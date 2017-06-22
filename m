@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
+ [IPv6:2607:f8b0:400d:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtPQj3ghYzDrVd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:39:57 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id s33so347659qtg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 18:39:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtPQl62tMzDrVv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:39:59 +1000 (AEST)
+Received: by mail-qk0-x241.google.com with SMTP id 16so363440qkg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 18:39:59 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
  corbet@lwn.net, mingo@redhat.com
-Subject: [RFC v3 02/23] powerpc: introduce set_hidx_slot helper
-Date: Wed, 21 Jun 2017 18:39:18 -0700
-Message-Id: <1498095579-6790-3-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC v3 03/23] powerpc: introduce get_hidx_gslot helper
+Date: Wed, 21 Jun 2017 18:39:19 -0700
+Message-Id: <1498095579-6790-4-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
 References: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,65 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce set_hidx_slot() which sets the (H_PAGE_F_SECOND|H_PAGE_F_GIX)
-bits at  the  appropriate  location  in  the  PTE  of  4K  PTE.  In the
-case of 64K PTE, it sets the bits in the second part of the PTE. Though
-the implementation for the former just needs the slot parameter, it does
-take some additional parameters to keep the prototype consistent.
+Introduce get_hidx_gslot() which returns the slot number of the HPTE
+in the global hash table.
 
-This function will come in handy as we  work  towards  re-arranging the
-bits in the later patches.
+This function will come in handy as we work towards re-arranging the
+PTE bits in the later patches.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-4k.h  |  7 +++++++
- arch/powerpc/include/asm/book3s/64/hash-64k.h | 16 ++++++++++++++++
- 2 files changed, 23 insertions(+)
+ arch/powerpc/include/asm/book3s/64/hash.h |  3 +++
+ arch/powerpc/mm/hash_utils_64.c           | 14 ++++++++++++++
+ 2 files changed, 17 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 9c2c8f1..cef644c 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -55,6 +55,13 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index ac049de..e7cf03a 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -162,6 +162,9 @@ static inline bool hpte_soft_invalid(unsigned long slot)
+ 	return ((slot & 0xfUL) == 0xfUL);
+ }
+ 
++unsigned long get_hidx_gslot(unsigned long vpn, unsigned long shift,
++		int ssize, real_pte_t rpte, unsigned int subpg_index);
++
+ /* This low level function performs the actual PTE insertion
+  * Setting the PTE depends on the MMU type and other factors. It's
+  * an horrible mess that I'm not going to try to clean up now but
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 1b494d0..99f97754c 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1591,6 +1591,20 @@ static inline void tm_flush_hash_page(int local)
  }
  #endif
  
-+static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
-+			unsigned int subpg_index, unsigned long slot)
++unsigned long get_hidx_gslot(unsigned long vpn, unsigned long shift,
++			int ssize, real_pte_t rpte, unsigned int subpg_index)
 +{
-+	return (slot << H_PAGE_F_GIX_SHIFT) &
-+		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
++	unsigned long hash, slot, hidx;
++
++	hash = hpt_hash(vpn, shift, ssize);
++	hidx = __rpte_to_hidx(rpte, subpg_index);
++	if (hidx & _PTEIDX_SECONDARY)
++		hash = ~hash;
++	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
++	slot += hidx & _PTEIDX_GROUP_IX;
++	return slot;
 +}
 +
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- 
- static inline char *get_hpte_slot_array(pmd_t *pmdp)
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 3f49941..4bac70a 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -75,6 +75,22 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
- 	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
- }
- 
-+static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
-+		unsigned int subpg_index, unsigned long slot)
-+{
-+	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-+
-+	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
-+	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
-+	/*
-+	 * Avoid race with __real_pte()
-+	 * hidx must be committed to memory before committing
-+	 * the pte.
-+	 */
-+	smp_wmb();
-+	return 0x0UL;
-+}
-+
- #define __rpte_to_pte(r)	((r).pte)
- extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
- /*
+ /* WARNING: This is called from hash_low_64.S, if you change this prototype,
+  *          do not forget to update the assembly call site !
+  */
 -- 
 1.8.3.1
