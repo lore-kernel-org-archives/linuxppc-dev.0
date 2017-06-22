@@ -1,38 +1,28 @@
-Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <gnomes@lxorguk.ukuu.org.uk>
+Received: from fuzix.org (www.llwyncelyn.cymru [82.70.14.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wttRz5sK3zDqj8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:27:43 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5MKPrdk108225
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:27:40 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b8magsnft-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:27:40 -0400
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Thu, 22 Jun 2017 17:27:38 -0300
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5MKRZiU16056412
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 17:27:35 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5MKRZQU007649
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 17:27:35 -0300
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Breno Leitao <leitao@debian.org>,
- Gustavo Romero <gromero@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/kernel: Avoid redundancies on giveup_all
-Date: Thu, 22 Jun 2017 17:27:23 -0300
-Message-Id: <1498163243-22203-1-git-send-email-leitao@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wttfs2fw8zDr2d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:37:08 +1000 (AEST)
+Date: Thu, 22 Jun 2017 21:36:55 +0100
+From: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+To: Logan Gunthorpe <logang@deltatee.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-ntb@googlegroups.com, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Bates
+ <sbates@raithlin.com>
+Subject: Re: [PATCH 3/7] asm-generic/io.h: make ioread64 and iowrite64
+ universally available
+Message-ID: <20170622213655.07dffac2@alans-desktop>
+In-Reply-To: <e856de0b-e9a3-8228-7a73-4daa38cb4479@deltatee.com>
+References: <20170622164817.25515-1-logang@deltatee.com>
+ <20170622164817.25515-4-logang@deltatee.com>
+ <20170622211431.14270378@alans-desktop>
+ <e856de0b-e9a3-8228-7a73-4daa38cb4479@deltatee.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,41 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently giveup_all() calls __giveup_fpu(), __giveup_altivec(), and
-__giveup_vsx(). But __giveup_vsx() also calls __giveup_fpu() and
-__giveup_altivec() again, in a redudant manner.
+On Thu, 22 Jun 2017 14:24:58 -0600
+Logan Gunthorpe <logang@deltatee.com> wrote:
 
-Other than giving up FP and Altivec, __giveup_vsx() also disables
-MSR_VSX on MSR, but this is already done by __giveup_{fpu,altivec}().
-As VSX can not be enabled alone on MSR (without FP and/or VEC
-enabled), this is also a redundancy. VSX is never enabled alone (without
-FP and VEC) because every time VSX is enabled, as through load_up_vsx()
-and restore_math(), FP is also enabled together.
+> On 6/22/2017 2:14 PM, Alan Cox wrote:
+> > If a platform doesn't support 64bit I/O operations from the CPU then you
+> > either need to use some kind of platform/architecture specific interface
+> > if present or accept you don't have one.  
+> 
+> Yes, I understand that.
+> 
+> The thing is that every user that's currently using it right now is 
+> patching in their own version that splits it on non-64bit systems.
+> 
+> > It's not safe to split it. Possibly for some use cases you could add an
+> > ioread64_maysplit()  
+> 
+> I'm open to doing something like that.
 
-This change improves giveup_all() in average just 3%, but since
-giveup_all() is called very frequently, around 8x per CPU per second on
-an idle machine, this change might show some noticeable improvement.
+I think that makes sense for the platforms with that problem. I'm not
+sure there are many that can't do it for mmio at least. 486SX can't do it
+and I guess some ARM32 but I think almost everyone else can including
+most 32bit x86.
 
-Signed-off-by: Breno Leitao <leitao@debian.org>
-Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/process.c | 4 ----
- 1 file changed, 4 deletions(-)
+What's more of a problem is a lot of platforms can do 64bit MMIO via
+ioread/write64 but not 64bit port I/O, and it's not clear how you
+represent that via an ioread/write API that abstracts it away.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 2ad725ef4368..5d6af58270e6 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -494,10 +494,6 @@ void giveup_all(struct task_struct *tsk)
- 	if (usermsr & MSR_VEC)
- 		__giveup_altivec(tsk);
- #endif
--#ifdef CONFIG_VSX
--	if (usermsr & MSR_VSX)
--		__giveup_vsx(tsk);
--#endif
- #ifdef CONFIG_SPE
- 	if (usermsr & MSR_SPE)
- 		__giveup_spe(tsk);
--- 
-2.11.0
+Alan
