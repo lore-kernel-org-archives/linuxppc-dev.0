@@ -1,48 +1,20 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0054.outbound.protection.outlook.com [104.47.0.54])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtkdT0wbmzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 00:35:24 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5MEYTlu095110
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 10:35:22 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b7vn8dw3r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 10:35:20 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 23 Jun 2017 00:35:17 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5MEZ68X64880804
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 00:35:14 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5MEYfrP003383
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 00:34:42 +1000
-Date: Thu, 22 Jun 2017 20:04:23 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 3/6] powerpc/64s: Blacklist system_call() and
- system_call_common() from kprobes
-References: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
- <e602b626323ee22ac39de305b62385a2a0210018.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170622133640.66861cda@roar.ozlabs.ibm.com>
- <87a850s2kd.fsf@concordia.ellerman.id.au>
- <20170622230800.08369dce@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtkwP4kL5zDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 00:48:21 +1000 (AEST)
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: Sebastian Huber <sebastian.huber@embedded-brains.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: DPAA: Software Portal selection for network interface
+Date: Thu, 22 Jun 2017 14:48:15 +0000
+Message-ID: <AM5PR0402MB26913CAEE7420F66309623D9ECDB0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
+References: <14d11770-fdbb-4719-559a-924855957568@embedded-brains.de>
+In-Reply-To: <14d11770-fdbb-4719-559a-924855957568@embedded-brains.de>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170622230800.08369dce@roar.ozlabs.ibm.com>
-Message-Id: <20170622143423.4fbbhtnss2vg5dyp@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,61 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/22 11:08PM, Nicholas Piggin wrote:
-> On Thu, 22 Jun 2017 21:07:46 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
-> 
-> > Nicholas Piggin <npiggin@gmail.com> writes:
-> > 
-> > > On Thu, 22 Jun 2017 00:08:39 +0530
-> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > >  
-> > >> Convert some of the symbols into private symbols and blacklist
-> > >> system_call_common() and system_call() from kprobes. We can't take a
-> > >> trap at parts of these functions as either MSR_RI is unset or the kernel
-> > >> stack pointer is not yet setup.
-> > >> 
-> > >> Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > >> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>  
-> > >
-> > > I don't have a problem with this bunch of system call labels
-> > > going private. They've never added much for me in profiles.
-> > >
-> > > Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
-Thanks for the review.
-
-> > >
-> > > Semi-related question, why is system_call: where it is?  
-> > 
-> > Ancient history.
-> > 
-> > We used to have:
-> > 
-> > 	bne	syscall_dotrace
-> > syscall_dotrace_cont:
-> > 	cmpldi	0,r0,NR_syscalls
-> > 	bge-	syscall_enosys
-> > 
-> > system_call:			/* label this so stack traces look sane */
-> > 
-> > 
-> > So it was there to hide syscall_dotrace_cont from back traces.
-> > 
-> > But we made syscall_dotrace_cont local in 2012 and then removed it
-> > entirely in 2015.
-> > 
-> > > Should we move it up to right after the mtmsrd / wrteei instruction?
-> > > (obviously for another patch). It's pretty common to get PMU
-> > > interrupts coming in right after mtmsr and this makes profiles split
-> > > the syscall into two which is annoying.  
-> > 
-> > Move it wherever makes sense and gives good back traces.
-> 
-> I'd be in favour of moving it to right after the interurpt enable.
-> I suppose you'd want a separate patch for that though. But we could
-> put it in this series since we're changing a lot of labels.
-
-Sure, I'll add a patch that does that.
-
-- Naveen
+SGkgU2ViYXN0aWFuLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFNl
+YmFzdGlhbiBIdWJlciBbbWFpbHRvOnNlYmFzdGlhbi5odWJlckBlbWJlZGRlZC1icmFpbnMuZGVd
+DQo+IFNlbnQ6IFRodXJzZGF5LCBKdW5lIDIyLCAyMDE3IDM6NDIgUE0NCj4gVG86IGxpbnV4cHBj
+LWRldkBsaXN0cy5vemxhYnMub3JnDQo+IENjOiBNYWRhbGluLWNyaXN0aWFuIEJ1Y3VyIDxtYWRh
+bGluLmJ1Y3VyQG54cC5jb20+DQo+IFN1YmplY3Q6IERQQUE6IFNvZnR3YXJlIFBvcnRhbCBzZWxl
+Y3Rpb24gZm9yIG5ldHdvcmsgaW50ZXJmYWNlDQo+IA0KPiBIZWxsbywNCj4gDQo+IGFzIGZhciBh
+cyBJIHVuZGVyc3RhbmQgdGhlIHNvZnR3YXJlIHBvcnRhbCBzZWxlY3Rpb24gZm9yIGEgbmV0d29y
+aw0KPiBpbnRlcmZhY2UgaXMgZG9uZSBpbg0KPiANCj4gc3RhdGljIGludCBkcGFhX2V0aF9wcm9i
+ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiB7DQo+ICAgICAgWy4uLl0NCj4gICAg
+ICBjaGFubmVsID0gZHBhYV9nZXRfY2hhbm5lbCgpOw0KPiAgICAgIGlmIChjaGFubmVsIDwgMCkg
+ew0KPiAgICAgICAgICBkZXZfZXJyKGRldiwgImRwYWFfZ2V0X2NoYW5uZWwoKSBmYWlsZWRcbiIp
+Ow0KPiAgICAgICAgICBlcnIgPSBjaGFubmVsOw0KPiAgICAgICAgICBnb3RvIGdldF9jaGFubmVs
+X2ZhaWxlZDsNCj4gICAgICB9DQo+IA0KPiAgICAgIHByaXYtPmNoYW5uZWwgPSAodTE2KWNoYW5u
+ZWw7DQo+IA0KPiAgICAgIC8qIFN0YXJ0IGEgdGhyZWFkIHRoYXQgd2lsbCB3YWxrIHRoZSBDUFVz
+IHdpdGggYWZmaW5lIHBvcnRhbHMNCj4gICAgICAgKiBhbmQgYWRkIHRoaXMgcG9vbCBjaGFubmVs
+IHRvIGVhY2gncyBkZXF1ZXVlIG1hc2suDQo+ICAgICAgICovDQo+ICAgICAgZHBhYV9ldGhfYWRk
+X2NoYW5uZWwocHJpdi0+Y2hhbm5lbCk7DQo+IA0KPiB3aXRoDQo+IA0KPiBzdGF0aWMgaW50IGRw
+YWFfZ2V0X2NoYW5uZWwodm9pZCkNCj4gew0KPiAgICAgIHNwaW5fbG9jaygmcnhfcG9vbF9jaGFu
+bmVsX2luaXQpOw0KPiAgICAgIGlmICghcnhfcG9vbF9jaGFubmVsKSB7DQo+ICAgICAgICAgIHUz
+MiBwb29sOw0KPiAgICAgICAgICBpbnQgcmV0Ow0KPiANCj4gICAgICAgICAgcmV0ID0gcW1hbl9h
+bGxvY19wb29sKCZwb29sKTsNCj4gDQo+ICAgICAgICAgIGlmICghcmV0KQ0KPiAgICAgICAgICAg
+ICAgcnhfcG9vbF9jaGFubmVsID0gcG9vbDsNCj4gICAgICB9DQo+ICAgICAgc3Bpbl91bmxvY2so
+JnJ4X3Bvb2xfY2hhbm5lbF9pbml0KTsNCj4gICAgICBpZiAoIXJ4X3Bvb2xfY2hhbm5lbCkNCj4g
+ICAgICAgICAgcmV0dXJuIC1FTk9NRU07DQo+ICAgICAgcmV0dXJuIHJ4X3Bvb2xfY2hhbm5lbDsN
+Cj4gfQ0KPiANCj4gd2hpY2ggYWx3YXlzIHJldHVybnMgdGhlIHNhbWUgcG9vbCBjaGFubmVsIChl
+LmcuIDB4NDAxKSBpZiBzdWNjZXNzZnVsLg0KDQpUaGF0J3MgY29ycmVjdC4NCg0KPiBUaGlzIG1l
+YW5zIGFsbCB0aGUgUU1hbiBwb3J0YWxfaXNyKCkgYXJlIGRpc3RyaWJ1dGVkIHJvdW5kLXJvYmlu
+IHRvIGFsbA0KPiBhZmZpbmUgcG9ydGFscy4gSXMgdGhlcmUgc29tZSB3YXkgdG8gY29uZmlndXJl
+IHRoZSBzb2Z0d2FyZSBwb3J0YWwgZm9yIGENCj4gc3BlY2lmaWMgbmV0d29yayBpbnRlcmZhY2Us
+IGUuZy4gdXNlIHByb2Nlc3NvcnMgMCwgMSwgMiwgMyBmb3Igb25lDQo+IGludGVyZmFjZSxhbmQg
+NCwgNSwgNiwgNyBmb3IgYW5vdGhlcj8NCg0KV2UndmUgc3RyaXBwZWQgYWxsIGNvbmZpZ3VyYWJp
+bGl0eSBhbmQgYWR2YW5jZWQgZmVhdHVyZXMgZnJvbSB0aGUgaW5pdGlhbA0KRFBBQSBzdWJtaXNz
+aW9uLiBXZSBkb24ndCBoYXZlIG9wdGlvbnMgdG8gY29uZmlndXJlIHRoaXMuIE9uIHRoZSBvdGhl
+ciBoYW5kLA0KdGhlIGluZ3Jlc3MgcXVldWVzIGFyZSBoZWxkIGFjdGl2ZSBpbiB0aGUgcG9ydGFs
+LCByZXN1bHRpbmcgaW4gb25lIENQVSBkb2luZw0KZGVxdWV1ZXMgd2hpbGUgdGhlcmUgYXJlIGZy
+YW1lcyBhdmFpbGFibGUuIFRoaXMgaXMgZG9uZSB0byBhdm9pZCBmcmFtZSANCnJlb3JkZXJpbmcs
+IGltcHJvdmluZyB0ZXJtaW5hdGlvbiBwZXJmb3JtYW5jZSAoYW5kIGZvcndhcmRlZCBUQ1AgcGVy
+Zm9ybWFuY2UpLg0KDQpUaGUgZG93bnNpZGUgaXMgdGhhdCB3ZSdyZSBub3Qgc2F0dXJhdGluZyBh
+bGwgQ1BVcyB3aXRoIHRyYWZmaWMuIFdlJ3JlDQpjdXJyZW50bHkgd29ya2luZyBvbiBhZGRpbmcg
+UnggaGFzaGluZywgdG8gYmUgYWJsZSB0byBtYWludGFpbiBpbnRyYS1mbG93DQpmcmFtZSBvcmRl
+ciB3aGlsZSBzcHJlYWRpbmcgcHJvY2Vzc2luZyBvbiBhbGwgQ1BVcy4NCg0KTWVhbndoaWxlLCB3
+b3VsZCBSUFMgKFJlY2VpdmUgUGFja2V0IFN0ZWVyaW5nKSBiZSBhIHNvbHV0aW9uIGZvciB5b3U/
+DQoNCj4gLS0NCj4gU2ViYXN0aWFuIEh1YmVyLCBlbWJlZGRlZCBicmFpbnMgR21iSA0KPiANCj4g
+QWRkcmVzcyA6IERvcm5pZXJzdHIuIDQsIEQtODIxNzggUHVjaGhlaW0sIEdlcm1hbnkNCj4gUGhv
+bmUgICA6ICs0OSA4OSAxODkgNDcgNDEtMTYNCj4gRmF4ICAgICA6ICs0OSA4OSAxODkgNDcgNDEt
+MDkNCj4gRS1NYWlsICA6IHNlYmFzdGlhbi5odWJlckBlbWJlZGRlZC1icmFpbnMuZGUNCj4gUEdQ
+ICAgICA6IFB1YmxpYyBrZXkgYXZhaWxhYmxlIG9uIHJlcXVlc3QuDQo+IA0KPiBEaWVzZSBOYWNo
+cmljaHQgaXN0IGtlaW5lIGdlc2Now6RmdGxpY2hlIE1pdHRlaWx1bmcgaW0gU2lubmUgZGVzIEVI
+VUcuDQoNCg0KUmVnYXJkcywNCk1hZGFsaW4NCg==
