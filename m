@@ -1,24 +1,24 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtS1d3hWVzDt0s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 13:36:53 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id f127so767907pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 20:36:53 -0700 (PDT)
-Date: Thu, 22 Jun 2017 13:36:40 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtS6r4xxFzDvYq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 13:41:24 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id j186so787939pge.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 20:41:24 -0700 (PDT)
+Date: Thu, 22 Jun 2017 13:41:12 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
  <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 3/6] powerpc/64s: Blacklist system_call() and
- system_call_common() from kprobes
-Message-ID: <20170622133640.66861cda@roar.ozlabs.ibm.com>
-In-Reply-To: <e602b626323ee22ac39de305b62385a2a0210018.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 4/6] powerpc/64s: Un-blacklist system_call() from
+ kprobes
+Message-ID: <20170622134112.4bd32543@roar.ozlabs.ibm.com>
+In-Reply-To: <d13eccaed4be643409abed29565dbdd8c7d5af6a.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
- <e602b626323ee22ac39de305b62385a2a0210018.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
+ <d13eccaed4be643409abed29565dbdd8c7d5af6a.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,27 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Jun 2017 00:08:39 +0530
+On Thu, 22 Jun 2017 00:08:40 +0530
 "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> Convert some of the symbols into private symbols and blacklist
-> system_call_common() and system_call() from kprobes. We can't take a
-> trap at parts of these functions as either MSR_RI is unset or the kernel
-> stack pointer is not yet setup.
-> 
-> Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> It is actually safe to probe system_call() in entry_64.S, but only till
+> we unset MSR_RI. To allow this, add a new symbol system_call_exit()
+> after the mtmsrd and blacklist that. Though the mtmsrd instruction
+> itself is now whitelisted, we won't be allowed to probe on it as we
+> don't allow probing on rfi and mtmsr instructions (checked for in
+> arch_prepare_kprobe()).
 
-I don't have a problem with this bunch of system call labels
-going private. They've never added much for me in profiles.
+Can you add a little comment to say probes aren't allowed, and it's
+located after the mtmsr in order to avoid contaminating traces?
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Also I wonder if a slightly different name would be more instructive?
+I don't normally care, but the system_call_common code isn't trivial
+to follow. system_call_exit might give the impression that it is the
+entire exit path (which would pair with system_call for entry).
 
-Semi-related question, why is system_call: where it is? Should we
-move it up to right after the mtmsrd / wrteei instruction?
-(obviously for another patch). It's pretty common to get PMU
-interrupts coming in right after mtmsr and this makes profiles split
-the syscall into two which is annoying.
+Perhaps system_call_exit_notrace? No that sucks too :(
 
 Thanks,
 Nick
+
+
+> 
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/entry_64.S | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index ef8e6615b8ba..feeeadc9aa71 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -204,6 +204,7 @@ system_call:			/* label this so stack traces look sane */
+>  	mtmsrd	r11,1
+>  #endif /* CONFIG_PPC_BOOK3E */
+>  
+> +system_call_exit:
+>  	ld	r9,TI_FLAGS(r12)
+>  	li	r11,-MAX_ERRNO
+>  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+> @@ -412,7 +413,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>  	b	.	/* prevent speculative execution */
+>  #endif
+>  _ASM_NOKPROBE_SYMBOL(system_call_common);
+> -_ASM_NOKPROBE_SYMBOL(system_call);
+> +_ASM_NOKPROBE_SYMBOL(system_call_exit);
+>  
+>  /* Save non-volatile GPRs, if not already saved. */
+>  _GLOBAL(save_nvgprs)
