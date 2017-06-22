@@ -1,29 +1,22 @@
-Return-Path: <logang@deltatee.com>
-Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pabeni@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtthf3TQBzDr2d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:38:42 +1000 (AEST)
-To: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-4-logang@deltatee.com>
- <20170622211431.14270378@alans-desktop>
- <e856de0b-e9a3-8228-7a73-4daa38cb4479@deltatee.com>
- <20170622213655.07dffac2@alans-desktop>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-ntb@googlegroups.com, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stephen Bates <sbates@raithlin.com>
-From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <131f6a1c-ee4d-20eb-d1d3-200c70bbae0c@deltatee.com>
-Date: Thu, 22 Jun 2017 14:38:28 -0600
-MIME-Version: 1.0
-In-Reply-To: <20170622213655.07dffac2@alans-desktop>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Subject: Re: [PATCH 3/7] asm-generic/io.h: make ioread64 and iowrite64
- universally available
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtv5y5GbVzDq8c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:57:10 +1000 (AEST)
+Message-ID: <1498165026.2503.21.camel@redhat.com>
+Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was
+ [net-next,v3,3/3] udp: try to avoid 2 cache miss on dequeue)
+From: Paolo Abeni <pabeni@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>,  netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Thu, 22 Jun 2017 22:57:06 +0200
+In-Reply-To: <87shisqihz.fsf@concordia.ellerman.id.au>
+References: <87shisqihz.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/22/2017 2:36 PM, Alan Cox wrote:
-> I think that makes sense for the platforms with that problem. I'm not
-> sure there are many that can't do it for mmio at least. 486SX can't do it
-> and I guess some ARM32 but I think almost everyone else can including
-> most 32bit x86.
->
-> What's more of a problem is a lot of platforms can do 64bit MMIO via
-> ioread/write64 but not 64bit port I/O, and it's not clear how you
-> represent that via an ioread/write API that abstracts it away.
+On Thu, 2017-06-22 at 23:06 +1000, Michael Ellerman wrote:
+> Paolo wrote:
+> > when udp_recvmsg() is executed, on x86_64 and other archs, most skb
+> > fields are on cold cachelines.
+> > If the skb are linear and the kernel don't need to compute the udp
+> > csum, only a handful of skb fields are required by udp_recvmsg().
+> > Since we already use skb->dev_scratch to cache hot data, and
+> > there are 32 bits unused on 64 bit archs, use such field to cache
+> > as much data as we can, and try to prefetch on dequeue the relevant
+> > fields that are left out.
+> > 
+> > This can save up to 2 cache miss per packet.
+> > 
+> > v1 -> v2:
+> >   - changed udp_dev_scratch fields types to u{32,16} variant,
+> >     replaced bitfiled with bool
+> > 
+> > Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+> > Acked-by: Eric Dumazet <edumazet@google.com>
+> > ---
+> >  net/ipv4/udp.c | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++------
+> >  1 file changed, 103 insertions(+), 11 deletions(-)
+> 
+> This appears to break wget on one of my machines.
+> 
+> Networking in general is working, I'm able to SSH in, but then I can't
+> do a wget.
 
-In Patch 2, we call bad_io_access for anyone trying to do 64bit accesses 
-on port I/O.
+Can you please check if the following patch fixes the issue? Only
+compiled tested here.
 
-Logan
+Thanks!!!
+---
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index 067a607..80d89fe 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -1446,16 +1446,19 @@ static struct sk_buff *__first_packet_length(struct sock *sk,
+ {
+ 	struct sk_buff *skb;
+ 
+-	while ((skb = skb_peek(rcvq)) != NULL &&
+-	       udp_lib_checksum_complete(skb)) {
+-		__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
+-				IS_UDPLITE(sk));
+-		__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
+-				IS_UDPLITE(sk));
+-		atomic_inc(&sk->sk_drops);
+-		__skb_unlink(skb, rcvq);
+-		*total += skb->truesize;
+-		kfree_skb(skb);
++	while ((skb = skb_peek(rcvq)) != NULL) {
++		if (udp_lib_checksum_complete(skb)) {
++			__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
++					IS_UDPLITE(sk));
++			__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
++					IS_UDPLITE(sk));
++			atomic_inc(&sk->sk_drops);
++			__skb_unlink(skb, rcvq);
++			*total += skb->truesize;
++			kfree_skb(skb);
++		} else {
++			udp_set_dev_scratch(skb);
++		}
+ 	}
+ 	return skb;
+ }
