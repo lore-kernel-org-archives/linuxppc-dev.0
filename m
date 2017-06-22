@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtPR43xjJzDqlZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:40:16 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id r62so356704qkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 18:40:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtPR65lV2zDr2y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:40:18 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id s33so348356qtg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 18:40:18 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -17,10 +17,10 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
  corbet@lwn.net, mingo@redhat.com
-Subject: [RFC v3 10/23] mm: provide the ability to disable execute on a key at
- creation
-Date: Wed, 21 Jun 2017 18:39:26 -0700
-Message-Id: <1498095579-6790-11-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC v3 11/23] x86: key creation with PKEY_DISABLE_EXECUTE is
+ disallowed
+Date: Wed, 21 Jun 2017 18:39:27 -0700
+Message-Id: <1498095579-6790-12-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
 References: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,33 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently sys_pkey_create() provides the ability to disable read
-and write permission on the key, at  creation. powerpc  has  the
-hardware support to disable execute on a pkey as well.This patch
-enhances the interface to let disable execute  at  key  creation
-time. x86 does  not  allow  this.  Hence the next patch will add
-ability  in  x86  to  return  error  is  PKEY_DISABLE_EXECUTE is
-specified.
+x86 does not support disabling execute permissions on a pkey.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- include/uapi/asm-generic/mman-common.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/x86/kernel/fpu/xstate.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
-index 8c27db0..bf4fa07 100644
---- a/include/uapi/asm-generic/mman-common.h
-+++ b/include/uapi/asm-generic/mman-common.h
-@@ -74,7 +74,9 @@
+diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
+index c24ac1e..d582631 100644
+--- a/arch/x86/kernel/fpu/xstate.c
++++ b/arch/x86/kernel/fpu/xstate.c
+@@ -900,6 +900,9 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 	if (!boot_cpu_has(X86_FEATURE_OSPKE))
+ 		return -EINVAL;
  
- #define PKEY_DISABLE_ACCESS	0x1
- #define PKEY_DISABLE_WRITE	0x2
-+#define PKEY_DISABLE_EXECUTE	0x4
- #define PKEY_ACCESS_MASK	(PKEY_DISABLE_ACCESS |\
--				 PKEY_DISABLE_WRITE)
-+				 PKEY_DISABLE_WRITE  |\
-+				 PKEY_DISABLE_EXECUTE)
- 
- #endif /* __ASM_GENERIC_MMAN_COMMON_H */
++	if (init_val & PKEY_DISABLE_EXECUTE)
++		return -EINVAL;
++
+ 	/* Set the bits we need in PKRU:  */
+ 	if (init_val & PKEY_DISABLE_ACCESS)
+ 		new_pkru_bits |= PKRU_AD_BIT;
 -- 
 1.8.3.1
