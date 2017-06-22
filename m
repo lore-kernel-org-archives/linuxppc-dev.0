@@ -1,27 +1,23 @@
-Return-Path: <logang@deltatee.com>
-Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pabeni@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wttP40MTNzDqj8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:25:11 +1000 (AEST)
-To: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-4-logang@deltatee.com>
- <20170622211431.14270378@alans-desktop>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-ntb@googlegroups.com, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stephen Bates <sbates@raithlin.com>
-From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <e856de0b-e9a3-8228-7a73-4daa38cb4479@deltatee.com>
-Date: Thu, 22 Jun 2017 14:24:58 -0600
-MIME-Version: 1.0
-In-Reply-To: <20170622211431.14270378@alans-desktop>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Subject: Re: [PATCH 3/7] asm-generic/io.h: make ioread64 and iowrite64
- universally available
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wttSS0VvgzDr3t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:28:08 +1000 (AEST)
+Message-ID: <1498163283.2503.19.camel@redhat.com>
+Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was
+ [net-next,v3,3/3] udp: try to avoid 2 cache miss on dequeue)
+From: Paolo Abeni <pabeni@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>,  netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Thu, 22 Jun 2017 22:28:03 +0200
+In-Reply-To: <1498149835.2503.1.camel@redhat.com>
+References: <87shisqihz.fsf@concordia.ellerman.id.au>
+ <1498149835.2503.1.camel@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/22/2017 2:14 PM, Alan Cox wrote:
-> If a platform doesn't support 64bit I/O operations from the CPU then you
-> either need to use some kind of platform/architecture specific interface
-> if present or accept you don't have one.
+On Thu, 2017-06-22 at 18:43 +0200, Paolo Abeni wrote:
+> On Thu, 2017-06-22 at 23:06 +1000, Michael Ellerman wrote:
+> > Paolo wrote:
+> > > when udp_recvmsg() is executed, on x86_64 and other archs, most skb
+> > > fields are on cold cachelines.
+> > > If the skb are linear and the kernel don't need to compute the udp
+> > > csum, only a handful of skb fields are required by udp_recvmsg().
+> > > Since we already use skb->dev_scratch to cache hot data, and
+> > > there are 32 bits unused on 64 bit archs, use such field to cache
+> > > as much data as we can, and try to prefetch on dequeue the relevant
+> > > fields that are left out.
+> > > 
+> > > This can save up to 2 cache miss per packet.
+> > > 
+> > > v1 -> v2:
+> > >   - changed udp_dev_scratch fields types to u{32,16} variant,
+> > >     replaced bitfiled with bool
+> > > 
+> > > Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+> > > Acked-by: Eric Dumazet <edumazet@google.com>
+> > > ---
+> > >  net/ipv4/udp.c | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++------
+> > >  1 file changed, 103 insertions(+), 11 deletions(-)
+> > 
+> > This appears to break wget on one of my machines.
+> > 
+> > Networking in general is working, I'm able to SSH in, but then I can't
+> > do a wget.
+> > 
+> > eg:
+> > 
+> > $ wget google.com
+> > --2017-06-22 22:45:39--  http://google.com/
+> > Resolving proxy.pmdw.com (proxy.pmdw.com)... failed: Temporary failure in name resolution.
+> > wget: unable to resolve host address ‘proxy.pmdw.com’
+> > 
+> > $ host proxy.pmdw.com
+> > proxy.pmdw.com is an alias for raven.pmdw.com.
+> > raven.pmdw.com has address 10.1.2.3
+> > 
+> > $ wget google.com
+> > --2017-06-22 22:52:08--  http://google.com/
+> > Resolving proxy.pmdw.com (proxy.pmdw.com)... failed: Temporary failure in name resolution.
+> > wget: unable to resolve host address ‘proxy.pmdw.com’
+> > 
+> > Maybe host is using TCP but the man page says it doesn't?
+> > 
+> > 
+> > Everything is OK if I boot back to the previous commit 0a463c78d25b
+> > ("udp: avoid a cache miss on dequeue"):
+> > 
+> > $ wget google.com
+> > --2017-06-22 23:00:01--  http://google.com/
+> > Resolving proxy.pmdw.com (proxy.pmdw.com)... 10.1.2.3
+> > Connecting to proxy.pmdw.com (proxy.pmdw.com)|10.1.2.3|:3128... connected.
+> > Proxy request sent, awaiting response... 302 Found
+> > Location: http://www.google.com.au/?gfe_rd=cr&ei=Ub9LWbPbLujDXrH1uPgE [following]
+> > --2017-06-22 23:00:01--  http://www.google.com.au/?gfe_rd=cr&ei=Ub9LWbPbLujDXrH1uPgE
+> > Reusing existing connection to proxy.pmdw.com:3128.
+> > Proxy request sent, awaiting response... 200 OK
+> > Length: unspecified [text/html]
+> > Saving to: ‘index.html’
+> > 
+> > index.html                      [ <=>                                       ]  11.37K  --.-KB/s    in 0.001s  
+> > 
+> > 2017-06-22 23:00:01 (22.0 MB/s) - ‘index.html’ saved [11640]
+> > 
+> > $ uname -a
+> > Linux 4.12.0-rc4-gcc6-00988-g0a463c7 #88 SMP Thu Jun 22 22:55:12 AEST 2017 ppc64 GNU/Linux
+> > 
+> > 
+> > Haven't had time to debug any further. Any ideas?
+> 
+> Thank you for this report.
+> 
+> Can you please specify features of the relevant NIC ? (ethtool -k
+> <name>) 
+> 
+> I'll try to replicate the issue as soon I'll get hands on suitable HW,
 
-Yes, I understand that.
+I had my hands on power7, but I can't trivially reproduce the issue so
+I'm going to bug you for more info. 
 
-The thing is that every user that's currently using it right now is 
-patching in their own version that splits it on non-64bit systems.
+Can you please specify the host CPU, the NIC in use (ethtool -i
+<name>), the compiler version used to build the kernel and possibly
+provide a tcpdump of the DNS packets received/sent while running wget
+and while running the host command?
 
-> It's not safe to split it. Possibly for some use cases you could add an
-> ioread64_maysplit()
+Do you have the relevant kernel running on others PPC hosts?
 
-I'm open to doing something like that.
+Thank you,
 
-> What btw is the actual ARM compiler warning ? Is the compiler also trying
-> to tell you it's a bad idea ?
-
-It's just the compiler noting that you are mixing volatile and 
-non-volatile pointers. Strangely some io{read|write}XX use volatile but 
-most do not. But it's nothing crazy.
-
-Logan
+Paolo
