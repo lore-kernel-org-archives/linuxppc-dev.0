@@ -1,22 +1,25 @@
-Return-Path: <srs0=jbbl=53=kernel.crashing.org=benh@ozlabs.org>
+Return-Path: <srs0=5yjr=53=gmail.com=bsingharora@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtZLS1BVlzDr1W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:21:52 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wtZLS0024z8vpM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:21:51 +1000 (AEST)
-Message-ID: <1498119678.31581.68.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtb526NBNzDqjP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:55:18 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wtb524cnKz8t3W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:55:18 +1000 (AEST)
+Message-ID: <1498121654.7935.1.camel@gmail.com>
 Subject: Re: 1M hugepage size being registered on Linux
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, victora
- <victora@linux.vnet.ibm.com>, alistair@popple.id.au, jk@ozlabs.org
-Cc: victora@br.ibm.com, mauricfo@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
-Date: Thu, 22 Jun 2017 03:21:18 -0500
-In-Reply-To: <87wp85sk9o.fsf@concordia.ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, jk@ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Stewart Smith
+ <stewart@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, victora@br.ibm.com, victora
+ <victora@linux.vnet.ibm.com>, alistair@popple.id.au
+Date: Thu, 22 Jun 2017 18:54:14 +1000
+In-Reply-To: <3493fb6b-5212-843c-60b8-b2b715b52154@linux.vnet.ibm.com>
 References: <322aa4a1a11ca79008a8c894c12a80d5@linux.vnet.ibm.com>
  <87wp85sk9o.fsf@concordia.ellerman.id.au>
+ <3493fb6b-5212-843c-60b8-b2b715b52154@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,29 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-06-21 at 20:33 +1000, Michael Ellerman wrote:
-> victora <victora@linux.vnet.ibm.com> writes:
+On Wed, 2017-06-21 at 12:32 -0300, Mauricio Faria de Oliveira wrote:
+> On 06/21/2017 07:33 AM, Michael Ellerman wrote:
+> > > I am working on a bug related to 1M hugepage size being registered on
+> > > Linux (Power 8 Baremetal - Garrison).
+> > Wasn't that caused by a firmware bug?
 > 
-> > Hi Alistair/Jeremy,
-> > 
-> > I am working on a bug related to 1M hugepage size being registered on 
-> > Linux (Power 8 Baremetal - Garrison).
+> Ben/Stewart, does that ring a bell, something new, intended or not? :- )
 > 
-> Wasn't that caused by a firmware bug?
 > 
-> > I was checking dmesg and it seems that 1M page size is coming from 
-> > firmware to Linux.
-> > 
-> > [    0.000000] base_shift=20: shift=20, sllp=0x0130, avpnm=0x00000000, 
-> > tlbiel=0, penc=2
-> > [    1.528867] HugeTLB registered 1 MB page size, pre-allocated 0 pages
-> > 
-> > Should Linux support this page size?
-> 
-> Does it work? :)
-> 
-> The user manual says it's a supported size, but I thought it didn't work
-> (in hardware) for some reason.
 
-Right, I thought there was some config bit to switch between 1M and 16M
-and that had never been fully verified ? I don't remember the details.
+Aneesh changed the code to support just 16M and 16G hugepages for hash even
+if the firmware exported that size. What is your end goal to support those
+pages or to prevent them from being used?
+
+Balbir Singh.
