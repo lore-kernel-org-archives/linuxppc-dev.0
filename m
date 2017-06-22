@@ -1,20 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtXMm1D4NzDqjC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:52:52 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: stable@vger.kernel.org  <stable@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
-Cc: lkml  <linux-kernel@vger.kernel.org>,
- Greg Kroah-Hartman  <gregkh@linuxfoundation.org>
-Subject: [PATCH backport pre-4.9] powerpc/slb: Force a full SLB flush when we
- insert for a bad EA
-Date: Thu, 22 Jun 2017 16:52:51 +1000
-Message-ID: <87k244sed8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtXTq4vkRzDq8c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:58:07 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5M6s6W6069800
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 02:58:05 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b7ycwyn73-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 02:58:04 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Thu, 22 Jun 2017 07:58:03 +0100
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [RESEND PATCH V3] cxl: Export library to support IBM XSL
+Date: Thu, 22 Jun 2017 08:57:59 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1498114679-20228-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,105 +35,703 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SLB miss handler calls slb_allocate_realmode() in order to create an
-SLB entry for the faulting address. At the very start of that function
-we check that the faulting Effective Address (EA) is less than
-PGTABLE_RANGE (ignoring the region), ie. is it an address which could
-possibly fit in the virtual address space.
+This patch exports a in-kernel 'library' API which can be called by
+other drivers to help interacting with an IBM XSL on a POWER9 system.
 
-For an EA which fails that test, we branch out of line (to label 8), but
-we still go on to create an SLB entry for the address. The SLB entry we
-create has a VSID of 0, which means it will never match anything in the
-hash table and so can't actually translate to a physical address.
+The XSL (Translation Service Layer) is a stripped down version of the
+PSL (Power Service Layer) used in some cards such as the Mellanox CX5.
+Like the PSL, it implements the CAIA architecture, but has a number
+of differences, mostly in it's implementation dependent registers.
 
-However that SLB entry will be inserted in the SLB, and so needs to be
-managed properly like any other SLB entry. In particular we need to
-insert the SLB entry in the SLB cache, so that it will be flushed when
-the process is descheduled.
+The XSL also uses a special DMA cxl mode, which uses a slightly
+different init sequence for the CAPP and PHB.
 
-And that is where the bugs begin. The first bug is that slb_finish_load()
-uses cr7 to decide if it should insert the SLB entry into the SLB cache.
-When we come from the invalid EA case we don't set cr7, it just has some
-junk value from userspace. So we may or may not insert the SLB entry in
-the SLB cache. If we fail to insert it, we may then incorrectly leave it
-in the SLB when the process is descheduled.
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-The second bug is that even if we do happen to add the entry to the SLB
-cache, we do not have enough bits in the SLB cache to remember the full
-ESID value for very large EAs.
-
-For example if a process branches to 0x788c545a18000000, that results in
-a 256MB SLB entry with an ESID of 0x788c545a1. But each entry in the SLB
-cache is only 32-bits, meaning we truncate the ESID to 0x88c545a1. This
-has the same effect as the first bug, we incorrectly leave the SLB entry
-in the SLB when the process is descheduled.
-
-When a process accesses an invalid EA it results in a SEGV signal being
-sent to the process, which typically results in the process being
-killed. Process death isn't instantaneous however, the process may catch
-the SEGV signal and continue somehow, or the kernel may start writing a
-core dump for the process, either of which means it's possible for the
-process to be preempted while its processing the SEGV but before it's
-been killed.
-
-If that happens, when the process is scheduled back onto the CPU we will
-allocate a new SLB entry for the NIP, which will insert a second entry
-into the SLB for the bad EA. Because we never flushed the original
-entry, due to either bug one or two, we now have two SLB entries that
-match the same EA.
-
-If another access is made to that EA, either by the process continuing
-after catching the SEGV, or by a second process accessing the same bad
-EA on the same CPU, we will trigger an SLB multi-hit machine check
-exception. This has been observed happening in the wild.
-
-The fix is when we hit the invalid EA case, we mark the SLB cache as
-being full. This causes us to not insert the truncated ESID into the SLB
-cache, and means when the process is switched out we will flush the
-entire SLB. Note that this works both for the original fault and for a
-subsequent call to slb_allocate_realmode() from switch_slb().
-
-Because we mark the SLB cache as full, it doesn't really matter what
-value is in cr7, but rather than leaving it as something random we set
-it to indicate the address was a kernel address. That also skips the
-attempt to insert it in the SLB cache which is a nice side effect.
-
-Another way to fix the bug would be to make the entries in the SLB cache
-wider, so that we don't truncate the ESID. However this would be a more
-intrusive change as it alters the size and layout of the paca.
-
-This bug was fixed in upstream by commit f0f558b131db ("powerpc/mm:
-Preserve CFAR value on SLB miss caused by access to bogus address"),
-which changed the way we handle a bad EA entirely removing this bug in
-the process.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/mm/slb_low.S | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Changelog[v3]
+ - Rebase to latest upstream.
+ - cxl_handle_mm_fault() is now exported. Remove kernel context
+   parameter
+ - Update comments
 
-Note this patch is not upstream. The bug fix was fixed differently in
-upstream prior to the bug being identified.
+Changelog[v2]
+ - Rebase to latest upstream.
+ - Return -EFAULT in case of NULL pointer in cxllib_handle_fault().
+ - Reverse parameters when copro_handle_mm_fault() is called.
 
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index dfdb90cb4403..1348c4862b08 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -174,6 +174,16 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	b	slb_finish_load
+ This applies on top of this patch:
+ http://patchwork.ozlabs.org/patch/775322/
+---
+ arch/powerpc/include/asm/opal-api.h |   1 +
+ drivers/misc/cxl/Kconfig            |   5 +
+ drivers/misc/cxl/Makefile           |   2 +-
+ drivers/misc/cxl/cxl.h              |   6 +
+ drivers/misc/cxl/cxllib.c           | 246 ++++++++++++++++++++++++++++++++++++
+ drivers/misc/cxl/fault.c            |  28 ++--
+ drivers/misc/cxl/native.c           |  16 ++-
+ drivers/misc/cxl/pci.c              |  41 ++++--
+ include/misc/cxllib.h               | 133 +++++++++++++++++++
+ 9 files changed, 450 insertions(+), 28 deletions(-)
+ create mode 100644 drivers/misc/cxl/cxllib.c
+ create mode 100644 include/misc/cxllib.h
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index cb3e624..3e0be78 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -877,6 +877,7 @@ enum {
+ 	OPAL_PHB_CAPI_MODE_SNOOP_OFF    = 2,
+ 	OPAL_PHB_CAPI_MODE_SNOOP_ON	= 3,
+ 	OPAL_PHB_CAPI_MODE_DMA		= 4,
++	OPAL_PHB_CAPI_MODE_DMA_TVT1	= 5,
+ };
  
- 8:	/* invalid EA */
+ /* OPAL I2C request */
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+index b75cf83..93397cb 100644
+--- a/drivers/misc/cxl/Kconfig
++++ b/drivers/misc/cxl/Kconfig
+@@ -11,11 +11,16 @@ config CXL_AFU_DRIVER_OPS
+ 	bool
+ 	default n
+ 
++config CXL_LIB
++	bool
++	default n
++
+ config CXL
+ 	tristate "Support for IBM Coherent Accelerators (CXL)"
+ 	depends on PPC_POWERNV && PCI_MSI && EEH
+ 	select CXL_BASE
+ 	select CXL_AFU_DRIVER_OPS
++	select CXL_LIB
+ 	default m
+ 	help
+ 	  Select this option to enable driver support for IBM Coherent
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+index c14fd6b..0b5fd74 100644
+--- a/drivers/misc/cxl/Makefile
++++ b/drivers/misc/cxl/Makefile
+@@ -3,7 +3,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+ 
+ cxl-y				+= main.o file.o irq.o fault.o native.o
+ cxl-y				+= context.o sysfs.o pci.o trace.o
+-cxl-y				+= vphb.o phb.o api.o
++cxl-y				+= vphb.o phb.o api.o cxllib.o
+ cxl-$(CONFIG_PPC_PSERIES)	+= flash.o guest.o of.o hcalls.o
+ cxl-$(CONFIG_DEBUG_FS)		+= debugfs.o
+ obj-$(CONFIG_CXL)		+= cxl.o
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index a03f8e7..b1afecc 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -1010,6 +1010,7 @@ static inline void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct den
+ 
+ void cxl_handle_fault(struct work_struct *work);
+ void cxl_prefault(struct cxl_context *ctx, u64 wed);
++int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar);
+ 
+ struct cxl *get_cxl_adapter(int num);
+ int cxl_alloc_sst(struct cxl_context *ctx);
+@@ -1061,6 +1062,11 @@ int cxl_afu_slbia(struct cxl_afu *afu);
+ int cxl_data_cache_flush(struct cxl *adapter);
+ int cxl_afu_disable(struct cxl_afu *afu);
+ int cxl_psl_purge(struct cxl_afu *afu);
++int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
++			  u32 *phb_index, u64 *capp_unit_id);
++int cxl_slot_is_switched(struct pci_dev *dev);
++int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
++u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+ 
+ void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+ void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+new file mode 100644
+index 0000000..4f4c5ca
+--- /dev/null
++++ b/drivers/misc/cxl/cxllib.c
+@@ -0,0 +1,246 @@
++/*
++ * Copyright 2017 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <asm/pnv-pci.h>
++#include <linux/hugetlb.h>
++#include <linux/sched/mm.h>
++#include <misc/cxllib.h>
++
++#include "cxl.h"
++
++#define CXL_INVALID_DRA                 ~0ull
++#define CXL_DUMMY_READ_SIZE             128
++#define CXL_DUMMY_READ_ALIGN            8
++#define CXL_CAPI_WINDOW_START           0x2000000000000ull
++#define CXL_CAPI_WINDOW_LOG_SIZE        48
++#define CXL_XSL_CONFIG_CURRENT_VERSION  CXL_XSL_CONFIG_VERSION1
++
++
++bool cxllib_slot_is_supported(struct pci_dev *dev, unsigned long flags)
++{
++	int rc;
++	u32 phb_index;
++	u64 chip_id, capp_unit_id;
++
++	/* No flags currently supported */
++	if (flags)
++		return false;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE))
++		return false;
++
++	if (!cxl_is_power9())
++		return false;
++
++	if (cxl_slot_is_switched(dev))
++		return false;
++
++	/* on p9, some pci slots are not connected to a CAPP unit */
++	rc = cxl_calc_capp_routing(dev, &chip_id, &phb_index, &capp_unit_id);
++	if (rc)
++		return false;
++
++	return true;
++}
++EXPORT_SYMBOL_GPL(cxllib_slot_is_supported);
++
++static DEFINE_MUTEX(dra_mutex);
++static u64 dummy_read_addr = CXL_INVALID_DRA;
++
++static int allocate_dummy_read_buf(void)
++{
++	u64 buf, vaddr;
++	size_t buf_size;
++
 +	/*
-+	 * It's possible the bad EA is too large to fit in the SLB cache, which
-+	 * would mean we'd fail to invalidate it on context switch. So mark the
-+	 * SLB cache as full so we force a full flush. We also set cr7+eq to
-+	 * mark the address as a kernel address, so slb_finish_load() skips
-+	 * trying to insert it into the SLB cache.
++	 * Dummy read buffer is 128-byte long, aligned on a
++	 * 256-byte boundary and we need the physical address.
 +	 */
-+	li	r9,SLB_CACHE_ENTRIES + 1
-+	sth	r9,PACASLBCACHEPTR(r13)
-+	crset	4*cr7+eq
- 	li	r10,0			/* BAD_VSID */
- 	li	r9,0			/* BAD_VSID */
- 	li	r11,SLB_VSID_USER	/* flags don't much matter */
++	buf_size = CXL_DUMMY_READ_SIZE + (1ull << CXL_DUMMY_READ_ALIGN);
++	buf = (u64) kzalloc(buf_size, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	vaddr = (buf + (1ull << CXL_DUMMY_READ_ALIGN) - 1) &
++					(~0ull << CXL_DUMMY_READ_ALIGN);
++
++	WARN((vaddr + CXL_DUMMY_READ_SIZE) > (buf + buf_size),
++		"Dummy read buffer alignment issue");
++	dummy_read_addr = virt_to_phys((void *) vaddr);
++	return 0;
++}
++
++int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
++{
++	int rc;
++	u32 phb_index;
++	u64 chip_id, capp_unit_id;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE))
++		return -EINVAL;
++
++	mutex_lock(&dra_mutex);
++	if (dummy_read_addr == CXL_INVALID_DRA) {
++		rc = allocate_dummy_read_buf();
++		if (rc) {
++			mutex_unlock(&dra_mutex);
++			return rc;
++		}
++	}
++	mutex_unlock(&dra_mutex);
++
++	rc = cxl_calc_capp_routing(dev, &chip_id, &phb_index, &capp_unit_id);
++	if (rc)
++		return rc;
++
++	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
++	if (rc)
++		return rc;
++	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
++		/* workaround for DD1 - nbwind = capiind */
++		cfg->dsnctl |= ((u64)0x02 << (63-47));
++	}
++
++	cfg->version  = CXL_XSL_CONFIG_CURRENT_VERSION;
++	cfg->log_bar_size = CXL_CAPI_WINDOW_LOG_SIZE;
++	cfg->bar_addr = CXL_CAPI_WINDOW_START;
++	cfg->dra = dummy_read_addr;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cxllib_get_xsl_config);
++
++int cxllib_switch_phb_mode(struct pci_dev *dev, enum cxllib_mode mode,
++			unsigned long flags)
++{
++	int rc = 0;
++
++	if (!cpu_has_feature(CPU_FTR_HVMODE))
++		return -EINVAL;
++
++	switch (mode) {
++	case CXL_MODE_PCI:
++		/*
++		 * We currently don't support going back to PCI mode
++		 * However, we'll turn the invalidations off, so that
++		 * the firmware doesn't have to ack them and can do
++		 * things like reset, etc.. with no worries.
++		 * So always return EPERM (can't go back to PCI) or
++		 * EBUSY if we couldn't even turn off snooping
++		 */
++		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_OFF);
++		if (rc)
++			rc = -EBUSY;
++		else
++			rc = -EPERM;
++		break;
++	case CXL_MODE_CXL:
++		/* DMA only supported on TVT1 for the time being */
++		if (flags != CXL_MODE_DMA_TVT1)
++			return -EINVAL;
++		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_DMA_TVT1);
++		if (rc)
++			return rc;
++		rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON);
++		break;
++	default:
++		rc = -EINVAL;
++	}
++	return rc;
++}
++EXPORT_SYMBOL_GPL(cxllib_switch_phb_mode);
++
++/*
++ * When switching the PHB to capi mode, the TVT#1 entry for
++ * the Partitionable Endpoint is set in bypass mode, like
++ * in PCI mode.
++ * Configure the device dma to use TVT#1, which is done
++ * by calling dma_set_mask() with a mask large enough.
++ */
++int cxllib_set_device_dma(struct pci_dev *dev, unsigned long flags)
++{
++	int rc;
++
++	if (flags)
++		return -EINVAL;
++
++	rc = dma_set_mask(&dev->dev, DMA_BIT_MASK(64));
++	return rc;
++}
++EXPORT_SYMBOL_GPL(cxllib_set_device_dma);
++
++int cxllib_get_PE_attributes(struct task_struct *task,
++			     unsigned long translation_mode,
++			     struct cxllib_pe_attributes *attr)
++{
++	struct mm_struct *mm = NULL;
++
++	if (translation_mode != CXL_TRANSLATED_MODE &&
++		translation_mode != CXL_REAL_MODE)
++		return -EINVAL;
++
++	attr->sr = cxl_calculate_sr(false,
++				task == NULL,
++				translation_mode == CXL_REAL_MODE,
++				true);
++	attr->lpid = mfspr(SPRN_LPID);
++	if (task) {
++		mm = get_task_mm(task);
++		if (mm == NULL)
++			return -EINVAL;
++		/*
++		 * Caller is keeping a reference on mm_users for as long
++		 * as XSL uses the memory context
++		 */
++		attr->pid = mm->context.id;
++		mmput(mm);
++	} else {
++		attr->pid = 0;
++	}
++	attr->tid = 0;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
++
++int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
++{
++	int rc;
++	u64 dar;
++	struct vm_area_struct *vma = NULL;
++	unsigned long page_size;
++
++	if (mm == NULL)
++		return -EFAULT;
++
++	down_read(&mm->mmap_sem);
++
++	for (dar = addr; dar < addr + size; dar += page_size) {
++		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
++			vma = find_vma(mm, addr);
++			if (!vma) {
++				pr_err("Can't find vma for addr %016llx\n", addr);
++				rc = -EFAULT;
++				goto out;
++			}
++			/* get the size of the pages allocated */
++			page_size = vma_kernel_pagesize(vma);
++		}
++
++		rc = cxl_handle_mm_fault(mm, flags, dar);
++		if (rc) {
++			pr_err("cxl_handle_mm_fault failed %d", rc);
++			rc = -EFAULT;
++			goto out;
++		}
++	}
++	rc = 0;
++out:
++	up_read(&mm->mmap_sem);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(cxllib_handle_fault);
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index c79e39b..077370f 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -132,18 +132,15 @@ static int cxl_handle_segment_miss(struct cxl_context *ctx,
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void cxl_handle_page_fault(struct cxl_context *ctx,
+-				  struct mm_struct *mm, u64 dsisr, u64 dar)
++int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar)
+ {
+ 	unsigned flt = 0;
+ 	int result;
+ 	unsigned long access, flags, inv_flags = 0;
+ 
+-	trace_cxl_pte_miss(ctx, dsisr, dar);
+-
+ 	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
+ 		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
+-		return cxl_ack_ae(ctx);
++		return result;
+ 	}
+ 
+ 	if (!radix_enabled()) {
+@@ -156,7 +153,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+ 			access |= _PAGE_WRITE;
+ 
+ 		access |= _PAGE_PRIVILEGED;
+-		if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
++		if (mm || (REGION_ID(dar) == USER_REGION_ID))
+ 			access &= ~_PAGE_PRIVILEGED;
+ 
+ 		if (dsisr & DSISR_NOHPTE)
+@@ -166,8 +163,23 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+ 		hash_page_mm(mm, dar, access, 0x300, inv_flags);
+ 		local_irq_restore(flags);
+ 	}
+-	pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
+-	cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
++	return 0;
++}
++
++static int cxl_handle_page_fault(struct cxl_context *ctx,
++				 struct mm_struct *mm,
++				 u64 dsisr, u64 dar)
++{
++	trace_cxl_pte_miss(ctx, dsisr, dar);
++
++	if (cxl_handle_mm_fault(mm, dsisr, dar)) {
++		cxl_ack_ae(ctx);
++	} else {
++		pr_devel("Page fault successfully handled for pe: %i!\n", ctx->pe);
++		cxl_ops->ack_irq(ctx, CXL_PSL_TFC_An_R, 0);
++	}
++
++	return IRQ_HANDLED;
+ }
+ 
+ /*
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 2b2f889..4a82c31 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -586,17 +586,17 @@ static int activate_afu_directed(struct cxl_afu *afu)
+ #define set_endian(sr) ((sr) &= ~(CXL_PSL_SR_An_LE))
+ #endif
+ 
+-static u64 calculate_sr(struct cxl_context *ctx)
++u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
+ {
+ 	u64 sr = 0;
+ 
+ 	set_endian(sr);
+-	if (ctx->master)
++	if (master)
+ 		sr |= CXL_PSL_SR_An_MP;
+ 	if (mfspr(SPRN_LPCR) & LPCR_TC)
+ 		sr |= CXL_PSL_SR_An_TC;
+-	if (ctx->kernel) {
+-		if (!ctx->real_mode)
++	if (kernel) {
++		if (!real_mode)
+ 			sr |= CXL_PSL_SR_An_R;
+ 		sr |= (mfmsr() & MSR_SF) | CXL_PSL_SR_An_HV;
+ 	} else {
+@@ -608,7 +608,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
+ 		if (!test_tsk_thread_flag(current, TIF_32BIT))
+ 			sr |= CXL_PSL_SR_An_SF;
+ 	}
+-	if (cxl_is_power9()) {
++	if (p9) {
+ 		if (radix_enabled())
+ 			sr |= CXL_PSL_SR_An_XLAT_ror;
+ 		else
+@@ -617,6 +617,12 @@ static u64 calculate_sr(struct cxl_context *ctx)
+ 	return sr;
+ }
+ 
++static u64 calculate_sr(struct cxl_context *ctx)
++{
++	return cxl_calculate_sr(ctx->master, ctx->kernel, ctx->real_mode,
++				cxl_is_power9());
++}
++
+ static void update_ivtes_directed(struct cxl_context *ctx)
+ {
+ 	bool need_update = (ctx->status == STARTED);
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 1eb9859..d18b3d9 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -375,7 +375,7 @@ static u64 get_capp_unit_id(struct device_node *np, u32 phb_index)
+ 	return 0;
+ }
+ 
+-static int calc_capp_routing(struct pci_dev *dev, u64 *chipid,
++int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+ 			     u32 *phb_index, u64 *capp_unit_id)
+ {
+ 	int rc;
+@@ -408,17 +408,9 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+ 	return 0;
+ }
+ 
+-static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci_dev *dev)
++int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+ {
+-	u64 xsl_dsnctl, psl_fircntl;
+-	u64 chipid;
+-	u32 phb_index;
+-	u64 capp_unit_id;
+-	int rc;
+-
+-	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+-	if (rc)
+-		return rc;
++	u64 xsl_dsnctl;
+ 
+ 	/*
+ 	 * CAPI Identifier bits [0:7]
+@@ -454,6 +446,27 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter, struct pci
+ 		xsl_dsnctl |= ((u64)0x04 << (63-55));
+ 	}
+ 
++	*reg = xsl_dsnctl;
++	return 0;
++}
++
++static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
++						 struct pci_dev *dev)
++{
++	u64 xsl_dsnctl, psl_fircntl;
++	u64 chipid;
++	u32 phb_index;
++	u64 capp_unit_id;
++	int rc;
++
++	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
++	if (rc)
++		return rc;
++
++	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
++	if (rc)
++		return rc;
++
+ 	cxl_p1_write(adapter, CXL_XSL9_DSNCTL, xsl_dsnctl);
+ 
+ 	/* Set fir_cntl to recommended value for production env */
+@@ -505,7 +518,7 @@ static int init_implementation_adapter_regs_psl8(struct cxl *adapter, struct pci
+ 	u64 capp_unit_id;
+ 	int rc;
+ 
+-	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
++	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -538,7 +551,7 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
+ 	u64 capp_unit_id;
+ 	int rc;
+ 
+-	rc = calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
++	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -1897,7 +1910,7 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
+ 
+ #define CXL_MAX_PCIEX_PARENT 2
+ 
+-static int cxl_slot_is_switched(struct pci_dev *dev)
++int cxl_slot_is_switched(struct pci_dev *dev)
+ {
+ 	struct device_node *np;
+ 	int depth = 0;
+diff --git a/include/misc/cxllib.h b/include/misc/cxllib.h
+new file mode 100644
+index 0000000..e5aa29f
+--- /dev/null
++++ b/include/misc/cxllib.h
+@@ -0,0 +1,133 @@
++/*
++ * Copyright 2017 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _MISC_CXLLIB_H
++#define _MISC_CXLLIB_H
++
++#include <linux/pci.h>
++#include <asm/reg.h>
++
++/*
++ * cxl driver exports a in-kernel 'library' API which can be called by
++ * other drivers to help interacting with an IBM XSL.
++ */
++
++/*
++ * tells whether capi is supported on the PCIe slot where the
++ * device is seated
++ *
++ * Input:
++ *	dev: device whose slot needs to be checked
++ *	flags: 0 for the time being
++ */
++bool cxllib_slot_is_supported(struct pci_dev *dev, unsigned long flags);
++
++
++/*
++ * Returns the configuration parameters to be used by the XSL or device
++ *
++ * Input:
++ *	dev: device, used to find PHB
++ * Output:
++ *	struct cxllib_xsl_config:
++ *		version
++ *		capi BAR address, i.e. 0x2000000000000-0x2FFFFFFFFFFFF
++ *		capi BAR size
++ *		data send control (XSL_DSNCTL)
++ *		dummy read address (XSL_DRA)
++ */
++#define CXL_XSL_CONFIG_VERSION1		1
++struct cxllib_xsl_config {
++	u32	version;     /* format version for register encoding */
++	u32	log_bar_size;/* log size of the capi_window */
++	u64	bar_addr;    /* address of the start of capi window */
++	u64	dsnctl;      /* matches definition of XSL_DSNCTL */
++	u64	dra;         /* real address that can be used for dummy read */
++};
++
++int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg);
++
++
++/*
++ * Activate capi for the pci host bridge associated with the device.
++ * Can be extended to deactivate once we know how to do it.
++ * Device must be ready to accept messages from the CAPP unit and
++ * respond accordingly (TLB invalidates, ...)
++ *
++ * PHB is switched to capi mode through calls to skiboot.
++ * CAPP snooping is activated
++ *
++ * Input:
++ *	dev: device whose PHB should switch mode
++ *	mode: mode to switch to i.e. CAPI or PCI
++ *	flags: options related to the mode
++ */
++enum cxllib_mode {
++	CXL_MODE_CXL,
++	CXL_MODE_PCI,
++};
++
++#define CXL_MODE_NO_DMA       0
++#define CXL_MODE_DMA_TVT0     1
++#define CXL_MODE_DMA_TVT1     2
++
++int cxllib_switch_phb_mode(struct pci_dev *dev, enum cxllib_mode mode,
++			unsigned long flags);
++
++
++/*
++ * Set the device for capi DMA.
++ * Define its dma_ops and dma offset so that allocations will be using TVT#1
++ *
++ * Input:
++ *	dev: device to set
++ *	flags: options. CXL_MODE_DMA_TVT1 should be used
++ */
++int cxllib_set_device_dma(struct pci_dev *dev, unsigned long flags);
++
++
++/*
++ * Get the Process Element structure for the given thread
++ *
++ * Input:
++ *    task: task_struct for the context of the translation
++ *    translation_mode: whether addresses should be translated
++ * Output:
++ *    attr: attributes to fill up the Process Element structure from CAIA
++ */
++struct cxllib_pe_attributes {
++	u64 sr;
++	u32 lpid;
++	u32 tid;
++	u32 pid;
++};
++#define CXL_TRANSLATED_MODE 0
++#define CXL_REAL_MODE 1
++
++int cxllib_get_PE_attributes(struct task_struct *task,
++	     unsigned long translation_mode, struct cxllib_pe_attributes *attr);
++
++
++/*
++ * Handle memory fault.
++ * Fault in all the pages of the specified buffer for the permissions
++ * provided in ‘flags’
++ *
++ * Shouldn't be called from interrupt context
++ *
++ * Input:
++ *	mm: struct mm for the thread faulting the pages
++ *	addr: base address of the buffer to page in
++ *	size: size of the buffer to page in
++ *	flags: permission requested (DSISR_ISSTORE...)
++ */
++int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags);
++
++
++#endif /* _MISC_CXLLIB_H */
+-- 
+2.7.4
