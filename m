@@ -1,54 +1,25 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtPJB0x1yzDr7R
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:34:17 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5M1Xf1U138424
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 21:34:13 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b7r1nbkd7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 21:34:13 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Thu, 22 Jun 2017 11:34:10 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5M1Y7b17078156
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:34:07 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5M1Y6hK012060
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:34:07 +1000
-Subject: Re: [PATCH v2 6/6] ima: Support module-style appended signatures
- for appraisal
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linux-security-module@vger.kernel.org,
- linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- James Morris <james.l.morris@oracle.com>, "Serge E. Hallyn"
- <serge@hallyn.com>, David Howells <dhowells@redhat.com>, David Woodhouse
- <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>, Rusty Russell
- <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David
- S. Miller" <davem@davemloft.net>, "AKASHI, Takahiro"
- <takahiro.akashi@linaro.org>
-Date: Wed, 21 Jun 2017 21:33:57 -0400
-In-Reply-To: <8760fpck0x.fsf@linux.vnet.ibm.com>
-References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1496886555-10082-7-git-send-email-bauerman@linux.vnet.ibm.com>
- <1497443972.4287.38.camel@linux.vnet.ibm.com>
- <8760fpck0x.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1498095237.5328.44.camel@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtPQd3sdxzDrHD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 11:39:53 +1000 (AEST)
+Received: by mail-qt0-x244.google.com with SMTP id s33so347463qtg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 18:39:53 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
+ linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
+ corbet@lwn.net, mingo@redhat.com
+Subject: [RFC v3 00/23] powerpc: Memory Protection Keys
+Date: Wed, 21 Jun 2017 18:39:16 -0700
+Message-Id: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,318 +29,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-06-21 at 14:45 -0300, Thiago Jung Bauermann wrote:
-> Hello Mimi,
-> 
-> Thanks for your review, and for queuing the other patches in this series.
-> 
-> Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
-> > On Wed, 2017-06-07 at 22:49 -0300, Thiago Jung Bauermann wrote:
-> >> This patch introduces the modsig keyword to the IMA policy syntax to
-> >> specify that a given hook should expect the file to have the IMA signature
-> >> appended to it.
-> >
-> > Thank you, Thiago. Appended signatures seem to be working proper now
-> > with multiple keys on the IMA keyring.
-> 
-> Great news!
-> 
-> > The length of this patch description is a good indication that this
-> > patch needs to be broken up for easier review. A few
-> > comments/suggestions inline below.
-> 
-> Ok, I will try to break it up, and also patch 5 as you suggested.
-> 
-> >> diff --git a/security/integrity/digsig.c b/security/integrity/digsig.c
-> >> index 06554c448dce..9190c9058f4f 100644
-> >> --- a/security/integrity/digsig.c
-> >> +++ b/security/integrity/digsig.c
-> >> @@ -48,11 +48,10 @@ static bool init_keyring __initdata;
-> >>  #define restrict_link_to_ima restrict_link_by_builtin_trusted
-> >>  #endif
-> >> 
-> >> -int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
-> >> -			    const char *digest, int digestlen)
-> >> +struct key *integrity_keyring_from_id(const unsigned int id)
-> >>  {
-> >> -	if (id >= INTEGRITY_KEYRING_MAX || siglen < 2)
-> >> -		return -EINVAL;
-> >> +	if (id >= INTEGRITY_KEYRING_MAX)
-> >> +		return ERR_PTR(-EINVAL);
-> >> 
-> >
-> > When splitting up this patch, the addition of this new function could
-> > be a separate patch. The patch description would explain the need for
-> > a new function.
-> 
-> Ok, will do for v3.
-> 
-> >> @@ -229,10 +234,14 @@ int ima_appraise_measurement(enum ima_hooks func,
-> >>  		goto out;
-> >>  	}
-> >> 
-> >> -	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value, rc, iint);
-> >> -	if ((status != INTEGRITY_PASS) && (status != INTEGRITY_UNKNOWN)) {
-> >> -		if ((status == INTEGRITY_NOLABEL)
-> >> -		    || (status == INTEGRITY_NOXATTRS))
-> >> +	/* Appended signatures aren't protected by EVM. */
-> >> +	status = evm_verifyxattr(dentry, XATTR_NAME_IMA,
-> >> +				 xattr_value->type == IMA_MODSIG ?
-> >> +				 NULL : xattr_value, rc, iint);
-> >> +	if (status != INTEGRITY_PASS && status != INTEGRITY_UNKNOWN &&
-> >> +	    !(xattr_value->type == IMA_MODSIG &&
-> >> +	      (status == INTEGRITY_NOLABEL || status == INTEGRITY_NOXATTRS))) {
-> >
-> > This was messy to begin with, and now it is even more messy. For
-> > appended signatures, we're only interested in INTEGRITY_FAIL. Maybe
-> > leave the existing "if" clause alone and define a new "if" clause.
-> 
-> Ok, is this what you had in mind?
-> 
-> @@ -229,8 +237,14 @@ int ima_appraise_measurement(enum ima_hooks func,
->  		goto out;
->  	}
-> 
-> -	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value, rc, iint);
-> -	if ((status != INTEGRITY_PASS) && (status != INTEGRITY_UNKNOWN)) {
-> +	/* Appended signatures aren't protected by EVM. */
-> +	status = evm_verifyxattr(dentry, XATTR_NAME_IMA,
-> +				 xattr_value->type == IMA_MODSIG ?
-> +				 NULL : xattr_value, rc, iint);
+Memory protection keys enable applications to protect its
+address space from inadvertent access or corruption from
+itself.
 
-Yes, maybe add a comment here indicating only verifying other security
-xattrs, if they exist.
+The overall idea:
 
-> +	if (xattr_value->type == IMA_MODSIG && status == INTEGRITY_FAIL) {
-> +		cause = "invalid-HMAC";
-> +		goto out;
-> +	} else if (status != INTEGRITY_PASS && status != INTEGRITY_UNKNOWN) {
->  		if ((status == INTEGRITY_NOLABEL)
->  		    || (status == INTEGRITY_NOXATTRS))
->  			cause = "missing-HMAC";
+ A process allocates a   key  and associates it with
+ a  address  range  within    its   address   space.
+ The process  than  can  dynamically  set read/write 
+ permissions on  the   key   without  involving  the 
+ kernel. Any  code that  violates   the  permissions
+ off the address space; as defined by its associated
+ key, will receive a segmentation fault.
 
-> 
-> >> @@ -267,11 +276,18 @@ int ima_appraise_measurement(enum ima_hooks func,
-> >>  		status = INTEGRITY_PASS;
-> >>  		break;
-> >>  	case EVM_IMA_XATTR_DIGSIG:
-> >> +	case IMA_MODSIG:
-> >>  		iint->flags |= IMA_DIGSIG;
-> >> -		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
-> >> -					     (const char *)xattr_value, rc,
-> >> -					     iint->ima_hash->digest,
-> >> -					     iint->ima_hash->length);
-> >> +
-> >> +		if (xattr_value->type == EVM_IMA_XATTR_DIGSIG)
-> >> +			rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
-> >> +						     (const char *)xattr_value,
-> >> +						     rc, iint->ima_hash->digest,
-> >> +						     iint->ima_hash->length);
-> >> +		else
-> >> +			rc = ima_modsig_verify(INTEGRITY_KEYRING_IMA,
-> >> +					       xattr_value);
-> >> +
-> >
-> > Perhaps allowing IMA_MODSIG to flow into EVM_IMA_XATTR_DIGSIG on
-> > failure, would help restore process_measurements() to the way it was.
-> > Further explanation below.
-> 
-> It's not possible to simply flow into EVM_IMA_XATTR_DIGSIG on failure
-> because after calling ima_read_xattr we need to run again all the logic
-> before the switch statement. Instead, I'm currently testing the
-> following change for v3, what do you think?
+This patch series enables the feature on PPC64.
+It is enabled on HPTE 64K-page platform.
 
-I don't think we can assume that the same algorithm will be used for
-signing the kernel image. Different entities would be signing the
-kernel image with different requirements.
-
-Suppose for example a stock distro image comes signed using one
-algorithm (appended signature), but the same kernel image is locally
-signed using a different algorithm (xattr).  Signature verification is
-dependent on either the distro or local public key being loaded onto
-the IMA keyring.
-
-> More about this code further below.
-> 
-> @@ -266,6 +280,44 @@ int ima_appraise_measurement(enum ima_hooks func,
->  		}
->  		status = INTEGRITY_PASS;
->  		break;
-> +	case IMA_MODSIG:
-> +		rc = ima_modsig_verify(INTEGRITY_KEYRING_IMA, xattr_value);
-> +		if (!rc) {
-> +			iint->flags |= IMA_DIGSIG;
-> +			status = INTEGRITY_PASS;
-> +			break;
-> +		}
-> +
-> +		/*
-> +		 * The appended signature failed verification. Let's try
-> +		 * reading a signature from the extended attribute instead.
-> +		 */
-> +
-> +		ima_free_xattr_data(xattr_value);
-> +		xattr_value = NULL;
-> +
-> +		/* read 'security.ima' */
-> +		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
-> +		algo = iint->ima_hash->algo;
-> +
-> +		if (!xattr_value || xattr_value->type == IMA_MODSIG ||
-> +		    ima_get_hash_algo(xattr_value, xattr_len) != algo) {
-> +			iint->flags |= IMA_DIGSIG;
-> +
-> +			if (rc == -EOPNOTSUPP)
-> +				status = INTEGRITY_UNKNOWN;
-> +			else {
-> +				cause = "invalid-signature";
-> +				status = INTEGRITY_FAIL;
-> +			}
-> +
-> +			break;
-> +		}
-> +
-> +		pr_debug("Trying the xattr signature\n");
-> +
-> +		return ima_appraise_measurement(func, iint, file, filename,
-> +						xattr_value, xattr_len, opened);
->  	case EVM_IMA_XATTR_DIGSIG:
->  		iint->flags |= IMA_DIGSIG;
->  		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
-> 
-> >> @@ -406,7 +424,8 @@ int ima_inode_setxattr(struct dentry *dentry, const char *xattr_name,
-> >>  		if (!xattr_value_len || (xvalue->type >= IMA_XATTR_LAST))
-> >>  			return -EINVAL;
-> >>  		ima_reset_appraise_flags(d_backing_inode(dentry),
-> >> -			 (xvalue->type == EVM_IMA_XATTR_DIGSIG) ? 1 : 0);
-> >> +					 xvalue->type == EVM_IMA_XATTR_DIGSIG ||
-> >> +					 xvalue->type == IMA_MODSIG);
-> >
-> > Probably easier to read if we set a variable, before calling
-> > ima_reset_appraise_flags.
-> 
-> Ok, will do in v3.
-> 
-> >> @@ -226,30 +282,23 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
-> >>  		goto out_digsig;
-> >>  	}
-> >> 
-> >> -	template_desc = ima_template_desc_current();
-> >> -	if ((action & IMA_APPRAISE_SUBMASK) ||
-> >> -		    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0)
-> >> -		/* read 'security.ima' */
-> >> -		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
-> >> -
-> >> -	hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
-> >> -
-> >> -	rc = ima_collect_measurement(iint, file, buf, size, hash_algo);
-> >> -	if (rc != 0) {
-> >> -		if (file->f_flags & O_DIRECT)
-> >> -			rc = (iint->flags & IMA_PERMIT_DIRECTIO) ? 0 : -EACCES;
-> >> -		goto out_digsig;
-> >> -	}
-> >> -
-> >
-> > There are four stages: collect measurement, store measurement,
-> > appraise measurement and audit measurement. "Collect" needs to be
-> > done if any one of the other stages is needed.
-> >
-> >>  	if (!pathbuf)	/* ima_rdwr_violation possibly pre-fetched */
-> >>  		pathname = ima_d_path(&file->f_path, &pathbuf, filename);
-> >> 
-> >> +	if (iint->flags & IMA_MODSIG_ALLOWED)
-> >> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
-> >> +					  iint, &xattr_value, &xattr_len,
-> >> +					  pathname, true);
-> >> +	if (!xattr_len)
-> >> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
-> >> +					  iint, &xattr_value, &xattr_len,
-> >> +					  pathname, false);
-> >
-> > I would rather see "collect" extended to support an appended signature
-> > rather than trying to combine "collect" and "appraise" together.
-> 
-> I'm not sure I understand what you mean by "extend collect to support an
-> appended signature", but the fundamental problem is that we don't know
-> whether we need to fallback to the xattr sig until the appraise step
-> because that's when we verify the signature, and by then the collect and
-> store steps were already completed and would need to be done again if
-> the hash algorithm in the xattr sig is different.
-
-The "appraise" stage could be moved before the "store" stage, like you
-have.  (This should be a separate patch explaining the need for moving
-it.)  Based on an argument to ima_collect_measurement() have it
-"collect" either the appended signature or the xattr.  Maybe something
-like this:
-
-loop [ appended signature, xattr ] {  <== list based on policy flags
-     collect_measurement()
-     if failure
-        continue
-     appraise_measurement()
-     if success
-        break
-}
-
-store_measurement()
-
-Mimi
+ISA3.0 section 5.7.13 describes the detailed specifications.
 
 
-> If we don't want to change the order of these steps what I suggest (and
-> what the code I pasted above for ima_appraise_measurement does) is to
-> only allow falling back to the xattr sig if the appended sig and the
-> xattr sig use the same hash algorithm.
-> 
-> In that case, collect and store don't need to be redone nor the store
-> step need to be moved after appraise. This is the only change that would
-> be needed in process_measurement:
+Testing:
+	This patch series has passed all the protection key
+	tests available in  the selftests directory.
+	The tests are updated to work on both x86 and powerpc.
 
-> @@ -227,10 +230,16 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
->  	}
-> 
->  	template_desc = ima_template_desc_current();
-> -	if ((action & IMA_APPRAISE_SUBMASK) ||
-> -		    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0)
-> -		/* read 'security.ima' */
-> -		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
-> +	if (action & IMA_APPRAISE_SUBMASK ||
-> +	    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0) {
-> +		if (iint->flags & IMA_MODSIG_ALLOWED)
-> +			ima_read_modsig(buf, &size, &xattr_value, &xattr_len);
-> +
-> +		if (!xattr_len)
-> +			/* read 'security.ima' */
-> +			xattr_len = ima_read_xattr(file_dentry(file),
-> +						   &xattr_value);
-> +	}
-> 
->  	hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
-> 
-> @@ -257,7 +266,7 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
->  	if ((mask & MAY_WRITE) && (iint->flags & IMA_DIGSIG) &&
->  	     !(iint->flags & IMA_NEW_FILE))
->  		rc = -EACCES;
-> -	kfree(xattr_value);
-> +	ima_free_xattr_data(xattr_value);
->  out_free:
->  	if (pathbuf)
->  		__putname(pathbuf);
-> 
-> >
-> >> +	if (rc)
-> >> +		goto out_digsig;
-> >> +
-> >>  	if (action & IMA_MEASURE)
-> >>  		ima_store_measurement(iint, file, pathname,
-> >>  				      xattr_value, xattr_len, pcr);
-> >> -	if (action & IMA_APPRAISE_SUBMASK)
-> >> -		rc = ima_appraise_measurement(func, iint, file, pathname,
-> >> -					      xattr_value, xattr_len, opened);
-> >
-> > Moving appraisal before storing the measurement, should be a separate
-> > patch with a clear explanation as to why it is needed.
-> 
-> Ok, will do in v3 if you don't like the restriction of both the modsig
-> and xattr sig having to use the same hash algorithm.
-> 
+version v3:
+	(1) split the patches into smaller consumable
+		patches.
+	(2) added the ability to disable execute permission
+		on a key at creation.
+	(3) rename  calc_pte_to_hpte_pkey_bits() to
+	    pte_to_hpte_pkey_bits() -- suggested by Anshuman
+	(4) some code optimization and clarity in
+		do_page_fault()  
+	(5) A bug fix while invalidating a hpte slot in 
+		__hash_page_4K() -- noticed by Aneesh
+	
+
+version v2:
+	(1) documentation and selftest added
+ 	(2) fixed a bug in 4k hpte backed 64k pte where page
+	    invalidation was not done correctly, and 
+	    initialization of second-part-of-the-pte was not
+	    done correctly if the pte was not yet Hashed
+	    with a hpte.  Reported by Aneesh.
+	(3) Fixed ABI breakage caused in siginfo structure.
+		Reported by Anshuman.
+	
+Outstanding known issue:
+    Calls to sys_swapcontext with a made-up context will end 
+    up with a crap AMR if done by code who didn't know about
+    that register. -- Reported by Ben.
+
+version v1: Initial version
+
+Thanks-to: Dave Hansen, Aneesh, Paul Mackerras,
+	   Michael Ellermen
+
+
+Ram Pai (23):
+  powerpc: Free up four 64K PTE bits in 4K backed HPTE pages
+  powerpc: introduce set_hidx_slot helper
+  powerpc: introduce get_hidx_gslot helper
+  powerpc: Free up four 64K PTE bits in 64K backed HPTE pages
+  powerpc: capture the PTE format changes in the dump pte report
+  powerpc: use helper functions in __hash_page_4K() for 64K PTE
+  powerpc: use helper functions in __hash_page_4K() for 4K PTE
+  powerpc: use helper functions in flush_hash_page()
+  mm: introduce an additional vma bit for powerpc pkey
+  mm: provide the ability to disable execute on a key at creation
+  x86: key creation with PKEY_DISABLE_EXECUTE is disallowed
+  powerpc: Implement sys_pkey_alloc and sys_pkey_free system call
+  powerpc: store and restore the pkey state across context switches
+  powerpc: Implementation for sys_mprotect_pkey() system call
+  powerpc: Program HPTE key protection bits
+  powerpc: Macro the mask used for checking DSI exception
+  powerpc: Handle exceptions caused by violation of pkey protection
+  powerpc: Deliver SEGV signal on pkey violation
+  selftest: Move protecton key selftest to arch neutral directory
+  selftest: PowerPC specific test updates to memory protection keys
+  Documentation: Move protecton key documentation to arch neutral
+    directory
+  Documentation: PowerPC specific updates to memory protection keys
+  procfs: display the protection-key number associated with a vma
+
+ Documentation/filesystems/proc.txt            |    3 +-
+ Documentation/vm/protection-keys.txt          |  110 ++
+ Documentation/x86/protection-keys.txt         |   85 --
+ arch/powerpc/Kconfig                          |   15 +
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |   14 +
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |   53 +-
+ arch/powerpc/include/asm/book3s/64/hash.h     |   15 +-
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    5 +
+ arch/powerpc/include/asm/book3s/64/mmu.h      |   10 +
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |   84 +-
+ arch/powerpc/include/asm/mman.h               |   14 +-
+ arch/powerpc/include/asm/mmu_context.h        |   12 +
+ arch/powerpc/include/asm/paca.h               |    1 +
+ arch/powerpc/include/asm/pkeys.h              |  159 +++
+ arch/powerpc/include/asm/processor.h          |    5 +
+ arch/powerpc/include/asm/reg.h                |    7 +-
+ arch/powerpc/include/asm/systbl.h             |    3 +
+ arch/powerpc/include/asm/unistd.h             |    6 +-
+ arch/powerpc/include/uapi/asm/ptrace.h        |    3 +-
+ arch/powerpc/include/uapi/asm/unistd.h        |    3 +
+ arch/powerpc/kernel/asm-offsets.c             |    5 +
+ arch/powerpc/kernel/exceptions-64s.S          |   18 +-
+ arch/powerpc/kernel/process.c                 |   18 +
+ arch/powerpc/kernel/signal_32.c               |   14 +
+ arch/powerpc/kernel/signal_64.c               |   14 +
+ arch/powerpc/kernel/traps.c                   |   49 +
+ arch/powerpc/mm/Makefile                      |    1 +
+ arch/powerpc/mm/dump_linuxpagetables.c        |    3 +-
+ arch/powerpc/mm/fault.c                       |   22 +
+ arch/powerpc/mm/hash64_4k.c                   |   14 +-
+ arch/powerpc/mm/hash64_64k.c                  |  111 +-
+ arch/powerpc/mm/hash_utils_64.c               |   36 +-
+ arch/powerpc/mm/hugetlbpage-hash64.c          |   16 +-
+ arch/powerpc/mm/mmu_context_book3s64.c        |    5 +
+ arch/powerpc/mm/pkeys.c                       |  267 +++++
+ arch/x86/kernel/fpu/xstate.c                  |    3 +
+ fs/proc/task_mmu.c                            |   18 +-
+ include/linux/mm.h                            |   18 +-
+ include/uapi/asm-generic/mman-common.h        |    4 +-
+ tools/testing/selftests/vm/Makefile           |    1 +
+ tools/testing/selftests/vm/pkey-helpers.h     |  365 ++++++
+ tools/testing/selftests/vm/protection_keys.c  | 1483 +++++++++++++++++++++++++
+ tools/testing/selftests/x86/Makefile          |    2 +-
+ tools/testing/selftests/x86/pkey-helpers.h    |  219 ----
+ tools/testing/selftests/x86/protection_keys.c | 1395 -----------------------
+ 45 files changed, 2868 insertions(+), 1840 deletions(-)
+ create mode 100644 Documentation/vm/protection-keys.txt
+ delete mode 100644 Documentation/x86/protection-keys.txt
+ create mode 100644 arch/powerpc/include/asm/pkeys.h
+ create mode 100644 arch/powerpc/mm/pkeys.c
+ create mode 100644 tools/testing/selftests/vm/pkey-helpers.h
+ create mode 100644 tools/testing/selftests/vm/protection_keys.c
+ delete mode 100644 tools/testing/selftests/x86/pkey-helpers.h
+ delete mode 100644 tools/testing/selftests/x86/protection_keys.c
+
+-- 
+1.8.3.1
