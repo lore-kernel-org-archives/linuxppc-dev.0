@@ -1,22 +1,30 @@
-Return-Path: <pabeni@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <logang@deltatee.com>
+Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtv5y5GbVzDq8c
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:57:10 +1000 (AEST)
-Message-ID: <1498165026.2503.21.camel@redhat.com>
-Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was
- [net-next,v3,3/3] udp: try to avoid 2 cache miss on dequeue)
-From: Paolo Abeni <pabeni@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@google.com>,  netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Thu, 22 Jun 2017 22:57:06 +0200
-In-Reply-To: <87shisqihz.fsf@concordia.ellerman.id.au>
-References: <87shisqihz.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtvPR0tYSzDqjH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 07:10:34 +1000 (AEST)
+To: Arnd Bergmann <arnd@arndb.de>
+References: <20170622164817.25515-1-logang@deltatee.com>
+ <20170622164817.25515-5-logang@deltatee.com>
+ <20170622210828.27304f6a@alans-desktop>
+ <401cdb64-6fdb-be30-b8bc-bf51c1a35074@deltatee.com>
+ <CAK8P3a1R-uvjjs=UpbvJjVXnFpD_OL1aRsw0KE_GkvNy+dVj8g@mail.gmail.com>
+Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, linux-ntb@googlegroups.com,
+ linux-alpha@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-crypto@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Stephen Bates <sbates@raithlin.com>, Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>
+From: Logan Gunthorpe <logang@deltatee.com>
+Message-ID: <3ae2d934-1054-cdd1-7eaa-e9758276cf51@deltatee.com>
+Date: Thu, 22 Jun 2017 15:10:20 -0600
+MIME-Version: 1.0
+In-Reply-To: <CAK8P3a1R-uvjjs=UpbvJjVXnFpD_OL1aRsw0KE_GkvNy+dVj8g@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Subject: Re: [PATCH 4/7] alpha: provide ioread64 and iowrite64 implementations
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,70 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-22 at 23:06 +1000, Michael Ellerman wrote:
-> Paolo wrote:
-> > when udp_recvmsg() is executed, on x86_64 and other archs, most skb
-> > fields are on cold cachelines.
-> > If the skb are linear and the kernel don't need to compute the udp
-> > csum, only a handful of skb fields are required by udp_recvmsg().
-> > Since we already use skb->dev_scratch to cache hot data, and
-> > there are 32 bits unused on 64 bit archs, use such field to cache
-> > as much data as we can, and try to prefetch on dequeue the relevant
-> > fields that are left out.
-> > 
-> > This can save up to 2 cache miss per packet.
-> > 
-> > v1 -> v2:
-> >   - changed udp_dev_scratch fields types to u{32,16} variant,
-> >     replaced bitfiled with bool
-> > 
-> > Signed-off-by: Paolo Abeni <pabeni@redhat.com>
-> > Acked-by: Eric Dumazet <edumazet@google.com>
-> > ---
-> >  net/ipv4/udp.c | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++------
-> >  1 file changed, 103 insertions(+), 11 deletions(-)
-> 
-> This appears to break wget on one of my machines.
-> 
-> Networking in general is working, I'm able to SSH in, but then I can't
-> do a wget.
+On 6/22/2017 3:03 PM, Arnd Bergmann wrote:
+> Drivers that want a non-atomic variant should include either
+> include/linux/io-64-nonatomic-hi-lo.h or include/linux/io-64-nonatomic-lo-hi.h
+> depending on what they need. Drivers that require 64-bit I/O should
+> probably just depend on CONFIG_64BIT and maybe use readq/writeq.
 
-Can you please check if the following patch fixes the issue? Only
-compiled tested here.
+Ok, I will work something like that up.
 
-Thanks!!!
----
-diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-index 067a607..80d89fe 100644
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -1446,16 +1446,19 @@ static struct sk_buff *__first_packet_length(struct sock *sk,
- {
- 	struct sk_buff *skb;
- 
--	while ((skb = skb_peek(rcvq)) != NULL &&
--	       udp_lib_checksum_complete(skb)) {
--		__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
--				IS_UDPLITE(sk));
--		__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
--				IS_UDPLITE(sk));
--		atomic_inc(&sk->sk_drops);
--		__skb_unlink(skb, rcvq);
--		*total += skb->truesize;
--		kfree_skb(skb);
-+	while ((skb = skb_peek(rcvq)) != NULL) {
-+		if (udp_lib_checksum_complete(skb)) {
-+			__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
-+					IS_UDPLITE(sk));
-+			__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
-+					IS_UDPLITE(sk));
-+			atomic_inc(&sk->sk_drops);
-+			__skb_unlink(skb, rcvq);
-+			*total += skb->truesize;
-+			kfree_skb(skb);
-+		} else {
-+			udp_set_dev_scratch(skb);
-+		}
- 	}
- 	return skb;
- }
+We'll still need a patch similar to patch 2 (less the non-atomic 
+versions) seeing even CONFIG_GENERIC_IOMAP arches don't actually have a 
+working ioread64/iowrite64 implementation.
+
+Thanks,
+
+Logan
