@@ -1,37 +1,26 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtQFW3qwczDsfH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 12:17:03 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5M2EXQh113516
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 22:17:01 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b7vn7da8n-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 22:17:01 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Wed, 21 Jun 2017 20:17:00 -0600
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 17/17] cxlflash: Update TMF command processing
-Date: Wed, 21 Jun 2017 21:16:54 -0500
-In-Reply-To: <1498097563-8680-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1498097563-8680-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1498097814-9301-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtRjF1B1BzDrWf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 13:22:41 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id e187so721449pgc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jun 2017 20:22:41 -0700 (PDT)
+Date: Thu, 22 Jun 2017 13:22:24 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 1/6] powerpc64/elfv1: Validate function pointer
+ address in the function descriptor
+Message-ID: <20170622132224.58edf1f5@roar.ozlabs.ibm.com>
+In-Reply-To: <701603cefa05559fec722e6cb809ae6afd0648e6.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
+ <701603cefa05559fec722e6cb809ae6afd0648e6.1498069502.git.naveen.n.rao@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,178 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+On Thu, 22 Jun 2017 00:08:37 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-Currently, the SCSI command presented to the device reset handler is used
-to send TMFs to the AFU for a device reset. This behavior is incorrect as
-the command presented is an actual command and not a special notification.
-As such, it should only be used for reference and not be acted upon.
+> Currently, we assume that the function pointer we receive in
+> ppc_function_entry() points to a function descriptor. However, this is
+> not always the case. In particular, assembly symbols without the right
+> annotation do not have an associated function descriptor. Some of these
+> symbols are added to the kprobe blacklist using _ASM_NOKPROBE_SYMBOL().
+> When such addresses are subsequently processed through
+> arch_deref_entry_point() in populate_kprobe_blacklist(), we see the
+> below errors during bootup:
+>     [    0.663963] Failed to find blacklist at 7d9b02a648029b6c
+>     [    0.663970] Failed to find blacklist at a14d03d0394a0001
+>     [    0.663972] Failed to find blacklist at 7d5302a6f94d0388
+>     [    0.663973] Failed to find blacklist at 48027d11e8610178
+>     [    0.663974] Failed to find blacklist at f8010070f8410080
+>     [    0.663976] Failed to find blacklist at 386100704801f89d
+>     [    0.663977] Failed to find blacklist at 7d5302a6f94d00b0
+> 
+> Fix this by checking if the address in the function descriptor is
+> actually a valid kernel address. In the case of assembly symbols, this
+> will almost always fail as this ends up being powerpc instructions. In
+> that case, return pointer to the address we received, rather than the
+> dereferenced value.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/code-patching.h | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+> index abef812de7f8..ec54050be585 100644
+> --- a/arch/powerpc/include/asm/code-patching.h
+> +++ b/arch/powerpc/include/asm/code-patching.h
+> @@ -83,8 +83,16 @@ static inline unsigned long ppc_function_entry(void *func)
+>  	 * On PPC64 ABIv1 the function pointer actually points to the
+>  	 * function's descriptor. The first entry in the descriptor is the
+>  	 * address of the function text.
+> +	 *
+> +	 * However, we may have received a pointer to an assembly symbol
+> +	 * that may not be a function descriptor. Validate that the entry
+> +	 * points to a valid kernel address and if not, return the pointer
+> +	 * we received as is.
+>  	 */
+> -	return ((func_descr_t *)func)->entry;
+> +	if (kernel_text_address(((func_descr_t *)func)->entry))
+> +		return ((func_descr_t *)func)->entry;
+> +	else
+> +		return (unsigned long)func;
 
-Additionally, the existing TMF transmission routine does not account for
-actual errors from the hardware, only reflecting failure when a timeout
-occurs. This can lead to a condition where the device reset handler is
-presented with a false 'success'.
+What if "func" is a text section label (bare asm function)?
+Won't func->entry load the random instruction located there
+and compare it with a kernel address?
 
-Update send_tmf() to dynamically allocate a private command for sending
-the TMF command and properly reflect failure when the completed command
-indicates an error or was aborted. Detect TMF commands during response
-processing and avoid scsi_done() for these types of commands. Lastly,
-update comments in the TMF processing paths to describe the new behavior.
+I don't know too much about the v1 ABI, but should we check for
+func belonging in the .opd section first and base the check on
+that? Alternatively I if "func" is in the kernel text address,
+we can recognize it's not in the .opd section... right?
 
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/main.c | 65 ++++++++++++++++++++++++++++++--------------
- 1 file changed, 44 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 4338982..7a787b6 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -155,9 +155,10 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
-  * cmd_complete() - command completion handler
-  * @cmd:	AFU command that has completed.
-  *
-- * Prepares and submits command that has either completed or timed out to
-- * the SCSI stack. Checks AFU command back into command pool for non-internal
-- * (cmd->scp populated) commands.
-+ * For SCSI commands this routine prepares and submits commands that have
-+ * either completed or timed out to the SCSI stack. For internal commands
-+ * (TMF or AFU), this routine simply notifies the originator that the
-+ * command has completed.
-  */
- static void cmd_complete(struct afu_cmd *cmd)
- {
-@@ -167,7 +168,6 @@ static void cmd_complete(struct afu_cmd *cmd)
- 	struct cxlflash_cfg *cfg = afu->parent;
- 	struct device *dev = &cfg->dev->dev;
- 	struct hwq *hwq = get_hwq(afu, cmd->hwq_index);
--	bool cmd_is_tmf;
- 
- 	spin_lock_irqsave(&hwq->hsq_slock, lock_flags);
- 	list_del(&cmd->list);
-@@ -180,19 +180,14 @@ static void cmd_complete(struct afu_cmd *cmd)
- 		else
- 			scp->result = (DID_OK << 16);
- 
--		cmd_is_tmf = cmd->cmd_tmf;
--
- 		dev_dbg_ratelimited(dev, "%s:scp=%p result=%08x ioasc=%08x\n",
- 				    __func__, scp, scp->result, cmd->sa.ioasc);
--
- 		scp->scsi_done(scp);
--
--		if (cmd_is_tmf) {
--			spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
--			cfg->tmf_active = false;
--			wake_up_all_locked(&cfg->tmf_waitq);
--			spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
--		}
-+	} else if (cmd->cmd_tmf) {
-+		spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
-+		cfg->tmf_active = false;
-+		wake_up_all_locked(&cfg->tmf_waitq);
-+		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 	} else
- 		complete(&cmd->cevent);
- }
-@@ -206,8 +201,10 @@ static void cmd_complete(struct afu_cmd *cmd)
-  */
- static void flush_pending_cmds(struct hwq *hwq)
- {
-+	struct cxlflash_cfg *cfg = hwq->afu->parent;
- 	struct afu_cmd *cmd, *tmp;
- 	struct scsi_cmnd *scp;
-+	ulong lock_flags;
- 
- 	list_for_each_entry_safe(cmd, tmp, &hwq->pending_cmds, list) {
- 		/* Bypass command when on a doneq, cmd_complete() will handle */
-@@ -222,7 +219,15 @@ static void flush_pending_cmds(struct hwq *hwq)
- 			scp->scsi_done(scp);
- 		} else {
- 			cmd->cmd_aborted = true;
--			complete(&cmd->cevent);
-+
-+			if (cmd->cmd_tmf) {
-+				spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
-+				cfg->tmf_active = false;
-+				wake_up_all_locked(&cfg->tmf_waitq);
-+				spin_unlock_irqrestore(&cfg->tmf_slock,
-+						       lock_flags);
-+			} else
-+				complete(&cmd->cevent);
- 		}
- 	}
- }
-@@ -455,24 +460,35 @@ static u32 cmd_to_target_hwq(struct Scsi_Host *host, struct scsi_cmnd *scp,
- /**
-  * send_tmf() - sends a Task Management Function (TMF)
-  * @afu:	AFU to checkout from.
-- * @scp:	SCSI command from stack.
-+ * @scp:	SCSI command from stack describing target.
-  * @tmfcmd:	TMF command to send.
-  *
-  * Return:
-- *	0 on success, SCSI_MLQUEUE_HOST_BUSY on failure
-+ *	0 on success, SCSI_MLQUEUE_HOST_BUSY or -errno on failure
-  */
- static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- {
- 	struct Scsi_Host *host = scp->device->host;
- 	struct cxlflash_cfg *cfg = shost_priv(host);
--	struct afu_cmd *cmd = sc_to_afucz(scp);
-+	struct afu_cmd *cmd = NULL;
- 	struct device *dev = &cfg->dev->dev;
- 	int hwq_index = cmd_to_target_hwq(host, scp, afu);
- 	struct hwq *hwq = get_hwq(afu, hwq_index);
-+	char *buf = NULL;
- 	ulong lock_flags;
- 	int rc = 0;
- 	ulong to;
- 
-+	buf = kzalloc(sizeof(*cmd) + __alignof__(*cmd) - 1, GFP_KERNEL);
-+	if (unlikely(!buf)) {
-+		dev_err(dev, "%s: no memory for command\n", __func__);
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	cmd = (struct afu_cmd *)PTR_ALIGN(buf, __alignof__(*cmd));
-+	INIT_LIST_HEAD(&cmd->queue);
-+
- 	/* When Task Management Function is active do not send another */
- 	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active)
-@@ -482,7 +498,6 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	cfg->tmf_active = true;
- 	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
--	cmd->scp = scp;
- 	cmd->parent = afu;
- 	cmd->cmd_tmf = true;
- 	cmd->hwq_index = hwq_index;
-@@ -511,12 +526,20 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 						       cfg->tmf_slock,
- 						       to);
- 	if (!to) {
--		cfg->tmf_active = false;
- 		dev_err(dev, "%s: TMF timed out\n", __func__);
--		rc = -1;
-+		rc = -ETIMEDOUT;
-+	} else if (cmd->cmd_aborted) {
-+		dev_err(dev, "%s: TMF aborted\n", __func__);
-+		rc = -EAGAIN;
-+	} else if (cmd->sa.ioasc) {
-+		dev_err(dev, "%s: TMF failed ioasc=%08x\n",
-+			__func__, cmd->sa.ioasc);
-+		rc = -EIO;
- 	}
-+	cfg->tmf_active = false;
- 	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- out:
-+	kfree(buf);
- 	return rc;
- }
- 
--- 
-2.1.0
+Thanks,
+Nick
