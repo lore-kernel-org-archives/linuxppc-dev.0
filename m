@@ -1,24 +1,30 @@
-Return-Path: <gunthorp@deltatee.com>
-Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sbates@raithlin.com>
+Received: from CAN01-TO1-obe.outbound.protection.outlook.com
+ (mail-eopbgr670131.outbound.protection.outlook.com [40.107.67.131])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtpCh0y2SzDqjM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 03:16:48 +1000 (AEST)
-From: Logan Gunthorpe <logang@deltatee.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-ntb@googlegroups.com, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stephen Bates <sbates@raithlin.com>, Logan Gunthorpe <logang@deltatee.com>,
- Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- David Airlie <airlied@linux.ie>
-Date: Thu, 22 Jun 2017 10:48:11 -0600
-Message-Id: <20170622164817.25515-2-logang@deltatee.com>
-In-Reply-To: <20170622164817.25515-1-logang@deltatee.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtpVQ2MsVzDr0r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 03:29:33 +1000 (AEST)
+From: "Stephen  Bates" <sbates@raithlin.com>
+To: Logan Gunthorpe <logang@deltatee.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>, "linux-ntb@googlegroups.com"
+ <linux-ntb@googlegroups.com>, "linux-alpha@vger.kernel.org"
+ <linux-alpha@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
+ <linux-crypto@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
+ <dri-devel@lists.freedesktop.org>
+CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Richard Henderson <rth@twiddle.net>, "Ivan
+ Kokshaysky" <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>
+Subject: Re: [PATCH 4/7] alpha: provide ioread64 and iowrite64 implementations
+Date: Thu, 22 Jun 2017 17:29:28 +0000
+Message-ID: <E70FB7EB-3A05-4A08-A85E-020F47751E3B@raithlin.com>
 References: <20170622164817.25515-1-logang@deltatee.com>
-Subject: [PATCH 1/7] drm/tilcdc: don't use volatile with iowrite64
+ <20170622164817.25515-5-logang@deltatee.com>
+In-Reply-To: <20170622164817.25515-5-logang@deltatee.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +34,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a prep patch for adding a universal iowrite64.
-
-The patch is to prevent compiler warnings when we add iowrite64 that
-would occur because there is an unnecessary volatile in this driver.
-
-Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
-Cc: Jyri Sarha <jsarha@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: David Airlie <airlied@linux.ie>
----
- drivers/gpu/drm/tilcdc/tilcdc_regs.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/tilcdc/tilcdc_regs.h b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
-index 9d528c0a67a4..e9ce725698a9 100644
---- a/drivers/gpu/drm/tilcdc/tilcdc_regs.h
-+++ b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
-@@ -131,14 +131,14 @@ static inline void tilcdc_write(struct drm_device *dev, u32 reg, u32 data)
- static inline void tilcdc_write64(struct drm_device *dev, u32 reg, u64 data)
- {
- 	struct tilcdc_drm_private *priv = dev->dev_private;
--	volatile void __iomem *addr = priv->mmio + reg;
-+	void __iomem *addr = priv->mmio + reg;
- 
- #ifdef iowrite64
- 	iowrite64(data, addr);
- #else
- 	__iowmb();
- 	/* This compiles to strd (=64-bit write) on ARM7 */
--	*(volatile u64 __force *)addr = __cpu_to_le64(data);
-+	*(u64 __force *)addr = __cpu_to_le64(data);
- #endif
- }
- 
--- 
-2.11.0
+PiArI2RlZmluZSBpb3dyaXRlNjRiZSh2LHApIGlvd3JpdGUzMihjcHVfdG9fYmU2NCh2KSwgKHAp
+KQ0KIA0KTG9nYW4sIHRoYW5rcyBmb3IgdGFraW5nIHRoaXMgY2xlYW51cCBvbi4gSSB0aGluayB0
+aGlzIHNob3VsZCBiZSBpb3dyaXRlNjQgbm90IGlvd3JpdGUzMj8NCg0KU3RlcGhlbg0KDQoNCg==
