@@ -1,44 +1,24 @@
-Return-Path: <srs0=/ax1=53=au1.ibm.com=benh@ozlabs.org>
+Return-Path: <srs0=jbbl=53=kernel.crashing.org=benh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtZ4j1wktzDr1S
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:09:57 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wtZ4j1DBJz8sxh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:09:57 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wtZ4h4W6xz9sNv
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2017 18:09:56 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5M88i8u018374
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2017 04:09:53 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2b87sgxx3a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2017 04:09:52 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Thu, 22 Jun 2017 18:09:47 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtZLS1BVlzDr1W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:21:52 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wtZLS0024z8vpM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 18:21:51 +1000 (AEST)
+Message-ID: <1498119678.31581.68.camel@kernel.crashing.org>
 Subject: Re: 1M hugepage size being registered on Linux
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <mpe@ellerman.id.au>, victora
  <victora@linux.vnet.ibm.com>, alistair@popple.id.au, jk@ozlabs.org
 Cc: victora@br.ibm.com, mauricfo@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
-Date: Thu, 22 Jun 2017 03:09:31 -0500
-In-Reply-To: <87o9tgsmdv.fsf@concordia.ellerman.id.au>
+Date: Thu, 22 Jun 2017 03:21:18 -0500
+In-Reply-To: <87wp85sk9o.fsf@concordia.ellerman.id.au>
 References: <322aa4a1a11ca79008a8c894c12a80d5@linux.vnet.ibm.com>
- <87o9tgsmdv.fsf@concordia.ellerman.id.au>
+ <87wp85sk9o.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Message-Id: <1498118971.31581.65.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,17 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-22 at 13:59 +1000, Michael Ellerman wrote:
-> It's unsupported in Linux because it doesn't match the page table
-> geometry.
+On Wed, 2017-06-21 at 20:33 +1000, Michael Ellerman wrote:
+> victora <victora@linux.vnet.ibm.com> writes:
 > 
-> We merged a patch from Aneesh to filter it out in 4.12-rc1:
+> > Hi Alistair/Jeremy,
+> > 
+> > I am working on a bug related to 1M hugepage size being registered on 
+> > Linux (Power 8 Baremetal - Garrison).
 > 
->   a525108cf1cc ("powerpc/mm/hugetlb: Filter out hugepage size not supported by page table layout")
+> Wasn't that caused by a firmware bug?
 > 
-> I guess we should probably send that patch to stable et. al.
+> > I was checking dmesg and it seems that 1M page size is coming from 
+> > firmware to Linux.
+> > 
+> > [    0.000000] base_shift=20: shift=20, sllp=0x0130, avpnm=0x00000000, 
+> > tlbiel=0, penc=2
+> > [    1.528867] HugeTLB registered 1 MB page size, pre-allocated 0 pages
+> > 
+> > Should Linux support this page size?
+> 
+> Does it work? :)
+> 
+> The user manual says it's a supported size, but I thought it didn't work
+> (in hardware) for some reason.
 
-It's also not supported in HW afaik, why is it there ?
-
-Cheers,
-Ben.
+Right, I thought there was some config bit to switch between 1M and 16M
+and that had never been fully verified ? I don't remember the details.
