@@ -1,22 +1,23 @@
-Return-Path: <pabeni@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gunthorp@deltatee.com>
+Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtnTr550lzDqyw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 02:44:00 +1000 (AEST)
-Message-ID: <1498149835.2503.1.camel@redhat.com>
-Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was
- [net-next,v3,3/3] udp: try to avoid 2 cache miss on dequeue)
-From: Paolo Abeni <pabeni@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@google.com>,  netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Thu, 22 Jun 2017 18:43:55 +0200
-In-Reply-To: <87shisqihz.fsf@concordia.ellerman.id.au>
-References: <87shisqihz.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtpC56YqszDqjM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 03:16:17 +1000 (AEST)
+From: Logan Gunthorpe <logang@deltatee.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-ntb@googlegroups.com, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Stephen Bates <sbates@raithlin.com>, Logan Gunthorpe <logang@deltatee.com>
+Date: Thu, 22 Jun 2017 10:48:13 -0600
+Message-Id: <20170622164817.25515-4-logang@deltatee.com>
+In-Reply-To: <20170622164817.25515-1-logang@deltatee.com>
+References: <20170622164817.25515-1-logang@deltatee.com>
+Subject: [PATCH 3/7] asm-generic/io.h: make ioread64 and iowrite64 universally
+ available
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,94 +27,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-22 at 23:06 +1000, Michael Ellerman wrote:
-> Paolo wrote:
-> > when udp_recvmsg() is executed, on x86_64 and other archs, most skb
-> > fields are on cold cachelines.
-> > If the skb are linear and the kernel don't need to compute the udp
-> > csum, only a handful of skb fields are required by udp_recvmsg().
-> > Since we already use skb->dev_scratch to cache hot data, and
-> > there are 32 bits unused on 64 bit archs, use such field to cache
-> > as much data as we can, and try to prefetch on dequeue the relevant
-> > fields that are left out.
-> > 
-> > This can save up to 2 cache miss per packet.
-> > 
-> > v1 -> v2:
-> >   - changed udp_dev_scratch fields types to u{32,16} variant,
-> >     replaced bitfiled with bool
-> > 
-> > Signed-off-by: Paolo Abeni <pabeni@redhat.com>
-> > Acked-by: Eric Dumazet <edumazet@google.com>
-> > ---
-> >  net/ipv4/udp.c | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++------
-> >  1 file changed, 103 insertions(+), 11 deletions(-)
-> 
-> This appears to break wget on one of my machines.
-> 
-> Networking in general is working, I'm able to SSH in, but then I can't
-> do a wget.
-> 
-> eg:
-> 
-> $ wget google.com
-> --2017-06-22 22:45:39--  http://google.com/
-> Resolving proxy.pmdw.com (proxy.pmdw.com)... failed: Temporary failure in name resolution.
-> wget: unable to resolve host address ‘proxy.pmdw.com’
-> 
-> $ host proxy.pmdw.com
-> proxy.pmdw.com is an alias for raven.pmdw.com.
-> raven.pmdw.com has address 10.1.2.3
-> 
-> $ wget google.com
-> --2017-06-22 22:52:08--  http://google.com/
-> Resolving proxy.pmdw.com (proxy.pmdw.com)... failed: Temporary failure in name resolution.
-> wget: unable to resolve host address ‘proxy.pmdw.com’
-> 
-> Maybe host is using TCP but the man page says it doesn't?
-> 
-> 
-> Everything is OK if I boot back to the previous commit 0a463c78d25b
-> ("udp: avoid a cache miss on dequeue"):
-> 
-> $ wget google.com
-> --2017-06-22 23:00:01--  http://google.com/
-> Resolving proxy.pmdw.com (proxy.pmdw.com)... 10.1.2.3
-> Connecting to proxy.pmdw.com (proxy.pmdw.com)|10.1.2.3|:3128... connected.
-> Proxy request sent, awaiting response... 302 Found
-> Location: http://www.google.com.au/?gfe_rd=cr&ei=Ub9LWbPbLujDXrH1uPgE [following]
-> --2017-06-22 23:00:01--  http://www.google.com.au/?gfe_rd=cr&ei=Ub9LWbPbLujDXrH1uPgE
-> Reusing existing connection to proxy.pmdw.com:3128.
-> Proxy request sent, awaiting response... 200 OK
-> Length: unspecified [text/html]
-> Saving to: ‘index.html’
-> 
-> index.html                      [ <=>                                       ]  11.37K  --.-KB/s    in 0.001s  
-> 
-> 2017-06-22 23:00:01 (22.0 MB/s) - ‘index.html’ saved [11640]
-> 
-> $ uname -a
-> Linux 4.12.0-rc4-gcc6-00988-g0a463c7 #88 SMP Thu Jun 22 22:55:12 AEST 2017 ppc64 GNU/Linux
-> 
-> 
-> Haven't had time to debug any further. Any ideas?
+Currently, ioread64 and iowrite64 are only available io CONFIG_64BIT=y
+and CONFIG_GENERIC_IOMAP=n. Thus, seeing the functions are not
+universally available, it makes them unusable for driver developers.
+This leads to ugly hacks such as those at the top of
 
-Thank you for this report.
+drivers/ntb/hw/intel/ntb_hw_intel.c
 
-Can you please specify features of the relevant NIC ? (ethtool -k
-<name>) 
+This patch adds fallback implementations for when CONFIG_64BIT and
+CONFIG_GENERIC_IOMAP are not set. These functions use two io32 based
+calls to complete the operation.
 
-I'll try to replicate the issue as soon I'll get hands on suitable HW,
-meanwhile can you please try to trace the system behavior with perf?
+Note, we do not use the volatile keyword in these functions like the
+others in the same file. It is necessary to avoid a compiler warning
+on arm.
 
-Something like:
+Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+---
+ include/asm-generic/io.h | 54 +++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 42 insertions(+), 12 deletions(-)
 
-perf probe -a __udp_enqueue_schedule_skb
-perf probe -a udp_recvmsg
-perf probe -a udpv6_recvmsg
-perf record -e probe:__udp_enqueue_schedule_skb -e probe:udp_recvmsg -e probe:udpv6_recvmsg -ag wget google.com
-perf report --stdio
-
-Thanks,
-
-Paolo
+diff --git a/include/asm-generic/io.h b/include/asm-generic/io.h
+index 7ef015eb3403..817edaa3da78 100644
+--- a/include/asm-generic/io.h
++++ b/include/asm-generic/io.h
+@@ -585,15 +585,24 @@ static inline u32 ioread32(const volatile void __iomem *addr)
+ }
+ #endif
+ 
+-#ifdef CONFIG_64BIT
+ #ifndef ioread64
+ #define ioread64 ioread64
+-static inline u64 ioread64(const volatile void __iomem *addr)
++#ifdef readq
++static inline u64 ioread64(const void __iomem *addr)
+ {
+ 	return readq(addr);
+ }
++#else
++static inline u64 ioread64(const void __iomem *addr)
++{
++	u64 low, high;
++
++	low = ioread32(addr);
++	high = ioread32(addr + sizeof(u32));
++	return low | (high << 32);
++}
++#endif
+ #endif
+-#endif /* CONFIG_64BIT */
+ 
+ #ifndef iowrite8
+ #define iowrite8 iowrite8
+@@ -619,15 +628,21 @@ static inline void iowrite32(u32 value, volatile void __iomem *addr)
+ }
+ #endif
+ 
+-#ifdef CONFIG_64BIT
+ #ifndef iowrite64
+ #define iowrite64 iowrite64
+-static inline void iowrite64(u64 value, volatile void __iomem *addr)
++#ifdef writeq
++static inline void iowrite64(u64 value, void __iomem *addr)
+ {
+ 	writeq(value, addr);
+ }
++#else
++static inline void iowrite64(u64 value, void __iomem *addr)
++{
++	iowrite32(value, addr);
++	iowrite32(value >> 32, addr + sizeof(u32));
++}
++#endif
+ #endif
+-#endif /* CONFIG_64BIT */
+ 
+ #ifndef ioread16be
+ #define ioread16be ioread16be
+@@ -645,15 +660,24 @@ static inline u32 ioread32be(const volatile void __iomem *addr)
+ }
+ #endif
+ 
+-#ifdef CONFIG_64BIT
+ #ifndef ioread64be
+ #define ioread64be ioread64be
+-static inline u64 ioread64be(const volatile void __iomem *addr)
++#ifdef readq
++static inline u64 ioread64be(const void __iomem *addr)
+ {
+ 	return swab64(readq(addr));
+ }
++#else
++static inline u64 ioread64be(const void __iomem *addr)
++{
++	u64 low, high;
++
++	low = ioread32be(addr + sizeof(u32));
++	high = ioread32be(addr);
++	return low | (high << 32);
++}
++#endif
+ #endif
+-#endif /* CONFIG_64BIT */
+ 
+ #ifndef iowrite16be
+ #define iowrite16be iowrite16be
+@@ -671,15 +695,21 @@ static inline void iowrite32be(u32 value, volatile void __iomem *addr)
+ }
+ #endif
+ 
+-#ifdef CONFIG_64BIT
+ #ifndef iowrite64be
+ #define iowrite64be iowrite64be
+-static inline void iowrite64be(u64 value, volatile void __iomem *addr)
++#ifdef writeq
++static inline void iowrite64be(u64 value, void __iomem *addr)
+ {
+ 	writeq(swab64(value), addr);
+ }
++#else
++static inline void iowrite64be(u64 value, void __iomem *addr)
++{
++	iowrite32be(value >> 32, addr);
++	iowrite32be(value, addr + sizeof(u32));
++}
++#endif
+ #endif
+-#endif /* CONFIG_64BIT */
+ 
+ #ifndef ioread8_rep
+ #define ioread8_rep ioread8_rep
+-- 
+2.11.0
