@@ -1,42 +1,48 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <bauerman@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtrbd2gVkzDqjQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 05:04:13 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wts3k2chjzDqjf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 05:25:06 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5MIwijd130035
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 15:04:11 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2b8k5e9b2c-1
+ v5MJNcCX022894
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 15:25:04 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b8kvr099b-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 15:04:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 15:25:03 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 23 Jun 2017 05:04:08 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5MJ46em44892294
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 05:04:06 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5MJ44jl003785
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 05:04:05 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] trace/kprobes: Sanitize derived event names
-Date: Fri, 23 Jun 2017 00:33:45 +0530
-In-Reply-To: <20170622182953.e1959ce03145b8bb45ec55de@kernel.org>
-References: <20170622182953.e1959ce03145b8bb45ec55de@kernel.org>
-Message-Id: <20170622190345.6444-1-naveen.n.rao@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 22 Jun 2017 16:25:01 -0300
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5MJOvd41704296
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:24:57 -0300
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5MJOxR5006022
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 16:25:00 -0300
+References: <1497996510-4032-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <8737attzw5.fsf@concordia.ellerman.id.au> <87h8z8g6wu.fsf@linux.vnet.ibm.com>
+ <87r2ycqigf.fsf@concordia.ellerman.id.au>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH] powerpc: Only obtain cpu_hotplug_lock if called by rtasd
+In-reply-to: <87r2ycqigf.fsf@concordia.ellerman.id.au>
+Date: Thu, 22 Jun 2017 16:24:47 -0300
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <878tkjn7uo.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,65 +52,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/22 06:29PM, Masami Hiramatsu wrote:
-> On Thu, 22 Jun 2017 00:20:27 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > When we derive event names, convert some expected symbols (such as ':'
-> > used to specify module:name and '.' present in some symbols) into
-> > underscores so that the event name is not rejected.
-> 
-> Oops, ok, this is my mistake.
-> 
-> Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-> 
-> This must be marked as bugfix for stable trees.
-> 
-> Could you also add a testcase for this (module name) bug?
-> 
-> MODNAME=`lsmod | head -n 2 | tail -n 1 | cut -f 1 -d " "`
-> FUNCNAME=`grep -m 1 "\\[$MODNAME\\]" /proc/kallsyms | xargs | cut -f 3 -d " "`
-> 
-> May gives you a target name :)
 
-Sure. Here is a test.
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Thanks for the review,
-Naveen
+> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+>
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>>> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+>>>
+>>>> Calling arch_update_cpu_topology from a CPU hotplug state machine callback
+>>>> hits a deadlock because the function tries to get a read lock on
+>>>> cpu_hotplug_lock while the state machine still holds a write lock on it.
+>>>>
+>>>> Since all callers of arch_update_cpu_topology except rtasd already hold
+>>>> cpu_hotplug_lock, this patch changes the function to use
+>>>> stop_machine_cpuslocked and creates a separate function for rtasd which
+>>>> still tries to obtain the lock.
+>>>>
+>>>> Michael Bringmann investigated the bug and provided a detailed analysis
+>>>> of the deadlock on this previous RFC for an alternate solution:
+>>>>
+>>>> https://patchwork.ozlabs.org/patch/771293/
+>>>
+>>> Do we know when this broke? Or has it never worked?
+>>
+>> It's been broken since at least v4.4, I think. I don't know about
+>> earlier versions.
+>
+> OK.
+>
+> Just to be clear, this is happening on a 4.12-rcX system with no other
+> patches?
+>
+> The code in arch_update_cpu_topology() has used stop_machine() since 
+> 30c05350c39d ("powerpc/pseries: Use stop machine to update cpu maps")
+> which went into v3.10, about 4 years ago.
+>
+> Prior to that it used get/put_online_cpus(), since 9eff1a38407c
+> ("powerpc/pseries: Poll VPA for topology changes and update NUMA maps"),
+> which was 2.6.38 in 2010.
+>
+> I wouldn't rule out the possibility it's been broken for 7 years, but I
+> wonder if something else has changed to cause it to break.
+>
+> We really need to work it out before we backport anything.
 
--
-[PATCH] selftests/ftrace: Add a test to probe module functions
+Michael Bringmann provided this information:
 
-Add a kprobes test to ensure that we are able to add a probe on a
-module function using 'p <mod>:<func>' format, without having to
-specify a probe name.
+    We need at least one patch to show the issue in the latest 4.12
+    codebase:
 
-Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- .../testing/selftests/ftrace/test.d/kprobe/probe_module.tc | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
- create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
+    [PATCH V6 2/2] powerpc/numa: Update CPU topology when VPHN enabled
+    https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-June/159341.html
 
-diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-new file mode 100644
-index 000000000000..ea7657041ba6
---- /dev/null
-+++ b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-@@ -0,0 +1,14 @@
-+#!/bin/sh
-+# description: Kprobe dynamic event - probing module
-+
-+[ -f kprobe_events ] || exit_unsupported # this is configurable
-+
-+echo 0 > events/enable
-+echo > kprobe_events
-+export MOD=`lsmod | head -n 2 | tail -n 1 | cut -f1 -d" "`
-+export FUNC=`grep -m 1 ".* t .*\\[$MOD\\]" /proc/kallsyms | xargs | cut -f3 -d" "`
-+[ "x" != "x$MOD" -a "y" != "y$FUNC" ] || exit_untested
-+echo p $MOD:$FUNC > kprobe_events
-+grep $MOD kprobe_events
-+echo > kprobe_events
-+clear_trace
+    Reason: Prior to this patch we were not exercising the PowerPC VPHN
+    hcall nor the associated path through the kernel/sched code that
+    encounters the problem. All CPUs, whether present at boot or
+    hot-added, are added to node 0 without this patch. This
+    representation of the topology is incorrect in many/most cases.
+
+    cpu_hotplug_begin() + get_online_cpus() have potentially been broken
+    since the implementation of multithreading for _cpu_up() and
+    _cpu_down().
+
+    Reason: 'cpu_hotplug.active_writer' check in get_online_cpus() is
+    dependent upon the nested routines that call get_online_cpus() to
+    execute in the same thread as the one that invokes
+    'cpu_hotplug_begin'.
+
+    PowerPC's version of arch_update_cpu_topology() has used
+    stop_machine() or get_online_cpus() for years, since at least 2011.
+
+    Practically speaking, until the recent patch, in the 4.12 codebase
+    PowerPC CPUs are being added only to nodes that were online at boot,
+    and the topology did not change enough to trigger the paths through
+    'stop_machine'.
+
+    I can't say for certain about the earlier code bases where
+    'arch_update_cpu_topology' used 'get_online_cpus'/'put_online_cpus'
+    directly.
+
+>>> Should it go to stable? (can't in its current form AFAICS)
+>>
+>> It's not hard to backport both this patch and commit fe5595c07400
+>> ("stop_machine: Provide stop_machine_cpuslocked()") from branch
+>> smp/hotplug in tip.git for stable.
+>
+> Yeah but it's not really my business backporting that unfortunately.
+
+Sorry, I wasn't clear. I was offering to provide backported patches for
+the relevant stable branches.
+
+Though that will only be necessary if we also backport the topology
+fixes as well.
+
 -- 
-2.13.1
+Thiago Jung Bauermann
+IBM Linux Technology Center
