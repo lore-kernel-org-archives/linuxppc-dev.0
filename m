@@ -1,20 +1,37 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0054.outbound.protection.outlook.com [104.47.0.54])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-io0-f196.google.com (mail-io0-f196.google.com
+ [209.85.223.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtkwP4kL5zDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 00:48:21 +1000 (AEST)
-From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: Sebastian Huber <sebastian.huber@embedded-brains.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: DPAA: Software Portal selection for network interface
-Date: Thu, 22 Jun 2017 14:48:15 +0000
-Message-ID: <AM5PR0402MB26913CAEE7420F66309623D9ECDB0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-References: <14d11770-fdbb-4719-559a-924855957568@embedded-brains.de>
-In-Reply-To: <14d11770-fdbb-4719-559a-924855957568@embedded-brains.de>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtlYM4TZ0zDr0w
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:16:55 +1000 (AEST)
+Received: by mail-io0-f196.google.com with SMTP id m19so4326312ioe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 08:16:55 -0700 (PDT)
+Date: Thu, 22 Jun 2017 10:16:51 -0500
+From: Rob Herring <robh@kernel.org>
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>,
+ Dan Douglass <dan.douglass@nxp.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>,
+ Marc Zyngier <marc.zyngier@arm.com>, Scott Wood <oss@buserror.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Corbet <corbet@lwn.net>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH] of: update ePAPR references to point to Devicetree
+ Specification
+Message-ID: <20170622151651.ghls5dgrrcjl7tnj@rob-hp-laptop>
+References: <1497408544-7383-1-git-send-email-frowand.list@gmail.com>
+ <20170618140531.jvmnttawom4ns55b@rob-hp-laptop>
+ <5947A62D.6050504@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5947A62D.6050504@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +41,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2ViYXN0aWFuLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFNl
-YmFzdGlhbiBIdWJlciBbbWFpbHRvOnNlYmFzdGlhbi5odWJlckBlbWJlZGRlZC1icmFpbnMuZGVd
-DQo+IFNlbnQ6IFRodXJzZGF5LCBKdW5lIDIyLCAyMDE3IDM6NDIgUE0NCj4gVG86IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnDQo+IENjOiBNYWRhbGluLWNyaXN0aWFuIEJ1Y3VyIDxtYWRh
-bGluLmJ1Y3VyQG54cC5jb20+DQo+IFN1YmplY3Q6IERQQUE6IFNvZnR3YXJlIFBvcnRhbCBzZWxl
-Y3Rpb24gZm9yIG5ldHdvcmsgaW50ZXJmYWNlDQo+IA0KPiBIZWxsbywNCj4gDQo+IGFzIGZhciBh
-cyBJIHVuZGVyc3RhbmQgdGhlIHNvZnR3YXJlIHBvcnRhbCBzZWxlY3Rpb24gZm9yIGEgbmV0d29y
-aw0KPiBpbnRlcmZhY2UgaXMgZG9uZSBpbg0KPiANCj4gc3RhdGljIGludCBkcGFhX2V0aF9wcm9i
-ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiB7DQo+ICAgICAgWy4uLl0NCj4gICAg
-ICBjaGFubmVsID0gZHBhYV9nZXRfY2hhbm5lbCgpOw0KPiAgICAgIGlmIChjaGFubmVsIDwgMCkg
-ew0KPiAgICAgICAgICBkZXZfZXJyKGRldiwgImRwYWFfZ2V0X2NoYW5uZWwoKSBmYWlsZWRcbiIp
-Ow0KPiAgICAgICAgICBlcnIgPSBjaGFubmVsOw0KPiAgICAgICAgICBnb3RvIGdldF9jaGFubmVs
-X2ZhaWxlZDsNCj4gICAgICB9DQo+IA0KPiAgICAgIHByaXYtPmNoYW5uZWwgPSAodTE2KWNoYW5u
-ZWw7DQo+IA0KPiAgICAgIC8qIFN0YXJ0IGEgdGhyZWFkIHRoYXQgd2lsbCB3YWxrIHRoZSBDUFVz
-IHdpdGggYWZmaW5lIHBvcnRhbHMNCj4gICAgICAgKiBhbmQgYWRkIHRoaXMgcG9vbCBjaGFubmVs
-IHRvIGVhY2gncyBkZXF1ZXVlIG1hc2suDQo+ICAgICAgICovDQo+ICAgICAgZHBhYV9ldGhfYWRk
-X2NoYW5uZWwocHJpdi0+Y2hhbm5lbCk7DQo+IA0KPiB3aXRoDQo+IA0KPiBzdGF0aWMgaW50IGRw
-YWFfZ2V0X2NoYW5uZWwodm9pZCkNCj4gew0KPiAgICAgIHNwaW5fbG9jaygmcnhfcG9vbF9jaGFu
-bmVsX2luaXQpOw0KPiAgICAgIGlmICghcnhfcG9vbF9jaGFubmVsKSB7DQo+ICAgICAgICAgIHUz
-MiBwb29sOw0KPiAgICAgICAgICBpbnQgcmV0Ow0KPiANCj4gICAgICAgICAgcmV0ID0gcW1hbl9h
-bGxvY19wb29sKCZwb29sKTsNCj4gDQo+ICAgICAgICAgIGlmICghcmV0KQ0KPiAgICAgICAgICAg
-ICAgcnhfcG9vbF9jaGFubmVsID0gcG9vbDsNCj4gICAgICB9DQo+ICAgICAgc3Bpbl91bmxvY2so
-JnJ4X3Bvb2xfY2hhbm5lbF9pbml0KTsNCj4gICAgICBpZiAoIXJ4X3Bvb2xfY2hhbm5lbCkNCj4g
-ICAgICAgICAgcmV0dXJuIC1FTk9NRU07DQo+ICAgICAgcmV0dXJuIHJ4X3Bvb2xfY2hhbm5lbDsN
-Cj4gfQ0KPiANCj4gd2hpY2ggYWx3YXlzIHJldHVybnMgdGhlIHNhbWUgcG9vbCBjaGFubmVsIChl
-LmcuIDB4NDAxKSBpZiBzdWNjZXNzZnVsLg0KDQpUaGF0J3MgY29ycmVjdC4NCg0KPiBUaGlzIG1l
-YW5zIGFsbCB0aGUgUU1hbiBwb3J0YWxfaXNyKCkgYXJlIGRpc3RyaWJ1dGVkIHJvdW5kLXJvYmlu
-IHRvIGFsbA0KPiBhZmZpbmUgcG9ydGFscy4gSXMgdGhlcmUgc29tZSB3YXkgdG8gY29uZmlndXJl
-IHRoZSBzb2Z0d2FyZSBwb3J0YWwgZm9yIGENCj4gc3BlY2lmaWMgbmV0d29yayBpbnRlcmZhY2Us
-IGUuZy4gdXNlIHByb2Nlc3NvcnMgMCwgMSwgMiwgMyBmb3Igb25lDQo+IGludGVyZmFjZSxhbmQg
-NCwgNSwgNiwgNyBmb3IgYW5vdGhlcj8NCg0KV2UndmUgc3RyaXBwZWQgYWxsIGNvbmZpZ3VyYWJp
-bGl0eSBhbmQgYWR2YW5jZWQgZmVhdHVyZXMgZnJvbSB0aGUgaW5pdGlhbA0KRFBBQSBzdWJtaXNz
-aW9uLiBXZSBkb24ndCBoYXZlIG9wdGlvbnMgdG8gY29uZmlndXJlIHRoaXMuIE9uIHRoZSBvdGhl
-ciBoYW5kLA0KdGhlIGluZ3Jlc3MgcXVldWVzIGFyZSBoZWxkIGFjdGl2ZSBpbiB0aGUgcG9ydGFs
-LCByZXN1bHRpbmcgaW4gb25lIENQVSBkb2luZw0KZGVxdWV1ZXMgd2hpbGUgdGhlcmUgYXJlIGZy
-YW1lcyBhdmFpbGFibGUuIFRoaXMgaXMgZG9uZSB0byBhdm9pZCBmcmFtZSANCnJlb3JkZXJpbmcs
-IGltcHJvdmluZyB0ZXJtaW5hdGlvbiBwZXJmb3JtYW5jZSAoYW5kIGZvcndhcmRlZCBUQ1AgcGVy
-Zm9ybWFuY2UpLg0KDQpUaGUgZG93bnNpZGUgaXMgdGhhdCB3ZSdyZSBub3Qgc2F0dXJhdGluZyBh
-bGwgQ1BVcyB3aXRoIHRyYWZmaWMuIFdlJ3JlDQpjdXJyZW50bHkgd29ya2luZyBvbiBhZGRpbmcg
-UnggaGFzaGluZywgdG8gYmUgYWJsZSB0byBtYWludGFpbiBpbnRyYS1mbG93DQpmcmFtZSBvcmRl
-ciB3aGlsZSBzcHJlYWRpbmcgcHJvY2Vzc2luZyBvbiBhbGwgQ1BVcy4NCg0KTWVhbndoaWxlLCB3
-b3VsZCBSUFMgKFJlY2VpdmUgUGFja2V0IFN0ZWVyaW5nKSBiZSBhIHNvbHV0aW9uIGZvciB5b3U/
-DQoNCj4gLS0NCj4gU2ViYXN0aWFuIEh1YmVyLCBlbWJlZGRlZCBicmFpbnMgR21iSA0KPiANCj4g
-QWRkcmVzcyA6IERvcm5pZXJzdHIuIDQsIEQtODIxNzggUHVjaGhlaW0sIEdlcm1hbnkNCj4gUGhv
-bmUgICA6ICs0OSA4OSAxODkgNDcgNDEtMTYNCj4gRmF4ICAgICA6ICs0OSA4OSAxODkgNDcgNDEt
-MDkNCj4gRS1NYWlsICA6IHNlYmFzdGlhbi5odWJlckBlbWJlZGRlZC1icmFpbnMuZGUNCj4gUEdQ
-ICAgICA6IFB1YmxpYyBrZXkgYXZhaWxhYmxlIG9uIHJlcXVlc3QuDQo+IA0KPiBEaWVzZSBOYWNo
-cmljaHQgaXN0IGtlaW5lIGdlc2Now6RmdGxpY2hlIE1pdHRlaWx1bmcgaW0gU2lubmUgZGVzIEVI
-VUcuDQoNCg0KUmVnYXJkcywNCk1hZGFsaW4NCg==
+On Mon, Jun 19, 2017 at 03:23:41AM -0700, Frank Rowand wrote:
+> On 06/18/17 07:05, Rob Herring wrote:
+> > On Tue, Jun 13, 2017 at 07:49:04PM -0700, frowand.list@gmail.com wrote:
+> >> From: Frank Rowand <frank.rowand@sony.com>
+> >>
+> >> The Devicetree Specification has superseded the ePAPR as the
+> >> base specification for bindings.  Update files in Documentation
+> >> to reference the new document.
+> >>
+> >> Some files are not updated because there is no hypervisor chapter
+> >> in the Devicetree Specification:
+> >>    Documentation/devicetree/bindings/powerpc/fsl/msi-pic.txt
+> >>    Documenation/virtual/kvm/api.txt
+> >>    Documenation/virtual/kvm/ppc-pv.txt
+
+> >> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt b/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
+> >> index f8cd2397aa04..d63ab1dec16d 100644
+> >> --- a/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
+> >> +++ b/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
+> >> @@ -3,10 +3,10 @@ Power Architecture CPU Binding
+> >>  Copyright 2013 Freescale Semiconductor Inc.
+> >>  
+> >>  Power Architecture CPUs in Freescale SOCs are represented in device trees as
+> >> -per the definition in ePAPR.
+> >> +per the definition in the Devicetree Specification.
+> > 
+> > Are we sure we didn't remove any PPC specifics that apply here?
+> 
+> I don't see any.
+> 
+> Table 3.7.1 "General Properties of CPU nodes" was slightly
+> re-ordered, but the same properties are listed in both documents.
+> 
+> I don't think that the boot requirements removal impacts this
+> file.
+> 
+> Am I missing something?
+
+No, I just wanted to make sure. So I guess there's just that one minor 
+thing to drop.
+
+Rob
