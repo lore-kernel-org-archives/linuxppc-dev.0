@@ -1,36 +1,23 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-it0-x230.google.com (mail-it0-x230.google.com
- [IPv6:2607:f8b0:4001:c0b::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pabeni@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wv8QP1SZtzDqjM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 16:57:16 +1000 (AEST)
-Received: by mail-it0-x230.google.com with SMTP id m47so3690893iti.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 23:57:16 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1498154792-49952-3-git-send-email-keescook@chromium.org>
-References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
- <1498154792-49952-3-git-send-email-keescook@chromium.org>
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Fri, 23 Jun 2017 06:57:14 +0000
-Message-ID: <CAKv+Gu_2Wg_D+4c3-iqMr9hbKkGVdBtW6Bmxj-4=FOG9hVN5vA@mail.gmail.com>
-Subject: Re: [kernel-hardening] [PATCH 2/4] arm64: Reduce ELF_ET_DYN_BASE
-To: Kees Cook <keescook@chromium.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- James Hogan <james.hogan@imgtec.com>,
- Pratyush Anand <panand@redhat.com>, Ingo Molnar <mingo@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- kernel-hardening@lists.openwall.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wv8Qh0BQszDqwP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 16:57:32 +1000 (AEST)
+Message-ID: <1498163269.2503.18.camel@redhat.com>
+Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was
+ [net-next,v3,3/3] udp: try to avoid 2 cache miss on dequeue)
+From: Paolo Abeni <pabeni@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>,  netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1498149835.2503.1.camel@redhat.com>
+References: <87shisqihz.fsf@concordia.ellerman.id.au>
+ <1498149835.2503.1.camel@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 22 Jun 2017 22:27:49 +0200
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,55 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kees,
+On Thu, 2017-06-22 at 18:43 +0200, Paolo Abeni wrote:
+> On Thu, 2017-06-22 at 23:06 +1000, Michael Ellerman wrote:
+> > Paolo wrote:
+> > > when udp_recvmsg() is executed, on x86_64 and other archs, most skb
+> > > fields are on cold cachelines.
+> > > If the skb are linear and the kernel don't need to compute the udp
+> > > csum, only a handful of skb fields are required by udp_recvmsg().
+> > > Since we already use skb->dev_scratch to cache hot data, and
+> > > there are 32 bits unused on 64 bit archs, use such field to cache
+> > > as much data as we can, and try to prefetch on dequeue the relevant
+> > > fields that are left out.
+> > > 
+> > > This can save up to 2 cache miss per packet.
+> > > 
+> > > v1 -> v2:
+> > >   - changed udp_dev_scratch fields types to u{32,16} variant,
+> > >     replaced bitfiled with bool
+> > > 
+> > > Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+> > > Acked-by: Eric Dumazet <edumazet@google.com>
+> > > ---
+> > >  net/ipv4/udp.c | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++------
+> > >  1 file changed, 103 insertions(+), 11 deletions(-)
+> > 
+> > This appears to break wget on one of my machines.
+> > 
+> > Networking in general is working, I'm able to SSH in, but then I can't
+> > do a wget.
+> > 
+> > eg:
+> > 
+> > $ wget google.com
+> > --2017-06-22 22:45:39--  http://google.com/
+> > Resolving proxy.pmdw.com (proxy.pmdw.com)... failed: Temporary failure in name resolution.
+> > wget: unable to resolve host address ‘proxy.pmdw.com’
+> > 
+> > $ host proxy.pmdw.com
+> > proxy.pmdw.com is an alias for raven.pmdw.com.
+> > raven.pmdw.com has address 10.1.2.3
+> > 
+> > $ wget google.com
+> > --2017-06-22 22:52:08--  http://google.com/
+> > Resolving proxy.pmdw.com (proxy.pmdw.com)... failed: Temporary failure in name resolution.
+> > wget: unable to resolve host address ‘proxy.pmdw.com’
+> > 
+> > Maybe host is using TCP but the man page says it doesn't?
+> > 
+> > 
+> > Everything is OK if I boot back to the previous commit 0a463c78d25b
+> > ("udp: avoid a cache miss on dequeue"):
+> > 
+> > $ wget google.com
+> > --2017-06-22 23:00:01--  http://google.com/
+> > Resolving proxy.pmdw.com (proxy.pmdw.com)... 10.1.2.3
+> > Connecting to proxy.pmdw.com (proxy.pmdw.com)|10.1.2.3|:3128... connected.
+> > Proxy request sent, awaiting response... 302 Found
+> > Location: http://www.google.com.au/?gfe_rd=cr&ei=Ub9LWbPbLujDXrH1uPgE [following]
+> > --2017-06-22 23:00:01--  http://www.google.com.au/?gfe_rd=cr&ei=Ub9LWbPbLujDXrH1uPgE
+> > Reusing existing connection to proxy.pmdw.com:3128.
+> > Proxy request sent, awaiting response... 200 OK
+> > Length: unspecified [text/html]
+> > Saving to: ‘index.html’
+> > 
+> > index.html                      [ <=>                                       ]  11.37K  --.-KB/s    in 0.001s  
+> > 
+> > 2017-06-22 23:00:01 (22.0 MB/s) - ‘index.html’ saved [11640]
+> > 
+> > $ uname -a
+> > Linux 4.12.0-rc4-gcc6-00988-g0a463c7 #88 SMP Thu Jun 22 22:55:12 AEST 2017 ppc64 GNU/Linux
+> > 
+> > 
+> > Haven't had time to debug any further. Any ideas?
+> 
+> Thank you for this report.
+> 
+> Can you please specify features of the relevant NIC ? (ethtool -k
+> <name>) 
+> 
+> I'll try to replicate the issue as soon I'll get hands on suitable HW,
 
-On 22 June 2017 at 18:06, Kees Cook <keescook@chromium.org> wrote:
-> Now that explicitly executed loaders are loaded in the mmap region,
-> position PIE binaries lower in the address space to avoid possible
-> collisions with mmap or stack regions. For 64-bit, align to 4GB to
-> allow runtimes to use the entire 32-bit address space for 32-bit
-> pointers.
->
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  arch/arm64/include/asm/elf.h | 13 ++++++-------
->  1 file changed, 6 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
-> index 5d1700425efe..f742af8f7c42 100644
-> --- a/arch/arm64/include/asm/elf.h
-> +++ b/arch/arm64/include/asm/elf.h
-> @@ -113,12 +113,13 @@
->  #define ELF_EXEC_PAGESIZE      PAGE_SIZE
->
->  /*
-> - * This is the location that an ET_DYN program is loaded if exec'ed.  Typical
-> - * use of this is to invoke "./ld.so someprog" to test out a new version of
-> - * the loader.  We need to make sure that it is out of the way of the program
-> - * that it will "exec", and that there is sufficient room for the brk.
-> + * This is the base location for PIE (ET_DYN with INTERP) loads. On
-> + * 64-bit, this is raised to 4GB to leave the entire 32-bit address
-> + * space open for things that want to use the area for 32-bit pointers.
->   */
-> -#define ELF_ET_DYN_BASE        (2 * TASK_SIZE_64 / 3)
-> +#define ELF_ET_DYN_BASE                (test_thread_flag(TIF_32BIT) ?  \
-> +                                       0x000400000UL :         \
-> +                                       0x100000000UL)
->
+I had my hands on power7, but I can't trivially reproduce the issue so
+I'm going to bug you for more info. 
 
-Why are you merging this with the COMPAT definition?
+Can you please specify the host CPU, the NIC in use (ethtool -i
+<name>), the compiler version used to build the kernel and possibly
+provide a tcpdump of the DNS packets received/sent while running wget
+and while running the host command?
 
->  #ifndef __ASSEMBLY__
->
-> @@ -173,8 +174,6 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
->
->  #ifdef CONFIG_COMPAT
->
-> -#define COMPAT_ELF_ET_DYN_BASE         (2 * TASK_SIZE_32 / 3)
-> -
->  /* AArch32 registers. */
->  #define COMPAT_ELF_NGREG               18
->  typedef unsigned int                   compat_elf_greg_t;
-> --
-> 2.7.4
->
+Do you have the relevant kernel running on others PPC hosts?
+
+Thank you,
+
+Paolo
