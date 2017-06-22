@@ -1,24 +1,35 @@
-Return-Path: <hannes@stressinduktion.org>
-Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
- [66.111.4.27])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtvZM5vsyzDqjH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 07:18:19 +1000 (AEST)
-Message-Id: <1498166297.111795.1018373424.5E414246@webmail.messagingengine.com>
-From: Hannes Frederic Sowa <hannes@stressinduktion.org>
-To: Paolo Abeni <pabeni@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtwLb06HMzDrFC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 07:53:11 +1000 (AEST)
+Date: Fri, 23 Jun 2017 07:53:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Christoph Hellwig <hch@lst.de>, Linus Torvalds
+ <torvalds@linux-foundation.org>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ dmaengine@vger.kernel.org, linux-tegra@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
+Subject: Re: new dma-mapping tree, was Re: clean up and modularize arch
+ dma_mapping interface V2
+Message-ID: <20170623075309.1e679168@canb.auug.org.au>
+In-Reply-To: <5425587c-73e8-e24a-86a3-8a65a7791dcb@samsung.com>
+References: <20170616181059.19206-1-hch@lst.de> <20170620124140.GA27163@lst.de>
+ <20170620230400.1a5ae889@canb.auug.org.au>
+ <CGME20170620131628epcas1p4f21d821bd414cba7e2d49abcbe414365@epcas1p4.samsung.com>
+ <20170620131623.GB30769@lst.de>
+ <5425587c-73e8-e24a-86a3-8a65a7791dcb@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-In-Reply-To: <1498165026.2503.21.camel@redhat.com>
-Date: Thu, 22 Jun 2017 23:18:17 +0200
-Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was [net-next, v3,
- 3/3] udp: try to avoid 2 cache miss on dequeue)
-References: <87shisqihz.fsf@concordia.ellerman.id.au>
- <1498165026.2503.21.camel@redhat.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 22, 2017, at 22:57, Paolo Abeni wrote:
->=20
-> Can you please check if the following patch fixes the issue? Only
-> compiled tested here.
->=20
-> Thanks!!!
-> ---
-> diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-> index 067a607..80d89fe 100644
-> --- a/net/ipv4/udp.c
-> +++ b/net/ipv4/udp.c
-> @@ -1446,16 +1446,19 @@ static struct sk_buff
-> *__first_packet_length(struct sock *sk,
-> =C2=A0{
-> =C2=A0	struct sk_buff *skb;
-> =C2=A0
-> -       while ((skb =3D skb_peek(rcvq)) !=3D NULL &&
-> -       =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0udp_lib_checksum_comple=
-te(skb)) {
-> -               __UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
-> -                               IS_UDPLITE(sk));
-> -               __UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
-> -                               IS_UDPLITE(sk));
-> -               atomic_inc(&sk->sk_drops);
-> -               __skb_unlink(skb, rcvq);
-> -               *total +=3D skb->truesize;
-> -               kfree_skb(skb);
-> +       while ((skb =3D skb_peek(rcvq)) !=3D NULL) {
-> +               if (udp_lib_checksum_complete(skb)) {
-> +                       __UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
-> +                                       IS_UDPLITE(sk));
-> +                       __UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
-> +                                       IS_UDPLITE(sk));
-> +                       atomic_inc(&sk->sk_drops);
-> +                       __skb_unlink(skb, rcvq);
-> +                       *total +=3D skb->truesize;
-> +                       kfree_skb(skb);
-> +               } else {
-> +                       udp_set_dev_scratch(skb);
+Hi all,
 
-It needs a "break;" here.
+On Wed, 21 Jun 2017 15:32:39 +0200 Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+>
+> On 2017-06-20 15:16, Christoph Hellwig wrote:
+> > On Tue, Jun 20, 2017 at 11:04:00PM +1000, Stephen Rothwell wrote:  
+> >> git://git.linaro.org/people/mszyprowski/linux-dma-mapping.git#dma-mapping-next
+> >>
+> >> Contacts: Marek Szyprowski and Kyungmin Park (cc'd)
+> >>
+> >> I have called your tree dma-mapping-hch for now.  The other tree has
+> >> not been updated since 4.9-rc1 and I am not sure how general it is.
+> >> Marek, Kyungmin, any comments?  
+> > I'd be happy to join efforts - co-maintainers and reviers are always
+> > welcome.  
+> 
+> I did some dma-mapping unification works in the past and my tree in 
+> linux-next
+> was a side effect of that. I think that for now it can be dropped in 
+> favor of
+> Christoph's tree. I can also do some review and help in maintainers work if
+> needed, although I was recently busy with other stuff.
 
-> +               }
-> =C2=A0	}
-> =C2=A0	return skb;
-> =C2=A0}
+OK, so I have dropped the dma-mapping tree and renamed dma-mapping-hch
+to dma-mapping.
 
-Bye,
-Hannes
+-- 
+Cheers,
+Stephen Rothwell
