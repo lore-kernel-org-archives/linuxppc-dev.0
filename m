@@ -1,30 +1,24 @@
-Return-Path: <logang@deltatee.com>
-Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hannes@stressinduktion.org>
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtvPR0tYSzDqjH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 07:10:34 +1000 (AEST)
-To: Arnd Bergmann <arnd@arndb.de>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-5-logang@deltatee.com>
- <20170622210828.27304f6a@alans-desktop>
- <401cdb64-6fdb-be30-b8bc-bf51c1a35074@deltatee.com>
- <CAK8P3a1R-uvjjs=UpbvJjVXnFpD_OL1aRsw0KE_GkvNy+dVj8g@mail.gmail.com>
-Cc: Alan Cox <gnomes@lxorguk.ukuu.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, linux-ntb@googlegroups.com,
- linux-alpha@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-crypto@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stephen Bates <sbates@raithlin.com>, Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>
-From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <3ae2d934-1054-cdd1-7eaa-e9758276cf51@deltatee.com>
-Date: Thu, 22 Jun 2017 15:10:20 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtvZM5vsyzDqjH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 07:18:19 +1000 (AEST)
+Message-Id: <1498166297.111795.1018373424.5E414246@webmail.messagingengine.com>
+From: Hannes Frederic Sowa <hannes@stressinduktion.org>
+To: Paolo Abeni <pabeni@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a1R-uvjjs=UpbvJjVXnFpD_OL1aRsw0KE_GkvNy+dVj8g@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Subject: Re: [PATCH 4/7] alpha: provide ioread64 and iowrite64 implementations
+Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <1498165026.2503.21.camel@redhat.com>
+Date: Thu, 22 Jun 2017 23:18:17 +0200
+Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was [net-next, v3,
+ 3/3] udp: try to avoid 2 cache miss on dequeue)
+References: <87shisqihz.fsf@concordia.ellerman.id.au>
+ <1498165026.2503.21.camel@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,18 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/22/2017 3:03 PM, Arnd Bergmann wrote:
-> Drivers that want a non-atomic variant should include either
-> include/linux/io-64-nonatomic-hi-lo.h or include/linux/io-64-nonatomic-lo-hi.h
-> depending on what they need. Drivers that require 64-bit I/O should
-> probably just depend on CONFIG_64BIT and maybe use readq/writeq.
+On Thu, Jun 22, 2017, at 22:57, Paolo Abeni wrote:
+>=20
+> Can you please check if the following patch fixes the issue? Only
+> compiled tested here.
+>=20
+> Thanks!!!
+> ---
+> diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+> index 067a607..80d89fe 100644
+> --- a/net/ipv4/udp.c
+> +++ b/net/ipv4/udp.c
+> @@ -1446,16 +1446,19 @@ static struct sk_buff
+> *__first_packet_length(struct sock *sk,
+> =C2=A0{
+> =C2=A0	struct sk_buff *skb;
+> =C2=A0
+> -       while ((skb =3D skb_peek(rcvq)) !=3D NULL &&
+> -       =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0udp_lib_checksum_comple=
+te(skb)) {
+> -               __UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
+> -                               IS_UDPLITE(sk));
+> -               __UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
+> -                               IS_UDPLITE(sk));
+> -               atomic_inc(&sk->sk_drops);
+> -               __skb_unlink(skb, rcvq);
+> -               *total +=3D skb->truesize;
+> -               kfree_skb(skb);
+> +       while ((skb =3D skb_peek(rcvq)) !=3D NULL) {
+> +               if (udp_lib_checksum_complete(skb)) {
+> +                       __UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
+> +                                       IS_UDPLITE(sk));
+> +                       __UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
+> +                                       IS_UDPLITE(sk));
+> +                       atomic_inc(&sk->sk_drops);
+> +                       __skb_unlink(skb, rcvq);
+> +                       *total +=3D skb->truesize;
+> +                       kfree_skb(skb);
+> +               } else {
+> +                       udp_set_dev_scratch(skb);
 
-Ok, I will work something like that up.
+It needs a "break;" here.
 
-We'll still need a patch similar to patch 2 (less the non-atomic 
-versions) seeing even CONFIG_GENERIC_IOMAP arches don't actually have a 
-working ioread64/iowrite64 implementation.
+> +               }
+> =C2=A0	}
+> =C2=A0	return skb;
+> =C2=A0}
 
-Thanks,
-
-Logan
+Bye,
+Hannes
