@@ -1,29 +1,16 @@
-Return-Path: <dave.jiang@intel.com>
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wtpDv3M4jzDqjM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 03:17:49 +1000 (AEST)
-From: "Jiang, Dave" <dave.jiang@intel.com>
-To: Logan Gunthorpe <logang@deltatee.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-arch@vger.kernel.org"
- <linux-arch@vger.kernel.org>, "linux-ntb@googlegroups.com"
- <linux-ntb@googlegroups.com>, "linux-alpha@vger.kernel.org"
- <linux-alpha@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
- <dri-devel@lists.freedesktop.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Stephen Bates <sbates@raithlin.com>, Jon Mason
- <jdmason@kudzu.us>, Allen Hubbe <Allen.Hubbe@emc.com>
-Subject: RE: [PATCH 5/7] ntb: ntb_hw_intel: remove ioread64 and iowrite64 hacks
-Date: Thu, 22 Jun 2017 17:17:46 +0000
-Message-ID: <112A412BB11A1242B37129D931BCE53472F8DFF5@fmsmsx116.amr.corp.intel.com>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-6-logang@deltatee.com>
-In-Reply-To: <20170622164817.25515-6-logang@deltatee.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wtpQx0cxPzDr0r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 03:26:33 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ benh@kernel.crashing.org, Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc: Invalidate ERAT on powersave wakeup for POWER9
+Date: Thu, 22 Jun 2017 12:26:16 -0500
+Message-Id: <20170622172616.7598-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,58 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtbnRiQGdvb2ds
-ZWdyb3Vwcy5jb20gW21haWx0bzpsaW51eC1udGJAZ29vZ2xlZ3JvdXBzLmNvbV0gT24gQmVoYWxm
-IE9mIExvZ2FuIEd1bnRob3JwZQ0KPiBTZW50OiBUaHVyc2RheSwgSnVuZSAyMiwgMjAxNyA5OjQ4
-IEFNDQo+IFRvOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcmNoQHZnZXIu
-a2VybmVsLm9yZzsgbGludXgtbnRiQGdvb2dsZWdyb3Vwcy5jb207IGxpbnV4LWFscGhhQHZnZXIu
-a2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1jcnlw
-dG9Admdlci5rZXJuZWwub3JnOyBkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnDQo+IENj
-OiBBcm5kIEJlcmdtYW5uIDxhcm5kQGFybmRiLmRlPjsgR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVn
-a2hAbGludXhmb3VuZGF0aW9uLm9yZz47IFN0ZXBoZW4gQmF0ZXMgPHNiYXRlc0ByYWl0aGxpbi5j
-b20+Ow0KPiBMb2dhbiBHdW50aG9ycGUgPGxvZ2FuZ0BkZWx0YXRlZS5jb20+OyBKb24gTWFzb24g
-PGpkbWFzb25Aa3VkenUudXM+OyBKaWFuZywgRGF2ZSA8ZGF2ZS5qaWFuZ0BpbnRlbC5jb20+OyBB
-bGxlbiBIdWJiZQ0KPiA8QWxsZW4uSHViYmVAZW1jLmNvbT4NCj4gU3ViamVjdDogW1BBVENIIDUv
-N10gbnRiOiBudGJfaHdfaW50ZWw6IHJlbW92ZSBpb3JlYWQ2NCBhbmQgaW93cml0ZTY0IGhhY2tz
-DQo+IA0KPiBOb3cgdGhhdCBpb3JlYWQ2NCBhbmQgaW93cml0ZTY0IGFyZSBhdmFpbGFibGUgZ2Vu
-ZXJpY2FsbHkgd2UgY2FuDQo+IHJlbW92ZSB0aGUgaGFjayBhdCB0aGUgdG9wIG9mIG50Yl9od19p
-bnRlbC5jIHRoYXQgcGF0Y2hlcyB0aGVtIGluDQo+IHdoZW4gdGhleSBhcmUgbm90IGF2YWlsYWJs
-ZS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IExvZ2FuIEd1bnRob3JwZSA8bG9nYW5nQGRlbHRhdGVl
-LmNvbT4NCj4gQ2M6IEpvbiBNYXNvbiA8amRtYXNvbkBrdWR6dS51cz4NCj4gQ2M6IERhdmUgSmlh
-bmcgPGRhdmUuamlhbmdAaW50ZWwuY29tPg0KPiBDYzogQWxsZW4gSHViYmUgPEFsbGVuLkh1YmJl
-QGVtYy5jb20+DQoNClRoYW5rcyBmb3IgZG9pbmcgdGhpcyBMb2dhbi4gDQoNCkFja2VkLWJ5OiBE
-YXZlIEppYW5nIDxkYXZlLmppYW5nQGludGVsLmNvbT4NCg0KPiAtLS0NCj4gIGRyaXZlcnMvbnRi
-L2h3L2ludGVsL250Yl9od19pbnRlbC5jIHwgMzAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgMzAgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9udGIvaHcvaW50ZWwvbnRiX2h3X2ludGVsLmMgYi9kcml2ZXJzL250Yi9ody9p
-bnRlbC9udGJfaHdfaW50ZWwuYw0KPiBpbmRleCBjMDAyMzg0OTE2NzMuLjU2MjIxZDU0MGMyYiAx
-MDA2NDQNCj4gLS0tIGEvZHJpdmVycy9udGIvaHcvaW50ZWwvbnRiX2h3X2ludGVsLmMNCj4gKysr
-IGIvZHJpdmVycy9udGIvaHcvaW50ZWwvbnRiX2h3X2ludGVsLmMNCj4gQEAgLTE1MywzNSArMTUz
-LDYgQEAgTU9EVUxFX1BBUk1fREVTQyh4ZW9uX2IyYl9kc2RfYmFyNV9hZGRyMzIsDQo+ICBzdGF0
-aWMgaW5saW5lIGVudW0gbnRiX3RvcG8geGVvbl9wcGRfdG9wbyhzdHJ1Y3QgaW50ZWxfbnRiX2Rl
-diAqbmRldiwgdTggcHBkKTsNCj4gIHN0YXRpYyBpbnQgeGVvbl9pbml0X2lzcihzdHJ1Y3QgaW50
-ZWxfbnRiX2RldiAqbmRldik7DQo+IA0KPiAtI2lmbmRlZiBpb3JlYWQ2NA0KPiAtI2lmZGVmIHJl
-YWRxDQo+IC0jZGVmaW5lIGlvcmVhZDY0IHJlYWRxDQo+IC0jZWxzZQ0KPiAtI2RlZmluZSBpb3Jl
-YWQ2NCBfaW9yZWFkNjQNCj4gLXN0YXRpYyBpbmxpbmUgdTY0IF9pb3JlYWQ2NCh2b2lkIF9faW9t
-ZW0gKm1taW8pDQo+IC17DQo+IC0JdTY0IGxvdywgaGlnaDsNCj4gLQ0KPiAtCWxvdyA9IGlvcmVh
-ZDMyKG1taW8pOw0KPiAtCWhpZ2ggPSBpb3JlYWQzMihtbWlvICsgc2l6ZW9mKHUzMikpOw0KPiAt
-CXJldHVybiBsb3cgfCAoaGlnaCA8PCAzMik7DQo+IC19DQo+IC0jZW5kaWYNCj4gLSNlbmRpZg0K
-PiAtDQo+IC0jaWZuZGVmIGlvd3JpdGU2NA0KPiAtI2lmZGVmIHdyaXRlcQ0KPiAtI2RlZmluZSBp
-b3dyaXRlNjQgd3JpdGVxDQo+IC0jZWxzZQ0KPiAtI2RlZmluZSBpb3dyaXRlNjQgX2lvd3JpdGU2
-NA0KPiAtc3RhdGljIGlubGluZSB2b2lkIF9pb3dyaXRlNjQodTY0IHZhbCwgdm9pZCBfX2lvbWVt
-ICptbWlvKQ0KPiAtew0KPiAtCWlvd3JpdGUzMih2YWwsIG1taW8pOw0KPiAtCWlvd3JpdGUzMih2
-YWwgPj4gMzIsIG1taW8gKyBzaXplb2YodTMyKSk7DQo+IC19DQo+IC0jZW5kaWYNCj4gLSNlbmRp
-Zg0KPiAtDQo+ICBzdGF0aWMgaW5saW5lIGludCBwZGV2X2lzX2F0b20oc3RydWN0IHBjaV9kZXYg
-KnBkZXYpDQo+ICB7DQo+ICAJc3dpdGNoIChwZGV2LT5kZXZpY2UpIHsNCj4gQEAgLTMwMDgsNCAr
-Mjk3OSwzIEBAIHN0YXRpYyB2b2lkIF9fZXhpdCBpbnRlbF9udGJfcGNpX2RyaXZlcl9leGl0KHZv
-aWQpDQo+ICAJZGVidWdmc19yZW1vdmVfcmVjdXJzaXZlKGRlYnVnZnNfZGlyKTsNCj4gIH0NCj4g
-IG1vZHVsZV9leGl0KGludGVsX250Yl9wY2lfZHJpdmVyX2V4aXQpOw0KPiAtDQo+IC0tDQo+IDIu
-MTEuMA0KPiANCj4gLS0NCj4gWW91IHJlY2VpdmVkIHRoaXMgbWVzc2FnZSBiZWNhdXNlIHlvdSBh
-cmUgc3Vic2NyaWJlZCB0byB0aGUgR29vZ2xlIEdyb3VwcyAibGludXgtbnRiIiBncm91cC4NCj4g
-VG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGdyb3VwIGFuZCBzdG9wIHJlY2VpdmluZyBlbWFpbHMg
-ZnJvbSBpdCwgc2VuZCBhbiBlbWFpbCB0byBsaW51eC1udGIrdW5zdWJzY3JpYmVAZ29vZ2xlZ3Jv
-dXBzLmNvbS4NCj4gVG8gcG9zdCB0byB0aGlzIGdyb3VwLCBzZW5kIGVtYWlsIHRvIGxpbnV4LW50
-YkBnb29nbGVncm91cHMuY29tLg0KPiBUbyB2aWV3IHRoaXMgZGlzY3Vzc2lvbiBvbiB0aGUgd2Vi
-IHZpc2l0IGh0dHBzOi8vZ3JvdXBzLmdvb2dsZS5jb20vZC9tc2dpZC9saW51eC1udGIvMjAxNzA2
-MjIxNjQ4MTcuMjU1MTUtNi0NCj4gbG9nYW5nJTQwZGVsdGF0ZWUuY29tLg0KPiBGb3IgbW9yZSBv
-cHRpb25zLCB2aXNpdCBodHRwczovL2dyb3Vwcy5nb29nbGUuY29tL2Qvb3B0b3V0Lg0K
+On POWER9 the ERAT may be incorrect on wakeup from some stop states
+that lose state. This causes random segvs and illegal instructions
+when these stop states are enabled.
+
+This patch invalidates the ERAT on wakeup on POWER9 to prevent this
+from causing a problem.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/idle_book3s.S | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 1ea14b96f1..ace2ad50c8 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -793,6 +793,9 @@ fastsleep_workaround_at_exit:
+  */
+ .global pnv_wakeup_loss
+ pnv_wakeup_loss:
++BEGIN_FTR_SECTION
++	PPC_INVALIDATE_ERAT
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	ld	r1,PACAR1(r13)
+ BEGIN_FTR_SECTION
+ 	CHECK_HMI_INTERRUPT
+-- 
+2.11.0
