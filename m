@@ -1,32 +1,38 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@chromium.org>
+Received: from mail-pg0-x232.google.com (mail-pg0-x232.google.com
+ [IPv6:2607:f8b0:400e:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvVRy5SBJzDr0T
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 06:29:50 +1000 (AEST)
-Date: Fri, 23 Jun 2017 21:29:44 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Thorsten Leemhuis <regressions@leemhuis.info>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Regression in kernel 4.12-rc1 for Powerpc 32 - bisected to
- commit 3448890c32c3
-Message-ID: <20170623202943.GS10672@ZenIV.linux.org.uk>
-References: <69187aa4-611f-b08a-8d14-b8fa47b4c464@lwfinger.net>
- <1588557c-2706-0c0e-3387-4ae65d0b5790@lwfinger.net>
- <20170621212257.GN10672@ZenIV.linux.org.uk>
- <5f4b9fa4-262a-31b1-32ba-a2f6e789b3d6@lwfinger.net>
- <20170621213415.GO10672@ZenIV.linux.org.uk>
- <655d304e-e455-6e0c-56e1-f127653ea13c@lwfinger.net>
- <20170622141203.GP10672@ZenIV.linux.org.uk>
- <7bbd4c87-e8ff-5f83-8c4c-e205872083bf@lwfinger.net>
- <20170622192515.GQ10672@ZenIV.linux.org.uk>
- <2346c306-8e26-94cb-3c63-b866a7f4625d@lwfinger.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2346c306-8e26-94cb-3c63-b866a7f4625d@lwfinger.net>
-Sender: Al Viro <viro@ftp.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvW7037cSzDqlL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 07:00:11 +1000 (AEST)
+Received: by mail-pg0-x232.google.com with SMTP id u62so25630594pgb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:00:11 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Daniel Micay <danielmicay@gmail.com>,
+ Qualys Security Advisory <qsa@qualys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Pratyush Anand <panand@redhat.com>, James Hogan <james.hogan@imgtec.com>,
+ Dmitry Safonov <dsafonov@virtuozzo.com>,
+ Grzegorz Andrejczuk <grzegorz.andrejczuk@intel.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, kernel-hardening@lists.openwall.com
+Subject: [PATCH v2 0/5] Use ELF_ET_DYN_BASE only for PIE
+Date: Fri, 23 Jun 2017 13:59:55 -0700
+Message-Id: <1498251600-132458-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +42,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 23, 2017 at 01:49:16PM -0500, Larry Finger wrote:
+This is v2 (to refresh the 5 patches in -mm) for moving ELF_ET_DYN_BASE
+safely lower. Changes are clarifications in the commit logs (suggested
+by mpe), a compat think-o fix for arm64 (thanks to Ard), and to add
+Rik and mpe's Acks.
 
-> > BTW, could you try to check what happens if you kill the
-> > 	if (__builtin_constant_p(n) && (n <= 8))
-> > bits in raw_copy_{to,from}_user()?  The usefulness of those (in __copy_from_user()
-> > originally) had always been dubious and the things are simpler without them.
-> > If _that_ turns out to cure breakage, I would be very surprised, though.
-> > 
-> Sorry I was gone so long. Installing jessie on this box resulted in a crash
-> on boot. Lubuntu 14.04 yielded a desktop with a functioning cursor, but
-> nothing else. Finally, Ubuntu 12.04 resulted in a working system. I hate
-> Unity, but I guess I'm stuck for now.
+Quoting patch 1/5:
 
-Ho-hum...  Jessie is 3.16, so whatever is crashing there, it's something
-different...  Ubuntu 12.04 is what, 3.2?
+The ELF_ET_DYN_BASE position was originally intended to keep loaders
+away from ET_EXEC binaries. (For example, running "/lib/ld-linux.so.2
+/bin/cat" might cause the subsequent load of /bin/cat into where the
+loader had been loaded.) With the advent of PIE (ET_DYN binaries with
+an INTERP Program Header), ELF_ET_DYN_BASE continued to be used since
+the kernel was only looking at ET_DYN. However, since ELF_ET_DYN_BASE
+is traditionally set at the top 1/3rd of the TASK_SIZE, a substantial
+portion of the address space is unused.
 
-> I know how easy it is to screw up a long bisection by booting the wrong
-> kernel. To help that problem and to work around the yaconf/yboot nonsense on
-> the MAC, my /etc/yaconf has always had generic kernel stanzas with only
-> default, old, and original kernels mentioned. From there I use a local
-> script to finish a kernel installation by moving the default links to the
-> old ones and creating the new default links pointing to the current kernel.
-> With those long-tested scripts, I'm sure that I am booting the one I want.
-> 
-> With the new installation, kernel 4.12-rc6 failed, as did 3448890c with the
-> backported 46f401c4 added.
-> 
-> Replacing "if (__builtin_constant_p(n) && (n <= 8))" with "if (0)" had no effect.
+For 32-bit tasks when RLIMIT_STACK is set to RLIM_INFINITY, programs
+are loaded below the mmap region. This means they can be made to collide
+(CVE-2017-1000370) or nearly collide (CVE-2017-1000371) with pathological
+stack regions. Lowering ELF_ET_DYN_BASE solves both by moving programs
+above the mmap region in all cases, and will now additionally avoid
+programs falling back to the mmap region by enforcing MAP_FIXED for
+program loads (i.e. if it would have collided with the stack, now it
+will fail to load instead of falling back to the mmap region).
+    
+To allow for a lower ELF_ET_DYN_BASE, loaders (ET_DYN without INTERP)
+are loaded into the mmap region, leaving space available for either an
+ET_EXEC binary with a fixed location or PIE being loaded into mmap by the
+loader. Only PIE programs are loaded offset from ELF_ET_DYN_BASE, which
+means architectures can now safely lower their values without risk of
+loaders colliding with their subsequently loaded programs.
+    
+For 64-bit, ELF_ET_DYN_BASE is best set to 4GB to allow runtimes to
+use the entire 32-bit address space for 32-bit pointers. For 32-bit,
+4MB is used as the traditional minimum load location, likely to avoid
+historically requiring a 4MB page table entry when only a portion of the
+first 4MB would be used (since the NULL address is avoided).
 
-OK, that simplifies things a bit.  Just to make sure we are on the same page:
+Thanks to PaX Team, Daniel Micay, and Rik van Riel for inspiration and
+suggestions on how to implement this solution.
 
-* f2ed8bebee69 + cherry-pick of 46f401c4 boots (Ubuntu 12.04 userland)
-* 3448890c32c3 + cherry-pick of 46f401c4 fails (Ubuntu 12.04 userland), ditto
-  with removal of constant-size bits in raw_copy_..._user().  Failure appears
-  to be on udev getting EFAULT on some syscalls.
-* straight Ubuntu 12.04 works
-* jessie crashes on boot.
-
-Could you post the boot logs of the first two?
+-Kees
