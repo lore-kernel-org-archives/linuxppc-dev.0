@@ -1,20 +1,32 @@
-Return-Path: <sebastian.huber@embedded-brains.de>
-Received: from dedi548.your-server.de (dedi548.your-server.de [85.10.215.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wv8515R8VzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 16:42:13 +1000 (AEST)
-Subject: Re: DPAA: Software Portal selection for network interface
-To: Madalin-cristian Bucur <madalin.bucur@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <14d11770-fdbb-4719-559a-924855957568@embedded-brains.de>
- <AM5PR0402MB26913CAEE7420F66309623D9ECDB0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-From: Sebastian Huber <sebastian.huber@embedded-brains.de>
-Message-ID: <a5c3c67e-6533-e5d7-c381-d3655398b8f9@embedded-brains.de>
-Date: Fri, 23 Jun 2017 08:42:06 +0200
+Return-Path: <horia.geanta@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00056.outbound.protection.outlook.com [40.107.0.56])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wv8Hb2wBxzDqjM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 16:51:22 +1000 (AEST)
+From: =?iso-8859-2?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
+To: Logan Gunthorpe <logang@deltatee.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>, "linux-ntb@googlegroups.com"
+ <linux-ntb@googlegroups.com>, "linux-alpha@vger.kernel.org"
+ <linux-alpha@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
+ <linux-crypto@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
+ <dri-devel@lists.freedesktop.org>
+CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Stephen Bates <sbates@raithlin.com>, "Dan
+ Douglass" <dan.douglass@nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Radu Solea <radu.solea@nxp.com>,
+ Steve Cornelius <steve.cornelius@nxp.com>
+Subject: Re: [PATCH 7/7] crypto: caam: cleanup CONFIG_64BIT ifdefs when using
+ io{read|write}64
+Date: Fri, 23 Jun 2017 06:51:14 +0000
+Message-ID: <VI1PR0401MB259182B9B11B72B4B53B2C1498D80@VI1PR0401MB2591.eurprd04.prod.outlook.com>
+References: <20170622164817.25515-1-logang@deltatee.com>
+ <20170622164817.25515-8-logang@deltatee.com>
+Content-Type: text/plain; charset="iso-8859-2"
 MIME-Version: 1.0
-In-Reply-To: <AM5PR0402MB26913CAEE7420F66309623D9ECDB0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +36,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/06/17 16:48, Madalin-cristian Bucur wrote:
-
->> This means all the QMan portal_isr() are distributed round-robin to al=
-l
->> affine portals. Is there some way to configure the software portal for=
- a
->> specific network interface, e.g. use processors 0, 1, 2, 3 for one
->> interface,and 4, 5, 6, 7 for another?
-> We've stripped all configurability and advanced features from the initi=
-al
-> DPAA submission. We don't have options to configure this. On the other =
-hand,
-> the ingress queues are held active in the portal, resulting in one CPU =
-doing
-> dequeues while there are frames available. This is done to avoid frame
-> reordering, improving termination performance (and forwarded TCP perfor=
-mance).
->
-> The downside is that we're not saturating all CPUs with traffic. We're
-> currently working on adding Rx hashing, to be able to maintain intra-fl=
-ow
-> frame order while spreading processing on all CPUs.
->
-> Meanwhile, would RPS (Receive Packet Steering) be a solution for you?
->
-
-We receive UDP packets with an MTU of 1500 on one of the 10G interfaces=20
-at wire speed. So, I guess I have to add this configure myself somehow=20
-and use a dedicated software portal for this interface.
-
---=20
-Sebastian Huber, embedded brains GmbH
-
-Address : Dornierstr. 4, D-82178 Puchheim, Germany
-Phone   : +49 89 189 47 41-16
-Fax     : +49 89 189 47 41-09
-E-Mail  : sebastian.huber@embedded-brains.de
-PGP     : Public key available on request.
-
-Diese Nachricht ist keine gesch=C3=A4ftliche Mitteilung im Sinne des EHUG=
-.
+On 6/22/2017 7:49 PM, Logan Gunthorpe wrote:=0A=
+> Now that ioread64 and iowrite64 are always available we don't=0A=
+> need the ugly ifdefs to change their implementation when they=0A=
+> are not.=0A=
+> =0A=
+Thanks Logan.=0A=
+=0A=
+Note however this is not equivalent - it changes the behaviour, since=0A=
+CAAM engine on i.MX6S/SL/D/Q platforms is broken in terms of 64-bit=0A=
+register endianness - see CONFIG_CRYPTO_DEV_FSL_CAAM_IMX usage in code=0A=
+you are removing.=0A=
+=0A=
+[Yes, current code has its problems, as it does not differentiate b/w=0A=
+i.MX platforms with and without the (unofficial) erratum, but this=0A=
+should be fixed separately.]=0A=
+=0A=
+Below is the change that would keep current logic - still forcing i.MX=0A=
+to write CAAM 64-bit registers in BE even if the engine is LE (yes, diff=0A=
+is doing a poor job).=0A=
+=0A=
+Horia=0A=
+=0A=
+diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h=0A=
+index 84d2f838a063..b893ebb24e65 100644=0A=
+--- a/drivers/crypto/caam/regs.h=0A=
++++ b/drivers/crypto/caam/regs.h=0A=
+@@ -134,50 +134,25 @@ static inline void clrsetbits_32(void __iomem=0A=
+*reg, u32 clear, u32 set)=0A=
+  *    base + 0x0000 : least-significant 32 bits=0A=
+  *    base + 0x0004 : most-significant 32 bits=0A=
+  */=0A=
+-#ifdef CONFIG_64BIT=0A=
+ static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
+ {=0A=
++#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
+        if (caam_little_end)=0A=
+                iowrite64(data, reg);=0A=
+        else=0A=
+-               iowrite64be(data, reg);=0A=
+-}=0A=
+-=0A=
+-static inline u64 rd_reg64(void __iomem *reg)=0A=
+-{=0A=
+-       if (caam_little_end)=0A=
+-               return ioread64(reg);=0A=
+-       else=0A=
+-               return ioread64be(reg);=0A=
+-}=0A=
+-=0A=
+-#else /* CONFIG_64BIT */=0A=
+-static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
+-{=0A=
+-#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
+-       if (caam_little_end) {=0A=
+-               wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);=0A=
+-               wr_reg32((u32 __iomem *)(reg), data);=0A=
+-       } else=0A=
+ #endif=0A=
+-       {=0A=
+-               wr_reg32((u32 __iomem *)(reg), data >> 32);=0A=
+-               wr_reg32((u32 __iomem *)(reg) + 1, data);=0A=
+-       }=0A=
++               iowrite64be(data, reg);=0A=
+ }=0A=
+=0A=
+ static inline u64 rd_reg64(void __iomem *reg)=0A=
+ {=0A=
+ #ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
+        if (caam_little_end)=0A=
+-               return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |=0A=
+-                       (u64)rd_reg32((u32 __iomem *)(reg)));=0A=
++               return ioread64(reg);=0A=
+        else=0A=
+ #endif=0A=
+-               return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |=0A=
+-                       (u64)rd_reg32((u32 __iomem *)(reg) + 1));=0A=
++               return ioread64be(reg);=0A=
+ }=0A=
+-#endif /* CONFIG_64BIT  */=0A=
+=0A=
+ #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT=0A=
+ #ifdef CONFIG_SOC_IMX7D=0A=
+=0A=
+=0A=
+> Signed-off-by: Logan Gunthorpe <logang@deltatee.com>=0A=
+> Cc: "Horia Geant=E3" <horia.geanta@nxp.com>=0A=
+> Cc: Dan Douglass <dan.douglass@nxp.com>=0A=
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>=0A=
+> Cc: "David S. Miller" <davem@davemloft.net>=0A=
+> ---=0A=
+>  drivers/crypto/caam/regs.h | 29 -----------------------------=0A=
+>  1 file changed, 29 deletions(-)=0A=
+> =0A=
+> diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h=0A=
+> index 84d2f838a063..26fc19dd0c39 100644=0A=
+> --- a/drivers/crypto/caam/regs.h=0A=
+> +++ b/drivers/crypto/caam/regs.h=0A=
+> @@ -134,7 +134,6 @@ static inline void clrsetbits_32(void __iomem *reg, u=
+32 clear, u32 set)=0A=
+>   *    base + 0x0000 : least-significant 32 bits=0A=
+>   *    base + 0x0004 : most-significant 32 bits=0A=
+>   */=0A=
+> -#ifdef CONFIG_64BIT=0A=
+>  static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
+>  {=0A=
+>  	if (caam_little_end)=0A=
+> @@ -151,34 +150,6 @@ static inline u64 rd_reg64(void __iomem *reg)=0A=
+>  		return ioread64be(reg);=0A=
+>  }=0A=
+>  =0A=
+> -#else /* CONFIG_64BIT */=0A=
+> -static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
+> -{=0A=
+> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
+> -	if (caam_little_end) {=0A=
+> -		wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);=0A=
+> -		wr_reg32((u32 __iomem *)(reg), data);=0A=
+> -	} else=0A=
+> -#endif=0A=
+> -	{=0A=
+> -		wr_reg32((u32 __iomem *)(reg), data >> 32);=0A=
+> -		wr_reg32((u32 __iomem *)(reg) + 1, data);=0A=
+> -	}=0A=
+> -}=0A=
+> -=0A=
+> -static inline u64 rd_reg64(void __iomem *reg)=0A=
+> -{=0A=
+> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
+> -	if (caam_little_end)=0A=
+> -		return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |=0A=
+> -			(u64)rd_reg32((u32 __iomem *)(reg)));=0A=
+> -	else=0A=
+> -#endif=0A=
+> -		return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |=0A=
+> -			(u64)rd_reg32((u32 __iomem *)(reg) + 1));=0A=
+> -}=0A=
+> -#endif /* CONFIG_64BIT  */=0A=
+> -=0A=
+>  #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT=0A=
+>  #ifdef CONFIG_SOC_IMX7D=0A=
+>  #define cpu_to_caam_dma(value) \=0A=
+> =0A=
