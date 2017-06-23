@@ -1,20 +1,28 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+Return-Path: <clg@kaod.org>
+Received: from 11.mo6.mail-out.ovh.net (11.mo6.mail-out.ovh.net
+ [188.165.38.119])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvNqk5y5nzDqjB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 02:16:33 +1000 (AEST)
-Date: Sat, 24 Jun 2017 00:15:32 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org, alistair@popple.id.au,
- Russell Currey <ruscur@russell.cc>
-Subject: Re: [PATCH 1/2] powerpc/powernv/pci: Add helper to check if a PE has
- a single vendor
-Message-ID: <201706240013.VRiyo8OU%fengguang.wu@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvPNR2nSCzDqjB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 02:41:27 +1000 (AEST)
+Received: from player735.ha.ovh.net (b9.ovh.net [213.186.33.59])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 5377DF274D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 15:05:56 +0200 (CEST)
+Subject: Re: [RFC PATCH 1/2] powerpc/xive: guest exploitation of the XIVE
+ interrupt controller
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1498123757-18427-1-git-send-email-clg@kaod.org>
+ <1498123757-18427-2-git-send-email-clg@kaod.org>
+ <1498134010.31581.71.camel@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ David Gibson <david@gibson.dropbear.id.au>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <590a98df-05df-f923-d665-fd8d77d427d9@kaod.org>
+Date: Fri, 23 Jun 2017 15:05:48 +0200
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="YiEDa0DAkWCtVeE4"
-In-Reply-To: <20170621071804.11660-1-ruscur@russell.cc>
+In-Reply-To: <1498134010.31581.71.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,492 +32,839 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/22/2017 02:20 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2017-06-22 at 11:29 +0200, Cédric Le Goater wrote:
+>> This is the framework for using XIVE in a PowerVM guest. The support
+>> is very similar to the native one in a much simpler form.
+> 
+> Looks really good. Minor nits & comments...
+> 
+>> Instead of OPAL calls, a set of Hypervisors call are used to configure
+>> the interrupt sources and the event/notification queues of the guest:
+>>
+>>    H_INT_GET_SOURCE_INFO
+>>    H_INT_SET_SOURCE_CONFIG
+>>    H_INT_GET_SOURCE_CONFIG
+>>    H_INT_GET_QUEUE_INFO
+>>    H_INT_SET_QUEUE_CONFIG
+>>    H_INT_GET_QUEUE_CONFIG
+>>    H_INT_RESET
+> 
+> There are the base ones.
+> 
+>> Calls that still need to be addressed :
+>>
+>>    H_INT_SET_OS_REPORTING_LINE
+>>    H_INT_GET_OS_REPORTING_LINE
+> 
+> Ah so those have to do with that magic cache line you can register with
+> the HW so that when you get an interrupt, you can do an MMIO store very
+> early on in the interrupt entry path to the XIVE, which will
+> asynchronously write the NSR etc... to that cache line which you can
+> then poke at later one.
+>
+> I don't know if it's worth exploiting in Linux, but we should support
+> it in qemu/kvm.
+ 
+>From a QEMU point of view, it's not a big deal I think. I just haven't 
+introduced a NVT structure yet, which would be needed to hold the address 
+of the reporting cache line, or something similar.
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+>>    H_INT_ESB
+> 
+> This is a h-call that performs the basic ESB operations. Some
+> interrupts can have a flag telling the OS to do the operations using
+> that hcall rather than directly. This can be used to workaround HW
+> issues with some interrupts sources if needed.
 
-Hi Russell,
+The hcall is implemented in QEMU. It has a lot in common with the 
+MMIO, that's why. For Linux, it should not require too much changes.
+We could use a XIVE_IRQ_FLAG_H_INT_ESB flag in xive_poke_esb() to do 
+the hcall instead of the out* calls.
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on v4.12-rc6 next-20170623]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+xive_do_source_eoi() needs some wrapper calls around ->eoi_mmio also.
 
-url:    https://github.com/0day-ci/linux/commits/Russell-Currey/powerpc-powernv-pci-Add-helper-to-check-if-a-PE-has-a-single-vendor/20170623-201801
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc-ppc64_defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=powerpc 
+> 
+>>    H_INT_SYNC
+> 
+> This will be needed for queue accounting in some cases, such as CPU
+> hotplug I think etc... For example if you mask an interrupt in the ESB,
+> a sync will ensure that any previous occurrence of this interrupt has
+> reached its target queue (and thus is visible in memory).
 
-Note: the linux-review/Russell-Currey/powerpc-powernv-pci-Add-helper-to-check-if-a-PE-has-a-single-vendor/20170623-201801 HEAD cc13610eab0edbbdf3d9a8b29b33b1bc02859672 builds fine.
-      It only hurts bisectibility.
+ok. The way this will be handled is still a little fuzzy for me. I need
+to study the question. 
 
-All errors (new ones prefixed by >>):
+>> As for XICS, the XIVE interface for the guest is described in the
+>> device tree under the interrupt controller node. A couple of new
+>> properties are specific to XIVE :
+>>
+>>  - "reg"
+>>
+>>    contains the base address and size of the thread interrupt
+>>    managnement areas (TIMA) for the user level for the OS level. Only
+>>    the OS level is taken into account.
+>>
+>>  - "ibm,xive-eq-sizes"
+>>
+>>    the size of the event queues.
+>>
+>>  - "ibm,xive-lisn-ranges"
+>>
+>>    the interrupt numbers ranges assigned to the guest. These are
+>>    allocated using a simple bitmap.
+>>
+>> This is work in progress. It was only tested with a QEMU XIVE model
+>> for pseries.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>  arch/powerpc/include/asm/hvcall.h      |  13 +-
+>>  arch/powerpc/include/asm/xive.h        |   1 +
+>>  arch/powerpc/platforms/pseries/Kconfig |   1 +
+>>  arch/powerpc/platforms/pseries/setup.c |   8 +-
+>>  arch/powerpc/platforms/pseries/smp.c   |  18 +-
+>>  arch/powerpc/sysdev/xive/Kconfig       |   5 +
+>>  arch/powerpc/sysdev/xive/Makefile      |   1 +
+>>  arch/powerpc/sysdev/xive/xive-hv.c     | 523 +++++++++++++++++++++++++++++++++
+>>  8 files changed, 566 insertions(+), 4 deletions(-)
+>>  create mode 100644 arch/powerpc/sysdev/xive/xive-hv.c
+>>
+>> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+>> index d73755fafbb0..3c019e9f451a 100644
+>> --- a/arch/powerpc/include/asm/hvcall.h
+>> +++ b/arch/powerpc/include/asm/hvcall.h
+>> @@ -280,7 +280,18 @@
+>>  #define H_RESIZE_HPT_COMMIT	0x370
+>>  #define H_REGISTER_PROC_TBL	0x37C
+>>  #define H_SIGNAL_SYS_RESET	0x380
+>> -#define MAX_HCALL_OPCODE	H_SIGNAL_SYS_RESET
+>> +#define H_INT_GET_SOURCE_INFO   0x3A8
+>> +#define H_INT_SET_SOURCE_CONFIG 0x3AC
+>> +#define H_INT_GET_SOURCE_CONFIG 0x3B0
+>> +#define H_INT_GET_QUEUE_INFO    0x3B4
+>> +#define H_INT_SET_QUEUE_CONFIG  0x3B8
+>> +#define H_INT_GET_QUEUE_CONFIG  0x3BC
+>> +#define H_INT_SET_OS_REPORTING_LINE 0x3C0
+>> +#define H_INT_GET_OS_REPORTING_LINE 0x3C4
+>> +#define H_INT_ESB               0x3C8
+>> +#define H_INT_SYNC              0x3CC
+>> +#define H_INT_RESET             0x3D0
+>> +#define MAX_HCALL_OPCODE	H_INT_RESET
+>>  
+>>  /* H_VIOCTL functions */
+>>  #define H_GET_VIOA_DUMP_SIZE	0x01
+>> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+>> index c23ff4389ca2..c947952ed934 100644
+>> --- a/arch/powerpc/include/asm/xive.h
+>> +++ b/arch/powerpc/include/asm/xive.h
+>> @@ -110,6 +110,7 @@ extern bool __xive_enabled;
+>>  
+>>  static inline bool xive_enabled(void) { return __xive_enabled; }
+>>  
+>> +extern bool xive_hv_init(void);
+>>  extern bool xive_native_init(void);
+>>  extern void xive_smp_probe(void);
+>>  extern int  xive_smp_prepare_cpu(unsigned int cpu);
+>> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+>> index 913c54e23eea..4eec0283f043 100644
+>> --- a/arch/powerpc/platforms/pseries/Kconfig
+>> +++ b/arch/powerpc/platforms/pseries/Kconfig
+>> @@ -7,6 +7,7 @@ config PPC_PSERIES
+>>  	select PCI
+>>  	select PCI_MSI
+>>  	select PPC_XICS
+>> +	select PPC_XIVE_HV
+>>  	select PPC_ICP_NATIVE
+>>  	select PPC_ICP_HV
+>>  	select PPC_ICS_RTAS
+>> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+>> index b5d86426e97b..53bad49b84be 100644
+>> --- a/arch/powerpc/platforms/pseries/setup.c
+>> +++ b/arch/powerpc/platforms/pseries/setup.c
+>> @@ -57,6 +57,7 @@
+>>  #include <asm/nvram.h>
+>>  #include <asm/pmc.h>
+>>  #include <asm/xics.h>
+>> +#include <asm/xive.h>
+>>  #include <asm/ppc-pci.h>
+>>  #include <asm/i8259.h>
+>>  #include <asm/udbg.h>
+>> @@ -176,8 +177,11 @@ static void __init pseries_setup_i8259_cascade(void)
+>>  
+>>  static void __init pseries_init_irq(void)
+>>  {
+>> -	xics_init();
+>> -	pseries_setup_i8259_cascade();
+>> +	/* Try using a XIVE if available, otherwise use a XICS */
+>> +	if (!xive_hv_init()) {
+>> +		xics_init();
+>> +		pseries_setup_i8259_cascade();
+>> +	}
+>>  }
+>>  
+>>  static void pseries_lpar_enable_pmcs(void)
+>> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+>> index 52ca6b311d44..3c53ca1d7f85 100644
+>> --- a/arch/powerpc/platforms/pseries/smp.c
+>> +++ b/arch/powerpc/platforms/pseries/smp.c
+>> @@ -41,6 +41,7 @@
+>>  #include <asm/vdso_datapage.h>
+>>  #include <asm/cputhreads.h>
+>>  #include <asm/xics.h>
+>> +#include <asm/xive.h>
+>>  #include <asm/dbell.h>
+>>  #include <asm/plpar_wrappers.h>
+>>  #include <asm/code-patching.h>
+>> @@ -136,7 +137,9 @@ static inline int smp_startup_cpu(unsigned int lcpu)
+>>  
+>>  static void smp_setup_cpu(int cpu)
+>>  {
+>> -	if (cpu != boot_cpuid)
+>> +	if (xive_enabled())
+>> +		xive_smp_setup_cpu();
+>> +	else if (cpu != boot_cpuid)
+>>  		xics_setup_cpu();
+>>  
+>>  	if (firmware_has_feature(FW_FEATURE_SPLPAR))
+>> @@ -180,6 +183,13 @@ static int smp_pSeries_kick_cpu(int nr)
+>>  	return 0;
+>>  }
+>>  
+>> +static int pseries_smp_prepare_cpu(int cpu)
+>> +{
+>> +	if (xive_enabled())
+>> +		return xive_smp_prepare_cpu(cpu);
+>> +	return 0;
+>> +}
+>> +
+>>  static void smp_pseries_cause_ipi(int cpu)
+>>  {
+>>  	/* POWER9 should not use this handler */
+>> @@ -212,6 +222,11 @@ static int pseries_cause_nmi_ipi(int cpu)
+>>  
+>>  static __init void pSeries_smp_probe(void)
+>>  {
+>> +	if (xive_enabled()) {
+>> +		xive_smp_probe();
+>> +		return;
+>> +	}
+>> +
+>>  	xics_smp_probe();
+>>  
+>>  	if (cpu_has_feature(CPU_FTR_DBELL))
+>> @@ -225,6 +240,7 @@ static struct smp_ops_t pseries_smp_ops = {
+>>  	.cause_ipi	= NULL,	/* Filled at runtime by pSeries_smp_probe() */
+>>  	.cause_nmi_ipi	= pseries_cause_nmi_ipi,
+>>  	.probe		= pSeries_smp_probe,
+>> +	.prepare_cpu	= pseries_smp_prepare_cpu,
+>>  	.kick_cpu	= smp_pSeries_kick_cpu,
+>>  	.setup_cpu	= smp_setup_cpu,
+>>  	.cpu_bootable	= smp_generic_cpu_bootable,
+>> diff --git a/arch/powerpc/sysdev/xive/Kconfig b/arch/powerpc/sysdev/xive/Kconfig
+>> index 12ccd7373d2f..85486e6c279e 100644
+>> --- a/arch/powerpc/sysdev/xive/Kconfig
+>> +++ b/arch/powerpc/sysdev/xive/Kconfig
+>> @@ -9,3 +9,8 @@ config PPC_XIVE_NATIVE
+>>  	default n
+>>  	select PPC_XIVE
+>>  	depends on PPC_POWERNV
+>> +
+>> +config PPC_XIVE_HV
+>> +	bool
+>> +	default n
+>> +	select PPC_XIVE
+>> diff --git a/arch/powerpc/sysdev/xive/Makefile b/arch/powerpc/sysdev/xive/Makefile
+>> index 3fab303fc169..c443dfac6e6b 100644
+>> --- a/arch/powerpc/sysdev/xive/Makefile
+>> +++ b/arch/powerpc/sysdev/xive/Makefile
+>> @@ -2,3 +2,4 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+>>  
+>>  obj-y				+= common.o
+>>  obj-$(CONFIG_PPC_XIVE_NATIVE)	+= native.o
+>> +obj-$(CONFIG_PPC_XIVE_HV)	+= xive-hv.o
+>> diff --git a/arch/powerpc/sysdev/xive/xive-hv.c b/arch/powerpc/sysdev/xive/xive-hv.c
+>> new file mode 100644
+>> index 000000000000..3adfcff9800f
+>> --- /dev/null
+>> +++ b/arch/powerpc/sysdev/xive/xive-hv.c
+> 
+> I would call it "papr.c" or "guest.c" by opposition to "native.c",
+> ditch the xive_ prefix.
 
->> arch/powerpc/platforms/powernv/pci-ioda.c:1721:13: error: 'pnv_pci_ioda_pe_single_vendor' defined but not used [-Werror=unused-function]
-    static bool pnv_pci_ioda_pe_single_vendor(struct pnv_ioda_pe *pe)
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   cc1: all warnings being treated as errors
+ok. I have chosen spapr.c
 
-vim +/pnv_pci_ioda_pe_single_vendor +1721 arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -0,0 +1,523 @@
+>> +/*
+>> + * Copyright 2016,2017 IBM Corporation.
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the License, or (at your option) any later version.
+>> + */
+>> +
+>> +#define pr_fmt(fmt) "xive: " fmt
+>> +
+>> +#include <linux/types.h>
+>> +#include <linux/irq.h>
+>> +#include <linux/debugfs.h>
+>> +#include <linux/smp.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/seq_file.h>
+>> +#include <linux/init.h>
+>> +#include <linux/of.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/spinlock.h>
+>> +#include <linux/delay.h>
+>> +#include <linux/cpumask.h>
+>> +#include <linux/mm.h>
+>> +
+>> +#include <asm/prom.h>
+>> +#include <asm/io.h>
+>> +#include <asm/smp.h>
+>> +#include <asm/irq.h>
+>> +#include <asm/errno.h>
+>> +#include <asm/xive.h>
+>> +#include <asm/xive-regs.h>
+>> +#include <asm/hvcall.h>
+>> +
+>> +#include "xive-internal.h"
+>> +
+>> +static u32 xive_queue_shift;
+>> +
+>> +struct xive_irq_bitmap {
+>> +	unsigned long		*bitmap;
+>> +	unsigned int		base;
+>> +	unsigned int		count;
+>> +	spinlock_t		lock;
+>> +	struct list_head	list;
+>> +};
+>> +
+>> +static LIST_HEAD(xive_irq_bitmaps);
+>> +
+>> +static int xive_irq_bitmap_add(int base, int count)
+>> +{
+>> +	struct xive_irq_bitmap *xibm;
+>> +
+>> +	xibm = kzalloc(sizeof(*xibm), GFP_ATOMIC);
+>> +	if (!xibm)
+>> +		return -ENOMEM;
+>> +
+>> +	spin_lock_init(&xibm->lock);
+>> +	xibm->base = base;
+>> +	xibm->count = count;
+>> +	xibm->bitmap = kzalloc(xibm->count, GFP_KERNEL);
+>> +	list_add(&xibm->list, &xive_irq_bitmaps);
+>> +
+>> +	pr_info("Using LISN range [ %d - %d ]", xibm->base,
+>> +		xibm->base + xibm->count - 1);
+>> +	return 0;
+>> +}
+>> +
+>> +static int __xive_irq_bitmap_alloc(struct xive_irq_bitmap *xibm)
+>> +{
+>> +	int irq;
+>> +
+>> +	irq = find_first_zero_bit(xibm->bitmap, xibm->count);
+>> +	if (irq != xibm->count) {
+>> +		set_bit(irq, xibm->bitmap);
+>> +		irq += xibm->base;
+>> +	} else {
+>> +		irq = -ENOMEM;
+>> +	}
+>> +
+>> +	return irq;
+>> +}
+>> +
+>> +static int xive_irq_bitmap_alloc(void)
+>> +{
+>> +	struct xive_irq_bitmap *xibm;
+>> +	unsigned long flags;
+>> +	int irq = -ENOENT;
+>> +
+>> +	list_for_each_entry(xibm, &xive_irq_bitmaps, list) {
+>> +		spin_lock_irqsave(&xibm->lock, flags);
+>> +		irq = __xive_irq_bitmap_alloc(xibm);
+>> +		spin_unlock_irqrestore(&xibm->lock, flags);
+>> +		if (irq >= 0)
+>> +			break;
+>> +	}
+>> +	return irq;
+>> +}
+>> +
+>> +static void xive_irq_bitmap_free(int irq)
+>> +{
+>> +	unsigned long flags;
+>> +	struct xive_irq_bitmap *xibm;
+>> +
+>> +	list_for_each_entry(xibm, &xive_irq_bitmaps, list) {
+>> +		if ((irq >= xibm->base) && (irq < xibm->base + xibm->count)) {
+>> +			spin_lock_irqsave(&xibm->lock, flags);
+>> +			clear_bit(irq - xibm->base, xibm->bitmap);
+>> +			spin_unlock_irqrestore(&xibm->lock, flags);
+>> +			break;
+>> +		}
+>> +	}
+>> +}
+>> +
+>> +static long plpar_int_get_source_info(unsigned long flags,
+>> +				      unsigned long lisn,
+>> +				      unsigned long *src_flags,
+>> +				      unsigned long *eoi_page,
+>> +				      unsigned long *trig_page,
+>> +				      unsigned long *esb_shift)
+>> +{
+>> +	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+>> +	long rc;
+>> +
+>> +	rc = plpar_hcall(H_INT_GET_SOURCE_INFO, retbuf, flags, lisn);
+>> +	if (rc) {
+>> +		pr_err("H_INT_GET_SOURCE_INFO lisn=%ld failed %ld\n", lisn, rc);
+>> +		return rc;
+>> +	}
+>> +
+>> +	*src_flags = retbuf[0];
+>> +	*eoi_page  = retbuf[1];
+>> +	*trig_page = retbuf[2];
+>> +	*esb_shift = retbuf[3];
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +#define XIVE_SRC_SET_EISN (1ull << (63 - 62))
+>> +#define XIVE_SRC_MASK     (1ull << (63 - 63)) /* unused */
+>> +
+>> +static long plpar_int_set_source_config(unsigned long flags,
+>> +					unsigned long lisn,
+>> +					unsigned long target,
+>> +					unsigned long prio,
+>> +					unsigned long sw_irq)
+>> +{
+>> +	long rc;
+>> +
+>> +	rc = plpar_hcall_norets(H_INT_SET_SOURCE_CONFIG, flags, lisn,
+>> +				target, prio, sw_irq);
+>> +	if (rc) {
+>> +		pr_err("H_INT_SET_SOURCE_CONFIG lisn=%ld failed %ld\n",
+>> +		       lisn, rc);
+>> +		return rc;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static long plpar_int_get_queue_info(unsigned long flags,
+>> +				     unsigned long target,
+>> +				     unsigned long priority,
+>> +				     unsigned long *esn_page,
+>> +				     unsigned long *esn_size)
+>> +{
+>> +	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+>> +	long rc;
+>> +
+>> +	rc = plpar_hcall(H_INT_GET_QUEUE_INFO, retbuf, flags, target, priority);
+>> +	if (rc) {
+>> +		pr_err("H_INT_GET_QUEUE_INFO cpu=%ld prio=%ld failed %ld\n",
+>> +		       target, priority, rc);
+>> +		return rc;
+>> +	}
+>> +
+>> +	*esn_page = retbuf[0];
+>> +	*esn_size = retbuf[1];
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +#define XIVE_EQ_ALWAYS_NOTIFY (1ull << (63 - 63))
+>> +
+>> +static long plpar_int_set_queue_config(unsigned long flags,
+>> +				       unsigned long target,
+>> +				       unsigned long priority,
+>> +				       unsigned long qpage,
+>> +				       unsigned long qsize)
+>> +{
+>> +	long rc;
+>> +
+>> +	rc = plpar_hcall_norets(H_INT_SET_QUEUE_CONFIG, flags, target,
+>> +				priority, qpage, qsize);
+>> +	if (rc) {
+>> +		pr_err("H_INT_SET_QUEUE_CONFIG cpu=%ld prio=%ld qpage=%lx returned %ld\n",
+>> +		       target, priority, qpage, rc);
+>> +		return  rc;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60)) /* TODO */
+>> +#define XIVE_SRC_LSI           (1ull << (63 - 61))
+>> +#define XIVE_SRC_TRIGGER_PAGE  (1ull << (63 - 62))
+>> +#define XIVE_SRC_STORE_EOI     (1ull << (63 - 63))
+> 
+> Those are PAPR specific definitions, we can keep them here but they
+> could also go in a common place and be prefixed appropriately, up
+> to you.
 
-  1715		 * for physical PE: the device is already added by now;
-  1716		 * for virtual PE: sysfs entries are not ready yet and
-  1717		 * tce_iommu_bus_notifier will add the device to a group later.
-  1718		 */
-  1719	}
-  1720	
-> 1721	static bool pnv_pci_ioda_pe_single_vendor(struct pnv_ioda_pe *pe)
-  1722	{
-  1723		unsigned short vendor = 0;
-  1724		struct pci_dev *pdev;
+yes. I am not sure where to put them. in : 
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+	arch/powerpc/include/asm/xive.h
+?
 
---YiEDa0DAkWCtVeE4
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+or may be in a new file as these define will be used by the hcalls 
+in kvm also.
 
-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
-Xef/A8+E5vGPewEA
+>> +static int xive_hv_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
+>> +{
+>> +	long rc;
+>> +	unsigned long flags;
+>> +	unsigned long eoi_page;
+>> +	unsigned long trig_page;
+>> +	unsigned long esb_shift;
+>> +
+>> +	memset(data, 0, sizeof(*data));
+>> +
+>> +	rc = plpar_int_get_source_info(0, hw_irq, &flags, &eoi_page, &trig_page,
+>> +				       &esb_shift);
+>> +	if (rc)
+>> +		return  -EINVAL;
+>> +
+>> +	if (flags & XIVE_SRC_STORE_EOI)
+>> +		data->flags  |= XIVE_IRQ_FLAG_STORE_EOI;
+>> +	if (flags & XIVE_SRC_LSI)
+>> +		data->flags  |= XIVE_IRQ_FLAG_LSI;
+>> +	data->eoi_page  = eoi_page;
+>> +	data->esb_shift = esb_shift;
+>> +	if (flags & XIVE_SRC_TRIGGER_PAGE)
+>> +		data->trig_page = trig_page;
+>> +
+>> +	data->eoi_mmio = ioremap(data->eoi_page, 1u << data->esb_shift);
+>> +	if (!data->eoi_mmio) {
+>> +		pr_err("Failed to map EOI page for irq 0x%x\n", hw_irq);
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>> +	if (!data->trig_page)
+>> +		return 0;
+>> +
+>> +	data->trig_mmio = ioremap(data->trig_page, 1u << data->esb_shift);
+>> +	if (!data->trig_mmio) {
+>> +		pr_err("Failed to map trigger page for irq 0x%x\n", hw_irq);
+>> +		return -ENOMEM;
+>> +	}
+>> +	return 0;
+>> +}
+>> +
+>> +static int xive_hv_configure_irq(u32 hw_irq, u32 target, u8 prio, u32 sw_irq)
+>> +{
+>> +	long rc;
+>> +
+>> +	rc = plpar_int_set_source_config(XIVE_SRC_SET_EISN, hw_irq, target,
+>> +					 prio, sw_irq);
+>> +
+>> +	return rc == 0 ? 0 : -ENXIO;
+>> +}
+>>
+> Double check if these guys can return the special return code that
+> says "wait & try again later"... Same with queue config actually.
 
---YiEDa0DAkWCtVeE4--
+the specs says that the syncs are done to complete the in-flight 
+interrupts before returning H_SUCCESS. So I think we are fine.
+ 
+>> +/* This can be called multiple time to change a queue configuration */
+>> +static int xive_hv_configure_queue(u32 target, struct xive_q *q, u8 prio,
+>> +				   __be32 *qpage, u32 order)
+>> +{
+>> +	s64 rc = 0;
+>> +	unsigned long esn_page;
+>> +	unsigned long esn_size;
+>> +	u64 flags, qpage_phys;
+>> +
+>> +	/* If there's an actual queue page, clean it */
+>> +	if (order) {
+>> +		if (WARN_ON(!qpage))
+>> +			return -EINVAL;
+>> +		qpage_phys = __pa(qpage);
+>> +	} else {
+>> +		qpage_phys = 0;
+>> +	}
+>> +
+>> +	/* Initialize the rest of the fields */
+>> +	q->msk = order ? ((1u << (order - 2)) - 1) : 0;
+>> +	q->idx = 0;
+>> +	q->toggle = 0;
+>> +
+>> +	rc = plpar_int_get_queue_info(0, target, prio, &esn_page, &esn_size);
+>> +	if (rc) {
+>> +		pr_err("Error %lld getting queue info prio %d\n", rc, prio);
+>> +		rc = -EIO;
+>> +		goto fail;
+>> +	}
+>> +	q->eoi_phys = be64_to_cpu(esn_page);
+>> +
+>> +	/* Default flags */
+>> +	flags = XIVE_EQ_ALWAYS_NOTIFY;
+>> +
+>> +	/* Configure and enable the queue in HW */
+>> +	rc = plpar_int_set_queue_config(flags, target, prio, qpage_phys, order);
+>> +	if (rc) {
+>> +		pr_err("Error %lld setting queue for prio %d\n", rc, prio);
+>> +		rc = -EIO;
+>> +	} else {
+>> +		q->qpage = qpage;
+>> +	}
+>> +fail:
+>> +	return rc;
+>> +}
+>> +
+>> +static int xive_hv_setup_queue(unsigned int cpu, struct xive_cpu *xc, u8 prio)
+>> +{
+>> +	struct xive_q *q = &xc->queue[prio];
+>> +	unsigned int alloc_order;
+>> +	struct page *pages;
+>> +	__be32 *qpage;
+>> +
+>> +	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
+>> +		(xive_queue_shift - PAGE_SHIFT) : 0;
+>> +	pages = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, alloc_order);
+>> +	if (!pages)
+>> +		return -ENOMEM;
+>> +	qpage = (__be32 *)page_address(pages);
+>> +	memset(qpage, 0, 1 << xive_queue_shift);
+>> +
+>> +	return xive_hv_configure_queue(cpu, q, prio, qpage, xive_queue_shift);
+>> +}
+>> +
+>> +static void xive_hv_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
+>> +				  u8 prio)
+>> +{
+>> +	struct xive_q *q = &xc->queue[prio];
+>> +	unsigned int alloc_order;
+>> +	long rc;
+>> +
+>> +	rc = plpar_int_set_queue_config(0, cpu, prio, 0, 0);
+>> +	if (rc)
+>> +		pr_err("Error %ld setting queue for prio %d\n", rc, prio);
+>> +
+>> +	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
+>> +		(xive_queue_shift - PAGE_SHIFT) : 0;
+>> +	free_pages((unsigned long)q->qpage, alloc_order);
+>> +	q->qpage = NULL;
+>> +}
+>> +
+>> +static bool xive_hv_match(struct device_node *node)
+>> +{
+> 
+> Hrm ... I suppose so... as long as we don't play with cascaded
+> controllers.
+
+OK. I just made it "work" for the moment and didn't dig in the 
+consequences yet.
+
+>> +	return 1;
+>> +}
+>> +
+>> +#ifdef CONFIG_SMP
+>> +static int xive_hv_get_ipi(unsigned int cpu, struct xive_cpu *xc)
+>> +{
+>> +	int irq = xive_irq_bitmap_alloc();
+>> +
+>> +	if (irq < 0) {
+>> +		pr_err("Failed to allocate IPI on CPU %d\n", cpu);
+>> +		return -ENXIO;
+>> +	}
+>> +
+>> +	xc->hw_ipi = irq;
+>> +	return 0;
+>> +}
+>> +
+>> +static void xive_hv_put_ipi(unsigned int cpu, struct xive_cpu *xc)
+>> +{
+>> +	xive_irq_bitmap_free(xc->hw_ipi);
+>> +}
+>> +#endif /* CONFIG_SMP */
+>> +
+>> +static void xive_hv_shutdown(void)
+>> +{
+>> +	long rc;
+>> +
+>> +	rc = plpar_hcall_norets(H_INT_RESET, 0);
+>> +	if (rc)
+>> +		pr_err("H_INT_RESET failed %ld\n", rc);
+>> +}
+>> +
+>> +static void xive_hv_update_pending(struct xive_cpu *xc)
+>> +{
+>> +	u8 nsr, cppr;
+>> +	u16 ack;
+>> +
+>> +	/* Perform the acknowledge hypervisor to register cycle */
+>> +	ack = be16_to_cpu(__raw_readw(xive_tima + TM_SPC_ACK_OS_REG));
+>> +
+>> +	/* Synchronize subsequent queue accesses */
+>> +	mb();
+>> +
+>> +	/*
+>> +	 * Grab the CPPR and the "NSR" field which indicates the source
+>> +	 * of the hypervisor interrupt (if any)
+>> +	 */
+>> +	cppr = ack & 0xff;
+>> +	nsr = ack >> 8;
+>> +
+>> +	if (nsr & TM_QW1_NSR_EO) {
+>> +		if (cppr == 0xff)
+>> +			return;
+>> +		/* Mark the priority pending */
+>> +		xc->pending_prio |= 1 << cppr;
+>> +
+>> +		/*
+>> +		 * A new interrupt should never have a CPPR less favored
+>> +		 * than our current one.
+>> +		 */
+>> +		if (cppr >= xc->cppr)
+>> +			pr_err("CPU %d odd ack CPPR, got %d at %d\n",
+>> +			       smp_processor_id(), cppr, xc->cppr);
+>> +
+>> +		/* Update our idea of what the CPPR is */
+>> +		xc->cppr = cppr;
+>> +	}
+>> +}
+>> +
+>> +static void xive_hv_eoi(u32 hw_irq)
+>> +{
+>> +	/* Not used */;
+>> +}
+> 
+> The above could be used for interrupts that need H_INT_ESB... Due to
+> how that was architected in PAPR though, I'm thinking we might want to
+> review the abstraction a bit between front-end and back-end to provide
+> something at the ESB ops level. 
+
+Do you mean exposing the xive_poke_esb() call and friends to the 
+backends ? or something more complex than what I have described above ? 
+
+> Not that anything uses that feature yet :-) 
+> (DD1.0 implementations might but I don't think they'll exist).
+>
+>> +static void xive_hv_setup_cpu(unsigned int cpu, struct xive_cpu *xc)
+>> +{
+>> +	pr_debug("(Old HW value: %08x)\n",
+>> +		 in_be32(xive_tima + TM_QW1_OS + TM_WORD2));
+>> +
+>> +	/* set LSMFB to 0xff to skip backlog scan) */
+>> +	out_be32(xive_tima + TM_QW1_OS + TM_WORD0, 0xff);
+>> +
+>> +	/* TODO: set TM_QW1W2_OS_CAM ?  */;
+> 
+> What do you mean ? The OS CAM is set by the hypervisor when switching
+> us in, or am I missing something ?
+
+no. It's me. I am still learning on this part.
+ 
+>> +	pr_debug("(New HW value: %08x)\n",
+>> +		 in_be32(xive_tima + TM_QW1_OS + TM_WORD2));
+>> +}
+>> +
+>> +static void xive_hv_teardown_cpu(unsigned int cpu, struct xive_cpu *xc)
+>> +{
+>> +	/* Nothing to do */;
+>> +}
+>> +
+>> +void xive_hv_sync_source(u32 hw_irq)
+>> +{
+>> +	/* TODO: I am not sure this is needed ? */;
+> 
+> It can be, you should implement it.
+
+ok. I see what is done for OPAL but for sPAPR it is not clear. 
+
+Thanks,
+
+C.
+
+>> +}
+>> +EXPORT_SYMBOL_GPL(xive_hv_sync_source);
+>> +
+>> +static const struct xive_ops xive_hv_ops = {
+>> +	.populate_irq_data	= xive_hv_populate_irq_data,
+>> +	.configure_irq		= xive_hv_configure_irq,
+>> +	.setup_queue		= xive_hv_setup_queue,
+>> +	.cleanup_queue		= xive_hv_cleanup_queue,
+>> +	.match			= xive_hv_match,
+>> +	.shutdown		= xive_hv_shutdown,
+>> +	.update_pending		= xive_hv_update_pending,
+>> +	.eoi			= xive_hv_eoi,
+>> +	.setup_cpu		= xive_hv_setup_cpu,
+>> +	.teardown_cpu		= xive_hv_teardown_cpu,
+>> +	.sync_source		= xive_hv_sync_source,
+>> +#ifdef CONFIG_SMP
+>> +	.get_ipi		= xive_hv_get_ipi,
+>> +	.put_ipi		= xive_hv_put_ipi,
+>> +#endif /* CONFIG_SMP */
+>> +	.name			= "hv",
+>> +};
+>> +
+>> +bool xive_hv_init(void)
+>> +{
+>> +	struct device_node *np;
+>> +	struct resource r;
+>> +	void __iomem *tima;
+>> +	struct property *prop;
+>> +	u8 max_prio = 7;
+>> +	u32 val;
+>> +	u32 len;
+>> +	const __be32 *reg;
+>> +	int i;
+>> +
+>> +	if (xive_cmdline_disabled)
+>> +		return false;
+>> +
+>> +	pr_devel("%s()\n", __func__);
+>> +	np = of_find_compatible_node(NULL, NULL, "ibm,power-ivpe");
+>> +	if (!np) {
+>> +		pr_devel("not found !\n");
+>> +		return false;
+>> +	}
+>> +	pr_devel("Found %s\n", np->full_name);
+>> +
+>> +	/* Resource 1 is the OS ring TIMA */
+>> +	if (of_address_to_resource(np, 1, &r)) {
+>> +		pr_err("Failed to get thread mgmnt area resource\n");
+>> +		return false;
+>> +	}
+>> +	tima = ioremap(r.start, resource_size(&r));
+>> +	if (!tima) {
+>> +		pr_err("Failed to map thread mgmnt area\n");
+>> +		return false;
+>> +	}
+>> +
+>> +	/* Feed the IRQ number allocator with the ranges given in the DT */
+>> +	reg = of_get_property(np, "ibm,xive-lisn-ranges", &len);
+>> +	if (!reg) {
+>> +		pr_err("Failed to read 'ibm,xive-lisn-ranges' property\n");
+>> +		return false;
+>> +	}
+>> +
+>> +	if (len % (2 * sizeof(u32)) != 0) {
+>> +		pr_err("invalid 'ibm,xive-lisn-ranges' property\n");
+>> +		return false;
+>> +	}
+>> +
+>> +	for (i = 0; i < len / (2 * sizeof(u32)); i++, reg += 2)
+>> +		xive_irq_bitmap_add(be32_to_cpu(reg[0]),
+>> +				    be32_to_cpu(reg[1]));
+>> +
+>> +	/* Iterate the EQ sizes and pick one */
+>> +	of_property_for_each_u32(np, "ibm,xive-eq-sizes", prop, reg, val) {
+>> +		xive_queue_shift = val;
+>> +		if (val == PAGE_SHIFT)
+>> +			break;
+>> +	}
+>> +
+>> +	/* Initialize XIVE core with our backend */
+>> +	if (!xive_core_init(&xive_hv_ops, tima, TM_QW1_OS, max_prio))
+>> +		return false;
+>> +
+>> +	pr_info("Using %dkB queues\n", 1 << (xive_queue_shift - 10));
+>> +	return true;
+>> +}
