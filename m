@@ -2,25 +2,17 @@ Return-Path: <pabeni@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvH7Q6KsMzDqhp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 21:59:46 +1000 (AEST)
-Message-ID: <1498219181.2611.6.camel@redhat.com>
-Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was
- [net-next,v3,3/3] udp: try to avoid 2 cache miss on dequeue)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvHbC63xZzDqj2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 22:20:23 +1000 (AEST)
 From: Paolo Abeni <pabeni@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Hannes Frederic Sowa
- <hannes@stressinduktion.org>
-Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@google.com>,  netdev@vger.kernel.org,
+To: netdev@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>,
+ Hannes Frederic Sowa <hannes@stressinduktion.org>,
+ Eric Dumazet <edumazet@google.com>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
-Date: Fri, 23 Jun 2017 13:59:41 +0200
-In-Reply-To: <87r2ybp4ud.fsf@concordia.ellerman.id.au>
-References: <87shisqihz.fsf@concordia.ellerman.id.au>
- <1498165026.2503.21.camel@redhat.com>
- <1498166297.111795.1018373424.5E414246@webmail.messagingengine.com>
- <87r2ybp4ud.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Subject: [PATCH net-next] udp: fix poll()
+Date: Fri, 23 Jun 2017 14:19:51 +0200
+Message-Id: <00735477ae8ffcc075e382ab45f6568ab158a0bf.1498220186.git.pabeni@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,80 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-06-23 at 16:59 +1000, Michael Ellerman wrote:
-> Hannes Frederic Sowa <hannes@stressinduktion.org> writes:
-> 
-> > On Thu, Jun 22, 2017, at 22:57, Paolo Abeni wrote:
-> > > 
-> > > Can you please check if the following patch fixes the issue? Only
-> > > compiled tested here.
-> > > 
-> > > Thanks!!!
-> > > ---
-> > > diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-> > > index 067a607..80d89fe 100644
-> > > --- a/net/ipv4/udp.c
-> > > +++ b/net/ipv4/udp.c
-> > > @@ -1446,16 +1446,19 @@ static struct sk_buff
-> > > *__first_packet_length(struct sock *sk,
-> > >  {
-> > >  	struct sk_buff *skb;
-> > >  
-> > > -       while ((skb = skb_peek(rcvq)) != NULL &&
-> > > -              udp_lib_checksum_complete(skb)) {
-> > > -               __UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
-> > > -                               IS_UDPLITE(sk));
-> > > -               __UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
-> > > -                               IS_UDPLITE(sk));
-> > > -               atomic_inc(&sk->sk_drops);
-> > > -               __skb_unlink(skb, rcvq);
-> > > -               *total += skb->truesize;
-> > > -               kfree_skb(skb);
-> > > +       while ((skb = skb_peek(rcvq)) != NULL) {
-> > > +               if (udp_lib_checksum_complete(skb)) {
-> > > +                       __UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
-> > > +                                       IS_UDPLITE(sk));
-> > > +                       __UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
-> > > +                                       IS_UDPLITE(sk));
-> > > +                       atomic_inc(&sk->sk_drops);
-> > > +                       __skb_unlink(skb, rcvq);
-> > > +                       *total += skb->truesize;
-> > > +                       kfree_skb(skb);
-> > > +               } else {
-> > > +                       udp_set_dev_scratch(skb);
-> > 
-> > It needs a "break;" here.
-> > 
-> > > +               }
-> > >  	}
-> > >  	return skb;
-> > >  }
-> 
-> That works!
-> 
-> $ wget google.com
-> --2017-06-23 16:56:31--  http://google.com/
-> Resolving proxy.pmdw.com (proxy.pmdw.com)... 10.1.2.3
-> Connecting to proxy.pmdw.com (proxy.pmdw.com)|10.1.2.3|:3128... connected.
-> Proxy request sent, awaiting response... 302 Found
-> Location: http://www.google.com.au/?gfe_rd=cr&ei=n7tMWeb9JYPr8wfg4LXYAQ [following]
-> --2017-06-23 16:56:31--  http://www.google.com.au/?gfe_rd=cr&ei=n7tMWeb9JYPr8wfg4LXYAQ
-> Reusing existing connection to proxy.pmdw.com:3128.
-> Proxy request sent, awaiting response... 200 OK
-> Length: unspecified [text/html]
-> Saving to: ‘index.html’
-> 
-> 
-> The patch had whitespace issues or something and I had to apply it by
-> hand, here's what I actually tested.
+Michael reported an UDP breakage caused by the commit b65ac44674dd
+("udp: try to avoid 2 cache miss on dequeue").
+The function __first_packet_length() can update the checksum bits
+of the pending skb, making the scratched area out-of-sync, and
+setting skb->csum, if the skb was previously in need of checksum
+validation.
 
-Thank you!
+On later recvmsg() for such skb, checksum validation will be
+invoked again - due to the wrong udp_skb_csum_unnecessary()
+value - and will fail, causing the valid skb to be dropped.
 
-I'll submit formally the patch after some more testing.
+This change addresses the issue refreshing the scratch area in
+__first_packet_length() after the possible checksum update.
 
-I noticed this version has entered the ppc patchwork, but I think that
-the formal submission should go towards the net-next tree.
+Fixes: b65ac44674dd ("udp: try to avoid 2 cache miss on dequeue")
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Hannes Frederic Sowa <hannes@stressinduktion.org>
+Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+---
+ net/ipv4/udp.c | 27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
-Cheers,
-
-Paolo
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index 067a607..47c7aa0 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -1446,16 +1446,23 @@ static struct sk_buff *__first_packet_length(struct sock *sk,
+ {
+ 	struct sk_buff *skb;
+ 
+-	while ((skb = skb_peek(rcvq)) != NULL &&
+-	       udp_lib_checksum_complete(skb)) {
+-		__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
+-				IS_UDPLITE(sk));
+-		__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
+-				IS_UDPLITE(sk));
+-		atomic_inc(&sk->sk_drops);
+-		__skb_unlink(skb, rcvq);
+-		*total += skb->truesize;
+-		kfree_skb(skb);
++	while ((skb = skb_peek(rcvq)) != NULL) {
++		if (udp_lib_checksum_complete(skb)) {
++			__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
++					IS_UDPLITE(sk));
++			__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
++					IS_UDPLITE(sk));
++			atomic_inc(&sk->sk_drops);
++			__skb_unlink(skb, rcvq);
++			*total += skb->truesize;
++			kfree_skb(skb);
++		} else {
++			/* the csum related bits could be changed, refresh
++			 * the scratch area
++			 */
++			udp_set_dev_scratch(skb);
++			break;
++		}
+ 	}
+ 	return skb;
+ }
+-- 
+2.9.4
