@@ -2,22 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wv4jt19XzzDqjD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:10:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wv4nS35llzDqjD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:13:32 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, John Stultz <john.stultz@linaro.org>
-Subject: Re: linux-next: build warning after merge of the tip tree
-In-Reply-To: <20170623140006.26585989@canb.auug.org.au>
-References: <20170623135834.49322610@canb.auug.org.au>
- <20170623140006.26585989@canb.auug.org.au>
-Date: Fri, 23 Jun 2017 14:10:25 +1000
-Message-ID: <87efubqr7y.fsf@concordia.ellerman.id.au>
+To: Thomas Gleixner <tglx@linutronix.de>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH] powerpc: Only obtain cpu_hotplug_lock if called by rtasd
+In-Reply-To: <alpine.DEB.2.20.1706222340280.2221@nanos>
+References: <1497996510-4032-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <8737attzw5.fsf@concordia.ellerman.id.au> <87h8z8g6wu.fsf@linux.vnet.ibm.com>
+ <87r2ycqigf.fsf@concordia.ellerman.id.au> <878tkjn7uo.fsf@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1706222340280.2221@nanos>
+Date: Fri, 23 Jun 2017 14:13:32 +1000
+Message-ID: <87bmpfqr2r.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,35 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-> Hi all,
+> On Thu, 22 Jun 2017, Thiago Jung Bauermann wrote:
+>> Michael Bringmann provided this information:
+>> >> It's not hard to backport both this patch and commit fe5595c07400
+>> >> ("stop_machine: Provide stop_machine_cpuslocked()") from branch
+>> >> smp/hotplug in tip.git for stable.
+>> >
+>> > Yeah but it's not really my business backporting that unfortunately.
+>> 
+>> Sorry, I wasn't clear. I was offering to provide backported patches for
+>> the relevant stable branches.
+>> 
+>> Though that will only be necessary if we also backport the topology
+>> fixes as well.
 >
-> [Forgot to cc John]
->
-> On Fri, 23 Jun 2017 13:58:34 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>
->> Hi all,
->> 
->> After merging the tip tree, today's linux-next build (powerpc
->> ppc64_defconfig) produced this warning:
->> 
->> kernel/time/timekeeping.c:519:2: warning: #warning Please contact your maintainers, as GENERIC_TIME_VSYSCALL_OLD compatibity will disappear soon. [-Wcpp]
->>  #warning Please contact your maintainers, as GENERIC_TIME_VSYSCALL_OLD compatibity will disappear soon.
->>   ^
->> kernel/time/timekeeping.c:519:2: warning: #warning Please contact your maintainers, as GENERIC_TIME_VSYSCALL_OLD compatibity will disappear soon. [-Wcpp]
->>  #warning Please contact your maintainers, as GENERIC_TIME_VSYSCALL_OLD compatibity will disappear soon.
->>   ^
->> 
->> Introduced by commit
->> 
->>   369adf04d80a ("time: Add warning about imminent deprecation of CONFIG_GENERIC_TIME_VSYSCALL_OLD")
+> So shall I pick up the fix and route it through tip smp/hotplug where the
+> cpu hotplug core changes reside on which that patch depends on?
 
-Fixed in my next today by:
+Yes please. Here's an ack if you like:
 
-  d4cfb11387ee ("powerpc: Convert VDSO update function to use new update_vsyscall interface")
-
-But you must have pulled before I pushed that, so the warning will go
-away tomorrow.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
