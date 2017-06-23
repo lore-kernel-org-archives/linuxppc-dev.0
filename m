@@ -1,23 +1,34 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qt0-f195.google.com (mail-qt0-f195.google.com
- [209.85.216.195])
+Return-Path: <logang@deltatee.com>
+Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvQxk4bXKzDqjL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 03:51:54 +1000 (AEST)
-Received: by mail-qt0-f195.google.com with SMTP id v31so2229931qtb.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 10:51:54 -0700 (PDT)
-Date: Fri, 23 Jun 2017 14:51:44 -0300
-From: Breno Leitao <leitao@debian.org>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Gustavo Romero <gromero@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/kernel: Avoid redundancies on giveup_all
-Message-ID: <20170623175143.qzrcrwustarcg6hv@gmail.com>
-References: <1498163243-22203-1-git-send-email-leitao@debian.org>
- <1498197792.7039.1.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvR6L1XHszDqjL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 03:59:21 +1000 (AEST)
+To: =?UTF-8?Q?Horia_Geant=c4=83?= <horia.geanta@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "linux-ntb@googlegroups.com" <linux-ntb@googlegroups.com>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+References: <20170622164817.25515-1-logang@deltatee.com>
+ <20170622164817.25515-8-logang@deltatee.com>
+ <VI1PR0401MB259182B9B11B72B4B53B2C1498D80@VI1PR0401MB2591.eurprd04.prod.outlook.com>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Stephen Bates <sbates@raithlin.com>, Dan Douglass <dan.douglass@nxp.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Radu Solea <radu.solea@nxp.com>,
+ Steve Cornelius <steve.cornelius@nxp.com>
+From: Logan Gunthorpe <logang@deltatee.com>
+Message-ID: <411c4bb0-2709-1902-778a-bf4d7734e3e1@deltatee.com>
+Date: Fri, 23 Jun 2017 11:59:02 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1498197792.7039.1.camel@gmail.com>
+In-Reply-To: <VI1PR0401MB259182B9B11B72B4B53B2C1498D80@VI1PR0401MB2591.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=iso-8859-2
+Subject: Re: [PATCH 7/7] crypto: caam: cleanup CONFIG_64BIT ifdefs when using
+ io{read|write}64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +38,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Cyril,
+Thanks Horia.
 
-On Fri, Jun 23, 2017 at 04:03:12PM +1000, Cyril Bur wrote:
-> On Thu, 2017-06-22 at 17:27 -0300, Breno Leitao wrote:
-> > Currently giveup_all() calls __giveup_fpu(), __giveup_altivec(), and
-> > __giveup_vsx(). But __giveup_vsx() also calls __giveup_fpu() and
-> > __giveup_altivec() again, in a redudant manner.
-> > 
-> > Other than giving up FP and Altivec, __giveup_vsx() also disables
-> > MSR_VSX on MSR, but this is already done by __giveup_{fpu,altivec}().
-> > As VSX can not be enabled alone on MSR (without FP and/or VEC
-> > enabled), this is also a redundancy. VSX is never enabled alone (without
-> > FP and VEC) because every time VSX is enabled, as through load_up_vsx()
-> > and restore_math(), FP is also enabled together.
-> > 
-> > This change improves giveup_all() in average just 3%, but since
-> > giveup_all() is called very frequently, around 8x per CPU per second on
-> > an idle machine, this change might show some noticeable improvement.
-> > 
+I'm inclined to just use your patch verbatim. I can set you as author,
+but no matter how I do it, I'll need your Signed-off-by.
+
+Logan
+
+On 23/06/17 12:51 AM, Horia Geantã wrote:
+> On 6/22/2017 7:49 PM, Logan Gunthorpe wrote:
+>> Now that ioread64 and iowrite64 are always available we don't
+>> need the ugly ifdefs to change their implementation when they
+>> are not.
+>>
+> Thanks Logan.
 > 
-> So I totally agree except this makes me quite nervous. I know we're
-> quite good at always disabling VSX when we disable FPU and ALTIVEC and
-> we do always turn VSX on when we enable FPU AND ALTIVEC. But still, if
-> we ever get that wrong...
-
-Right, I understand your point, we can consider this code as a
-'fallback' if we, somehow, forget to disable VSX when disabling
-FPU/ALTIVEC. Good point.
-
-> I'm more interested in how this improves giveup_all() performance by so
-> much, but then hardware often surprises - I guess that's the cost of a
-> function call.
-
-I got this number using ftrace. I used the 'funcgraph' tracer with the
-trace_options set to 'funcgraph-duration'. Then I set set_ftrace_filter with
-giveup_all().
-
-There is also a tool that helps with it if you wish. It uses the
-exactly same mechanism I used but in a more automated way. The tool name
-is funcgraph by Brendan.
-
-https://github.com/brendangregg/perf-tools/blob/master/kernel/funcgraph
-
-> Perhaps caching the thread.regs->msr isn't a good idea.
-
-Yes, I looked at it, but it seems that the compiler is optimizing it, keeping
-it at r30, and not saving in the memory/stack. This is the code being generated
-here, where r9 contains the task pointer.
-
- usermsr = tsk->thread.regs->msr;
-	c0000000000199c4:       08 01 c9 eb     ld r30,264(r9)
-
- if ((usermsr & msr_all_available) == 0)                                                                                                  
-	c0000000000199c8:       60 5f 2a e9     ld r9,24416(r10)
-	c0000000000199cc:       39 48 ca 7f     and.  r10,r30,r9
-	c0000000000199d0:       20 00 82 40     bne c0000000000199f0 <giveup_all+0x60>
-
-> If we could
-> branch over in the common case and but still have the call to the
-> function in case something goes horribly wrong?
-
-Yes, we can revisit it on a future opportunity. Thanks for sharing your opinion.
+> Note however this is not equivalent - it changes the behaviour, since
+> CAAM engine on i.MX6S/SL/D/Q platforms is broken in terms of 64-bit
+> register endianness - see CONFIG_CRYPTO_DEV_FSL_CAAM_IMX usage in code
+> you are removing.
+> 
+> [Yes, current code has its problems, as it does not differentiate b/w
+> i.MX platforms with and without the (unofficial) erratum, but this
+> should be fixed separately.]
+> 
+> Below is the change that would keep current logic - still forcing i.MX
+> to write CAAM 64-bit registers in BE even if the engine is LE (yes, diff
+> is doing a poor job).
+> 
+> Horia
+> 
+> diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h
+> index 84d2f838a063..b893ebb24e65 100644
+> --- a/drivers/crypto/caam/regs.h
+> +++ b/drivers/crypto/caam/regs.h
+> @@ -134,50 +134,25 @@ static inline void clrsetbits_32(void __iomem
+> *reg, u32 clear, u32 set)
+>   *    base + 0x0000 : least-significant 32 bits
+>   *    base + 0x0004 : most-significant 32 bits
+>   */
+> -#ifdef CONFIG_64BIT
+>  static inline void wr_reg64(void __iomem *reg, u64 data)
+>  {
+> +#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
+>         if (caam_little_end)
+>                 iowrite64(data, reg);
+>         else
+> -               iowrite64be(data, reg);
+> -}
+> -
+> -static inline u64 rd_reg64(void __iomem *reg)
+> -{
+> -       if (caam_little_end)
+> -               return ioread64(reg);
+> -       else
+> -               return ioread64be(reg);
+> -}
+> -
+> -#else /* CONFIG_64BIT */
+> -static inline void wr_reg64(void __iomem *reg, u64 data)
+> -{
+> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
+> -       if (caam_little_end) {
+> -               wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);
+> -               wr_reg32((u32 __iomem *)(reg), data);
+> -       } else
+>  #endif
+> -       {
+> -               wr_reg32((u32 __iomem *)(reg), data >> 32);
+> -               wr_reg32((u32 __iomem *)(reg) + 1, data);
+> -       }
+> +               iowrite64be(data, reg);
+>  }
+> 
+>  static inline u64 rd_reg64(void __iomem *reg)
+>  {
+>  #ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
+>         if (caam_little_end)
+> -               return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |
+> -                       (u64)rd_reg32((u32 __iomem *)(reg)));
+> +               return ioread64(reg);
+>         else
+>  #endif
+> -               return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |
+> -                       (u64)rd_reg32((u32 __iomem *)(reg) + 1));
+> +               return ioread64be(reg);
+>  }
+> -#endif /* CONFIG_64BIT  */
+> 
+>  #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
+>  #ifdef CONFIG_SOC_IMX7D
+> 
+> 
+>> Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
+>> Cc: "Horia Geantã" <horia.geanta@nxp.com>
+>> Cc: Dan Douglass <dan.douglass@nxp.com>
+>> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+>> Cc: "David S. Miller" <davem@davemloft.net>
+>> ---
+>>  drivers/crypto/caam/regs.h | 29 -----------------------------
+>>  1 file changed, 29 deletions(-)
+>>
+>> diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h
+>> index 84d2f838a063..26fc19dd0c39 100644
+>> --- a/drivers/crypto/caam/regs.h
+>> +++ b/drivers/crypto/caam/regs.h
+>> @@ -134,7 +134,6 @@ static inline void clrsetbits_32(void __iomem *reg, u32 clear, u32 set)
+>>   *    base + 0x0000 : least-significant 32 bits
+>>   *    base + 0x0004 : most-significant 32 bits
+>>   */
+>> -#ifdef CONFIG_64BIT
+>>  static inline void wr_reg64(void __iomem *reg, u64 data)
+>>  {
+>>  	if (caam_little_end)
+>> @@ -151,34 +150,6 @@ static inline u64 rd_reg64(void __iomem *reg)
+>>  		return ioread64be(reg);
+>>  }
+>>  
+>> -#else /* CONFIG_64BIT */
+>> -static inline void wr_reg64(void __iomem *reg, u64 data)
+>> -{
+>> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
+>> -	if (caam_little_end) {
+>> -		wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);
+>> -		wr_reg32((u32 __iomem *)(reg), data);
+>> -	} else
+>> -#endif
+>> -	{
+>> -		wr_reg32((u32 __iomem *)(reg), data >> 32);
+>> -		wr_reg32((u32 __iomem *)(reg) + 1, data);
+>> -	}
+>> -}
+>> -
+>> -static inline u64 rd_reg64(void __iomem *reg)
+>> -{
+>> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
+>> -	if (caam_little_end)
+>> -		return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |
+>> -			(u64)rd_reg32((u32 __iomem *)(reg)));
+>> -	else
+>> -#endif
+>> -		return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |
+>> -			(u64)rd_reg32((u32 __iomem *)(reg) + 1));
+>> -}
+>> -#endif /* CONFIG_64BIT  */
+>> -
+>>  #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
+>>  #ifdef CONFIG_SOC_IMX7D
+>>  #define cpu_to_caam_dma(value) \
+>>
