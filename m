@@ -1,21 +1,21 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x232.google.com (mail-pg0-x232.google.com
- [IPv6:2607:f8b0:400e:c05::232])
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvW7037cSzDqlL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 07:00:11 +1000 (AEST)
-Received: by mail-pg0-x232.google.com with SMTP id u62so25630594pgb.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:00:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvW7061QYzDr0T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 07:00:12 +1000 (AEST)
+Received: by mail-pf0-x230.google.com with SMTP id e7so28477223pfk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:00:12 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
+Cc: Kees Cook <keescook@chromium.org>, stable@vger.kernel.org,
  Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@redhat.com>,
  Daniel Micay <danielmicay@gmail.com>,
  Qualys Security Advisory <qsa@qualys.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
+ Russell King <linux@armlinux.org.uk>, Will Deacon <will.deacon@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
@@ -30,9 +30,11 @@ Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
  linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  linux-fsdevel@vger.kernel.org, kernel-hardening@lists.openwall.com
-Subject: [PATCH v2 0/5] Use ELF_ET_DYN_BASE only for PIE
-Date: Fri, 23 Jun 2017 13:59:55 -0700
-Message-Id: <1498251600-132458-1-git-send-email-keescook@chromium.org>
+Subject: [PATCH v2 3/5] arm64: Move ELF_ET_DYN_BASE to 4GB / 4MB
+Date: Fri, 23 Jun 2017 13:59:58 -0700
+Message-Id: <1498251600-132458-4-git-send-email-keescook@chromium.org>
+In-Reply-To: <1498251600-132458-1-git-send-email-keescook@chromium.org>
+References: <1498251600-132458-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,45 +44,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is v2 (to refresh the 5 patches in -mm) for moving ELF_ET_DYN_BASE
-safely lower. Changes are clarifications in the commit logs (suggested
-by mpe), a compat think-o fix for arm64 (thanks to Ard), and to add
-Rik and mpe's Acks.
+Now that explicitly executed loaders are loaded in the mmap region, we
+have more freedom to decide where we position PIE binaries in the address
+space to avoid possible collisions with mmap or stack regions.
 
-Quoting patch 1/5:
+For 64-bit, align to 4GB to allow runtimes to use the entire 32-bit
+address space for 32-bit pointers. On 32-bit use 4MB, to match ARM. This
+could be 0x8000, the standard ET_EXEC load address, but that is needlessly
+close to the NULL address, and anyone running arm compat PIE will have an
+MMU, so the tight mapping is not needed.
 
-The ELF_ET_DYN_BASE position was originally intended to keep loaders
-away from ET_EXEC binaries. (For example, running "/lib/ld-linux.so.2
-/bin/cat" might cause the subsequent load of /bin/cat into where the
-loader had been loaded.) With the advent of PIE (ET_DYN binaries with
-an INTERP Program Header), ELF_ET_DYN_BASE continued to be used since
-the kernel was only looking at ET_DYN. However, since ELF_ET_DYN_BASE
-is traditionally set at the top 1/3rd of the TASK_SIZE, a substantial
-portion of the address space is unused.
+Cc: stable@vger.kernel.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ arch/arm64/include/asm/elf.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-For 32-bit tasks when RLIMIT_STACK is set to RLIM_INFINITY, programs
-are loaded below the mmap region. This means they can be made to collide
-(CVE-2017-1000370) or nearly collide (CVE-2017-1000371) with pathological
-stack regions. Lowering ELF_ET_DYN_BASE solves both by moving programs
-above the mmap region in all cases, and will now additionally avoid
-programs falling back to the mmap region by enforcing MAP_FIXED for
-program loads (i.e. if it would have collided with the stack, now it
-will fail to load instead of falling back to the mmap region).
-    
-To allow for a lower ELF_ET_DYN_BASE, loaders (ET_DYN without INTERP)
-are loaded into the mmap region, leaving space available for either an
-ET_EXEC binary with a fixed location or PIE being loaded into mmap by the
-loader. Only PIE programs are loaded offset from ELF_ET_DYN_BASE, which
-means architectures can now safely lower their values without risk of
-loaders colliding with their subsequently loaded programs.
-    
-For 64-bit, ELF_ET_DYN_BASE is best set to 4GB to allow runtimes to
-use the entire 32-bit address space for 32-bit pointers. For 32-bit,
-4MB is used as the traditional minimum load location, likely to avoid
-historically requiring a 4MB page table entry when only a portion of the
-first 4MB would be used (since the NULL address is avoided).
-
-Thanks to PaX Team, Daniel Micay, and Rik van Riel for inspiration and
-suggestions on how to implement this solution.
-
--Kees
+diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
+index 5d1700425efe..8790fb09f689 100644
+--- a/arch/arm64/include/asm/elf.h
++++ b/arch/arm64/include/asm/elf.h
+@@ -113,12 +113,11 @@
+ #define ELF_EXEC_PAGESIZE	PAGE_SIZE
+ 
+ /*
+- * This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+- * use of this is to invoke "./ld.so someprog" to test out a new version of
+- * the loader.  We need to make sure that it is out of the way of the program
+- * that it will "exec", and that there is sufficient room for the brk.
++ * This is the base location for PIE (ET_DYN with INTERP) loads. On
++ * 64-bit, this is raised to 4GB to leave the entire 32-bit address
++ * space open for things that want to use the area for 32-bit pointers.
+  */
+-#define ELF_ET_DYN_BASE	(2 * TASK_SIZE_64 / 3)
++#define ELF_ET_DYN_BASE		0x100000000UL
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -173,7 +172,8 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+ 
+ #ifdef CONFIG_COMPAT
+ 
+-#define COMPAT_ELF_ET_DYN_BASE		(2 * TASK_SIZE_32 / 3)
++/* PIE load location for compat arm. Must match ARM ELF_ET_DYN_BASE. */
++#define COMPAT_ELF_ET_DYN_BASE		0x000400000UL
+ 
+ /* AArch32 registers. */
+ #define COMPAT_ELF_NGREG		18
+-- 
+2.7.4
