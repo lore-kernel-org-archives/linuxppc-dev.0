@@ -1,34 +1,44 @@
-Return-Path: <logang@deltatee.com>
-Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=htoo=54=linux.vnet.ibm.com=victora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvR6L1XHszDqjL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 03:59:21 +1000 (AEST)
-To: =?UTF-8?Q?Horia_Geant=c4=83?= <horia.geanta@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-ntb@googlegroups.com" <linux-ntb@googlegroups.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-8-logang@deltatee.com>
- <VI1PR0401MB259182B9B11B72B4B53B2C1498D80@VI1PR0401MB2591.eurprd04.prod.outlook.com>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stephen Bates <sbates@raithlin.com>, Dan Douglass <dan.douglass@nxp.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Radu Solea <radu.solea@nxp.com>,
- Steve Cornelius <steve.cornelius@nxp.com>
-From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <411c4bb0-2709-1902-778a-bf4d7734e3e1@deltatee.com>
-Date: Fri, 23 Jun 2017 11:59:02 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvSSR75kDzDr0T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 05:00:07 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wvSSR6HmCz8vKr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 05:00:07 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wvSSR2y7Qz9s87
+ for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2017 05:00:07 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5NIwmIL024148
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Jun 2017 15:00:05 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2b958xrk3x-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Jun 2017 15:00:05 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <victora@linux.vnet.ibm.com>;
+ Fri, 23 Jun 2017 15:00:04 -0400
 MIME-Version: 1.0
-In-Reply-To: <VI1PR0401MB259182B9B11B72B4B53B2C1498D80@VI1PR0401MB2591.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=iso-8859-2
-Subject: Re: [PATCH 7/7] crypto: caam: cleanup CONFIG_64BIT ifdefs when using
- io{read|write}64
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Fri, 23 Jun 2017 16:00:39 -0300
+From: victora <victora@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: alistair@popple.id.au, jk@ozlabs.org, victora@br.ibm.com,
+ mauricfo@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+Subject: Re: 1M hugepage size being registered on Linux
+In-Reply-To: <87o9tgsmdv.fsf@concordia.ellerman.id.au>
+References: <322aa4a1a11ca79008a8c894c12a80d5@linux.vnet.ibm.com>
+ <87o9tgsmdv.fsf@concordia.ellerman.id.au>
+Message-Id: <fd47f4ad5f3589d4d9b6fc7253615c22@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,152 +48,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Horia.
+Em 2017-06-22 00:59, Michael Ellerman escreveu:
+> Hi Victor,
+> 
+> Someone refreshed my memory on this, coffee was involved ...
+> 
+> victora <victora@linux.vnet.ibm.com> writes:
+>> Hi Alistair/Jeremy,
+>> 
+>> I am working on a bug related to 1M hugepage size being registered on
+>> Linux (Power 8 Baremetal - Garrison).
+> 
+> On those machines the property in the device tree comes straight from
+> hostboot, and it includes 1M:
+> 
+> # lsprop ibm,segment-page-sizes
+> ibm,segment-page-sizes
+> 		 0000000c  00000000  00000003  0000000c
+>                  baseshift slbenc    lpnum     shift
+> 		 00000000  00000010  00000007  00000018
+>                  penc      shift     penc      shift
+> 		 00000038  00000010  00000110  00000002
+>                  penc      baseshift slbenc    lpnum
+> 		 00000010  00000001  00000018  00000008
+>                  shift     penc      shift     penc
+> 		 00000014  00000130  00000001  00000014	<--- 1MB = 2^0x14
+>                  baseshift slbenc    lpnum     shift
+> 		 00000002  00000018  00000100  00000001
+>                  penc      baseshift slbenc    lpnum
+> 		 00000018  00000000  00000022  00000120
+>                  shift     penc      baseshift slbenc
+> 		 00000001  00000022  00000003
+>                  lpnum     shift     penc
+> 
+> 
+>> I was checking dmesg and it seems that 1M page size is coming from
+>> firmware to Linux.
+>> 
+>> [    0.000000] base_shift=20: shift=20, sllp=0x0130, avpnm=0x00000000, 
+>> tlbiel=0, penc=2
+>> [    1.528867] HugeTLB registered 1 MB page size, pre-allocated 0 
+>> pages
+> 
+> Which is why you see that message.
+> 
+>> Should Linux support this page size? As afar as I know, this was an
+>> unsupported page size in the past isn't it? If this should be 
+>> supported
+>> now, is there any specific reason for that?
+> 
+> It's unsupported in Linux because it doesn't match the page table
+> geometry.
+> 
+> We merged a patch from Aneesh to filter it out in 4.12-rc1:
+> 
+>   a525108cf1cc ("powerpc/mm/hugetlb: Filter out hugepage size not
+> supported by page table layout")
+> 
+> I guess we should probably send that patch to stable et. al.
+> 
+> cheers
 
-I'm inclined to just use your patch verbatim. I can set you as author,
-but no matter how I do it, I'll need your Signed-off-by.
+Hi Michael,
 
-Logan
+Sorry for the delay. Thanks for merging that patch.
+Was that patch also sent to stable et. al.?
 
-On 23/06/17 12:51 AM, Horia Geantã wrote:
-> On 6/22/2017 7:49 PM, Logan Gunthorpe wrote:
->> Now that ioread64 and iowrite64 are always available we don't
->> need the ugly ifdefs to change their implementation when they
->> are not.
->>
-> Thanks Logan.
-> 
-> Note however this is not equivalent - it changes the behaviour, since
-> CAAM engine on i.MX6S/SL/D/Q platforms is broken in terms of 64-bit
-> register endianness - see CONFIG_CRYPTO_DEV_FSL_CAAM_IMX usage in code
-> you are removing.
-> 
-> [Yes, current code has its problems, as it does not differentiate b/w
-> i.MX platforms with and without the (unofficial) erratum, but this
-> should be fixed separately.]
-> 
-> Below is the change that would keep current logic - still forcing i.MX
-> to write CAAM 64-bit registers in BE even if the engine is LE (yes, diff
-> is doing a poor job).
-> 
-> Horia
-> 
-> diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h
-> index 84d2f838a063..b893ebb24e65 100644
-> --- a/drivers/crypto/caam/regs.h
-> +++ b/drivers/crypto/caam/regs.h
-> @@ -134,50 +134,25 @@ static inline void clrsetbits_32(void __iomem
-> *reg, u32 clear, u32 set)
->   *    base + 0x0000 : least-significant 32 bits
->   *    base + 0x0004 : most-significant 32 bits
->   */
-> -#ifdef CONFIG_64BIT
->  static inline void wr_reg64(void __iomem *reg, u64 data)
->  {
-> +#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
->         if (caam_little_end)
->                 iowrite64(data, reg);
->         else
-> -               iowrite64be(data, reg);
-> -}
-> -
-> -static inline u64 rd_reg64(void __iomem *reg)
-> -{
-> -       if (caam_little_end)
-> -               return ioread64(reg);
-> -       else
-> -               return ioread64be(reg);
-> -}
-> -
-> -#else /* CONFIG_64BIT */
-> -static inline void wr_reg64(void __iomem *reg, u64 data)
-> -{
-> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
-> -       if (caam_little_end) {
-> -               wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);
-> -               wr_reg32((u32 __iomem *)(reg), data);
-> -       } else
->  #endif
-> -       {
-> -               wr_reg32((u32 __iomem *)(reg), data >> 32);
-> -               wr_reg32((u32 __iomem *)(reg) + 1, data);
-> -       }
-> +               iowrite64be(data, reg);
->  }
-> 
->  static inline u64 rd_reg64(void __iomem *reg)
->  {
->  #ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
->         if (caam_little_end)
-> -               return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |
-> -                       (u64)rd_reg32((u32 __iomem *)(reg)));
-> +               return ioread64(reg);
->         else
->  #endif
-> -               return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |
-> -                       (u64)rd_reg32((u32 __iomem *)(reg) + 1));
-> +               return ioread64be(reg);
->  }
-> -#endif /* CONFIG_64BIT  */
-> 
->  #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
->  #ifdef CONFIG_SOC_IMX7D
-> 
-> 
->> Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
->> Cc: "Horia Geantã" <horia.geanta@nxp.com>
->> Cc: Dan Douglass <dan.douglass@nxp.com>
->> Cc: Herbert Xu <herbert@gondor.apana.org.au>
->> Cc: "David S. Miller" <davem@davemloft.net>
->> ---
->>  drivers/crypto/caam/regs.h | 29 -----------------------------
->>  1 file changed, 29 deletions(-)
->>
->> diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h
->> index 84d2f838a063..26fc19dd0c39 100644
->> --- a/drivers/crypto/caam/regs.h
->> +++ b/drivers/crypto/caam/regs.h
->> @@ -134,7 +134,6 @@ static inline void clrsetbits_32(void __iomem *reg, u32 clear, u32 set)
->>   *    base + 0x0000 : least-significant 32 bits
->>   *    base + 0x0004 : most-significant 32 bits
->>   */
->> -#ifdef CONFIG_64BIT
->>  static inline void wr_reg64(void __iomem *reg, u64 data)
->>  {
->>  	if (caam_little_end)
->> @@ -151,34 +150,6 @@ static inline u64 rd_reg64(void __iomem *reg)
->>  		return ioread64be(reg);
->>  }
->>  
->> -#else /* CONFIG_64BIT */
->> -static inline void wr_reg64(void __iomem *reg, u64 data)
->> -{
->> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
->> -	if (caam_little_end) {
->> -		wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);
->> -		wr_reg32((u32 __iomem *)(reg), data);
->> -	} else
->> -#endif
->> -	{
->> -		wr_reg32((u32 __iomem *)(reg), data >> 32);
->> -		wr_reg32((u32 __iomem *)(reg) + 1, data);
->> -	}
->> -}
->> -
->> -static inline u64 rd_reg64(void __iomem *reg)
->> -{
->> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
->> -	if (caam_little_end)
->> -		return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |
->> -			(u64)rd_reg32((u32 __iomem *)(reg)));
->> -	else
->> -#endif
->> -		return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |
->> -			(u64)rd_reg32((u32 __iomem *)(reg) + 1));
->> -}
->> -#endif /* CONFIG_64BIT  */
->> -
->>  #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
->>  #ifdef CONFIG_SOC_IMX7D
->>  #define cpu_to_caam_dma(value) \
->>
+Thanks
+Victor
