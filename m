@@ -1,22 +1,23 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qt0-f195.google.com (mail-qt0-f195.google.com
+ [209.85.216.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvQT826lXzDqjf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 03:30:36 +1000 (AEST)
-Date: Sat, 24 Jun 2017 02:30:31 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] trace/kprobes: Sanitize derived event names
-Message-Id: <20170624023031.8eade91e3510c8208050137f@kernel.org>
-In-Reply-To: <20170622190345.6444-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20170622182953.e1959ce03145b8bb45ec55de@kernel.org>
- <20170622190345.6444-1-naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvQxk4bXKzDqjL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 03:51:54 +1000 (AEST)
+Received: by mail-qt0-f195.google.com with SMTP id v31so2229931qtb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 10:51:54 -0700 (PDT)
+Date: Fri, 23 Jun 2017 14:51:44 -0300
+From: Breno Leitao <leitao@debian.org>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gustavo Romero <gromero@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/kernel: Avoid redundancies on giveup_all
+Message-ID: <20170623175143.qzrcrwustarcg6hv@gmail.com>
+References: <1498163243-22203-1-git-send-email-leitao@debian.org>
+ <1498197792.7039.1.camel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1498197792.7039.1.camel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,80 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 23 Jun 2017 00:33:45 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+Hi Cyril,
 
-> On 2017/06/22 06:29PM, Masami Hiramatsu wrote:
-> > On Thu, 22 Jun 2017 00:20:27 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Fri, Jun 23, 2017 at 04:03:12PM +1000, Cyril Bur wrote:
+> On Thu, 2017-06-22 at 17:27 -0300, Breno Leitao wrote:
+> > Currently giveup_all() calls __giveup_fpu(), __giveup_altivec(), and
+> > __giveup_vsx(). But __giveup_vsx() also calls __giveup_fpu() and
+> > __giveup_altivec() again, in a redudant manner.
 > > 
-> > > When we derive event names, convert some expected symbols (such as ':'
-> > > used to specify module:name and '.' present in some symbols) into
-> > > underscores so that the event name is not rejected.
+> > Other than giving up FP and Altivec, __giveup_vsx() also disables
+> > MSR_VSX on MSR, but this is already done by __giveup_{fpu,altivec}().
+> > As VSX can not be enabled alone on MSR (without FP and/or VEC
+> > enabled), this is also a redundancy. VSX is never enabled alone (without
+> > FP and VEC) because every time VSX is enabled, as through load_up_vsx()
+> > and restore_math(), FP is also enabled together.
 > > 
-> > Oops, ok, this is my mistake.
+> > This change improves giveup_all() in average just 3%, but since
+> > giveup_all() is called very frequently, around 8x per CPU per second on
+> > an idle machine, this change might show some noticeable improvement.
 > > 
-> > Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > 
-> > This must be marked as bugfix for stable trees.
-> > 
-> > Could you also add a testcase for this (module name) bug?
-> > 
-> > MODNAME=`lsmod | head -n 2 | tail -n 1 | cut -f 1 -d " "`
-> > FUNCNAME=`grep -m 1 "\\[$MODNAME\\]" /proc/kallsyms | xargs | cut -f 3 -d " "`
-> > 
-> > May gives you a target name :)
 > 
-> Sure. Here is a test.
-> 
-> Thanks for the review,
-> Naveen
-> 
-> -
-> [PATCH] selftests/ftrace: Add a test to probe module functions
-> 
-> Add a kprobes test to ensure that we are able to add a probe on a
-> module function using 'p <mod>:<func>' format, without having to
-> specify a probe name.
-> 
-> Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> So I totally agree except this makes me quite nervous. I know we're
+> quite good at always disabling VSX when we disable FPU and ALTIVEC and
+> we do always turn VSX on when we enable FPU AND ALTIVEC. But still, if
+> we ever get that wrong...
 
-Perfect! :)
+Right, I understand your point, we can consider this code as a
+'fallback' if we, somehow, forget to disable VSX when disabling
+FPU/ALTIVEC. Good point.
 
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+> I'm more interested in how this improves giveup_all() performance by so
+> much, but then hardware often surprises - I guess that's the cost of a
+> function call.
 
-Thanks!
+I got this number using ftrace. I used the 'funcgraph' tracer with the
+trace_options set to 'funcgraph-duration'. Then I set set_ftrace_filter with
+giveup_all().
 
-> ---
->  .../testing/selftests/ftrace/test.d/kprobe/probe_module.tc | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->  create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-> 
-> diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-> new file mode 100644
-> index 000000000000..ea7657041ba6
-> --- /dev/null
-> +++ b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-> @@ -0,0 +1,14 @@
-> +#!/bin/sh
-> +# description: Kprobe dynamic event - probing module
-> +
-> +[ -f kprobe_events ] || exit_unsupported # this is configurable
-> +
-> +echo 0 > events/enable
-> +echo > kprobe_events
-> +export MOD=`lsmod | head -n 2 | tail -n 1 | cut -f1 -d" "`
-> +export FUNC=`grep -m 1 ".* t .*\\[$MOD\\]" /proc/kallsyms | xargs | cut -f3 -d" "`
-> +[ "x" != "x$MOD" -a "y" != "y$FUNC" ] || exit_untested
-> +echo p $MOD:$FUNC > kprobe_events
-> +grep $MOD kprobe_events
-> +echo > kprobe_events
-> +clear_trace
-> -- 
-> 2.13.1
-> 
+There is also a tool that helps with it if you wish. It uses the
+exactly same mechanism I used but in a more automated way. The tool name
+is funcgraph by Brendan.
 
+https://github.com/brendangregg/perf-tools/blob/master/kernel/funcgraph
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+> Perhaps caching the thread.regs->msr isn't a good idea.
+
+Yes, I looked at it, but it seems that the compiler is optimizing it, keeping
+it at r30, and not saving in the memory/stack. This is the code being generated
+here, where r9 contains the task pointer.
+
+ usermsr = tsk->thread.regs->msr;
+	c0000000000199c4:       08 01 c9 eb     ld r30,264(r9)
+
+ if ((usermsr & msr_all_available) == 0)                                                                                                  
+	c0000000000199c8:       60 5f 2a e9     ld r9,24416(r10)
+	c0000000000199cc:       39 48 ca 7f     and.  r10,r30,r9
+	c0000000000199d0:       20 00 82 40     bne c0000000000199f0 <giveup_all+0x60>
+
+> If we could
+> branch over in the common case and but still have the call to the
+> function in case something goes horribly wrong?
+
+Yes, we can revisit it on a future opportunity. Thanks for sharing your opinion.
