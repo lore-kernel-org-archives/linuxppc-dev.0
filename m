@@ -1,21 +1,21 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
+Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c00::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvW7061QYzDr0T
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 07:00:12 +1000 (AEST)
-Received: by mail-pf0-x230.google.com with SMTP id e7so28477223pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:00:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvW7251gJzDqlL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 07:00:14 +1000 (AEST)
+Received: by mail-pf0-x22a.google.com with SMTP id c73so28456228pfk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:00:14 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Kees Cook <keescook@chromium.org>, stable@vger.kernel.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@redhat.com>,
+ Rik van Riel <riel@redhat.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
  Daniel Micay <danielmicay@gmail.com>,
  Qualys Security Advisory <qsa@qualys.com>,
- Russell King <linux@armlinux.org.uk>, Will Deacon <will.deacon@arm.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
@@ -30,9 +30,9 @@ Cc: Kees Cook <keescook@chromium.org>, stable@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  linux-fsdevel@vger.kernel.org, kernel-hardening@lists.openwall.com
-Subject: [PATCH v2 3/5] arm64: Move ELF_ET_DYN_BASE to 4GB / 4MB
-Date: Fri, 23 Jun 2017 13:59:58 -0700
-Message-Id: <1498251600-132458-4-git-send-email-keescook@chromium.org>
+Subject: [PATCH v2 4/5] powerpc: Move ELF_ET_DYN_BASE to 4GB / 4MB
+Date: Fri, 23 Jun 2017 13:59:59 -0700
+Message-Id: <1498251600-132458-5-git-send-email-keescook@chromium.org>
 In-Reply-To: <1498251600-132458-1-git-send-email-keescook@chromium.org>
 References: <1498251600-132458-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -49,50 +49,41 @@ have more freedom to decide where we position PIE binaries in the address
 space to avoid possible collisions with mmap or stack regions.
 
 For 64-bit, align to 4GB to allow runtimes to use the entire 32-bit
-address space for 32-bit pointers. On 32-bit use 4MB, to match ARM. This
-could be 0x8000, the standard ET_EXEC load address, but that is needlessly
-close to the NULL address, and anyone running arm compat PIE will have an
-MMU, so the tight mapping is not needed.
+address space for 32-bit pointers. On 32-bit use 4MB, which is the
+traditional x86 minimum load location, likely to avoid historically
+requiring a 4MB page table entry when only a portion of the first 4MB
+would be used (since the NULL address is avoided).
 
 Cc: stable@vger.kernel.org
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Kees Cook <keescook@chromium.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/arm64/include/asm/elf.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/elf.h | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
-index 5d1700425efe..8790fb09f689 100644
---- a/arch/arm64/include/asm/elf.h
-+++ b/arch/arm64/include/asm/elf.h
-@@ -113,12 +113,11 @@
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 09bde6e34f5d..548d9a411a0d 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -23,12 +23,13 @@
+ #define CORE_DUMP_USE_REGSET
  #define ELF_EXEC_PAGESIZE	PAGE_SIZE
  
- /*
-- * This is the location that an ET_DYN program is loaded if exec'ed.  Typical
-- * use of this is to invoke "./ld.so someprog" to test out a new version of
-- * the loader.  We need to make sure that it is out of the way of the program
-- * that it will "exec", and that there is sufficient room for the brk.
+-/* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+-   use of this is to invoke "./ld.so someprog" to test out a new version of
+-   the loader.  We need to make sure that it is out of the way of the program
+-   that it will "exec", and that there is sufficient room for the brk.  */
+-
+-#define ELF_ET_DYN_BASE	0x20000000
++/*
 + * This is the base location for PIE (ET_DYN with INTERP) loads. On
 + * 64-bit, this is raised to 4GB to leave the entire 32-bit address
 + * space open for things that want to use the area for 32-bit pointers.
-  */
--#define ELF_ET_DYN_BASE	(2 * TASK_SIZE_64 / 3)
-+#define ELF_ET_DYN_BASE		0x100000000UL
++ */
++#define ELF_ET_DYN_BASE		(is_32bit_task() ? 0x000400000UL : \
++						   0x100000000UL)
  
- #ifndef __ASSEMBLY__
+ #define ELF_CORE_EFLAGS (is_elf2_task() ? 2 : 0)
  
-@@ -173,7 +172,8 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- 
- #ifdef CONFIG_COMPAT
- 
--#define COMPAT_ELF_ET_DYN_BASE		(2 * TASK_SIZE_32 / 3)
-+/* PIE load location for compat arm. Must match ARM ELF_ET_DYN_BASE. */
-+#define COMPAT_ELF_ET_DYN_BASE		0x000400000UL
- 
- /* AArch32 registers. */
- #define COMPAT_ELF_NGREG		18
 -- 
 2.7.4
