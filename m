@@ -1,18 +1,39 @@
-Return-Path: <pabeni@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-it0-x233.google.com (mail-it0-x233.google.com
+ [IPv6:2607:f8b0:4001:c0b::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvHbC63xZzDqj2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 22:20:23 +1000 (AEST)
-From: Paolo Abeni <pabeni@redhat.com>
-To: netdev@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>,
- Hannes Frederic Sowa <hannes@stressinduktion.org>,
- Eric Dumazet <edumazet@google.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next] udp: fix poll()
-Date: Fri, 23 Jun 2017 14:19:51 +0200
-Message-Id: <00735477ae8ffcc075e382ab45f6568ab158a0bf.1498220186.git.pabeni@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvKdS1K5bzDqjL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 23:52:28 +1000 (AEST)
+Received: by mail-it0-x233.google.com with SMTP id b205so8602956itg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 06:52:27 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <CAKv+Gu_2Wg_D+4c3-iqMr9hbKkGVdBtW6Bmxj-4=FOG9hVN5vA@mail.gmail.com>
+References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
+ <1498154792-49952-3-git-send-email-keescook@chromium.org>
+ <CAKv+Gu_2Wg_D+4c3-iqMr9hbKkGVdBtW6Bmxj-4=FOG9hVN5vA@mail.gmail.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Fri, 23 Jun 2017 06:52:24 -0700
+Message-ID: <CAGXu5jLHOjg9+8xDSzs2nLKjoqUf3NAc_0a1Coo+4WnDYRT3=g@mail.gmail.com>
+Subject: Re: [kernel-hardening] [PATCH 2/4] arm64: Reduce ELF_ET_DYN_BASE
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>,
+ Pratyush Anand <panand@redhat.com>, Ingo Molnar <mingo@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,65 +43,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael reported an UDP breakage caused by the commit b65ac44674dd
-("udp: try to avoid 2 cache miss on dequeue").
-The function __first_packet_length() can update the checksum bits
-of the pending skb, making the scratched area out-of-sync, and
-setting skb->csum, if the skb was previously in need of checksum
-validation.
+On Thu, Jun 22, 2017 at 11:57 PM, Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
+> Hi Kees,
+>
+> On 22 June 2017 at 18:06, Kees Cook <keescook@chromium.org> wrote:
+>> Now that explicitly executed loaders are loaded in the mmap region,
+>> position PIE binaries lower in the address space to avoid possible
+>> collisions with mmap or stack regions. For 64-bit, align to 4GB to
+>> allow runtimes to use the entire 32-bit address space for 32-bit
+>> pointers.
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> ---
+>>  arch/arm64/include/asm/elf.h | 13 ++++++-------
+>>  1 file changed, 6 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
+>> index 5d1700425efe..f742af8f7c42 100644
+>> --- a/arch/arm64/include/asm/elf.h
+>> +++ b/arch/arm64/include/asm/elf.h
+>> @@ -113,12 +113,13 @@
+>>  #define ELF_EXEC_PAGESIZE      PAGE_SIZE
+>>
+>>  /*
+>> - * This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+>> - * use of this is to invoke "./ld.so someprog" to test out a new version of
+>> - * the loader.  We need to make sure that it is out of the way of the program
+>> - * that it will "exec", and that there is sufficient room for the brk.
+>> + * This is the base location for PIE (ET_DYN with INTERP) loads. On
+>> + * 64-bit, this is raised to 4GB to leave the entire 32-bit address
+>> + * space open for things that want to use the area for 32-bit pointers.
+>>   */
+>> -#define ELF_ET_DYN_BASE        (2 * TASK_SIZE_64 / 3)
+>> +#define ELF_ET_DYN_BASE                (test_thread_flag(TIF_32BIT) ?  \
+>> +                                       0x000400000UL :         \
+>> +                                       0x100000000UL)
+>>
+>
+> Why are you merging this with the COMPAT definition?
 
-On later recvmsg() for such skb, checksum validation will be
-invoked again - due to the wrong udp_skb_csum_unnecessary()
-value - and will fail, causing the valid skb to be dropped.
+It seemed like the right thing to do since a single definition could
+handle both cases. Is there something I'm overlooking in the arm64
+case?
 
-This change addresses the issue refreshing the scratch area in
-__first_packet_length() after the possible checksum update.
+-Kees
 
-Fixes: b65ac44674dd ("udp: try to avoid 2 cache miss on dequeue")
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Hannes Frederic Sowa <hannes@stressinduktion.org>
-Signed-off-by: Paolo Abeni <pabeni@redhat.com>
----
- net/ipv4/udp.c | 27 +++++++++++++++++----------
- 1 file changed, 17 insertions(+), 10 deletions(-)
+>
+>>  #ifndef __ASSEMBLY__
+>>
+>> @@ -173,8 +174,6 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+>>
+>>  #ifdef CONFIG_COMPAT
+>>
+>> -#define COMPAT_ELF_ET_DYN_BASE         (2 * TASK_SIZE_32 / 3)
+>> -
+>>  /* AArch32 registers. */
+>>  #define COMPAT_ELF_NGREG               18
+>>  typedef unsigned int                   compat_elf_greg_t;
+>> --
+>> 2.7.4
+>>
 
-diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-index 067a607..47c7aa0 100644
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -1446,16 +1446,23 @@ static struct sk_buff *__first_packet_length(struct sock *sk,
- {
- 	struct sk_buff *skb;
- 
--	while ((skb = skb_peek(rcvq)) != NULL &&
--	       udp_lib_checksum_complete(skb)) {
--		__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
--				IS_UDPLITE(sk));
--		__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
--				IS_UDPLITE(sk));
--		atomic_inc(&sk->sk_drops);
--		__skb_unlink(skb, rcvq);
--		*total += skb->truesize;
--		kfree_skb(skb);
-+	while ((skb = skb_peek(rcvq)) != NULL) {
-+		if (udp_lib_checksum_complete(skb)) {
-+			__UDP_INC_STATS(sock_net(sk), UDP_MIB_CSUMERRORS,
-+					IS_UDPLITE(sk));
-+			__UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
-+					IS_UDPLITE(sk));
-+			atomic_inc(&sk->sk_drops);
-+			__skb_unlink(skb, rcvq);
-+			*total += skb->truesize;
-+			kfree_skb(skb);
-+		} else {
-+			/* the csum related bits could be changed, refresh
-+			 * the scratch area
-+			 */
-+			udp_set_dev_scratch(skb);
-+			break;
-+		}
- 	}
- 	return skb;
- }
+
+
 -- 
-2.9.4
+Kees Cook
+Pixel Security
