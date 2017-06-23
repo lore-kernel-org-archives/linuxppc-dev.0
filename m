@@ -1,46 +1,19 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wv9fk6bvyzDqnc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 17:53:02 +1000 (AEST)
-Date: Fri, 23 Jun 2017 09:51:23 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jiri Slaby <jslaby@suse.cz>
-cc: mingo@redhat.com, peterz@infradead.org, dvhart@infradead.org,
- linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Richard Kuo <rkuo@codeaurora.org>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/1] futex: remove duplicated code and fix UB
-In-Reply-To: <20170621115318.2781-1-jslaby@suse.cz>
-Message-ID: <alpine.DEB.2.20.1706230017520.2221@nanos>
-References: <20170621115318.2781-1-jslaby@suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvBWh55d6zDqnm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 18:32:00 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id d5so6441774pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:32:00 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: bsingharora@gmail.com, Oliver O'Halloran <oohall@gmail.com>,
+ linux-mm@kvack.org
+Subject: [PATCH v3 1/6] mm, x86: Add ARCH_HAS_ZONE_DEVICE to Kconfig
+Date: Fri, 23 Jun 2017 18:31:17 +1000
+Message-Id: <20170623083122.5992-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,62 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 21 Jun 2017, Jiri Slaby wrote:
-> diff --git a/arch/arm64/include/asm/futex.h b/arch/arm64/include/asm/futex.h
-> index f32b42e8725d..5bb2fd4674e7 100644
-> --- a/arch/arm64/include/asm/futex.h
-> +++ b/arch/arm64/include/asm/futex.h
-> @@ -48,20 +48,10 @@ do {									\
->  } while (0)
->  
->  static inline int
-> -futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
+Currently ZONE_DEVICE depends on X86_64 and this will get unwieldly as
+new architectures (and platforms) get ZONE_DEVICE support. Move to an
+arch selected Kconfig option to save us the trouble.
 
-That unsigned int seems to be a change from the arm64 tree in next. It's
-not upstream and it'll cause a (easy to resolve) conflict.
+Cc: linux-mm@kvack.org
+Acked-by: Ingo Molnar <mingo@kernel.org>
+Acked-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+v2: Added missing hunk.
+v3: No changes
+---
+ arch/x86/Kconfig | 1 +
+ mm/Kconfig       | 6 +++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-> +static int futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
-> +{
-> +	int op = (encoded_op >> 28) & 7;
-> +	int cmp = (encoded_op >> 24) & 15;
-> +	int oparg = (int)(encoded_op << 8) >> 20;
-> +	int cmparg = (int)(encoded_op << 20) >> 20;
-
-So this is really bad. We have implicit and explicit type casting to
-int. And while we are at it can we please stop proliferating the existing
-mess.
-
-'op' and 'cmp' definitly can be unsigned int. There is no reason to cast
-them to int.
-
-oparg, cmparg and oldval are more interesting.
-
-The logic here is "documented" in uapi/linux/futex.h
-
-/* FUTEX_WAKE_OP will perform atomically
-   int oldval = *(int *)UADDR2;
-   *(int *)UADDR2 = oldval OP OPARG;
-   if (oldval CMP CMPARG)
-       wake UADDR2;  */
-
-Now the FUTEX_OP macro which is supposed to compose the encoded_up does:
-
-#define FUTEX_OP(op, oparg, cmp, cmparg) \
-  (((op & 0xf) << 28) | ((cmp & 0xf) << 24)             \
-   | ((oparg & 0xfff) << 12) | (cmparg & 0xfff))
-
-Of course this all is not typed, undocumented and completely ill
-defined.
-
-> +	int oparg = (int)(encoded_op << 8) >> 20;
-> +	int cmparg = (int)(encoded_op << 20) >> 20;
-
-So in fact we sign expand the 12 bits of oparg and cmparg. Really
-intuitive.
-
-Yes, we probably can't change that anymore, but at least we should make it
-very explicit and add a comment to that effect.
-
-Thanks,
-
-	tglx
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 0efb4c9497bc..325429a3f32f 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -59,6 +59,7 @@ config X86
+ 	select ARCH_HAS_STRICT_KERNEL_RWX
+ 	select ARCH_HAS_STRICT_MODULE_RWX
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
++	select ARCH_HAS_ZONE_DEVICE		if X86_64
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select ARCH_MIGHT_HAVE_ACPI_PDC		if ACPI
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+diff --git a/mm/Kconfig b/mm/Kconfig
+index beb7a455915d..790e52a8a486 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -683,12 +683,16 @@ config IDLE_PAGE_TRACKING
+ 
+ 	  See Documentation/vm/idle_page_tracking.txt for more details.
+ 
++# arch_add_memory() comprehends device memory
++config ARCH_HAS_ZONE_DEVICE
++	bool
++
+ config ZONE_DEVICE
+ 	bool "Device memory (pmem, etc...) hotplug support"
+ 	depends on MEMORY_HOTPLUG
+ 	depends on MEMORY_HOTREMOVE
+ 	depends on SPARSEMEM_VMEMMAP
+-	depends on X86_64 #arch_add_memory() comprehends device memory
++	depends on ARCH_HAS_ZONE_DEVICE
+ 
+ 	help
+ 	  Device memory hotplug support allows for establishing pmem,
+-- 
+2.9.4
