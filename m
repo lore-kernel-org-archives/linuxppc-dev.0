@@ -1,39 +1,21 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x232.google.com (mail-pg0-x232.google.com
- [IPv6:2607:f8b0:400e:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvW7349MVzDr0T
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 07:00:15 +1000 (AEST)
-Received: by mail-pg0-x232.google.com with SMTP id f127so25632332pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 14:00:15 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <keescook@chromium.org>, stable@vger.kernel.org, x86@kernel.org,
- Rik van Riel <riel@redhat.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Daniel Micay <danielmicay@gmail.com>,
- Qualys Security Advisory <qsa@qualys.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Pratyush Anand <panand@redhat.com>, James Hogan <james.hogan@imgtec.com>,
- Dmitry Safonov <dsafonov@virtuozzo.com>,
- Grzegorz Andrejczuk <grzegorz.andrejczuk@intel.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, kernel-hardening@lists.openwall.com
-Subject: [PATCH v2 1/5] binfmt_elf: Use ELF_ET_DYN_BASE only for PIE
-Date: Fri, 23 Jun 2017 13:59:56 -0700
-Message-Id: <1498251600-132458-2-git-send-email-keescook@chromium.org>
-In-Reply-To: <1498251600-132458-1-git-send-email-keescook@chromium.org>
-References: <1498251600-132458-1-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvYzp24NLzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 09:09:10 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: alistair@popple.id.au, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mhiramat@kernel.org,
+ naveen.n.rao@linux.vnet.ibm.com, npiggin@gmail.com,
+ ravi.bangoria@linux.vnet.ibm.com, rostedt@goodmis.org
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.12-7 tag
+Date: Sat, 24 Jun 2017 09:09:08 +1000
+Message-ID: <87injmpai3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,146 +25,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ELF_ET_DYN_BASE position was originally intended to keep loaders
-away from ET_EXEC binaries. (For example, running "/lib/ld-linux.so.2
-/bin/cat" might cause the subsequent load of /bin/cat into where the
-loader had been loaded.) With the advent of PIE (ET_DYN binaries with
-an INTERP Program Header), ELF_ET_DYN_BASE continued to be used since
-the kernel was only looking at ET_DYN. However, since ELF_ET_DYN_BASE
-is traditionally set at the top 1/3rd of the TASK_SIZE, a substantial
-portion of the address space is unused.
+--=-=-=
+Content-Type: text/plain
 
-For 32-bit tasks when RLIMIT_STACK is set to RLIM_INFINITY, programs
-are loaded below the mmap region. This means they can be made to collide
-(CVE-2017-1000370) or nearly collide (CVE-2017-1000371) with pathological
-stack regions. Lowering ELF_ET_DYN_BASE solves both by moving programs
-above the mmap region in all cases, and will now additionally avoid
-programs falling back to the mmap region by enforcing MAP_FIXED for
-program loads (i.e. if it would have collided with the stack, now it
-will fail to load instead of falling back to the mmap region).
+Hi Linus,
 
-To allow for a lower ELF_ET_DYN_BASE, loaders (ET_DYN without INTERP)
-are loaded into the mmap region, leaving space available for either an
-ET_EXEC binary with a fixed location or PIE being loaded into mmap by the
-loader. Only PIE programs are loaded offset from ELF_ET_DYN_BASE, which
-means architectures can now safely lower their values without risk of
-loaders colliding with their subsequently loaded programs.
+Please pull some more powerpc fixes for 4.12. Most of these actually came in
+last week but got held up for some more testing.
 
-For 64-bit, ELF_ET_DYN_BASE is best set to 4GB to allow runtimes to
-use the entire 32-bit address space for 32-bit pointers. For 32-bit,
-4MB is used as the traditional minimum load location, likely to avoid
-historically requiring a 4MB page table entry when only a portion of the
-first 4MB would be used (since the NULL address is avoided).
+The following changes since commit a093c92dc7f96a15de98ec8cfe38e6f7610a5969:
 
-Thanks to PaX Team, Daniel Micay, and Rik van Riel for inspiration and
-suggestions on how to implement this solution.
+  powerpc/debug: Add missing warn flag to WARN_ON's non-builtin path (2017-06-16 16:10:37 +1000)
 
-Fixes: d1fd836dcf00 ("mm: split ET_DYN ASLR from mmap ASLR")
-Cc: stable@vger.kernel.org
-Cc: x86@kernel.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Acked-by: Rik van Riel <riel@redhat.com>
----
- arch/x86/include/asm/elf.h | 13 +++++-----
- fs/binfmt_elf.c            | 59 +++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 58 insertions(+), 14 deletions(-)
+are available in the git repository at:
 
-diff --git a/arch/x86/include/asm/elf.h b/arch/x86/include/asm/elf.h
-index e8ab9a46bc68..1c18d83d3f09 100644
---- a/arch/x86/include/asm/elf.h
-+++ b/arch/x86/include/asm/elf.h
-@@ -245,12 +245,13 @@ extern int force_personality32;
- #define CORE_DUMP_USE_REGSET
- #define ELF_EXEC_PAGESIZE	4096
- 
--/* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
--   use of this is to invoke "./ld.so someprog" to test out a new version of
--   the loader.  We need to make sure that it is out of the way of the program
--   that it will "exec", and that there is sufficient room for the brk.  */
--
--#define ELF_ET_DYN_BASE		(TASK_SIZE / 3 * 2)
-+/*
-+ * This is the base location for PIE (ET_DYN with INTERP) loads. On
-+ * 64-bit, this is raised to 4GB to leave the entire 32-bit address
-+ * space open for things that want to use the area for 32-bit pointers.
-+ */
-+#define ELF_ET_DYN_BASE		(mmap_is_ia32() ? 0x000400000UL : \
-+						  0x100000000UL)
- 
- /* This yields a mask that user programs can use to figure out what
-    instruction set this CPU supports.  This could be done in user space,
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index ef4fb234bb5b..879ff9c7ffd0 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -925,17 +925,60 @@ static int load_elf_binary(struct linux_binprm *bprm)
- 		elf_flags = MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE;
- 
- 		vaddr = elf_ppnt->p_vaddr;
-+		/*
-+		 * If we are loading ET_EXEC or we have already performed
-+		 * the ET_DYN load_addr calculations, proceed normally.
-+		 */
- 		if (loc->elf_ex.e_type == ET_EXEC || load_addr_set) {
- 			elf_flags |= MAP_FIXED;
- 		} else if (loc->elf_ex.e_type == ET_DYN) {
--			/* Try and get dynamic programs out of the way of the
--			 * default mmap base, as well as whatever program they
--			 * might try to exec.  This is because the brk will
--			 * follow the loader, and is not movable.  */
--			load_bias = ELF_ET_DYN_BASE - vaddr;
--			if (current->flags & PF_RANDOMIZE)
--				load_bias += arch_mmap_rnd();
--			load_bias = ELF_PAGESTART(load_bias);
-+			/*
-+			 * This logic is run once for the first LOAD Program
-+			 * Header for ET_DYN binaries to calculate the
-+			 * randomization (load_bias) for all the LOAD
-+			 * Program Headers, and to calculate the entire
-+			 * size of the ELF mapping (total_size). (Note that
-+			 * load_addr_set is set to true later once the
-+			 * initial mapping is performed.)
-+			 *
-+			 * There are effectively two types of ET_DYN
-+			 * binaries: programs (i.e. PIE: ET_DYN with INTERP)
-+			 * and loaders (ET_DYN without INTERP, since they
-+			 * _are_ the ELF interpreter). The loaders must
-+			 * be loaded away from programs since the program
-+			 * may otherwise collide with the loader (especially
-+			 * for ET_EXEC which does not have a randomized
-+			 * position). For example to handle invocations of
-+			 * "./ld.so someprog" to test out a new version of
-+			 * the loader, the subsequent program that the
-+			 * loader loads must avoid the loader itself, so
-+			 * they cannot share the same load range. Sufficient
-+			 * room for the brk must be allocated with the
-+			 * loader as well, since brk must be available with
-+			 * the loader.
-+			 *
-+			 * Therefore, programs are loaded offset from
-+			 * ELF_ET_DYN_BASE and loaders are loaded into the
-+			 * independently randomized mmap region (0 load_bias
-+			 * without MAP_FIXED).
-+			 */
-+			if (elf_interpreter) {
-+				load_bias = ELF_ET_DYN_BASE;
-+				if (current->flags & PF_RANDOMIZE)
-+					load_bias += arch_mmap_rnd();
-+				elf_flags |= MAP_FIXED;
-+			} else
-+				load_bias = 0;
-+
-+			/*
-+			 * Since load_bias is used for all subsequent loading
-+			 * calculations, we must lower it by the first vaddr
-+			 * so that the remaining calculations based on the
-+			 * ELF vaddrs will be correctly offset. The result
-+			 * is then page aligned.
-+			 */
-+			load_bias = ELF_PAGESTART(load_bias - vaddr);
-+
- 			total_size = total_mapping_size(elf_phdata,
- 							loc->elf_ex.e_phnum);
- 			if (!total_size) {
--- 
-2.7.4
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.12-7
+
+for you to fetch changes up to 34f19ff1b5a0d11e46df479623d6936460105c9f:
+
+  powerpc/64: Initialise thread_info for emergency stacks (2017-06-23 13:25:38 +1000)
+
+----------------------------------------------------------------
+powerpc fixes for 4.12 #7
+
+ - three fixes for kprobes/ftrace/livepatch interactions.
+
+ - properly handle data breakpoints when using the Radix MMU.
+
+ - fix for perf sampling of registers during call_usermodehelper().
+
+ - properly initialise the thread_info on our emergency stacks.
+
+ - add an explicit flush when doing TLB invalidations for a process
+   using NPU2.
+
+Thanks to:
+  Alistair Popple, Naveen N. Rao, Nicholas Piggin, Ravi Bangoria,
+  Masami Hiramatsu.
+
+----------------------------------------------------------------
+Alistair Popple (1):
+      powerpc/powernv/npu-dma: Add explicit flush when sending an ATSD
+
+Naveen N. Rao (4):
+      powerpc/kprobes: Pause function_graph tracing during jprobes handling
+      powerpc/ftrace: Pass the correct stack pointer for DYNAMIC_FTRACE_WITH_REGS
+      powerpc/kprobes: Skip livepatch_handler() for jprobes
+      powerpc/64s: Handle data breakpoints in Radix mode
+
+Nicholas Piggin (1):
+      powerpc/64: Initialise thread_info for emergency stacks
+
+Ravi Bangoria (1):
+      powerpc/perf: Fix oops when kthread execs user process
+
+ arch/powerpc/include/asm/kprobes.h             |  1 +
+ arch/powerpc/kernel/exceptions-64s.S           | 11 +--
+ arch/powerpc/kernel/kprobes.c                  | 17 +++++
+ arch/powerpc/kernel/setup_64.c                 | 31 ++++++++-
+ arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 59 ++++++++++++----
+ arch/powerpc/perf/perf_regs.c                  |  3 +-
+ arch/powerpc/platforms/powernv/npu-dma.c       | 94 ++++++++++++++++++--------
+ 7 files changed, 166 insertions(+), 50 deletions(-)
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJZTZ+UAAoJEFHr6jzI4aWAw3QP/3ZwTXsGLcksVyGlsVVY2S3n
+BS+sIzm1ptEKVteRo6uAkNUQp+dfL9Clw6WG/24LiYhNASMd01H99wrNM95BiOZS
+w743GJhTNpaTZeJls/T3Ulwiq8koisx4wDoybsJYkW1ifZfZkgEtRqHuzpch34zD
+abIGLKTQTMcRmBxrMnR0ANOCd00WHVnBeIVQAj2679lj95PDMEXylqIS69r/pKLU
+43cdc7JHAAjbUE3ZQDiPY0DwHr+fTsxtGDymYGwIMWgnPv6FNzDEOyGZPhWjTAQM
+6NDqj1wCJ9ymefq9CPK6K4NiRPi6fuQYLEtRJOJqxmMlUpTW0+MJVcsEAbo7+ML1
+DOMIZPBSC5+7lKW/o6naKEkiOFnA3FosKD/h30SvtsTijcStLNoaxCdObs3QkqkB
++/SQGNP/z0j3Jzvx9KS81H10F5Gn7xUrU18BGBFxJJp8t8i81BMwvnZUwFCLErQN
+eO6fl9IYsK2vIvJESAKm+R8aBt4y6uQ2dn3vl2SNSwQlBy0+Ptarow15KpzLz/rX
+4nrQ58ugVeZAbEV2LxfDfMTQJXGtrIM6Qyk55yWj7OYvU5X1KRrxSAdVOSS4fjmZ
+hUW3w6zMc/cyj6RFlK+2odjS5azBSfqU9aNZAKoXhproTGrCoO40q+lt9nQ1JPVT
+i+Xi7yveeZwBA9/mIuii
+=HEG0
+-----END PGP SIGNATURE-----
+--=-=-=--
