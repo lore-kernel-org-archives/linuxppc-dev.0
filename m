@@ -1,21 +1,17 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvBWt6mFgzDqyj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 18:32:10 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id y7so6434301pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:32:10 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: bsingharora@gmail.com,
-	Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH v3 6/6] powerpc/mm: Enable ZONE_DEVICE on powerpc
-Date: Fri, 23 Jun 2017 18:31:22 +1000
-Message-Id: <20170623083122.5992-6-oohall@gmail.com>
-In-Reply-To: <20170623083122.5992-1-oohall@gmail.com>
-References: <20170623083122.5992-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvCTK152czDqjl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 19:15:01 +1000 (AEST)
+In-Reply-To: <20170527080452.GA14021@fergus.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: John Stultz <john.stultz@linaro.org>, linux-kernel@vger.kernel.org
+Subject: Re: powerpc: Convert VDSO update function to use new update_vsyscall
+ interface
+Message-Id: <3wvCTJ6Yvmz9s8P@ozlabs.org>
+Date: Fri, 23 Jun 2017 19:15:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Flip the switch. Running around and screaming "IT'S ALIVE" is optional,
-but recommended.
+On Sat, 2017-05-27 at 08:04:52 UTC, Paul Mackerras wrote:
+> This converts the powerpc VDSO time update function to use the new
+> interface introduced in commit 576094b7f0aa ("time: Introduce new
+> GENERIC_TIME_VSYSCALL", 2012-09-11).  Where the old interface gave
+> us the time as of the last update in seconds and whole nanoseconds,
+> with the new interface we get the nanoseconds part effectively in
+> a binary fixed-point format with tk->tkr_mono.shift bits to the
+> right of the binary point.
+> 
+> With the old interface, the fractional nanoseconds got truncated,
+> meaning that the value returned by the VDSO clock_gettime function
+> would have about 1ns of jitter in it compared to the value computed
+> by the generic timekeeping code in the kernel.
+> 
+> The powerpc VDSO time functions (clock_gettime and gettimeofday)
+> already work in units of 2^-32 seconds, or 0.23283 ns, because that
+> makes it simple to split the result into seconds and fractional
+> seconds, and represent the fractional seconds in either microseconds
+> or nanoseconds.  This is good enough accuracy for now, so this patch
+> avoids changing how the VDSO works or the interface in the VDSO data
+> page.
+> 
+> This patch converts the powerpc update_vsyscall_old to be called
+> update_vsyscall and use the new interface.  We convert the fractional
+> second to units of 2^-32 seconds without truncating to whole nanoseconds.
+> (There is still a conversion to whole nanoseconds for any legacy users
+> of the vdso_data/systemcfg stamp_xtime field.)
+> 
+> In addition, this improves the accuracy of the computation of tb_to_xs
+> for those systems with high-frequency timebase clocks (>= 268.5 MHz)
+> by doing the right shift in two parts, one before the multiplication and
+> one after, rather than doing the right shift before the multiplication.
+> (We can't do all of the right shift after the multiplication unless we
+> use 128-bit arithmetic.)
+> 
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> Acked-by: John Stultz <john.stultz@linaro.org>
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
-v3: Only select when building for 64bit Book3-S
----
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Applied to powerpc next-test, thanks.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index bf4391d18923..978f371bb103 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -138,6 +138,7 @@ config PPC
- 	select ARCH_HAS_SG_CHAIN
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
-+	select ARCH_HAS_ZONE_DEVICE		if PPC_BOOK3S_64
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
--- 
-2.9.4
+https://git.kernel.org/powerpc/c/d4cfb11387ee29ba4626546c676fd2
+
+cheers
