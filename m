@@ -1,19 +1,21 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvBWh55d6zDqnm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 18:32:00 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id d5so6441774pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:32:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvBWk73bJzDqnq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 18:32:02 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id u62so5371866pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 01:32:02 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: bsingharora@gmail.com, Oliver O'Halloran <oohall@gmail.com>,
- linux-mm@kvack.org
-Subject: [PATCH v3 1/6] mm, x86: Add ARCH_HAS_ZONE_DEVICE to Kconfig
-Date: Fri, 23 Jun 2017 18:31:17 +1000
-Message-Id: <20170623083122.5992-1-oohall@gmail.com>
+Cc: bsingharora@gmail.com,
+	Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH v3 2/6] powerpc/vmemmap: Reshuffle vmemmap_free()
+Date: Fri, 23 Jun 2017 18:31:18 +1000
+Message-Id: <20170623083122.5992-2-oohall@gmail.com>
+In-Reply-To: <20170623083122.5992-1-oohall@gmail.com>
+References: <20170623083122.5992-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,55 +25,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently ZONE_DEVICE depends on X86_64 and this will get unwieldly as
-new architectures (and platforms) get ZONE_DEVICE support. Move to an
-arch selected Kconfig option to save us the trouble.
+Removes an indentation level and shuffles some code around to make the
+following patch cleaner. No functional changes.
 
-Cc: linux-mm@kvack.org
-Acked-by: Ingo Molnar <mingo@kernel.org>
-Acked-by: Balbir Singh <bsingharora@gmail.com>
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-v2: Added missing hunk.
-v3: No changes
+v1 -> v2: Remove broken initialiser
 ---
- arch/x86/Kconfig | 1 +
- mm/Kconfig       | 6 +++++-
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/init_64.c | 48 ++++++++++++++++++++++++-----------------------
+ 1 file changed, 25 insertions(+), 23 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 0efb4c9497bc..325429a3f32f 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -59,6 +59,7 @@ config X86
- 	select ARCH_HAS_STRICT_KERNEL_RWX
- 	select ARCH_HAS_STRICT_MODULE_RWX
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
-+	select ARCH_HAS_ZONE_DEVICE		if X86_64
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	select ARCH_MIGHT_HAVE_ACPI_PDC		if ACPI
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
-diff --git a/mm/Kconfig b/mm/Kconfig
-index beb7a455915d..790e52a8a486 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -683,12 +683,16 @@ config IDLE_PAGE_TRACKING
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index ec84b31c6c86..8851e4f5dbab 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -234,13 +234,15 @@ static unsigned long vmemmap_list_free(unsigned long start)
+ void __ref vmemmap_free(unsigned long start, unsigned long end)
+ {
+ 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
++	unsigned long page_order = get_order(page_size);
  
- 	  See Documentation/vm/idle_page_tracking.txt for more details.
+ 	start = _ALIGN_DOWN(start, page_size);
  
-+# arch_add_memory() comprehends device memory
-+config ARCH_HAS_ZONE_DEVICE
-+	bool
+ 	pr_debug("vmemmap_free %lx...%lx\n", start, end);
+ 
+ 	for (; start < end; start += page_size) {
+-		unsigned long addr;
++		unsigned long nr_pages, addr;
++		struct page *page;
+ 
+ 		/*
+ 		 * the section has already be marked as invalid, so
+@@ -251,29 +253,29 @@ void __ref vmemmap_free(unsigned long start, unsigned long end)
+ 			continue;
+ 
+ 		addr = vmemmap_list_free(start);
+-		if (addr) {
+-			struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
+-
+-			if (PageReserved(page)) {
+-				/* allocated from bootmem */
+-				if (page_size < PAGE_SIZE) {
+-					/*
+-					 * this shouldn't happen, but if it is
+-					 * the case, leave the memory there
+-					 */
+-					WARN_ON_ONCE(1);
+-				} else {
+-					unsigned int nr_pages =
+-						1 << get_order(page_size);
+-					while (nr_pages--)
+-						free_reserved_page(page++);
+-				}
+-			} else
+-				free_pages((unsigned long)(__va(addr)),
+-							get_order(page_size));
+-
+-			vmemmap_remove_mapping(start, page_size);
++		if (!addr)
++			continue;
 +
- config ZONE_DEVICE
- 	bool "Device memory (pmem, etc...) hotplug support"
- 	depends on MEMORY_HOTPLUG
- 	depends on MEMORY_HOTREMOVE
- 	depends on SPARSEMEM_VMEMMAP
--	depends on X86_64 #arch_add_memory() comprehends device memory
-+	depends on ARCH_HAS_ZONE_DEVICE
- 
- 	help
- 	  Device memory hotplug support allows for establishing pmem,
++		page = pfn_to_page(addr >> PAGE_SHIFT);
++		nr_pages = 1 << page_order;
++
++		if (PageReserved(page)) {
++			/* allocated from bootmem */
++			if (page_size < PAGE_SIZE) {
++				/*
++				 * this shouldn't happen, but if it is
++				 * the case, leave the memory there
++				 */
++				WARN_ON_ONCE(1);
++			} else {
++				while (nr_pages--)
++					free_reserved_page(page++);
++			}
++		} else {
++			free_pages((unsigned long)(__va(addr)), page_order);
+ 		}
++
++		vmemmap_remove_mapping(start, page_size);
+ 	}
+ }
+ #endif
 -- 
 2.9.4
