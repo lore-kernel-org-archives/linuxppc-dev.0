@@ -1,32 +1,36 @@
-Return-Path: <horia.geanta@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00056.outbound.protection.outlook.com [40.107.0.56])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-it0-x230.google.com (mail-it0-x230.google.com
+ [IPv6:2607:f8b0:4001:c0b::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wv8Hb2wBxzDqjM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 16:51:22 +1000 (AEST)
-From: =?iso-8859-2?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
-To: Logan Gunthorpe <logang@deltatee.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-arch@vger.kernel.org"
- <linux-arch@vger.kernel.org>, "linux-ntb@googlegroups.com"
- <linux-ntb@googlegroups.com>, "linux-alpha@vger.kernel.org"
- <linux-alpha@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
- <dri-devel@lists.freedesktop.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Stephen Bates <sbates@raithlin.com>, "Dan
- Douglass" <dan.douglass@nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Radu Solea <radu.solea@nxp.com>,
- Steve Cornelius <steve.cornelius@nxp.com>
-Subject: Re: [PATCH 7/7] crypto: caam: cleanup CONFIG_64BIT ifdefs when using
- io{read|write}64
-Date: Fri, 23 Jun 2017 06:51:14 +0000
-Message-ID: <VI1PR0401MB259182B9B11B72B4B53B2C1498D80@VI1PR0401MB2591.eurprd04.prod.outlook.com>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-8-logang@deltatee.com>
-Content-Type: text/plain; charset="iso-8859-2"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wv8QP1SZtzDqjM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 16:57:16 +1000 (AEST)
+Received: by mail-it0-x230.google.com with SMTP id m47so3690893iti.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jun 2017 23:57:16 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1498154792-49952-3-git-send-email-keescook@chromium.org>
+References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
+ <1498154792-49952-3-git-send-email-keescook@chromium.org>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Fri, 23 Jun 2017 06:57:14 +0000
+Message-ID: <CAKv+Gu_2Wg_D+4c3-iqMr9hbKkGVdBtW6Bmxj-4=FOG9hVN5vA@mail.gmail.com>
+Subject: Re: [kernel-hardening] [PATCH 2/4] arm64: Reduce ELF_ET_DYN_BASE
+To: Kees Cook <keescook@chromium.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>,
+ Pratyush Anand <panand@redhat.com>, Ingo Molnar <mingo@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ kernel-hardening@lists.openwall.com
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,145 +40,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/22/2017 7:49 PM, Logan Gunthorpe wrote:=0A=
-> Now that ioread64 and iowrite64 are always available we don't=0A=
-> need the ugly ifdefs to change their implementation when they=0A=
-> are not.=0A=
-> =0A=
-Thanks Logan.=0A=
-=0A=
-Note however this is not equivalent - it changes the behaviour, since=0A=
-CAAM engine on i.MX6S/SL/D/Q platforms is broken in terms of 64-bit=0A=
-register endianness - see CONFIG_CRYPTO_DEV_FSL_CAAM_IMX usage in code=0A=
-you are removing.=0A=
-=0A=
-[Yes, current code has its problems, as it does not differentiate b/w=0A=
-i.MX platforms with and without the (unofficial) erratum, but this=0A=
-should be fixed separately.]=0A=
-=0A=
-Below is the change that would keep current logic - still forcing i.MX=0A=
-to write CAAM 64-bit registers in BE even if the engine is LE (yes, diff=0A=
-is doing a poor job).=0A=
-=0A=
-Horia=0A=
-=0A=
-diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h=0A=
-index 84d2f838a063..b893ebb24e65 100644=0A=
---- a/drivers/crypto/caam/regs.h=0A=
-+++ b/drivers/crypto/caam/regs.h=0A=
-@@ -134,50 +134,25 @@ static inline void clrsetbits_32(void __iomem=0A=
-*reg, u32 clear, u32 set)=0A=
-  *    base + 0x0000 : least-significant 32 bits=0A=
-  *    base + 0x0004 : most-significant 32 bits=0A=
-  */=0A=
--#ifdef CONFIG_64BIT=0A=
- static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
- {=0A=
-+#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
-        if (caam_little_end)=0A=
-                iowrite64(data, reg);=0A=
-        else=0A=
--               iowrite64be(data, reg);=0A=
--}=0A=
--=0A=
--static inline u64 rd_reg64(void __iomem *reg)=0A=
--{=0A=
--       if (caam_little_end)=0A=
--               return ioread64(reg);=0A=
--       else=0A=
--               return ioread64be(reg);=0A=
--}=0A=
--=0A=
--#else /* CONFIG_64BIT */=0A=
--static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
--{=0A=
--#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
--       if (caam_little_end) {=0A=
--               wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);=0A=
--               wr_reg32((u32 __iomem *)(reg), data);=0A=
--       } else=0A=
- #endif=0A=
--       {=0A=
--               wr_reg32((u32 __iomem *)(reg), data >> 32);=0A=
--               wr_reg32((u32 __iomem *)(reg) + 1, data);=0A=
--       }=0A=
-+               iowrite64be(data, reg);=0A=
- }=0A=
-=0A=
- static inline u64 rd_reg64(void __iomem *reg)=0A=
- {=0A=
- #ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
-        if (caam_little_end)=0A=
--               return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |=0A=
--                       (u64)rd_reg32((u32 __iomem *)(reg)));=0A=
-+               return ioread64(reg);=0A=
-        else=0A=
- #endif=0A=
--               return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |=0A=
--                       (u64)rd_reg32((u32 __iomem *)(reg) + 1));=0A=
-+               return ioread64be(reg);=0A=
- }=0A=
--#endif /* CONFIG_64BIT  */=0A=
-=0A=
- #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT=0A=
- #ifdef CONFIG_SOC_IMX7D=0A=
-=0A=
-=0A=
-> Signed-off-by: Logan Gunthorpe <logang@deltatee.com>=0A=
-> Cc: "Horia Geant=E3" <horia.geanta@nxp.com>=0A=
-> Cc: Dan Douglass <dan.douglass@nxp.com>=0A=
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>=0A=
-> Cc: "David S. Miller" <davem@davemloft.net>=0A=
-> ---=0A=
->  drivers/crypto/caam/regs.h | 29 -----------------------------=0A=
->  1 file changed, 29 deletions(-)=0A=
-> =0A=
-> diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h=0A=
-> index 84d2f838a063..26fc19dd0c39 100644=0A=
-> --- a/drivers/crypto/caam/regs.h=0A=
-> +++ b/drivers/crypto/caam/regs.h=0A=
-> @@ -134,7 +134,6 @@ static inline void clrsetbits_32(void __iomem *reg, u=
-32 clear, u32 set)=0A=
->   *    base + 0x0000 : least-significant 32 bits=0A=
->   *    base + 0x0004 : most-significant 32 bits=0A=
->   */=0A=
-> -#ifdef CONFIG_64BIT=0A=
->  static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
->  {=0A=
->  	if (caam_little_end)=0A=
-> @@ -151,34 +150,6 @@ static inline u64 rd_reg64(void __iomem *reg)=0A=
->  		return ioread64be(reg);=0A=
->  }=0A=
->  =0A=
-> -#else /* CONFIG_64BIT */=0A=
-> -static inline void wr_reg64(void __iomem *reg, u64 data)=0A=
-> -{=0A=
-> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
-> -	if (caam_little_end) {=0A=
-> -		wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);=0A=
-> -		wr_reg32((u32 __iomem *)(reg), data);=0A=
-> -	} else=0A=
-> -#endif=0A=
-> -	{=0A=
-> -		wr_reg32((u32 __iomem *)(reg), data >> 32);=0A=
-> -		wr_reg32((u32 __iomem *)(reg) + 1, data);=0A=
-> -	}=0A=
-> -}=0A=
-> -=0A=
-> -static inline u64 rd_reg64(void __iomem *reg)=0A=
-> -{=0A=
-> -#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX=0A=
-> -	if (caam_little_end)=0A=
-> -		return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |=0A=
-> -			(u64)rd_reg32((u32 __iomem *)(reg)));=0A=
-> -	else=0A=
-> -#endif=0A=
-> -		return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |=0A=
-> -			(u64)rd_reg32((u32 __iomem *)(reg) + 1));=0A=
-> -}=0A=
-> -#endif /* CONFIG_64BIT  */=0A=
-> -=0A=
->  #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT=0A=
->  #ifdef CONFIG_SOC_IMX7D=0A=
->  #define cpu_to_caam_dma(value) \=0A=
-> =0A=
+Hi Kees,
+
+On 22 June 2017 at 18:06, Kees Cook <keescook@chromium.org> wrote:
+> Now that explicitly executed loaders are loaded in the mmap region,
+> position PIE binaries lower in the address space to avoid possible
+> collisions with mmap or stack regions. For 64-bit, align to 4GB to
+> allow runtimes to use the entire 32-bit address space for 32-bit
+> pointers.
+>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> ---
+>  arch/arm64/include/asm/elf.h | 13 ++++++-------
+>  1 file changed, 6 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
+> index 5d1700425efe..f742af8f7c42 100644
+> --- a/arch/arm64/include/asm/elf.h
+> +++ b/arch/arm64/include/asm/elf.h
+> @@ -113,12 +113,13 @@
+>  #define ELF_EXEC_PAGESIZE      PAGE_SIZE
+>
+>  /*
+> - * This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+> - * use of this is to invoke "./ld.so someprog" to test out a new version of
+> - * the loader.  We need to make sure that it is out of the way of the program
+> - * that it will "exec", and that there is sufficient room for the brk.
+> + * This is the base location for PIE (ET_DYN with INTERP) loads. On
+> + * 64-bit, this is raised to 4GB to leave the entire 32-bit address
+> + * space open for things that want to use the area for 32-bit pointers.
+>   */
+> -#define ELF_ET_DYN_BASE        (2 * TASK_SIZE_64 / 3)
+> +#define ELF_ET_DYN_BASE                (test_thread_flag(TIF_32BIT) ?  \
+> +                                       0x000400000UL :         \
+> +                                       0x100000000UL)
+>
+
+Why are you merging this with the COMPAT definition?
+
+>  #ifndef __ASSEMBLY__
+>
+> @@ -173,8 +174,6 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+>
+>  #ifdef CONFIG_COMPAT
+>
+> -#define COMPAT_ELF_ET_DYN_BASE         (2 * TASK_SIZE_32 / 3)
+> -
+>  /* AArch32 registers. */
+>  #define COMPAT_ELF_NGREG               18
+>  typedef unsigned int                   compat_elf_greg_t;
+> --
+> 2.7.4
+>
