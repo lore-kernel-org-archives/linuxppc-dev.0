@@ -2,22 +2,19 @@ Return-Path: <mhiramat@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvQSz1S1dzDqjL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 03:30:27 +1000 (AEST)
-Date: Sat, 24 Jun 2017 02:30:21 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvQT826lXzDqjf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 03:30:36 +1000 (AEST)
+Date: Sat, 24 Jun 2017 02:30:31 +0900
 From: Masami Hiramatsu <mhiramat@kernel.org>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>, Ananth N Mavinakayanahalli
  <ananth@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] selftests/ftrace: Update multiple kprobes test for
- powerpc
-Message-Id: <20170624023021.92f2f90f0e09314ac9bdb87a@kernel.org>
-In-Reply-To: <20170622170325.qznheui7eydkdnmv@naverao1-tp.localdomain>
-References: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
- <f49dbddfbc7dee2f68a610bba468c39a4d017feb.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170622180738.e97092d4fa6458b9199a03d7@kernel.org>
- <20170622170325.qznheui7eydkdnmv@naverao1-tp.localdomain>
+Subject: Re: [PATCH 1/2] trace/kprobes: Sanitize derived event names
+Message-Id: <20170624023031.8eade91e3510c8208050137f@kernel.org>
+In-Reply-To: <20170622190345.6444-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20170622182953.e1959ce03145b8bb45ec55de@kernel.org>
+ <20170622190345.6444-1-naveen.n.rao@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,97 +26,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Jun 2017 22:33:25 +0530
+On Fri, 23 Jun 2017 00:33:45 +0530
 "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> On 2017/06/22 06:07PM, Masami Hiramatsu wrote:
-> > On Thu, 22 Jun 2017 00:20:28 +0530
+> On 2017/06/22 06:29PM, Masami Hiramatsu wrote:
+> > On Thu, 22 Jun 2017 00:20:27 +0530
 > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 > > 
-> > > KPROBES_ON_FTRACE is only available on powerpc64le. Update comment to
-> > > clarify this.
-> > > 
-> > > Also, we should use an offset of 8 to ensure that the probe does not
-> > > fall on ftrace location. The current offset of 4 will fall before the
-> > > function local entry point and won't fire, while an offset of 12 or 16
-> > > will fall on ftrace location. Offset 8 is currently guaranteed to not be
-> > > the ftrace location.
+> > > When we derive event names, convert some expected symbols (such as ':'
+> > > used to specify module:name and '.' present in some symbols) into
+> > > underscores so that the event name is not rejected.
 > > 
-> > OK, these part seems good to me.
+> > Oops, ok, this is my mistake.
 > > 
-> > > 
-> > > Finally, do not filter out symbols with a dot. Powerpc Elfv1 uses dot
-> > > prefix for all functions and this prevents us from testing some of those
-> > > symbols. Furthermore, with the patch to derive event names properly in
-> > > the presence of ':' and '.', such names are accepted by kprobe_events
-> > > and constitutes a good test for those symbols.
+> > Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
 > > 
-> > Hmm, the reason why I added such filter was to avoid symbols including
-> > gcc-generated suffixes like as .constprop or .isra etc.
+> > This must be marked as bugfix for stable trees.
+> > 
+> > Could you also add a testcase for this (module name) bug?
+> > 
+> > MODNAME=`lsmod | head -n 2 | tail -n 1 | cut -f 1 -d " "`
+> > FUNCNAME=`grep -m 1 "\\[$MODNAME\\]" /proc/kallsyms | xargs | cut -f 3 -d " "`
+> > 
+> > May gives you a target name :)
 > 
-> I see.
+> Sure. Here is a test.
 > 
-> I do wonder -- is there a problem if we try probing those symbols? On my 
-> local x86 vm, I don't see an issue probing it especially with the 
-> previous patch to enable probing with symbols having a '.' or ':'.
+> Thanks for the review,
+> Naveen
 > 
-> Furthermore, since this is for testing kprobe_events, I feel it is good 
-> to try probing those symbols too to catch any weird errors we may hit.
+> -
+> [PATCH] selftests/ftrace: Add a test to probe module functions
+> 
+> Add a kprobes test to ensure that we are able to add a probe on a
+> module function using 'p <mod>:<func>' format, without having to
+> specify a probe name.
+> 
+> Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-Yes, and that is not what this testcase is aiming to. That testcase should
-be a separated one, with correct error handling.
+Perfect! :)
 
-Thank you,
+Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
 
+Thanks!
+
+> ---
+>  .../testing/selftests/ftrace/test.d/kprobe/probe_module.tc | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>  create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
 > 
-> Thanks for the review!
-> - Naveen
-> 
-> 
-> > So if the Powerpc Elfv1 use dot prefix, that is OK, in that case,
-> > could you update the filter as "^.*\\..*" ?
-> > 
-> > Thank you,
-> > 
-> > > 
-> > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > > ---
-> > >  tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc | 8 ++++----
-> > >  1 file changed, 4 insertions(+), 4 deletions(-)
-> > > 
-> > > diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-> > > index f4d1ff785d67..d209c071b2c0 100644
-> > > --- a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-> > > +++ b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-> > > @@ -2,16 +2,16 @@
-> > >  # description: Register/unregister many kprobe events
-> > >  
-> > >  # ftrace fentry skip size depends on the machine architecture.
-> > > -# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc
-> > > +# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc64le
-> > >  case `uname -m` in
-> > >    x86_64|i[3456]86) OFFS=5;;
-> > > -  ppc*) OFFS=4;;
-> > > +  ppc64le) OFFS=8;;
-> > >    *) OFFS=0;;
-> > >  esac
-> > >  
-> > >  echo "Setup up to 256 kprobes"
-> > > -grep t /proc/kallsyms | cut -f3 -d" " | grep -v .*\\..* | \
-> > > -head -n 256 | while read i; do echo p ${i}+${OFFS} ; done > kprobe_events ||:
-> > > +grep t /proc/kallsyms | cut -f3 -d" " | head -n 256 | \
-> > > +while read i; do echo p ${i}+${OFFS} ; done > kprobe_events ||:
-> > >  
-> > >  echo 1 > events/kprobes/enable
-> > >  echo 0 > events/kprobes/enable
-> > > -- 
-> > > 2.13.1
-> > > 
-> > 
-> > 
-> > -- 
-> > Masami Hiramatsu <mhiramat@kernel.org>
-> > 
+> diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
+> new file mode 100644
+> index 000000000000..ea7657041ba6
+> --- /dev/null
+> +++ b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
+> @@ -0,0 +1,14 @@
+> +#!/bin/sh
+> +# description: Kprobe dynamic event - probing module
+> +
+> +[ -f kprobe_events ] || exit_unsupported # this is configurable
+> +
+> +echo 0 > events/enable
+> +echo > kprobe_events
+> +export MOD=`lsmod | head -n 2 | tail -n 1 | cut -f1 -d" "`
+> +export FUNC=`grep -m 1 ".* t .*\\[$MOD\\]" /proc/kallsyms | xargs | cut -f3 -d" "`
+> +[ "x" != "x$MOD" -a "y" != "y$FUNC" ] || exit_untested
+> +echo p $MOD:$FUNC > kprobe_events
+> +grep $MOD kprobe_events
+> +echo > kprobe_events
+> +clear_trace
+> -- 
+> 2.13.1
 > 
 
 
