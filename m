@@ -1,46 +1,30 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
- [IPv6:2607:f8b0:4001:c06::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvxkb6pj5zDr0W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 23:59:03 +1000 (AEST)
-Received: by mail-io0-x229.google.com with SMTP id h134so45539655iof.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 06:59:03 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20170624091110.GX4902@n2100.armlinux.org.uk>
-References: <1498251600-132458-1-git-send-email-keescook@chromium.org>
- <20170624091110.GX4902@n2100.armlinux.org.uk>
-From: Kees Cook <keescook@chromium.org>
-Date: Sat, 24 Jun 2017 06:58:59 -0700
-Message-ID: <CAGXu5jKPu3NS5i3eAa6QhMHE_r6Z6U7d5bGsNfp25N3=04hszQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] Use ELF_ET_DYN_BASE only for PIE
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Daniel Micay <danielmicay@gmail.com>,
- Qualys Security Advisory <qsa@qualys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "x86@kernel.org" <x86@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Pratyush Anand <panand@redhat.com>, James Hogan <james.hogan@imgtec.com>,
- Dmitry Safonov <dsafonov@virtuozzo.com>,
- Grzegorz Andrejczuk <grzegorz.andrejczuk@intel.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- LKML <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvzwm30zPzDr0T
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 01:38:00 +1000 (AEST)
+Message-ID: <1498318616.31581.87.camel@kernel.crashing.org>
+Subject: Re: clean up and modularize arch dma_mapping interface V2
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>, tndave <tushar.n.dave@oracle.com>
+Cc: linux-mips@linux-mips.org, linux-samsung-soc@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ x86@kernel.org, linux-tegra@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ dmaengine@vger.kernel.org, iommu@lists.linux-foundation.org,
+ openrisc@lists.librecores.org, netdev@vger.kernel.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Date: Sat, 24 Jun 2017 10:36:56 -0500
+In-Reply-To: <20170624071855.GD14580@lst.de>
+References: <20170616181059.19206-1-hch@lst.de>
+ <162d7932-5766-4c29-5471-07d1b699190a@oracle.com>
+ <20170624071855.GD14580@lst.de>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,46 +34,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 24, 2017 at 2:11 AM, Russell King - ARM Linux
-<linux@armlinux.org.uk> wrote:
-> On Fri, Jun 23, 2017 at 01:59:55PM -0700, Kees Cook wrote:
->> This is v2 (to refresh the 5 patches in -mm) for moving ELF_ET_DYN_BASE
->> safely lower. Changes are clarifications in the commit logs (suggested
->> by mpe), a compat think-o fix for arm64 (thanks to Ard), and to add
->> Rik and mpe's Acks.
->>
->> Quoting patch 1/5:
->>
->> The ELF_ET_DYN_BASE position was originally intended to keep loaders
->> away from ET_EXEC binaries. (For example, running "/lib/ld-linux.so.2
->> /bin/cat" might cause the subsequent load of /bin/cat into where the
->> loader had been loaded.) With the advent of PIE (ET_DYN binaries with
->> an INTERP Program Header), ELF_ET_DYN_BASE continued to be used since
->> the kernel was only looking at ET_DYN. However, since ELF_ET_DYN_BASE
->> is traditionally set at the top 1/3rd of the TASK_SIZE, a substantial
->> portion of the address space is unused.
->
-> With existing kernels on ARM:
->
-> 00010000-00017000 r-xp 00000000 08:01 270810     /bin/cat
-> 00026000-00027000 r--p 00006000 08:01 270810     /bin/cat
-> 00027000-00028000 rw-p 00007000 08:01 270810     /bin/cat
-> 7f661000-7f679000 r-xp 00000000 08:01 281659     /lib/arm-linux-gnueabihf/ld-2.23.so
-> 7f688000-7f689000 r--p 00017000 08:01 281659     /lib/arm-linux-gnueabihf/ld-2.23.so
-> 7f689000-7f68a000 rw-p 00018000 08:01 281659     /lib/arm-linux-gnueabihf/ld-2.23.so
->
-> If the loader is loaded at 4MB, this means the size of an ET_EXEC
-> program is limited to less than 4MB - and distros aren't yet
-> building everything as PIE on ARM.
+On Sat, 2017-06-24 at 09:18 +0200, Christoph Hellwig wrote:
+> On Wed, Jun 21, 2017 at 12:24:28PM -0700, tndave wrote:
+> > Thanks for doing this.
+> > So archs can still have their own definition for dma_set_mask() if 
+> > HAVE_ARCH_DMA_SET_MASK is y?
+> > (and similarly for dma_set_coherent_mask() when 
+> > CONFIG_ARCH_HAS_DMA_SET_COHERENT_MASK is y)
+> > Any plan to change these?
+> 
+> Yes, those should go away, but I'm not entirely sure how yet.  We'll
+> need some hook for switching between an IOMMU and a direct mapping
+> (I guess that's what you want to do for sparc as well?), and I need
+> to find the best way to do that.  Reimplementing all of dma_set_mask
+> and dma_set_coherent_mask is something that I want to move away from.
 
-The loader isn't loaded at 4MB; that's what patch 1 changes: loaders
-are moved into the mmap region so they will not collide with either
-ET_EXEC nor PIE (ET_DYN-with-INTERP).
+I think we still need to do it. For example we have a bunch new "funky"
+cases.
 
-(After this patch, the name "ELF_ET_DYN_BASE" becomes a bit misleading...)
+We already have the case where we mix the direct and iommu mappings,
+on some powerpc platforms that translates in an iommu mapping down at
+0 for the 32-bit space and a direct mapping high up in the PCI address
+space (which crops the top bits and thus hits memory at 0 onwards).
 
--Kees
+This type of hybrid layout is needed by some adapters, typically
+storage, which want to keep the "coherent" mask at 32-bit but support
+64-bit for streaming masks.
 
--- 
-Kees Cook
-Pixel Security
+Another one we are trying to deal better with at the moment is devices
+with DMA addressing limitations. Some GPUs typically (but not only)
+have limits that go all accross the gamut, typically I've seen 40 bits,
+44 bits and 47 bits... And of course those are "high peformance"
+adapters so we don't want to limit them to the comparatively small
+iommu mapping with extra overhead.
+
+At the moment, we're looking at a dma_set_mask() hook that will, for
+these guys, re-configure the iommu mapping to create a "compressed"
+linear mapping of system memory (ie, skipping the holes we have between
+chip on P9 for example) using the largest possible iommu page size
+(256M on P8, 1G on P9).
+
+This is made tricky of course because several devices can potentially
+share a DMA domain based on various platform specific reasons. And of
+course we have no way to figure out what's the "common denominator" of
+all those devices before they start doing DMA. A driver can start
+before the neighbour is probed and a driver can start doing DMAs using
+the standard 32-bit mapping without doing dma_set_mask().
+
+So heuristics ... ugh. Better ideas welcome :-) All that to say that we
+are far from being able to get rid of dma_set_mask() custom
+implementations (and coherent mask too).
+
+I was tempted at some point retiring the 32-bit iommu mapping
+completely, just doing that "linear" thing I mentioned above and
+swiotlb for the rest, along with introducing ZONE_DMA32 on powerpc
+(with the real 64-bit bypass still around for non-limited devices but
+that's then just extra speed by bypassing the iommu xlate & cache).
+
+But I worry of the impact on those silly adapters that set the coherent
+mask to 32-bits to keep their microcode & descriptor ring down in 32-
+bit space. I'm not sure how well ZONE_DMA32 behaves in those cases.
+
+Cheers,
+Ben.
