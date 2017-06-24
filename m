@@ -1,45 +1,19 @@
-Return-Path: <keescook@google.com>
-Received: from mail-it0-x22f.google.com (mail-it0-x22f.google.com
- [IPv6:2607:f8b0:4001:c0b::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ww4nB4Kh5zDr15
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 05:16:46 +1000 (AEST)
-Received: by mail-it0-x22f.google.com with SMTP id m84so6834830ita.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 12:16:46 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1498251600-132458-2-git-send-email-keescook@chromium.org>
-References: <1498251600-132458-1-git-send-email-keescook@chromium.org>
- <1498251600-132458-2-git-send-email-keescook@chromium.org>
-From: Kees Cook <keescook@chromium.org>
-Date: Sat, 24 Jun 2017 12:16:42 -0700
-Message-ID: <CAGXu5jL7cYJT6n8w8egOuLOH6QHAp8X=+s3B+hB_sdNb8ub=5Q@mail.gmail.com>
-Subject: Re: [PATCH v2 1/5] binfmt_elf: Use ELF_ET_DYN_BASE only for PIE
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <keescook@chromium.org>, "# 3.4.x" <stable@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, Rik van Riel <riel@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Daniel Micay <danielmicay@gmail.com>,
- Qualys Security Advisory <qsa@qualys.com>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Pratyush Anand <panand@redhat.com>,
- James Hogan <james.hogan@imgtec.com>, Dmitry Safonov <dsafonov@virtuozzo.com>,
- Grzegorz Andrejczuk <grzegorz.andrejczuk@intel.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- LKML <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ww5hH4qcpzDqkx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 05:57:35 +1000 (AEST)
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id v5OJvQvU028935
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 14:57:27 -0500
+Message-ID: <1498334247.31581.93.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/xive: Silence message about VP block allocation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Sat, 24 Jun 2017 14:57:27 -0500
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,39 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 23, 2017 at 1:59 PM, Kees Cook <keescook@chromium.org> wrote:
-> For 32-bit tasks when RLIMIT_STACK is set to RLIM_INFINITY, programs
-> are loaded below the mmap region. This means they can be made to collide
-> (CVE-2017-1000370) or nearly collide (CVE-2017-1000371) with pathological
-> stack regions. Lowering ELF_ET_DYN_BASE solves both by moving programs
-> above the mmap region in all cases, and will now additionally avoid
-> programs falling back to the mmap region by enforcing MAP_FIXED for
-> program loads (i.e. if it would have collided with the stack, now it
-> will fail to load instead of falling back to the mmap region).
+There is no reason for that message to be pr_info(), it will be printed
+every time we start a KVM guest.
 
-It was pointed out by rmk that I described this inaccurately. I mix up
-my own visualization of the address space (above/below in
-/proc/$pid/maps) with actual value comparisons (above/below
-numerically). This paragraph should read:
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-
-For 32-bit tasks when RLIMIT_STACK is set to RLIM_INFINITY, programs
-are loaded above the mmap region. This means they can be made to collide
-(CVE-2017-1000370) or nearly collide (CVE-2017-1000371) with pathological
-stack regions. Lowering ELF_ET_DYN_BASE solves both by moving programs
-below the mmap region in all cases, and will now additionally avoid
-programs falling back to the mmap region by enforcing MAP_FIXED for
-program loads (i.e. if it would have collided with the stack, now it
-will fail to load instead of falling back to the mmap region).
-
-
-Andrew, are you able to manually adjust this commit log in -mm, or
-should I resend the patch with this paragraph corrected?
-
-Thanks!
-
--Kees
-
--- 
-Kees Cook
-Pixel Security
+diff --git a/arch/powerpc/sysdev/xive/native.c
+b/arch/powerpc/sysdev/xive/native.c
+index ab9ecce..0f95476b 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -633,8 +633,8 @@ u32 xive_native_alloc_vp_block(u32 max_vcpus)
+        if (max_vcpus > (1 << order))
+                order++;
+ 
+-       pr_info("VP block alloc, for max VCPUs %d use order %d\n",
+-               max_vcpus, order);
++       pr_debug("VP block alloc, for max VCPUs %d use order %d\n",
++                max_vcpus, order);
+ 
+        for (;;) {
+                rc = opal_xive_alloc_vp_block(order);
