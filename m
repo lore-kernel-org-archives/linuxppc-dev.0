@@ -1,30 +1,19 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvms1578pzDr0V
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 17:18:59 +1000 (AEST)
-Date: Sat, 24 Jun 2017 09:18:55 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: tndave <tushar.n.dave@oracle.com>
-Cc: Christoph Hellwig <hch@lst.de>, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org,
- xen-devel@lists.xenproject.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dmaengine@vger.kernel.org,
- linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: clean up and modularize arch dma_mapping interface V2
-Message-ID: <20170624071855.GD14580@lst.de>
-References: <20170616181059.19206-1-hch@lst.de>
- <162d7932-5766-4c29-5471-07d1b699190a@oracle.com>
+Return-Path: <jhubbard@nvidia.com>
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvgpp5jw9zDr0V
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 13:31:46 +1000 (AEST)
+Subject: Re: [PATCH v3 1/6] mm, x86: Add ARCH_HAS_ZONE_DEVICE to Kconfig
+To: Oliver O'Halloran <oohall@gmail.com>, <linuxppc-dev@lists.ozlabs.org>
+CC: <bsingharora@gmail.com>, <linux-mm@kvack.org>
+References: <20170623083122.5992-1-oohall@gmail.com>
+From: John Hubbard <jhubbard@nvidia.com>
+Message-ID: <ce32f815-24db-4656-78e2-df3af37da2bb@nvidia.com>
+Date: Fri, 23 Jun 2017 20:26:37 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <162d7932-5766-4c29-5471-07d1b699190a@oracle.com>
+In-Reply-To: <20170623083122.5992-1-oohall@gmail.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,16 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 21, 2017 at 12:24:28PM -0700, tndave wrote:
-> Thanks for doing this.
-> So archs can still have their own definition for dma_set_mask() if 
-> HAVE_ARCH_DMA_SET_MASK is y?
-> (and similarly for dma_set_coherent_mask() when 
-> CONFIG_ARCH_HAS_DMA_SET_COHERENT_MASK is y)
-> Any plan to change these?
+On 06/23/2017 01:31 AM, Oliver O'Halloran wrote:
+> Currently ZONE_DEVICE depends on X86_64 and this will get unwieldly as
+> new architectures (and platforms) get ZONE_DEVICE support. Move to an
+> arch selected Kconfig option to save us the trouble.
+> 
+> Cc: linux-mm@kvack.org
+> Acked-by: Ingo Molnar <mingo@kernel.org>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+> v2: Added missing hunk.
+> v3: No changes
+> ---
+>   arch/x86/Kconfig | 1 +
+>   mm/Kconfig       | 6 +++++-
+>   2 files changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 0efb4c9497bc..325429a3f32f 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -59,6 +59,7 @@ config X86
+>   	select ARCH_HAS_STRICT_KERNEL_RWX
+>   	select ARCH_HAS_STRICT_MODULE_RWX
+>   	select ARCH_HAS_UBSAN_SANITIZE_ALL
+> +	select ARCH_HAS_ZONE_DEVICE		if X86_64
+>   	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+>   	select ARCH_MIGHT_HAVE_ACPI_PDC		if ACPI
+>   	select ARCH_MIGHT_HAVE_PC_PARPORT
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index beb7a455915d..790e52a8a486 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -683,12 +683,16 @@ config IDLE_PAGE_TRACKING
+>   
+>   	  See Documentation/vm/idle_page_tracking.txt for more details.
+>   
+> +# arch_add_memory() comprehends device memory
+> +config ARCH_HAS_ZONE_DEVICE
+> +	bool
+> +
+>   config ZONE_DEVICE
+>   	bool "Device memory (pmem, etc...) hotplug support"
+>   	depends on MEMORY_HOTPLUG
+>   	depends on MEMORY_HOTREMOVE
+>   	depends on SPARSEMEM_VMEMMAP
+> -	depends on X86_64 #arch_add_memory() comprehends device memory
+> +	depends on ARCH_HAS_ZONE_DEVICE
+>   
+>   	help
+>   	  Device memory hotplug support allows for establishing pmem,
+> 
 
-Yes, those should go away, but I'm not entirely sure how yet.  We'll
-need some hook for switching between an IOMMU and a direct mapping
-(I guess that's what you want to do for sparc as well?), and I need
-to find the best way to do that.  Reimplementing all of dma_set_mask
-and dma_set_coherent_mask is something that I want to move away from.
+Hi Oliver,
+
++1, this is nice to have, and it behaves as expected on x86_64 with and without HMM, at 
+least with the small bit of Kconfig dependency testing I did here.
+
+thanks,
+john h
