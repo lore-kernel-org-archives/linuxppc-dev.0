@@ -2,27 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvzwm30zPzDr0T
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 01:38:00 +1000 (AEST)
-Message-ID: <1498318616.31581.87.camel@kernel.crashing.org>
-Subject: Re: clean up and modularize arch dma_mapping interface V2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ww2P52VJ0zDr0T
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 03:29:13 +1000 (AEST)
+Message-ID: <1498325341.31581.90.camel@kernel.crashing.org>
+Subject: [PATCH v2] powerpc: Invalidate ERAT on powersave wakeup for POWER9
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>, tndave <tushar.n.dave@oracle.com>
-Cc: linux-mips@linux-mips.org, linux-samsung-soc@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- x86@kernel.org, linux-tegra@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- dmaengine@vger.kernel.org, iommu@lists.linux-foundation.org,
- openrisc@lists.librecores.org, netdev@vger.kernel.org,
- sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Date: Sat, 24 Jun 2017 10:36:56 -0500
-In-Reply-To: <20170624071855.GD14580@lst.de>
-References: <20170616181059.19206-1-hch@lst.de>
- <162d7932-5766-4c29-5471-07d1b699190a@oracle.com>
- <20170624071855.GD14580@lst.de>
+To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Date: Sat, 24 Jun 2017 12:29:01 -0500
+In-Reply-To: <20170622172616.7598-1-mikey@neuling.org>
+References: <20170622172616.7598-1-mikey@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,66 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-06-24 at 09:18 +0200, Christoph Hellwig wrote:
-> On Wed, Jun 21, 2017 at 12:24:28PM -0700, tndave wrote:
-> > Thanks for doing this.
-> > So archs can still have their own definition for dma_set_mask() if 
-> > HAVE_ARCH_DMA_SET_MASK is y?
-> > (and similarly for dma_set_coherent_mask() when 
-> > CONFIG_ARCH_HAS_DMA_SET_COHERENT_MASK is y)
-> > Any plan to change these?
-> 
-> Yes, those should go away, but I'm not entirely sure how yet.  We'll
-> need some hook for switching between an IOMMU and a direct mapping
-> (I guess that's what you want to do for sparc as well?), and I need
-> to find the best way to do that.  Reimplementing all of dma_set_mask
-> and dma_set_coherent_mask is something that I want to move away from.
+On POWER9 the ERAT may be incorrect on wakeup from some stop states
+that lose state. This causes random segvs and illegal instructions
+when these stop states are enabled.
 
-I think we still need to do it. For example we have a bunch new "funky"
-cases.
+This patch invalidates the ERAT on wakeup on POWER9 to prevent this
+from causing a problem.
 
-We already have the case where we mix the direct and iommu mappings,
-on some powerpc platforms that translates in an iommu mapping down at
-0 for the 32-bit space and a direct mapping high up in the PCI address
-space (which crops the top bits and thus hits memory at 0 onwards).
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-This type of hybrid layout is needed by some adapters, typically
-storage, which want to keep the "coherent" mask at 32-bit but support
-64-bit for streaming masks.
+v2. [BenH] Move to a place before we branch off to KVM if the
+           core was in a guest. Also add a comment about the
+           SRR1 bit extraction.
+---
+ arch/powerpc/kernel/exceptions-64s.S | 4 +++-
+ arch/powerpc/kernel/idle_book3s.S    | 7 +++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-Another one we are trying to deal better with at the moment is devices
-with DMA addressing limitations. Some GPUs typically (but not only)
-have limits that go all accross the gamut, typically I've seen 40 bits,
-44 bits and 47 bits... And of course those are "high peformance"
-adapters so we don't want to limit them to the comparatively small
-iommu mapping with extra overhead.
-
-At the moment, we're looking at a dma_set_mask() hook that will, for
-these guys, re-configure the iommu mapping to create a "compressed"
-linear mapping of system memory (ie, skipping the holes we have between
-chip on P9 for example) using the largest possible iommu page size
-(256M on P8, 1G on P9).
-
-This is made tricky of course because several devices can potentially
-share a DMA domain based on various platform specific reasons. And of
-course we have no way to figure out what's the "common denominator" of
-all those devices before they start doing DMA. A driver can start
-before the neighbour is probed and a driver can start doing DMAs using
-the standard 32-bit mapping without doing dma_set_mask().
-
-So heuristics ... ugh. Better ideas welcome :-) All that to say that we
-are far from being able to get rid of dma_set_mask() custom
-implementations (and coherent mask too).
-
-I was tempted at some point retiring the 32-bit iommu mapping
-completely, just doing that "linear" thing I mentioned above and
-swiotlb for the rest, along with introducing ZONE_DMA32 on powerpc
-(with the real 64-bit bypass still around for non-limited devices but
-that's then just extra speed by bypassing the iommu xlate & cache).
-
-But I worry of the impact on those silly adapters that set the coherent
-mask to 32-bits to keep their microcode & descriptor ring down in 32-
-bit space. I'm not sure how well ZONE_DMA32 behaves in those cases.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index ae418b85c17c..b4b2c3a344c4 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -99,7 +99,9 @@ EXC_VIRT_NONE(0x4000, 0x100)
+ #ifdef CONFIG_PPC_P7_NAP
+ 	/*
+ 	 * If running native on arch 2.06 or later, check if we are waking up
+-	 * from nap/sleep/winkle, and branch to idle handler.
++	 * from nap/sleep/winkle, and branch to idle handler. This tests
++	 * SRR1 bits 46:47. A non-0 value indicates that we are coming from
++	 * a power saving state.
+ 	 */
+ #define IDLETEST(n)							\
+ 	BEGIN_FTR_SECTION ;						\
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 4898d676dcae..3fd65739e105 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -489,6 +489,13 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+  */
+ pnv_restore_hyp_resource_arch300:
+ 	/*
++	 * Workaround for POWER9, if we lost resources, the ERAT
++	 * might have been mixed up and needs flushing.
++	 */
++	blt	cr3,1f
++	PPC_INVALIDATE_ERAT
++1:
++	/*
+ 	 * POWER ISA 3. Use PSSCR to determine if we
+ 	 * are waking up from deep idle state
+ 	 */
