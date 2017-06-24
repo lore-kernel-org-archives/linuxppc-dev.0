@@ -1,27 +1,45 @@
-Return-Path: <horia.geanta@nxp.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0069.outbound.protection.outlook.com [104.47.33.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvv2n5plqzDr0V
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 21:57:52 +1000 (AEST)
-From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
-To: Logan Gunthorpe <logang@deltatee.com>, <linux-kernel@vger.kernel.org>,
- <linux-arch@vger.kernel.org>, <linux-ntb@googlegroups.com>,
- <linux-alpha@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-crypto@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Stephen Bates <sbates@raithlin.com>, Dan
- Douglass <dan.douglass@nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- "David S . Miller" <davem@davemloft.net>, Radu Solea <radu.solea@nxp.com>,
- Steve Cornelius <steve.cornelius@nxp.com>
-Subject: [PATCH v2 7/7] crypto: caam: cleanup CONFIG_64BIT ifdefs when using
- io{read|write}64
-Date: Sat, 24 Jun 2017 14:57:07 +0300
-Message-ID: <20170624115707.30095-1-horia.geanta@nxp.com>
-In-Reply-To: <411c4bb0-2709-1902-778a-bf4d7734e3e1@deltatee.com>
-References: <411c4bb0-2709-1902-778a-bf4d7734e3e1@deltatee.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvxkb6pj5zDr0W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 23:59:03 +1000 (AEST)
+Received: by mail-io0-x229.google.com with SMTP id h134so45539655iof.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 06:59:03 -0700 (PDT)
 MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <20170624091110.GX4902@n2100.armlinux.org.uk>
+References: <1498251600-132458-1-git-send-email-keescook@chromium.org>
+ <20170624091110.GX4902@n2100.armlinux.org.uk>
+From: Kees Cook <keescook@chromium.org>
+Date: Sat, 24 Jun 2017 06:58:59 -0700
+Message-ID: <CAGXu5jKPu3NS5i3eAa6QhMHE_r6Z6U7d5bGsNfp25N3=04hszQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] Use ELF_ET_DYN_BASE only for PIE
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Daniel Micay <danielmicay@gmail.com>,
+ Qualys Security Advisory <qsa@qualys.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "x86@kernel.org" <x86@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Pratyush Anand <panand@redhat.com>, James Hogan <james.hogan@imgtec.com>,
+ Dmitry Safonov <dsafonov@virtuozzo.com>,
+ Grzegorz Andrejczuk <grzegorz.andrejczuk@intel.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,82 +50,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that ioread64 and iowrite64 are always available we don't
-need the ugly ifdefs to change their implementation when they
-are not.
+On Sat, Jun 24, 2017 at 2:11 AM, Russell King - ARM Linux
+<linux@armlinux.org.uk> wrote:
+> On Fri, Jun 23, 2017 at 01:59:55PM -0700, Kees Cook wrote:
+>> This is v2 (to refresh the 5 patches in -mm) for moving ELF_ET_DYN_BASE
+>> safely lower. Changes are clarifications in the commit logs (suggested
+>> by mpe), a compat think-o fix for arm64 (thanks to Ard), and to add
+>> Rik and mpe's Acks.
+>>
+>> Quoting patch 1/5:
+>>
+>> The ELF_ET_DYN_BASE position was originally intended to keep loaders
+>> away from ET_EXEC binaries. (For example, running "/lib/ld-linux.so.2
+>> /bin/cat" might cause the subsequent load of /bin/cat into where the
+>> loader had been loaded.) With the advent of PIE (ET_DYN binaries with
+>> an INTERP Program Header), ELF_ET_DYN_BASE continued to be used since
+>> the kernel was only looking at ET_DYN. However, since ELF_ET_DYN_BASE
+>> is traditionally set at the top 1/3rd of the TASK_SIZE, a substantial
+>> portion of the address space is unused.
+>
+> With existing kernels on ARM:
+>
+> 00010000-00017000 r-xp 00000000 08:01 270810     /bin/cat
+> 00026000-00027000 r--p 00006000 08:01 270810     /bin/cat
+> 00027000-00028000 rw-p 00007000 08:01 270810     /bin/cat
+> 7f661000-7f679000 r-xp 00000000 08:01 281659     /lib/arm-linux-gnueabihf/ld-2.23.so
+> 7f688000-7f689000 r--p 00017000 08:01 281659     /lib/arm-linux-gnueabihf/ld-2.23.so
+> 7f689000-7f68a000 rw-p 00018000 08:01 281659     /lib/arm-linux-gnueabihf/ld-2.23.so
+>
+> If the loader is loaded at 4MB, this means the size of an ET_EXEC
+> program is limited to less than 4MB - and distros aren't yet
+> building everything as PIE on ARM.
 
-Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
-Cc: Horia Geantă <horia.geanta@nxp.com>
-Cc: Dan Douglass <dan.douglass@nxp.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>
+The loader isn't loaded at 4MB; that's what patch 1 changes: loaders
+are moved into the mmap region so they will not collide with either
+ET_EXEC nor PIE (ET_DYN-with-INTERP).
 
-Updated patch such that behaviour does not change
-from i.MX workaround point of view.
+(After this patch, the name "ELF_ET_DYN_BASE" becomes a bit misleading...)
 
-Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
----
- drivers/crypto/caam/regs.h | 33 ++++-----------------------------
- 1 file changed, 4 insertions(+), 29 deletions(-)
+-Kees
 
-diff --git a/drivers/crypto/caam/regs.h b/drivers/crypto/caam/regs.h
-index 84d2f838a063..b893ebb24e65 100644
---- a/drivers/crypto/caam/regs.h
-+++ b/drivers/crypto/caam/regs.h
-@@ -134,50 +134,25 @@ static inline void clrsetbits_32(void __iomem *reg, u32 clear, u32 set)
-  *    base + 0x0000 : least-significant 32 bits
-  *    base + 0x0004 : most-significant 32 bits
-  */
--#ifdef CONFIG_64BIT
- static inline void wr_reg64(void __iomem *reg, u64 data)
- {
-+#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
- 	if (caam_little_end)
- 		iowrite64(data, reg);
- 	else
--		iowrite64be(data, reg);
--}
--
--static inline u64 rd_reg64(void __iomem *reg)
--{
--	if (caam_little_end)
--		return ioread64(reg);
--	else
--		return ioread64be(reg);
--}
--
--#else /* CONFIG_64BIT */
--static inline void wr_reg64(void __iomem *reg, u64 data)
--{
--#ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
--	if (caam_little_end) {
--		wr_reg32((u32 __iomem *)(reg) + 1, data >> 32);
--		wr_reg32((u32 __iomem *)(reg), data);
--	} else
- #endif
--	{
--		wr_reg32((u32 __iomem *)(reg), data >> 32);
--		wr_reg32((u32 __iomem *)(reg) + 1, data);
--	}
-+		iowrite64be(data, reg);
- }
- 
- static inline u64 rd_reg64(void __iomem *reg)
- {
- #ifndef CONFIG_CRYPTO_DEV_FSL_CAAM_IMX
- 	if (caam_little_end)
--		return ((u64)rd_reg32((u32 __iomem *)(reg) + 1) << 32 |
--			(u64)rd_reg32((u32 __iomem *)(reg)));
-+		return ioread64(reg);
- 	else
- #endif
--		return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |
--			(u64)rd_reg32((u32 __iomem *)(reg) + 1));
-+		return ioread64be(reg);
- }
--#endif /* CONFIG_64BIT  */
- 
- #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
- #ifdef CONFIG_SOC_IMX7D
 -- 
-2.12.0.264.gd6db3f216544
+Kees Cook
+Pixel Security
