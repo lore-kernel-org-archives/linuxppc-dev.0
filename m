@@ -1,21 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <palmer@dabbelt.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wvYzp24NLzDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 09:09:10 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: alistair@popple.id.au, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mhiramat@kernel.org,
- naveen.n.rao@linux.vnet.ibm.com, npiggin@gmail.com,
- ravi.bangoria@linux.vnet.ibm.com, rostedt@goodmis.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.12-7 tag
-Date: Sat, 24 Jun 2017 09:09:08 +1000
-Message-ID: <87injmpai3.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wvc6v2KcpzDqpG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 10:45:26 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id s66so9550036pfs.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jun 2017 17:45:26 -0700 (PDT)
+Date: Fri, 23 Jun 2017 17:45:23 -0700 (PDT)
+From: Palmer Dabbelt <palmer@dabbelt.com>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: geert@linux-m68k.org
+CC: linux-arch@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+CC: Olof Johansson <olof@lixom.net>
+CC: albert@sifive.com
+CC: patches@groups.riscv.org
+CC: gregkh@linuxfoundation.org
+CC: jslaby@suse.com
+CC: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 12/17] tty: New RISC-V SBI Console Driver
+In-Reply-To: <CAK8P3a35SEeOaVXBNCzUiwQTXys4MZN28d4yVRqNQ=Jz=Z-EWw@mail.gmail.com>
+Message-ID: <mhng-ff4db4ff-d1b4-4f40-8488-7c5b0bf52b67@palmer-si-x1c4>
+Mime-Version: 1.0 (MHng)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,87 +32,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On Wed, 07 Jun 2017 00:58:04 PDT (-0700), Arnd Bergmann wrote:
+> On Wed, Jun 7, 2017 at 9:15 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> CC (hypervisor) console folks
+>>
+>> On Wed, Jun 7, 2017 at 1:00 AM, Palmer Dabbelt <palmer@dabbelt.com> wrote:
+>>> This patch adds a new driver for the console availiable via the RISC-V
+>>> SBI.  This console is specified to be used for early boot messages, and
+>>> is designed to be a very simple (albiet somewhat slow) console that is
+>>> always availiable.  All RISC-V systems have an SBI console.
+>>>
+>>> The SBI console is made availiable for early printk messages and is also
+>>> availiable as a regular console.
+>>>
+>>> Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
+>>> ---
+>>>  drivers/tty/hvc/Kconfig   |  11 +++++
+>>>  drivers/tty/hvc/Makefile  |   1 +
+>>>  drivers/tty/hvc/hvc_sbi.c | 102 ++++++++++++++++++++++++++++++++++++++++++++++
+>>>  3 files changed, 114 insertions(+)
+>>>  create mode 100644 drivers/tty/hvc/hvc_sbi.c
+>>>
+>>> diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
+>>> index 574da15fe618..f3774adab240 100644
+>>> --- a/drivers/tty/hvc/Kconfig
+>>> +++ b/drivers/tty/hvc/Kconfig
+>>> @@ -114,4 +114,15 @@ config HVCS
+>>>           which will also be compiled when this driver is built as a
+>>>           module.
+>>>
+>>> +config HVC_SBI
+>>> +       bool "SBI console support"
+>>> +       depends on RISCV
+>>> +       select HVC_DRIVER
+>>> +       default y
+>>> +       help
+>>> +         This enables support for console output via RISC-V SBI calls, which
+>>> +         is normally used only during boot to output printk.
+>>> +
+>>> +         If you don't know what do to here, say Y.
+>>> +
+>>>  endif # TTY
+>
+> Please move this a little higher along with the other HVC_DRIVER
+> implementations.
 
-Hi Linus,
+OK: https://github.com/riscv/riscv-linux/commit/1c769cad7931b7b08644d2d4a7b6985777a8e0be
 
-Please pull some more powerpc fixes for 4.12. Most of these actually came in
-last week but got held up for some more testing.
+>>> + * RISC-V SBI interface to hvc_console.c
+>>> + *  based on drivers-tty/hvc/hvc_udbg.c
+>>> + *
+>>> + * Copyright (C) 2008 David Gibson, IBM Corporation
+>>> + * Copyright (C) 2012 Regents of the University of California
+>
+> 2017?
 
-The following changes since commit a093c92dc7f96a15de98ec8cfe38e6f7610a5969:
-
-  powerpc/debug: Add missing warn flag to WARN_ON's non-builtin path (2017-06-16 16:10:37 +1000)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.12-7
-
-for you to fetch changes up to 34f19ff1b5a0d11e46df479623d6936460105c9f:
-
-  powerpc/64: Initialise thread_info for emergency stacks (2017-06-23 13:25:38 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.12 #7
-
- - three fixes for kprobes/ftrace/livepatch interactions.
-
- - properly handle data breakpoints when using the Radix MMU.
-
- - fix for perf sampling of registers during call_usermodehelper().
-
- - properly initialise the thread_info on our emergency stacks.
-
- - add an explicit flush when doing TLB invalidations for a process
-   using NPU2.
-
-Thanks to:
-  Alistair Popple, Naveen N. Rao, Nicholas Piggin, Ravi Bangoria,
-  Masami Hiramatsu.
-
-----------------------------------------------------------------
-Alistair Popple (1):
-      powerpc/powernv/npu-dma: Add explicit flush when sending an ATSD
-
-Naveen N. Rao (4):
-      powerpc/kprobes: Pause function_graph tracing during jprobes handling
-      powerpc/ftrace: Pass the correct stack pointer for DYNAMIC_FTRACE_WITH_REGS
-      powerpc/kprobes: Skip livepatch_handler() for jprobes
-      powerpc/64s: Handle data breakpoints in Radix mode
-
-Nicholas Piggin (1):
-      powerpc/64: Initialise thread_info for emergency stacks
-
-Ravi Bangoria (1):
-      powerpc/perf: Fix oops when kthread execs user process
-
- arch/powerpc/include/asm/kprobes.h             |  1 +
- arch/powerpc/kernel/exceptions-64s.S           | 11 +--
- arch/powerpc/kernel/kprobes.c                  | 17 +++++
- arch/powerpc/kernel/setup_64.c                 | 31 ++++++++-
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 59 ++++++++++++----
- arch/powerpc/perf/perf_regs.c                  |  3 +-
- arch/powerpc/platforms/powernv/npu-dma.c       | 94 ++++++++++++++++++--------
- 7 files changed, 166 insertions(+), 50 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZTZ+UAAoJEFHr6jzI4aWAw3QP/3ZwTXsGLcksVyGlsVVY2S3n
-BS+sIzm1ptEKVteRo6uAkNUQp+dfL9Clw6WG/24LiYhNASMd01H99wrNM95BiOZS
-w743GJhTNpaTZeJls/T3Ulwiq8koisx4wDoybsJYkW1ifZfZkgEtRqHuzpch34zD
-abIGLKTQTMcRmBxrMnR0ANOCd00WHVnBeIVQAj2679lj95PDMEXylqIS69r/pKLU
-43cdc7JHAAjbUE3ZQDiPY0DwHr+fTsxtGDymYGwIMWgnPv6FNzDEOyGZPhWjTAQM
-6NDqj1wCJ9ymefq9CPK6K4NiRPi6fuQYLEtRJOJqxmMlUpTW0+MJVcsEAbo7+ML1
-DOMIZPBSC5+7lKW/o6naKEkiOFnA3FosKD/h30SvtsTijcStLNoaxCdObs3QkqkB
-+/SQGNP/z0j3Jzvx9KS81H10F5Gn7xUrU18BGBFxJJp8t8i81BMwvnZUwFCLErQN
-eO6fl9IYsK2vIvJESAKm+R8aBt4y6uQ2dn3vl2SNSwQlBy0+Ptarow15KpzLz/rX
-4nrQ58ugVeZAbEV2LxfDfMTQJXGtrIM6Qyk55yWj7OYvU5X1KRrxSAdVOSS4fjmZ
-hUW3w6zMc/cyj6RFlK+2odjS5azBSfqU9aNZAKoXhproTGrCoO40q+lt9nQ1JPVT
-i+Xi7yveeZwBA9/mIuii
-=HEG0
------END PGP SIGNATURE-----
---=-=-=--
+https://github.com/riscv/riscv-linux/commit/dafa678d26886076a8a9cccc2486f1bbbfa44aa8
