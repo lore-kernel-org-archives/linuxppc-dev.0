@@ -1,33 +1,29 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wwmqY38WGzDr1S
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 08:21:13 +1000 (AEST)
-Date: Sun, 25 Jun 2017 23:21:06 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Thorsten Leemhuis <regressions@leemhuis.info>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: gcc 4.6.3 miscompile on ppc32 (was Re: Regression in kernel
- 4.12-rc1 for Powerpc 32 - bisected to commit 3448890c32c3)
-Message-ID: <20170625222106.GX10672@ZenIV.linux.org.uk>
-References: <20170622141203.GP10672@ZenIV.linux.org.uk>
- <7bbd4c87-e8ff-5f83-8c4c-e205872083bf@lwfinger.net>
- <20170622192515.GQ10672@ZenIV.linux.org.uk>
- <2346c306-8e26-94cb-3c63-b866a7f4625d@lwfinger.net>
- <20170623202943.GS10672@ZenIV.linux.org.uk>
- <3e093314-5148-2e14-33a9-e5d67bd2e7cf@lwfinger.net>
- <20170625095351.GU10672@ZenIV.linux.org.uk>
- <20170625111404.GV10672@ZenIV.linux.org.uk>
- <20170625205324.GW10672@ZenIV.linux.org.uk>
- <20170625214408.GT16550@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170625214408.GT16550@gate.crashing.org>
-Sender: Al Viro <viro@ftp.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwnnD73ntzDr0c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 09:04:16 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id z6so7086316pfk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 16:04:16 -0700 (PDT)
+Message-ID: <1498431798.7935.5.camel@gmail.com>
+Subject: Re: [RFC v3 02/23] powerpc: introduce set_hidx_slot helper
+From: Balbir Singh <bsingharora@gmail.com>
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-mm@kvack.org,  x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org,  corbet@lwn.net, mingo@redhat.com
+Date: Mon, 26 Jun 2017 09:03:18 +1000
+In-Reply-To: <1498095579-6790-3-git-send-email-linuxram@us.ibm.com>
+References: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
+ <1498095579-6790-3-git-send-email-linuxram@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,75 +33,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 25, 2017 at 04:44:09PM -0500, Segher Boessenkool wrote:
+On Wed, 2017-06-21 at 18:39 -0700, Ram Pai wrote:
+> Introduce set_hidx_slot() which sets the (H_PAGE_F_SECOND|H_PAGE_F_GIX)
+> bits at  the  appropriate  location  in  the  PTE  of  4K  PTE.  In the
+> case of 64K PTE, it sets the bits in the second part of the PTE. Though
+> the implementation for the former just needs the slot parameter, it does
+> take some additional parameters to keep the prototype consistent.
+> 
+> This function will come in handy as we  work  towards  re-arranging the
+> bits in the later patches.
+> 
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hash-4k.h  |  7 +++++++
+>  arch/powerpc/include/asm/book3s/64/hash-64k.h | 16 ++++++++++++++++
+>  2 files changed, 23 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> index 9c2c8f1..cef644c 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> @@ -55,6 +55,13 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
+>  }
+>  #endif
+>  
+> +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> +			unsigned int subpg_index, unsigned long slot)
+> +{
+> +	return (slot << H_PAGE_F_GIX_SHIFT) &
+> +		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
+> +}
+> +
 
-> Do you have a short stand-alone testcase?  4.6 is ancient, of course, but
-> the actual problem may still exist in more recent compilers (if it _is_
-> a compiler problem; if it's not, you *really* want to know :-) )
+A comment on top would help explain that 4k and 64k are different, 64k
+is a new layout.
 
-Enjoy.  At least 6.3 doesn't step into that.  Look for mtctr in the resulting
-asm...
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>  
+>  static inline char *get_hpte_slot_array(pmd_t *pmdp)
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> index 3f49941..4bac70a 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> @@ -75,6 +75,22 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+>  	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
+>  }
+>  
+> +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> +		unsigned int subpg_index, unsigned long slot)
+> +{
+> +	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+> +
+> +	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+> +	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+> +	/*
+> +	 * Avoid race with __real_pte()
+> +	 * hidx must be committed to memory before committing
+> +	 * the pte.
+> +	 */
+> +	smp_wmb();
 
-cat <<'EOF' >a.c
-struct iovec
-{
- void *iov_base;
- unsigned iov_len;
-};
+Whats the other paired barrier, is it in set_pte()?
 
-unsigned long v;
+> +	return 0x0UL;
+> +}
 
-extern void * barf(void *,int,unsigned);
+We return 0 here and slot information for 4k pages, it is not that
+clear
 
-extern unsigned long bar(void *to, const void *from, unsigned long size);
-
-static inline unsigned long __bar(void *to, const void *from, unsigned long n)
-{
- unsigned long res = n;
- if (__builtin_expect(!!(((void)0, (((( unsigned long)(from)) <= v) && ((((n)) == 0) || ((((n)) - 1) <= (v - (( unsigned long)(from)))))))), 1))
-  res = bar(to, from, n);
- if (res)
-  barf(to + (n - res), 0, res);
- return res;
-}
-
-int foo(int type, const struct iovec * uvector,
-         unsigned long nr_segs, unsigned long fast_segs,
-         struct iovec *iov,
-         struct iovec **ret_pointer)
-{
- unsigned long seg;
- int ret;
- if (nr_segs == 0) {
-  ret = 0;
-  goto out;
- }
- if (nr_segs > 1024) {
-  ret = -22;
-  goto out;
- }
- if (__bar(iov, uvector, nr_segs*sizeof(*uvector))) {
-  ret = -14;
-  goto out;
- }
- ret = 0;
- for (seg = 0; seg < nr_segs; seg++) {
-  void *buf = iov[seg].iov_base;
-  int len = (int)iov[seg].iov_len;
-  if (len < 0) {
-   ret = -22;
-   goto out;
-  }
-  if (type >= 0
-      && __builtin_expect(!!(!((void)0, (((( unsigned long)(buf)) <= v) && ((((len)) == 0) || ((((len)) - 1) <= (v - (( unsigned long)(buf)))))))), 0)) {
-   ret = -14;
-   goto out;
-  }
-  ret += len;
- }
-out:
- *ret_pointer = iov;
- return ret;
-}
-EOF
-powerpc-linux-gcc -m32 -fno-strict-aliasing -fno-common -std=gnu89 -fno-PIE -msoft-float -pipe -ffixed-r2 -mmultiple -mno-altivec -mno-vsx -mno-spe -mspe=no -funit-at-a-time -fno-dwarf2-cfi-asm -mno-string -mcpu=powerpc -Wa,-maltivec -mbig-endian -fno-delete-null-pointer-checks -Os -fno-stack-protector -Wno-unused-but-set-variable -fomit-frame-pointer -fno-var-tracking-assignments -femit-struct-debug-baseonly -fno-var-tracking -fno-strict-overflow -fconserve-stack -fverbose-asm -S a.c
+Balbir Singh.
