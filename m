@@ -1,20 +1,21 @@
 Return-Path: <karim.eshapa@gmail.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
+Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
+ [IPv6:2a00:1450:400c:c0c::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wwbLX6grXzDr13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 01:13:56 +1000 (AEST)
-Received: by mail-wr0-x241.google.com with SMTP id 77so24832986wrb.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 08:13:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwbNS2dpQzDr16
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 01:15:36 +1000 (AEST)
+Received: by mail-wr0-x244.google.com with SMTP id 77so24839880wrb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 08:15:36 -0700 (PDT)
 From: Karim Eshapa <karim.eshapa@gmail.com>
 To: oss@buserror.net
 Cc: claudiu.manoil@nxp.com, roy.pledge@nxp.com, colin.king@canonical.com,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
-Subject: [PATCH] soc/qman: Sleep instead of stuck hacking jiffies.
-Date: Sun, 25 Jun 2017 17:13:42 +0200
-Message-Id: <1498403622-2878-1-git-send-email-karim.eshapa@gmail.com>
+Subject: [PATCH] soc/qman: Change a comment for an entry check insid
+ drain_mr_fqrni function
+Date: Sun, 25 Jun 2017 17:15:24 +0200
+Message-Id: <1498403724-2962-1-git-send-email-karim.eshapa@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use msleep() instead of stucking with
-long delay will be more efficient.
+Change the comment for an entry check inside function
+drain_mr_fqrni() with sleep for sufficient period
+of time instead of long time proccessor cycles.
 
 Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
 ---
- drivers/soc/fsl/qbman/qman.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/soc/fsl/qbman/qman.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index 3d891db..18d391e 100644
+index 18d391e..636a7d7 100644
 --- a/drivers/soc/fsl/qbman/qman.c
 +++ b/drivers/soc/fsl/qbman/qman.c
-@@ -1084,11 +1084,7 @@ static int drain_mr_fqrni(struct qm_portal *p)
- 		 * entries well before the ring has been fully consumed, so
- 		 * we're being *really* paranoid here.
+@@ -1071,18 +1071,19 @@ static int drain_mr_fqrni(struct qm_portal *p)
+ 	msg = qm_mr_current(p);
+ 	if (!msg) {
+ 		/*
+-		 * if MR was full and h/w had other FQRNI entries to produce, we
+-		 * need to allow it time to produce those entries once the
+-		 * existing entries are consumed. A worst-case situation
+-		 * (fully-loaded system) means h/w sequencers may have to do 3-4
+-		 * other things before servicing the portal's MR pump, each of
+-		 * which (if slow) may take ~50 qman cycles (which is ~200
+-		 * processor cycles). So rounding up and then multiplying this
+-		 * worst-case estimate by a factor of 10, just to be
+-		 * ultra-paranoid, goes as high as 10,000 cycles. NB, we consume
+-		 * one entry at a time, so h/w has an opportunity to produce new
+-		 * entries well before the ring has been fully consumed, so
+-		 * we're being *really* paranoid here.
++		 * if MR was full and h/w had other FQRNI entries to
++		 * produce, we need to allow it time to produce those
++		 * entries once the existing entries are consumed.
++		 * A worst-case situation (fully-loaded system) means
++		 * h/w sequencers may have to do 3-4 other things
++		 * before servicing the portal's MR pump, each of
++		 * which (if slow) may take ~50 qman cycles
++		 * (which is ~200 processor cycles). So sleep with
++		 * 1 ms would be very sufficient, after this period
++		 * we can check if there is something produced.
++		 * NB, we consume one entry at a time, so h/w has
++		 * an opportunity to produce new entries well before
++		 * the ring has been fully consumed.
  		 */
--		u64 now, then = jiffies;
--
--		do {
--			now = jiffies;
--		} while ((then + 10000) > now);
-+		msleep(1);
+ 		msleep(1);
  		msg = qm_mr_current(p);
- 		if (!msg)
- 			return 0;
 -- 
 2.7.4
