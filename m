@@ -1,32 +1,20 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <karim.eshapa@gmail.com>
+Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
+ [IPv6:2a00:1450:400c:c0c::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wwV1t2KHxzDr13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 21:14:10 +1000 (AEST)
-Date: Sun, 25 Jun 2017 12:14:04 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Thorsten Leemhuis <regressions@leemhuis.info>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Regression in kernel 4.12-rc1 for Powerpc 32 - bisected to
- commit 3448890c32c3
-Message-ID: <20170625111404.GV10672@ZenIV.linux.org.uk>
-References: <5f4b9fa4-262a-31b1-32ba-a2f6e789b3d6@lwfinger.net>
- <20170621213415.GO10672@ZenIV.linux.org.uk>
- <655d304e-e455-6e0c-56e1-f127653ea13c@lwfinger.net>
- <20170622141203.GP10672@ZenIV.linux.org.uk>
- <7bbd4c87-e8ff-5f83-8c4c-e205872083bf@lwfinger.net>
- <20170622192515.GQ10672@ZenIV.linux.org.uk>
- <2346c306-8e26-94cb-3c63-b866a7f4625d@lwfinger.net>
- <20170623202943.GS10672@ZenIV.linux.org.uk>
- <3e093314-5148-2e14-33a9-e5d67bd2e7cf@lwfinger.net>
- <20170625095351.GU10672@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170625095351.GU10672@ZenIV.linux.org.uk>
-Sender: Al Viro <viro@ftp.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwbLX6grXzDr13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 01:13:56 +1000 (AEST)
+Received: by mail-wr0-x241.google.com with SMTP id 77so24832986wrb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 08:13:55 -0700 (PDT)
+From: Karim Eshapa <karim.eshapa@gmail.com>
+To: oss@buserror.net
+Cc: claudiu.manoil@nxp.com, roy.pledge@nxp.com, colin.king@canonical.com,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
+Subject: [PATCH] soc/qman: Sleep instead of stuck hacking jiffies.
+Date: Sun, 25 Jun 2017 17:13:42 +0200
+Message-Id: <1498403622-2878-1-git-send-email-karim.eshapa@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,16 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 25, 2017 at 10:53:58AM +0100, Al Viro wrote:
-> On Sat, Jun 24, 2017 at 12:29:23PM -0500, Larry Finger wrote:
-> 
-> > I made a break through. If I turn off inline copy to/from users for 32-bit
-> > ppc with the following patch, then the system boots:
-> 
-> OK...  So it's 4.6.3 miscompiling something - it is hardware-independent,
-> reproduced in qemu.  I'd like to get more self-contained example of
-> miscompile, though; should be done by tonight...
+Use msleep() instead of stucking with
+long delay will be more efficient.
 
-OK, it's the call in rw_copy_check_uvector(); with INLINE_COPY_FROM_USER
-it's miscompiled by 4.6.3.  I hadn't looked through the generated code
-yet; will do that after I grab some sleep.
+Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
+---
+ drivers/soc/fsl/qbman/qman.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 3d891db..18d391e 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -1084,11 +1084,7 @@ static int drain_mr_fqrni(struct qm_portal *p)
+ 		 * entries well before the ring has been fully consumed, so
+ 		 * we're being *really* paranoid here.
+ 		 */
+-		u64 now, then = jiffies;
+-
+-		do {
+-			now = jiffies;
+-		} while ((then + 10000) > now);
++		msleep(1);
+ 		msg = qm_mr_current(p);
+ 		if (!msg)
+ 			return 0;
+-- 
+2.7.4
