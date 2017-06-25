@@ -1,24 +1,32 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wwL7P0FNjzDr19
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 15:18:25 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id u62so11272459pgb.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jun 2017 22:18:24 -0700 (PDT)
-Date: Sun, 25 Jun 2017 15:18:04 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwSGP5yxyzDr13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 19:54:50 +1000 (AEST)
+Date: Sun, 25 Jun 2017 10:53:58 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Thorsten Leemhuis <regressions@leemhuis.info>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] powerpc: Invalidate ERAT on powersave wakeup for POWER9
-Message-ID: <20170625151804.30b56c67@roar.ozlabs.ibm.com>
-In-Reply-To: <1498325341.31581.90.camel@kernel.crashing.org>
-References: <20170622172616.7598-1-mikey@neuling.org>
- <1498325341.31581.90.camel@kernel.crashing.org>
+Subject: Re: Regression in kernel 4.12-rc1 for Powerpc 32 - bisected to
+ commit 3448890c32c3
+Message-ID: <20170625095351.GU10672@ZenIV.linux.org.uk>
+References: <20170621212257.GN10672@ZenIV.linux.org.uk>
+ <5f4b9fa4-262a-31b1-32ba-a2f6e789b3d6@lwfinger.net>
+ <20170621213415.GO10672@ZenIV.linux.org.uk>
+ <655d304e-e455-6e0c-56e1-f127653ea13c@lwfinger.net>
+ <20170622141203.GP10672@ZenIV.linux.org.uk>
+ <7bbd4c87-e8ff-5f83-8c4c-e205872083bf@lwfinger.net>
+ <20170622192515.GQ10672@ZenIV.linux.org.uk>
+ <2346c306-8e26-94cb-3c63-b866a7f4625d@lwfinger.net>
+ <20170623202943.GS10672@ZenIV.linux.org.uk>
+ <3e093314-5148-2e14-33a9-e5d67bd2e7cf@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3e093314-5148-2e14-33a9-e5d67bd2e7cf@lwfinger.net>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +36,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 24 Jun 2017 12:29:01 -0500
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Sat, Jun 24, 2017 at 12:29:23PM -0500, Larry Finger wrote:
 
-> On POWER9 the ERAT may be incorrect on wakeup from some stop states
-> that lose state. This causes random segvs and illegal instructions
-> when these stop states are enabled.
-> 
-> This patch invalidates the ERAT on wakeup on POWER9 to prevent this
-> from causing a problem.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> v2. [BenH] Move to a place before we branch off to KVM if the
->            core was in a guest. Also add a comment about the
->            SRR1 bit extraction.
+> I made a break through. If I turn off inline copy to/from users for 32-bit
+> ppc with the following patch, then the system boots:
 
-This looks a bit safer to me now (avoiding KVM). My understanding is
-the real-mode i- and d-ERAT entries are still valid and usable,
-which is why this works.
-
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
-> ---
->  arch/powerpc/kernel/exceptions-64s.S | 4 +++-
->  arch/powerpc/kernel/idle_book3s.S    | 7 +++++++
->  2 files changed, 10 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index ae418b85c17c..b4b2c3a344c4 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -99,7 +99,9 @@ EXC_VIRT_NONE(0x4000, 0x100)
->  #ifdef CONFIG_PPC_P7_NAP
->  	/*
->  	 * If running native on arch 2.06 or later, check if we are waking up
-> -	 * from nap/sleep/winkle, and branch to idle handler.
-> +	 * from nap/sleep/winkle, and branch to idle handler. This tests
-> +	 * SRR1 bits 46:47. A non-0 value indicates that we are coming from
-> +	 * a power saving state.
->  	 */
->  #define IDLETEST(n)							\
->  	BEGIN_FTR_SECTION ;						\
-> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> index 4898d676dcae..3fd65739e105 100644
-> --- a/arch/powerpc/kernel/idle_book3s.S
-> +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -489,6 +489,13 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
->   */
->  pnv_restore_hyp_resource_arch300:
->  	/*
-> +	 * Workaround for POWER9, if we lost resources, the ERAT
-> +	 * might have been mixed up and needs flushing.
-> +	 */
-> +	blt	cr3,1f
-> +	PPC_INVALIDATE_ERAT
-> +1:
-> +	/*
->  	 * POWER ISA 3. Use PSSCR to determine if we
->  	 * are waking up from deep idle state
->  	 */
-> 
+OK...  So it's 4.6.3 miscompiling something - it is hardware-independent,
+reproduced in qemu.  I'd like to get more self-contained example of
+miscompile, though; should be done by tonight...
