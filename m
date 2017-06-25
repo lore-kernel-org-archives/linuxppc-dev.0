@@ -1,38 +1,18 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wwhR41mC0zDr1S
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 05:03:11 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5PIxQrL026921
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 15:03:09 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2babdevg52-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 15:03:09 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 26 Jun 2017 05:03:06 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5PJ34ei65732692
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 05:03:04 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5PJ33Pf029975
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 05:03:04 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- anton@samba.org, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/sysfs: Expose MMCR2 spr in sysfs
-Date: Mon, 26 Jun 2017 00:32:52 +0530
-Message-Id: <1498417372-27137-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwjq635x0zDr1S
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 06:05:38 +1000 (AEST)
+Message-ID: <1498421118.31581.110.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/powernv: Tell OPAL about our MMU mode
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, Michael Neuling
+ <michael.neuling@au1.ibm.com>
+Date: Sun, 25 Jun 2017 15:05:18 -0500
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,55 +22,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Monitor Mode Control Register 2 (MMCR2) is a 64-bit
-register that contains 9-bit control fields for
-controlling the operation of PMC1 - PMC6. Patch
-to expose the MMCR2 spr in sysfs.
+That will allow OPAL to configure the CPU in an optimal way.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/sysfs.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 4437c70c7c2b..587eb3a7b5da 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -482,6 +482,7 @@ SYSFS_PMCSETUP(pmc7, SPRN_PMC7);
- SYSFS_PMCSETUP(pmc8, SPRN_PMC8);
- 
- SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
-+SYSFS_PMCSETUP(mmcr2, SPRN_MMCR2);
- SYSFS_SPRSETUP(purr, SPRN_PURR);
- SYSFS_SPRSETUP(spurr, SPRN_SPURR);
- SYSFS_SPRSETUP(pir, SPRN_PIR);
-@@ -492,6 +493,7 @@ SYSFS_SPRSETUP(pir, SPRN_PIR);
-   Lets be conservative and default to pseries.
- */
- static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
-+static DEVICE_ATTR(mmcr2, 0600, show_mmcr2, store_mmcr2);
- static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
- static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
- static DEVICE_ATTR(pir, 0400, show_pir, NULL);
-@@ -760,6 +762,9 @@ static int register_cpu_online(unsigned int cpu)
- 	if (cpu_has_feature(CPU_FTR_MMCRA))
- 		device_create_file(s, &dev_attr_mmcra);
- 
-+	if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		device_create_file(s, &dev_attr_mmcr2);
+The matching OPAL change has been sent to the skiboot list.
+
+Setting those bits in the reinit() call with an older OPAL
+will result in the call returning an error which Linux ignores
+but it will still work in the sense that it will still honor
+the other flags it understands (the endian switch ones).
+
+ arch/powerpc/include/asm/opal-api.h    |  9 +++++++++
+ arch/powerpc/platforms/powernv/opal.c  | 14 ++++++++++++--
+ arch/powerpc/platforms/powernv/setup.c |  6 +++++-
+ 3 files changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index cb3e624..85e6d88 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -805,6 +805,15 @@ struct OpalIoPhb3ErrorData {
+ enum {
+ 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
+ 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
 +
- 	if (cpu_has_feature(CPU_FTR_PURR)) {
- 		if (!firmware_has_feature(FW_FEATURE_LPAR))
- 			add_write_permission_dev_attr(&dev_attr_purr);
-@@ -845,6 +850,9 @@ static int unregister_cpu_online(unsigned int cpu)
- 	if (cpu_has_feature(CPU_FTR_MMCRA))
- 		device_remove_file(s, &dev_attr_mmcra);
++	/* These two define the base MMU mode of the host on P9
++	 *
++	 * On P9 Nimbus DD2.0 and Cumlus (and later), KVM can still
++	 * create hash guests in "radix" mode with care (full core
++	 * switch only).
++	 */
++	OPAL_REINIT_CPUS_MMU_HASH	= (1 << 2),
++	OPAL_REINIT_CPUS_MMU_RADIX	= (1 << 3),
+ };
  
-+	if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		device_remove_file(s, &dev_attr_mmcr2);
+ typedef struct oppanel_line {
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 59684b4..e522d6b 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -59,6 +59,8 @@ static struct task_struct *kopald_tsk;
+ 
+ void opal_configure_cores(void)
+ {
++	uint64_t reinit_flags = 0;
 +
- 	if (cpu_has_feature(CPU_FTR_PURR))
- 		device_remove_file(s, &dev_attr_purr);
+ 	/* Do the actual re-init, This will clobber all FPRs, VRs, etc...
+ 	 *
+ 	 * It will preserve non volatile GPRs and HSPRG0/1. It will
+@@ -66,11 +68,19 @@ void opal_configure_cores(void)
+ 	 * but it might clobber a bunch.
+ 	 */
+ #ifdef __BIG_ENDIAN__
+-	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++	reinit_flags |= OPAL_REINIT_CPUS_HILE_BE;
+ #else
+-	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_LE);
++	reinit_flags |= OPAL_REINIT_CPUS_HILE_LE;
+ #endif
  
--- 
-2.7.4
++	/* Radix MMU */
++	if (early_radix_enabled())
++		reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX;
++	else
++		reinit_flags |= OPAL_REINIT_CPUS_MMU_HASH;
++
++	opal_reinit_cpus(reinit_flags);
++
+ 	/* Restore some bits */
+ 	if (cur_cpu_spec->cpu_restore)
+ 		cur_cpu_spec->cpu_restore();
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 2dc7e5f..d1cef70 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -254,8 +254,12 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+ 		 * We might be running as little-endian - now that interrupts
+ 		 * are disabled, reset the HILE bit to big-endian so we don't
+ 		 * take interrupts in the wrong endian later
++		 *
++		 * We also switch to radix mode on P9 as this is compatible
++		 * with hash and will allow earlier kernels to boot.
+ 		 */
+-		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE |
++				 OPAL_REINIT_CPUS_MMU_RADIX);
+ 	}
+ }
+ #endif /* CONFIG_KEXEC_CORE */
