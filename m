@@ -1,34 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wx8RR06SnzDr1k
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 23:05:07 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- James Hogan <james.hogan@imgtec.com>, Pratyush Anand <panand@redhat.com>,
- Ingo Molnar <mingo@kernel.org>,
- "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390\@vger.kernel.org" <linux-s390@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>,
- "kernel-hardening\@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Subject: Re: [PATCH 3/4] powerpc: Reduce ELF_ET_DYN_BASE
-In-Reply-To: <CAGXu5jK7aHHRMZyZyrviBF+cLghWcH_D4PX_vMFOycHuF7EdLA@mail.gmail.com>
-References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
- <1498154792-49952-4-git-send-email-keescook@chromium.org>
- <87podvp4q1.fsf@concordia.ellerman.id.au>
- <CAGXu5jK7aHHRMZyZyrviBF+cLghWcH_D4PX_vMFOycHuF7EdLA@mail.gmail.com>
-Date: Mon, 26 Jun 2017 23:04:58 +1000
-Message-ID: <8737amew79.fsf@concordia.ellerman.id.au>
+Return-Path: <schindele@nentec.de>
+Received: from dmz-mail.nentec.de (gate.nentec.de [213.218.23.37])
+ by lists.ozlabs.org (Postfix) with SMTP id 3wx8Tq66qXzDr1k
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 23:07:11 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/ipic: Support edge on IRQ0
+To: Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20170625023905.24649-1-oss@buserror.net>
+ <878tkeex1f.fsf@concordia.ellerman.id.au>
+From: =?UTF-8?Q?J=c3=bcrgen_Schindele?= <schindele@nentec.de>
+Message-ID: <e1f22604-17fe-0a13-994c-14b497a049fb@nentec.de>
+Date: Mon, 26 Jun 2017 14:55:45 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <878tkeex1f.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,41 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
+Index 48 equals IRQ0 in developpers manual
 
-> On Fri, Jun 23, 2017 at 12:01 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Kees Cook <keescook@chromium.org> writes:
->>
->>> Now that explicitly executed loaders are loaded in the mmap region,
->>> position PIE binaries lower in the address space to avoid possible
->>> collisions with mmap or stack regions. For 64-bit, align to 4GB to
->>> allow runtimes to use the entire 32-bit address space for 32-bit
->>> pointers.
->>
->> The change log and subject are a bit out of whack with the actual patch
->> because previously we used 512MB.
->>
->> How about?
->>
->>   powerpc: Move ELF_ET_DYN_BASE to 4GB / 4MB
->>
->>   Now that explicitly executed loaders are loaded in the mmap region,
->>   we have more freedom to decide where we position PIE binaries in the
->>   address space to avoid possible collisions with mmap or stack regions.
->>
->>   For 64-bit, align to 4GB to allow runtimes to use the entire 32-bit
->>   address space for 32-bit pointers. On 32-bit use 4MB.
->
-> Good idea, thanks. I'll resend the series with the commit logs updated.
->
->> Is there any particular reasoning behind the 4MB value on 32-bit?
->
-> So, I've dug around a bit on this, and I *think* the rationale is to
-> avoid mapping a possible 4MB page table entry when it won't be using
-> at least a portion near the lower end (NULL address area covered
-> blocked by mmap_min_addr). It seems to be mainly tradition, though.
 
-OK, that is obscure, especially for CPUs that don't have a 4MB page
-size. But consistency across arches is probably best regardless.
+Am 26.06.2017 um 14:46 schrieb Michael Ellerman:
+> Scott Wood <oss@buserror.net> writes:
+>
+>> External IRQ0 has the same capabilities as the other IRQ1-7 and is
+>> handled by the same register IPIC_SEPNR.  When this register is not
+>> specified for "ack" in "ipic_info", you cannot configure this IRQ as
+>> IRQ_TYPE_EDGE_FALLING.  This oversight was probably due to the
+>> non-contiguous hwirq numbering of IRQ0 in the IPIC.
+> I don't know this code at all, but nothing in the diff says "IRQ0" to
+> me?
+>
+> cheers
+>
+>> diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
+>> index f267ee0afc08..16f1edd78c40 100644
+>> --- a/arch/powerpc/sysdev/ipic.c
+>> +++ b/arch/powerpc/sysdev/ipic.c
+>> @@ -315,6 +315,7 @@ static struct ipic_info ipic_info[] =3D {
+>>   		.prio_mask =3D 7,
+>>   	},
+>>   	[48] =3D {
+>> +		.ack	=3D IPIC_SEPNR,
+>>   		.mask	=3D IPIC_SEMSR,
+>>   		.prio	=3D IPIC_SMPRR_A,
+>>   		.force	=3D IPIC_SEFCR,
+>> --=20
+>> 2.11.0
 
-cheers
+--=20
+  i. A.
+J=C3=BCrgen Schindele
+Softwareentwicklung
+
+PSI Nentec GmbH
+Greschbachstra=C3=9Fe 12
+76229 Karlsruhe
+Deutschland
+Telefon: +49 721 94249-51
+Telefax: +49 721 94249-10
+schindele@nentec.de
+www.nentec.de
+
+Gesch=C3=A4ftsf=C3=BChrung: Klaus Becker, Roland Knapp
+Sitz der Gesellschaft: Karlsruhe
+Handelsregister: Amtsgericht Mannheim HRB 107658
+
+Diese E-Mail enth=C3=A4lt vertrauliche oder rechtlich gesch=C3=BCtzte Inf=
+ormationen. Wenn Sie nicht der vorgesehene Empf=C3=A4nger sind, informier=
+en Sie bitte sofort den Absender und l=C3=B6schen Sie diese E-Mail. Das u=
+nbefugte Kopieren dieser E-Mail oder die unbefugte Weitergabe der enthalt=
+enen Informationen ist nicht gestattet.
+
+The information contained in this message is confidential or protected by=
+ law. If you are not the intended recipient, please contact the sender an=
+d delete this message. Any unauthorised copying of this message or unauth=
+orised distribution of the information contained herein is prohibited.
