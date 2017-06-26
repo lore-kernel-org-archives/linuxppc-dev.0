@@ -1,31 +1,14 @@
-Return-Path: <srs0=hipf=57=aculab.com=david.laight@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxFCT6WFqzDr26
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 02:40:05 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wxFCT5kVnz8vLp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 02:40:05 +1000 (AEST)
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wxFCT2wxbz9s81
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Jun 2017 02:40:05 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Michael Ellerman' <mpe@ellerman.id.au>, "linuxppc-dev@ozlabs.org"
- <linuxppc-dev@ozlabs.org>
-CC: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
- "Larry.Finger@lwfinger.net" <Larry.Finger@lwfinger.net>
-Subject: RE: [PATCH] powerpc/32: Avoid miscompilation w/GCC 4.6.3 - don't
- inline copy_to/from_user()
-Date: Mon, 26 Jun 2017 16:22:09 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD002B1DB@AcuExch.aculab.com>
-References: <1498484055-13783-1-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1498484055-13783-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <geoff@infradead.org>
+Subject: Re: ps3 linux: os_area_queue_work_handler: Could not update FLASH ROM
+To: Sombat Tragolgosol <sombat3960@gmail.com>, Linuxppc-dev@lists.ozlabs.org
+Cc: Jeremy Kerr <jk@ozlabs.org>
+References: <CAC1vu63d9t3vdfz_+62hDc94tfG=rRN757RezXh8wSNwnYdmZg@mail.gmail.com>
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <f3e6f786-e35a-c105-5749-c74e4463c721@infradead.org>
+Date: Mon, 26 Jun 2017 10:24:54 -0700
 MIME-Version: 1.0
+In-Reply-To: <CAC1vu63d9t3vdfz_+62hDc94tfG=rRN757RezXh8wSNwnYdmZg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,21 +18,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman
-> Sent: 26 June 2017 14:34
-..
-> Al also pointed out that inlining copy_to/from_user() is probably of litt=
-le or
-> no benefit, which is correct
-...
+Hi Sombat,
 
-I was a bit horrified at the x86-64 versions of copy_to/from_user() as well=
-.
-With code that (tries to) error kernel pointers that cross stack frame
-boundaries I'm fairly sure they expand to a lot of code.
+On 06/26/2017 02:26 AM, Sombat Tragolgosol wrote:
+> 1) Is it normal for os_area_queue_work_handler: Could not update FLASH ROM?
 
-I also suspect the cost of that kernel address check is not insignificant
-especially if it has to walk down several stack frames.
-(Never mind what happens to code compiled without stack frames.)
+You should try to find the exact cause of the error.  It could be due to a
+corrupted os-area.
 
-	David
+> 2) My Date time is not correct.  Is the problem is not able to update os-area data?
+> 
+> Here below is my rtc time problem.
+> 
+> RTC time is not proper value (lower than it should be).
+> (For GameOS , Date-Time is OK.)
+> 
+> Here is what I've tried
+>    1) lv1_get_rtc gets 205943663 (11 Jul 1976)
+>    2) saved_params.rtc_diff always is 946684800
+>         (205943663+946684800) = 11 Jul 2006
+>    So every time, my Linux is booted,  my year says 2006 and causes problem on clock skew.
+>    3) if I add 345746286 to rtc in read_rtc function in
+>       arch/powerpc/platforms/ps3/time.c and
+>       drivers/rtc/rtc-ps3.c
+>       (205943663+946684800+345746286) = 25 Jun 2017
+>    My boot time and date is acceptable for my temporary use.
+> 
+>    Do you have any proper solution? I don't want to modify source for my one rtc time problem?
+
+Your problem is that the os-area database value is wrong and is not being set.
+
+The RTC hardware of the PS3 cannot be reset, so each OS (game-os and Linux) needs
+to maintain a difference between the hardware RTC value and the value it
+uses for time.
+
+A read-only copy of the game-os diff is put at os_area_params.rtc_diff.  You can read
+that with 'ps3-flash-util --game-time'. For Linux we keep that difference in the
+os-area database (db_area_offset + OS_AREA_DB_OWNER_LINUX + OS_AREA_DB_KEY_RTC_DIFF).
+
+See:
+
+  https://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-linux-docs/PlatformSpecificUtilities.html
+
+First you should try to set the os-area value with 'ps3-rtc-init --force'.  Look at
+the ps3-rtc-init source to see how to set the rtc diff value yourself:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-utils.git/tree/ps3-rtc-init.in#n69
+
+Maybe you need to re-format the os-area database 'ps3-flash-util ----db-format'.  Make
+a backup first.  See '** backup flash data **' here:
+
+  https://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-howto/ps3-boot-recovery-howto.txt
+
+-Geoff
