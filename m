@@ -1,26 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=7x/w=57=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wwvMS6l0PzDr34
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 13:15:48 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paolo Abeni <pabeni@redhat.com>,
- Hannes Frederic Sowa <hannes@stressinduktion.org>
-Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: DNS (?) not working on G5 (64-bit powerpc) (was [net-next, v3,
- 3/3] udp: try to avoid 2 cache miss on dequeue)
-In-Reply-To: <1498219181.2611.6.camel@redhat.com>
-References: <87shisqihz.fsf@concordia.ellerman.id.au>
- <1498165026.2503.21.camel@redhat.com>
- <1498166297.111795.1018373424.5E414246@webmail.messagingengine.com>
- <87r2ybp4ud.fsf@concordia.ellerman.id.au>
- <1498219181.2611.6.camel@redhat.com>
-Date: Mon, 26 Jun 2017 13:15:48 +1000
-Message-ID: <87d19rphgb.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwvnX4bllzDr0c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 13:34:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wwvnX3hWWz8t9R
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 13:34:56 +1000 (AEST)
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wwvnW6nqzz9s76
+ for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2017 13:34:55 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id p21so13217590qke.0
+ for <linuxppc-dev@ozlabs.org>; Sun, 25 Jun 2017 20:34:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170603132747.GA18185@amd>
+References: <20170603105232.6436-1-bsingharora@gmail.com>
+ <20170603132747.GA18185@amd>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 26 Jun 2017 13:34:52 +1000
+Message-ID: <CAKTCnzk2bhFr3BvgQSzQr8TK9DB+bW7TyCtfzq7537F9Ym8QKw@mail.gmail.com>
+Subject: Re: [PATCH] kernel/power/suspend: use CONFIG_HAVE_SET_MEMORY for
+ include condition
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Len Brown <len.brown@intel.com>, Laura Abbott <labbott@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +42,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paolo Abeni <pabeni@redhat.com> writes:
-> Thank you!
->
-> I'll submit formally the patch after some more testing.
+On Sat, Jun 3, 2017 at 11:27 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Sat 2017-06-03 20:52:32, Balbir Singh wrote:
+>> Kbuild reported a build failure when CONFIG_STRICT_KERNEL_RWX was
+>> enabled on powerpc. We don't yet have ARCH_HAS_SET_MEMORY and ppc32
+>> saw a build failure.
+>>
+>> fixes(50327dd kernel/power/snapshot.c: use set_memory.h header)
+>>
+>> I've only done a basic compile test with a config that has
+>> hibernation enabled.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Len Brown <len.brown@intel.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Thanks.
+Ping. Could we please pick this up? it breaks any attempt to support
+STRICT_KERNEL_RWX on powerpc
 
-> I noticed this version has entered the ppc patchwork, but I think that
-> the formal submission should go towards the net-next tree.
-
-Yeah it picks up all patches sent to the list. That's fine I'll just
-mark it "Not applicable", and expect to see it arrive via net-next.
-
-cheers
+Balbir Singh.
