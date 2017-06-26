@@ -1,14 +1,30 @@
-Return-Path: <geoff@infradead.org>
-Subject: Re: ps3 linux: os_area_queue_work_handler: Could not update FLASH ROM
-To: Sombat Tragolgosol <sombat3960@gmail.com>, Linuxppc-dev@lists.ozlabs.org
-Cc: Jeremy Kerr <jk@ozlabs.org>
-References: <CAC1vu63d9t3vdfz_+62hDc94tfG=rRN757RezXh8wSNwnYdmZg@mail.gmail.com>
-From: Geoff Levand <geoff@infradead.org>
-Message-ID: <f3e6f786-e35a-c105-5749-c74e4463c721@infradead.org>
-Date: Mon, 26 Jun 2017 10:24:54 -0700
-MIME-Version: 1.0
-In-Reply-To: <CAC1vu63d9t3vdfz_+62hDc94tfG=rRN757RezXh8wSNwnYdmZg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxHBD0jH0zDr2d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 04:09:07 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5QI8lG5111620
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 14:09:04 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2baw9vvgmp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 14:09:04 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 26 Jun 2017 19:09:02 +0100
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, mikey@neuling.org,
+ benh@kernel.crashing.org, brking@linux.vnet.ibm.com,
+ clsoto@linux.vnet.ibm.com
+Subject: [PATCH v2] powerpc/powernv: Enable PCI peer-to-peer
+Date: Mon, 26 Jun 2017 20:08:55 +0200
+Message-Id: <20170626180855.28238-1-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,56 +34,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sombat,
+P9 has support for PCI peer-to-peer, enabling a device to write in the
+mmio space of another device directly, without interrupting the CPU.
 
-On 06/26/2017 02:26 AM, Sombat Tragolgosol wrote:
-> 1) Is it normal for os_area_queue_work_handler: Could not update FLASH ROM?
+This patch adds support for it on powernv, by adding a new API to be
+called by drivers. The pnv_pci_set_p2p(...) call configures an
+'initiator', i.e the device which will issue the mmio operation, and a
+'target', i.e. the device on the receiving side.
 
-You should try to find the exact cause of the error.  It could be due to a
-corrupted os-area.
+P9 really only supports mmio stores for the time being (loads are only
+supported if the 2 devices are under the same PHBs), but that's
+expected to change in the future, so the API allows to define both
+load and store operations.
 
-> 2) My Date time is not correct.  Is the problem is not able to update os-area data?
-> 
-> Here below is my rtc time problem.
-> 
-> RTC time is not proper value (lower than it should be).
-> (For GameOS , Date-Time is OK.)
-> 
-> Here is what I've tried
->    1) lv1_get_rtc gets 205943663 (11 Jul 1976)
->    2) saved_params.rtc_diff always is 946684800
->         (205943663+946684800) = 11 Jul 2006
->    So every time, my Linux is booted,  my year says 2006 and causes problem on clock skew.
->    3) if I add 345746286 to rtc in read_rtc function in
->       arch/powerpc/platforms/ps3/time.c and
->       drivers/rtc/rtc-ps3.c
->       (205943663+946684800+345746286) = 25 Jun 2017
->    My boot time and date is acceptable for my temporary use.
-> 
->    Do you have any proper solution? I don't want to modify source for my one rtc time problem?
+    /* PCI p2p descriptor */
+    #define OPAL_PCI_P2P_ENABLE		0x1
+    #define OPAL_PCI_P2P_LOAD		0x2
+    #define OPAL_PCI_P2P_STORE		0x4
 
-Your problem is that the os-area database value is wrong and is not being set.
+    int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target,
+    			   uint64_t desc)
 
-The RTC hardware of the PS3 cannot be reset, so each OS (game-os and Linux) needs
-to maintain a difference between the hardware RTC value and the value it
-uses for time.
+It uses a new OPAL call, as the configuration magic is done on the
+PHBs by skiboot.
 
-A read-only copy of the game-os diff is put at os_area_params.rtc_diff.  You can read
-that with 'ps3-flash-util --game-time'. For Linux we keep that difference in the
-os-area database (db_area_offset + OS_AREA_DB_OWNER_LINUX + OS_AREA_DB_KEY_RTC_DIFF).
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+---
+Requires skiboot patch:
+http://patchwork.ozlabs.org/patch/780813/
 
-See:
+Changelog:
+  - change of API
+  - allow disabling of p2p setting
 
-  https://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-linux-docs/PlatformSpecificUtilities.html
 
-First you should try to set the os-area value with 'ps3-rtc-init --force'.  Look at
-the ps3-rtc-init source to see how to set the rtc diff value yourself:
+ arch/powerpc/include/asm/opal-api.h            |  8 ++-
+ arch/powerpc/include/asm/opal.h                |  3 ++
+ arch/powerpc/include/asm/pnv-pci.h             |  2 +
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/pci-ioda.c      |  3 +-
+ arch/powerpc/platforms/powernv/pci.c           | 68 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci.h           |  4 ++
+ 7 files changed, 86 insertions(+), 3 deletions(-)
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-utils.git/tree/ps3-rtc-init.in#n69
-
-Maybe you need to re-format the os-area database 'ps3-flash-util ----db-format'.  Make
-a backup first.  See '** backup flash data **' here:
-
-  https://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-howto/ps3-boot-recovery-howto.txt
-
--Geoff
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index cb3e6242a78c..2b068550b106 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -190,7 +190,8 @@
+ #define OPAL_NPU_INIT_CONTEXT			146
+ #define OPAL_NPU_DESTROY_CONTEXT		147
+ #define OPAL_NPU_MAP_LPAR			148
+-#define OPAL_LAST				148
++#define OPAL_PCI_SET_P2P			149
++#define OPAL_LAST				149
+ 
+ /* Device tree flags */
+ 
+@@ -1003,6 +1004,11 @@ enum {
+ 	XIVE_DUMP_EMU_STATE	= 5,
+ };
+ 
++/* PCI p2p descriptor */
++#define OPAL_PCI_P2P_ENABLE		0x1
++#define OPAL_PCI_P2P_LOAD		0x2
++#define OPAL_PCI_P2P_STORE		0x4
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __OPAL_API_H */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 588fb1c23af9..9c099fa9bb4e 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -267,6 +267,9 @@ int64_t opal_xive_allocate_irq(uint32_t chip_id);
+ int64_t opal_xive_free_irq(uint32_t girq);
+ int64_t opal_xive_sync(uint32_t type, uint32_t id);
+ int64_t opal_xive_dump(uint32_t type, uint32_t id);
++int64_t opal_pci_set_p2p(uint64_t phb_init, uint64_t phb_target,
++			uint64_t desc, uint16_t pe_number);
++
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index de9681034353..59a548909d0b 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -26,6 +26,8 @@ extern int pnv_pci_get_presence_state(uint64_t id, uint8_t *state);
+ extern int pnv_pci_get_power_state(uint64_t id, uint8_t *state);
+ extern int pnv_pci_set_power_state(uint64_t id, uint8_t state,
+ 				   struct opal_msg *msg);
++extern int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target,
++			uint64_t desc);
+ 
+ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
+ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index f620572f891f..cf629d2d89d9 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -310,3 +310,4 @@ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
+ OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+ OPAL_CALL(opal_npu_map_lpar,			OPAL_NPU_MAP_LPAR);
++OPAL_CALL(opal_pci_set_p2p,			OPAL_PCI_SET_P2P);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 283caf1070c9..ebb24ddf17c3 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1408,7 +1408,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+ 
+ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
+ 		int num);
+-static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
+ 
+ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
+ {
+@@ -2280,7 +2279,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
+ 	return 0;
+ }
+ 
+-static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
++void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
+ {
+ 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+ 	int64_t rc;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 935ccb249a8a..ce712dee44a8 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -37,6 +37,8 @@
+ #include "powernv.h"
+ #include "pci.h"
+ 
++static DEFINE_MUTEX(p2p_mutex);
++
+ int pnv_pci_get_slot_id(struct device_node *np, uint64_t *id)
+ {
+ 	struct device_node *parent = np;
+@@ -901,6 +903,72 @@ void pnv_pci_dma_bus_setup(struct pci_bus *bus)
+ 	}
+ }
+ 
++int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target,
++		uint64_t desc)
++{
++	struct pci_controller *hose;
++	struct pnv_phb *phb_init, *phb_target;
++	struct pnv_ioda_pe *pe_init;
++	int rc;
++
++	if (!opal_check_token(OPAL_PCI_SET_P2P))
++		return -ENXIO;
++
++	hose = pci_bus_to_host(initiator->bus);
++	phb_init = hose->private_data;
++
++	hose = pci_bus_to_host(target->bus);
++	phb_target = hose->private_data;
++
++	pe_init = pnv_ioda_get_pe(initiator);
++	if (!pe_init)
++		return -ENODEV;
++	/*
++	 * Configuring the initiator's PHB requires to adjust its
++	 * TVE#1 setting. Since the same device can be an initiator
++	 * several times for different target devices, we need to keep
++	 * a reference count to know when we can restore the default
++	 * bypass setting on its TVE#1 when disabling.
++	 *
++	 * Opal is not tracking PE states, so we add a reference count
++	 * on the PE in linux. To handle concurrent calls to
++	 * pnv_pci_set_p2p(), it also requires to take a lock covering
++	 * the call to opal and the handling of the reference
++	 * count. Such a lock should really be per PE, but since this
++	 * API is only meant to be called once at setup time, it seems
++	 * like an overkill, so keep it at the API level, i.e. only
++	 * one call can proceed at a time.
++	 *
++	 * A much simpler alternative could be to not restore the TVE
++	 * setting in bypass mode when disabling... thus slightly
++	 * increasing the chance of checkstop if a device tries to
++	 * access a bogus pci address in what should be pretty rare
++	 * conditions. For the record, I was tempted...
++	 */
++	mutex_lock(&p2p_mutex);
++	rc = opal_pci_set_p2p(phb_init->opal_id, phb_target->opal_id,
++			desc, pe_init->pe_number);
++	if (rc != OPAL_SUCCESS) {
++		rc = -EIO;
++		goto out;
++	}
++
++	if (desc & OPAL_PCI_P2P_ENABLE) {
++		pe_init->p2p_initiator_count++;
++	} else {
++		if (pe_init->p2p_initiator_count > 0) {
++			pe_init->p2p_initiator_count--;
++			if (!pe_init->p2p_initiator_count)
++				pnv_pci_ioda2_set_bypass(pe_init, true);
++		}
++	}
++	rc = 0;
++out:
++	mutex_unlock(&p2p_mutex);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(pnv_pci_set_p2p);
++
+ void pnv_pci_shutdown(void)
+ {
+ 	struct pci_controller *hose;
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 18c8a2fa03b8..12ade6611b01 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -75,6 +75,9 @@ struct pnv_ioda_pe {
+ 	struct pnv_ioda_pe	*master;
+ 	struct list_head	slaves;
+ 
++	/* PCI peer-to-peer*/
++	int			p2p_initiator_count;
++
+ 	/* Link in list of PE#s */
+ 	struct list_head	list;
+ };
+@@ -230,6 +233,7 @@ extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+ extern struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev);
+ extern void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq);
+ extern bool pnv_pci_enable_device_hook(struct pci_dev *dev);
++extern void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
+ 
+ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 			    const char *fmt, ...);
+-- 
+2.11.0
