@@ -1,30 +1,33 @@
-Return-Path: <logang@deltatee.com>
-Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tushar.n.dave@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxMYR4dDyzDr13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 07:26:03 +1000 (AEST)
-To: Arnd Bergmann <arnd@arndb.de>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-3-logang@deltatee.com>
- <CAK8P3a1Uh=PQbGi540KGLpkoEVH+KUW18mzqN3aiijroXwEMWQ@mail.gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, linux-ntb@googlegroups.com,
- linux-alpha@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-crypto@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stephen Bates <sbates@raithlin.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Suresh Warrier <warrier@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <0746dbb0-9fc1-d24c-89c0-b079a3cd0c7b@deltatee.com>
-Date: Mon, 26 Jun 2017 15:25:41 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxNTC3Sp9zDr2d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 08:07:27 +1000 (AEST)
+Subject: Re: clean up and modularize arch dma_mapping interface V2
+To: Christoph Hellwig <hch@lst.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-mips@linux-mips.org, linux-samsung-soc@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ x86@kernel.org, linux-tegra@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ dmaengine@vger.kernel.org, iommu@lists.linux-foundation.org,
+ openrisc@lists.librecores.org, netdev@vger.kernel.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+References: <20170616181059.19206-1-hch@lst.de>
+ <162d7932-5766-4c29-5471-07d1b699190a@oracle.com>
+ <20170624071855.GD14580@lst.de>
+ <1498318616.31581.87.camel@kernel.crashing.org>
+ <20170626094739.GB13981@lst.de>
+From: tndave <tushar.n.dave@oracle.com>
+Message-ID: <91360640-546b-edab-9f4a-952c7a1d0061@oracle.com>
+Date: Mon, 26 Jun 2017 15:06:25 -0700
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a1Uh=PQbGi540KGLpkoEVH+KUW18mzqN3aiijroXwEMWQ@mail.gmail.com>
+In-Reply-To: <20170626094739.GB13981@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Subject: Re: [PATCH 2/7] iomap: implement ioread64 and iowrite64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,18 +37,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/26/2017 2:43 PM, Arnd Bergmann wrote:
-> This hardcodes the behavior of include/linux/io-64-nonatomic-hi-lo.h, which
-> I find rather confusing, as only about one in five drivers wants this
-> behavior.
->
-> I'd suggest you don't add it in lib/iomap.c at all for 32-bit architectures,
-> but rather use the same logic that we have for readq/writeq in
-> io-64-nonatomic-hi-lo.h and io-64-nonatomic-lo-hi.h, adding
-> {lo_hi,hi_lo}_{ioread,iowrite}{,be} to the same files, and provide
-> the {ioread,iowrite}{,be} macros only if they have not been defined
-> at that point.
 
-Thanks Arnd. Yes, I'm already reworking this patchset to do exactly that.
 
-Logan
+On 06/26/2017 02:47 AM, Christoph Hellwig wrote:
+> On Sat, Jun 24, 2017 at 10:36:56AM -0500, Benjamin Herrenschmidt wrote:
+>> I think we still need to do it. For example we have a bunch new "funky"
+>> cases.
+> 
+> I have no plan to do away with the selection - I just want a better
+> interface than the current one.
+I agree we need better interface than the current one.
+Like Benjamin mentioned cases for powerpc , sparc also need some special
+treatment for ATU IOMMU depending on device's DMA mask.
+
+For sparc, I am in process of enabling one or more dedicated IOTSB (I/O
+Translation Storage Buffer) per PCI BDF (contrary to current design
+where all PCI device under root complex share a 32bit and/or 64bit IOTSB
+depending on 32bit and/or 64bit DMA). I am planning to use DMA set mask
+APIs as hook where based on device's dma mask values (dma_mask and
+coherent_dma_mask) one or more IOTSB resource will be allocated (and
+released [1]).
+
+Without set_dma_mask ops, I can still rely on HAVE_ARCH_DMA_SET_MASK and
+dma_supported() that allows me to distinguish if device is setting
+its streaming dma_mask and coherent_dma_mask respectively.
+
+-Tushar
+
+[1] By default, every PCI BDF will have one dedicated 32bit IOTSB. This
+is to support default case where some device drivers even don't bother
+to set DMA mask but instead are fine with default 32bit mask.
+A 64bit IOTSB will be allocated when device request 64bit dma_mask.
+However if device wants 64bit dma mask for both coherent and
+non-coherent, a default 32bit IOTSB will be released as well. Wasting an
+IOTSB is not a good idea because there is a hard limit on max number of
+IOTSB per guest domain per root complex.
+
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
