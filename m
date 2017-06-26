@@ -1,17 +1,32 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wx85S694tzDr1g
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 22:49:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wx8RR06SnzDr1k
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 23:05:07 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Santosh Sivaraj <santosh@fossix.org>, linuxppc-dev@lists.ozlabs.org
-Cc: arnd@arndb.de, benh@kernel.crashing.org, ego@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/smp: Do not BUG_ON if invalid CPU during kick
-In-Reply-To: <20170624091640.20935-1-santosh@fossix.org>
-References: <20170624091640.20935-1-santosh@fossix.org>
-Date: Mon, 26 Jun 2017 22:49:31 +1000
-Message-ID: <8760fiewx0.fsf@concordia.ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>, Pratyush Anand <panand@redhat.com>,
+ Ingo Molnar <mingo@kernel.org>,
+ "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390\@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-arch <linux-arch@vger.kernel.org>,
+ "kernel-hardening\@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Subject: Re: [PATCH 3/4] powerpc: Reduce ELF_ET_DYN_BASE
+In-Reply-To: <CAGXu5jK7aHHRMZyZyrviBF+cLghWcH_D4PX_vMFOycHuF7EdLA@mail.gmail.com>
+References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
+ <1498154792-49952-4-git-send-email-keescook@chromium.org>
+ <87podvp4q1.fsf@concordia.ellerman.id.au>
+ <CAGXu5jK7aHHRMZyZyrviBF+cLghWcH_D4PX_vMFOycHuF7EdLA@mail.gmail.com>
+Date: Mon, 26 Jun 2017 23:04:58 +1000
+Message-ID: <8737amew79.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,39 +38,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Santosh Sivaraj <santosh@fossix.org> writes:
+Kees Cook <keescook@chromium.org> writes:
 
-> During secondary start, we do not need to BUG_ON if an invalid CPU number
-> is passed. We alreay print an error if secondary cannot be started, so
-                    ^
-                    d
-> just return an error instead.
+> On Fri, Jun 23, 2017 at 12:01 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Kees Cook <keescook@chromium.org> writes:
+>>
+>>> Now that explicitly executed loaders are loaded in the mmap region,
+>>> position PIE binaries lower in the address space to avoid possible
+>>> collisions with mmap or stack regions. For 64-bit, align to 4GB to
+>>> allow runtimes to use the entire 32-bit address space for 32-bit
+>>> pointers.
+>>
+>> The change log and subject are a bit out of whack with the actual patch
+>> because previously we used 512MB.
+>>
+>> How about?
+>>
+>>   powerpc: Move ELF_ET_DYN_BASE to 4GB / 4MB
+>>
+>>   Now that explicitly executed loaders are loaded in the mmap region,
+>>   we have more freedom to decide where we position PIE binaries in the
+>>   address space to avoid possible collisions with mmap or stack regions.
+>>
+>>   For 64-bit, align to 4GB to allow runtimes to use the entire 32-bit
+>>   address space for 32-bit pointers. On 32-bit use 4MB.
 >
-> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
-> ---
->  arch/powerpc/kernel/smp.c            | 3 ++-
->  arch/powerpc/platforms/cell/smp.c    | 3 ++-
->  arch/powerpc/platforms/powernv/smp.c | 3 ++-
->  arch/powerpc/platforms/pseries/smp.c | 3 ++-
+> Good idea, thanks. I'll resend the series with the commit logs updated.
+>
+>> Is there any particular reasoning behind the 4MB value on 32-bit?
+>
+> So, I've dug around a bit on this, and I *think* the rationale is to
+> avoid mapping a possible 4MB page table entry when it won't be using
+> at least a portion near the lower end (NULL address area covered
+> blocked by mmap_min_addr). It seems to be mainly tradition, though.
 
-This looks good to me ...
-
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index df2a416..05bf583 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -112,7 +112,8 @@ int smp_generic_cpu_bootable(unsigned int nr)
->  #ifdef CONFIG_PPC64
->  int smp_generic_kick_cpu(int nr)
->  {
-> -	BUG_ON(nr < 0 || nr >= NR_CPUS);
-> +	if (nr < 0 || nr >= NR_CPUS)
-> +		return -EINVAL;
-
-Except that these checks should all use nr_cpu_ids AFAICS.
-
-I think they were just written before nr_cpu_ids existed.
-
-Can you send me an incremental patch to switch them to nr_cpu_ids?
+OK, that is obscure, especially for CPUs that don't have a 4MB page
+size. But consistency across arches is probably best regardless.
 
 cheers
