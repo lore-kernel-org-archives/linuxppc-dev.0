@@ -1,27 +1,31 @@
-Return-Path: <logang@deltatee.com>
-Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=hipf=57=aculab.com=david.laight@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxDw81klPzDr1s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 02:26:47 +1000 (AEST)
-To: Jyri Sarha <jsarha@ti.com>, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-ntb@googlegroups.com,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-7-logang@deltatee.com>
- <504da99a-838c-48ec-c5b2-6b611d587a10@ti.com>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stephen Bates <sbates@raithlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- David Airlie <airlied@linux.ie>
-From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <3ffb5648-00f6-26cb-116a-370085038a0d@deltatee.com>
-Date: Mon, 26 Jun 2017 10:26:35 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxFCT6WFqzDr26
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 02:40:05 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wxFCT5kVnz8vLp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 02:40:05 +1000 (AEST)
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wxFCT2wxbz9s81
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Jun 2017 02:40:05 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Michael Ellerman' <mpe@ellerman.id.au>, "linuxppc-dev@ozlabs.org"
+ <linuxppc-dev@ozlabs.org>
+CC: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+ "Larry.Finger@lwfinger.net" <Larry.Finger@lwfinger.net>
+Subject: RE: [PATCH] powerpc/32: Avoid miscompilation w/GCC 4.6.3 - don't
+ inline copy_to/from_user()
+Date: Mon, 26 Jun 2017 16:22:09 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD002B1DB@AcuExch.aculab.com>
+References: <1498484055-13783-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1498484055-13783-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <504da99a-838c-48ec-c5b2-6b611d587a10@ti.com>
-Content-Type: text/plain; charset=utf-8
-Subject: Re: [PATCH 6/7] drm/tilcdc: clean up ifdef hacks around iowrite64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jyri,
+From: Michael Ellerman
+> Sent: 26 June 2017 14:34
+..
+> Al also pointed out that inlining copy_to/from_user() is probably of litt=
+le or
+> no benefit, which is correct
+...
 
-Thanks for the ack. However, I'm reworking this patch set to use the
-include/linux/io-64-nonatomic* headers which will explicitly devolve
-into two 32-bit transfers. It's not clear whether this is appropriate
-for the tilcdc driver as it was never setup to use 32-bit transfers
-(unlike the others I had patched).
+I was a bit horrified at the x86-64 versions of copy_to/from_user() as well=
+.
+With code that (tries to) error kernel pointers that cross stack frame
+boundaries I'm fairly sure they expand to a lot of code.
 
-If you think it's ok, I can still patch this driver to use the
-non-atomic headers. Otherwise I can leave it out. Please let me know.
+I also suspect the cost of that kernel address check is not insignificant
+especially if it has to walk down several stack frames.
+(Never mind what happens to code compiled without stack frames.)
 
-Thanks,
-
-Logan
-
-
-On 26/06/17 02:55 AM, Jyri Sarha wrote:
-> Acked-by: Jyri Sarha <jsarha@ti.com>
-> 
-> And thanks!
-> 
->> ---
->>  drivers/gpu/drm/tilcdc/tilcdc_regs.h | 6 ------
->>  1 file changed, 6 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/tilcdc/tilcdc_regs.h b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
->> index e9ce725698a9..0b901405f30a 100644
->> --- a/drivers/gpu/drm/tilcdc/tilcdc_regs.h
->> +++ b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
->> @@ -133,13 +133,7 @@ static inline void tilcdc_write64(struct drm_device *dev, u32 reg, u64 data)
->>  	struct tilcdc_drm_private *priv = dev->dev_private;
->>  	void __iomem *addr = priv->mmio + reg;
->>  
->> -#ifdef iowrite64
->>  	iowrite64(data, addr);
->> -#else
->> -	__iowmb();
->> -	/* This compiles to strd (=64-bit write) on ARM7 */
->> -	*(u64 __force *)addr = __cpu_to_le64(data);
->> -#endif
->>  }
->>  
->>  static inline u32 tilcdc_read(struct drm_device *dev, u32 reg)
->>
-> 
+	David
