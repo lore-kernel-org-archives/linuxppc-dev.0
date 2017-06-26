@@ -1,23 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wwtjl1zYtzDqlL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 12:46:35 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id d5so16354709pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jun 2017 19:46:35 -0700 (PDT)
-Date: Mon, 26 Jun 2017 12:46:24 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 2/6] powerpc/vmemmap: Reshuffle vmemmap_free()
-Message-ID: <20170626124624.7c055172@firefly.ozlabs.ibm.com>
-In-Reply-To: <20170623083122.5992-2-oohall@gmail.com>
-References: <20170623083122.5992-1-oohall@gmail.com>
- <20170623083122.5992-2-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwvL96vTXzDr0c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 13:14:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: victora <victora@linux.vnet.ibm.com>
+Cc: alistair@popple.id.au, jk@ozlabs.org, victora@br.ibm.com,
+ mauricfo@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+Subject: Re: 1M hugepage size being registered on Linux
+In-Reply-To: <fd47f4ad5f3589d4d9b6fc7253615c22@linux.vnet.ibm.com>
+References: <322aa4a1a11ca79008a8c894c12a80d5@linux.vnet.ibm.com>
+ <87o9tgsmdv.fsf@concordia.ellerman.id.au>
+ <fd47f4ad5f3589d4d9b6fc7253615c22@linux.vnet.ibm.com>
+Date: Mon, 26 Jun 2017 13:14:41 +1000
+Message-ID: <87fuenphi6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,93 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 23 Jun 2017 18:31:18 +1000
-Oliver O'Halloran <oohall@gmail.com> wrote:
+victora <victora@linux.vnet.ibm.com> writes:
+> Em 2017-06-22 00:59, Michael Ellerman escreveu:
+>> 
+>> We merged a patch from Aneesh to filter it out in 4.12-rc1:
+>> 
+>>   a525108cf1cc ("powerpc/mm/hugetlb: Filter out hugepage size not
+>> supported by page table layout")
+>> 
+>> I guess we should probably send that patch to stable et. al.
+              ^
+              :)
+>
+> Sorry for the delay. Thanks for merging that patch.
+> Was that patch also sent to stable et. al.?
 
-> Removes an indentation level and shuffles some code around to make the
-> following patch cleaner. No functional changes.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
-> v1 -> v2: Remove broken initialiser
-> ---
->  arch/powerpc/mm/init_64.c | 48 ++++++++++++++++++++++++-----------------------
->  1 file changed, 25 insertions(+), 23 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index ec84b31c6c86..8851e4f5dbab 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -234,13 +234,15 @@ static unsigned long vmemmap_list_free(unsigned long start)
->  void __ref vmemmap_free(unsigned long start, unsigned long end)
->  {
->  	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-> +	unsigned long page_order = get_order(page_size);
->  
->  	start = _ALIGN_DOWN(start, page_size);
->  
->  	pr_debug("vmemmap_free %lx...%lx\n", start, end);
->  
->  	for (; start < end; start += page_size) {
-> -		unsigned long addr;
-> +		unsigned long nr_pages, addr;
-> +		struct page *page;
->  
->  		/*
->  		 * the section has already be marked as invalid, so
-> @@ -251,29 +253,29 @@ void __ref vmemmap_free(unsigned long start, unsigned long end)
->  			continue;
->  
->  		addr = vmemmap_list_free(start);
-> -		if (addr) {
-> -			struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
-> -
-> -			if (PageReserved(page)) {
-> -				/* allocated from bootmem */
-> -				if (page_size < PAGE_SIZE) {
-> -					/*
-> -					 * this shouldn't happen, but if it is
-> -					 * the case, leave the memory there
-> -					 */
-> -					WARN_ON_ONCE(1);
-> -				} else {
-> -					unsigned int nr_pages =
-> -						1 << get_order(page_size);
-> -					while (nr_pages--)
-> -						free_reserved_page(page++);
-> -				}
-> -			} else
-> -				free_pages((unsigned long)(__va(addr)),
-> -							get_order(page_size));
-> -
-> -			vmemmap_remove_mapping(start, page_size);
-> +		if (!addr)
-> +			continue;
-> +
-> +		page = pfn_to_page(addr >> PAGE_SHIFT);
-> +		nr_pages = 1 << page_order;
-> +
-> +		if (PageReserved(page)) {
-> +			/* allocated from bootmem */
-> +			if (page_size < PAGE_SIZE) {
-> +				/*
-> +				 * this shouldn't happen, but if it is
-> +				 * the case, leave the memory there
-> +				 */
-> +				WARN_ON_ONCE(1);
-> +			} else {
-> +				while (nr_pages--)
-> +					free_reserved_page(page++);
-> +			}
-> +		} else {
-> +			free_pages((unsigned long)(__va(addr)), page_order);
->  		}
-> +
-> +		vmemmap_remove_mapping(start, page_size);
->  	}
->  }
->  #endif
+No it wasn't.
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
-
-Balbir Singh.
+cheers
