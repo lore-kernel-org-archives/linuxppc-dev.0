@@ -1,29 +1,27 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
+Return-Path: <logang@deltatee.com>
+Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxDsK2QzWzDr27
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 02:24:21 +1000 (AEST)
-Received: by mail-it0-x242.google.com with SMTP id f20so544259itb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 09:24:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxDw81klPzDr1s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 02:26:47 +1000 (AEST)
+To: Jyri Sarha <jsarha@ti.com>, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-ntb@googlegroups.com,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20170622164817.25515-1-logang@deltatee.com>
+ <20170622164817.25515-7-logang@deltatee.com>
+ <504da99a-838c-48ec-c5b2-6b611d587a10@ti.com>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Stephen Bates <sbates@raithlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ David Airlie <airlied@linux.ie>
+From: Logan Gunthorpe <logang@deltatee.com>
+Message-ID: <3ffb5648-00f6-26cb-116a-370085038a0d@deltatee.com>
+Date: Mon, 26 Jun 2017 10:26:35 -0600
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <AM5PR0402MB26914A0A9BB0877F420848B9ECDF0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-References: <1497884657-3744-1-git-send-email-madalin.bucur@nxp.com>
- <1497884657-3744-2-git-send-email-madalin.bucur@nxp.com>
- <CAMuHMdU6hkU03s2ZBYEYdOqO3M1djbjZ0YKw8VbHYEvsNxLZxw@mail.gmail.com>
- <AM5PR0402MB26914A0A9BB0877F420848B9ECDF0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 26 Jun 2017 18:24:17 +0200
-Message-ID: <CAMuHMdXAKTBGiFc37jQjjCV_9Mb2SE2t7KHWASSwdMcFpFKmrA@mail.gmail.com>
-Subject: Re: [PATCH 1/2] fsl/fman: propagate dma_ops
-To: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <504da99a-838c-48ec-c5b2-6b611d587a10@ti.com>
+Content-Type: text/plain; charset=utf-8
+Subject: Re: [PATCH 6/7] drm/tilcdc: clean up ifdef hacks around iowrite64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,83 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Madalin,
+Hi Jyri,
 
-On Mon, Jun 26, 2017 at 4:55 PM, Madalin-cristian Bucur
-<madalin.bucur@nxp.com> wrote:
->> -----Original Message-----
->> From: geert.uytterhoeven@gmail.com [mailto:geert.uytterhoeven@gmail.com]
->> On Behalf Of Geert Uytterhoeven
->> Sent: Monday, June 26, 2017 10:49 AM
->> To: Madalin-cristian Bucur <madalin.bucur@nxp.com>
->> Cc: netdev@vger.kernel.org; David S. Miller <davem@davemloft.net>;
->> linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
->> Subject: Re: [PATCH 1/2] fsl/fman: propagate dma_ops
+Thanks for the ack. However, I'm reworking this patch set to use the
+include/linux/io-64-nonatomic* headers which will explicitly devolve
+into two 32-bit transfers. It's not clear whether this is appropriate
+for the tilcdc driver as it was never setup to use 32-bit transfers
+(unlike the others I had patched).
+
+If you think it's ok, I can still patch this driver to use the
+non-atomic headers. Otherwise I can leave it out. Please let me know.
+
+Thanks,
+
+Logan
+
+
+On 26/06/17 02:55 AM, Jyri Sarha wrote:
+> Acked-by: Jyri Sarha <jsarha@ti.com>
+> 
+> And thanks!
+> 
+>> ---
+>>  drivers/gpu/drm/tilcdc/tilcdc_regs.h | 6 ------
+>>  1 file changed, 6 deletions(-)
 >>
-> On Mon, Jun 19, 2017 at 5:04 PM, Madalin Bucur <madalin.bucur@nxp.com>
->> wrote:
->> > Make sure dma_ops are set, to be later used by the Ethernet driver.
->> >
->> > Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
->> > ---
->> >  drivers/net/ethernet/freescale/fman/mac.c | 2 ++
->> >  1 file changed, 2 insertions(+)
->> >
->> > diff --git a/drivers/net/ethernet/freescale/fman/mac.c
->> b/drivers/net/ethernet/freescale/fman/mac.c
->> > index 0b31f85..6e67d22f 100644
->> > --- a/drivers/net/ethernet/freescale/fman/mac.c
->> > +++ b/drivers/net/ethernet/freescale/fman/mac.c
->> > @@ -623,6 +623,8 @@ static struct platform_device
->> *dpaa_eth_add_device(int fman_id,
->> >                 goto no_mem;
->> >         }
->> >
->> > +       set_dma_ops(&pdev->dev, get_dma_ops(priv->dev));
->> > +
+>> diff --git a/drivers/gpu/drm/tilcdc/tilcdc_regs.h b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
+>> index e9ce725698a9..0b901405f30a 100644
+>> --- a/drivers/gpu/drm/tilcdc/tilcdc_regs.h
+>> +++ b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
+>> @@ -133,13 +133,7 @@ static inline void tilcdc_write64(struct drm_device *dev, u32 reg, u64 data)
+>>  	struct tilcdc_drm_private *priv = dev->dev_private;
+>>  	void __iomem *addr = priv->mmio + reg;
+>>  
+>> -#ifdef iowrite64
+>>  	iowrite64(data, addr);
+>> -#else
+>> -	__iowmb();
+>> -	/* This compiles to strd (=64-bit write) on ARM7 */
+>> -	*(u64 __force *)addr = __cpu_to_le64(data);
+>> -#endif
+>>  }
+>>  
+>>  static inline u32 tilcdc_read(struct drm_device *dev, u32 reg)
 >>
->> When compile-testing with f NO_DMA=3Dy:
->>
->>     drivers/net/ethernet/freescale/fman/mac.c: In function
->> =E2=80=98dpaa_eth_add_device=E2=80=99:
->>     drivers/net/ethernet/freescale/fman/mac.c:626: error: implicit
->> declaration of function =E2=80=98set_dma_ops=E2=80=99
->>
->> Reverting commit 5567e989198b5a8d fixes this regression in v4.12-rc7.
->>
->> Why is this change needed?
->> There's no single other call to the DMA API in this file?
->
-> We're setting here the dma_ops that are later used in the other driver/pa=
-tch.
-> The problem is we now depend upon DMA but do not explicitly declare it:
->
-> <<Code that depends on the dma-mapping API needs to set 'depends on HAS_D=
-MA'
-> in its Kconfig>>
-
-Sure. But only if the driver really uses DMA.
-I can stick a set_dma_ops() call in whatever driver, but that doesn't
-mean it will
-suddenly use DMA.
-Why does the FMan driver suddenly has a dependency on DMA, if it doesn't
-use DMA?
-
-> I'll need to add this to the FMan driver Kconfig.
-
-Why does the FMan driver need this?
-Why can't his call be done in the driver that uses the DMA APIO?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+> 
