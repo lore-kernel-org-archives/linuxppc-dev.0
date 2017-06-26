@@ -1,28 +1,34 @@
-Return-Path: <martin.petersen@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxHxs1bvDzDr24
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 04:43:27 +1000 (AEST)
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/17] cxlflash: LUN provisioning support and
- miscellaneous fixes
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-References: <1498097563-8680-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Date: Mon, 26 Jun 2017 14:43:18 -0400
-In-Reply-To: <1498097563-8680-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- (Uma Krishnan's message of "Wed, 21 Jun 2017 21:12:43 -0500")
-Message-ID: <yq160fi37zt.fsf@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxLcb6jW8zDr2f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 06:43:43 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id p66so967208oia.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 13:43:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20170622164817.25515-3-logang@deltatee.com>
+References: <20170622164817.25515-1-logang@deltatee.com>
+ <20170622164817.25515-3-logang@deltatee.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 26 Jun 2017 22:43:40 +0200
+Message-ID: <CAK8P3a1Uh=PQbGi540KGLpkoEVH+KUW18mzqN3aiijroXwEMWQ@mail.gmail.com>
+Subject: Re: [PATCH 2/7] iomap: implement ioread64 and iowrite64
+To: Logan Gunthorpe <logang@deltatee.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ linux-ntb@googlegroups.com, linux-alpha@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-crypto@vger.kernel.org,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Stephen Bates <sbates@raithlin.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Suresh Warrier <warrier@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,14 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> +u64 ioread64(void __iomem *addr)
+> +{
+> +       u64 low, high;
+> +
+> +       low = ioread32(addr);
+> +       high = ioread32(addr + sizeof(u32));
+> +       return low | (high << 32);
+> +}
+> +u64 ioread64be(void __iomem *addr)
+> +{
+> +       u64 low, high;
+> +
+> +       low = ioread32be(addr + sizeof(u32));
+> +       high = ioread32be(addr);
+> +       return low | (high << 32);
+> +}
+> +#endif
 
-Uma,
+This hardcodes the behavior of include/linux/io-64-nonatomic-hi-lo.h, which
+I find rather confusing, as only about one in five drivers wants this
+behavior.
 
-> This patch series contains miscellaneous fixes and several
-> enhancements such as LUN provisioning support, WS16 unmap and AFU
-> debug capabilities.
+I'd suggest you don't add it in lib/iomap.c at all for 32-bit architectures,
+but rather use the same logic that we have for readq/writeq in
+io-64-nonatomic-hi-lo.h and io-64-nonatomic-lo-hi.h, adding
+{lo_hi,hi_lo}_{ioread,iowrite}{,be} to the same files, and provide
+the {ioread,iowrite}{,be} macros only if they have not been defined
+at that point.
 
-Applied to 4.13/scsi-queue. Thank you!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+       Arnd
