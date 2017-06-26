@@ -1,19 +1,27 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
- [150.101.137.145])
- by lists.ozlabs.org (Postfix) with ESMTP id 3wwxQz72QVzDr0c
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 14:48:59 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] powerpc/powernv/pci: Add helper to check if a PE has
- a single vendor
-Date: Mon, 26 Jun 2017 14:48:25 +1000
-Message-ID: <1719039.1i4epCekVU@new-mexico>
-In-Reply-To: <20170621071804.11660-1-ruscur@russell.cc>
-References: <20170621071804.11660-1-ruscur@russell.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wwxSx2Z3VzDr0c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 14:50:41 +1000 (AEST)
+Message-ID: <1498449778.31581.118.camel@kernel.crashing.org>
+Subject: Re: [RFC v3 02/23] powerpc: introduce set_hidx_slot helper
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Balbir Singh <bsingharora@gmail.com>, Ram Pai <linuxram@us.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org
+Cc: paulus@samba.org, mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, dave.hansen@intel.com,
+ hbabu@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
+ corbet@lwn.net, mingo@redhat.com
+Date: Sun, 25 Jun 2017 23:02:58 -0500
+In-Reply-To: <1498431798.7935.5.camel@gmail.com>
+References: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
+ <1498095579-6790-3-git-send-email-linuxram@us.ibm.com>
+ <1498431798.7935.5.camel@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,58 +31,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-You may need some kind of temporary unused annotation to shut the
-compiler/kbuild robot up but the patch itself looks fine.
+On Mon, 2017-06-26 at 09:03 +1000, Balbir Singh wrote:
+> On Wed, 2017-06-21 at 18:39 -0700, Ram Pai wrote:
+> > Introduce set_hidx_slot() which sets the (H_PAGE_F_SECOND|H_PAGE_F_GIX)
+> > bits at  the  appropriate  location  in  the  PTE  of  4K  PTE.  In the
+> > case of 64K PTE, it sets the bits in the second part of the PTE. Though
+> > the implementation for the former just needs the slot parameter, it does
+> > take some additional parameters to keep the prototype consistent.
+> > 
+> > This function will come in handy as we  work  towards  re-arranging the
+> > bits in the later patches.
 
-Reviewed-by: Alistair Popple <alistair@popple.id.au>
+The name somewhat sucks. Something like pte_set_hash_slot() or
+something like that would be much more meaningful.
 
-On Wed, 21 Jun 2017 05:18:03 PM Russell Currey wrote:
-> Add a helper that determines if all the devices contained in a given PE
-> are all from the same vendor or not.  This can be useful in determining
-> if it's okay to make PE-wide changes that may be suitable for some
-> devices but not for others.
+> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/book3s/64/hash-4k.h  |  7 +++++++
+> >  arch/powerpc/include/asm/book3s/64/hash-64k.h | 16 ++++++++++++++++
+> >  2 files changed, 23 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> > index 9c2c8f1..cef644c 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> > @@ -55,6 +55,13 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
+> >  }
+> >  #endif
+> >  
+> > +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> > +			unsigned int subpg_index, unsigned long slot)
+> > +{
+> > +	return (slot << H_PAGE_F_GIX_SHIFT) &
+> > +		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
+> > +}
+> > +
 > 
-> This is used later in the series.
+> A comment on top would help explain that 4k and 64k are different, 64k
+> is a new layout.
 > 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
+> >  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> >  
+> >  static inline char *get_hpte_slot_array(pmd_t *pmdp)
+> > diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> > index 3f49941..4bac70a 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> > @@ -75,6 +75,22 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+> >  	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
+> >  }
+> >  
+> > +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> > +		unsigned int subpg_index, unsigned long slot)
+> > +{
+> > +	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+> > +
+> > +	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+> > +	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+> > +	/*
+> > +	 * Avoid race with __real_pte()
+> > +	 * hidx must be committed to memory before committing
+> > +	 * the pte.
+> > +	 */
+> > +	smp_wmb();
 > 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 283caf1070c9..13835ac30795 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1718,6 +1718,31 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
->  	 */
->  }
->  
-> +static bool pnv_pci_ioda_pe_single_vendor(struct pnv_ioda_pe *pe)
-> +{
-> +	unsigned short vendor = 0;
-> +	struct pci_dev *pdev;
-> +
-> +	if (pe->device_count == 1)
-> +		return true;
-> +
-> +	/* pe->pdev should be set if it's a single device, pe->pbus if not */
-> +	if (!pe->pbus)
-> +		return true;
-> +
-> +	list_for_each_entry(pdev, &pe->pbus->devices, bus_list) {
-> +		if (!vendor) {
-> +			vendor = pdev->vendor;
-> +			continue;
-> +		}
-> +
-> +		if (pdev->vendor != vendor)
-> +			return false;
-> +	}
-> +
-> +	return true;
-> +}
-> +
->  static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
->  {
->  	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+> Whats the other paired barrier, is it in set_pte()?
 > 
+> > +	return 0x0UL;
+> > +}
+> 
+> We return 0 here and slot information for 4k pages, it is not that
+> clear
+> 
+> Balbir Singh.
