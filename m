@@ -1,25 +1,40 @@
-Return-Path: <jsarha@ti.com>
-Received: from lelnx193.ext.ti.com (lelnx193.ext.ti.com [198.47.27.77])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <srs0=kieq=57=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wx7Fw1PDNzDr1p
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 22:11:47 +1000 (AEST)
-Subject: Re: [PATCH 6/7] drm/tilcdc: clean up ifdef hacks around iowrite64
-To: Logan Gunthorpe <logang@deltatee.com>, <linux-kernel@vger.kernel.org>,
- <linux-arch@vger.kernel.org>, <linux-ntb@googlegroups.com>,
- <linux-alpha@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-crypto@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Stephen Bates <sbates@raithlin.com>, Tomi
- Valkeinen <tomi.valkeinen@ti.com>, David Airlie <airlied@linux.ie>
-References: <20170622164817.25515-1-logang@deltatee.com>
- <20170622164817.25515-7-logang@deltatee.com>
-From: Jyri Sarha <jsarha@ti.com>
-Message-ID: <504da99a-838c-48ec-c5b2-6b611d587a10@ti.com>
-Date: Mon, 26 Jun 2017 11:55:03 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wx7Kk0QdwzDr1p
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 22:15:06 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3wx7Kj6tN6z8t39
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 22:15:05 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3wx7Kj1XHLz9rvt
+ for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2017 22:15:05 +1000 (AEST)
+Date: Mon, 26 Jun 2017 14:15:01 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
+ 'fadump_append=' parameter
+Message-ID: <20170626141501.6086b6ab@kitsune.suse.cz>
+In-Reply-To: <a3ac4a10-3315-187b-e29a-01637ba19dff@linux.vnet.ibm.com>
+References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
+ <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
+ <20170510180132.1fa0c1ec@kitsune.suse.cz>
+ <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
+ <20170511151637.19d4a23f@kitsune.suse.cz>
+ <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
+ <20170512174209.67ccfd45@kitsune.suse.cz>
+ <b6a968fe-378e-1273-a996-43c716f276bd@linux.vnet.ibm.com>
+ <20170515112901.67d32e76@kitsune.suse.cz>
+ <102276aa-cddb-dc60-269c-b29dedc89eab@linux.vnet.ibm.com>
+ <20170609140454.2eb01371@kitsune.suse.cz>
+ <a3ac4a10-3315-187b-e29a-01637ba19dff@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20170622164817.25515-7-logang@deltatee.com>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +44,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/22/17 19:48, Logan Gunthorpe wrote:
-> Now that we can expect iowrite64 to always exist the hack is no longer
-> necessary so we just call iowrite64 directly.
-> 
-> Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
-> Cc: Jyri Sarha <jsarha@ti.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: David Airlie <airlied@linux.ie>
+Hello,
 
-Acked-by: Jyri Sarha <jsarha@ti.com>
+On Tue, 20 Jun 2017 21:14:08 +0530
+Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
 
-And thanks!
+> On Friday 09 June 2017 05:34 PM, Michal Such=C3=A1nek wrote:
+> > On Thu, 8 Jun 2017 23:30:37 +0530
+> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >> On Monday 15 May 2017 02:59 PM, Michal Such=C3=A1nek wrote: =20
+> >>> On Mon, 15 May 2017 12:59:46 +0530
+> >>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >>>> On Friday 12 May 2017 09:12 PM, Michal Such=C3=A1nek wrote: =20
+> >>>>> On Fri, 12 May 2017 15:15:33 +0530
+> >>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >>>>>> On Thursday 11 May 2017 06:46 PM, Michal Such=C3=A1nek wrote: =20
+> >>>>>>> On Thu, 11 May 2017 02:00:11 +0530
+> >>>>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >>>>>>>> On Wednesday 10 May 2017 09:31 PM, Michal Such=C3=A1nek wrote: =
+=20
+> >>>>>>>>> On Wed, 03 May 2017 23:52:52 +0530
+> >>>>>>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> >>>>>>>>>             =20
+> >>>>>>>>>> With the introduction of 'fadump_append=3D' parameter to pass
+> >>>>>>>>>> additional parameters to fadump (capture) kernel, update
+> >>>>>>>>>> documentation about it.
+> >>>>>>>>>>
+> >>>>>>>>>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> >>>>>>>>>> ---
+> >>>>>>>>>>      =20
+> >>>>>>>>>>             =20
+> >>>>>>>>> Writing your own deficient parser for comma separated
+> >>>>>>>>> arguments when perfectly fine parser for space separated
+> >>>>>>>>> quoted arguments exists in the kernel and the bootloader
+> >>>>>>>>> does not seem like a good idea to me. =20
+> >>>>>>>> Couple of things that prompted me for v5 are:
+> >>>>>>>>        1. Using parse_early_options() limits the kind of
+> >>>>>>>> parameters that can be passed to fadump capture kernel.
+> >>>>>>>> Passing parameters like systemd.unit=3D & udev.childern.max=3D
+> >>>>>>>> has no effect with v4. Updating
+> >>>>>>>>           boot_command_line parameter, when fadump is active,
+> >>>>>>>> seems a better alternative.
+> >>>>>>>>
+> >>>>>>>>        2. Passing space-separated quoted arguments is not
+> >>>>>>>> working as intended with lilo. Updating bootloader with the
+> >>>>>>>> below entry in /etc/lilo.conf file results in a missing
+> >>>>>>>> append entry in /etc/yaboot.conf file.
+> >>>>>>>>
+> >>>>>>>>             append =3D "quiet sysrq=3D1 insmod=3Dsym53c8xx
+> >>>>>>>> insmod=3Dipr crashkernel=3D512M-:256M fadump_append=3D\"nr_cpus=
+=3D1
+> >>>>>>>> numa=3Doff udev.children-max=3D2\"" =20
+> >>>>>>> Meaning that a script that emulates LILO semantics on top of
+> >>>>>>> yaboot which is completely capable of passing qouted space
+> >>>>>>> separated arguments fails. IMHO it is more reasonable to fix
+> >>>>>>> the script or whatever adaptation layer or use yaboot
+> >>>>>>> directly than working around bug in said script by
+> >>>>>>> introducing a new argument parser in the kernel.
+> >>>>>>>
+> >>>>>>>          =20
 
-> ---
->  drivers/gpu/drm/tilcdc/tilcdc_regs.h | 6 ------
->  1 file changed, 6 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/tilcdc/tilcdc_regs.h b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
-> index e9ce725698a9..0b901405f30a 100644
-> --- a/drivers/gpu/drm/tilcdc/tilcdc_regs.h
-> +++ b/drivers/gpu/drm/tilcdc/tilcdc_regs.h
-> @@ -133,13 +133,7 @@ static inline void tilcdc_write64(struct drm_device *dev, u32 reg, u64 data)
->  	struct tilcdc_drm_private *priv = dev->dev_private;
->  	void __iomem *addr = priv->mmio + reg;
->  
-> -#ifdef iowrite64
->  	iowrite64(data, addr);
-> -#else
-> -	__iowmb();
-> -	/* This compiles to strd (=64-bit write) on ARM7 */
-> -	*(u64 __force *)addr = __cpu_to_le64(data);
-> -#endif
->  }
->  
->  static inline u32 tilcdc_read(struct drm_device *dev, u32 reg)
-> 
+> >> The intention with this patch is to replace
+> >>
+> >>     "root=3D/dev/sda2 ro fadump_append=3Dnr_cpus=3D1,numa=3Doff
+> >> crashkernel=3D1024M"
+> >>
+> >> with
+> >>
+> >>     "root=3D/dev/sda2 ro nr_cpus=3D1 numa=3Doff crashkernel=3D1024M"
+> >>
+> >> when kernel is booting for dump capture.
+> >> While parse_args() is making parsing relatively easy, the main
+> >> idea is to replace parameters as above when fadump capture kernel
+> >> is booting. The code is relatively complicated to replace
+> >> parameters using space-separated
+> >> quoted string even though parse_args() may parse them easily.
+> >> Comma-separated
+> >> list was easier to implement and seemed less error prone for
+> >> replacing parameters. =20
+> >
+> > You can still do that relatively easily. parse_args() gives you the
+> > content of fadump_capture argument. You should probably add a
+> > variant that gives you also the position of the fadump_capture
+> > argument in case user specified it multiple times - picking the
+> > wrong one would cause errors. =20
+>=20
+> There is no denying that this can be done with the use of
+> parse_args() function.
+> But my contention is a custom parser is no more error prone,
+> considering it only has to search/replace commas in
+> fadump_extra_args=3D till the first occurrence of space/nul, without
+> having to deal with the naunces of parse_args() function.=20
+If you do that you=20
+
+1) introduce new parser which is error-prone even for not very complex
+parsers
+
+2) does not handle quoting properly meaning that
+ a) the passed arguments cannot include a comma (which is the case for
+ many existing kernel parameters)
+ b) your parser, parse_args and any parser analyzing the commandline
+ before you replace the arguments do not agree on the content and
+ length of the fadump_extra_args argument
+
+3) you introduce completely new syntax for arguments which the user
+ has to research and understand for no good reason
+> Also, to
+> get the last occurence, could use something like
+> get_last_crashkernel() instead of adding a variant to parse_args().
+
+Why are you talking about last occurence all the time? Does that mean
+that if user specifies fadump_extra_args in both the 'default' and
+'extra' kernel arguments to the grub configuration script only the one
+from 'extra' arguments will be expanded and  the on from 'default'
+arguments will be just left there? Why?
+
+>=20
+> > Then you can just replace the fadump_append=3D"appended arguments"
+> > with the dequoted "appended arguments" parse_args() gives you.
+> > Dequating should shorten the arguments as would removing the
+> > fadump_append=3D prefix so it should be quite possible in-place. It
+> > is in fact even easier than the comma separated list since you do
+> > not need to do any parsing yourself - only strlen, memset and
+> > memcpy.
+> >
+> > That said, if you replace the fadump_append argument the running
+> > kernel will have extra arguments without knowing where they came
+> > from making detection of this happening all the more difficult. =20
+>=20
+> How about replacing "fadump_extra_args=3Dx,y,z" with "fadump_extra_args
+> x y z"?
+
+How does this handle x that includes a comma?
+
+How does this handle x that includes a space?
+
+How does it handle x that includes a double quote? - Well, presumably
+it will just stay there with the fadump_extra_args expanded or not and
+will cause equal breakage.
+
+> Presence of fadump_extra_args hints the user about the extra
+> parameters passed
+> to fadump capture kernel and also lets parsing/replacing be simple -
+> replace the first '=3D' and subsequent commas with ' ' in this
+> fadump_extra_args=3D parameter
+> and we are good to go. No additional handling. Even if we go with=20
+> space-separated
+> quoted string, simply replacing "fadump_extra_args=3D" with=20
+> "fadump_extra_args "
+
+Leaving the empty fadump_extra_args argument might be good for
+indication that the replacement possibly took place and comes for free.
+
+> should suffice, no need to worry about parse_args as well.=20
+
+If you use parse_args it can give you the content of the every
+fadump_extra_args argument and dequotes it for you. So in the case
+fadump_extra_args does include double quotes you get them handled
+correctly for you by existing parser.
+
+And you want to make a variant of parse_args that tells you where the
+argument starts and ends in the parsed commandline so you know which
+part you should replace - which it certainly does know but no current
+users need the information so it does not tell you.
+
+When you do that users can read (or for the most part have already
+read) about the kernel argument syntax and apply that to
+fadump_extra_args. No additional specification and exceptions are
+needed.
+
+> I prefer=20
+> comma-separated
+> list though, for it leaves no dependency on how bootloader handles=20
+> space-separated
+> quoted strings, considering my encounter with yast bootloader which
+> is not so
+> impressive in handling quoted strings. Also, the code change is not
+> so complicated.
+
+If yast cannot handle kernel parameters correctly report a bug. The
+quoting of arguments with spaces is part of the kernel parameter
+specification so yast should handle it.
+
+>=20
+>=20
+> >> Want to replace fadump_append=3D, to avoid command line overflow
+> >> issues and also to not have to deal with special cases like --.
+> >> Actually, fadump_append=3D
+> >> seems to be confusing in that sense. How about
+> >> fadump_args=3Dcomma-separated-list-
+> >> of-params-for-capture-kernel ? Please share your thoughts. =20
+> > The comma separated list still can contain a -- argument so you
+> > still have to do something about that. Or not and just document
+> > that people should not use it. =20
+>=20
+> The user has the flexibility to use fadump_extra_args=3D to pass
+> special parameters
+> keeping in mind that "fadump_extra_args=3Dx,y,z" will be replaced
+> in-place with
+> "fadump_extra_args x y z" and it happens only in fadump capture
+> kernel. No additional
+> code changes needed to handle this except for documentation talking=20
+> about it?
+
+Presumably if y is "--" then z and any subsequent kernel arguments after
+fadump_extra_args are passed to init when fadump_extra_args is
+expanded and not so when left as is. This may be unexpected - the user
+may expect that if fadump_extra_args contains a "--" as y then z is
+appended after existing "--" in commandline or if none is present the
+whole "-- z" is moved to the end. This would be clean way of handling
+the extra arguments - no text only preprocessing allowing for dirty
+tricks moving arguments from kernel to init by in-place text
+replacement. Note that any unclosed quoting in arguments after
+fadump_extra_args may make appending "-- z" quite difficult if you
+wanted to do it correctly. If you do not want to bother (with either)
+it is an understandable shortcoming in the implementation and should be
+documented.
+
+Thanks
+
+Michal
