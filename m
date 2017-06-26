@@ -1,23 +1,25 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0049.outbound.protection.outlook.com [104.47.0.49])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.182])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxD3S5FmMzDr3R
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 01:48:04 +1000 (AEST)
-From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: Fabio Estevam <festevam@gmail.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "David S. Miller"
- <davem@davemloft.net>, Geert Uytterhoeven <geert@linux-m68k.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, linux-kernel
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH] fsl/fman: add dependency on HAS_DMA
-Date: Mon, 26 Jun 2017 15:47:58 +0000
-Message-ID: <AM5PR0402MB2691541D906CFF92C44046E3ECDF0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-References: <1498489947-17272-1-git-send-email-madalin.bucur@nxp.com>
- <CAOMZO5AWgPv6bOFjpt4vC1PSMNpC+dpR2A90+fc2Z_uojoUAmA@mail.gmail.com>
-In-Reply-To: <CAOMZO5AWgPv6bOFjpt4vC1PSMNpC+dpR2A90+fc2Z_uojoUAmA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxDC25wzszDr24
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 01:54:38 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Karim Eshapa' <karim.eshapa@gmail.com>, "oss@buserror.net"
+ <oss@buserror.net>
+CC: "roy.pledge@nxp.com" <roy.pledge@nxp.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "claudiu.manoil@nxp.com"
+ <claudiu.manoil@nxp.com>, "colin.king@canonical.com"
+ <colin.king@canonical.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH] soc/qman: Sleep instead of stuck hacking jiffies.
+Date: Mon, 26 Jun 2017 15:54:30 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD002B1A5@AcuExch.aculab.com>
+References: <1498403622-2878-1-git-send-email-karim.eshapa@gmail.com>
+In-Reply-To: <1498403622-2878-1-git-send-email-karim.eshapa@gmail.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,16 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBGYWJpbyBFc3RldmFtIFttYWls
-dG86ZmVzdGV2YW1AZ21haWwuY29tXQ0KPiBTZW50OiBNb25kYXksIEp1bmUgMjYsIDIwMTcgNjoy
-MSBQTQ0KPiBUbzogTWFkYWxpbi1jcmlzdGlhbiBCdWN1ciA8bWFkYWxpbi5idWN1ckBueHAuY29t
-Pg0KPiBDYzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgRGF2aWQgUy4gTWlsbGVyIDxkYXZlbUBk
-YXZlbWxvZnQubmV0PjsgR2VlcnQNCj4gVXl0dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9y
-Zz47IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4ga2VybmVsIDxsaW51
-eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBmc2wvZm1h
-bjogYWRkIGRlcGVuZGVuY3kgb24gSEFTX0RNQQ0KPiANCj4gT24gTW9uLCBKdW4gMjYsIDIwMTcg
-YXQgMTI6MTIgUE0sIE1hZGFsaW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJAbnhwLmNvbT4NCj4gd3Jv
-dGU6DQo+ID4gQSBwcmV2aW91cyBjb21taXQgaW5zZXJ0ZWQgYSBkZXBlbmRlbmN5IG9uIERNQSBB
-UEkgdGhhdCByZXF1aXJlcw0KPiA+IEhBU19ETUEgdG8gYmUgYWRkZWQgaW4gS2NvbmZpZy4NCj4g
-DQo+IEl0IHdvdWxkIGJlIG5pY2UgdG8gc3BlY2lmeSB0aGUgY29tbWl0IHRoYXQgY2F1c2VkIHRo
-aXMuDQoNClNlbnQgdjIsIHRoYW5rcy4NCg0KTWFkYWxpbg0K
+From: Karim Eshapa
+> Sent: 25 June 2017 16:14
+> Use msleep() instead of stucking with
+> long delay will be more efficient.
+...
+> --- a/drivers/soc/fsl/qbman/qman.c
+> +++ b/drivers/soc/fsl/qbman/qman.c
+> @@ -1084,11 +1084,7 @@ static int drain_mr_fqrni(struct qm_portal *p)
+>  		 * entries well before the ring has been fully consumed, so
+>  		 * we're being *really* paranoid here.
+>  		 */
+> -		u64 now, then =3D jiffies;
+> -
+> -		do {
+> -			now =3D jiffies;
+> -		} while ((then + 10000) > now);
+> +		msleep(1);
+...
+How is that in any way equivalent?
+If HZ is 1000 the old code loops for 10 seconds.
+If HZ is 250 (common for some distros) it loops for 40 seconds.
+
+Clearly both are horrid, but it isn't at all clear that a 1ms sleep
+is performing the same job.
+
+My guess is that this code is never called, and broken if actually called.
+
+	David
