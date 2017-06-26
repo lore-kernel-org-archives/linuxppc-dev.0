@@ -1,40 +1,12 @@
-Return-Path: <srs0=kieq=57=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wx7Kk0QdwzDr1p
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 22:15:06 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3wx7Kj6tN6z8t39
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 22:15:05 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3wx7Kj1XHLz9rvt
- for <linuxppc-dev@ozlabs.org>; Mon, 26 Jun 2017 22:15:05 +1000 (AEST)
-Date: Mon, 26 Jun 2017 14:15:01 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
- 'fadump_append=' parameter
-Message-ID: <20170626141501.6086b6ab@kitsune.suse.cz>
-In-Reply-To: <a3ac4a10-3315-187b-e29a-01637ba19dff@linux.vnet.ibm.com>
-References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
- <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
- <20170510180132.1fa0c1ec@kitsune.suse.cz>
- <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
- <20170511151637.19d4a23f@kitsune.suse.cz>
- <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
- <20170512174209.67ccfd45@kitsune.suse.cz>
- <b6a968fe-378e-1273-a996-43c716f276bd@linux.vnet.ibm.com>
- <20170515112901.67d32e76@kitsune.suse.cz>
- <102276aa-cddb-dc60-269c-b29dedc89eab@linux.vnet.ibm.com>
- <20170609140454.2eb01371@kitsune.suse.cz>
- <a3ac4a10-3315-187b-e29a-01637ba19dff@linux.vnet.ibm.com>
+Return-Path: <sombat3960@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Sombat Tragolgosol <sombat3960@gmail.com>
+Date: Mon, 26 Jun 2017 16:26:50 +0700
+Message-ID: <CAC1vu63d9t3vdfz_+62hDc94tfG=rRN757RezXh8wSNwnYdmZg@mail.gmail.com>
+Subject: ps3 linux: os_area_queue_work_handler: Could not update FLASH ROM
+To: Linuxppc-dev@lists.ozlabs.org
+Cc: geoff@infradead.org, Jeremy Kerr <jk@ozlabs.org>
+Content-Type: multipart/alternative; boundary="f403043eee34ffd7e70552d98c21"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,223 +16,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+--f403043eee34ffd7e70552d98c21
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 20 Jun 2017 21:14:08 +0530
-Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+Dear Sir,
 
-> On Friday 09 June 2017 05:34 PM, Michal Such=C3=A1nek wrote:
-> > On Thu, 8 Jun 2017 23:30:37 +0530
-> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-> >> On Monday 15 May 2017 02:59 PM, Michal Such=C3=A1nek wrote: =20
-> >>> On Mon, 15 May 2017 12:59:46 +0530
-> >>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-> >>>> On Friday 12 May 2017 09:12 PM, Michal Such=C3=A1nek wrote: =20
-> >>>>> On Fri, 12 May 2017 15:15:33 +0530
-> >>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-> >>>>>> On Thursday 11 May 2017 06:46 PM, Michal Such=C3=A1nek wrote: =20
-> >>>>>>> On Thu, 11 May 2017 02:00:11 +0530
-> >>>>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-> >>>>>>>> On Wednesday 10 May 2017 09:31 PM, Michal Such=C3=A1nek wrote: =
-=20
-> >>>>>>>>> On Wed, 03 May 2017 23:52:52 +0530
-> >>>>>>>>> Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-> >>>>>>>>>             =20
-> >>>>>>>>>> With the introduction of 'fadump_append=3D' parameter to pass
-> >>>>>>>>>> additional parameters to fadump (capture) kernel, update
-> >>>>>>>>>> documentation about it.
-> >>>>>>>>>>
-> >>>>>>>>>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-> >>>>>>>>>> ---
-> >>>>>>>>>>      =20
-> >>>>>>>>>>             =20
-> >>>>>>>>> Writing your own deficient parser for comma separated
-> >>>>>>>>> arguments when perfectly fine parser for space separated
-> >>>>>>>>> quoted arguments exists in the kernel and the bootloader
-> >>>>>>>>> does not seem like a good idea to me. =20
-> >>>>>>>> Couple of things that prompted me for v5 are:
-> >>>>>>>>        1. Using parse_early_options() limits the kind of
-> >>>>>>>> parameters that can be passed to fadump capture kernel.
-> >>>>>>>> Passing parameters like systemd.unit=3D & udev.childern.max=3D
-> >>>>>>>> has no effect with v4. Updating
-> >>>>>>>>           boot_command_line parameter, when fadump is active,
-> >>>>>>>> seems a better alternative.
-> >>>>>>>>
-> >>>>>>>>        2. Passing space-separated quoted arguments is not
-> >>>>>>>> working as intended with lilo. Updating bootloader with the
-> >>>>>>>> below entry in /etc/lilo.conf file results in a missing
-> >>>>>>>> append entry in /etc/yaboot.conf file.
-> >>>>>>>>
-> >>>>>>>>             append =3D "quiet sysrq=3D1 insmod=3Dsym53c8xx
-> >>>>>>>> insmod=3Dipr crashkernel=3D512M-:256M fadump_append=3D\"nr_cpus=
-=3D1
-> >>>>>>>> numa=3Doff udev.children-max=3D2\"" =20
-> >>>>>>> Meaning that a script that emulates LILO semantics on top of
-> >>>>>>> yaboot which is completely capable of passing qouted space
-> >>>>>>> separated arguments fails. IMHO it is more reasonable to fix
-> >>>>>>> the script or whatever adaptation layer or use yaboot
-> >>>>>>> directly than working around bug in said script by
-> >>>>>>> introducing a new argument parser in the kernel.
-> >>>>>>>
-> >>>>>>>          =20
+I'd like to have help and ask some.
 
-> >> The intention with this patch is to replace
-> >>
-> >>     "root=3D/dev/sda2 ro fadump_append=3Dnr_cpus=3D1,numa=3Doff
-> >> crashkernel=3D1024M"
-> >>
-> >> with
-> >>
-> >>     "root=3D/dev/sda2 ro nr_cpus=3D1 numa=3Doff crashkernel=3D1024M"
-> >>
-> >> when kernel is booting for dump capture.
-> >> While parse_args() is making parsing relatively easy, the main
-> >> idea is to replace parameters as above when fadump capture kernel
-> >> is booting. The code is relatively complicated to replace
-> >> parameters using space-separated
-> >> quoted string even though parse_args() may parse them easily.
-> >> Comma-separated
-> >> list was easier to implement and seemed less error prone for
-> >> replacing parameters. =20
-> >
-> > You can still do that relatively easily. parse_args() gives you the
-> > content of fadump_capture argument. You should probably add a
-> > variant that gives you also the position of the fadump_capture
-> > argument in case user specified it multiple times - picking the
-> > wrong one would cause errors. =20
->=20
-> There is no denying that this can be done with the use of
-> parse_args() function.
-> But my contention is a custom parser is no more error prone,
-> considering it only has to search/replace commas in
-> fadump_extra_args=3D till the first occurrence of space/nul, without
-> having to deal with the naunces of parse_args() function.=20
-If you do that you=20
+1) Is it normal for os_area_queue_work_handler: Could not update FLASH ROM?
+2) My Date time is not correct.  Is the problem is not able to update
+os-area data?
 
-1) introduce new parser which is error-prone even for not very complex
-parsers
+Here below is my rtc time problem.
 
-2) does not handle quoting properly meaning that
- a) the passed arguments cannot include a comma (which is the case for
- many existing kernel parameters)
- b) your parser, parse_args and any parser analyzing the commandline
- before you replace the arguments do not agree on the content and
- length of the fadump_extra_args argument
+RTC time is not proper value (lower than it should be).
+(For GameOS , Date-Time is OK.)
 
-3) you introduce completely new syntax for arguments which the user
- has to research and understand for no good reason
-> Also, to
-> get the last occurence, could use something like
-> get_last_crashkernel() instead of adding a variant to parse_args().
+Here is what I've tried
+   1) lv1_get_rtc gets 205943663 (11 Jul 1976)
+   2) saved_params.rtc_diff always is 946684800
+        (205943663+946684800) = 11 Jul 2006
+   So every time, my Linux is booted,  my year says 2006 and causes problem
+on clock skew.
+   3) if I add 345746286 to rtc in read_rtc function in
+      arch/powerpc/platforms/ps3/time.c and
+      drivers/rtc/rtc-ps3.c
+      (205943663+946684800+345746286) = 25 Jun 2017
+   My boot time and date is acceptable for my temporary use.
 
-Why are you talking about last occurence all the time? Does that mean
-that if user specifies fadump_extra_args in both the 'default' and
-'extra' kernel arguments to the grub configuration script only the one
-from 'extra' arguments will be expanded and  the on from 'default'
-arguments will be just left there? Why?
+   Do you have any proper solution? I don't want to modify source for my
+one rtc time problem?
 
->=20
-> > Then you can just replace the fadump_append=3D"appended arguments"
-> > with the dequoted "appended arguments" parse_args() gives you.
-> > Dequating should shorten the arguments as would removing the
-> > fadump_append=3D prefix so it should be quite possible in-place. It
-> > is in fact even easier than the comma separated list since you do
-> > not need to do any parsing yourself - only strlen, memset and
-> > memcpy.
-> >
-> > That said, if you replace the fadump_append argument the running
-> > kernel will have extra arguments without knowing where they came
-> > from making detection of this happening all the more difficult. =20
->=20
-> How about replacing "fadump_extra_args=3Dx,y,z" with "fadump_extra_args
-> x y z"?
+Best regards,
+Sombat T.
 
-How does this handle x that includes a comma?
+--f403043eee34ffd7e70552d98c21
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-How does this handle x that includes a space?
+<div dir=3D"ltr"><div><div><div><div><div><div>Dear Sir,<br></div><div><br>=
+I&#39;d like to have help and ask some. <br><br>1) Is it normal for os_area=
+_queue_work_handler: Could not update FLASH ROM?<br></div><div>2) My Date t=
+ime is not correct.=C2=A0 Is the problem is not able to update os-area data=
+?<br><br>Here below is my rtc time problem.<br><br>RTC time is not proper v=
+alue (lower than it should be).<br>(For GameOS , Date-Time is OK.)<br><br>H=
+ere is what I&#39;ve tried <br>=C2=A0=C2=A0 1) lv1_get_rtc gets 205943663 (=
+11 Jul 1976)<br>=C2=A0=C2=A0 2) saved_params.rtc_diff always is 946684800<b=
+r></div><div>=C2=A0=C2=A0=C2=A0 =C2=A0 =C2=A0 (205943663+946684800) =3D 11 =
+Jul 2006<br></div>=C2=A0=C2=A0 So every time, my Linux is booted,=C2=A0 my =
+year says 2006 and causes problem on clock skew.<br></div>=C2=A0=C2=A0 3) i=
+f I add 345746286 to rtc in read_rtc function in</div>=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 arch/powerpc/platforms/ps3/time.c and<br></div>=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0 drivers/rtc/rtc-ps3.c<br></div><div>=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 (205943663+946684800+345746286) =3D 25 Jun 2017<br></div><div></div>=
+=C2=A0=C2=A0 My boot time and date is acceptable for my temporary use.<br><=
+/div><div><br>=C2=A0=C2=A0 Do you have any proper solution? I don&#39;t wan=
+t to modify source for my one rtc time problem?<br><br></div><div>Best rega=
+rds,<br></div><div>Sombat T.<br><br></div>=C2=A0=C2=A0 <br><div><div><br></=
+div></div></div>
 
-How does it handle x that includes a double quote? - Well, presumably
-it will just stay there with the fadump_extra_args expanded or not and
-will cause equal breakage.
-
-> Presence of fadump_extra_args hints the user about the extra
-> parameters passed
-> to fadump capture kernel and also lets parsing/replacing be simple -
-> replace the first '=3D' and subsequent commas with ' ' in this
-> fadump_extra_args=3D parameter
-> and we are good to go. No additional handling. Even if we go with=20
-> space-separated
-> quoted string, simply replacing "fadump_extra_args=3D" with=20
-> "fadump_extra_args "
-
-Leaving the empty fadump_extra_args argument might be good for
-indication that the replacement possibly took place and comes for free.
-
-> should suffice, no need to worry about parse_args as well.=20
-
-If you use parse_args it can give you the content of the every
-fadump_extra_args argument and dequotes it for you. So in the case
-fadump_extra_args does include double quotes you get them handled
-correctly for you by existing parser.
-
-And you want to make a variant of parse_args that tells you where the
-argument starts and ends in the parsed commandline so you know which
-part you should replace - which it certainly does know but no current
-users need the information so it does not tell you.
-
-When you do that users can read (or for the most part have already
-read) about the kernel argument syntax and apply that to
-fadump_extra_args. No additional specification and exceptions are
-needed.
-
-> I prefer=20
-> comma-separated
-> list though, for it leaves no dependency on how bootloader handles=20
-> space-separated
-> quoted strings, considering my encounter with yast bootloader which
-> is not so
-> impressive in handling quoted strings. Also, the code change is not
-> so complicated.
-
-If yast cannot handle kernel parameters correctly report a bug. The
-quoting of arguments with spaces is part of the kernel parameter
-specification so yast should handle it.
-
->=20
->=20
-> >> Want to replace fadump_append=3D, to avoid command line overflow
-> >> issues and also to not have to deal with special cases like --.
-> >> Actually, fadump_append=3D
-> >> seems to be confusing in that sense. How about
-> >> fadump_args=3Dcomma-separated-list-
-> >> of-params-for-capture-kernel ? Please share your thoughts. =20
-> > The comma separated list still can contain a -- argument so you
-> > still have to do something about that. Or not and just document
-> > that people should not use it. =20
->=20
-> The user has the flexibility to use fadump_extra_args=3D to pass
-> special parameters
-> keeping in mind that "fadump_extra_args=3Dx,y,z" will be replaced
-> in-place with
-> "fadump_extra_args x y z" and it happens only in fadump capture
-> kernel. No additional
-> code changes needed to handle this except for documentation talking=20
-> about it?
-
-Presumably if y is "--" then z and any subsequent kernel arguments after
-fadump_extra_args are passed to init when fadump_extra_args is
-expanded and not so when left as is. This may be unexpected - the user
-may expect that if fadump_extra_args contains a "--" as y then z is
-appended after existing "--" in commandline or if none is present the
-whole "-- z" is moved to the end. This would be clean way of handling
-the extra arguments - no text only preprocessing allowing for dirty
-tricks moving arguments from kernel to init by in-place text
-replacement. Note that any unclosed quoting in arguments after
-fadump_extra_args may make appending "-- z" quite difficult if you
-wanted to do it correctly. If you do not want to bother (with either)
-it is an understandable shortcoming in the implementation and should be
-documented.
-
-Thanks
-
-Michal
+--f403043eee34ffd7e70552d98c21--
