@@ -1,41 +1,28 @@
-Return-Path: <keescook@google.com>
-Received: from mail-it0-x236.google.com (mail-it0-x236.google.com
- [IPv6:2607:f8b0:4001:c0b::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxHZv3zNWzDr1r
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 04:27:02 +1000 (AEST)
-Received: by mail-it0-x236.google.com with SMTP id b205so3386197itg.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 11:27:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxHxs1bvDzDr24
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 04:43:27 +1000 (AEST)
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: Re: [PATCH 00/17] cxlflash: LUN provisioning support and
+ miscellaneous fixes
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1498097563-8680-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Mon, 26 Jun 2017 14:43:18 -0400
+In-Reply-To: <1498097563-8680-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ (Uma Krishnan's message of "Wed, 21 Jun 2017 21:12:43 -0500")
+Message-ID: <yq160fi37zt.fsf@oracle.com>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <8737amew79.fsf@concordia.ellerman.id.au>
-References: <1498154792-49952-1-git-send-email-keescook@chromium.org>
- <1498154792-49952-4-git-send-email-keescook@chromium.org>
- <87podvp4q1.fsf@concordia.ellerman.id.au>
- <CAGXu5jK7aHHRMZyZyrviBF+cLghWcH_D4PX_vMFOycHuF7EdLA@mail.gmail.com>
- <8737amew79.fsf@concordia.ellerman.id.au>
-From: Kees Cook <keescook@chromium.org>
-Date: Mon, 26 Jun 2017 11:26:59 -0700
-Message-ID: <CAGXu5jJKtdgRzdiDhA7XBcsaLQhmFgyQahk1F-zscFQY3pNBUQ@mail.gmail.com>
-Subject: Re: [PATCH 3/4] powerpc: Reduce ELF_ET_DYN_BASE
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- James Hogan <james.hogan@imgtec.com>, Pratyush Anand <panand@redhat.com>,
- Ingo Molnar <mingo@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,54 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 26, 2017 at 6:04 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Kees Cook <keescook@chromium.org> writes:
->
->> On Fri, Jun 23, 2017 at 12:01 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> Kees Cook <keescook@chromium.org> writes:
->>>
->>>> Now that explicitly executed loaders are loaded in the mmap region,
->>>> position PIE binaries lower in the address space to avoid possible
->>>> collisions with mmap or stack regions. For 64-bit, align to 4GB to
->>>> allow runtimes to use the entire 32-bit address space for 32-bit
->>>> pointers.
->>>
->>> The change log and subject are a bit out of whack with the actual patch
->>> because previously we used 512MB.
->>>
->>> How about?
->>>
->>>   powerpc: Move ELF_ET_DYN_BASE to 4GB / 4MB
->>>
->>>   Now that explicitly executed loaders are loaded in the mmap region,
->>>   we have more freedom to decide where we position PIE binaries in the
->>>   address space to avoid possible collisions with mmap or stack regions.
->>>
->>>   For 64-bit, align to 4GB to allow runtimes to use the entire 32-bit
->>>   address space for 32-bit pointers. On 32-bit use 4MB.
->>
->> Good idea, thanks. I'll resend the series with the commit logs updated.
->>
->>> Is there any particular reasoning behind the 4MB value on 32-bit?
->>
->> So, I've dug around a bit on this, and I *think* the rationale is to
->> avoid mapping a possible 4MB page table entry when it won't be using
->> at least a portion near the lower end (NULL address area covered
->> blocked by mmap_min_addr). It seems to be mainly tradition, though.
->
-> OK, that is obscure, especially for CPUs that don't have a 4MB page
-> size. But consistency across arches is probably best regardless.
 
-Yeah, I like being not "close" to the NULL address, though the
-definition of "close" has been various values like 64K (mmap_min_addr)
-and 1M (x86 BIOS junk and new stack-gap size). 4MB is above even that,
-so, I think we're fine there. It's what Windows has used, so it's
-familiar and any new attack methodologies would at least be shared
-across OSes and architectures, so we should "notice" any problem with
-the value, and then we can adjust it if we need to.
+Uma,
 
--Kees
+> This patch series contains miscellaneous fixes and several
+> enhancements such as LUN provisioning support, WS16 unmap and AFU
+> debug capabilities.
+
+Applied to 4.13/scsi-queue. Thank you!
 
 -- 
-Kees Cook
-Pixel Security
+Martin K. Petersen	Oracle Linux Engineering
