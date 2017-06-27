@@ -1,24 +1,21 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxlg646kFzDr27
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 22:32:18 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Frederic Barrat' <fbarrat@linux.vnet.ibm.com>, "mpe@ellerman.id.au"
- <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "mikey@neuling.org" <mikey@neuling.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>,
- "clsoto@linux.vnet.ibm.com" <clsoto@linux.vnet.ibm.com>
-Subject: RE: [PATCH v2] powerpc/powernv: Enable PCI peer-to-peer
-Date: Tue, 27 Jun 2017 12:32:10 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD002BE3A@AcuExch.aculab.com>
-References: <20170626180855.28238-1-fbarrat@linux.vnet.ibm.com>
-In-Reply-To: <20170626180855.28238-1-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxlxS58sSzDr26
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 22:44:44 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/8] Support for 24x7 hcall interface version 2
+In-Reply-To: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
+References: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
+Date: Tue, 27 Jun 2017 22:44:41 +1000
+Message-ID: <87injhd2h2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Frederic Barrat
-> Sent: 26 June 2017 19:09
-> P9 has support for PCI peer-to-peer, enabling a device to write in the
-> mmio space of another device directly, without interrupting the CPU.
->=20
-> This patch adds support for it on powernv, by adding a new API to be
-> called by drivers. The pnv_pci_set_p2p(...) call configures an
-> 'initiator', i.e the device which will issue the mmio operation, and a
-> 'target', i.e. the device on the receiving side.
-...
+Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
 
-Two questions:
+> Hello,
+>
+> The hypervisor interface to access 24x7 performance counters (which collect
+> performance information from system power on to system power off) has been
+> extended in POWER9 adding new fields to the request and result element
+> structures.
+>
+> Also, results for some domains now return more than one result element and
+> those need to be added to get a total count.
+>
+> The first two patches fix bugs in the existing code. The following 4
+> patches are code improvements and the last two finally implement support
+> for the changes in POWER9 described above.
+>
+> POWER8 systems only support version 1 of the interface, while POWER9
+> systems only support version 2. I tested these patches on POWER8 to verify
+> that there are no regressions, and also on POWER9 DD1.
 
-1) How does the driver get the correct address to give to the 'initiator'
-   in order to perform an access to the 'target'?
+Where is version 2 documented?
 
-2) Surely the API call the driver makes should be architecture neutral,
-   returning an error on other architectures.
+And what happens when we boot on a POWER9 in POWER8 compatibility mode?
 
-At least some x86 cpus also support peer-to-peer writes,
-I believe they can work between cpu chips.
-PCIe bridges might support them (or be configurable to support them).
-
-	David
+cheers
