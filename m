@@ -1,15 +1,15 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxkLs1TJ1zDqjJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 21:33:09 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id j186so3990443pge.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 04:33:09 -0700 (PDT)
-Message-ID: <1498563132.7935.15.camel@gmail.com>
-Subject: Re: [RFC v4 03/17] x86: key creation with PKEY_DISABLE_EXECUTE
- disallowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxkMW1p1QzDr3D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 21:33:43 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id f127so3987292pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 04:33:43 -0700 (PDT)
+Message-ID: <1498563169.7935.16.camel@gmail.com>
+Subject: Re: [RFC v4 02/17] mm: ability to disable execute permission on a
+ key at creation
 From: Balbir Singh <bsingharora@gmail.com>
 To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
@@ -19,10 +19,10 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
  akpm@linux-foundation.org,  corbet@lwn.net, mingo@redhat.com
-Date: Tue, 27 Jun 2017 21:32:12 +1000
-In-Reply-To: <1498558319-32466-4-git-send-email-linuxram@us.ibm.com>
+Date: Tue, 27 Jun 2017 21:32:49 +1000
+In-Reply-To: <1498558319-32466-3-git-send-email-linuxram@us.ibm.com>
 References: <1498558319-32466-1-git-send-email-linuxram@us.ibm.com>
- <1498558319-32466-4-git-send-email-linuxram@us.ibm.com>
+ <1498558319-32466-3-git-send-email-linuxram@us.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,33 +35,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2017-06-27 at 03:11 -0700, Ram Pai wrote:
-> x86 does not support disabling execute permissions on a pkey.
+> Currently sys_pkey_create() provides the ability to disable read
+> and write permission on the key, at  creation. powerpc  has  the
+> hardware support to disable execute on a pkey as well.This patch
+> enhances the interface to let disable execute  at  key  creation
+> time. x86 does  not  allow  this.  Hence the next patch will add
+> ability  in  x86  to  return  error  if  PKEY_DISABLE_EXECUTE is
+> specified.
 > 
 > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 > ---
->  arch/x86/kernel/fpu/xstate.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
-> index c24ac1e..d582631 100644
-> --- a/arch/x86/kernel/fpu/xstate.c
-> +++ b/arch/x86/kernel/fpu/xstate.c
-> @@ -900,6 +900,9 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
->  	if (!boot_cpu_has(X86_FEATURE_OSPKE))
->  		return -EINVAL;
->  
-> +	if (init_val & PKEY_DISABLE_EXECUTE)
-> +		return -EINVAL;
-> +
->  	/* Set the bits we need in PKRU:  */
->  	if (init_val & PKEY_DISABLE_ACCESS)
->  		new_pkru_bits |= PKRU_AD_BIT;
-
-I am not an x86 expert. IIUC, execute disable is done via allocating an
-execute_only_pkey and checking vma_key via AD + vma_flags against VM_EXEC.
-
-Your patch looks good to me
 
 Acked-by: Balbir Singh <bsingharora@gmail.com>
-
-Balbir Singh.
