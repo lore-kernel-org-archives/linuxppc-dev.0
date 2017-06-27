@@ -1,28 +1,19 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
+Return-Path: <oohall@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxhZH4dJNzDr27
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 20:12:55 +1000 (AEST)
-Received: by mail-qt0-x242.google.com with SMTP id v31so3166861qtb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 03:12:55 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
- linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
- corbet@lwn.net, mingo@redhat.com
-Subject: [RFC v4 17/17] procfs: display the protection-key number associated
- with a vma
-Date: Tue, 27 Jun 2017 03:11:59 -0700
-Message-Id: <1498558319-32466-18-git-send-email-linuxram@us.ibm.com>
-In-Reply-To: <1498558319-32466-1-git-send-email-linuxram@us.ibm.com>
-References: <1498558319-32466-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxhww58HQzDr3V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 20:29:04 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id u36so3796849pgn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 03:29:04 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-nvdimm@lists.01.org,
+	Oliver O'Halloran <oohall@gmail.com>
+Subject: [RFC 1/4] libnvdimm: add to_{nvdimm,nd_region}_dev()
+Date: Tue, 27 Jun 2017 20:28:48 +1000
+Message-Id: <20170627102851.15484-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,80 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Display the pkey number associated with the vma in smaps of a task.
-The key will be seen as below:
+struct device contains the ->of_node pointer so that devices can be
+assoicated with the device-tree node that created them on DT platforms.
+libnvdimm hides the struct device for regions and nvdimm devices inside
+of an opaque structure so this patch adds accessors for each to allow
+the of_nvdimm driver to set the of_node pointer.
 
-VmFlags: rd wr mr mw me dw ac key=0
-
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- Documentation/filesystems/proc.txt |  3 ++-
- fs/proc/task_mmu.c                 | 22 +++++++++++-----------
- 2 files changed, 13 insertions(+), 12 deletions(-)
+ drivers/nvdimm/dimm_devs.c   | 6 ++++++
+ drivers/nvdimm/region_devs.c | 6 ++++++
+ include/linux/libnvdimm.h    | 2 ++
+ 3 files changed, 14 insertions(+)
 
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-index 4cddbce..a8c74aa 100644
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -423,7 +423,7 @@ SwapPss:               0 kB
- KernelPageSize:        4 kB
- MMUPageSize:           4 kB
- Locked:                0 kB
--VmFlags: rd ex mr mw me dw
-+VmFlags: rd ex mr mw me dw key=<num>
+diff --git a/drivers/nvdimm/dimm_devs.c b/drivers/nvdimm/dimm_devs.c
+index f0d1b7e5de01..cbddac011181 100644
+--- a/drivers/nvdimm/dimm_devs.c
++++ b/drivers/nvdimm/dimm_devs.c
+@@ -227,6 +227,12 @@ struct nvdimm *to_nvdimm(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(to_nvdimm);
  
- the first of these lines shows the same information as is displayed for the
- mapping in /proc/PID/maps.  The remaining lines show the size of the mapping
-@@ -491,6 +491,7 @@ manner. The codes are the following:
-     hg  - huge page advise flag
-     nh  - no-huge page advise flag
-     mg  - mergable advise flag
-+    key=<num> - the memory protection key number
- 
- Note that there is no guarantee that every flag and associated mnemonic will
- be present in all further kernel releases. Things get changed, the flags may
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 2ddc298..d2eb096 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -1,4 +1,6 @@
- #include <linux/mm.h>
-+#include <linux/pkeys.h>
-+#include <linux/huge_mm.h>
- #include <linux/vmacache.h>
- #include <linux/hugetlb.h>
- #include <linux/huge_mm.h>
-@@ -666,22 +668,20 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
- 		[ilog2(VM_MERGEABLE)]	= "mg",
- 		[ilog2(VM_UFFD_MISSING)]= "um",
- 		[ilog2(VM_UFFD_WP)]	= "uw",
--#ifdef CONFIG_ARCH_HAS_PKEYS
--		/* These come out via ProtectionKey: */
--		[ilog2(VM_PKEY_BIT0)]	= "",
--		[ilog2(VM_PKEY_BIT1)]	= "",
--		[ilog2(VM_PKEY_BIT2)]	= "",
--		[ilog2(VM_PKEY_BIT3)]	= "",
--#endif /* CONFIG_ARCH_HAS_PKEYS */
--#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
--		/* Additional bit in ProtectionKey: */
--		[ilog2(VM_PKEY_BIT4)]	= "",
--#endif
- 	};
- 	size_t i;
- 
- 	seq_puts(m, "VmFlags: ");
- 	for (i = 0; i < BITS_PER_LONG; i++) {
-+#ifdef CONFIG_ARCH_HAS_PKEYS
-+		if (i == ilog2(VM_PKEY_BIT0)) {
-+			int keyvalue = vma_pkey(vma);
++struct device *to_nvdimm_dev(struct nvdimm *nvdimm)
++{
++	return &nvdimm->dev;
++}
++EXPORT_SYMBOL_GPL(to_nvdimm_dev);
 +
-+			i += ilog2(arch_max_pkey())-1;
-+			seq_printf(m, "key=%d ", keyvalue);
-+			continue;
-+		}
-+#endif /* CONFIG_ARCH_HAS_PKEYS */
- 		if (!mnemonics[i][0])
- 			continue;
- 		if (vma->vm_flags & (1UL << i)) {
+ struct nvdimm *nd_blk_region_to_dimm(struct nd_blk_region *ndbr)
+ {
+ 	struct nd_region *nd_region = &ndbr->nd_region;
+diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
+index cbaab4210c39..6c3988135fd5 100644
+--- a/drivers/nvdimm/region_devs.c
++++ b/drivers/nvdimm/region_devs.c
+@@ -182,6 +182,12 @@ struct nd_region *to_nd_region(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(to_nd_region);
+ 
++struct device *to_nd_region_dev(struct nd_region *region)
++{
++	return &region->dev;
++}
++EXPORT_SYMBOL_GPL(to_nd_region_dev);
++
+ struct nd_blk_region *to_nd_blk_region(struct device *dev)
+ {
+ 	struct nd_region *nd_region = to_nd_region(dev);
+diff --git a/include/linux/libnvdimm.h b/include/linux/libnvdimm.h
+index 550761477005..10fbc523ff95 100644
+--- a/include/linux/libnvdimm.h
++++ b/include/linux/libnvdimm.h
+@@ -139,6 +139,8 @@ struct nd_region *to_nd_region(struct device *dev);
+ struct nd_blk_region *to_nd_blk_region(struct device *dev);
+ struct nvdimm_bus_descriptor *to_nd_desc(struct nvdimm_bus *nvdimm_bus);
+ struct device *to_nvdimm_bus_dev(struct nvdimm_bus *nvdimm_bus);
++struct device *to_nvdimm_dev(struct nvdimm *nvdimm);
++struct device *to_nd_region_dev(struct nd_region *region);
+ const char *nvdimm_name(struct nvdimm *nvdimm);
+ struct kobject *nvdimm_kobj(struct nvdimm *nvdimm);
+ unsigned long nvdimm_cmd_mask(struct nvdimm *nvdimm);
 -- 
-1.8.3.1
+2.9.4
