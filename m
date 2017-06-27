@@ -1,30 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxjVw6GmNzDr5j
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 20:55:04 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id u62so3887364pgb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 03:55:04 -0700 (PDT)
-Message-ID: <1498560849.7935.9.camel@gmail.com>
-Subject: Re: [RFC v4 01/17] mm: introduce an additional vma bit for powerpc
- pkey
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-mm@kvack.org,  x86@kernel.org, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org,  corbet@lwn.net, mingo@redhat.com
-Date: Tue, 27 Jun 2017 20:54:09 +1000
-In-Reply-To: <1498558319-32466-2-git-send-email-linuxram@us.ibm.com>
-References: <1498558319-32466-1-git-send-email-linuxram@us.ibm.com>
- <1498558319-32466-2-git-send-email-linuxram@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxjcM3kK5zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 20:59:47 +1000 (AEST)
+Subject: Patch "powerpc/slb: Force a full SLB flush when we insert for a bad
+ EA" has been added to the 3.18-stable tree
+To: mpe@ellerman.id.au, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
+ stable@vger.kernel.org
+Cc: <stable@vger.kernel.org>, <stable-commits@vger.kernel.org>
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 27 Jun 2017 12:59:44 +0200
+In-Reply-To: <87k244sed8.fsf@concordia.ellerman.id.au>
+Message-ID: <149856118420762@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,39 +26,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-06-27 at 03:11 -0700, Ram Pai wrote:
-> Currently there are only 4bits in the vma flags to support 16 keys
-> on x86.  powerpc supports 32 keys, which needs 5bits. This patch
-> introduces an addition bit in the vma flags.
-> 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  fs/proc/task_mmu.c |  6 +++++-
->  include/linux/mm.h | 18 +++++++++++++-----
->  2 files changed, 18 insertions(+), 6 deletions(-)
-> 
-> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-> index f0c8b33..2ddc298 100644
-> --- a/fs/proc/task_mmu.c
-> +++ b/fs/proc/task_mmu.c
-> @@ -666,12 +666,16 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
->  		[ilog2(VM_MERGEABLE)]	= "mg",
->  		[ilog2(VM_UFFD_MISSING)]= "um",
->  		[ilog2(VM_UFFD_WP)]	= "uw",
-> -#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-> +#ifdef CONFIG_ARCH_HAS_PKEYS
->  		/* These come out via ProtectionKey: */
->  		[ilog2(VM_PKEY_BIT0)]	= "",
->  		[ilog2(VM_PKEY_BIT1)]	= "",
->  		[ilog2(VM_PKEY_BIT2)]	= "",
->  		[ilog2(VM_PKEY_BIT3)]	= "",
-> +#endif /* CONFIG_ARCH_HAS_PKEYS */
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +		/* Additional bit in ProtectionKey: */
-> +		[ilog2(VM_PKEY_BIT4)]	= "",
->  #endif
 
-Not sure why these are linked with smap bits, but I guess the keys live
-in the Supervisor Mode Access Prevention area?
+This is a note to let you know that I've just added the patch titled
 
-Balbir Singh.
+    powerpc/slb: Force a full SLB flush when we insert for a bad EA
+
+to the 3.18-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     powerpc-slb-force-a-full-slb-flush-when-we-insert-for-a-bad-ea.patch
+and it can be found in the queue-3.18 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+>From mpe@ellerman.id.au  Tue Jun 27 12:58:25 2017
+From: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 22 Jun 2017 16:52:51 +1000
+Subject: powerpc/slb: Force a full SLB flush when we insert for a bad EA
+To: stable@vger.kernel.org  <stable@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
+Cc: lkml  <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman  <gregkh@linuxfoundation.org>
+Message-ID: <87k244sed8.fsf@concordia.ellerman.id.au>
+
+From: Michael Ellerman <mpe@ellerman.id.au>
+
+[Note this patch is not upstream. The bug fix was fixed differently in
+upstream prior to the bug being identified.]
+
+The SLB miss handler calls slb_allocate_realmode() in order to create an
+SLB entry for the faulting address. At the very start of that function
+we check that the faulting Effective Address (EA) is less than
+PGTABLE_RANGE (ignoring the region), ie. is it an address which could
+possibly fit in the virtual address space.
+
+For an EA which fails that test, we branch out of line (to label 8), but
+we still go on to create an SLB entry for the address. The SLB entry we
+create has a VSID of 0, which means it will never match anything in the
+hash table and so can't actually translate to a physical address.
+
+However that SLB entry will be inserted in the SLB, and so needs to be
+managed properly like any other SLB entry. In particular we need to
+insert the SLB entry in the SLB cache, so that it will be flushed when
+the process is descheduled.
+
+And that is where the bugs begin. The first bug is that slb_finish_load()
+uses cr7 to decide if it should insert the SLB entry into the SLB cache.
+When we come from the invalid EA case we don't set cr7, it just has some
+junk value from userspace. So we may or may not insert the SLB entry in
+the SLB cache. If we fail to insert it, we may then incorrectly leave it
+in the SLB when the process is descheduled.
+
+The second bug is that even if we do happen to add the entry to the SLB
+cache, we do not have enough bits in the SLB cache to remember the full
+ESID value for very large EAs.
+
+For example if a process branches to 0x788c545a18000000, that results in
+a 256MB SLB entry with an ESID of 0x788c545a1. But each entry in the SLB
+cache is only 32-bits, meaning we truncate the ESID to 0x88c545a1. This
+has the same effect as the first bug, we incorrectly leave the SLB entry
+in the SLB when the process is descheduled.
+
+When a process accesses an invalid EA it results in a SEGV signal being
+sent to the process, which typically results in the process being
+killed. Process death isn't instantaneous however, the process may catch
+the SEGV signal and continue somehow, or the kernel may start writing a
+core dump for the process, either of which means it's possible for the
+process to be preempted while its processing the SEGV but before it's
+been killed.
+
+If that happens, when the process is scheduled back onto the CPU we will
+allocate a new SLB entry for the NIP, which will insert a second entry
+into the SLB for the bad EA. Because we never flushed the original
+entry, due to either bug one or two, we now have two SLB entries that
+match the same EA.
+
+If another access is made to that EA, either by the process continuing
+after catching the SEGV, or by a second process accessing the same bad
+EA on the same CPU, we will trigger an SLB multi-hit machine check
+exception. This has been observed happening in the wild.
+
+The fix is when we hit the invalid EA case, we mark the SLB cache as
+being full. This causes us to not insert the truncated ESID into the SLB
+cache, and means when the process is switched out we will flush the
+entire SLB. Note that this works both for the original fault and for a
+subsequent call to slb_allocate_realmode() from switch_slb().
+
+Because we mark the SLB cache as full, it doesn't really matter what
+value is in cr7, but rather than leaving it as something random we set
+it to indicate the address was a kernel address. That also skips the
+attempt to insert it in the SLB cache which is a nice side effect.
+
+Another way to fix the bug would be to make the entries in the SLB cache
+wider, so that we don't truncate the ESID. However this would be a more
+intrusive change as it alters the size and layout of the paca.
+
+This bug was fixed in upstream by commit f0f558b131db ("powerpc/mm:
+Preserve CFAR value on SLB miss caused by access to bogus address"),
+which changed the way we handle a bad EA entirely removing this bug in
+the process.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/mm/slb_low.S |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+Note this patch is not upstream. The bug fix was fixed differently in
+upstream prior to the bug being identified.
+
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -179,6 +179,16 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEG
+ 	b	slb_finish_load
+ 
+ 8:	/* invalid EA */
++	/*
++	 * It's possible the bad EA is too large to fit in the SLB cache, which
++	 * would mean we'd fail to invalidate it on context switch. So mark the
++	 * SLB cache as full so we force a full flush. We also set cr7+eq to
++	 * mark the address as a kernel address, so slb_finish_load() skips
++	 * trying to insert it into the SLB cache.
++	 */
++	li	r9,SLB_CACHE_ENTRIES + 1
++	sth	r9,PACASLBCACHEPTR(r13)
++	crset	4*cr7+eq
+ 	li	r10,0			/* BAD_VSID */
+ 	li	r9,0			/* BAD_VSID */
+ 	li	r11,SLB_VSID_USER	/* flags don't much matter */
+
+
+Patches currently in stable-queue which might be from mpe@ellerman.id.au are
+
+queue-3.18/powerpc-slb-force-a-full-slb-flush-when-we-insert-for-a-bad-ea.patch
+queue-3.18/powerpc-kprobes-pause-function_graph-tracing-during-jprobes-handling.patch
