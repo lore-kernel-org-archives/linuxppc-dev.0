@@ -1,29 +1,26 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-yw0-x235.google.com (mail-yw0-x235.google.com
- [IPv6:2607:f8b0:4002:c05::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <leoyang.li@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00041.outbound.protection.outlook.com [40.107.0.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxqlL69dDzDr2Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 01:36:14 +1000 (AEST)
-Received: by mail-yw0-x235.google.com with SMTP id l21so4939155ywb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 08:36:14 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Tue, 27 Jun 2017 11:36:08 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ingo Molnar <mingo@kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>, mpe <mpe@ellerman.id.au>,
- sachinp <sachinp@linux.vnet.ibm.com>, ego <ego@linux.vnet.ibm.com>,
- Li Zefan <lizefan@huawei.com>
-Subject: Re: [next-20170609] Oops while running CPU off-on
- (cpuset.c/cpuset_can_attach)
-Message-ID: <20170627153608.GD2289@htj.duckdns.org>
-References: <1497266622.15415.39.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxs6q1wZJzDr2Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 02:38:09 +1000 (AEST)
+From: Leo Li <leoyang.li@nxp.com>
+To: Scott Wood <oss@buserror.net>, Karim Eshapa <karim.eshapa@gmail.com>
+CC: Roy Pledge <roy.pledge@nxp.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Claudiu Manoil <claudiu.manoil@nxp.com>,
+ "colin.king@canonical.com" <colin.king@canonical.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [v3] drivers:soc:fsl:qbman:qman.c: Sleep instead of stuck hacking
+ jiffies.
+Date: Tue, 27 Jun 2017 16:38:00 +0000
+Message-ID: <AM4PR0401MB1699F4CD65C50361933D2FA48FDC0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+References: <1493963118-11064-1-git-send-email-karim.eshapa@gmail.com>
+ <20170625024638.t6awgp7omzq5dcnk@home.buserror.net>
+In-Reply-To: <20170625024638.t6awgp7omzq5dcnk@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1497266622.15415.39.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Abdul.
 
-Sorry about the long delay.
 
-On Mon, Jun 12, 2017 at 04:53:42PM +0530, Abdul Haleem wrote:
-> linux-next kernel crashed while running CPU offline and online.
-> 
-> Machine: Power 8 LPAR
-> Kernel : 4.12.0-rc4-next-20170609
-> gcc : version 5.2.1
-> config: attached
-> testcase: CPU off/on
-> 
-> for i in $(seq 100);do 
->     for j in $(seq 0 15);do 
->         echo 0 >  /sys/devices/system/cpu/cpu$j/online
->         sleep 5
->         echo 1 > /sys/devices/system/cpu/cpu$j/online
->     done
-> done
-> 
-...
-> NIP [c0000000001d6868] cpuset_can_attach+0x58/0x1b0
+> -----Original Message-----
+> From: Scott Wood [mailto:oss@buserror.net]
+> Sent: Saturday, June 24, 2017 9:47 PM
+> To: Karim Eshapa <karim.eshapa@gmail.com>
+> Cc: Roy Pledge <roy.pledge@nxp.com>; linux-kernel@vger.kernel.org;
+> Claudiu Manoil <claudiu.manoil@nxp.com>; colin.king@canonical.com;
+> linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org; Leo =
+Li
+> <leoyang.li@nxp.com>
+> Subject: Re: [v3] drivers:soc:fsl:qbman:qman.c: Sleep instead of stuck
+> hacking jiffies.
+>=20
+> On Fri, May 05, 2017 at 07:45:18AM +0200, Karim Eshapa wrote:
+> > Use msleep() instead of stucking with
+> > long delay will be more efficient.
+> >
+> > Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
+> > ---
+> >  drivers/soc/fsl/qbman/qman.c | 6 +-----
+> >  1 file changed, 1 insertion(+), 5 deletions(-)
+>=20
+> Acked-by: Scott Wood <oss@buserror.net>
+>=20
+> (though the subject line should be "soc/qman: ...")
+>=20
+> Leo, are you going to send this patch (and other qman patches) via arm-so=
+c?
 
-Can you please map this to the source line?
+Yes.  I can take it through the pull request for soc/fsl via arm-soc.  As m=
+entioned in the feedback from David in another email, probably we should up=
+date the comment and commit message to mention how 10000 cycles becomes 1ms=
+.
 
-> LR [c0000000001d6858] cpuset_can_attach+0x48/0x1b0
-> Call Trace:
-> [c00000000c72b9a0] [c0000000001d6858] cpuset_can_attach+0x48/0x1b0
-> (unreliable)
-> [c00000000c72ba00] [c0000000001cbe80] cgroup_migrate_execute+0xb0/0x450
-> [c00000000c72ba80] [c0000000001d3754] cgroup_transfer_tasks+0x1c4/0x360
-> [c00000000c72bba0] [c0000000001d923c] cpuset_hotplug_workfn+0x86c/0xa20
-> [c00000000c72bca0] [c00000000011aa44] process_one_work+0x1e4/0x580
-> [c00000000c72bd30] [c00000000011ae78] worker_thread+0x98/0x5c0
-> [c00000000c72bdc0] [c000000000124058] kthread+0x168/0x1b0
-> [c00000000c72be30] [c00000000000b2e8] ret_from_kernel_thread+0x5c/0x74
-> Instruction dump:
-> f821ffa1 7c7d1b78 60000000 60000000 38810020 7fa3eb78 3f42ffed 4bff4c25 
-> 60000000 3b5a0448 3d420020 eb610020 <e9230960> 7f43d378 e9290000
-> f92af200 
-
-Thanks.
-
--- 
-tejun
+Regards,
+Leo
