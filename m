@@ -1,33 +1,42 @@
-Return-Path: <tushar.n.dave@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxNTC3Sp9zDr2d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 08:07:27 +1000 (AEST)
-Subject: Re: clean up and modularize arch dma_mapping interface V2
-To: Christoph Hellwig <hch@lst.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-mips@linux-mips.org, linux-samsung-soc@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- x86@kernel.org, linux-tegra@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- dmaengine@vger.kernel.org, iommu@lists.linux-foundation.org,
- openrisc@lists.librecores.org, netdev@vger.kernel.org,
- sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-References: <20170616181059.19206-1-hch@lst.de>
- <162d7932-5766-4c29-5471-07d1b699190a@oracle.com>
- <20170624071855.GD14580@lst.de>
- <1498318616.31581.87.camel@kernel.crashing.org>
- <20170626094739.GB13981@lst.de>
-From: tndave <tushar.n.dave@oracle.com>
-Message-ID: <91360640-546b-edab-9f4a-952c7a1d0061@oracle.com>
-Date: Mon, 26 Jun 2017 15:06:25 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxRLV6LZWzDr2g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 10:16:50 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5R0Dis2010109
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 20:16:48 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bb3wr4e10-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 20:16:47 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Mon, 26 Jun 2017 20:16:46 -0400
+Date: Mon, 26 Jun 2017 17:16:37 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+Subject: Re: [RFC v3 02/23] powerpc: introduce set_hidx_slot helper
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1498095579-6790-1-git-send-email-linuxram@us.ibm.com>
+ <1498095579-6790-3-git-send-email-linuxram@us.ibm.com>
+ <1498431798.7935.5.camel@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20170626094739.GB13981@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1498431798.7935.5.camel@gmail.com>
+Message-Id: <20170627001637.GA5846@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,45 +46,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 06/26/2017 02:47 AM, Christoph Hellwig wrote:
-> On Sat, Jun 24, 2017 at 10:36:56AM -0500, Benjamin Herrenschmidt wrote:
->> I think we still need to do it. For example we have a bunch new "funky"
->> cases.
+On Mon, Jun 26, 2017 at 09:03:18AM +1000, Balbir Singh wrote:
+> On Wed, 2017-06-21 at 18:39 -0700, Ram Pai wrote:
+> > Introduce set_hidx_slot() which sets the (H_PAGE_F_SECOND|H_PAGE_F_GIX)
+> > bits at  the  appropriate  location  in  the  PTE  of  4K  PTE.  In the
+> > case of 64K PTE, it sets the bits in the second part of the PTE. Though
+> > the implementation for the former just needs the slot parameter, it does
+> > take some additional parameters to keep the prototype consistent.
+> > 
+> > This function will come in handy as we  work  towards  re-arranging the
+> > bits in the later patches.
+> > 
+> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/book3s/64/hash-4k.h  |  7 +++++++
+> >  arch/powerpc/include/asm/book3s/64/hash-64k.h | 16 ++++++++++++++++
+> >  2 files changed, 23 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> > index 9c2c8f1..cef644c 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> > @@ -55,6 +55,13 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
+> >  }
+> >  #endif
+> >  
+> > +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> > +			unsigned int subpg_index, unsigned long slot)
+> > +{
+> > +	return (slot << H_PAGE_F_GIX_SHIFT) &
+> > +		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
+> > +}
+> > +
 > 
-> I have no plan to do away with the selection - I just want a better
-> interface than the current one.
-I agree we need better interface than the current one.
-Like Benjamin mentioned cases for powerpc , sparc also need some special
-treatment for ATU IOMMU depending on device's DMA mask.
+> A comment on top would help explain that 4k and 64k are different, 64k
+> is a new layout.
 
-For sparc, I am in process of enabling one or more dedicated IOTSB (I/O
-Translation Storage Buffer) per PCI BDF (contrary to current design
-where all PCI device under root complex share a 32bit and/or 64bit IOTSB
-depending on 32bit and/or 64bit DMA). I am planning to use DMA set mask
-APIs as hook where based on device's dma mask values (dma_mask and
-coherent_dma_mask) one or more IOTSB resource will be allocated (and
-released [1]).
+ok.
 
-Without set_dma_mask ops, I can still rely on HAVE_ARCH_DMA_SET_MASK and
-dma_supported() that allows me to distinguish if device is setting
-its streaming dma_mask and coherent_dma_mask respectively.
-
--Tushar
-
-[1] By default, every PCI BDF will have one dedicated 32bit IOTSB. This
-is to support default case where some device drivers even don't bother
-to set DMA mask but instead are fine with default 32bit mask.
-A 64bit IOTSB will be allocated when device request 64bit dma_mask.
-However if device wants 64bit dma mask for both coherent and
-non-coherent, a default 32bit IOTSB will be released as well. Wasting an
-IOTSB is not a good idea because there is a hard limit on max number of
-IOTSB per guest domain per root complex.
-
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
+> >  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> >  
+> >  static inline char *get_hpte_slot_array(pmd_t *pmdp)
+> > diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> > index 3f49941..4bac70a 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> > @@ -75,6 +75,22 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+> >  	return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
+> >  }
+> >  
+> > +static inline unsigned long set_hidx_slot(pte_t *ptep, real_pte_t rpte,
+> > +		unsigned int subpg_index, unsigned long slot)
+> > +{
+> > +	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+> > +
+> > +	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+> > +	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+> > +	/*
+> > +	 * Avoid race with __real_pte()
+> > +	 * hidx must be committed to memory before committing
+> > +	 * the pte.
+> > +	 */
+> > +	smp_wmb();
+> 
+> Whats the other paired barrier, is it in set_pte()?
+
+ __real_pte() reads the hidx. The smp_rmb() is in that function.
+
+> 
+> > +	return 0x0UL;
+> > +}
+> 
+> We return 0 here and slot information for 4k pages, it is not that
+> clear
+
+We return 0 here and commit the 4k-hpte hidx. 
+
+
+RP
