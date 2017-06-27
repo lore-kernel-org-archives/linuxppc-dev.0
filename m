@@ -1,17 +1,41 @@
-Return-Path: <hare@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxpGt0PkjzDr2Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 00:29:57 +1000 (AEST)
-From: Hannes Reinecke <hare@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Torsten Duwe <duwe@suse.com>, linuxppc-dev@lists.ozlabs.org,
- Hannes Reinecke <hare@suse.de>, Hannes Reinecke <hare@suse.com>
-Subject: [PATCH] powerpc: conditionally compile platform-specific serial
- drivers
-Date: Tue, 27 Jun 2017 16:29:51 +0200
-Message-Id: <1498573791-6781-1-git-send-email-hare@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxqTp64s3zDr0c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 01:24:30 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5RFO2mF042805
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 11:24:28 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bbskvh6v2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 11:24:28 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 27 Jun 2017 11:24:27 -0400
+Subject: Re: [RFC v4 09/17] powerpc: call the hash functions with the correct
+ pkey value
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+References: <1498558319-32466-1-git-send-email-linuxram@us.ibm.com>
+ <1498558319-32466-10-git-send-email-linuxram@us.ibm.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 27 Jun 2017 20:54:07 +0530
+MIME-Version: 1.0
+In-Reply-To: <1498558319-32466-10-git-send-email-linuxram@us.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <5e4fa932-4313-5376-2147-a6431bbec16b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,61 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpsc.c and mpc52xx-psc.c are platform-specific serial drivers, and
-should be compiled for the respective platforms only.
 
-Signed-off-by: Hannes Reinecke <hare@suse.com>
----
- arch/powerpc/boot/Makefile | 7 ++++---
- arch/powerpc/boot/serial.c | 4 ++++
- 2 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index e82f333..1a4609c 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -99,14 +99,15 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c decompress.c main.c \
- 		$(libfdt) libfdt-wrapper.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		elf_util.c $(zlib-y) devtree.c stdlib.c \
--		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
--		uartlite.c mpc52xx-psc.c opal.c
-+		oflib.c ofconsole.c cuboot.c cpm-serial.c \
-+		uartlite.c opal.c
-+src-wlib-$(CONFIG_PPC_MPC52XX) += mpc52xx-psc.c
- src-wlib-$(CONFIG_PPC64_BOOT_WRAPPER) +=  opal-calls.S
- src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
- src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
- src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
- src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
--src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
-+src-wlib-$(CONFIG_EMBEDDED6xx) += mpsc.c mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
- 
- src-plat-y := of.c epapr.c
- src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
-diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-index e04c1e4..7b5c02b 100644
---- a/arch/powerpc/boot/serial.c
-+++ b/arch/powerpc/boot/serial.c
-@@ -120,15 +120,19 @@ int serial_console_init(void)
- 	if (dt_is_compatible(devp, "ns16550") ||
- 	    dt_is_compatible(devp, "pnpPNP,501"))
- 		rc = ns16550_console_init(devp, &serial_cd);
-+#ifdef CONFIG_EMBEDDED6xx
- 	else if (dt_is_compatible(devp, "marvell,mv64360-mpsc"))
- 		rc = mpsc_console_init(devp, &serial_cd);
-+#endif
- 	else if (dt_is_compatible(devp, "fsl,cpm1-scc-uart") ||
- 	         dt_is_compatible(devp, "fsl,cpm1-smc-uart") ||
- 	         dt_is_compatible(devp, "fsl,cpm2-scc-uart") ||
- 	         dt_is_compatible(devp, "fsl,cpm2-smc-uart"))
- 		rc = cpm_console_init(devp, &serial_cd);
-+#ifdef CONFIG_PPC_MPC52XX
- 	else if (dt_is_compatible(devp, "fsl,mpc5200-psc-uart"))
- 		rc = mpc5200_psc_console_init(devp, &serial_cd);
-+#endif
- 	else if (dt_is_compatible(devp, "xlnx,opb-uartlite-1.00.b") ||
- 		 dt_is_compatible(devp, "xlnx,xps-uartlite-1.00.a"))
- 		rc = uartlite_console_init(devp, &serial_cd);
--- 
-1.8.5.6
+On Tuesday 27 June 2017 03:41 PM, Ram Pai wrote:
+> Pass the correct protection key value to the hash functions on
+> page fault.
+> 
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>   arch/powerpc/include/asm/pkeys.h | 11 +++++++++++
+>   arch/powerpc/mm/hash_utils_64.c  |  4 ++++
+>   arch/powerpc/mm/mem.c            |  6 ++++++
+>   3 files changed, 21 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> index ef1c601..1370b3f 100644
+> --- a/arch/powerpc/include/asm/pkeys.h
+> +++ b/arch/powerpc/include/asm/pkeys.h
+> @@ -74,6 +74,17 @@ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+>   }
+> 
+>   /*
+> + * return the protection key of the vma corresponding to the
+> + * given effective address @ea.
+> + */
+> +static inline int mm_pkey(struct mm_struct *mm, unsigned long ea)
+> +{
+> +	struct vm_area_struct *vma = find_vma(mm, ea);
+> +	int pkey = vma ? vma_pkey(vma) : 0;
+> +	return pkey;
+> +}
+> +
+> +/*
+>
+
+That is not going to work in hash fault path right ? We can't do a 
+find_vma there without holding the mmap_sem
+
+-aneesh
