@@ -1,26 +1,17 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qk0-x22e.google.com (mail-qk0-x22e.google.com
- [IPv6:2607:f8b0:400d:c09::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hare@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxnkf3W5PzDr2Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 00:05:30 +1000 (AEST)
-Received: by mail-qk0-x22e.google.com with SMTP id d78so25650563qkb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 07:05:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170627104328.GD30002@leverpostej>
-References: <20170627102851.15484-1-oohall@gmail.com>
- <20170627102851.15484-2-oohall@gmail.com>
- <20170627104328.GD30002@leverpostej>
-From: Oliver <oohall@gmail.com>
-Date: Wed, 28 Jun 2017 00:05:27 +1000
-Message-ID: <CAOSf1CGxciDwRLKv5JkessO_AGAKR4jKiY5+=3z4dptQHPssxw@mail.gmail.com>
-Subject: Re: [RFC 2/4] libnvdimm: Add a device-tree interface
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- devicetree@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxpGt0PkjzDr2Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 00:29:57 +1000 (AEST)
+From: Hannes Reinecke <hare@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Torsten Duwe <duwe@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ Hannes Reinecke <hare@suse.de>, Hannes Reinecke <hare@suse.com>
+Subject: [PATCH] powerpc: conditionally compile platform-specific serial
+ drivers
+Date: Tue, 27 Jun 2017 16:29:51 +0200
+Message-Id: <1498573791-6781-1-git-send-email-hare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,154 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mark,
+mpsc.c and mpc52xx-psc.c are platform-specific serial drivers, and
+should be compiled for the respective platforms only.
 
-Thanks for the review and sorry, I really should have added more
-context. I was originally just going to send this to the linux-nvdimm
-list, but I figured the wider device-tree community might be
-interested too.
+Signed-off-by: Hannes Reinecke <hare@suse.com>
+---
+ arch/powerpc/boot/Makefile | 7 ++++---
+ arch/powerpc/boot/serial.c | 4 ++++
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-Preamble:
-
-Non-volatile DIMMs (nvdimms) are otherwise normal DDR DIMMs that are
-based on some kind of non-volatile memory with DRAM-like performance
-(i.e. not flash). The best known example would probably be Intel's 3D
-XPoint technology, but there are a few others around. The non-volatile
-aspect makes them useful as storage devices and being part of the
-memory space allows the backing storage to be exposed to userspace via
-mmap() provided the kernel supports it. The mmap() trick is enabled by
-the kernel supporting "direct access" aka DAX.
-
-With that out of the way...
-
-On Tue, Jun 27, 2017 at 8:43 PM, Mark Rutland <mark.rutland@arm.com> wrote:
-> Hi,
->
-> On Tue, Jun 27, 2017 at 08:28:49PM +1000, Oliver O'Halloran wrote:
->> A fairly bare-bones set of device-tree bindings so libnvdimm can be used
->> on powerpc and other, less cool, device-tree based platforms.
->
-> ;)
->
->> Cc: devicetree@vger.kernel.org
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->> ---
->> The current bindings are essentially this:
->>
->> nonvolatile-memory {
->>       compatible = "nonvolatile-memory", "special-memory";
->>       ranges;
->>
->>       region@0 {
->>               compatible = "nvdimm,byte-addressable";
->>               reg = <0x0 0x1000>;
->>       };
->>
->>       region@1000 {
->>               compatible = "nvdimm,byte-addressable";
->>               reg = <0x1000 0x1000>;
->>       };
->> };
->
-> This needs to have a proper binding document under
-> Documentation/devicetree/bindings/. Something like the reserved-memory
-> bdings would be a good template.
->
-> If we want thet "nvdimm" vendor-prefix, that'll have to be reserved,
-> too (see Documentation/devicetree/bindings/vendor-prefixes.txt).
-
-It's on my TODO list, I just wanted to get some comments on the
-overall approach before doing the rest of the grunt work.
-
->
-> What is "special-memory"? What other memory types would be described
-> here?
->
-> What exacctly does "nvdimm,byte-addressable" imply? I suspect that you
-> also expect such memory to be compatible with mappings using (some)
-> cacheable attributes?
-
-I think it's always been assumed that nvdimm memory can be treated as
-cacheable system memory for all intents and purposes. It might be
-useful to be able to override it on a per-bus or per-region basis
-though.
-
->
-> Perhaps the byte-addressable property should be a boolean property on
-> the region, rather than part of the compatible string.
-See below.
-
->> To handle interleave sets, etc the plan was the add an extra property with the
->> interleave stride and a "mapping" property with <&DIMM, dimm-start-offset>
->> tuples for each dimm in the interleave set. Block MMIO regions can be added
->> with a different compatible type, but I'm not too concerned with them for
->> now.
->
-> Sorry, I'm not too familiar with nonvolatile memory. What are interleave
-> sets?
-
-An interleave set refers to a group of DIMMs which share a physical
-address range. The addresses in the range are assigned to different
-backing DIMMs to improve performance. E.g
-
-Addr 0 to Addr 127 are on DIMM0, Addr 127 to 255 are on DIMM1, Addr
-256 to 384 are on DIMM0, etc, etc
-
-software needs to be aware of the interleave pattern so it can
-localise memory errors to a specific DIMM.
-
->
-> What are block MMIO regions?
-
-NVDIMMs come in two flavours: byte addressable and block aperture. The
-byte addressable type can be treated as conventional memory while the
-block aperture type are essentially an MMIO block device. Their
-contents are accessed via the MMIO window rather than being presented
-to the system as RAM so they don't have any of the features that make
-NVDIMMs interesting. It would be nice if we could punt them into a
-different driver, unfortunately ACPI allows storage on one DIMM to be
-partitioned into byte addressable and block regions and libnvdimm
-provides the management interface for both. Dan Williams, who
-maintains libnvdimm and the ACPI interface to it, would be a better
-person to ask about the finer details.
-
->
-> Is there any documentation one can refer to for any of this?
-
-Documentation/nvdimm/nvdimm.txt has a fairly detailed overview of how
-libnvdimm operates. The short version is that libnvdimm provides a
-"nvdimm_bus" container for "regions" and "dimms." Regions are chunks
-of memory and come in the block or byte types mentioned above, while
-DIMMs refer to the physical devices. A firmware specific driver
-converts the firmware's hardware description into a set of DIMMs, a
-set of regions, and a set of relationships between the two.
-
-On top of that, regions are partitioned into "namespaces" which are
-then exported to userspace as either a block device (with PAGE_SIZE
-blocks) or as a "DAX device." In the block device case a filesystem is
-used to manage the storage and provided the filesystem supports FS_DAX
-and is mounted with -o dax, mmap() calls will map the backing memory
-directly rather than buffering IO in the page cache. DAX devices can
-be mmap()ed to access the backing storage directly so all the
-management issues can be punted to userspace.
-
->
-> [...]
->
->> +static const struct of_device_id of_nvdimm_bus_match[] = {
->> +     { .compatible = "nonvolatile-memory" },
->> +     { .compatible = "special-memory" },
->> +     { },
->> +};
->
-> Why both? Is the driver handling other "special-memory"?
-
-This is one of the things I was hoping the community could help
-decide. "nonvolatile-memory" is probably a more accurate description
-of the for the current usage, but the functionality does have other
-uses. The interface might be useful for exposing any kind memory with
-special characteristics, like high-bandwidth memory or memory on a
-coherent accelerator.
-
-Thanks,
-Oliver
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index e82f333..1a4609c 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -99,14 +99,15 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c decompress.c main.c \
+ 		$(libfdt) libfdt-wrapper.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		elf_util.c $(zlib-y) devtree.c stdlib.c \
+-		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
+-		uartlite.c mpc52xx-psc.c opal.c
++		oflib.c ofconsole.c cuboot.c cpm-serial.c \
++		uartlite.c opal.c
++src-wlib-$(CONFIG_PPC_MPC52XX) += mpc52xx-psc.c
+ src-wlib-$(CONFIG_PPC64_BOOT_WRAPPER) +=  opal-calls.S
+ src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
+ src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
+ src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
+ src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
+-src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
++src-wlib-$(CONFIG_EMBEDDED6xx) += mpsc.c mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
+ 
+ src-plat-y := of.c epapr.c
+ src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+index e04c1e4..7b5c02b 100644
+--- a/arch/powerpc/boot/serial.c
++++ b/arch/powerpc/boot/serial.c
+@@ -120,15 +120,19 @@ int serial_console_init(void)
+ 	if (dt_is_compatible(devp, "ns16550") ||
+ 	    dt_is_compatible(devp, "pnpPNP,501"))
+ 		rc = ns16550_console_init(devp, &serial_cd);
++#ifdef CONFIG_EMBEDDED6xx
+ 	else if (dt_is_compatible(devp, "marvell,mv64360-mpsc"))
+ 		rc = mpsc_console_init(devp, &serial_cd);
++#endif
+ 	else if (dt_is_compatible(devp, "fsl,cpm1-scc-uart") ||
+ 	         dt_is_compatible(devp, "fsl,cpm1-smc-uart") ||
+ 	         dt_is_compatible(devp, "fsl,cpm2-scc-uart") ||
+ 	         dt_is_compatible(devp, "fsl,cpm2-smc-uart"))
+ 		rc = cpm_console_init(devp, &serial_cd);
++#ifdef CONFIG_PPC_MPC52XX
+ 	else if (dt_is_compatible(devp, "fsl,mpc5200-psc-uart"))
+ 		rc = mpc5200_psc_console_init(devp, &serial_cd);
++#endif
+ 	else if (dt_is_compatible(devp, "xlnx,opb-uartlite-1.00.b") ||
+ 		 dt_is_compatible(devp, "xlnx,xps-uartlite-1.00.a"))
+ 		rc = uartlite_console_init(devp, &serial_cd);
+-- 
+1.8.5.6
