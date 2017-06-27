@@ -1,43 +1,20 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxdN73x6bzDqlL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 17:48:55 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5R7mqdD101114
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 03:48:53 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bb2b3yds8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 03:48:53 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 27 Jun 2017 17:48:42 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5R7meK761407416
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 17:48:40 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5R7meaC029392
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 17:48:40 +1000
-Subject: Re: [PATCH] powerpc/perf: Add POWER9 alternate PM_RUN_CYC and
- PM_RUN_INST_CMPL events
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, mikey@neuling.org
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <20170618235128.20472-1-anton@ozlabs.org>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Tue, 27 Jun 2017 13:18:37 +0530
-MIME-Version: 1.0
-In-Reply-To: <20170618235128.20472-1-anton@ozlabs.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <fd388965-53af-2fe1-5606-5d6f5e1c6324@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxdNY6Dc1zDr3S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 17:49:17 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id f127so3330548pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 00:49:17 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com, christophe.leroy@c-s.fr, paulus@samba.org,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v4 0/9] Provide STRICT_KERNEL_RWX for powerpc
+Date: Tue, 27 Jun 2017 17:48:54 +1000
+Message-Id: <20170627074903.19324-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,49 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Provide STRICT_KERNEL_RWX for PPC64/BOOK3S
 
-On Monday 19 June 2017 05:21 AM, Anton Blanchard wrote:
-> From: Anton Blanchard <anton@samba.org>
->
-> Similar to POWER8, POWER9 can count run cycles and run instructions
-> completed on more than one PMU.
+These patches enable RX mappings of kernel text.
+rodata is mapped RX as well as a trade-off, there
+are more details in the patch description
 
-Acked-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+As a prerequisite for R/O text, patch_instruction
+is moved over to using a separate mapping that
+allows write to kernel text. xmon/ftrace/kprobes
+have been moved over to work with patch_instruction
 
+There is a bug fix, the updatepp and updateboltedpp
+(pseries) providers, did not use flags as described in
+PAPR (patch 6). I would like to see that patch marked
+to stable, I've not added a Cc:stable myself.
 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->   arch/powerpc/perf/power9-events-list.h | 4 ++++
->   arch/powerpc/perf/power9-pmu.c         | 2 ++
->   2 files changed, 6 insertions(+)
->
-> diff --git a/arch/powerpc/perf/power9-events-list.h b/arch/powerpc/perf/power9-events-list.h
-> index 71a6bfee5c02..e9e417eefa59 100644
-> --- a/arch/powerpc/perf/power9-events-list.h
-> +++ b/arch/powerpc/perf/power9-events-list.h
-> @@ -51,8 +51,12 @@ EVENT(PM_DTLB_MISS,				0x300fc)
->   EVENT(PM_ITLB_MISS,				0x400fc)
->   /* Run_Instructions */
->   EVENT(PM_RUN_INST_CMPL,				0x500fa)
-> +/* Alternate event code for PM_RUN_INST_CMPL */
-> +EVENT(PM_RUN_INST_CMPL_ALT,			0x400fa)
->   /* Run_cycles */
->   EVENT(PM_RUN_CYC,				0x600f4)
-> +/* Alternate event code for Run_cycles */
-> +EVENT(PM_RUN_CYC_ALT,				0x200f4)
->   /* Instruction Dispatched */
->   EVENT(PM_INST_DISP,				0x200f2)
->   EVENT(PM_INST_DISP_ALT,				0x300f2)
-> diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-> index 018f8e90ac35..b9168163b2b2 100644
-> --- a/arch/powerpc/perf/power9-pmu.c
-> +++ b/arch/powerpc/perf/power9-pmu.c
-> @@ -107,6 +107,8 @@ extern struct attribute_group isa207_pmu_format_group;
->   /* Table of alternatives, sorted by column 0 */
->   static const unsigned int power9_event_alternatives[][MAX_ALT] = {
->   	{ PM_INST_DISP,			PM_INST_DISP_ALT },
-> +	{ PM_RUN_CYC_ALT,		PM_RUN_CYC },
-> +	{ PM_RUN_INST_CMPL_ALT,		PM_RUN_INST_CMPL },
->   };
->
->   static int power9_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+Another build failure was reported, because instead
+of using ARCH_HAS_SET_MEMORY as a gate for set_memory.h
+inclusion, some of the infrastructure in the core kernel
+uses CONFIG_STRICT_KERNEL_RWX. I've sent a fix to the
+fix the latter. It should be picked up by 4.13 at which
+time we can remove the config dependency on !HIBERNATION
+in arch/powerpc/Kconfig
+
+This version received testing under CONFIG_RELOCATABLE_TEST.
+CONFIG_STRICT_KERNEL_RWX does not work great with that config
+and disables the feature when relocation is on and prints
+a warning message. The radix variant of CONFIG_RELOCATABLE_TEST
+did not boot with and without the config, I am investigating
+the issue. I also suspect optprobes might not be compatible
+with relocatable kernels (even without these patches).
+
+After these changes go in we can get the PPC32 varaint
+for the same feature based on patches already posted
+by Christophe.
+
+Changelog v4:
+	Multiple cleanups to patch_instruction() based on
+	review comments from Michael Ellerman
+	Changes to Kconfig to make the feature selectable
+Changelog v3:
+	Support radix
+	Drop ptdump patch, already picked from v2
+Changelog v2:
+	Support optprobes via patch_instruction
+
+Balbir Singh (9):
+  powerpc/lib/code-patching: Use alternate map for patch_instruction()
+  powerpc/kprobes: Move kprobes over to patch_instruction
+  powerpc/kprobes/optprobes: Move over to patch_instruction
+  powerpc/xmon: Add patch_instruction() support for xmon
+  powerpc/vmlinux.lds: Align __init_begin to 16M
+  powerpc/platform/pseries/lpar: Fix updatepp and updateboltedpp
+  powerpc/mm/hash: Implement mark_rodata_ro() for hash
+  powerpc/mm/radix: Implement mark_rodata_ro() for radix
+  powerpc/Kconfig: Enable STRICT_KERNEL_RWX
+
+ arch/powerpc/Kconfig                       |   2 +
+ arch/powerpc/include/asm/book3s/64/hash.h  |   3 +
+ arch/powerpc/include/asm/book3s/64/radix.h |   4 +
+ arch/powerpc/kernel/kprobes.c              |   4 +-
+ arch/powerpc/kernel/optprobes.c            |  58 +++++++----
+ arch/powerpc/kernel/vmlinux.lds.S          |  10 +-
+ arch/powerpc/lib/code-patching.c           | 160 ++++++++++++++++++++++++++++-
+ arch/powerpc/mm/pgtable-hash64.c           |  41 ++++++++
+ arch/powerpc/mm/pgtable-radix.c            |  73 ++++++++++++-
+ arch/powerpc/mm/pgtable_64.c               |   9 ++
+ arch/powerpc/platforms/pseries/lpar.c      |  21 +++-
+ arch/powerpc/xmon/xmon.c                   |   7 +-
+ 12 files changed, 358 insertions(+), 34 deletions(-)
+
+-- 
+2.9.4
