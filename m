@@ -1,21 +1,19 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxhx30qCmzDr2g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 20:29:11 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id d5so4200751pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 03:29:11 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-nvdimm@lists.01.org,
-	Oliver O'Halloran <oohall@gmail.com>
-Subject: [RFC 4/4] powerpc/powernv: Create platform devs for nvdimm buses
-Date: Tue, 27 Jun 2017 20:28:51 +1000
-Message-Id: <20170627102851.15484-4-oohall@gmail.com>
-In-Reply-To: <20170627102851.15484-1-oohall@gmail.com>
+Return-Path: <mark.rutland@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3wxjGc0mMjzDqlL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 20:44:23 +1000 (AEST)
+Date: Tue, 27 Jun 2017 11:43:28 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org,
+ devicetree@vger.kernel.org
+Subject: Re: [RFC 2/4] libnvdimm: Add a device-tree interface
+Message-ID: <20170627104328.GD30002@leverpostej>
 References: <20170627102851.15484-1-oohall@gmail.com>
+ <20170627102851.15484-2-oohall@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170627102851.15484-2-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scan the devicetree for nonvolatile-memory buses and instantiate a
-platform device for them.
+Hi,
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/platforms/powernv/opal.c | 3 +++
- 1 file changed, 3 insertions(+)
+On Tue, Jun 27, 2017 at 08:28:49PM +1000, Oliver O'Halloran wrote:
+> A fairly bare-bones set of device-tree bindings so libnvdimm can be used
+> on powerpc and other, less cool, device-tree based platforms.
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 59684b4af4d1..bd3ed78f6f04 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -775,6 +775,9 @@ static int __init opal_init(void)
- 	/* Create i2c platform devices */
- 	opal_pdev_init("ibm,opal-i2c");
- 
-+	/* Handle non-volatile memory devices */
-+	opal_pdev_init("nonvolatile-memory");
-+
- 	/* Setup a heatbeat thread if requested by OPAL */
- 	opal_init_heartbeat();
- 
--- 
-2.9.4
+;)
+
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+> The current bindings are essentially this:
+> 
+> nonvolatile-memory {
+> 	compatible = "nonvolatile-memory", "special-memory";
+> 	ranges;
+> 
+> 	region@0 {
+> 		compatible = "nvdimm,byte-addressable";
+> 		reg = <0x0 0x1000>;
+> 	};
+> 
+> 	region@1000 {
+> 		compatible = "nvdimm,byte-addressable";
+> 		reg = <0x1000 0x1000>;
+> 	};
+> };
+
+This needs to have a proper binding document under
+Documentation/devicetree/bindings/. Something like the reserved-memory
+bdings would be a good template.
+
+If we want thet "nvdimm" vendor-prefix, that'll have to be reserved,
+too (see Documentation/devicetree/bindings/vendor-prefixes.txt).
+
+What is "special-memory"? What other memory types would be described
+here?
+
+What exacctly does "nvdimm,byte-addressable" imply? I suspect that you
+also expect such memory to be compatible with mappings using (some)
+cacheable attributes?
+
+Perhaps the byte-addressable property should be a boolean property on
+the region, rather than part of the compatible string.
+
+> To handle interleave sets, etc the plan was the add an extra property with the
+> interleave stride and a "mapping" property with <&DIMM, dimm-start-offset>
+> tuples for each dimm in the interleave set. Block MMIO regions can be added
+> with a different compatible type, but I'm not too concerned with them for
+> now.
+
+Sorry, I'm not too familiar with nonvolatile memory. What are interleave
+sets?
+
+What are block MMIO regions?
+
+Is there any documentation one can refer to for any of this?
+
+[...]
+
+> +static const struct of_device_id of_nvdimm_bus_match[] = {
+> +	{ .compatible = "nonvolatile-memory" },
+> +	{ .compatible = "special-memory" },
+> +	{ },
+> +};
+
+Why both? Is the driver handling other "special-memory"?
+
+Thanks,
+Mark.
