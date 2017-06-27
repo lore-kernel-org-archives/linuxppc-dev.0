@@ -1,24 +1,24 @@
 Return-Path: <leoyang.li@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00041.outbound.protection.outlook.com [40.107.0.41])
+Received: from EUR03-DB5-obe.outbound.protection.outlook.com
+ (mail-eopbgr40045.outbound.protection.outlook.com [40.107.4.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxs6q1wZJzDr2Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 02:38:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxsKd1gB9zDr2Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 02:47:32 +1000 (AEST)
 From: Leo Li <leoyang.li@nxp.com>
-To: Scott Wood <oss@buserror.net>, Karim Eshapa <karim.eshapa@gmail.com>
+To: David Laight <David.Laight@ACULAB.COM>, 'Karim Eshapa'
+ <karim.eshapa@gmail.com>, "oss@buserror.net" <oss@buserror.net>
 CC: Roy Pledge <roy.pledge@nxp.com>, "linux-kernel@vger.kernel.org"
  <linux-kernel@vger.kernel.org>, Claudiu Manoil <claudiu.manoil@nxp.com>,
  "colin.king@canonical.com" <colin.king@canonical.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [v3] drivers:soc:fsl:qbman:qman.c: Sleep instead of stuck hacking
- jiffies.
-Date: Tue, 27 Jun 2017 16:38:00 +0000
-Message-ID: <AM4PR0401MB1699F4CD65C50361933D2FA48FDC0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-References: <1493963118-11064-1-git-send-email-karim.eshapa@gmail.com>
- <20170625024638.t6awgp7omzq5dcnk@home.buserror.net>
-In-Reply-To: <20170625024638.t6awgp7omzq5dcnk@home.buserror.net>
+Subject: RE: [PATCH] soc/qman: Sleep instead of stuck hacking jiffies.
+Date: Tue, 27 Jun 2017 16:47:25 +0000
+Message-ID: <AM4PR0401MB1699119BCAAB631C16D86C2D8FDC0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+References: <1498403622-2878-1-git-send-email-karim.eshapa@gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6DD002B1A5@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD002B1A5@AcuExch.aculab.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,37 +33,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 > -----Original Message-----
-> From: Scott Wood [mailto:oss@buserror.net]
-> Sent: Saturday, June 24, 2017 9:47 PM
-> To: Karim Eshapa <karim.eshapa@gmail.com>
+> From: Linuxppc-dev [mailto:linuxppc-dev-
+> bounces+leoli=3Dfreescale.com@lists.ozlabs.org] On Behalf Of David Laight
+> Sent: Monday, June 26, 2017 10:55 AM
+> To: 'Karim Eshapa' <karim.eshapa@gmail.com>; oss@buserror.net
 > Cc: Roy Pledge <roy.pledge@nxp.com>; linux-kernel@vger.kernel.org;
 > Claudiu Manoil <claudiu.manoil@nxp.com>; colin.king@canonical.com;
-> linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org; Leo =
-Li
-> <leoyang.li@nxp.com>
-> Subject: Re: [v3] drivers:soc:fsl:qbman:qman.c: Sleep instead of stuck
-> hacking jiffies.
+> linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org
+> Subject: RE: [PATCH] soc/qman: Sleep instead of stuck hacking jiffies.
 >=20
-> On Fri, May 05, 2017 at 07:45:18AM +0200, Karim Eshapa wrote:
+> From: Karim Eshapa
+> > Sent: 25 June 2017 16:14
 > > Use msleep() instead of stucking with
 > > long delay will be more efficient.
-> >
-> > Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
-> > ---
-> >  drivers/soc/fsl/qbman/qman.c | 6 +-----
-> >  1 file changed, 1 insertion(+), 5 deletions(-)
+> ...
+> > --- a/drivers/soc/fsl/qbman/qman.c
+> > +++ b/drivers/soc/fsl/qbman/qman.c
+> > @@ -1084,11 +1084,7 @@ static int drain_mr_fqrni(struct qm_portal *p)
+> >  		 * entries well before the ring has been fully consumed, so
+> >  		 * we're being *really* paranoid here.
+> >  		 */
+> > -		u64 now, then =3D jiffies;
+> > -
+> > -		do {
+> > -			now =3D jiffies;
+> > -		} while ((then + 10000) > now);
+> > +		msleep(1);
+> ...
+> How is that in any way equivalent?
+> If HZ is 1000 the old code loops for 10 seconds.
+> If HZ is 250 (common for some distros) it loops for 40 seconds.
 >=20
-> Acked-by: Scott Wood <oss@buserror.net>
+> Clearly both are horrid, but it isn't at all clear that a 1ms sleep is pe=
+rforming
+> the same job.
 >=20
-> (though the subject line should be "soc/qman: ...")
->=20
-> Leo, are you going to send this patch (and other qman patches) via arm-so=
-c?
-
-Yes.  I can take it through the pull request for soc/fsl via arm-soc.  As m=
-entioned in the feedback from David in another email, probably we should up=
-date the comment and commit message to mention how 10000 cycles becomes 1ms=
+> My guess is that this code is never called, and broken if actually called=
 .
+
+It was indeed broken.  The intent was to wait for 10000 cycles but mistaken=
+ly coded as 10000 jiffies.  I think we choose 1ms as it is not too long and=
+ almost guarantees the 10000 cycles delay.
 
 Regards,
 Leo
