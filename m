@@ -1,27 +1,20 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR03-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr50072.outbound.protection.outlook.com [40.107.5.72])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <santosh@fossix.org>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxc3F0M7ZzDr1g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 16:49:12 +1000 (AEST)
-From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "David S. Miller"
- <davem@davemloft.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 1/2] fsl/fman: propagate dma_ops
-Date: Tue, 27 Jun 2017 06:49:06 +0000
-Message-ID: <AM5PR0402MB2691DEA503F55351B65EA433ECDC0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-References: <1497884657-3744-1-git-send-email-madalin.bucur@nxp.com>
- <1497884657-3744-2-git-send-email-madalin.bucur@nxp.com>
- <CAMuHMdU6hkU03s2ZBYEYdOqO3M1djbjZ0YKw8VbHYEvsNxLZxw@mail.gmail.com>
- <AM5PR0402MB26914A0A9BB0877F420848B9ECDF0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
- <CAMuHMdXAKTBGiFc37jQjjCV_9Mb2SE2t7KHWASSwdMcFpFKmrA@mail.gmail.com>
-In-Reply-To: <CAMuHMdXAKTBGiFc37jQjjCV_9Mb2SE2t7KHWASSwdMcFpFKmrA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxcJ936yVzDr1g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 17:00:25 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id u62so3199148pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 00:00:24 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] powerpc/smp: Do not BUG_ON if invalid CPU during kick
+Date: Tue, 27 Jun 2017 12:30:05 +0530
+Message-Id: <20170627070006.32132-1-santosh@fossix.org>
+In-Reply-To: <8760fiewx0.fsf@concordia.ellerman.id.au>
+References: <8760fiewx0.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,81 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBnZWVydC51eXR0ZXJob2V2ZW5A
-Z21haWwuY29tIFttYWlsdG86Z2VlcnQudXl0dGVyaG9ldmVuQGdtYWlsLmNvbV0NCj4gT24gQmVo
-YWxmIE9mIEdlZXJ0IFV5dHRlcmhvZXZlbg0KPiBTZW50OiBNb25kYXksIEp1bmUgMjYsIDIwMTcg
-NzoyNCBQTQ0KPiBUbzogTWFkYWxpbi1jcmlzdGlhbiBCdWN1ciA8bWFkYWxpbi5idWN1ckBueHAu
-Y29tPg0KPiBDYzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgRGF2aWQgUy4gTWlsbGVyIDxkYXZl
-bUBkYXZlbWxvZnQubmV0PjsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4
-LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIGZzbC9m
-bWFuOiBwcm9wYWdhdGUgZG1hX29wcw0KPiANCj4gSGkgTWFkYWxpbiwNCj4gDQo+IE9uIE1vbiwg
-SnVuIDI2LCAyMDE3IGF0IDQ6NTUgUE0sIE1hZGFsaW4tY3Jpc3RpYW4gQnVjdXINCj4gPG1hZGFs
-aW4uYnVjdXJAbnhwLmNvbT4gd3JvdGU6DQo+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
-DQo+ID4+IEZyb206IGdlZXJ0LnV5dHRlcmhvZXZlbkBnbWFpbC5jb20NCj4gW21haWx0bzpnZWVy
-dC51eXR0ZXJob2V2ZW5AZ21haWwuY29tXQ0KPiA+PiBPbiBCZWhhbGYgT2YgR2VlcnQgVXl0dGVy
-aG9ldmVuDQo+ID4+IFNlbnQ6IE1vbmRheSwgSnVuZSAyNiwgMjAxNyAxMDo0OSBBTQ0KPiA+PiBU
-bzogTWFkYWxpbi1jcmlzdGlhbiBCdWN1ciA8bWFkYWxpbi5idWN1ckBueHAuY29tPg0KPiA+PiBD
-YzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgRGF2aWQgUy4gTWlsbGVyIDxkYXZlbUBkYXZlbWxv
-ZnQubmV0PjsNCj4gPj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5l
-bEB2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIGZzbC9mbWFu
-OiBwcm9wYWdhdGUgZG1hX29wcw0KPiA+Pg0KPiA+IE9uIE1vbiwgSnVuIDE5LCAyMDE3IGF0IDU6
-MDQgUE0sIE1hZGFsaW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJAbnhwLmNvbT4NCj4gPj4gd3JvdGU6
-DQo+ID4+ID4gTWFrZSBzdXJlIGRtYV9vcHMgYXJlIHNldCwgdG8gYmUgbGF0ZXIgdXNlZCBieSB0
-aGUgRXRoZXJuZXQgZHJpdmVyLg0KPiA+PiA+DQo+ID4+ID4gU2lnbmVkLW9mZi1ieTogTWFkYWxp
-biBCdWN1ciA8bWFkYWxpbi5idWN1ckBueHAuY29tPg0KPiA+PiA+IC0tLQ0KPiA+PiA+ICBkcml2
-ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9tYWMuYyB8IDIgKysNCj4gPj4gPiAgMSBm
-aWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKQ0KPiA+PiA+DQo+ID4+ID4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9mbWFuL21hYy5jDQo+ID4+IGIvZHJpdmVy
-cy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2ZtYW4vbWFjLmMNCj4gPj4gPiBpbmRleCAwYjMxZjg1
-Li42ZTY3ZDIyZiAxMDA2NDQNCj4gPj4gPiAtLS0gYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVl
-c2NhbGUvZm1hbi9tYWMuYw0KPiA+PiA+ICsrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVz
-Y2FsZS9mbWFuL21hYy5jDQo+ID4+ID4gQEAgLTYyMyw2ICs2MjMsOCBAQCBzdGF0aWMgc3RydWN0
-IHBsYXRmb3JtX2RldmljZQ0KPiA+PiAqZHBhYV9ldGhfYWRkX2RldmljZShpbnQgZm1hbl9pZCwN
-Cj4gPj4gPiAgICAgICAgICAgICAgICAgZ290byBub19tZW07DQo+ID4+ID4gICAgICAgICB9DQo+
-ID4+ID4NCj4gPj4gPiArICAgICAgIHNldF9kbWFfb3BzKCZwZGV2LT5kZXYsIGdldF9kbWFfb3Bz
-KHByaXYtPmRldikpOw0KPiA+PiA+ICsNCj4gPj4NCj4gPj4gV2hlbiBjb21waWxlLXRlc3Rpbmcg
-d2l0aCBmIE5PX0RNQT15Og0KPiA+Pg0KPiA+PiAgICAgZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJl
-ZXNjYWxlL2ZtYW4vbWFjLmM6IEluIGZ1bmN0aW9uDQo+ID4+IOKAmGRwYWFfZXRoX2FkZF9kZXZp
-Y2XigJk6DQo+ID4+ICAgICBkcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9tYWMu
-Yzo2MjY6IGVycm9yOiBpbXBsaWNpdA0KPiA+PiBkZWNsYXJhdGlvbiBvZiBmdW5jdGlvbiDigJhz
-ZXRfZG1hX29wc+KAmQ0KPiA+Pg0KPiA+PiBSZXZlcnRpbmcgY29tbWl0IDU1NjdlOTg5MTk4YjVh
-OGQgZml4ZXMgdGhpcyByZWdyZXNzaW9uIGluIHY0LjEyLXJjNy4NCj4gPj4NCj4gPj4gV2h5IGlz
-IHRoaXMgY2hhbmdlIG5lZWRlZD8NCj4gPj4gVGhlcmUncyBubyBzaW5nbGUgb3RoZXIgY2FsbCB0
-byB0aGUgRE1BIEFQSSBpbiB0aGlzIGZpbGU/DQo+ID4NCj4gPiBXZSdyZSBzZXR0aW5nIGhlcmUg
-dGhlIGRtYV9vcHMgdGhhdCBhcmUgbGF0ZXIgdXNlZCBpbiB0aGUgb3RoZXINCj4gZHJpdmVyL3Bh
-dGNoLg0KPiA+IFRoZSBwcm9ibGVtIGlzIHdlIG5vdyBkZXBlbmQgdXBvbiBETUEgYnV0IGRvIG5v
-dCBleHBsaWNpdGx5IGRlY2xhcmUgaXQ6DQo+ID4NCj4gPiA8PENvZGUgdGhhdCBkZXBlbmRzIG9u
-IHRoZSBkbWEtbWFwcGluZyBBUEkgbmVlZHMgdG8gc2V0ICdkZXBlbmRzIG9uDQo+IEhBU19ETUEn
-DQo+ID4gaW4gaXRzIEtjb25maWc+Pg0KPiANCj4gU3VyZS4gQnV0IG9ubHkgaWYgdGhlIGRyaXZl
-ciByZWFsbHkgdXNlcyBETUEuDQo+IEkgY2FuIHN0aWNrIGEgc2V0X2RtYV9vcHMoKSBjYWxsIGlu
-IHdoYXRldmVyIGRyaXZlciwgYnV0IHRoYXQgZG9lc24ndA0KPiBtZWFuIGl0IHdpbGwNCj4gc3Vk
-ZGVubHkgdXNlIERNQS4NCj4gV2h5IGRvZXMgdGhlIEZNYW4gZHJpdmVyIHN1ZGRlbmx5IGhhcyBh
-IGRlcGVuZGVuY3kgb24gRE1BLCBpZiBpdCBkb2Vzbid0DQo+IHVzZSBETUE/DQo+IA0KPiA+IEkn
-bGwgbmVlZCB0byBhZGQgdGhpcyB0byB0aGUgRk1hbiBkcml2ZXIgS2NvbmZpZy4NCj4gDQo+IFdo
-eSBkb2VzIHRoZSBGTWFuIGRyaXZlciBuZWVkIHRoaXM/DQo+IFdoeSBjYW4ndCBoaXMgY2FsbCBi
-ZSBkb25lIGluIHRoZSBkcml2ZXIgdGhhdCB1c2VzIHRoZSBETUEgQVBJTz8NCg0KVGhlIERQQUEg
-RXRoZXJuZXQgZHJpdmVyIG1ha2VzIHVzZSBvZiBETUEgb3BzLiBJdCB1c2VkIHRvIGdldCB0aGVt
-IGZyb20NCmFuIEFQSSBjYWxsIChhcmNoX3NldHVwX2RtYV9vcHMpIHRoYXQgd2FzIG5vdCBleHBv
-cnRlZC4gVGhlIERQQUEgRXRoZXJuZXQNCnRoYXQgbWFrZXMgdXNlIG9mIHRoZSBGTWFuIGRldmlj
-ZXMgZG9lcyBub3QgZ2V0IHRoZSBkbWFfb3BzIGFzIGl0IGRvZXMgbm90DQpwcm9iZSBuZWl0aGVy
-IGFzIGFuIE9GIHBsYXRmb3JtIGRldmljZSBub3IgdGhvcm91Z2ggQUNQSS4gSXQgcHJvYmVzIGFz
-IGENCnBsYXRmb3JtIGRldmljZSBiYXNlZCBvbiBpbmZvcm1hdGlvbiBwcmVwYXJlZCBieSB0aGUg
-Rk1hbiBkcml2ZXIuIFdoYXQgdGhlDQpGTWFuIGNoYW5nZSBbMV0gZG9lcyBpcyBzdXBwbGVtZW50
-IHRoZSBpbmZvcm1hdGlvbiBzaGFyZWQgd2l0aCB0aGUgRXRoZXJuZXQNCmRyaXZlciB3aXRoIHRo
-ZSBkbWFfb3BzIHRoYXQgdGhlIEZNYW4gZHJpdmVyIGdldHMgZHVyaW5nIE9GIHByb2JpbmcuIFRo
-ZXJlDQphcmUgbm8gc2NlbmFyaW9zIG9uZSBjYW4gdXNlIHRoZSBEUEFBIGRyaXZlcnMgd2l0aCBO
-T19ETUEsIGFzIGZhciBhcyBJIGtub3cuDQoNCkZvciBnZW5lcmFsIGluZm8gb24gdGhlIERQQUEg
-ZHJpdmVycyBwbGVhc2UgcmVmZXIgdG8gdGhlIGRvY3VtZW50YXRpb24NCmZvdW5kIGluIERvY3Vt
-ZW50YXRpb24vbmV0d29ya2luZy9kcGFhLnR4dC4gRm9yIHRoZSBwcm9iaW5nIG9mIHRoZSBFdGhl
-cm5ldA0KZHJpdmVyIHNlZSBjaGFuZ2UgWzJdIGFuZCBkcGFhX2V0aF9hZGRfZGV2aWNlKCkgaW4g
-ZnNsL2ZtYW4sIGRwYWFfZXRoX3Byb2JlKCkNCmluIGRwYWFfZXRoLg0KIA0KWzFdIDU1NjdlOTg5
-MTk4YjVhOGQgZnNsL2ZtYW46IHByb3BhZ2F0ZSBkbWFfb3BzDQpbMl0gZmI1MjcyOGE5Mjk0ZDk3
-ZCBkcGFhX2V0aDogcmV1c2UgdGhlIGRtYV9vcHMgcHJvdmlkZWQgYnkgdGhlIEZNYW4gTUFDIGRl
-dmljZQ0KDQo+IEdye29ldGplLGVldGluZ31zLA0KPiANCj4gICAgICAgICAgICAgICAgICAgICAg
-ICAgR2VlcnQNCj4gDQo+IC0tDQo+IEdlZXJ0IFV5dHRlcmhvZXZlbiAtLSBUaGVyZSdzIGxvdHMg
-b2YgTGludXggYmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtDQo+IG02OGsub3JnDQo+IA0KPiBJ
-biBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15
-c2VsZiBhIGhhY2tlci4NCj4gQnV0DQo+IHdoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMg
-SSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UNCj4gdGhhdC4NCj4gICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51cyBUb3J2YWxkcw0KDQpUaGFua3Ms
-DQpNYWRhbGluDQo=
+During secondary start, we do not need to BUG_ON if an invalid CPU number
+is passed. We already print an error if secondary cannot be started, so
+just return an error instead.
+
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+---
+ arch/powerpc/kernel/smp.c            | 3 ++-
+ arch/powerpc/platforms/cell/smp.c    | 3 ++-
+ arch/powerpc/platforms/powernv/smp.c | 3 ++-
+ arch/powerpc/platforms/pseries/smp.c | 3 ++-
+ 4 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index df2a416..05bf583 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -112,7 +112,8 @@ int smp_generic_cpu_bootable(unsigned int nr)
+ #ifdef CONFIG_PPC64
+ int smp_generic_kick_cpu(int nr)
+ {
+-	BUG_ON(nr < 0 || nr >= NR_CPUS);
++	if (nr < 0 || nr >= NR_CPUS)
++		return -EINVAL;
+ 
+ 	/*
+ 	 * The processor is currently spinning, waiting for the
+diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
+index 895560f..ee8c535 100644
+--- a/arch/powerpc/platforms/cell/smp.c
++++ b/arch/powerpc/platforms/cell/smp.c
+@@ -115,7 +115,8 @@ static void smp_cell_setup_cpu(int cpu)
+ 
+ static int smp_cell_kick_cpu(int nr)
+ {
+-	BUG_ON(nr < 0 || nr >= NR_CPUS);
++	if (nr < 0 || nr >= NR_CPUS)
++		return -EINVAL;
+ 
+ 	if (!smp_startup_cpu(nr))
+ 		return -ENOENT;
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index c04c87a..292825f 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -63,7 +63,8 @@ static int pnv_smp_kick_cpu(int nr)
+ 	long rc;
+ 	uint8_t status;
+ 
+-	BUG_ON(nr < 0 || nr >= NR_CPUS);
++	if (nr < 0 || nr >= NR_CPUS)
++		return -EINVAL;
+ 
+ 	/*
+ 	 * If we already started or OPAL is not supported, we just
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index 52ca6b3..c82182a 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -151,7 +151,8 @@ static void smp_setup_cpu(int cpu)
+ 
+ static int smp_pSeries_kick_cpu(int nr)
+ {
+-	BUG_ON(nr < 0 || nr >= NR_CPUS);
++	if (nr < 0 || nr >= NR_CPUS)
++		return -EINVAL;
+ 
+ 	if (!smp_startup_cpu(nr))
+ 		return -ENOENT;
+-- 
+2.9.4
