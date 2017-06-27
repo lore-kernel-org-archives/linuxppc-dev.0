@@ -1,20 +1,23 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxdNY6Dc1zDr3S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 17:49:17 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id f127so3330548pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 00:49:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxdNc2vM3zDr3M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 17:49:20 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id u36so3328142pgn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 00:49:20 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	mpe@ellerman.id.au
 Cc: naveen.n.rao@linux.vnet.ibm.com, christophe.leroy@c-s.fr, paulus@samba.org,
  Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v4 0/9] Provide STRICT_KERNEL_RWX for powerpc
-Date: Tue, 27 Jun 2017 17:48:54 +1000
-Message-Id: <20170627074903.19324-1-bsingharora@gmail.com>
+Subject: [PATCH v4 1/9] powerpc/lib/code-patching: Use alternate map for
+ patch_instruction()
+Date: Tue, 27 Jun 2017 17:48:55 +1000
+Message-Id: <20170627074903.19324-2-bsingharora@gmail.com>
+In-Reply-To: <20170627074903.19324-1-bsingharora@gmail.com>
+References: <20170627074903.19324-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,76 +27,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Provide STRICT_KERNEL_RWX for PPC64/BOOK3S
+This patch creates the window using text_poke_area, allocated
+via get_vm_area(). text_poke_area is per CPU to avoid locking.
+text_poke_area for each cpu is setup using late_initcall, prior
+to setup of these alternate mapping areas, we continue to use
+direct write to change/modify kernel text. With the ability
+to use alternate mappings to write to kernel text, it provides
+us the freedom to then turn text read-only and implement
+CONFIG_STRICT_KERNEL_RWX.
 
-These patches enable RX mappings of kernel text.
-rodata is mapped RX as well as a trade-off, there
-are more details in the patch description
+This code is CPU hotplug aware to ensure that the we have mappings
+for any new cpus as they come online and tear down mappings for
+any cpus that are offline.
 
-As a prerequisite for R/O text, patch_instruction
-is moved over to using a separate mapping that
-allows write to kernel text. xmon/ftrace/kprobes
-have been moved over to work with patch_instruction
+Other arches do similar things, but use fixmaps. The reason
+for not using fixmaps is to make use of any randomization in
+the future.
 
-There is a bug fix, the updatepp and updateboltedpp
-(pseries) providers, did not use flags as described in
-PAPR (patch 6). I would like to see that patch marked
-to stable, I've not added a Cc:stable myself.
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/lib/code-patching.c | 160 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 156 insertions(+), 4 deletions(-)
 
-Another build failure was reported, because instead
-of using ARCH_HAS_SET_MEMORY as a gate for set_memory.h
-inclusion, some of the infrastructure in the core kernel
-uses CONFIG_STRICT_KERNEL_RWX. I've sent a fix to the
-fix the latter. It should be picked up by 4.13 at which
-time we can remove the config dependency on !HIBERNATION
-in arch/powerpc/Kconfig
-
-This version received testing under CONFIG_RELOCATABLE_TEST.
-CONFIG_STRICT_KERNEL_RWX does not work great with that config
-and disables the feature when relocation is on and prints
-a warning message. The radix variant of CONFIG_RELOCATABLE_TEST
-did not boot with and without the config, I am investigating
-the issue. I also suspect optprobes might not be compatible
-with relocatable kernels (even without these patches).
-
-After these changes go in we can get the PPC32 varaint
-for the same feature based on patches already posted
-by Christophe.
-
-Changelog v4:
-	Multiple cleanups to patch_instruction() based on
-	review comments from Michael Ellerman
-	Changes to Kconfig to make the feature selectable
-Changelog v3:
-	Support radix
-	Drop ptdump patch, already picked from v2
-Changelog v2:
-	Support optprobes via patch_instruction
-
-Balbir Singh (9):
-  powerpc/lib/code-patching: Use alternate map for patch_instruction()
-  powerpc/kprobes: Move kprobes over to patch_instruction
-  powerpc/kprobes/optprobes: Move over to patch_instruction
-  powerpc/xmon: Add patch_instruction() support for xmon
-  powerpc/vmlinux.lds: Align __init_begin to 16M
-  powerpc/platform/pseries/lpar: Fix updatepp and updateboltedpp
-  powerpc/mm/hash: Implement mark_rodata_ro() for hash
-  powerpc/mm/radix: Implement mark_rodata_ro() for radix
-  powerpc/Kconfig: Enable STRICT_KERNEL_RWX
-
- arch/powerpc/Kconfig                       |   2 +
- arch/powerpc/include/asm/book3s/64/hash.h  |   3 +
- arch/powerpc/include/asm/book3s/64/radix.h |   4 +
- arch/powerpc/kernel/kprobes.c              |   4 +-
- arch/powerpc/kernel/optprobes.c            |  58 +++++++----
- arch/powerpc/kernel/vmlinux.lds.S          |  10 +-
- arch/powerpc/lib/code-patching.c           | 160 ++++++++++++++++++++++++++++-
- arch/powerpc/mm/pgtable-hash64.c           |  41 ++++++++
- arch/powerpc/mm/pgtable-radix.c            |  73 ++++++++++++-
- arch/powerpc/mm/pgtable_64.c               |   9 ++
- arch/powerpc/platforms/pseries/lpar.c      |  21 +++-
- arch/powerpc/xmon/xmon.c                   |   7 +-
- 12 files changed, 358 insertions(+), 34 deletions(-)
-
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 500b0f6..19b8368 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -12,23 +12,172 @@
+ #include <linux/vmalloc.h>
+ #include <linux/init.h>
+ #include <linux/mm.h>
+-#include <asm/page.h>
+-#include <asm/code-patching.h>
++#include <linux/cpuhotplug.h>
++#include <linux/slab.h>
+ #include <linux/uaccess.h>
+ #include <linux/kprobes.h>
+ 
++#include <asm/pgtable.h>
++#include <asm/tlbflush.h>
++#include <asm/page.h>
++#include <asm/code-patching.h>
+ 
+-int patch_instruction(unsigned int *addr, unsigned int instr)
++static int __patch_instruction(unsigned int *addr, unsigned int instr)
+ {
+ 	int err;
+ 
+ 	__put_user_size(instr, addr, 4, err);
+ 	if (err)
+ 		return err;
+-	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" : : "r" (addr));
++	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (addr));
++	return 0;
++}
++
++#ifdef CONFIG_STRICT_KERNEL_RWX
++static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
++
++static int text_area_cpu_up(unsigned int cpu)
++{
++	struct vm_struct *area;
++
++	area = get_vm_area(PAGE_SIZE, VM_ALLOC);
++	if (!area) {
++		WARN_ONCE(1, "Failed to create text area for cpu %d\n",
++			cpu);
++		return -1;
++	}
++	this_cpu_write(text_poke_area, area);
++	return 0;
++}
++
++static int text_area_cpu_down(unsigned int cpu)
++{
++	free_vm_area(this_cpu_read(text_poke_area));
++	return 0;
++}
++
++/*
++ * This is an early_initcall and early_initcalls happen at the right time
++ * for us, after slab is enabled and before we mark ro pages R/O. In the
++ * future if get_vm_area is randomized, this will be more flexible than
++ * fixmap
++ */
++static int __init setup_text_poke_area(void)
++{
++	BUG_ON(!cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
++		"powerpc/text_poke:online", text_area_cpu_up,
++		text_area_cpu_down));
++
++	pr_info("text_poke area ready...\n");
++	return 0;
++}
++
++/*
++ * This can be called for kernel text or a module.
++ */
++static int map_patch_area(void *addr, unsigned long text_poke_addr)
++{
++	unsigned long pfn;
++	int err;
++
++	if (is_vmalloc_addr(addr))
++		pfn = vmalloc_to_pfn(addr);
++	else
++		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
++
++	err = map_kernel_page(text_poke_addr, (pfn << PAGE_SHIFT),
++				pgprot_val(PAGE_KERNEL));
++	pr_devel("Mapped addr %lx with pfn %lx:%d\n", text_poke_addr, pfn, err);
++	if (err)
++		return -1;
++	return 0;
++}
++
++static inline int unmap_patch_area(unsigned long addr)
++{
++	pte_t *ptep;
++	pmd_t *pmdp;
++	pud_t *pudp;
++	pgd_t *pgdp;
++
++	pgdp = pgd_offset_k(addr);
++	if (unlikely(!pgdp))
++		return -EINVAL;
++	pudp = pud_offset(pgdp, addr);
++	if (unlikely(!pudp))
++		return -EINVAL;
++	pmdp = pmd_offset(pudp, addr);
++	if (unlikely(!pmdp))
++		return -EINVAL;
++	ptep = pte_offset_kernel(pmdp, addr);
++	if (unlikely(!ptep))
++		return -EINVAL;
++
++	pr_devel("clearing mm %p, pte %p, addr %lx\n", &init_mm, ptep, addr);
++	/*
++	 * In hash, pte_clear flushes the tlb, in radix, we have to
++	 */
++	pte_clear(&init_mm, addr, ptep);
++	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+ 	return 0;
+ }
+ 
++int patch_instruction(unsigned int *addr, unsigned int instr)
++{
++	int err;
++	unsigned int *dest = NULL;
++	unsigned long flags;
++	unsigned long text_poke_addr;
++	unsigned long kaddr = (unsigned long)addr;
++
++	/*
++	 * During early early boot patch_instruction is called
++	 * when text_poke_area is not ready, but we still need
++	 * to allow patching. We just do the plain old patching
++	 * We use slab_is_available and per cpu read * via this_cpu_read
++	 * of text_poke_area. Per-CPU areas might not be up early
++	 * this can create problems with just using this_cpu_read()
++	 */
++	if (!slab_is_available() || !this_cpu_read(text_poke_area))
++		return __patch_instruction(addr, instr);
++
++	local_irq_save(flags);
++
++	text_poke_addr = (unsigned long)__this_cpu_read(text_poke_area)->addr;
++	if (map_patch_area(addr, text_poke_addr)) {
++		err = -1;
++		goto out;
++	}
++
++	dest = (unsigned int *)(text_poke_addr) +
++			((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
++
++	/*
++	 * We use __put_user_size so that we can handle faults while
++	 * writing to dest and return err to handle faults gracefully
++	 */
++	__put_user_size(instr, dest, 4, err);
++	if (!err)
++		asm ("dcbst 0, %0; sync; icbi 0,%0; icbi 0,%1; sync; isync"
++			::"r" (dest), "r"(addr));
++	err = unmap_patch_area(text_poke_addr);
++	if (err)
++		pr_warn("failed to unmap %lx\n", text_poke_addr);
++out:
++	local_irq_restore(flags);
++	return err;
++}
++
++#else /* !CONFIG_STRICT_KERNEL_RWX */
++
++int patch_instruction(unsigned int *addr, unsigned int instr)
++{
++	return __patch_instruction(addr, instr);
++}
++
++#endif /* CONFIG_STRICT_KERNEL_RWX */
++NOKPROBE_SYMBOL(patch_instruction);
++
+ int patch_branch(unsigned int *addr, unsigned long target, int flags)
+ {
+ 	return patch_instruction(addr, create_branch(addr, target, flags));
+@@ -514,3 +663,6 @@ static int __init test_code_patching(void)
+ late_initcall(test_code_patching);
+ 
+ #endif /* CONFIG_CODE_PATCHING_SELFTEST */
++#ifdef CONFIG_STRICT_KERNEL_RWX
++late_initcall(setup_text_poke_area);
++#endif
 -- 
 2.9.4
