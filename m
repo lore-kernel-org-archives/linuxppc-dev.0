@@ -1,44 +1,26 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wxY0G5YM4zDr24
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 14:31:26 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5R4Sb3u074033
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 00:31:24 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bb2ywpq9f-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 00:31:24 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 27 Jun 2017 14:31:20 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5R4V9mB2883956
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 14:31:17 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5R4UicY023061
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 14:30:45 +1000
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- live-patching@vger.kernel.org
-Subject: [RESEND PATCH] powerpc/modules: Introduce new stub code for
- SHN_LIVEPATCH symbols
-Date: Tue, 27 Jun 2017 10:00:18 +0530
-Message-Id: <1498537818-9733-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wxY4n6xqLzDq7q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 14:35:21 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id d5so3070168pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jun 2017 21:35:21 -0700 (PDT)
+Message-ID: <1498538113.8812.1.camel@gmail.com>
+Subject: Re: [PATCH V5] powerpc/powernv : Add support for OPAL-OCC
+ command/response interface
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+ paulus@samba.org,  mpe@ellerman.id.au, svaidy@linux.vnet.ibm.com,
+ ego@linux.vnet.ibm.com
+Date: Tue, 27 Jun 2017 14:35:13 +1000
+In-Reply-To: <1498455138-6402-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1498455138-6402-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,179 +30,483 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-R_PPC64_REL24 relocation type is used for a function call, where the
-function symbol address is resolved and stub code (a.k.a trampoline)
-is constructed to jump into the global entry of the function. The
-caller is responsible for setting up the TOC of the called function
-before branching and NOP is expected after every branch, which gets
-replaced with an instruction to restore the callers TOC from the
-stack on return.
+On Mon, 2017-06-26 at 11:02 +0530, Shilpasri G Bhat wrote:
+> In P9, OCC (On-Chip-Controller) supports shared memory based
+> commad-response interface. Within the shared memory there is an OPAL
+> command buffer and OCC response buffer that can be used to send
+> inband commands to OCC. This patch adds a platform driver to support
+> the command/response interface between OCC and the host.
+> 
 
-SHN_LIVEPATCH symbols with R_PPC64_REL24 relocation type might not
-adhere to nop instruction after a branch. The reason being called
-function was local to the callee and the instruction sequence
-generated does not stores and restores the TOC value onto the stack
-of the calling function, which is right. The calling function instead
-uses the localentry (function entry + 0x8) to jump into the function
-and returns without the need for store/restoring the TOC, as both of
-the functions were in the same compilation unit.
+I feel obliged to check that an occ request_id can be zero, I'm sure
+its fine - just have to ask, zero is so often special.
 
-When such functions become global because they are livepatched and
-every call to the function, re-directs the callee to the patched
-version in the module. Every branch from the livepatch module, to
-previously local function turns out to be a jump into the kernel
-code but with the code sequence remains that of the localentry. This
-leads to error while trying to access the function with an assumption,
-of being local to the calling function:
+I should also point out I don't know must about how the OCC works or
+anything so I would be best if there were other eyes on this.
 
-insmod: ERROR: could not insert module ./kpatch-meminfo-string.ko: Invalid module format
+Provided zero is an ok request_id:
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
 
-Jun 13 02:10:47 ubuntu kernel: [   37.774292] module_64: kpatch_meminfo_string: REL24 -1152921504749690968 out of range!
-
-SHN_LIVEPATCH symbols + R_PPC64_REL24 type relocations can be handled
-by introducing a new stub code sequence, instead of regular module stub
-code. Where stub takes care of storing and restoring the Link Register/TOC
-onto the stack of the livepatched function and restores them upon
-return from the called function.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-Cc: live-patching@vger.kernel.org
----
-Resending the patch with minor editing of commit message and have added
-more developers to cc list.
-
- arch/powerpc/kernel/module_64.c | 55 ++++++++++++++++++++++++++++++++---------
- 1 file changed, 44 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 0b0f896..52ded0f 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -102,10 +102,16 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
-    jump, actually, to reset r2 (TOC+0x8000). */
- struct ppc64_stub_entry
- {
--	/* 28 byte jump instruction sequence (7 instructions). We only
--	 * need 6 instructions on ABIv2 but we always allocate 7 so
--	 * so we don't have to modify the trampoline load instruction. */
--	u32 jump[7];
-+	/* 28 byte jump instruction sequence (7 instructions) and only
-+	 * 6 instructions are needed on ABIv2 to create trampoline.
-+	 * Trampoline for livepatch symbol needs extra 7 instructions
-+	 * to save and restore LR, TOC values.
-+	 *
-+	 * To accommodate extra instructions required for livepatch
-+	 * entry, we allocate 15 instructions so we don't have to
-+	 * modify the trampoline load instruction.
-+	 */
-+	u32 jump[15];
- 	/* Used by ftrace to identify stubs */
- 	u32 magic;
- 	/* Data for the above code */
-@@ -131,7 +137,7 @@ static u32 ppc64_stub_insns[] = {
- 	0x396b0000,			/* addi    r11,r11, <low> */
- 	/* Save current r2 value in magic place on the stack. */
- 	0xf8410000|R2_STACK_OFFSET,	/* std     r2,R2_STACK_OFFSET(r1) */
--	0xe98b0020,			/* ld      r12,32(r11) */
-+	0xe98b0040,			/* ld      r12,64(r11) */
- #ifdef PPC64_ELF_ABI_v1
- 	/* Set up new r2 from function descriptor */
- 	0xe84b0028,			/* ld      r2,40(r11) */
-@@ -140,6 +146,24 @@ static u32 ppc64_stub_insns[] = {
- 	0x4e800420			/* bctr */
- };
- 
-+static u32 ppc64_klp_stub_insns[] = {
-+	0x3d620000,                     /* addis   r11,r2, <high>	*/
-+	0x396b0000,                     /* addi    r11,r11, <low>	*/
-+	0x7c0802a6,                     /* mflr    r0			*/
-+	0xf8010010,                     /* std     r0,16(r1)		*/
-+	/* Save current r2 value in magic place on the stack. */
-+	0xf8410000|R2_STACK_OFFSET,     /* std     r2,R2_STACK_OFFSET(r1) */
-+	0xe98b0040,			/* ld	   r12,64(r11)		*/
-+	0xf821ffe1,                     /* stdu    r1,-32(r1)		*/
-+	0x7d8903a6,                     /* mtctr   r12			*/
-+	0x4e800421,                     /* bctrl			*/
-+	0x38210020,                     /* addi    r1,r1,32		*/
-+	0xe8010010,                     /* ld      r0,16(r1)		*/
-+	0xe8410000|R2_STACK_OFFSET,     /* ld      r2,R2_STACK_OFFSET(r1) */
-+	0x7c0803a6,                     /* mtlr    r0			*/
-+	0x4e800020                      /* blr				*/
-+};
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
- int module_trampoline_target(struct module *mod, unsigned long addr,
- 			     unsigned long *target)
-@@ -392,11 +416,16 @@ static inline unsigned long my_r2(const Elf64_Shdr *sechdrs, struct module *me)
- static inline int create_stub(const Elf64_Shdr *sechdrs,
- 			      struct ppc64_stub_entry *entry,
- 			      unsigned long addr,
--			      struct module *me)
-+			      struct module *me, int klp_symbol)
- {
- 	long reladdr;
- 
--	memcpy(entry->jump, ppc64_stub_insns, sizeof(ppc64_stub_insns));
-+	memset(entry, 0, sizeof(*entry));
-+	if (klp_symbol)
-+		memcpy(entry->jump, ppc64_klp_stub_insns,
-+				sizeof(ppc64_klp_stub_insns));
-+	else
-+		memcpy(entry->jump, ppc64_stub_insns, sizeof(ppc64_stub_insns));
- 
- 	/* Stub uses address relative to r2. */
- 	reladdr = (unsigned long)entry - my_r2(sechdrs, me);
-@@ -419,7 +448,7 @@ static inline int create_stub(const Elf64_Shdr *sechdrs,
-    stub to set up the TOC ptr (r2) for the function. */
- static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
- 				   unsigned long addr,
--				   struct module *me)
-+				   struct module *me, int klp_symbol)
- {
- 	struct ppc64_stub_entry *stubs;
- 	unsigned int i, num_stubs;
-@@ -435,7 +464,7 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
- 			return (unsigned long)&stubs[i];
- 	}
- 
--	if (!create_stub(sechdrs, &stubs[i], addr, me))
-+	if (!create_stub(sechdrs, &stubs[i], addr, me, klp_symbol))
- 		return 0;
- 
- 	return (unsigned long)&stubs[i];
-@@ -615,13 +644,17 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 			/* FIXME: Handle weak symbols here --RR */
- 			if (sym->st_shndx == SHN_UNDEF) {
- 				/* External: go via stub */
--				value = stub_for_addr(sechdrs, value, me);
-+				value = stub_for_addr(sechdrs, value, me, 0);
- 				if (!value)
- 					return -ENOENT;
- 				if (!restore_r2((u32 *)location + 1, me))
- 					return -ENOEXEC;
- 
- 				squash_toc_save_inst(strtab + sym->st_name, value);
-+			} else if (sym->st_shndx == SHN_LIVEPATCH) {
-+				value = stub_for_addr(sechdrs, value, me, 1);
-+				if (!value)
-+					return -ENOENT;
- 			} else
- 				value += local_entry_offset(sym);
- 
-@@ -775,7 +808,7 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module
- #else
- static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
- {
--	return stub_for_addr(sechdrs, (unsigned long)ftrace_caller, me);
-+	return stub_for_addr(sechdrs, (unsigned long)ftrace_caller, me, 0);
- }
- #endif
- 
--- 
-2.7.4
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> ---
+> The skiboot patch for the interface is posted here:
+> https://lists.ozlabs.org/pipermail/skiboot/2017-June/007960.html
+> 
+> Changes from V4:
+> - Add token as a parameter to the opal_occ_command()
+> - Use per-occ counter for command request_id instead of using async
+>   token.
+> 
+>  arch/powerpc/include/asm/opal-api.h            |  41 +++-
+>  arch/powerpc/include/asm/opal.h                |   3 +
+>  arch/powerpc/platforms/powernv/Makefile        |   2 +-
+>  arch/powerpc/platforms/powernv/opal-occ.c      | 303 +++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>  arch/powerpc/platforms/powernv/opal.c          |   8 +
+>  6 files changed, 356 insertions(+), 2 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/powernv/opal-occ.c
+> 
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index cb3e624..011d86c 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -42,6 +42,10 @@
+>  #define OPAL_I2C_STOP_ERR	-24
+>  #define OPAL_XIVE_PROVISIONING	-31
+>  #define OPAL_XIVE_FREE_ACTIVE	-32
+> +#define OPAL_OCC_INVALID_STATE	-33
+> +#define OPAL_OCC_BUSY		-34
+> +#define OPAL_OCC_CMD_TIMEOUT	-35
+> +#define OPAL_OCC_RSP_MISMATCH	-36
+>  
+>  /* API Tokens (in r0) */
+>  #define OPAL_INVALID_CALL		       -1
+> @@ -190,7 +194,8 @@
+>  #define OPAL_NPU_INIT_CONTEXT			146
+>  #define OPAL_NPU_DESTROY_CONTEXT		147
+>  #define OPAL_NPU_MAP_LPAR			148
+> -#define OPAL_LAST				148
+> +#define OPAL_OCC_COMMAND			149
+> +#define OPAL_LAST				149
+>  
+>  /* Device tree flags */
+>  
+> @@ -829,6 +834,40 @@ struct opal_prd_msg_header {
+>  
+>  struct opal_prd_msg;
+>  
+> +enum occ_cmd {
+> +	OCC_CMD_AMESTER_PASS_THRU = 0,
+> +	OCC_CMD_CLEAR_SENSOR_DATA,
+> +	OCC_CMD_SET_POWER_CAP,
+> +	OCC_CMD_SET_POWER_SHIFTING_RATIO,
+> +	OCC_CMD_SELECT_SENSOR_GROUPS,
+> +	OCC_CMD_LAST
+> +};
+> +
+> +struct opal_occ_cmd_rsp_msg {
+> +	__be64 cdata;
+> +	__be64 rdata;
+> +	__be16 cdata_size;
+> +	__be16 rdata_size;
+> +	u8 cmd;
+> +	u8 request_id;
+> +	u8 status;
+> +};
+> +
+> +struct opal_occ_cmd_data {
+> +	__be16 size;
+> +	u8 cmd;
+> +	u8 data[];
+> +};
+> +
+> +struct opal_occ_rsp_data {
+> +	__be16 size;
+> +	u8 status;
+> +	u8 data[];
+> +};
+> +
+> +#define MAX_OPAL_CMD_DATA_LENGTH        4090
+> +#define MAX_OCC_RSP_DATA_LENGTH         8698
+> +
+>  #define OCC_RESET                       0
+>  #define OCC_LOAD                        1
+>  #define OCC_THROTTLE                    2
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 03ed493..84659bd 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -346,6 +346,9 @@ static inline int opal_get_async_rc(struct opal_msg msg)
+>  
+>  void opal_wake_poller(void);
+>  
+> +int64_t opal_occ_command(int chip_id, struct opal_occ_cmd_rsp_msg *msg,
+> +			 int token, bool retry);
+> +
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* _ASM_POWERPC_OPAL_H */
+> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+> index b5d98cb..f5f0902 100644
+> --- a/arch/powerpc/platforms/powernv/Makefile
+> +++ b/arch/powerpc/platforms/powernv/Makefile
+> @@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
+>  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+>  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+>  obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+> -obj-y			+= opal-kmsg.o
+> +obj-y			+= opal-kmsg.o opal-occ.o
+>  
+>  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+>  obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
+> diff --git a/arch/powerpc/platforms/powernv/opal-occ.c b/arch/powerpc/platforms/powernv/opal-occ.c
+> new file mode 100644
+> index 0000000..440304f
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/opal-occ.c
+> @@ -0,0 +1,303 @@
+> +/*
+> + * Copyright IBM Corporation 2017
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#define pr_fmt(fmt) "opal-occ: " fmt
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/highmem.h>
+> +#include <linux/slab.h>
+> +#include <asm/opal.h>
+> +
+> +struct occ {
+> +	struct miscdevice dev;
+> +	struct opal_occ_rsp_data *rsp;
+> +	atomic_t session;
+> +	atomic_t cmd_in_progress;
+> +	atomic_t rsp_consumed;
+> +	int id;
+> +	u8 request_id;
+> +} *occs;
+> +static int nr_occs;
+> +
+> +static int __send_occ_command(struct opal_occ_cmd_rsp_msg *msg,
+> +			      int chip_id, int token, bool retry)
+> +{
+> +	struct opal_msg async_msg;
+> +	int rc;
+> +
+> +	rc = opal_occ_command(chip_id, msg, token, retry);
+> +	if (rc == OPAL_ASYNC_COMPLETION) {
+> +		rc = opal_async_wait_response(token, &async_msg);
+> +		if (rc) {
+> +			pr_devel("Failed to wait for async response %d\n", rc);
+> +			return rc;
+> +		}
+> +	}
+> +
+> +	return rc ? rc : opal_get_async_rc(async_msg);
+> +}
+> +
+> +static int send_occ_command(struct opal_occ_cmd_rsp_msg *msg, struct occ *occ)
+> +{
+> +	int token, rc;
+> +
+> +	token = opal_async_get_token_interruptible();
+> +	if (token < 0) {
+> +		pr_devel("Failed to get the token for OCC command %d (%d)\n",
+> +			 msg->cmd, token);
+> +		return token;
+> +	}
+> +
+> +	msg->request_id = occ->request_id++;
+> +	rc = __send_occ_command(msg, occ->id, token, false);
+> +
+> +	switch (rc) {
+> +	case OPAL_OCC_CMD_TIMEOUT:
+> +	case OPAL_OCC_RSP_MISMATCH:
+> +		pr_devel("Failed OCC command with %d. Retrying it again\n", rc);
+> +		msg->request_id = occ->request_id++;
+> +		rc = __send_occ_command(msg, occ->id, token, true);
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	opal_async_release_token(token);
+> +	return opal_error_code(rc);
+> +}
+> +
+> +static int opal_occ_cmd_prepare(struct opal_occ_cmd_data *cmd, struct occ *occ)
+> +{
+> +	struct opal_occ_cmd_rsp_msg msg;
+> +	int rc;
+> +
+> +	msg.cmd = cmd->cmd;
+> +	msg.cdata = cpu_to_be64(__pa(cmd->data));
+> +	msg.cdata_size = cpu_to_be16(cmd->size);
+> +	msg.rdata = cpu_to_be64(__pa(occ->rsp->data));
+> +
+> +	rc = send_occ_command(&msg, occ);
+> +	if (rc) {
+> +		pr_info("Failed OCC command %d with %d\n", cmd->cmd, rc);
+> +		return rc;
+> +	}
+> +
+> +	occ->rsp->size = be16_to_cpu(msg.rdata_size);
+> +	occ->rsp->status = msg.status;
+> +	if (occ->rsp->size > MAX_OCC_RSP_DATA_LENGTH) {
+> +		pr_devel("Bigger OCC response size, clipping to %d\n",
+> +			 MAX_OCC_RSP_DATA_LENGTH);
+> +		occ->rsp->size = MAX_OCC_RSP_DATA_LENGTH;
+> +	}
+> +
+> +	atomic_set(&occ->rsp_consumed, 1);
+> +	return rc;
+> +}
+> +
+> +static ssize_t opal_occ_write(struct file *file, const char __user *buf,
+> +			      size_t count, loff_t *ppos)
+> +{
+> +	struct miscdevice *dev = file->private_data;
+> +	struct occ *occ = container_of(dev, struct occ, dev);
+> +	struct opal_occ_cmd_data *cmd;
+> +	int rc;
+> +
+> +	if (count < sizeof(*cmd))
+> +		return -EINVAL;
+> +
+> +	if (atomic_cmpxchg(&occ->cmd_in_progress, 0, 1))
+> +		return -EBUSY;
+> +
+> +	cmd = kmalloc(count, GFP_KERNEL);
+> +	if (!cmd) {
+> +		rc = -ENOMEM;
+> +		goto out;
+> +	}
+> +
+> +	rc = copy_from_user(cmd, buf, count);
+> +	if (rc) {
+> +		pr_err("Failed to copy OCC command request message\n");
+> +		rc = -EFAULT;
+> +		goto free_cmd;
+> +	}
+> +
+> +	if (cmd->size > MAX_OPAL_CMD_DATA_LENGTH) {
+> +		rc = -EINVAL;
+> +		goto free_cmd;
+> +	}
+> +
+> +	rc = opal_occ_cmd_prepare(cmd, occ);
+> +	if (!rc)
+> +		rc = count;
+> +
+> +free_cmd:
+> +	kfree(cmd);
+> +out:
+> +	atomic_set(&occ->cmd_in_progress, 0);
+> +	return rc;
+> +}
+> +
+> +static ssize_t opal_occ_read(struct file *file, char __user *buf,
+> +			     size_t count, loff_t *ppos)
+> +{
+> +	struct miscdevice *dev = file->private_data;
+> +	struct occ *occ = container_of(dev, struct occ, dev);
+> +	int rc;
+> +
+> +	if (count < sizeof(*occ->rsp) + occ->rsp->size)
+> +		return -EINVAL;
+> +
+> +	if (atomic_cmpxchg(&occ->cmd_in_progress, 0, 1))
+> +		return -EBUSY;
+> +
+> +	if (!atomic_cmpxchg(&occ->rsp_consumed, 1, 0)) {
+> +		rc = -EBUSY;
+> +		goto out;
+> +	}
+> +
+> +	rc = copy_to_user((void __user *)buf, occ->rsp,
+> +			  sizeof(occ->rsp) + occ->rsp->size);
+> +	if (rc) {
+> +		atomic_set(&occ->rsp_consumed, 1);
+> +		pr_err("Failed to copy OCC response data to user\n");
+> +	}
+> +
+> +out:
+> +	atomic_set(&occ->cmd_in_progress, 0);
+> +	return rc ? rc : sizeof(*occ->rsp) + occ->rsp->size;
+> +}
+> +
+> +static int opal_occ_open(struct inode *inode, struct file *file)
+> +{
+> +	struct miscdevice *dev = file->private_data;
+> +	struct occ *occ = container_of(dev, struct occ, dev);
+> +
+> +	return atomic_cmpxchg(&occ->session, 0, 1) ? -EBUSY : 0;
+> +}
+> +
+> +static int opal_occ_release(struct inode *inode, struct file *file)
+> +{
+> +	struct miscdevice *dev = file->private_data;
+> +	struct occ *occ = container_of(dev, struct occ, dev);
+> +
+> +	atomic_set(&occ->session, 0);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct file_operations opal_occ_fops = {
+> +	.open		= opal_occ_open,
+> +	.read		= opal_occ_read,
+> +	.write		= opal_occ_write,
+> +	.release	= opal_occ_release,
+> +	.owner		= THIS_MODULE,
+> +};
+> +
+> +#define MAX_POSSIBLE_CHIPS	256
+> +
+> +static int opal_occ_probe(struct platform_device *pdev)
+> +{
+> +	unsigned int chip[MAX_POSSIBLE_CHIPS];
+> +	unsigned int cpu;
+> +	unsigned int prev_chip_id = UINT_MAX;
+> +	int i, rc;
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		unsigned int id = cpu_to_chip_id(cpu);
+> +
+> +		if (prev_chip_id != id) {
+> +			int j = nr_occs;
+> +
+> +			while (--j >= 0)
+> +				if (chip[j] == id)
+> +					continue;
+> +
+> +			prev_chip_id = id;
+> +			chip[nr_occs++] = id;
+> +			WARN_ON_ONCE(nr_occs >= MAX_POSSIBLE_CHIPS - 1);
+> +		}
+> +	}
+> +
+> +	occs = kcalloc(nr_occs, sizeof(*occs), GFP_KERNEL);
+> +	if (!occs)
+> +		return -ENOMEM;
+> +
+> +	for (i = 0; i < nr_occs; i++) {
+> +		char name[10];
+> +
+> +		occs[i].id = chip[i];
+> +		occs[i].dev.minor = MISC_DYNAMIC_MINOR;
+> +		snprintf(name, 10, "occ%d", chip[i]);
+> +		occs[i].dev.name = name;
+> +		occs[i].dev.fops = &opal_occ_fops;
+> +		occs[i].rsp = kmalloc(sizeof(occs[i].rsp) +
+> +				      MAX_OCC_RSP_DATA_LENGTH,
+> +				      GFP_KERNEL);
+> +		if (!occs[i].rsp) {
+> +			rc = -ENOMEM;
+> +			goto free_occs;
+> +		}
+> +
+> +		rc = misc_register(&occs[i].dev);
+> +		if (rc)
+> +			goto free_occ_rsp_data;
+> +	}
+> +
+> +	return 0;
+> +
+> +free_occ_rsp_data:
+> +	kfree(occs[i].rsp);
+> +free_occs:
+> +	while (--i >= 0) {
+> +		kfree(occs[i].rsp);
+> +		misc_deregister(&occs[i].dev);
+> +	}
+> +	kfree(occs);
+> +
+> +	return rc;
+> +}
+> +
+> +static int opal_occ_remove(struct platform_device *pdev)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < nr_occs; i++) {
+> +		kfree(occs[i].rsp);
+> +		misc_deregister(&occs[i].dev);
+> +	}
+> +
+> +	kfree(occs);
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id opal_occ_match[] = {
+> +	{ .compatible = "ibm,opal-occ-cmd-rsp-interface" },
+> +	{ },
+> +};
+> +
+> +static struct platform_driver opal_occ_driver = {
+> +	.driver = {
+> +		.name           = "opal-occ",
+> +		.of_match_table = opal_occ_match,
+> +	},
+> +	.probe	= opal_occ_probe,
+> +	.remove	= opal_occ_remove,
+> +};
+> +
+> +module_platform_driver(opal_occ_driver);
+> +
+> +MODULE_DESCRIPTION("PowerNV OPAL-OCC driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index f620572..e6bf18d 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -310,3 +310,4 @@ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
+>  OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+>  OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+>  OPAL_CALL(opal_npu_map_lpar,			OPAL_NPU_MAP_LPAR);
+> +OPAL_CALL(opal_occ_command,			OPAL_OCC_COMMAND);
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index 59684b4..d87c61b 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -815,6 +815,9 @@ static int __init opal_init(void)
+>  	opal_pdev_init("ibm,opal-flash");
+>  	opal_pdev_init("ibm,opal-prd");
+>  
+> +	/* Initialize platform device: OCC_OPAL command-response interface */
+> +	opal_pdev_init("ibm,opal-occ-cmd-rsp-interface");
+> +
+>  	/* Initialise platform device: oppanel interface */
+>  	opal_pdev_init("ibm,opal-oppanel");
+>  
+> @@ -859,6 +862,7 @@ void opal_shutdown(void)
+>  EXPORT_SYMBOL_GPL(opal_flash_write);
+>  EXPORT_SYMBOL_GPL(opal_flash_erase);
+>  EXPORT_SYMBOL_GPL(opal_prd_msg);
+> +EXPORT_SYMBOL_GPL(opal_occ_command);
+>  
+>  /* Convert a region of vmalloc memory to an opal sg list */
+>  struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
+> @@ -937,6 +941,10 @@ int opal_error_code(int rc)
+>  	case OPAL_UNSUPPORTED:		return -EIO;
+>  	case OPAL_HARDWARE:		return -EIO;
+>  	case OPAL_INTERNAL_ERROR:	return -EIO;
+> +	case OPAL_OCC_BUSY:		return -EBUSY;
+> +	case OPAL_OCC_INVALID_STATE:
+> +	case OPAL_OCC_CMD_TIMEOUT:
+> +	case OPAL_OCC_RSP_MISMATCH:	return -EIO;
+>  	default:
+>  		pr_err("%s: unexpected OPAL error %d\n", __func__, rc);
+>  		return -EIO;
