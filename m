@@ -1,16 +1,17 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.weber@rockwellcollins.com>
+Received: from ch3vs01.rockwellcollins.com (smtpimr.rockwellcollins.com
+ [205.175.226.27])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyRPF3ngjzDr3q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 01:22:41 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
- Michael Neuling <mikey@neuling.org>
-Subject: [PATCH v2] powerpc/powernv: Tell OPAL about our MMU mode
-Date: Wed, 28 Jun 2017 10:22:35 -0500
-Message-Id: <20170628152235.31310-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wySnh1MZNzDr3r
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 02:25:26 +1000 (AEST)
+From: Matt Weber <matthew.weber@rockwellcollins.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Matt Weber <matthew.weber@rockwellcollins.com>,
+ Ronak Desai <ronak.desai@rockwellcollins.com>
+Subject: [PATCH v2] powerpc/traps : Updated MC for E6500 L1D cache err
+Date: Wed, 28 Jun 2017 11:14:29 -0500
+Message-Id: <1498666469-28454-1-git-send-email-matthew.weber@rockwellcollins.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,96 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+This patch updates the machine check handler of Linux kernel to
+handle the e6500 architecture case. In e6500 core, L1 Data Cache Write
+Shadow Mode (DCWS) register is not implemented but L1 data cache always
+runs in write shadow mode. So, on L1 data cache parity errors, hardware
+will automatically invalidate the data cache but will still log a
+machine check interrupt.
 
-That will allow OPAL to configure the CPU in an optimal way.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Ronak Desai <ronak.desai@rockwellcollins.com>
+Signed-off-by: Matthew Weber <matthew.weber@rockwellcollins.com>
 ---
-v2:
-  Always set the hash bit since we always need hash for KVM guests.
----
- arch/powerpc/include/asm/opal-api.h    |  9 +++++++++
- arch/powerpc/platforms/powernv/opal.c  | 17 +++++++++++++++--
- arch/powerpc/platforms/powernv/setup.c |  6 +++++-
- 3 files changed, 29 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index cb3e6242a7..85e6d8817f 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -805,6 +805,15 @@ struct OpalIoPhb3ErrorData {
- enum {
- 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
- 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
-+
-+	/* These two define the base MMU mode of the host on P9
-+	 *
-+	 * On P9 Nimbus DD2.0 and Cumlus (and later), KVM can still
-+	 * create hash guests in "radix" mode with care (full core
-+	 * switch only).
-+	 */
-+	OPAL_REINIT_CPUS_MMU_HASH	= (1 << 2),
-+	OPAL_REINIT_CPUS_MMU_RADIX	= (1 << 3),
- };
- 
- typedef struct oppanel_line {
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 59684b4af4..955265bea9 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -59,6 +59,8 @@ static struct task_struct *kopald_tsk;
- 
- void opal_configure_cores(void)
+Changes 
+v1 -> v2
+[Scott Wood
+ - Used existing header define for SPRN_PVR
+ - Fixed line wrapping
+
+---
+ arch/powerpc/kernel/traps.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 76f6045..f656277 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -504,6 +504,7 @@ int machine_check_47x(struct pt_regs *regs)
+ int machine_check_e500mc(struct pt_regs *regs)
  {
-+	uint64_t reinit_flags = 0;
-+
- 	/* Do the actual re-init, This will clobber all FPRs, VRs, etc...
- 	 *
- 	 * It will preserve non volatile GPRs and HSPRG0/1. It will
-@@ -66,11 +68,22 @@ void opal_configure_cores(void)
- 	 * but it might clobber a bunch.
- 	 */
- #ifdef __BIG_ENDIAN__
--	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
-+	reinit_flags |= OPAL_REINIT_CPUS_HILE_BE;
- #else
--	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_LE);
-+	reinit_flags |= OPAL_REINIT_CPUS_HILE_LE;
- #endif
+ 	unsigned long mcsr = mfspr(SPRN_MCSR);
++	unsigned long pvr = mfspr(SPRN_PVR);
+ 	unsigned long reason = mcsr;
+ 	int recoverable = 1;
  
-+	/*
-+	 * POWER ISA says we always support running hash:
-+	 *  ie. Host hash  supports  hash guests
-+	 *      Host radix supports  hash/radix guests
-+	 */
-+	reinit_flags |= OPAL_REINIT_CPUS_MMU_HASH;
-+	if (early_radix_enabled())
-+		reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX;
-+
-+	opal_reinit_cpus(reinit_flags);
-+
- 	/* Restore some bits */
- 	if (cur_cpu_spec->cpu_restore)
- 		cur_cpu_spec->cpu_restore();
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 2dc7e5fb86..d1cef70bc7 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -254,8 +254,12 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- 		 * We might be running as little-endian - now that interrupts
- 		 * are disabled, reset the HILE bit to big-endian so we don't
- 		 * take interrupts in the wrong endian later
-+		 *
-+		 * We also switch to radix mode on P9 as this is compatible
-+		 * with hash and will allow earlier kernels to boot.
+@@ -545,8 +546,15 @@ int machine_check_e500mc(struct pt_regs *regs)
+ 		 * may still get logged and cause a machine check.  We should
+ 		 * only treat the non-write shadow case as non-recoverable.
  		 */
--		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
-+		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE |
-+				 OPAL_REINIT_CPUS_MMU_RADIX);
+-		if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
+-			recoverable = 0;
++		/* On e6500 core, L1 DCWS (Data cache write shadow mode) bit
++		 * is not implemented but L1 data cache always runs in write
++		 * shadow mode. Hence on data cache parity errors HW will
++		 * automatically invalidate the L1 Data Cache.
++		 */
++		if (PVR_VER(pvr) != PVR_VER_E6500) {
++			if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
++				recoverable = 0;
++		}
  	}
- }
- #endif /* CONFIG_KEXEC_CORE */
+ 
+ 	if (reason & MCSR_L2MMU_MHIT) {
 -- 
-2.11.0
+1.9.1
