@@ -1,28 +1,28 @@
-Return-Path: <axboe@kernel.dk>
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyPbV3rJhzDr3l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 00:01:26 +1000 (AEST)
-Received: by mail-pf0-x22c.google.com with SMTP id e7so34061023pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 07:01:26 -0700 (PDT)
-Subject: Re: linux-next: build failure after merge of the block tree
-From: Jens Axboe <axboe@kernel.dk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-References: <20170628180456.30cb9242@canb.auug.org.au>
- <664cc88d-18a5-18c4-5bce-4d4352d15f4f@kernel.dk>
-Message-ID: <2bd17edb-4a5b-5bf8-7074-1156a5249325@kernel.dk>
-Date: Wed, 28 Jun 2017 08:01:20 -0600
-MIME-Version: 1.0
-In-Reply-To: <664cc88d-18a5-18c4-5bce-4d4352d15f4f@kernel.dk>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyPxN3rmczDr3q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 00:16:56 +1000 (AEST)
+Date: Wed, 28 Jun 2017 23:16:50 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] selftests/ftrace: Update multiple kprobes test for
+ powerpc
+Message-Id: <20170628231650.6fb5d14fb00923d29bd313d7@kernel.org>
+In-Reply-To: <20170628092846.uwc55zuq7dsbrzho@naverao1-tp.localdomain>
+References: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
+ <f49dbddfbc7dee2f68a610bba468c39a4d017feb.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170622180738.e97092d4fa6458b9199a03d7@kernel.org>
+ <20170622170325.qznheui7eydkdnmv@naverao1-tp.localdomain>
+ <20170624023021.92f2f90f0e09314ac9bdb87a@kernel.org>
+ <20170624200610.f3aee818b8f6ff2631e0d56a@kernel.org>
+ <20170628092846.uwc55zuq7dsbrzho@naverao1-tp.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +32,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/28/2017 06:43 AM, Jens Axboe wrote:
-> On 06/28/2017 02:04 AM, Stephen Rothwell wrote:
->> Hi Jens,
->>
->> After merging the block tree, today's linux-next build (powerpc
->> allnoconfig) failed like this:
->>
->> fs/fcntl.o: In function `do_fcntl': 
->> fcntl.c:(.text+0x6d4): undefined reference to `__get_user_bad'
->> fcntl.c:(.text+0x730): undefined reference to `__get_user_bad'
->>
->> Probably caused by commit
->>
->>   c75b1d9421f8 ("fs: add fcntl() interface for setting/getting write life time hints")
->>
->> On powerpc (at least) you cannot use get_user() to fetch anything larger
->> than "unsigned long" i.e. 32 bits on 32 bit powerpc.
->>
->> This has been discussed before (and, I think, a fix attempted).
-> 
-> Gah, thanks for letting me know. I'll test your patch and queue it
-> up to fix this issue.
+On Wed, 28 Jun 2017 14:58:46 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-But put_user() is fine? Just checking here, since the change adds
-both a u64 put and get user.
+> On 2017/06/24 08:06PM, Masami Hiramatsu wrote:
+> > On Sat, 24 Jun 2017 02:30:21 +0900
+> > Masami Hiramatsu <mhiramat@kernel.org> wrote:
+> > 
+> > > On Thu, 22 Jun 2017 22:33:25 +0530
+> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > On 2017/06/22 06:07PM, Masami Hiramatsu wrote:
+> > > > > On Thu, 22 Jun 2017 00:20:28 +0530
+> > > > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> > > > > 
+> > > > > > KPROBES_ON_FTRACE is only available on powerpc64le. Update comment to
+> > > > > > clarify this.
+> > > > > > 
+> > > > > > Also, we should use an offset of 8 to ensure that the probe does not
+> > > > > > fall on ftrace location. The current offset of 4 will fall before the
+> > > > > > function local entry point and won't fire, while an offset of 12 or 16
+> > > > > > will fall on ftrace location. Offset 8 is currently guaranteed to not be
+> > > > > > the ftrace location.
+> > > > > 
+> > > > > OK, these part seems good to me.
+> > > > > 
+> > > > > > 
+> > > > > > Finally, do not filter out symbols with a dot. Powerpc Elfv1 uses dot
+> > > > > > prefix for all functions and this prevents us from testing some of those
+> > > > > > symbols. Furthermore, with the patch to derive event names properly in
+> > > > > > the presence of ':' and '.', such names are accepted by kprobe_events
+> > > > > > and constitutes a good test for those symbols.
+> > > > > 
+> > > > > Hmm, the reason why I added such filter was to avoid symbols including
+> > > > > gcc-generated suffixes like as .constprop or .isra etc.
+> > > > 
+> > > > I see.
+> > > > 
+> > > > I do wonder -- is there a problem if we try probing those symbols? On my 
+> > > > local x86 vm, I don't see an issue probing it especially with the 
+> > > > previous patch to enable probing with symbols having a '.' or ':'.
+> > > > 
+> > > > Furthermore, since this is for testing kprobe_events, I feel it is good 
+> > > > to try probing those symbols too to catch any weird errors we may hit.
+> > > 
+> > > Yes, and that is not what this testcase is aiming to. That testcase should
+> > > be a separated one, with correct error handling.
+> 
+> Ok, I will re-send the patch by changing the pattern.
+> 
+> > 
+> > Hi Naveen,
+> > 
+> > Here is the testcase which I meant above. This may help if there is any
+> > regression related to this specific issue.
+> 
+> Nice!
+> I tested this and there are a few small issues on powerpc...
+> 
+> > 
+> > Thank you,
+> > 
+> > -----
+> > 
+> > selftests: ftrace: Add a testcase for kprobe event naming
+> > 
+> > From: Masami Hiramatsu <mhiramat@kernel.org>
+> > 
+> > Add a testcase for kprobe event naming. This testcase
+> > checks whether the kprobe events can automatically ganerate
+> > its event name on normal function and dot-suffixed function.
+> > Also it checks whether the kprobe events can correctly
+> > define new event with given event name and group name.
+> > 
+> > Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
+> > ---
+> >  .../ftrace/test.d/kprobe/kprobe_eventname.tc       |   28 ++++++++++++++++++++
+> >  1 file changed, 28 insertions(+)
+> >  create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
+> > 
+> > diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
+> > new file mode 100644
+> > index 0000000..d259031
+> > --- /dev/null
+> > +++ b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
+> > @@ -0,0 +1,28 @@
+> > +#!/bin/sh
+> > +# description: Kprobe event auto/manual naming
+> > +
+> > +disable_events
+> > +echo > kprobe_events
+> > +
+> > +:;: "Add an event on function without name" ;:
+> > +
+> > +FUNC=`grep -m 10 " [tT] [^.]*$" /proc/kallsyms | tail -n 1 | cut -f 3 -d " "`
+> 
+> On powerpc, this always ends up using a blacklisted function. So, I 
+> think we need a way to find a function that is not black listed.  
+
+Hmm, if we increase the -m argument, like -m 100, is that still
+in a blacklisted function?
+
+> However, one of the issues is that debugfs does not show all the address 
+> ranges that are blacklisted. I am coming up with a way to address that 
+> and will post patches once I have it working.
+
+Would you find that is only on powerpc or generic issue?
+
+> 
+> With those patches, we should be able to select symbols that are not 
+> blacklisted.
+
+Or, maybe we can use generic function, like "schedule" or "vfs_read"
+etc.
+
+> 
+> > +echo p $FUNC > kprobe_events
+> > +test -d events/kprobes/p_${FUNC}_0 || exit_failure
+> > +
+> > +:;: "Add an event on function with new name" ;:
+> > +
+> > +echo p:event1 $FUNC > kprobe_events
+> > +test -d events/kprobes/event1 || exit_failure
+> > +
+> > +:;: "Add an event on function with new name and group" ;:
+> > +
+> > +echo p:kprobes2/event2 $FUNC > kprobe_events
+> > +test -d events/kprobes2/event2 || exit_failure
+> > +
+> > +:;: "Add an event on dot function without name" ;:
+> > +
+> > +FUNC=`grep -m 10 " [tT] .*\..*$" /proc/kallsyms | tail -n 1 | cut -f 3 -d " "`
+> > +echo p $FUNC > kprobe_events
+> > +EVENT=`grep $FUNC kprobe_events | cut -f 1 -d " " | cut -f 2 -d:` || exit_failure
+> > +test -d events/$EVENT || exit_failure
+> 
+> Probably good to add 'echo > kprobe_events' at the end just to clean up?
+
+Ah, good catch!
+
+Thanks!
+
+> 
+> 
+> Thanks,
+> Naveen
+> 
+
 
 -- 
-Jens Axboe
+Masami Hiramatsu <mhiramat@kernel.org>
