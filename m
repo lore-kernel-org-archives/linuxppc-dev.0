@@ -1,29 +1,16 @@
-Return-Path: <axboe@kernel.dk>
-Received: from mail-it0-x234.google.com (mail-it0-x234.google.com
- [IPv6:2607:f8b0:4001:c0b::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyR8T1ptRzDr3q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 01:11:37 +1000 (AEST)
-Received: by mail-it0-x234.google.com with SMTP id m84so35250499ita.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 08:11:37 -0700 (PDT)
-Subject: Re: linux-next: build failure after merge of the block tree
-From: Jens Axboe <axboe@kernel.dk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-References: <20170628180456.30cb9242@canb.auug.org.au>
- <664cc88d-18a5-18c4-5bce-4d4352d15f4f@kernel.dk>
- <2bd17edb-4a5b-5bf8-7074-1156a5249325@kernel.dk>
-Message-ID: <2c4503f8-8284-2578-3622-03529cc8bffe@kernel.dk>
-Date: Wed, 28 Jun 2017 09:11:32 -0600
-MIME-Version: 1.0
-In-Reply-To: <2bd17edb-4a5b-5bf8-7074-1156a5249325@kernel.dk>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyRPF3ngjzDr3q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 01:22:41 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ Michael Neuling <mikey@neuling.org>
+Subject: [PATCH v2] powerpc/powernv: Tell OPAL about our MMU mode
+Date: Wed, 28 Jun 2017 10:22:35 -0500
+Message-Id: <20170628152235.31310-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,35 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/28/2017 08:01 AM, Jens Axboe wrote:
-> On 06/28/2017 06:43 AM, Jens Axboe wrote:
->> On 06/28/2017 02:04 AM, Stephen Rothwell wrote:
->>> Hi Jens,
->>>
->>> After merging the block tree, today's linux-next build (powerpc
->>> allnoconfig) failed like this:
->>>
->>> fs/fcntl.o: In function `do_fcntl': 
->>> fcntl.c:(.text+0x6d4): undefined reference to `__get_user_bad'
->>> fcntl.c:(.text+0x730): undefined reference to `__get_user_bad'
->>>
->>> Probably caused by commit
->>>
->>>   c75b1d9421f8 ("fs: add fcntl() interface for setting/getting write life time hints")
->>>
->>> On powerpc (at least) you cannot use get_user() to fetch anything larger
->>> than "unsigned long" i.e. 32 bits on 32 bit powerpc.
->>>
->>> This has been discussed before (and, I think, a fix attempted).
->>
->> Gah, thanks for letting me know. I'll test your patch and queue it
->> up to fix this issue.
-> 
-> But put_user() is fine? Just checking here, since the change adds
-> both a u64 put and get user.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I just changed all 4, at least that provides some symmetry in how
-we copy things in and out for that set of fcntls.
+That will allow OPAL to configure the CPU in an optimal way.
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+v2:
+  Always set the hash bit since we always need hash for KVM guests.
+---
+ arch/powerpc/include/asm/opal-api.h    |  9 +++++++++
+ arch/powerpc/platforms/powernv/opal.c  | 17 +++++++++++++++--
+ arch/powerpc/platforms/powernv/setup.c |  6 +++++-
+ 3 files changed, 29 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index cb3e6242a7..85e6d8817f 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -805,6 +805,15 @@ struct OpalIoPhb3ErrorData {
+ enum {
+ 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
+ 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
++
++	/* These two define the base MMU mode of the host on P9
++	 *
++	 * On P9 Nimbus DD2.0 and Cumlus (and later), KVM can still
++	 * create hash guests in "radix" mode with care (full core
++	 * switch only).
++	 */
++	OPAL_REINIT_CPUS_MMU_HASH	= (1 << 2),
++	OPAL_REINIT_CPUS_MMU_RADIX	= (1 << 3),
+ };
+ 
+ typedef struct oppanel_line {
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 59684b4af4..955265bea9 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -59,6 +59,8 @@ static struct task_struct *kopald_tsk;
+ 
+ void opal_configure_cores(void)
+ {
++	uint64_t reinit_flags = 0;
++
+ 	/* Do the actual re-init, This will clobber all FPRs, VRs, etc...
+ 	 *
+ 	 * It will preserve non volatile GPRs and HSPRG0/1. It will
+@@ -66,11 +68,22 @@ void opal_configure_cores(void)
+ 	 * but it might clobber a bunch.
+ 	 */
+ #ifdef __BIG_ENDIAN__
+-	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++	reinit_flags |= OPAL_REINIT_CPUS_HILE_BE;
+ #else
+-	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_LE);
++	reinit_flags |= OPAL_REINIT_CPUS_HILE_LE;
+ #endif
+ 
++	/*
++	 * POWER ISA says we always support running hash:
++	 *  ie. Host hash  supports  hash guests
++	 *      Host radix supports  hash/radix guests
++	 */
++	reinit_flags |= OPAL_REINIT_CPUS_MMU_HASH;
++	if (early_radix_enabled())
++		reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX;
++
++	opal_reinit_cpus(reinit_flags);
++
+ 	/* Restore some bits */
+ 	if (cur_cpu_spec->cpu_restore)
+ 		cur_cpu_spec->cpu_restore();
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 2dc7e5fb86..d1cef70bc7 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -254,8 +254,12 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+ 		 * We might be running as little-endian - now that interrupts
+ 		 * are disabled, reset the HILE bit to big-endian so we don't
+ 		 * take interrupts in the wrong endian later
++		 *
++		 * We also switch to radix mode on P9 as this is compatible
++		 * with hash and will allow earlier kernels to boot.
+ 		 */
+-		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE |
++				 OPAL_REINIT_CPUS_MMU_RADIX);
+ 	}
+ }
+ #endif /* CONFIG_KEXEC_CORE */
 -- 
-Jens Axboe
+2.11.0
