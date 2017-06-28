@@ -1,50 +1,21 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyHY40cMczDr3h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 19:28:55 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5S9Sif0145694
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 05:28:54 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bc8p8kqrc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 05:28:53 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 28 Jun 2017 19:28:51 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5S9Sncd5636546
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 19:28:49 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5S9Skqm009744
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 19:28:47 +1000
-Date: Wed, 28 Jun 2017 14:58:46 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] selftests/ftrace: Update multiple kprobes test for
- powerpc
-References: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
- <f49dbddfbc7dee2f68a610bba468c39a4d017feb.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170622180738.e97092d4fa6458b9199a03d7@kernel.org>
- <20170622170325.qznheui7eydkdnmv@naverao1-tp.localdomain>
- <20170624023021.92f2f90f0e09314ac9bdb87a@kernel.org>
- <20170624200610.f3aee818b8f6ff2631e0d56a@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyJDf078bzDr3h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 19:59:45 +1000 (AEST)
+Date: Wed, 28 Jun 2017 11:52:32 +0200
+From: Torsten Duwe <duwe@lst.de>
+To: Hannes Reinecke <hare@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Hannes Reinecke <hare@suse.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: conditionally compile platform-specific
+ serial drivers
+Message-ID: <20170628095232.GA27785@lst.de>
+References: <1498573791-6781-1-git-send-email-hare@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170624200610.f3aee818b8f6ff2631e0d56a@kernel.org>
-Message-Id: <20170628092846.uwc55zuq7dsbrzho@naverao1-tp.localdomain>
+In-Reply-To: <1498573791-6781-1-git-send-email-hare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,129 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/24 08:06PM, Masami Hiramatsu wrote:
-> On Sat, 24 Jun 2017 02:30:21 +0900
-> Masami Hiramatsu <mhiramat@kernel.org> wrote:
-> 
-> > On Thu, 22 Jun 2017 22:33:25 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > 
-> > > On 2017/06/22 06:07PM, Masami Hiramatsu wrote:
-> > > > On Thu, 22 Jun 2017 00:20:28 +0530
-> > > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > KPROBES_ON_FTRACE is only available on powerpc64le. Update comment to
-> > > > > clarify this.
-> > > > > 
-> > > > > Also, we should use an offset of 8 to ensure that the probe does not
-> > > > > fall on ftrace location. The current offset of 4 will fall before the
-> > > > > function local entry point and won't fire, while an offset of 12 or 16
-> > > > > will fall on ftrace location. Offset 8 is currently guaranteed to not be
-> > > > > the ftrace location.
-> > > > 
-> > > > OK, these part seems good to me.
-> > > > 
-> > > > > 
-> > > > > Finally, do not filter out symbols with a dot. Powerpc Elfv1 uses dot
-> > > > > prefix for all functions and this prevents us from testing some of those
-> > > > > symbols. Furthermore, with the patch to derive event names properly in
-> > > > > the presence of ':' and '.', such names are accepted by kprobe_events
-> > > > > and constitutes a good test for those symbols.
-> > > > 
-> > > > Hmm, the reason why I added such filter was to avoid symbols including
-> > > > gcc-generated suffixes like as .constprop or .isra etc.
-> > > 
-> > > I see.
-> > > 
-> > > I do wonder -- is there a problem if we try probing those symbols? On my 
-> > > local x86 vm, I don't see an issue probing it especially with the 
-> > > previous patch to enable probing with symbols having a '.' or ':'.
-> > > 
-> > > Furthermore, since this is for testing kprobe_events, I feel it is good 
-> > > to try probing those symbols too to catch any weird errors we may hit.
-> > 
-> > Yes, and that is not what this testcase is aiming to. That testcase should
-> > be a separated one, with correct error handling.
+On Tue, Jun 27, 2017 at 04:29:51PM +0200, Hannes Reinecke wrote:
+> mpsc.c and mpc52xx-psc.c are platform-specific serial drivers, and
+> should be compiled for the respective platforms only.
 
-Ok, I will re-send the patch by changing the pattern.
+Yes, this is really dead code that gets compiled and copied needlessly,
+on all PPCs apart from those embedded platforms.
 
-> 
-> Hi Naveen,
-> 
-> Here is the testcase which I meant above. This may help if there is any
-> regression related to this specific issue.
+> Signed-off-by: Hannes Reinecke <hare@suse.com>
 
-Nice!
-I tested this and there are a few small issues on powerpc...
+Reviewed-by: Torsten Duwe <duwe@suse.de>
 
-> 
-> Thank you,
-> 
-> -----
-> 
-> selftests: ftrace: Add a testcase for kprobe event naming
-> 
-> From: Masami Hiramatsu <mhiramat@kernel.org>
-> 
-> Add a testcase for kprobe event naming. This testcase
-> checks whether the kprobe events can automatically ganerate
-> its event name on normal function and dot-suffixed function.
-> Also it checks whether the kprobe events can correctly
-> define new event with given event name and group name.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
 > ---
->  .../ftrace/test.d/kprobe/kprobe_eventname.tc       |   28 ++++++++++++++++++++
->  1 file changed, 28 insertions(+)
->  create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
+>  arch/powerpc/boot/Makefile | 7 ++++---
+>  arch/powerpc/boot/serial.c | 4 ++++
+>  2 files changed, 8 insertions(+), 3 deletions(-)
 > 
-> diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
-> new file mode 100644
-> index 0000000..d259031
-> --- /dev/null
-> +++ b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
-> @@ -0,0 +1,28 @@
-> +#!/bin/sh
-> +# description: Kprobe event auto/manual naming
-> +
-> +disable_events
-> +echo > kprobe_events
-> +
-> +:;: "Add an event on function without name" ;:
-> +
-> +FUNC=`grep -m 10 " [tT] [^.]*$" /proc/kallsyms | tail -n 1 | cut -f 3 -d " "`
-
-On powerpc, this always ends up using a blacklisted function. So, I 
-think we need a way to find a function that is not black listed.  
-However, one of the issues is that debugfs does not show all the address 
-ranges that are blacklisted. I am coming up with a way to address that 
-and will post patches once I have it working.
-
-With those patches, we should be able to select symbols that are not 
-blacklisted.
-
-> +echo p $FUNC > kprobe_events
-> +test -d events/kprobes/p_${FUNC}_0 || exit_failure
-> +
-> +:;: "Add an event on function with new name" ;:
-> +
-> +echo p:event1 $FUNC > kprobe_events
-> +test -d events/kprobes/event1 || exit_failure
-> +
-> +:;: "Add an event on function with new name and group" ;:
-> +
-> +echo p:kprobes2/event2 $FUNC > kprobe_events
-> +test -d events/kprobes2/event2 || exit_failure
-> +
-> +:;: "Add an event on dot function without name" ;:
-> +
-> +FUNC=`grep -m 10 " [tT] .*\..*$" /proc/kallsyms | tail -n 1 | cut -f 3 -d " "`
-> +echo p $FUNC > kprobe_events
-> +EVENT=`grep $FUNC kprobe_events | cut -f 1 -d " " | cut -f 2 -d:` || exit_failure
-> +test -d events/$EVENT || exit_failure
-
-Probably good to add 'echo > kprobe_events' at the end just to clean up?
-
-
-Thanks,
-Naveen
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index e82f333..1a4609c 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -99,14 +99,15 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c decompress.c main.c \
+>  		$(libfdt) libfdt-wrapper.c \
+>  		ns16550.c serial.c simple_alloc.c div64.S util.S \
+>  		elf_util.c $(zlib-y) devtree.c stdlib.c \
+> -		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
+> -		uartlite.c mpc52xx-psc.c opal.c
+> +		oflib.c ofconsole.c cuboot.c cpm-serial.c \
+> +		uartlite.c opal.c
+> +src-wlib-$(CONFIG_PPC_MPC52XX) += mpc52xx-psc.c
+>  src-wlib-$(CONFIG_PPC64_BOOT_WRAPPER) +=  opal-calls.S
+>  src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
+>  src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
+>  src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
+>  src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
+> -src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
+> +src-wlib-$(CONFIG_EMBEDDED6xx) += mpsc.c mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
+>  
+>  src-plat-y := of.c epapr.c
+>  src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
+> diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+> index e04c1e4..7b5c02b 100644
+> --- a/arch/powerpc/boot/serial.c
+> +++ b/arch/powerpc/boot/serial.c
+> @@ -120,15 +120,19 @@ int serial_console_init(void)
+>  	if (dt_is_compatible(devp, "ns16550") ||
+>  	    dt_is_compatible(devp, "pnpPNP,501"))
+>  		rc = ns16550_console_init(devp, &serial_cd);
+> +#ifdef CONFIG_EMBEDDED6xx
+>  	else if (dt_is_compatible(devp, "marvell,mv64360-mpsc"))
+>  		rc = mpsc_console_init(devp, &serial_cd);
+> +#endif
+>  	else if (dt_is_compatible(devp, "fsl,cpm1-scc-uart") ||
+>  	         dt_is_compatible(devp, "fsl,cpm1-smc-uart") ||
+>  	         dt_is_compatible(devp, "fsl,cpm2-scc-uart") ||
+>  	         dt_is_compatible(devp, "fsl,cpm2-smc-uart"))
+>  		rc = cpm_console_init(devp, &serial_cd);
+> +#ifdef CONFIG_PPC_MPC52XX
+>  	else if (dt_is_compatible(devp, "fsl,mpc5200-psc-uart"))
+>  		rc = mpc5200_psc_console_init(devp, &serial_cd);
+> +#endif
+>  	else if (dt_is_compatible(devp, "xlnx,opb-uartlite-1.00.b") ||
+>  		 dt_is_compatible(devp, "xlnx,xps-uartlite-1.00.a"))
+>  		rc = uartlite_console_init(devp, &serial_cd);
+> -- 
+> 1.8.5.6
+> 
