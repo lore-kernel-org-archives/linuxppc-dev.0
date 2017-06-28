@@ -1,25 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wy7yv39YmzDr1b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 13:47:19 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id u36so6567162pgn.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 20:47:19 -0700 (PDT)
-Date: Wed, 28 Jun 2017 13:47:05 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wy94C3FFvzDr3R
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 14:36:59 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id f127so6709868pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jun 2017 21:36:59 -0700 (PDT)
+Date: Wed, 28 Jun 2017 14:36:46 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Mahesh Salgaonkar
- <mahesh@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul
- Mackerras <paulus@samba.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Rework local TLB flush for boot and
- MCE on POWER9
-Message-ID: <20170628134705.6bbd2b9a@roar.ozlabs.ibm.com>
-In-Reply-To: <87k23wvn78.fsf@skywalker.in.ibm.com>
-References: <20170606054247.24914-1-npiggin@gmail.com>
- <87k23wvn78.fsf@skywalker.in.ibm.com>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ego@linux.vnet.ibm.com, mpe@ellerman.id.au
+Subject: Re: [PATCH] powernv:idle: Clear r12 on wakeup from stop lite
+Message-ID: <20170628143646.5e92bcb5@roar.ozlabs.ibm.com>
+In-Reply-To: <1498612609-13677-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1498612609-13677-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,70 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Jun 2017 08:21:55 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Wed, 28 Jun 2017 06:46:49 +0530
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> wrote:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
+> pnv_wakeup_noloss expects R12 to contain SRR1 value to determine if
+> the wakeup reason is an HMI in CHECK_HMI_INTERRUPT.
 > 
-> > There are two cases outside the normal address space management
-> > where a CPU's local TLB is to be flushed:
-> >
-> >   1. Host boot; in case something has left stale entries in the
-> >      TLB (e.g., kexec).
-> >
-> >   2. Machine check; to clean corrupted TLB entries.
-> >
-> > CPU state restore from deep idle states also flushes the TLB. However
-> > this seems to be a side effect of reusing the boot code to set CPU
-> > state, rather than a requirement itself.
-> >
-> > This type of TLB flush is coded inflexibly, several times for each CPU
-> > type, and they have a number of problems with ISA v3.0B:
-> >
-> > - The current radix mode of the MMU is not taken into account. tlbiel
-> >   is undefined if the R field does not match the current radix mode.
-> >
-> > - ISA v3.0B hash mode should be flushing the partition and process
-> >   table caches.
-> >
-> > - ISA v3.0B radix mode should be flushing partition and process table
-> >   caches, and also the page walk cache.
-> >
-> > To improve this situation, consolidate the flushing code and implement
-> > it in C and inline asm under the mm/ directory, and add ISA v3.0B cases
-> > for radix and hash.
-> >
-> > Take it out from early cputable detection hooks, and move it later in
-> > the boot process after the MMU registers are set up and before
-> > relocation is first turned on.
-> >
-> > Provide capability for LPID flush to specify radix mode.
-> >
-> > TLB flush is no longer called when restoring from deep idle states.  
+> When we wakeup with ESL=0, SRR1 will not contain the wakeup reason, so
+> there is no point setting R12 to SRR1.
 > 
+> However, we don't set R12 at all and R12 contains garbage, and still
+> being used to check HMI assuming that it had SRR1. causing the
+> OPAL msglog to be filled with the following print:
+> 	HMI: Received HMI interrupt: HMER = 0x0040000000000000
 > 
-> I am not sure the new location of flushing the tlb is correct/perfect. For ex:
-> may be we should do it before htab_initialize() so that we start with
-> all everything flushed ? But otherwise
+> This patch clears R12 after waking up from stop with ESL=EC=0, so that
+> we don't accidentally enter the HMI handler in pnv_wakeup_noloss if
+> the R12[42:45] corresponds to HMI as wakeup reason.
 > 
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Bug existed prior to "commit 9d29250136f6 ("powerpc/64s/idle: Avoid SRR
+> usage in idle sleep/wake paths")  but was never hit in practice
+> 
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> Fixes: 9d29250136f6 ("powerpc/64s/idle: Avoid SRR usage in idle
+> sleep/wake paths")
+
+Thanks guys, appreciate you finding and fixing my bug :)
+
+I think this looks like the best fix. Really minor nitpick but you
+could adjust the line widths on the comment slightly (mpe might do
+that when merging).
+
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
 
-Thanks for taking a look over it. The location of the flush is based on
-the thinking that:
-
-1. We don't have to flush while MSR IR/DR = 0 because real mode
-   translation entries should be correct (if not we have much bigger
-   problems). But we must flush before setting IR/DR.
-
-2. We should flush after all setup is done (e.g., all SPRs set) in
-   case there is some influence on internal translation structures
-   or invalidation.
-
-The conclusion is that we should flush just before turning on MSR IR/DR.
-
-If there is something wrong with my assumptions, it would be be
-important to adjust the patch.
-
-Thanks,
-Nick
+> ---
+>  arch/powerpc/kernel/idle_book3s.S | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 1ea14b9..34794fd 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -256,6 +256,21 @@ power_enter_stop:
+>  	bne	 .Lhandle_esl_ec_set
+>  	IDLE_STATE_ENTER_SEQ(PPC_STOP)
+>  	li	r3,0  /* Since we didn't lose state, return 0 */
+> +	/*
+> +	 * pnv_wakeup_noloss expects R12 to contain SRR1 value
+> +	 * to determine if the wakeup reason is an HMI in
+> +	 * CHECK_HMI_INTERRUPT.
+> +	 *
+> +	 * However, when we wakeup with ESL=0,
+> +	 * SRR1 will not contain the wakeup reason,
+> +	 * so there is no point setting R12 to SRR1.
+> +	 *
+> +	 * Further, we clear R12 here, so that we
+> +	 * don't accidentally enter the HMI
+> +	 * in pnv_wakeup_noloss if the
+> +	 * R12[42:45] == WAKE_HMI.
+> +	 */
+> +	li	r12, 0
+>  	b 	pnv_wakeup_noloss
+>  
+>  .Lhandle_esl_ec_set:
