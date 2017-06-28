@@ -1,40 +1,21 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyCLx3zK8zDr3p
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 16:19:53 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5S6DgJu039594
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 02:19:50 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bbwtxt60e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 02:19:50 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 28 Jun 2017 16:19:47 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5S6JiU14981166
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 16:19:44 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5S6Jhm0021385
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 16:19:44 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Ian Munsie <imunsie@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: [PATCH] MAINTAINERS: Remove myself as cxl maintainer
-Date: Wed, 28 Jun 2017 16:19:20 +1000
-Message-Id: <20170628061920.26722-1-imunsie@au.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyCg44QszzDr3l
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 16:33:52 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2] spin loop primitives for busy waiting
+In-Reply-To: <20170529022223.14793-1-npiggin@gmail.com>
+References: <20170529022223.14793-1-npiggin@gmail.com>
+Date: Wed, 28 Jun 2017 16:33:52 +1000
+Message-ID: <877ezwd3jj.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,33 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-I am no longer employed by IBM and will no longer have access to cxl
-hardware, so remove myself as a cxl maintainer.
+> Current busy-wait loops are implemented by repeatedly calling cpu_relax()
+> to give an arch option for a low-latency option to improve power and/or
+> SMT resource contention.
+>
+> This poses some difficulties for powerpc, which has SMT priority setting
+> instructions (priorities determine how ifetch cycles are apportioned).
+> powerpc's cpu_relax() is implemented by setting a low priority then
+> setting normal priority. This has several problems:
+>
+>  - Changing thread priority can have some execution cost and potential
+>    impact to other threads in the core. It's inefficient to execute them
+>    every time around a busy-wait loop.
+>
+>  - Depending on implementation details, a `low ; medium` sequence may
+>    not have much if any affect. Some software with similar pattern
+>    actually inserts a lot of nops between, in order to cause a few fetch
+>    cycles with the low priority.
+>
+>  - The busy-wait loop runs with regular priority. This might only be a few
+>    fetch cycles, but if there are several threads running such loops, they
+>    could cause a noticable impact on a non-idle thread.
+>
+> Implement spin_begin, spin_end primitives that can be used around busy
+> wait loops, which default to no-ops. And spin_cpu_relax which defaults to
+> cpu_relax.
+>
+> This will allow architectures to hook the entry and exit of busy-wait
+> loops, and will allow powerpc to set low SMT priority at entry, and
+> normal priority at exit.
+>
+> Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>
+> Since last time:
+> - Fixed spin_do_cond with initial test as suggested by Linus.
+> - Renamed it to spin_until_cond, which reads a little better.
+>
+>  include/linux/processor.h | 70 +++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 70 insertions(+)
+>  create mode 100644 include/linux/processor.h
 
-If anyone needs to contact me in the future, please use my personal
-email address darkstarsword@gmail.com
+I'm gonna merge this via the powerpc tree unless anyone objects.
 
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- MAINTAINERS | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9e984645c4b0..1e8a915577fa 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3721,7 +3721,6 @@ S:	Supported
- F:	drivers/net/ethernet/chelsio/cxgb4vf/
- 
- CXL (IBM Coherent Accelerator Processor Interface CAPI) DRIVER
--M:	Ian Munsie <imunsie@au1.ibm.com>
- M:	Frederic Barrat <fbarrat@linux.vnet.ibm.com>
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Supported
--- 
-2.11.0
+cheers
