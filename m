@@ -1,21 +1,20 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyTg91wwczDr4Z
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 03:04:53 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id z6so9771669pfk.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 10:04:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyTgF0SQSzDr3t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 03:04:57 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id j186so8878908pge.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 10:04:56 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	mpe@ellerman.id.au
 Cc: naveen.n.rao@linux.vnet.ibm.com, christophe.leroy@c-s.fr, paulus@samba.org,
  Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v5 6/7] mm/radix: Fix permissions correctly for
- interrupt_vectors
-Date: Thu, 29 Jun 2017 03:04:10 +1000
-Message-Id: <20170628170411.28864-7-bsingharora@gmail.com>
+Subject: [PATCH v5 7/7] powerpc/Kconfig: Enable STRICT_KERNEL_RWX
+Date: Thu, 29 Jun 2017 03:04:11 +1000
+Message-Id: <20170628170411.28864-8-bsingharora@gmail.com>
 In-Reply-To: <20170628170411.28864-1-bsingharora@gmail.com>
 References: <20170628170411.28864-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,40 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 9abcc98 introduced marking kernel text as executable,
-but missed some bits of the changes from hash_utils_64.c, where
-under CONFIG_RELOCATABLE with CONFIG_RELOCATABLE_TEST or a kdump
-kernel, if the size of the mapping was less than 1G, we end up
-marking the first page (address range 0->mapping_size) as non
-executable. As a side-effect none of the exception handlers
-work
+We have the basic support in the form of patching R/O
+text sections, linker scripts for extending alignment
+of text data. We've also got mark_rodata_ro()
 
-fixes - Commit 9abcc981de97
-("powerpc/mm/radix: Only add X for pages overlapping kernel text")
+NOTE: There is a temporary work-around for disabling
+STRICT_KERNEL_RWX if CONFIG_HIBERNATION is enabled
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/mm/pgtable-radix.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/Kconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 6dc9923..ec21f97 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -230,6 +230,14 @@ static int __meminit create_physical_mapping(unsigned long start,
- 		else
- 			prot = PAGE_KERNEL;
- 
-+		/*
-+		 * See the comment in hash_utils_64.c
-+		 */
-+		if ((PHYSICAL_START > MEMORY_START) &&
-+			overlaps_interrupt_vector_text(vaddr,
-+							vaddr + mapping_size))
-+			prot = PAGE_KERNEL_X;
-+
- 		rc = radix__map_kernel_page(vaddr, addr, prot, mapping_size);
- 		if (rc)
- 			return rc;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 7d95c1d..cda69f3 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -163,6 +163,8 @@ config PPC
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
++	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S_64 && !HIBERNATION)
++	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
+ 	select HAVE_CBPF_JIT			if !PPC64
+ 	select HAVE_CONTEXT_TRACKING		if PPC64
+ 	select HAVE_DEBUG_KMEMLEAK
 -- 
 2.9.4
