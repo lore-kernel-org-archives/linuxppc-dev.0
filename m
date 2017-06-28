@@ -1,20 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c00::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyNQC5hPtzDr3l
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 23:08:19 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org, Oliver O'Halloran <oohall@gmail.com>,
- akpm@linux-foundation.org <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4 1/6] mm, x86: Add ARCH_HAS_ZONE_DEVICE to Kconfig
-In-Reply-To: <20170628013236.413-1-oohall@gmail.com>
-References: <20170628013236.413-1-oohall@gmail.com>
-Date: Wed, 28 Jun 2017 23:08:17 +1000
-Message-ID: <87r2y4b6pq.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyPbV3rJhzDr3l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 00:01:26 +1000 (AEST)
+Received: by mail-pf0-x22c.google.com with SMTP id e7so34061023pfk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 07:01:26 -0700 (PDT)
+Subject: Re: linux-next: build failure after merge of the block tree
+From: Jens Axboe <axboe@kernel.dk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+References: <20170628180456.30cb9242@canb.auug.org.au>
+ <664cc88d-18a5-18c4-5bce-4d4352d15f4f@kernel.dk>
+Message-ID: <2bd17edb-4a5b-5bf8-7074-1156a5249325@kernel.dk>
+Date: Wed, 28 Jun 2017 08:01:20 -0600
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <664cc88d-18a5-18c4-5bce-4d4352d15f4f@kernel.dk>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
+On 06/28/2017 06:43 AM, Jens Axboe wrote:
+> On 06/28/2017 02:04 AM, Stephen Rothwell wrote:
+>> Hi Jens,
+>>
+>> After merging the block tree, today's linux-next build (powerpc
+>> allnoconfig) failed like this:
+>>
+>> fs/fcntl.o: In function `do_fcntl': 
+>> fcntl.c:(.text+0x6d4): undefined reference to `__get_user_bad'
+>> fcntl.c:(.text+0x730): undefined reference to `__get_user_bad'
+>>
+>> Probably caused by commit
+>>
+>>   c75b1d9421f8 ("fs: add fcntl() interface for setting/getting write life time hints")
+>>
+>> On powerpc (at least) you cannot use get_user() to fetch anything larger
+>> than "unsigned long" i.e. 32 bits on 32 bit powerpc.
+>>
+>> This has been discussed before (and, I think, a fix attempted).
+> 
+> Gah, thanks for letting me know. I'll test your patch and queue it
+> up to fix this issue.
 
-> Currently ZONE_DEVICE depends on X86_64 and this will get unwieldly as
-> new architectures (and platforms) get ZONE_DEVICE support. Move to an
-> arch selected Kconfig option to save us the trouble.
->
-> Cc: linux-mm@kvack.org
-> Acked-by: Ingo Molnar <mingo@kernel.org>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
-> Andew, the rest of the series should be going in via the ppc tree, but
-> since there's nothing ppc specific about this patch do you want to
-> take it via mm?
+But put_user() is fine? Just checking here, since the change adds
+both a u64 put and get user.
 
-Except without this patch none of the rest of the series can be tested
-on powerpc, because the code doesn't go live until ARCH_HAS_ZONE_DEVICE
-is wired up for powerpc.
-
-So it'd be better if the series stayed together, wherever it goes. I'll
-pick it up unless Andrew objects.
-
-cheers
+-- 
+Jens Axboe
