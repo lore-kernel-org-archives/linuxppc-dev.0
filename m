@@ -1,24 +1,21 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyFVr2rLbzDqjs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 17:56:51 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id f127so7296837pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 00:56:51 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] MAINTAINERS: Remove myself as cxl maintainer
-In-Reply-To: <20170628061920.26722-1-imunsie@au.ibm.com>
-References: <20170628061920.26722-1-imunsie@au.ibm.com>
-Date: Wed, 28 Jun 2017 17:56:44 +1000
-Message-ID: <87mv8so88z.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyFh95wBfzDqlL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 18:04:57 +1000 (AEST)
+Date: Wed, 28 Jun 2017 18:04:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, "Martin K. Petersen"
+ <martin.petersen@oracle.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the block tree
+Message-ID: <20170628180456.30cb9242@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ian,
+Hi Jens,
 
-As Andrew said, thanks for everything: CXL enablement was my
-introduction to the kernel - it was a great place to start, and it was a
-privilege to work with you.
+After merging the block tree, today's linux-next build (powerpc
+allnoconfig) failed like this:
 
-All the best for your future endeavours!
+fs/fcntl.o: In function `do_fcntl': 
+fcntl.c:(.text+0x6d4): undefined reference to `__get_user_bad'
+fcntl.c:(.text+0x730): undefined reference to `__get_user_bad'
 
-Regards,
-Daniel
+Probably caused by commit
 
-Ian Munsie <imunsie@au1.ibm.com> writes:
+  c75b1d9421f8 ("fs: add fcntl() interface for setting/getting write life time hints")
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> I am no longer employed by IBM and will no longer have access to cxl
-> hardware, so remove myself as a cxl maintainer.
->
-> If anyone needs to contact me in the future, please use my personal
-> email address darkstarsword@gmail.com
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  MAINTAINERS | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9e984645c4b0..1e8a915577fa 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3721,7 +3721,6 @@ S:	Supported
->  F:	drivers/net/ethernet/chelsio/cxgb4vf/
->  
->  CXL (IBM Coherent Accelerator Processor Interface CAPI) DRIVER
-> -M:	Ian Munsie <imunsie@au1.ibm.com>
->  M:	Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->  L:	linuxppc-dev@lists.ozlabs.org
->  S:	Supported
-> -- 
-> 2.11.0
+On powerpc (at least) you cannot use get_user() to fetch anything larger
+than "unsigned long" i.e. 32 bits on 32 bit powerpc.
+
+This has been discussed before (and, I think, a fix attempted).
+
+For now I have applied the following patch:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 28 Jun 2017 17:50:31 +1000
+Subject: [PATCH] fs: don't read an enum directly from a u64 __user *
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ fs/fcntl.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index 24e233c75a33..19825eb7c40d 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -277,6 +277,7 @@ static long fcntl_rw_hint(struct file *file, unsigned int cmd,
+ {
+ 	struct inode *inode = file_inode(file);
+ 	u64 *argp = (u64 __user *)arg;
++	u64 h;
+ 	enum rw_hint hint;
+ 
+ 	switch (cmd) {
+@@ -285,8 +286,9 @@ static long fcntl_rw_hint(struct file *file, unsigned int cmd,
+ 			return -EFAULT;
+ 		return 0;
+ 	case F_SET_FILE_RW_HINT:
+-		if (get_user(hint, argp))
++		if (copy_from_user(&h, argp, sizeof(h)))
+ 			return -EFAULT;
++		hint = (enum rw_hint)h;
+ 		if (!rw_hint_valid(hint))
+ 			return -EINVAL;
+ 
+@@ -299,8 +301,9 @@ static long fcntl_rw_hint(struct file *file, unsigned int cmd,
+ 			return -EFAULT;
+ 		return 0;
+ 	case F_SET_RW_HINT:
+-		if (get_user(hint, argp))
++		if (copy_from_user(&h, argp, sizeof(h)))
+ 			return -EFAULT;
++		hint = (enum rw_hint)h;
+ 		if (!rw_hint_valid(hint))
+ 			return -EINVAL;
+ 
+-- 
+2.11.0
+
+-- 
+Cheers,
+Stephen Rothwell
