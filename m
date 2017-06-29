@@ -3,52 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wz0Pc6QSzzDr1k
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:09:56 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wz10Y2KyXzDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:45 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5TD9lwP055950
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:09:54 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bd1npsfbn-1
+ v5TDYOOa105581
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:36:43 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bcyq0qt6y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:09:52 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:36:43 -0400
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 29 Jun 2017 23:09:22 +1000
+ Thu, 29 Jun 2017 23:36:40 +1000
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5TD9C4E8061210
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:09:20 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5TDaTM82162968
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:37 +1000
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5TD8la6020169
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:08:47 +1000
-Date: Thu, 29 Jun 2017 18:38:29 +0530
+ v5TDa4SB000489
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:05 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>,
  Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] selftests/ftrace: Update multiple kprobes test for
- powerpc
-References: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
- <f49dbddfbc7dee2f68a610bba468c39a4d017feb.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170622180738.e97092d4fa6458b9199a03d7@kernel.org>
- <20170622170325.qznheui7eydkdnmv@naverao1-tp.localdomain>
- <20170624023021.92f2f90f0e09314ac9bdb87a@kernel.org>
- <20170624200610.f3aee818b8f6ff2631e0d56a@kernel.org>
- <20170628092846.uwc55zuq7dsbrzho@naverao1-tp.localdomain>
- <20170628231650.6fb5d14fb00923d29bd313d7@kernel.org>
- <20170628184324.zpfe6f54jbhzxq5g@naverao1-tp.localdomain>
- <20170629095757.2f1fea73ad2e61ad08618e15@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170629095757.2f1fea73ad2e61ad08618e15@kernel.org>
-Message-Id: <20170629130829.yo2zadusujji4koq@naverao1-tp.localdomain>
+ Michael Ellerman <mpe@ellerman.id.au>, Shuah Khan <shuah@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/4] trace/kprobes: Sanitize derived event names
+Date: Thu, 29 Jun 2017 19:05:36 +0530
+In-Reply-To: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <daf0b168ca884719e2d26c08dd6cd690f54d6f47.1498742262.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,96 +48,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/06/29 09:57AM, Masami Hiramatsu wrote:
-> On Thu, 29 Jun 2017 00:13:24 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > On 2017/06/28 11:16PM, Masami Hiramatsu wrote:
-> > > > > diff --git 
-> > > > > a/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc 
-> > > > > b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
-> > > > > new file mode 100644
-> > > > > index 0000000..d259031
-> > > > > --- /dev/null
-> > > > > +++ b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
-> > > > > @@ -0,0 +1,28 @@
-> > > > > +#!/bin/sh
-> > > > > +# description: Kprobe event auto/manual naming
-> > > > > +
-> > > > > +disable_events
-> > > > > +echo > kprobe_events
-> > > > > +
-> > > > > +:;: "Add an event on function without name" ;:
-> > > > > +
-> > > > > +FUNC=`grep -m 10 " [tT] [^.]*$" /proc/kallsyms | tail -n 1 | cut -f 3 -d " "`
-> > > > 
-> > > > On powerpc, this always ends up using a blacklisted function. So, I 
-> > > > think we need a way to find a function that is not black listed.  
-> > > 
-> > > Hmm, if we increase the -m argument, like -m 100, is that still
-> > > in a blacklisted function?
-> > 
-> > Yes, most of the initial symbols are exception vectors which are 
-> > blacklisted.
-> 
-> Hmm, then how about this? :)
-> 
-> grep _stext -A 1000 | grep -m 10 " [tT] [^.]*$" /proc/kallsyms
+When we derive event names, convert some expected symbols (such as ':'
+used to specify module:name and '.' present in some symbols) into
+underscores so that the event name is not rejected.
 
-That just happened to block the test ;)
-I think your suggestion to use schedule/vfs_read is probably the best 
-option. I will update your patch and post it.
+Before this patch:
+    # echo 'p kobject_example:foo_store' > kprobe_events
+    trace_kprobe: Failed to allocate trace_probe.(-22)
+    -sh: write error: Invalid argument
 
-> 
-> > 
-> > > 
-> > > > However, one of the issues is that debugfs does not show all the address 
-> > > > ranges that are blacklisted. I am coming up with a way to address that 
-> > > > and will post patches once I have it working.
-> > > 
-> > > Would you find that is only on powerpc or generic issue?
-> > 
-> > I meant the address _ranges_ that are blacklisted such as the ones with 
-> > __kprobes annotation and __entry_text and so on.
-> 
-> I see, but we can also check the address by comparing the address
-> of symbols, which also can be retrieved from kallsyms.
+After this patch:
+    # echo 'p kobject_example:foo_store' > kprobe_events
+    # cat kprobe_events
+    p:kprobes/p_kobject_example_foo_store_0 kobject_example:foo_store
 
-Yes, but this is very platform specific and will result in a lot of 
-checks, arm64 especially.
+Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ kernel/trace/trace_kprobe.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-> Since the test case is also applied to stable kernel, I don't want
-> to make it depending on some special kernel tweaks.
-
-Sure, makes sense. For now, I think it's best to keep the test simple.  
-But, we can enhance these later to consider the blacklist.
-
-Thanks,
-Naveen
-
-> 
-> > > 
-> > > > 
-> > > > With those patches, we should be able to select symbols that are not 
-> > > > blacklisted.
-> > > 
-> > > Or, maybe we can use generic function, like "schedule" or "vfs_read"
-> > > etc.
-> > 
-> > Yes, I think this will be good for the generic test, but may not help 
-> > selecting a dot symbol on powerpc.
-> 
-> Right, and it depends on what gcc version and option is specified.
-> So, maybe we can skip the test if there is no such symbols.
-> 
-> I intended to test the symbols with some dot-suffix, but it seems
-> ppc64 has dot-started symbols, right? If there is no dot-suffixed
-> symbols, I think this test should skip the test case.
-> 
-> Thank you,
-> 
-> 
-> 
-> -- 
-> Masami Hiramatsu <mhiramat@kernel.org>
-> 
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index c129fca6ec99..44fd819aa33d 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -598,6 +598,14 @@ static struct notifier_block trace_kprobe_module_nb = {
+ 	.priority = 1	/* Invoked after kprobe module callback */
+ };
+ 
++/* Convert certain expected symbols into '_' when generating event names */
++static inline void sanitize_event_name(char *name)
++{
++	while (*name++ != '\0')
++		if (*name == ':' || *name == '.')
++			*name = '_';
++}
++
+ static int create_trace_kprobe(int argc, char **argv)
+ {
+ 	/*
+@@ -740,6 +748,7 @@ static int create_trace_kprobe(int argc, char **argv)
+ 		else
+ 			snprintf(buf, MAX_EVENT_NAME_LEN, "%c_0x%p",
+ 				 is_return ? 'r' : 'p', addr);
++		sanitize_event_name(buf);
+ 		event = buf;
+ 	}
+ 	tk = alloc_trace_kprobe(group, event, addr, symbol, offset, maxactive,
+-- 
+2.13.1
