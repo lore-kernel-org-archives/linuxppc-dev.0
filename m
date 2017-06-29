@@ -1,41 +1,30 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wydnc4W9YzDr4n
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:11:00 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5SN5JYn007625
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 19:10:58 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bcgxubrr9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 19:10:58 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Wed, 28 Jun 2017 20:10:55 -0300
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5SN6aI226345520
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 20:06:37 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5SNArM0018648
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 20:10:53 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v2 8/8] powerpc/perf/hv-24x7: Aggregate result elements on
- POWER9 SMT8
-Date: Wed, 28 Jun 2017 20:10:26 -0300
-In-Reply-To: <20170628231026.23190-1-bauerman@linux.vnet.ibm.com>
-References: <20170628231026.23190-1-bauerman@linux.vnet.ibm.com>
-Message-Id: <20170628231026.23190-9-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyh971PnBzDr4V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 10:58:03 +1000 (AEST)
+Date: Thu, 29 Jun 2017 09:57:57 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] selftests/ftrace: Update multiple kprobes test for
+ powerpc
+Message-Id: <20170629095757.2f1fea73ad2e61ad08618e15@kernel.org>
+In-Reply-To: <20170628184324.zpfe6f54jbhzxq5g@naverao1-tp.localdomain>
+References: <cover.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
+ <f49dbddfbc7dee2f68a610bba468c39a4d017feb.1498070485.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170622180738.e97092d4fa6458b9199a03d7@kernel.org>
+ <20170622170325.qznheui7eydkdnmv@naverao1-tp.localdomain>
+ <20170624023021.92f2f90f0e09314ac9bdb87a@kernel.org>
+ <20170624200610.f3aee818b8f6ff2631e0d56a@kernel.org>
+ <20170628092846.uwc55zuq7dsbrzho@naverao1-tp.localdomain>
+ <20170628231650.6fb5d14fb00923d29bd313d7@kernel.org>
+ <20170628184324.zpfe6f54jbhzxq5g@naverao1-tp.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,132 +34,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER9 SMT8 the 24x7 API returns two result elements for physical core
-and virtual CPU events and we need to add their counts to get the final
-result.
+On Thu, 29 Jun 2017 00:13:24 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
----
- arch/powerpc/perf/hv-24x7.c | 54 +++++++++++++++++++++++++++++++++++----------
- 1 file changed, 42 insertions(+), 12 deletions(-)
+> On 2017/06/28 11:16PM, Masami Hiramatsu wrote:
+> > > > diff --git 
+> > > > a/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc 
+> > > > b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
+> > > > new file mode 100644
+> > > > index 0000000..d259031
+> > > > --- /dev/null
+> > > > +++ b/tools/testing/selftests/ftrace/test.d/kprobe/kprobe_eventname.tc
+> > > > @@ -0,0 +1,28 @@
+> > > > +#!/bin/sh
+> > > > +# description: Kprobe event auto/manual naming
+> > > > +
+> > > > +disable_events
+> > > > +echo > kprobe_events
+> > > > +
+> > > > +:;: "Add an event on function without name" ;:
+> > > > +
+> > > > +FUNC=`grep -m 10 " [tT] [^.]*$" /proc/kallsyms | tail -n 1 | cut -f 3 -d " "`
+> > > 
+> > > On powerpc, this always ends up using a blacklisted function. So, I 
+> > > think we need a way to find a function that is not black listed.  
+> > 
+> > Hmm, if we increase the -m argument, like -m 100, is that still
+> > in a blacklisted function?
+> 
+> Yes, most of the initial symbols are exception vectors which are 
+> blacklisted.
 
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 38f6a81683a8..8a61b2415186 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -31,6 +31,9 @@
- /* Version of the 24x7 hypervisor API that we should use in this machine. */
- static int interface_version;
- 
-+/* Whether we have to aggregate result data for some domains. */
-+static bool aggregate_result_elements;
-+
- static bool domain_is_valid(unsigned domain)
- {
- 	switch (domain) {
-@@ -58,6 +61,15 @@ static bool is_physical_domain(unsigned domain)
- 	}
- }
- 
-+/* Domains for which more than one result element are returned for each event. */
-+static bool domain_needs_aggregation(unsigned int domain)
-+{
-+	return aggregate_result_elements &&
-+			(domain == HV_PERF_DOMAIN_PHYS_CORE ||
-+			 (domain >= HV_PERF_DOMAIN_VCPU_HOME_CORE &&
-+			  domain <= HV_PERF_DOMAIN_VCPU_REMOTE_NODE));
-+}
-+
- static const char *domain_name(unsigned domain)
- {
- 	if (!domain_is_valid(domain))
-@@ -1145,17 +1157,23 @@ static int add_event_to_24x7_request(struct perf_event *event,
- 	req->starting_ix = cpu_to_be16(idx);
- 	req->max_ix = cpu_to_be16(1);
- 
--	if (request_buffer->interface_version > 1 &&
--	    req->performance_domain != HV_PERF_DOMAIN_PHYS_CHIP) {
--		req->starting_thread_group_ix = idx % 2;
--		req->max_num_thread_groups = 1;
-+	if (request_buffer->interface_version > 1) {
-+		if (domain_needs_aggregation(req->performance_domain))
-+			req->max_num_thread_groups = -1;
-+		else if (req->performance_domain != HV_PERF_DOMAIN_PHYS_CHIP) {
-+			req->starting_thread_group_ix = idx % 2;
-+			req->max_num_thread_groups = 1;
-+		}
- 	}
- 
- 	return 0;
- }
- 
- /**
-- * get_count_from_result - get event count from the given result
-+ * get_count_from_result - get event count from all result elements in result
-+ *
-+ * If the event corresponding to this result needs aggregation of the result
-+ * element values, then this function does that.
-  *
-  * @event:	Event associated with @res.
-  * @resb:	Result buffer containing @res.
-@@ -1172,6 +1190,8 @@ static int get_count_from_result(struct perf_event *event,
- 	u16 data_size = be16_to_cpu(res->result_element_data_size);
- 	unsigned int data_offset;
- 	void *element_data;
-+	int i;
-+	u64 count;
- 
- 	/*
- 	 * We can bail out early if the result is empty.
-@@ -1189,8 +1209,10 @@ static int get_count_from_result(struct perf_event *event,
- 	/*
- 	 * Since we always specify 1 as the maximum for the smallest resource
- 	 * we're requesting, there should to be only one element per result.
-+	 * Except when an event needs aggregation, in which case there are more.
- 	 */
--	if (num_elements != 1) {
-+	if (num_elements != 1 &&
-+	    !domain_needs_aggregation(event_get_domain(event))) {
- 		pr_err("Error: result of request %hhu has %hu elements\n",
- 		       res->result_ix, num_elements);
- 
-@@ -1211,13 +1233,17 @@ static int get_count_from_result(struct perf_event *event,
- 		data_offset = offsetof(struct hv_24x7_result_element_v2,
- 				       element_data);
- 
--	element_data = res->elements + data_offset;
-+	/* Go through the result elements in the result. */
-+	for (i = count = 0, element_data = res->elements + data_offset;
-+	     i < num_elements;
-+	     i++, element_data += data_size + data_offset)
-+		count += be64_to_cpu(*((u64 *) element_data));
- 
--	*countp = be64_to_cpu(*((u64 *) element_data));
-+	*countp = count;
- 
--	/* The next result is after the result element. */
-+	/* The next result is after the last result element. */
- 	if (next)
--		*next = element_data + data_size;
-+		*next = element_data - data_offset;
- 
- 	return 0;
- }
-@@ -1565,9 +1591,13 @@ static int hv_24x7_init(void)
- 	}
- 
- 	/* POWER8 only supports v1, while POWER9 only supports v2. */
--	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
- 		interface_version = 2;
--	else
-+
-+		/* SMT8 in POWER9 needs to aggregate result elements. */
-+		if (threads_per_core == 8)
-+			aggregate_result_elements = true;
-+	} else
- 		interface_version = 1;
- 
- 	hret = hv_perf_caps_get(&caps);
+Hmm, then how about this? :)
+
+grep _stext -A 1000 | grep -m 10 " [tT] [^.]*$" /proc/kallsyms
+
+> 
+> > 
+> > > However, one of the issues is that debugfs does not show all the address 
+> > > ranges that are blacklisted. I am coming up with a way to address that 
+> > > and will post patches once I have it working.
+> > 
+> > Would you find that is only on powerpc or generic issue?
+> 
+> I meant the address _ranges_ that are blacklisted such as the ones with 
+> __kprobes annotation and __entry_text and so on.
+
+I see, but we can also check the address by comparing the address
+of symbols, which also can be retrieved from kallsyms.
+Since the test case is also applied to stable kernel, I don't want
+to make it depending on some special kernel tweaks.
+
+> > 
+> > > 
+> > > With those patches, we should be able to select symbols that are not 
+> > > blacklisted.
+> > 
+> > Or, maybe we can use generic function, like "schedule" or "vfs_read"
+> > etc.
+> 
+> Yes, I think this will be good for the generic test, but may not help 
+> selecting a dot symbol on powerpc.
+
+Right, and it depends on what gcc version and option is specified.
+So, maybe we can skip the test if there is no such symbols.
+
+I intended to test the symbols with some dot-suffix, but it seems
+ppc64 has dot-started symbols, right? If there is no dot-suffixed
+symbols, I think this test should skip the test case.
+
+Thank you,
+
+
+
 -- 
-2.13.0
+Masami Hiramatsu <mhiramat@kernel.org>
