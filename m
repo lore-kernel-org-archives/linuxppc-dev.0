@@ -1,28 +1,40 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyx4k1J7mzDr4V
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 20:40:06 +1000 (AEST)
-Date: Thu, 29 Jun 2017 12:39:59 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>, mpe@ellerman.id.au,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, bsingharora@gmail.com, anton@samba.org,
- sukadev@linux.vnet.ibm.com, mikey@neuling.org, stewart@linux.vnet.ibm.com,
- dja@axtens.net, eranian@google.com, hemant@linux.vnet.ibm.com
-Subject: Re: [PATCH v11 07/10] powerpc/perf: PMU functions for Core IMC and
- hotplugging
-In-Reply-To: <766e7d43-0ca9-1e34-2cbe-73d1cbb2ee14@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1706291239070.1861@nanos>
-References: <1498676291-24002-1-git-send-email-anju@linux.vnet.ibm.com>
- <1498676291-24002-2-git-send-email-anju@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1706282104290.1890@nanos>
- <766e7d43-0ca9-1e34-2cbe-73d1cbb2ee14@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyx6L4fzczDr4Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 20:41:30 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5TAcwEA042922
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 06:41:28 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bcv9vhesp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 06:41:28 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 29 Jun 2017 20:41:26 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5TAfL4C11206980
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 20:41:21 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5TAfCmN028923
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 20:41:13 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 0/7] powerpc: build out kprobes blacklist -- series 3
+Date: Thu, 29 Jun 2017 16:11:03 +0530
+Message-Id: <cover.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +44,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jun 2017, Madhavan Srinivasan wrote:
-> On Thursday 29 June 2017 01:11 AM, Thomas Gleixner wrote:
-> Idea is to handle multiple event session for a given core and
-> yes, my bad, current implementation is racy/broken.
-> But an alternate approach is to have a per-core mutex and
-> per-core ref count to handle this.
-> 
-> event_init path:
-> per-core mutex lock
->   if ( per-core[refcount] == 0) {
->        rc = opal call to start the engine;
->        if (rc on failure) {
->        per-core mutex unlock;
->        log error info;
->        return error;
->        }
->   }
->   increment the per-core[refcount];
-> per-core mutex unlock;
-> 
-> 
-> event_destroy path:
-> per-core mutex lock
->   decrement the per-core[refcount];
->   if ( per-core[refcount] == 0) {
->      rc = opal call to stop the engine;
->      if (rc on failure) {
->        per-core mutex unlock;
->        log the failure;
->        return error;
->      }
->   } else if ( per-core[refcount] < 0) {
->      WARN()
->      per-core[refcount] = 0;
->   }
-> per-core mutext unlock;
+This is the third in the series of patches to build out an appropriate
+kprobes blacklist for powerpc. Since posting the second series (*),
+there have been related changes to the code and I have brought that
+series forward to account for those changes. As such, all patches from
+the second series are included in this patchset.
 
-Yes, that works and looks about right.
+This patchset now ensures that the newly added multiple kprobes test in
+the ftrace testsuite passes on powerpc64. Tested on both Elfv1 and
+Elfv2.
 
-Thanks,
+Changes since v3:
+  - Patch 1 now implements a different approach by checking if the function
+    pointer points to .text or not.
+  - Patch 4 is new, as suggested by Nick.
+  - Patch 6 (previously 5) changed to leave 'restore' symbol alone.
+  - Patch 7 (previously 6) moves __rtas_enter after the mtmsr.
+  - Patches 2, 3 and 5 (previously numbered 4) are unchanged
 
-	tglx
+v3:
+https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg119596.html
+
+(*) series 2:
+https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg117562.html
+
+
+- Naveen
+
+
+Naveen N. Rao (7):
+  powerpc64/elfv1: Only dereference function descriptor for non-text
+    symbols
+  powerpc/64s: Convert .L__replay_interrupt_return to a local label
+  powerpc/64s: Blacklist system_call() and system_call_common() from
+    kprobes
+  powerpc/64s: Move system_call() symbol to just after setting MSR_EE
+  powerpc/64s: Un-blacklist system_call() from kprobes
+  powerpc/64s: Blacklist functions invoked on a trap
+  powerpc/64s: Blacklist rtas entry/exit from kprobes
+
+ arch/powerpc/include/asm/code-patching.h | 10 ++++-
+ arch/powerpc/kernel/entry_64.S           | 75 +++++++++++++++++++-------------
+ arch/powerpc/kernel/exceptions-64s.S     |  6 ++-
+ arch/powerpc/kernel/traps.c              |  3 ++
+ 4 files changed, 61 insertions(+), 33 deletions(-)
+
+-- 
+2.13.1
