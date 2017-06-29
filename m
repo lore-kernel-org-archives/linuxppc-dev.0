@@ -1,40 +1,37 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyr4w3RMtzDqkF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 16:54:56 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyr5p6VWSzDr4Z
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 16:55:42 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5T6s4Qd094655
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 02:54:54 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bckf3j1tx-1
+ v5T6s0qL064087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 02:55:41 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bcv9v8y2a-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 02:54:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 02:55:40 -0400
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Thu, 29 Jun 2017 16:54:45 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5T6sf7d5833184
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 16:54:41 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5T6sWeR031490
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 16:54:33 +1000
+ Thu, 29 Jun 2017 16:55:36 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5T6tQix2752848
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 16:55:34 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5T6t1io026221
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 16:55:01 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
 Cc: dwmw2@infradead.org, stewart@linux.vnet.ibm.com
-Subject: [PATCH 1/5] powerpc/opal: Make __opal_async_{get,
- release}_token() static
-Date: Thu, 29 Jun 2017 16:54:09 +1000
-In-Reply-To: <20170629065413.19845-1-cyrilbur@gmail.com>
-References: <20170629065413.19845-1-cyrilbur@gmail.com>
-Message-Id: <20170629065413.19845-2-cyrilbur@gmail.com>
+Subject: [PATCH 0/5] Allow opal-async waiters to get interrupted
+Date: Thu, 29 Jun 2017 16:54:08 +1000
+Message-Id: <20170629065413.19845-1-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,68 +41,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are no callers of both __opal_async_get_token() and
-__opal_async_release_token().
+Hello,
 
-This patch also removes the possibility of "emergency through
-synchronous call to __opal_async_get_token()" as such it makes more
-sense to initialise opal_sync_sem for the maximum number of async
-tokens.
+This patchset aims to solve the problem that currently all users of
+the opal-async calls must use wait_event(), this may be undesirable
+when there is a userspace process behind the request for the opal
+call, if OPAL takes too long to complete the call then hung task
+warnings will appear.
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- arch/powerpc/include/asm/opal.h             |  2 --
- arch/powerpc/platforms/powernv/opal-async.c | 10 +++-------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+In order to solve the problem callers should use
+wait_event_interruptible(), due to the interruptible nature of this
+call the opal-async infrastructure needs to track extra state
+associated with each async token, this is prepared for in patch 2/5.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 588fb1c23af9..5553ad2f3e53 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -291,9 +291,7 @@ extern void opal_notifier_enable(void);
- extern void opal_notifier_disable(void);
- extern void opal_notifier_update_evt(uint64_t evt_mask, uint64_t evt_val);
- 
--extern int __opal_async_get_token(void);
- extern int opal_async_get_token_interruptible(void);
--extern int __opal_async_release_token(int token);
- extern int opal_async_release_token(int token);
- extern int opal_async_wait_response(uint64_t token, struct opal_msg *msg);
- extern int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data);
-diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
-index 83bebeec0fea..1d56ac9da347 100644
---- a/arch/powerpc/platforms/powernv/opal-async.c
-+++ b/arch/powerpc/platforms/powernv/opal-async.c
-@@ -33,7 +33,7 @@ static struct semaphore opal_async_sem;
- static struct opal_msg *opal_async_responses;
- static unsigned int opal_max_async_tokens;
- 
--int __opal_async_get_token(void)
-+static int __opal_async_get_token(void)
- {
- 	unsigned long flags;
- 	int token;
-@@ -73,7 +73,7 @@ int opal_async_get_token_interruptible(void)
- }
- EXPORT_SYMBOL_GPL(opal_async_get_token_interruptible);
- 
--int __opal_async_release_token(int token)
-+static int __opal_async_release_token(int token)
- {
- 	unsigned long flags;
- 
-@@ -199,11 +199,7 @@ int __init opal_async_comp_init(void)
- 		goto out_opal_node;
- 	}
- 
--	/* Initialize to 1 less than the maximum tokens available, as we may
--	 * require to pop one during emergency through synchronous call to
--	 * __opal_async_get_token()
--	 */
--	sema_init(&opal_async_sem, opal_max_async_tokens - 1);
-+	sema_init(&opal_async_sem, opal_max_async_tokens);
- 
- out_opal_node:
- 	of_node_put(opal_node);
+Patch 3/5 attempts to provide a solution to the problem that the
+powernv_flash MTD driver can use in patch 5/5.
+
+Hello MTD folk, traditionally Michael Ellerman takes powernv_flash
+driver patches through the powerpc tree, as always your feedback is
+very welcome.
+
+Thanks,
+
+Cyril
+
+Cyril Bur (5):
+  powerpc/opal: Make __opal_async_{get,release}_token() static
+  powerpc/opal: Rework the opal-async interface
+  powerpc/opal: Add opal_async_wait_response_interruptible() to
+    opal-async
+  powerpc/powernv: Add OPAL_BUSY to opal_error_code()
+  mtd: powernv_flash: Use opal_async_wait_response_interruptible()
+
+ arch/powerpc/include/asm/opal.h             |   3 +-
+ arch/powerpc/platforms/powernv/opal-async.c | 190 ++++++++++++++++++++--------
+ arch/powerpc/platforms/powernv/opal.c       |   1 +
+ drivers/mtd/devices/powernv_flash.c         |  18 ++-
+ 4 files changed, 151 insertions(+), 61 deletions(-)
+
 -- 
 2.13.2
