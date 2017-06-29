@@ -1,20 +1,23 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wypY346s7zDr1h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 15:45:43 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id f127so10622477pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 22:45:43 -0700 (PDT)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- tlfalcon@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] net: ibm: ibmveth: constify dev_pm_ops structures.
-Date: Thu, 29 Jun 2017 11:14:50 +0530
-Message-Id: <24303710c4e099faa0ca7d9d92a71e53d6b66bcc.1498714986.git.arvind.yadav.cs@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wypg55CnKzDr1h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 15:50:57 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, benh@kernel.crashing.org,
+ paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Build fix for non SPARSEMEM_VMEMAP config
+In-Reply-To: <bb3cb2f5-12dd-0b0d-0b2a-ca5de2d1f6bf@linux.vnet.ibm.com>
+References: <1498630168-26376-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <bb344453-f49d-aff1-8f9c-732b8a40cbfa@ozlabs.ru>
+ <bb3cb2f5-12dd-0b0d-0b2a-ca5de2d1f6bf@linux.vnet.ibm.com>
+Date: Thu, 29 Jun 2017 15:50:57 +1000
+Message-ID: <878tkbbav2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-dev_pm_ops are not supposed to change at runtime. All functions
-working with dev_pm_ops provided by <linux/device.h> work with const
-dev_pm_ops. So mark the non-const structs as const.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-  15426	   1256	      0	  16682	   412a	drivers/net/ethernet/ibm/ibmveth.o
+> On Wednesday 28 June 2017 12:48 PM, Alexey Kardashevskiy wrote:
+>> On 28/06/17 16:09, Aneesh Kumar K.V wrote:
+>>> We can use pfn_to_page in realmode for other configs. Hence remove the
+>>> CONFIG_FLATMEM ifdef
+>> 
+>> For CONFIG_SPARSEMEM and CONFIG_DISCONTIGMEM and others (I am struggling to
+>> find the full list :) )? Are you sure about that? If I recall correctly, at
+>> the time realmode_pfn_to_page() could not work for all of them, what changed?
+>
+> That is one thing I wanted to check. Everything other than 
+> SPARSEMEM_VMEMMAP should use linear mapping which can work with real 
+> mode also right ? Or am i missing something ?
 
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-  15618	   1064	      0	  16682	   412a	drivers/net/ethernet/ibm/ibmveth.o
+I think that's right. But I'm going to make you test it anyway :)
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 72ab7b6..02b26bf 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1843,7 +1843,7 @@ static int ibmveth_resume(struct device *dev)
- };
- MODULE_DEVICE_TABLE(vio, ibmveth_device_table);
- 
--static struct dev_pm_ops ibmveth_pm_ops = {
-+static const struct dev_pm_ops ibmveth_pm_ops = {
- 	.resume = ibmveth_resume
- };
- 
--- 
-1.9.1
+cheers
