@@ -2,18 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyzKH59ZHzDr4l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 22:21:07 +1000 (AEST)
-In-Reply-To: <149633761543.6229.12888040793158845755.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyzKJ4xgvzDr4n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 22:21:08 +1000 (AEST)
+In-Reply-To: <149634598024.11266.1878020879845577140.stgit@hbathini.in.ibm.com>
 To: Hari Bathini <hbathini@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michal =?utf-8?b?U3VjaMOhbmVr?= <msuchanek@suse.de>,
- Pingfan Liu <piliu@redhat.com>,
+ Ankit Kumar <ankit@linux.vnet.ibm.com>,
  Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [v3,1/3] powerpc/fadump: avoid duplicates in crash memory ranges
-Message-Id: <3wyzKH3D0pz9s76@ozlabs.org>
-Date: Thu, 29 Jun 2017 22:21:07 +1000 (AEST)
+Subject: Re: [v2] powerpc/fadump: add reschedule point while releasing memory
+Message-Id: <3wyzKJ3N38z9s7v@ozlabs.org>
+Date: Thu, 29 Jun 2017 22:21:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,57 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-01 at 17:20:38 UTC, Hari Bathini wrote:
-> fadump sets up crash memory ranges to be used for creating PT_LOAD
-> program headers in elfcore header. Memory chunk RMA_START through
-> boot memory area size is added as the first memory range because
-> firmware, at the time of crash, moves this memory chunk to different
-> location specified during fadump registration making it necessary to
-> create a separate program header for it with the correct offset.
-> This memory chunk is skipped while setting up the remaining memory
-> ranges. But currently, there is possibility that some of this memory
-> may have duplicate entries like when it is hot-removed and added
-> again. Ensure that no two memory ranges represent the same memory.
+On Thu, 2017-06-01 at 19:40:10 UTC, Hari Bathini wrote:
+> Around 95% of memory is reserved by fadump/capture kernel. All this
+> memory is freed, one page at a time, on writing '1' to the node
+> /sys/kernel/fadump_release_mem. On systems with large memory, this
+> can take a long time to complete, leading to soft lockup warning
+> messages. To avoid this, add reschedule points at regular intervals.
 > 
-> When 5 lmbs are hot-removed and then hot-plugged before registering
-> fadump, here is how the program headers in /proc/vmcore exported by
-> fadump look like
+> Also, while memblock_reserve() implicitly takes care of holes in the
+> given memory range while reserving memory, those holes need to be
+> taken care of while releasing memory as memory is freed one page at
+> a time. Add support to skip holes while releasing memory.
 > 
-> without this change:
-> 
->   Program Headers:
->     Type           Offset             VirtAddr           PhysAddr
->                    FileSiz            MemSiz              Flags  Align
->     NOTE           0x0000000000010000 0x0000000000000000 0x0000000000000000
->                    0x0000000000001894 0x0000000000001894         0
->     LOAD           0x0000000000021020 0xc000000000000000 0x0000000000000000
->                    0x0000000040000000 0x0000000040000000  RWE    0
->     LOAD           0x0000000040031020 0xc000000000000000 0x0000000000000000
->                    0x0000000010000000 0x0000000010000000  RWE    0
->     LOAD           0x0000000050040000 0xc000000010000000 0x0000000010000000
->                    0x0000000050000000 0x0000000050000000  RWE    0
->     LOAD           0x00000000a0040000 0xc000000060000000 0x0000000060000000
->                    0x000000019ffe0000 0x000000019ffe0000  RWE    0
-> 
-> and with this change:
-> 
->   Program Headers:
->     Type           Offset             VirtAddr           PhysAddr
->                    FileSiz            MemSiz              Flags  Align
->     NOTE           0x0000000000010000 0x0000000000000000 0x0000000000000000
->                    0x0000000000001894 0x0000000000001894         0
->     LOAD           0x0000000000021020 0xc000000000000000 0x0000000000000000
->                    0x0000000040000000 0x0000000040000000  RWE    0
->     LOAD           0x0000000040030000 0xc000000040000000 0x0000000040000000
->                    0x0000000020000000 0x0000000020000000  RWE    0
->     LOAD           0x0000000060030000 0xc000000060000000 0x0000000060000000
->                    0x000000019ffe0000 0x000000019ffe0000  RWE    0
-> 
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 > Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-> Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a77af552ccc9d4d54459a39f9e5f7a
+https://git.kernel.org/powerpc/c/68fa6478e3b1fab7077d390070ed45
 
 cheers
