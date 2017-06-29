@@ -1,44 +1,45 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wz10Y5fcszDr4R
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:45 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wz10d6JkfzDr5C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:49 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5TDYTMZ038876
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:36:43 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bd1dt3d2j-1
+ v5TDYxFJ096392
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:36:47 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bd1mfjw35-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:36:43 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 09:36:47 -0400
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 29 Jun 2017 23:36:40 +1000
+ Thu, 29 Jun 2017 23:36:43 +1000
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5TDaVc757671890
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:39 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5TDaXHr1114530
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:41 +1000
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5TDa6DL000655
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:07 +1000
+ v5TDa9NB000829
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 23:36:09 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: Masami Hiramatsu <mhiramat@kernel.org>,
  Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Shuah Khan <shuah@kernel.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/4] selftests/ftrace: Add a test to probe module functions
-Date: Thu, 29 Jun 2017 19:05:37 +0530
+Subject: [PATCH v2 3/4] selftests/ftrace: Update multiple kprobes test for
+ powerpc
+Date: Thu, 29 Jun 2017 19:05:38 +0530
 In-Reply-To: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <04c3a67eb5fe13b12725f7198ef9904f992a512a.1498742262.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <f7a4667e3a43fa6a3e33c4026d412a4dd02b4550.1498742262.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,37 +49,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a kprobes test to ensure that we are able to add a probe on a
-module function using 'p <mod>:<func>' format, without having to
-specify a probe name.
+KPROBES_ON_FTRACE is only available on powerpc64le. Update comment to
+clarify this.
 
-Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+Also, we should use an offset of 8 to ensure that the probe does not
+fall on ftrace location. The current offset of 4 will fall before the
+function local entry point and won't fire, while an offset of 12 or 16
+will fall on ftrace location. Offset 8 is currently guaranteed to not be
+the ftrace location.
+
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- .../testing/selftests/ftrace/test.d/kprobe/probe_module.tc | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
- create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
+ tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-new file mode 100644
-index 000000000000..ea7657041ba6
---- /dev/null
-+++ b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-@@ -0,0 +1,14 @@
-+#!/bin/sh
-+# description: Kprobe dynamic event - probing module
-+
-+[ -f kprobe_events ] || exit_unsupported # this is configurable
-+
-+echo 0 > events/enable
-+echo > kprobe_events
-+export MOD=`lsmod | head -n 2 | tail -n 1 | cut -f1 -d" "`
-+export FUNC=`grep -m 1 ".* t .*\\[$MOD\\]" /proc/kallsyms | xargs | cut -f3 -d" "`
-+[ "x" != "x$MOD" -a "y" != "y$FUNC" ] || exit_untested
-+echo p $MOD:$FUNC > kprobe_events
-+grep $MOD kprobe_events
-+echo > kprobe_events
-+clear_trace
+diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
+index f4d1ff785d67..2a1cb9908746 100644
+--- a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
++++ b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
+@@ -2,10 +2,10 @@
+ # description: Register/unregister many kprobe events
+ 
+ # ftrace fentry skip size depends on the machine architecture.
+-# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc
++# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc64le
+ case `uname -m` in
+   x86_64|i[3456]86) OFFS=5;;
+-  ppc*) OFFS=4;;
++  ppc64le) OFFS=8;;
+   *) OFFS=0;;
+ esac
+ 
 -- 
 2.13.1
