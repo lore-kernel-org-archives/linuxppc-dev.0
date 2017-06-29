@@ -1,23 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hare@suse.com>
+Received: from smtp.nue.novell.com (smtp.nue.novell.com [195.135.221.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wypg55CnKzDr1h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 15:50:57 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, benh@kernel.crashing.org,
- paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Build fix for non SPARSEMEM_VMEMAP config
-In-Reply-To: <bb3cb2f5-12dd-0b0d-0b2a-ca5de2d1f6bf@linux.vnet.ibm.com>
-References: <1498630168-26376-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <bb344453-f49d-aff1-8f9c-732b8a40cbfa@ozlabs.ru>
- <bb3cb2f5-12dd-0b0d-0b2a-ca5de2d1f6bf@linux.vnet.ibm.com>
-Date: Thu, 29 Jun 2017 15:50:57 +1000
-Message-ID: <878tkbbav2.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyqGs0SmFzDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 16:18:27 +1000 (AEST)
+Subject: Re: [PATCH 1/3] cxlflash: Avoid double free of character device
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1498669929-39684-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1498670061-39766-1-git-send-email-mrochs@linux.vnet.ibm.com>
+From: Hannes Reinecke <hare@suse.com>
+Message-ID: <4d8934d0-5cda-2800-77f2-a131bd368ee8@suse.com>
+Date: Thu, 29 Jun 2017 07:58:19 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1498670061-39766-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On 06/28/2017 07:14 PM, Matthew R. Ochs wrote:
+> The device_unregister() service used when cleaning up the character
+> device is already responsible for the internal state associated with
+> the device upon successful creation. As the cxlflash driver does not
+> obtain a second reference to the character device, the explicit call
+> to put_device() is not required and can lead to an inconsistent sysfs
+> among other issues as the reference is no longer valid after the first
+> put_device() is performed.
+> 
+> Remove the unnecessary put_device() to remedy this issue.
+> 
+> Fixes: a834a36b57d9 ("scsi: cxlflash: Create character device to provide host management interface")
+> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>> ---
+>  drivers/scsi/cxlflash/main.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+Reviewed-by: Hannes Reinecke <hare@suse.com>
 
-> On Wednesday 28 June 2017 12:48 PM, Alexey Kardashevskiy wrote:
->> On 28/06/17 16:09, Aneesh Kumar K.V wrote:
->>> We can use pfn_to_page in realmode for other configs. Hence remove the
->>> CONFIG_FLATMEM ifdef
->> 
->> For CONFIG_SPARSEMEM and CONFIG_DISCONTIGMEM and others (I am struggling to
->> find the full list :) )? Are you sure about that? If I recall correctly, at
->> the time realmode_pfn_to_page() could not work for all of them, what changed?
->
-> That is one thing I wanted to check. Everything other than 
-> SPARSEMEM_VMEMMAP should use linear mapping which can work with real 
-> mode also right ? Or am i missing something ?
+Cheers,
 
-I think that's right. But I'm going to make you test it anyway :)
-
-cheers
+Hannes
+-- 
+Dr. Hannes Reinecke		               zSeries & Storage
+hare@suse.com			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: F. Imendörffer, J. Smithard, D. Upmanyu, G. Norton
+HRB 21284 (AG Nürnberg)
