@@ -3,36 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzD4d1pFvzDr5g
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 07:56:00 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5TLs8HE087635
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 17:55:57 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bd282w7yp-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzD4d2ptJzDr5j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 07:56:01 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5TLrxNg090957
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 17:55:58 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bd6td6u9n-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 17:55:57 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 17:55:58 -0400
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 29 Jun 2017 18:55:55 -0300
+ Thu, 29 Jun 2017 18:55:56 -0300
 Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v5TLtqdS51314826
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 18:55:52 -0300
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5TLtsAd3735954
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 18:55:54 -0300
 Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
  by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v5TLtrgs030157
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 18:55:53 -0300
+ v5TLttKT030165
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 18:55:55 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v3 0/8] Support for 24x7 hcall interface version 2
-Date: Thu, 29 Jun 2017 18:55:30 -0300
-Message-Id: <20170629215538.1645-1-bauerman@linux.vnet.ibm.com>
+Subject: [PATCH v3 1/8] powerpc/perf/hv-24x7: Fix passing of catalog version
+ number
+Date: Thu, 29 Jun 2017 18:55:31 -0300
+In-Reply-To: <20170629215538.1645-1-bauerman@linux.vnet.ibm.com>
+References: <20170629215538.1645-1-bauerman@linux.vnet.ibm.com>
+Message-Id: <20170629215538.1645-2-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,63 +45,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+H_GET_24X7_CATALOG_PAGE needs to be passed the version number obtained from
+the first catalog page obtained previously. This is a 64 bit number, but
+create_events_from_catalog truncates it to 32-bit.
 
-The hypervisor interface to access 24x7 performance counters (which collect
-performance information from system power on to system power off) has been
-extended in POWER9 adding new fields to the request and result element
-structures.
+This worked on POWER8, but POWER9 actually uses the upper bits so the call
+fails with H_P3 because the hypervisor doesn't recognize the version.
 
-Also, results for some domains now return more than one result element and
-those need to be added to get a total count.
+This patch also adds the hcall return code to the error message, which is
+helpful when debugging the problem.
 
-The first two patches fix bugs in the existing code. The following 4 patches
-are code improvements and the last two finally implement support for the
-changes in POWER9 described above.
+Fixes: 5c5cd7b50259 ("powerpc/perf/hv-24x7: parse catalog and populate sysfs with events")
+Reviewed-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/hv-24x7.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-POWER8 systems only support version 1 of the interface, while POWER9 systems
-only support version 2. I tested these patches on POWER8 to verify that
-there are no regressions, and also on POWER9 DD1.
-
-Changes since v2:
-
-All patches
-- Added Reviewed-by tags from Sukadev to the patches which didn't change
-  after he reviewed them.
-
-Patch "powerpc/perf/hv-24x7: Minor improvements"
-- Fix off-by-one error in HV_PERF_DOMAIN_MAX usage in h_24x7_event_init.
-
-Patch "powerpc/perf/hv-24x7: Support v2 of the hypervisor API"
-- Use cur_cpu_spec->oprofile_cpu_type instead of CPU_FTR_ARCH_300 to
-  check for POWER9 in hv_24x7_init (suggested by Michael Ellerman).
-
-Changes since v1:
-
-Patch "powerpc/perf/hv-24x7: Support v2 of the hypervisor API"
-- Use function instead of API version-specific macros to obtain the number
-  of requests that fit in the request buffer (suggested by Sukadev).
-- Added interface version parameter to request size macro instead of
-  defining one macro per version (suggested by Sukadev).
-- Return early with -EIO instead of -ENOTSUPP after finding the start of the
-  next result in get_count_from_result if there's more than one result
-  element.
-- Changed h_24x7_event_commit_txn to bail out if any result has an error
-  (suggested by Sukadev).
-Thiago Jung Bauermann (8):
-  powerpc/perf/hv-24x7: Fix passing of catalog version number
-  powerpc/perf/hv-24x7: Fix off-by-one error in request_buffer check
-  powerpc/perf/hv-24x7: Properly iterate through results
-  powerpc-perf/hx-24x7: Don't log failed hcall twice
-  powerpc/perf/hv-24x7: Fix return value of hcalls
-  powerpc/perf/hv-24x7: Minor improvements
-  powerpc/perf/hv-24x7: Support v2 of the hypervisor API
-  powerpc/perf/hv-24x7: Aggregate result elements on POWER9 SMT8
-
- arch/powerpc/perf/hv-24x7.c            | 242 ++++++++++++++++++++++++---------
- arch/powerpc/perf/hv-24x7.h            |  69 ++++++++--
- arch/powerpc/platforms/pseries/Kconfig |   2 +-
- 3 files changed, 241 insertions(+), 72 deletions(-)
-
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 7b2ca16b1eb4..1354cde7095c 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -670,7 +670,7 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 	       event_data_bytes, junk_events, event_idx, event_attr_ct, i,
+ 	       attr_max, event_idx_last, desc_ct, long_desc_ct;
+ 	ssize_t ct, ev_len;
+-	uint32_t catalog_version_num;
++	uint64_t catalog_version_num;
+ 	struct attribute **events, **event_descs, **event_long_descs;
+ 	struct hv_24x7_catalog_page_0 *page_0 =
+ 		kmem_cache_alloc(hv_page_cache, GFP_KERNEL);
+@@ -706,8 +706,8 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 	event_data_offs   = be16_to_cpu(page_0->event_data_offs);
+ 	event_data_len    = be16_to_cpu(page_0->event_data_len);
+ 
+-	pr_devel("cv %zu cl %zu eec %zu edo %zu edl %zu\n",
+-			(size_t)catalog_version_num, catalog_len,
++	pr_devel("cv %llu cl %zu eec %zu edo %zu edl %zu\n",
++			catalog_version_num, catalog_len,
+ 			event_entry_count, event_data_offs, event_data_len);
+ 
+ 	if ((MAX_4K < event_data_len)
+@@ -761,8 +761,8 @@ static int create_events_from_catalog(struct attribute ***events_,
+ 				catalog_version_num,
+ 				i + event_data_offs);
+ 		if (hret) {
+-			pr_err("failed to get event data in page %zu\n",
+-					i + event_data_offs);
++			pr_err("Failed to get event data in page %zu: rc=%ld\n",
++			       i + event_data_offs, hret);
+ 			ret = -EIO;
+ 			goto e_event_data;
+ 		}
 -- 
 2.13.0
