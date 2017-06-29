@@ -1,22 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyz853kpxzDr26
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 22:13:09 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Eryu Guan <eguan@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, liwan@redhat.com
-Subject: Re: [v4.12-rc1 regression] mount ext4 fs results in kernel crash on
- PPC64le host
-In-Reply-To: <20170629103347.GR23360@eguan.usersys.redhat.com>
-References: <20170628083237.GF23360@eguan.usersys.redhat.com>
- <87h8yz9ji8.fsf@concordia.ellerman.id.au>
- <20170629103347.GR23360@eguan.usersys.redhat.com>
-Date: Thu, 29 Jun 2017 22:13:08 +1000
-Message-ID: <8760ff9eln.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyz8R4m4ZzDr5Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 22:13:27 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id f127so11710737pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 05:13:27 -0700 (PDT)
+Date: Thu, 29 Jun 2017 22:13:11 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
+ <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Anton
+ Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 7/7] powerpc/64s: Blacklist rtas entry/exit from kprobes
+Message-ID: <20170629221311.1c1c1dd6@roar.ozlabs.ibm.com>
+In-Reply-To: <20170629115414.7avzpd57ficdq3me@naverao1-tp.localdomain>
+References: <cover.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
+ <39d40efd808c6346b97e5bfe4be47546919cb91b.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170629210130.242bd2c3@roar.ozlabs.ibm.com>
+ <20170629115414.7avzpd57ficdq3me@naverao1-tp.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Eryu Guan <eguan@redhat.com> writes:
+On Thu, 29 Jun 2017 17:24:14 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> On Thu, Jun 29, 2017 at 08:27:11PM +1000, Michael Ellerman wrote:
->> Eryu Guan <eguan@redhat.com> writes:
->> 
->> > Hi all,
->> >
->> > Li Wang and I are constantly seeing ppc64le hosts crashing due to bad
->> > page access. But it's not reproducing on every ppc64le host we've
->> > tested, but it usually happened in filesystem testings.
->> 
->> <snip>
->> 
->> > And I've confirmed that reverting above commit 'resolves' the crash.
->> 
->> Do you mean ~v4.12-rc7 with that commit reverted still triggers the
->> crash?
->
-> Correct. I also confirmed that reverting it when it was HEAD also fixed
-> the crash.
+> On 2017/06/29 09:01PM, Nicholas Piggin wrote:
+> > On Thu, 29 Jun 2017 16:11:10 +0530
+> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> >   
+> > > We can't take traps with relocation off, so blacklist enter_rtas() and
+> > > rtas_return_loc(). However, instead of blacklisting all of enter_rtas(),
+> > > introduce a new symbol __enter_rtas from where on we can't take a trap
+> > > and blacklist that.
+> > > 
+> > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/kernel/entry_64.S | 3 +++
+> > >  1 file changed, 3 insertions(+)
+> > > 
+> > > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> > > index 0c27084800b6..16f4c4a1a294 100644
+> > > --- a/arch/powerpc/kernel/entry_64.S
+> > > +++ b/arch/powerpc/kernel/entry_64.S
+> > > @@ -1082,6 +1082,7 @@ _GLOBAL(enter_rtas)
+> > >  	sync				/* disable interrupts so SRR0/1 */
+> > >  	mtmsrd	r0			/* don't get trashed */
+> > >  
+> > > +__enter_rtas:  
+> > 
+> > Hmm, am I missing something, or is there a reason to put these labels
+> > after the mtmsr? Even if kprobes does the right thing, I think it's
+> > easier to read the code if you cover the mtmsr as well.  
+> 
+> I thought you asked for this, per your previous review comment:
+> https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg119667.html
+> 
+> Or, did I get that wrong?
 
-OK. The former, reverting it on top of mainline is more informative.
+No you're right, I'm contradicting myself. Let me start again.
 
-cheers
+I think we'd like to put the label before the mtmsrd if possible. So
+in that case, should we adjust the system call code instead (then you
+wouldn't have to add a comment for it).
+
+And then you could move this label back above the mtmsrd. Sorry for
+the confusion.
+
+Thanks,
+Nick
