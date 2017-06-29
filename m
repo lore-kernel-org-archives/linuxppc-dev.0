@@ -1,24 +1,24 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyxJF0VVhzDrM4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 20:50:05 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id u62so11499904pgb.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 03:50:04 -0700 (PDT)
-Date: Thu, 29 Jun 2017 20:49:45 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyxQn1BX2zDqjJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 20:55:45 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id u62so11514824pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 03:55:45 -0700 (PDT)
+Date: Thu, 29 Jun 2017 20:55:25 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
  <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Anton
  Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 1/7] powerpc64/elfv1: Only dereference function
- descriptor for non-text symbols
-Message-ID: <20170629204945.03bf29b8@roar.ozlabs.ibm.com>
-In-Reply-To: <46b6f6aaec8dd297c2d8e811c82dc2303ff13508.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 5/7] powerpc/64s: Un-blacklist system_call() from
+ kprobes
+Message-ID: <20170629205525.47a7e21f@roar.ozlabs.ibm.com>
+In-Reply-To: <2832438c5f54ec9bef25ffacedff52c145a53d61.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
- <46b6f6aaec8dd297c2d8e811c82dc2303ff13508.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
+ <2832438c5f54ec9bef25ffacedff52c145a53d61.1498732172.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,58 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jun 2017 16:11:04 +0530
+On Thu, 29 Jun 2017 16:11:08 +0530
 "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-> Currently, we assume that the function pointer we receive in
-> ppc_function_entry() points to a function descriptor. However, this is
-> not always the case. In particular, assembly symbols without the right
-> annotation do not have an associated function descriptor. Some of these
-> symbols are added to the kprobe blacklist using _ASM_NOKPROBE_SYMBOL().
-> 
-> When such addresses are subsequently processed through
-> arch_deref_entry_point() in populate_kprobe_blacklist(), we see the
-> below errors during bootup:
->     [    0.663963] Failed to find blacklist at 7d9b02a648029b6c
->     [    0.663970] Failed to find blacklist at a14d03d0394a0001
->     [    0.663972] Failed to find blacklist at 7d5302a6f94d0388
->     [    0.663973] Failed to find blacklist at 48027d11e8610178
->     [    0.663974] Failed to find blacklist at f8010070f8410080
->     [    0.663976] Failed to find blacklist at 386100704801f89d
->     [    0.663977] Failed to find blacklist at 7d5302a6f94d00b0
-> 
-> Fix this by checking if the function pointer we receive in
-> ppc_function_entry() already points to kernel text. If so, we just
-> return it as is. If not, we assume that this is a function descriptor
-> and proceed to dereference it.
-> 
-> Suggested-by: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/code-patching.h | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-> index abef812de7f8..5482928eea1b 100644
-> --- a/arch/powerpc/include/asm/code-patching.h
-> +++ b/arch/powerpc/include/asm/code-patching.h
-> @@ -83,8 +83,16 @@ static inline unsigned long ppc_function_entry(void *func)
->  	 * On PPC64 ABIv1 the function pointer actually points to the
->  	 * function's descriptor. The first entry in the descriptor is the
->  	 * address of the function text.
-> +	 *
-> +	 * However, we may also receive pointer to an assembly symbol. To
-> +	 * detect that, we first check if the function pointer we receive
-> +	 * already points to kernel/module text and we only dereference it
-> +	 * if it doesn't.
->  	 */
-> -	return ((func_descr_t *)func)->entry;
-> +	if (kernel_text_address((unsigned long)func))
-> +		return (unsigned long)func;
-> +	else
-> +		return ((func_descr_t *)func)->entry;
+> It is actually safe to probe system_call() in entry_64.S, but only till
+> we unset MSR_RI. To allow this, add a new symbol system_call_exit()
+> after the mtmsrd and blacklist that. Though the mtmsrd instruction
+> itself is now whitelisted, we won't be allowed to probe on it as we
+> don't allow probing on rfi and mtmsr instructions (checked for in
+> arch_prepare_kprobe()).
 
-This seems good to me now. I guess it should do the right thing with
-modules too, looking at kernel_text_address implementation.
+Can you perhaps add a small comment to explain the label
+(and why it's safe to have after the mtmsrd). It could be
+a bit confusing to read if you don't have that detail of
+the tracer in your mind.
+
+Other than that
 
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+
+
+> 
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/entry_64.S | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index c39436706555..7a87427a67cd 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -205,6 +205,7 @@ system_call:			/* label this so stack traces look sane */
+>  	mtmsrd	r11,1
+>  #endif /* CONFIG_PPC_BOOK3E */
+>  
+> +system_call_exit:
+>  	ld	r9,TI_FLAGS(r12)
+>  	li	r11,-MAX_ERRNO
+>  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+> @@ -413,7 +414,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>  	b	.	/* prevent speculative execution */
+>  #endif
+>  _ASM_NOKPROBE_SYMBOL(system_call_common);
+> -_ASM_NOKPROBE_SYMBOL(system_call);
+> +_ASM_NOKPROBE_SYMBOL(system_call_exit);
+>  
+>  /* Save non-volatile GPRs, if not already saved. */
+>  _GLOBAL(save_nvgprs)
