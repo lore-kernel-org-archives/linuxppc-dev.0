@@ -1,21 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyzKT1wLDzDr4K
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyzKT6ksJzDr4K
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 22:21:17 +1000 (AEST)
-In-Reply-To: <20170615185418.13980-17-javier@dowhile0.org>
-To: Javier Martinez Canillas <javier@dowhile0.org>,
- linux-kernel@vger.kernel.org
+In-Reply-To: <20170621071804.11660-1-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>,
- devicetree@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Javier Martinez Canillas <javier@dowhile0.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RESEND, v5,
- 16/16] powerpc/44x: Add generic compatible string for I2C EEPROM
-Message-Id: <3wyzKS5H8Rz9s3T@ozlabs.org>
-Date: Thu, 29 Jun 2017 22:21:16 +1000 (AEST)
+Cc: alistair@popple.id.au, Russell Currey <ruscur@russell.cc>
+Subject: Re: [1/2] powerpc/powernv/pci: Add helper to check if a PE has a
+ single vendor
+Message-Id: <3wyzKT5Lbsz9sNZ@ozlabs.org>
+Date: Thu, 29 Jun 2017 22:21:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-15 at 18:54:18 UTC, Javier Martinez Canillas wrote:
-> The at24 driver allows to register I2C EEPROM chips using different vendor
-> and devices, but the I2C subsystem does not take the vendor into account
-> when matching using the I2C table since it only has device entries.
+On Wed, 2017-06-21 at 07:18:03 UTC, Russell Currey wrote:
+> Add a helper that determines if all the devices contained in a given PE
+> are all from the same vendor or not.  This can be useful in determining
+> if it's okay to make PE-wide changes that may be suitable for some
+> devices but not for others.
 > 
-> But when matching using an OF table, both the vendor and device has to be
-> taken into account so the driver defines only a set of compatible strings
-> using the "atmel" vendor as a generic fallback for compatible I2C devices.
+> This is used later in the series.
 > 
-> So add this generic fallback to the device node compatible string to make
-> the device to match the driver using the OF device ID table.
-> 
-> Signed-off-by: Javier Martinez Canillas <javier@dowhile0.org>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/adeb8667eaf5f00b5a7f0cede680cd
+https://git.kernel.org/powerpc/c/a0f98629f19943fb8387a7d5fd01e6
 
 cheers
