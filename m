@@ -2,18 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wynsX63dLzDr4d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 15:14:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wyp4h4Rz2zDr4g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 15:24:36 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/8] Support for 24x7 hcall interface version 2
-In-Reply-To: <87efu3db41.fsf@linux.vnet.ibm.com>
-References: <1496350947-30951-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <87injhd2h2.fsf@concordia.ellerman.id.au> <87efu3db41.fsf@linux.vnet.ibm.com>
-Date: Thu, 29 Jun 2017 15:14:56 +1000
-Message-ID: <87injfbcj3.fsf@concordia.ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Michael Neuling <michael.neuling@au1.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Tell OPAL about our MMU mode
+In-Reply-To: <1498655175.3651.43.camel@kernel.crashing.org>
+References: <1498421118.31581.110.camel@kernel.crashing.org>
+ <87a84sd72z.fsf@concordia.ellerman.id.au>
+ <1498655175.3651.43.camel@kernel.crashing.org>
+Date: Thu, 29 Jun 2017 15:24:36 +1000
+Message-ID: <87efu3bc2z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,39 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
->>> The hypervisor interface to access 24x7 performance counters (which collect
->>> performance information from system power on to system power off) has been
->>> extended in POWER9 adding new fields to the request and result element
->>> structures.
->>>
->>> Also, results for some domains now return more than one result element and
->>> those need to be added to get a total count.
->>>
->>> The first two patches fix bugs in the existing code. The following 4
->>> patches are code improvements and the last two finally implement support
->>> for the changes in POWER9 described above.
->>>
->>> POWER8 systems only support version 1 of the interface, while POWER9
->>> systems only support version 2. I tested these patches on POWER8 to verify
->>> that there are no regressions, and also on POWER9 DD1.
->>
->> Where is version 2 documented?
+> On Wed, 2017-06-28 at 15:17 +1000, Michael Ellerman wrote:
+>> Which doesn't really make sense. FSP says it's running (runtime).
+>> 
+>> The end of the OPAL log is below.
+>> 
+>> I think your patch means we're now calling slw_reinit(), whereas
+>> previously we would skip it?
 >
-> Only in an internal specification.
-
-Presumably a PAPR ACR, what's the title? And is it approved/accepted?
-
->> And what happens when we boot on a POWER9 in POWER8 compatibility mode?
+> Ugh... and slw_reinit() is somewhat broken I suppose these days. Drat.
 >
-> It will still use version 2 of the API, and still require aggregation of
-> result elements. Does this mean that hv_24x7_init should check
-> cur_cpu_spec->oprofile_cpu_type for "ppc64/power9" instead of
-> cpu_has_feature(CPU_FTR_ARCH_300)?
+> Mikey, we probably need to key that off arch 300 or check for a DT prop
+> skiboot would put in that tells Linux it can do this.
 
-Yes.
+DT prop of accepted reinit flags seems like it would work.
+
+No prop means HILE_LE/HILE_BE.
 
 cheers
