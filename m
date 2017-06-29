@@ -1,22 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wyp6b01x0zDr4g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 15:26:15 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dan Carpenter <dan.carpenter@oracle.com>, Scott Wood <oss@buserror.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] powerpc: remapping too much memory
-In-Reply-To: <20170628114907.kf3t65mrdbq7rsfm@mwanda>
-References: <20170628114907.kf3t65mrdbq7rsfm@mwanda>
-Date: Thu, 29 Jun 2017 15:26:14 +1000
-Message-ID: <87bmp7bc09.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wypY346s7zDr1h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jun 2017 15:45:43 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id f127so10622477pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jun 2017 22:45:43 -0700 (PDT)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ tlfalcon@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] net: ibm: ibmveth: constify dev_pm_ops structures.
+Date: Thu, 29 Jun 2017 11:14:50 +0530
+Message-Id: <24303710c4e099faa0ca7d9d92a71e53d6b66bcc.1498714986.git.arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan Carpenter <dan.carpenter@oracle.com> writes:
+dev_pm_ops are not supposed to change at runtime. All functions
+working with dev_pm_ops provided by <linux/device.h> work with const
+dev_pm_ops. So mark the non-const structs as const.
 
-> There is a cut and paste error here so we use "sizeof(struct mpc83xx_pmc)"
-> to remap the memory for "clock_regs".  That sizeof() is 20 bytes and we
-> only need to remap 12 bytes.  It presumably doesn't affect run time too
-> much...
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+  15426	   1256	      0	  16682	   412a	drivers/net/ethernet/ibm/ibmveth.o
 
-I don't know 83xx well, but I suspect mappings occur on a 4K granularity
-at a minimum :)
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+  15618	   1064	      0	  16682	   412a	drivers/net/ethernet/ibm/ibmveth.o
 
-> I changed them to both use "sizeof(*variable_name)" because that's the
-> prefered kernel style these days.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks.
-
-cheers
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 72ab7b6..02b26bf 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1843,7 +1843,7 @@ static int ibmveth_resume(struct device *dev)
+ };
+ MODULE_DEVICE_TABLE(vio, ibmveth_device_table);
+ 
+-static struct dev_pm_ops ibmveth_pm_ops = {
++static const struct dev_pm_ops ibmveth_pm_ops = {
+ 	.resume = ibmveth_resume
+ };
+ 
+-- 
+1.9.1
