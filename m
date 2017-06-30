@@ -1,22 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0042.outbound.protection.outlook.com [104.47.1.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzXMc34CHzDr7w
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 20:10:04 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: Don Zickus <dzickus@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- santosiv@in.ibm.com, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: watchdog false positive warning at CPU unplug
-In-Reply-To: <20170630080740.20766-1-npiggin@gmail.com>
-References: <20170630080740.20766-1-npiggin@gmail.com>
-Date: Fri, 30 Jun 2017 20:10:03 +1000
-Message-ID: <87zicppz0k.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzXjm3hzLzDr55
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 20:25:48 +1000 (AEST)
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "oss@buserror.net"
+ <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc: allow compiling with GENERIC_MSI_IRQ
+Date: Fri, 30 Jun 2017 10:25:42 +0000
+Message-ID: <595626F0.2090700@nxp.com>
+References: <20170630095022.17228-1-laurentiu.tudor@nxp.com>
+ <8737ahrdn9.fsf@concordia.ellerman.id.au>
+In-Reply-To: <8737ahrdn9.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi Michael,
 
-> CPU unplug will call stop_wd_on_cpu regardless if the watchdog has
-> been configured to be enabled on that CPU. Don't warn in the case
-> it's not in our enabled mask, this is a valid case.
+On 06/30/2017 01:08 PM, Michael Ellerman wrote:
+> Hi Laurentiu,
 >
-> Fixes: powerpc-64s-implement-arch-specific-hardlockup-watchdog.patch
-> Reported-by: Santosh Sivaraj <santosiv@in.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kernel/watchdog.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+> laurentiu.tudor@nxp.com writes:
+>> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+>>
+>> This allows building powerpc with the GENERIC_MSI_IRQ Kconfig
+>> by enabling the asm-generic msi.h in Kbuild. Without this,
+>> there's a compilation error [1] because powerpc, as most arches,
+>> doesn't provide an asm/msi.h.
+>>
+>> [1] In file included from ./include/linux/kvm_host.h:20:0,
+>>                   from ./arch/powerpc/include/asm/kvm_ppc.h:30,
+>>                   from arch/powerpc/kernel/dbell.c:20:
+>> ./include/linux/msi.h:195:21: fatal error: asm/msi.h: No such file or di=
+rectory
+>
+> I have >50 configs here with GENERIC_MSI_IRQ=3Dy, so I don't understand
+> what's going wrong for you.
+>
+> Can you tell me more about what you're doing and how it's breaking.
+>
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Actually i made an error in the commit message, sorry about that. It's=20
+GENERIC_MSI_IRQ_DOMAIN that breaks the arch/powerpc build. If this is=20
+enabled, the generic header include/linux/msi.h wants an asm/msi.h and=20
+we don't have one on powerpc. That's what the patch tries to fix.
+Want me to resend with the correct commit message? ... if you're ok with=20
+the patch, of course.
 
-cheers
+---
+Thanks & Best Regards, Laurentiu=
