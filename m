@@ -1,19 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <eguan@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzYST59w2zDr5Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 20:59:21 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: clombard@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.12-8 tag
-Date: Fri, 30 Jun 2017 20:59:19 +1000
-Message-ID: <87tw2xpwqg.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzZXd3gr0zDr5r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 21:48:01 +1000 (AEST)
+Date: Fri, 30 Jun 2017 19:47:56 +0800
+From: Eryu Guan <eguan@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: tj@kernel.org, Balbir Singh <bsingharora@gmail.com>, liwan@redhat.com,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: kworker with empty task->cpus_allowed (was Re: [v4.12-rc1
+ regression] mount ext4 fs results in kernel crash on PPC64le host)
+Message-ID: <20170630114756.GD23360@eguan.usersys.redhat.com>
+References: <20170628083237.GF23360@eguan.usersys.redhat.com>
+ <CAKTCnzncEoCC4=p2_ySpNdB6229SbCCqjDCzfpf8XA0xvvzH1g@mail.gmail.com>
+ <20170629034122.GI23360@eguan.usersys.redhat.com>
+ <CAKTCnzk8VMN0hBi24vEoNPGvvX-s8uhrjMdn7drQVDUdfA_+Ow@mail.gmail.com>
+ <20170629100533.GQ23360@eguan.usersys.redhat.com>
+ <87efu39he0.fsf@concordia.ellerman.id.au>
+ <20170629113933.GT23360@eguan.usersys.redhat.com>
+ <878tkb9ewo.fsf@concordia.ellerman.id.au>
+ <20170629135919.GU23360@eguan.usersys.redhat.com>
+ <8760fdrdq1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8760fdrdq1.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,82 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On Fri, Jun 30, 2017 at 08:07:02PM +1000, Michael Ellerman wrote:
+> Eryu Guan <eguan@redhat.com> writes:
+> >
+> > I have to update the patch a bit to make it compile.
+> 
+> Sure.
+> 
+> >> +	WARN_ON(cpumask_empty(worker->task->cpus_allowed));
+> >> +	WARN_ON(cpumask_empty(pool->attrs->cpumask));
+> >
+> > Seems only the last two WARN_ON were triggered.
+> 
+> OK thanks.
+> 
+> Can you try this patch and see if it changes anything? (with the debug
+> still applied).
 
-Hi Linus,
+This patch fixes the crash for me. After appliying this patch (with all
+other debug patches still applied), kernel didn't print any warnings or
+calltraces or debug messages.
 
-Please pull hopefully the last two powerpc fixes for 4.12.
+> 
+> We've been trying to reproduce the bug here but haven't had any luck so far.
 
-The CXL one is larger than I'd usually send at rc7, but it fixes new
-code this cycle, so better to have it working for the release. It was
-actually sent a few weeks back but got blocked in testing behind another
-fix that was causing issues.
+I'm using this reproducer:
+for i in `seq 5`; do
+	mkfs -t ext4 -F /dev/sda5 && sleep 3 && mount /dev/sda5 /mnt/ext4 && umount /dev/sda5
+done
 
-We are still tracking one crash in v4.12-rc7, but only one person has
-reproduced it and the commit identified by bisect doesn't touch any of
-the relevant code, so I think it's 50/50 whether that commit is actually
-the problem or it's some code layout / toolchain issue.
+Thanks,
+Eryu
 
-cheers
-
-The following changes since commit 34f19ff1b5a0d11e46df479623d6936460105c9f:
-
-  powerpc/64: Initialise thread_info for emergency stacks (2017-06-23 13:25:38 +1000)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.12-8
-
-for you to fetch changes up to d6bd8194e2867e85ac2de63486d3b83ccfae4e62:
-
-  powerpc/32: Avoid miscompilation w/GCC 4.6.3 - don't inline copy_to/from_user() (2017-06-26 23:25:08 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.12 #8
-
-Two fixes for code we merged this cycle:
-
- - cxl: Fixes for Coherent Accelerator Interface Architecture 2.0
- - Avoid miscompilation w/GCC 4.6.3 on 32-bit - don't inline copy_to/from_user()
-
-Thanks to:
-  Al Viro, Larry Finger, Christophe Lombard.
-
-----------------------------------------------------------------
-Christophe Lombard (1):
-      cxl: Fixes for Coherent Accelerator Interface Architecture 2.0
-
-Michael Ellerman (1):
-      powerpc/32: Avoid miscompilation w/GCC 4.6.3 - don't inline copy_to/from_user()
-
- arch/powerpc/include/asm/uaccess.h |  8 +-------
- drivers/misc/cxl/context.c         |  6 +++---
- drivers/misc/cxl/cxl.h             | 18 +++++-------------
- drivers/misc/cxl/fault.c           | 23 +++++++++++++++--------
- drivers/misc/cxl/main.c            | 17 +++++++++++++----
- drivers/misc/cxl/native.c          | 29 +++++++++++++++++------------
- drivers/misc/cxl/pci.c             | 11 ++++-------
- 7 files changed, 58 insertions(+), 54 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZVi8IAAoJEFHr6jzI4aWAObAP/ibiGxJ0kirpBZhgK1p8Cm+Y
-DXF/HUSzgn5AAIb4Tnkoj8usFYyHb4szGkx54ngEyfIiX5UqkN2/ZdYXMYRf5Ks5
-FrDffjoU0+HeEFl0UgZ8DnbbFgSWbwOyOzNaIr3eV6aCRjNKjAmDuDUDsqpxbgGX
-8UqAEYw3POkRIzTt7fmdcfVvvGG6pno98w1kuepWgbT07XuzFqUz8VOHM/8pP32O
-AKmolBO3JH1vn9r2F4hDrcbEEB9zF9j0hZrXTy5RQV7qpEZxIlQWGgNqzGCIaeHR
-VycNLvIcJECN6A5OzcWl2P/KlPUUZtEVy6PlbDuoo+A4FFouuXKlZHI5nlzpPip9
-ABNRq9zHeCyUaXcpxxCCyEQlXA0q5btFFLb+3T79tZE2uosCYLfIdpC1WgeGl91q
-oPq+lZZ0UHefuO+HCH1qJfrDECx4qfm9bJsQmoh2UrQW/hsVhwbjAiHaUN6uhzYT
-948i/SJctFRKPc6h+t0hLk8nqmb+8ri2LWhguIebPNZCt3L9vHDRTra7CQNThQrV
-IrIKcN39U1kpW+KFBThvJ+eE22utVQMq2WMJlrmPkRANr9Kd7EYXui4B9a9cqAW2
-TZgq3GvKqRcEBFk0JoT8Iozs/5OIVPQsz54t1runMP9FtiP+AXOAfeQtLGXYtoxY
-t0OFSSbVzkzw8btboskh
-=rc+B
------END PGP SIGNATURE-----
---=-=-=--
+> 
+> cheers
+> 
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 4640f6d64f8b..b310ecc07e00 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -733,6 +733,8 @@ void __init setup_per_cpu_areas(void)
+>  	for_each_possible_cpu(cpu) {
+>                  __per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];
+>  		paca[cpu].data_offset = __per_cpu_offset[cpu];
+> +
+> +		set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
+>  	}
+>  }
+>  #endif
