@@ -1,46 +1,16 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzl7V3Z5ZzDr8P
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2017 04:15:17 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5UIE6Bc016962
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 14:15:14 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bdqvshcwy-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 14:15:14 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 30 Jun 2017 14:15:13 -0400
-Date: Fri, 30 Jun 2017 11:15:11 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- sachinp <sachinp@linux.vnet.ibm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Paul McKenney <Paul.McKenney@us.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linux-next <linux-next@vger.kernel.org>, paulus@samba.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [linux-next] cpus stalls detected few hours after booting next
- kernel
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1498728106.19484.21.camel@abdul>
- <20170629193614.376e27e6@roar.ozlabs.ibm.com>
- <20170629202305.6187367f@roar.ozlabs.ibm.com>
- <20170630004534.228f7c08@roar.ozlabs.ibm.com>
- <1498800138.19484.25.camel@abdul>
- <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
-Message-Id: <20170630181511.GC2393@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzry86N98zDr8Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2017 08:37:36 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org, mikey@neuling.org,
+ Breno Leitao <brenohl@br.ibm.com>
+Subject: [PATCH v2] powerpc/powernv: Tell OPAL about our MMU mode on POWER9
+Date: Fri, 30 Jun 2017 17:37:32 -0500
+Message-Id: <20170630223732.32044-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,42 +20,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 30, 2017 at 05:28:02PM +1000, Nicholas Piggin wrote:
-> On Fri, 30 Jun 2017 10:52:18 +0530
-> Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
-> 
-> > On Fri, 2017-06-30 at 00:45 +1000, Nicholas Piggin wrote:
-> > > On Thu, 29 Jun 2017 20:23:05 +1000
-> > > Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > 
-> > > > On Thu, 29 Jun 2017 19:36:14 +1000
-> > > > Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > 
-> > > > > I don't *think* the replay-wakeup-interrupt patch is directly involved, but
-> > > > > it's likely to be one of the idle patches.  
-> > > 
-> > > Okay this turned out to be misconfigured sleep states I added for the
-> > > simulator, sorry for the false alarm.
-> > > 
-> > > > Although you have this in the backtrace. I wonder if that's a stuck
-> > > > lock in rcu_process_callbacks?
-> > > 
-> > > So this spinlock becomes top of the list of suspects. Can you try
-> > > enabling lockdep and try to reproduce it?
-> > 
-> > Yes, recreated again with CONFIG_LOCKDEP=y & CONFIG_DEBUG_LOCKDEP=y set.
-> > I do not see any difference in trace messages with and without LOCKDEP
-> > enabled.
-> > 
-> > Please find the attached log file.
-> 
-> Can you get an rcu_invoke_callback event trace that Paul suggested?
-> 
-> Does this bug show up with just the powerpc next branch?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-And I must say that those RCU CPU stall warnings are spectacular!
+That will allow OPAL to configure the CPU in an optimal way.
 
-Did you by chance boot with a small subset of the CPUs online, and
-bring the rest online later on?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+v2:
+  - Always set the hash bit since we always need hash for KVM guests.
+  - Gate with ARCH_300 since this can break P8.
+---
+ arch/powerpc/include/asm/opal-api.h    |  9 +++++++++
+ arch/powerpc/platforms/powernv/opal.c  | 19 +++++++++++++++++--
+ arch/powerpc/platforms/powernv/setup.c | 11 ++++++++++-
+ 3 files changed, 36 insertions(+), 3 deletions(-)
 
-							Thanx, Paul
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0b543f0f54..b3111c14f8 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -876,6 +876,15 @@ struct OpalIoPhb4ErrorData {
+ enum {
+ 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
+ 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
++
++	/* These two define the base MMU mode of the host on P9
++	 *
++	 * On P9 Nimbus DD2.0 and Cumlus (and later), KVM can still
++	 * create hash guests in "radix" mode with care (full core
++	 * switch only).
++	 */
++	OPAL_REINIT_CPUS_MMU_HASH	= (1 << 2),
++	OPAL_REINIT_CPUS_MMU_RADIX	= (1 << 3),
+ };
+ 
+ typedef struct oppanel_line {
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 59684b4af4..eaefae10bd 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -59,6 +59,8 @@ static struct task_struct *kopald_tsk;
+ 
+ void opal_configure_cores(void)
+ {
++	uint64_t reinit_flags = 0;
++
+ 	/* Do the actual re-init, This will clobber all FPRs, VRs, etc...
+ 	 *
+ 	 * It will preserve non volatile GPRs and HSPRG0/1. It will
+@@ -66,11 +68,24 @@ void opal_configure_cores(void)
+ 	 * but it might clobber a bunch.
+ 	 */
+ #ifdef __BIG_ENDIAN__
+-	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++	reinit_flags |= OPAL_REINIT_CPUS_HILE_BE;
+ #else
+-	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_LE);
++	reinit_flags |= OPAL_REINIT_CPUS_HILE_LE;
+ #endif
+ 
++	/*
++	 * POWER9 always support running hash:
++	 *  ie. Host hash  supports  hash guests
++	 *      Host radix supports  hash/radix guests
++	 */
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		reinit_flags |= OPAL_REINIT_CPUS_MMU_HASH;
++		if (early_radix_enabled())
++			reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX;
++	}
++
++	opal_reinit_cpus(reinit_flags);
++
+ 	/* Restore some bits */
+ 	if (cur_cpu_spec->cpu_restore)
+ 		cur_cpu_spec->cpu_restore();
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 2dc7e5fb86..7d2723429d 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -225,6 +225,8 @@ static void pnv_kexec_wait_secondaries_down(void)
+ 
+ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
++	uint64_t reinit_flags;
++
+ 	if (xive_enabled())
+ 		xive_kexec_teardown_cpu(secondary);
+ 	else
+@@ -254,8 +256,15 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+ 		 * We might be running as little-endian - now that interrupts
+ 		 * are disabled, reset the HILE bit to big-endian so we don't
+ 		 * take interrupts in the wrong endian later
++		 *
++		 * We reinit to enable both radix and hash on P9 to ensure
++		 * the mode used by the next kernel is always supported.
+ 		 */
+-		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++		reinit_flags = OPAL_REINIT_CPUS_HILE_BE;
++		if (cpu_has_feature(CPU_FTR_ARCH_300))
++			reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX |
++				OPAL_REINIT_CPUS_MMU_HASH;
++		opal_reinit_cpus(reinit_flags);
+ 	}
+ }
+ #endif /* CONFIG_KEXEC_CORE */
+-- 
+2.11.0
