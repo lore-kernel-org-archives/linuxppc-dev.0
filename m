@@ -1,22 +1,29 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzSJl3y8yzDr60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 17:07:19 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id f127so14430941pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 00:07:19 -0700 (PDT)
-Date: Fri, 30 Jun 2017 17:07:05 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzSn00w2JzDr61
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 17:28:20 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id z6so16063648pfk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 00:28:20 -0700 (PDT)
+Date: Fri, 30 Jun 2017 17:28:02 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Anton
- Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 0/7] powerpc: build out kprobes blacklist -- series 3
-Message-ID: <20170630170705.5d69edc6@roar.ozlabs.ibm.com>
-In-Reply-To: <cover.1498755960.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1498755960.git.naveen.n.rao@linux.vnet.ibm.com>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>, Stephen Rothwell
+ <sfr@canb.auug.org.au>, Paul McKenney <Paul.McKenney@us.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, linux-next
+ <linux-next@vger.kernel.org>, paulus@samba.org, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, paulmck@linux.vnet.ibm.com
+Subject: Re: [linux-next] cpus stalls detected few hours after booting next
+ kernel
+Message-ID: <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
+In-Reply-To: <1498800138.19484.25.camel@abdul>
+References: <1498728106.19484.21.camel@abdul>
+ <20170629193614.376e27e6@roar.ozlabs.ibm.com>
+ <20170629202305.6187367f@roar.ozlabs.ibm.com>
+ <20170630004534.228f7c08@roar.ozlabs.ibm.com>
+ <1498800138.19484.25.camel@abdul>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,27 +35,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jun 2017 23:19:13 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Fri, 30 Jun 2017 10:52:18 +0530
+Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
 
-> This is the third in the series of patches to build out an appropriate
-> kprobes blacklist for powerpc. Since posting the second series (*),
-> there have been related changes to the code and I have brought that
-> series forward to account for those changes. As such, all patches from
-> the second series are included in this patchset.
+> On Fri, 2017-06-30 at 00:45 +1000, Nicholas Piggin wrote:
+> > On Thu, 29 Jun 2017 20:23:05 +1000
+> > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > 
+> > > On Thu, 29 Jun 2017 19:36:14 +1000
+> > > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > 
+> > > > I don't *think* the replay-wakeup-interrupt patch is directly involved, but
+> > > > it's likely to be one of the idle patches.  
+> > 
+> > Okay this turned out to be misconfigured sleep states I added for the
+> > simulator, sorry for the false alarm.
+> > 
+> > > Although you have this in the backtrace. I wonder if that's a stuck
+> > > lock in rcu_process_callbacks?
+> > 
+> > So this spinlock becomes top of the list of suspects. Can you try
+> > enabling lockdep and try to reproduce it?
 > 
-> This patchset now ensures that the newly added multiple kprobes test in
-> the ftrace testsuite passes on powerpc64. Tested on both Elfv1 and
-> Elfv2.
+> Yes, recreated again with CONFIG_LOCKDEP=y & CONFIG_DEBUG_LOCKDEP=y set.
+> I do not see any difference in trace messages with and without LOCKDEP
+> enabled.
 > 
-> Changes since v4:
->   - Patch 5 changed to move system_call_exit() symbol before the mtmsrd,
->     along with an explanation for its placement.
->   - Patch 7 reverted to previous version moving the new symbol before
->     the mtmsrd as well.
->   - All other patches remain unchanged from v4.
+> Please find the attached log file.
 
-These all look good to me now.
+Can you get an rcu_invoke_callback event trace that Paul suggested?
+
+Does this bug show up with just the powerpc next branch?
 
 Thanks,
 Nick
