@@ -1,16 +1,28 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <garsilva@embeddedor.com>
+Received: from gateway32.websitewelcome.com (gateway32.websitewelcome.com
+ [192.185.145.171])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzry86N98zDr8Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2017 08:37:36 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org, mikey@neuling.org,
- Breno Leitao <brenohl@br.ibm.com>
-Subject: [PATCH v2] powerpc/powernv: Tell OPAL about our MMU mode on POWER9
-Date: Fri, 30 Jun 2017 17:37:32 -0500
-Message-Id: <20170630223732.32044-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzs2m6PCFzDr8Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2017 08:41:36 +1000 (AEST)
+Received: from cm13.websitewelcome.com (cm13.websitewelcome.com [100.42.49.6])
+ by gateway32.websitewelcome.com (Postfix) with ESMTP id 6375F15931E
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Fri, 30 Jun 2017 17:17:37 -0500 (CDT)
+Date: Fri, 30 Jun 2017 17:17:35 -0500
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Subject: [PATCH] ASoC: imx-ssi: add check on platform_get_irq return value
+Message-ID: <20170630221735.GA17951@embeddedgus>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,111 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Check return value from call to platform_get_irq(),
+so in case of failure print error message and propagate
+the return value.
 
-That will allow OPAL to configure the CPU in an optimal way.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 ---
-v2:
-  - Always set the hash bit since we always need hash for KVM guests.
-  - Gate with ARCH_300 since this can break P8.
----
- arch/powerpc/include/asm/opal-api.h    |  9 +++++++++
- arch/powerpc/platforms/powernv/opal.c  | 19 +++++++++++++++++--
- arch/powerpc/platforms/powernv/setup.c | 11 ++++++++++-
- 3 files changed, 36 insertions(+), 3 deletions(-)
+ sound/soc/fsl/imx-ssi.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0b543f0f54..b3111c14f8 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -876,6 +876,15 @@ struct OpalIoPhb4ErrorData {
- enum {
- 	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
- 	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
-+
-+	/* These two define the base MMU mode of the host on P9
-+	 *
-+	 * On P9 Nimbus DD2.0 and Cumlus (and later), KVM can still
-+	 * create hash guests in "radix" mode with care (full core
-+	 * switch only).
-+	 */
-+	OPAL_REINIT_CPUS_MMU_HASH	= (1 << 2),
-+	OPAL_REINIT_CPUS_MMU_RADIX	= (1 << 3),
- };
- 
- typedef struct oppanel_line {
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 59684b4af4..eaefae10bd 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -59,6 +59,8 @@ static struct task_struct *kopald_tsk;
- 
- void opal_configure_cores(void)
- {
-+	uint64_t reinit_flags = 0;
-+
- 	/* Do the actual re-init, This will clobber all FPRs, VRs, etc...
- 	 *
- 	 * It will preserve non volatile GPRs and HSPRG0/1. It will
-@@ -66,11 +68,24 @@ void opal_configure_cores(void)
- 	 * but it might clobber a bunch.
- 	 */
- #ifdef __BIG_ENDIAN__
--	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
-+	reinit_flags |= OPAL_REINIT_CPUS_HILE_BE;
- #else
--	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_LE);
-+	reinit_flags |= OPAL_REINIT_CPUS_HILE_LE;
- #endif
- 
-+	/*
-+	 * POWER9 always support running hash:
-+	 *  ie. Host hash  supports  hash guests
-+	 *      Host radix supports  hash/radix guests
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		reinit_flags |= OPAL_REINIT_CPUS_MMU_HASH;
-+		if (early_radix_enabled())
-+			reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX;
-+	}
-+
-+	opal_reinit_cpus(reinit_flags);
-+
- 	/* Restore some bits */
- 	if (cur_cpu_spec->cpu_restore)
- 		cur_cpu_spec->cpu_restore();
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 2dc7e5fb86..7d2723429d 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -225,6 +225,8 @@ static void pnv_kexec_wait_secondaries_down(void)
- 
- static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- {
-+	uint64_t reinit_flags;
-+
- 	if (xive_enabled())
- 		xive_kexec_teardown_cpu(secondary);
- 	else
-@@ -254,8 +256,15 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- 		 * We might be running as little-endian - now that interrupts
- 		 * are disabled, reset the HILE bit to big-endian so we don't
- 		 * take interrupts in the wrong endian later
-+		 *
-+		 * We reinit to enable both radix and hash on P9 to ensure
-+		 * the mode used by the next kernel is always supported.
- 		 */
--		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
-+		reinit_flags = OPAL_REINIT_CPUS_HILE_BE;
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX |
-+				OPAL_REINIT_CPUS_MMU_HASH;
-+		opal_reinit_cpus(reinit_flags);
+diff --git a/sound/soc/fsl/imx-ssi.c b/sound/soc/fsl/imx-ssi.c
+index b95132e..0679061 100644
+--- a/sound/soc/fsl/imx-ssi.c
++++ b/sound/soc/fsl/imx-ssi.c
+@@ -527,6 +527,10 @@ static int imx_ssi_probe(struct platform_device *pdev)
  	}
- }
- #endif /* CONFIG_KEXEC_CORE */
+ 
+ 	ssi->irq = platform_get_irq(pdev, 0);
++	if (ssi->irq < 0) {
++		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", ssi->irq);
++		return ssi->irq;
++	}
+ 
+ 	ssi->clk = devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(ssi->clk)) {
 -- 
-2.11.0
+2.5.0
