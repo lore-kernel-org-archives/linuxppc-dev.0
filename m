@@ -1,35 +1,34 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qk0-x231.google.com (mail-qk0-x231.google.com
- [IPv6:2607:f8b0:400d:c09::231])
+Return-Path: <rjwysocki@gmail.com>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzZkz56q7zDrBg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 21:56:59 +1000 (AEST)
-Received: by mail-qk0-x231.google.com with SMTP id d78so98377416qkb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 04:56:59 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Fri, 30 Jun 2017 07:56:50 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Eryu Guan <eguan@redhat.com>, Balbir Singh <bsingharora@gmail.com>,
- liwan@redhat.com, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: kworker with empty task->cpus_allowed (was Re: [v4.12-rc1
- regression] mount ext4 fs results in kernel crash on PPC64le host)
-Message-ID: <20170630115650.GA16820@htj.duckdns.org>
-References: <CAKTCnzncEoCC4=p2_ySpNdB6229SbCCqjDCzfpf8XA0xvvzH1g@mail.gmail.com>
- <20170629034122.GI23360@eguan.usersys.redhat.com>
- <CAKTCnzk8VMN0hBi24vEoNPGvvX-s8uhrjMdn7drQVDUdfA_+Ow@mail.gmail.com>
- <20170629100533.GQ23360@eguan.usersys.redhat.com>
- <87efu39he0.fsf@concordia.ellerman.id.au>
- <20170629113933.GT23360@eguan.usersys.redhat.com>
- <878tkb9ewo.fsf@concordia.ellerman.id.au>
- <20170629135919.GU23360@eguan.usersys.redhat.com>
- <20170629142425.GB3531@htj.duckdns.org>
- <87k23uqo3d.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzbxW18KyzDr5p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 22:51:11 +1000 (AEST)
+Received: by mail-io0-x242.google.com with SMTP id m19so3341703ioe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 05:51:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87k23uqo3d.fsf@concordia.ellerman.id.au>
+Sender: rjwysocki@gmail.com
+In-Reply-To: <878tkaqgu2.fsf@concordia.ellerman.id.au>
+References: <20170614130241.19865-2-npiggin@gmail.com>
+ <3wyzKL1g2Vz9s65@ozlabs.org>
+ <CAJZ5v0g2DMRcL78k2+qA0svxGqtt-sTW2BpcfvRjU-=iCBjEYg@mail.gmail.com>
+ <878tkaqgu2.fsf@concordia.ellerman.id.au>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 30 Jun 2017 14:51:08 +0200
+Message-ID: <CAJZ5v0i7kmgVdaqajChvyvebK8ZpjY8HTnLbAH7-ktmj4K8QZQ@mail.gmail.com>
+Subject: Re: [1/3] cpuidle: powerpc: cpuidle set polling before enabling irqs
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Michael.
+On Fri, Jun 30, 2017 at 5:45 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> "Rafael J. Wysocki" <rafael@kernel.org> writes:
+>
+>> On Thu, Jun 29, 2017 at 2:21 PM, Michael Ellerman
+>> <patch-notifications@ellerman.id.au> wrote:
+>>> On Wed, 2017-06-14 at 13:02:39 UTC, Nicholas Piggin wrote:
+>>>> local_irq_enable can cause interrupts to be taken which could
+>>>> take significant amount of processing time. The idle process
+>>>> should set its polling flag before this, so another process that
+>>>> wakes it during this time will not have to send an IPI.
+>>>>
+>>>> Expand the TIF_POLLING_NRFLAG coverage to as large as possible.
+>>>>
+>>>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>
+>>> Series applied to powerpc next, thanks.
+>>>
+>>> https://git.kernel.org/powerpc/c/3fc5ee927ff4ffed6aa2fcd44d2fbf
+>>
+>> OK
+>>
+>> I've applied it too, so I guess I should drop it?
+>
+> Erk sorry. I hadn't heard anything so I picked it up.
+>
+> If you can drop it that would be good, but if not git will probably work
+> it out mostly :)
 
-On Fri, Jun 30, 2017 at 11:08:22AM +1000, Michael Ellerman wrote:
-> Tejun Heo <tj@kernel.org> writes:
-> 
-> > Could be the same problem as the one reported in the following thread.
-> >
-> >  http://lkml.kernel.org/r/1497266622.15415.39.camel@abdul.in.ibm.com
-> >
-> > The root cause there is ppc arch code not setting up possible cpu <->
-> > numa mapping during boot.
-> 
-> Huh?
-> 
-> You changed the workqueue code to avoid that in 2186d9f940b6
-> ("workqueue: move wq_numa_init() to workqueue_init()"), didn't you?
+I've dropped it, no problem.
 
-That was a different issue.  This one is cpu <-> numa node mapping not
-being stable across cpu hotplug.
-
-Thanks.
-
--- 
-tejun
+Thanks,
+Rafael
