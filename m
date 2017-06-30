@@ -1,22 +1,46 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qk0-f177.google.com (mail-qk0-f177.google.com
- [209.85.220.177])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzj3Y43FBzDr64
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2017 02:41:45 +1000 (AEST)
-Received: by mail-qk0-f177.google.com with SMTP id d78so105038045qkb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 09:41:45 -0700 (PDT)
-Date: Fri, 30 Jun 2017 13:41:36 -0300
-From: Breno Leitao <leitao@debian.org>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/tm: fix live state of vs0/32 in tm_reclaim
-Message-ID: <20170630164135.tlcgh365cjrquscj@gmail.com>
-References: <1498783490-23675-1-git-send-email-gromero@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzl7V3Z5ZzDr8P
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jul 2017 04:15:17 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5UIE6Bc016962
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 14:15:14 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bdqvshcwy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 14:15:14 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Fri, 30 Jun 2017 14:15:13 -0400
+Date: Fri, 30 Jun 2017 11:15:11 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ sachinp <sachinp@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Paul McKenney <Paul.McKenney@us.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>, paulus@samba.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [linux-next] cpus stalls detected few hours after booting next
+ kernel
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1498728106.19484.21.camel@abdul>
+ <20170629193614.376e27e6@roar.ozlabs.ibm.com>
+ <20170629202305.6187367f@roar.ozlabs.ibm.com>
+ <20170630004534.228f7c08@roar.ozlabs.ibm.com>
+ <1498800138.19484.25.camel@abdul>
+ <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1498783490-23675-1-git-send-email-gromero@linux.vnet.ibm.com>
+In-Reply-To: <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
+Message-Id: <20170630181511.GC2393@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +50,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Gustavo for the patch.
-
-On Thu, Jun 29, 2017 at 08:39:23PM -0400, Gustavo Romero wrote:
-> Currently tm_reclaim() can return with a corrupted vs0 (fp0) or vs32 (v0)
-> due to the fact vs0 is used to save FPSCR and vs32 is used to save VSCR.
+On Fri, Jun 30, 2017 at 05:28:02PM +1000, Nicholas Piggin wrote:
+> On Fri, 30 Jun 2017 10:52:18 +0530
+> Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
 > 
-> Later, we recheckpoint trusting that the live state of FP and VEC are ok
-> depending on the MSR.FP and MSR.VEC bits, i.e. if MSR.FP is enabled that
-> means the FP registers checkpointed before entering are correct and so
-> after a treclaim. we can trust the FP live state, and similarly on VEC regs.
-> However if tm_reclaim() does not return a sane state then tm_recheckpoint()
-> will recheckpoint a corrupted instate back to the checkpoint area.
+> > On Fri, 2017-06-30 at 00:45 +1000, Nicholas Piggin wrote:
+> > > On Thu, 29 Jun 2017 20:23:05 +1000
+> > > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > > 
+> > > > On Thu, 29 Jun 2017 19:36:14 +1000
+> > > > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > > 
+> > > > > I don't *think* the replay-wakeup-interrupt patch is directly involved, but
+> > > > > it's likely to be one of the idle patches.  
+> > > 
+> > > Okay this turned out to be misconfigured sleep states I added for the
+> > > simulator, sorry for the false alarm.
+> > > 
+> > > > Although you have this in the backtrace. I wonder if that's a stuck
+> > > > lock in rcu_process_callbacks?
+> > > 
+> > > So this spinlock becomes top of the list of suspects. Can you try
+> > > enabling lockdep and try to reproduce it?
+> > 
+> > Yes, recreated again with CONFIG_LOCKDEP=y & CONFIG_DEBUG_LOCKDEP=y set.
+> > I do not see any difference in trace messages with and without LOCKDEP
+> > enabled.
+> > 
+> > Please find the attached log file.
 > 
-> That commit fixes the corruption by restoring vs0 and vs32 from the
-> ckfp_state and ckvr_state after they are used to save FPSCR and VSCR,
-> respectively.
+> Can you get an rcu_invoke_callback event trace that Paul suggested?
 > 
-> The effect of the issue described above is observed, for instance, once a
-> VSX unavailable exception is caught in the middle of a transaction with
-> MSR.FP = 1 or MSR.VEC = 1. If MSR.FP = 1, then after getting back to user
-> space FP state is corrupted. If MSR.VEC = 1, then VEC state is corrupted.
-> 
-> The issue does occur if MSR.FP = 0 and MSR.VEC = 0 because ckfp_state and
-> ckvr_state are both copied from fp_state and vr_state, respectively, and
-> on recheckpointing both states will be restored from these thread
-> structures and not from the live state.
+> Does this bug show up with just the powerpc next branch?
 
-Just complementing what Gustavo said, currently the tm_recheckpoint()
-function grabs the values to be re-checkpoint from two places, depending
-on the MSR configuration.
+And I must say that those RCU CPU stall warnings are spectacular!
 
-If VEC or FP are disabled on MSR argument when tm_recheckpoint() is
-called, then it restorese the values from the thread ckvr/ckfp area and
-recheckpoint these values into processor transactional area.
+Did you by chance boot with a small subset of the CPUs online, and
+bring the rest online later on?
 
-On the other side, if VEC or FP are disabled, it does not restore the
-vectors and fp registers from the thread ckvec/ckfp area, and it will
-recheckpoint what is currently on the live registers. If the registers
-changed after the reclaim, we will send these new values recheckpointed,
-and later on userspace when the transaction fails.
-
-This second scenario is what is causing the error reported on this
-email thread. In fact, I am wondering if we can hit another hidden bug that
-changes the fp and vec values between the tm_reclaim() and
-tm_recheckpoint() invokations, as for example, an interrupt that calls
-memcpy() in this small mean time.
-
-That said, I am wondering if we shouldn't always rely on thread ckfp and
-ckvec during tm_recheckpoint() (and never rely on the live registers). This
-should simplify the reclaim/recheckpoint mechanism, and make it less
-error prone.
+							Thanx, Paul
