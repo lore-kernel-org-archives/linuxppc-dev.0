@@ -1,28 +1,49 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzMqV0lMCzDr4p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 13:45:10 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Linux PM <linux-pm@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- "Rafael J . Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [1/3] cpuidle: powerpc: cpuidle set polling before enabling irqs
-In-Reply-To: <CAJZ5v0g2DMRcL78k2+qA0svxGqtt-sTW2BpcfvRjU-=iCBjEYg@mail.gmail.com>
-References: <20170614130241.19865-2-npiggin@gmail.com>
- <3wyzKL1g2Vz9s65@ozlabs.org>
- <CAJZ5v0g2DMRcL78k2+qA0svxGqtt-sTW2BpcfvRjU-=iCBjEYg@mail.gmail.com>
-Date: Fri, 30 Jun 2017 13:45:09 +1000
-Message-ID: <878tkaqgu2.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzPzw5h1gzDr5t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 15:22:36 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v5U5J49K063082
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 01:22:34 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bd0yup6g2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 01:22:33 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Fri, 30 Jun 2017 15:22:30 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v5U5MSTG4718966
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 15:22:28 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v5U5MQ8O020938
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 15:22:27 +1000
+Subject: Re: [linux-next] cpus stalls detected few hours after booting next
+ kernel
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>, Stephen Rothwell
+ <sfr@canb.auug.org.au>, Paul McKenney <Paul.McKenney@us.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, linux-next
+ <linux-next@vger.kernel.org>, paulus@samba.org, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 30 Jun 2017 10:52:18 +0530
+In-Reply-To: <20170630004534.228f7c08@roar.ozlabs.ibm.com>
+References: <1498728106.19484.21.camel@abdul>
+ <20170629193614.376e27e6@roar.ozlabs.ibm.com>
+ <20170629202305.6187367f@roar.ozlabs.ibm.com>
+ <20170630004534.228f7c08@roar.ozlabs.ibm.com>
+Content-Type: multipart/mixed; boundary="=-B8Ez7iUl+V6b9Uq+Lj+A"
+Mime-Version: 1.0
+Message-Id: <1498800138.19484.25.camel@abdul>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +53,856 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Rafael J. Wysocki" <rafael@kernel.org> writes:
 
-> On Thu, Jun 29, 2017 at 2:21 PM, Michael Ellerman
-> <patch-notifications@ellerman.id.au> wrote:
->> On Wed, 2017-06-14 at 13:02:39 UTC, Nicholas Piggin wrote:
->>> local_irq_enable can cause interrupts to be taken which could
->>> take significant amount of processing time. The idle process
->>> should set its polling flag before this, so another process that
->>> wakes it during this time will not have to send an IPI.
->>>
->>> Expand the TIF_POLLING_NRFLAG coverage to as large as possible.
->>>
->>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>
->> Series applied to powerpc next, thanks.
->>
->> https://git.kernel.org/powerpc/c/3fc5ee927ff4ffed6aa2fcd44d2fbf
->
-> OK
->
-> I've applied it too, so I guess I should drop it?
+--=-B8Ez7iUl+V6b9Uq+Lj+A
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 
-Erk sorry. I hadn't heard anything so I picked it up.
+On Fri, 2017-06-30 at 00:45 +1000, Nicholas Piggin wrote:
+> On Thu, 29 Jun 2017 20:23:05 +1000
+> Nicholas Piggin <npiggin@gmail.com> wrote:
+> 
+> > On Thu, 29 Jun 2017 19:36:14 +1000
+> > Nicholas Piggin <npiggin@gmail.com> wrote:
+> 
+> > > I don't *think* the replay-wakeup-interrupt patch is directly involved, but
+> > > it's likely to be one of the idle patches.  
+> 
+> Okay this turned out to be misconfigured sleep states I added for the
+> simulator, sorry for the false alarm.
+> 
+> > Although you have this in the backtrace. I wonder if that's a stuck
+> > lock in rcu_process_callbacks?
+> 
+> So this spinlock becomes top of the list of suspects. Can you try
+> enabling lockdep and try to reproduce it?
 
-If you can drop it that would be good, but if not git will probably work
-it out mostly :)
+Yes, recreated again with CONFIG_LOCKDEP=y & CONFIG_DEBUG_LOCKDEP=y set.
+I do not see any difference in trace messages with and without LOCKDEP
+enabled.
 
-cheers
+Please find the attached log file.
+
+> 
+> > [ 5948.345539] CPU: 63 PID: 7360 Comm: rs:main Q:Reg Not tainted \
+> > 4.12.0-rc7-next-20170628 #2 [ 5948.345612] task: c000000f1c14e600 task.stack: \
+> > c000000f1c1e8000 [ 5948.345672] NIP: c0000000009c7a10 LR: c0000000009c7a08 CTR: \
+> > c00000000015eda0 [ 5948.358553] REGS: c000000f1c1eb150 TRAP: 0501   Not tainted  \
+> > (4.12.0-rc7-next-20170628) [ 5948.358623] MSR: 9000000000009033 \
+> > <SF,HV,EE,ME,IR,DR,RI,LE> [ 5948.358626]   CR: 28082884  XER: 20000000
+> > [ 5948.358706] CFAR: c0000000009c7a28 SOFTE: 1 
+> > GPR00: c00000000015f14c c000000f1c1eb3d0 c000000001062b00 0000000000000001 
+> > GPR04: c000000fff6e6180 0000000000000000 0000000000000001 00000000000000cc 
+> > GPR08: 0000000000000001 000000008000004a 0000000000000000 0000000000000000 
+> > GPR12: c00000000015eda0 c00000000fd55a80 
+> > [ 5948.358986] NIP [c0000000009c7a10] _raw_spin_lock_irqsave+0x90/0x100
+> > [ 5948.359043] LR [c0000000009c7a08] _raw_spin_lock_irqsave+0x88/0x100
+> > [ 5948.359099] Call Trace:
+> > [ 5948.359123] [c000000f1c1eb3d0] [0000000000000001] 0x1 (unreliable)
+> > [ 5948.359182] [c000000f1c1eb410] [c00000000015f14c] \
+> d> rcu_process_callbacks+0x3ac/0x620 [ 5948.359252] [c000000f1c1eb4c0] \
+> > [c0000000000e1e0c] __do_softirq+0x14c/0x3a0 [ 5948.365958] [c000000f1c1eb5b0] \
+> > [c0000000000e2448] irq_exit+0x108/0x120 [ 5948.366016] [c000000f1c1eb5d0] \
+> > [c0000000000232b4] timer_interrupt+0xa4/0xe0 [ 5948.366075] [c000000f1c1eb600] \
+> > [c000000000009208] decrementer_common+0x158/0x160 [ 5948.366149] --- interrupt: 901 \
+> > at start_this_handle+0xd0/0x4b0  LR = jbd2__journal_start+0x17c/0x2b0
+> > [ 5948.366242] [c000000f1c1eb8f0] [c000000f20a5cb00] 0xc000000f20a5cb00 (unreliable)
+> > [ 5948.366314] [c000000f1c1eba00] [c00000000040717c] jbd2__journal_start+0x17c/0x2b0
+> > [ 5948.366388] [c000000f1c1eba70] [c00000000038edf4] \
+> > __ext4_journal_start_sb+0x84/0x180 [ 5948.366459] [c000000f1c1ebad0] \
+> > [c0000000003b47dc] ext4_da_write_begin+0x17c/0x520 [ 5948.366532] [c000000f1c1ebb90] \
+> > [c00000000021f9c8] generic_perform_write+0xe8/0x250 [ 5948.366604] [c000000f1c1ebc20] \
+> > [c000000000220d20] __generic_file_write_iter+0x200/0x240 [ 5948.366677] \
+> > [c000000f1c1ebc80] [c00000000039d614] ext4_file_write_iter+0x2e4/0x4d0 [ 5948.373255] \
+> > [c000000f1c1ebd00] [c0000000002e13c0] __vfs_write+0x120/0x200 [ 5948.373313] \
+> > [c000000f1c1ebd90] [c0000000002e2c48] vfs_write+0xc8/0x240 [ 5948.373371] \
+> > [c000000f1c1ebde0] [c0000000002e4940] SyS_write+0x60/0x110 [ 5948.373430] \
+> > [c000000f1c1ebe30] [c00000000000b8e0] system_call+0x38/0xdc [ 5948.373486] \
+> > Instruction dump: [ 5948.373521] 7fe3fb78 e8010010 eba1ffe8 ebc1fff0 ebe1fff8 \
+> > 7c0803a6 4e800020 8bad028a  [ 5948.373592] 7fe3fb78 4b64db15 60000000 7c210b78 \
+> > <e92d0000> 89290009 792affe3 40820048  [ 5948.374515] Sending NMI from CPU 74 to CPUs \
+> > 
+> 
+
+
+-- 
+Regard's
+
+Abdul Haleem
+IBM Linux Technology Centre
+
+
+
+--=-B8Ez7iUl+V6b9Uq+Lj+A
+Content-Disposition: attachment; filename="trace-with-lockdep"
+Content-Type: text/plain; name="trace-with-lockdep"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+[ 9296.490900] INFO: rcu_sched detected stalls on CPUs/tasks:
+[ 9296.491039] 	8-...: (18788 GPs behind) idle=0cc/0/0 softirq=653/653 fqs=0 
+[ 9296.491081] 	9-...: (18788 GPs behind) idle=860/0/0 softirq=702/702 fqs=0 
+[ 9296.491114] 	10-...: (47558 GPs behind) idle=f90/0/0 softirq=493/493 fqs=0 
+[ 9296.491147] 	14-...: (18791 GPs behind) idle=840/0/0 softirq=816/816 fqs=0 
+[ 9296.491180] 	17-...: (1976 GPs behind) idle=0ec/0/0 softirq=1147/1147 fqs=0 
+[ 9296.491221] 	19-...: (60 GPs behind) idle=6a8/0/0 softirq=1551/1551 fqs=0 
+[ 9296.491256] 	23-...: (965 GPs behind) idle=f2c/0/0 softirq=1130/1131 fqs=0 
+[ 9296.491289] 	25-...: (37469 GPs behind) idle=170/0/0 softirq=599/599 fqs=0 
+[ 9296.491444] 	27-...: (47543 GPs behind) idle=3b0/0/0 softirq=606/606 fqs=0 
+[ 9296.491479] 	28-...: (47541 GPs behind) idle=5d4/0/0 softirq=503/504 fqs=0 
+[ 9296.491514] 	29-...: (47541 GPs behind) idle=8b4/0/0 softirq=470/470 fqs=0 
+[ 9296.491547] 	32-...: (2324 GPs behind) idle=7c4/0/0 softirq=946/946 fqs=0 
+[ 9296.491580] 	33-...: (37473 GPs behind) idle=5a0/0/0 softirq=618/618 fqs=0 
+[ 9296.491616] 	37-...: (9317 GPs behind) idle=c98/0/0 softirq=679/679 fqs=0 
+[ 9296.491649] 	38-...: (9316 GPs behind) idle=c14/0/0 softirq=788/788 fqs=0 
+[ 9296.491682] 	39-...: (2324 GPs behind) idle=884/0/0 softirq=713/714 fqs=0 
+[ 9296.491715] 	41-...: (0 ticks this GP) idle=2c8/0/0 softirq=854/854 fqs=0 
+[ 9296.491748] 	46-...: (18790 GPs behind) idle=074/0/0 softirq=578/578 fqs=0 
+[ 9296.491781] 	47-...: (17262 GPs behind) idle=a80/0/0 softirq=651/652 fqs=0 
+[ 9296.491814] 	49-...: (37469 GPs behind) idle=a24/0/0 softirq=609/609 fqs=0 
+[ 9296.491850] 	50-...: (91 GPs behind) idle=278/0/0 softirq=508/508 fqs=0 
+[ 9296.491883] 	51-...: (47405 GPs behind) idle=9f8/0/0 softirq=500/500 fqs=0 
+[ 9296.491916] 	53-...: (398 GPs behind) idle=6f4/0/0 softirq=907/907 fqs=0 
+[ 9296.491949] 	55-...: (103 GPs behind) idle=ec0/0/0 softirq=1396/1397 fqs=0 
+[ 9296.491982] 	62-...: (47405 GPs behind) idle=01c/0/0 softirq=616/616 fqs=0 
+[ 9296.492015] 	66-...: (1864 GPs behind) idle=6d0/0/0 softirq=2570/2570 fqs=0 
+[ 9296.492054] 	76-...: (7008 GPs behind) idle=c40/0/0 softirq=614/614 fqs=0 
+[ 9296.492087] 	(detected by 44, t=6002 jiffies, g=50052, c=50051, q=1667)
+[ 9296.492123] Sending NMI from CPU 44 to CPUs 8:
+[ 9296.492153] NMI backtrace for cpu 8
+[ 9296.492179] CPU: 8 PID: 0 Comm: swapper/8 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9296.492219] task: c000003c9b859e00 task.stack: c000003ffb3cc000
+[ 9296.492252] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fffafeeeef0
+[ 9296.492290] REGS: c000003ffb3cfb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9296.492335] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9296.492339]   CR: 42004284  XER: 00000000
+[ 9296.492384] CFAR: 00007fffafede9d4 SOFTE: 1 
+GPR00: c0000000007447f8 c000003ffb3cfde0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000471c6556a84 0000003ffb540000 
+GPR08: 0000000000000004 00007fffafc839d0 0000000000000000 0000000000000007 
+GPR12: 0000000000002200 00007fffaff1b480 
+[ 9296.492549] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9296.492583] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9296.492618] Call Trace:
+[ 9296.492633] [c000003ffb3cfde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9296.492680] [c000003ffb3cfe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9296.492720] [c000003ffb3cfe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9296.492756] [c000003ffb3cfe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9296.492790] [c000003ffb3cfef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9296.492831] [c000003ffb3cff20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9296.492874] [c000003ffb3cff90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9296.492912] Instruction dump:
+[ 9296.492932] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9296.492974] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9296.493174] Sending NMI from CPU 44 to CPUs 9:
+[ 9296.517443] NMI backtrace for cpu 9
+[ 9296.517575] CPU: 9 PID: 0 Comm: swapper/9 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9296.562017] task: c000003c9b85b500 task.stack: c000003ffb3d0000
+[ 9296.587329] NIP: c000000000944cb8 LR: c000000000944ca8 CTR: c00000000017aba0
+[ 9296.613534] REGS: c000003ffb3d3630 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9296.663342] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9296.663347]   CR: 28002224  XER: 20000000
+[ 9296.669368] CFAR: c000000000944cc8 SOFTE: 1 
+GPR00: c00000000017af4c c000003ffb3d38b0 c000000001072000 0000000000000001 
+GPR04: c000003ffc266580 0000000000000000 0000000000000001 00000000000595b6 
+GPR08: 007fffffffffffff 0000000000000000 0000000000000000 0000000000000000 
+GPR12: c00000000017aba0 c00000000fb05a00 
+[ 9296.762797] NIP [c000000000944cb8] _raw_spin_lock_irqsave+0x98/0x100
+[ 9296.778977] LR [c000000000944ca8] _raw_spin_lock_irqsave+0x88/0x100
+[ 9296.795228] Call Trace:
+[ 9296.795244] [c000003ffb3d38b0] [c000003ffc265a00] 0xc000003ffc265a00 (unreliable)
+[ 9296.828575] [c000003ffb3d38f0] [c00000000017af4c] rcu_process_callbacks+0x3ac/0x620
+[ 9296.845999] [c000003ffb3d39a0] [c0000000000ed98c] __do_softirq+0x14c/0x3a0
+[ 9296.852227] [c000003ffb3d3a90] [c0000000000ee048] irq_exit+0x1a8/0x1c0
+[ 9296.868760] [c000003ffb3d3ac0] [c000000000023354] timer_interrupt+0xa4/0xe0
+[ 9296.901712] [c000003ffb3d3af0] [c000000000008f74] decrementer_common+0x114/0x120
+[ 9296.926487] --- interrupt: 901 at __replay_interrupt+0x38/0x3c
+    LR = arch_local_irq_restore+0x74/0x90
+[ 9296.947216] [c000003ffb3d3de0] [c000003ffb3d3e60] 0xc000003ffb3d3e60 (unreliable)
+[ 9296.962723] [c000003ffb3d3e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9296.993276] [c000003ffb3d3e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9297.007586] [c000003ffb3d3e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9297.014754] [c000003ffb3d3ef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9297.029299] [c000003ffb3d3f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9297.044577] [c000003ffb3d3f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9297.073870] Instruction dump:
+[ 9297.073896] eba1ffe8 ebc1fff0 ebe1fff8 7c0803a6 4e800020 8bad028a 7fe3fb78 4b6d0a05 
+[ 9297.088445] 60000000 7c210b78 e92d0000 89290009 <792affe3> 40820048 813e0000 2fa90000 
+[ 9297.161478] Sending NMI from CPU 44 to CPUs 10:
+[ 9297.161508] NMI backtrace for cpu 10
+[ 9297.188142] CPU: 10 PID: 0 Comm: swapper/10 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9297.210787] task: c000003c9b85cc00 task.stack: c000003ffb3d4000
+[ 9297.227071] NIP: c000000000944cb0 LR: c000000000944ca8 CTR: c00000000017aba0
+[ 9297.255645] REGS: c000003ffb3d7630 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9297.271416] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9297.271422]   CR: 28002224  XER: 20000000
+[ 9297.294140] CFAR: c000000000944cc8 SOFTE: 1 
+GPR00: c00000000017af4c c000003ffb3d78b0 c000000001072000 0000000000000001 
+GPR04: c000003ffc2a6580 0000000000000000 0000000000000001 00000000000595b6 
+GPR08: 003fffffffffffff 000000008000002c 0000000000000000 0000000000000000 
+GPR12: c00000000017aba0 c00000000fb06400 
+[ 9297.395397] NIP [c000000000944cb0] _raw_spin_lock_irqsave+0x90/0x100
+[ 9297.423426] LR [c000000000944ca8] _raw_spin_lock_irqsave+0x88/0x100
+[ 9297.430487] Call Trace:
+[ 9297.430505] [c000003ffb3d78b0] [c000003ffc2a5a00] 0xc000003ffc2a5a00 (unreliable)
+[ 9297.467196] [c000003ffb3d78f0] [c00000000017af4c] rcu_process_callbacks+0x3ac/0x620
+[ 9297.484514] [c000003ffb3d79a0] [c0000000000ed98c] __do_softirq+0x14c/0x3a0
+[ 9297.503240] [c000003ffb3d7a90] [c0000000000ee048] irq_exit+0x1a8/0x1c0
+[ 9297.527267] [c000003ffb3d7ac0] [c000000000023354] timer_interrupt+0xa4/0xe0
+[ 9297.555228] [c000003ffb3d7af0] [c000000000008f74] decrementer_common+0x114/0x120
+[ 9297.561930] --- interrupt: 901 at __replay_interrupt+0x38/0x3c
+    LR = arch_local_irq_restore+0x74/0x90
+[ 9297.595998] [c000003ffb3d7de0] [c000003ffb3d7e60] 0xc000003ffb3d7e60 (unreliable)
+[ 9297.624678] [c000003ffb3d7e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9297.647982] [c000003ffb3d7e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9297.674747] [c000003ffb3d7e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9297.697962] [c000003ffb3d7ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9297.708935] [c000003ffb3d7f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9297.737634] [c000003ffb3d7f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9297.822966] Instruction dump:
+[ 9297.822994] 7fe3fb78 e8010010 eba1ffe8 ebc1fff0 ebe1fff8 7c0803a6 4e800020 8bad028a 
+[ 9297.849216] 7fe3fb78 4b6d0a05 60000000 7c210b78 <e92d0000> 89290009 792affe3 40820048 
+[ 9297.877547] Sending NMI from CPU 44 to CPUs 14:
+[ 9297.877579] NMI backtrace for cpu 14
+[ 9297.915633] CPU: 14 PID: 0 Comm: swapper/14 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9297.950879] task: c000003c9b862800 task.stack: c000003ffb3e4000
+[ 9297.968040] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fffb14feef0
+[ 9297.985553] REGS: c000003ffb3e7b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9298.004256] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9298.004262]   CR: 44004284  XER: 00000000
+[ 9298.040357] CFAR: 00007fffb1504c4c SOFTE: 1 
+GPR00: c0000000007447f8 c000003ffb3e7de0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000471f09d0a6f 0000003ffb6c0000 
+GPR08: 0000000000000004 0000000000003475 0000000000000001 0000000000000005 
+GPR12: 0000000000002200 00007fffb152b480 
+[ 9298.199280] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9298.217603] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9298.239368] Call Trace:
+[ 9298.239386] [c000003ffb3e7de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9298.263882] [c000003ffb3e7e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9298.280695] [c000003ffb3e7e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9298.313698] [c000003ffb3e7e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9298.321270] [c000003ffb3e7ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9298.346754] [c000003ffb3e7f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9298.364007] [c000003ffb3e7f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9298.370488] Instruction dump:
+[ 9298.387427] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9298.414560] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9298.438613] Sending NMI from CPU 44 to CPUs 17:
+[ 9298.455810] NMI backtrace for cpu 17
+[ 9298.455835] CPU: 17 PID: 0 Comm: swapper/17 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9298.473573] task: c000003c9b866d00 task.stack: c000003ffb3f0000
+[ 9298.508075] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9298.525437] REGS: c000003ffb3f3b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9298.543877] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9298.543881]   CR: 42004284  XER: 00000000
+[ 9298.568312] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003ffb3f3de0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 0000047202427c7d 0000003ffb780000 
+GPR08: 0000000000000004 b000000000009033 0000000000000002 0000000000000000 
+GPR12: c000000000022a20 c00000000fb0aa00 
+[ 9298.673839] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9298.692496] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9298.710820] Call Trace:
+[ 9298.710837] [c000003ffb3f3de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9298.747999] [c000003ffb3f3e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9298.754413] [c000003ffb3f3e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9298.772746] [c000003ffb3f3e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9298.807704] [c000003ffb3f3ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9298.825043] [c000003ffb3f3f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9298.843295] [c000003ffb3f3f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9298.861979] Instruction dump:
+[ 9298.871717] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9298.897006] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9298.924841] Sending NMI from CPU 44 to CPUs 19:
+[ 9298.948743] NMI backtrace for cpu 19
+[ 9298.975694] CPU: 19 PID: 0 Comm: swapper/19 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9298.988689] task: c000003c9b869b00 task.stack: c000003ffb3f8000
+[ 9299.027250] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9299.054184] REGS: c000003ffb3fbb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9299.093282] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9299.093285]   CR: 28004284  XER: 00000000
+[ 9299.142812] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003ffb3fbde0 c000000001072000 0000000000000500 
+GPR04: c000003ffc4c0400 0000000000115ba6 00000472114d895d 0000000000000001 
+GPR08: 0000000000000004 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 0000000000002200 00007fff9454b480 
+[ 9299.273652] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9299.292171] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9299.327436] Call Trace:
+[ 9299.327451] [c000003ffb3fbde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9299.352700] [c000003ffb3fbe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9299.369242] [c000003ffb3fbe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9299.387568] [c000003ffb3fbe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9299.404651] [c000003ffb3fbef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9299.433431] [c000003ffb3fbf20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9299.471450] [c000003ffb3fbf90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9299.490417] Instruction dump:
+[ 9299.510315] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9299.517029] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9299.536778] Sending NMI from CPU 44 to CPUs 23:
+[ 9299.554625] NMI backtrace for cpu 23
+[ 9299.573325] CPU: 23 PID: 0 Comm: swapper/23 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9299.591962] task: c000003c9b86f700 task.stack: c000003c9b908000
+[ 9299.608821] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fffb14feef0
+[ 9299.627489] REGS: c000003c9b90bb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9299.662533] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9299.662536]   CR: 24004284  XER: 00000000
+[ 9299.697875] CFAR: 00007fffb1504c4c SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b90bde0 c000000001072000 0000000000000500 
+GPR04: 0000000000000003 c000000000091990 0000047223cafc40 0000000000000001 
+GPR08: 0000000000000004 0000000000003475 0000000000000001 0000000000000005 
+GPR12: 0000000000002200 00007fffb152b480 
+[ 9299.795544] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9299.814350] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9299.814382] Call Trace:
+[ 9299.832846] [c000003c9b90bde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9299.857461] [c000003c9b90be00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9299.875884] [c000003c9b90be60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9299.894148] [c000003c9b90be80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9299.912282] [c000003c9b90bef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9299.946875] [c000003c9b90bf20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9299.976527] [c000003c9b90bf90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9299.996220] Instruction dump:
+[ 9299.996240] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9300.022099] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9300.041656] Sending NMI from CPU 44 to CPUs 25:
+[ 9300.058628] NMI backtrace for cpu 25
+[ 9300.081524] CPU: 25 PID: 0 Comm: swapper/25 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9300.112913] task: c000003c9b872500 task.stack: c000003c9b910000
+[ 9300.180349] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9300.233679] REGS: c000003c9b913b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9300.296119] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9300.296123]   CR: 42004284  XER: 00000000
+[ 9300.313884] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b913de0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000472332c811c 0000003ffb980000 
+GPR08: 0000000000000004 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 00007fffbbe81920 00007fffbbf2b600 
+[ 9300.410054] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9300.440917] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9300.447296] Call Trace:
+[ 9300.466558] [c000003c9b913de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9300.494234] [c000003c9b913e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9300.519120] [c000003c9b913e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9300.537880] [c000003c9b913e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9300.555902] [c000003c9b913ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9300.584360] [c000003c9b913f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9300.591044] [c000003c9b913f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9300.639205] Instruction dump:
+[ 9300.639225] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9300.677876] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9300.696665] Sending NMI from CPU 44 to CPUs 27:
+[ 9300.703841] NMI backtrace for cpu 27
+[ 9300.703862] CPU: 27 PID: 0 Comm: swapper/27 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9300.740508] task: c000003c9b875300 task.stack: c000003c9b918000
+[ 9300.758762] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fffab6deef0
+[ 9300.777600] REGS: c000003c9b91bb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9300.813229] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9300.813233]   CR: 42004284  XER: 00000000
+[ 9300.831178] CFAR: 00007fffab6d4d28 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b91bde0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 0000047246dd3abc 0000003ffba00000 
+GPR08: 0000000000000004 00007fffaaa939d0 0000000000000000 0000000000000007 
+GPR12: 0000000000002200 00007fffaa5c7730 
+[ 9300.947970] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9300.977708] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9300.985303] Call Trace:
+[ 9301.003603] [c000003c9b91bde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9301.023179] [c000003c9b91be00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9301.042055] [c000003c9b91be60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9301.077323] [c000003c9b91be80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9301.094294] [c000003c9b91bef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9301.111652] [c000003c9b91bf20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9301.167796] [c000003c9b91bf90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9301.221557] Instruction dump:
+[ 9301.221578] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9301.260291] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9301.285876] Sending NMI from CPU 44 to CPUs 28:
+[ 9301.294336] NMI backtrace for cpu 28
+[ 9301.294362] CPU: 28 PID: 0 Comm: swapper/28 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9301.376555] task: c000003c9b876a00 task.stack: c000003c9b91c000
+[ 9301.389185] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fff829d1540
+[ 9301.422855] REGS: c000003c9b91fb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9301.450900] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9301.450904]   CR: 24002284  XER: 00000000
+[ 9301.506309] CFAR: 00007fff829415ec SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b91fde0 c000000001072000 0000000000000500 
+GPR04: b000000000001033 c000000000091990 0000047258e27aef 0000000000000001 
+GPR08: 0000000000000004 6435663962393d73 0000000000000000 0000000000000000 
+GPR12: 00007fff829d1540 00007fff813368b0 
+[ 9301.612894] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9301.632328] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9301.638478] Call Trace:
+[ 9301.638492] [c000003c9b91fde0] [c000003c9b91fe60] 0xc000003c9b91fe60 (unreliable)
+[ 9301.675571] [c000003c9b91fe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9301.694314] [c000003c9b91fe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9301.712755] [c000003c9b91fe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9301.730359] [c000003c9b91fef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9301.756801] [c000003c9b91ff20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9301.804757] [c000003c9b91ff90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9301.811002] Instruction dump:
+[ 9301.829323] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9301.849098] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9301.868370] Sending NMI from CPU 44 to CPUs 29:
+[ 9301.886118] NMI backtrace for cpu 29
+[ 9301.905115] CPU: 29 PID: 0 Comm: swapper/29 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9301.911524] task: c000003c9b878100 task.stack: c000003c9b920000
+[ 9301.943042] NIP: c000000000944cb0 LR: c000000000944ca8 CTR: c00000000017aba0
+[ 9301.961644] REGS: c000003c9b923630 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9301.986462] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9301.986466]   CR: 28002224  XER: 20000000
+[ 9302.022681] CFAR: c000000000944cc8 SOFTE: 1 
+GPR00: c00000000017af4c c000003c9b9238b0 c000000001072000 0000000000000001 
+GPR04: c000003ffc766580 0000000000000000 0000000000000001 0000000000000159 
+GPR08: 00000007ffffffff 000000008000002c 0000000000000000 0000000000000000 
+GPR12: c00000000017aba0 c00000000fb12200 
+[ 9302.101117] NIP [c000000000944cb0] _raw_spin_lock_irqsave+0x90/0x100
+[ 9302.131662] LR [c000000000944ca8] _raw_spin_lock_irqsave+0x88/0x100
+[ 9302.221694] Call Trace:
+[ 9302.221709] [c000003c9b9238b0] [c000003ffc765a00] 0xc000003ffc765a00 (unreliable)
+[ 9302.238789] [c000003c9b9238f0] [c00000000017af4c] rcu_process_callbacks+0x3ac/0x620
+[ 9302.276064] [c000003c9b9239a0] [c0000000000ed98c] __do_softirq+0x14c/0x3a0
+[ 9302.293952] [c000003c9b923a90] [c0000000000ee048] irq_exit+0x1a8/0x1c0
+[ 9302.311461] [c000003c9b923ac0] [c000000000023354] timer_interrupt+0xa4/0xe0
+[ 9302.339277] [c000003c9b923af0] [c000000000008f74] decrementer_common+0x114/0x120
+[ 9302.346884] --- interrupt: 901 at __replay_interrupt+0x38/0x3c
+    LR = arch_local_irq_restore+0x74/0x90
+[ 9302.394548] [c000003c9b923de0] [c000003c9b923e60] 0xc000003c9b923e60 (unreliable)
+[ 9302.420360] [c000003c9b923e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9302.438520] [c000003c9b923e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9302.456905] [c000003c9b923e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9302.480436] [c000003c9b923ef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9302.491192] [c000003c9b923f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9302.574156] [c000003c9b923f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9302.585258] Instruction dump:
+[ 9302.585279] 7fe3fb78 e8010010 eba1ffe8 ebc1fff0 ebe1fff8 7c0803a6 4e800020 8bad028a 
+[ 9302.657483] 7fe3fb78 4b6d0a05 60000000 7c210b78 <e92d0000> 89290009 792affe3 40820048 
+[ 9302.664159] Sending NMI from CPU 44 to CPUs 32:
+[ 9302.681809] NMI backtrace for cpu 32
+[ 9302.700638] CPU: 32 PID: 0 Comm: swapper/32 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9302.718556] task: c000003c9b87af00 task.stack: c000003c9b928000
+[ 9302.737141] NIP: c00000000000a694 LR: c000000000015714 CTR: 0000000000000001
+[ 9302.755573] REGS: c000003c9b92bb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9302.792598] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9302.792602]   CR: 24004284  XER: 00000000
+[ 9302.816832] CFAR: c00000000000b8e0 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b92bde0 c000000001072000 0000000000000500 
+GPR04: c000003ffc800400 0000000000115e92 00000472833a1cf0 0000000000000001 
+GPR08: 0000000000000004 6c616e72756f6a2d 6369767265732e64 6572663a30310a65 
+GPR12: 390a2f3a72657a65 c00000000fb14000 
+[ 9302.920490] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9302.926650] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9302.944569] Call Trace:
+[ 9302.962203] [c000003c9b92bde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9302.990324] [c000003c9b92be00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9303.026760] [c000003c9b92be60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9303.033928] [c000003c9b92be80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9303.051324] [c000003c9b92bef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9303.078879] [c000003c9b92bf20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9303.104297] [c000003c9b92bf90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9303.122216] Instruction dump:
+[ 9303.122236] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9303.170443] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9303.220843] Sending NMI from CPU 44 to CPUs 33:
+[ 9303.249904] NMI backtrace for cpu 33
+[ 9303.270206] CPU: 33 PID: 0 Comm: swapper/33 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9303.276353] task: c000003c9b87c600 task.stack: c000003c9b92c000
+[ 9303.293844] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fff829d1540
+[ 9303.311925] REGS: c000003c9b92fb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9303.347509] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9303.347513]   CR: 22002284  XER: 00000000
+[ 9303.366211] CFAR: 00007fff829415ec SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b92fde0 c000000001072000 0000000000000500 
+GPR04: b000000000001033 c000000000091990 0000047294905a3c 0000000000000001 
+GPR08: 0000000000000004 6435663962393d73 0000000000000000 0000000000000000 
+GPR12: 00007fff829d1540 00007fff813368b0 
+[ 9303.470804] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9303.488641] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9303.495341] Call Trace:
+[ 9303.514156] [c000003c9b92fde0] [c000003c9b92fe60] 0xc000003c9b92fe60 (unreliable)
+[ 9303.531795] [c000003c9b92fe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9303.550192] [c000003c9b92fe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9303.585452] [c000003c9b92fe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9303.591570] [c000003c9b92fef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9303.620425] [c000003c9b92ff20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9303.626606] [c000003c9b92ff90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9303.644337] Instruction dump:
+[ 9303.663847] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9303.694286] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9303.753936] Sending NMI from CPU 44 to CPUs 37:
+[ 9303.753971] NMI backtrace for cpu 37
+[ 9303.766740] CPU: 37 PID: 0 Comm: swapper/37 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9303.814228] task: c000003c9b982e00 task.stack: c000003c9b93c000
+[ 9303.832456] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9303.863565] REGS: c000003c9b93fb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9303.881521] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9303.881525]   CR: 44004284  XER: 00000000
+[ 9303.914900] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b93fde0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000472a3f25d89 0000003ffbc80000 
+GPR08: 0000000000000004 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 00007fff9cedf910 00007fff9c237730 
+[ 9304.029118] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9304.058062] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9304.065253] Call Trace:
+[ 9304.065271] [c000003c9b93fde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9304.101370] [c000003c9b93fe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9304.107699] [c000003c9b93fe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9304.136497] [c000003c9b93fe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9304.221565] [c000003c9b93fef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9304.260836] [c000003c9b93ff20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9304.281568] [c000003c9b93ff90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9304.300687] Instruction dump:
+[ 9304.319056] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9304.339133] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9304.378008] Sending NMI from CPU 44 to CPUs 38:
+[ 9304.378038] NMI backtrace for cpu 38
+[ 9304.384758] CPU: 38 PID: 0 Comm: swapper/38 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9304.404488] task: c000003c9b984500 task.stack: c000003c9b940000
+[ 9304.434731] NIP: c00000000000a694 LR: c000000000015714 CTR: 0000000000000002
+[ 9304.460458] REGS: c000003c9b943b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9304.477495] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9304.477499]   CR: 42004284  XER: 00000000
+[ 9304.514749] CFAR: c00000000000b8e0 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b943de0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000472b6fde474 0000003ffbcc0000 
+GPR08: 0000000000000004 0400000004000000 b086dbca0d000000 a83295cc187105cc 
+GPR12: 02030201981274d2 c00000000fb17c00 
+[ 9304.624683] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9304.643585] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9304.649911] Call Trace:
+[ 9304.649928] [c000003c9b943de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9304.687789] [c000003c9b943e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9304.706874] [c000003c9b943e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9304.725416] [c000003c9b943e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9304.743083] [c000003c9b943ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9304.777483] [c000003c9b943f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9304.796094] [c000003c9b943f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9304.814382] Instruction dump:
+[ 9304.832016] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9304.838515] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9304.858069] Sending NMI from CPU 44 to CPUs 39:
+[ 9304.880592] NMI backtrace for cpu 39
+[ 9304.910462] CPU: 39 PID: 0 Comm: swapper/39 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9304.941208] task: c000003c9b985c00 task.stack: c000003c9b944000
+[ 9304.964230] NIP: c00000000000a694 LR: c000000000015714 CTR: 0000000000000001
+[ 9304.996486] REGS: c000003c9b947b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9305.035294] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9305.035299]   CR: 22004284  XER: 00000000
+[ 9305.081163] CFAR: c00000000000b8e0 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b947de0 c000000001072000 0000000000000500 
+GPR04: c000003ffc9c0400 0000000000116048 00000472c6541b2c 0000000000000001 
+GPR08: 0000000000000004 30310a6563697672 72657a656572663a 7570633a390a2f3a 
+GPR12: 3a380a2f3a746573 c00000000fb18600 
+[ 9305.201318] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9305.251019] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9305.280157] Call Trace:
+[ 9305.280175] [c000003c9b947de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9305.311415] [c000003c9b947e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9305.328798] [c000003c9b947e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9305.346225] [c000003c9b947e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9305.363905] [c000003c9b947ef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9305.398601] [c000003c9b947f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9305.428570] [c000003c9b947f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9305.448157] Instruction dump:
+[ 9305.476493] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9305.483216] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9305.502628] Sending NMI from CPU 44 to CPUs 41:
+[ 9305.520050] NMI backtrace for cpu 41
+[ 9305.538198] CPU: 41 PID: 0 Comm: swapper/41 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9305.556372] task: c000003c9b988a00 task.stack: c000003c9b94c000
+[ 9305.575148] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9305.593577] REGS: c000003c9b94fb60 TRAP: 0e81   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9305.630206] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9305.630211]   CR: 22004284  XER: 00000000
+[ 9305.647742] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b94fde0 c000000001072000 0000000028000000 
+GPR04: c000003ffca40400 00000000001160c8 00000472d9d7dedf 0000000000000001 
+GPR08: 0000000000000002 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 00007fff8814ee40 00007fff86ee67b0 
+[ 9305.747990] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9305.766759] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9305.785721] Call Trace:
+[ 9305.804297] [c000003c9b94fde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9305.822288] [c000003c9b94fe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9305.847469] [c000003c9b94fe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9305.865758] [c000003c9b94fe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9305.883773] [c000003c9b94fef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9305.912805] [c000003c9b94ff20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9305.919044] [c000003c9b94ff90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9305.969918] Instruction dump:
+[ 9305.969940] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9306.007293] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9306.015089] Sending NMI from CPU 44 to CPUs 46:
+[ 9306.032672] NMI backtrace for cpu 46
+[ 9306.032695] CPU: 46 PID: 0 Comm: swapper/46 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9306.068992] task: c000003c9b98fd00 task.stack: c000003c9b960000
+[ 9306.088166] NIP: c00000000000a694 LR: c000000000015714 CTR: 000000013b214380
+[ 9306.117972] REGS: c000003c9b963b60 TRAP: 0e81   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9306.179282] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9306.179286]   CR: 28004284  XER: 00000000
+[ 9306.244235] CFAR: 000000013b21b110 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b963de0 c000000001072000 0000000028000000 
+GPR04: c000003ffcb80400 0000000000116130 00000472e97cbb91 0000000000000001 
+GPR08: 0000000000000002 000001000f0e5a40 0000000000000000 000000000000000f 
+GPR12: 0000000000004400 00007fff923dd610 
+[ 9306.400580] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9306.431341] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9306.437573] Call Trace:
+[ 9306.456434] [c000003c9b963de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9306.475205] [c000003c9b963e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9306.512478] [c000003c9b963e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9306.530796] [c000003c9b963e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9306.536991] [c000003c9b963ef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9306.566807] [c000003c9b963f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9306.585208] [c000003c9b963f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9306.623004] Instruction dump:
+[ 9306.623026] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9306.660545] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9306.679720] Sending NMI from CPU 44 to CPUs 47:
+[ 9306.686168] NMI backtrace for cpu 47
+[ 9306.686190] CPU: 47 PID: 0 Comm: swapper/47 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9306.733237] task: c000003c9b991400 task.stack: c000003c9b964000
+[ 9306.751678] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9306.770450] REGS: c000003c9b967b60 TRAP: 0e81   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9306.807149] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9306.807153]   CR: 48004284  XER: 00000000
+[ 9306.825411] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b967de0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000472fd6e28ff 0000003ffbf00000 
+GPR08: 0000000000000002 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 0000000000002200 00007fffb3b0cb60 
+[ 9306.924453] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9306.976021] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9306.982836] Call Trace:
+[ 9306.982852] [c000003c9b967de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9307.020753] [c000003c9b967e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9307.038104] [c000003c9b967e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9307.074016] [c000003c9b967e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9307.091898] [c000003c9b967ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9307.109058] [c000003c9b967f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9307.139605] [c000003c9b967f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9307.165916] Instruction dump:
+[ 9307.165939] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9307.185258] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9307.972247] Sending NMI from CPU 44 to CPUs 49:
+[ 9307.972277] NMI backtrace for cpu 49
+[ 9308.046911] CPU: 49 PID: 0 Comm: swapper/49 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9308.105919] task: c000003c9b994200 task.stack: c000003c9b96c000
+[ 9308.113669] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9308.131441] REGS: c000003c9b96fb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9308.150026] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9308.150030]   CR: 42004284  XER: 00000000
+[ 9308.185946] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b96fde0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 0000047324ade317 0000003ffbf80000 
+GPR08: 0000000000000004 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 00007fff85a04560 00007fff85c4b480 
+[ 9308.366086] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9308.385089] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9308.403595] Call Trace:
+[ 9308.403611] [c000003c9b96fde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9308.428510] [c000003c9b96fe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9308.447293] [c000003c9b96fe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9308.483901] [c000003c9b96fe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9308.483934] [c000003c9b96fef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9308.518965] [c000003c9b96ff20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9308.548235] [c000003c9b96ff90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9308.555163] Instruction dump:
+[ 9308.574398] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9308.593933] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9308.613314] Sending NMI from CPU 44 to CPUs 50:
+[ 9308.631224] NMI backtrace for cpu 50
+[ 9308.648453] CPU: 50 PID: 0 Comm: swapper/50 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9308.656018] task: c000003c9b995900 task.stack: c000003c9b970000
+[ 9308.691548] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fff829d1540
+[ 9308.728105] REGS: c000003c9b973b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9308.756459] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9308.756463]   CR: 28002284  XER: 00000000
+[ 9308.791784] CFAR: 00007fff829415ec SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b973de0 c000000001072000 0000000000000500 
+GPR04: b000000000001033 c000000000091990 0000047338c9eba3 0000000000000001 
+GPR08: 0000000000000004 6435663962393d73 0000000000000000 0000000000000000 
+GPR12: 00007fff829d1540 00007fff813368b0 
+[ 9308.901163] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9308.919143] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9308.938234] Call Trace:
+[ 9308.938248] [c000003c9b973de0] [c000003c9b973e60] 0xc000003c9b973e60 (unreliable)
+[ 9308.944452] [c000003c9b973e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9308.981825] [c000003c9b973e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9308.999229] [c000003c9b973e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9309.018030] [c000003c9b973ef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9309.045888] [c000003c9b973f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9309.082118] [c000003c9b973f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9309.103073] Instruction dump:
+[ 9309.103094] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9309.141435] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9309.171257] Sending NMI from CPU 44 to CPUs 51:
+[ 9309.205026] NMI backtrace for cpu 51
+[ 9309.205052] CPU: 51 PID: 0 Comm: swapper/51 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9309.312542] task: c000003c9b997000 task.stack: c000003c9b974000
+[ 9309.350881] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000747240
+[ 9309.376578] REGS: c000003c9b977b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9309.401975] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9309.401980]   CR: 22002284  XER: 00000000
+[ 9309.430883] CFAR: c0000000007472f8 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b977de0 c000000001072000 0000000000000500 
+GPR04: b000000000001033 c000000000091990 000004734a4cbd8f 0000000000000001 
+GPR08: 0000000000000004 0000000000000808 c000003c9b974000 0000000000000504 
+GPR12: c000000000747240 c00000000fb1fe00 
+[ 9309.527372] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9309.545492] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9309.564208] Call Trace:
+[ 9309.583055] [c000003c9b977de0] [c000003c9b977e60] 0xc000003c9b977e60 (unreliable)
+[ 9309.589261] [c000003c9b977e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9309.607067] [c000003c9b977e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9309.643739] [c000003c9b977e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9309.661635] [c000003c9b977ef0] [c000000000145ae0] cpu_startup_entry+0x30/0x50
+[ 9309.690364] [c000003c9b977f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9309.697187] [c000003c9b977f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9309.726900] Instruction dump:
+[ 9309.746275] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9309.765461] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9309.792061] Sending NMI from CPU 44 to CPUs 53:
+[ 9309.808717] NMI backtrace for cpu 53
+[ 9309.808742] CPU: 53 PID: 0 Comm: swapper/53 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9309.827420] task: c000003c9b999e00 task.stack: c000003c9b97c000
+[ 9309.844664] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9309.881898] REGS: c000003c9b97fb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9309.888480] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9309.888485]   CR: 28004224  XER: 00000000
+[ 9309.935216] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9b97fde0 c000000001072000 0000000000000500 
+GPR04: c000003ffcd40400 0000000000116422 000004735cb9144a 0000000000000001 
+GPR08: 0000000000000004 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 00007fffaece4560 00007fffaef2b480 
+[ 9310.058523] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9310.077755] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9310.095857] Call Trace:
+[ 9310.095874] [c000003c9b97fde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9310.134144] [c000003c9b97fe00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9310.140991] [c000003c9b97fe60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9310.158273] [c000003c9b97fe80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9310.196314] [c000003c9b97fef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9310.225357] [c000003c9b97ff20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9310.279247] [c000003c9b97ff90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9310.301515] Instruction dump:
+[ 9310.325593] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9310.355791] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9310.390757] Sending NMI from CPU 44 to CPUs 55:
+[ 9310.426600] NMI backtrace for cpu 55
+[ 9310.456747] CPU: 55 PID: 0 Comm: swapper/55 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9310.467784] task: c000003c9b99cc00 task.stack: c000003c9ba04000
+[ 9310.511676] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000198900
+[ 9310.536464] REGS: c000003c9ba07b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9310.554860] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9310.554865]   CR: 42004224  XER: 00000000
+[ 9310.590244] CFAR: c000000000008f70 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9ba07de0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 000004736f9448df 0000003ffc100000 
+GPR08: 0000000000000004 b000000000009033 0000000000000002 0000000000000000 
+GPR12: 0000000000002200 00007fffa0d4b480 
+[ 9310.667964] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9310.697612] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9310.734383] Call Trace:
+[ 9310.734402] [c000003c9ba07de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9310.757647] [c000003c9ba07e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9310.775715] [c000003c9ba07e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9310.793766] [c000003c9ba07e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9310.810696] [c000003c9ba07ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9310.828259] [c000003c9ba07f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9310.863411] [c000003c9ba07f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9310.881505] Instruction dump:
+[ 9310.898211] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9310.916903] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9310.924632] Sending NMI from CPU 44 to CPUs 62:
+[ 9310.941350] NMI backtrace for cpu 62
+[ 9310.958100] CPU: 62 PID: 0 Comm: swapper/62 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9310.975712] task: c000003c9b9a6d00 task.stack: c000003c9ba20000
+[ 9310.992486] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fff86f56640
+[ 9311.011222] REGS: c000003c9ba23b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9311.045542] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9311.045546]   CR: 22004284  XER: 00000000
+[ 9311.078477] CFAR: 00007fff86f13510 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9ba23de0 c000000001072000 0000000000000500 
+GPR04: c000003ffcf80400 0000000000116506 000004737f49c5db 0000000000000001 
+GPR08: 0000000000000004 0000000000000008 0000000000000000 0000000000000000 
+GPR12: 00007fff86f56640 00007fff8712a960 
+[ 9311.155477] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9311.198906] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9311.198941] Call Trace:
+[ 9311.217691] [c000003c9ba23de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9311.255563] [c000003c9ba23e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9311.300746] [c000003c9ba23e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9311.330388] [c000003c9ba23e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9311.369861] [c000003c9ba23ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9311.400775] [c000003c9ba23f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9311.436527] [c000003c9ba23f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9311.456024] Instruction dump:
+[ 9311.456045] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9311.493879] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9311.501383] Sending NMI from CPU 44 to CPUs 66:
+[ 9311.527819] NMI backtrace for cpu 66
+[ 9311.527845] CPU: 66 PID: 0 Comm: swapper/66 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9311.592912] task: c000003c9b9ac900 task.stack: c000003c9ba30000
+[ 9311.622562] NIP: c00000000000a694 LR: c000000000015714 CTR: c000000000747240
+[ 9311.656344] REGS: c000003c9ba33b60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9311.705689] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9311.705693]   CR: 44004284  XER: 00000000
+[ 9311.741067] CFAR: c0000000007472f8 SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9ba33de0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000473912f8e8f 0000003ffc3c0000 
+GPR08: 0000000000000004 0000000000000808 c000003c9ba30000 00000047f9b906f7 
+GPR12: c000000000747240 c00000000fb29400 
+[ 9311.823076] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9311.854186] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9311.861414] Call Trace:
+[ 9311.880720] [c000003c9ba33de0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9311.898230] [c000003c9ba33e00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9311.936659] [c000003c9ba33e60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9311.943632] [c000003c9ba33e80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9311.961183] [c000003c9ba33ef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9311.989027] [c000003c9ba33f20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9311.996672] [c000003c9ba33f90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9312.045290] Instruction dump:
+[ 9312.045310] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9312.083100] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9312.089854] Sending NMI from CPU 44 to CPUs 76:
+[ 9312.107445] NMI backtrace for cpu 76
+[ 9312.125918] CPU: 76 PID: 0 Comm: swapper/76 Not tainted 4.12.0-rc7-next-20170628-autotest #1
+[ 9312.143699] task: c000003c9b9baf00 task.stack: c000003c9ba58000
+[ 9312.160906] NIP: c00000000000a694 LR: c000000000015714 CTR: 00007fffa89eeef0
+[ 9312.178648] REGS: c000003c9ba5bb60 TRAP: 0501   Not tainted  (4.12.0-rc7-next-20170628-autotest)
+[ 9312.214335] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[ 9312.214339]   CR: 48004284  XER: 00000000
+[ 9312.233464] CFAR: 00007fffa89f4c4c SOFTE: 1 
+GPR00: c0000000007447f8 c000003c9ba5bde0 c000000001072000 0000000000000900 
+GPR04: 0000000000000003 c000000000091990 00000473a2dfe141 0000003ffc640000 
+GPR08: 0000000000000004 0000000000003475 0000000000000001 0000000000000005 
+GPR12: 0000000000002200 00007fffa8a1b480 
+[ 9312.384725] NIP [c00000000000a694] __replay_interrupt+0x38/0x3c
+[ 9312.415206] LR [c000000000015714] arch_local_irq_restore+0x74/0x90
+[ 9312.422010] Call Trace:
+[ 9312.441234] [c000003c9ba5bde0] [c000000000199580] tick_broadcast_oneshot_control+0x40/0x60 (unreliable)
+[ 9312.459276] [c000003c9ba5be00] [c0000000007447f8] cpuidle_enter_state+0x108/0x3d0
+[ 9312.511009] [c000003c9ba5be60] [c000000000145504] call_cpuidle+0x44/0x80
+[ 9312.528234] [c000003c9ba5be80] [c0000000001458b0] do_idle+0x290/0x2f0
+[ 9312.535059] [c000003c9ba5bef0] [c000000000145ae4] cpu_startup_entry+0x34/0x50
+[ 9312.563891] [c000003c9ba5bf20] [c000000000046ac4] start_secondary+0x304/0x360
+[ 9312.582556] [c000003c9ba5bf90] [c00000000000aa6c] start_secondary_prolog+0x10/0x14
+[ 9312.620081] Instruction dump:
+[ 9312.620101] 7d200026 618c8000 2c030900 4182e7f0 2c030500 4182e338 2c030e80 4182ffa4 
+[ 9312.657417] 2c030ea0 4182f2c8 2c030e60 4182f080 <4e800020> 7c781b78 480003e9 48000401 
+[ 9312.676481] rcu_sched kthread starved for 7620 jiffies! g50052 c50051 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x402
+[ 9312.711089] rcu_sched       D    0     8      2 0x00000800
+[ 9312.772781] Call Trace:
+[ 9312.772797] [c000003ffb3a38c0] [c000003c9b84a200] 0xc000003c9b84a200 (unreliable)
+[ 9312.785261] [c000003ffb3a3a90] [c00000000001b338] __switch_to+0x2e8/0x430
+[ 9312.806547] [c000003ffb3a3af0] [c00000000093e4e8] __schedule+0x3a8/0xaf0
+[ 9312.861861] [c000003ffb3a3bc0] [c00000000093ec70] schedule+0x40/0xb0
+[ 9312.885668] [c000003ffb3a3bf0] [c000000000943700] schedule_timeout+0x200/0x450
+[ 9312.903634] [c000003ffb3a3ce0] [c00000000017cddc] rcu_gp_kthread+0x52c/0xba0
+[ 9312.921951] [c000003ffb3a3dc0] [c0000000001116c0] kthread+0x160/0x1a0
+[ 9312.940446] [c000003ffb3a3e30] [c00000000000b524] ret_from_kernel_thread+0x5c/0xb8
+
+--=-B8Ez7iUl+V6b9Uq+Lj+A--
