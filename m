@@ -1,37 +1,35 @@
-Return-Path: <ivan@de.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-qk0-x231.google.com (mail-qk0-x231.google.com
+ [IPv6:2607:f8b0:400d:c09::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3wzZgG4pkmzDr5r
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 21:53:46 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v5UBmZKY017037
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 07:53:44 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bd0yv4uj5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 07:53:43 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ivan@de.ibm.com>;
- Fri, 30 Jun 2017 12:53:41 +0100
-From: Ivan Mikhaylov <ivan@de.ibm.com>
-To: Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Patrice Chotard <patrice.chotard@st.com>,
- Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Joel Stanley <joel@jms.id.au>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-mmc@vger.kernel.org,
- kernel@stlinux.com
-Subject: [PATCH v1 2/2] 44x/fsp2: enable eMMC arasan for fsp2 platform
-Date: Fri, 30 Jun 2017 14:53:31 +0300
-Message-Id: <20170630115331.73869-3-ivan@de.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3wzZkz56q7zDrBg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 21:56:59 +1000 (AEST)
+Received: by mail-qk0-x231.google.com with SMTP id d78so98377416qkb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jun 2017 04:56:59 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Fri, 30 Jun 2017 07:56:50 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Eryu Guan <eguan@redhat.com>, Balbir Singh <bsingharora@gmail.com>,
+ liwan@redhat.com, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: kworker with empty task->cpus_allowed (was Re: [v4.12-rc1
+ regression] mount ext4 fs results in kernel crash on PPC64le host)
+Message-ID: <20170630115650.GA16820@htj.duckdns.org>
+References: <CAKTCnzncEoCC4=p2_ySpNdB6229SbCCqjDCzfpf8XA0xvvzH1g@mail.gmail.com>
+ <20170629034122.GI23360@eguan.usersys.redhat.com>
+ <CAKTCnzk8VMN0hBi24vEoNPGvvX-s8uhrjMdn7drQVDUdfA_+Ow@mail.gmail.com>
+ <20170629100533.GQ23360@eguan.usersys.redhat.com>
+ <87efu39he0.fsf@concordia.ellerman.id.au>
+ <20170629113933.GT23360@eguan.usersys.redhat.com>
+ <878tkb9ewo.fsf@concordia.ellerman.id.au>
+ <20170629135919.GU23360@eguan.usersys.redhat.com>
+ <20170629142425.GB3531@htj.duckdns.org>
+ <87k23uqo3d.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87k23uqo3d.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,87 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add mmc0 changes for enabling arasan emmc and change
-defconfig appropriately.
+Hello, Michael.
 
-Signed-off-by: Ivan Mikhaylov <ivan@de.ibm.com>
----
- arch/powerpc/boot/dts/fsp2.dts          |   33 +++++++++++++++++-------------
- arch/powerpc/configs/44x/fsp2_defconfig |    2 +
- 2 files changed, 21 insertions(+), 14 deletions(-)
+On Fri, Jun 30, 2017 at 11:08:22AM +1000, Michael Ellerman wrote:
+> Tejun Heo <tj@kernel.org> writes:
+> 
+> > Could be the same problem as the one reported in the following thread.
+> >
+> >  http://lkml.kernel.org/r/1497266622.15415.39.camel@abdul.in.ibm.com
+> >
+> > The root cause there is ppc arch code not setting up possible cpu <->
+> > numa mapping during boot.
+> 
+> Huh?
+> 
+> You changed the workqueue code to avoid that in 2186d9f940b6
+> ("workqueue: move wq_numa_init() to workqueue_init()"), didn't you?
 
-diff --git a/arch/powerpc/boot/dts/fsp2.dts b/arch/powerpc/boot/dts/fsp2.dts
-index 475953a..6a63026 100644
---- a/arch/powerpc/boot/dts/fsp2.dts
-+++ b/arch/powerpc/boot/dts/fsp2.dts
-@@ -52,6 +52,7 @@
- 	clocks {
- 		mmc_clk: mmc_clk {
- 			compatible = "fixed-clock";
-+			#clock-cells = <0>;
- 			clock-frequency = <50000000>;
- 			clock-output-names = "mmc_clk";
- 		};
-@@ -359,20 +360,6 @@
- 		interrupts = <31 0x4 15 0x84>;
- 	};
- 
--	mmc0: sdhci@020c0000 {
--		compatible	= "st,sdhci-stih407", "st,sdhci";
--		status		= "disabled";
--		reg		= <0x020c0000 0x20000>;
--		reg-names	= "mmc";
--		interrupt-parent = <&UIC1_3>;
--		interrupts	= <21 0x4 22 0x4>;
--		interrupt-names	= "mmcirq";
--		pinctrl-names	= "default";
--		pinctrl-0	= <>;
--		clock-names	= "mmc";
--		clocks		= <&mmc_clk>;
--	};
--
- 	plb6 {
- 		compatible = "ibm,plb6";
- 		#address-cells = <2>;
-@@ -501,6 +488,24 @@
- 					 /*RXDE*/  4 &UIC1_2 13 0x4>;
- 		};
- 
-+		mmc0: sdhci@020c0000 {
-+			compatible	= "st,sdhci-stih407", "st,sdhci";
-+			reg		= <0x020c0000 0x20000>;
-+			reg-names	= "mmc";
-+			interrupts	= <21 0x4>;
-+			interrupt-parent = <&UIC1_3>;
-+			interrupt-names	= "mmcirq";
-+			pinctrl-names	= "default";
-+			pinctrl-0	= <>;
-+			clock-names	= "mmc";
-+			clocks		= <&mmc_clk>;
-+			bus-width	= <4>;
-+			non-removable;
-+			sd-uhs-sdr50;
-+			sd-uhs-sdr104;
-+			sd-uhs-ddr50;
-+		};
-+
- 		opb {
- 			compatible = "ibm,opb";
- 			#address-cells = <1>;
-diff --git a/arch/powerpc/configs/44x/fsp2_defconfig b/arch/powerpc/configs/44x/fsp2_defconfig
-index e8e6a69..935aabe 100644
---- a/arch/powerpc/configs/44x/fsp2_defconfig
-+++ b/arch/powerpc/configs/44x/fsp2_defconfig
-@@ -92,8 +92,10 @@ CONFIG_MMC_DEBUG=y
- CONFIG_MMC_SDHCI=y
- CONFIG_MMC_SDHCI_PLTFM=y
- CONFIG_MMC_SDHCI_OF_ARASAN=y
-+CONFIG_MMC_SDHCI_ST=y
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_M41T80=y
-+CONFIG_RESET_CONTROLLER=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT4_FS=y
- CONFIG_EXT4_FS_POSIX_ACL=y
+That was a different issue.  This one is cpu <-> numa node mapping not
+being stable across cpu hotplug.
+
+Thanks.
+
 -- 
-1.7.1
+tejun
