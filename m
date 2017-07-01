@@ -2,20 +2,20 @@ Return-Path: <martin.petersen@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x0QsK4ZFjzDr4g
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jul 2017 07:05:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x0Qsv1wdvzDr8Q
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Jul 2017 07:05:55 +1000 (AEST)
 To: Arvind Yadav <arvind.yadav.cs@gmail.com>
 Cc: tyreld@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au, jejb@linux.vnet.ibm.com,
  martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: ibmvscsi: constify dev_pm_ops structures.
+Subject: Re: [PATCH] scsi: ibmvfc: constify dev_pm_ops structures.
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
-References: <ff2eee2670f773454efdece4f455bb367fff3baa.1498722090.git.arvind.yadav.cs@gmail.com>
-Date: Sat, 01 Jul 2017 17:05:06 -0400
-In-Reply-To: <ff2eee2670f773454efdece4f455bb367fff3baa.1498722090.git.arvind.yadav.cs@gmail.com>
- (Arvind Yadav's message of "Thu, 29 Jun 2017 13:13:55 +0530")
-Message-ID: <yq1bmp3x3zx.fsf@oracle.com>
+References: <c0ec5db7e2c3313cb7b417e76330520fd2b6136c.1498722828.git.arvind.yadav.cs@gmail.com>
+Date: Sat, 01 Jul 2017 17:05:40 -0400
+In-Reply-To: <c0ec5db7e2c3313cb7b417e76330520fd2b6136c.1498722828.git.arvind.yadav.cs@gmail.com>
+ (Arvind Yadav's message of "Thu, 29 Jun 2017 13:24:41 +0530")
+Message-ID: <yq17ezrx3yz.fsf@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,7 +34,7 @@ Arvind,
 > working with dev_pm_ops provided by <linux/device.h> work with const
 > dev_pm_ops. So mark the non-const structs as const.
 
-Applied to 4.13/scsi-queue.
+Applied to 4.13/scsi-queue. Thanks!
 
 -- 
 Martin K. Petersen	Oracle Linux Engineering
