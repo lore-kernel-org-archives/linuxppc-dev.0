@@ -1,25 +1,23 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1CKP3hK3zDr4J
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 13:28:57 +1000 (AEST)
-Date: Mon, 3 Jul 2017 12:28:52 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Shuah
- Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 3/4] selftests/ftrace: Update multiple kprobes test
- for powerpc
-Message-Id: <20170703122852.c7f94b042bdb5a20a5316b0f@kernel.org>
-In-Reply-To: <f7a4667e3a43fa6a3e33c4026d412a4dd02b4550.1498742262.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
- <f7a4667e3a43fa6a3e33c4026d412a4dd02b4550.1498742262.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1CVT4cx4zDr4D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 13:36:49 +1000 (AEST)
+Received: by mail-qk0-x243.google.com with SMTP id p21so22554017qke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Jul 2017 20:36:49 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <316b2400-6be8-2772-e307-0fa6447ccaa9@linux.vnet.ibm.com>
+References: <20170630065235.752-1-oohall@gmail.com>
+ <316b2400-6be8-2772-e307-0fa6447ccaa9@linux.vnet.ibm.com>
+From: Oliver <oohall@gmail.com>
+Date: Mon, 3 Jul 2017 13:36:46 +1000
+Message-ID: <CAOSf1CG63M9V-si7ewm6xY3ow8FN_GY7RdR4XsXuNKkTb72uRA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/hugetlbfs: Export HPAGE_SHIFT
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jun 2017 19:05:38 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Fri, Jun 30, 2017 at 7:28 PM, Anshuman Khandual
+<khandual@linux.vnet.ibm.com> wrote:
+> On 06/30/2017 12:22 PM, Oliver O'Halloran wrote:
+>> Export it so it can be referenced inside a module.
+>>
+>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>> ---
+>>  arch/powerpc/mm/hugetlbpage.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+>> index ceeab69cf7fc..96293560f294 100644
+>> --- a/arch/powerpc/mm/hugetlbpage.c
+>> +++ b/arch/powerpc/mm/hugetlbpage.c
+>> @@ -34,6 +34,7 @@
+>>  #define PAGE_SHIFT_16G       34
+>>
+>>  unsigned int HPAGE_SHIFT;
+>> +EXPORT_SYMBOL(HPAGE_SHIFT);
+>
+> Why would you need this in a driver ? This represents the
+> default HugeTLB page size.
 
-> KPROBES_ON_FTRACE is only available on powerpc64le. Update comment to
-> clarify this.
-> 
-> Also, we should use an offset of 8 to ensure that the probe does not
-> fall on ftrace location. The current offset of 4 will fall before the
-> function local entry point and won't fire, while an offset of 12 or 16
-> will fall on ftrace location. Offset 8 is currently guaranteed to not be
-> the ftrace location.
+Libnvdimm uses HPAGE_SIZE for a few things that it probably shouldn't.
+I have sent a fix for libnvdimm, but that hasn't been merged yet and
+this was breaking mpe's -next builds in the mean time. I agree it's
+kind of bad, but we needed ZONE_DEVICE support to be in 4.13.
 
-OK, looks good to me.
-
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-
-Thanks!
-
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-> index f4d1ff785d67..2a1cb9908746 100644
-> --- a/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-> +++ b/tools/testing/selftests/ftrace/test.d/kprobe/multiple_kprobes.tc
-> @@ -2,10 +2,10 @@
->  # description: Register/unregister many kprobe events
->  
->  # ftrace fentry skip size depends on the machine architecture.
-> -# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc
-> +# Currently HAVE_KPROBES_ON_FTRACE defined on x86 and powerpc64le
->  case `uname -m` in
->    x86_64|i[3456]86) OFFS=5;;
-> -  ppc*) OFFS=4;;
-> +  ppc64le) OFFS=8;;
->    *) OFFS=0;;
->  esac
->  
-> -- 
-> 2.13.1
-> 
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Oliver
