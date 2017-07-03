@@ -1,26 +1,24 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1Cq60rdmzDr4H
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 13:51:14 +1000 (AEST)
-Date: Mon, 3 Jul 2017 12:51:09 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Steven Rostedt
- <rostedt@goodmis.org>, Ananth N Mavinakayanahalli
- <ananth@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Shuah
- Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/4] selftests/ftrace: Add a test to probe module
- functions
-Message-Id: <20170703125109.191c52bdc0495cc41e742d84@kernel.org>
-In-Reply-To: <20170703122733.e0f7043415e495352c0a12a9@kernel.org>
-References: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
- <04c3a67eb5fe13b12725f7198ef9904f992a512a.1498742262.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170703122733.e0f7043415e495352c0a12a9@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1Cx21mjQzDqjF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 13:56:22 +1000 (AEST)
+Date: Mon, 3 Jul 2017 13:55:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH 1/2] powerpc/xive: guest exploitation of the XIVE
+ interrupt controller
+Message-ID: <20170703035552.GQ13989@umbus.fritz.box>
+References: <1498123757-18427-1-git-send-email-clg@kaod.org>
+ <1498123757-18427-2-git-send-email-clg@kaod.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Vsi50HYs5tPfr+1I"
+In-Reply-To: <1498123757-18427-2-git-send-email-clg@kaod.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 3 Jul 2017 12:27:33 +0900
-Masami Hiramatsu <mhiramat@kernel.org> wrote:
 
-> On Thu, 29 Jun 2017 19:05:37 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > Add a kprobes test to ensure that we are able to add a probe on a
-> > module function using 'p <mod>:<func>' format, without having to
-> > specify a probe name.
-> > 
-> > Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> >  .../testing/selftests/ftrace/test.d/kprobe/probe_module.tc | 14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
-> >  create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-> > 
-> > diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-> > new file mode 100644
-> > index 000000000000..ea7657041ba6
-> > --- /dev/null
-> > +++ b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
-> > @@ -0,0 +1,14 @@
-> > +#!/bin/sh
-> > +# description: Kprobe dynamic event - probing module
-> > +
-> > +[ -f kprobe_events ] || exit_unsupported # this is configurable
-> > +
-> > +echo 0 > events/enable
-> > +echo > kprobe_events
-> > +export MOD=`lsmod | head -n 2 | tail -n 1 | cut -f1 -d" "`
-> > +export FUNC=`grep -m 1 ".* t .*\\[$MOD\\]" /proc/kallsyms | xargs | cut -f3 -d" "`
-> > +[ "x" != "x$MOD" -a "y" != "y$FUNC" ] || exit_untested
-> 
-> Could you also add below case?
-> 
-> echo p:probe_$MOD/$FUNC $MOD/$FUNC > kprobe_events 
+--Vsi50HYs5tPfr+1I
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Oops, it should be something like
+On Thu, Jun 22, 2017 at 11:29:16AM +0200, C=E9dric Le Goater wrote:
+> This is the framework for using XIVE in a PowerVM guest. The support
+> is very similar to the native one in a much simpler form.
+>=20
+> Instead of OPAL calls, a set of Hypervisors call are used to configure
+> the interrupt sources and the event/notification queues of the guest:
+>=20
+>    H_INT_GET_SOURCE_INFO
+>    H_INT_SET_SOURCE_CONFIG
+>    H_INT_GET_SOURCE_CONFIG
+>    H_INT_GET_QUEUE_INFO
+>    H_INT_SET_QUEUE_CONFIG
+>    H_INT_GET_QUEUE_CONFIG
+>    H_INT_RESET
+>=20
+> Calls that still need to be addressed :
+>=20
+>    H_INT_SET_OS_REPORTING_LINE
+>    H_INT_GET_OS_REPORTING_LINE
+>    H_INT_ESB
+>    H_INT_SYNC
 
-echo "p:test_${MOD}_${FUNC} $MOD/$FUNC" > kprobe_events
+So, does this mean there's a PAPR update with the XIVE virtualization
+stuff?  Or at least an ACR?  Can we have that available please...
 
-since we would like to avoid adding new group name for it.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-(Adding new group name should be a separated one.)
+--Vsi50HYs5tPfr+1I
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Thank you,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-> 
-> This is for "new event with name on module" case, your one is for "new event without name on module (automatic name generation)"
-> 
-> We should have different test case, because those kicks slightly different parts in kprobe tracer.
-> 
-> Thank you,
-> 
-> > +echo p $MOD:$FUNC > kprobe_events
-> > +grep $MOD kprobe_events
-> > +echo > kprobe_events
-> > +clear_trace
-> > -- 
-> > 2.13.1
-> > 
-> 
-> 
-> -- 
-> Masami Hiramatsu <mhiramat@kernel.org>
+iQIcBAEBCAAGBQJZWcBFAAoJEGw4ysog2bOS4fQP/10BnDdzOOCB3L9EHkq10jV5
+tzl0wtjXCz3FAgfOI3xIpB0pb/74KJv9nUzuuFvSyrca8Vq6W7XGqkYKcK8+N7Oz
+lDIVRzVCLexMREDSddERTmgofZYhQANnqQRlSgcvljdSJIzFAjWU/doINasX+dA5
+D0ylE++f7/EOFOFqAhbZQDsnJNpdD6Y84cDvwehKI09/67ZDE0x6G0oaQld0Yt/G
+MRp71/LcjdVFvSr0CtGMnGJrs/IP2rYBsSlO6iQ0gHRqXkwvzDjSDmvJpHDzT5mD
+eT/cdD14kIC+yNXJao9Uw21CGckg1Hofn+oOQEI3ZA1I9QPt7X3o3v7dKNfI98MZ
+2QkgEcK0bat04NvJNHn9EyxybeDgOHukwKgrp2zXd/RF28xnXHvEr/stpjv06GeO
+WzKd8o+zQz9LDYJYr15SEklGECf2Iv3JPyKJqo4ujvp2mgQxghy4HUM/ZYQI9w5R
+gh0QGryo+8ViP3APzSz4i4v/bIOtfpPtH7xHRkS5Ud4JIebPG4yQlPWg56TnfdZh
+kjsubFsGFAo4jDmt3pg1lLubWvP+0SPDV1NO+TR7UCQOO7Ujh14DVxLSuxHXjZbQ
+oCG6Ddu12uPWrUZmp3FPhMJVZfoW9bYsNg6NnDUBtYEEYcenN56LuOjHH0vEFfDi
+/FjZMjflSOJvOLGRUEcD
+=T5GU
+-----END PGP SIGNATURE-----
 
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+--Vsi50HYs5tPfr+1I--
