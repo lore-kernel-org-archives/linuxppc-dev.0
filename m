@@ -1,42 +1,41 @@
 Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1Gbj47BCzDr3V
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 15:56:32 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1H6T69n7zDr44
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 16:19:45 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v635s4ES142438
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 01:56:30 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bem6g21u7-1
+ v636IvHp110688
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 02:19:43 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bf6300xj5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2017 01:56:28 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2017 02:19:42 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Mon, 3 Jul 2017 15:56:25 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ Mon, 3 Jul 2017 16:19:39 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v635uEex46137452
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 15:56:22 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v635tnZH000903
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 15:55:49 +1000
-Subject: [linux-next] SMT off triggers WARNING: CPU: 1 PID: 13 at
- arch/powerpc/kernel/watchdog.c:314 stop_wd_on_cpu+0x54/0xf0
+ v636JZkZ6947128
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 16:19:35 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v636JYrf004308
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 16:19:35 +1000
+Subject: [selftest/powerpc] mainline kernel panics with
+ tm/tm-signal-context-chk-vsx.c tests
 From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-next
- <linux-next@vger.kernel.org>, npiggin <npiggin@gmail.com>, sachinp
- <sachinp@linux.vnet.ibm.com>, Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 03 Jul 2017 11:25:18 +0530
-Content-Type: multipart/mixed; boundary="=-yh8TjOj6NM1EgVsv/CWi"
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, mpe <mpe@ellerman.id.au>,
+ sachinp <sachinp@linux.vnet.ibm.com>, Cyril Bur <cyrilbur@gmail.com>
+Date: Mon, 03 Jul 2017 11:49:27 +0530
+Content-Type: multipart/mixed; boundary="=-BsqNy1K/4RznTuG7u+6W"
 Mime-Version: 1.0
-Message-Id: <1499061318.3226.14.camel@abdul.in.ibm.com>
+Message-Id: <1499062767.3226.24.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,79 +46,74 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-yh8TjOj6NM1EgVsv/CWi
+--=-BsqNy1K/4RznTuG7u+6W
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 
 Hi,
 
-Today's next-20170630 on powerpc shows warnings in dmesg when SMT is
-disabled.
+Today's mainline kernel panics and machine rebooted when running kernel
+selftest on powerpc.
 
-Test: SMT off
-kernel: 4.12.0-rc7-next-20170630
-Machine: Power 8 Bare-metal
+Test:  tm/tm-signal-context-chk-vsx.c
+kernel version : 4.12.0-rc7
+Machine : Power 8 Bare-metal
+config: attached, config_4k_pages
 gcc: 4.8.5
-config: attached
 
-Steps to recreate
------------------
-1. Boot powerpc machine with today's next kernel.
-By default SMT 8 is enabled.
-$ ppc64_cpu  --smt
-SMT=8
-
-2. Disable SMT
-$ ppc64_cpu --smt=off
-
-With above command a WARN_ON(1) is triggered from stop_wd_on_cpu
-function in file arch/powerpc/kernel/watchdog.c at line 314
-
-static int stop_wd_on_cpu(unsigned int cpu)
-{
-    if (!cpumask_test_cpu(cpu, &wd_cpus_enabled)) {
->>>     WARN_ON(1);
-        return 0;
-    }
-
-
-$ dmesg
-WARNING: CPU: 1 PID: 13 at arch/powerpc/kernel/watchdog.c:314 stop_wd_on_cpu+0x54/0xf0
-Modules linked in: iptable_mangle ipt_MASQUERADE nf_nat_masquerade_ipv4
-iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4 nf_defrag_ipv4
-xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 xt_tcpudp tun bridge
-stp llc kvm_hv kvm iptable_filter vmx_crypto ipmi_powernv ipmi_devintf
-leds_powernv ipmi_msghandler powernv_op_panel powernv_rng led_class
-rng_core binfmt_misc nfsd ip_tables x_tables autofs4
-CPU: 1 PID: 13 Comm: cpuhp/1 Not tainted
-4.12.0-rc7-next-20170630-autotest #1
-task: c0000007f8479200 task.stack: c0000007f8578000
-NIP: c00000000002cbd4 LR: c0000000000dc238 CTR: c00000000002cb80
-REGS: c0000007f857b9b0 TRAP: 0700   Not tainted  (4.12.0-rc7-next-20170630-autotest)
-MSR: 9000000000029033 <SF,HV,EE,ME,IR,DR,RI,LE>
-  CR: 24000028  XER: 00000000  
-CFAR: c0000000000dc234 SOFTE: 1 
-GPR00: c0000000000dc238 c0000007f857bc30 c000000001063000 0000000000000001
-GPR04: 000000000000009e 0000000000000000 0000000000000000 0000000000000000
-GPR08: 0000000000000001 0000000000000000 0000000000000000 0000000000000000
-GPR12: c00000000002cb80 c00000000fd40580 c000000000107348 c0000007fc163d80
+kernel traces:
+--------------
+tm-signal-msr-r[39659]: bad frame in rt_sigreturn: 00003ffff40562a0 nip
+00003fff934e9b18 lr 00003fff936b04d8
+tm-signal-stack[39667]: bad frame in setup_rt_frame: 0000000000000000
+nip 0000000010000cc4 lr 0000000010000ca8
+------------[ cut here ]------------
+Kernel BUG at c0000000015cbefc [verbose debug info unavailable]
+Unexpected TM Bad Thing exception at c0000000015cbefc (msr 0x2a03031)
+Oops: Unrecoverable exception, sig: 6 [#1]
+SMP NR_CPUS=2048
+NUMA
+PowerNV
+Dumping ftrace buffer:
+   (ftrace buffer empty)
+Modules linked in: rcutorture bridge iptable_mangle torture
+ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat
+nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT
+nf_reject_ipv4 xt_tcpudp tun stp llc kvm_hv kvm iptable_filter
+vmx_crypto powernv_rng powernv_op_panel rng_core leds_powernv led_class
+binfmt_misc nfsd ip_tables x_tables autofs4 [last unloaded: rcutorture]
+CPU: 0 PID: 41291 Comm: tm-signal-conte Not tainted 4.12.0-rc7-autotest #1
+task: c0000007d4448000 task.stack: c0000007d8370000
+NIP: c0000000015cbefc LR: c0000000015e97f0 CTR: 0000000000000000
+REGS: c0000007d83739a0 TRAP: 0700   Not tainted  (4.12.0-rc7-autotest)
+MSR: 9000000302a03031 <SF,HV,VEC,VSX,FP,ME,IR,DR,LE,TM[SE]>
+  CR: 44000848  XER: 20000000
+CFAR: c0000000015cbeac SOFTE: 1
+PACATMSCRATCH: 900000010280b033
+GPR00: c0000000015e97d8 c0000007d8373c20 c00000000268f000 00003fffdf088ec8
+GPR04: 00003fffdf089150 00003fffdf088150 0000000000000000 c0000007d444a050
+GPR08: 0000000200000000 0000000000000000 0000000000000000 000c000000000000
+GPR12: c0000007d4449a10 c00000000fdc0000 0000000000000000 0000000000000000
 GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 0000000000000000 0000000000000000 c00000000010ccc0
-GPR24: c000000000f47888 00000007fe810000 0000000000000000 c00000000002cb80
-GPR28: 000000000000009e 0000000000000000 c0000000010a1b80 0000000000000001
-NIP [c00000000002cbd4] stop_wd_on_cpu+0x54/0xf0
-LR [c0000000000dc238] cpuhp_invoke_callback+0x148/0x5b0
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR24: 0000000000000000 c0000007d44487a8 0000000000000000 00003fffdf088eb8
+GPR28: c0000007d8373ea0 c0000007d8373d30 c0000007d4448000 00003fffdf088150
+NIP [c0000000015cbefc] fast_exception_return+0xac/0xb4
+LR [c0000000015e97f0] handle_rt_signal64+0xa0/0x790
 Call Trace:
-[c0000007f857bc70] [c0000000000dc238] cpuhp_invoke_callback+0x148/0x5b0
-[c0000007f857bce0] [c0000000000dc818] cpuhp_down_callbacks+0x78/0xf0
-[c0000007f857bd30] [c0000000000dd86c] cpuhp_thread_fun+0x16c/0x180
-[c0000007f857bd60] [c00000000010cf50] smpboot_thread_fn+0x290/0x2a0
-[c0000007f857bdc0] [c0000000001074a0] kthread+0x160/0x1a0
-[c0000007f857be30] [c00000000000bc9c] ret_from_kernel_thread+0x5c/0xc0
+[c0000007d8373c20] [c0000000015e97d8] handle_rt_signal64+0x88/0x790 (unreliable)
+[c0000007d8373d10] [c0000000015dbf60] do_signal+0x160/0x2d0
+[c0000007d8373e00] [c0000000015dc254] do_notify_resume+0xc4/0xf0
+[c0000007d8373e30] [c0000000015cbdc4] ret_from_except_lite+0x70/0x74
 Instruction dump:
-3d420004 394aeb80 7fa907b4 57e806be 79291f24 f8010010 f821ffc1 7fca4a14 
-7cea482a 7ce94436 792a07e1 40820030 <0fe00000> 38210040 38600000 e8010010 
----[ end trace bc1cf8bfb9c5be6e ]---
+f84d02f8 e9a100d8 7c7b03a6 e84101a0 7c4ff120 e8410170 7c5a03a6 e8010070
+e8410080 e8610088 e8810090 e8210078 <4c000024> 48000000 e8610178 88ed01db
+---[ end trace a62498af9ec43680 ]---
+
+Kernel panic - not syncing: Fatal exception
+Dumping ftrace buffer:
+   (ftrace buffer empty)
+Rebooting in 10 seconds..
 
 
 -- 
@@ -130,14 +124,14 @@ IBM Linux Technology Centre
 
 
 
---=-yh8TjOj6NM1EgVsv/CWi
-Content-Disposition: attachment; filename="Tul-NV-config"
-Content-Type: text/plain; name="Tul-NV-config"; charset="UTF-8"
+--=-BsqNy1K/4RznTuG7u+6W
+Content-Disposition: attachment; filename="config_4k_pages"
+Content-Type: text/plain; name="config_4k_pages"; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/powerpc 4.10.0-rc2 Kernel Configuration
+# Linux/powerpc 4.9.0-rc8 Kernel Configuration
 #
 CONFIG_PPC64=y
 
@@ -282,7 +276,7 @@ CONFIG_TASK_IO_ACCOUNTING=y
 CONFIG_TREE_RCU=y
 # CONFIG_RCU_EXPERT is not set
 CONFIG_SRCU=y
-CONFIG_TASKS_RCU=y
+# CONFIG_TASKS_RCU is not set
 CONFIG_RCU_STALL_COMMON=y
 # CONFIG_TREE_RCU_TRACE is not set
 CONFIG_BUILD_BIN2C=y
@@ -385,6 +379,7 @@ CONFIG_SLUB_CPU_PARTIAL=y
 CONFIG_PROFILING=y
 CONFIG_TRACEPOINTS=y
 CONFIG_KEXEC_CORE=y
+CONFIG_HAVE_IMA_KEXEC=y
 CONFIG_OPROFILE=y
 CONFIG_HAVE_OPROFILE=y
 CONFIG_KPROBES=y
@@ -502,11 +497,7 @@ CONFIG_DEFAULT_CFQ=y
 # CONFIG_DEFAULT_NOOP is not set
 CONFIG_DEFAULT_IOSCHED="cfq"
 CONFIG_PREEMPT_NOTIFIERS=y
-CONFIG_INLINE_SPIN_UNLOCK_IRQ=y
-CONFIG_INLINE_READ_UNLOCK=y
-CONFIG_INLINE_READ_UNLOCK_IRQ=y
-CONFIG_INLINE_WRITE_UNLOCK=y
-CONFIG_INLINE_WRITE_UNLOCK_IRQ=y
+CONFIG_UNINLINE_SPIN_UNLOCK=y
 CONFIG_ARCH_SUPPORTS_ATOMIC_RMW=y
 CONFIG_MUTEX_SPIN_ON_OWNER=y
 CONFIG_RWSEM_SPIN_ON_OWNER=y
@@ -646,10 +637,11 @@ CONFIG_ARCH_HAS_WALK_MEMORY=y
 CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
 CONFIG_PPC64_SUPPORTS_MEMORY_FAILURE=y
 CONFIG_KEXEC=y
+CONFIG_KEXEC_FILE=y
 CONFIG_RELOCATABLE=y
-# CONFIG_RELOCATABLE_TEST is not set
+CONFIG_RELOCATABLE_TEST=y
 CONFIG_CRASH_DUMP=y
-# CONFIG_FA_DUMP is not set
+CONFIG_FA_DUMP=y
 CONFIG_IRQ_ALL_CPUS=y
 CONFIG_NUMA=y
 CONFIG_NODES_SHIFT=8
@@ -709,10 +701,9 @@ CONFIG_ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT=y
 # CONFIG_IDLE_PAGE_TRACKING is not set
 CONFIG_ARCH_MEMORY_PROBE=y
 CONFIG_NODES_SPAN_OTHER_NODES=y
-# CONFIG_PPC_4K_PAGES is not set
-CONFIG_PPC_64K_PAGES=y
-CONFIG_FORCE_MAX_ZONEORDER=9
-CONFIG_PPC_SUBPAGE_PROT=y
+CONFIG_PPC_4K_PAGES=y
+# CONFIG_PPC_64K_PAGES is not set
+CONFIG_FORCE_MAX_ZONEORDER=13
 CONFIG_PPC_COPRO_BASE=y
 CONFIG_SCHED_SMT=y
 CONFIG_PPC_DENORMALISATION=y
@@ -1150,61 +1141,7 @@ CONFIG_CXL_BASE=y
 CONFIG_CXL_AFU_DRIVER_OPS=y
 CONFIG_CXL=m
 CONFIG_HAVE_IDE=y
-CONFIG_IDE=y
-
-#
-# Please see Documentation/ide/ide.txt for help/info on IDE drives
-#
-CONFIG_IDE_XFER_MODE=y
-CONFIG_IDE_TIMINGS=y
-CONFIG_IDE_ATAPI=y
-# CONFIG_BLK_DEV_IDE_SATA is not set
-CONFIG_IDE_GD=y
-CONFIG_IDE_GD_ATA=y
-# CONFIG_IDE_GD_ATAPI is not set
-CONFIG_BLK_DEV_IDECD=y
-CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
-# CONFIG_BLK_DEV_IDETAPE is not set
-# CONFIG_IDE_TASK_IOCTL is not set
-CONFIG_IDE_PROC_FS=y
-
-#
-# IDE chipset support/bugfixes
-#
-# CONFIG_BLK_DEV_PLATFORM is not set
-CONFIG_BLK_DEV_IDEDMA_SFF=y
-
-#
-# PCI IDE chipsets support
-#
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_PCIBUS_ORDER=y
-# CONFIG_BLK_DEV_OFFBOARD is not set
-CONFIG_BLK_DEV_GENERIC=y
-# CONFIG_BLK_DEV_OPTI621 is not set
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-# CONFIG_BLK_DEV_AEC62XX is not set
-# CONFIG_BLK_DEV_ALI15X3 is not set
-CONFIG_BLK_DEV_AMD74XX=y
-# CONFIG_BLK_DEV_CMD64X is not set
-# CONFIG_BLK_DEV_TRIFLEX is not set
-# CONFIG_BLK_DEV_HPT366 is not set
-# CONFIG_BLK_DEV_JMICRON is not set
-# CONFIG_BLK_DEV_PIIX is not set
-# CONFIG_BLK_DEV_IT8172 is not set
-# CONFIG_BLK_DEV_IT8213 is not set
-# CONFIG_BLK_DEV_IT821X is not set
-# CONFIG_BLK_DEV_NS87415 is not set
-# CONFIG_BLK_DEV_PDC202XX_OLD is not set
-# CONFIG_BLK_DEV_PDC202XX_NEW is not set
-# CONFIG_BLK_DEV_SVWKS is not set
-# CONFIG_BLK_DEV_SIIMAGE is not set
-# CONFIG_BLK_DEV_SL82C105 is not set
-# CONFIG_BLK_DEV_SLC90E66 is not set
-# CONFIG_BLK_DEV_TRM290 is not set
-# CONFIG_BLK_DEV_VIA82CXXX is not set
-# CONFIG_BLK_DEV_TC86C001 is not set
-CONFIG_BLK_DEV_IDEDMA=y
+# CONFIG_IDE is not set
 
 #
 # SCSI device support
@@ -1330,7 +1267,82 @@ CONFIG_SATA_AHCI=y
 # CONFIG_SATA_INIC162X is not set
 # CONFIG_SATA_ACARD_AHCI is not set
 # CONFIG_SATA_SIL24 is not set
-# CONFIG_ATA_SFF is not set
+CONFIG_ATA_SFF=y
+
+#
+# SFF controllers with custom DMA interface
+#
+# CONFIG_PDC_ADMA is not set
+# CONFIG_SATA_QSTOR is not set
+# CONFIG_SATA_SX4 is not set
+CONFIG_ATA_BMDMA=y
+
+#
+# SATA SFF controllers with BMDMA
+#
+# CONFIG_ATA_PIIX is not set
+# CONFIG_SATA_MV is not set
+# CONFIG_SATA_NV is not set
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SIL is not set
+# CONFIG_SATA_SIS is not set
+# CONFIG_SATA_SVW is not set
+# CONFIG_SATA_ULI is not set
+# CONFIG_SATA_VIA is not set
+# CONFIG_SATA_VITESSE is not set
+
+#
+# PATA SFF controllers with BMDMA
+#
+# CONFIG_PATA_ALI is not set
+CONFIG_PATA_AMD=y
+# CONFIG_PATA_ARTOP is not set
+# CONFIG_PATA_ATIIXP is not set
+# CONFIG_PATA_ATP867X is not set
+# CONFIG_PATA_CMD64X is not set
+# CONFIG_PATA_CYPRESS is not set
+# CONFIG_PATA_EFAR is not set
+# CONFIG_PATA_HPT366 is not set
+# CONFIG_PATA_HPT37X is not set
+# CONFIG_PATA_HPT3X2N is not set
+# CONFIG_PATA_HPT3X3 is not set
+# CONFIG_PATA_IT8213 is not set
+# CONFIG_PATA_IT821X is not set
+# CONFIG_PATA_JMICRON is not set
+# CONFIG_PATA_MARVELL is not set
+# CONFIG_PATA_NETCELL is not set
+# CONFIG_PATA_NINJA32 is not set
+# CONFIG_PATA_NS87415 is not set
+# CONFIG_PATA_OLDPIIX is not set
+# CONFIG_PATA_OPTIDMA is not set
+# CONFIG_PATA_PDC2027X is not set
+# CONFIG_PATA_PDC_OLD is not set
+# CONFIG_PATA_RADISYS is not set
+# CONFIG_PATA_RDC is not set
+# CONFIG_PATA_SCH is not set
+# CONFIG_PATA_SERVERWORKS is not set
+# CONFIG_PATA_SIL680 is not set
+# CONFIG_PATA_SIS is not set
+# CONFIG_PATA_TOSHIBA is not set
+# CONFIG_PATA_TRIFLEX is not set
+# CONFIG_PATA_VIA is not set
+# CONFIG_PATA_WINBOND is not set
+
+#
+# PIO-only SFF controllers
+#
+# CONFIG_PATA_CMD640_PCI is not set
+# CONFIG_PATA_MPIIX is not set
+# CONFIG_PATA_NS87410 is not set
+# CONFIG_PATA_OPTI is not set
+# CONFIG_PATA_PLATFORM is not set
+# CONFIG_PATA_RZ1000 is not set
+
+#
+# Generic fallback / legacy drivers
+#
+CONFIG_ATA_GENERIC=y
+# CONFIG_PATA_LEGACY is not set
 CONFIG_MD=y
 CONFIG_BLK_DEV_MD=y
 CONFIG_MD_AUTODETECT=y
@@ -1560,7 +1572,6 @@ CONFIG_NET_VENDOR_SILAN=y
 CONFIG_NET_VENDOR_SIS=y
 # CONFIG_SIS900 is not set
 # CONFIG_SIS190 is not set
-CONFIG_NET_VENDOR_SOLARFLARE=y
 # CONFIG_SFC is not set
 # CONFIG_SFC_FALCON is not set
 CONFIG_NET_VENDOR_SMSC=y
@@ -1815,7 +1826,7 @@ CONFIG_LEGACY_PTY_COUNT=256
 # CONFIG_TRACE_SINK is not set
 # CONFIG_PPC_EPAPR_HV_BYTECHAN is not set
 CONFIG_DEVMEM=y
-CONFIG_DEVKMEM=y
+# CONFIG_DEVKMEM is not set
 
 #
 # Serial drivers
@@ -2199,7 +2210,6 @@ CONFIG_VGA_ARB_MAX_GPUS=16
 #
 # ACP (Audio CoProcessor) Configuration
 #
-# CONFIG_DRM_LIB_RANDOM is not set
 
 #
 # Frame buffer Devices
@@ -2681,7 +2691,6 @@ CONFIG_RTC_DRV_OPAL=y
 #
 CONFIG_RTC_DRV_GENERIC=y
 # CONFIG_RTC_DRV_SNVS is not set
-# CONFIG_RTC_DRV_R7301 is not set
 
 #
 # HID Sensor RTC drivers
@@ -2823,18 +2832,13 @@ CONFIG_EXT4_FS_SECURITY=y
 CONFIG_JBD2=y
 # CONFIG_JBD2_DEBUG is not set
 CONFIG_FS_MBCACHE=y
-CONFIG_REISERFS_FS=m
-# CONFIG_REISERFS_CHECK is not set
-# CONFIG_REISERFS_PROC_INFO is not set
-CONFIG_REISERFS_FS_XATTR=y
-CONFIG_REISERFS_FS_POSIX_ACL=y
-CONFIG_REISERFS_FS_SECURITY=y
+# CONFIG_REISERFS_FS is not set
 CONFIG_JFS_FS=m
 CONFIG_JFS_POSIX_ACL=y
 CONFIG_JFS_SECURITY=y
 # CONFIG_JFS_DEBUG is not set
 # CONFIG_JFS_STATISTICS is not set
-CONFIG_XFS_FS=m
+CONFIG_XFS_FS=y
 # CONFIG_XFS_QUOTA is not set
 CONFIG_XFS_POSIX_ACL=y
 # CONFIG_XFS_RT is not set
@@ -2920,6 +2924,7 @@ CONFIG_MISC_FILESYSTEMS=y
 # CONFIG_BEFS_FS is not set
 # CONFIG_BFS_FS is not set
 # CONFIG_EFS_FS is not set
+# CONFIG_LOGFS is not set
 CONFIG_CRAMFS=m
 CONFIG_SQUASHFS=m
 CONFIG_SQUASHFS_FILE_CACHE=y
@@ -3072,7 +3077,7 @@ CONFIG_CRC32_SLICEBY8=y
 # CONFIG_CRC32_SARWATE is not set
 # CONFIG_CRC32_BIT is not set
 # CONFIG_CRC7 is not set
-CONFIG_LIBCRC32C=m
+CONFIG_LIBCRC32C=y
 # CONFIG_CRC8 is not set
 # CONFIG_CRC64_ECMA is not set
 # CONFIG_AUDIT_ARCH_COMPAT_GENERIC is not set
@@ -3122,7 +3127,6 @@ CONFIG_FONT_8x16=y
 CONFIG_SG_POOL=y
 CONFIG_ARCH_HAS_SG_CHAIN=y
 CONFIG_SBITMAP=y
-# CONFIG_PRIME_NUMBERS is not set
 
 #
 # Kernel hacking
@@ -3190,27 +3194,27 @@ CONFIG_DEFAULT_HUNG_TASK_TIMEOUT=120
 # CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
 CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
 # CONFIG_WQ_WATCHDOG is not set
-# CONFIG_PANIC_ON_OOPS is not set
-CONFIG_PANIC_ON_OOPS_VALUE=0
+CONFIG_PANIC_ON_OOPS=y
+CONFIG_PANIC_ON_OOPS_VALUE=1
 CONFIG_SCHED_DEBUG=y
 CONFIG_SCHED_INFO=y
 CONFIG_SCHEDSTATS=y
-# CONFIG_SCHED_STACK_END_CHECK is not set
+CONFIG_SCHED_STACK_END_CHECK=y
 # CONFIG_DEBUG_TIMEKEEPING is not set
 # CONFIG_TIMER_STATS is not set
 
 #
 # Lock Debugging (spinlocks, mutexes, etc...)
 #
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_DEBUG_SPINLOCK is not set
-# CONFIG_DEBUG_MUTEXES is not set
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
 # CONFIG_DEBUG_WW_MUTEX_SLOWPATH is not set
 # CONFIG_DEBUG_LOCK_ALLOC is not set
 # CONFIG_PROVE_LOCKING is not set
 # CONFIG_LOCK_STAT is not set
 # CONFIG_DEBUG_ATOMIC_SLEEP is not set
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
 # CONFIG_LOCK_TORTURE_TEST is not set
 CONFIG_STACKTRACE=y
 # CONFIG_DEBUG_KOBJECT is not set
@@ -3226,7 +3230,7 @@ CONFIG_DEBUG_BUGVERBOSE=y
 #
 # CONFIG_PROVE_RCU is not set
 # CONFIG_SPARSE_RCU_POINTER is not set
-CONFIG_TORTURE_TEST=m
+# CONFIG_TORTURE_TEST is not set
 # CONFIG_RCU_PERF_TEST is not set
 CONFIG_RCU_TORTURE_TEST=m
 # CONFIG_RCU_TORTURE_TEST_SLOW_PREINIT is not set
@@ -3285,7 +3289,7 @@ CONFIG_PROBE_EVENTS=y
 # CONFIG_LKDTM is not set
 # CONFIG_TEST_LIST_SORT is not set
 # CONFIG_KPROBES_SANITY_TEST is not set
-# CONFIG_BACKTRACE_SELF_TEST is not set
+CONFIG_BACKTRACE_SELF_TEST=y
 # CONFIG_RBTREE_TEST is not set
 # CONFIG_INTERVAL_TREE_TEST is not set
 # CONFIG_PERCPU_TEST is not set
@@ -3392,7 +3396,6 @@ CONFIG_CRYPTO_WORKQUEUE=y
 # CONFIG_CRYPTO_MCRYPTD is not set
 CONFIG_CRYPTO_AUTHENC=m
 CONFIG_CRYPTO_TEST=m
-CONFIG_CRYPTO_ENGINE=m
 
 #
 # Authenticated Encryption with Associated Data
@@ -3434,15 +3437,15 @@ CONFIG_CRYPTO_GHASH=m
 # CONFIG_CRYPTO_POLY1305 is not set
 CONFIG_CRYPTO_MD4=m
 CONFIG_CRYPTO_MD5=m
-# CONFIG_CRYPTO_MD5_PPC is not set
+CONFIG_CRYPTO_MD5_PPC=m
 CONFIG_CRYPTO_MICHAEL_MIC=m
 # CONFIG_CRYPTO_RMD128 is not set
 # CONFIG_CRYPTO_RMD160 is not set
 # CONFIG_CRYPTO_RMD256 is not set
 # CONFIG_CRYPTO_RMD320 is not set
 CONFIG_CRYPTO_SHA1=m
-# CONFIG_CRYPTO_SHA1_PPC is not set
-CONFIG_CRYPTO_SHA256=m
+CONFIG_CRYPTO_SHA1_PPC=m
+CONFIG_CRYPTO_SHA256=y
 # CONFIG_CRYPTO_SHA512 is not set
 # CONFIG_CRYPTO_SHA3 is not set
 CONFIG_CRYPTO_TGR192=m
@@ -3502,7 +3505,6 @@ CONFIG_CRYPTO_DEV_NX_COMPRESS_POWERNV=y
 CONFIG_CRYPTO_DEV_VMX=y
 CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
 # CONFIG_CRYPTO_DEV_CHELSIO is not set
-CONFIG_CRYPTO_DEV_VIRTIO=m
 # CONFIG_ASYMMETRIC_KEY_TYPE is not set
 
 #
@@ -3529,4 +3531,4 @@ CONFIG_VHOST_NET=m
 CONFIG_VHOST=m
 # CONFIG_VHOST_CROSS_ENDIAN_LEGACY is not set
 
---=-yh8TjOj6NM1EgVsv/CWi--
+--=-BsqNy1K/4RznTuG7u+6W--
