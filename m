@@ -1,23 +1,24 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1D3c1TlTzDr14
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 14:02:04 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id c24so9696681pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Jul 2017 21:02:04 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
-Subject: [PATCH] powerpc/powernv/idle: Put pnv_cpu_offline behind HOTPLUG_CPU
-Date: Mon,  3 Jul 2017 13:31:52 +0930
-Message-Id: <20170703040152.5144-1-joel@jms.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1DSd1GJqzDr3Q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 14:20:16 +1000 (AEST)
+Message-ID: <1499055599.16202.23.camel@kernel.crashing.org>
+Subject: Re: [RFC PATCH 1/2] powerpc/xive: guest exploitation of the XIVE
+ interrupt controller
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>, =?ISO-8859-1?Q?C=E9dric?=
+ Le Goater <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+Date: Sun, 02 Jul 2017 23:19:59 -0500
+In-Reply-To: <20170703035552.GQ13989@umbus.fritz.box>
+References: <1498123757-18427-1-git-send-email-clg@kaod.org>
+ <1498123757-18427-2-git-send-email-clg@kaod.org>
+ <20170703035552.GQ13989@umbus.fritz.box>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit 900612315788 ("powerpc/powernv/smp: Add busy-wait loop as fall back
-for CPU-Hotplug") the idle code uses generic_check_cpu_restart(), but that
-function is not available when CONFIG_HOTPLUG_CPU is disabled.
+On Mon, 2017-07-03 at 13:55 +1000, David Gibson wrote:
+> > Calls that still need to be addressed :
+> > 
+> >    H_INT_SET_OS_REPORTING_LINE
+> >    H_INT_GET_OS_REPORTING_LINE
+> >    H_INT_ESB
+> >    H_INT_SYNC
+> 
+> So, does this mean there's a PAPR update with the XIVE virtualization
+> stuff?  Or at least an ACR?  Can we have that available please...
 
-arch/powerpc/platforms/powernv/idle.c: In function ‘pnv_cpu_offline’:
-arch/powerpc/platforms/powernv/idle.c:286:11: error: implicit declaration of
-function ‘generic_check_cpu_restart’ [-Werror=implicit-function-declaration]
-   while (!generic_check_cpu_restart(cpu)) {
-           ^~~~~~~~~~~~~~~~~~~~~~~~~
+There is, I will try to get it published.
 
-The callers of pnv_cpu_offline are behind CONFIG_HOTPLUG_CPU, so fix the build
-error by putting this code behind the same gard.
-
-Fixes: 900612315788 ("powerpc/powernv/smp: Add busy-wait loop as fall back for CPU-Hotplug").
-Cc: <stable@vger.kernel.org> # 4.12
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/powerpc/platforms/powernv/idle.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 445f30a2c5ef..b15d108db216 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -261,6 +261,8 @@ static u64 pnv_deepest_stop_psscr_val;
- static u64 pnv_deepest_stop_psscr_mask;
- static bool deepest_stop_found;
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+
- /*
-  * pnv_cpu_offline: A function that puts the CPU into the deepest
-  * available platform idle state on a CPU-Offline.
-@@ -294,6 +296,8 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- 	return srr1;
- }
- 
-+#endif /* CONFIG_HOTPLUG_CPU */
-+
- /*
-  * Power ISA 3.0 idle initialization.
-  *
--- 
-2.13.2
+Cheers,
+Ben.
