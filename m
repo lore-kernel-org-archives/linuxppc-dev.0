@@ -1,17 +1,44 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1S2m582szDr8S
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 23:02:08 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v6 10/10] powerpc/Kconfig: Enable STRICT_KERNEL_RWX for some
- configs
-Date: Mon,  3 Jul 2017 23:01:54 +1000
-Message-Id: <1499086914-25695-10-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1499086914-25695-1-git-send-email-mpe@ellerman.id.au>
-References: <1499086914-25695-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1SWR0DV5zDr3V
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jul 2017 23:23:30 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v63DJHu2082230
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 09:23:28 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bf13vjacp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2017 09:23:28 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Mon, 3 Jul 2017 10:23:26 -0300
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v63DNM9d18415790
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 10:23:22 -0300
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v63DNOxP002362
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 10:23:25 -0300
+References: <20170629215538.1645-2-bauerman@linux.vnet.ibm.com>
+ <3x0nQH2RsPz9sNx@ozlabs.org>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [v3,
+ 1/8] powerpc/perf/hv-24x7: Fix passing of catalog version number
+In-reply-to: <3x0nQH2RsPz9sNx@ozlabs.org>
+Date: Mon, 03 Jul 2017 10:23:13 -0300
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87shidvem6.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,43 +48,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Balbir Singh <bsingharora@gmail.com>
 
-All code that patches kernel text has been moved over to using
-patch_instruction() and patch_instruction() is able to cope with the
-kernel text being read only.
+Michael Ellerman <patch-notifications@ellerman.id.au> writes:
 
-The linker script has been updated to ensure the read only data ends
-on a large page boundary, so it and the preceding kernel text can be
-marked R_X. We also have implementations of mark_rodata_ro() for Hash
-and Radix MMU modes.
+> On Thu, 2017-06-29 at 21:55:31 UTC, Thiago Jung Bauermann wrote:
+>> H_GET_24X7_CATALOG_PAGE needs to be passed the version number obtained from
+>> the first catalog page obtained previously. This is a 64 bit number, but
+>> create_events_from_catalog truncates it to 32-bit.
+>> 
+>> This worked on POWER8, but POWER9 actually uses the upper bits so the call
+>> fails with H_P3 because the hypervisor doesn't recognize the version.
+>> 
+>> This patch also adds the hcall return code to the error message, which is
+>> helpful when debugging the problem.
+>> 
+>> Fixes: 5c5cd7b50259 ("powerpc/perf/hv-24x7: parse catalog and populate sysfs with events")
+>> Reviewed-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+>> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+>
+> Series applied to powerpc next, thanks.
+>
+> https://git.kernel.org/powerpc/c/12bf85a71000af7419b19b5e909109
 
-There are some corner-cases missing when the kernel is built
-relocatable, so for now make it depend on !RELOCATABLE.
+Thanks!
 
-There's also a temporary workaround to depend on !HIBERNATION to avoid
-a build failure, that will be removed once we've merged with the PM
-tree.
-
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-[mpe: Make it depend on !RELOCATABLE, munge change log]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Kconfig | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index eb0e591c867d..0190340f8ca9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -164,6 +164,8 @@ config PPC
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_TRACEHOOK
-+	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S_64 && !RELOCATABLE && !HIBERNATION)
-+	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
- 	select HAVE_CBPF_JIT			if !PPC64
- 	select HAVE_CONTEXT_TRACKING		if PPC64
- 	select HAVE_DEBUG_KMEMLEAK
 -- 
-2.7.4
+Thiago Jung Bauermann
+IBM Linux Technology Center
