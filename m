@@ -1,40 +1,46 @@
-Return-Path: <gromero@linux.vnet.ibm.com>
+Return-Path: <paulmck@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2GHT6PzCzDqkF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 06:45:56 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2KyS5jMFzDq7q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 09:31:28 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v64KhtRp102844
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 16:45:53 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bg9tpt0yw-1
+ v64NSlIT007605
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 19:31:25 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bgay507t2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 16:45:52 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 19:31:25 -0400
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Tue, 4 Jul 2017 17:45:51 -0300
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v64Kjnmn18284616
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 17:45:49 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v64KjpvD004249
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 17:45:51 -0300
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Gustavo Romero <gromero@linux.vnet.ibm.com>,
- Breno Leitao <leitao@debian.org>
-Subject: [PATCH] powerpc/tm: fix live state of vs0/32 in tm_reclaim
-Date: Tue,  4 Jul 2017 16:45:15 -0400
-In-Reply-To: <1499127540.8033.3.camel@gmail.com>
-References: <1499127540.8033.3.camel@gmail.com>
-Message-Id: <1499201115-22967-1-git-send-email-gromero@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Tue, 4 Jul 2017 19:31:25 -0400
+Date: Tue, 4 Jul 2017 16:31:22 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, sachinp <sachinp@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Paul McKenney <Paul.McKenney@us.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>, paulus@samba.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [linux-next] cpus stalls detected few hours after booting next
+ kernel
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1498728106.19484.21.camel@abdul>
+ <20170629193614.376e27e6@roar.ozlabs.ibm.com>
+ <20170629202305.6187367f@roar.ozlabs.ibm.com>
+ <20170630004534.228f7c08@roar.ozlabs.ibm.com>
+ <1498800138.19484.25.camel@abdul>
+ <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
+ <1499177698.19784.7.camel@abdul.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1499177698.19784.7.camel@abdul.in.ibm.com>
+Message-Id: <20170704233122.GS2393@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,115 +50,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently tm_reclaim() can return with a corrupted vs0 (fp0) or vs32 (v0)
-due to the fact vs0 is used to save FPSCR and vs32 is used to save VSCR.
+On Tue, Jul 04, 2017 at 07:44:58PM +0530, Abdul Haleem wrote:
+> On Fri, 2017-06-30 at 17:28 +1000, Nicholas Piggin wrote:
+> > On Fri, 30 Jun 2017 10:52:18 +0530
+> > Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Fri, 2017-06-30 at 00:45 +1000, Nicholas Piggin wrote:
+> > > > On Thu, 29 Jun 2017 20:23:05 +1000
+> > > > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > > > 
+> > > > > On Thu, 29 Jun 2017 19:36:14 +1000
+> > > > > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > > > 
+> > > > > > I don't *think* the replay-wakeup-interrupt patch is directly involved, but
+> > > > > > it's likely to be one of the idle patches.  
+> > > > 
+> > > > Okay this turned out to be misconfigured sleep states I added for the
+> > > > simulator, sorry for the false alarm.
+> > > > 
+> > > > > Although you have this in the backtrace. I wonder if that's a stuck
+> > > > > lock in rcu_process_callbacks?
+> > > > 
+> > > > So this spinlock becomes top of the list of suspects. Can you try
+> > > > enabling lockdep and try to reproduce it?
+> > > 
+> > > Yes, recreated again with CONFIG_LOCKDEP=y & CONFIG_DEBUG_LOCKDEP=y set.
+> > > I do not see any difference in trace messages with and without LOCKDEP
+> > > enabled.
+> > > 
+> > > Please find the attached log file.
+> > 
+> > Can you get an rcu_invoke_callback event trace that Paul suggested?
+> 
+> I could not reproduce the issue with the latest next kernel
+> (4.12.0-rc7-next-20170703).
+> 
+> > Does this bug show up with just the powerpc next branch?
+> 
+> Perhaps, stress-ng test on today's mainline kernel (4.12.0) triggered a
+> different trace message and this not reproducible all the time.
+> 
+> 
+> stress-ng --io 100  --vm 10 --vm-bytes 100g --timeout 1h --oomable
+> 
+> INFO: rcu_sched self-detected stall on CPU
+>         8-...: (2099 ticks this GP) idle=37e/140000000000001/0
+> softirq=1404131/1404131 fqs=932 
+>          (t=2100 jiffies g=394894 c=394893 q=21997)
+> Task dump for CPU 8:
+> kworker/u162:2  R  running task    11168 28468      2 0x00000884   
+> Workqueue: writeback wb_workfn (flush-253:1)
+> Call Trace:
+> [c00000036e3eb340] [c000000000114480] sched_show_task+0xf0/0x160
+> (unreliable)
+> [c00000036e3eb3b0] [c0000000009adc2c] rcu_dump_cpu_stacks+0xd0/0x134
+> [c00000036e3eb400] [c00000000015e4d0] rcu_check_callbacks+0x8f0/0xaf0
+> [c00000036e3eb530] [c000000000165e2c] update_process_times+0x3c/0x90
+> [c00000036e3eb560] [c00000000017b73c] tick_sched_handle.isra.13
+> +0x2c/0xc0
+> [c00000036e3eb590] [c00000000017b828] tick_sched_timer+0x58/0xb0
+> [c00000036e3eb5d0] [c0000000001669e8] __hrtimer_run_queues+0xf8/0x330
+> [c00000036e3eb650] [c000000000167744] hrtimer_interrupt+0xe4/0x280
+> [c00000036e3eb710] [c000000000022620] __timer_interrupt+0x90/0x270
+> [c00000036e3eb760] [c000000000022cf0] timer_interrupt+0xa0/0xe0
+> [c00000036e3eb790] [c0000000000091e8] decrementer_common+0x158/0x160
+> --- interrupt: 901 at move_expired_inodes+0x30/0x200
+>     LR = queue_io+0x8c/0x190
+> [c00000036e3eba80] [c00000036e3ebac0] 0xc00000036e3ebac0 (unreliable)
+> [c00000036e3ebac0] [c000000000319b24] wb_writeback+0x2b4/0x420
 
-Later, we recheckpoint trusting that the live state of FP and VEC are ok
-depending on the MSR.FP and MSR.VEC bits, i.e. if MSR.FP is enabled that
-means the FP registers checkpointed when we entered in TM are correct and
-after a treclaim. we can trust the FP live state. Similarly to VEC regs.
-However if tm_reclaim() does not return a sane state then tm_recheckpoint()
-will recheckpoint a corrupted state from live state back to the checkpoint
-area.
+The usual assumption would be that wb_writeback() is looping or...
 
-That commit fixes the corruption by restoring vs0 and vs32 from the
-ckfp_state and ckvr_state after they are used to save FPSCR and VSCR,
-respectively.
+> [c00000036e3ebb90] [c00000000031a980] wb_workfn+0xf0/0x4b0
+> [c00000036e3ebca0] [c0000000000fa160] process_one_work+0x180/0x470
+> [c00000036e3ebd30] [c0000000000fa6d4] worker_thread+0x284/0x500
 
-The effect of the issue described above is observed, for instance, once a
-VSX unavailable exception is caught in the middle of a transaction with
-MSR.FP = 1 or MSR.VEC = 1. If MSR.FP = 1, then after getting back to user
-space FP state is corrupted. If MSR.VEC = 1, then VEC state is corrupted.
+...there is so much work being scheduled that worker_thread() cannot
+keep up.  If tracing locates such a loop, the usual trick is to
+place a cond_resched_rcu_qs() somewhere in it (but of course not
+where interrupts or preemption are disabled).
 
-The issue does not occur if MSR.FP = 0 and MSR.VEC = 0 because ckfp_state
-and ckvr_state are both copied from fp_state and vr_state, respectively,
-and on recheckpointing both states will be restored from these thread
-structures and not from the live state.
+Tracing can help detect this.  Or printk()s, for that matter.  ;-)
 
-The issue does not occur also if MSR.FP = 1 and MSR.VEC = 1 because it
-implies MSR.VSX = 1 and in that case the VSX unavailable exception does not
-happen in the middle of the transactional block.
+							Thanx, Paul
 
-Finally, that commit also fixes the MSR used to check if FP and VEC bits
-are enabled once we are in tm_reclaim_thread(). ckpt_regs.msr is valid only
-if giveup_all() is called *before* using ckpt_regs.msr for checks because
-check_if_tm_restore_required() in giveup_all() will copy regs->msr to
-ckpt_regs.msr and so ckpt_regs.msr reflects exactly the MSR that the thread
-had when it came off the processor.
-
-No regression was observed on powerpc/tm selftests after this fix.
-
-Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Signed-off-by: Breno Leitao <leitao@debian.org>
----
- arch/powerpc/kernel/process.c |  9 +++++++--
- arch/powerpc/kernel/tm.S      | 14 ++++++++++++++
- 2 files changed, 21 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 2ad725e..ac1fc51 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -864,6 +864,13 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- 	if (!MSR_TM_SUSPENDED(mfmsr()))
- 		return;
- 
-+	/* Copy regs->msr to ckpt_regs.msr making the last valid for
-+	 * the checks below. check_if_tm_restore_required() in
-+	 * giveup_all() will take care of it. Also update fp_state
-+	 * and vr_state from live state if the live state is valid.
-+	 */
-+	giveup_all(container_of(thr, struct task_struct, thread));
-+
- 	/*
- 	 * If we are in a transaction and FP is off then we can't have
- 	 * used FP inside that transaction. Hence the checkpointed
-@@ -883,8 +890,6 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- 		memcpy(&thr->ckvr_state, &thr->vr_state,
- 		       sizeof(struct thread_vr_state));
- 
--	giveup_all(container_of(thr, struct task_struct, thread));
--
- 	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
- }
- 
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 3a2d041..5dfbddb 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -259,9 +259,17 @@ _GLOBAL(tm_reclaim)
- 
- 	addi	r7, r3, THREAD_CKVRSTATE
- 	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
-+
-+	/* Corrupting v0 (vs32). Should restore it later. */
- 	mfvscr	v0
- 	li	r6, VRSTATE_VSCR
- 	stvx	v0, r7, r6
-+
-+	/* Restore v0 (vs32) from ckvr_state.vr[0], otherwise we might
-+	 * recheckpoint the wrong live value.
-+	 */
-+	LXVD2X_ROT(32, R0, R7)
-+
- dont_backup_vec:
- 	mfspr	r0, SPRN_VRSAVE
- 	std	r0, THREAD_CKVRSAVE(r3)
-@@ -272,9 +280,15 @@ dont_backup_vec:
- 	addi	r7, r3, THREAD_CKFPSTATE
- 	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp state */
- 
-+	/* Corrupting fr0 (vs0). Should restore it later. */
- 	mffs    fr0
- 	stfd    fr0,FPSTATE_FPSCR(r7)
- 
-+	/* Restore fr0 (vs0) from ckfp_state.fpr[0], otherwise we might
-+	 * recheckpoint the wrong live value.
-+	 */
-+	LXVD2X_ROT(0, R0, R7)
-+
- dont_backup_fp:
- 
- 	/* TM regs, incl TEXASR -- these live in thread_struct.  Note they've
--- 
-2.7.4
+> [c00000036e3ebdc0] [c000000000101fc0] kthread+0x160/0x1a0
+> [c00000036e3ebe30] [c00000000000bb60] ret_from_kernel_thread+0x5c/0x7c
+> INFO: rcu_sched self-detected stall on CPU
+>         51-...: (2099 ticks this GP) idle=7c2/140000000000001/0
+> softirq=1272749/1272749 fqs=995 
+>          (t=2100 jiffies g=394900 c=394899 q=32186)
+> ~                                                   
+> 
+> stress-ng : http://kernel.ubuntu.com/git/cking/stress-ng.git
+> 
+> > 
+> > Thanks,
+> > Nick
+> > 
+> 
+> 
+> -- 
+> Regard's
+> 
+> Abdul Haleem
+> IBM Linux Technology Centre
+> 
+> 
+> 
