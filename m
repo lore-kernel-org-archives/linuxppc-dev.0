@@ -1,19 +1,32 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x212D2zpczDqj1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 20:48:36 +1000 (AEST)
-In-Reply-To: <4bd8ff1d8855711d3bf8a11eecc8068e3aabac03.1498755960.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>
-Subject: Re: [v5,
- 1/7] powerpc64/elfv1: Only dereference function descriptor for
- non-text symbols
-Message-Id: <3x212D24Vhz9s71@ozlabs.org>
-Date: Tue,  4 Jul 2017 20:48:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x21RN5wBbzDqj1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 21:06:56 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Eryu Guan <eguan@redhat.com>
+Cc: tj@kernel.org, Balbir Singh <bsingharora@gmail.com>, liwan@redhat.com,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: kworker with empty task->cpus_allowed (was Re: [v4.12-rc1
+ regression] mount ext4 fs results in kernel crash on PPC64le host)
+In-Reply-To: <20170704082101.GM23360@eguan.usersys.redhat.com>
+References: <20170629034122.GI23360@eguan.usersys.redhat.com>
+ <CAKTCnzk8VMN0hBi24vEoNPGvvX-s8uhrjMdn7drQVDUdfA_+Ow@mail.gmail.com>
+ <20170629100533.GQ23360@eguan.usersys.redhat.com>
+ <87efu39he0.fsf@concordia.ellerman.id.au>
+ <20170629113933.GT23360@eguan.usersys.redhat.com>
+ <878tkb9ewo.fsf@concordia.ellerman.id.au>
+ <20170629135919.GU23360@eguan.usersys.redhat.com>
+ <8760fdrdq1.fsf@concordia.ellerman.id.au>
+ <20170630114756.GD23360@eguan.usersys.redhat.com>
+ <87tw2syayk.fsf@concordia.ellerman.id.au>
+ <20170704082101.GM23360@eguan.usersys.redhat.com>
+Date: Tue, 04 Jul 2017 21:06:55 +1000
+Message-ID: <87r2xwxxyo.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +36,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-06-29 at 17:49:14 UTC, "Naveen N. Rao" wrote:
-> Currently, we assume that the function pointer we receive in
-> ppc_function_entry() points to a function descriptor. However, this is
-> not always the case. In particular, assembly symbols without the right
-> annotation do not have an associated function descriptor. Some of these
-> symbols are added to the kprobe blacklist using _ASM_NOKPROBE_SYMBOL().
-> 
-> When such addresses are subsequently processed through
-> arch_deref_entry_point() in populate_kprobe_blacklist(), we see the
-> below errors during bootup:
->     [    0.663963] Failed to find blacklist at 7d9b02a648029b6c
->     [    0.663970] Failed to find blacklist at a14d03d0394a0001
->     [    0.663972] Failed to find blacklist at 7d5302a6f94d0388
->     [    0.663973] Failed to find blacklist at 48027d11e8610178
->     [    0.663974] Failed to find blacklist at f8010070f8410080
->     [    0.663976] Failed to find blacklist at 386100704801f89d
->     [    0.663977] Failed to find blacklist at 7d5302a6f94d00b0
-> 
-> Fix this by checking if the function pointer we receive in
-> ppc_function_entry() already points to kernel text. If so, we just
-> return it as is. If not, we assume that this is a function descriptor
-> and proceed to dereference it.
-> 
-> Suggested-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Eryu Guan <eguan@redhat.com> writes:
 
-Series applied to powerpc next, thanks.
+> On Tue, Jul 04, 2017 at 04:26:11PM +1000, Michael Ellerman wrote:
+>> Eryu Guan <eguan@redhat.com> writes:
+>> > On Fri, Jun 30, 2017 at 08:07:02PM +1000, Michael Ellerman wrote:
+>> >> 
+>> >> Can you try this patch and see if it changes anything? (with the debug
+>> >> still applied).
+>> >
+>> > This patch fixes the crash for me. After appliying this patch (with all
+>> > other debug patches still applied), kernel didn't print any warnings or
+>> > calltraces or debug messages.
+>> 
+>> OK. It's not meant to fix it :)
+>
+> Understand.
+>
+>> 
+>> I can't form any connection between your bisection result and that
+>> patch, nothing is making any sense TBH.
+>> 
+>> What hardware are you on? And are you doing CPU hotplug or anything like that?
+>
+> It's a "PowerVM" guest (I'm not familiar with powerpc, I don't know what
+> does that mean..) running on Power8 host. I didn't do any CPU hotplug or
+> anything like that.
 
-https://git.kernel.org/powerpc/c/83e840c770f2c578bbbff478d62a44
+OK thanks.
+
+We might have to try and sync up on irc so we can debug this a bit faster.
+
+Can you try this hunk also?
 
 cheers
+
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index c74bf39ef764..7c55721b1f1d 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -3902,6 +3906,7 @@ static int alloc_and_link_pwqs(struct workqueue_struct *wq)
+ 		     "ordering guarantee broken for workqueue %s\n", wq->name);
+ 		return ret;
+ 	} else {
++		WARN_ON(cpumask_empty(unbound_std_wq_attrs[highpri]->cpumask));
+ 		return apply_workqueue_attrs(wq, unbound_std_wq_attrs[highpri]);
+ 	}
+ }
