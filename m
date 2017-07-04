@@ -1,22 +1,21 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1lTD21KdzDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 10:37:36 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id c24so12799092pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2017 17:37:36 -0700 (PDT)
-Message-ID: <1499128649.8033.5.camel@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/tm: fix live state of vs0/32 in tm_reclaim
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1lld75BmzDqRW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 10:50:05 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id d193so6212165pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2017 17:50:05 -0700 (PDT)
+Message-ID: <1499129399.8033.7.camel@gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/tm: test for regs sanity in VSX exception
 From: Cyril Bur <cyrilbur@gmail.com>
-To: Breno Leitao <leitao@debian.org>, Gustavo Romero
- <gromero@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 04 Jul 2017 10:37:29 +1000
-In-Reply-To: <20170630164135.tlcgh365cjrquscj@gmail.com>
+To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: leitao@debian.org
+Date: Tue, 04 Jul 2017 10:49:59 +1000
+In-Reply-To: <1498783490-23675-2-git-send-email-gromero@linux.vnet.ibm.com>
 References: <1498783490-23675-1-git-send-email-gromero@linux.vnet.ibm.com>
- <20170630164135.tlcgh365cjrquscj@gmail.com>
+ <1498783490-23675-2-git-send-email-gromero@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,62 +27,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-06-30 at 13:41 -0300, Breno Leitao wrote:
-> Thanks Gustavo for the patch.
+On Thu, 2017-06-29 at 20:44 -0400, Gustavo Romero wrote:
+> Add a test to check if FP/VSX registers are sane (restored correctly) after
+> a VSX unavailable exception is caught in the middle of a transaction.
 > 
-> On Thu, Jun 29, 2017 at 08:39:23PM -0400, Gustavo Romero wrote:
-> > Currently tm_reclaim() can return with a corrupted vs0 (fp0) or vs32 (v0)
-> > due to the fact vs0 is used to save FPSCR and vs32 is used to save VSCR.
-> > 
-> > Later, we recheckpoint trusting that the live state of FP and VEC are ok
-> > depending on the MSR.FP and MSR.VEC bits, i.e. if MSR.FP is enabled that
-> > means the FP registers checkpointed before entering are correct and so
-> > after a treclaim. we can trust the FP live state, and similarly on VEC regs.
-> > However if tm_reclaim() does not return a sane state then tm_recheckpoint()
-> > will recheckpoint a corrupted instate back to the checkpoint area.
-> > 
-> > That commit fixes the corruption by restoring vs0 and vs32 from the
-> > ckfp_state and ckvr_state after they are used to save FPSCR and VSCR,
-> > respectively.
-> > 
-> > The effect of the issue described above is observed, for instance, once a
-> > VSX unavailable exception is caught in the middle of a transaction with
-> > MSR.FP = 1 or MSR.VEC = 1. If MSR.FP = 1, then after getting back to user
-> > space FP state is corrupted. If MSR.VEC = 1, then VEC state is corrupted.
-> > 
-> > The issue does occur if MSR.FP = 0 and MSR.VEC = 0 because ckfp_state and
-> > ckvr_state are both copied from fp_state and vr_state, respectively, and
-> > on recheckpointing both states will be restored from these thread
-> > structures and not from the live state.
-> 
-> Just complementing what Gustavo said, currently the tm_recheckpoint()
-> function grabs the values to be re-checkpoint from two places, depending
-> on the MSR configuration.
-> 
-> If VEC or FP are disabled on MSR argument when tm_recheckpoint() is
-> called, then it restorese the values from the thread ckvr/ckfp area and
-> recheckpoint these values into processor transactional area.
-> 
-> On the other side, if VEC or FP are disabled, it does not restore the
-> vectors and fp registers from the thread ckvec/ckfp area, and it will
-> recheckpoint what is currently on the live registers. If the registers
-> changed after the reclaim, we will send these new values recheckpointed,
-> and later on userspace when the transaction fails.
-> 
-> This second scenario is what is causing the error reported on this
-> email thread. In fact, I am wondering if we can hit another hidden bug that
-> changes the fp and vec values between the tm_reclaim() and
-> tm_recheckpoint() invokations, as for example, an interrupt that calls
-> memcpy() in this small mean time.
-> 
-> That said, I am wondering if we shouldn't always rely on thread ckfp and
-> ckvec during tm_recheckpoint() (and never rely on the live registers). This
-> should simplify the reclaim/recheckpoint mechanism, and make it less
-> error prone.
+> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 
-I think you're absolutely correct - its a mess. Personally I think that
-the assembly functions should do the bare minimum. So the two cases
-that you describe which are handled in assembly could easily be handled
-in C either before the call to the assembly or after.
+Looks good, its a nice test for a very difficult (difficult on purpose
+but still possible by accident!) to hit bug.
 
-Cyril
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+
+> ---
+>  tools/testing/selftests/powerpc/tm/Makefile        |   3 +-
+>  .../testing/selftests/powerpc/tm/tm-vsx-unavail.c  | 144 +++++++++++++++++++++
+>  2 files changed, 146 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/tm/tm-vsx-unavail.c
+> 
+> diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+> index 958c11c..d0ffbb8 100644
+> --- a/tools/testing/selftests/powerpc/tm/Makefile
+> +++ b/tools/testing/selftests/powerpc/tm/Makefile
+> @@ -2,7 +2,7 @@ SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu
+>  	tm-signal-context-chk-vmx tm-signal-context-chk-vsx
+>  
+>  TEST_GEN_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
+> -	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-vmx-unavail \
+> +	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-vmx-unavail tm-vsx-unavail \
+>  	$(SIGNAL_CONTEXT_CHK_TESTS)
+>  
+>  include ../../lib.mk
+> @@ -15,6 +15,7 @@ $(OUTPUT)/tm-syscall: tm-syscall-asm.S
+>  $(OUTPUT)/tm-syscall: CFLAGS += -I../../../../../usr/include
+>  $(OUTPUT)/tm-tmspr: CFLAGS += -pthread
+>  $(OUTPUT)/tm-vmx-unavail: CFLAGS += -pthread -m64
+> +$(OUTPUT)/tm-vsx-unavail: CFLAGS += -pthread -m64
+>  
+>  SIGNAL_CONTEXT_CHK_TESTS := $(patsubst %,$(OUTPUT)/%,$(SIGNAL_CONTEXT_CHK_TESTS))
+>  $(SIGNAL_CONTEXT_CHK_TESTS): tm-signal.S
+> diff --git a/tools/testing/selftests/powerpc/tm/tm-vsx-unavail.c b/tools/testing/selftests/powerpc/tm/tm-vsx-unavail.c
+> new file mode 100644
+> index 0000000..7ff933a
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/tm/tm-vsx-unavail.c
+> @@ -0,0 +1,144 @@
+> +/*
+> + * Copyright 2017, Gustavo Romero and Breno Leitao, IBM Corp.
+> + * Licensed under GPLv2.
+> + *
+> + * Force VSX unavailable exception during a transaction and see
+> + * if it corrupts the checkpointed FP registers state after the abort.
+> + */
+> +
+> +#define _GNU_SOURCE
+> +
+> +#include <stdio.h>
+> +#include <stdlib.h>
+> +#include <unistd.h>
+> +#include <inttypes.h>
+> +#include <pthread.h>
+> +#include <sched.h>
+> +
+> +#include "tm.h"
+> +#include "utils.h"
+> +
+> +int passed;
+> +
+> +void *ping(void *not_used)
+> +{
+> +	asm goto(
+> +		// r3 = 0x5555555555555555
+> +		"lis  3, 0x5555    ;"
+> +		"ori  3, 3, 0x5555 ;"
+> +		"sldi 3, 3, 32     ;"
+> +		"oris 3, 3, 0x5555 ;"
+> +		"ori  3, 3, 0x5555 ;"
+> +
+> +		//r4 = 0xFFFFFFFFFFFFFFFF
+> +		"lis  4, 0xFFFF    ;"
+> +		"ori  4, 4, 0xFFFF ;"
+> +		"sldi 4, 4, 32     ;"
+> +		"oris 4, 4, 0xFFFF ;"
+> +		"ori  4, 4, 0xFFFF ;"
+> +
+> +		// vs33 and vs34 will just be used to construct vs0 from r3 and
+> +		// r4. Both won't be used in any other place after that.
+> +		"mtvsrd 33, 3      ;"
+> +		"mtvsrd 34, 4      ;"
+> +
+> +		// vs0 = (r3 || r4) = 0x5555555555555555FFFFFFFFFFFFFFFF
+> +		"xxmrghd 0, 33, 34 ;"
+> +
+> +
+> +		// Wait ~8s so we have a sufficient amount of context
+> +		// switches so load_fp and load_vec overflow and MSR.FP, MSR.VEC
+> +		// and MSR.VSX are disabled.
+> +		"       lis	 7, 0x1       ;"
+> +		"       ori      7, 7, 0xBFFE ;"
+> +		"       sldi     7, 7, 15     ;"
+> +		"1:	addi     7, 7, -1     ;"
+> +		"       cmpdi    7, 0         ;"
+> +		"       bne      1b           ;"
+> +
+> +		// Any floating-point instruction in here.
+> +		// N.B. 'fmr' is *not touching* any previously set register,
+> +		// i.e. it's not touching vs0.
+> +		"fmr    10, 10     ;"
+> +
+> +		// vs0 is *still* 0x5555555555555555FFFFFFFFFFFFFFFF, right?
+> +		// Get in a transaction and cause a VSX unavailable exception.
+> +		"2:	tbegin.               ;" // Begin HTM
+> +		"       beq      3f           ;" // Failure handler
+> +		"       xxmrghd  10, 10, 10   ;" // VSX unavailable in TM
+> +		"       tend.                 ;" // End HTM
+> +		"3:     nop                   ;" // Fall through to code below
+> +
+> +		// Immediately after a transaction failure we save vs0 to two
+> +		// general purpose registers to check its value. We need to have
+> +		// the same value as before we entered in transactional state.
+> +
+> +		// vs0 should be *still* 0x5555555555555555FFFFFFFFFFFFFFFF
+> +
+> +		// Save high half - MSB (64bit).
+> +		"mfvsrd  5, 0                 ;"
+> +
+> +		// Save low half - LSB (64bit).
+> +		// We mess with vs3, but it's not important.
+> +		"xxsldwi 3, 0, 0, 2           ;"
+> +		"mfvsrd  6, 3                 ;"
+> +
+> +		// N.B. r3 and r4 never changed since they were used to
+> +		// construct the initial vs0 value, hence we can use them to do
+> +		// the comparison. r3 and r4 will be destroy but it's ok.
+> +		"cmpd  3, 5                ;" // compare r3 to r5
+> +		"bne   %[value_mismatch]      ;"
+> +		"cmpd  4, 6                ;" // compare r4 to r6
+> +		"bne   %[value_mismatch]      ;"
+> +		"b     %[value_ok]            ;"
+> +		:
+> +		:
+> +		: "r3", "r4", "vs33", "vs34", "vs0",
+> +		  "vs10", "fr10", "r7", "r5", "r6", "vs3"
+> +		: value_mismatch, value_ok
+> +		);
+> +value_mismatch:
+> +		passed = 0;
+> +		return NULL;
+> +value_ok:
+> +		passed = 1;
+> +		return NULL;
+> +}
+> +
+> +void *pong(void *not_used)
+> +{
+> +	while (1)
+> +		sched_yield(); // will be classed as interactive-like thread
+> +}
+> +
+> +int tm_vsx_unavail_test(void)
+> +{
+> +	pthread_t t0, t1;
+> +	pthread_attr_t attr;
+> +	cpu_set_t cpuset;
+> +
+> +	// Set only CPU 0 in the mask. Both threads will be bound to cpu 0
+> +	CPU_ZERO(&cpuset);
+> +	CPU_SET(0, &cpuset);
+> +
+> +	// Init pthread attribute
+> +	pthread_attr_init(&attr);
+> +
+> +	// Set CPU 0 mask into the pthread attribute
+> +	pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset);
+> +
+> +	// 'pong' thread used to induce context switches on 'ping' thread
+> +	pthread_create(&t1, &attr /* bound to cpu 0 */, pong, NULL);
+> +
+> +	printf("Checking if FP/VSX is sane after a VSX exception in TM...\n");
+> +
+> +	pthread_create(&t0, &attr /* bound to cpu 0 as well */, ping, NULL);
+> +	pthread_join(t0, NULL);
+> +
+> +	return passed ? EXIT_SUCCESS : EXIT_FAILURE;
+> +}
+> +
+> +int main(int argc, char **argv)
+> +{
+> +	return test_harness(tm_vsx_unavail_test, "tm_vsx_unavail_test");
+> +}
