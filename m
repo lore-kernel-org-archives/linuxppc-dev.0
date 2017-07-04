@@ -1,17 +1,32 @@
-Return-Path: <santosh@fossix.org>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1rTG1s6TzDqhp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 14:22:57 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id u36so25012966pgn.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2017 21:22:57 -0700 (PDT)
-From: Santosh Sivaraj <santosh@fossix.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/smp: Get cpu only after validity check
-Date: Tue,  4 Jul 2017 09:52:46 +0530
-Message-Id: <20170704042246.22609-1-santosh@fossix.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1vCW2LjqzDqj1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 16:26:15 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Eryu Guan <eguan@redhat.com>
+Cc: tj@kernel.org, Balbir Singh <bsingharora@gmail.com>, liwan@redhat.com,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: kworker with empty task->cpus_allowed (was Re: [v4.12-rc1
+ regression] mount ext4 fs results in kernel crash on PPC64le host)
+In-Reply-To: <20170630114756.GD23360@eguan.usersys.redhat.com>
+References: <20170628083237.GF23360@eguan.usersys.redhat.com>
+ <CAKTCnzncEoCC4=p2_ySpNdB6229SbCCqjDCzfpf8XA0xvvzH1g@mail.gmail.com>
+ <20170629034122.GI23360@eguan.usersys.redhat.com>
+ <CAKTCnzk8VMN0hBi24vEoNPGvvX-s8uhrjMdn7drQVDUdfA_+Ow@mail.gmail.com>
+ <20170629100533.GQ23360@eguan.usersys.redhat.com>
+ <87efu39he0.fsf@concordia.ellerman.id.au>
+ <20170629113933.GT23360@eguan.usersys.redhat.com>
+ <878tkb9ewo.fsf@concordia.ellerman.id.au>
+ <20170629135919.GU23360@eguan.usersys.redhat.com>
+ <8760fdrdq1.fsf@concordia.ellerman.id.au>
+ <20170630114756.GD23360@eguan.usersys.redhat.com>
+Date: Tue, 04 Jul 2017 16:26:11 +1000
+Message-ID: <87tw2syayk.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,35 +36,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check for validity of cpu before calling get_hard_smp_processor_id.
+Eryu Guan <eguan@redhat.com> writes:
+> On Fri, Jun 30, 2017 at 08:07:02PM +1000, Michael Ellerman wrote:
+>> 
+>> Can you try this patch and see if it changes anything? (with the debug
+>> still applied).
+>
+> This patch fixes the crash for me. After appliying this patch (with all
+> other debug patches still applied), kernel didn't print any warnings or
+> calltraces or debug messages.
 
-Found with coverity.
+OK. It's not meant to fix it :)
 
-Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
----
- arch/powerpc/platforms/powernv/smp.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I can't form any connection between your bisection result and that
+patch, nothing is making any sense TBH.
 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 40dae96..c6448c7 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -57,7 +57,7 @@ static void pnv_smp_setup_cpu(int cpu)
+What hardware are you on? And are you doing CPU hotplug or anything like that?
+
+Can you back out the last patch I sent and try this?
+
+cheers
+
+
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index c74bf39ef764..8ec3841f9689 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -3338,6 +3338,8 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
  
- static int pnv_smp_kick_cpu(int nr)
- {
--	unsigned int pcpu = get_hard_smp_processor_id(nr);
-+	unsigned int pcpu;
- 	unsigned long start_here =
- 			__pa(ppc_function_entry(generic_secondary_smp_init));
- 	long rc;
-@@ -66,6 +66,7 @@ static int pnv_smp_kick_cpu(int nr)
- 	if (nr < 0 || nr >= nr_cpu_ids)
- 		return -EINVAL;
+ 	lockdep_assert_held(&wq_pool_mutex);
  
-+	pcpu = get_hard_smp_processor_id(nr);
++	WARN_ON(cpumask_empty(attrs->cpumask));
++
+ 	/* do we already have a matching pool? */
+ 	hash_for_each_possible(unbound_pool_hash, pool, hash_node, hash) {
+ 		if (wqattrs_equal(pool->attrs, attrs)) {
+@@ -3366,6 +3368,8 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
+ 	copy_workqueue_attrs(pool->attrs, attrs);
+ 	pool->node = target_node;
+ 
++	WARN_ON(cpumask_empty(pool->attrs->cpumask));
++
  	/*
- 	 * If we already started or OPAL is not supported, we just
- 	 * kick the CPU via the PACA
--- 
-2.9.4
+ 	 * no_numa isn't a worker_pool attribute, always clear it.  See
+ 	 * 'struct workqueue_attrs' comments for detail.
+@@ -5494,6 +5498,7 @@ static void __init wq_numa_init(void)
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		node = cpu_to_node(cpu);
++		printk("%s: setting cpu %d on node %d present? %d\n", __func__, cpu, node, cpu_present(cpu));
+ 		if (WARN_ON(node == NUMA_NO_NODE)) {
+ 			pr_warn("workqueue: NUMA node mapping not available for cpu%d, disabling NUMA support\n", cpu);
+ 			/* happens iff arch is bonkers, let's just proceed */
+@@ -5502,6 +5507,16 @@ static void __init wq_numa_init(void)
+ 		cpumask_set_cpu(cpu, tbl[node]);
+ 	}
+ 
++	for_each_possible_cpu(cpu) {
++		struct worker_pool *pool;
++
++		for_each_cpu_worker_pool(pool, cpu) {
++			if (cpumask_empty(pool->attrs->cpumask))
++				printk("%s: cpumask EMPTY! for pool %p on cpu %d\n", __func__, pool, cpu);
++			printk("%s: pool %p on cpu %d node = %d\n", __func__, pool, cpu, pool->node);
++		}
++	}
++
+ 	wq_numa_possible_cpumask = tbl;
+ 	wq_numa_enabled = true;
+ }
