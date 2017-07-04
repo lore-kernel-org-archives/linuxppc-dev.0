@@ -1,45 +1,31 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x1mSL16WHzDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 11:21:53 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v641IVBB038269
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Jul 2017 21:21:51 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bfc04399g-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Jul 2017 21:21:51 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 4 Jul 2017 11:21:49 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v641Lld42359610
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 11:21:47 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v641LcMJ031256
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 11:21:38 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- v641LcmB031253
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 11:21:38 +1000
-Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 78184A01C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 11:21:46 +1000 (AEST)
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: context_switch: Fix pthread errors
-Date: Tue,  4 Jul 2017 11:21:15 +1000
-Message-Id: <20170704012115.30870-1-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x1pcQ2DDtzDqhp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jul 2017 12:59:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [1/3] cpuidle: powerpc: cpuidle set polling before enabling irqs
+In-Reply-To: <CAJZ5v0i7kmgVdaqajChvyvebK8ZpjY8HTnLbAH7-ktmj4K8QZQ@mail.gmail.com>
+References: <20170614130241.19865-2-npiggin@gmail.com>
+ <3wyzKL1g2Vz9s65@ozlabs.org>
+ <CAJZ5v0g2DMRcL78k2+qA0svxGqtt-sTW2BpcfvRjU-=iCBjEYg@mail.gmail.com>
+ <878tkaqgu2.fsf@concordia.ellerman.id.au>
+ <CAJZ5v0i7kmgVdaqajChvyvebK8ZpjY8HTnLbAH7-ktmj4K8QZQ@mail.gmail.com>
+Date: Tue, 04 Jul 2017 12:59:01 +1000
+Message-ID: <87y3s4ykju.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,52 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Turns out pthreads returns an errno and doesn't set errno. This doesn't
-play well with perror().
+"Rafael J. Wysocki" <rafael@kernel.org> writes:
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- .../selftests/powerpc/benchmarks/context_switch.c        | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+> On Fri, Jun 30, 2017 at 5:45 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> "Rafael J. Wysocki" <rafael@kernel.org> writes:
+>>
+>>> On Thu, Jun 29, 2017 at 2:21 PM, Michael Ellerman
+>>> <patch-notifications@ellerman.id.au> wrote:
+>>>> On Wed, 2017-06-14 at 13:02:39 UTC, Nicholas Piggin wrote:
+>>>>> local_irq_enable can cause interrupts to be taken which could
+>>>>> take significant amount of processing time. The idle process
+>>>>> should set its polling flag before this, so another process that
+>>>>> wakes it during this time will not have to send an IPI.
+>>>>>
+>>>>> Expand the TIF_POLLING_NRFLAG coverage to as large as possible.
+>>>>>
+>>>>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>>
+>>>> Series applied to powerpc next, thanks.
+>>>>
+>>>> https://git.kernel.org/powerpc/c/3fc5ee927ff4ffed6aa2fcd44d2fbf
+>>>
+>>> OK
+>>>
+>>> I've applied it too, so I guess I should drop it?
+>>
+>> Erk sorry. I hadn't heard anything so I picked it up.
+>>
+>> If you can drop it that would be good, but if not git will probably work
+>> it out mostly :)
+>
+> I've dropped it, no problem.
 
-diff --git a/tools/testing/selftests/powerpc/benchmarks/context_switch.c b/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-index 778f5fbfd784..7486e532d3e2 100644
---- a/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-+++ b/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-@@ -75,6 +75,7 @@ static void touch(void)
- 
- static void start_thread_on(void *(*fn)(void *), void *arg, unsigned long cpu)
- {
-+	int rc;
- 	pthread_t tid;
- 	cpu_set_t cpuset;
- 	pthread_attr_t attr;
-@@ -82,14 +83,23 @@ static void start_thread_on(void *(*fn)(void *), void *arg, unsigned long cpu)
- 	CPU_ZERO(&cpuset);
- 	CPU_SET(cpu, &cpuset);
- 
--	pthread_attr_init(&attr);
-+	rc = pthread_attr_init(&attr);
-+	if (rc) {
-+		errno = rc;
-+		perror("pthread_attr_init");
-+		exit(1);
-+	}
- 
--	if (pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset)) {
-+	rc = pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset);
-+	if (rc)	{
-+		errno = rc;
- 		perror("pthread_attr_setaffinity_np");
- 		exit(1);
- 	}
- 
--	if (pthread_create(&tid, &attr, fn, arg)) {
-+	rc = pthread_create(&tid, &attr, fn, arg);
-+	if (rc) {
-+		errno = rc;
- 		perror("pthread_create");
- 		exit(1);
- 	}
--- 
-2.13.2
+Thanks.
+
+cheers
