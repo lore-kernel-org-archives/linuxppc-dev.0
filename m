@@ -1,47 +1,34 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
+Return-Path: <stewart@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Swl6842zDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 14:45:27 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2X4q0gFJzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 17:07:38 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v654i2H4138574
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 00:45:25 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bg78psyep-1
+ v6573u6t023028
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 03:07:36 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bg6j7hd0f-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 00:45:25 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 03:07:36 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 5 Jul 2017 14:45:22 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v654jKMo4719002
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 14:45:20 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v654jB53001241
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 14:45:12 +1000
-Subject: Re: [PATCH] powerpc/mm: fix a hardcode on memory boundary checking
-To: Rui Teng <rui.teng@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20170112090906.17864-1-rui.teng@linux.vnet.ibm.com>
-Cc: Boqun Feng <boqun.feng@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- jia he <hejianet@linux.vnet.ibm.com>
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 5 Jul 2017 10:15:11 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 5 Jul 2017 03:07:34 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>, skiboot@lists.ozlabs.org
+Cc: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH] powerpc/powernv: report error messages from opal
+In-Reply-To: <1482299579-21599-1-git-send-email-oohall@gmail.com>
+References: <1482298544-8418-1-git-send-email-oohall@gmail.com>
+ <1482299579-21599-1-git-send-email-oohall@gmail.com>
+Date: Wed, 05 Jul 2017 17:07:24 +1000
 MIME-Version: 1.0
-In-Reply-To: <20170112090906.17864-1-rui.teng@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <d960be70-c47b-cfb4-45b4-7d35e3e19539@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <87van7pdjn.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,13 +38,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/12/2017 02:39 PM, Rui Teng wrote:
-> The offset of hugepage block will not be 16G, if the expected
-> page is more than one. Calculate the totol size instead of the
-> hardcode value.
-> 
-> Signed-off-by: Rui Teng <rui.teng@linux.vnet.ibm.com>
+Oliver O'Halloran <oohall@gmail.com> writes:
+> Recent versions of skiboot will raise an OPAL event (read: interrupt)
+> when firmware writes an error message to its internal console. In
+> conjunction they provide an OPAL call that the kernel can use to extract
+> these messages from the OPAL log to allow them to be written into the
+> kernel's log buffer where someone will (hopefully) look at them.
+>
+> For the companion skiboot patches see:
+>
+> 	https://lists.ozlabs.org/pipermail/skiboot/2016-December/005861.html
+>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+>  arch/powerpc/include/asm/opal-api.h            |  5 +++-
+>  arch/powerpc/include/asm/opal.h                |  1 +
+>  arch/powerpc/platforms/powernv/opal-msglog.c   | 41 ++++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+>  4 files changed, 47 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0e2e57bcab50..cb9c0e6afb33 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -167,7 +167,8 @@
+>  #define OPAL_INT_EOI				124
+>  #define OPAL_INT_SET_MFRR			125
+>  #define OPAL_PCI_TCE_KILL			126
+> -#define OPAL_LAST				126
+> +#define OPAL_SCRAPE_LOG				128
 
-I have a redundant patch, this one is the original.
+(another thought, along with the skiboot thoughts), I don't like the
+SCRAPE_LOG name so much, as it's more of a "hey linux, here's some log
+messages from firmware, possibly before you were
+involved"... OPAL_FETCH_LOG ?
 
-Tested-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+-- 
+Stewart Smith
+OPAL Architect, IBM.
