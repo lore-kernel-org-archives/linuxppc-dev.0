@@ -1,44 +1,34 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Scx1rbdzDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 14:31:45 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v654ShjF107328
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 00:31:42 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bgapu9es9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Sfc26YwzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 14:33:12 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v654T04K121224
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 00:33:10 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bg6j7cg14-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 00:31:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 00:33:09 -0400
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 5 Jul 2017 14:31:38 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v654VYHx4784616
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 14:31:34 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v654VXW2017561
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 14:31:33 +1000
-Subject: Re: [PATCH] powerpc/mm: Implemented default_hugepagesz verification
- for powerpc
-To: Victor Aoqui <victora@br.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com,
- mpe@ellerman.id.au
-References: <20170703200559.3743-1-victora@br.ibm.com>
-Cc: victora@linux.vnet.ibm.com
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 5 Jul 2017 10:01:26 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 4 Jul 2017 22:33:09 -0600
+Subject: Re: [PATCH] powerpc/mm: Check gigantic page range correctly inside
+ memblock
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20170703073130.27258-1-khandual@linux.vnet.ibm.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 5 Jul 2017 10:03:04 +0530
 MIME-Version: 1.0
-In-Reply-To: <20170703200559.3743-1-victora@br.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <4d5950e6-d208-b8d1-ffee-6e54c741c8e0@linux.vnet.ibm.com>
+In-Reply-To: <20170703073130.27258-1-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <aa292524-c075-26ea-78ea-ce9e539e9ce9@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,45 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/04/2017 01:35 AM, Victor Aoqui wrote:
-> Implemented default hugepage size verification (default_hugepagesz=)
-> in order to allow allocation of defined number of pages (hugepages=)
-> only for supported hugepage sizes.
+
+
+On Monday 03 July 2017 01:01 PM, Anshuman Khandual wrote:
+> The gigantic page range received from platform actually extends
+> upto (block_size * expeted_pages) starting at any given address
+> instead of just a single 16GB page.
 > 
-> Signed-off-by: Victor Aoqui <victora@br.ibm.com>
+> Fixes: 4792adbac9eb ("powerpc: Don't use a 16G page if beyond mem= limits")
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/mm/hugetlbpage.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
+> Though in actual experiments never seen multiple gigantic pages (16GB)
+> starting at the same address. But again its very much possible looking
+> at the device tree property interfaces and depending upon what PowerVM
+> provides.
 > 
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index a4f33de..464e72e 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -797,6 +797,21 @@ static int __init hugepage_setup_sz(char *str)
->  }
->  __setup("hugepagesz=", hugepage_setup_sz);
+>   arch/powerpc/mm/hash_utils_64.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> +static int __init default_hugepage_setup_sz(char *str)
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index f2095ce..a3f1e7d 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -507,7 +507,7 @@ static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
+>   	printk(KERN_INFO "Huge page(16GB) memory: "
+>   			"addr = 0x%lX size = 0x%lX pages = %d\n",
+>   			phys_addr, block_size, expected_pages);
+> -	if (phys_addr + (16 * GB) <= memblock_end_of_DRAM()) {
+> +	if (phys_addr + block_size * expected_pages <= memblock_end_of_DRAM()) {
+>   		memblock_reserve(phys_addr, block_size * expected_pages);
+>   		add_gpage(phys_addr, block_size, expected_pages);
+>   	}
+> 
 
-The function name should be hugetlb_default_size_setup in
-sync with the generic function hugetlb_default_setup for the
-same parameter default_hugepagesz.
+This was already posted by another person.
 
-> +{
-> +        unsigned long long size;
-> +
-> +        size = memparse(str, &str);
-> +
-> +        if (add_huge_page_size(size) != 0) {
+https://lkml.kernel.org/r/20170112090906.17864-1-rui.teng@linux.vnet.ibm.com
 
-I am little bit confused here. Do we always follow another
-'hugepages=' element after 'default_hugepagesz' ? If not,
-then we dont have to do 'add_huge_page_size'. But then
-that function checks for valid huge page sizes and skips
-adding hstate if its already added. So I guess it okay.
 
-> +                hugetlb_bad_size();
-> +                pr_err("Invalid default huge page size specified(%llu)\n", size);
-
-Error message should have 'ppc' some where to indicate that
-the arch rejected the size not core MM.
+-aneesh
