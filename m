@@ -1,23 +1,43 @@
-Return-Path: <avagin@virtuozzo.com>
-Received: from EUR02-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr10131.outbound.protection.outlook.com [40.107.1.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2szg6x8mzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 06:34:23 +1000 (AEST)
-Date: Wed, 5 Jul 2017 13:34:05 -0700
-From: Andrei Vagin <avagin@virtuozzo.com>
-To: James Morse <james.morse@arm.com>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
- Roland McGrath <roland@hack.frob.com>, linuxppc-dev@lists.ozlabs.org,
- Zhou Chengming <zhouchengming1@huawei.com>,
- Yury Norov <ynorov@caviumnetworks.com>, Andrey Vagin <avagin@openvz.org>
-Subject: Re: [PATCH] ptrace: Add compat PTRACE_{G,S}ETSIGMASK handlers
-Message-ID: <20170705203403.GA14320@outlook.office365.com>
-References: <20170629162637.10676-1-james.morse@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2yVM0F26zDqj2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 09:57:46 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v65NsNCc138395
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 19:57:44 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bgwemrwaf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 19:57:44 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 5 Jul 2017 19:57:42 -0400
+Date: Wed, 5 Jul 2017 16:57:38 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ parri.andrea@gmail.com, dave@stgolabs.net, manfred@colorfullife.com,
+ arnd@arndb.de, peterz@infradead.org, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, will.deacon@arm.com, oleg@redhat.com,
+ mingo@redhat.com, netfilter-devel@vger.kernel.org, tj@kernel.org,
+ stern@rowland.harvard.edu, akpm@linux-foundation.org,
+ torvalds@linux-foundation.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH RFC 21/26] powerpc: Remove spin_unlock_wait()
+ arch-specific definitions
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170629235918.GA6445@linux.vnet.ibm.com>
+ <1498780894-8253-21-git-send-email-paulmck@linux.vnet.ibm.com>
+ <20170702035807.tnzmkynyevfobt5a@tardis>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-In-Reply-To: <20170629162637.10676-1-james.morse@arm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170702035807.tnzmkynyevfobt5a@tardis>
+Message-Id: <20170705235738.GK2393@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,124 +47,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 29, 2017 at 05:26:37PM +0100, James Morse wrote:
-> compat_ptrace_request() lacks handlers for PTRACE_{G,S}ETSIGMASK,
-> instead using those in ptrace_request(). The compat variant should
-> read a compat_sigset_t from userspace instead of ptrace_request()s
-> sigset_t.
+On Sun, Jul 02, 2017 at 11:58:07AM +0800, Boqun Feng wrote:
+> On Thu, Jun 29, 2017 at 05:01:29PM -0700, Paul E. McKenney wrote:
+> > There is no agreed-upon definition of spin_unlock_wait()'s semantics,
+> > and it appears that all callers could do just as well with a lock/unlock
+> > pair.  This commit therefore removes the underlying arch-specific
+> > arch_spin_unlock_wait().
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: <linuxppc-dev@lists.ozlabs.org>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Alan Stern <stern@rowland.harvard.edu>
+> > Cc: Andrea Parri <parri.andrea@gmail.com>
+> > Cc: Linus Torvalds <torvalds@linux-foundation.org>
 > 
-> While compat_sigset_t is the same size as sigset_t, it is defined as
-> 2xu32, instead of a single u64. On a big-endian CPU this means that
-> compat_sigset_t is passed to user-space using middle-endianness,
-> where the least-significant u32 is written most significant byte
-> first.
-> 
-> If ptrace_request()s code is used userspace will read the most
-> significant u32 where it expected the least significant.
-> 
-> Instead of duplicating ptrace_request()s code as a special case in
-> the arch code, handle it here.
->
+> Acked-by: Boqun Feng <boqun.feng@gmail.com>
 
-Acked-by: Andrei Vagin <avagin@openvz.org>
+And finally applied in preparation for v2 of the patch series.
 
-> CC: Yury Norov <ynorov@caviumnetworks.com>
-> CC: Andrey Vagin <avagin@openvz.org>
-> Reported-by: Zhou Chengming <zhouchengming1@huawei.com>
-> Signed-off-by: James Morse <james.morse@arm.com>
-> Fixes: 29000caecbe87 ("ptrace: add ability to get/set signal-blocked mask")
-> ---
-> LTP test case here:
-> https://lists.linux.it/pipermail/ltp/2017-June/004932.html
+Thank you!!!
+
+							Thanx, Paul
+
+> Regards,
+> Boqun
 > 
->  kernel/ptrace.c | 52 ++++++++++++++++++++++++++++++++++++++++------------
->  1 file changed, 40 insertions(+), 12 deletions(-)
-> 
-> diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-> index 8d2c10714530..a5bebb6713e8 100644
-> --- a/kernel/ptrace.c
-> +++ b/kernel/ptrace.c
-> @@ -843,6 +843,22 @@ static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
->  EXPORT_SYMBOL_GPL(task_user_regset_view);
->  #endif
->  
-> +static int ptrace_setsigmask(struct task_struct *child, sigset_t *new_set)
-> +{
-> +	sigdelsetmask(new_set, sigmask(SIGKILL)|sigmask(SIGSTOP));
-> +
-> +	/*
-> +	 * Every thread does recalc_sigpending() after resume, so
-> +	 * retarget_shared_pending() and recalc_sigpending() are not
-> +	 * called here.
-> +	 */
-> +	spin_lock_irq(&child->sighand->siglock);
-> +	child->blocked = *new_set;
-> +	spin_unlock_irq(&child->sighand->siglock);
-> +
-> +	return 0;
-> +}
-> +
->  int ptrace_request(struct task_struct *child, long request,
->  		   unsigned long addr, unsigned long data)
->  {
-> @@ -914,18 +930,7 @@ int ptrace_request(struct task_struct *child, long request,
->  			break;
->  		}
->  
-> -		sigdelsetmask(&new_set, sigmask(SIGKILL)|sigmask(SIGSTOP));
-> -
-> -		/*
-> -		 * Every thread does recalc_sigpending() after resume, so
-> -		 * retarget_shared_pending() and recalc_sigpending() are not
-> -		 * called here.
-> -		 */
-> -		spin_lock_irq(&child->sighand->siglock);
-> -		child->blocked = new_set;
-> -		spin_unlock_irq(&child->sighand->siglock);
-> -
-> -		ret = 0;
-> +		ret = ptrace_setsigmask(child, &new_set);
->  		break;
->  	}
->  
-> @@ -1149,7 +1154,9 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
->  			  compat_ulong_t addr, compat_ulong_t data)
->  {
->  	compat_ulong_t __user *datap = compat_ptr(data);
-> +	compat_sigset_t set32;
->  	compat_ulong_t word;
-> +	sigset_t new_set;
->  	siginfo_t siginfo;
->  	int ret;
->  
-> @@ -1189,6 +1196,27 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
->  		else
->  			ret = ptrace_setsiginfo(child, &siginfo);
->  		break;
-> +	case PTRACE_GETSIGMASK:
-> +		if (addr != sizeof(compat_sigset_t))
-> +			return -EINVAL;
-> +
-> +		sigset_to_compat(&set32, &child->blocked);
-> +
-> +		if (copy_to_user(datap, &set32, sizeof(set32)))
-> +			return -EFAULT;
-> +
-> +		ret = 0;
-> +		break;
-> +	case PTRACE_SETSIGMASK:
-> +		if (addr != sizeof(compat_sigset_t))
-> +			return -EINVAL;
-> +
-> +		if (copy_from_user(&set32, datap, sizeof(compat_sigset_t)))
-> +			return -EFAULT;
-> +
-> +		sigset_from_compat(&new_set, &set32);
-> +		ret = ptrace_setsigmask(child, &new_set);
-> +		break;
->  #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
->  	case PTRACE_GETREGSET:
->  	case PTRACE_SETREGSET:
-> -- 
-> 2.11.0
-> 
+> > ---
+> >  arch/powerpc/include/asm/spinlock.h | 33 ---------------------------------
+> >  1 file changed, 33 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+> > index 8c1b913de6d7..d256e448ea49 100644
+> > --- a/arch/powerpc/include/asm/spinlock.h
+> > +++ b/arch/powerpc/include/asm/spinlock.h
+> > @@ -170,39 +170,6 @@ static inline void arch_spin_unlock(arch_spinlock_t *lock)
+> >  	lock->slock = 0;
+> >  }
+> >  
+> > -static inline void arch_spin_unlock_wait(arch_spinlock_t *lock)
+> > -{
+> > -	arch_spinlock_t lock_val;
+> > -
+> > -	smp_mb();
+> > -
+> > -	/*
+> > -	 * Atomically load and store back the lock value (unchanged). This
+> > -	 * ensures that our observation of the lock value is ordered with
+> > -	 * respect to other lock operations.
+> > -	 */
+> > -	__asm__ __volatile__(
+> > -"1:	" PPC_LWARX(%0, 0, %2, 0) "\n"
+> > -"	stwcx. %0, 0, %2\n"
+> > -"	bne- 1b\n"
+> > -	: "=&r" (lock_val), "+m" (*lock)
+> > -	: "r" (lock)
+> > -	: "cr0", "xer");
+> > -
+> > -	if (arch_spin_value_unlocked(lock_val))
+> > -		goto out;
+> > -
+> > -	while (lock->slock) {
+> > -		HMT_low();
+> > -		if (SHARED_PROCESSOR)
+> > -			__spin_yield(lock);
+> > -	}
+> > -	HMT_medium();
+> > -
+> > -out:
+> > -	smp_mb();
+> > -}
+> > -
+> >  /*
+> >   * Read-write spinlocks, allowing multiple readers
+> >   * but only one writer.
+> > -- 
+> > 2.5.2
+> > 
