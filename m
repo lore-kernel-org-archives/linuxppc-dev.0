@@ -1,30 +1,37 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <victora@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2lCL5R7hzDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 01:29:02 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id p21so31711094qke.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 08:29:02 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Wed, 5 Jul 2017 11:28:55 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, ego <ego@linux.vnet.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Li Zefan <lizefan@huawei.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ingo Molnar <mingo@kernel.org>, mpe <mpe@ellerman.id.au>
-Subject: Re: [next-20170609] Oops while running CPU off-on
- (cpuset.c/cpuset_can_attach)
-Message-ID: <20170705152855.GD19330@htj.duckdns.org>
-References: <1497266622.15415.39.camel@abdul.in.ibm.com>
- <20170627153608.GD2289@htj.duckdns.org>
- <1499092582.10651.15.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2lzH5K0zzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 02:03:39 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v65FwiOI106107
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 12:03:37 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bgvxc1rc8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 12:03:36 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <victora@linux.vnet.ibm.com>;
+ Wed, 5 Jul 2017 10:03:36 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1499092582.10651.15.camel@abdul.in.ibm.com>
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Wed, 05 Jul 2017 13:03:57 -0300
+From: victora <victora@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Victor Aoqui <victora@br.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH] powerpc/mm: Implemented default_hugepagesz verification
+ for powerpc
+In-Reply-To: <1f549637-773a-868c-effd-5614e85aa892@linux.vnet.ibm.com>
+References: <20170703200559.3743-1-victora@br.ibm.com>
+ <1f549637-773a-868c-effd-5614e85aa892@linux.vnet.ibm.com>
+Message-Id: <e5ebc15347db59703d9499ea6962927b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,112 +41,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Abdul.
+Em 2017-07-05 01:26, Aneesh Kumar K.V escreveu:
+> On Tuesday 04 July 2017 01:35 AM, Victor Aoqui wrote:
+>> Implemented default hugepage size verification (default_hugepagesz=)
+>> in order to allow allocation of defined number of pages (hugepages=)
+>> only for supported hugepage sizes.
+>> 
+>> Signed-off-by: Victor Aoqui <victora@br.ibm.com>
+>> ---
+>>   arch/powerpc/mm/hugetlbpage.c | 15 +++++++++++++++
+>>   1 file changed, 15 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/mm/hugetlbpage.c 
+>> b/arch/powerpc/mm/hugetlbpage.c
+>> index a4f33de..464e72e 100644
+>> --- a/arch/powerpc/mm/hugetlbpage.c
+>> +++ b/arch/powerpc/mm/hugetlbpage.c
+>> @@ -797,6 +797,21 @@ static int __init hugepage_setup_sz(char *str)
+>>   }
+>>   __setup("hugepagesz=", hugepage_setup_sz);
+>> 
+>> +static int __init default_hugepage_setup_sz(char *str)
+>> +{
+>> +        unsigned long long size;
+>> +
+>> +        size = memparse(str, &str);
+>> +
+>> +        if (add_huge_page_size(size) != 0) {
+>> +                hugetlb_bad_size();
+>> +                pr_err("Invalid default huge page size 
+>> specified(%llu)\n", size);
+>> +        }
+>> +
+>> +        return 1;
+>> +}
+>> +__setup("default_hugepagesz=", default_hugepage_setup_sz);
+> 
+> isn't that a behavior change in what we have now ? . Right now if size
+> specified is not supported, we fallback to HPAGE_SIZE.
 
-Thanks for the debug info.  Can you please see whether the following
-patch fixes the issue?  If the problem is too difficult to reproduce
-to confirm the fix by seeing whether it no longer triggers, please let
-me know.  We can instead apply a patch which triggers WARN on the
-failing condition to confirm the diagnosis.
+Yes, it is. However, is this a correct behavior? If we specify an 
+unsupported value, for example default_hugepagesz=1M and hugepages=1000, 
+1M will be ignored and 1000 pages of 16M (arch default) will be 
+allocated. This could lead to non-expected out of of memory/performance 
+issue.
 
-Thanks.
+> 
+> mm/hugetlb.c
+> 
+> if (!size_to_hstate(default_hstate_size)) {
+> 	default_hstate_size = HPAGE_SIZE;
+> 	if (!size_to_hstate(default_hstate_size))
+> 		hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
+> }
+> 
+> 
+>> +
+>>   struct kmem_cache *hugepte_cache;
+>>   static int __init hugetlbpage_init(void)
+>>   {
+>> 
+> 
+> Even if we want to do this, this should be done in generic code and
+> should not be powerpc specific
+> 
 
-diff --git a/kernel/cgroup/cgroup-internal.h b/kernel/cgroup/cgroup-internal.h
-index 793565c05742..8b4c3c2f2509 100644
---- a/kernel/cgroup/cgroup-internal.h
-+++ b/kernel/cgroup/cgroup-internal.h
-@@ -33,6 +33,9 @@ struct cgroup_taskset {
- 	struct list_head	src_csets;
- 	struct list_head	dst_csets;
- 
-+	/* the number of tasks in the set */
-+	int			nr_tasks;
-+
- 	/* the subsys currently being processed */
- 	int			ssid;
- 
-diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
-index dbfd7028b1c6..e3c4152741a3 100644
---- a/kernel/cgroup/cgroup.c
-+++ b/kernel/cgroup/cgroup.c
-@@ -1954,6 +1954,8 @@ static void cgroup_migrate_add_task(struct task_struct *task,
- 	if (!cset->mg_src_cgrp)
- 		return;
- 
-+	mgctx->tset.nr_tasks++;
-+
- 	list_move_tail(&task->cg_list, &cset->mg_tasks);
- 	if (list_empty(&cset->mg_node))
- 		list_add_tail(&cset->mg_node,
-@@ -2047,16 +2049,18 @@ static int cgroup_migrate_execute(struct cgroup_mgctx *mgctx)
- 		return 0;
- 
- 	/* check that we can legitimately attach to the cgroup */
--	do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
--		if (ss->can_attach) {
--			tset->ssid = ssid;
--			ret = ss->can_attach(tset);
--			if (ret) {
--				failed_ssid = ssid;
--				goto out_cancel_attach;
-+	if (tset->nr_tasks) {
-+		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
-+			if (ss->can_attach) {
-+				tset->ssid = ssid;
-+				ret = ss->can_attach(tset);
-+				if (ret) {
-+					failed_ssid = ssid;
-+					goto out_cancel_attach;
-+				}
- 			}
--		}
--	} while_each_subsys_mask();
-+		} while_each_subsys_mask();
-+	}
- 
- 	/*
- 	 * Now that we're guaranteed success, proceed to move all tasks to
-@@ -2085,25 +2089,29 @@ static int cgroup_migrate_execute(struct cgroup_mgctx *mgctx)
- 	 */
- 	tset->csets = &tset->dst_csets;
- 
--	do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
--		if (ss->attach) {
--			tset->ssid = ssid;
--			ss->attach(tset);
--		}
--	} while_each_subsys_mask();
-+	if (tset->nr_tasks) {
-+		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
-+			if (ss->attach) {
-+				tset->ssid = ssid;
-+				ss->attach(tset);
-+			}
-+		} while_each_subsys_mask();
-+	}
- 
- 	ret = 0;
- 	goto out_release_tset;
- 
- out_cancel_attach:
--	do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
--		if (ssid == failed_ssid)
--			break;
--		if (ss->cancel_attach) {
--			tset->ssid = ssid;
--			ss->cancel_attach(tset);
--		}
--	} while_each_subsys_mask();
-+	if (tset->nr_tasks) {
-+		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
-+			if (ssid == failed_ssid)
-+				break;
-+			if (ss->cancel_attach) {
-+				tset->ssid = ssid;
-+				ss->cancel_attach(tset);
-+			}
-+		} while_each_subsys_mask();
-+	}
- out_release_tset:
- 	spin_lock_irq(&css_set_lock);
- 	list_splice_init(&tset->dst_csets, &tset->src_csets);
+The verification of supported powerpc hugepage size (hugepagesz=) is 
+being performed on add_huge_page_size(), which is currently defined in 
+arch/powerpc/mm/hugetlbpage.c. I think it makes more sense to implement 
+default_hugepagesz= verification on arch/powerpc, don't you think?
+
+> -aneesh
