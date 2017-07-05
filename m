@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2mlf6NLMzDqyV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 02:38:38 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2mll0dLKzDr14
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 02:38:42 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v65GcYt7104159
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 12:38:36 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bh39d1jbn-1
+ v65GcfcK018990
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 12:38:41 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bgmdvcpxb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 12:38:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 12:38:40 -0400
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 5 Jul 2017 12:38:35 -0400
+ Wed, 5 Jul 2017 10:38:35 -0600
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -27,12 +27,9 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 2/5] powernv:idle: Change return type of pnv_probe_idle_states
- to int
-Date: Wed,  5 Jul 2017 22:08:13 +0530
-In-Reply-To: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1499272696-28751-3-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH 0/5] powernv:idle: Cleanup idle states initialization
+Date: Wed,  5 Jul 2017 22:08:11 +0530
+Message-Id: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,77 +41,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-In the current idle initialization code, if there are failures in
-pnv_probe_idle_states, then no platform idle state is
-enabled. However, since the error is not propagated to the top-level
-function pnv_init_idle_states, we continue initialization in this
-top-level function even though this will never be used.
+Hi,
 
-Hence change the the return type of pnv_probe_idle_states from void to
-int and in case of failures, bail out early on in
-pnv_init_idle_states.
+This patch set aims at cleaning up the powernv idle initialization
+code mainly covering the following
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/idle.c | 18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+a) Currently there is redundant code for parsing the device-tree for
+   idle states. We do it in two places, once during the platform idle
+   initialization, once more when the cpidle driver initializes. In
+   this patchset the device-tree is parsed only once and we maintain
+   an in-kernel data structure with the details of each platform idle
+   state. The cpu-idle initialization code looks at this data
+   structure for initializing cpuidle states. This makes the cpuidle
+   driver initialization more streamlined.
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index b747bb5..a5990d9 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -813,26 +813,27 @@ static int __init pnv_idle_parse(struct  device_node *np, int dt_idle_states)
- /*
-  * Probe device tree for supported idle states
-  */
--static void __init pnv_probe_idle_states(void)
-+static int __init pnv_probe_idle_states(void)
- {
- 	struct device_node *np;
- 	int dt_idle_states;
--	int i;
-+	int i, rc;
- 
- 	np = of_find_node_by_path("/ibm,opal/power-mgt");
- 	if (!np) {
- 		pr_warn("opal: PowerMgmt Node not found\n");
--		return;
-+		return -ENODEV;
- 	}
- 	dt_idle_states = of_property_count_u32_elems(np,
- 			"ibm,cpu-idle-state-flags");
- 	if (dt_idle_states < 0) {
- 		pr_warn("cpuidle-powernv: no idle states found in the DT\n");
--		return;
-+		return -ENOENT;
- 	}
- 
--	if (pnv_idle_parse(np, dt_idle_states))
--		return;
-+	rc = pnv_idle_parse(np, dt_idle_states);
-+	if (rc)
-+		return rc;
- 
- 	if (cpu_has_feature(CPU_FTR_ARCH_300))
- 		pnv_power9_idle_init();
-@@ -842,6 +843,8 @@ static void __init pnv_probe_idle_states(void)
- 			continue;
- 		supported_cpuidle_states |= pnv_idle.states[i].flags;
- 	}
-+
-+	return 0;
- }
- 
- static int __init pnv_init_idle_states(void)
-@@ -852,7 +855,8 @@ static int __init pnv_init_idle_states(void)
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		goto out;
- 
--	pnv_probe_idle_states();
-+	if (pnv_probe_idle_states())
-+		goto out;
- 
- 	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
- 		patch_instruction(
+b) Currently the idle initialzation code for power8 and power9 are
+   mixed up. In this patchset we segregate them into their respective
+   functions for improved readability.
+
+c) The current code has a bug when the Sleep-Winkle-Engine is unable
+   to restore the hypervisor states for the deep idle states that lose
+   full hypervisor context, since in such cases we don't disable such
+   deep states. Thus, the CPUs that enter such deep states don't
+   wakeup correctly.
+
+Patch 1 in the series addresses a).
+
+Patches 2,3,4 address b)
+
+Patch 5 fixes the bug c)
+
+These patches are applied on top of next branch of the powerpc-linux
+git tree. The patches have been tested on POWER8 and POWER9.
+   
+Gautham R. Shenoy (5):
+  powernv:idle: Move device-tree parsing to one place.
+  powernv:idle: Change return type of pnv_probe_idle_states to int
+  powernv:idle: Define idle init function for power8
+  powernv:idle: Move initialization of sibling pacas to
+    pnv_alloc_idle_core_states
+  powernv:idle: Disable LOSE_FULL_CONTEXT states when stop-api fails.
+
+ arch/powerpc/include/asm/cpuidle.h    |  32 +-
+ arch/powerpc/platforms/powernv/idle.c | 576 ++++++++++++++++++++++++++--------
+ drivers/cpuidle/cpuidle-powernv.c     | 233 ++++----------
+ 3 files changed, 521 insertions(+), 320 deletions(-)
+
 -- 
 1.9.4
