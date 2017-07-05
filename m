@@ -1,27 +1,56 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2dP813D9zDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 21:07:08 +1000 (AEST)
-Date: Wed, 5 Jul 2017 21:07:02 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC PATCH 1/2] powerpc/xive: guest exploitation of the XIVE
- interrupt controller
-Message-ID: <20170705110702.GO2180@umbus.fritz.box>
-References: <1498123757-18427-1-git-send-email-clg@kaod.org>
- <1498123757-18427-2-git-send-email-clg@kaod.org>
- <20170703035552.GQ13989@umbus.fritz.box>
- <1499055599.16202.23.camel@kernel.crashing.org>
- <18d0c283-3527-d599-36d8-4397a0a4d6db@kaod.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="5G50dybFf3pRZKd7"
-In-Reply-To: <18d0c283-3527-d599-36d8-4397a0a4d6db@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2fsW6rskzDq7q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 22:13:19 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v65C96fm116662
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 08:13:16 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bgtyf51yt-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 08:13:16 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Wed, 5 Jul 2017 22:13:13 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v65CD9rm8126864
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 22:13:09 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v65CD63b031708
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 22:13:07 +1000
+Subject: Re: [PATCH v2 6/6] ima: Support module-style appended signatures
+ for appraisal
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>, "Serge E. Hallyn"
+ <serge@hallyn.com>, David Howells <dhowells@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>, Rusty Russell
+ <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David
+ S. Miller" <davem@davemloft.net>, "AKASHI, Takahiro"
+ <takahiro.akashi@linaro.org>
+Date: Wed, 05 Jul 2017 08:13:01 -0400
+In-Reply-To: <87fuebei68.fsf@linux.vnet.ibm.com>
+References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1496886555-10082-7-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1497443972.4287.38.camel@linux.vnet.ibm.com>
+ <8760fpck0x.fsf@linux.vnet.ibm.com>
+ <1498095237.5328.44.camel@linux.vnet.ibm.com>
+ <87fuebei68.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1499256781.3059.41.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,73 +60,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2017-07-04 at 23:22 -0300, Thiago Jung Bauermann wrote:
+> Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+> 
+> > On Wed, 2017-06-21 at 14:45 -0300, Thiago Jung Bauermann wrote:
+> >> Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+> >> > On Wed, 2017-06-07 at 22:49 -0300, Thiago Jung Bauermann wrote:
+> >> >> @@ -267,11 +276,18 @@ int ima_appraise_measurement(enum ima_hooks func,
+> >> >>  		status = INTEGRITY_PASS;
+> >> >>  		break;
+> >> >>  	case EVM_IMA_XATTR_DIGSIG:
+> >> >> +	case IMA_MODSIG:
+> >> >>  		iint->flags |= IMA_DIGSIG;
+> >> >> -		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+> >> >> -					     (const char *)xattr_value, rc,
+> >> >> -					     iint->ima_hash->digest,
+> >> >> -					     iint->ima_hash->length);
+> >> >> +
+> >> >> +		if (xattr_value->type == EVM_IMA_XATTR_DIGSIG)
+> >> >> +			rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+> >> >> +						     (const char *)xattr_value,
+> >> >> +						     rc, iint->ima_hash->digest,
+> >> >> +						     iint->ima_hash->length);
+> >> >> +		else
+> >> >> +			rc = ima_modsig_verify(INTEGRITY_KEYRING_IMA,
+> >> >> +					       xattr_value);
+> >> >> +
+> >> >
+> >> > Perhaps allowing IMA_MODSIG to flow into EVM_IMA_XATTR_DIGSIG on
+> >> > failure, would help restore process_measurements() to the way it was.
+> >> > Further explanation below.
+> >> 
+> >> It's not possible to simply flow into EVM_IMA_XATTR_DIGSIG on failure
+> >> because after calling ima_read_xattr we need to run again all the logic
+> >> before the switch statement. Instead, I'm currently testing the
+> >> following change for v3, what do you think?
+> >
+> > I don't think we can assume that the same algorithm will be used for
+> > signing the kernel image. Different entities would be signing the
+> > kernel image with different requirements.
+> >
+> > Suppose for example a stock distro image comes signed using one
+> > algorithm (appended signature), but the same kernel image is locally
+> > signed using a different algorithm (xattr). Signature verification is
+> > dependent on either the distro or local public key being loaded onto
+> > the IMA keyring.
+> 
+> This example is good, but it raises one question: should the xattr
+> signature cover the entire contents of the stock distro image (i.e.,
+> also cover the appended signature), or should it ignore the appended
+> signature and thus cover the same contents that the appended signature
+> covers?
+> 
+> If the former, then we can't reuse the iint->ima_hash that was collected
+> when trying to verify the appended signature because it doesn't cover
+> the appended signature itself and won't match the hash expected by the
+> xattr signature.
+> 
+> If the latter, then evmctl ima_sign needs to be modified to check
+> whether there's an appended signature in the given file and ignore it
+> when calculating the xattr signature.
+> 
+> Which is better?
 
---5G50dybFf3pRZKd7
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I realize that having the same file hash for both the appended
+signature and extended attribute would make things a lot easier, but
+security.ima is a signature of the file as written to disk, meaning it
+would include any appended signature
 
-On Mon, Jul 03, 2017 at 09:11:18AM +0200, C=E9dric Le Goater wrote:
-> On 07/03/2017 06:19 AM, Benjamin Herrenschmidt wrote:
-> > On Mon, 2017-07-03 at 13:55 +1000, David Gibson wrote:
-> >>> Calls that still need to be addressed :
-> >>>
-> >>>     H_INT_SET_OS_REPORTING_LINE
-> >>>     H_INT_GET_OS_REPORTING_LINE
-> >>>     H_INT_ESB
-> >>>     H_INT_SYNC
-> >>
-> >> So, does this mean there's a PAPR update with the XIVE virtualization
-> >> stuff?  Or at least an ACR?  Can we have that available please...
-> >=20
-> > There is, I will try to get it published.
->=20
-> Until then, the QEMU support will have some documentation on the=20
-> hcalls and on the device tree.
->=20
-> I am still struggling with CAS on QEMU. POWER9 supports both the=20
-> legacy XICS model and the newer one, XIVE, and we can switch from=20
-> one another depending on the guest kernel. This is a serious=20
-> headache for the model as the ICS/ICP objects are chosen after=20
-> the guest has booted.
+> 
+> >> >> @@ -226,30 +282,23 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
+> >> >>  		goto out_digsig;
+> >> >>  	}
+> >> >> 
+> >> >> -	template_desc = ima_template_desc_current();
+> >> >> -	if ((action & IMA_APPRAISE_SUBMASK) ||
+> >> >> -		    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0)
+> >> >> -		/* read 'security.ima' */
+> >> >> -		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
+> >> >> -
+> >> >> -	hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
+> >> >> -
+> >> >> -	rc = ima_collect_measurement(iint, file, buf, size, hash_algo);
+> >> >> -	if (rc != 0) {
+> >> >> -		if (file->f_flags & O_DIRECT)
+> >> >> -			rc = (iint->flags & IMA_PERMIT_DIRECTIO) ? 0 : -EACCES;
+> >> >> -		goto out_digsig;
+> >> >> -	}
+> >> >> -
+> >> >
+> >> > There are four stages: collect measurement, store measurement,
+> >> > appraise measurement and audit measurement. "Collect" needs to be
+> >> > done if any one of the other stages is needed.
+> >> >
+> >> >>  	if (!pathbuf)	/* ima_rdwr_violation possibly pre-fetched */
+> >> >>  		pathname = ima_d_path(&file->f_path, &pathbuf, filename);
+> >> >> 
+> >> >> +	if (iint->flags & IMA_MODSIG_ALLOWED)
+> >> >> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
+> >> >> +					  iint, &xattr_value, &xattr_len,
+> >> >> +					  pathname, true);
+> >> >> +	if (!xattr_len)
+> >> >> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
+> >> >> +					  iint, &xattr_value, &xattr_len,
+> >> >> +					  pathname, false);
+> >> >
+> >> > I would rather see "collect" extended to support an appended signature
+> >> > rather than trying to combine "collect" and "appraise" together.
+> >> 
+> >> I'm not sure I understand what you mean by "extend collect to support an
+> >> appended signature", but the fundamental problem is that we don't know
+> >> whether we need to fallback to the xattr sig until the appraise step
+> >> because that's when we verify the signature, and by then the collect and
+> >> store steps were already completed and would need to be done again if
+> >> the hash algorithm in the xattr sig is different.
+> >
+> > The "appraise" stage could be moved before the "store" stage, like you
+> > have. (This should be a separate patch explaining the need for moving
+> > it.) Based on an argument to ima_collect_measurement() have it
+> > "collect" either the appended signature or the xattr. Maybe something
+> > like this:
+> >
+> > loop [ appended signature, xattr ] { <== list based on policy flags
+> >   collect_measurement()
+> >   if failure
+> >     continue
+> >   appraise_measurement()
+> >   if success
+> >     break
+> > }
+> >
+> > store_measurement()
+> 
+> Ok, the above is what v2 already does, so the only change I made was to
+> rename the function from measure_and_appraise to collect_and_appraise to
+> match the IMA jargon.
 
-Ah.
+I would prefer if you did not combine the "collect" and "appraise"
+functions, but left them independent of each other. 
 
-I don't know if it helps, but we do have the ability to trigger a full
-system reset from CAS, so possibly we can do the XICS/XIVE
-instantiation in the reset path.
-
-I don't think we use that CAS reset ability yet - we just adjust the
-device tree and continue the boot.  But it's there if we need it.
-
-Worst comes to worst, we might have to instantiate both XICS and XIVE
-objects, with some flags in each indicating which is active.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---5G50dybFf3pRZKd7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJZXMhWAAoJEGw4ysog2bOSPRoP/1yDRpDNAfz5m1ADVmeSxb82
-+7TJ6Y6eCejD1ysQ9eT0QFv0m1FLDbZa5Mb9dCU2Db6N5pzePxMyCx+vbhIiSL/u
-lWAp6EOuzJwR+TLwLu1UKjf4DyTryXS8yhx4Sk780KlDF5AvNuS8a+0KDnNc+y8I
-LDxSQqIBUQCj5wYVPAA5guzTH3NLyCeAXTpFIobyKf/D8YrPWzRE8693YVhO29no
-SCTa4DJgK9WqU7ohcQtvo/PdFRbwR7D05JO3yo2rcD0+wX2HHkUxxJw3wWl0LCKc
-6FhPVCj6uD5zFFsPQPzf09/J6if6qU4MrNgNRgjhEvd+9zcjAMmVw4OPUii4aM+J
-Ukx68zfGEP+jB7jzQ7At874pgaBT4lY6CubRysejop0qhxUa90gYAZ7ketELuXbn
-MBxorRa8yueFbShYI/5ptjWwtvK+RVAFAfKpdyscY4djwbwgWsdpKx9xGWBS+ZGC
-tv8sWJza6NmO+BOtM0+2UQooWuh9K7yJdMy0iDnoN03dEb0PuFxXrAO7M5i8W7mG
-366O8Ri4r+a4USt/vXEXQSWvmQzFjTH3eubNWy4Dgj43pM/5VJsMmVakteoJmgVD
-c4ypnqQpjHs/9zw4eZiPPz5823EKXGn7BivDhSp4U12dIEFmA+P9Q89R/6MlkTUG
-wbsBf7wheXEbgL2VliiL
-=v2jY
------END PGP SIGNATURE-----
-
---5G50dybFf3pRZKd7--
+Mimi
