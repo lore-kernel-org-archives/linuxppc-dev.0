@@ -1,20 +1,56 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Mzj74HYzDqkF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 11:02:41 +1000 (AEST)
-Message-ID: <1499216561.7056.7.camel@neuling.org>
-Subject: Re: [PATCH] powerpc/tm: fix live state of vs0/32 in tm_reclaim
-From: Michael Neuling <mikey@neuling.org>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Breno Leitao <leitao@debian.org>, Cyril Bur <cyrilbur@gmail.com>
-Date: Wed, 05 Jul 2017 11:02:41 +1000
-In-Reply-To: <1499201115-22967-1-git-send-email-gromero@linux.vnet.ibm.com>
-References: <1499127540.8033.3.camel@gmail.com>
- <1499201115-22967-1-git-send-email-gromero@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Pmg1gC9zDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 12:23:14 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v652JB9I091944
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 22:23:12 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bg9tq2gnu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 22:23:12 -0400
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Tue, 4 Jul 2017 23:23:10 -0300
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v652ImXg29097984
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 23:18:48 -0300
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v652N78n008346
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Jul 2017 23:23:08 -0300
+References: <1496886555-10082-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1496886555-10082-7-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1497443972.4287.38.camel@linux.vnet.ibm.com>
+ <8760fpck0x.fsf@linux.vnet.ibm.com>
+ <1498095237.5328.44.camel@linux.vnet.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, David Howells <dhowells@redhat.com>,
+ David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>
+Subject: Re: [PATCH v2 6/6] ima: Support module-style appended signatures for
+ appraisal
+In-reply-to: <1498095237.5328.44.camel@linux.vnet.ibm.com>
+Date: Tue, 04 Jul 2017 23:22:55 -0300
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87fuebei68.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,173 +60,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-07-04 at 16:45 -0400, Gustavo Romero wrote:
-> Currently tm_reclaim() can return with a corrupted vs0 (fp0) or vs32 (v0)
-> due to the fact vs0 is used to save FPSCR and vs32 is used to save VSCR.
 
-tm_reclaim() should have no state live in the registers once it returns.  I=
-t
-should all be saved in the thread struct. The above is not an issue in my b=
-ook.
+Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
 
-Having a quick look at the code, I think there's and issue but we need some=
-thing
-more like this (completely untested).
+> On Wed, 2017-06-21 at 14:45 -0300, Thiago Jung Bauermann wrote:
+>> Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+>> > On Wed, 2017-06-07 at 22:49 -0300, Thiago Jung Bauermann wrote:
+>> >> @@ -267,11 +276,18 @@ int ima_appraise_measurement(enum ima_hooks func,
+>> >>  		status = INTEGRITY_PASS;
+>> >>  		break;
+>> >>  	case EVM_IMA_XATTR_DIGSIG:
+>> >> +	case IMA_MODSIG:
+>> >>  		iint->flags |= IMA_DIGSIG;
+>> >> -		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+>> >> -					     (const char *)xattr_value, rc,
+>> >> -					     iint->ima_hash->digest,
+>> >> -					     iint->ima_hash->length);
+>> >> +
+>> >> +		if (xattr_value->type == EVM_IMA_XATTR_DIGSIG)
+>> >> +			rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+>> >> +						     (const char *)xattr_value,
+>> >> +						     rc, iint->ima_hash->digest,
+>> >> +						     iint->ima_hash->length);
+>> >> +		else
+>> >> +			rc = ima_modsig_verify(INTEGRITY_KEYRING_IMA,
+>> >> +					       xattr_value);
+>> >> +
+>> >
+>> > Perhaps allowing IMA_MODSIG to flow into EVM_IMA_XATTR_DIGSIG on
+>> > failure, would help restore process_measurements() to the way it was.
+>> > Further explanation below.
+>> 
+>> It's not possible to simply flow into EVM_IMA_XATTR_DIGSIG on failure
+>> because after calling ima_read_xattr we need to run again all the logic
+>> before the switch statement. Instead, I'm currently testing the
+>> following change for v3, what do you think?
+>
+> I don't think we can assume that the same algorithm will be used for
+> signing the kernel image. Different entities would be signing the
+> kernel image with different requirements.
+>
+> Suppose for example a stock distro image comes signed using one
+> algorithm (appended signature), but the same kernel image is locally
+> signed using a different algorithm (xattr). Signature verification is
+> dependent on either the distro or local public key being loaded onto
+> the IMA keyring.
 
-When we recheckpoint inside an fp unavail, we need to recheckpoint vec if i=
-t was
-enabled.  Currently we only ever recheckpoint the FP which seems like a bug=
-.=20
-Visa versa for the other way around.
+This example is good, but it raises one question: should the xattr
+signature cover the entire contents of the stock distro image (i.e.,
+also cover the appended signature), or should it ignore the appended
+signature and thus cover the same contents that the appended signature
+covers?
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index d4e545d27e..d1184264e2 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1589,7 +1589,7 @@ void fp_unavailable_tm(struct pt_regs *regs)
-         * If VMX is in use, the VRs now hold checkpointed values,
-         * so we don't want to load the VRs from the thread_struct.
-         */
--       tm_recheckpoint(&current->thread, MSR_FP);
-+       tm_recheckpoint(&current->thread, regs->msr);
-=20
-        /* If VMX is in use, get the transactional values back */
-        if (regs->msr & MSR_VEC) {
-@@ -1611,7 +1611,7 @@ void altivec_unavailable_tm(struct pt_regs *regs)
-                 regs->nip, regs->msr);
-        tm_reclaim_current(TM_CAUSE_FAC_UNAV);
-        regs->msr |=3D MSR_VEC;
--       tm_recheckpoint(&current->thread, MSR_VEC);
-+       tm_recheckpoint(&current->thread, regs->msr);
-        current->thread.used_vr =3D 1;
-=20
-        if (regs->msr & MSR_FP) {
+If the former, then we can't reuse the iint->ima_hash that was collected
+when trying to verify the appended signature because it doesn't cover
+the appended signature itself and won't match the hash expected by the
+xattr signature.
 
+If the latter, then evmctl ima_sign needs to be modified to check
+whether there's an appended signature in the given file and ignore it
+when calculating the xattr signature.
 
-> Later, we recheckpoint trusting that the live state of FP and VEC are ok
-> depending on the MSR.FP and MSR.VEC bits, i.e. if MSR.FP is enabled that
-> means the FP registers checkpointed when we entered in TM are correct and
-> after a treclaim. we can trust the FP live state. Similarly to VEC regs.
-> However if tm_reclaim() does not return a sane state then tm_recheckpoint=
-()
-> will recheckpoint a corrupted state from live state back to the checkpoin=
-t
-> area.
+Which is better?
 
+>> >> @@ -226,30 +282,23 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
+>> >>  		goto out_digsig;
+>> >>  	}
+>> >> 
+>> >> -	template_desc = ima_template_desc_current();
+>> >> -	if ((action & IMA_APPRAISE_SUBMASK) ||
+>> >> -		    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0)
+>> >> -		/* read 'security.ima' */
+>> >> -		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
+>> >> -
+>> >> -	hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
+>> >> -
+>> >> -	rc = ima_collect_measurement(iint, file, buf, size, hash_algo);
+>> >> -	if (rc != 0) {
+>> >> -		if (file->f_flags & O_DIRECT)
+>> >> -			rc = (iint->flags & IMA_PERMIT_DIRECTIO) ? 0 : -EACCES;
+>> >> -		goto out_digsig;
+>> >> -	}
+>> >> -
+>> >
+>> > There are four stages: collect measurement, store measurement,
+>> > appraise measurement and audit measurement. "Collect" needs to be
+>> > done if any one of the other stages is needed.
+>> >
+>> >>  	if (!pathbuf)	/* ima_rdwr_violation possibly pre-fetched */
+>> >>  		pathname = ima_d_path(&file->f_path, &pathbuf, filename);
+>> >> 
+>> >> +	if (iint->flags & IMA_MODSIG_ALLOWED)
+>> >> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
+>> >> +					  iint, &xattr_value, &xattr_len,
+>> >> +					  pathname, true);
+>> >> +	if (!xattr_len)
+>> >> +		rc = measure_and_appraise(file, buf, size, func, opened, action,
+>> >> +					  iint, &xattr_value, &xattr_len,
+>> >> +					  pathname, false);
+>> >
+>> > I would rather see "collect" extended to support an appended signature
+>> > rather than trying to combine "collect" and "appraise" together.
+>> 
+>> I'm not sure I understand what you mean by "extend collect to support an
+>> appended signature", but the fundamental problem is that we don't know
+>> whether we need to fallback to the xattr sig until the appraise step
+>> because that's when we verify the signature, and by then the collect and
+>> store steps were already completed and would need to be done again if
+>> the hash algorithm in the xattr sig is different.
+>
+> The "appraise" stage could be moved before the "store" stage, like you
+> have. (This should be a separate patch explaining the need for moving
+> it.) Based on an argument to ima_collect_measurement() have it
+> "collect" either the appended signature or the xattr. Maybe something
+> like this:
+>
+> loop [ appended signature, xattr ] { <== list based on policy flags
+>   collect_measurement()
+>   if failure
+>     continue
+>   appraise_measurement()
+>   if success
+>     break
+> }
+>
+> store_measurement()
 
+Ok, the above is what v2 already does, so the only change I made was to
+rename the function from measure_and_appraise to collect_and_appraise to
+match the IMA jargon.
 
-
-> That commit fixes the corruption by restoring vs0 and vs32 from the
-> ckfp_state and ckvr_state after they are used to save FPSCR and VSCR,
-> respectively.
->=20
-> The effect of the issue described above is observed, for instance, once a
-> VSX unavailable exception is caught in the middle of a transaction with
-> MSR.FP =3D 1 or MSR.VEC =3D 1. If MSR.FP =3D 1, then after getting back t=
-o user
-> space FP state is corrupted. If MSR.VEC =3D 1, then VEC state is corrupte=
-d.
->=20
-> The issue does not occur if MSR.FP =3D 0 and MSR.VEC =3D 0 because ckfp_s=
-tate
-> and ckvr_state are both copied from fp_state and vr_state, respectively,
-> and on recheckpointing both states will be restored from these thread
-> structures and not from the live state.
->=20
-> The issue does not occur also if MSR.FP =3D 1 and MSR.VEC =3D 1 because i=
-t
-> implies MSR.VSX =3D 1 and in that case the VSX unavailable exception does=
- not
-> happen in the middle of the transactional block.
->=20
-> Finally, that commit also fixes the MSR used to check if FP and VEC bits
-> are enabled once we are in tm_reclaim_thread(). ckpt_regs.msr is valid on=
-ly
-> if giveup_all() is called *before* using ckpt_regs.msr for checks because
-> check_if_tm_restore_required() in giveup_all() will copy regs->msr to
-> ckpt_regs.msr and so ckpt_regs.msr reflects exactly the MSR that the thre=
-ad
-> had when it came off the processor.
->=20
-> No regression was observed on powerpc/tm selftests after this fix.
->=20
-> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> ---
-> =C2=A0arch/powerpc/kernel/process.c |=C2=A0=C2=A09 +++++++--
-> =C2=A0arch/powerpc/kernel/tm.S=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 14 ++=
-++++++++++++
-> =C2=A02 files changed, 21 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.=
-c
-> index 2ad725e..ac1fc51 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -864,6 +864,13 @@ static void tm_reclaim_thread(struct thread_struct *=
-thr,
-> =C2=A0	if (!MSR_TM_SUSPENDED(mfmsr()))
-> =C2=A0		return;
-> =C2=A0
-> +	/* Copy regs->msr to ckpt_regs.msr making the last valid for
-> +	=C2=A0* the checks below. check_if_tm_restore_required() in
-> +	=C2=A0* giveup_all() will take care of it. Also update fp_state
-> +	=C2=A0* and vr_state from live state if the live state is valid.
-> +	=C2=A0*/
-> +	giveup_all(container_of(thr, struct task_struct, thread));
-> +
-> =C2=A0	/*
-> =C2=A0	=C2=A0* If we are in a transaction and FP is off then we can't hav=
-e
-> =C2=A0	=C2=A0* used FP inside that transaction. Hence the checkpointed
-> @@ -883,8 +890,6 @@ static void tm_reclaim_thread(struct thread_struct *t=
-hr,
-> =C2=A0		memcpy(&thr->ckvr_state, &thr->vr_state,
-> =C2=A0		=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0sizeof(struct thread_vr=
-_state));
-> =C2=A0
-> -	giveup_all(container_of(thr, struct task_struct, thread));
-> -
-> =C2=A0	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
-> =C2=A0}
-> =C2=A0
-> diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-> index 3a2d041..5dfbddb 100644
-> --- a/arch/powerpc/kernel/tm.S
-> +++ b/arch/powerpc/kernel/tm.S
-> @@ -259,9 +259,17 @@ _GLOBAL(tm_reclaim)
-> =C2=A0
-> =C2=A0	addi	r7, r3, THREAD_CKVRSTATE
-> =C2=A0	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
-> +
-> +	/* Corrupting v0 (vs32). Should restore it later. */
-> =C2=A0	mfvscr	v0
-> =C2=A0	li	r6, VRSTATE_VSCR
-> =C2=A0	stvx	v0, r7, r6
-> +
-> +	/* Restore v0 (vs32) from ckvr_state.vr[0], otherwise we might
-> +	=C2=A0* recheckpoint the wrong live value.
-> +	=C2=A0*/
-> +	LXVD2X_ROT(32, R0, R7)
-> +
-> =C2=A0dont_backup_vec:
-> =C2=A0	mfspr	r0, SPRN_VRSAVE
-> =C2=A0	std	r0, THREAD_CKVRSAVE(r3)
-> @@ -272,9 +280,15 @@ dont_backup_vec:
-> =C2=A0	addi	r7, r3, THREAD_CKFPSTATE
-> =C2=A0	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp
-> state */
-> =C2=A0
-> +	/* Corrupting fr0 (vs0). Should restore it later. */
-> =C2=A0	mffs=C2=A0=C2=A0=C2=A0=C2=A0fr0
-> =C2=A0	stfd=C2=A0=C2=A0=C2=A0=C2=A0fr0,FPSTATE_FPSCR(r7)
-> =C2=A0
-> +	/* Restore fr0 (vs0) from ckfp_state.fpr[0], otherwise we might
-> +	=C2=A0* recheckpoint the wrong live value.
-> +	=C2=A0*/
-> +	LXVD2X_ROT(0, R0, R7)
-> +
-> =C2=A0dont_backup_fp:
-> =C2=A0
-> =C2=A0	/* TM regs, incl TEXASR -- these live in thread_struct.=C2=A0=C2=
-=A0Note they've
+-- 
+Thiago Jung Bauermann
+IBM Linux Technology Center
