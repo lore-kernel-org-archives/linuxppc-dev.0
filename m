@@ -1,19 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Rrd0Y2MzDr1p
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 13:56:49 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id d193so11236862pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 20:56:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Rrh2W87zDr1n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 13:56:52 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id u36so29558362pgn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 20:56:52 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/3] powerpc/pseries/le: work around a firmware quirk
-Date: Wed,  5 Jul 2017 13:56:26 +1000
-Message-Id: <20170705035627.19563-3-npiggin@gmail.com>
+Subject: [PATCH v2 3/3] powerpc: do not send system reset request through the
+ oops path
+Date: Wed,  5 Jul 2017 13:56:27 +1000
+Message-Id: <20170705035627.19563-4-npiggin@gmail.com>
 In-Reply-To: <20170705035627.19563-1-npiggin@gmail.com>
 References: <20170705035627.19563-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,49 +26,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some PowerVM firmware when delivering a system reset interrupt to a
-little endian OS will mess up SRR registers. They are byteswapped, and
-SRR1 is incorrect. An example from a crash:
+A system reset is a request to crash / debug the system rather than
+necessarily caused by encountering a BUG. So there is no need to
+serialize all CPUs behind the die lock, adding taints to all subsequent
+traces beyond the first, breaking console locks, etc.
 
-  NIP: 14dd0900000000c0
-  MSR: 1000000200000080
+The system reset is NMI context which has its own printk buffers to
+prevent output being interleaved. Then it's better to have all
+secondaries print out their debug as quickly as possible and the primary
+will flush out all printk buffers during panic().
 
-It's possible to detect this pattern in SRR1 (that would never happen in
-normal operation), and at least fix the NIP. After this patch, the same
-interrupt reports NIP properly:
+So remove the 0x100 path from die, and move it into system_reset. Name
+the crash/dump reasons "System Reset".
 
-  NIP [c00000000009dd14] plpar_hcall_norets+0x1c/0x28
+This gives "not tained" traces when crashing an untainted kernel. It
+also gives the panic reason as "System Reset" as opposed to "Fatal
+exception in interrupt" (or "die oops" for fadump).
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/pseries/ras.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/powerpc/kernel/traps.c | 47 ++++++++++++++++++++++++++++++---------------
+ 1 file changed, 31 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index bb70b26334f0..4923ffe230cf 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -379,6 +379,21 @@ static void fwnmi_release_errinfo(void)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index bfcfd9ef09f2..574e949f8db9 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -162,21 +162,9 @@ static void oops_end(unsigned long flags, struct pt_regs *regs,
  
- int pSeries_system_reset_exception(struct pt_regs *regs)
- {
-+#ifdef __LITTLE_ENDIAN__
-+	/*
-+	 * Some firmware byteswaps SRR registers and gives incorrect SRR1. Try
-+	 * to detect the bad SRR1 pattern here. Flip the NIP back to correct
-+	 * endian for reporting purposes. Unfortunately the MSR can't be fixed,
-+	 * so clear it. It will be missing MSR_RI so we won't try to recover.
-+	 */
-+	if ((be64_to_cpu(regs->msr) &
-+			(MSR_LE|MSR_RI|MSR_DR|MSR_IR|MSR_ME|MSR_PR|
-+			 MSR_ILE|MSR_HV|MSR_SF)) == (MSR_DR|MSR_SF)) {
-+		regs->nip = be64_to_cpu((__be64)regs->nip);
-+		regs->msr = 0;
-+	}
-+#endif
+ 	crash_fadump(regs, "die oops");
+ 
+-	/*
+-	 * A system reset (0x100) is a request to dump, so we always send
+-	 * it through the crashdump code.
+-	 */
+-	if (kexec_should_crash(current) || (TRAP(regs) == 0x100)) {
++	if (kexec_should_crash(current))
+ 		crash_kexec(regs);
+ 
+-		/*
+-		 * We aren't the primary crash CPU. We need to send it
+-		 * to a holding pattern to avoid it ending up in the panic
+-		 * code.
+-		 */
+-		crash_kexec_secondary(regs);
+-	}
+-
+ 	if (!signr)
+ 		return;
+ 
+@@ -294,17 +282,44 @@ void system_reset_exception(struct pt_regs *regs)
+ 			goto out;
+ 	}
+ 
+-	die("System Reset", regs, SIGABRT);
++	if (debugger(regs))
++		goto out;
 +
- 	if (fwnmi_active) {
- 		struct rtas_error_log *errhdr = fwnmi_get_errinfo(regs);
- 		if (errhdr) {
++	/*
++	 * A system reset is a request to dump, so we always send
++	 * it through the crashdump code (if fadump or kdump are
++	 * registered).
++	 */
++	crash_fadump(regs, "System Reset");
++
++	crash_kexec(regs);
++
++	/*
++	 * We aren't the primary crash CPU. We need to send it
++	 * to a holding pattern to avoid it ending up in the panic
++	 * code.
++	 */
++	crash_kexec_secondary(regs);
++
++	/*
++	 * No debugger or crash dump registered, print logs then
++	 * panic.
++	 */
++	__die("System Reset", regs, SIGABRT);
++
++	mdelay(2*MSEC_PER_SEC); /* Wait a little while for others to print */
++	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
++	nmi_panic(regs, "System Reset");
+ 
+ out:
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	BUG_ON(get_paca()->in_nmi == 0);
+ 	if (get_paca()->in_nmi > 1)
+-		panic("Unrecoverable nested System Reset");
++		nmi_panic(regs, "Unrecoverable nested System Reset");
+ #endif
+ 	/* Must die if the interrupt is not recoverable */
+ 	if (!(regs->msr & MSR_RI))
+-		panic("Unrecoverable System Reset");
++		nmi_panic(regs, "Unrecoverable System Reset");
+ 
+ 	if (!nested)
+ 		nmi_exit();
 -- 
 2.11.0
