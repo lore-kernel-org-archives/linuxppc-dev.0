@@ -1,22 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2Rrh2W87zDr1n
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 13:56:52 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id u36so29558362pgn.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 20:56:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2S1d51HtzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 14:04:37 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id z6so33065772pfk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 21:04:37 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: [PATCH v2 3/3] powerpc: do not send system reset request through the
- oops path
-Date: Wed,  5 Jul 2017 13:56:27 +1000
-Message-Id: <20170705035627.19563-4-npiggin@gmail.com>
-In-Reply-To: <20170705035627.19563-1-npiggin@gmail.com>
-References: <20170705035627.19563-1-npiggin@gmail.com>
+Subject: [PATCH 0/4] machine check handling improvements
+Date: Wed,  5 Jul 2017 14:04:18 +1000
+Message-Id: <20170705040422.20933-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,102 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A system reset is a request to crash / debug the system rather than
-necessarily caused by encountering a BUG. So there is no need to
-serialize all CPUs behind the die lock, adding taints to all subsequent
-traces beyond the first, breaking console locks, etc.
+These are some improvements to recoverability and debugability
+of machine check handling. Patch 2 depends on patch 1, but they
+are otherwise independent.
 
-The system reset is NMI context which has its own printk buffers to
-prevent output being interleaved. Then it's better to have all
-secondaries print out their debug as quickly as possible and the primary
-will flush out all printk buffers during panic().
+Thanks,
+Nick
 
-So remove the 0x100 path from die, and move it into system_reset. Name
-the crash/dump reasons "System Reset".
+Nicholas Piggin (4):
+  powerpc/powernv: handle the platform error reboot in ppc_md.restart
+  powerpc/powernv: machine check use kernel crash path
+  powernv/pseries: machine check use kernel crash path
+  powerpc: machine check interrupt is a non-maskable interrupt
 
-This gives "not tained" traces when crashing an untainted kernel. It
-also gives the panic reason as "System Reset" as opposed to "Fatal
-exception in interrupt" (or "die oops" for fadump).
+ arch/powerpc/include/asm/opal.h           |  2 +-
+ arch/powerpc/kernel/traps.c               |  9 +++--
+ arch/powerpc/platforms/powernv/opal-hmi.c | 20 ++---------
+ arch/powerpc/platforms/powernv/opal.c     | 57 ++++++++-----------------------
+ arch/powerpc/platforms/powernv/powernv.h  |  2 ++
+ arch/powerpc/platforms/powernv/setup.c    | 31 +++++++++++++++++
+ arch/powerpc/platforms/pseries/ras.c      | 22 ++++++------
+ 7 files changed, 69 insertions(+), 74 deletions(-)
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/traps.c | 47 ++++++++++++++++++++++++++++++---------------
- 1 file changed, 31 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bfcfd9ef09f2..574e949f8db9 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -162,21 +162,9 @@ static void oops_end(unsigned long flags, struct pt_regs *regs,
- 
- 	crash_fadump(regs, "die oops");
- 
--	/*
--	 * A system reset (0x100) is a request to dump, so we always send
--	 * it through the crashdump code.
--	 */
--	if (kexec_should_crash(current) || (TRAP(regs) == 0x100)) {
-+	if (kexec_should_crash(current))
- 		crash_kexec(regs);
- 
--		/*
--		 * We aren't the primary crash CPU. We need to send it
--		 * to a holding pattern to avoid it ending up in the panic
--		 * code.
--		 */
--		crash_kexec_secondary(regs);
--	}
--
- 	if (!signr)
- 		return;
- 
-@@ -294,17 +282,44 @@ void system_reset_exception(struct pt_regs *regs)
- 			goto out;
- 	}
- 
--	die("System Reset", regs, SIGABRT);
-+	if (debugger(regs))
-+		goto out;
-+
-+	/*
-+	 * A system reset is a request to dump, so we always send
-+	 * it through the crashdump code (if fadump or kdump are
-+	 * registered).
-+	 */
-+	crash_fadump(regs, "System Reset");
-+
-+	crash_kexec(regs);
-+
-+	/*
-+	 * We aren't the primary crash CPU. We need to send it
-+	 * to a holding pattern to avoid it ending up in the panic
-+	 * code.
-+	 */
-+	crash_kexec_secondary(regs);
-+
-+	/*
-+	 * No debugger or crash dump registered, print logs then
-+	 * panic.
-+	 */
-+	__die("System Reset", regs, SIGABRT);
-+
-+	mdelay(2*MSEC_PER_SEC); /* Wait a little while for others to print */
-+	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
-+	nmi_panic(regs, "System Reset");
- 
- out:
- #ifdef CONFIG_PPC_BOOK3S_64
- 	BUG_ON(get_paca()->in_nmi == 0);
- 	if (get_paca()->in_nmi > 1)
--		panic("Unrecoverable nested System Reset");
-+		nmi_panic(regs, "Unrecoverable nested System Reset");
- #endif
- 	/* Must die if the interrupt is not recoverable */
- 	if (!(regs->msr & MSR_RI))
--		panic("Unrecoverable System Reset");
-+		nmi_panic(regs, "Unrecoverable System Reset");
- 
- 	if (!nested)
- 		nmi_exit();
 -- 
 2.11.0
