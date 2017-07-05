@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2v3f73C4zDr3F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 07:22:54 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id m54so194315qtb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 14:22:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2v3m3Rd7zDr4B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 07:23:00 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id p21so204037qke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 14:23:00 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -17,9 +17,10 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
  corbet@lwn.net, mingo@redhat.com
-Subject: [RFC v5 10/38] powerpc: use helper functions in flush_hash_page()
-Date: Wed,  5 Jul 2017 14:21:47 -0700
-Message-Id: <1499289735-14220-11-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC v5 12/38] mm: ability to disable execute permission on a key at
+ creation
+Date: Wed,  5 Jul 2017 14:21:49 -0700
+Message-Id: <1499289735-14220-13-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
 References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,45 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-replace redundant code in flush_hash_page() with helper function
-pte_get_hash_gslot().
+Currently sys_pkey_create() provides the ability to disable read
+and write permission on the key, at  creation. powerpc  has  the
+hardware support to disable execute on a pkey as well.This patch
+enhances the interface to let disable execute  at  key  creation
+time. x86 does  not  allow  this.  Hence the next patch will add
+ability  in  x86  to  return  error  if  PKEY_DISABLE_EXECUTE is
+specified.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/mm/hash_utils_64.c |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
+ include/uapi/asm-generic/mman-common.h |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index d3604da..d863696 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1615,23 +1615,18 @@ unsigned long pte_get_hash_gslot(unsigned long vpn, unsigned long shift,
- void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
- 		     unsigned long flags)
- {
--	unsigned long hash, index, shift, hidx, slot;
-+	unsigned long index, shift, gslot;
- 	int local = flags & HPTE_LOCAL_UPDATE;
+diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
+index 8c27db0..bf4fa07 100644
+--- a/include/uapi/asm-generic/mman-common.h
++++ b/include/uapi/asm-generic/mman-common.h
+@@ -74,7 +74,9 @@
  
- 	DBG_LOW("flush_hash_page(vpn=%016lx)\n", vpn);
- 	pte_iterate_hashed_subpages(pte, psize, vpn, index, shift) {
--		hash = hpt_hash(vpn, shift, ssize);
--		hidx = __rpte_to_hidx(pte, index);
--		if (hidx & _PTEIDX_SECONDARY)
--			hash = ~hash;
--		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--		slot += hidx & _PTEIDX_GROUP_IX;
--		DBG_LOW(" sub %ld: hash=%lx, hidx=%lx\n", index, slot, hidx);
-+		gslot = pte_get_hash_gslot(vpn, shift, ssize, pte, index);
-+		DBG_LOW(" sub %ld: gslot=%lx\n", index, gslot);
- 		/*
- 		 * We use same base page size and actual psize, because we don't
- 		 * use these functions for hugepage
- 		 */
--		mmu_hash_ops.hpte_invalidate(slot, vpn, psize, psize,
-+		mmu_hash_ops.hpte_invalidate(gslot, vpn, psize, psize,
- 					     ssize, local);
- 	} pte_iterate_hashed_end();
+ #define PKEY_DISABLE_ACCESS	0x1
+ #define PKEY_DISABLE_WRITE	0x2
++#define PKEY_DISABLE_EXECUTE	0x4
+ #define PKEY_ACCESS_MASK	(PKEY_DISABLE_ACCESS |\
+-				 PKEY_DISABLE_WRITE)
++				 PKEY_DISABLE_WRITE  |\
++				 PKEY_DISABLE_EXECUTE)
  
+ #endif /* __ASM_GENERIC_MMAN_COMMON_H */
 -- 
 1.7.1
