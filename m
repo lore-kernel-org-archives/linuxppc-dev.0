@@ -1,19 +1,18 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2XF00qP5zDr13
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 17:14:44 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id c24so19239923pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 00:14:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2XF23x6fzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 17:14:46 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id u62so30332781pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 00:14:46 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	mpe@ellerman.id.au
-Subject: [PATCH 2/3] powerpc/mm/hash: WARN if relocation is enabled and
- CONFIG_STRICT_KERNEL_RWX
-Date: Wed,  5 Jul 2017 17:14:24 +1000
-Message-Id: <20170705071425.5417-3-bsingharora@gmail.com>
+Subject: [PATCH 3/3] powerpc/strict_kernel_rwx: Don't depend on !RELOCATABLE
+Date: Wed,  5 Jul 2017 17:14:25 +1000
+Message-Id: <20170705071425.5417-4-bsingharora@gmail.com>
 In-Reply-To: <20170705071425.5417-1-bsingharora@gmail.com>
 References: <20170705071425.5417-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,40 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For radix we split the mapping into smaller page sizes (at the cost of
-additional TLB overhead), but for hash its best to print a warning. In
-the case of hash and no-relocation, the kernel should be well aligned
-to provide the least overhead with the current linear mapping size (16M)
+The concerns with extra permissions and overlap have been
+address, remove the dependency on !RELOCTABLE
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/mm/pgtable-hash64.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-index 0809102b..7c2479d 100644
---- a/arch/powerpc/mm/pgtable-hash64.c
-+++ b/arch/powerpc/mm/pgtable-hash64.c
-@@ -438,6 +438,11 @@ void hash__mark_rodata_ro(void)
- 		return;
- 	}
- 
-+	if (PHYSICAL_START > MEMORY_START)
-+		pr_warn("Detected relocation and CONFIG_STRICT_KERNEL_RWX "
-+			"permissions are best effort, some non-text area "
-+			"might still be left as executable");
-+
- 	shift = mmu_psize_defs[mmu_linear_psize].shift;
- 	step = 1 << shift;
- 
-@@ -448,7 +453,7 @@ void hash__mark_rodata_ro(void)
- 			start, end, step);
- 
- 	if (start == end) {
--		pr_warn("could not set rodata ro, relocate the start"
-+		pr_warn("Could not set rodata ro, relocate the start"
- 			" of the kernel to a 0x%x boundary\n", step);
- 		return;
- 	}
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 36f858c..3963e24 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -165,7 +165,7 @@ config PPC
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+-	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S_64 && !RELOCATABLE && !HIBERNATION)
++	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S_64 && && !HIBERNATION)
+ 	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
+ 	select HAVE_CBPF_JIT			if !PPC64
+ 	select HAVE_CONTEXT_TRACKING		if PPC64
 -- 
 2.9.4
