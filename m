@@ -3,35 +3,36 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2lzH5K0zzDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 02:03:39 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2m5w0SdkzDqhp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 02:09:23 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v65FwiOI106107
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 12:03:37 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bgvxc1rc8-1
+ v65G8sEN094136
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 12:09:21 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bh3a6g82e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 12:03:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 12:09:21 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <victora@linux.vnet.ibm.com>;
- Wed, 5 Jul 2017 10:03:36 -0600
+ Wed, 5 Jul 2017 12:09:20 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII;
  format=flowed
-Date: Wed, 05 Jul 2017 13:03:57 -0300
+Date: Wed, 05 Jul 2017 13:09:42 -0300
 From: victora <victora@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Victor Aoqui <victora@br.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+ linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com,
+ mpe@ellerman.id.au
 Subject: Re: [PATCH] powerpc/mm: Implemented default_hugepagesz verification
  for powerpc
-In-Reply-To: <1f549637-773a-868c-effd-5614e85aa892@linux.vnet.ibm.com>
+In-Reply-To: <4d5950e6-d208-b8d1-ffee-6e54c741c8e0@linux.vnet.ibm.com>
 References: <20170703200559.3743-1-victora@br.ibm.com>
- <1f549637-773a-868c-effd-5614e85aa892@linux.vnet.ibm.com>
-Message-Id: <e5ebc15347db59703d9499ea6962927b@linux.vnet.ibm.com>
+ <4d5950e6-d208-b8d1-ffee-6e54c741c8e0@linux.vnet.ibm.com>
+Message-Id: <2e7aa4b69ac391fdaed7275551a511ff@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,16 +42,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em 2017-07-05 01:26, Aneesh Kumar K.V escreveu:
-> On Tuesday 04 July 2017 01:35 AM, Victor Aoqui wrote:
+Em 2017-07-05 01:31, Anshuman Khandual escreveu:
+> On 07/04/2017 01:35 AM, Victor Aoqui wrote:
 >> Implemented default hugepage size verification (default_hugepagesz=)
 >> in order to allow allocation of defined number of pages (hugepages=)
 >> only for supported hugepage sizes.
 >> 
 >> Signed-off-by: Victor Aoqui <victora@br.ibm.com>
 >> ---
->>   arch/powerpc/mm/hugetlbpage.c | 15 +++++++++++++++
->>   1 file changed, 15 insertions(+)
+>>  arch/powerpc/mm/hugetlbpage.c | 15 +++++++++++++++
+>>  1 file changed, 15 insertions(+)
 >> 
 >> diff --git a/arch/powerpc/mm/hugetlbpage.c 
 >> b/arch/powerpc/mm/hugetlbpage.c
@@ -58,57 +59,43 @@ Em 2017-07-05 01:26, Aneesh Kumar K.V escreveu:
 >> --- a/arch/powerpc/mm/hugetlbpage.c
 >> +++ b/arch/powerpc/mm/hugetlbpage.c
 >> @@ -797,6 +797,21 @@ static int __init hugepage_setup_sz(char *str)
->>   }
->>   __setup("hugepagesz=", hugepage_setup_sz);
+>>  }
+>>  __setup("hugepagesz=", hugepage_setup_sz);
 >> 
 >> +static int __init default_hugepage_setup_sz(char *str)
+> 
+> The function name should be hugetlb_default_size_setup in
+> sync with the generic function hugetlb_default_setup for the
+> same parameter default_hugepagesz.
+> 
+
+Yes, makes sense to me.
+
 >> +{
 >> +        unsigned long long size;
 >> +
 >> +        size = memparse(str, &str);
 >> +
 >> +        if (add_huge_page_size(size) != 0) {
+> 
+> I am little bit confused here. Do we always follow another
+> 'hugepages=' element after 'default_hugepagesz' ? If not,
+> then we dont have to do 'add_huge_page_size'. But then
+> that function checks for valid huge page sizes and skips
+> adding hstate if its already added. So I guess it okay.
+> 
+
+'default_hugepagesz=' is not always followed by 'hugepages=', but if we 
+specify 'hugepages=' along with 'default_hugepagesz=' it will try to 
+allocate the hugepage size specified. If the size is not supported by 
+hardware, it will try to allocate the number of pages specified with the 
+default hugepage size of the arch, which is not the desired behavior. So 
+calling add_huge_page_size would verify if the hugepage size is 
+supported and in case it's not, hugepages will not be allocated.
+
 >> +                hugetlb_bad_size();
 >> +                pr_err("Invalid default huge page size 
 >> specified(%llu)\n", size);
->> +        }
->> +
->> +        return 1;
->> +}
->> +__setup("default_hugepagesz=", default_hugepage_setup_sz);
 > 
-> isn't that a behavior change in what we have now ? . Right now if size
-> specified is not supported, we fallback to HPAGE_SIZE.
-
-Yes, it is. However, is this a correct behavior? If we specify an 
-unsupported value, for example default_hugepagesz=1M and hugepages=1000, 
-1M will be ignored and 1000 pages of 16M (arch default) will be 
-allocated. This could lead to non-expected out of of memory/performance 
-issue.
-
-> 
-> mm/hugetlb.c
-> 
-> if (!size_to_hstate(default_hstate_size)) {
-> 	default_hstate_size = HPAGE_SIZE;
-> 	if (!size_to_hstate(default_hstate_size))
-> 		hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
-> }
-> 
-> 
->> +
->>   struct kmem_cache *hugepte_cache;
->>   static int __init hugetlbpage_init(void)
->>   {
->> 
-> 
-> Even if we want to do this, this should be done in generic code and
-> should not be powerpc specific
-> 
-
-The verification of supported powerpc hugepage size (hugepagesz=) is 
-being performed on add_huge_page_size(), which is currently defined in 
-arch/powerpc/mm/hugetlbpage.c. I think it makes more sense to implement 
-default_hugepagesz= verification on arch/powerpc, don't you think?
-
-> -aneesh
+> Error message should have 'ppc' some where to indicate that
+> the arch rejected the size not core MM.
