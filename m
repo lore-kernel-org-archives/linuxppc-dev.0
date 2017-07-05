@@ -1,21 +1,30 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
+ [IPv6:2607:f8b0:400d:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2l6h63jszDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 01:25:00 +1000 (AEST)
-Subject: [PATCH 07/14] spufs: Implement show_options
-From: David Howells <dhowells@redhat.com>
-To: viro@zeniv.linux.org.uk
-Cc: dhowells@redhat.com, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
- linux-kernel@vger.kernel.org
-Date: Wed, 05 Jul 2017 16:24:56 +0100
-Message-ID: <149926829650.20611.7487998328479640331.stgit@warthog.procyon.org.uk>
-In-Reply-To: <149926824154.20611.6104595541055328700.stgit@warthog.procyon.org.uk>
-References: <149926824154.20611.6104595541055328700.stgit@warthog.procyon.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2lCL5R7hzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 01:29:02 +1000 (AEST)
+Received: by mail-qk0-x241.google.com with SMTP id p21so31711094qke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 08:29:02 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Wed, 5 Jul 2017 11:28:55 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, ego <ego@linux.vnet.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Li Zefan <lizefan@huawei.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>, mpe <mpe@ellerman.id.au>
+Subject: Re: [next-20170609] Oops while running CPU off-on
+ (cpuset.c/cpuset_can_attach)
+Message-ID: <20170705152855.GD19330@htj.duckdns.org>
+References: <1497266622.15415.39.camel@abdul.in.ibm.com>
+ <20170627153608.GD2289@htj.duckdns.org>
+ <1499092582.10651.15.camel@abdul.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1499092582.10651.15.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +34,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement the show_options superblock op for spufs as part of a bid to get
-rid of s_options and generic_show_options() to make it easier to implement
-a context-based mount where the mount options can be passed individually
-over a file descriptor.
+Hello, Abdul.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: Jeremy Kerr <jk@ozlabs.org>
-cc: linuxppc-dev@lists.ozlabs.org
----
+Thanks for the debug info.  Can you please see whether the following
+patch fixes the issue?  If the problem is too difficult to reproduce
+to confirm the fix by seeing whether it no longer triggers, please let
+me know.  We can instead apply a patch which triggers WARN on the
+failing condition to confirm the diagnosis.
 
- arch/powerpc/platforms/cell/spufs/inode.c |   21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
+Thanks.
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index d8af9bc0489f..27a51a60bc33 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -605,6 +605,23 @@ static const match_table_t spufs_tokens = {
- 	{ Opt_err,    NULL  },
- };
+diff --git a/kernel/cgroup/cgroup-internal.h b/kernel/cgroup/cgroup-internal.h
+index 793565c05742..8b4c3c2f2509 100644
+--- a/kernel/cgroup/cgroup-internal.h
++++ b/kernel/cgroup/cgroup-internal.h
+@@ -33,6 +33,9 @@ struct cgroup_taskset {
+ 	struct list_head	src_csets;
+ 	struct list_head	dst_csets;
  
-+static int spufs_show_options(struct seq_file *m, struct dentry *root)
-+{
-+	struct spufs_sb_info *sbi = spufs_get_sb_info(root->d_sb);
++	/* the number of tasks in the set */
++	int			nr_tasks;
 +
-+	if (!uid_eq(root->i_uid, GLOBAL_ROOT_UID))
-+		seq_printf(m, ",uid=%u",
-+			   from_kuid_munged(&init_user_ns, root->i_uid));
-+	if (!gid_eq(root->i_gid, GLOBAL_ROOT_GID))
-+		seq_printf(m, ",gid=%u",
-+			   from_kgid_munged(&init_user_ns, root->i_gid));
-+	if (root->i_mode & S_IALLUGO != 0775)
-+		seq_printf(m, ",mode=%o", root->i_mode);
-+	if (sbi->debug)
-+		seq_puts(m, ",debug");
-+	return 0;
-+}
-+
- static int
- spufs_parse_options(struct super_block *sb, char *options, struct inode *root)
- {
-@@ -724,11 +741,9 @@ spufs_fill_super(struct super_block *sb, void *data, int silent)
- 		.destroy_inode = spufs_destroy_inode,
- 		.statfs = simple_statfs,
- 		.evict_inode = spufs_evict_inode,
--		.show_options = generic_show_options,
-+		.show_options = spufs_show_options,
- 	};
+ 	/* the subsys currently being processed */
+ 	int			ssid;
  
--	save_mount_options(sb, data);
--
- 	info = kzalloc(sizeof(*info), GFP_KERNEL);
- 	if (!info)
- 		return -ENOMEM;
+diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
+index dbfd7028b1c6..e3c4152741a3 100644
+--- a/kernel/cgroup/cgroup.c
++++ b/kernel/cgroup/cgroup.c
+@@ -1954,6 +1954,8 @@ static void cgroup_migrate_add_task(struct task_struct *task,
+ 	if (!cset->mg_src_cgrp)
+ 		return;
+ 
++	mgctx->tset.nr_tasks++;
++
+ 	list_move_tail(&task->cg_list, &cset->mg_tasks);
+ 	if (list_empty(&cset->mg_node))
+ 		list_add_tail(&cset->mg_node,
+@@ -2047,16 +2049,18 @@ static int cgroup_migrate_execute(struct cgroup_mgctx *mgctx)
+ 		return 0;
+ 
+ 	/* check that we can legitimately attach to the cgroup */
+-	do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
+-		if (ss->can_attach) {
+-			tset->ssid = ssid;
+-			ret = ss->can_attach(tset);
+-			if (ret) {
+-				failed_ssid = ssid;
+-				goto out_cancel_attach;
++	if (tset->nr_tasks) {
++		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
++			if (ss->can_attach) {
++				tset->ssid = ssid;
++				ret = ss->can_attach(tset);
++				if (ret) {
++					failed_ssid = ssid;
++					goto out_cancel_attach;
++				}
+ 			}
+-		}
+-	} while_each_subsys_mask();
++		} while_each_subsys_mask();
++	}
+ 
+ 	/*
+ 	 * Now that we're guaranteed success, proceed to move all tasks to
+@@ -2085,25 +2089,29 @@ static int cgroup_migrate_execute(struct cgroup_mgctx *mgctx)
+ 	 */
+ 	tset->csets = &tset->dst_csets;
+ 
+-	do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
+-		if (ss->attach) {
+-			tset->ssid = ssid;
+-			ss->attach(tset);
+-		}
+-	} while_each_subsys_mask();
++	if (tset->nr_tasks) {
++		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
++			if (ss->attach) {
++				tset->ssid = ssid;
++				ss->attach(tset);
++			}
++		} while_each_subsys_mask();
++	}
+ 
+ 	ret = 0;
+ 	goto out_release_tset;
+ 
+ out_cancel_attach:
+-	do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
+-		if (ssid == failed_ssid)
+-			break;
+-		if (ss->cancel_attach) {
+-			tset->ssid = ssid;
+-			ss->cancel_attach(tset);
+-		}
+-	} while_each_subsys_mask();
++	if (tset->nr_tasks) {
++		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
++			if (ssid == failed_ssid)
++				break;
++			if (ss->cancel_attach) {
++				tset->ssid = ssid;
++				ss->cancel_attach(tset);
++			}
++		} while_each_subsys_mask();
++	}
+ out_release_tset:
+ 	spin_lock_irq(&css_set_lock);
+ 	list_splice_init(&tset->dst_csets, &tset->src_csets);
