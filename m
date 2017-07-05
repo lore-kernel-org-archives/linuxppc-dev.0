@@ -1,13 +1,19 @@
 Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x2S1n2QRszDr1p
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jul 2017 14:04:45 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id d193so11265528pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jul 2017 21:04:45 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- skiboot@lists.ozlabs.org
-Subject: [PATCH 1/4] powerpc/powernv: handle the platform error reboot in
- ppc_md.restart
-Date: Wed,  5 Jul 2017 14:04:19 +1000
-Message-Id: <20170705040422.20933-2-npiggin@gmail.com>
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: [PATCH 2/4] powerpc/powernv: machine check use kernel crash path
+Date: Wed,  5 Jul 2017 14:04:20 +1000
+Message-Id: <20170705040422.20933-3-npiggin@gmail.com>
 In-Reply-To: <20170705040422.20933-1-npiggin@gmail.com>
 References: <20170705040422.20933-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,200 +25,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unrecovered MCE and HMI errors are sent through a special restart
-OPAL call to log the platform error. The downside is that they don't
-go through normal crash paths, so they don't give much information
-to the Linux console.
+Use the kernel crash path in cases of recovered machine checks that
+occur in kernel mode, because it gives much better Linux crash
+information, and can allow the offending process to be killed without
+completely taking down the system.
 
-Change this by allowing them to set an error which then causes the
-normal restart handler to use the platform error call. Have MCE and HMI
-handlers set this and then use the normal panic path for unrecoverable
-cases.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+As a test, when triggering an i-side 0111b error (ifetch from foreign
+address) in kernel mode process context on POWER9, the kernel currently
+dies quickly like this:
+
+Severe Machine check interrupt [Not recovered]
+  NIP [ffff000000000000]: 0xffff000000000000
+  Initiator: CPU
+  Error type: Real address [Instruction fetch (foreign)]
+[  127.426651616,0] OPAL: Reboot requested due to Platform error.
+    Effective[  127.426693712,3] OPAL: Reboot requested due to Platform error. address: ffff000000000000
+opal: Reboot type 1 not supported
+Kernel panic - not syncing: PowerNV Unrecovered Machine Check
+CPU: 56 PID: 4425 Comm: syscall Tainted: G   M            4.12.0-rc1-13857-ga4700a261072-dirty #35
+Call Trace:
+[  128.017988928,4] IPMI: BUG: Dropping ESEL on the floor due to buggy/mising code in OPAL for this BMCRebooting in 10 seconds..
+Trying to free IRQ 496 from IRQ context!
+
+
+After this patch, the process is killed and the kernel continues with
+this message, which gives enough information to identify the offending
+branch (e.g., CFAR):
+
+Severe Machine check interrupt [Not recovered]
+  NIP [ffff000000000000]: 0xffff000000000000
+  Initiator: CPU
+  Error type: Real address [Instruction fetch (foreign)]
+    Effective address: ffff000000000000
+Oops: Machine check, sig: 7 [#1]
+SMP NR_CPUS=2048
+NUMA
+PowerNV
+Modules linked in: iptable_mangle ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 xt_tcpudp tun bridge stp llc kvm_hv kvm iptable_filter binfmt_misc vmx_crypto ip_tables x_tables autofs4 crc32c_vpmsum
+CPU: 22 PID: 4436 Comm: syscall Tainted: G   M            4.12.0-rc1-13857-ga4700a261072-dirty #36
+task: c000000932300000 task.stack: c000000932380000
+NIP: ffff000000000000 LR: 00000000217706a4 CTR: ffff000000000000
+REGS: c00000000fc8fd80 TRAP: 0200   Tainted: G   M             (4.12.0-rc1-13857-ga4700a261072-dirty)
+MSR: 90000000001c1003 <SF,HV,ME,RI,LE>
+  CR: 24000484  XER: 20000000
+CFAR: c000000000004c80 DAR: 0000000021770a90 DSISR: 0a000000 SOFTE: 1
+GPR00: 0000000000001ebe 00007fffce4818b0 0000000021797f00 0000000000000000
+GPR04: 00007fff8007ac24 0000000044000484 0000000000004000 00007fff801405e8
+GPR08: 900000000280f033 0000000024000484 0000000000000000 0000000000000030
+GPR12: 9000000000001003 00007fff801bc370 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR28: 00007fff801b0000 0000000000000000 00000000217707a0 00007fffce481918
+NIP [ffff000000000000] 0xffff000000000000
+LR [00000000217706a4] 0x217706a4
+Call Trace:
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+---[ end trace 32ae1dabb4f8dae6 ]---
 ---
- arch/powerpc/include/asm/opal.h           |  2 +-
- arch/powerpc/platforms/powernv/opal-hmi.c | 20 +++-------------
- arch/powerpc/platforms/powernv/opal.c     | 39 ++-----------------------------
- arch/powerpc/platforms/powernv/powernv.h  |  2 ++
- arch/powerpc/platforms/powernv/setup.c    | 31 ++++++++++++++++++++++++
- 5 files changed, 39 insertions(+), 55 deletions(-)
+ arch/powerpc/platforms/powernv/opal.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 588fb1c23af9..182dab435aad 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -50,7 +50,7 @@ int64_t opal_tpo_write(uint64_t token, uint32_t year_mon_day,
- 		       uint32_t hour_min);
- int64_t opal_cec_power_down(uint64_t request);
- int64_t opal_cec_reboot(void);
--int64_t opal_cec_reboot2(uint32_t reboot_type, char *diag);
-+int64_t opal_cec_reboot2(uint32_t reboot_type, const char *diag);
- int64_t opal_read_nvram(uint64_t buffer, uint64_t size, uint64_t offset);
- int64_t opal_write_nvram(uint64_t buffer, uint64_t size, uint64_t offset);
- int64_t opal_handle_interrupt(uint64_t isn, __be64 *outstanding_event_mask);
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index 88f3c61eec95..dbb0e91058e9 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -30,6 +30,8 @@
- #include <asm/cputable.h>
- #include <asm/machdep.h>
- 
-+#include "powernv.h"
-+
- static int opal_hmi_handler_nb_init;
- struct OpalHmiEvtNode {
- 	struct list_head list;
-@@ -267,8 +269,6 @@ static void hmi_event_handler(struct work_struct *work)
- 	spin_unlock_irqrestore(&opal_hmi_evt_lock, flags);
- 
- 	if (unrecoverable) {
--		int ret;
--
- 		/* Pull all HMI events from OPAL before we panic. */
- 		while (opal_get_msg(__pa(&msg), sizeof(msg)) == OPAL_SUCCESS) {
- 			u32 type;
-@@ -284,22 +284,8 @@ static void hmi_event_handler(struct work_struct *work)
- 			print_hmi_event_info(hmi_evt);
- 		}
- 
--		/*
--		 * Unrecoverable HMI exception. We need to inform BMC/OCC
--		 * about this error so that it can collect relevant data
--		 * for error analysis before rebooting.
--		 */
--		ret = opal_cec_reboot2(OPAL_REBOOT_PLATFORM_ERROR,
--			"Unrecoverable HMI exception");
--		if (ret == OPAL_UNSUPPORTED) {
--			pr_emerg("Reboot type %d not supported\n",
--						OPAL_REBOOT_PLATFORM_ERROR);
--		}
-+		pnv_platform_error = "Unrecoverable HMI exception";
- 
--		/*
--		 * Fall through and panic if opal_cec_reboot2() returns
--		 * OPAL_UNSUPPORTED.
--		 */
- 		panic("Unrecoverable HMI exception");
- 	}
- }
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 59684b4af4d1..4b2505d98eb8 100644
+index 4b2505d98eb8..92f00113227f 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -424,7 +424,6 @@ static int opal_recover_mce(struct pt_regs *regs,
- int opal_machine_check(struct pt_regs *regs)
- {
- 	struct machine_check_event evt;
--	int ret;
+@@ -30,6 +30,7 @@
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ #include <asm/mce.h>
++#include <asm/bug.h>
  
- 	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
- 		return 0;
-@@ -440,43 +439,9 @@ int opal_machine_check(struct pt_regs *regs)
- 	if (opal_recover_mce(regs, &evt))
- 		return 1;
+ #include "powernv.h"
  
--	/*
--	 * Unrecovered machine check, we are heading to panic path.
--	 *
--	 * We may have hit this MCE in very early stage of kernel
--	 * initialization even before opal-prd has started running. If
--	 * this is the case then this MCE error may go un-noticed or
--	 * un-analyzed if we go down panic path. We need to inform
--	 * BMC/OCC about this error so that they can collect relevant
--	 * data for error analysis before rebooting.
--	 * Use opal_cec_reboot2(OPAL_REBOOT_PLATFORM_ERROR) to do so.
--	 * This function may not return on BMC based system.
--	 */
--	ret = opal_cec_reboot2(OPAL_REBOOT_PLATFORM_ERROR,
--			"Unrecoverable Machine Check exception");
--	if (ret == OPAL_UNSUPPORTED) {
--		pr_emerg("Reboot type %d not supported\n",
--					OPAL_REBOOT_PLATFORM_ERROR);
--	}
-+	pnv_platform_error = "Unrecoverable Machine Check exception";
- 
--	/*
--	 * We reached here. There can be three possibilities:
--	 * 1. We are running on a firmware level that do not support
--	 *    opal_cec_reboot2()
--	 * 2. We are running on a firmware level that do not support
--	 *    OPAL_REBOOT_PLATFORM_ERROR reboot type.
--	 * 3. We are running on FSP based system that does not need opal
--	 *    to trigger checkstop explicitly for error analysis. The FSP
--	 *    PRD component would have already got notified about this
--	 *    error through other channels.
--	 *
--	 * If hardware marked this as an unrecoverable MCE, we are
--	 * going to panic anyway. Even if it didn't, it's not safe to
--	 * continue at this point, so we should explicitly panic.
--	 */
--
--	panic("PowerNV Unrecovered Machine Check");
--	return 0;
-+	panic("Unrecoverable Machine Check exception");
- }
- 
- /* Early hmi handler called in real mode. */
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 6dbc0a1da1f6..998f19828b85 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -7,6 +7,8 @@ extern void pnv_smp_init(void);
- static inline void pnv_smp_init(void) { }
- #endif
- 
-+extern const char *pnv_platform_error;
-+
- struct pci_dev;
- 
- #ifdef CONFIG_PCI
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 2dc7e5fb86c3..c4571788f1c9 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -125,10 +125,41 @@ static void pnv_prepare_going_down(void)
- 	opal_flash_term_callback();
- }
- 
-+/*
-+ * This can be set to have ppc_md.restart to request a
-+ * OPAL_REBOOT_PLATFORM_ERROR reboot, which logs the error reason.
-+ */
-+const char *pnv_platform_error = NULL;
-+
- static void  __noreturn pnv_restart(char *cmd)
- {
- 	long rc = OPAL_BUSY;
- 
-+	if (pnv_platform_error) {
-+		/*
-+		 * Don't bother to shut things down because this will
-+		 * xstop the system.
-+		 */
-+		rc = opal_cec_reboot2(OPAL_REBOOT_PLATFORM_ERROR,
-+					pnv_platform_error);
-+		if (rc == OPAL_UNSUPPORTED) {
-+			pr_emerg("Reboot type %d not supported\n",
-+					OPAL_REBOOT_PLATFORM_ERROR);
-+			rc = OPAL_BUSY;
-+		}
-+		/*
-+		 * We reached here. There can be three possibilities:
-+		 * 1. We are running on a firmware level that do not support
-+		 *    opal_cec_reboot2()
-+		 * 2. We are running on a firmware level that do not support
-+		 *    OPAL_REBOOT_PLATFORM_ERROR reboot type.
-+		 * 3. We are running on FSP based system that does not need
-+		 *    opal to trigger checkstop explicitly for error analysis.
-+		 *    The FSP PRD component would have already got notified
-+		 *    about this error through other channels.
-+		 */
-+	}
-+
- 	pnv_prepare_going_down();
- 
- 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+@@ -407,15 +408,22 @@ static int opal_recover_mce(struct pt_regs *regs,
+ 		/* Fatal machine check */
+ 		pr_err("Machine check interrupt is fatal\n");
+ 		recovered = 0;
+-	} else if ((evt->severity == MCE_SEV_ERROR_SYNC) &&
+-			(user_mode(regs) && !is_global_init(current))) {
++	} else if (evt->severity == MCE_SEV_ERROR_SYNC) {
+ 		/*
+-		 * For now, kill the task if we have received exception when
+-		 * in userspace.
++		 * Try to kill processes if we get a synchronous machine check
++		 * (e.g., one caused by execution of this instruction). This
++		 * will devolve into a panic if we try to kill init or are in
++		 * an interrupt etc.
+ 		 *
+ 		 * TODO: Queue up this address for hwpoisioning later.
++		 * TODO: This is not quite right for d-side machine
++		 *       checks ->nip is not necessarily the important
++		 *       address.
+ 		 */
+-		_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
++		if ((user_mode(regs)))
++			_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
++		else
++			die("Machine check", regs, SIGBUS);
+ 		recovered = 1;
+ 	}
+ 	return recovered;
 -- 
 2.11.0
