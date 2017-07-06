@@ -1,13 +1,13 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3LtJ6kkYzDr3x
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 01:16:24 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id c24so679036pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jul 2017 08:16:24 -0700 (PDT)
-Date: Fri, 7 Jul 2017 01:16:09 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3M9R5rs2zDr3x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 01:29:31 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id u36so631780pgn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jul 2017 08:29:31 -0700 (PDT)
+Date: Fri, 7 Jul 2017 01:29:16 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
@@ -16,12 +16,12 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
  <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org
-Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas
- to pnv_alloc_idle_core_states
-Message-ID: <20170707011609.76c51329@roar.ozlabs.ibm.com>
-In-Reply-To: <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when
+ stop-api fails.
+Message-ID: <20170707012916.215ed32a@roar.ozlabs.ibm.com>
+In-Reply-To: <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
 References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
- <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,36 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  5 Jul 2017 22:08:15 +0530
+On Wed,  5 Jul 2017 22:08:16 +0530
 "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
 > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> On POWER9 DD1, in order to get around a hardware issue, we store in
-> every CPU thread's paca the paca pointers of all its siblings.
+> Currently, we use the opal call opal_slw_set_reg() to inform the that
+> the Sleep-Winkle Engine (SLW) to restore the contents of some of the
+> Hypervisor state on wakeup from deep idle states that lose full
+> hypervisor context (characterized by the flag
+> OPAL_PM_LOSE_FULL_CONTEXT).
 > 
-> Move this code into pnv_alloc_idle_core_states() soon after the space
-> for saving the sibling pacas is allocated.
+> However, the current code has a bug in that if opal_slw_set_reg()
+> fails, we don't disable the use of these deep states (winkle on
+> POWER8, stop4 onwards on POWER9).
 > 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> This patch fixes this bug by ensuring that if the the sleep winkle
+> engine is unable to restore the hypervisor states in
+> pnv_save_sprs_for_deep_states(), then we mark as invalid the states
+> which lose full context.
+> 
+> As a side-effect, since supported_cpuidle_states in
+> pnv_probe_idle_states() consists of flags of only the valid states,
+> this patch will ensure that no other subsystem in the kernel can use
+> the states which lose full context on stop-api failures.
 
-> -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> -		int cpu;
-> -
-> -		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
-> -		for_each_possible_cpu(cpu) {
-> -			int base_cpu = cpu_first_thread_sibling(cpu);
-> -			int idx = cpu_thread_in_core(cpu);
-> -			int i;
-> -
+Looks good. Is there something minimal we can do for stable here?
 
-You could move the thread_sibling_pacas allocation to here?
+Aside question, do we need to restore LPCR at all with the SLW engine?
+It gets set up again when by the idle wakeup code.
 
-Speaking of which... core_idle_state and thread_sibling_pacas are
-allocated with kmalloc_node... What happens if we take an SLB miss
-in the idle wakeup code on these guys? Nothing good I think. Perhaps
-we should put them into the pacas or somewhere in bolted memory.
+And does POWER9 really need MSR and PSSCR restored by SLW? (going a bit
+off topic here, I'm just curious)
 
-Good cleanup though.
-
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Thanks,
+Nick
