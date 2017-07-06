@@ -1,43 +1,25 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x2yVM0F26zDqj2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 09:57:46 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v65NsNCc138395
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Jul 2017 19:57:44 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bgwemrwaf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Jul 2017 19:57:44 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Wed, 5 Jul 2017 19:57:42 -0400
-Date: Wed, 5 Jul 2017 16:57:38 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- parri.andrea@gmail.com, dave@stgolabs.net, manfred@colorfullife.com,
- arnd@arndb.de, peterz@infradead.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, will.deacon@arm.com, oleg@redhat.com,
- mingo@redhat.com, netfilter-devel@vger.kernel.org, tj@kernel.org,
- stern@rowland.harvard.edu, akpm@linux-foundation.org,
- torvalds@linux-foundation.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH RFC 21/26] powerpc: Remove spin_unlock_wait()
- arch-specific definitions
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170629235918.GA6445@linux.vnet.ibm.com>
- <1498780894-8253-21-git-send-email-paulmck@linux.vnet.ibm.com>
- <20170702035807.tnzmkynyevfobt5a@tardis>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x30x22yt7zDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jul 2017 11:47:33 +1000 (AEST)
+Subject: Re: [PATCH v6 0/7] perf report: Show branch type
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: jolsa@kernel.org, peterz@infradead.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, Linux-kernel@vger.kernel.org,
+ ak@linux.intel.com, kan.liang@intel.com, yao.jin@intel.com,
+ linuxppc-dev@lists.ozlabs.org
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
+ <20170420093656.GA28272@krava>
+ <94386248-7565-64cf-7e6f-4341531724e7@linux.intel.com>
+ <f08ab435-20d9-7fe0-5c0b-bca7d0743c83@linux.intel.com>
+Message-ID: <5f220f2c-8f88-c60e-3daa-092c1346c5b0@linux.intel.com>
+Date: Thu, 6 Jul 2017 09:47:09 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170702035807.tnzmkynyevfobt5a@tardis>
-Message-Id: <20170705235738.GK2393@linux.vnet.ibm.com>
+In-Reply-To: <f08ab435-20d9-7fe0-5c0b-bca7d0743c83@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,83 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 02, 2017 at 11:58:07AM +0800, Boqun Feng wrote:
-> On Thu, Jun 29, 2017 at 05:01:29PM -0700, Paul E. McKenney wrote:
-> > There is no agreed-upon definition of spin_unlock_wait()'s semantics,
-> > and it appears that all callers could do just as well with a lock/unlock
-> > pair.  This commit therefore removes the underlying arch-specific
-> > arch_spin_unlock_wait().
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: <linuxppc-dev@lists.ozlabs.org>
-> > Cc: Will Deacon <will.deacon@arm.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Alan Stern <stern@rowland.harvard.edu>
-> > Cc: Andrea Parri <parri.andrea@gmail.com>
-> > Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> Acked-by: Boqun Feng <boqun.feng@gmail.com>
+Hi Arnaldo,
 
-And finally applied in preparation for v2 of the patch series.
+Could this series be merged? It's more than 2 months since the last time 
+Jiri Olsa gave the ack.
 
-Thank you!!!
+Thanks
 
-							Thanx, Paul
+Jin Yao
 
-> Regards,
-> Boqun
-> 
-> > ---
-> >  arch/powerpc/include/asm/spinlock.h | 33 ---------------------------------
-> >  1 file changed, 33 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-> > index 8c1b913de6d7..d256e448ea49 100644
-> > --- a/arch/powerpc/include/asm/spinlock.h
-> > +++ b/arch/powerpc/include/asm/spinlock.h
-> > @@ -170,39 +170,6 @@ static inline void arch_spin_unlock(arch_spinlock_t *lock)
-> >  	lock->slock = 0;
-> >  }
-> >  
-> > -static inline void arch_spin_unlock_wait(arch_spinlock_t *lock)
-> > -{
-> > -	arch_spinlock_t lock_val;
-> > -
-> > -	smp_mb();
-> > -
-> > -	/*
-> > -	 * Atomically load and store back the lock value (unchanged). This
-> > -	 * ensures that our observation of the lock value is ordered with
-> > -	 * respect to other lock operations.
-> > -	 */
-> > -	__asm__ __volatile__(
-> > -"1:	" PPC_LWARX(%0, 0, %2, 0) "\n"
-> > -"	stwcx. %0, 0, %2\n"
-> > -"	bne- 1b\n"
-> > -	: "=&r" (lock_val), "+m" (*lock)
-> > -	: "r" (lock)
-> > -	: "cr0", "xer");
-> > -
-> > -	if (arch_spin_value_unlocked(lock_val))
-> > -		goto out;
-> > -
-> > -	while (lock->slock) {
-> > -		HMT_low();
-> > -		if (SHARED_PROCESSOR)
-> > -			__spin_yield(lock);
-> > -	}
-> > -	HMT_medium();
-> > -
-> > -out:
-> > -	smp_mb();
-> > -}
-> > -
-> >  /*
-> >   * Read-write spinlocks, allowing multiple readers
-> >   * but only one writer.
-> > -- 
-> > 2.5.2
-> > 
+
+On 6/26/2017 2:24 PM, Jin, Yao wrote:
+> Hi maintainers,
+>
+> Is this patch series OK or anything I should update?
+>
+> Thanks
+>
+> Jin Yao
+>
+>
+> On 6/2/2017 4:02 PM, Jin, Yao wrote:
+>> Hi maintainers,
+>>
+>> Is this patch series (v6) OK for merging?
+>>
+>> Thanks
+>>
+>> Jin Yao
+>>
+>>
+>> On 4/20/2017 5:36 PM, Jiri Olsa wrote:
+>>> On Thu, Apr 20, 2017 at 08:07:48PM +0800, Jin Yao wrote:
+>>>> v6:
+>>>>     Update according to the review comments from
+>>>>     Jiri Olsa <jolsa@redhat.com>. Major modifications are:
+>>>>
+>>>>     1. Move that multiline conditional code inside {} brackets.
+>>>>
+>>>>     2. Move branch_type_stat_display() from builtin-report.c to
+>>>>        branch.c. Move branch_type_str() from callchain.c to
+>>>>        branch.c.
+>>>>
+>>>>     3. Keep the original branch info display order, that is:
+>>>>        predicted, abort, cycles, iterations
+>>> for the tools part
+>>>
+>>> Acked-by: Jiri Olsa <jolsa@kernel.org>
+>>>
+>>> thanks,
+>>> jirka
+>>
+>
