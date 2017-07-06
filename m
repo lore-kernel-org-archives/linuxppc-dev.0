@@ -3,29 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3XFm0Fk4zDr5D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 08:18:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3XFr69cczDr8d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 08:18:56 +1000 (AEST)
 Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v66MIhRO120014
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jul 2017 18:18:49 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bhqu9pkff-1
+ v66MIs0a120309
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jul 2017 18:18:54 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bhqu9pkh9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jul 2017 18:18:49 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jul 2017 18:18:54 -0400
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 6 Jul 2017 19:18:46 -0300
+ Thu, 6 Jul 2017 19:18:52 -0300
 Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v66MIhGd65732744
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jul 2017 19:18:43 -0300
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v66MIoWq11927616
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jul 2017 19:18:50 -0300
 Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
  by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v66MIhun007396
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jul 2017 19:18:43 -0300
+ v66MIoCc007484
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Jul 2017 19:18:51 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linux-security-module@vger.kernel.org
 Cc: linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
@@ -40,12 +40,11 @@ Cc: linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  "AKASHI, Takahiro" <takahiro.akashi@linaro.org>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v3 5/7] integrity: Select CONFIG_KEYS instead of depending on
- it
-Date: Thu,  6 Jul 2017 19:17:51 -0300
+Subject: [PATCH v3 6/7] ima: Store measurement after appraisal
+Date: Thu,  6 Jul 2017 19:17:52 -0300
 In-Reply-To: <20170706221753.17380-1-bauerman@linux.vnet.ibm.com>
 References: <20170706221753.17380-1-bauerman@linux.vnet.ibm.com>
-Message-Id: <20170706221753.17380-6-bauerman@linux.vnet.ibm.com>
+Message-Id: <20170706221753.17380-7-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,29 +54,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This avoids a dependency cycle in CONFIG_IMA_APPRAISE_MODSIG (introduced by
-a later patch in this series): it will select CONFIG_MODULE_SIG_FORMAT
-which in turn selects CONFIG_KEYS. Kconfig then complains that
-CONFIG_INTEGRITY_SIGNATURE depends on CONFIG_KEYS.
+When module-style signatures appended at the end of files are supported for
+IMA appraisal, the code will fallback to the xattr signature if the
+appended one fails to verify.
+
+The problem is that we don't know whether we need to fallback to the xattr
+signature until the appraise step, and by then the measure step was already
+completed and would need to be done again in case the template includes the
+signature.
+
+To avoid this problem, do the appraisal first so that the correct signature
+is stored by the template in the measure step.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- security/integrity/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ security/integrity/ima/ima_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/security/integrity/Kconfig b/security/integrity/Kconfig
-index da9565891738..0d642e0317c7 100644
---- a/security/integrity/Kconfig
-+++ b/security/integrity/Kconfig
-@@ -17,8 +17,8 @@ if INTEGRITY
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index 2aebb7984437..0b4845e7248d 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -244,12 +244,12 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
+ 	if (!pathbuf)	/* ima_rdwr_violation possibly pre-fetched */
+ 		pathname = ima_d_path(&file->f_path, &pathbuf, filename);
  
- config INTEGRITY_SIGNATURE
- 	bool "Digital signature verification using multiple keyrings"
--	depends on KEYS
- 	default n
-+	select KEYS
- 	select SIGNATURE
- 	help
- 	  This option enables digital signature verification support
+-	if (action & IMA_MEASURE)
+-		ima_store_measurement(iint, file, pathname,
+-				      xattr_value, xattr_len, pcr);
+ 	if (action & IMA_APPRAISE_SUBMASK)
+ 		rc = ima_appraise_measurement(func, iint, file, pathname,
+ 					      xattr_value, xattr_len, opened);
++	if (action & IMA_MEASURE)
++		ima_store_measurement(iint, file, pathname,
++				      xattr_value, xattr_len, pcr);
+ 	if (action & IMA_AUDIT)
+ 		ima_audit_measurement(iint, pathname);
+ 
 -- 
 2.13.0
