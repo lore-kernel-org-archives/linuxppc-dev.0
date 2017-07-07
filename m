@@ -1,44 +1,24 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=gn1y=6k=ftp.linux.org.uk=viro@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3yZ22gLQzDr5V
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 01:04:26 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v67Ex7pW072366
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 11:04:24 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bj0wq98f3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 11:04:23 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 7 Jul 2017 09:04:22 -0600
-Date: Fri, 7 Jul 2017 20:34:16 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas
- to pnv_alloc_idle_core_states
-Reply-To: ego@linux.vnet.ibm.com
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
- <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
- <20170707011609.76c51329@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3yyj4P5NzDr5d
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 01:22:21 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3x3yyj3lbSz8t5D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 01:22:21 +1000 (AEST)
+Date: Fri, 7 Jul 2017 16:22:15 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: torvalds@linux-fondation.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs/fcntl: Fix F_GET/SETLK etc. for compat processes
+Message-ID: <20170707152215.GE10672@ZenIV.linux.org.uk>
+References: <1499431731-27058-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170707011609.76c51329@roar.ozlabs.ibm.com>
-Message-Id: <20170707150416.GD8913@in.ibm.com>
+In-Reply-To: <1499431731-27058-1-git-send-email-mpe@ellerman.id.au>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,49 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 07, 2017 at 01:16:09AM +1000, Nicholas Piggin wrote:
-> On Wed,  5 Jul 2017 22:08:15 +0530
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+On Fri, Jul 07, 2017 at 10:48:51PM +1000, Michael Ellerman wrote:
+> Commit 8c6657cb50cb ("Switch flock copyin/copyout primitives to
+> copy_{from,to}_user()") added copy_flock_fields(from, to), but then in all cases
+> called it with arguments of (to, from). eg:
 > 
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > 
-> > On POWER9 DD1, in order to get around a hardware issue, we store in
-> > every CPU thread's paca the paca pointers of all its siblings.
-> > 
-> > Move this code into pnv_alloc_idle_core_states() soon after the space
-> > for saving the sibling pacas is allocated.
-> > 
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>   static int get_compat_flock(struct flock *kfl, struct compat_flock __user *ufl)
+>   {
+>   	struct compat_flock fl;
 > 
-> > -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> > -		int cpu;
-> > -
-> > -		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
-> > -		for_each_possible_cpu(cpu) {
-> > -			int base_cpu = cpu_first_thread_sibling(cpu);
-> > -			int idx = cpu_thread_in_core(cpu);
-> > -			int i;
-> > -
+>   	if (copy_from_user(&fl, ufl, sizeof(struct compat_flock)))
+>   		return -EFAULT;
+>   	copy_flock_fields(*kfl, fl);
+>   	return 0;
+>   }
 > 
-> You could move the thread_sibling_pacas allocation to here?
+> We are reading the compat_flock ufl from userspace, into flock kfl. First we
+> copy all of ufl into fl on the stack, and then we want to assign each field of
+> fl to kfl. So we are copying from fl and to kfl. But as written the
+> copy_flock_fields() macro takes the arguments in the other order.
 > 
-> Speaking of which... core_idle_state and thread_sibling_pacas are
-> allocated with kmalloc_node... What happens if we take an SLB miss
-> in the idle wakeup code on these guys? Nothing good I think. Perhaps
-> we should put them into the pacas or somewhere in bolted memory.
+> copy_to/from_user() take "to" as the first argument, so change the order of
+> arguments in the copy_flock_fields() macro, rather than changing the callers.
 
-Yes, though the SLB miss hasn't yet been encountered in practise so
-far!
+D'oh...
 
-While one can define thread_sibling_pacas in PACA, it doesn't make
-sense to allocate space for core_idle_state in PACA since the
-allocated value of the secondary threads will never be used.
-
-What is the right way to ensure that these allocations fall in the
-bolted range ?
-
-> 
-> Good cleanup though.
-> 
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> 
+Acked-by: Al Viro <viro@zeniv.linux.org.uk>
