@@ -1,25 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3lg354vvzDqj8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 16:53:03 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, bsingharora@gmail.com, anton@samba.org,
- sukadev@linux.vnet.ibm.com, mikey@neuling.org, stewart@linux.vnet.ibm.com,
- dja@axtens.net, eranian@google.com, hemant@linux.vnet.ibm.com,
- maddy@linux.vnet.ibm.com, anju@linux.vnet.ibm.com
-Subject: Re: [PATCH v12 02/10] powerpc/powernv: Autoload IMC device driver
- module
-In-Reply-To: <1499074673-30576-3-git-send-email-anju@linux.vnet.ibm.com>
-References: <1499074673-30576-1-git-send-email-anju@linux.vnet.ibm.com>
- <1499074673-30576-3-git-send-email-anju@linux.vnet.ibm.com>
-Date: Fri, 07 Jul 2017 16:53:00 +1000
-Message-ID: <87k23k91rn.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3ltc3jvpzDr5N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 17:03:04 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id q85so3399034pfq.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 00:03:04 -0700 (PDT)
+From: Matt Brown <matthew.brown.dev@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Subject: [PATCH v2] powerpc/powernv: Use darn instr for random_seed on p9
+Date: Fri,  7 Jul 2017 17:02:49 +1000
+Message-Id: <20170707070249.15773-1-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,165 +22,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Maddy/Anju,
+Currently ppc_md.get_random_seed uses the powernv_get_random_long function.
+A guest calling this function would have to go through the hypervisor. The
+'darn' instruction, introduced in POWER9, allows us to bypass this by
+directly obtaining a value from the mmio region.
 
-Comments below :)
+This patch adds a function for ppc_md.get_random_seed on p9,
+utilising the darn instruction.
 
-Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
-> Code to create platform device for the IMC counters.
-> Paltform devices are created based on the IMC compatibility
-> string.
->
-> New Config flag "CONFIG_HV_PERF_IMC_CTRS" add to contain the
-> IMC counter changes.
+Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+---
+v2:
+	- remove repeat darn attempts
+	- move hook to rng_init
+---
+ arch/powerpc/include/asm/ppc-opcode.h |  4 ++++
+ arch/powerpc/platforms/powernv/rng.c  | 22 ++++++++++++++++++++++
+ 2 files changed, 26 insertions(+)
 
-I don't think we need a separate config, it can just use
-CONFIG_PPC_POWERNV.
-
-I don't think we'll ever want to turn it off for powernv, unless we're
-trying to build a small kernel, in which case we'll turn of PERF
-entirely.
-
-> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-> new file mode 100644
-> index 000000000000..5b1045c81af4
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
-> @@ -0,0 +1,73 @@
-> +/*
-> + * OPAL IMC interface detection driver
-> + * Supported on POWERNV platform
-> + *
-> + * Copyright	(C) 2017 Madhavan Srinivasan, IBM Corporation.
-> + *		(C) 2017 Anju T Sudhakar, IBM Corporation.
-> + *		(C) 2017 Hemant K Shaw, IBM Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-
-We usually don't include that part in every file.
-
-> + */
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/miscdevice.h>
-> +#include <linux/fs.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/poll.h>
-> +#include <linux/mm.h>
-> +#include <linux/slab.h>
-> +#include <linux/crash_dump.h>
-> +#include <asm/opal.h>
-> +#include <asm/io.h>
-> +#include <asm/uaccess.h>
-> +#include <asm/cputable.h>
-> +#include <asm/imc-pmu.h>
-> +
-> +static int opal_imc_counters_probe(struct platform_device *pdev)
-> +{
-> +	struct device_node *imc_dev = NULL;
-> +
-> +	if (!pdev || !pdev->dev.of_node)
-> +		return -ENODEV;
-
-We don't need that level of paranoia :)
-
-> +	/*
-> +	 * Check whether this is kdump kernel. If yes, just return.
-> +	 */
-> +	if (is_kdump_kernel())
-> +		return -ENODEV;
-
-Hmm, that's a bit unusual. Is there any particular reason to do that for
-this driver?
-
-> +	imc_dev = pdev->dev.of_node;
-> +	if (!imc_dev)
-> +		return -ENODEV;
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id opal_imc_match[] = {
-> +	{ .compatible = IMC_DTB_COMPAT },
-> +	{},
-> +};
-> +
-> +static struct platform_driver opal_imc_driver = {
-> +	.driver = {
-> +		.name = "opal-imc-counters",
-> +		.of_match_table = opal_imc_match,
-> +	},
-> +	.probe = opal_imc_counters_probe,
-> +};
-> +
-
-This can't be built as a module, so it should not be using MODULE macros.
-
-> +MODULE_DEVICE_TABLE(of, opal_imc_match);
-
-Drop that.
-
-> +module_platform_driver(opal_imc_driver);
-
-Use builtin_platform_driver().
-
-> +MODULE_DESCRIPTION("PowerNV OPAL IMC driver");
-> +MODULE_LICENSE("GPL");
-
-Drop those.
-
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 59684b4af4d1..fbdca259ea76 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -705,6 +707,17 @@ static void opal_pdev_init(const char *compatible)
->  		of_platform_device_create(np, NULL, NULL);
->  }
->  
-> +#ifdef CONFIG_HV_PERF_IMC_CTRS
-> +static void __init opal_imc_init_dev(void)
-> +{
-> +	struct device_node *np;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, IMC_DTB_COMPAT);
-> +	if (np)
-> +		of_platform_device_create(np, NULL, NULL);
-> +}
-> +#endif
-
-That doesn't need the #ifdef.
-
->  static int kopald(void *unused)
->  {
->  	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
-> @@ -778,6 +791,11 @@ static int __init opal_init(void)
->  	/* Setup a heatbeat thread if requested by OPAL */
->  	opal_init_heartbeat();
->  
-> +#ifdef CONFIG_HV_PERF_IMC_CTRS
-> +	/* Detect IMC pmu counters support and create PMUs */
-> +	opal_imc_init_dev();
-> +#endif
-> +
-
-Neither here.
-
->  	/* Create leds platform devices */
->  	leds = of_find_node_by_path("/ibm,opal/leds");
->  	if (leds) {
-> -- 
-> 2.11.0
-
-
-cheers
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index c4ced1d..d5f7082 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -134,6 +134,7 @@
+ #define PPC_INST_COPY			0x7c00060c
+ #define PPC_INST_COPY_FIRST		0x7c20060c
+ #define PPC_INST_CP_ABORT		0x7c00068c
++#define PPC_INST_DARN			0x7c0005e6
+ #define PPC_INST_DCBA			0x7c0005ec
+ #define PPC_INST_DCBA_MASK		0xfc0007fe
+ #define PPC_INST_DCBAL			0x7c2005ec
+@@ -325,6 +326,9 @@
+ 
+ /* Deal with instructions that older assemblers aren't aware of */
+ #define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
++#define PPC_DARN(t, l)		stringify_in_c(.long PPC_INST_DARN |  \
++						___PPC_RT(t)	   |  \
++						___PPC_RA(l))
+ #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
+ 					__PPC_RA(a) | __PPC_RB(b))
+ #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+index 5dcbdea..ab6f411 100644
+--- a/arch/powerpc/platforms/powernv/rng.c
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -8,6 +8,7 @@
+  */
+ 
+ #define pr_fmt(fmt)	"powernv-rng: " fmt
++#define DARN_ERR 0xFFFFFFFFFFFFFFFFul
+ 
+ #include <linux/kernel.h>
+ #include <linux/of.h>
+@@ -16,6 +17,7 @@
+ #include <linux/slab.h>
+ #include <linux/smp.h>
+ #include <asm/archrandom.h>
++#include <asm/cputable.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+@@ -67,6 +69,21 @@ int powernv_get_random_real_mode(unsigned long *v)
+ 	return 1;
+ }
+ 
++int powernv_get_random_darn(unsigned long *v)
++{
++	unsigned long val;
++
++	/* Using DARN with L=1 - conditioned random number */
++	asm (PPC_DARN(%0, 1)"\n" : "=r"(val) :);
++
++	if (val == DARN_ERR)
++		return 0;
++
++	*v = val;
++
++	return 1;
++}
++
+ int powernv_get_random_long(unsigned long *v)
+ {
+ 	struct powernv_rng *rng;
+@@ -136,6 +153,7 @@ static __init int rng_create(struct device_node *dn)
+ static __init int rng_init(void)
+ {
+ 	struct device_node *dn;
++	unsigned long drn_test;
+ 	int rc;
+ 
+ 	for_each_compatible_node(dn, NULL, "ibm,power-rng") {
+@@ -150,6 +168,10 @@ static __init int rng_init(void)
+ 		of_platform_device_create(dn, NULL, NULL);
+ 	}
+ 
++	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++	    powernv_get_random_darn(&drn_test))
++		ppc_md.get_random_seed = powernv_get_random_darn;
++
+ 	return 0;
+ }
+ machine_subsys_initcall(powernv, rng_init);
+-- 
+2.9.3
