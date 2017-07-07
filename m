@@ -1,21 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3vW00Zd7zDr5V
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 22:46:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3vYf6fWgzDr5V
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 22:48:54 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [git pull] vfs.git part 1
-In-Reply-To: <20170705071423.GY10672@ZenIV.linux.org.uk>
-References: <20170705071423.GY10672@ZenIV.linux.org.uk>
-Date: Fri, 07 Jul 2017 22:46:32 +1000
-Message-ID: <87eftsv2hj.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: torvalds@linux-fondation.org
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] fs/fcntl: Fix F_GET/SETLK etc. for compat processes
+Date: Fri,  7 Jul 2017 22:48:51 +1000
+Message-Id: <1499431731-27058-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Al Viro <viro@ZenIV.linux.org.uk> writes:
+Commit 8c6657cb50cb ("Switch flock copyin/copyout primitives to
+copy_{from,to}_user()") added copy_flock_fields(from, to), but then in all cases
+called it with arguments of (to, from). eg:
 
-> 	vfs.git topology is rather convoluted this cycle, so
-> I'm afraid that it'll take more pull requests than usual ;-/
->
-> The first pile is #work.misc-set_fs.  Assorted getting rid
-> of cargo-culted access_ok(), cargo-culted set_fs() and
-> field-by-field copyouts.  The same description applies to
-> a lot of stuff in other branches - this is just the stuff that
-> didn't fit into a more specific topical branch.
->
-> The following changes since commit c86daad2c25bfd4a33d48b7691afaa96d9c5ab46:
->
->   Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input (2017-05-26 16:45:13 -0700)
->
-> are available in the git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs.git work.misc-set_fs
->
-> for you to fetch changes up to 8c6657cb50cb037ff58b3f6a547c6569568f3527:
->
->   Switch flock copyin/copyout primitives to copy_{from,to}_user() (2017-06-26 23:52:44 -0400)
+  static int get_compat_flock(struct flock *kfl, struct compat_flock __user *ufl)
+  {
+  	struct compat_flock fl;
 
-This commit seems to have broken networking on a bunch of my PPC
-machines (64-bit kernel, 32-bit userspace).
+  	if (copy_from_user(&fl, ufl, sizeof(struct compat_flock)))
+  		return -EFAULT;
+  	copy_flock_fields(*kfl, fl);
+  	return 0;
+  }
 
-# first bad commit: [8c6657cb50cb037ff58b3f6a547c6569568f3527] Switch flock copyin/copyout primitives to copy_{from,to}_user()
+We are reading the compat_flock ufl from userspace, into flock kfl. First we
+copy all of ufl into fl on the stack, and then we want to assign each field of
+fl to kfl. So we are copying from fl and to kfl. But as written the
+copy_flock_fields() macro takes the arguments in the other order.
 
-The symptom is eth0 doesn't get address via dhcp.
+copy_to/from_user() take "to" as the first argument, so change the order of
+arguments in the copy_flock_fields() macro, rather than changing the callers.
 
-Reverting it on top of master (9f45efb928) everything works OK again.
+Fixes: 8c6657cb50cb ("Switch flock copyin/copyout primitives to copy_{from,to}_user()")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ fs/fcntl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Trying to bring networking up manually gives:
-
-# ifup eth0
-ifup: failed to lock lockfile /run/network/ifstate.eth0: Invalid argument
-
-strace shows:
-
-5647  fcntl64(3, F_SETLK, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = -1 EINVAL (Invalid argument)
-5647  write(2, "ifup: failed to lock lockfile /r"..., 74) = 74
-
-vs the working case:
-
-6005  fcntl64(3, F_SETLK, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
-
-Patch coming.
-
-cheers
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index b6bd89628025..f40e3a9c10a5 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -520,7 +520,7 @@ SYSCALL_DEFINE3(fcntl64, unsigned int, fd, unsigned int, cmd,
+ 
+ #ifdef CONFIG_COMPAT
+ /* careful - don't use anywhere else */
+-#define copy_flock_fields(from, to)		\
++#define copy_flock_fields(to, from)		\
+ 	(to).l_type = (from).l_type;		\
+ 	(to).l_whence = (from).l_whence;	\
+ 	(to).l_start = (from).l_start;		\
+-- 
+2.7.4
