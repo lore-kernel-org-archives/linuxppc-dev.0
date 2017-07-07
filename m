@@ -1,28 +1,44 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x41wc6JCVzDr5m
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 03:35:44 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id d77so4674578oig.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 10:35:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x41ym5hmrzDr71
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 03:37:36 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v67HNemf055684
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 13:37:31 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bjcmjd6bv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 13:37:31 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 7 Jul 2017 11:37:30 -0600
+Date: Fri, 7 Jul 2017 23:07:10 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject: Re: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when
+ stop-api fails.
+Reply-To: ego@linux.vnet.ibm.com
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
+ <20170707012916.215ed32a@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <CA+55aFyREtWvwCLc0iHMUOLo-VLDpxju7WwEmjOSyByHre3avQ@mail.gmail.com>
-References: <20170705071423.GY10672@ZenIV.linux.org.uk>
- <87eftsv2hj.fsf@concordia.ellerman.id.au>
- <CA+55aFyREtWvwCLc0iHMUOLo-VLDpxju7WwEmjOSyByHre3avQ@mail.gmail.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 7 Jul 2017 10:35:41 -0700
-Message-ID: <CA+55aFzHBR9M+UN2CMAQ0np275iyWyAY0uKK8LFo33g0e7Z-VQ@mail.gmail.com>
-Subject: Re: [git pull] vfs.git part 1
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/mixed; boundary="001a1137cfe89522570553bda95d"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170707012916.215ed32a@roar.ozlabs.ibm.com>
+Message-Id: <20170707173710.GE8913@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,75 +48,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a1137cfe89522570553bda95d
-Content-Type: text/plain; charset="UTF-8"
+On Fri, Jul 07, 2017 at 01:29:16AM +1000, Nicholas Piggin wrote:
+> On Wed,  5 Jul 2017 22:08:16 +0530
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > Currently, we use the opal call opal_slw_set_reg() to inform the that
+> > the Sleep-Winkle Engine (SLW) to restore the contents of some of the
+> > Hypervisor state on wakeup from deep idle states that lose full
+> > hypervisor context (characterized by the flag
+> > OPAL_PM_LOSE_FULL_CONTEXT).
+> > 
+> > However, the current code has a bug in that if opal_slw_set_reg()
+> > fails, we don't disable the use of these deep states (winkle on
+> > POWER8, stop4 onwards on POWER9).
+> > 
+> > This patch fixes this bug by ensuring that if the the sleep winkle
+> > engine is unable to restore the hypervisor states in
+> > pnv_save_sprs_for_deep_states(), then we mark as invalid the states
+> > which lose full context.
+> > 
+> > As a side-effect, since supported_cpuidle_states in
+> > pnv_probe_idle_states() consists of flags of only the valid states,
+> > this patch will ensure that no other subsystem in the kernel can use
+> > the states which lose full context on stop-api failures.
+> 
+> Looks good. Is there something minimal we can do for stable here?
+> 
+> Aside question, do we need to restore LPCR at all with the SLW engine?
+> It gets set up again when by the idle wakeup code.
 
-On Fri, Jul 7, 2017 at 8:59 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> The copy_flock_fields() macro has the arguments in order <from, to>,
-> but all the users seem to do it the other way around.
 
-Looking more at it, I think I'd also like copy_flock_fields() to take
-pointer arguments, to match all the code around it (both
-copy_to/from_user and the memset calls.
+> 
+> And does POWER9 really need MSR and PSSCR restored by SLW? (going a bit
+> off topic here, I'm just curious)
 
-The actual order of arguments I suspect Michael's patch did better -
-make the copy_flock_fields() just match the order of memcpy() and
-copy_to/from_user(), both of which have <dest,src> order.
+MSR is needed to be restored so that we wakeup with the right
+endianness and with the IR,DR disabled.
 
-So I think my preferred patch would be something like this, even if it
-is bigger than either.
+PSSCR is set to a value so that in case of a special wakeup for a
+deep-stop, the SLW can program the core to go back to the stop level
+provided by the PSSCR value via the stop-api.
 
-Comments? Michael, does this work for your case?
 
-              Linus
+> 
+> Thanks,
+> Nick
+> 
 
---001a1137cfe89522570553bda95d
-Content-Type: text/plain; charset="US-ASCII"; name="patch.diff"
-Content-Disposition: attachment; filename="patch.diff"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_j4u556fz1
-
-IGZzL2ZjbnRsLmMgfCAzMCArKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0KIDEgZmlsZSBj
-aGFuZ2VkLCAxNSBpbnNlcnRpb25zKCspLCAxNSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9m
-cy9mY250bC5jIGIvZnMvZmNudGwuYwppbmRleCBiNmJkODk2MjgwMjUuLjNiMDFiNjQ2ZTUyOCAx
-MDA2NDQKLS0tIGEvZnMvZmNudGwuYworKysgYi9mcy9mY250bC5jCkBAIC01MjAsNTAgKzUyMCw1
-MCBAQCBTWVNDQUxMX0RFRklORTMoZmNudGw2NCwgdW5zaWduZWQgaW50LCBmZCwgdW5zaWduZWQg
-aW50LCBjbWQsCiAKICNpZmRlZiBDT05GSUdfQ09NUEFUCiAvKiBjYXJlZnVsIC0gZG9uJ3QgdXNl
-IGFueXdoZXJlIGVsc2UgKi8KLSNkZWZpbmUgY29weV9mbG9ja19maWVsZHMoZnJvbSwgdG8pCQlc
-Ci0JKHRvKS5sX3R5cGUgPSAoZnJvbSkubF90eXBlOwkJXAotCSh0bykubF93aGVuY2UgPSAoZnJv
-bSkubF93aGVuY2U7CVwKLQkodG8pLmxfc3RhcnQgPSAoZnJvbSkubF9zdGFydDsJCVwKLQkodG8p
-LmxfbGVuID0gKGZyb20pLmxfbGVuOwkJXAotCSh0bykubF9waWQgPSAoZnJvbSkubF9waWQ7Ci0K
-LXN0YXRpYyBpbnQgZ2V0X2NvbXBhdF9mbG9jayhzdHJ1Y3QgZmxvY2sgKmtmbCwgc3RydWN0IGNv
-bXBhdF9mbG9jayBfX3VzZXIgKnVmbCkKKyNkZWZpbmUgY29weV9mbG9ja19maWVsZHMoZHN0LCBz
-cmMpCQlcCisJKGRzdCktPmxfdHlwZSA9IChzcmMpLT5sX3R5cGU7CQlcCisJKGRzdCktPmxfd2hl
-bmNlID0gKHNyYyktPmxfd2hlbmNlOwlcCisJKGRzdCktPmxfc3RhcnQgPSAoc3JjKS0+bF9zdGFy
-dDsJXAorCShkc3QpLT5sX2xlbiA9IChzcmMpLT5sX2xlbjsJCVwKKwkoZHN0KS0+bF9waWQgPSAo
-c3JjKS0+bF9waWQ7CisKK3N0YXRpYyBpbnQgZ2V0X2NvbXBhdF9mbG9jayhzdHJ1Y3QgZmxvY2sg
-KmtmbCwgY29uc3Qgc3RydWN0IGNvbXBhdF9mbG9jayBfX3VzZXIgKnVmbCkKIHsKIAlzdHJ1Y3Qg
-Y29tcGF0X2Zsb2NrIGZsOwogCiAJaWYgKGNvcHlfZnJvbV91c2VyKCZmbCwgdWZsLCBzaXplb2Yo
-c3RydWN0IGNvbXBhdF9mbG9jaykpKQogCQlyZXR1cm4gLUVGQVVMVDsKLQljb3B5X2Zsb2NrX2Zp
-ZWxkcygqa2ZsLCBmbCk7CisJY29weV9mbG9ja19maWVsZHMoa2ZsLCAmZmwpOwogCXJldHVybiAw
-OwogfQogCi1zdGF0aWMgaW50IGdldF9jb21wYXRfZmxvY2s2NChzdHJ1Y3QgZmxvY2sgKmtmbCwg
-c3RydWN0IGNvbXBhdF9mbG9jazY0IF9fdXNlciAqdWZsKQorc3RhdGljIGludCBnZXRfY29tcGF0
-X2Zsb2NrNjQoc3RydWN0IGZsb2NrICprZmwsIGNvbnN0IHN0cnVjdCBjb21wYXRfZmxvY2s2NCBf
-X3VzZXIgKnVmbCkKIHsKIAlzdHJ1Y3QgY29tcGF0X2Zsb2NrNjQgZmw7CiAKIAlpZiAoY29weV9m
-cm9tX3VzZXIoJmZsLCB1ZmwsIHNpemVvZihzdHJ1Y3QgY29tcGF0X2Zsb2NrNjQpKSkKIAkJcmV0
-dXJuIC1FRkFVTFQ7Ci0JY29weV9mbG9ja19maWVsZHMoKmtmbCwgZmwpOworCWNvcHlfZmxvY2tf
-ZmllbGRzKGtmbCwgJmZsKTsKIAlyZXR1cm4gMDsKIH0KIAotc3RhdGljIGludCBwdXRfY29tcGF0
-X2Zsb2NrKHN0cnVjdCBmbG9jayAqa2ZsLCBzdHJ1Y3QgY29tcGF0X2Zsb2NrIF9fdXNlciAqdWZs
-KQorc3RhdGljIGludCBwdXRfY29tcGF0X2Zsb2NrKGNvbnN0IHN0cnVjdCBmbG9jayAqa2ZsLCBz
-dHJ1Y3QgY29tcGF0X2Zsb2NrIF9fdXNlciAqdWZsKQogewogCXN0cnVjdCBjb21wYXRfZmxvY2sg
-Zmw7CiAKIAltZW1zZXQoJmZsLCAwLCBzaXplb2Yoc3RydWN0IGNvbXBhdF9mbG9jaykpOwotCWNv
-cHlfZmxvY2tfZmllbGRzKGZsLCAqa2ZsKTsKKwljb3B5X2Zsb2NrX2ZpZWxkcygmZmwsIGtmbCk7
-CiAJaWYgKGNvcHlfdG9fdXNlcih1ZmwsICZmbCwgc2l6ZW9mKHN0cnVjdCBjb21wYXRfZmxvY2sp
-KSkKIAkJcmV0dXJuIC1FRkFVTFQ7CiAJcmV0dXJuIDA7CiB9CiAKLXN0YXRpYyBpbnQgcHV0X2Nv
-bXBhdF9mbG9jazY0KHN0cnVjdCBmbG9jayAqa2ZsLCBzdHJ1Y3QgY29tcGF0X2Zsb2NrNjQgX191
-c2VyICp1ZmwpCitzdGF0aWMgaW50IHB1dF9jb21wYXRfZmxvY2s2NChjb25zdCBzdHJ1Y3QgZmxv
-Y2sgKmtmbCwgc3RydWN0IGNvbXBhdF9mbG9jazY0IF9fdXNlciAqdWZsKQogewogCXN0cnVjdCBj
-b21wYXRfZmxvY2s2NCBmbDsKIAogCW1lbXNldCgmZmwsIDAsIHNpemVvZihzdHJ1Y3QgY29tcGF0
-X2Zsb2NrNjQpKTsKLQljb3B5X2Zsb2NrX2ZpZWxkcyhmbCwgKmtmbCk7CisJY29weV9mbG9ja19m
-aWVsZHMoJmZsLCBrZmwpOwogCWlmIChjb3B5X3RvX3VzZXIodWZsLCAmZmwsIHNpemVvZihzdHJ1
-Y3QgY29tcGF0X2Zsb2NrNjQpKSkKIAkJcmV0dXJuIC1FRkFVTFQ7CiAJcmV0dXJuIDA7Cg==
---001a1137cfe89522570553bda95d--
+--
+Thanks and Regards
+gautham.
