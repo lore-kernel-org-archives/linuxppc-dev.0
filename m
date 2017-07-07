@@ -1,30 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3mQP4F6czDr5N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 17:27:09 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id u36so3081898pgn.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 00:27:09 -0700 (PDT)
-Message-ID: <1499412358.23251.7.camel@gmail.com>
-Subject: Re: [RFC v5 01/38] powerpc: Free up four 64K PTE bits in 4K backed
- HPTE pages
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-mm@kvack.org,  x86@kernel.org, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org,  corbet@lwn.net, mingo@redhat.com
-Date: Fri, 07 Jul 2017 17:25:58 +1000
-In-Reply-To: <1499289735-14220-2-git-send-email-linuxram@us.ibm.com>
-References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <1499289735-14220-2-git-send-email-linuxram@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3nMc3qpFzDr5N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 18:09:48 +1000 (AEST)
+Date: Fri, 7 Jul 2017 10:09:43 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Jin Yao <yao.jin@linux.intel.com>, peterz@infradead.org
+Cc: acme@kernel.org, jolsa@kernel.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, Linux-kernel@vger.kernel.org,
+ ak@linux.intel.com, kan.liang@intel.com, yao.jin@intel.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v6 0/7] perf report: Show branch type
+Message-ID: <20170707080943.GB3987@krava>
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +26,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-07-05 at 14:21 -0700, Ram Pai wrote:
-> Rearrange 64K PTE bits to  free  up  bits 3, 4, 5  and  6,
-> in the 4K backed HPTE pages.These bits continue to be used
-> for 64K backed HPTE pages in this patch, but will be freed
-> up in the next patch. The  bit  numbers are big-endian  as
-> defined in the ISA3.0
+On Thu, Apr 20, 2017 at 08:07:48PM +0800, Jin Yao wrote:
+> v6:
+>    Update according to the review comments from
+>    Jiri Olsa <jolsa@redhat.com>. Major modifications are: 
 > 
-> The patch does the following change to the 4k htpe backed
-> 64K PTE's format.
->
+>    1. Move that multiline conditional code inside {} brackets.
+> 
+>    2. Move branch_type_stat_display() from builtin-report.c to
+>       branch.c. Move branch_type_str() from callchain.c to
+>       branch.c.
+> 
+>    3. Keep the original branch info display order, that is:
+>       predicted, abort, cycles, iterations
 
-The diagrams make the patch much easier to understand, thanks!
+Peter,
+are you ok with the kernel side of this?
 
-<snip>
- 
-> NOTE:even though bits 3, 4, 5, 6, 7 are  not  used  when
-> the  64K  PTE is backed by 4k HPTE,  they continue to be
-> used  if  the  PTE  gets  backed  by 64k HPTE.  The next
-> patch will decouple that aswell, and truely  release the
-> bits.
->
+thanks,
+jirka
 
-<snip>
-
-Balbir Singh. 
+> 
+> v5:
+> ---
+>    Mainly the v5 patch series are updated according to
+>    comments from Jiri Olsa <jolsa@redhat.com>.
+> 
+>    The kernel part doesn't have functional change. It just
+>    solve the merge issue.
+> 
+>    In userspace, the functions of branch type counting and
+>    branch type name resolving are moved to the new files: 
+>    util/branch.c, util/branch.h.
+> 
+>    And refactor the branch info printing code for better
+>    maintenance.
+> 
+> Not changed (or just fix merge issue):
+>   perf/core: Define the common branch type classification
+>   perf/x86/intel: Record branch type
+>   perf record: Create a new option save_type in --branch-filter
+> 
+> New patches:
+>   perf report: Refactor the branch info printing code
+>   perf util: Create branch.c/.h for common branch functions
+> 
+> Changed:
+>   perf report: Show branch type statistics for stdio mode
+>   perf report: Show branch type in callchain entry
+> 
+> v4:
+> ---
+> 1. Describe the major changes in patch description.
+>    Thanks for Peter Zijlstra's reminding. 
+> 
+> 2. Initialize branch type to 0 in intel_pmu_lbr_read_32 and
+>    intel_pmu_lbr_read_64. Remove the invalid else code in
+>    intel_pmu_lbr_filter. 
+> 
+> v3:
+> ---
+> 1. Move the JCC forward/backward and cross page computing from
+>    kernel to userspace.
+> 
+> 2. Use lookup table to replace original switch/case processing.
+> 
+> Changed:
+>   perf/core: Define the common branch type classification
+>   perf/x86/intel: Record branch type
+>   perf report: Show branch type statistics for stdio mode
+>   perf report: Show branch type in callchain entry
+> 
+> Not changed:
+>   perf record: Create a new option save_type in --branch-filter
+> 
+> v2:
+> ---
+> 1. Use 4 bits in perf_branch_entry to record branch type.
+> 
+> 2. Pull out some common branch types from FAR_BRANCH. Now the branch
+>    types defined in perf_event.h:
+> 
+> Jin Yao (7):
+>   perf/core: Define the common branch type classification
+>   perf/x86/intel: Record branch type
+>   perf record: Create a new option save_type in --branch-filter
+>   perf report: Refactor the branch info printing code
+>   perf util: Create branch.c/.h for common branch functions
+>   perf report: Show branch type statistics for stdio mode
+>   perf report: Show branch type in callchain entry
+> 
+>  arch/x86/events/intel/lbr.c              |  53 +++++++++-
+>  include/uapi/linux/perf_event.h          |  29 +++++-
+>  tools/include/uapi/linux/perf_event.h    |  29 +++++-
+>  tools/perf/Documentation/perf-record.txt |   1 +
+>  tools/perf/builtin-report.c              |  25 +++++
+>  tools/perf/util/Build                    |   1 +
+>  tools/perf/util/branch.c                 | 168 +++++++++++++++++++++++++++++++
+>  tools/perf/util/branch.h                 |  25 +++++
+>  tools/perf/util/callchain.c              | 140 ++++++++++++++------------
+>  tools/perf/util/callchain.h              |   5 +-
+>  tools/perf/util/event.h                  |   3 +-
+>  tools/perf/util/hist.c                   |   5 +-
+>  tools/perf/util/machine.c                |  26 +++--
+>  tools/perf/util/parse-branch-options.c   |   1 +
+>  14 files changed, 427 insertions(+), 84 deletions(-)
+>  create mode 100644 tools/perf/util/branch.c
+>  create mode 100644 tools/perf/util/branch.h
+> 
+> -- 
+> 2.7.4
+> 
