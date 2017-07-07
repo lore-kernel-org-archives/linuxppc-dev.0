@@ -1,26 +1,18 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x45BD4jRbzDr5d
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 06:02:44 +1000 (AEST)
-Date: Fri, 7 Jul 2017 19:59:55 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [git pull] vfs.git part 1
-Message-ID: <20170707185955.GH10672@ZenIV.linux.org.uk>
-References: <20170705071423.GY10672@ZenIV.linux.org.uk>
- <87eftsv2hj.fsf@concordia.ellerman.id.au>
- <CA+55aFyREtWvwCLc0iHMUOLo-VLDpxju7WwEmjOSyByHre3avQ@mail.gmail.com>
- <CA+55aFzHBR9M+UN2CMAQ0np275iyWyAY0uKK8LFo33g0e7Z-VQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFzHBR9M+UN2CMAQ0np275iyWyAY0uKK8LFo33g0e7Z-VQ@mail.gmail.com>
-Sender: Al Viro <viro@ftp.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x46l12GTNzDr8l
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 07:12:45 +1000 (AEST)
+Message-ID: <1499461936.3397.13.camel@kernel.crashing.org>
+Subject: [PATCH 2/2] powerpc/mm/radix: Synchronize updates to the process table
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Michael Neuling
+ <michael.neuling@au1.ibm.com>, Nick Piggin <npiggin@au1.ibm.com>
+Date: Fri, 07 Jul 2017 16:12:16 -0500
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,76 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 07, 2017 at 10:35:41AM -0700, Linus Torvalds wrote:
+When writing to the process table, we need to ensure the store is
+visible to a subsequent access by the MMU. We assume we never have
+the PID active while doing the update, so a ptesync/isync pair
+should hopefully be a big enough hammer for our purpose.
 
-> Comments? Michael, does this work for your case?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Looks sane...
+Note: Architecturally, we also need to use a tlbie(l) with RIC=2
+to flush the process table cache. However this is (very) expensive
+and we know that POWER9 will invalidate its cache when hitting the
+mtpid instruction.
 
-> +++ b/fs/fcntl.c
-> @@ -520,50 +520,50 @@ SYSCALL_DEFINE3(fcntl64, unsigned int, fd, unsigned int, cmd,
->  
->  #ifdef CONFIG_COMPAT
->  /* careful - don't use anywhere else */
-> -#define copy_flock_fields(from, to)		\
-> -	(to).l_type = (from).l_type;		\
-> -	(to).l_whence = (from).l_whence;	\
-> -	(to).l_start = (from).l_start;		\
-> -	(to).l_len = (from).l_len;		\
-> -	(to).l_pid = (from).l_pid;
-> -
-> -static int get_compat_flock(struct flock *kfl, struct compat_flock __user *ufl)
-> +#define copy_flock_fields(dst, src)		\
-> +	(dst)->l_type = (src)->l_type;		\
-> +	(dst)->l_whence = (src)->l_whence;	\
-> +	(dst)->l_start = (src)->l_start;	\
-> +	(dst)->l_len = (src)->l_len;		\
-> +	(dst)->l_pid = (src)->l_pid;
-> +
-> +static int get_compat_flock(struct flock *kfl, const struct compat_flock __user *ufl)
->  {
->  	struct compat_flock fl;
->  
->  	if (copy_from_user(&fl, ufl, sizeof(struct compat_flock)))
->  		return -EFAULT;
-> -	copy_flock_fields(*kfl, fl);
-> +	copy_flock_fields(kfl, &fl);
->  	return 0;
->  }
->  
-> -static int get_compat_flock64(struct flock *kfl, struct compat_flock64 __user *ufl)
-> +static int get_compat_flock64(struct flock *kfl, const struct compat_flock64 __user *ufl)
->  {
->  	struct compat_flock64 fl;
->  
->  	if (copy_from_user(&fl, ufl, sizeof(struct compat_flock64)))
->  		return -EFAULT;
-> -	copy_flock_fields(*kfl, fl);
-> +	copy_flock_fields(kfl, &fl);
->  	return 0;
->  }
->  
-> -static int put_compat_flock(struct flock *kfl, struct compat_flock __user *ufl)
-> +static int put_compat_flock(const struct flock *kfl, struct compat_flock __user *ufl)
->  {
->  	struct compat_flock fl;
->  
->  	memset(&fl, 0, sizeof(struct compat_flock));
-> -	copy_flock_fields(fl, *kfl);
-> +	copy_flock_fields(&fl, kfl);
->  	if (copy_to_user(ufl, &fl, sizeof(struct compat_flock)))
->  		return -EFAULT;
->  	return 0;
->  }
->  
-> -static int put_compat_flock64(struct flock *kfl, struct compat_flock64 __user *ufl)
-> +static int put_compat_flock64(const struct flock *kfl, struct compat_flock64 __user *ufl)
->  {
->  	struct compat_flock64 fl;
->  
->  	memset(&fl, 0, sizeof(struct compat_flock64));
-> -	copy_flock_fields(fl, *kfl);
-> +	copy_flock_fields(&fl, kfl);
->  	if (copy_to_user(ufl, &fl, sizeof(struct compat_flock64)))
->  		return -EFAULT;
->  	return 0;
+To be safe, we should add the tlbie for any ARCH300 processor we
+don't know about though. (Aneesh, Nick do we need a ftr bit ?)
+
+ arch/powerpc/mm/mmu_context_book3s64.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index 9404b5e..e3e2803 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -138,6 +138,14 @@ static int radix__init_new_context(struct mm_struct *mm)
+ 	rts_field = radix__get_tree_size();
+ 	process_tb[index].prtb0 = cpu_to_be64(rts_field | __pa(mm->pgd) | RADIX_PGD_INDEX_SIZE);
+ 
++	/*
++	 * Order the above store with subsequent update of the PID
++	 * register (at which point HW can start loading/caching
++	 * the entry) and the corresponding load by the MMU from
++	 * the L2 cache.
++	 */
++	asm volatile("ptesync;isync" : : : "memory");
++
+ 	mm->context.npu_context = NULL;
+ 
+ 	return index;
