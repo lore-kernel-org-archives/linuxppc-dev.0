@@ -1,27 +1,48 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3znq0CsqzDr5l
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 01:59:43 +1000 (AEST)
-Received: by mail-oi0-x242.google.com with SMTP id l130so4370765oib.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 08:59:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x401f1mJVzDr5l
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 02:09:58 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v67G9llM174771
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 12:09:55 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bj3v76j6r-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 12:09:53 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Sat, 8 Jul 2017 02:09:19 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v67G9Gcc7995738
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 8 Jul 2017 02:09:16 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v67G97km003786
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 8 Jul 2017 02:09:08 +1000
+Date: Fri, 7 Jul 2017 21:39:14 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Shuah Khan <shuah@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/4] selftests/ftrace: Add a test to probe module
+ functions
+References: <cover.1498742261.git.naveen.n.rao@linux.vnet.ibm.com>
+ <04c3a67eb5fe13b12725f7198ef9904f992a512a.1498742262.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170703122733.e0f7043415e495352c0a12a9@kernel.org>
+ <20170703125109.191c52bdc0495cc41e742d84@kernel.org>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <87eftsv2hj.fsf@concordia.ellerman.id.au>
-References: <20170705071423.GY10672@ZenIV.linux.org.uk>
- <87eftsv2hj.fsf@concordia.ellerman.id.au>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 7 Jul 2017 08:59:40 -0700
-Message-ID: <CA+55aFyREtWvwCLc0iHMUOLo-VLDpxju7WwEmjOSyByHre3avQ@mail.gmail.com>
-Subject: Re: [git pull] vfs.git part 1
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/mixed; boundary="94eb2c0933a82841090553bc5257"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170703125109.191c52bdc0495cc41e742d84@kernel.org>
+Message-Id: <20170707160914.plo3vpeafwmimpqm@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,72 +52,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---94eb2c0933a82841090553bc5257
-Content-Type: text/plain; charset="UTF-8"
+On 2017/07/03 12:51PM, Masami Hiramatsu wrote:
+> On Mon, 3 Jul 2017 12:27:33 +0900
+> Masami Hiramatsu <mhiramat@kernel.org> wrote:
+> 
+> > On Thu, 29 Jun 2017 19:05:37 +0530
+> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> > 
+> > > Add a kprobes test to ensure that we are able to add a probe on a
+> > > module function using 'p <mod>:<func>' format, without having to
+> > > specify a probe name.
+> > > 
+> > > Suggested-by: Masami Hiramatsu <mhiramat@kernel.org>
+> > > Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
+> > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > > ---
+> > >  .../testing/selftests/ftrace/test.d/kprobe/probe_module.tc | 14 ++++++++++++++
+> > >  1 file changed, 14 insertions(+)
+> > >  create mode 100644 tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
+> > > 
+> > > diff --git a/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
+> > > new file mode 100644
+> > > index 000000000000..ea7657041ba6
+> > > --- /dev/null
+> > > +++ b/tools/testing/selftests/ftrace/test.d/kprobe/probe_module.tc
+> > > @@ -0,0 +1,14 @@
+> > > +#!/bin/sh
+> > > +# description: Kprobe dynamic event - probing module
+> > > +
+> > > +[ -f kprobe_events ] || exit_unsupported # this is configurable
+> > > +
+> > > +echo 0 > events/enable
+> > > +echo > kprobe_events
+> > > +export MOD=`lsmod | head -n 2 | tail -n 1 | cut -f1 -d" "`
+> > > +export FUNC=`grep -m 1 ".* t .*\\[$MOD\\]" /proc/kallsyms | xargs | cut -f3 -d" "`
+> > > +[ "x" != "x$MOD" -a "y" != "y$FUNC" ] || exit_untested
+> > 
+> > Could you also add below case?
+> > 
+> > echo p:probe_$MOD/$FUNC $MOD/$FUNC > kprobe_events 
+> 
+> Oops, it should be something like
+> 
+> echo "p:test_${MOD}_${FUNC} $MOD/$FUNC" > kprobe_events
+> 
+> since we would like to avoid adding new group name for it.
+> 
+> (Adding new group name should be a separated one.)
+> 
+> Thank you,
+> 
+> > 
+> > This is for "new event with name on module" case, your one is for "new event without name on module (automatic name generation)"
+> > 
+> > We should have different test case, because those kicks slightly different parts in kprobe tracer.
 
-On Fri, Jul 7, 2017 at 5:46 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Al Viro <viro@ZenIV.linux.org.uk> writes:
->
->>
->>   Switch flock copyin/copyout primitives to copy_{from,to}_user() (2017-06-26 23:52:44 -0400)
->
-> This commit seems to have broken networking on a bunch of my PPC
-> machines (64-bit kernel, 32-bit userspace).
+Sure. Will make changes to the two tests here and re-spin.
 
-Bah. I think that commit is entirely broken, due to having the
-arguments to the "copy_flock_fields()" in the wrong order.
-
-The copy_flock_fields() macro has the arguments in order <from, to>,
-but all the users seem to do it the other way around.
-
-I think it would have been more obvious if the put_compat_flock*()
-source argument had been "const".
-
-> Patch coming.
-
-I'm not seeing a patch, so I did my own. But it's _entirely_ untested.
-Does the attached fix things for you?
-
-                     Linus
-
---94eb2c0933a82841090553bc5257
-Content-Type: text/plain; charset="US-ASCII"; name="patch.diff"
-Content-Disposition: attachment; filename="patch.diff"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_j4u1r3qg0
-
-IGZzL2ZjbnRsLmMgfCAxNiArKysrKysrKy0tLS0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgOCBpbnNl
-cnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2ZzL2ZjbnRsLmMgYi9mcy9m
-Y250bC5jCmluZGV4IGI2YmQ4OTYyODAyNS4uZWViMTllMjJmZDA4IDEwMDY0NAotLS0gYS9mcy9m
-Y250bC5jCisrKyBiL2ZzL2ZjbnRsLmMKQEAgLTUyNyw0MyArNTI3LDQzIEBAIFNZU0NBTExfREVG
-SU5FMyhmY250bDY0LCB1bnNpZ25lZCBpbnQsIGZkLCB1bnNpZ25lZCBpbnQsIGNtZCwKIAkodG8p
-LmxfbGVuID0gKGZyb20pLmxfbGVuOwkJXAogCSh0bykubF9waWQgPSAoZnJvbSkubF9waWQ7CiAK
-LXN0YXRpYyBpbnQgZ2V0X2NvbXBhdF9mbG9jayhzdHJ1Y3QgZmxvY2sgKmtmbCwgc3RydWN0IGNv
-bXBhdF9mbG9jayBfX3VzZXIgKnVmbCkKK3N0YXRpYyBpbnQgZ2V0X2NvbXBhdF9mbG9jayhzdHJ1
-Y3QgZmxvY2sgKmtmbCwgY29uc3Qgc3RydWN0IGNvbXBhdF9mbG9jayBfX3VzZXIgKnVmbCkKIHsK
-IAlzdHJ1Y3QgY29tcGF0X2Zsb2NrIGZsOwogCiAJaWYgKGNvcHlfZnJvbV91c2VyKCZmbCwgdWZs
-LCBzaXplb2Yoc3RydWN0IGNvbXBhdF9mbG9jaykpKQogCQlyZXR1cm4gLUVGQVVMVDsKLQljb3B5
-X2Zsb2NrX2ZpZWxkcygqa2ZsLCBmbCk7CisJY29weV9mbG9ja19maWVsZHMoZmwsICprZmwpOwog
-CXJldHVybiAwOwogfQogCi1zdGF0aWMgaW50IGdldF9jb21wYXRfZmxvY2s2NChzdHJ1Y3QgZmxv
-Y2sgKmtmbCwgc3RydWN0IGNvbXBhdF9mbG9jazY0IF9fdXNlciAqdWZsKQorc3RhdGljIGludCBn
-ZXRfY29tcGF0X2Zsb2NrNjQoc3RydWN0IGZsb2NrICprZmwsIGNvbnN0IHN0cnVjdCBjb21wYXRf
-ZmxvY2s2NCBfX3VzZXIgKnVmbCkKIHsKIAlzdHJ1Y3QgY29tcGF0X2Zsb2NrNjQgZmw7CiAKIAlp
-ZiAoY29weV9mcm9tX3VzZXIoJmZsLCB1ZmwsIHNpemVvZihzdHJ1Y3QgY29tcGF0X2Zsb2NrNjQp
-KSkKIAkJcmV0dXJuIC1FRkFVTFQ7Ci0JY29weV9mbG9ja19maWVsZHMoKmtmbCwgZmwpOworCWNv
-cHlfZmxvY2tfZmllbGRzKGZsLCAqa2ZsKTsKIAlyZXR1cm4gMDsKIH0KIAotc3RhdGljIGludCBw
-dXRfY29tcGF0X2Zsb2NrKHN0cnVjdCBmbG9jayAqa2ZsLCBzdHJ1Y3QgY29tcGF0X2Zsb2NrIF9f
-dXNlciAqdWZsKQorc3RhdGljIGludCBwdXRfY29tcGF0X2Zsb2NrKGNvbnN0IHN0cnVjdCBmbG9j
-ayAqa2ZsLCBzdHJ1Y3QgY29tcGF0X2Zsb2NrIF9fdXNlciAqdWZsKQogewogCXN0cnVjdCBjb21w
-YXRfZmxvY2sgZmw7CiAKIAltZW1zZXQoJmZsLCAwLCBzaXplb2Yoc3RydWN0IGNvbXBhdF9mbG9j
-aykpOwotCWNvcHlfZmxvY2tfZmllbGRzKGZsLCAqa2ZsKTsKKwljb3B5X2Zsb2NrX2ZpZWxkcygq
-a2ZsLCBmbCk7CiAJaWYgKGNvcHlfdG9fdXNlcih1ZmwsICZmbCwgc2l6ZW9mKHN0cnVjdCBjb21w
-YXRfZmxvY2spKSkKIAkJcmV0dXJuIC1FRkFVTFQ7CiAJcmV0dXJuIDA7CiB9CiAKLXN0YXRpYyBp
-bnQgcHV0X2NvbXBhdF9mbG9jazY0KHN0cnVjdCBmbG9jayAqa2ZsLCBzdHJ1Y3QgY29tcGF0X2Zs
-b2NrNjQgX191c2VyICp1ZmwpCitzdGF0aWMgaW50IHB1dF9jb21wYXRfZmxvY2s2NChjb25zdCBz
-dHJ1Y3QgZmxvY2sgKmtmbCwgc3RydWN0IGNvbXBhdF9mbG9jazY0IF9fdXNlciAqdWZsKQogewog
-CXN0cnVjdCBjb21wYXRfZmxvY2s2NCBmbDsKIAogCW1lbXNldCgmZmwsIDAsIHNpemVvZihzdHJ1
-Y3QgY29tcGF0X2Zsb2NrNjQpKTsKLQljb3B5X2Zsb2NrX2ZpZWxkcyhmbCwgKmtmbCk7CisJY29w
-eV9mbG9ja19maWVsZHMoKmtmbCwgZmwpOwogCWlmIChjb3B5X3RvX3VzZXIodWZsLCAmZmwsIHNp
-emVvZihzdHJ1Y3QgY29tcGF0X2Zsb2NrNjQpKSkKIAkJcmV0dXJuIC1FRkFVTFQ7CiAJcmV0dXJu
-IDA7Cg==
---94eb2c0933a82841090553bc5257--
+Thanks,
+Naveen
