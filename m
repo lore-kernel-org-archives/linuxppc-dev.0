@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3qyW1zMhzDr5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 20:06:43 +1000 (AEST)
-Message-Id: <dc6eaa52ddd6d8193c55ff9647f8beefc82504ad.1499418509.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3qyY2rkfzDr5l
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 20:06:45 +1000 (AEST)
+Message-Id: <fc8110858b9d66d320ec5e0a509a59460ea07ea9.1499418509.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1499418509.git.christophe.leroy@c-s.fr>
 References: <cover.1499418509.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 2/5] powerpc/mm: Fix kernel RAM protection after freeing
- unused memory on PPC32
+Subject: [PATCH v2 3/5] powerpc/mm: Implement STRICT_KERNEL_RWX on PPC32
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>, Balbir Singh <bsingharora@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  7 Jul 2017 12:06:40 +0200 (CEST)
+Date: Fri,  7 Jul 2017 12:06:42 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,104 +23,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As seen below, allthough the init sections have been freed, the
-associated memory area is still marked as executable in the
-page tables.
+This patch implements STRICT_KERNEL_RWX on PPC32.
 
-~ dmesg
-[    5.860093] Freeing unused kernel memory: 592K (c0570000 - c0604000)
+As for CONFIG_DEBUG_PAGEALLOC, it deactivates BAT and LTLB mappings
+in order to allow page protection setup at the level of each page.
 
-~ cat /sys/kernel/debug/kernel_page_tables
----[ Start of kernel VM ]---
-0xc0000000-0xc0497fff        4704K  rw  X  present dirty accessed shared
-0xc0498000-0xc056ffff         864K  rw     present dirty accessed shared
-0xc0570000-0xc059ffff         192K  rw  X  present dirty accessed shared
-0xc05a0000-0xc7ffffff      125312K  rw     present dirty accessed shared
----[ vmalloc() Area ]---
-
-This patch fixes that.
-
-The implementation is done by reusing the change_page_attr()
-function implemented for CONFIG_DEBUG_PAGEALLOC
+As BAT/LTLB mappings are deactivated, there might be a performance
+impact.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/mem.c        |  1 +
- arch/powerpc/mm/mmu_decl.h   |  3 +++
- arch/powerpc/mm/pgtable_32.c | 13 ++++++++++---
- 3 files changed, 14 insertions(+), 3 deletions(-)
+ arch/powerpc/Kconfig              |  2 +-
+ arch/powerpc/kernel/vmlinux.lds.S |  2 +-
+ arch/powerpc/mm/init_32.c         |  6 ++++++
+ arch/powerpc/mm/pgtable_32.c      | 24 ++++++++++++++++++++++++
+ 4 files changed, 32 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 8541f18694a4..b8cf4056d0d7 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -403,6 +403,7 @@ void free_initmem(void)
- {
- 	ppc_md.progress = ppc_printk_progress;
- 	free_initmem_default(POISON_FREE_INITMEM);
-+	remap_init_ram();
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 36f858c37ca7..07c51f31f8a6 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -165,7 +165,7 @@ config PPC
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+-	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S_64 && !RELOCATABLE && !HIBERNATION)
++	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
+ 	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
+ 	select HAVE_CBPF_JIT			if !PPC64
+ 	select HAVE_CONTEXT_TRACKING		if PPC64
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index b1a250560198..882628fa6987 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -8,7 +8,7 @@
+ #include <asm/cache.h>
+ #include <asm/thread_info.h>
+ 
+-#ifdef CONFIG_STRICT_KERNEL_RWX
++#if defined(CONFIG_STRICT_KERNEL_RWX) && !defined(CONFIG_PPC32)
+ #define STRICT_ALIGN_SIZE	(1 << 24)
+ #else
+ #define STRICT_ALIGN_SIZE	PAGE_SIZE
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 8a7c38b8d335..7d5fee1bb116 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -113,6 +113,12 @@ void __init MMU_setup(void)
+ 		__map_without_bats = 1;
+ 		__map_without_ltlbs = 1;
+ 	}
++#ifdef CONFIG_STRICT_KERNEL_RWX
++	if (rodata_enabled) {
++		__map_without_bats = 1;
++		__map_without_ltlbs = 1;
++	}
++#endif
  }
  
- #ifdef CONFIG_BLK_DEV_INITRD
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index d46128b22150..207af7ad3bda 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -94,6 +94,7 @@ extern void _tlbia(void);
- #ifdef CONFIG_PPC32
- 
- extern void mapin_ram(void);
-+void remap_init_ram(void);
- extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, pgprot_t prot);
- 
-@@ -105,6 +106,8 @@ struct hash_pte;
- extern struct hash_pte *Hash, *Hash_end;
- extern unsigned long Hash_size, Hash_mask;
- 
-+#else
-+static inline void remap_init_ram(void) {}
- #endif /* CONFIG_PPC32 */
- 
- extern unsigned long ioremap_bot;
+ /*
 diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 991036f818bb..a87a0b12b032 100644
+index a87a0b12b032..0b70ccd53de8 100644
 --- a/arch/powerpc/mm/pgtable_32.c
 +++ b/arch/powerpc/mm/pgtable_32.c
-@@ -323,8 +323,6 @@ get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
-         return(retval);
+@@ -34,6 +34,7 @@
+ #include <asm/fixmap.h>
+ #include <asm/io.h>
+ #include <asm/setup.h>
++#include <asm/sections.h>
+ 
+ #include "mmu_decl.h"
+ 
+@@ -375,6 +376,29 @@ void remap_init_ram(void)
+ 	change_page_attr(page, numpages, PAGE_KERNEL);
  }
  
--#ifdef CONFIG_DEBUG_PAGEALLOC
--
- static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
- {
- 	pte_t *kpte;
-@@ -347,7 +345,7 @@ static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
- /*
-  * Change the page attributes of an page in the linear mapping.
-  *
-- * THIS CONFLICTS WITH BAT MAPPINGS, DEBUG USE ONLY
-+ * THIS DOES NOTHING WITH BAT MAPPINGS, DEBUG USE ONLY
-  */
- static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
- {
-@@ -368,7 +366,16 @@ static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
- 	return err;
- }
- 
-+void remap_init_ram(void)
++#ifdef CONFIG_STRICT_KERNEL_RWX
++void mark_rodata_ro(void)
 +{
-+	struct page *page = virt_to_page(_sinittext);
-+	unsigned long numpages = PFN_UP((unsigned long)_einittext) -
-+				 PFN_DOWN((unsigned long)_sinittext);
++	struct page *page;
++	unsigned long numpages;
 +
-+	change_page_attr(page, numpages, PAGE_KERNEL);
++	page = virt_to_page(_stext);
++	numpages = PFN_UP((unsigned long)_etext) -
++		   PFN_DOWN((unsigned long)_stext);
++
++	change_page_attr(page, numpages, PAGE_KERNEL_ROX);
++	/*
++	 * mark .rodata as read only. Use __init_begin rather than __end_rodata
++	 * to cover NOTES and EXCEPTION_TABLE.
++	 */
++	page = virt_to_page(__start_rodata);
++	numpages = PFN_UP((unsigned long)__init_begin) -
++		   PFN_DOWN((unsigned long)__start_rodata);
++
++	change_page_attr(page, numpages, PAGE_KERNEL_RO);
 +}
- 
-+#ifdef CONFIG_DEBUG_PAGEALLOC
++#endif
++
+ #ifdef CONFIG_DEBUG_PAGEALLOC
  void __kernel_map_pages(struct page *page, int numpages, int enable)
  {
- 	if (PageHighMem(page))
 -- 
 2.12.0
