@@ -1,51 +1,43 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
+Return-Path: <ego@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3sHN5lLrzDr5N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 21:06:24 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3sjn0J36zDr5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 21:25:48 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v67B5lpU045757
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 07:06:22 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bj0wq09ua-1
+ v67BOgkv024017
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 07:25:46 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bj9cy00w3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 07:06:21 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 07:25:46 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Fri, 7 Jul 2017 21:06:18 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v67B6FPd10551718
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 21:06:15 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v67B66P3031666
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 21:06:07 +1000
-Subject: Re: [linux-next] cpus stalls detected few hours after booting next
- kernel
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 7 Jul 2017 05:25:45 -0600
+Date: Fri, 7 Jul 2017 16:55:39 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 To: Nicholas Piggin <npiggin@gmail.com>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, Stephen Rothwell
- <sfr@canb.auug.org.au>, Paul McKenney <Paul.McKenney@us.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, linux-next
- <linux-next@vger.kernel.org>, paulus@samba.org, paulmck@linux.vnet.ibm.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 07 Jul 2017 16:36:10 +0530
-In-Reply-To: <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
-References: <1498728106.19484.21.camel@abdul>
- <20170629193614.376e27e6@roar.ozlabs.ibm.com>
- <20170629202305.6187367f@roar.ozlabs.ibm.com>
- <20170630004534.228f7c08@roar.ozlabs.ibm.com>
- <1498800138.19484.25.camel@abdul>
- <20170630172802.6d4ddca2@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1499425570.19784.38.camel@abdul.in.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/5] powernv:idle: Move device-tree parsing to one place.
+Reply-To: ego@linux.vnet.ibm.com
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-2-git-send-email-ego@linux.vnet.ibm.com>
+ <20170707005340.003c530b@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170707005340.003c530b@roar.ozlabs.ibm.com>
+Message-Id: <20170707112539.GA8913@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,60 +47,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-06-30 at 17:28 +1000, Nicholas Piggin wrote:
-> On Fri, 30 Jun 2017 10:52:18 +0530
-> Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
+Hello Nicholas,
+
+On Fri, Jul 07, 2017 at 12:53:40AM +1000, Nicholas Piggin wrote:
+> On Wed,  5 Jul 2017 22:08:12 +0530
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 > 
-> > On Fri, 2017-06-30 at 00:45 +1000, Nicholas Piggin wrote:
-> > > On Thu, 29 Jun 2017 20:23:05 +1000
-> > > Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > 
-> > > > On Thu, 29 Jun 2017 19:36:14 +1000
-> > > > Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > 
-> > > > > I don't *think* the replay-wakeup-interrupt patch is directly involved, but
-> > > > > it's likely to be one of the idle patches.  
-> > > 
-> > > Okay this turned out to be misconfigured sleep states I added for the
-> > > simulator, sorry for the false alarm.
-> > > 
-> > > > Although you have this in the backtrace. I wonder if that's a stuck
-> > > > lock in rcu_process_callbacks?
-> > > 
-> > > So this spinlock becomes top of the list of suspects. Can you try
-> > > enabling lockdep and try to reproduce it?
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > > 
-> > Yes, recreated again with CONFIG_LOCKDEP=y & CONFIG_DEBUG_LOCKDEP=y set.
-> > I do not see any difference in trace messages with and without LOCKDEP
-> > enabled.
+> > The details of the platform idle state are exposed by the firmware to
+> > the kernel via device tree.
 > > 
-> > Please find the attached log file.
+> > In the current code, we parse the device tree twice :
+> > 
+> > 1) During the boot up in arch/powerpc/platforms/powernv/idle.c Here,
+> > the device tree is parsed to obtain the details of the
+> > supported_cpuidle_states which is used to determine the default idle
+> > state (which would be used when cpuidle is absent) and the deepest
+> > idle state (which would be used for cpu-hotplug).
+> > 
+> > 2) During the powernv cpuidle driver initializion
+> > (drivers/cpuidle/cpuidle-powernv.c). Here we parse the device tree to
+> > populate the cpuidle driver's states.
+> > 
+> > This patch moves all the device tree parsing to the platform idle
+> > code. It defines data-structures for recording the details of the
+> > parsed idle states. Any other kernel subsystem that is interested in
+> > the idle states (eg: cpuidle-powernv driver) can just use the
+> > in-kernel data structure instead of parsing the device tree all over
+> > again.
+> > 
+> > Further, this helps to check the validity of states in one place and
+> > in case of invalid states (eg : stop states whose psscr values are
+> > errorenous) flag them as invalid, so that the other subsystems can be
+> > prevented from using those.
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 > 
-> Can you get an rcu_invoke_callback event trace that Paul suggested?
+> Hi,
+> 
+> I think the overall direction is good. A few small things.
 
-Yes, I was able to collect the perf data for rcu_invoke_callback event
-on recent next kernel (4.12.0-next-20170705). the issue is rare to hit.
+Thanks for reviewing the patches.
+> 
+> 
+> > +
+> > +#define PNV_IDLE_NAME_LEN     16
+> > +struct pnv_idle_state {
+> > +	char name[PNV_IDLE_NAME_LEN];
+> > +	u32 flags;
+> > +	u32 latency_ns;
+> > +	u32 residency_ns;
+> > +	u64 ctrl_reg_val;   /* The ctrl_reg on POWER8 would be pmicr. */
+> > +	u64 ctrl_reg_mask;  /* On POWER9 it is psscr */
+> > +	bool valid;
+> > +};
+> 
+> Do we use PMICR anywhere in the idle code? What about allowing for some
+> machine-specific fields?
 
-After booting the next kernel, I started this command 'perf record  -e
-rcu:rcu_invoke_callback -a -g -- cat' and waited for 30 minutes.
+PMICR is not used anywhere so far. I will change to to psscr_val and
+psscr_mask for now. If there is a use for pmicr n the future, we can
+change this to the union struct as you suggest.
 
-five minutes after seeing the stalls messages, I did CTRL-C to end the
-perf command.
-
-@Nicholas : the perf.data report is too huge to attach here, shall I
-ping you the internal location of file on slack/mail ? Also the machine
-is in the same state if you want to use it ?
 
 > 
-> Does this bug show up with just the powerpc next branch?
+>     union {
+>         struct { /* p9 */
+>             u64 psscr_val;
+>             u64 psscr_mask;
+>         };
+>         struct { /* p8 */
+>             u64 pmicr...;
+> 
+> 
+> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> > index 2abee07..b747bb5 100644
+> > --- a/arch/powerpc/platforms/powernv/idle.c
+> > +++ b/arch/powerpc/platforms/powernv/idle.c
+> > @@ -58,6 +58,17 @@
+> >  static u64 pnv_deepest_stop_psscr_mask;
+> >  static bool deepest_stop_found;
+> >  
+> > +/*
+> > + * Data structure that stores details of
+> > + * all the platform idle states.
+> > + */
+> > +struct pnv_idle_states pnv_idle;
+> > +
+> > +struct pnv_idle_states *get_pnv_idle_states(void)
+> > +{
+> > +	return &pnv_idle;
+> > +}
+> 
+> I wouldn't have the wrapper function... but it's your code so it's
+> up to you. One thing though is that this function you have called get_
+> just to return the pointer, but it does not take a reference or
+> allocate memory or initialize the structure. Other functions with the
+> same prefix do such things. Can we make something more consistent?
+
+I agree with the wrapper function. But then the alternative was to
+declare this variable as an extern so that cpuidle can access it. Is
+that preferable ?
+
+> 
+> ...
+> 
+> > +/**
+> > + * get_idle_prop_u32_array: Returns an array of u32 elements
+> > + *			    parsed from the device tree corresponding
+> > + *			    to the property provided in variable propname.
+> > + *
+> > + * @np: Pointer to device tree node "/ibm,opal/power-mgt"
+> > + * @nr_states: Expected number of elements.
+> > + * @propname : Name of the property whose values is an array of
+> > + *             u32 elements
+> > + *
+> > + * Returns a pointer to a u32 array of size nr_states on success.
+> > + * Returns NULL on failure.
+> > + */
+> > +static inline u32 *get_idle_prop_u32_array(struct device_node *np,
+> > +					   int nr_states,
+> > +					   const char *propname)
+> > +{
+> > +	u32 *ret_array;
+> > +	int rc, count;
+> > +
+> > +	count = of_property_count_u32_elems(np, propname);
+> > +	rc = validate_dt_prop_sizes("ibm,cpu-idle-state-flags", nr_states,
+> > +				    propname, count);
+> > +	if (rc)
+> > +		return NULL;
+> > +
+> > +	ret_array = kcalloc(nr_states, sizeof(*ret_array), GFP_KERNEL);
+> > +	if (!ret_array)
+> > +		return NULL;
+> 
+> So I would say for this, how about moving the allocations into the caller?
+> You're still doing most of the error handling freeing there, so I would
+> say it's more balanced if you do that.
+
+Sure, that makes sense. I will move the allocation to the main
+function and remove the "inline" associated with these helpers.
+
+> 
+> Also, perhaps consider dropping most of the inline keywords. Unless it's
+> performance critical or does some significant optimisation due to constant
+> parameters I would say avoid the keyword as a rule.
+> 
+> [snip]
+> 
+> There's a lot of code movement, I haven't reviewed it all carefully, but
+> it looks good in general. I'll apply the patches and check the result
+> in the next few days when I get a bit of time.
+
+If it helps, I will post the subsequent version breaking this patch
+into smaller ones.
+
+
 > 
 > Thanks,
 > Nick
 > 
-
-
--- 
-Regard's
-
-Abdul Haleem
-IBM Linux Technology Centre
+--
+Thanks and Regards
+gautham.
