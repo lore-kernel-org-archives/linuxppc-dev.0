@@ -1,25 +1,44 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x3wsV2TjtzDr5V
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jul 2017 23:47:42 +1000 (AEST)
-From: Mark Brown <broonie@kernel.org>
-To: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- "Gustavo A. R. Silva" <garsilva@embeddedor.com>, alsa-devel@alsa-project.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x3yZ22gLQzDr5V
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 01:04:26 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v67Ex7pW072366
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Jul 2017 11:04:24 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bj0wq98f3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 11:04:23 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 7 Jul 2017 09:04:22 -0600
+Date: Fri, 7 Jul 2017 20:34:16 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- alsa-devel@alsa-project.org
-In-Reply-To: <20170630221735.GA17951@embeddedgus>
-Message-Id: <E1dTSjX-0002kF-8h@finisterre>
-Date: Fri, 07 Jul 2017 13:51:43 +0100
-Subject: Applied "ASoC: imx-ssi: add check on platform_get_irq return value"
- to the asoc tree
+ linux-pm@vger.kernel.org
+Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas
+ to pnv_alloc_idle_core_states
+Reply-To: ego@linux.vnet.ibm.com
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
+ <20170707011609.76c51329@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170707011609.76c51329@roar.ozlabs.ibm.com>
+Message-Id: <20170707150416.GD8913@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,63 +48,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+On Fri, Jul 07, 2017 at 01:16:09AM +1000, Nicholas Piggin wrote:
+> On Wed,  5 Jul 2017 22:08:15 +0530
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > On POWER9 DD1, in order to get around a hardware issue, we store in
+> > every CPU thread's paca the paca pointers of all its siblings.
+> > 
+> > Move this code into pnv_alloc_idle_core_states() soon after the space
+> > for saving the sibling pacas is allocated.
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 
+> > -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> > -		int cpu;
+> > -
+> > -		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
+> > -		for_each_possible_cpu(cpu) {
+> > -			int base_cpu = cpu_first_thread_sibling(cpu);
+> > -			int idx = cpu_thread_in_core(cpu);
+> > -			int i;
+> > -
+> 
+> You could move the thread_sibling_pacas allocation to here?
+> 
+> Speaking of which... core_idle_state and thread_sibling_pacas are
+> allocated with kmalloc_node... What happens if we take an SLB miss
+> in the idle wakeup code on these guys? Nothing good I think. Perhaps
+> we should put them into the pacas or somewhere in bolted memory.
 
-   ASoC: imx-ssi: add check on platform_get_irq return value
+Yes, though the SLB miss hasn't yet been encountered in practise so
+far!
 
-has been applied to the asoc tree at
+While one can define thread_sibling_pacas in PACA, it doesn't make
+sense to allocate space for core_idle_state in PACA since the
+allocated value of the secondary threads will never be used.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+What is the right way to ensure that these allocations fall in the
+bolted range ?
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
->From ae1fbdff6dbcdfee9daee69fa1e7d26d1f31d1c7 Mon Sep 17 00:00:00 2001
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Date: Fri, 30 Jun 2017 17:17:35 -0500
-Subject: [PATCH] ASoC: imx-ssi: add check on platform_get_irq return value
-
-Check return value from call to platform_get_irq(),
-so in case of failure print error message and propagate
-the return value.
-
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/imx-ssi.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/sound/soc/fsl/imx-ssi.c b/sound/soc/fsl/imx-ssi.c
-index b95132e2f9dc..06790615e04e 100644
---- a/sound/soc/fsl/imx-ssi.c
-+++ b/sound/soc/fsl/imx-ssi.c
-@@ -527,6 +527,10 @@ static int imx_ssi_probe(struct platform_device *pdev)
- 	}
- 
- 	ssi->irq = platform_get_irq(pdev, 0);
-+	if (ssi->irq < 0) {
-+		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", ssi->irq);
-+		return ssi->irq;
-+	}
- 
- 	ssi->clk = devm_clk_get(&pdev->dev, NULL);
- 	if (IS_ERR(ssi->clk)) {
--- 
-2.13.2
+> 
+> Good cleanup though.
+> 
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> 
