@@ -1,25 +1,30 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x4DPq5YcvzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 11:28:15 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id z6so6541276pfk.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Jul 2017 18:28:15 -0700 (PDT)
-Date: Fri, 7 Jul 2017 18:28:11 -0700
-From: Brian Norris <computersforpeace@gmail.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org,
- stewart@linux.vnet.ibm.com, dwmw2@infradead.org
-Subject: Re: [PATCH 5/5] mtd: powernv_flash: Use
- opal_async_wait_response_interruptible()
-Message-ID: <20170708012811.GF55942@google.com>
-References: <20170629065413.19845-1-cyrilbur@gmail.com>
- <20170629065413.19845-6-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x4Q3l73H4zDr9C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Jul 2017 18:43:15 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id u62so6678216pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Jul 2017 01:43:15 -0700 (PDT)
+Date: Sat, 8 Jul 2017 18:42:53 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/5] powernv:idle: Move device-tree parsing to one place.
+Message-ID: <20170708184253.3f5f6f87@roar.ozlabs.ibm.com>
+In-Reply-To: <20170707112539.GA8913@in.ibm.com>
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-2-git-send-email-ego@linux.vnet.ibm.com>
+ <20170707005340.003c530b@roar.ozlabs.ibm.com>
+ <20170707112539.GA8913@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170629065413.19845-6-cyrilbur@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,21 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 29, 2017 at 04:54:13PM +1000, Cyril Bur wrote:
-> The OPAL calls performed in this driver shouldn't be using
-> opal_async_wait_response() as this performs a wait_event() which, on
-> long running OPAL calls could result in hung task warnings. wait_event()
-> also prevents timely signal delivery which is also undesirable.
-> 
-> This patch also attempts to quieten down the use of dev_err() when
-> errors haven't actually occurred and also to return better information up
-> the stack rather than always -EIO.
-> 
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> ---
->  drivers/mtd/devices/powernv_flash.c | 18 +++++++++++-------
->  1 file changed, 11 insertions(+), 7 deletions(-)
+On Fri, 7 Jul 2017 16:55:39 +0530
+Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
 
-Seems OK:
+> Hello Nicholas,
+> 
+> On Fri, Jul 07, 2017 at 12:53:40AM +1000, Nicholas Piggin wrote:
 
-Acked-by: Brian Norris <computersforpeace@gmail.com>
+> > I wouldn't have the wrapper function... but it's your code so it's
+> > up to you. One thing though is that this function you have called get_
+> > just to return the pointer, but it does not take a reference or
+> > allocate memory or initialize the structure. Other functions with the
+> > same prefix do such things. Can we make something more consistent?  
+> 
+> I agree with the wrapper function. But then the alternative was to
+> declare this variable as an extern so that cpuidle can access it. Is
+> that preferable ?
+
+Yeah I think that's fine.
+
+[snip
+
+> > [snip]
+> > 
+> > There's a lot of code movement, I haven't reviewed it all carefully, but
+> > it looks good in general. I'll apply the patches and check the result
+> > in the next few days when I get a bit of time.  
+> 
+> If it helps, I will post the subsequent version breaking this patch
+> into smaller ones.
+
+If you could without too much trouble, that would be a good help.
+
+Thanks,
+Nick
