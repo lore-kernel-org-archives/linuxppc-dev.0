@@ -1,31 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5mjS0ZhrzDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 23:47:08 +1000 (AEST)
-Date: Mon, 10 Jul 2017 15:46:58 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: "Jin, Yao" <yao.jin@linux.intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>, acme@kernel.org,
- jolsa@kernel.org, mingo@redhat.com,
- alexander.shishkin@linux.intel.com, kan.liang@intel.com,
- ak@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
- Linux-kernel@vger.kernel.org, yao.jin@intel.com
-Subject: Re: [PATCH v6 1/7] perf/core: Define the common branch type
- classification
-Message-ID: <20170710134658.k44bpa7tra2woyiu@hirez.programming.kicks-ass.net>
-References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
- <1492690075-17243-2-git-send-email-yao.jin@linux.intel.com>
- <87r2xoj08g.fsf@concordia.ellerman.id.au>
- <820424b8-d7b3-56cc-2b97-ec570d44ec25@linux.intel.com>
- <87h8ykvayi.fsf@concordia.ellerman.id.au>
- <dadaf750-1096-3e4b-1d97-b3d39e66dba8@linux.intel.com>
- <20170710131049.GA13471@gate.crashing.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.189])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5n6w0hWDzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 00:05:43 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Cyril Bur' <cyrilbur@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-mtd@lists.infradead.org"
+ <linux-mtd@lists.infradead.org>
+CC: "stewart@linux.vnet.ibm.com" <stewart@linux.vnet.ibm.com>,
+ "alistair@popple.id.au" <alistair@popple.id.au>, "dwmw2@infradead.org"
+ <dwmw2@infradead.org>, "rlippert@google.com" <rlippert@google.com>
+Subject: RE: [PATCH v2 08/10] powerpc/opal: Add
+ opal_async_wait_response_interruptible() to opal-async
+Date: Mon, 10 Jul 2017 14:05:34 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0036C52@AcuExch.aculab.com>
+References: <20170710013106.27276-1-cyrilbur@gmail.com>
+ <20170710013106.27276-9-cyrilbur@gmail.com>
+In-Reply-To: <20170710013106.27276-9-cyrilbur@gmail.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170710131049.GA13471@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,24 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 10, 2017 at 08:10:50AM -0500, Segher Boessenkool wrote:
+From: Cyril Bur
+> Sent: 10 July 2017 02:31
+> This patch adds an _interruptible version of opal_async_wait_response().
+> This is useful when a long running OPAL call is performed on behalf of a
+> userspace thread, for example, the opal_flash_{read,write,erase}
+> functions performed by the powernv-flash MTD driver.
+>=20
+> It is foreseeable that these functions would take upwards of two minutes
+> causing the wait_event() to block long enough to cause hung task
+> warnings. Furthermore, wait_event_interruptible() is preferable as
+> otherwise there is no way for signals to stop the process which is going
+> to be confusing in userspace.
 
-> > PERF_BR_INT is triggered by instruction "int" .
-> > PERF_BR_IRQ is triggered by interrupts, traps, faults (the ring 0,3 
-> > transition).
-> 
-> So your "PERF_BR_INT" is a system call? 
+ISTM that if you are doing (something like) a flash full device erase
+(that really can take minutes) it isn't actually an interruptible
+operation - the flash chip will still be busy.
+So allowing the user process be interrupted just leaves a big mess.
 
-The "INT" thing has indeed been used as system call mechanism (typically
-INT 80). But these days we have special purpose syscall instructions.
+OTOH the 'hung task' warning isn't the only problem with uninterruptible
+sleeps - the processes also count towards the 'load average'.
+Some software believes the 'load average' is a meaningful value.
 
-It could maybe be compared to the PPC "Unconditional TRAP with
-immediate" where you use the immediate value as an index into a handler
-vector.
+It would be more generally useful for tasks to be able to sleep
+uninterruptibly without counting towards the 'load average' or triggering
+the 'task stuck' warning.
+(I've code somewhere that sleeps interruptibly unless there is a signal
+pending when it sleeps uninterruptibly.)
 
-> And PERF_BR_IRQ is not an interrupt request (as its name suggests),
-> not what we call an "external interrupt" either; instead it is every
-> interrupt that is not a system call?
+WRT flash erases, 'whole device' erases aren't significantly quicker
+than sector by sector erases.
+The latter can be interrupted between sectors.
+I'm not sure you'd want to do writes than lock down enough kernel
+memory to take even a second to complete.
 
-It is actual interrupts, but also faults, traps and all the other
-exceptions not caused by "INT" I think.
+	David
