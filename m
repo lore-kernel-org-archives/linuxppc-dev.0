@@ -1,41 +1,38 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5SNl4gQdzDq6Q
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5SNm0ZBrzDq7Z
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:31:35 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6A1Sb0I039377
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Jul 2017 21:31:33 -0400
+ v6A1ScQO104172
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Jul 2017 21:31:32 -0400
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bjtpttg16-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bjucuhc6r-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jul 2017 21:31:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jul 2017 21:31:32 -0400
 Received: from localhost
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Mon, 10 Jul 2017 11:31:31 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6A1VSg316711888
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:31:28 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6A1VJ9Y025718
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:31:20 +1000
+ Mon, 10 Jul 2017 11:31:28 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6A1VQrE22216938
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:31:26 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6A1VObB006281
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:31:24 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
 Cc: benh@kernel.crashing.org, stewart@linux.vnet.ibm.com, dwmw2@infradead.org,
  rlippert@google.com, alistair@popple.id.au
-Subject: [PATCH v2 04/10] mtd: powernv_flash: Remove pointless goto in driver
- init
-Date: Mon, 10 Jul 2017 11:31:00 +1000
-In-Reply-To: <20170710013106.27276-1-cyrilbur@gmail.com>
-References: <20170710013106.27276-1-cyrilbur@gmail.com>
-Message-Id: <20170710013106.27276-5-cyrilbur@gmail.com>
+Subject: [PATCH v2 00/10] Allow opal-async waiters to get interrupted
+Date: Mon, 10 Jul 2017 11:30:56 +1000
+Message-Id: <20170710013106.27276-1-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,53 +42,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- drivers/mtd/devices/powernv_flash.c | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
+Hello,
 
-diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-index d50b5f200f73..d7243b72ba6e 100644
---- a/drivers/mtd/devices/powernv_flash.c
-+++ b/drivers/mtd/devices/powernv_flash.c
-@@ -232,21 +232,20 @@ static int powernv_flash_probe(struct platform_device *pdev)
- 	int ret;
- 
- 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
--	if (!data) {
--		ret = -ENOMEM;
--		goto out;
--	}
-+	if (!data)
-+		return -ENOMEM;
-+
- 	data->mtd.priv = data;
- 
- 	ret = of_property_read_u32(dev->of_node, "ibm,opal-id", &(data->id));
- 	if (ret) {
- 		dev_err(dev, "no device property 'ibm,opal-id'\n");
--		goto out;
-+		return ret;
- 	}
- 
- 	ret = powernv_flash_set_driver_info(dev, &data->mtd);
- 	if (ret)
--		goto out;
-+		return ret;
- 
- 	mutex_init(&data->lock);
- 
-@@ -257,10 +256,7 @@ static int powernv_flash_probe(struct platform_device *pdev)
- 	 * with an ffs partition at the start, it should prove easier for users
- 	 * to deal with partitions or not as they see fit
- 	 */
--	ret = mtd_device_register(&data->mtd, NULL, 0);
--
--out:
--	return ret;
-+	return mtd_device_register(&data->mtd, NULL, 0);
- }
- 
- /**
+Version one of this series ignored that OPAL may continue to use
+buffers passed to it after Linux kfree()s the buffer. This version
+addresses this, not in a particularly nice way - future work could
+make this better. This version also includes a few cleanups and fixups
+to powernv_flash driver one along the course of this work that I
+thought I would just send.
+
+The problem we're trying to solve here is that currently all users of
+the opal-async calls must use wait_event(), this may be undesirable
+when there is a userspace process behind the request for the opal
+call, if OPAL takes too long to complete the call then hung task
+warnings will appear.
+
+In order to solve the problem callers should use
+wait_event_interruptible(), due to the interruptible nature of this
+call the opal-async infrastructure needs to track extra state
+associated with each async token, this is prepared for in patch 6/10.
+
+While I was working on the opal-async infrastructure improvements
+Stewart fixed another problem and he relies on the corrected behaviour
+of opal-async so I've sent it here.
+
+Hello MTD folk, traditionally Michael Ellerman takes powernv_flash
+driver patches through the powerpc tree, as always your feedback is
+very welcome.
+
+Thanks,
+
+Cyril
+
+Cyril Bur (9):
+  mtd: powernv_flash: Use WARN_ON_ONCE() rather than BUG_ON()
+  mtd: powernv_flash: Lock around concurrent access to OPAL
+  mtd: powernv_flash: Don't treat OPAL_SUCCESS as an error
+  mtd: powernv_flash: Remove pointless goto in driver init
+  powerpc/opal: Make __opal_async_{get,release}_token() static
+  powerpc/opal: Rework the opal-async interface
+  powerpc/opal: Add opal_async_wait_response_interruptible() to
+    opal-async
+  powerpc/powernv: Add OPAL_BUSY to opal_error_code()
+  mtd: powernv_flash: Use opal_async_wait_response_interruptible()
+
+Stewart Smith (1):
+  powernv/opal-sensor: remove not needed lock
+
+ arch/powerpc/include/asm/opal.h              |   4 +-
+ arch/powerpc/platforms/powernv/opal-async.c  | 188 +++++++++++++++++++--------
+ arch/powerpc/platforms/powernv/opal-sensor.c |  17 +--
+ arch/powerpc/platforms/powernv/opal.c        |   1 +
+ drivers/mtd/devices/powernv_flash.c          |  66 +++++++---
+ 5 files changed, 190 insertions(+), 86 deletions(-)
+
 -- 
 2.13.2
