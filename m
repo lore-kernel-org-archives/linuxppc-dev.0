@@ -1,16 +1,43 @@
-Return-Path: <sebastian.huber@embedded-brains.de>
-Received: from dedi548.your-server.de (dedi548.your-server.de [85.10.215.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5cKG5Sx3zDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 17:29:06 +1000 (AEST)
-From: Sebastian Huber <sebastian.huber@embedded-brains.de>
-To: netdev@vger.kernel.org
-Cc: Madalin Bucur <madalin.bucur@nxp.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] soc/qbman: Simplify bman_release()
-Date: Mon, 10 Jul 2017 09:28:59 +0200
-Message-Id: <20170710072859.2616-1-sebastian.huber@embedded-brains.de>
+Return-Path: <javier@dowhile0.org>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5ck45gC2zDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 17:47:08 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id v193so12020885itc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 00:47:08 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20170615185418.13980-1-javier@dowhile0.org>
+References: <20170615185418.13980-1-javier@dowhile0.org>
+From: Javier Martinez Canillas <javier@dowhile0.org>
+Date: Mon, 10 Jul 2017 09:47:05 +0200
+Message-ID: <CABxcv==J_QwoivZ0PRWMoG-weAp7F-LpEXkBxw_9jwH3ENKjsw@mail.gmail.com>
+Subject: Re: [RESEND PATCH v5 00/16] eeprom: at24: Add OF device ID table
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
+ Javier Martinez Canillas <javier@dowhile0.org>, Florian Larysch <fl@n621.de>,
+ David Lechner <david@lechnology.com>,
+ Rob Herring <robh+dt@kernel.org>, Andy Shevchenko <andy.shevchenko@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
+ Dinh Nguyen <dinguyen@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Will Deacon <will.deacon@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joachim Eastwood <manabian@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Magnus Damm <magnus.damm@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <kernel@pengutronix.de>,
+ Linux I2C <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,49 +47,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Get the affine portal only once for the complete transaction.
+Hello Wolfram,
 
-Signed-off-by: Sebastian Huber <sebastian.huber@embedded-brains.de>
----
- drivers/soc/fsl/qbman/bman.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+On Thu, Jun 15, 2017 at 8:54 PM, Javier Martinez Canillas
+<javier@dowhile0.org> wrote:
+>
+> This series is a follow-up to patch [0] that added an OF device ID table
+> to the at24 EEPROM driver. As you suggested [1], this version instead of
+> adding entries for every used <vendor,device> tuple, only adds a single
+> entry for each chip type using the "atmel" vendor as a generic fallback.
+>
+> The first patch documents in the DT binding what's the correct vendor to
+> use and what are the ones that are being deprecated. The second one adds
+> the OF device ID table for the at24 driver and the next patches use this
+> vendor in the compatible string to each DTS that defines a compatible I2C
+> EEPROM device node.
+>
+> Patches can be applied independently since the DTS changes without driver
+> changes are no-op and the OF table won't be used without the DTS changes.
+>
+> [0]: https://lkml.org/lkml/2017/3/14/589
+> [1]: https://lkml.org/lkml/2017/3/15/99
+>
 
-diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
-index a3d6d7cfa929..0af2069a6b7e 100644
---- a/drivers/soc/fsl/qbman/bman.c
-+++ b/drivers/soc/fsl/qbman/bman.c
-@@ -723,26 +723,23 @@ int bman_release(struct bman_pool *pool, const struct bm_buffer *bufs, u8 num)
- 
- 	DPAA_ASSERT(num > 0 && num <= 8);
- 
--	do {
-+	while (1) {
- 		p = get_affine_portal();
- 		local_irq_save(irqflags);
- 		avail = bm_rcr_get_avail(&p->p);
- 		if (avail < 2)
- 			update_rcr_ci(p, avail);
- 		r = bm_rcr_start(&p->p);
--		local_irq_restore(irqflags);
--		put_affine_portal();
- 		if (likely(r))
- 			break;
- 
-+		local_irq_restore(irqflags);
-+		put_affine_portal();
-+		if (unlikely(--timeout == 0))
-+			return -ETIMEDOUT;
- 		udelay(1);
--	} while (--timeout);
--
--	if (unlikely(!timeout))
--		return -ETIMEDOUT;
-+	}
- 
--	p = get_affine_portal();
--	local_irq_save(irqflags);
- 	/*
- 	 * we can copy all but the first entry, as this can trigger badness
- 	 * with the valid-bit
--- 
-2.12.3
+Are you planning to pick this series? It has been in the list for
+months and were resent many times...
+
+Best regards,
+Javier
