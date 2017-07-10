@@ -1,24 +1,30 @@
-Return-Path: <nicholas.piggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5XHL6DjWzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 14:27:10 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id d193so11193583pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jul 2017 21:27:10 -0700 (PDT)
-Date: Mon, 10 Jul 2017 14:26:53 +1000
-From: Nicholas Piggin <nicholas.piggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling
- <michael.neuling@au1.ibm.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/mm/radix: Properly clear process table entry
-Message-ID: <20170710142653.366c66e1@roar.ozlabs.ibm.com>
-In-Reply-To: <1499517932.3397.22.camel@kernel.crashing.org>
-References: <1499517932.3397.22.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5XRN4WZQzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 14:34:08 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas to
+ pnv_alloc_idle_core_states
+In-Reply-To: <20170708190012.6c697975@roar.ozlabs.ibm.com>
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
+ <20170707011609.76c51329@roar.ozlabs.ibm.com>
+ <20170707150416.GD8913@in.ibm.com>
+ <20170708190012.6c697975@roar.ozlabs.ibm.com>
+Date: Mon, 10 Jul 2017 14:34:08 +1000
+Message-ID: <877ezgap1b.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,12 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 08 Jul 2017 07:45:32 -0500
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Nicholas Piggin <npiggin@gmail.com> writes:
+> On Fri, 7 Jul 2017 20:34:16 +0530
+> Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+>> On Fri, Jul 07, 2017 at 01:16:09AM +1000, Nicholas Piggin wrote:
+>> > 
+>> > Speaking of which... core_idle_state and thread_sibling_pacas are
+>> > allocated with kmalloc_node... What happens if we take an SLB miss
+>> > in the idle wakeup code on these guys? Nothing good I think. Perhaps
+>> > we should put them into the pacas or somewhere in bolted memory.  
+>> 
+>> Yes, though the SLB miss hasn't yet been encountered in practise so
+>> far!
+>
+> Considering it's a node-affine allocation, it may actually be possible
+> to hit in practice on very large memory systems in practice.
 
-> On radix, the process table entry we want to clear when
-> destroying a context is entry 0, not entry 1
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+You can boot with disable_1tb_segments on the kernel command line to
+increase the change of hitting it.
 
-This looks obviously correct to me.
+cheers
