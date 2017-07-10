@@ -1,23 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5ZnV0qwGzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 16:19:58 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id z6so13152963pfk.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jul 2017 23:19:57 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <masriniv@in.ibm.com>,
- Anton Blanchard <anton@samba.org>, Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH] POWER9 PMU interrupt after idle workaround
-Date: Mon, 10 Jul 2017 16:19:38 +1000
-Message-Id: <20170710061938.22513-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5bL76BvtzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 16:44:47 +1000 (AEST)
+Message-ID: <1499669082.2865.8.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc/mm/radix: Synchronize updates to the
+ process table
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@au1.ibm.com>
+Cc: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>, Michael Neuling
+ <michael.neuling@au1.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Date: Mon, 10 Jul 2017 16:44:42 +1000
+In-Reply-To: <20170710144006.669cab3a@roar.ozlabs.ibm.com>
+References: <1499461936.3397.13.camel@kernel.crashing.org>
+ <20170710144006.669cab3a@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 DD2 can see spurious PMU interrupts after state-loss idle in
-some conditions.
+On Mon, 2017-07-10 at 14:40 +1000, Nicholas Piggin wrote:
+> On Fri, 07 Jul 2017 16:12:16 -0500
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > When writing to the process table, we need to ensure the store is
+> > visible to a subsequent access by the MMU. We assume we never have
+> > the PID active while doing the update, so a ptesync/isync pair
+> > should hopefully be a big enough hammer for our purpose.
+> > 
+> 
+> Do we need this if it's going from invalid->valid?
 
-A solution is to save and reload MMCR0 over state-loss idle.
+No. While there is no valid bit in radix, I checked with HW and they
+will not cache an entry that has an invalid RTS field. We should ensure
+this gets architected for future impl. though.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/idle_book3s.S | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+> 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > Note: Architecturally, we also need to use a tlbie(l) with RIC=2
+> > to flush the process table cache. However this is (very) expensive
+> > and we know that POWER9 will invalidate its cache when hitting the
+> > mtpid instruction.
+> > 
+> > To be safe, we should add the tlbie for any ARCH300 processor we
+> > don't know about though. (Aneesh, Nick do we need a ftr bit ?)
+> 
+> Good question, I'm not sure. Aside from this particular thing, it
+> seems like a good idea in general to add implementation specific
+> tests into the ftr framework.
+> 
+> We could add the PVR into it so we don't have to pollute FTR bits.
+> The POWER9_DD1 bit for example could just be a PVR mask and cmp.
 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 5adb390e773b..516ebef905c0 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -30,6 +30,7 @@
-  * Use unused space in the interrupt stack to save and restore
-  * registers for winkle support.
-  */
-+#define _MMCR0	GPR0
- #define _SDR1	GPR3
- #define _PTCR	GPR3
- #define _RPR	GPR4
-@@ -272,6 +273,14 @@ power_enter_stop:
- 	b 	pnv_wakeup_noloss
- 
- .Lhandle_esl_ec_set:
-+	/*
-+	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
-+	 * state-loss idle. Saving and restoring MMCR0 over idle is a
-+	 * workaround.
-+	 */
-+	mfspr	r4,SPRN_MMCR0
-+	std	r4,_MMCR0(r1)
-+
- /*
-  * Check if the requested state is a deep idle state.
-  */
-@@ -450,10 +459,14 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
- pnv_restore_hyp_resource_arch300:
- 	/*
- 	 * Workaround for POWER9, if we lost resources, the ERAT
--	 * might have been mixed up and needs flushing.
-+	 * might have been mixed up and needs flushing. We also need
-+	 * to reload MMCR0 (see comment above).
- 	 */
- 	blt	cr3,1f
- 	PPC_INVALIDATE_ERAT
-+	ld	r1,PACAR1(r13)
-+	ld	r4,_MMCR0(r1)
-+	mtspr	SPRN_MMCR0,r4
- 1:
- 	/*
- 	 * POWER ISA 3. Use PSSCR to determine if we
--- 
-2.11.0
+Reading the PVR isn't necessarily cheap though, we may want to cache
+it.
+> 
+> > 
+> >  arch/powerpc/mm/mmu_context_book3s64.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+> > index 9404b5e..e3e2803 100644
+> > --- a/arch/powerpc/mm/mmu_context_book3s64.c
+> > +++ b/arch/powerpc/mm/mmu_context_book3s64.c
+> > @@ -138,6 +138,14 @@ static int radix__init_new_context(struct mm_struct *mm)
+> >  	rts_field = radix__get_tree_size();
+> >  	process_tb[index].prtb0 = cpu_to_be64(rts_field | __pa(mm->pgd) | RADIX_PGD_INDEX_SIZE);
+> >  
+> > +	/*
+> > +	 * Order the above store with subsequent update of the PID
+> > +	 * register (at which point HW can start loading/caching
+> > +	 * the entry) and the corresponding load by the MMU from
+> > +	 * the L2 cache.
+> > +	 */
+> > +	asm volatile("ptesync;isync" : : : "memory");
+> > +
+> >  	mm->context.npu_context = NULL;
+> >  
+> >  	return index;
+> > 
