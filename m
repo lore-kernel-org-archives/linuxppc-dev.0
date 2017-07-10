@@ -1,31 +1,28 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <andy.shevchenko@gmail.com>
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5nrw3hBqzDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 00:38:40 +1000 (AEST)
-Date: Mon, 10 Jul 2017 09:37:42 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Jin, Yao" <yao.jin@linux.intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>, acme@kernel.org,
- jolsa@kernel.org, mingo@redhat.com, alexander.shishkin@linux.intel.com,
- kan.liang@intel.com, ak@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
- Linux-kernel@vger.kernel.org, yao.jin@intel.com
-Subject: Re: [PATCH v6 1/7] perf/core: Define the common branch type
- classification
-Message-ID: <20170710143737.GC13471@gate.crashing.org>
-References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
- <1492690075-17243-2-git-send-email-yao.jin@linux.intel.com>
- <87r2xoj08g.fsf@concordia.ellerman.id.au>
- <820424b8-d7b3-56cc-2b97-ec570d44ec25@linux.intel.com>
- <87h8ykvayi.fsf@concordia.ellerman.id.au>
- <dadaf750-1096-3e4b-1d97-b3d39e66dba8@linux.intel.com>
- <20170710131049.GA13471@gate.crashing.org>
- <20170710134658.k44bpa7tra2woyiu@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170710134658.k44bpa7tra2woyiu@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5pjC3NP3zDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 01:17:03 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id 16so13200421qkg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 08:17:03 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1499697478.19784.42.camel@abdul.in.ibm.com>
+References: <1499320823.19784.17.camel@abdul.in.ibm.com>
+ <CAHp75VdfjatKMWXzHLr7s3CCAh_-Gd=a2K72pFDdtt1X9Kk7Rw@mail.gmail.com>
+ <1499697478.19784.42.camel@abdul.in.ibm.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Mon, 10 Jul 2017 18:17:00 +0300
+Message-ID: <CAHp75VdSgpviH9U1nh7HVL-t9kHHQeAdDSnAGjsXtFaXXTNnXQ@mail.gmail.com>
+Subject: Re: Today's linux-next build fail on powerpc
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Wolfram Sang <wsa@the-dreams.de>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Luis Oliveira <Luis.Oliveira@synopsys.com>,
+ linux-next <linux-next@vger.kernel.org>, linux-i2c <linux-i2c@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,35 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
+On Mon, Jul 10, 2017 at 5:37 PM, Abdul Haleem
+<abdhalee@linux.vnet.ibm.com> wrote:
+> On Fri, 2017-07-07 at 19:36 +0300, Andy Shevchenko wrote:
+>> On Thu, Jul 6, 2017 at 9:00 AM, Abdul Haleem
+>> <abdhalee@linux.vnet.ibm.com> wrote:
+>> > next-20170705 fails to build on powerpc with below errors.
+>> I had sent a fix yesterday. Had you chance to test it?
 
-On Mon, Jul 10, 2017 at 03:46:58PM +0200, Peter Zijlstra wrote:
-> On Mon, Jul 10, 2017 at 08:10:50AM -0500, Segher Boessenkool wrote:
-> 
-> > > PERF_BR_INT is triggered by instruction "int" .
-> > > PERF_BR_IRQ is triggered by interrupts, traps, faults (the ring 0,3 
-> > > transition).
-> > 
-> > So your "PERF_BR_INT" is a system call? 
-> 
-> The "INT" thing has indeed been used as system call mechanism (typically
-> INT 80). But these days we have special purpose syscall instructions.
-> 
-> It could maybe be compared to the PPC "Unconditional TRAP with
-> immediate" where you use the immediate value as an index into a handler
-> vector.
+> drivers/i2c/busses/i2c-designware-platdrv.c:331:6: error: implicit
+> declaration of function
+> =E2=80=98i2c_detect_slave_mode=E2=80=99 [-Werror=3Dimplicit-function-decl=
+aration]
+>   if (i2c_detect_slave_mode(&pdev->dev))
+>       ^
+>   CC [M]  fs/jffs2/scan.o
+>
+> Please point me to the correct patch you are referring to ?
 
-If we would do that, yes :-)  (We just generate a SIGTRAP instead).
+commit 8f1a357d41a22009150cf404b5aa5876efdb59b1
 
-> > And PERF_BR_IRQ is not an interrupt request (as its name suggests),
-> > not what we call an "external interrupt" either; instead it is every
-> > interrupt that is not a system call?
-> 
-> It is actual interrupts, but also faults, traps and all the other
-> exceptions not caused by "INT" I think.
+   i2c: Provide a stub for i2c_detect_slave_mode()
 
-Ah, right, exceptions == interrupts for PowerPC, more terminological
-confusion :-)
-
-
-Segher
+--=20
+With Best Regards,
+Andy Shevchenko
