@@ -3,22 +3,22 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5Z6260zqzDqML
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 15:49:14 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5ZF60x77zDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 15:55:21 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6A5mWu1003387
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 01:49:12 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bjvvde00m-1
+ v6A5sdQA089181
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 01:55:20 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bjtpu0xwc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 01:49:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 01:55:20 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sun, 9 Jul 2017 23:49:12 -0600
-Date: Sun, 9 Jul 2017 22:49:00 -0700
+ Sun, 9 Jul 2017 23:55:18 -0600
+Date: Sun, 9 Jul 2017 22:55:02 -0700
 From: Ram Pai <linuxram@us.ibm.com>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -28,16 +28,15 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
  akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
-Subject: Re: [RFC v5 32/38] powerpc: capture the violated protection key on
- fault
+Subject: Re: [RFC v5 31/38] powerpc: introduce get_pte_pkey() helper
 Reply-To: Ram Pai <linuxram@us.ibm.com>
 References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <1499289735-14220-33-git-send-email-linuxram@us.ibm.com>
- <5fa43f48-d3b3-89f2-0bbd-58be3e07f4b8@linux.vnet.ibm.com>
+ <1499289735-14220-32-git-send-email-linuxram@us.ibm.com>
+ <58e0d9ff-727f-c960-5c5f-16d19a89e181@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5fa43f48-d3b3-89f2-0bbd-58be3e07f4b8@linux.vnet.ibm.com>
-Message-Id: <20170710054900.GB5713@ram.oc3035372033.ibm.com>
+In-Reply-To: <58e0d9ff-727f-c960-5c5f-16d19a89e181@linux.vnet.ibm.com>
+Message-Id: <20170710055502.GC5713@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,86 +46,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 10, 2017 at 08:40:19AM +0530, Anshuman Khandual wrote:
+On Mon, Jul 10, 2017 at 08:41:30AM +0530, Anshuman Khandual wrote:
 > On 07/06/2017 02:52 AM, Ram Pai wrote:
-> > Capture the protection key that got violated in paca.
-> > This value will be used by used to inform the signal
-> > handler.
+> > get_pte_pkey() helper returns the pkey associated with
+> > a address corresponding to a given mm_struct.
 > > 
 > > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 > > ---
-> >  arch/powerpc/include/asm/paca.h   |    1 +
-> >  arch/powerpc/kernel/asm-offsets.c |    1 +
-> >  arch/powerpc/mm/fault.c           |    3 +++
-> >  3 files changed, 5 insertions(+), 0 deletions(-)
+> >  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    5 ++++
+> >  arch/powerpc/mm/hash_utils_64.c               |   28 +++++++++++++++++++++++++
+> >  2 files changed, 33 insertions(+), 0 deletions(-)
 > > 
-> > diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> > index c8bd1fc..0c06188 100644
-> > --- a/arch/powerpc/include/asm/paca.h
-> > +++ b/arch/powerpc/include/asm/paca.h
-> > @@ -94,6 +94,7 @@ struct paca_struct {
-> >  	u64 dscr_default;		/* per-CPU default DSCR */
-> >  #ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> >  	u64 paca_amr;			/* value of amr at exception */
-> > +	u16 paca_pkey;                  /* exception causing pkey */
-> >  #endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> >  
-> >  #ifdef CONFIG_PPC_STD_MMU_64
-> > diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> > index 17f5d8a..7dff862 100644
-> > --- a/arch/powerpc/kernel/asm-offsets.c
-> > +++ b/arch/powerpc/kernel/asm-offsets.c
-> > @@ -244,6 +244,7 @@ int main(void)
-> >  
-> >  #ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> >  	OFFSET(PACA_AMR, paca_struct, paca_amr);
-> > +	OFFSET(PACA_PKEY, paca_struct, paca_pkey);
-> >  #endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> >  
-> >  	OFFSET(ACCOUNT_STARTTIME, paca_struct, accounting.starttime);
-> > diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> > index a6710f5..c8674a7 100644
-> > --- a/arch/powerpc/mm/fault.c
-> > +++ b/arch/powerpc/mm/fault.c
-> > @@ -265,6 +265,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
-> >  	if (error_code & DSISR_KEYFAULT) {
-> >  		code = SEGV_PKUERR;
-> >  		get_paca()->paca_amr = read_amr();
-> > +		get_paca()->paca_pkey = get_pte_pkey(current->mm, address);
-> >  		goto bad_area_nosemaphore;
-> >  	}
-> >  #endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> > @@ -290,6 +291,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
-> >  
-> >  	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
-> >  
+> > diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> > index f7a6ed3..369f9ff 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> > @@ -450,6 +450,11 @@ extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap,
+> >  int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+> >  		     pte_t *ptep, unsigned long trap, unsigned long flags,
+> >  		     int ssize, unsigned int shift, unsigned int mmu_psize);
 > > +
+> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> > +u16 get_pte_pkey(struct mm_struct *mm, unsigned long address);
+> > +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+> > +
+> >  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> >  extern int __hash_page_thp(unsigned long ea, unsigned long access,
+> >  			   unsigned long vsid, pmd_t *pmdp, unsigned long trap,
+> > diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> > index 1e74529..591990c 100644
+> > --- a/arch/powerpc/mm/hash_utils_64.c
+> > +++ b/arch/powerpc/mm/hash_utils_64.c
+> > @@ -1573,6 +1573,34 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+> >  	local_irq_restore(flags);
+> >  }
+> >  
+> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> > +/*
+> > + * return the protection key associated with the given address
+> > + * and the mm_struct.
+> > + */
+> > +u16 get_pte_pkey(struct mm_struct *mm, unsigned long address)
+> > +{
+> > +	pte_t *ptep;
+> > +	u16 pkey = 0;
+> > +	unsigned long flags;
+> > +
+> > +	if (REGION_ID(address) == VMALLOC_REGION_ID)
+> > +		mm = &init_mm;
 > 
-> Stray empty line addition here.
-> 
-> >  	/*
-> >  	 * We want to do this outside mmap_sem, because reading code around nip
-> >  	 * can result in fault, which will cause a deadlock when called with
-> > @@ -453,6 +455,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
-> >  	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
-> >  			is_exec, 0)) {
-> >  		get_paca()->paca_amr = read_amr();
-> > +		get_paca()->paca_pkey = vma_pkey(vma);
-> 
-> Why not get_pte_pkey() here as well ? IIUC both these function would
-> give us the same pkey, then why is the difference when we process a
-> page fault for real protection key violation in HW compared to cross
-> checking of VMA protection key in SW for regular page faults.
+> IIUC, protection keys are only applicable for user space. This
+> function is getting used to populate siginfo structure. Then how
+> can we ever request this for any address in VMALLOC region.
 
-Unfortunately if we have reached here, it means the pgd-pmd-pdt-...pte
-structures have not yet been totally populated for the task. Hence we
-cannot walk the tree, to find the pte, to find the key. hence we have to 
-depend on vma_pkey() to get the key from the vma.
+make sense. this check is not needed.
 
+> 
+> > +
+> > +	if (!mm || !mm->pgd)
+> > +		return 0;
+> 
+> Is this really required at this stage ?
+
+its a sanity check to gaurd against bad inputs. See a problem?
 RP
-
-
-
 
 -- 
 Ram Pai
