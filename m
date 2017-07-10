@@ -1,23 +1,25 @@
-Return-Path: <Yuri.Norov@cavium.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0044.outbound.protection.outlook.com [104.47.33.44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5djY04F8zDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 18:31:44 +1000 (AEST)
-Date: Mon, 10 Jul 2017 11:31:26 +0300
-From: Yury Norov <ynorov@caviumnetworks.com>
-To: James Morse <james.morse@arm.com>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
- Roland McGrath <roland@hack.frob.com>, linuxppc-dev@lists.ozlabs.org,
- Zhou Chengming <zhouchengming1@huawei.com>,
- Andrey Vagin <avagin@openvz.org>
-Subject: Re: [PATCH] ptrace: Add compat PTRACE_{G,S}ETSIGMASK handlers
-Message-ID: <20170710083126.pv6pxjrt7qshxsa7@yury-thinkpad>
-References: <20170629162637.10676-1-james.morse@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5hP36tYszDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 20:32:39 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Jin\, Yao" <yao.jin@linux.intel.com>, acme@kernel.org, jolsa@kernel.org,
+ peterz@infradead.org, mingo@redhat.com, alexander.shishkin@linux.intel.com
+Cc: ak@linux.intel.com, kan.liang@intel.com, linuxppc-dev@lists.ozlabs.org,
+ Linux-kernel@vger.kernel.org, yao.jin@intel.com
+Subject: Re: [PATCH v6 1/7] perf/core: Define the common branch type
+ classification
+In-Reply-To: <820424b8-d7b3-56cc-2b97-ec570d44ec25@linux.intel.com>
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
+ <1492690075-17243-2-git-send-email-yao.jin@linux.intel.com>
+ <87r2xoj08g.fsf@concordia.ellerman.id.au>
+ <820424b8-d7b3-56cc-2b97-ec570d44ec25@linux.intel.com>
+Date: Mon, 10 Jul 2017 20:32:37 +1000
+Message-ID: <87h8ykvayi.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170629162637.10676-1-james.morse@arm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,128 +29,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 29, 2017 at 05:26:37PM +0100, James Morse wrote:
-> compat_ptrace_request() lacks handlers for PTRACE_{G,S}ETSIGMASK,
-> instead using those in ptrace_request(). The compat variant should
-> read a compat_sigset_t from userspace instead of ptrace_request()s
-> sigset_t.
-> 
-> While compat_sigset_t is the same size as sigset_t, it is defined as
-> 2xu32, instead of a single u64. On a big-endian CPU this means that
-> compat_sigset_t is passed to user-space using middle-endianness,
-> where the least-significant u32 is written most significant byte
-> first.
-> 
-> If ptrace_request()s code is used userspace will read the most
-> significant u32 where it expected the least significant.
-> 
-> Instead of duplicating ptrace_request()s code as a special case in
-> the arch code, handle it here.
- 
-Hi James,
+"Jin, Yao" <yao.jin@linux.intel.com> writes:
+> On 7/10/2017 2:05 PM, Michael Ellerman wrote:
+>> Jin Yao <yao.jin@linux.intel.com> writes:
+>>
+>>> It is often useful to know the branch types while analyzing branch
+>>> data. For example, a call is very different from a conditional branch.
+>>>
+...
+>>> To keep consistent on kernel and userspace and make the classification
+>>> more common, the patch adds the common branch type classification
+>>> in perf_event.h.
+>>
+>> Most of the code and doc uses "branch" but then a few these are called
+>> "jump". Can we just stick with "branch"?
+>>
+>>> PERF_BR_NONE      : unknown
+>>> PERF_BR_JCC       : conditional jump
+>>> PERF_BR_JMP       : jump
+>>> PERF_BR_IND_JMP   : indirect jump
+>> eg:
+>>
+>> PERF_BR_COND    : conditional branch
+>> PERF_BR_UNCOND  : unconditional branch
+>> PERF_BR_IND     : indirect branch
+>
+> Call and jump are all branches. If we want to figure out which one is 
+> jump and which one is call, we need the detail branch type definitions.
 
-I tested arm64/ilp32 on top of, and everything is fine.
+Yeah I'm not saying we don't need the different types, I'm saying I'd
+rather we just called them "branch" not "jump". Just because "jump" can
+mean different things on different arches.
 
-Yury
+> For example,  if we only say "PERF_BR_IND", we could not know if it's an 
+> indirect jump or indirect call.
 
-Acked-by: Yury Norov <ynorov@caviumnetworks.com>
+Yes we can, PERF_BR_IND is an indirect branch, which is not a call,
+because if it was a call then it would be PERF_BR_IND_CALL.
 
-> CC: Yury Norov <ynorov@caviumnetworks.com>
-> CC: Andrey Vagin <avagin@openvz.org>
-> Reported-by: Zhou Chengming <zhouchengming1@huawei.com>
-> Signed-off-by: James Morse <james.morse@arm.com>
-> Fixes: 29000caecbe87 ("ptrace: add ability to get/set signal-blocked mask")
-> ---
-> LTP test case here:
-> https://lists.linux.it/pipermail/ltp/2017-June/004932.html
-> 
->  kernel/ptrace.c | 52 ++++++++++++++++++++++++++++++++++++++++------------
->  1 file changed, 40 insertions(+), 12 deletions(-)
-> 
-> diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-> index 8d2c10714530..a5bebb6713e8 100644
-> --- a/kernel/ptrace.c
-> +++ b/kernel/ptrace.c
-> @@ -843,6 +843,22 @@ static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
->  EXPORT_SYMBOL_GPL(task_user_regset_view);
->  #endif
->  
-> +static int ptrace_setsigmask(struct task_struct *child, sigset_t *new_set)
-> +{
-> +	sigdelsetmask(new_set, sigmask(SIGKILL)|sigmask(SIGSTOP));
-> +
-> +	/*
-> +	 * Every thread does recalc_sigpending() after resume, so
-> +	 * retarget_shared_pending() and recalc_sigpending() are not
-> +	 * called here.
-> +	 */
-> +	spin_lock_irq(&child->sighand->siglock);
-> +	child->blocked = *new_set;
-> +	spin_unlock_irq(&child->sighand->siglock);
-> +
-> +	return 0;
-> +}
-> +
->  int ptrace_request(struct task_struct *child, long request,
->  		   unsigned long addr, unsigned long data)
->  {
-> @@ -914,18 +930,7 @@ int ptrace_request(struct task_struct *child, long request,
->  			break;
->  		}
->  
-> -		sigdelsetmask(&new_set, sigmask(SIGKILL)|sigmask(SIGSTOP));
-> -
-> -		/*
-> -		 * Every thread does recalc_sigpending() after resume, so
-> -		 * retarget_shared_pending() and recalc_sigpending() are not
-> -		 * called here.
-> -		 */
-> -		spin_lock_irq(&child->sighand->siglock);
-> -		child->blocked = new_set;
-> -		spin_unlock_irq(&child->sighand->siglock);
-> -
-> -		ret = 0;
-> +		ret = ptrace_setsigmask(child, &new_set);
->  		break;
->  	}
->  
-> @@ -1149,7 +1154,9 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
->  			  compat_ulong_t addr, compat_ulong_t data)
->  {
->  	compat_ulong_t __user *datap = compat_ptr(data);
-> +	compat_sigset_t set32;
->  	compat_ulong_t word;
-> +	sigset_t new_set;
->  	siginfo_t siginfo;
->  	int ret;
->  
-> @@ -1189,6 +1196,27 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
->  		else
->  			ret = ptrace_setsiginfo(child, &siginfo);
->  		break;
-> +	case PTRACE_GETSIGMASK:
-> +		if (addr != sizeof(compat_sigset_t))
-> +			return -EINVAL;
-> +
-> +		sigset_to_compat(&set32, &child->blocked);
-> +
-> +		if (copy_to_user(datap, &set32, sizeof(set32)))
-> +			return -EFAULT;
-> +
-> +		ret = 0;
-> +		break;
-> +	case PTRACE_SETSIGMASK:
-> +		if (addr != sizeof(compat_sigset_t))
-> +			return -EINVAL;
-> +
-> +		if (copy_from_user(&set32, datap, sizeof(compat_sigset_t)))
-> +			return -EFAULT;
-> +
-> +		sigset_from_compat(&new_set, &set32);
-> +		ret = ptrace_setsigmask(child, &new_set);
-> +		break;
->  #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
->  	case PTRACE_GETREGSET:
->  	case PTRACE_SETREGSET:
-> -- 
-> 2.11.0
+>>> PERF_BR_CALL      : call
+>>> PERF_BR_IND_CALL  : indirect call
+>>> PERF_BR_RET       : return
+>>> PERF_BR_SYSCALL   : syscall
+>>> PERF_BR_SYSRET    : syscall return
+>>> PERF_BR_IRQ       : hw interrupt/trap/fault
+>>> PERF_BR_INT       : sw interrupt
+>> I'm not sure what that means, I'm guessing on x86 it means someone
+>> executed "int" ?
+>
+> PERF_BR_IRQ is for hw interrupt and PERF_BR_INT is for sw interrupt.
+
+OK, but I still don't know what that means :)
+
+What's an example of an instruction that is PERF_BR_IRQ and PERF_BR_INT ?
+
+> PERF_BR_CALL/PERF_BR_IND_CALL and PERF_BR_RET are for function call 
+> (direct call and indirect call) and return.
+
+Yep makes sense.
+
+> PERF_BR_SYSCALL/PERF_BR_SYSRET are for syscall and syscall return.
+
+Yep OK.
+
+>> Is that sufficiently useful to use up a bit? I think we only have 3
+>> free?
+>
+> Do you means 3 bits? Each bit stands for one branch type? I guess what 
+> you mean is:
+>
+> PERF_BR_COND    : conditional branch
+> PERF_BR_UNCOND  : unconditional branch
+> PERF_BR_IND     : indirect branch
+>
+> But 3 branch types are not enough for us.
+
+What I meant was you're using 4 bits for the type, so you have 16
+possible values, and you've defined 13 of them. Meaning there are only 3
+types free.
+
+So we should try to only define branch types that are really useful, and
+keep some free for future use.
+
+Maybe PERF_BR_INT is really common on x86 and so it's important to count
+it, but like I said above I don't know what it is.
+
+>>> PERF_BR_IRET      : return from interrupt
+>>> PERF_BR_FAR_BRANCH: not generic far branch type
+>> What is a "not generic far branch" ?
+>>
+>> I don't know what that would mean on powerpc for example.
+>
+> It's reserved for future using I think.
+
+OK so let's not put it in the Linux API until it's defined?
+
+>> I think the only thing we have on powerpc that's commonly used and that
+>> isn't covered above is branches that decrement a loop counter and then
+>> branch based on the result.
+...
+>
+> Sorry, I'm not familiar with powerpc arch. Or could you add the branch 
+> type which powerpc needs?
+
+These are good:
+
++	PERF_BR_COND		= 1,	/* conditional */
++	PERF_BR_UNCOND		= 2,	/* unconditional */
++	PERF_BR_IND		= 3,	/* indirect */
++	PERF_BR_CALL		= 4,	/* call */
++	PERF_BR_IND_CALL	= 5,	/* indirect call */
++	PERF_BR_RET		= 6,	/* return */
+
+These we wouldn't use currently, but make sense:
+
++	PERF_BR_SYSCALL		= 7,	/* syscall */
++	PERF_BR_SYSRET		= 8,	/* syscall return */
++	PERF_BR_IRET		= 11,	/* return from interrupt */
+
+These I'm not so sure about, I don't really know what they would map to
+for us:
+
++	PERF_BR_IRQ		= 9,	/* hw interrupt/trap/fault */
++	PERF_BR_INT		= 10,	/* sw interrupt */
+
+And sounds like this should be dropped for now:
+
++	PERF_BR_FAR_BRANCH	= 12,	/* not generic far branch type */
+
+The branch types you haven't covered which might be useful for us are:
+
+	PERF_BR_COND_CALL	/* Conditional call */
+	PERF_BR_COND_RET	/* Condition return */
+
+
+cheers
