@@ -1,43 +1,24 @@
-Return-Path: <javier@dowhile0.org>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yao.jin@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5ck45gC2zDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 17:47:08 +1000 (AEST)
-Received: by mail-it0-x242.google.com with SMTP id v193so12020885itc.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 00:47:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5dMm5KWdzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 18:16:20 +1000 (AEST)
+Subject: Re: [PATCH v6 1/7] perf/core: Define the common branch type
+ classification
+To: Michael Ellerman <mpe@ellerman.id.au>, acme@kernel.org, jolsa@kernel.org,
+ peterz@infradead.org, mingo@redhat.com, alexander.shishkin@linux.intel.com
+Cc: ak@linux.intel.com, kan.liang@intel.com, linuxppc-dev@lists.ozlabs.org,
+ Linux-kernel@vger.kernel.org, yao.jin@intel.com
+References: <1492690075-17243-1-git-send-email-yao.jin@linux.intel.com>
+ <1492690075-17243-2-git-send-email-yao.jin@linux.intel.com>
+ <87r2xoj08g.fsf@concordia.ellerman.id.au>
+From: "Jin, Yao" <yao.jin@linux.intel.com>
+Message-ID: <820424b8-d7b3-56cc-2b97-ec570d44ec25@linux.intel.com>
+Date: Mon, 10 Jul 2017 16:16:13 +0800
 MIME-Version: 1.0
-In-Reply-To: <20170615185418.13980-1-javier@dowhile0.org>
-References: <20170615185418.13980-1-javier@dowhile0.org>
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Date: Mon, 10 Jul 2017 09:47:05 +0200
-Message-ID: <CABxcv==J_QwoivZ0PRWMoG-weAp7F-LpEXkBxw_9jwH3ENKjsw@mail.gmail.com>
-Subject: Re: [RESEND PATCH v5 00/16] eeprom: at24: Add OF device ID table
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
- Javier Martinez Canillas <javier@dowhile0.org>, Florian Larysch <fl@n621.de>,
- David Lechner <david@lechnology.com>,
- Rob Herring <robh+dt@kernel.org>, Andy Shevchenko <andy.shevchenko@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
- Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
- Dinh Nguyen <dinguyen@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Will Deacon <will.deacon@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Joachim Eastwood <manabian@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Magnus Damm <magnus.damm@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <kernel@pengutronix.de>,
- Linux I2C <linux-i2c@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <87r2xoj08g.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,31 +28,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
 
-On Thu, Jun 15, 2017 at 8:54 PM, Javier Martinez Canillas
-<javier@dowhile0.org> wrote:
->
-> This series is a follow-up to patch [0] that added an OF device ID table
-> to the at24 EEPROM driver. As you suggested [1], this version instead of
-> adding entries for every used <vendor,device> tuple, only adds a single
-> entry for each chip type using the "atmel" vendor as a generic fallback.
->
-> The first patch documents in the DT binding what's the correct vendor to
-> use and what are the ones that are being deprecated. The second one adds
-> the OF device ID table for the at24 driver and the next patches use this
-> vendor in the compatible string to each DTS that defines a compatible I2C
-> EEPROM device node.
->
-> Patches can be applied independently since the DTS changes without driver
-> changes are no-op and the OF table won't be used without the DTS changes.
->
-> [0]: https://lkml.org/lkml/2017/3/14/589
-> [1]: https://lkml.org/lkml/2017/3/15/99
->
 
-Are you planning to pick this series? It has been in the list for
-months and were resent many times...
+On 7/10/2017 2:05 PM, Michael Ellerman wrote:
+> Hi Jin Yao,
+>
+> Sorry I haven't commented until now, but it got lost in the flood of
+> patches.
 
-Best regards,
-Javier
+Never mind, it's no problem. :)
+
+> Just a few nit-picks below ...
+> Jin Yao <yao.jin@linux.intel.com> writes:
+>
+>> It is often useful to know the branch types while analyzing branch
+>> data. For example, a call is very different from a conditional branch.
+>>
+>> Currently we have to look it up in binary while the binary may later
+>> not be available and even the binary is available but user has to take
+>> some time. It is very useful for user to check it directly in perf
+>> report.
+>>
+>> Perf already has support for disassembling the branch instruction
+>> to get the x86 branch type.
+>>
+>> To keep consistent on kernel and userspace and make the classification
+>> more common, the patch adds the common branch type classification
+>> in perf_event.h.
+> Most of the code and doc uses "branch" but then a few these are called
+> "jump". Can we just stick with "branch"?
+>
+>> PERF_BR_NONE      : unknown
+>> PERF_BR_JCC       : conditional jump
+>> PERF_BR_JMP       : jump
+>> PERF_BR_IND_JMP   : indirect jump
+> eg:
+>
+> PERF_BR_COND    : conditional branch
+> PERF_BR_UNCOND  : unconditional branch
+> PERF_BR_IND     : indirect branch
+
+Call and jump are all branches. If we want to figure out which one is 
+jump and which one is call, we need the detail branch type definitions.
+
+For example,  if we only say "PERF_BR_IND", we could not know if it's an 
+indirect jump or indirect call.
+>> PERF_BR_CALL      : call
+>> PERF_BR_IND_CALL  : indirect call
+>> PERF_BR_RET       : return
+>> PERF_BR_SYSCALL   : syscall
+>> PERF_BR_SYSRET    : syscall return
+>> PERF_BR_IRQ       : hw interrupt/trap/fault
+>> PERF_BR_INT       : sw interrupt
+> I'm not sure what that means, I'm guessing on x86 it means someone
+> executed "int" ?
+
+PERF_BR_IRQ is for hw interrupt and PERF_BR_INT is for sw interrupt.
+
+PERF_BR_CALL/PERF_BR_IND_CALL and PERF_BR_RET are for function call 
+(direct call and indirect call) and return.
+
+PERF_BR_SYSCALL/PERF_BR_SYSRET are for syscall and syscall return.
+
+> Is that sufficiently useful to use up a bit? I think we only have 3
+> free?
+
+Do you means 3 bits? Each bit stands for one branch type? I guess what 
+you mean is:
+
+PERF_BR_COND    : conditional branch
+PERF_BR_UNCOND  : unconditional branch
+PERF_BR_IND     : indirect branch
+
+But 3 branch types are not enough for us.
+
+>> PERF_BR_IRET      : return from interrupt
+>> PERF_BR_FAR_BRANCH: not generic far branch type
+> What is a "not generic far branch" ?
+>
+> I don't know what that would mean on powerpc for example.
+
+It's reserved for future using I think.
+
+>
+> I think the only thing we have on powerpc that's commonly used and that
+> isn't covered above is branches that decrement a loop counter and then
+> branch based on the result.
+>
+> It might be nice if we could separate those out from other conditional
+> branches. Whether it's worth using a bit for I'm not sure. Do other
+> arches have something similar?
+>
+> Those branches do tend to be "backward conditional", so that may be
+> sufficient. But backward conditional also includes if bodies that have
+> been moved out of line and then branch back to the main body of the
+> function.
+>
+> cheers
+
+Sorry, I'm not familiar with powerpc arch. Or could you add the branch 
+type which powerpc needs?
+
+For backward conditional and forward conditional, we compute them in 
+userspace according to the from/to addresses.
+
+Thanks
+Jin Yao
