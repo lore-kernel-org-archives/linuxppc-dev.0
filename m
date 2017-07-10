@@ -1,24 +1,24 @@
-Return-Path: <garsilva@embeddedor.com>
-Received: from gateway31.websitewelcome.com (gateway31.websitewelcome.com
- [192.185.143.46])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nicholas.piggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5Wp82nPXzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 14:05:20 +1000 (AEST)
-Received: from cm14.websitewelcome.com (cm14.websitewelcome.com [100.42.49.7])
- by gateway31.websitewelcome.com (Postfix) with ESMTP id 7F62914537
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Jul 2017 22:15:48 -0500 (CDT)
-Date: Sun, 9 Jul 2017 22:15:39 -0500
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-To: Li Yang <leoyang.li@nxp.com>, Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Subject: [PATCH] usb: gadget: fsl_udc_core: compress return logic into one line
-Message-ID: <20170710031539.GA18282@embeddedgus>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5XHL6DjWzDq6W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 14:27:10 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id d193so11193583pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jul 2017 21:27:10 -0700 (PDT)
+Date: Mon, 10 Jul 2017 14:26:53 +1000
+From: Nicholas Piggin <nicholas.piggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling
+ <michael.neuling@au1.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/mm/radix: Properly clear process table entry
+Message-ID: <20170710142653.366c66e1@roar.ozlabs.ibm.com>
+In-Reply-To: <1499517932.3397.22.camel@kernel.crashing.org>
+References: <1499517932.3397.22.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simplify return logic to avoid unnecessary variable assignment.
+On Sat, 08 Jul 2017 07:45:32 -0500
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-This issue was detected using Coccinelle and the following
-semantic patch:
+> On radix, the process table entry we want to clear when
+> destroying a context is entry 0, not entry 1
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-@@
-local idexpression ret;
-expression e;
-@@
-
--ret =
-+return
-     e;
--return ret;
-
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
----
- drivers/usb/gadget/udc/fsl_udc_core.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
-index 6f2f71c..bf8ff5e 100644
---- a/drivers/usb/gadget/udc/fsl_udc_core.c
-+++ b/drivers/usb/gadget/udc/fsl_udc_core.c
-@@ -1642,8 +1642,7 @@ static int process_ep_req(struct fsl_udc *udc, int pipe,
- 		} else if (hc32_to_cpu(curr_td->size_ioc_sts)
- 				& DTD_STATUS_ACTIVE) {
- 			VDBG("Request not complete");
--			status = REQ_UNCOMPLETE;
--			return status;
-+			return REQ_UNCOMPLETE;
- 		} else if (remaining_length) {
- 			if (direction) {
- 				VDBG("Transmit dTD remaining length not zero");
--- 
-2.5.0
+This looks obviously correct to me.
