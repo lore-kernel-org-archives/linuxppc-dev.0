@@ -1,41 +1,20 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x5SQC0g2qzDr59
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:32:50 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6A1SZ4R031156
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Jul 2017 21:32:48 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bjux3rnku-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Jul 2017 21:32:48 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Mon, 10 Jul 2017 11:32:45 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6A1VS0u13041672
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:31:28 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6A1VRjd030297
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 11:31:28 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
-Cc: benh@kernel.crashing.org, stewart@linux.vnet.ibm.com, dwmw2@infradead.org,
- rlippert@google.com, alistair@popple.id.au
-Subject: [PATCH v2 02/10] mtd: powernv_flash: Lock around concurrent access to
- OPAL
-Date: Mon, 10 Jul 2017 11:30:58 +1000
-In-Reply-To: <20170710013106.27276-1-cyrilbur@gmail.com>
-References: <20170710013106.27276-1-cyrilbur@gmail.com>
-Message-Id: <20170710013106.27276-3-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x5TM40XP0zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 12:15:12 +1000 (AEST)
+Date: Mon, 10 Jul 2017 12:15:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, David Howells
+ <dhowells@redhat.com>, Jeremy Kerr <jk@ozlabs.org>, Linux PPC Development
+ List <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the vfs tree
+Message-ID: <20170710121511.1995914e@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,86 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OPAL can only manage one flash access at a time and will return an
-OPAL_BUSY error for each concurrent access to the flash. The simplest
-way to prevent this from happening is with a mutex.
+Hi Al,
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+After merging the vfs tree, today's linux-next build (powerpc
+ppc64_defconfig) failed like this:
+
+arch/powerpc/platforms/cell/spufs/inode.c: In function 'spufs_show_options':
+arch/powerpc/platforms/cell/spufs/inode.c:612:18: error: 'struct dentry' has no member named 'i_uid'
+  if (!uid_eq(root->i_uid, GLOBAL_ROOT_UID))
+                  ^
+arch/powerpc/platforms/cell/spufs/inode.c:614:43: error: 'struct dentry' has no member named 'i_uid'
+       from_kuid_munged(&init_user_ns, root->i_uid));
+                                           ^
+arch/powerpc/platforms/cell/spufs/inode.c:615:18: error: 'struct dentry' has no member named 'i_gid'
+  if (!gid_eq(root->i_gid, GLOBAL_ROOT_GID))
+                  ^
+arch/powerpc/platforms/cell/spufs/inode.c:617:43: error: 'struct dentry' has no member named 'i_gid'
+       from_kgid_munged(&init_user_ns, root->i_gid));
+                                           ^
+arch/powerpc/platforms/cell/spufs/inode.c:618:10: error: 'struct dentry' has no member named 'i_mode'
+  if (root->i_mode & S_IALLUGO != 0775)
+          ^
+arch/powerpc/platforms/cell/spufs/inode.c:619:33: error: 'struct dentry' has no member named 'i_mode'
+   seq_printf(m, ",mode=%o", root->i_mode);
+                                 ^
+
+Caused by commit
+
+  4f9365d9e2e7 ("spufs: Implement show_options")
+
+A bit hard to revert this, so I added the below patch for now ... please
+fix it up.
+
+Also, isn't this a bit late for this merge window?
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 10 Jul 2017 11:05:31 +1000
+Subject: [PATCH] disable the spufs show options for now
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/mtd/devices/powernv_flash.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/cell/spufs/inode.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-index a9a20c00687c..7b41af06f4fe 100644
---- a/drivers/mtd/devices/powernv_flash.c
-+++ b/drivers/mtd/devices/powernv_flash.c
-@@ -38,6 +38,7 @@
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 27a51a60bc33..fafbf88326d8 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -609,6 +609,7 @@ static int spufs_show_options(struct seq_file *m, struct dentry *root)
+ {
+ 	struct spufs_sb_info *sbi = spufs_get_sb_info(root->d_sb);
  
- struct powernv_flash {
- 	struct mtd_info	mtd;
-+	struct mutex lock;
- 	u32 id;
- };
- 
-@@ -59,12 +60,15 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 	dev_dbg(dev, "%s(op=%d, offset=0x%llx, len=%zu)\n",
- 			__func__, op, offset, len);
- 
-+	mutex_lock(&info->lock);
-+
- 	token = opal_async_get_token_interruptible();
- 	if (token < 0) {
- 		if (token != -ERESTARTSYS)
- 			dev_err(dev, "Failed to get an async token\n");
- 
--		return token;
-+		rc = token;
-+		goto out;
- 	}
- 
- 	switch (op) {
-@@ -79,18 +83,21 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 		break;
- 	default:
- 		WARN_ON_ONCE(1);
--		return -EIO;
-+		rc = -EIO;
-+		goto out;
- 	}
- 
- 	if (rc != OPAL_ASYNC_COMPLETION) {
- 		dev_err(dev, "opal_flash_async_op(op=%d) failed (rc %d)\n",
- 				op, rc);
- 		opal_async_release_token(token);
--		return -EIO;
-+		rc = -EIO;
-+		goto out;
- 	}
- 
- 	rc = opal_async_wait_response(token, &msg);
- 	opal_async_release_token(token);
-+	mutex_unlock(&info->lock);
- 	if (rc) {
- 		dev_err(dev, "opal async wait failed (rc %d)\n", rc);
- 		return -EIO;
-@@ -106,6 +113,9 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 	}
- 
- 	return rc;
-+out:
-+	mutex_unlock(&info->lock);
-+	return rc;
- }
- 
- /**
-@@ -237,6 +247,8 @@ static int powernv_flash_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto out;
- 
-+	mutex_init(&data->lock);
-+
- 	dev_set_drvdata(dev, data);
- 
- 	/*
++#if 0
+ 	if (!uid_eq(root->i_uid, GLOBAL_ROOT_UID))
+ 		seq_printf(m, ",uid=%u",
+ 			   from_kuid_munged(&init_user_ns, root->i_uid));
+@@ -617,6 +618,7 @@ static int spufs_show_options(struct seq_file *m, struct dentry *root)
+ 			   from_kgid_munged(&init_user_ns, root->i_gid));
+ 	if (root->i_mode & S_IALLUGO != 0775)
+ 		seq_printf(m, ",mode=%o", root->i_mode);
++#endif
+ 	if (sbi->debug)
+ 		seq_puts(m, ",debug");
+ 	return 0;
 -- 
 2.13.2
+
+-- 
+Cheers,
+Stephen Rothwell
