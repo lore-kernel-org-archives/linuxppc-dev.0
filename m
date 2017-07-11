@@ -1,30 +1,33 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6BJG05LNzDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 16:00:13 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id c24so17472846pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 23:00:13 -0700 (PDT)
-Date: Tue, 11 Jul 2017 15:59:59 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
-Subject: Re: [RFC v5 02/38] powerpc: Free up four 64K PTE bits in 64K backed
- HPTE pages
-Message-ID: <20170711155959.79e2d4de@firefly.ozlabs.ibm.com>
-In-Reply-To: <1499289735-14220-3-git-send-email-linuxram@us.ibm.com>
-References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <1499289735-14220-3-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6DJB3JKYzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 17:30:18 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id f134so14644706oig.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 00:30:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20170711001207.GA11642@glebfm.cloud.tilaa.com>
+References: <20170711001207.GA11642@glebfm.cloud.tilaa.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 11 Jul 2017 09:30:14 +0200
+Message-ID: <CAK8P3a1uJc0dNoELw1KWKnc9Lme3HDxR2Coj0-snuCmO4n-81A@mail.gmail.com>
+Subject: Re: [PATCH] tty: Fix TIOCGPTPEER ioctl definition
+To: Gleb Fotengauer-Malinovskiy <glebfm@altlinux.org>
+Cc: Aleksa Sarai <asarai@suse.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, Christian Brauner <christian.brauner@ubuntu.com>,
+ Valentin Rothberg <vrothberg@suse.com>, "Dmitry V. Levin" <ldv@altlinux.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-alpha@vger.kernel.org,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-sh@vger.kernel.org,
+ sparclinux <sparclinux@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
+ linux-arch <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +37,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  5 Jul 2017 14:21:39 -0700
-Ram Pai <linuxram@us.ibm.com> wrote:
-
-> Rearrange 64K PTE bits to  free  up  bits 3, 4, 5  and  6
-> in the 64K backed HPTE pages. This along with the earlier
-> patch will  entirely free  up the four bits from 64K PTE.
-> The bit numbers are  big-endian as defined in the  ISA3.0
-> 
-> This patch  does  the  following change to 64K PTE backed
-> by 64K HPTE.
-> 
-> H_PAGE_F_SECOND (S) which  occupied  bit  4  moves to the
-> 	second part of the pte to bit 60.
-> H_PAGE_F_GIX (G,I,X) which  occupied  bit 5, 6 and 7 also
-> 	moves  to  the   second part of the pte to bit 61,
->        	62, 63, 64 respectively
-> 
-> since bit 7 is now freed up, we move H_PAGE_BUSY (B) from
-> bit  9  to  bit  7.
-> 
-> The second part of the PTE will hold
-> (H_PAGE_F_SECOND|H_PAGE_F_GIX) at bit 60,61,62,63.
-> 
-> Before the patch, the 64K HPTE backed 64k PTE format was
-> as follows
-> 
->  0 1 2 3 4  5  6  7  8 9 10...........................63
->  : : : : :  :  :  :  : : :                            :
->  v v v v v  v  v  v  v v v                            v
-> 
-> ,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
-> |x|x|x| |S |G |I |X |x|B|x|x|x|................|.|.|.|.| <- primary pte
-> '_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
-> | | | | |  |  |  |  | | | | |..................| | | | | <- secondary pte
-> '_'_'_'_'__'__'__'__'_'_'_'_'__________________'_'_'_'_'
+On Tue, Jul 11, 2017 at 2:12 AM, Gleb Fotengauer-Malinovskiy
+<glebfm@altlinux.org> wrote:
+> This ioctl does nothing to justify an _IOC_READ or _IOC_WRITE flag
+> because it doesn't copy anything from/to userspace to access the
+> argument.
 >
+> Fixes: 54ebbfb1 ("tty: add TIOCGPTPEER ioctl")
+> Signed-off-by: Gleb Fotengauer-Malinovskiy <glebfm@altlinux.org>
 
-It's not entirely clear what the secondary pte contains
-today and how many of the bits are free today?
-
-Balbir Singh. 
+Acked-by: Arnd Bergmann <arnd@arndb.de>
