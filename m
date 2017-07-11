@@ -1,32 +1,32 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-yw0-x232.google.com (mail-yw0-x232.google.com
+ [IPv6:2607:f8b0:4002:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6PTB1MJfzDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 00:23:41 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Gleb Fotengauer-Malinovskiy' <glebfm@altlinux.org>, Aleksa Sarai
- <asarai@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-CC: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, Valentin Rothberg
- <vrothberg@suse.com>, "linux-parisc@vger.kernel.org"
- <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Dmitry V.
- Levin" <ldv@altlinux.org>, Jiri Slaby <jslaby@suse.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, Christian Brauner
- <christian.brauner@ubuntu.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] tty: Fix TIOCGPTPEER ioctl definition
-Date: Tue, 11 Jul 2017 14:23:29 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD003758C@AcuExch.aculab.com>
-References: <20170711001207.GA11642@glebfm.cloud.tilaa.com>
-In-Reply-To: <20170711001207.GA11642@glebfm.cloud.tilaa.com>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6Pvp3pG9zDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 00:43:18 +1000 (AEST)
+Received: by mail-yw0-x232.google.com with SMTP id a12so1444571ywh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 07:43:18 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <20170630115331.73869-2-ivan@de.ibm.com>
+References: <20170630115331.73869-2-ivan@de.ibm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 11 Jul 2017 16:43:14 +0200
+Message-ID: <CAPDyKFop7DyEgDBisBOE0a3Z1PJtHFdQ_Vh8SY9onjLAEDwSTQ@mail.gmail.com>
+Subject: Re: [PATCH v1 1/2] mmc/host: add FSP2(ppc476fpe) into depends for
+ sdhci-st
+To: Ivan Mikhaylov <ivan@de.ibm.com>
+Cc: Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Adrian Hunter <adrian.hunter@intel.com>,
+ Patrice Chotard <patrice.chotard@st.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joel Stanley <joel@jms.id.au>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, kernel@stlinux.com
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,17 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Linuxppc-dev  Gleb Fotengauer-Malinovskiy
-> Sent: 11 July 2017 01:12
-> This ioctl does nothing to justify an _IOC_READ or _IOC_WRITE flag
-> because it doesn't copy anything from/to userspace to access the
-> argument.
->=20
-> Fixes: 54ebbfb1 ("tty: add TIOCGPTPEER ioctl")
-...
-> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
-> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+On 30 June 2017 at 13:53, Ivan Mikhaylov <ivan@de.ibm.com> wrote:
+> shdci-st driver can be used for ppc476 fsp2 soc.
+>
+> Signed-off-by: Ivan Mikhaylov <ivan@de.ibm.com>
 
-This is a user API change. When was the ioctl added?
+Thanks, applied for next!
 
-	David
+Kind regards
+Uffe
+
+> ---
+>  drivers/mmc/host/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+> index 2eb9701..edf5787 100644
+> --- a/drivers/mmc/host/Kconfig
+> +++ b/drivers/mmc/host/Kconfig
+> @@ -354,7 +354,7 @@ config MMC_MOXART
+>
+>  config MMC_SDHCI_ST
+>         tristate "SDHCI support on STMicroelectronics SoC"
+> -       depends on ARCH_STI
+> +       depends on ARCH_STI || FSP2
+>         depends on MMC_SDHCI_PLTFM
+>         select MMC_SDHCI_IO_ACCESSORS
+>         help
+> --
+> 1.7.1
+>
