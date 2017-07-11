@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6LX33Rg3zDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 22:10:59 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org
-Subject: [PATCH] powerpc/64: Fix atomic64_inc_not_zero() to return an int
-Date: Tue, 11 Jul 2017 22:10:54 +1000
-Message-Id: <1499775054-631-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6MMF13cZzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 22:48:25 +1000 (AEST)
+In-Reply-To: <20170629115726.11060-1-bsingharora@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [v2] powerpc/kexec: Fix radix to hash kexec
+Message-Id: <3x6MMF0J7cz9s8J@ozlabs.org>
+Date: Tue, 11 Jul 2017 22:48:24 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,56 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Although it's not documented anywhere, there is an expectation that
-atomic64_inc_not_zero() returns a result which fits in an int. This is
-the behaviour implemented on all arches except powerpc.
+On Thu, 2017-06-29 at 11:57:26 UTC, Balbir Singh wrote:
+> This patch fixes a crash seen while doing a kexec from
+> radix mode to hash mode. Key 0 is special in hash and
+> used in the RPN by default, we set the key values to 0
+> today. In radix mode key 0 is used to control
+> supervisor<->user access. In hash key 0 is used by default,
+> so the first instruction after the switch causes a crash on
+> kexec.
+> 
+> This patch fixes
+> (3b10d00 powerpc/mm/radix: Prevent kernel execution of user space)
+> The commit above introduced setting of IAMR and AMOR values to
+> prevent execution of user mode instructions from supervisor mode.
+> We need to clean up these SPR's on kexec.
+> 
+> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
-This has caused at least one bug in practice, in the percpu-refcount
-code, where the long result from our atomic64_inc_not_zero() was
-truncated to an int leading to lost references and stuck systems. That
-was worked around in that code in commit 966d2b04e070 ("percpu-refcount:
-fix reference leak during percpu-atomic transition").
+Applied to powerpc fixes, thanks.
 
-To the best of my grepping abilities there are no other callers
-in-tree which truncate the value, but we should fix it anyway. Because
-the breakage is subtle and potentially very harmful I'm also tagging
-it for stable.
+https://git.kernel.org/powerpc/c/1e2a516e89fc412a754327522ab271
 
-Code generation is largely unaffected because in most cases the
-callers are just using the result for a test anyway. In particular the
-case of fget() that was mentioned in commit a6cf7ed5119f
-("powerpc/atomic: Implement atomic*_inc_not_zero") generates exactly
-the same code.
-
-Fixes: a6cf7ed5119f ("powerpc/atomic: Implement atomic*_inc_not_zero")
-Cc: stable@vger.kernel.org # v3.4
-Noticed-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/atomic.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index 2b90335194a7..a2cc8010cd72 100644
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -560,7 +560,7 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
-  * Atomically increments @v by 1, so long as @v is non-zero.
-  * Returns non-zero if @v was non-zero, and zero otherwise.
-  */
--static __inline__ long atomic64_inc_not_zero(atomic64_t *v)
-+static __inline__ int atomic64_inc_not_zero(atomic64_t *v)
- {
- 	long t1, t2;
- 
-@@ -579,7 +579,7 @@ static __inline__ long atomic64_inc_not_zero(atomic64_t *v)
- 	: "r" (&v->counter)
- 	: "cc", "xer", "memory");
- 
--	return t1;
-+	return t1 != 0;
- }
- 
- #endif /* __powerpc64__ */
--- 
-2.7.4
+cheers
