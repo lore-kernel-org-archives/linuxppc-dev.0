@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6MMG04j7zDqb4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6MMG5bjBzDqb4
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 22:48:26 +1000 (AEST)
-In-Reply-To: <20170630223732.32044-1-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20170706084643.22425-1-oohall@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- Breno Leitao <brenohl@br.ibm.com>
-Subject: Re: [v2] powerpc/powernv: Tell OPAL about our MMU mode on POWER9
-Message-Id: <3x6MMF6KvBz9sNc@ozlabs.org>
-Date: Tue, 11 Jul 2017 22:48:25 +1000 (AEST)
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: powerpc/asm: Mark cr0 as clobbered in mftb()
+Message-Id: <3x6MMG547Qz9sR8@ozlabs.org>
+Date: Tue, 11 Jul 2017 22:48:26 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-06-30 at 22:37:32 UTC, Michael Neuling wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Thu, 2017-07-06 at 08:46:43 UTC, Oliver O'Halloran wrote:
+> The workaround for the CELL timebase bug does not correctly mark cr0 as
+> being clobbered. This can result in GCC making some poor^W completely
+> broken optimisations.
 > 
-> That will allow OPAL to configure the CPU in an optimal way.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/1c0eaf0f56d6128af7f0f252855173
+https://git.kernel.org/powerpc/c/2400fd822f467cb4c886c879d8ad99
 
 cheers
