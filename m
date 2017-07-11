@@ -1,20 +1,30 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x69zX3Cf8zDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 15:45:44 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id z6so17443723pfk.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 22:45:44 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
- Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH] powerpc: configs: Add Skiroot defconfig
-Date: Tue, 11 Jul 2017 15:15:31 +0930
-Message-Id: <20170711054531.18673-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6BJG05LNzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 16:00:13 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id c24so17472846pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 23:00:13 -0700 (PDT)
+Date: Tue, 11 Jul 2017 15:59:59 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+Subject: Re: [RFC v5 02/38] powerpc: Free up four 64K PTE bits in 64K backed
+ HPTE pages
+Message-ID: <20170711155959.79e2d4de@firefly.ozlabs.ibm.com>
+In-Reply-To: <1499289735-14220-3-git-send-email-linuxram@us.ibm.com>
+References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
+ <1499289735-14220-3-git-send-email-linuxram@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,248 +34,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This configuration is used by the OpenPower firmware for it's
-Linux-as-bootloader implementation. Also known as the Petitboot kernel,
-this configuration broke in 4.12 (CPU_HOTPLUG=n), so add it to the
-upstream tree in order to get better coverage.
+On Wed,  5 Jul 2017 14:21:39 -0700
+Ram Pai <linuxram@us.ibm.com> wrote:
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/powerpc/configs/skiroot_defconfig | 226 +++++++++++++++++++++++++++++++++
- 1 file changed, 226 insertions(+)
- create mode 100644 arch/powerpc/configs/skiroot_defconfig
+> Rearrange 64K PTE bits to  free  up  bits 3, 4, 5  and  6
+> in the 64K backed HPTE pages. This along with the earlier
+> patch will  entirely free  up the four bits from 64K PTE.
+> The bit numbers are  big-endian as defined in the  ISA3.0
+> 
+> This patch  does  the  following change to 64K PTE backed
+> by 64K HPTE.
+> 
+> H_PAGE_F_SECOND (S) which  occupied  bit  4  moves to the
+> 	second part of the pte to bit 60.
+> H_PAGE_F_GIX (G,I,X) which  occupied  bit 5, 6 and 7 also
+> 	moves  to  the   second part of the pte to bit 61,
+>        	62, 63, 64 respectively
+> 
+> since bit 7 is now freed up, we move H_PAGE_BUSY (B) from
+> bit  9  to  bit  7.
+> 
+> The second part of the PTE will hold
+> (H_PAGE_F_SECOND|H_PAGE_F_GIX) at bit 60,61,62,63.
+> 
+> Before the patch, the 64K HPTE backed 64k PTE format was
+> as follows
+> 
+>  0 1 2 3 4  5  6  7  8 9 10...........................63
+>  : : : : :  :  :  :  : : :                            :
+>  v v v v v  v  v  v  v v v                            v
+> 
+> ,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
+> |x|x|x| |S |G |I |X |x|B|x|x|x|................|.|.|.|.| <- primary pte
+> '_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
+> | | | | |  |  |  |  | | | | |..................| | | | | <- secondary pte
+> '_'_'_'_'__'__'__'__'_'_'_'_'__________________'_'_'_'_'
+>
 
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-new file mode 100644
-index 000000000000..24a3ea65d9e2
---- /dev/null
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -0,0 +1,226 @@
-+CONFIG_PPC64=y
-+CONFIG_ALTIVEC=y
-+CONFIG_VSX=y
-+CONFIG_NR_CPUS=2048
-+CONFIG_CPU_LITTLE_ENDIAN=y
-+# CONFIG_SWAP is not set
-+CONFIG_SYSVIPC=y
-+CONFIG_POSIX_MQUEUE=y
-+# CONFIG_CROSS_MEMORY_ATTACH is not set
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_TASKSTATS=y
-+CONFIG_TASK_DELAY_ACCT=y
-+CONFIG_TASK_XACCT=y
-+CONFIG_TASK_IO_ACCOUNTING=y
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=20
-+CONFIG_RELAY=y
-+CONFIG_BLK_DEV_INITRD=y
-+# CONFIG_RD_GZIP is not set
-+# CONFIG_RD_BZIP2 is not set
-+# CONFIG_RD_LZMA is not set
-+# CONFIG_RD_LZO is not set
-+# CONFIG_RD_LZ4 is not set
-+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-+CONFIG_PERF_EVENTS=y
-+# CONFIG_COMPAT_BRK is not set
-+CONFIG_JUMP_LABEL=y
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODULE_SIG=y
-+CONFIG_MODULE_SIG_FORCE=y
-+CONFIG_MODULE_SIG_SHA512=y
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_IOSCHED_DEADLINE is not set
-+# CONFIG_PPC_PSERIES is not set
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-+CONFIG_CPU_IDLE=y
-+CONFIG_HZ_100=y
-+CONFIG_KEXEC=y
-+CONFIG_IRQ_ALL_CPUS=y
-+CONFIG_NUMA=y
-+# CONFIG_COMPACTION is not set
-+# CONFIG_MIGRATION is not set
-+# CONFIG_BOUNCE is not set
-+CONFIG_PPC_64K_PAGES=y
-+CONFIG_SCHED_SMT=y
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE="console=tty0 console=hvc0 powersave=off"
-+# CONFIG_SECCOMP is not set
-+CONFIG_NET=y
-+CONFIG_PACKET=y
-+CONFIG_UNIX=y
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+CONFIG_NET_IPIP=y
-+CONFIG_SYN_COOKIES=y
-+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
-+# CONFIG_IPV6 is not set
-+CONFIG_DNS_RESOLVER=y
-+# CONFIG_WIRELESS is not set
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_DEVTMPFS=y
-+CONFIG_DEVTMPFS_MOUNT=y
-+CONFIG_MTD=m
-+CONFIG_MTD_POWERNV_FLASH=m
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_SIZE=65536
-+CONFIG_VIRTIO_BLK=m
-+CONFIG_BLK_DEV_NVME=m
-+CONFIG_EEPROM_AT24=y
-+# CONFIG_CXL is not set
-+CONFIG_BLK_DEV_SD=m
-+CONFIG_BLK_DEV_SR=m
-+CONFIG_BLK_DEV_SR_VENDOR=y
-+CONFIG_CHR_DEV_SG=m
-+CONFIG_SCSI_CONSTANTS=y
-+CONFIG_SCSI_SCAN_ASYNC=y
-+CONFIG_SCSI_FC_ATTRS=y
-+CONFIG_SCSI_CXGB3_ISCSI=m
-+CONFIG_SCSI_CXGB4_ISCSI=m
-+CONFIG_SCSI_BNX2_ISCSI=m
-+CONFIG_BE2ISCSI=m
-+CONFIG_SCSI_AACRAID=m
-+CONFIG_MEGARAID_NEWGEN=y
-+CONFIG_MEGARAID_MM=m
-+CONFIG_MEGARAID_MAILBOX=m
-+CONFIG_MEGARAID_SAS=m
-+CONFIG_SCSI_MPT2SAS=m
-+CONFIG_SCSI_IPR=m
-+# CONFIG_SCSI_IPR_TRACE is not set
-+# CONFIG_SCSI_IPR_DUMP is not set
-+CONFIG_SCSI_QLA_FC=m
-+CONFIG_SCSI_QLA_ISCSI=m
-+CONFIG_SCSI_LPFC=m
-+CONFIG_SCSI_VIRTIO=m
-+CONFIG_SCSI_DH=y
-+CONFIG_SCSI_DH_ALUA=m
-+CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
-+# CONFIG_ATA_SFF is not set
-+CONFIG_MD=y
-+CONFIG_BLK_DEV_MD=m
-+CONFIG_MD_LINEAR=m
-+CONFIG_MD_RAID0=m
-+CONFIG_MD_RAID1=m
-+CONFIG_MD_RAID10=m
-+CONFIG_MD_RAID456=m
-+CONFIG_MD_MULTIPATH=m
-+CONFIG_MD_FAULTY=m
-+CONFIG_BLK_DEV_DM=m
-+CONFIG_DM_CRYPT=m
-+CONFIG_DM_SNAPSHOT=m
-+CONFIG_DM_MIRROR=m
-+CONFIG_DM_ZERO=m
-+CONFIG_DM_MULTIPATH=m
-+CONFIG_ACENIC=m
-+CONFIG_ACENIC_OMIT_TIGON_I=y
-+CONFIG_TIGON3=y
-+CONFIG_BNX2X=m
-+CONFIG_CHELSIO_T1=y
-+CONFIG_BE2NET=m
-+CONFIG_S2IO=m
-+CONFIG_E100=m
-+CONFIG_E1000=m
-+CONFIG_E1000E=m
-+CONFIG_IXGB=m
-+CONFIG_IXGBE=m
-+CONFIG_MLX4_EN=m
-+CONFIG_MLX5_CORE=m
-+CONFIG_MLX5_CORE_EN=y
-+CONFIG_MYRI10GE=m
-+CONFIG_QLGE=m
-+CONFIG_NETXEN_NIC=m
-+CONFIG_SFC=m
-+# CONFIG_USB_NET_DRIVERS is not set
-+# CONFIG_WLAN is not set
-+CONFIG_INPUT_EVDEV=y
-+CONFIG_INPUT_MISC=y
-+# CONFIG_SERIO_SERPORT is not set
-+# CONFIG_DEVMEM is not set
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_IPMI_HANDLER=y
-+CONFIG_IPMI_DEVICE_INTERFACE=y
-+CONFIG_IPMI_POWERNV=y
-+CONFIG_HW_RANDOM=y
-+CONFIG_RAW_DRIVER=y
-+CONFIG_MAX_RAW_DEVS=1024
-+CONFIG_TCG_TIS_I2C_NUVOTON=y
-+# CONFIG_I2C_COMPAT is not set
-+CONFIG_I2C_CHARDEV=y
-+# CONFIG_I2C_HELPER_AUTO is not set
-+CONFIG_DRM=y
-+CONFIG_DRM_RADEON=y
-+CONFIG_DRM_AST=m
-+CONFIG_FIRMWARE_EDID=y
-+CONFIG_FB_MODE_HELPERS=y
-+CONFIG_FB_OF=y
-+CONFIG_FB_MATROX=y
-+CONFIG_FB_MATROX_MILLENIUM=y
-+CONFIG_FB_MATROX_MYSTIQUE=y
-+CONFIG_FB_MATROX_G=y
-+# CONFIG_LCD_CLASS_DEVICE is not set
-+# CONFIG_BACKLIGHT_GENERIC is not set
-+# CONFIG_VGA_CONSOLE is not set
-+CONFIG_LOGO=y
-+CONFIG_USB_HIDDEV=y
-+CONFIG_USB=y
-+CONFIG_USB_MON=y
-+CONFIG_USB_XHCI_HCD=y
-+CONFIG_USB_EHCI_HCD=y
-+# CONFIG_USB_EHCI_HCD_PPC_OF is not set
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_STORAGE=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_GENERIC=m
-+CONFIG_VIRT_DRIVERS=y
-+CONFIG_VIRTIO_PCI=y
-+# CONFIG_IOMMU_SUPPORT is not set
-+CONFIG_EXT4_FS=m
-+CONFIG_EXT4_FS_POSIX_ACL=y
-+CONFIG_EXT4_FS_SECURITY=y
-+CONFIG_XFS_FS=m
-+CONFIG_XFS_POSIX_ACL=y
-+CONFIG_BTRFS_FS=m
-+CONFIG_BTRFS_FS_POSIX_ACL=y
-+CONFIG_ISO9660_FS=m
-+CONFIG_UDF_FS=m
-+CONFIG_MSDOS_FS=m
-+CONFIG_VFAT_FS=m
-+CONFIG_PROC_KCORE=y
-+CONFIG_TMPFS=y
-+CONFIG_TMPFS_POSIX_ACL=y
-+# CONFIG_MISC_FILESYSTEMS is not set
-+# CONFIG_NETWORK_FILESYSTEMS is not set
-+CONFIG_NLS_DEFAULT="utf8"
-+CONFIG_NLS_CODEPAGE_437=y
-+CONFIG_NLS_ASCII=y
-+CONFIG_NLS_ISO8859_1=y
-+CONFIG_NLS_UTF8=y
-+CONFIG_CRC16=y
-+CONFIG_CRC_ITU_T=y
-+CONFIG_LIBCRC32C=y
-+CONFIG_PRINTK_TIME=y
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_DEBUG_KERNEL=y
-+CONFIG_DEBUG_STACKOVERFLOW=y
-+CONFIG_SCHEDSTATS=y
-+# CONFIG_FTRACE is not set
-+CONFIG_XMON=y
-+CONFIG_XMON_DEFAULT=y
-+CONFIG_SECURITY=y
-+CONFIG_IMA=y
-+CONFIG_EVM=y
-+# CONFIG_CRYPTO_ECHAINIV is not set
-+CONFIG_CRYPTO_ECB=y
-+CONFIG_CRYPTO_CMAC=y
-+CONFIG_CRYPTO_MD4=y
-+CONFIG_CRYPTO_ARC4=y
-+CONFIG_CRYPTO_DES=y
-+# CONFIG_CRYPTO_HW is not set
--- 
-2.13.2
+It's not entirely clear what the secondary pte contains
+today and how many of the bits are free today?
+
+Balbir Singh. 
