@@ -1,19 +1,20 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-yb0-x22a.google.com (mail-yb0-x22a.google.com
- [IPv6:2607:f8b0:4002:c09::22a])
+Received: from mail-yw0-x22c.google.com (mail-yw0-x22c.google.com
+ [IPv6:2607:f8b0:4002:c05::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x629F55jKzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 09:53:36 +1000 (AEST)
-Received: by mail-yb0-x22a.google.com with SMTP id p207so33054613yba.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 16:53:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x62K366dXzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 10:00:23 +1000 (AEST)
+Received: by mail-yw0-x22c.google.com with SMTP id a12so42434471ywh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 17:00:23 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170627102851.15484-1-oohall@gmail.com>
+In-Reply-To: <20170627102851.15484-3-oohall@gmail.com>
 References: <20170627102851.15484-1-oohall@gmail.com>
+ <20170627102851.15484-3-oohall@gmail.com>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Mon, 10 Jul 2017 16:53:33 -0700
-Message-ID: <CAPcyv4g-vgaAZu9DWXfOcwH5p_ZJBwiMJFZ43rKWuJB2L-W7VQ@mail.gmail.com>
-Subject: Re: [RFC 1/4] libnvdimm: add to_{nvdimm,nd_region}_dev()
+Date: Mon, 10 Jul 2017 17:00:20 -0700
+Message-ID: <CAPcyv4j_gJy5xVwF3fAYeKTUQwSVGRu_6um5xvjbVs7nEp1J2w@mail.gmail.com>
+Subject: Re: [RFC 3/4] powerpc: Add pmem API support
 To: "Oliver O'Halloran" <oohall@gmail.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>
@@ -28,14 +29,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, Jun 27, 2017 at 3:28 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
-> struct device contains the ->of_node pointer so that devices can be
-> assoicated with the device-tree node that created them on DT platforms.
-> libnvdimm hides the struct device for regions and nvdimm devices inside
-> of an opaque structure so this patch adds accessors for each to allow
-> the of_nvdimm driver to set the of_node pointer.
+> Adds powerpc64 implementations of:
+>
+>         memcpy_flushcache()
+>         arch_wb_cache_pmem()
+>         arch_invalidate_pmem()
+>
+> Which form the architecture-specific portition of the persistent memory
+> API. These functions provide cache-management primitives for the DAX
+> drivers and libNVDIMM.
+>
 
-I'd rather go the other way and pass in the of_node to the bus and
-dimm registration routines. It's a generic property of the device so
-we should handle it like other generic device properties that get set
-at initialization time like 'attr_groups' in nvdimm_bus_descriptor, or
-a new parameter to nvdimm_create().
+Ok, now that we have commit 0aed55af8834 "x86, uaccess: introduce
+copy_from_iter_flushcache for pmem / cache-bypass operations" upstream
+that changes the model for how an architecture advertises
+pmem-specific cache management routines. CONFIG_ARCH_HAS_PMEM_API
+causes the pmem driver to try to link to these helpers rather than
+dummy fallbacks:
+
+    arch_wb_cache_pmem
+    arch_invalidate_pmem
+
+....and CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE indicates that the arch has
+all the needed "flushcache" apis:
+
+    __copy_from_user_flushcache
+    memcpy_page_flushcache
+    memcpy_flushcache
