@@ -1,46 +1,20 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x693x0cj1zDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 15:04:28 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6B53hwa084804
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 01:04:26 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bma0p5gcc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 01:04:25 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 10 Jul 2017 23:04:25 -0600
-Date: Tue, 11 Jul 2017 10:34:20 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: Re: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when
- stop-api fails.
-Reply-To: ego@linux.vnet.ibm.com
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
- <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
- <20170707012916.215ed32a@roar.ozlabs.ibm.com>
- <20170707173710.GE8913@in.ibm.com>
- <20170708190526.44ea9ab9@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170708190526.44ea9ab9@roar.ozlabs.ibm.com>
-Message-Id: <20170711050420.GA11116@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x69zX3Cf8zDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 15:45:44 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id z6so17443723pfk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jul 2017 22:45:44 -0700 (PDT)
+Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Jeremy Kerr <jk@ozlabs.org>
+Subject: [PATCH] powerpc: configs: Add Skiroot defconfig
+Date: Tue, 11 Jul 2017 15:15:31 +0930
+Message-Id: <20170711054531.18673-1-joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,78 +24,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 08, 2017 at 07:05:26PM +1000, Nicholas Piggin wrote:
-> On Fri, 7 Jul 2017 23:07:10 +0530
-> Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> 
-> > On Fri, Jul 07, 2017 at 01:29:16AM +1000, Nicholas Piggin wrote:
-> > > On Wed,  5 Jul 2017 22:08:16 +0530
-> > > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-> > >   
-> > > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > > > 
-> > > > Currently, we use the opal call opal_slw_set_reg() to inform the that
-> > > > the Sleep-Winkle Engine (SLW) to restore the contents of some of the
-> > > > Hypervisor state on wakeup from deep idle states that lose full
-> > > > hypervisor context (characterized by the flag
-> > > > OPAL_PM_LOSE_FULL_CONTEXT).
-> > > > 
-> > > > However, the current code has a bug in that if opal_slw_set_reg()
-> > > > fails, we don't disable the use of these deep states (winkle on
-> > > > POWER8, stop4 onwards on POWER9).
-> > > > 
-> > > > This patch fixes this bug by ensuring that if the the sleep winkle
-> > > > engine is unable to restore the hypervisor states in
-> > > > pnv_save_sprs_for_deep_states(), then we mark as invalid the states
-> > > > which lose full context.
-> > > > 
-> > > > As a side-effect, since supported_cpuidle_states in
-> > > > pnv_probe_idle_states() consists of flags of only the valid states,
-> > > > this patch will ensure that no other subsystem in the kernel can use
-> > > > the states which lose full context on stop-api failures.  
-> > > 
-> > > Looks good. Is there something minimal we can do for stable here?
-> > > 
-> > > Aside question, do we need to restore LPCR at all with the SLW engine?
-> > > It gets set up again when by the idle wakeup code.  
-> > 
-> > 
-> > > 
-> > > And does POWER9 really need MSR and PSSCR restored by SLW? (going a bit
-> > > off topic here, I'm just curious)  
-> > 
-> > MSR is needed to be restored so that we wakeup with the right
-> > endianness and with the IR,DR disabled.
-> 
-> And POWER8 does not require this?
-> 
-> > PSSCR is set to a value so that in case of a special wakeup for a
-> > deep-stop, the SLW can program the core to go back to the stop level
-> > provided by the PSSCR value via the stop-api.
-> 
-> It always restores to deepest stop? Is there any way to restore to the
-> achieved stop level? Maybe there is no usefulness for that.
+This configuration is used by the OpenPower firmware for it's
+Linux-as-bootloader implementation. Also known as the Petitboot kernel,
+this configuration broke in 4.12 (CPU_HOTPLUG=n), so add it to the
+upstream tree in order to get better coverage.
 
-That would have been ideal. But there's no way to achieve that at the
-moment. The alternative is to have call the stop-api with psscr set to
-the desired stop level before every stop entry. This is will consume
-additional cycles which is what we are trying to avoid.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/configs/skiroot_defconfig | 226 +++++++++++++++++++++++++++++++++
+ 1 file changed, 226 insertions(+)
+ create mode 100644 arch/powerpc/configs/skiroot_defconfig
 
-So we are currently setting the psscr value to deepest stop via stop
-api as a compromise, because then on wakeup, we end up restoring more
-than what would typically be required, but that's still ok since we
-would be erring on the side of caution.
-
-Programming the PSSCR to any other value might have safety
-concerns. Eg: Suppose a core which was in stop11 got woken up by a
-special wakeup and if the psscr programmed via stop API was stop4 then
-the firmware will put the core in stop4. Now, since stop4 doesn't lose
-timebase and stop11 does, in the aforementioned case TB would have
-gone out of sync in the duration that the core was in stop11. Thus,
-when the core wakes up in the kernel in stop4, the kernel won't resync
-the TB which is a problematic.
-
-> 
-> Thanks,
-> Nick
-> 
+diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+new file mode 100644
+index 000000000000..24a3ea65d9e2
+--- /dev/null
++++ b/arch/powerpc/configs/skiroot_defconfig
+@@ -0,0 +1,226 @@
++CONFIG_PPC64=y
++CONFIG_ALTIVEC=y
++CONFIG_VSX=y
++CONFIG_NR_CPUS=2048
++CONFIG_CPU_LITTLE_ENDIAN=y
++# CONFIG_SWAP is not set
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++# CONFIG_CROSS_MEMORY_ATTACH is not set
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_TASKSTATS=y
++CONFIG_TASK_DELAY_ACCT=y
++CONFIG_TASK_XACCT=y
++CONFIG_TASK_IO_ACCOUNTING=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=20
++CONFIG_RELAY=y
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_RD_GZIP is not set
++# CONFIG_RD_BZIP2 is not set
++# CONFIG_RD_LZMA is not set
++# CONFIG_RD_LZO is not set
++# CONFIG_RD_LZ4 is not set
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++CONFIG_PERF_EVENTS=y
++# CONFIG_COMPAT_BRK is not set
++CONFIG_JUMP_LABEL=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_SIG=y
++CONFIG_MODULE_SIG_FORCE=y
++CONFIG_MODULE_SIG_SHA512=y
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_IOSCHED_DEADLINE is not set
++# CONFIG_PPC_PSERIES is not set
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_CPU_IDLE=y
++CONFIG_HZ_100=y
++CONFIG_KEXEC=y
++CONFIG_IRQ_ALL_CPUS=y
++CONFIG_NUMA=y
++# CONFIG_COMPACTION is not set
++# CONFIG_MIGRATION is not set
++# CONFIG_BOUNCE is not set
++CONFIG_PPC_64K_PAGES=y
++CONFIG_SCHED_SMT=y
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=tty0 console=hvc0 powersave=off"
++# CONFIG_SECCOMP is not set
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_NET_IPIP=y
++CONFIG_SYN_COOKIES=y
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_BEET is not set
++# CONFIG_IPV6 is not set
++CONFIG_DNS_RESOLVER=y
++# CONFIG_WIRELESS is not set
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
++CONFIG_DEVTMPFS_MOUNT=y
++CONFIG_MTD=m
++CONFIG_MTD_POWERNV_FLASH=m
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZE=65536
++CONFIG_VIRTIO_BLK=m
++CONFIG_BLK_DEV_NVME=m
++CONFIG_EEPROM_AT24=y
++# CONFIG_CXL is not set
++CONFIG_BLK_DEV_SD=m
++CONFIG_BLK_DEV_SR=m
++CONFIG_BLK_DEV_SR_VENDOR=y
++CONFIG_CHR_DEV_SG=m
++CONFIG_SCSI_CONSTANTS=y
++CONFIG_SCSI_SCAN_ASYNC=y
++CONFIG_SCSI_FC_ATTRS=y
++CONFIG_SCSI_CXGB3_ISCSI=m
++CONFIG_SCSI_CXGB4_ISCSI=m
++CONFIG_SCSI_BNX2_ISCSI=m
++CONFIG_BE2ISCSI=m
++CONFIG_SCSI_AACRAID=m
++CONFIG_MEGARAID_NEWGEN=y
++CONFIG_MEGARAID_MM=m
++CONFIG_MEGARAID_MAILBOX=m
++CONFIG_MEGARAID_SAS=m
++CONFIG_SCSI_MPT2SAS=m
++CONFIG_SCSI_IPR=m
++# CONFIG_SCSI_IPR_TRACE is not set
++# CONFIG_SCSI_IPR_DUMP is not set
++CONFIG_SCSI_QLA_FC=m
++CONFIG_SCSI_QLA_ISCSI=m
++CONFIG_SCSI_LPFC=m
++CONFIG_SCSI_VIRTIO=m
++CONFIG_SCSI_DH=y
++CONFIG_SCSI_DH_ALUA=m
++CONFIG_ATA=y
++CONFIG_SATA_AHCI=y
++# CONFIG_ATA_SFF is not set
++CONFIG_MD=y
++CONFIG_BLK_DEV_MD=m
++CONFIG_MD_LINEAR=m
++CONFIG_MD_RAID0=m
++CONFIG_MD_RAID1=m
++CONFIG_MD_RAID10=m
++CONFIG_MD_RAID456=m
++CONFIG_MD_MULTIPATH=m
++CONFIG_MD_FAULTY=m
++CONFIG_BLK_DEV_DM=m
++CONFIG_DM_CRYPT=m
++CONFIG_DM_SNAPSHOT=m
++CONFIG_DM_MIRROR=m
++CONFIG_DM_ZERO=m
++CONFIG_DM_MULTIPATH=m
++CONFIG_ACENIC=m
++CONFIG_ACENIC_OMIT_TIGON_I=y
++CONFIG_TIGON3=y
++CONFIG_BNX2X=m
++CONFIG_CHELSIO_T1=y
++CONFIG_BE2NET=m
++CONFIG_S2IO=m
++CONFIG_E100=m
++CONFIG_E1000=m
++CONFIG_E1000E=m
++CONFIG_IXGB=m
++CONFIG_IXGBE=m
++CONFIG_MLX4_EN=m
++CONFIG_MLX5_CORE=m
++CONFIG_MLX5_CORE_EN=y
++CONFIG_MYRI10GE=m
++CONFIG_QLGE=m
++CONFIG_NETXEN_NIC=m
++CONFIG_SFC=m
++# CONFIG_USB_NET_DRIVERS is not set
++# CONFIG_WLAN is not set
++CONFIG_INPUT_EVDEV=y
++CONFIG_INPUT_MISC=y
++# CONFIG_SERIO_SERPORT is not set
++# CONFIG_DEVMEM is not set
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_IPMI_HANDLER=y
++CONFIG_IPMI_DEVICE_INTERFACE=y
++CONFIG_IPMI_POWERNV=y
++CONFIG_HW_RANDOM=y
++CONFIG_RAW_DRIVER=y
++CONFIG_MAX_RAW_DEVS=1024
++CONFIG_TCG_TIS_I2C_NUVOTON=y
++# CONFIG_I2C_COMPAT is not set
++CONFIG_I2C_CHARDEV=y
++# CONFIG_I2C_HELPER_AUTO is not set
++CONFIG_DRM=y
++CONFIG_DRM_RADEON=y
++CONFIG_DRM_AST=m
++CONFIG_FIRMWARE_EDID=y
++CONFIG_FB_MODE_HELPERS=y
++CONFIG_FB_OF=y
++CONFIG_FB_MATROX=y
++CONFIG_FB_MATROX_MILLENIUM=y
++CONFIG_FB_MATROX_MYSTIQUE=y
++CONFIG_FB_MATROX_G=y
++# CONFIG_LCD_CLASS_DEVICE is not set
++# CONFIG_BACKLIGHT_GENERIC is not set
++# CONFIG_VGA_CONSOLE is not set
++CONFIG_LOGO=y
++CONFIG_USB_HIDDEV=y
++CONFIG_USB=y
++CONFIG_USB_MON=y
++CONFIG_USB_XHCI_HCD=y
++CONFIG_USB_EHCI_HCD=y
++# CONFIG_USB_EHCI_HCD_PPC_OF is not set
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_STORAGE=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_GENERIC=m
++CONFIG_VIRT_DRIVERS=y
++CONFIG_VIRTIO_PCI=y
++# CONFIG_IOMMU_SUPPORT is not set
++CONFIG_EXT4_FS=m
++CONFIG_EXT4_FS_POSIX_ACL=y
++CONFIG_EXT4_FS_SECURITY=y
++CONFIG_XFS_FS=m
++CONFIG_XFS_POSIX_ACL=y
++CONFIG_BTRFS_FS=m
++CONFIG_BTRFS_FS_POSIX_ACL=y
++CONFIG_ISO9660_FS=m
++CONFIG_UDF_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=m
++CONFIG_PROC_KCORE=y
++CONFIG_TMPFS=y
++CONFIG_TMPFS_POSIX_ACL=y
++# CONFIG_MISC_FILESYSTEMS is not set
++# CONFIG_NETWORK_FILESYSTEMS is not set
++CONFIG_NLS_DEFAULT="utf8"
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_ASCII=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS_UTF8=y
++CONFIG_CRC16=y
++CONFIG_CRC_ITU_T=y
++CONFIG_LIBCRC32C=y
++CONFIG_PRINTK_TIME=y
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DEBUG_STACKOVERFLOW=y
++CONFIG_SCHEDSTATS=y
++# CONFIG_FTRACE is not set
++CONFIG_XMON=y
++CONFIG_XMON_DEFAULT=y
++CONFIG_SECURITY=y
++CONFIG_IMA=y
++CONFIG_EVM=y
++# CONFIG_CRYPTO_ECHAINIV is not set
++CONFIG_CRYPTO_ECB=y
++CONFIG_CRYPTO_CMAC=y
++CONFIG_CRYPTO_MD4=y
++CONFIG_CRYPTO_ARC4=y
++CONFIG_CRYPTO_DES=y
++# CONFIG_CRYPTO_HW is not set
+-- 
+2.13.2
