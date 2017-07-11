@@ -1,18 +1,27 @@
-Return-Path: <npiggin@gmail.com>
-Date: Wed, 12 Jul 2017 03:09:52 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
-Subject: Re: [PATCH 1/4] powerpc/powernv: handle the platform error reboot
- in ppc_md.restart
-Message-ID: <20170712030952.213e9ad1@roar.ozlabs.ibm.com>
-In-Reply-To: <6e0ddb0b-a877-1840-5f7d-e8b06faee6a7@linux.vnet.ibm.com>
-References: <20170705040422.20933-1-npiggin@gmail.com>
- <20170705040422.20933-2-npiggin@gmail.com>
- <20170707035611.6a9e60b6@roar.ozlabs.ibm.com>
- <6e0ddb0b-a877-1840-5f7d-e8b06faee6a7@linux.vnet.ibm.com>
+Return-Path: <dave.hansen@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6Th02TkXzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 03:33:19 +1000 (AEST)
+Subject: Re: [RFC v5 36/38] selftest: PowerPC specific test updates to memory
+ protection keys
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org
+References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
+ <1499289735-14220-37-git-send-email-linuxram@us.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <c0e2eab4-a724-5155-4ae9-03b37e4b9f54@intel.com>
+Date: Tue, 11 Jul 2017 10:33:09 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1499289735-14220-37-git-send-email-linuxram@us.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,43 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 10 Jul 2017 11:18:35 +0530
-Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-
-> On 07/06/2017 11:26 PM, Nicholas Piggin wrote:
-> > On Wed,  5 Jul 2017 14:04:19 +1000
-> > Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> > +	/*
-> > +	 * We reached here. There can be three possibilities:
-> > +	 * 1. We are running on a firmware level that do not support
-> > +	 *    opal_cec_reboot2()
-> > +	 * 2. We are running on a firmware level that do not support
-> > +	 *    OPAL_REBOOT_PLATFORM_ERROR reboot type.
-> > +	 * 3. We are running on FSP based system that does not need
-> > +	 *    opal to trigger checkstop explicitly for error analysis.
-> > +	 *    The FSP PRD component would have already got notified
-> > +	 *    about this error through other channels.
-> > +	 */
-> > +  
+On 07/05/2017 02:22 PM, Ram Pai wrote:
+> Abstracted out the arch specific code into the header file, and
+> added powerpc specific changes.
 > 
-> Not sure if looping forever unconditionally here is better idea. How
-> about we check panic_timeout and decide whether to reboot or fall
-> through for loop ?
-> 
-> 	if (panic_timeout != 0)
-> 		emergency_restart();
-> 
-> > +	for (;;)
-> > +		;> +}  
+> a) added 4k-backed hpte, memory allocator, powerpc specific.
+> b) added three test case where the key is associated after the page is
+> 	accessed/allocated/mapped.
+> c) cleaned up the code to make checkpatch.pl happy
 
-Yes that's a good point. What I've done is just to call ppc_md.restart().
-To match BMC behaviour, particularly for point #3, I think we expect a
-restart here. MCE is not quite the same thing as panic, so I think that's
-okay to ignore the panic timeout.
-
-The important thing is the MCE messages will have been sent to Linux
-console.
-
-Thanks,
-Nick
+There's a *lot* of churn here.  If it breaks, I'm going to have a heck
+of a time figuring out which hunk broke.  Is there any way to break this
+up into a series of things that we have a chance at bisecting?
