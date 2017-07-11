@@ -1,20 +1,15 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6KXz5XfTzDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 21:26:43 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/mm/hash: Remove stale comment.
-Date: Tue, 11 Jul 2017 13:26:26 +0200
-Message-Id: <20170711112626.17094-1-msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6LX33Rg3zDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 22:10:59 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: anton@samba.org
+Subject: [PATCH] powerpc/64: Fix atomic64_inc_not_zero() to return an int
+Date: Tue, 11 Jul 2017 22:10:54 +1000
+Message-Id: <1499775054-631-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +19,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit e6f81a92015b ("powerpc/mm/hash: Support 68 bit VA") the
-masking is folded into ASM_VSID_SCRAMBLE but the comment about masking
-is removed only from the firt use of ASM_VSID_SCRAMBLE.
+Although it's not documented anywhere, there is an expectation that
+atomic64_inc_not_zero() returns a result which fits in an int. This is
+the behaviour implemented on all arches except powerpc.
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+This has caused at least one bug in practice, in the percpu-refcount
+code, where the long result from our atomic64_inc_not_zero() was
+truncated to an int leading to lost references and stuck systems. That
+was worked around in that code in commit 966d2b04e070 ("percpu-refcount:
+fix reference leak during percpu-atomic transition").
+
+To the best of my grepping abilities there are no other callers
+in-tree which truncate the value, but we should fix it anyway. Because
+the breakage is subtle and potentially very harmful I'm also tagging
+it for stable.
+
+Code generation is largely unaffected because in most cases the
+callers are just using the result for a test anyway. In particular the
+case of fget() that was mentioned in commit a6cf7ed5119f
+("powerpc/atomic: Implement atomic*_inc_not_zero") generates exactly
+the same code.
+
+Fixes: a6cf7ed5119f ("powerpc/atomic: Implement atomic*_inc_not_zero")
+Cc: stable@vger.kernel.org # v3.4
+Noticed-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/slb_low.S | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/powerpc/include/asm/atomic.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index bde378559d01..8e95e01b9e8e 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -296,10 +296,6 @@ slb_compare_rr_to_size:
- 	srdi	r10,r10,(SID_SHIFT_1T - SID_SHIFT)	/* get 1T ESID */
- 	rldimi  r10,r9,ESID_BITS_1T,0
- 	ASM_VSID_SCRAMBLE(r10,r9,r11,1T)
--	/*
--	 * bits above VSID_BITS_1T need to be ignored from r10
--	 * also combine VSID and flags
--	 */
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index 2b90335194a7..a2cc8010cd72 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -560,7 +560,7 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+  * Atomically increments @v by 1, so long as @v is non-zero.
+  * Returns non-zero if @v was non-zero, and zero otherwise.
+  */
+-static __inline__ long atomic64_inc_not_zero(atomic64_t *v)
++static __inline__ int atomic64_inc_not_zero(atomic64_t *v)
+ {
+ 	long t1, t2;
  
- 	li	r10,MMU_SEGSIZE_1T
- 	rldimi	r11,r10,SLB_VSID_SSIZE_SHIFT,0	/* insert segment size */
+@@ -579,7 +579,7 @@ static __inline__ long atomic64_inc_not_zero(atomic64_t *v)
+ 	: "r" (&v->counter)
+ 	: "cc", "xer", "memory");
+ 
+-	return t1;
++	return t1 != 0;
+ }
+ 
+ #endif /* __powerpc64__ */
 -- 
-2.10.2
+2.7.4
