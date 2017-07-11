@@ -1,22 +1,28 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <James.Hogan@imgtec.com>
+Received: from imgpgp01.kl.imgtec.org (mailapp01.imgtec.com [195.59.15.196])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6H3J1f84zDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 19:34:19 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id u62so16138865pgb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 02:34:19 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Subject: Re: [PATCH v2] powerpc/powernv: Use darn instr for random_seed on p9
-In-Reply-To: <20170707070249.15773-1-matthew.brown.dev@gmail.com>
-References: <20170707070249.15773-1-matthew.brown.dev@gmail.com>
-Date: Tue, 11 Jul 2017 19:34:14 +1000
-Message-ID: <8737a3mi5l.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6J9Q4pdyzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 20:24:42 +1000 (AEST)
+Date: Tue, 11 Jul 2017 11:03:43 +0100
+From: James Hogan <james.hogan@imgtec.com>
+To: Gleb Fotengauer-Malinovskiy <glebfm@altlinux.org>
+CC: Aleksa Sarai <asarai@suse.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Arnd Bergmann
+ <arnd@arndb.de>, Christian Brauner <christian.brauner@ubuntu.com>, Valentin
+ Rothberg <vrothberg@suse.com>, "Dmitry V. Levin" <ldv@altlinux.org>,
+ <linux-kernel@vger.kernel.org>, <linux-alpha@vger.kernel.org>,
+ <linux-mips@linux-mips.org>, <linux-parisc@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-sh@vger.kernel.org>,
+ <sparclinux@vger.kernel.org>, <linux-xtensa@linux-xtensa.org>,
+ <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH] tty: Fix TIOCGPTPEER ioctl definition
+Message-ID: <20170711100343.GP31455@jhogan-linux.le.imgtec.org>
+References: <20170711001207.GA11642@glebfm.cloud.tilaa.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Zfao1/4IORAeFOVj"
+In-Reply-To: <20170711001207.GA11642@glebfm.cloud.tilaa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,94 +32,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Matt,
+--Zfao1/4IORAeFOVj
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Currently ppc_md.get_random_seed uses the powernv_get_random_long function.
-> A guest calling this function would have to go through the hypervisor. The
-> 'darn' instruction, introduced in POWER9, allows us to bypass this by
-> directly obtaining a value from the mmio region.
->
-> This patch adds a function for ppc_md.get_random_seed on p9,
-> utilising the darn instruction.
+On Tue, Jul 11, 2017 at 03:12:17AM +0300, Gleb Fotengauer-Malinovskiy wrote:
+> This ioctl does nothing to justify an _IOC_READ or _IOC_WRITE flag
+> because it doesn't copy anything from/to userspace to access the
+> argument.
+>=20
+> Fixes: 54ebbfb1 ("tty: add TIOCGPTPEER ioctl")
 
-This patch looks pretty good - I'm not set up to test it but I have one
-code-style nit:
+I think its recommended these days to include at least 12 nibbles of
+commit hash, i.e.
 
-> diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
-> index 5dcbdea..ab6f411 100644
-> --- a/arch/powerpc/platforms/powernv/rng.c
-> +++ b/arch/powerpc/platforms/powernv/rng.c
-> @@ -8,6 +8,7 @@
->   */
->  
->  #define pr_fmt(fmt)	"powernv-rng: " fmt
-> +#define DARN_ERR 0xFFFFFFFFFFFFFFFFul
->  
->  #include <linux/kernel.h>
->  #include <linux/of.h>
-> @@ -16,6 +17,7 @@
->  #include <linux/slab.h>
->  #include <linux/smp.h>
->  #include <asm/archrandom.h>
-> +#include <asm/cputable.h>
->  #include <asm/io.h>
->  #include <asm/prom.h>
->  #include <asm/machdep.h>
-> @@ -67,6 +69,21 @@ int powernv_get_random_real_mode(unsigned long *v)
->  	return 1;
->  }
->  
-> +int powernv_get_random_darn(unsigned long *v)
+Fixes: 54ebbfb16034 ("tty: add TIOCGPTPEER ioctl")
 
-This is only referenced in this file so it should probably be labelled
-as 'static'.
+(consider setting your git default to 12 with this):
+git config core.abbrev 12
 
-> +{
-> +	unsigned long val;
-> +
-> +	/* Using DARN with L=1 - conditioned random number */
-> +	asm (PPC_DARN(%0, 1)"\n" : "=r"(val) :);
-> +
-> +	if (val == DARN_ERR)
-> +		return 0;
-> +
-> +	*v = val;
-> +
-> +	return 1;
+Cheers
+James
 
-I was a bit confused to see 1 representing success - I think I have been
-in userspace too long. But I checked against pseries_get_random_long and
-it is in fact correct, so good for you!
+> Signed-off-by: Gleb Fotengauer-Malinovskiy <glebfm@altlinux.org>
+> ---
+>  arch/alpha/include/uapi/asm/ioctls.h   | 2 +-
+>  arch/mips/include/uapi/asm/ioctls.h    | 2 +-
+>  arch/parisc/include/uapi/asm/ioctls.h  | 2 +-
+>  arch/powerpc/include/uapi/asm/ioctls.h | 2 +-
+>  arch/sh/include/uapi/asm/ioctls.h      | 2 +-
+>  arch/sparc/include/uapi/asm/ioctls.h   | 2 +-
+>  arch/xtensa/include/uapi/asm/ioctls.h  | 2 +-
+>  include/uapi/asm-generic/ioctls.h      | 2 +-
+>  8 files changed, 8 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/arch/alpha/include/uapi/asm/ioctls.h b/arch/alpha/include/ua=
+pi/asm/ioctls.h
+> index ff67b837..1cd7dc7 100644
+> --- a/arch/alpha/include/uapi/asm/ioctls.h
+> +++ b/arch/alpha/include/uapi/asm/ioctls.h
+> @@ -100,7 +100,7 @@
+>  #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
+>  #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
+>  #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+> =20
+>  #define TIOCSERCONFIG	0x5453
+>  #define TIOCSERGWILD	0x5454
+> diff --git a/arch/mips/include/uapi/asm/ioctls.h b/arch/mips/include/uapi=
+/asm/ioctls.h
+> index 68e19b6..1609cb0 100644
+> --- a/arch/mips/include/uapi/asm/ioctls.h
+> +++ b/arch/mips/include/uapi/asm/ioctls.h
+> @@ -91,7 +91,7 @@
+>  #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
+>  #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
+>  #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+> =20
+>  /* I hope the range from 0x5480 on is free ... */
+>  #define TIOCSCTTY	0x5480		/* become controlling tty */
+> diff --git a/arch/parisc/include/uapi/asm/ioctls.h b/arch/parisc/include/=
+uapi/asm/ioctls.h
+> index 674c68a..d0e3321 100644
+> --- a/arch/parisc/include/uapi/asm/ioctls.h
+> +++ b/arch/parisc/include/uapi/asm/ioctls.h
+> @@ -60,7 +60,7 @@
+>  #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
+>  #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
+>  #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+> =20
+>  #define FIONCLEX	0x5450  /* these numbers need to be adjusted. */
+>  #define FIOCLEX		0x5451
+> diff --git a/arch/powerpc/include/uapi/asm/ioctls.h b/arch/powerpc/includ=
+e/uapi/asm/ioctls.h
+> index bfd609a..e3b1046 100644
+> --- a/arch/powerpc/include/uapi/asm/ioctls.h
+> +++ b/arch/powerpc/include/uapi/asm/ioctls.h
+> @@ -100,7 +100,7 @@
+>  #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
+>  #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
+>  #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+> =20
+>  #define TIOCSERCONFIG	0x5453
+>  #define TIOCSERGWILD	0x5454
+> diff --git a/arch/sh/include/uapi/asm/ioctls.h b/arch/sh/include/uapi/asm=
+/ioctls.h
+> index eec7901..787bac9 100644
+> --- a/arch/sh/include/uapi/asm/ioctls.h
+> +++ b/arch/sh/include/uapi/asm/ioctls.h
+> @@ -93,7 +93,7 @@
+>  #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
+>  #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
+>  #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+> =20
+>  #define TIOCSERCONFIG	_IO('T', 83) /* 0x5453 */
+>  #define TIOCSERGWILD	_IOR('T', 84,  int) /* 0x5454 */
+> diff --git a/arch/sparc/include/uapi/asm/ioctls.h b/arch/sparc/include/ua=
+pi/asm/ioctls.h
+> index 6d27398..f5df72b 100644
+> --- a/arch/sparc/include/uapi/asm/ioctls.h
+> +++ b/arch/sparc/include/uapi/asm/ioctls.h
+> @@ -88,7 +88,7 @@
+>  #define TIOCGPTN	_IOR('t', 134, unsigned int) /* Get Pty Number */
+>  #define TIOCSPTLCK	_IOW('t', 135, int) /* Lock/unlock PTY */
+>  #define TIOCSIG		_IOW('t', 136, int) /* Generate signal on Pty slave */
+> -#define TIOCGPTPEER	_IOR('t', 137, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('t', 137) /* Safely open the slave */
+> =20
+>  /* Little f */
+>  #define FIOCLEX		_IO('f', 1)
+> diff --git a/arch/xtensa/include/uapi/asm/ioctls.h b/arch/xtensa/include/=
+uapi/asm/ioctls.h
+> index 98b004e..47d82c0 100644
+> --- a/arch/xtensa/include/uapi/asm/ioctls.h
+> +++ b/arch/xtensa/include/uapi/asm/ioctls.h
+> @@ -105,7 +105,7 @@
+>  #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
+>  #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
+>  #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+> =20
+>  #define TIOCSERCONFIG	_IO('T', 83)
+>  #define TIOCSERGWILD	_IOR('T', 84,  int)
+> diff --git a/include/uapi/asm-generic/ioctls.h b/include/uapi/asm-generic=
+/ioctls.h
+> index 06d5f7d..14baf9f2 100644
+> --- a/include/uapi/asm-generic/ioctls.h
+> +++ b/include/uapi/asm-generic/ioctls.h
+> @@ -77,7 +77,7 @@
+>  #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
+>  #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
+>  #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
+> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+> =20
+>  #define FIONCLEX	0x5450
+>  #define FIOCLEX		0x5451
+>=20
+> --=20
+> glebfm
+>=20
 
-An excellent followup patch would be changing the type of this function
-to be bool rather than int, but no pressure :)
+--Zfao1/4IORAeFOVj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Regards,
-Daniel
+-----BEGIN PGP SIGNATURE-----
 
-> +}
-> +
->  int powernv_get_random_long(unsigned long *v)
->  {
->  	struct powernv_rng *rng;
-> @@ -136,6 +153,7 @@ static __init int rng_create(struct device_node *dn)
->  static __init int rng_init(void)
->  {
->  	struct device_node *dn;
-> +	unsigned long drn_test;
->  	int rc;
->  
->  	for_each_compatible_node(dn, NULL, "ibm,power-rng") {
-> @@ -150,6 +168,10 @@ static __init int rng_init(void)
->  		of_platform_device_create(dn, NULL, NULL);
->  	}
->  
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-> +	    powernv_get_random_darn(&drn_test))
-> +		ppc_md.get_random_seed = powernv_get_random_darn;
-> +
->  	return 0;
->  }
->  machine_subsys_initcall(powernv, rng_init);
-> -- 
-> 2.9.3
+iQIzBAEBCAAdFiEEd80NauSabkiESfLYbAtpk944dnoFAllkonYACgkQbAtpk944
+dnr0zA/9HKpKqlgodicAvtqRseBGnkcEEKwmoKGq0rDDYUaoa7kW+9uKE8p2TJE6
+jygBer5aCyRXY9z6+l6DYGaY2YxFWoe0mp7gdD49/4Cde+zGH4DX7ePZPnAG+uit
+fweeIo9oG2f8Q4hnv6cD9Pi1svYugfZIPz5WuuI7LixlW87RbZONgpJqzgjiuRqv
+n+/8HOqMIecu8UzQ940XaRA2YfoEJ4aqTVQXXbcSpcov/C/Jk0gUbch8HSSnuG4Z
+UP1my0m61lKjmuIJhRK2lGcCprZfIuZyJmuTZySJjnEwCYChxkUkW1jmHUnoGREI
+Go74baDV4H8e2AOmMzSn5wmRoU+evbgmyrSLT+qvvWfUxGYL3cKUg8SzRZLW3yvE
+H7+q0gzMuYlAUeyQWxsyfuX28AqyHLgBxkvegO9AgET2QLgmv5S9uRGaGCXP8ct9
+002gG6oqkHqB+FS0WI41R7svCx+QgYyxBNxkZPNA5/1VNbJGfMpr16BvOR9ARQO6
+GcGnfsB61DcZrJLOHrYIyC5jPbpYyd3f60AU2cencEqiiO0IRmjFNB0Dspmf8CC9
+BX5FJGlGgYVSODi8RAbWLWYdmXAKrt6+V0aBGqHOuNclC7TAC4dB02BYynTBRs0/
+IFFylTMJwEm41p6tkrTnyG8SgAEK7ZU0SoZjJSpk+hENBUvRKqI=
+=qoHc
+-----END PGP SIGNATURE-----
+
+--Zfao1/4IORAeFOVj--
