@@ -1,34 +1,25 @@
-Return-Path: <asarai@suse.de>
+Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6Pyk5Bq6zDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 00:45:50 +1000 (AEST)
-Subject: Re: [PATCH] tty: Fix TIOCGPTPEER ioctl definition
-To: David Laight <David.Laight@ACULAB.COM>,
- 'Gleb Fotengauer-Malinovskiy' <glebfm@altlinux.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- Valentin Rothberg <vrothberg@suse.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Dmitry V. Levin" <ldv@altlinux.org>, Jiri Slaby <jslaby@suse.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Christian Brauner <christian.brauner@ubuntu.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <20170711001207.GA11642@glebfm.cloud.tilaa.com>
- <063D6719AE5E284EB5DD2968C1650D6DD003758C@AcuExch.aculab.com>
-From: Aleksa Sarai <asarai@suse.de>
-Message-ID: <a99e301b-05d1-d262-aca2-60e3f3400bc5@suse.de>
-Date: Wed, 12 Jul 2017 00:45:36 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6Q6r1gtQzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 00:52:52 +1000 (AEST)
+Date: Tue, 11 Jul 2017 16:52:46 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
+ arnd@arndb.de, akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+Subject: Re: [RFC v5 00/38] powerpc: Memory Protection Keys
+Message-ID: <20170711145246.GA11917@dhcp22.suse.cz>
+References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD003758C@AcuExch.aculab.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,25 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Sent: 11 July 2017 01:12
->> This ioctl does nothing to justify an _IOC_READ or _IOC_WRITE flag
->> because it doesn't copy anything from/to userspace to access the
->> argument.
->>
->> Fixes: 54ebbfb1 ("tty: add TIOCGPTPEER ioctl")
-> ...
->> -#define TIOCGPTPEER	_IOR('T', 0x41, int) /* Safely open the slave */
->> +#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
+On Wed 05-07-17 14:21:37, Ram Pai wrote:
+> Memory protection keys enable applications to protect its
+> address space from inadvertent access or corruption from
+> itself.
 > 
-> This is a user API change. When was the ioctl added?
+> The overall idea:
+> 
+>  A process allocates a   key  and associates it with
+>  an  address  range  within    its   address   space.
+>  The process  then  can  dynamically  set read/write 
+>  permissions on  the   key   without  involving  the 
+>  kernel. Any  code that  violates   the  permissions
+>  of  the address space; as defined by its associated
+>  key, will receive a segmentation fault.
+> 
+> This patch series enables the feature on PPC64 HPTE
+> platform.
+> 
+> ISA3.0 section 5.7.13 describes the detailed specifications.
 
-It was just pulled this merge window (4.13-rc1).
+Could you describe the highlevel design of this feature in the cover
+letter. I have tried to get some idea from the patchset but it was
+really far from trivial. Patches are not very well split up (many
+helpers are added without their users etc..). 
 
-  % git tag --contains 54ebbfb1603415d9953c150535850d30609ef077
-  %
+> 
+> Testing:
+> 	This patch series has passed all the protection key
+> 	tests available in  the selftests directory.
+> 	The tests are updated to work on both x86 and powerpc.
+> 
+> version v5:
+> 	(1) reverted back to the old design -- store the 
+> 	    key in the pte, instead of bypassing it.
+> 	    The v4 design slowed down the hash page path.
 
+This surprised me a lot but I couldn't find the respective code. Why do
+you need to store anything in the pte? My understanding of PKEYs is that
+the setup and teardown should be very cheap and so no page tables have
+to updated. Or do I just misunderstand what you wrote here?
 -- 
-Aleksa Sarai
-Software Engineer (Containers)
-SUSE Linux GmbH
-https://www.cyphar.com/
+Michal Hocko
+SUSE Labs
