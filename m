@@ -1,28 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7Dlx5kbpzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 08:54:21 +1000 (AEST)
-Message-ID: <1499900032.2865.46.camel@kernel.crashing.org>
-Subject: Re: [RFC v5 00/38] powerpc: Memory Protection Keys
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michal Hocko <mhocko@kernel.org>, Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- paulus@samba.org, mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
-Date: Thu, 13 Jul 2017 08:53:52 +1000
-In-Reply-To: <20170712072337.GB28912@dhcp22.suse.cz>
-References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <20170711145246.GA11917@dhcp22.suse.cz>
- <20170711193257.GB5525@ram.oc3035372033.ibm.com>
- <20170712072337.GB28912@dhcp22.suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7DwP1YKXzDqBs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 09:01:41 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6CMwdZn044044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 19:01:39 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bnt3pwtyg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 19:01:38 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Thu, 13 Jul 2017 00:01:36 +0100
+Subject: Re: [PATCH v2] powerpc/powernv: Enable PCI peer-to-peer
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, mikey@neuling.org,
+ brking@linux.vnet.ibm.com, clsoto@linux.vnet.ibm.com
+References: <20170626180855.28238-1-fbarrat@linux.vnet.ibm.com>
+ <1499899179.2865.42.camel@kernel.crashing.org>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 12 Jul 2017 18:01:31 -0500
+MIME-Version: 1.0
+In-Reply-To: <1499899179.2865.42.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <040bff3c-6afd-0e20-2d3c-d26716137eeb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,91 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-07-12 at 09:23 +0200, Michal Hocko wrote:
+
+
+Le 12/07/2017 à 17:39, Benjamin Herrenschmidt a écrit :
+> On Mon, 2017-06-26 at 20:08 +0200, Frederic Barrat wrote:
+>> +       if (desc & OPAL_PCI_P2P_ENABLE) {
+>> +               pe_init->p2p_initiator_count++;
+>> +       } else {
+>> +               if (pe_init->p2p_initiator_count > 0) {
+>> +                       pe_init->p2p_initiator_count--;
+>> +                       if (!pe_init->p2p_initiator_count)
+>> +                               pnv_pci_ioda2_set_bypass(pe_init, true);
+>> +               }
 > 
-> > 
-> > Ideally the MMU looks at the PTE for keys, in order to enforce
-> > protection. This is the case with x86 and is the case with power9 Radix
-> > page table. Hence the keys have to be programmed into the PTE.
-> 
-> But x86 doesn't update ptes for PKEYs, that would be just too expensive.
-> You could use standard mprotect to do the same...
+> So you have the initiator refcounting in Linux and the target
+> refcounting in OPAL ... any reason for that ?
 
-What do you mean ? x86 ends up in mprotect_fixup -> change_protection()
-which will update the PTEs just the same as we do.
+The initiator refcount is per PE and skiboot doesn't track PEs. Also 
+when the initiator refcount falls back to 0, we should restore the 
+default bypass setting for the TVE, and that's more easily done from 
+linux, since it knows the start and end address of the memory. So for 
+those reasons, I don't really have the choice, the initiator refcount 
+seems better suited in linux.
 
-Changing the key for a page is a form mprotect. Changing the access
-permissions for keys is different, for us it's a special register
-(AMR).
+The target refcount is per PHB and it just seemed easier to keep it in opal.
 
-I don't understand why you think we are doing any differently than x86
-here.
+Does the lack of symmetry bother you?
 
-> > However with HPT on power, these keys do not necessarily have to be
-> > programmed into the PTE. We could bypass the Linux Page Table Entry(PTE)
-> > and instead just program them into the Hash Page Table(HPTE), since
-> > the MMU does not refer the PTE but refers the HPTE. The last version
-> > of the page attempted to do that.   It worked as follows:
-> > 
-> > a) when a address range is requested to be associated with a key; by the
-> >    application through key_mprotect() system call, the kernel
-> >    stores that key in the vmas corresponding to that address
-> >    range.
-> > 
-> > b) Whenever there is a hash page fault for that address, the fault
-> >    handler reads the key from the VMA and programs the key into the
-> >    HPTE. __hash_page() is the function that does that.
-> 
-> What causes the fault here?
-
-The hardware. With the hash MMU, the HW walks a hash table which is
-effectively a large in-memory TLB extension. When a page isn't found
-there, a  "hash fault" is generated allowing Linux to populate that
-hash table with the content of the corresponding PTE. 
-
-> > c) Once the hpte is programmed, the MMU can sense key violations and
-> >    generate key-faults.
-> > 
-> > The problem is with step (b).  This step is really a very critical
-> > path which is performance sensitive. We dont want to add any delays.
-> > However if we want to access the key from the vma, we will have to
-> > hold the vma semaphore, and that is a big NO-NO. As a result, this
-> > design had to be dropped.
-> > 
-> > 
-> > 
-> > I reverted back to the old design i.e the design in v4 version. In this
-> > version we do the following:
-> > 
-> > a) when a address range is requested to be associated with a key; by the
-> >    application through key_mprotect() system call, the kernel
-> >    stores that key in the vmas corresponding to that address
-> >    range. Also the kernel programs the key into Linux PTE coresponding to all the
-> >    pages associated with the address range.
-> 
-> OK, so how is this any different from the regular mprotect then?
-
-It takes the key argument. This is nothing new. This was done for x86
-already, we are just re-using the infrastructure. Look at
-do_mprotect_pkey() in mm/mprotect.c today. It's all the same code,
-pkey_mprotect() is just mprotect with an added key argument.
-
-> > b) Whenever there is a hash page fault for that address, the fault
-> >    handler reads the key from the Linux PTE and programs the key into 
-> >    the HPTE.
-> > 
-> > c) Once the HPTE is programmed, the MMU can sense key violations and
-> >    generate key-faults.
-> > 
-> > 
-> > Since step (b) in this case has easy access to the Linux PTE, and hence
-> > to the key, it is fast to access it and program the HPTE. Thus we avoid
-> > taking any performance hit on this critical path.
-> > 
-> > Hope this explains the rationale,
-> > 
-> > 
-> > As promised here is the high level design:
-> 
-> I will read through that later
-> [...]
+   Fred
