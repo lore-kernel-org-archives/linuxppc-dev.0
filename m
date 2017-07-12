@@ -1,42 +1,23 @@
-Return-Path: <srs0=qtsl=6p=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6xtL1N0jzDqjY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 21:43:54 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3x6xtL0qZbz8sxs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 21:43:54 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3x6xtK4Ndkz9s4s
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2017 21:43:53 +1000 (AEST)
-Date: Wed, 12 Jul 2017 13:31:02 +0200
-From: msuchanek <msuchanek@suse.de>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
- 'fadump_append=' parameter
-Message-ID: <20170712133102.2145e393@naga>
-In-Reply-To: <dc6ce480-52e0-1cf9-a2ce-252fdf24f79a@linux.vnet.ibm.com>
-References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
- <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
- <20170510180132.1fa0c1ec@kitsune.suse.cz>
- <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
- <20170511151637.19d4a23f@kitsune.suse.cz>
- <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
- <20170512174209.67ccfd45@kitsune.suse.cz>
- <b6a968fe-378e-1273-a996-43c716f276bd@linux.vnet.ibm.com>
- <20170515112901.67d32e76@kitsune.suse.cz>
- <102276aa-cddb-dc60-269c-b29dedc89eab@linux.vnet.ibm.com>
- <20170609140454.2eb01371@kitsune.suse.cz>
- <a3ac4a10-3315-187b-e29a-01637ba19dff@linux.vnet.ibm.com>
- <20170626141501.6086b6ab@kitsune.suse.cz>
- <dc6ce480-52e0-1cf9-a2ce-252fdf24f79a@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6yRY6575zDqjY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 22:09:13 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Jiri Olsa <jolsa@redhat.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Andi Kleen <andi@firstfloor.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, mikey@neuling.org
+Subject: Re: [GIT PULL] Please pull JSON files for Power9 PMU events
+In-Reply-To: <20170712020827.GB31223@us.ibm.com>
+References: <20170712020827.GB31223@us.ibm.com>
+Date: Wed, 12 Jul 2017 22:09:12 +1000
+Message-ID: <87a849luvr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,49 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
 
-On Wed, 12 Jul 2017 00:00:57 +0530
-Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> Hi Arnaldo,
+>
+> Please pull the JSON files for POWER9 PMU events.
+>
+> The following changes since commit 07d306c838c5c30196619baae36107d0615e459b:
+>
+>   Merge git://www.linux-watchdog.org/linux-watchdog (2017-07-11 09:59:37 -0700)
+>
+> are available in the git repository at:
+>
+>   https://github.com/sukadev/linux/ p9-json
+>
+> for you to fetch changes up to f94a86dbb13e18bd7ad566cabe42df63d3bd1039:
+>
+>   perf vendor events: Add POWER9 PVRs to mapfile (2017-07-11 19:30:40 -0500)
+>
+> ----------------------------------------------------------------
+> Sukadev Bhattiprolu (2):
+>       perf vendor events: Add POWER9 PMU events
+>       perf vendor events: Add POWER9 PVRs to mapfile
 
-> Hi Michal,
->=20
->=20
-> Thanks for the review..
->=20
->=20
-> On Monday 26 June 2017 05:45 PM, Michal Such=C3=A1nek wrote:
-> > Hello,
-> >
-> > On Tue, 20 Jun 2017 21:14:08 +0530
-> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
-> > =20
+I think the PVRs need work.
 
-> I would prefer documenting over a complex implementation. Actually, I
-> am considering a simple approach of replacing every occurrence of
-> "fadump_extra_args=3D" with "fadump_extra_args " in fadump capture
-> kernel. The cmdline
->=20
->    "root=3D/dev/sda2 ro fadump_extra_args=3D"a b c" crashkernel=3D512M=20
-> fadump_extra_args=3Dd"
->=20
-> becomes
->=20
->    "root=3D/dev/sda2 ro fadump_extra_args "a b c" crashkernel=3D512M=20
-> fadump_extra_args d"
+You have:
 
-which is totally broken
++004e0100,1,power9.json,core
++004e0000,1,power9.json,core
 
->=20
-> in fadump capture kernel. This must take care of the pitfalls with
-> the current approach and also,
-> doesn't rely on parse_args() which was not designed for this scenario
-> to start with..?
+The first is P9 DD1, but the second doesn't exist. We have it in the
+kernel, but with a mask of 0xffff0000. From memory the perf code doesn't
+do any masking or anything fancy, it looks for an exact match.
 
-It was designed for parsing arguments. To handle replacing arguments
-you have to extend it. You need to get more information from it for
-this case.
+So for starters you should probably drop that one and add 0x004e1200 and
+0x004e0200.
 
-Best regards
-
-Michal
+cheers
