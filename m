@@ -1,38 +1,39 @@
-Return-Path: <victora@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x72YN71xRzDqgF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 01:14:32 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6CEx8EG097250
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 11:14:30 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bnn25uwn5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x77NL2JlBzDqhk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 04:52:00 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6CGclWN036133
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 12:40:15 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bncjb3rgg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 11:14:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 12:40:15 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <victora@linux.vnet.ibm.com>;
- Wed, 12 Jul 2017 09:14:29 -0600
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 12 Jul 2017 10:40:14 -0600
+Date: Wed, 12 Jul 2017 09:40:08 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Andi Kleen <andi@firstfloor.org>, ak@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ mikey@neuling.org, mpetlan@redhat.com
+Subject: Re: [GIT PULL] Please pull JSON files for Power9 PMU events
+References: <20170712020827.GB31223@us.ibm.com>
+ <87a849luvr.fsf@concordia.ellerman.id.au>
+ <20170712144611.GN27350@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Date: Wed, 12 Jul 2017 12:15:10 -0300
-From: victora <victora@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Victor Aoqui <victora@br.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH] powerpc/mm: Implemented default_hugepagesz verification
- for powerpc
-In-Reply-To: <e5ebc15347db59703d9499ea6962927b@linux.vnet.ibm.com>
-References: <20170703200559.3743-1-victora@br.ibm.com>
- <1f549637-773a-868c-effd-5614e85aa892@linux.vnet.ibm.com>
- <e5ebc15347db59703d9499ea6962927b@linux.vnet.ibm.com>
-Message-Id: <231a6e252020968b7eff8dd25dbb126b@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170712144611.GN27350@kernel.org>
+Message-Id: <20170712164008.GC31223@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,83 +43,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em 2017-07-05 13:03, victora escreveu:
-> Em 2017-07-05 01:26, Aneesh Kumar K.V escreveu:
->> On Tuesday 04 July 2017 01:35 AM, Victor Aoqui wrote:
->>> Implemented default hugepage size verification (default_hugepagesz=)
->>> in order to allow allocation of defined number of pages (hugepages=)
->>> only for supported hugepage sizes.
->>> 
->>> Signed-off-by: Victor Aoqui <victora@br.ibm.com>
->>> ---
->>>   arch/powerpc/mm/hugetlbpage.c | 15 +++++++++++++++
->>>   1 file changed, 15 insertions(+)
->>> 
->>> diff --git a/arch/powerpc/mm/hugetlbpage.c 
->>> b/arch/powerpc/mm/hugetlbpage.c
->>> index a4f33de..464e72e 100644
->>> --- a/arch/powerpc/mm/hugetlbpage.c
->>> +++ b/arch/powerpc/mm/hugetlbpage.c
->>> @@ -797,6 +797,21 @@ static int __init hugepage_setup_sz(char *str)
->>>   }
->>>   __setup("hugepagesz=", hugepage_setup_sz);
->>> 
->>> +static int __init default_hugepage_setup_sz(char *str)
->>> +{
->>> +        unsigned long long size;
->>> +
->>> +        size = memparse(str, &str);
->>> +
->>> +        if (add_huge_page_size(size) != 0) {
->>> +                hugetlb_bad_size();
->>> +                pr_err("Invalid default huge page size 
->>> specified(%llu)\n", size);
->>> +        }
->>> +
->>> +        return 1;
->>> +}
->>> +__setup("default_hugepagesz=", default_hugepage_setup_sz);
->> 
->> isn't that a behavior change in what we have now ? . Right now if size
->> specified is not supported, we fallback to HPAGE_SIZE.
+Arnaldo Carvalho de Melo [acme@kernel.org] wrote:
+> Em Wed, Jul 12, 2017 at 10:09:12PM +1000, Michael Ellerman escreveu:
+> > Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> > > Please pull the JSON files for POWER9 PMU events.
 > 
-> Yes, it is. However, is this a correct behavior? If we specify an
-> unsupported value, for example default_hugepagesz=1M and
-> hugepages=1000, 1M will be ignored and 1000 pages of 16M (arch
-> default) will be allocated. This could lead to non-expected out of of
-> memory/performance issue.
+> > >       perf vendor events: Add POWER9 PMU events
+> > >       perf vendor events: Add POWER9 PVRs to mapfile
 > 
->> 
->> mm/hugetlb.c
->> 
->> if (!size_to_hstate(default_hstate_size)) {
->> 	default_hstate_size = HPAGE_SIZE;
->> 	if (!size_to_hstate(default_hstate_size))
->> 		hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
->> }
->> 
->> 
->>> +
->>>   struct kmem_cache *hugepte_cache;
->>>   static int __init hugetlbpage_init(void)
->>>   {
->>> 
->> 
->> Even if we want to do this, this should be done in generic code and
->> should not be powerpc specific
->> 
+> > I think the PVRs need work.
 > 
-> The verification of supported powerpc hugepage size (hugepagesz=) is
-> being performed on add_huge_page_size(), which is currently defined in
-> arch/powerpc/mm/hugetlbpage.c. I think it makes more sense to
-> implement default_hugepagesz= verification on arch/powerpc, don't you
-> think?
+> > You have:
 > 
->> -aneesh
+> > +004e0100,1,power9.json,core
+> > +004e0000,1,power9.json,core
+> 
+> > The first is P9 DD1, but the second doesn't exist. We have it in the
+> > kernel, but with a mask of 0xffff0000. From memory the perf code doesn't
+> > do any masking or anything fancy, it looks for an exact match.
+> 
+> > So for starters you should probably drop that one and add 0x004e1200 and
+> > 0x004e0200.
 
-Hi Aneesh,
+Yes, thanks.
 
-Did you have time to review the comments above?
+> 
+> Could this check be somehow done automatically? Using whatever is in the
+> kernel sources or some IBM released document?
 
-Thanks
-Victor
+Yes, had a recent discussion offline with Michael Petlan and Jiri about
+generalizing/simplifying this. For now, I have added the above PVRs and
+will look into the broader fix.
+
+The following changes since commit 07d306c838c5c30196619baae36107d0615e459b:
+
+  Merge git://www.linux-watchdog.org/linux-watchdog (2017-07-11 09:59:37 -0700)
+
+are available in the git repository at:
+
+  https://github.com/sukadev/linux/ p9-json
+
+for you to fetch changes up to 8870b54739866c6eea23c36a0125af8045fbd572:
+
+  perf vendor events: Add POWER9 PVRs to mapfile (2017-07-12 11:11:00 -0500)
+
+----------------------------------------------------------------
+Sukadev Bhattiprolu (2):
+      perf vendor events: Add POWER9 PMU events
+      perf vendor events: Add POWER9 PVRs to mapfile
+
+ tools/perf/pmu-events/arch/powerpc/mapfile.csv     |   3 +
+ .../perf/pmu-events/arch/powerpc/power9/cache.json | 176 +++++
+ .../arch/powerpc/power9/floating-point.json        |  44 ++
+ .../pmu-events/arch/powerpc/power9/frontend.json   | 446 +++++++++++
+ .../pmu-events/arch/powerpc/power9/marked.json     | 782 +++++++++++++++++++
+ .../pmu-events/arch/powerpc/power9/memory.json     | 158 ++++
+ .../perf/pmu-events/arch/powerpc/power9/other.json | 836 +++++++++++++++++++++
+ .../pmu-events/arch/powerpc/power9/pipeline.json   | 680 +++++++++++++++++
+ tools/perf/pmu-events/arch/powerpc/power9/pmc.json | 146 ++++
+ .../arch/powerpc/power9/translation.json           | 272 +++++++
+ 10 files changed, 3543 insertions(+)
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/cache.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/floating-point.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/frontend.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/marked.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/memory.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/other.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/pipeline.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/pmc.json
+ create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/translation.json
