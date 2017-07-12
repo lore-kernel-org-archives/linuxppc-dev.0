@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6vms56tnzDqjy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6vmt0mYPzDqk6
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 20:09:01 +1000 (AEST)
-Message-Id: <630dc639c7321ac9afbe124eaee27165ef7ce08a.1499633349.git.christophe.leroy@c-s.fr>
+Message-Id: <129a139ac5d1625b8e2e48b01f5ef2752d36203f.1499633349.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1499633349.git.christophe.leroy@c-s.fr>
 References: <cover.1499633349.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 6/7] powerpc/8xx: mark init functions with __init
+Subject: [PATCH 7/7] powerpc/8xx: Reduce DTLB miss handler by one insn
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 12 Jul 2017 12:08:55 +0200 (CEST)
+Date: Wed, 12 Jul 2017 12:08:57 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,46 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-setup_initial_memory_limit() is only called during init.
-mmu_patch_cmp_limit() is only called from 8xx_mmu.c
+This reduces the DTLB miss handler hot path (user address path)
+by one instruction by preserving r10.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/8xx_mmu.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index ab3b10746f36..f29212e40f40 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -87,7 +87,7 @@ void __init MMU_init_hw(void)
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index b889b5812274..7365148219fd 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -466,23 +466,23 @@ DataStoreTLBMiss:
+ 	 * kernel page tables.
+ 	 */
+ 	mfspr	r10, SPRN_MD_EPN
+-	rlwinm	r10, r10, 16, 0xfff8
+-	cmpli	cr0, r10, PAGE_OFFSET@h
++	rlwinm	r11, r10, 16, 0xfff8
++	cmpli	cr0, r11, PAGE_OFFSET@h
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+ 	blt+	3f
++	rlwinm	r11, r10, 16, 0xfff8
+ #ifndef CONFIG_PIN_TLB_IMMR
+-	cmpli	cr0, r10, VIRT_IMMR_BASE@h
++	cmpli	cr0, r11, VIRT_IMMR_BASE@h
  #endif
- }
- 
--static void mmu_mapin_immr(void)
-+static void __init mmu_mapin_immr(void)
- {
- 	unsigned long p = PHYS_IMMR_BASE;
- 	unsigned long v = VIRT_IMMR_BASE;
-@@ -107,7 +107,7 @@ extern unsigned int DTLBMiss_cmp, FixupDAR_cmp;
- extern unsigned int ITLBMiss_cmp;
+ _ENTRY(DTLBMiss_cmp)
+-	cmpli	cr7, r10, (PAGE_OFFSET + 0x1800000)@h
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
++	cmpli	cr7, r11, (PAGE_OFFSET + 0x1800000)@h
+ #ifndef CONFIG_PIN_TLB_IMMR
+ _ENTRY(DTLBMiss_jmp)
+ 	beq-	DTLBMissIMMR
  #endif
+ 	blt	cr7, DTLBMissLinear
++	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
+-	mfspr	r10, SPRN_MD_EPN
  
--void mmu_patch_cmp_limit(unsigned int *addr, unsigned long mapped)
-+static void __init mmu_patch_cmp_limit(unsigned int *addr, unsigned long mapped)
- {
- 	unsigned int instr = *addr;
- 
-@@ -151,8 +151,8 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
- 	return mapped;
- }
- 
--void setup_initial_memory_limit(phys_addr_t first_memblock_base,
--				phys_addr_t first_memblock_size)
-+void __init setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+				       phys_addr_t first_memblock_size)
- {
- 	/* We don't currently support the first MEMBLOCK not mapping 0
- 	 * physical on those processors
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+@@ -703,7 +703,7 @@ DTLBMissLinear:
+ 	/* Set 8M byte page and mark it valid */
+ 	li	r11, MD_PS8MEG | MD_SVALID
+ 	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
+-	rlwinm	r10, r10, 16, 0x0f800000	/* 8xx supports max 256Mb RAM */
++	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
+ 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY	| \
+ 			  _PAGE_PRESENT
+ 	MTSPR_CPU6(SPRN_MD_RPN, r10, r11)	/* Update TLB entry */
 -- 
 2.12.0
