@@ -1,19 +1,42 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=qtsl=6p=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6vmt0mYPzDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 20:09:01 +1000 (AEST)
-Message-Id: <129a139ac5d1625b8e2e48b01f5ef2752d36203f.1499633349.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1499633349.git.christophe.leroy@c-s.fr>
-References: <cover.1499633349.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 7/7] powerpc/8xx: Reduce DTLB miss handler by one insn
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 12 Jul 2017 12:08:57 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6xtL1N0jzDqjY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 21:43:54 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3x6xtL0qZbz8sxs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 21:43:54 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3x6xtK4Ndkz9s4s
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2017 21:43:53 +1000 (AEST)
+Date: Wed, 12 Jul 2017 13:31:02 +0200
+From: msuchanek <msuchanek@suse.de>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v5 2/2] powerpc/fadump: update documentation about
+ 'fadump_append=' parameter
+Message-ID: <20170712133102.2145e393@naga>
+In-Reply-To: <dc6ce480-52e0-1cf9-a2ce-252fdf24f79a@linux.vnet.ibm.com>
+References: <149383572199.1694.10940679065871920087.stgit@hbathini.in.ibm.com>
+ <149383576571.1694.13692135068122879322.stgit@hbathini.in.ibm.com>
+ <20170510180132.1fa0c1ec@kitsune.suse.cz>
+ <e1485f4d-f346-fea6-ee2a-9c7a6b2f6587@linux.vnet.ibm.com>
+ <20170511151637.19d4a23f@kitsune.suse.cz>
+ <b1c1c890-fac0-dede-4b80-0fc12f1e95e7@linux.vnet.ibm.com>
+ <20170512174209.67ccfd45@kitsune.suse.cz>
+ <b6a968fe-378e-1273-a996-43c716f276bd@linux.vnet.ibm.com>
+ <20170515112901.67d32e76@kitsune.suse.cz>
+ <102276aa-cddb-dc60-269c-b29dedc89eab@linux.vnet.ibm.com>
+ <20170609140454.2eb01371@kitsune.suse.cz>
+ <a3ac4a10-3315-187b-e29a-01637ba19dff@linux.vnet.ibm.com>
+ <20170626141501.6086b6ab@kitsune.suse.cz>
+ <dc6ce480-52e0-1cf9-a2ce-252fdf24f79a@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +46,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reduces the DTLB miss handler hot path (user address path)
-by one instruction by preserving r10.
+Hello,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+On Wed, 12 Jul 2017 00:00:57 +0530
+Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index b889b5812274..7365148219fd 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -466,23 +466,23 @@ DataStoreTLBMiss:
- 	 * kernel page tables.
- 	 */
- 	mfspr	r10, SPRN_MD_EPN
--	rlwinm	r10, r10, 16, 0xfff8
--	cmpli	cr0, r10, PAGE_OFFSET@h
-+	rlwinm	r11, r10, 16, 0xfff8
-+	cmpli	cr0, r11, PAGE_OFFSET@h
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
- 	blt+	3f
-+	rlwinm	r11, r10, 16, 0xfff8
- #ifndef CONFIG_PIN_TLB_IMMR
--	cmpli	cr0, r10, VIRT_IMMR_BASE@h
-+	cmpli	cr0, r11, VIRT_IMMR_BASE@h
- #endif
- _ENTRY(DTLBMiss_cmp)
--	cmpli	cr7, r10, (PAGE_OFFSET + 0x1800000)@h
--	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
-+	cmpli	cr7, r11, (PAGE_OFFSET + 0x1800000)@h
- #ifndef CONFIG_PIN_TLB_IMMR
- _ENTRY(DTLBMiss_jmp)
- 	beq-	DTLBMissIMMR
- #endif
- 	blt	cr7, DTLBMissLinear
-+	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
--	mfspr	r10, SPRN_MD_EPN
- 
- 	/* Insert level 1 index */
- 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-@@ -703,7 +703,7 @@ DTLBMissLinear:
- 	/* Set 8M byte page and mark it valid */
- 	li	r11, MD_PS8MEG | MD_SVALID
- 	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
--	rlwinm	r10, r10, 16, 0x0f800000	/* 8xx supports max 256Mb RAM */
-+	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
- 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY	| \
- 			  _PAGE_PRESENT
- 	MTSPR_CPU6(SPRN_MD_RPN, r10, r11)	/* Update TLB entry */
--- 
-2.12.0
+> Hi Michal,
+>=20
+>=20
+> Thanks for the review..
+>=20
+>=20
+> On Monday 26 June 2017 05:45 PM, Michal Such=C3=A1nek wrote:
+> > Hello,
+> >
+> > On Tue, 20 Jun 2017 21:14:08 +0530
+> > Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+> > =20
+
+> I would prefer documenting over a complex implementation. Actually, I
+> am considering a simple approach of replacing every occurrence of
+> "fadump_extra_args=3D" with "fadump_extra_args " in fadump capture
+> kernel. The cmdline
+>=20
+>    "root=3D/dev/sda2 ro fadump_extra_args=3D"a b c" crashkernel=3D512M=20
+> fadump_extra_args=3Dd"
+>=20
+> becomes
+>=20
+>    "root=3D/dev/sda2 ro fadump_extra_args "a b c" crashkernel=3D512M=20
+> fadump_extra_args d"
+
+which is totally broken
+
+>=20
+> in fadump capture kernel. This must take care of the pitfalls with
+> the current approach and also,
+> doesn't rely on parse_args() which was not designed for this scenario
+> to start with..?
+
+It was designed for parsing arguments. To handle replacing arguments
+you have to extend it. You need to get more information from it for
+this case.
+
+Best regards
+
+Michal
