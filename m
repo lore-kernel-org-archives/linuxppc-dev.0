@@ -1,32 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6kVf5qXlzDqgF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 13:11:06 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id q85so1376036pfq.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 20:11:06 -0700 (PDT)
-Date: Wed, 12 Jul 2017 13:10:51 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
-Subject: Re: [RFC v5 02/38] powerpc: Free up four 64K PTE bits in 64K backed
- HPTE pages
-Message-ID: <20170712131051.5bf657c7@firefly.ozlabs.ibm.com>
-In-Reply-To: <20170711154415.GA5525@ram.oc3035372033.ibm.com>
-References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <1499289735-14220-3-git-send-email-linuxram@us.ibm.com>
- <20170711155959.79e2d4de@firefly.ozlabs.ibm.com>
- <20170711154415.GA5525@ram.oc3035372033.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6krv2k7jzDqgQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 13:26:55 +1000 (AEST)
+Message-ID: <1499830007.2865.36.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc: Hande page faults for bad paste and bad AMO
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Neuling <michael.neuling@au1.ibm.com>
+Date: Wed, 12 Jul 2017 13:26:47 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,57 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 11 Jul 2017 08:44:15 -0700
-Ram Pai <linuxram@us.ibm.com> wrote:
+On POWER9 and bad paste instruction (targeting the wrong memory
+type) or an invalid opcode in an AMO (atomic memory operation)
+will result in specific DSISR bits to be set.
 
-> On Tue, Jul 11, 2017 at 03:59:59PM +1000, Balbir Singh wrote:
-> > On Wed,  5 Jul 2017 14:21:39 -0700
-> > Ram Pai <linuxram@us.ibm.com> wrote:
-> >   
-> > > Rearrange 64K PTE bits to  free  up  bits 3, 4, 5  and  6
-> > > in the 64K backed HPTE pages. This along with the earlier
-> > > patch will  entirely free  up the four bits from 64K PTE.
-> > > The bit numbers are  big-endian as defined in the  ISA3.0
-> > > 
-> > > This patch  does  the  following change to 64K PTE backed
-> > > by 64K HPTE.
-> > > 
-> > > H_PAGE_F_SECOND (S) which  occupied  bit  4  moves to the
-> > > 	second part of the pte to bit 60.
-> > > H_PAGE_F_GIX (G,I,X) which  occupied  bit 5, 6 and 7 also
-> > > 	moves  to  the   second part of the pte to bit 61,
-> > >        	62, 63, 64 respectively
-> > > 
-> > > since bit 7 is now freed up, we move H_PAGE_BUSY (B) from
-> > > bit  9  to  bit  7.
-> > > 
-> > > The second part of the PTE will hold
-> > > (H_PAGE_F_SECOND|H_PAGE_F_GIX) at bit 60,61,62,63.
-> > > 
-> > > Before the patch, the 64K HPTE backed 64k PTE format was
-> > > as follows
-> > > 
-> > >  0 1 2 3 4  5  6  7  8 9 10...........................63
-> > >  : : : : :  :  :  :  : : :                            :
-> > >  v v v v v  v  v  v  v v v                            v
-> > > 
-> > > ,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
-> > > |x|x|x| |S |G |I |X |x|B|x|x|x|................|.|.|.|.| <- primary pte
-> > > '_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
-> > > | | | | |  |  |  |  | | | | |..................| | | | | <- secondary pte
-> > > '_'_'_'_'__'__'__'__'_'_'_'_'__________________'_'_'_'_'
-> > >  
-> > 
-> > It's not entirely clear what the secondary pte contains
-> > today and how many of the bits are free today?  
-> 
-> The secondary pte today is not used for anything for 64k-hpte
-> backed ptes. It gets used the moment the pte gets backed by
-> 4-k hptes. Till then the bits are available. And this patch
-> makes use of that knowledge. 
+We currently don't understand those bits and thus just "hang"
+the process taking constant page faults.
 
-OK.. but does this mean subpage-protection? Or do you mean
-page size demotion? I presume it's the later.
+Additionally in the case of paste, it appears that we don't
+always get a valid DAR value when the error is a wrong memory
+type.
 
+So we need to test those errors early in do_page_fault(),
+I chose to generate a SIGBUS which is more correct than a SIGSEGV.
 
-Balbir Singh.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 0266c664014a..5dfce2022f74 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -337,6 +337,21 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	}
+ #endif /* CONFIG_PPC_ICSWX */
+ 
++#ifdef CONFIG_PPC_STD_MMU_64
++	/*
++	 * These faults indicate a copy/paste on an invalid memory type
++	 * or an incorrect AMO operation. They have been observed as not
++	 * properly updating the DAR, so handle them early
++	 */
++	if (error_code & (DSISR_BAD_COPYPASTE | DSISR_BAD_AMO)) {
++		if (user_mode(regs))
++			_exception(SIGBUS, regs, BUS_OBJERR, address);
++		else
++			rc = SIGBUS;
++		goto bail;
++	}
++#endif /* CONFIG_PPC_STD_MMU_64 */
++
+ 	if (notify_page_fault(regs))
+ 		goto bail;
+ 
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 7e50e47375d6..71f524f2b109 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -282,6 +282,8 @@
+ #define   DSISR_UNSUPP_MMU	0x00080000	/* Unsupported MMU config */
+ #define   DSISR_SET_RC		0x00040000	/* Failed setting of R/C bits */
+ #define   DSISR_PGDIRFAULT      0x00020000      /* Fault on page directory */
++#define   DSISR_BAD_COPYPASTE   0x00000008      /* Copy/Paste on wrong mem type */
++#define   DSISR_BAD_AMO		0x00000004	/* Incorrect AMO opcode */
+ #define SPRN_TBRL	0x10C	/* Time Base Read Lower Register (user, R/O) */
+ #define SPRN_TBRU	0x10D	/* Time Base Read Upper Register (user, R/O) */
+ #define SPRN_CIR	0x11B	/* Chip Information Register (hyper, R/0) */
