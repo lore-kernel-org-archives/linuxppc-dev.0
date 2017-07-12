@@ -1,24 +1,24 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hejianet@gmail.com>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x71wm1qSgzDqjY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 00:46:16 +1000 (AEST)
-Date: Wed, 12 Jul 2017 11:46:11 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Jiri Olsa <jolsa@redhat.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Andi Kleen <andi@firstfloor.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, mikey@neuling.org
-Subject: Re: [GIT PULL] Please pull JSON files for Power9 PMU events
-Message-ID: <20170712144611.GN27350@kernel.org>
-References: <20170712020827.GB31223@us.ibm.com>
- <87a849luvr.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87a849luvr.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x72GS1NtmzDqgX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 01:01:36 +1000 (AEST)
+Received: by mail-it0-x243.google.com with SMTP id o202so2373468itc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 08:01:36 -0700 (PDT)
+From: Jia He <hejianet@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Ingo Molnar <mingo@kernel.org>, fweisbec@gmail.com,
+ Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>,
+ Stanislaw Gruszka <sgruszka@redhat.com>, Ivan Mikhaylov <ivan@de.ibm.com>,
+ cyrilbur@gmail.com, Jia He <hejianet@gmail.com>
+Subject: [PATCH] powerpc/time: use get_tb instead of get_vtb in running_clock
+Date: Wed, 12 Jul 2017 23:01:10 +0800
+Message-Id: <1499871670-24671-1-git-send-email-hejianet@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, Jul 12, 2017 at 10:09:12PM +1000, Michael Ellerman escreveu:
-> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
-> > Please pull the JSON files for POWER9 PMU events.
+Virtual time base(vtb) is a register which increases only in guest.
+Any exit from guest to host will stop the vtb(saved and restored by kvm).
+But if there is an IO causes guest exits to host, the guest's watchdog
+(watchdog_timer_fn -> is_softlockup -> get_timestamp -> running_clock)
+needs to also include the time elapsed in host. get_vtb is not correct in
+this case.
 
-> >       perf vendor events: Add POWER9 PMU events
-> >       perf vendor events: Add POWER9 PVRs to mapfile
- 
-> I think the PVRs need work.
- 
-> You have:
- 
-> +004e0100,1,power9.json,core
-> +004e0000,1,power9.json,core
- 
-> The first is P9 DD1, but the second doesn't exist. We have it in the
-> kernel, but with a mask of 0xffff0000. From memory the perf code doesn't
-> do any masking or anything fancy, it looks for an exact match.
- 
-> So for starters you should probably drop that one and add 0x004e1200 and
-> 0x004e0200.
+Also, the TB_OFFSET is well saved and restored by qemu after commit [1].
+So we can use get_tb here.
 
-Could this check be somehow done automatically? Using whatever is in the
-kernel sources or some IBM released document?
+[1] http://git.qemu.org/?p=qemu.git;a=commit;h=42043e4f1
 
-- Arnaldo
+Signed-off-by: Jia He <hejianet@gmail.com>
+---
+ arch/powerpc/kernel/time.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index fe6f3a2..c542dd3 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -695,16 +695,15 @@ notrace unsigned long long sched_clock(void)
+ unsigned long long running_clock(void)
+ {
+ 	/*
+-	 * Don't read the VTB as a host since KVM does not switch in host
+-	 * timebase into the VTB when it takes a guest off the CPU, reading the
+-	 * VTB would result in reading 'last switched out' guest VTB.
++	 * Use get_tb instead of get_vtb for guest since the TB_OFFSET has been
++	 * well saved/restored when qemu does suspend/resume.
+ 	 *
+ 	 * Host kernels are often compiled with CONFIG_PPC_PSERIES checked, it
+ 	 * would be unsafe to rely only on the #ifdef above.
+ 	 */
+ 	if (firmware_has_feature(FW_FEATURE_LPAR) &&
+ 	    cpu_has_feature(CPU_FTR_ARCH_207S))
+-		return mulhdu(get_vtb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
++		return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
+ 
+ 	/*
+ 	 * This is a next best approximation without a VTB.
+-- 
+2.9.3
