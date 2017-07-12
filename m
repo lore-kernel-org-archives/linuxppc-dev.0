@@ -1,41 +1,30 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x6m8v0mtbzDqk0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 14:25:50 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6C4NoTV038709
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 00:25:48 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bncj4ram7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 00:25:48 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Wed, 12 Jul 2017 14:25:45 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6C4OJp022806608
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 14:24:27 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6C4Ntnf009199
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 14:23:55 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
-Cc: benh@kernel.crashing.org, stewart@linux.vnet.ibm.com, dwmw2@infradead.org,
- rlippert@google.com, alistair@popple.id.au
-Subject: [PATCH v3 03/10] mtd: powernv_flash: Don't treat OPAL_SUCCESS as an
- error
-Date: Wed, 12 Jul 2017 14:22:57 +1000
-In-Reply-To: <20170712042304.19745-1-cyrilbur@gmail.com>
-References: <20170712042304.19745-1-cyrilbur@gmail.com>
-Message-Id: <20170712042304.19745-4-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x6nVd2HbwzDqg3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 15:26:17 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id q85so1767763pfq.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jul 2017 22:26:17 -0700 (PDT)
+Date: Wed, 12 Jul 2017 15:26:01 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+Subject: Re: [RFC v5 15/38] powerpc: helper function to read,write
+ AMR,IAMR,UAMOR registers
+Message-ID: <20170712152601.3b2f52ed@firefly.ozlabs.ibm.com>
+In-Reply-To: <1499289735-14220-16-git-send-email-linuxram@us.ibm.com>
+References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
+ <1499289735-14220-16-git-send-email-linuxram@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,75 +34,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While this driver expects to interact asynchronously, OPAL is well
-within its rights to return OPAL_SUCCESS to indicate that the operation
-completed without the need for a callback. We shouldn't treat
-OPAL_SUCCESS as an error rather we should wrap up and return promptly to
-the caller.
+On Wed,  5 Jul 2017 14:21:52 -0700
+Ram Pai <linuxram@us.ibm.com> wrote:
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
-I'll note here that currently no OPAL exists that will return
-OPAL_SUCCESS so there isn't the possibility of a bug today.
+> Implements helper functions to read and write the key related
+> registers; AMR, IAMR, UAMOR.
+> 
+> AMR register tracks the read,write permission of a key
+> IAMR register tracks the execute permission of a key
+> UAMOR register enables and disables a key
+> 
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgtable.h |   60 ++++++++++++++++++++++++++
+>  1 files changed, 60 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 85bc987..435d6a7 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -428,6 +428,66 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>  		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 1);
+>  }
+>  
+> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> +
+> +#include <asm/reg.h>
+> +static inline u64 read_amr(void)
+> +{
+> +	return mfspr(SPRN_AMR);
+> +}
+> +static inline void write_amr(u64 value)
+> +{
+> +	mtspr(SPRN_AMR, value);
+> +}
+> +static inline u64 read_iamr(void)
+> +{
+> +	return mfspr(SPRN_IAMR);
+> +}
+> +static inline void write_iamr(u64 value)
+> +{
+> +	mtspr(SPRN_IAMR, value);
+> +}
+> +static inline u64 read_uamor(void)
+> +{
+> +	return mfspr(SPRN_UAMOR);
+> +}
+> +static inline void write_uamor(u64 value)
+> +{
+> +	mtspr(SPRN_UAMOR, value);
+> +}
+> +
+> +#else /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+> +
+> +static inline u64 read_amr(void)
+> +{
+> +	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
+> +	return -1;
+> +}
 
- drivers/mtd/devices/powernv_flash.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+Why do we need to have a version here if we are going to WARN(), why not
+let the compilation fail if called from outside of CONFIG_PPC64_MEMORY_PROTECTION_KEYS?
+Is that the intention?
 
-diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-index 7b41af06f4fe..d50b5f200f73 100644
---- a/drivers/mtd/devices/powernv_flash.c
-+++ b/drivers/mtd/devices/powernv_flash.c
-@@ -66,9 +66,8 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 	if (token < 0) {
- 		if (token != -ERESTARTSYS)
- 			dev_err(dev, "Failed to get an async token\n");
--
--		rc = token;
--		goto out;
-+		mutex_unlock(&info->lock);
-+		return token;
- 	}
- 
- 	switch (op) {
-@@ -87,23 +86,25 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 		goto out;
- 	}
- 
-+	if (rc == OPAL_SUCCESS)
-+		goto out_success;
-+
- 	if (rc != OPAL_ASYNC_COMPLETION) {
- 		dev_err(dev, "opal_flash_async_op(op=%d) failed (rc %d)\n",
- 				op, rc);
--		opal_async_release_token(token);
- 		rc = -EIO;
- 		goto out;
- 	}
- 
- 	rc = opal_async_wait_response(token, &msg);
--	opal_async_release_token(token);
--	mutex_unlock(&info->lock);
- 	if (rc) {
- 		dev_err(dev, "opal async wait failed (rc %d)\n", rc);
--		return -EIO;
-+		rc = -EIO;
-+		goto out;
- 	}
- 
- 	rc = opal_get_async_rc(msg);
-+out_success:
- 	if (rc == OPAL_SUCCESS) {
- 		rc = 0;
- 		if (retlen)
-@@ -112,8 +113,8 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 		rc = -EIO;
- 	}
- 
--	return rc;
- out:
-+	opal_async_release_token(token);
- 	mutex_unlock(&info->lock);
- 	return rc;
- }
--- 
-2.13.2
+Balbir Singh
