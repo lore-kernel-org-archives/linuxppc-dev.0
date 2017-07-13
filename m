@@ -1,45 +1,29 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0104.hostedemail.com
+ [216.40.44.104])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7hxj4myPzDqk3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 03:04:25 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6DGwdRl045525
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 13:04:23 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bnt3q1hj6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 13:04:23 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 13 Jul 2017 13:04:21 -0400
-Date: Thu, 13 Jul 2017 10:04:11 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
-Subject: Re: [RFC v5 34/38] procfs: display the protection-key number
- associated with a vma
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <1499289735-14220-35-git-send-email-linuxram@us.ibm.com>
- <8b0827c9-9fc9-c2d5-d1a5-52d9eef8965e@intel.com>
- <20170713080348.GH5525@ram.oc3035372033.ibm.com>
- <e3355a7a-8899-b69d-968a-6862c29633a2@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e3355a7a-8899-b69d-968a-6862c29633a2@intel.com>
-Message-Id: <20170713170411.GI5525@ram.oc3035372033.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7kb03RNbzDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 04:18:19 +1000 (AEST)
+Message-ID: <1499969891.4457.59.camel@perches.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_asrc: constify snd_soc_dai_ops
+ structure
+From: Joe Perches <joe@perches.com>
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>, Mark Brown
+ <broonie@kernel.org>
+Cc: Takashi Iwai <tiwai@suse.de>, Timur Tabi <timur@tabi.org>, Nicolin Chen
+ <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam
+ <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav
+ Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org,  linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Thu, 13 Jul 2017 11:18:11 -0700
+In-Reply-To: <20170713101814.Horde.q8OhHejhvSALVEt2o11aUTW@gator4166.hostgator.com>
+References: <20170713072351.GA1485@embeddedgus> <s5hlgnsiyg6.wl-tiwai@suse.de>
+ <20170713101630.odml56qmsvgxqj64@sirena.org.uk>
+ <20170713101814.Horde.q8OhHejhvSALVEt2o11aUTW@gator4166.hostgator.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,53 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 13, 2017 at 07:07:48AM -0700, Dave Hansen wrote:
-> On 07/13/2017 01:03 AM, Ram Pai wrote:
-> > On Tue, Jul 11, 2017 at 11:13:56AM -0700, Dave Hansen wrote:
-> >> On 07/05/2017 02:22 PM, Ram Pai wrote:
-> >>> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> >>> +void arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
-> >>> +{
-> >>> +	seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
-> >>> +}
-> >>> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> >>
-> >> This seems like kinda silly unnecessary duplication.  Could we just put
-> >> this in the fs/proc/ code and #ifdef it on ARCH_HAS_PKEYS?
+On Thu, 2017-07-13 at 10:18 -0500, Gustavo A. R. Silva wrote:
+> Hi Mark,
+> 
+> Quoting Mark Brown <broonie@kernel.org>:
+> 
+> > On Thu, Jul 13, 2017 at 09:32:41AM +0200, Takashi Iwai wrote:
 > > 
-> > Well x86 predicates it based on availability of X86_FEATURE_OSPKE.
+> > > please stop posting in this style.  It's really annoying to see
+> > > spontaneously popping-up almost same patch for more than two hours
+> > > long.
+> > > If you have a series of the same fix patches, send them as a patch
+> > > set in a shot with a thread.  git-send-email does it right.
+> > > I don't mind a couple of patches posted separately, but this is over
+> > > the limit.
 > > 
-> > powerpc doesn't need that check or any similar check. So trying to
-> > generalize the code does not save much IMHO.
+> > Or at least just collect them up and send them all at one time even if
+> > not as a single thread (you don't want to CC everyone affected by a
+> > single patch in the set on everything, that's harder to avoid when
+> > sending a series via git, but it can be confusing to get one item in a
+> > large patch series without context).
 > 
-> I know all your hardware doesn't support it. :)
+> I like this idea better. I will do so next time. :)
 
-Wow! you bring a good point which I had not considered yet. I need some
-runtime checks for RPT.
+I don't it's better.
 
-But regardless, my above statement is still partially true. x86
-predicates it based on availability of X86_FEATURE_OSPKE, and powerpc
-should predicate it based on HPT. So we have our own
-customized checks. Hence a unified function won't suffice.
-
-> 
-> So, for instance, if you are running on a new POWER9 with radix page
-> tables, you will just always output "ProtectionKey: 0" in every VMA,
-> regardless?
-> 
-> > maybe have a seperate inline function that does
-> > seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
-> > and is called from x86 and powerpc's arch_show_smap()?
-> > At least will keep the string format captured in 
-> > one single place.
-> 
-> Now that we have two architectures, is there a strong reason we can't
-> just have an arch_pkeys_enabled(), and stick the seq_printf() back in
-> generic code?
-
-correct. that looks like the correct approach. Was trying to avoid
-touching arch neutral code. But this approach will force me
-do so. Will do.
-
--- 
-Ram Pai
+It's not that confusing if the 0/n patch cover letter is cc'd
+to all the appropriate mailing lists and all the [1..n]/n
+patches are sent with in-reply-to of the cover letter and
+send to the maintainers and appropriate mailing lists.
