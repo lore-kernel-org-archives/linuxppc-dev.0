@@ -1,27 +1,21 @@
-Return-Path: <garsilva@embeddedor.com>
-Received: from gateway31.websitewelcome.com (gateway31.websitewelcome.com
- [192.185.143.46])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paubert@iram.es>
+Received: from cica-lavadora-l1mail3.puc.rediris.es
+ (ci-l1mail3-out05a.puc.rediris.es [IPv6:2001:720:418:ca02::31])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7S3t2c5rzDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:23:54 +1000 (AEST)
-Received: from cm12.websitewelcome.com (cm12.websitewelcome.com [100.42.49.8])
- by gateway31.websitewelcome.com (Postfix) with ESMTP id 8740A23303
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 02:23:52 -0500 (CDT)
-Date: Thu, 13 Jul 2017 02:23:51 -0500
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Subject: [PATCH] ASoC: fsl_asrc: constify snd_soc_dai_ops structure
-Message-ID: <20170713072351.GA1485@embeddedgus>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7S8X5rvbzDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:27:56 +1000 (AEST)
+Date: Thu, 13 Jul 2017 09:16:18 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Matt Brown <matthew.brown.dev@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
+Subject: Re: [PATCH 3/5] powerpc/lib/sstep: Add bpermd instruction emulation
+Message-ID: <20170713071618.ibiqvzkc4dusc6ub@lt-gp.iram.es>
+References: <20170713032548.451-1-matthew.brown.dev@gmail.com>
+ <20170713032548.451-3-matthew.brown.dev@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170713032548.451-3-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This structure is only stored in the ops field of a snd_soc_dai_driver
-structure. That field is declared const, so snd_soc_dai_ops structures
-that have this property can be declared as const also.
+On Thu, Jul 13, 2017 at 01:25:46PM +1000, Matt Brown wrote:
+> This adds emulation for the bpermd instruction.
+> 
+> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+> ---
+>  arch/powerpc/lib/sstep.c | 23 +++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+> 
+> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+> index cf69987..603654d 100644
+> --- a/arch/powerpc/lib/sstep.c
+> +++ b/arch/powerpc/lib/sstep.c
+> @@ -637,6 +637,21 @@ static nokprobe_inline void do_popcnt(struct pt_regs *regs, unsigned long v1,
+>  	regs->gpr[ra] = out_val;
+>  }
+>  
+> +static nokprobe_inline void do_bpermd(struct pt_regs *regs, unsigned long v1,
+> +				unsigned long v2, int ra)
+> +{
+> +	unsigned int idx, i;
+> +	unsigned char perm;
+> +
+> +	perm = 0x0;
+> +	for (i = 0; i < 8; i++) {
+> +		idx = (v1 >> (i * 8)) & 0xff;
+> +		if (idx < 64)
+> +			perm |= (v2 & (1 << idx)) >> (idx - i);
+> +	}
+> +	regs->gpr[ra] = 0 | perm;
 
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
----
- sound/soc/fsl/fsl_asrc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Huh? What's the point of doing an or with 0?
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 8cfffa7..806d399 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -542,7 +542,7 @@ static int fsl_asrc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	return 0;
- }
- 
--static struct snd_soc_dai_ops fsl_asrc_dai_ops = {
-+static const struct snd_soc_dai_ops fsl_asrc_dai_ops = {
- 	.hw_params    = fsl_asrc_dai_hw_params,
- 	.hw_free      = fsl_asrc_dai_hw_free,
- 	.trigger      = fsl_asrc_dai_trigger,
--- 
-2.5.0
+The compiler will eliminate it, but it just confuses the reader.
+
+	Gabriel
+> +}
+> +
+>  static nokprobe_inline int trap_compare(long v1, long v2)
+>  {
+>  	int ret = 0;
+> @@ -1274,6 +1289,14 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+>  			goto logical_done;
+>  #endif
+>  
+> +#ifdef __powerpc64__
+> +		case 2396736:	/* bpermd */
+> +			val = regs->gpr[rd];
+> +			val2 = regs->gpr[rb];
+> +			do_bpermd(regs, val, val2, ra);
+> +			goto logical_done;
+> +#endif
+> +
+>  /*
+>   * Shift instructions
+>   */
+> -- 
+> 2.9.3
