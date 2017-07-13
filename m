@@ -1,26 +1,54 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7qKQ6tYrzDqkm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 07:51:54 +1000 (AEST)
-Message-ID: <1499979030.2865.62.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/time: use get_tb instead of get_vtb in
- running_clock
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: hejianet <hejianet@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
- fweisbec@gmail.com, Thomas Gleixner <tglx@linutronix.de>, John Stultz
- <john.stultz@linaro.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Ivan
- Mikhaylov <ivan@de.ibm.com>, cyrilbur@gmail.com
-Date: Fri, 14 Jul 2017 06:50:30 +1000
-In-Reply-To: <946976cd-ca8b-7d26-d316-aeaab44beb04@gmail.com>
-References: <1499871670-24671-1-git-send-email-hejianet@gmail.com>
- <1499899504.2865.44.camel@kernel.crashing.org>
- <946976cd-ca8b-7d26-d316-aeaab44beb04@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7sV34dTLzDqkm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 09:29:29 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6DNSaqU131827
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 19:29:27 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bpcsu4wqh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 19:29:27 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Thu, 13 Jul 2017 19:29:26 -0400
+Date: Thu, 13 Jul 2017 16:29:16 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+ "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ linux-kselftest@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>,
+ Haren Myneni/Beaverton/IBM <hbabu@us.ibm.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [RFC v5 15/38] powerpc: helper function to read,write
+ AMR,IAMR,UAMOR registers
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
+ <1499289735-14220-16-git-send-email-linuxram@us.ibm.com>
+ <20170712152601.3b2f52ed@firefly.ozlabs.ibm.com>
+ <20170713075502.GG5525@ram.oc3035372033.ibm.com>
+ <CAKTCnzmDd2K0gc=0gvNn7Q_QBPqmQdwppnpU-J9B1AMva7w8sA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKTCnzmDd2K0gc=0gvNn7Q_QBPqmQdwppnpU-J9B1AMva7w8sA@mail.gmail.com>
+Message-Id: <20170713232916.GK5525@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +58,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-07-13 at 14:55 +0800, hejianet wrote:
-> Hi Ben
-> I add some printk logs in watchdog_timer_fn in the guest
-> [   16.025222] get_vtb=8236291881, get_tb=13756711357, get_timestamp=4
-> [   20.025624] get_vtb=9745285807, get_tb=15804711283, get_timestamp=7
-> [   24.025042] get_vtb=11518119641, get_tb=17852711085, get_timestamp=10
-> [   28.024074] get_vtb=13192704319, get_tb=19900711071, get_timestamp=13
-> [   32.024086] get_vtb=14856516982, get_tb=21948711066, get_timestamp=16
-> [   36.024075] get_vtb=16569127618, get_tb=23996711078, get_timestamp=20
-> [   40.024138] get_vtb=17008865823, get_tb=26044718418, get_timestamp=20
-> [   44.023993] get_vtb=17020637241, get_tb=28092716383, get_timestamp=20
-> [   48.023996] get_vtb=17022857170, get_tb=30140718472, get_timestamp=20
-> [   52.023996] get_vtb=17024268541, get_tb=32188718432, get_timestamp=20
-> [   56.023996] get_vtb=17036577783, get_tb=34236718077, get_timestamp=20
-> [   60.023996] get_vtb=17037829743, get_tb=36284718437, get_timestamp=20
-> [   64.023992] get_vtb=17039846747, get_tb=38332716609, get_timestamp=20
-> [   68.023991] get_vtb=17041448345, get_tb=40380715903, get_timestamp=20
+On Thu, Jul 13, 2017 at 07:49:05PM +1000, Balbir Singh wrote:
+> On Thu, Jul 13, 2017 at 5:55 PM, Ram Pai <linuxram@us.ibm.com> wrote:
+> > On Wed, Jul 12, 2017 at 03:26:01PM +1000, Balbir Singh wrote:
+> >> On Wed,  5 Jul 2017 14:21:52 -0700
+> >> Ram Pai <linuxram@us.ibm.com> wrote:
+> >>
+> >> > Implements helper functions to read and write the key related
+> >> > registers; AMR, IAMR, UAMOR.
+> >> >
+> >> > AMR register tracks the read,write permission of a key
+> >> > IAMR register tracks the execute permission of a key
+> >> > UAMOR register enables and disables a key
+> >> >
+> >> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> >> > ---
+> >> >  arch/powerpc/include/asm/book3s/64/pgtable.h |   60 ++++++++++++++++++++++++++
+> >> >  1 files changed, 60 insertions(+), 0 deletions(-)
+> >> >
+> >> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> >> > index 85bc987..435d6a7 100644
+> >> > --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> >> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> >> > @@ -428,6 +428,66 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+> >> >             pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 1);
+> >> >  }
+> >> >
+> >> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> >> > +
+> >> > +#include <asm/reg.h>
+> >> > +static inline u64 read_amr(void)
+> >> > +{
+> >> > +   return mfspr(SPRN_AMR);
+> >> > +}
+> >> > +static inline void write_amr(u64 value)
+> >> > +{
+> >> > +   mtspr(SPRN_AMR, value);
+> >> > +}
+> >> > +static inline u64 read_iamr(void)
+> >> > +{
+> >> > +   return mfspr(SPRN_IAMR);
+> >> > +}
+> >> > +static inline void write_iamr(u64 value)
+> >> > +{
+> >> > +   mtspr(SPRN_IAMR, value);
+> >> > +}
+> >> > +static inline u64 read_uamor(void)
+> >> > +{
+> >> > +   return mfspr(SPRN_UAMOR);
+> >> > +}
+> >> > +static inline void write_uamor(u64 value)
+> >> > +{
+> >> > +   mtspr(SPRN_UAMOR, value);
+> >> > +}
+> >> > +
+> >> > +#else /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+> >> > +
+> >> > +static inline u64 read_amr(void)
+> >> > +{
+> >> > +   WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
+> >> > +   return -1;
+> >> > +}
+> >>
+> >> Why do we need to have a version here if we are going to WARN(), why not
+> >> let the compilation fail if called from outside of CONFIG_PPC64_MEMORY_PROTECTION_KEYS?
+> >> Is that the intention?
+> >
+> > I did not want to stop someone; kernel module for example, from calling
+> > these interfaces from outside the pkey domain.
+> >
+> > Either way can be argued to be correct, I suppose.
 > 
-> The get_timestamp(use get_vtb(),unit is second) is slower down compared
-> with printk time. You also can obviously watch the get_vtb increment is
-> slowly less than get_tb increment.
+> Nope, build failures are better than run time failures, otherwise the
+> kernel will split its guts warning and warning here.
+> 
 
-But that is the entire point of vtb ... because it only counts when
-running in the guest, not the time spent in the host.
+Well these are helper functions that can be called by anyone under
+any situation. I will rather have them defined unconditionally; under
+no ifdefs.  No spewing of warnings anymore. The registers will
+be read or written as told. It just makes sense that way.
 
-> Without this patch, I thought there might be some softlockup warnings
-> missed in guest.
+RP
 
-Ugh ? We already have too many of these ! On the contrary, we don't
-want the guest to start to spew soft lockup warnings because it was not
-scheduled by the host enough. The guest soft lockup warnings should be
-specifically about something bad happening inside the guest.
-
-Your patch seems to defeat the whole purpose of that running_clock()
-function unless I'm somewhat mistaken.
-
-Ben.
+-- 
+Ram Pai
