@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7bDM1KMFzDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 22:46:43 +1000 (AEST)
-In-Reply-To: <1499770669-9255-1-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7bDN0spqzDqk7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 22:46:44 +1000 (AEST)
+In-Reply-To: <1499775054-631-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/perf: Fix SDAR_MODE value for continous sampling in power9
-Message-Id: <3x7bDL64p0z9s82@ozlabs.org>
-Date: Thu, 13 Jul 2017 22:46:42 +1000 (AEST)
+Cc: anton@samba.org
+Subject: Re: powerpc/64: Fix atomic64_inc_not_zero() to return an int
+Message-Id: <3x7bDM6dDgz9sNw@ozlabs.org>
+Date: Thu, 13 Jul 2017 22:46:43 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,23 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-07-11 at 10:57:49 UTC, Madhavan Srinivasan wrote:
-> Incase of continous sampling, code currently defaults
-> MMCRA[SDAR_MODE] to 0b01 for power9 DD1 which is
-> 'Continous sampling mode update SDAR on TLB miss'.
-> And for the rest it copies the sdar_mode value from
-> the event code, which mostly turns out to be 0b00
-> ('No Updates').
+On Tue, 2017-07-11 at 12:10:54 UTC, Michael Ellerman wrote:
+> Although it's not documented anywhere, there is an expectation that
+> atomic64_inc_not_zero() returns a result which fits in an int. This is
+> the behaviour implemented on all arches except powerpc.
 > 
-> Instead, fix the sdar_mode to 0b10
-> ('Continous sampling mode update SDAR on dcache miss')
-> as default for power9 incase of continous sampling.
+> This has caused at least one bug in practice, in the percpu-refcount
+> code, where the long result from our atomic64_inc_not_zero() was
+> truncated to an int leading to lost references and stuck systems. That
+> was worked around in that code in commit 966d2b04e070 ("percpu-refcount:
+> fix reference leak during percpu-atomic transition").
 > 
-> Fixes: 78b4416aa2493 ('powerpc/perf: Handle sdar_mode for marked event in power9')
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> To the best of my grepping abilities there are no other callers
+> in-tree which truncate the value, but we should fix it anyway. Because
+> the breakage is subtle and potentially very harmful I'm also tagging
+> it for stable.
+> 
+> Code generation is largely unaffected because in most cases the
+> callers are just using the result for a test anyway. In particular the
+> case of fget() that was mentioned in commit a6cf7ed5119f
+> ("powerpc/atomic: Implement atomic*_inc_not_zero") generates exactly
+> the same code.
+> 
+> Fixes: a6cf7ed5119f ("powerpc/atomic: Implement atomic*_inc_not_zero")
+> Cc: stable@vger.kernel.org # v3.4
+> Noticed-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/20dd4c624d25156d5ec3345bbb690b
+https://git.kernel.org/powerpc/c/01e6a61aceb82e13bec29502a8eb70
 
 cheers
