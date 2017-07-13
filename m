@@ -1,16 +1,35 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7bDN0spqzDqk7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 22:46:44 +1000 (AEST)
-In-Reply-To: <1499775054-631-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: anton@samba.org
-Subject: Re: powerpc/64: Fix atomic64_inc_not_zero() to return an int
-Message-Id: <3x7bDM6dDgz9sNw@ozlabs.org>
-Date: Thu, 13 Jul 2017 22:46:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7cKJ4q1CzDqlY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 23:36:04 +1000 (AEST)
+Date: Thu, 13 Jul 2017 15:36:00 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+ Christoph Hellwig <hch@lst.de>,
+ Thierry Escande <thierry.escande@collabora.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Sakari Ailus <sakari.ailus@iki.fi>, linux-media@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Pawel Osciak <pawel@osciak.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Hans Verkuil <hverkuil@xs4all.nl>,
+ Shuah Khan <shuahkh@osg.samsung.com>, linux-parisc@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 0/2] [media] videobuf2-dc: Add support for cacheable
+ MMAP
+Message-ID: <20170713133600.GA24748@lst.de>
+References: <CGME20161026085228epcas3p3895ea279d5538750a3b1c59715ad3761@epcas3p3.samsung.com>
+ <1477471926-15796-1-git-send-email-thierry.escande@collabora.com>
+ <f829886e-4842-a500-6b10-9a46e1b763f5@samsung.com>
+ <20170705173327.GD5417@lst.de>
+ <7505cb31-6bd1-7f76-f975-aa5e61e567f0@samsung.com>
+ <20170713132153.GD31807@n2100.armlinux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170713132153.GD31807@n2100.armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-07-11 at 12:10:54 UTC, Michael Ellerman wrote:
-> Although it's not documented anywhere, there is an expectation that
-> atomic64_inc_not_zero() returns a result which fits in an int. This is
-> the behaviour implemented on all arches except powerpc.
+On Thu, Jul 13, 2017 at 02:21:53PM +0100, Russell King - ARM Linux wrote:
+> My conclusion of the dma_alloc_noncoherent() and dma_cache_sync() API
+> when it was introduced is that it's basically a completely broken
+> interface, and I've never seen any point to it.  Maybe some of that is
+> because it's badly documented - which in turn makes it badly designed
+> (because there's no specification detailing what it's supposed to be
+> doing.)
 > 
-> This has caused at least one bug in practice, in the percpu-refcount
-> code, where the long result from our atomic64_inc_not_zero() was
-> truncated to an int leading to lost references and stuck systems. That
-> was worked around in that code in commit 966d2b04e070 ("percpu-refcount:
-> fix reference leak during percpu-atomic transition").
-> 
-> To the best of my grepping abilities there are no other callers
-> in-tree which truncate the value, but we should fix it anyway. Because
-> the breakage is subtle and potentially very harmful I'm also tagging
-> it for stable.
-> 
-> Code generation is largely unaffected because in most cases the
-> callers are just using the result for a test anyway. In particular the
-> case of fget() that was mentioned in commit a6cf7ed5119f
-> ("powerpc/atomic: Implement atomic*_inc_not_zero") generates exactly
-> the same code.
-> 
-> Fixes: a6cf7ed5119f ("powerpc/atomic: Implement atomic*_inc_not_zero")
-> Cc: stable@vger.kernel.org # v3.4
-> Noticed-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> I'd like to see that thing die...
 
-Applied to powerpc fixes.
+It's not exactly the best interface ever, so any improvement is welcome.
 
-https://git.kernel.org/powerpc/c/01e6a61aceb82e13bec29502a8eb70
+I've posted a series to kill dma_alloc_noncoherent in favor of
+dma_alloc_attrs a short while ago, and a big chunk of it should have
+made it into 4.12.  I plan to kill it off entirely for 4.13.
 
-cheers
+That leaves dma_cache_sync() - it's used by 6 drivers:
+
+drivers/net/ethernet/i825xx/lasi_82596.c
+drivers/net/ethernet/seeq/sgiseeq.c
+drivers/scsi/53c700.c
+drivers/scsi/sgiwd93.c
+drivers/sh/maple/maple.c
+drivers/tty/serial/mpsc.c
+
+Those are used on parisc, mips for a few old SGI systems, the SH
+dreamcast and powerpc marvell mv64x60 devices.
+
+So it shouldn't be too hard to figure out if they could be moved
+to the normal dma_sync_* calls.
+
+On parisc dma_cache_sync is equivalent to dma_sync_single_for_cpu,
+so that should be fine.
+
+On mips the implementation of dma_sync_single_for_cpu is a little
+more complicated, but both dma_sync_single_for_cpu and dma_cache_sync
+end up calling __dma_sync_virtual, so they look like the same in
+the end as well.
+
+On SH sync_single_for_device is implemented using dma_cache_sync,
+and there is no dma_sync_single_for_cpu.
+
+On powerpc both dma_sync_single_for_cpu and dma_sync_single_for_device
+are implemented using the same primitive as dma_cache_sync.
+
+In short: killing off dma_cache_sync and using the existing and
+better defined syncing primitives looks entirely feasible.
+
+I'll add it to my TODO list for 4.13.
