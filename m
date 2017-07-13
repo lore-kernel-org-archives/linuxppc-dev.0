@@ -1,32 +1,26 @@
-Return-Path: <garsilva@embeddedor.com>
-Received: from gateway34.websitewelcome.com (gateway34.websitewelcome.com
- [192.185.148.119])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7pvx48h0zDqkm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 07:33:17 +1000 (AEST)
-Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
- by gateway34.websitewelcome.com (Postfix) with ESMTP id 5D95B5B80F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 16:10:57 -0500 (CDT)
-Date: Thu, 13 Jul 2017 16:10:56 -0500
-Message-ID: <20170713161056.Horde.jVvECgjHYS4t4jiD4hqm2WC@gator4166.hostgator.com>
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-To: Joe Perches <joe@perches.com>
-Cc: Mark Brown <broonie@kernel.org>, Takashi Iwai <tiwai@suse.de>, Timur
- Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li
- <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood
- <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
- <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_asrc: constify snd_soc_dai_ops
- structure
-References: <20170713072351.GA1485@embeddedgus> <s5hlgnsiyg6.wl-tiwai@suse.de>
- <20170713101630.odml56qmsvgxqj64@sirena.org.uk>
- <20170713101814.Horde.q8OhHejhvSALVEt2o11aUTW@gator4166.hostgator.com>
- <1499969891.4457.59.camel@perches.com>
-In-Reply-To: <1499969891.4457.59.camel@perches.com>
-Content-Type: text/plain; charset=utf-8; format=flowed; DelSp=Yes
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7qKQ6tYrzDqkm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 07:51:54 +1000 (AEST)
+Message-ID: <1499979030.2865.62.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/time: use get_tb instead of get_vtb in
+ running_clock
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: hejianet <hejianet@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
+ fweisbec@gmail.com, Thomas Gleixner <tglx@linutronix.de>, John Stultz
+ <john.stultz@linaro.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Ivan
+ Mikhaylov <ivan@de.ibm.com>, cyrilbur@gmail.com
+Date: Fri, 14 Jul 2017 06:50:30 +1000
+In-Reply-To: <946976cd-ca8b-7d26-d316-aeaab44beb04@gmail.com>
+References: <1499871670-24671-1-git-send-email-hejianet@gmail.com>
+ <1499899504.2865.44.camel@kernel.crashing.org>
+ <946976cd-ca8b-7d26-d316-aeaab44beb04@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,46 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joe,
+On Thu, 2017-07-13 at 14:55 +0800, hejianet wrote:
+> Hi Ben
+> I add some printk logs in watchdog_timer_fn in the guest
+> [   16.025222] get_vtb=8236291881, get_tb=13756711357, get_timestamp=4
+> [   20.025624] get_vtb=9745285807, get_tb=15804711283, get_timestamp=7
+> [   24.025042] get_vtb=11518119641, get_tb=17852711085, get_timestamp=10
+> [   28.024074] get_vtb=13192704319, get_tb=19900711071, get_timestamp=13
+> [   32.024086] get_vtb=14856516982, get_tb=21948711066, get_timestamp=16
+> [   36.024075] get_vtb=16569127618, get_tb=23996711078, get_timestamp=20
+> [   40.024138] get_vtb=17008865823, get_tb=26044718418, get_timestamp=20
+> [   44.023993] get_vtb=17020637241, get_tb=28092716383, get_timestamp=20
+> [   48.023996] get_vtb=17022857170, get_tb=30140718472, get_timestamp=20
+> [   52.023996] get_vtb=17024268541, get_tb=32188718432, get_timestamp=20
+> [   56.023996] get_vtb=17036577783, get_tb=34236718077, get_timestamp=20
+> [   60.023996] get_vtb=17037829743, get_tb=36284718437, get_timestamp=20
+> [   64.023992] get_vtb=17039846747, get_tb=38332716609, get_timestamp=20
+> [   68.023991] get_vtb=17041448345, get_tb=40380715903, get_timestamp=20
+> 
+> The get_timestamp(use get_vtb(),unit is second) is slower down compared
+> with printk time. You also can obviously watch the get_vtb increment is
+> slowly less than get_tb increment.
 
-Quoting Joe Perches <joe@perches.com>:
+But that is the entire point of vtb ... because it only counts when
+running in the guest, not the time spent in the host.
 
-> On Thu, 2017-07-13 at 10:18 -0500, Gustavo A. R. Silva wrote:
->> Hi Mark,
->>
->> Quoting Mark Brown <broonie@kernel.org>:
->>
->> > On Thu, Jul 13, 2017 at 09:32:41AM +0200, Takashi Iwai wrote:
->> >
->> > > please stop posting in this style.  It's really annoying to see
->> > > spontaneously popping-up almost same patch for more than two hours
->> > > long.
->> > > If you have a series of the same fix patches, send them as a patch
->> > > set in a shot with a thread.  git-send-email does it right.
->> > > I don't mind a couple of patches posted separately, but this is over
->> > > the limit.
->> >
->> > Or at least just collect them up and send them all at one time even if
->> > not as a single thread (you don't want to CC everyone affected by a
->> > single patch in the set on everything, that's harder to avoid when
->> > sending a series via git, but it can be confusing to get one item in a
->> > large patch series without context).
->>
->> I like this idea better. I will do so next time. :)
->
-> I don't it's better.
->
-> It's not that confusing if the 0/n patch cover letter is cc'd
-> to all the appropriate mailing lists and all the [1..n]/n
-> patches are sent with in-reply-to of the cover letter and
-> send to the maintainers and appropriate mailing lists.
+> Without this patch, I thought there might be some softlockup warnings
+> missed in guest.
 
-I ended up following your suggestions:
+Ugh ? We already have too many of these ! On the contrary, we don't
+want the guest to start to spew soft lockup warnings because it was not
+scheduled by the host enough. The guest soft lockup warnings should be
+specifically about something bad happening inside the guest.
 
-https://lkml.org/lkml/2017/7/13/739 (Notice that these are new  
-patches. Not related to the ones I previously sent)
+Your patch seems to defeat the whole purpose of that running_clock()
+function unless I'm somewhat mistaken.
 
-Much appreciated
-Thanks!
---
-Gustavo A. R. Silva
+Ben.
