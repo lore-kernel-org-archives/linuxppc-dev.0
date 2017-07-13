@@ -1,30 +1,21 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7QfM6RcszDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 16:20:11 +1000 (AEST)
-Date: Thu, 13 Jul 2017 08:20:02 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-mm@kvack.org, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org, paulus@samba.org,
- mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
-Subject: Re: [RFC v5 00/38] powerpc: Memory Protection Keys
-Message-ID: <20170713062002.GB14492@dhcp22.suse.cz>
-References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <20170711145246.GA11917@dhcp22.suse.cz>
- <20170711193257.GB5525@ram.oc3035372033.ibm.com>
- <20170712072337.GB28912@dhcp22.suse.cz>
- <1499900032.2865.46.camel@kernel.crashing.org>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7RB44H0qzDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 16:44:12 +1000 (AEST)
+Date: Thu, 13 Jul 2017 01:43:53 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ anton@samba.org
+Subject: Re: [PATCH 1/5] powerpc/lib/sstep: Add cmpb instruction emulation
+Message-ID: <20170713064352.GY13471@gate.crashing.org>
+References: <20170713032548.451-1-matthew.brown.dev@gmail.com>
+ <5baaa1d2-b57d-3330-b496-b011cd209815@au1.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1499900032.2865.46.camel@kernel.crashing.org>
+In-Reply-To: <5baaa1d2-b57d-3330-b496-b011cd209815@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,52 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 13-07-17 08:53:52, Benjamin Herrenschmidt wrote:
-> On Wed, 2017-07-12 at 09:23 +0200, Michal Hocko wrote:
-> > 
-> > > 
-> > > Ideally the MMU looks at the PTE for keys, in order to enforce
-> > > protection. This is the case with x86 and is the case with power9 Radix
-> > > page table. Hence the keys have to be programmed into the PTE.
-> > 
-> > But x86 doesn't update ptes for PKEYs, that would be just too expensive.
-> > You could use standard mprotect to do the same...
+On Thu, Jul 13, 2017 at 01:51:30PM +1000, Andrew Donnellan wrote:
+> On 13/07/17 13:25, Matt Brown wrote:
+> >@@ -1049,6 +1066,13 @@ int analyse_instr(struct instruction_op *op, struct 
+> >pt_regs *regs,
+> > 			do_cmp_unsigned(regs, val, val2, rd >> 2);
+> > 			goto instr_done;
+> >
+> >+		case 19173952: /* cmpb */
 > 
-> What do you mean ? x86 ends up in mprotect_fixup -> change_protection()
-> which will update the PTEs just the same as we do.
+> This looks wrong and should never trigger, given that the switch 
+> statement is comparing against ((instr >> 1) & 0x3ff).
 > 
-> Changing the key for a page is a form mprotect. Changing the access
-> permissions for keys is different, for us it's a special register
-> (AMR).
-> 
-> I don't understand why you think we are doing any differently than x86
-> here.
+> How did you get this value?
 
-That was a misunderstanding on my side as explained in other reply.
+The correct number is 508, and 19173952 = 37744*508.  How to get
+37744 is a mystery though :-)
 
-> > > However with HPT on power, these keys do not necessarily have to be
-> > > programmed into the PTE. We could bypass the Linux Page Table Entry(PTE)
-> > > and instead just program them into the Hash Page Table(HPTE), since
-> > > the MMU does not refer the PTE but refers the HPTE. The last version
-> > > of the page attempted to do that.   It worked as follows:
-> > > 
-> > > a) when a address range is requested to be associated with a key; by the
-> > >    application through key_mprotect() system call, the kernel
-> > >    stores that key in the vmas corresponding to that address
-> > >    range.
-> > > 
-> > > b) Whenever there is a hash page fault for that address, the fault
-> > >    handler reads the key from the VMA and programs the key into the
-> > >    HPTE. __hash_page() is the function that does that.
-> > 
-> > What causes the fault here?
-> 
-> The hardware. With the hash MMU, the HW walks a hash table which is
-> effectively a large in-memory TLB extension. When a page isn't found
-> there, a  "hash fault" is generated allowing Linux to populate that
-> hash table with the content of the corresponding PTE. 
 
-Thanks for the clarification
--- 
-Michal Hocko
-SUSE Labs
+Segher
