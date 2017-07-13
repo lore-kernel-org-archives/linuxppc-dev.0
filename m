@@ -1,33 +1,19 @@
-Return-Path: <srs0=wusc=6q=hotmail.com=intermediadc@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jstancek@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7Wl1613QzDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:09:33 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3x7Wl15Vlnz8t8V
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:09:33 +1000 (AEST)
-Received: from EUR03-VE1-obe.outbound.protection.outlook.com
- (mail-oln040092072054.outbound.protection.outlook.com [40.92.72.54])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3x7Wl03dZFz9s82
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Jul 2017 20:09:31 +1000 (AEST)
-From: luigi burdo <intermediadc@hotmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, "linuxppc-dev@ozlabs.org"
- <linuxppc-dev@ozlabs.org>
-CC: "kbuild-all@01.org" <kbuild-all@01.org>
-Subject: Re: issue with kernel 4.12.rc6 addnote -kernel dont build
-Date: Thu, 13 Jul 2017 10:09:28 +0000
-Message-ID: <AM5P194MB01322B67735B766DF228193CC8AC0@AM5P194MB0132.EURP194.PROD.OUTLOOK.COM>
-References: <1498652022-10417-2-git-send-email-mpe@ellerman.id.au>
- <201707021731.2m4fORfG%fengguang.wu@intel.com>
- <AM5P194MB013262D4AE4121CF72E1DDA9C8D10@AM5P194MB0132.EURP194.PROD.OUTLOOK.COM>,
- <8760f0v9ml.fsf@concordia.ellerman.id.au>
-In-Reply-To: <8760f0v9ml.fsf@concordia.ellerman.id.au>
-Content-Type: multipart/alternative;
- boundary="_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7XhL5bKDzDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:52:18 +1000 (AEST)
+Date: Thu, 13 Jul 2017 06:52:16 -0400 (EDT)
+From: Jan Stancek <jstancek@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: paulus@ozlabs.org, David Gibson <dgibson@redhat.com>, thuth@redhat.com,
+ Steve Best <sbest@redhat.com>, Laurent Vivier <lvivier@redhat.com>
+Message-ID: <1184529176.51045609.1499943136316.JavaMail.zimbra@redhat.com>
+In-Reply-To: <830588289.51042658.1499942166009.JavaMail.zimbra@redhat.com>
+Subject: [bug] KVM: Unrecoverable TM Unavailable Exception f60
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,121 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
+I'm running into Oops below on IBM PowerNV system (model 8247-22L)
+with 4.12 trees and qemu-kvm-2.9. It triggers quickly after I start
+KVM guest installation:
 
-Hi Michael,
-sorry for late reply
+virt-install  --name ppc64le_kvm_1cpu --mac 52:56:00:00:00:06 --location nfs://XXX --ram=1024 --vcpus=1 --file-size=20 --hvm --nonsparse --debug --nographics --noautoconsole --wait -1 --prompt --accelerate --os-variant=virtio26 --network bridge:br3,model=virtio --serial pty --console pty --file /home/virtimages/VirtualMachines/ppc64le_kvm_1cpu.img --extra-args "serial console=tty0 console=hvc0" --noreboot
 
->Did it just stop working? That code is from 2014?
+# git describe
+v4.12-10985-g4ca6df1
 
-exit without right kenel build  with the error that add in the log last tim=
-e.
+# cat /proc/cpuinfo | head
+processor	: 0
+cpu		: POWER8E (raw), altivec supported
+clock		: 3325.000000MHz
+revision	: 2.1 (pvr 004b 0201)
 
+4.11 works OK
+4.11 with these 4 patches applied panics in same way as latest HEAD (v4.12-10985-g4ca6df1)
+  KVM: PPC: Book3S HV: Save/restore host values of debug registers
+  KVM: PPC: Book3S HV: Preserve userspace HTM state properly
+  KVM: PPC: Book3S HV: Restore critical SPRs to host values on guest exit
+  KVM: PPC: Book3S HV: Context-switch EBB registers properly
 
->> Host Machine BE Qoriq e5500  16GB ram
->What userspace are you running? Is it 32-bit ?
+---
 
-yes 32 bit OS Ubuntu Mate 16.10 , with 64 bit kernel
+[  181.328511] Unrecoverable TM Unavailable Exception f60 at d00000001e7d9980
+[  181.328605] Oops: Unrecoverable TM Unavailable Exception, sig: 6 [#1]
+[  181.328613] SMP NR_CPUS=2048 
+[  181.328613] NUMA 
+[  181.328618] PowerNV
+[  181.328646] Modules linked in: vhost_net vhost tap nfs_layout_nfsv41_files rpcsec_gss_krb5 nfsv4 dns_resolver nfs fscache xt_CHECKSUM iptable_mangle ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 tun ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter bridge stp llc kvm_hv kvm nfsd ses enclosure scsi_transport_sas ghash_generic auth_rpcgss gf128mul xts sg ctr nfs_acl lockd vmx_crypto shpchp ipmi_powernv i2c_opal grace ipmi_devintf i2c_core powernv_rng sunrpc ipmi_msghandler ibmpowernv uio_pdrv_genirq uio leds_powernv powernv_op_panel ip_tables xfs sd_mod lpfc ipr bnx2x libata mdio ptp pps_core scsi_transport_fc libcrc32c dm_mirror dm_region_hash dm_log dm_mod
+[  181.329278] CPU: 40 PID: 9926 Comm: CPU 0/KVM Not tainted 4.12.0+ #1
+[  181.329337] task: c000003fc6980000 task.stack: c000003fe4d80000
+[  181.329396] NIP: d00000001e7d9980 LR: d00000001e77381c CTR: d00000001e7d98f0
+[  181.329465] REGS: c000003fe4d837e0 TRAP: 0f60   Not tainted  (4.12.0+)
+[  181.329523] MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+[  181.329527]   CR: 24022448  XER: 00000000
+[  181.329608] CFAR: d00000001e773818 SOFTE: 1 
+[  181.329608] GPR00: d00000001e77381c c000003fe4d83a60 d00000001e7ef410 c000003fdcfe0000 
+[  181.329608] GPR04: c000003fe4f00000 0000000000000000 0000000000000000 c000003fd7954800 
+[  181.329608] GPR08: 0000000000000001 c000003fc6980000 0000000000000000 d00000001e7e2880 
+[  181.329608] GPR12: d00000001e7d98f0 c000000007b19000 00000001295220e0 00007fffc0ce2090 
+[  181.329608] GPR16: 0000010011886608 00007fff8c89f260 0000000000000001 00007fff8c080028 
+[  181.329608] GPR20: 0000000000000000 00000100118500a6 0000010011850000 0000010011850000 
+[  181.329608] GPR24: 00007fffc0ce1b48 0000010011850000 00000000d673b901 0000000000000000 
+[  181.329608] GPR28: 0000000000000000 c000003fdcfe0000 c000003fdcfe0000 c000003fe4f00000 
+[  181.330199] NIP [d00000001e7d9980] kvmppc_vcpu_run_hv+0x90/0x6b0 [kvm_hv]
+[  181.330264] LR [d00000001e77381c] kvmppc_vcpu_run+0x2c/0x40 [kvm]
+[  181.330322] Call Trace:
+[  181.330351] [c000003fe4d83a60] [d00000001e773478] kvmppc_set_one_reg+0x48/0x340 [kvm] (unreliable)
+[  181.330437] [c000003fe4d83b30] [d00000001e77381c] kvmppc_vcpu_run+0x2c/0x40 [kvm]
+[  181.330513] [c000003fe4d83b50] [d00000001e7700b4] kvm_arch_vcpu_ioctl_run+0x114/0x2a0 [kvm]
+[  181.330586] [c000003fe4d83bd0] [d00000001e7642f8] kvm_vcpu_ioctl+0x598/0x7a0 [kvm]
+[  181.330658] [c000003fe4d83d40] [c0000000003451b8] do_vfs_ioctl+0xc8/0x8b0
+[  181.330717] [c000003fe4d83de0] [c000000000345a64] SyS_ioctl+0xc4/0x120
+[  181.330776] [c000003fe4d83e30] [c00000000000b004] system_call+0x58/0x6c
+[  181.330833] Instruction dump:
+[  181.330869] e92d0260 e9290b50 e9290108 792807e3 41820058 e92d0260 e9290b50 e9290108 
+[  181.330941] 792ae8a4 794a1f87 408204f4 e92d0260 <7d4022a6> f9490ff0 e92d0260 7d4122a6 
+[  181.331013] ---[ end trace 6f6ddeb4bfe92a92 ]---
+[  181.334574] 
+[  183.334758] Kernel panic - not syncing: Fatal exception
+[  183.338352] Rebooting in 10 seconds..
 
->>  HOSTCC  arch/powerpc/boot/addnote
-   ^^^^^^
->   What compiler is that?
+---
 
- gcc 6.2.0
-https://launchpad.net/ubuntu/yakkety/+package/gcc-6
-
-
->Building with V=3D1 should show you.
-
-i will check it and report.
-
-
->These warnings seem like they're correct, but that code should never
->But they're only warnings, so they shouldn't be breaking the build AFAICS.
-
- Can be this issue associated with a module? i have this feeling because la=
-st time i have successiful
-build the kernel but without some lan modules (but i cant have lan working)=
-.
-Thanks
-Luigi
-
-
---_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
-1">
-<style type=3D"text/css" style=3D"display:none;"><!-- P {margin-top:0;margi=
-n-bottom:0;} --></style>
-</head>
-<body dir=3D"ltr">
-<div id=3D"divtagdefaultwrapper" style=3D"font-size:12pt;color:#000000;font=
--family:Calibri,Helvetica,sans-serif;" dir=3D"ltr">
-<p><br>
-</p>
-Hi Michael,<br>
-sorry for late reply<br>
-<div style=3D"color: rgb(0, 0, 0);">
-<div><br>
-</div>
-<font size=3D"2"><span style=3D"font-size:10pt;">
-<div class=3D"PlainText">&gt;Did it just stop working? That code is from 20=
-14?</div>
-<div class=3D"PlainText"><br>
-</div>
-<div class=3D"PlainText">exit without right kenel build &nbsp;with the erro=
-r that add in the log last time.<br>
-<br>
-<br>
-&gt;&gt; Host Machine BE Qoriq e5500&nbsp; 16GB ram<br>
-&gt;What userspace are you running? Is it 32-bit ?</div>
-<div class=3D"PlainText"><br>
-</div>
-<div class=3D"PlainText">yes 32 bit OS Ubuntu Mate 16.10 , with 64 bit kern=
-el</div>
-<div class=3D"PlainText"><br>
-&gt;&gt; &nbsp;HOSTCC&nbsp; arch/powerpc/boot/addnote<br>
-&nbsp;&nbsp; ^^^^^^<br>
-&gt; &nbsp; What compiler is that?</div>
-<div class=3D"PlainText"><span style=3D"font-size: 10pt;"><br>
-</span></div>
-<div class=3D"PlainText"><span style=3D"font-size: 10pt;">&nbsp;gcc 6.2.0&n=
-bsp;</span><br>
-</div>
-<div class=3D"PlainText"><a href=3D"https://launchpad.net/ubuntu/yakkety/&#=
-43;package/gcc-6" class=3D"OWAAutoLink" id=3D"LPlnk379831" previewremoved=
-=3D"true">https://launchpad.net/ubuntu/yakkety/&#43;package/gcc-6</a>&nbsp;=
-&nbsp;&nbsp;<br>
-<br>
-<br>
-&gt;Building with V=3D1 should show you.<br>
-<br>
-i will check it and report.<br>
-<br>
-<br>
-&gt;These warnings seem like they're correct, but that code should never<br=
->
-&gt;But they're only warnings, so they shouldn't be breaking the build AFAI=
-CS.<br>
-<br>
-&nbsp;Can be this issue associated with a module? i have this feeling becau=
-se last time i have successiful&nbsp;</div>
-<div class=3D"PlainText">build the kernel but without some lan modules (but=
- i cant have lan working).</div>
-<div class=3D"PlainText">Thanks&nbsp;</div>
-<div class=3D"PlainText">Luigi<br>
-<br>
-</div>
-</span></font></div>
-</div>
-</body>
-</html>
-
---_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_--
+Regards,
+Jan
