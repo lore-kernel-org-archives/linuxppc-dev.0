@@ -1,41 +1,30 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7MNQ4fjFzDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 13:52:54 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6D3qKj1020368
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 23:52:52 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bnt3q5ek0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jul 2017 23:52:51 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 13 Jul 2017 13:52:49 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6D3pV7026738920
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 13:51:31 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6D3pMR7016290
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 13:51:22 +1000
-Subject: Re: [PATCH 1/5] powerpc/lib/sstep: Add cmpb instruction emulation
-To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20170713032548.451-1-matthew.brown.dev@gmail.com>
-Cc: anton@samba.org
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 13 Jul 2017 13:51:30 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7QfM6RcszDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 16:20:11 +1000 (AEST)
+Date: Thu, 13 Jul 2017 08:20:02 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, paulus@samba.org,
+ mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+Subject: Re: [RFC v5 00/38] powerpc: Memory Protection Keys
+Message-ID: <20170713062002.GB14492@dhcp22.suse.cz>
+References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
+ <20170711145246.GA11917@dhcp22.suse.cz>
+ <20170711193257.GB5525@ram.oc3035372033.ibm.com>
+ <20170712072337.GB28912@dhcp22.suse.cz>
+ <1499900032.2865.46.camel@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <20170713032548.451-1-matthew.brown.dev@gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <5baaa1d2-b57d-3330-b496-b011cd209815@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1499900032.2865.46.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,18 +34,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13/07/17 13:25, Matt Brown wrote:
-> @@ -1049,6 +1066,13 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
->  			do_cmp_unsigned(regs, val, val2, rd >> 2);
->  			goto instr_done;
->
-> +		case 19173952: /* cmpb */
+On Thu 13-07-17 08:53:52, Benjamin Herrenschmidt wrote:
+> On Wed, 2017-07-12 at 09:23 +0200, Michal Hocko wrote:
+> > 
+> > > 
+> > > Ideally the MMU looks at the PTE for keys, in order to enforce
+> > > protection. This is the case with x86 and is the case with power9 Radix
+> > > page table. Hence the keys have to be programmed into the PTE.
+> > 
+> > But x86 doesn't update ptes for PKEYs, that would be just too expensive.
+> > You could use standard mprotect to do the same...
+> 
+> What do you mean ? x86 ends up in mprotect_fixup -> change_protection()
+> which will update the PTEs just the same as we do.
+> 
+> Changing the key for a page is a form mprotect. Changing the access
+> permissions for keys is different, for us it's a special register
+> (AMR).
+> 
+> I don't understand why you think we are doing any differently than x86
+> here.
 
-This looks wrong and should never trigger, given that the switch 
-statement is comparing against ((instr >> 1) & 0x3ff).
+That was a misunderstanding on my side as explained in other reply.
 
-How did you get this value?
+> > > However with HPT on power, these keys do not necessarily have to be
+> > > programmed into the PTE. We could bypass the Linux Page Table Entry(PTE)
+> > > and instead just program them into the Hash Page Table(HPTE), since
+> > > the MMU does not refer the PTE but refers the HPTE. The last version
+> > > of the page attempted to do that.   It worked as follows:
+> > > 
+> > > a) when a address range is requested to be associated with a key; by the
+> > >    application through key_mprotect() system call, the kernel
+> > >    stores that key in the vmas corresponding to that address
+> > >    range.
+> > > 
+> > > b) Whenever there is a hash page fault for that address, the fault
+> > >    handler reads the key from the VMA and programs the key into the
+> > >    HPTE. __hash_page() is the function that does that.
+> > 
+> > What causes the fault here?
+> 
+> The hardware. With the hash MMU, the HW walks a hash table which is
+> effectively a large in-memory TLB extension. When a page isn't found
+> there, a  "hash fault" is generated allowing Linux to populate that
+> hash table with the content of the corresponding PTE. 
 
+Thanks for the clarification
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Michal Hocko
+SUSE Labs
