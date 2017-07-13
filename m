@@ -1,42 +1,41 @@
 Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7WM60bK3zDqmf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 19:52:17 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6D9nrnl096411
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 05:52:15 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bnt3qgj2c-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7WtV3G44zDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:16:02 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6DADak6124966
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 06:15:59 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bnt3q9k6t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 05:52:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 06:15:57 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Thu, 13 Jul 2017 19:52:11 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6D9q93w28115062
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 19:52:09 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6D9q7J1009131
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 19:52:07 +1000
-Subject: [mainline][ext2] fsfuzzer triggered WARNING: CPU: 1 PID: 72688 at
- fs/super.c:1244 mount_fs+0x200/0x220
+ Thu, 13 Jul 2017 20:15:54 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6DAFquW26673220
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:15:52 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6DAFiCE014650
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:15:44 +1000
+Subject: [BUG][cramfs] Kernel Oops while fuzz testing cramfs on mainline kernel
 From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
- sachinp <sachinp@linux.vnet.ibm.com>,
- chandan <chandan@linux.vnet.ibm.com>, viro@zeniv.linux.org.uk
-Date: Thu, 13 Jul 2017 15:22:01 +0530
-Content-Type: multipart/mixed; boundary="=-3aQG57QwWJpLmi3xnVuz"
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel
+ <linux-fsdevel@vger.kernel.org>, sachinp <sachinp@linux.vnet.ibm.com>, viro
+ <viro@zeniv.linux.org.uk>, chandan <chandan@linux.vnet.ibm.com>
+Date: Thu, 13 Jul 2017 15:45:50 +0530
+Content-Type: multipart/mixed; boundary="=-siVe9POLb/HaPBKfwPvk"
 Mime-Version: 1.0
-Message-Id: <1499939521.5335.11.camel@abdul.in.ibm.com>
+Message-Id: <1499940950.5335.24.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,84 +46,93 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-3aQG57QwWJpLmi3xnVuz
+--=-siVe9POLb/HaPBKfwPvk
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 
 Hi,
 
-WARN() is being triggered when running fsfuzzer for ext2 file system on
-powerpc machine running 4.12.0-rc1 kernel.
+fsfuzzer triggers kernel Oops on powerpc machine
 
 Machine : Power 8 bare-metal
 Kernel :  4.12.0-rc1
 gcc : 4.8.5
-Test: fsfuzzer (https://github.com/stevegrubb/fsfuzzer)
+Test: fsfuzzer (https://github.com/stevegrubb/fsfuzzer) 
 
-trace:
------
-./run_test ext2 10
-ext2 set sb->s_maxbytes to negative value (-537001984)
-------------[ cut here ]------------
-WARNING: CPU: 1 PID: 72688 at fs/super.c:1244 mount_fs+0x200/0x220
-Modules linked in: cramfs iptable_mangle ipt_MASQUERADE
-nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4
-nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4
-xt_tcpudp tun bridge stp llc kvm_hv kvm iptable_filter vmx_crypto
-ipmi_powernv ipmi_devintf ipmi_msghandler powernv_rng leds_powernv
-led_class rng_core powernv_op_panel binfmt_misc nfsd ip_tables x_tables
-autofs4
-CPU: 1 PID: 72688 Comm: mount Tainted: G        W       4.12.0-rc1-autotest #2
-task: c0000007f3bb9d00 task.stack: c0000007f04cc000
-NIP: c0000000002dbf60 LR: c0000000002dbf5c CTR: c0000000006e09e0
-REGS: c0000007f04cf990 TRAP: 0700   Tainted: G        W        (4.12.0-rc1-autotest)
-MSR: 900000000282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
- CR: 22022822  XER: 20000000
-CFAR: c0000000009a8868 SOFTE: 1 #012GPR00: c0000000002dbf5c
-c0000007f04cfc10 c000000001050300 0000000000000036 #012GPR04:
-c0000007ff54ada0 c0000007ff561838 0000000000000000 ffffffffffffffff
-#012GPR08: 0000000000000000 c000000000d31664 00000007fe820000
-9000000002803003 #012GPR12: 0000000000002200 c00000000fd40580
-0000000032d09198 0000000032d09188 #012GPR16: 0000000032d079dc
-ffffffffffffffff 0000000000000000 0000000032d050a0 #012GPR20:
-0000010002b31290 0000000000000000 00000000c0ed0000 00007fffaa291efc
-#012GPR24: 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 #012GPR28: 0000000000000000 c0000007bab9cfc0
-c000000000fcead0 c0000007e236a000
-NIP [c0000000002dbf60] mount_fs+0x200/0x220
-LR [c0000000002dbf5c] mount_fs+0x1fc/0x220
+Issue is rare to hit, only reproduced once out of 5 retries.
+
+traces:
+-------
+cramfs: Error -3 while decompressing! 
+cramfs: d00000001225c304(3554)->c000000af36f0000(65536)
+cramfs: bad compressed blocksize 4294302712
+cramfs: bad compressed blocksize 4294302712
+cramfs: bad compressed blocksize 4294301340
+cramfs: bad compressed blocksize 4294301340
+cramfs: bad compressed blocksize 4294243528
+cramfs: bad compressed blocksize 4294243528
+Unable to handle kernel paging request for data at address
+0xd000080000000000
+Faulting instruction address: 0xc0000000005ff918
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2048 
+NUMA 
+PowerNV
+Dumping ftrace buffer: 
+   (ftrace buffer empty)
+Modules linked in: rcutorture bridge cramfs iptable_mangle torture
+ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat
+nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT
+nf_reject_ipv4 xt_tcpudp tun stp llc kvm_hv kvm iptable_filter
+vmx_crypto ipmi_powernv ipmi_devintf powernv_rng ipmi_msghandler
+powernv_op_panel leds_powernv led_class rng_core binfmt_misc nfsd
+ip_tables x_tables autofs4 [last unloaded: rcutorture]CPU: 59 PID: 25870
+Comm: fstest Not tainted 4.12.0-rc1-autotest #1
+task: c000000f1b29e100 task.stack: c000000e3fb3c000
+NIP: c0000000005ff918 LR: c0000000002d3e90 CTR: c0000000005ff810
+REGS: c000000e3fb3fa20 TRAP: 0300   Not tainted  (4.12.0-rc1-autotest)
+MSR: 9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>
+  CR: 22002882  XER: 00000000
+CFAR: c0000000005ff8a4 DAR: d000080000000000 DSISR: 40000000 SOFTE: 1
+GPR00: c0000000002d3e90 c000000e3fb3fca0 c000000001050300 d000080000000000  
+GPR04: 00007fffcd50e180 0000000000000020 c000000e3fb3fe00 0000000000000000 
+GPR08: 0000000000000000 c0000000010eaa70 c000000000a30960 c0000000009c0f80 
+GPR12: 0000000000000000 c00000000fd54480 0000000010002160 00000000100020d0 
+GPR16: 00000000100020d8 00000000100020f8 0000000010002108 0000000010002110 
+GPR20: 0000000010002120 0000000010002128 c000000e3fb3fe00 00007fffcd50e180 
+GPR24: c0000000010e0580 0000000000000000 0000000000010000 000000000000001f 
+GPR28: c000000e3fb3fe00 0000000000000000 00007fffcd50e180 0000000000000000 
+NIP [c0000000005ff918] read_port+0x108/0x1e0
+LR [c0000000002d3e90] __vfs_read+0x40/0x1b0
 Call Trace:
-[c0000007f04cfc10] [c0000000002dbf5c] mount_fs+0x1fc/0x220 (unreliable)
-[c0000007f04cfcc0] [c0000000003032cc] vfs_kern_mount+0x5c/0x180
-[c0000007f04cfd10] [c000000000307c48] do_mount+0x278/0xee0
-[c0000007f04cfde0] [c000000000308cb4] SyS_mount+0x94/0x100
-[c0000007f04cfe30] [c00000000000b7e0] system_call+0x38/0xfc
+[c000000e3fb3fca0] [00000000100020d8] 0x100020d8 (unreliable)
+[c000000e3fb3fd10] [c0000000002d3e90] __vfs_read+0x40/0x1b0
+[c000000e3fb3fda0] [c0000000002d57bc] vfs_read+0xac/0x190
+[c000000e3fb3fde0] [c0000000002d74c0] SyS_read+0x60/0x110
+[c000000e3fb3fe30] [c00000000000b7e0] system_call+0x38/0xfc
 Instruction dump:
-4182fe84 4bffff70 60000000 60420000 3b800000 3b400000 4bfffe6c e89e0000
-3c62ffb6 3863a5f0 486cc8d1 60000000 <0fe00000> 4bfffedc 60000000
-60000000
----[ end trace 94263d5270c2cf71 ]---
+3bbd0001 419a00b4 e9380070 7fe3fb78 2fa90000 7d2c4b78 409effb0 3d22000a
+3929a770 e8690000 7c7f1a14 7c0004ac <8b830000> 0c1c0000 4c00012c
+7b9c0620 
+---[ end trace 0c40bce9f31b7670 ]---
 
+which maps to:
+c0000000005ff918 <read_port+0x108> 00 00 83 8b  lbz     r28,0(r3)  
 
-from file fs/super.c in function mount_fs() a WARN() is being triggered.
+test logs:
+----------
+Fuzzing /var/tmp/avocado_fd9HwK/1-fsfuzzer.py_Fsfuzzer.test/src/fsfuzzer-master/fs/cramfs.135.img (679936 bytes can change)...
+Testing /var/tmp/avocado_fd9HwK/1-fsfuzzer.py_Fsfuzzer.test/src/fsfuzzer-master/fs/cramfs.135.img...
++++ New Tests...
+./run_test: line 155: 25870 Segmentation fault      ./fstest $DIR
+ New tests failed aborting
 
-   error = security_sb_kern_mount(sb, flags, secdata);
-    if (error)
-        goto out_sb;
+Message from syslogd@ltc at Jul 13 11:16:09 ...
+ kernel:Dumping ftrace buffer:
 
-    /*
-     * filesystems should never set s_maxbytes larger than
-MAX_LFS_FILESIZE
-     * but s_maxbytes was an unsigned long long for many releases. Throw
-     * this warning for a little while to try and catch filesystems that
-     * violate this rule.
-     */
->>> WARN((sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
-        "negative value (%lld)\n", type->name, sb->s_maxbytes);
+Message from syslogd@ltc at Jul 13 11:16:09 ...
+ kernel:   (ftrace buffer empty)
 
-    up_write(&sb->s_umount);
-    free_secdata(secdata);
-    return root;
 
 -- 
 Regard's
@@ -134,7 +142,7 @@ IBM Linux Technology Centre
 
 
 
---=-3aQG57QwWJpLmi3xnVuz
+--=-siVe9POLb/HaPBKfwPvk
 Content-Disposition: attachment; filename="Tul-NV-config"
 Content-Type: text/plain; name="Tul-NV-config"; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
@@ -3533,4 +3541,4 @@ CONFIG_VHOST_NET=m
 CONFIG_VHOST=m
 # CONFIG_VHOST_CROSS_ENDIAN_LEGACY is not set
 
---=-3aQG57QwWJpLmi3xnVuz--
+--=-siVe9POLb/HaPBKfwPvk--
