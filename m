@@ -1,28 +1,33 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=wusc=6q=hotmail.com=intermediadc@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7WwN64B7zDqq4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:17:40 +1000 (AEST)
-Date: Thu, 13 Jul 2017 11:16:30 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: "Gustavo A. R. Silva" <garsilva@embeddedor.com>,
- Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Message-ID: <20170713101630.odml56qmsvgxqj64@sirena.org.uk>
-References: <20170713072351.GA1485@embeddedgus> <s5hlgnsiyg6.wl-tiwai@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7Wl1613QzDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:09:33 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3x7Wl15Vlnz8t8V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 20:09:33 +1000 (AEST)
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-oln040092072054.outbound.protection.outlook.com [40.92.72.54])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3x7Wl03dZFz9s82
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Jul 2017 20:09:31 +1000 (AEST)
+From: luigi burdo <intermediadc@hotmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "linuxppc-dev@ozlabs.org"
+ <linuxppc-dev@ozlabs.org>
+CC: "kbuild-all@01.org" <kbuild-all@01.org>
+Subject: Re: issue with kernel 4.12.rc6 addnote -kernel dont build
+Date: Thu, 13 Jul 2017 10:09:28 +0000
+Message-ID: <AM5P194MB01322B67735B766DF228193CC8AC0@AM5P194MB0132.EURP194.PROD.OUTLOOK.COM>
+References: <1498652022-10417-2-git-send-email-mpe@ellerman.id.au>
+ <201707021731.2m4fORfG%fengguang.wu@intel.com>
+ <AM5P194MB013262D4AE4121CF72E1DDA9C8D10@AM5P194MB0132.EURP194.PROD.OUTLOOK.COM>,
+ <8760f0v9ml.fsf@concordia.ellerman.id.au>
+In-Reply-To: <8760f0v9ml.fsf@concordia.ellerman.id.au>
+Content-Type: multipart/alternative;
+ boundary="_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="f6ufjioalak4igbi"
-In-Reply-To: <s5hlgnsiyg6.wl-tiwai@suse.de>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_asrc: constify snd_soc_dai_ops
- structure
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +37,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---f6ufjioalak4igbi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jul 13, 2017 at 09:32:41AM +0200, Takashi Iwai wrote:
 
-> please stop posting in this style.  It's really annoying to see
-> spontaneously popping-up almost same patch for more than two hours
-> long.
+Hi Michael,
+sorry for late reply
 
-> If you have a series of the same fix patches, send them as a patch
-> set in a shot with a thread.  git-send-email does it right.
+>Did it just stop working? That code is from 2014?
 
-> I don't mind a couple of patches posted separately, but this is over
-> the limit.
+exit without right kenel build  with the error that add in the log last tim=
+e.
 
-Or at least just collect them up and send them all at one time even if
-not as a single thread (you don't want to CC everyone affected by a
-single patch in the set on everything, that's harder to avoid when
-sending a series via git, but it can be confusing to get one item in a
-large patch series without context). =20
 
---f6ufjioalak4igbi
-Content-Type: application/pgp-signature; name="signature.asc"
+>> Host Machine BE Qoriq e5500  16GB ram
+>What userspace are you running? Is it 32-bit ?
 
------BEGIN PGP SIGNATURE-----
+yes 32 bit OS Ubuntu Mate 16.10 , with 64 bit kernel
 
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAllnSH0ACgkQJNaLcl1U
-h9Bf8Qf6AzXqrmxUZfLyUvE72qUb3AwmnIzLONclZSgwG2VD3VTL65vc3ZAehIMr
-AWgSWL0laBKJhAiCdQ6ZQ5r3CQmui27gyIHagZ8GXrVSrgw2/lZOzwPkmTGQA/Ya
-OSrRnYVmK/ClSkV12NDYS4uvBRGSho275Y7mfI/rdlqYJMBjgI1uzz2HQn8bQ7iM
-QKZ8FIXhjH9Qait3bVYL7m6uYHhAOW7opBnVGOH2m+X30AuD6Wec9XU72Q1/pGvA
-GYJmGiImxQtRBV+OK0STvQxO4RJ0INfXL1ZT7b8UY8frMMFx9Mu7CpIidWdtP1jO
-ZIzvA0T3+aqq/EALntQqjBHBfp9j/Q==
-=nlTK
------END PGP SIGNATURE-----
+>>  HOSTCC  arch/powerpc/boot/addnote
+   ^^^^^^
+>   What compiler is that?
 
---f6ufjioalak4igbi--
+ gcc 6.2.0
+https://launchpad.net/ubuntu/yakkety/+package/gcc-6
+
+
+>Building with V=3D1 should show you.
+
+i will check it and report.
+
+
+>These warnings seem like they're correct, but that code should never
+>But they're only warnings, so they shouldn't be breaking the build AFAICS.
+
+ Can be this issue associated with a module? i have this feeling because la=
+st time i have successiful
+build the kernel but without some lan modules (but i cant have lan working)=
+.
+Thanks
+Luigi
+
+
+--_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1">
+<style type=3D"text/css" style=3D"display:none;"><!-- P {margin-top:0;margi=
+n-bottom:0;} --></style>
+</head>
+<body dir=3D"ltr">
+<div id=3D"divtagdefaultwrapper" style=3D"font-size:12pt;color:#000000;font=
+-family:Calibri,Helvetica,sans-serif;" dir=3D"ltr">
+<p><br>
+</p>
+Hi Michael,<br>
+sorry for late reply<br>
+<div style=3D"color: rgb(0, 0, 0);">
+<div><br>
+</div>
+<font size=3D"2"><span style=3D"font-size:10pt;">
+<div class=3D"PlainText">&gt;Did it just stop working? That code is from 20=
+14?</div>
+<div class=3D"PlainText"><br>
+</div>
+<div class=3D"PlainText">exit without right kenel build &nbsp;with the erro=
+r that add in the log last time.<br>
+<br>
+<br>
+&gt;&gt; Host Machine BE Qoriq e5500&nbsp; 16GB ram<br>
+&gt;What userspace are you running? Is it 32-bit ?</div>
+<div class=3D"PlainText"><br>
+</div>
+<div class=3D"PlainText">yes 32 bit OS Ubuntu Mate 16.10 , with 64 bit kern=
+el</div>
+<div class=3D"PlainText"><br>
+&gt;&gt; &nbsp;HOSTCC&nbsp; arch/powerpc/boot/addnote<br>
+&nbsp;&nbsp; ^^^^^^<br>
+&gt; &nbsp; What compiler is that?</div>
+<div class=3D"PlainText"><span style=3D"font-size: 10pt;"><br>
+</span></div>
+<div class=3D"PlainText"><span style=3D"font-size: 10pt;">&nbsp;gcc 6.2.0&n=
+bsp;</span><br>
+</div>
+<div class=3D"PlainText"><a href=3D"https://launchpad.net/ubuntu/yakkety/&#=
+43;package/gcc-6" class=3D"OWAAutoLink" id=3D"LPlnk379831" previewremoved=
+=3D"true">https://launchpad.net/ubuntu/yakkety/&#43;package/gcc-6</a>&nbsp;=
+&nbsp;&nbsp;<br>
+<br>
+<br>
+&gt;Building with V=3D1 should show you.<br>
+<br>
+i will check it and report.<br>
+<br>
+<br>
+&gt;These warnings seem like they're correct, but that code should never<br=
+>
+&gt;But they're only warnings, so they shouldn't be breaking the build AFAI=
+CS.<br>
+<br>
+&nbsp;Can be this issue associated with a module? i have this feeling becau=
+se last time i have successiful&nbsp;</div>
+<div class=3D"PlainText">build the kernel but without some lan modules (but=
+ i cant have lan working).</div>
+<div class=3D"PlainText">Thanks&nbsp;</div>
+<div class=3D"PlainText">Luigi<br>
+<br>
+</div>
+</span></font></div>
+</div>
+</body>
+</html>
+
+--_000_AM5P194MB01322B67735B766DF228193CC8AC0AM5P194MB0132EURP_--
