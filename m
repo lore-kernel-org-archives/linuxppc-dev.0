@@ -1,35 +1,29 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dave.hansen@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7cKJ4q1CzDqlY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 23:36:04 +1000 (AEST)
-Date: Thu, 13 Jul 2017 15:36:00 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
- Christoph Hellwig <hch@lst.de>,
- Thierry Escande <thierry.escande@collabora.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Sakari Ailus <sakari.ailus@iki.fi>, linux-media@vger.kernel.org,
- linux-kernel@vger.kernel.org, Pawel Osciak <pawel@osciak.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Hans Verkuil <hverkuil@xs4all.nl>,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-parisc@vger.kernel.org,
- linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 0/2] [media] videobuf2-dc: Add support for cacheable
- MMAP
-Message-ID: <20170713133600.GA24748@lst.de>
-References: <CGME20161026085228epcas3p3895ea279d5538750a3b1c59715ad3761@epcas3p3.samsung.com>
- <1477471926-15796-1-git-send-email-thierry.escande@collabora.com>
- <f829886e-4842-a500-6b10-9a46e1b763f5@samsung.com>
- <20170705173327.GD5417@lst.de>
- <7505cb31-6bd1-7f76-f975-aa5e61e567f0@samsung.com>
- <20170713132153.GD31807@n2100.armlinux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7dJK4GnZzDqk3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 00:20:17 +1000 (AEST)
+Subject: Re: [RFC v5 34/38] procfs: display the protection-key number
+ associated with a vma
+To: Ram Pai <linuxram@us.ibm.com>
+References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
+ <1499289735-14220-35-git-send-email-linuxram@us.ibm.com>
+ <8b0827c9-9fc9-c2d5-d1a5-52d9eef8965e@intel.com>
+ <20170713080348.GH5525@ram.oc3035372033.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <e3355a7a-8899-b69d-968a-6862c29633a2@intel.com>
+Date: Thu, 13 Jul 2017 07:07:48 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170713132153.GD31807@n2100.armlinux.org.uk>
+In-Reply-To: <20170713080348.GH5525@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,52 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 13, 2017 at 02:21:53PM +0100, Russell King - ARM Linux wrote:
-> My conclusion of the dma_alloc_noncoherent() and dma_cache_sync() API
-> when it was introduced is that it's basically a completely broken
-> interface, and I've never seen any point to it.  Maybe some of that is
-> because it's badly documented - which in turn makes it badly designed
-> (because there's no specification detailing what it's supposed to be
-> doing.)
+On 07/13/2017 01:03 AM, Ram Pai wrote:
+> On Tue, Jul 11, 2017 at 11:13:56AM -0700, Dave Hansen wrote:
+>> On 07/05/2017 02:22 PM, Ram Pai wrote:
+>>> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+>>> +void arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
+>>> +{
+>>> +	seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
+>>> +}
+>>> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+>>
+>> This seems like kinda silly unnecessary duplication.  Could we just put
+>> this in the fs/proc/ code and #ifdef it on ARCH_HAS_PKEYS?
 > 
-> I'd like to see that thing die...
+> Well x86 predicates it based on availability of X86_FEATURE_OSPKE.
+> 
+> powerpc doesn't need that check or any similar check. So trying to
+> generalize the code does not save much IMHO.
 
-It's not exactly the best interface ever, so any improvement is welcome.
+I know all your hardware doesn't support it. :)
 
-I've posted a series to kill dma_alloc_noncoherent in favor of
-dma_alloc_attrs a short while ago, and a big chunk of it should have
-made it into 4.12.  I plan to kill it off entirely for 4.13.
+So, for instance, if you are running on a new POWER9 with radix page
+tables, you will just always output "ProtectionKey: 0" in every VMA,
+regardless?
 
-That leaves dma_cache_sync() - it's used by 6 drivers:
+> maybe have a seperate inline function that does
+> seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
+> and is called from x86 and powerpc's arch_show_smap()?
+> At least will keep the string format captured in 
+> one single place.
 
-drivers/net/ethernet/i825xx/lasi_82596.c
-drivers/net/ethernet/seeq/sgiseeq.c
-drivers/scsi/53c700.c
-drivers/scsi/sgiwd93.c
-drivers/sh/maple/maple.c
-drivers/tty/serial/mpsc.c
-
-Those are used on parisc, mips for a few old SGI systems, the SH
-dreamcast and powerpc marvell mv64x60 devices.
-
-So it shouldn't be too hard to figure out if they could be moved
-to the normal dma_sync_* calls.
-
-On parisc dma_cache_sync is equivalent to dma_sync_single_for_cpu,
-so that should be fine.
-
-On mips the implementation of dma_sync_single_for_cpu is a little
-more complicated, but both dma_sync_single_for_cpu and dma_cache_sync
-end up calling __dma_sync_virtual, so they look like the same in
-the end as well.
-
-On SH sync_single_for_device is implemented using dma_cache_sync,
-and there is no dma_sync_single_for_cpu.
-
-On powerpc both dma_sync_single_for_cpu and dma_sync_single_for_device
-are implemented using the same primitive as dma_cache_sync.
-
-In short: killing off dma_cache_sync and using the existing and
-better defined syncing primitives looks entirely feasible.
-
-I'll add it to my TODO list for 4.13.
+Now that we have two architectures, is there a strong reason we can't
+just have an arch_pkeys_enabled(), and stick the seq_printf() back in
+generic code?
