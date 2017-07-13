@@ -1,43 +1,29 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <garsilva@embeddedor.com>
+Received: from gateway36.websitewelcome.com (gateway36.websitewelcome.com
+ [192.185.187.5])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7Sm85r4czDqk7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:55:20 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6D7rgG9033908
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 03:55:18 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bnt3pcq6u-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 03:55:18 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 13 Jul 2017 01:55:17 -0600
-Date: Thu, 13 Jul 2017 00:55:02 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com
-Subject: Re: [RFC v5 15/38] powerpc: helper function to read,write
- AMR,IAMR,UAMOR registers
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1499289735-14220-1-git-send-email-linuxram@us.ibm.com>
- <1499289735-14220-16-git-send-email-linuxram@us.ibm.com>
- <20170712152601.3b2f52ed@firefly.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7SvP71f9zDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 18:01:37 +1000 (AEST)
+Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
+ by gateway36.websitewelcome.com (Postfix) with ESMTP id 9807540408688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 02:36:38 -0500 (CDT)
+Date: Thu, 13 Jul 2017 02:36:38 -0500
+Message-ID: <20170713023638.Horde.0_LUC9FWsp9URj4mt2AqTT6@gator4166.hostgator.com>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Liam
+ Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jaroslav
+ Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_asrc: constify snd_soc_dai_ops
+ structure
+References: <20170713072351.GA1485@embeddedgus> <s5hlgnsiyg6.wl-tiwai@suse.de>
+In-Reply-To: <s5hlgnsiyg6.wl-tiwai@suse.de>
+Content-Type: text/plain; charset=utf-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170712152601.3b2f52ed@firefly.ozlabs.ibm.com>
-Message-Id: <20170713075502.GG5525@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,72 +33,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 12, 2017 at 03:26:01PM +1000, Balbir Singh wrote:
-> On Wed,  5 Jul 2017 14:21:52 -0700
-> Ram Pai <linuxram@us.ibm.com> wrote:
-> 
-> > Implements helper functions to read and write the key related
-> > registers; AMR, IAMR, UAMOR.
-> > 
-> > AMR register tracks the read,write permission of a key
-> > IAMR register tracks the execute permission of a key
-> > UAMOR register enables and disables a key
-> > 
-> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/book3s/64/pgtable.h |   60 ++++++++++++++++++++++++++
-> >  1 files changed, 60 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> > index 85bc987..435d6a7 100644
-> > --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> > @@ -428,6 +428,66 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
-> >  		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 1);
-> >  }
-> >  
-> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> > +
-> > +#include <asm/reg.h>
-> > +static inline u64 read_amr(void)
-> > +{
-> > +	return mfspr(SPRN_AMR);
-> > +}
-> > +static inline void write_amr(u64 value)
-> > +{
-> > +	mtspr(SPRN_AMR, value);
-> > +}
-> > +static inline u64 read_iamr(void)
-> > +{
-> > +	return mfspr(SPRN_IAMR);
-> > +}
-> > +static inline void write_iamr(u64 value)
-> > +{
-> > +	mtspr(SPRN_IAMR, value);
-> > +}
-> > +static inline u64 read_uamor(void)
-> > +{
-> > +	return mfspr(SPRN_UAMOR);
-> > +}
-> > +static inline void write_uamor(u64 value)
-> > +{
-> > +	mtspr(SPRN_UAMOR, value);
-> > +}
-> > +
-> > +#else /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> > +
-> > +static inline u64 read_amr(void)
-> > +{
-> > +	WARN(1, "%s called with MEMORY PROTECTION KEYS disabled\n", __func__);
-> > +	return -1;
-> > +}
-> 
-> Why do we need to have a version here if we are going to WARN(), why not
-> let the compilation fail if called from outside of CONFIG_PPC64_MEMORY_PROTECTION_KEYS?
-> Is that the intention?
+Hi Takashi,
 
-I did not want to stop someone; kernel module for example, from calling
-these interfaces from outside the pkey domain.
+Quoting Takashi Iwai <tiwai@suse.de>:
 
-Either way can be argued to be correct, I suppose.
-RP
+> Gustavo,
+>
+> please stop posting in this style.  It's really annoying to see
+> spontaneously popping-up almost same patch for more than two hours
+> long.
+>
+> If you have a series of the same fix patches, send them as a patch
+> set in a shot with a thread.  git-send-email does it right.
+>
+
+I will do that.
+
+Thanks for the suggestion.
+--
+Gustavo A. R. Silva
+
+> I don't mind a couple of patches posted separately, but this is over
+> the limit.
+>
+>
+> thanks,
+>
+> Takashi
+>
+> On Thu, 13 Jul 2017 09:23:51 +0200,
+> Gustavo A. R. Silva wrote:
+>>
+>> This structure is only stored in the ops field of a snd_soc_dai_driver
+>> structure. That field is declared const, so snd_soc_dai_ops structures
+>> that have this property can be declared as const also.
+>>
+>> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+>> ---
+>>  sound/soc/fsl/fsl_asrc.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+>> index 8cfffa7..806d399 100644
+>> --- a/sound/soc/fsl/fsl_asrc.c
+>> +++ b/sound/soc/fsl/fsl_asrc.c
+>> @@ -542,7 +542,7 @@ static int fsl_asrc_dai_trigger(struct  
+>> snd_pcm_substream *substream, int cmd,
+>>  	return 0;
+>>  }
+>>
+>> -static struct snd_soc_dai_ops fsl_asrc_dai_ops = {
+>> +static const struct snd_soc_dai_ops fsl_asrc_dai_ops = {
+>>  	.hw_params    = fsl_asrc_dai_hw_params,
+>>  	.hw_free      = fsl_asrc_dai_hw_free,
+>>  	.trigger      = fsl_asrc_dai_trigger,
+>> --
+>> 2.5.0
+>>
+>> _______________________________________________
+>> Alsa-devel mailing list
+>> Alsa-devel@alsa-project.org
+>> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+>>
