@@ -1,28 +1,28 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7T2S5W4DzDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 18:07:44 +1000 (AEST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v6D7d99u004500
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 07:39:09 GMT
-Date: Thu, 13 Jul 2017 10:38:49 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Alexander Graf <agraf@suse.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] KVM: PPC: e500mc: Fix a NULL dereference
-Message-ID: <20170713073849.tj6jqmhliyjmn3zi@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7T4Q0t00zDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 18:09:26 +1000 (AEST)
+Date: Thu, 13 Jul 2017 10:09:19 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Andi Kleen <andi@firstfloor.org>, ak@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ mikey@neuling.org, mpetlan@redhat.com
+Subject: Re: [GIT PULL] Please pull JSON files for Power9 PMU events
+Message-ID: <20170713080919.GA6531@krava>
+References: <20170712020827.GB31223@us.ibm.com>
+ <87a849luvr.fsf@concordia.ellerman.id.au>
+ <20170712144611.GN27350@kernel.org>
+ <20170712164008.GC31223@us.ibm.com>
+ <87y3rtj91u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87y3rtj91u.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,25 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We should set "err = -ENOMEM;", otherwise it means we're returning
-ERR_PTR(0) which is NULL.  It results in a NULL pointer dereference in
-the caller.
+On Thu, Jul 13, 2017 at 01:43:41PM +1000, Michael Ellerman wrote:
+> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> ...
+> >
+> >  tools/perf/pmu-events/arch/powerpc/mapfile.csv     |   3 +
+> >  .../perf/pmu-events/arch/powerpc/power9/cache.json | 176 +++++
+> >  .../arch/powerpc/power9/floating-point.json        |  44 ++
+> >  .../pmu-events/arch/powerpc/power9/frontend.json   | 446 +++++++++++
+> >  .../pmu-events/arch/powerpc/power9/marked.json     | 782 +++++++++++++++++++
+> >  .../pmu-events/arch/powerpc/power9/memory.json     | 158 ++++
+> 
+> In the map file we have "power9.json", but the files are power9/x.json.
+> How does that work?
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+hum, we take just the base name from that string and use it
+as a map to the directory/struct with events.. so no harm done
 
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index f48a0c22e8f9..d0b6b5788afc 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -331,8 +331,10 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_e500mc(struct kvm *kvm,
- 		goto uninit_vcpu;
- 
- 	vcpu->arch.shared = (void *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
--	if (!vcpu->arch.shared)
-+	if (!vcpu->arch.shared) {
-+		err = -ENOMEM;
- 		goto uninit_tlb;
-+	}
- 
- 	return vcpu;
- 
+I guess it's the leftover from when we switched from single file
+to per topic event files.. x86 arch seems to have it right
+
+I'll send the fix
+
+thanks,
+jirka
