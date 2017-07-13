@@ -1,22 +1,27 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <garsilva@embeddedor.com>
+Received: from gateway31.websitewelcome.com (gateway31.websitewelcome.com
+ [192.185.143.46])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7Rmw1WMjzDqk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:10:55 +1000 (AEST)
-Date: Thu, 13 Jul 2017 02:10:46 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org,
- Matt Brown <matthew.brown.dev@gmail.com>
-Subject: Re: [PATCH 1/5] powerpc/lib/sstep: Add cmpb instruction emulation
-Message-ID: <20170713071046.GA13471@gate.crashing.org>
-References: <20170713032548.451-1-matthew.brown.dev@gmail.com>
- <5baaa1d2-b57d-3330-b496-b011cd209815@au1.ibm.com>
- <20170713064352.GY13471@gate.crashing.org>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7Rry4pV2zDqk6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:14:26 +1000 (AEST)
+Received: from cm13.websitewelcome.com (cm13.websitewelcome.com [100.42.49.6])
+ by gateway31.websitewelcome.com (Postfix) with ESMTP id BAB9017622
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 02:14:23 -0500 (CDT)
+Date: Thu, 13 Jul 2017 02:14:21 -0500
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ "Gusatvo A. R. Silva" <garsilva@embeddedor.com>
+Subject: [PATCH] ASoC: fsl_spdif: constify snd_soc_dai_ops structure
+Message-ID: <20170713071335.GA30695@embeddedgus>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170713064352.GY13471@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 13, 2017 at 01:43:53AM -0500, Segher Boessenkool wrote:
-> On Thu, Jul 13, 2017 at 01:51:30PM +1000, Andrew Donnellan wrote:
-> > On 13/07/17 13:25, Matt Brown wrote:
-> > >@@ -1049,6 +1066,13 @@ int analyse_instr(struct instruction_op *op, struct 
-> > >pt_regs *regs,
-> > > 			do_cmp_unsigned(regs, val, val2, rd >> 2);
-> > > 			goto instr_done;
-> > >
-> > >+		case 19173952: /* cmpb */
-> > 
-> > This looks wrong and should never trigger, given that the switch 
-> > statement is comparing against ((instr >> 1) & 0x3ff).
-> > 
-> > How did you get this value?
-> 
-> The correct number is 508, and 19173952 = 37744*508.  How to get
-> 37744 is a mystery though :-)
+This structure is only stored in the ops field of a snd_soc_dai_driver
+structure. That field is declared const, so snd_soc_dai_ops structures
+that have this property can be declared as const also.
 
-Ah.  Take the binary representation of 508, and interpret that as if
-it were octal :-)  Those pesky meddling leading zeroes!
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+---
+ sound/soc/fsl/fsl_spdif.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Segher
+diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
+index 1ff467c..7e6cc4d 100644
+--- a/sound/soc/fsl/fsl_spdif.c
++++ b/sound/soc/fsl/fsl_spdif.c
+@@ -626,7 +626,7 @@ static int fsl_spdif_trigger(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static struct snd_soc_dai_ops fsl_spdif_dai_ops = {
++static const struct snd_soc_dai_ops fsl_spdif_dai_ops = {
+ 	.startup = fsl_spdif_startup,
+ 	.hw_params = fsl_spdif_hw_params,
+ 	.trigger = fsl_spdif_trigger,
+-- 
+2.5.0
