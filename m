@@ -1,24 +1,17 @@
-Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-qk0-x22c.google.com (mail-qk0-x22c.google.com
- [IPv6:2607:f8b0:400d:c09::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7vGj1QZ8zDqkm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 10:49:49 +1000 (AEST)
-Received: by mail-qk0-x22c.google.com with SMTP id v17so58598952qka.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:49:49 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170713074732.GD13471@gate.crashing.org>
-References: <20170713032548.451-1-matthew.brown.dev@gmail.com>
- <20170713032548.451-5-matthew.brown.dev@gmail.com>
- <20170713074732.GD13471@gate.crashing.org>
-From: Matt Brown <matthew.brown.dev@gmail.com>
-Date: Fri, 14 Jul 2017 10:49:46 +1000
-Message-ID: <CAPoR37bHoNwN7MEO0JTLh_23vwPo5scbjbjHQ6Q_nF-xBg5Baw@mail.gmail.com>
-Subject: Re: [PATCH 5/5] powerpc/lib/sstep: Add isel instruction emulation
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7whG2F4hzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 11:53:34 +1000 (AEST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/4] powerpc/mm/radix: Don't iterate all sets when flushing
+ the PWC
+Date: Fri, 14 Jul 2017 11:52:55 +1000
+Message-Id: <20170714015258.7933-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 13, 2017 at 5:47 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
-> On Thu, Jul 13, 2017 at 01:25:48PM +1000, Matt Brown wrote:
->> +             case 585:       /* isel */
->
-> The secondary opcode for isel is only 5 bits, not 10 like most other
-> insns have.
+The PWC flush only needs a single set call, just like the
+full (RIC=2) flush.
 
-Yet another conversion mistake, I'll get there one day!
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/mm/tlb-radix.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
->
->> +                     mb = (instr >> 6) & 0x1f; /* bc */
->> +                     val = (regs->ccr >> (mb + 32)) & 1;
->
-> regs->ccr >> (31 - mb)  ?
->
->> +
->> +                     if (val)
->> +                             regs->gpr[rd] = regs->gpr[ra];
->
-> You need to treat ra=0 separately (as 0, not reg 0).
->
-Ah I missed that. The wording in the ISA doesn't make that completely obvious.
-
-Thanks,
-Matt
-
->> +                     else
->> +                             regs->gpr[rd] = regs->gpr[rb];
->> +                     goto logical_done;
->
->
-> Segher
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 02e7140..5403419 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -52,12 +52,15 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
+ 	 */
+ 	__tlbiel_pid(pid, 0, ric);
+ 
+-	if (ric == RIC_FLUSH_ALL)
+-		/* For the remaining sets, just flush the TLB */
+-		ric = RIC_FLUSH_TLB;
++	/* For PWC, only one flush is needed */
++	if (ric == RIC_FLUSH_PWC) {
++		asm volatile("ptesync": : :"memory");
++		return;
++	}
+ 
++	/* For the remaining sets, just flush the TLB */
+ 	for (set = 1; set < POWER9_TLB_SETS_RADIX ; set++)
+-		__tlbiel_pid(pid, set, ric);
++		__tlbiel_pid(pid, set, RIC_FLUSH_TLB);
+ 
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
+-- 
+2.9.4
