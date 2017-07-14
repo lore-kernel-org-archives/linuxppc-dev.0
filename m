@@ -1,21 +1,21 @@
 Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-qk0-x22a.google.com (mail-qk0-x22a.google.com
- [IPv6:2607:f8b0:400d:c09::22a])
+Received: from mail-qk0-x22c.google.com (mail-qk0-x22c.google.com
+ [IPv6:2607:f8b0:400d:c09::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x7vBl1CJszDqkm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 10:46:23 +1000 (AEST)
-Received: by mail-qk0-x22a.google.com with SMTP id v17so58559030qka.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:46:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x7vGj1QZ8zDqkm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 10:49:49 +1000 (AEST)
+Received: by mail-qk0-x22c.google.com with SMTP id v17so58598952qka.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jul 2017 17:49:49 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170713073757.GC13471@gate.crashing.org>
+In-Reply-To: <20170713074732.GD13471@gate.crashing.org>
 References: <20170713032548.451-1-matthew.brown.dev@gmail.com>
- <20170713032548.451-4-matthew.brown.dev@gmail.com>
- <20170713073757.GC13471@gate.crashing.org>
+ <20170713032548.451-5-matthew.brown.dev@gmail.com>
+ <20170713074732.GD13471@gate.crashing.org>
 From: Matt Brown <matthew.brown.dev@gmail.com>
-Date: Fri, 14 Jul 2017 10:46:20 +1000
-Message-ID: <CAPoR37bkFAguL1SGa1Zfq-+H1pwN_LE0PV4VHD_GLt9+Kw1gOg@mail.gmail.com>
-Subject: Re: [PATCH 4/5] powerpc/lib/sstep: Add prty instruction emulation
+Date: Fri, 14 Jul 2017 10:49:46 +1000
+Message-ID: <CAPoR37bHoNwN7MEO0JTLh_23vwPo5scbjbjHQ6Q_nF-xBg5Baw@mail.gmail.com>
+Subject: Re: [PATCH 5/5] powerpc/lib/sstep: Add isel instruction emulation
 To: Segher Boessenkool <segher@kernel.crashing.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 Content-Type: text/plain; charset="UTF-8"
@@ -28,40 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 13, 2017 at 5:37 PM, Segher Boessenkool
+On Thu, Jul 13, 2017 at 5:47 PM, Segher Boessenkool
 <segher@kernel.crashing.org> wrote:
-> On Thu, Jul 13, 2017 at 01:25:47PM +1000, Matt Brown wrote:
->> +static nokprobe_inline void do_prtyw(struct pt_regs *regs, unsigned long v,
->> +                             int ra)
->> +{
->> +     unsigned long low, high, out;
->> +     unsigned int i;
+> On Thu, Jul 13, 2017 at 01:25:48PM +1000, Matt Brown wrote:
+>> +             case 585:       /* isel */
+>
+> The secondary opcode for isel is only 5 bits, not 10 like most other
+> insns have.
+
+Yet another conversion mistake, I'll get there one day!
+
+>
+>> +                     mb = (instr >> 6) & 0x1f; /* bc */
+>> +                     val = (regs->ccr >> (mb + 32)) & 1;
+>
+> regs->ccr >> (31 - mb)  ?
+>
 >> +
->> +     high = 0;
->> +     low = 0;
->> +     out = 0;
->> +
->> +     for (i = 0; i < 8; i++) {
->> +             if (v & (1 << (i * 8)))
+>> +                     if (val)
+>> +                             regs->gpr[rd] = regs->gpr[ra];
 >
-> 1UL
+> You need to treat ra=0 separately (as 0, not reg 0).
 >
->> +                     (i < 4) ? (low++) : (high++);
->> +     }
->> +
->> +     if (low % 2)
->> +             out |= low;
->> +     if (high % 2)
->> +             out |= (high << 32);
->
-> Only the low bit of each word of the output can be set.  Something
-> like
->
->   out = ((high & 1) << 32) | (low & 1);
->
-Ah, I wasn't aware. That way is much more concise too :)
+Ah I missed that. The wording in the ISA doesn't make that completely obvious.
 
 Thanks,
 Matt
+
+>> +                     else
+>> +                             regs->gpr[rd] = regs->gpr[rb];
+>> +                     goto logical_done;
+>
 >
 > Segher
