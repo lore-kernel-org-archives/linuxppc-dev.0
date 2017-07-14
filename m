@@ -1,33 +1,23 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x89NL697pzDqg2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 21:25:38 +1000 (AEST)
-Date: Fri, 14 Jul 2017 12:25:11 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Joe Perches <joe@perches.com>
-Cc: "Gustavo A. R. Silva" <garsilva@embeddedor.com>,
- Takashi Iwai <tiwai@suse.de>, Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Message-ID: <20170714112511.nhcgu2ogpufgele5@sirena.org.uk>
-References: <20170713072351.GA1485@embeddedgus> <s5hlgnsiyg6.wl-tiwai@suse.de>
- <20170713101630.odml56qmsvgxqj64@sirena.org.uk>
- <20170713101814.Horde.q8OhHejhvSALVEt2o11aUTW@gator4166.hostgator.com>
- <1499969891.4457.59.camel@perches.com>
- <20170714110233.fqkmgy7kyhje7mfy@sirena.org.uk>
- <1500030501.4457.70.camel@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x89kS6WYSzDqg2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 21:41:19 +1000 (AEST)
+Date: Fri, 14 Jul 2017 21:41:01 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <masriniv@in.ibm.com>, Michael Neuling
+ <mikey@neuling.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] POWER9 PMU interrupt after idle workaround
+Message-ID: <20170714214101.481a0e74@kryten>
+In-Reply-To: <20170710061938.22513-1-npiggin@gmail.com>
+References: <20170710061938.22513-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="3trzf5fbgnvyazpu"
-In-Reply-To: <1500030501.4457.70.camel@perches.com>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_asrc: constify snd_soc_dai_ops
- structure
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,44 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Nick,
 
---3trzf5fbgnvyazpu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> POWER9 DD2 can see spurious PMU interrupts after state-loss idle in
+> some conditions.
+> 
+> A solution is to save and reload MMCR0 over state-loss idle.
 
-On Fri, Jul 14, 2017 at 04:08:21AM -0700, Joe Perches wrote:
-> On Fri, 2017-07-14 at 12:02 +0100, Mark Brown wrote:
-> > On Thu, Jul 13, 2017 at 11:18:11AM -0700, Joe Perches wrote:
+Thanks, looks good.
 
-> > > I don't it's better.
-> > > It's not that confusing if the 0/n patch cover letter is cc'd
-> > > to all the appropriate mailing lists and all the [1..n]/n
-> > > patches are sent with in-reply-to of the cover letter and
-> > > send to the maintainers and appropriate mailing lists.
+Tested-by: Anton Blanchard <anton@samba.org>
 
-> > With large serieses like Gustavo is sending the CC list can easily hit
-> > the points where mailing lists start blocking it, and the individual
-> > pathces really do need to go to the relevant people so they have sight
-> > of them.
+Anton
 
-> I agree and that's what I wrote.
-
-The set of people who should have sight of the patches is wider than
-just the maintainers.
-
---3trzf5fbgnvyazpu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlloqhYACgkQJNaLcl1U
-h9AYhAf/bzZk180+uonV/eWMvBLhp9DjDorYUwNH8iMEnK+C7PCG8uirPRHKbf2v
-sRoRs1rR7Cit/xEc3dmfiKD+HbxZjqNGRG5D7Ba3qDIbwisF8m3XPYDXIN4OR7TH
-f07aVu37OezSq/kQvTvkNzvImbCOvx2BzLPOH1/4KondYjMXy855MsLZurow4PxP
-zcPf+5hUwWA/f4Q+u1VlMFzuseHX0t7c5V1QqD8SEfuPVWzr8Aj1W2GP8+DDD3PV
-rBX4VdsTIeet8r6/xBY4xR9DeyLsfecwrupwVyY1W9A/wDSydfxfhuOlOAsqG6oo
-RrGy5J1oGEfDD05B8o9cU8PElsWdHw==
-=rvsf
------END PGP SIGNATURE-----
-
---3trzf5fbgnvyazpu--
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kernel/idle_book3s.S | 15 ++++++++++++++-
+>  1 file changed, 14 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/idle_book3s.S
+> b/arch/powerpc/kernel/idle_book3s.S index 5adb390e773b..516ebef905c0
+> 100644 --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -30,6 +30,7 @@
+>   * Use unused space in the interrupt stack to save and restore
+>   * registers for winkle support.
+>   */
+> +#define _MMCR0	GPR0
+>  #define _SDR1	GPR3
+>  #define _PTCR	GPR3
+>  #define _RPR	GPR4
+> @@ -272,6 +273,14 @@ power_enter_stop:
+>  	b 	pnv_wakeup_noloss
+>  
+>  .Lhandle_esl_ec_set:
+> +	/*
+> +	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
+> +	 * state-loss idle. Saving and restoring MMCR0 over idle is a
+> +	 * workaround.
+> +	 */
+> +	mfspr	r4,SPRN_MMCR0
+> +	std	r4,_MMCR0(r1)
+> +
+>  /*
+>   * Check if the requested state is a deep idle state.
+>   */
+> @@ -450,10 +459,14 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+>  pnv_restore_hyp_resource_arch300:
+>  	/*
+>  	 * Workaround for POWER9, if we lost resources, the ERAT
+> -	 * might have been mixed up and needs flushing.
+> +	 * might have been mixed up and needs flushing. We also need
+> +	 * to reload MMCR0 (see comment above).
+>  	 */
+>  	blt	cr3,1f
+>  	PPC_INVALIDATE_ERAT
+> +	ld	r1,PACAR1(r13)
+> +	ld	r4,_MMCR0(r1)
+> +	mtspr	SPRN_MMCR0,r4
+>  1:
+>  	/*
+>  	 * POWER ISA 3. Use PSSCR to determine if we
