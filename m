@@ -1,14 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x83J12WPCzDqln
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x83J13Qx5zDqlq
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 16:51:29 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] powerpc/mm/hash: Refactor hash__mark_rodata_ro()
-Date: Fri, 14 Jul 2017 16:51:22 +1000
-Message-Id: <1500015083-23511-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 3/3] powerpc/mm: Mark __init memory no-execute when
+ STRICT_KERNEL_RWX=y
+Date: Fri, 14 Jul 2017 16:51:23 +1000
+Message-Id: <1500015083-23511-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
 References: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,78 +21,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the core logic into a helper, so we can use it for changing other
-permissions.
+Currently even with STRICT_KERNEL_RWX we leave the __init text marked
+executable after init, which is bad.
 
-We also change the logic to align start down, and end up. This means
-calling the function with a range will expand that range to be at
-least 1 mmu_linear_psize page in size. We need that so we can use it
-on __init_begin ...  __init_end which is not a full page in size.
+Add a hook to mark it NX (no-execute) before we free it, and implement
+it for radix and hash.
 
-This should always work for _stext/__init_begin, because we align
-__init_begin to _stext + 16M in the linker script.
+Note that we use __init_end as the end address, not _einittext,
+because overlaps_kernel_text() uses __init_end, because there are
+additional executable sections other than .init.text between
+__init_begin and __init_end.
 
+Tested on radix and hash with:
+
+  0:mon> p $__init_begin
+  *** 400 exception occurred
+
+Fixes: 1e0fc9d1eb2b ("powerpc/Kconfig: Enable STRICT_KERNEL_RWX for some configs")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/pgtable-hash64.c | 32 +++++++++++++++++++-------------
- 1 file changed, 19 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h    |  1 +
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++++
+ arch/powerpc/include/asm/book3s/64/radix.h   |  1 +
+ arch/powerpc/mm/mem.c                        |  1 +
+ arch/powerpc/mm/pgtable-hash64.c             | 12 ++++++++++++
+ arch/powerpc/mm/pgtable-radix.c              |  8 ++++++++
+ arch/powerpc/mm/pgtable_64.c                 |  8 ++++++++
+ 7 files changed, 38 insertions(+)
 
-diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-index 188b4107584d..73019c52141f 100644
---- a/arch/powerpc/mm/pgtable-hash64.c
-+++ b/arch/powerpc/mm/pgtable-hash64.c
-@@ -425,33 +425,39 @@ int hash__has_transparent_hugepage(void)
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 0ce513f2926f..36fc7bfe9e11 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -91,6 +91,7 @@ static inline int hash__pgd_bad(pgd_t pgd)
+ }
+ #ifdef CONFIG_STRICT_KERNEL_RWX
+ extern void hash__mark_rodata_ro(void);
++extern void hash__mark_initmem_nx(void);
+ #endif
+ 
+ extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index c0737c86a362..3d562b210c65 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -1192,5 +1192,12 @@ static inline const int pud_pfn(pud_t pud)
+ 	BUILD_BUG();
+ 	return 0;
+ }
++
++#ifdef CONFIG_STRICT_KERNEL_RWX
++void mark_initmem_nx(void);
++#else
++static inline void mark_initmem_nx(void) { }
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index 487709ff6875..544440b5aff3 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -118,6 +118,7 @@
  
  #ifdef CONFIG_STRICT_KERNEL_RWX
--void hash__mark_rodata_ro(void)
-+static bool hash__change_memory_range(unsigned long start, unsigned long end,
-+				      unsigned long newpp)
+ extern void radix__mark_rodata_ro(void);
++extern void radix__mark_initmem_nx(void);
+ #endif
+ 
+ static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 8541f18694a4..46b4e67d2372 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -402,6 +402,7 @@ void __init mem_init(void)
+ void free_initmem(void)
  {
--	unsigned long start = (unsigned long)_stext;
--	unsigned long end = (unsigned long)__init_begin;
- 	unsigned long idx;
- 	unsigned int step, shift;
--	unsigned long newpp = PP_RXXX;
- 
- 	shift = mmu_psize_defs[mmu_linear_psize].shift;
- 	step = 1 << shift;
- 
--	start = ((start + step - 1) >> shift) << shift;
--	end = (end >> shift) << shift;
-+	start = ALIGN_DOWN(start, step);
-+	end = ALIGN(end, step); // aligns up
- 
--	pr_devel("marking ro start %lx, end %lx, step %x\n",
--			start, end, step);
-+	if (start >= end)
-+		return false;
- 
--	if (start == end) {
--		pr_warn("could not set rodata ro, relocate the start"
--			" of the kernel to a 0x%x boundary\n", step);
--		return;
--	}
-+	pr_debug("Changing page protection on range 0x%lx-0x%lx, to 0x%lx, step 0x%x\n",
-+		 start, end, newpp, step);
- 
- 	for (idx = start; idx < end; idx += step)
- 		/* Not sure if we can do much with the return value */
- 		mmu_hash_ops.hpte_updateboltedpp(newpp, idx, mmu_linear_psize,
- 							mmu_kernel_ssize);
- 
-+	return true;
-+}
-+
-+void hash__mark_rodata_ro(void)
-+{
-+	unsigned long start, end;
-+
-+	start = (unsigned long)_stext;
-+	end = (unsigned long)__init_begin;
-+
-+	WARN_ON(!hash__change_memory_range(start, end, PP_RXXX));
+ 	ppc_md.progress = ppc_printk_progress;
++	mark_initmem_nx();
+ 	free_initmem_default(POISON_FREE_INITMEM);
  }
+ 
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 73019c52141f..443a2c66a304 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -460,4 +460,16 @@ void hash__mark_rodata_ro(void)
+ 
+ 	WARN_ON(!hash__change_memory_range(start, end, PP_RXXX));
+ }
++
++void hash__mark_initmem_nx(void)
++{
++	unsigned long start, end, pp;
++
++	start = (unsigned long)__init_begin;
++	end = (unsigned long)__init_end;
++
++	pp = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL));
++
++	WARN_ON(!hash__change_memory_range(start, end, pp));
++}
+ #endif
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 336e52ec652c..5cc50d47ce3f 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -162,6 +162,14 @@ void radix__mark_rodata_ro(void)
+ 
+ 	radix__change_memory_range(start, end, _PAGE_WRITE);
+ }
++
++void radix__mark_initmem_nx(void)
++{
++	unsigned long start = (unsigned long)__init_begin;
++	unsigned long end = (unsigned long)__init_end;
++
++	radix__change_memory_range(start, end, _PAGE_EXEC);
++}
+ #endif /* CONFIG_STRICT_KERNEL_RWX */
+ 
+ static inline void __meminit print_mapping(unsigned long start,
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 5c0b795d656c..0736e94c7615 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -505,4 +505,12 @@ void mark_rodata_ro(void)
+ 	else
+ 		hash__mark_rodata_ro();
+ }
++
++void mark_initmem_nx(void)
++{
++	if (radix_enabled())
++		radix__mark_initmem_nx();
++	else
++		hash__mark_initmem_nx();
++}
  #endif
 -- 
 2.7.4
