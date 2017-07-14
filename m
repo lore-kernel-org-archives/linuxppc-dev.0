@@ -1,14 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x83J06cbxzDqlW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 16:51:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x83J12WPCzDqln
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Jul 2017 16:51:29 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] powerpc/mm/radix: Refactor radix__mark_rodata_ro()
-Date: Fri, 14 Jul 2017 16:51:21 +1000
-Message-Id: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/3] powerpc/mm/hash: Refactor hash__mark_rodata_ro()
+Date: Fri, 14 Jul 2017 16:51:22 +1000
+Message-Id: <1500015083-23511-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
+References: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,63 +20,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the core logic into a helper, so we can use it for changing permissions
-other than _PAGE_WRITE.
+Move the core logic into a helper, so we can use it for changing other
+permissions.
+
+We also change the logic to align start down, and end up. This means
+calling the function with a range will expand that range to be at
+least 1 mmu_linear_psize page in size. We need that so we can use it
+on __init_begin ...  __init_end which is not a full page in size.
+
+This should always work for _stext/__init_begin, because we align
+__init_begin to _stext + 16M in the linker script.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/pgtable-radix.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/pgtable-hash64.c | 32 +++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 8c13e4282308..336e52ec652c 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -112,10 +112,9 @@ int radix__map_kernel_page(unsigned long ea, unsigned long pa,
- }
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 188b4107584d..73019c52141f 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -425,33 +425,39 @@ int hash__has_transparent_hugepage(void)
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
  
  #ifdef CONFIG_STRICT_KERNEL_RWX
--void radix__mark_rodata_ro(void)
-+void radix__change_memory_range(unsigned long start, unsigned long end,
-+				unsigned long clear)
+-void hash__mark_rodata_ro(void)
++static bool hash__change_memory_range(unsigned long start, unsigned long end,
++				      unsigned long newpp)
  {
 -	unsigned long start = (unsigned long)_stext;
 -	unsigned long end = (unsigned long)__init_begin;
  	unsigned long idx;
- 	pgd_t *pgdp;
- 	pud_t *pudp;
-@@ -125,7 +124,8 @@ void radix__mark_rodata_ro(void)
- 	start = ALIGN_DOWN(start, PAGE_SIZE);
- 	end = PAGE_ALIGN(end); // aligns up
+ 	unsigned int step, shift;
+-	unsigned long newpp = PP_RXXX;
  
--	pr_devel("marking ro start %lx, end %lx\n", start, end);
-+	pr_debug("Changing flags on range %lx-%lx removing 0x%lx\n",
-+		 start, end, clear);
+ 	shift = mmu_psize_defs[mmu_linear_psize].shift;
+ 	step = 1 << shift;
  
- 	for (idx = start; idx < end; idx += PAGE_SIZE) {
- 		pgdp = pgd_offset_k(idx);
-@@ -147,11 +147,21 @@ void radix__mark_rodata_ro(void)
- 		if (!ptep)
- 			continue;
- update_the_pte:
--		radix__pte_update(&init_mm, idx, ptep, _PAGE_WRITE, 0, 0);
-+		radix__pte_update(&init_mm, idx, ptep, clear, 0, 0);
- 	}
+-	start = ((start + step - 1) >> shift) << shift;
+-	end = (end >> shift) << shift;
++	start = ALIGN_DOWN(start, step);
++	end = ALIGN(end, step); // aligns up
  
- 	radix__flush_tlb_kernel_range(start, end);
- }
+-	pr_devel("marking ro start %lx, end %lx, step %x\n",
+-			start, end, step);
++	if (start >= end)
++		return false;
+ 
+-	if (start == end) {
+-		pr_warn("could not set rodata ro, relocate the start"
+-			" of the kernel to a 0x%x boundary\n", step);
+-		return;
+-	}
++	pr_debug("Changing page protection on range 0x%lx-0x%lx, to 0x%lx, step 0x%x\n",
++		 start, end, newpp, step);
+ 
+ 	for (idx = start; idx < end; idx += step)
+ 		/* Not sure if we can do much with the return value */
+ 		mmu_hash_ops.hpte_updateboltedpp(newpp, idx, mmu_linear_psize,
+ 							mmu_kernel_ssize);
+ 
++	return true;
++}
 +
-+void radix__mark_rodata_ro(void)
++void hash__mark_rodata_ro(void)
 +{
 +	unsigned long start, end;
 +
 +	start = (unsigned long)_stext;
 +	end = (unsigned long)__init_begin;
 +
-+	radix__change_memory_range(start, end, _PAGE_WRITE);
-+}
- #endif /* CONFIG_STRICT_KERNEL_RWX */
- 
- static inline void __meminit print_mapping(unsigned long start,
++	WARN_ON(!hash__change_memory_range(start, end, PP_RXXX));
+ }
+ #endif
 -- 
 2.7.4
