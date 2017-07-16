@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9CNL4QpwzDqmL
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 13:59:14 +1000 (AEST)
-Received: by mail-qt0-x242.google.com with SMTP id w12so14716176qta.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 20:59:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9CNP06hWzDqmB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 13:59:16 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id v31so14709019qtb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 20:59:16 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
  corbet@lwn.net, mingo@redhat.com, mhocko@kernel.org
-Subject: [RFC v6 29/62] powerpc: Macro the mask used for checking DSI exception
-Date: Sat, 15 Jul 2017 20:56:31 -0700
-Message-Id: <1500177424-13695-30-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC v6 30/62] powerpc: implementation for arch_vma_access_permitted()
+Date: Sat, 15 Jul 2017 20:56:32 -0700
+Message-Id: <1500177424-13695-31-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
 References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,54 +31,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace the magic number used to check for DSI exception
-with a meaningful value.
+This patch provides the implementation for
+arch_vma_access_permitted(). Returns true if the
+requested access is allowed by pkey associated with the
+vma.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/reg.h       |    7 ++++++-
- arch/powerpc/kernel/exceptions-64s.S |    2 +-
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/mmu_context.h |    5 +++-
+ arch/powerpc/mm/pkeys.c                |   43 ++++++++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 7e50e47..ee04bc0 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -272,16 +272,21 @@
- #define SPRN_DAR	0x013	/* Data Address Register */
- #define SPRN_DBCR	0x136	/* e300 Data Breakpoint Control Reg */
- #define SPRN_DSISR	0x012	/* Data Storage Interrupt Status Register */
-+#define   DSISR_BIT32		0x80000000	/* not defined */
- #define   DSISR_NOHPTE		0x40000000	/* no translation found */
-+#define   DSISR_PAGEATTR_CONFLT	0x20000000	/* page attribute conflict */
-+#define   DSISR_BIT35		0x10000000	/* not defined */
- #define   DSISR_PROTFAULT	0x08000000	/* protection fault */
- #define   DSISR_BADACCESS	0x04000000	/* bad access to CI or G */
- #define   DSISR_ISSTORE		0x02000000	/* access was a store */
- #define   DSISR_DABRMATCH	0x00400000	/* hit data breakpoint */
--#define   DSISR_NOSEGMENT	0x00200000	/* SLB miss */
- #define   DSISR_KEYFAULT	0x00200000	/* Key fault */
-+#define   DSISR_BIT43		0x00100000	/* not defined */
- #define   DSISR_UNSUPP_MMU	0x00080000	/* Unsupported MMU config */
- #define   DSISR_SET_RC		0x00040000	/* Failed setting of R/C bits */
- #define   DSISR_PGDIRFAULT      0x00020000      /* Fault on page directory */
-+#define   DSISR_PAGE_FAULT_MASK (DSISR_BIT32 | DSISR_PAGEATTR_CONFLT | \
-+				DSISR_BADACCESS | DSISR_DABRMATCH | DSISR_BIT43)
- #define SPRN_TBRL	0x10C	/* Time Base Read Lower Register (user, R/O) */
- #define SPRN_TBRU	0x10D	/* Time Base Read Upper Register (user, R/O) */
- #define SPRN_CIR	0x11B	/* Chip Information Register (hyper, R/0) */
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index b886795..e154bfe 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1411,7 +1411,7 @@ USE_TEXT_SECTION()
- 	.balign	IFETCH_ALIGN_BYTES
- do_hash_page:
- #ifdef CONFIG_PPC_STD_MMU_64
--	andis.	r0,r4,0xa450		/* weird error? */
-+	andis.	r0,r4,DSISR_PAGE_FAULT_MASK@h
- 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
- 	CURRENT_THREAD_INFO(r11, r1)
- 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 7232484..635d4a6 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -175,6 +175,10 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
+ {
+ }
+ 
++#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++bool arch_vma_access_permitted(struct vm_area_struct *vma,
++			bool write, bool execute, bool foreign);
++#else /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
+ 		bool write, bool execute, bool foreign)
+ {
+@@ -182,7 +186,6 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
+ 	return true;
+ }
+ 
+-#ifndef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+ #define pkey_initialize()
+ #define pkey_mm_init(mm)
+ 
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index 1794e17..9999ce1 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -234,3 +234,46 @@ bool arch_pte_access_permitted(u64 pte, bool write, bool execute)
+ 	return pkey_access_permitted(pte_to_pkey_bits(pte),
+ 			write, execute);
+ }
++
++/*
++ * We only want to enforce protection keys on the current process
++ * because we effectively have no access to AMR/IAMR for other
++ * processes or any way to tell *which * AMR/IAMR in a threaded
++ * process we could use.
++ *
++ * So do not enforce things if the VMA is not from the current
++ * mm, or if we are in a kernel thread.
++ */
++static inline bool vma_is_foreign(struct vm_area_struct *vma)
++{
++	if (!current->mm)
++		return true;
++	/*
++	 * if the VMA is from another process, then AMR/IAMR has no
++	 * relevance and should not be enforced.
++	 */
++	if (current->mm != vma->vm_mm)
++		return true;
++
++	return false;
++}
++
++bool arch_vma_access_permitted(struct vm_area_struct *vma,
++		bool write, bool execute, bool foreign)
++{
++	int pkey;
++
++	if (!pkey_inited)
++		return true;
++
++	/* allow access if the VMA is not one from this process */
++	if (foreign || vma_is_foreign(vma))
++		return true;
++
++	pkey = vma_pkey(vma);
++
++	if (!pkey)
++		return true;
++
++	return pkey_access_permitted(pkey, write, execute);
++}
 -- 
 1.7.1
