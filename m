@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
+ [IPv6:2607:f8b0:400d:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9CMq46XZzDqmb
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 13:58:47 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id a66so16022036qkb.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 20:58:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9CMs6x2nzDqmr
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 13:58:49 +1000 (AEST)
+Received: by mail-qk0-x241.google.com with SMTP id c18so6917803qkb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 20:58:49 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -17,10 +17,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
  corbet@lwn.net, mingo@redhat.com, mhocko@kernel.org
-Subject: [RFC v6 18/62] powerpc: sys_pkey_alloc() and sys_pkey_free() system
- calls
-Date: Sat, 15 Jul 2017 20:56:20 -0700
-Message-Id: <1500177424-13695-19-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC v6 19/62] powerpc: ability to create execute-disabled pkeys
+Date: Sat, 15 Jul 2017 20:56:21 -0700
+Message-Id: <1500177424-13695-20-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
 References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,56 +31,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Finally this patch provides the ability for a process to
-allocate and free a protection key.
+powerpc has hardware support to disable execute on a pkey.
+This patch enables the ability to create execute-disabled
+keys.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/systbl.h      |    2 ++
- arch/powerpc/include/asm/unistd.h      |    4 +---
- arch/powerpc/include/uapi/asm/unistd.h |    2 ++
- 3 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/pkeys.h |   12 ++++++++++++
+ arch/powerpc/mm/pkeys.c          |   10 ++++++++++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 1c94708..22dd776 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -388,3 +388,5 @@
- COMPAT_SYS_SPU(pwritev2)
- SYSCALL(kexec_file_load)
- SYSCALL(statx)
-+SYSCALL(pkey_alloc)
-+SYSCALL(pkey_free)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 9ba11db..e0273bc 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,13 +12,11 @@
- #include <uapi/asm/unistd.h>
+diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+index 1943e6b..0e744f1 100644
+--- a/arch/powerpc/include/asm/pkeys.h
++++ b/arch/powerpc/include/asm/pkeys.h
+@@ -2,6 +2,18 @@
+ #define _ASM_PPC64_PKEYS_H
  
+ extern bool pkey_inited;
++/* override any generic PKEY Permission defines */
++#undef  PKEY_DISABLE_ACCESS
++#define PKEY_DISABLE_ACCESS    0x1
++#undef  PKEY_DISABLE_WRITE
++#define PKEY_DISABLE_WRITE     0x2
++#undef  PKEY_DISABLE_EXECUTE
++#define PKEY_DISABLE_EXECUTE   0x4
++#undef  PKEY_ACCESS_MASK
++#define PKEY_ACCESS_MASK       (PKEY_DISABLE_ACCESS |\
++				PKEY_DISABLE_WRITE  |\
++				PKEY_DISABLE_EXECUTE)
++
+ #define arch_max_pkey()  32
+ #define AMR_RD_BIT 0x1UL
+ #define AMR_WR_BIT 0x2UL
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index 98d0391..b9ad98d 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -73,6 +73,7 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 		unsigned long init_val)
+ {
+ 	u64 new_amr_bits = 0x0ul;
++	u64 new_iamr_bits = 0x0ul;
  
--#define NR_syscalls		384
-+#define NR_syscalls		386
+ 	if (!is_pkey_enabled(pkey))
+ 		return -1;
+@@ -85,5 +86,14 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
  
- #define __NR__exit __NR_exit
+ 	init_amr(pkey, new_amr_bits);
  
- #define __IGNORE_pkey_mprotect
--#define __IGNORE_pkey_alloc
--#define __IGNORE_pkey_free
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index b85f142..7993a07 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -394,5 +394,7 @@
- #define __NR_pwritev2		381
- #define __NR_kexec_file_load	382
- #define __NR_statx		383
-+#define __NR_pkey_alloc		384
-+#define __NR_pkey_free		385
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
++	/*
++	 * By default execute is disabled.
++	 * To enable execute, PKEY_ENABLE_EXECUTE
++	 * needs to be specified.
++	 */
++	if ((init_val & PKEY_DISABLE_EXECUTE))
++		new_iamr_bits |= IAMR_EX_BIT;
++
++	init_iamr(pkey, new_iamr_bits);
+ 	return 0;
+ }
 -- 
 1.7.1
