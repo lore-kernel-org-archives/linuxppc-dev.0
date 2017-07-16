@@ -1,28 +1,42 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
- [IPv6:2607:f8b0:400d:c09::242])
+Return-Path: <bjorn.andersson@linaro.org>
+Received: from mail-pg0-x232.google.com (mail-pg0-x232.google.com
+ [IPv6:2607:f8b0:400e:c05::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9CPx729XzDqm7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 14:00:37 +1000 (AEST)
-Received: by mail-qk0-x242.google.com with SMTP id v17so14726479qka.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 21:00:37 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
- linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
- corbet@lwn.net, mingo@redhat.com, mhocko@kernel.org
-Subject: [RFC v6 62/62] Documentation/vm: PowerPC specific updates to memory
- protection keys
-Date: Sat, 15 Jul 2017 20:57:04 -0700
-Message-Id: <1500177424-13695-63-git-send-email-linuxram@us.ibm.com>
-In-Reply-To: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9Gxn1kdhzDr34
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 16:39:56 +1000 (AEST)
+Received: by mail-pg0-x232.google.com with SMTP id k14so64331722pgr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 23:39:56 -0700 (PDT)
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+To: Kishon Vijay Abraham I <kishon@ti.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Richard Zhu <hongxing.zhu@nxp.com>, Lucas Stach <l.stach@pengutronix.de>,
+ Murali Karicheri <m-karicheri2@ti.com>,
+ Minghuan Lian <minghuan.Lian@freescale.com>,
+ Mingkai Hu <mingkai.hu@freescale.com>,
+ Roy Zang <tie-fei.zang@freescale.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Niklas Cassel <niklas.cassel@axis.com>,
+ Jesper Nilsson <jesper.nilsson@axis.com>,
+ Joao Pinto <Joao.Pinto@synopsys.com>,
+ Xiaowei Song <songxiaowei@hisilicon.com>,
+ Binghui Wang <wangbinghui@hisilicon.com>,
+ Stanimir Varbanov <svarbanov@mm-sol.com>,
+ Pratyush Anand <pratyush.anand@gmail.com>
+Cc: linux-omap@vger.kernel.org (open list:PCI DRIVER FOR TI DRA7XX),
+ linux-pci@vger.kernel.org (open list:PCI DRIVER FOR TI DRA7XX),
+ linux-kernel@vger.kernel.org (open list),
+ linux-arm-kernel@lists.infradead.org (moderated list:PCI DRIVER FOR SAMSUNG
+ EXYNOS),
+ linux-samsung-soc@vger.kernel.org (moderated list:PCI DRIVER FOR SAMSUNG
+ EXYNOS),
+ linuxppc-dev@lists.ozlabs.org (open list:PCI DRIVER FOR FREESCALE LAYERSCAPE),
+ linux-arm-kernel@axis.com (open list:PCIE DRIVER FOR AXIS ARTPEC),
+ linux-arm-msm@vger.kernel.org (open list:PCIE DRIVER FOR QUALCOMM MSM)
+Subject: [PATCH 1/3] PCI: dwc: Handle host_init failures
+Date: Sat, 15 Jul 2017 23:39:45 -0700
+Message-Id: <20170716063947.3272-1-bjorn.andersson@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,138 +46,336 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add documentation updates that capture PowerPC specific changes.
+In several dwc based drivers host_init can fail, so make sure to
+propagate and handle this to avoid continuing operation of a driver or
+hardware in an invalid state.
 
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- Documentation/vm/protection-keys.txt |   90 ++++++++++++++++++++++++---------
- 1 files changed, 65 insertions(+), 25 deletions(-)
+ drivers/pci/dwc/pci-dra7xx.c           |  4 +++-
+ drivers/pci/dwc/pci-exynos.c           |  4 +++-
+ drivers/pci/dwc/pci-imx6.c             |  4 +++-
+ drivers/pci/dwc/pci-keystone.c         |  4 +++-
+ drivers/pci/dwc/pci-layerscape.c       | 14 ++++++++++----
+ drivers/pci/dwc/pcie-armada8k.c        |  4 +++-
+ drivers/pci/dwc/pcie-artpec6.c         |  4 +++-
+ drivers/pci/dwc/pcie-designware-host.c |  7 +++++--
+ drivers/pci/dwc/pcie-designware-plat.c |  4 +++-
+ drivers/pci/dwc/pcie-designware.h      |  2 +-
+ drivers/pci/dwc/pcie-kirin.c           |  4 +++-
+ drivers/pci/dwc/pcie-qcom.c            |  6 ++++--
+ drivers/pci/dwc/pcie-spear13xx.c       |  4 +++-
+ 13 files changed, 47 insertions(+), 18 deletions(-)
 
-diff --git a/Documentation/vm/protection-keys.txt b/Documentation/vm/protection-keys.txt
-index b643045..9330105 100644
---- a/Documentation/vm/protection-keys.txt
-+++ b/Documentation/vm/protection-keys.txt
-@@ -1,22 +1,45 @@
--Memory Protection Keys for Userspace (PKU aka PKEYs) is a CPU feature
--which will be found on future Intel CPUs.
--
--Memory Protection Keys provides a mechanism for enforcing page-based
--protections, but without requiring modification of the page tables
--when an application changes protection domains.  It works by
--dedicating 4 previously ignored bits in each page table entry to a
--"protection key", giving 16 possible keys.
--
--There is also a new user-accessible register (PKRU) with two separate
--bits (Access Disable and Write Disable) for each key.  Being a CPU
--register, PKRU is inherently thread-local, potentially giving each
--thread a different set of protections from every other thread.
--
--There are two new instructions (RDPKRU/WRPKRU) for reading and writing
--to the new register.  The feature is only available in 64-bit mode,
--even though there is theoretically space in the PAE PTEs.  These
--permissions are enforced on data access only and have no effect on
--instruction fetches.
-+Memory Protection Keys for Userspace (PKU aka PKEYs) is a CPU feature found on
-+future Intel CPUs and on PowerPC 7 and higher CPUs.
-+
-+Memory Protection Keys provide a mechanism for enforcing page-based
-+protections, but without requiring modification of the page tables when an
-+application changes protection domains.
-+
-+It works by dedicating bits in each page table entry to a "protection key".
-+There is also a user-accessible register with two separate bits for each
-+key.  Being a CPU register, the user-accessible register is inherently
-+thread-local, potentially giving each thread a different set of protections
-+from every other thread.
-+
-+On Intel:
-+
-+	Four previously bits are used the page table entry giving 16 possible keys.
-+
-+	The user accessible register(PKRU) has a bit each per key to disable
-+	access and to disable write.
-+
-+	The feature is only available in 64-bit mode, even though there is
-+	theoretically space in the PAE PTEs.  These permissions are enforced on
-+	data access only and have no effect on instruction fetches.
-+
-+On PowerPC:
-+
-+	Five bits in the page table entry are used giving 32 possible keys.
-+	This support is currently for Hash Page Table mode only.
-+
-+	The user accessible register(AMR) has a bit each per key to disable
-+	read and write. Access disable can be achieved by disabling
-+	read and write.
-+
-+	'mtspr 0xd, mem' reads the AMR register
-+	'mfspr mem, 0xd' writes into the AMR register.
-+
-+	Execution can  be  disabled by allocating a key with execute-disabled
-+	permission. The execute-permissions on the key; however, cannot be
-+	changed through a user accessible register. The CPU will not allow
-+	execution of instruction in pages that are associated with
-+	execute-disabled key.
-+
+diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
+index f2fc5f47064e..e8c13bb76169 100644
+--- a/drivers/pci/dwc/pci-dra7xx.c
++++ b/drivers/pci/dwc/pci-dra7xx.c
+@@ -195,7 +195,7 @@ static void dra7xx_pcie_enable_interrupts(struct dra7xx_pcie *dra7xx)
+ 	dra7xx_pcie_enable_msi_interrupts(dra7xx);
+ }
  
- =========================== Syscalls ===========================
- 
-@@ -28,9 +51,9 @@ There are 3 system calls which directly interact with pkeys:
- 			  unsigned long prot, int pkey);
- 
- Before a pkey can be used, it must first be allocated with
--pkey_alloc().  An application calls the WRPKRU instruction
-+pkey_alloc().  An application calls the WRPKRU/AMR instruction
- directly in order to change access permissions to memory covered
--with a key.  In this example WRPKRU is wrapped by a C function
-+with a key.  In this example WRPKRU/AMR is wrapped by a C function
- called pkey_set().
- 
- 	int real_prot = PROT_READ|PROT_WRITE;
-@@ -52,11 +75,11 @@ is no longer in use:
- 	munmap(ptr, PAGE_SIZE);
- 	pkey_free(pkey);
- 
--(Note: pkey_set() is a wrapper for the RDPKRU and WRPKRU instructions.
-+(Note: pkey_set() is a wrapper for the RDPKRU,WRPKRU or AMR instructions.
-  An example implementation can be found in
-- tools/testing/selftests/x86/protection_keys.c)
-+ tools/testing/selftests/vm/protection_keys.c)
- 
--=========================== Behavior ===========================
-+=========================== Behavior =================================
- 
- The kernel attempts to make protection keys consistent with the
- behavior of a plain mprotect().  For instance if you do this:
-@@ -66,7 +89,7 @@ behavior of a plain mprotect().  For instance if you do this:
- 
- you can expect the same effects with protection keys when doing this:
- 
--	pkey = pkey_alloc(0, PKEY_DISABLE_WRITE | PKEY_DISABLE_READ);
-+	pkey = pkey_alloc(0, PKEY_DISABLE_ACCESS);
- 	pkey_mprotect(ptr, size, PROT_READ|PROT_WRITE, pkey);
- 	something(ptr);
- 
-@@ -83,3 +106,20 @@ with a read():
- The kernel will send a SIGSEGV in both cases, but si_code will be set
- to SEGV_PKERR when violating protection keys versus SEGV_ACCERR when
- the plain mprotect() permissions are violated.
+-static void dra7xx_pcie_host_init(struct pcie_port *pp)
++static int dra7xx_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
+@@ -206,6 +206,8 @@ static void dra7xx_pcie_host_init(struct pcie_port *pp)
+ 	dw_pcie_wait_for_link(pci);
+ 	dw_pcie_msi_init(pp);
+ 	dra7xx_pcie_enable_interrupts(dra7xx);
 +
++	return 0;
+ }
+ 
+ static const struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
+diff --git a/drivers/pci/dwc/pci-exynos.c b/drivers/pci/dwc/pci-exynos.c
+index c78c06552590..f77f872e8b78 100644
+--- a/drivers/pci/dwc/pci-exynos.c
++++ b/drivers/pci/dwc/pci-exynos.c
+@@ -581,13 +581,15 @@ static int exynos_pcie_link_up(struct dw_pcie *pci)
+ 	return 0;
+ }
+ 
+-static void exynos_pcie_host_init(struct pcie_port *pp)
++static int exynos_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct exynos_pcie *ep = to_exynos_pcie(pci);
+ 
+ 	exynos_pcie_establish_link(ep);
+ 	exynos_pcie_enable_interrupts(ep);
 +
-+====================================================================
-+		Semantic differences
++	return 0;
+ }
+ 
+ static const struct dw_pcie_host_ops exynos_pcie_host_ops = {
+diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
+index bf5c3616e344..20aae4469ee4 100644
+--- a/drivers/pci/dwc/pci-imx6.c
++++ b/drivers/pci/dwc/pci-imx6.c
+@@ -636,7 +636,7 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
+ 	return ret;
+ }
+ 
+-static void imx6_pcie_host_init(struct pcie_port *pp)
++static int imx6_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pci);
+@@ -649,6 +649,8 @@ static void imx6_pcie_host_init(struct pcie_port *pp)
+ 
+ 	if (IS_ENABLED(CONFIG_PCI_MSI))
+ 		dw_pcie_msi_init(pp);
 +
-+The following semantic differences exist between x86 and power.
++	return 0;
+ }
+ 
+ static int imx6_pcie_link_up(struct dw_pcie *pci)
+diff --git a/drivers/pci/dwc/pci-keystone.c b/drivers/pci/dwc/pci-keystone.c
+index 4783cec1f78d..3ad3f8aa27b0 100644
+--- a/drivers/pci/dwc/pci-keystone.c
++++ b/drivers/pci/dwc/pci-keystone.c
+@@ -261,7 +261,7 @@ static int keystone_pcie_fault(unsigned long addr, unsigned int fsr,
+ 	return 0;
+ }
+ 
+-static void __init ks_pcie_host_init(struct pcie_port *pp)
++static int __init ks_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct keystone_pcie *ks_pcie = to_keystone_pcie(pci);
+@@ -289,6 +289,8 @@ static void __init ks_pcie_host_init(struct pcie_port *pp)
+ 	 */
+ 	hook_fault_code(17, keystone_pcie_fault, SIGBUS, 0,
+ 			"Asynchronous external abort");
 +
-+a) powerpc *also* allows creation of a key with execute-disabled.
-+	The following is allowed on powerpc.
-+	pkey = pkey_alloc(0, PKEY_DISABLE_EXECUTE);
++	return 0;
+ }
+ 
+ static const struct dw_pcie_host_ops keystone_pcie_host_ops = {
+diff --git a/drivers/pci/dwc/pci-layerscape.c b/drivers/pci/dwc/pci-layerscape.c
+index fd861289ad8b..7581490f007c 100644
+--- a/drivers/pci/dwc/pci-layerscape.c
++++ b/drivers/pci/dwc/pci-layerscape.c
+@@ -108,31 +108,35 @@ static int ls1021_pcie_link_up(struct dw_pcie *pci)
+ 	return 1;
+ }
+ 
+-static void ls1021_pcie_host_init(struct pcie_port *pp)
++static int ls1021_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct ls_pcie *pcie = to_ls_pcie(pci);
+ 	struct device *dev = pci->dev;
+ 	u32 index[2];
++	int ret;
+ 
+ 	pcie->scfg = syscon_regmap_lookup_by_phandle(dev->of_node,
+ 						     "fsl,pcie-scfg");
+ 	if (IS_ERR(pcie->scfg)) {
++		ret = PTR_ERR(pcie->scfg);
+ 		dev_err(dev, "No syscfg phandle specified\n");
+ 		pcie->scfg = NULL;
+-		return;
++		return ret;
+ 	}
+ 
+ 	if (of_property_read_u32_array(dev->of_node,
+ 				       "fsl,pcie-scfg", index, 2)) {
+ 		pcie->scfg = NULL;
+-		return;
++		return -EINVAL;
+ 	}
+ 	pcie->index = index[1];
+ 
+ 	dw_pcie_setup_rc(pp);
+ 
+ 	ls_pcie_drop_msg_tlp(pcie);
 +
-+b) changing the permission bits of a key from a signal handler does not
-+   persist on x86. The PKRU specific fpregs entry needs to be modified
-+   for it to persist.  On powerpc the permission bits of the key can be
-+   modified by programming the AMR register from the signal handler.
-+   The changes persist across signal boundaries.
-+=====================================================================
++	return 0;
+ }
+ 
+ static int ls_pcie_link_up(struct dw_pcie *pci)
+@@ -150,7 +154,7 @@ static int ls_pcie_link_up(struct dw_pcie *pci)
+ 	return 1;
+ }
+ 
+-static void ls_pcie_host_init(struct pcie_port *pp)
++static int ls_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct ls_pcie *pcie = to_ls_pcie(pci);
+@@ -160,6 +164,8 @@ static void ls_pcie_host_init(struct pcie_port *pp)
+ 	ls_pcie_clear_multifunction(pcie);
+ 	ls_pcie_drop_msg_tlp(pcie);
+ 	iowrite32(0, pci->dbi_base + PCIE_DBI_RO_WR_EN);
++
++	return 0;
+ }
+ 
+ static int ls_pcie_msi_host_init(struct pcie_port *pp,
+diff --git a/drivers/pci/dwc/pcie-armada8k.c b/drivers/pci/dwc/pcie-armada8k.c
+index ea8f34af6a85..017a727a68db 100644
+--- a/drivers/pci/dwc/pcie-armada8k.c
++++ b/drivers/pci/dwc/pcie-armada8k.c
+@@ -134,13 +134,15 @@ static void armada8k_pcie_establish_link(struct armada8k_pcie *pcie)
+ 		dev_err(pci->dev, "Link not up after reconfiguration\n");
+ }
+ 
+-static void armada8k_pcie_host_init(struct pcie_port *pp)
++static int armada8k_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct armada8k_pcie *pcie = to_armada8k_pcie(pci);
+ 
+ 	dw_pcie_setup_rc(pp);
+ 	armada8k_pcie_establish_link(pcie);
++
++	return 0;
+ }
+ 
+ static irqreturn_t armada8k_pcie_irq_handler(int irq, void *arg)
+diff --git a/drivers/pci/dwc/pcie-artpec6.c b/drivers/pci/dwc/pcie-artpec6.c
+index 01c6f7823672..5d81f1d884e3 100644
+--- a/drivers/pci/dwc/pcie-artpec6.c
++++ b/drivers/pci/dwc/pcie-artpec6.c
+@@ -175,13 +175,15 @@ static void artpec6_pcie_enable_interrupts(struct artpec6_pcie *artpec6_pcie)
+ 		dw_pcie_msi_init(pp);
+ }
+ 
+-static void artpec6_pcie_host_init(struct pcie_port *pp)
++static int artpec6_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct artpec6_pcie *artpec6_pcie = to_artpec6_pcie(pci);
+ 
+ 	artpec6_pcie_establish_link(artpec6_pcie);
+ 	artpec6_pcie_enable_interrupts(artpec6_pcie);
++
++	return 0;
+ }
+ 
+ static const struct dw_pcie_host_ops artpec6_pcie_host_ops = {
+diff --git a/drivers/pci/dwc/pcie-designware-host.c b/drivers/pci/dwc/pcie-designware-host.c
+index d29c020da082..157621175147 100644
+--- a/drivers/pci/dwc/pcie-designware-host.c
++++ b/drivers/pci/dwc/pcie-designware-host.c
+@@ -401,8 +401,11 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 		}
+ 	}
+ 
+-	if (pp->ops->host_init)
+-		pp->ops->host_init(pp);
++	if (pp->ops->host_init) {
++		ret = pp->ops->host_init(pp);
++		if (ret)
++			goto error;
++	}
+ 
+ 	pp->root_bus_nr = pp->busn->start;
+ 
+diff --git a/drivers/pci/dwc/pcie-designware-plat.c b/drivers/pci/dwc/pcie-designware-plat.c
+index 091b4e7ad059..168e2380f493 100644
+--- a/drivers/pci/dwc/pcie-designware-plat.c
++++ b/drivers/pci/dwc/pcie-designware-plat.c
+@@ -35,7 +35,7 @@ static irqreturn_t dw_plat_pcie_msi_irq_handler(int irq, void *arg)
+ 	return dw_handle_msi_irq(pp);
+ }
+ 
+-static void dw_plat_pcie_host_init(struct pcie_port *pp)
++static int dw_plat_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 
+@@ -44,6 +44,8 @@ static void dw_plat_pcie_host_init(struct pcie_port *pp)
+ 
+ 	if (IS_ENABLED(CONFIG_PCI_MSI))
+ 		dw_pcie_msi_init(pp);
++
++	return 0;
+ }
+ 
+ static const struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
+diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
+index b4d2a89f8e58..7366c8167404 100644
+--- a/drivers/pci/dwc/pcie-designware.h
++++ b/drivers/pci/dwc/pcie-designware.h
+@@ -134,7 +134,7 @@ struct dw_pcie_host_ops {
+ 			     unsigned int devfn, int where, int size, u32 *val);
+ 	int (*wr_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
+ 			     unsigned int devfn, int where, int size, u32 val);
+-	void (*host_init)(struct pcie_port *pp);
++	int (*host_init)(struct pcie_port *pp);
+ 	void (*msi_set_irq)(struct pcie_port *pp, int irq);
+ 	void (*msi_clear_irq)(struct pcie_port *pp, int irq);
+ 	phys_addr_t (*get_msi_addr)(struct pcie_port *pp);
+diff --git a/drivers/pci/dwc/pcie-kirin.c b/drivers/pci/dwc/pcie-kirin.c
+index 33fddb9f6739..0b0eb67f2658 100644
+--- a/drivers/pci/dwc/pcie-kirin.c
++++ b/drivers/pci/dwc/pcie-kirin.c
+@@ -430,9 +430,11 @@ static int kirin_pcie_establish_link(struct pcie_port *pp)
+ 	return 0;
+ }
+ 
+-static void kirin_pcie_host_init(struct pcie_port *pp)
++static int kirin_pcie_host_init(struct pcie_port *pp)
+ {
+ 	kirin_pcie_establish_link(pp);
++
++	return 0;
+ }
+ 
+ static struct dw_pcie_ops kirin_dw_pcie_ops = {
+diff --git a/drivers/pci/dwc/pcie-qcom.c b/drivers/pci/dwc/pcie-qcom.c
+index 68c5f2ab5bc8..d15657dc3990 100644
+--- a/drivers/pci/dwc/pcie-qcom.c
++++ b/drivers/pci/dwc/pcie-qcom.c
+@@ -891,7 +891,7 @@ static int qcom_pcie_link_up(struct dw_pcie *pci)
+ 	return !!(val & PCI_EXP_LNKSTA_DLLLA);
+ }
+ 
+-static void qcom_pcie_host_init(struct pcie_port *pp)
++static int qcom_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct qcom_pcie *pcie = to_qcom_pcie(pci);
+@@ -921,12 +921,14 @@ static void qcom_pcie_host_init(struct pcie_port *pp)
+ 	if (ret)
+ 		goto err;
+ 
+-	return;
++	return 0;
+ err:
+ 	qcom_ep_reset_assert(pcie);
+ 	phy_power_off(pcie->phy);
+ err_deinit:
+ 	pcie->ops->deinit(pcie);
++
++	return ret;
+ }
+ 
+ static int qcom_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
+diff --git a/drivers/pci/dwc/pcie-spear13xx.c b/drivers/pci/dwc/pcie-spear13xx.c
+index 80897291e0fb..52000bc34600 100644
+--- a/drivers/pci/dwc/pcie-spear13xx.c
++++ b/drivers/pci/dwc/pcie-spear13xx.c
+@@ -177,13 +177,15 @@ static int spear13xx_pcie_link_up(struct dw_pcie *pci)
+ 	return 0;
+ }
+ 
+-static void spear13xx_pcie_host_init(struct pcie_port *pp)
++static int spear13xx_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct spear13xx_pcie *spear13xx_pcie = to_spear13xx_pcie(pci);
+ 
+ 	spear13xx_pcie_establish_link(spear13xx_pcie);
+ 	spear13xx_pcie_enable_interrupts(spear13xx_pcie);
++
++	return 0;
+ }
+ 
+ static const struct dw_pcie_host_ops spear13xx_pcie_host_ops = {
 -- 
-1.7.1
+2.12.0
