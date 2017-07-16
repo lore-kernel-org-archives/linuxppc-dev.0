@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9CNV0r8czDqmM
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 13:59:22 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id c18so6918510qkb.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 20:59:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9CNX5Lj0zDqm7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jul 2017 13:59:24 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id c18so6918551qkb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jul 2017 20:59:24 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com,
  linuxram@us.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
  corbet@lwn.net, mingo@redhat.com, mhocko@kernel.org
-Subject: [RFC v6 32/62] powerpc: capture AMR register content on pkey violation
-Date: Sat, 15 Jul 2017 20:56:34 -0700
-Message-Id: <1500177424-13695-33-git-send-email-linuxram@us.ibm.com>
+Subject: [RFC v6 33/62] powerpc: introduce get_pte_pkey() helper
+Date: Sat, 15 Jul 2017 20:56:35 -0700
+Message-Id: <1500177424-13695-34-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
 References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,68 +31,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-capture AMR register contents, and save it in paca
-whenever a pkey violation is detected.
-
-This value will be needed to deliver pkey-violation
-signal to the task.
+get_pte_pkey() helper returns the pkey associated with
+a address corresponding to a given mm_struct.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/paca.h   |    3 +++
- arch/powerpc/kernel/asm-offsets.c |    5 +++++
- arch/powerpc/mm/fault.c           |    2 ++
- 3 files changed, 10 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    5 +++++
+ arch/powerpc/mm/hash_utils_64.c               |   25 +++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 1c09f8f..c8bd1fc 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -92,6 +92,9 @@ struct paca_struct {
- 	struct dtl_entry *dispatch_log_end;
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 	u64 dscr_default;		/* per-CPU default DSCR */
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index f7a6ed3..369f9ff 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -450,6 +450,11 @@ extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap,
+ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		     pte_t *ptep, unsigned long trap, unsigned long flags,
+ 		     int ssize, unsigned int shift, unsigned int mmu_psize);
++
 +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	u64 paca_amr;			/* value of amr at exception */
++u16 get_pte_pkey(struct mm_struct *mm, unsigned long address);
 +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
++
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ extern int __hash_page_thp(unsigned long ea, unsigned long access,
+ 			   unsigned long vsid, pmd_t *pmdp, unsigned long trap,
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 1e74529..6bc8e91 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1573,6 +1573,31 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	local_irq_restore(flags);
+ }
  
- #ifdef CONFIG_PPC_STD_MMU_64
- 	/*
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 709e234..17f5d8a 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -241,6 +241,11 @@ int main(void)
- 	OFFSET(PACAHWCPUID, paca_struct, hw_cpu_id);
- 	OFFSET(PACAKEXECSTATE, paca_struct, kexec_state);
- 	OFFSET(PACA_DSCR_DEFAULT, paca_struct, dscr_default);
-+
 +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	OFFSET(PACA_AMR, paca_struct, paca_amr);
++/*
++ * return the protection key associated with the given address
++ * and the mm_struct.
++ */
++u16 get_pte_pkey(struct mm_struct *mm, unsigned long address)
++{
++	pte_t *ptep;
++	u16 pkey = 0;
++	unsigned long flags;
++
++	if (!mm || !mm->pgd)
++		return 0;
++
++	local_irq_save(flags);
++	ptep = find_linux_pte_or_hugepte(mm->pgd, address,
++			NULL, NULL);
++	if (ptep)
++		pkey = pte_to_pkey_bits(pte_val(READ_ONCE(*ptep)));
++	local_irq_restore(flags);
++
++	return pkey;
++}
 +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
 +
- 	OFFSET(ACCOUNT_STARTTIME, paca_struct, accounting.starttime);
- 	OFFSET(ACCOUNT_STARTTIME_USER, paca_struct, accounting.starttime_user);
- 	OFFSET(ACCOUNT_USER_TIME, paca_struct, accounting.utime);
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index ea74fe2..a6710f5 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -264,6 +264,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- #ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
- 	if (error_code & DSISR_KEYFAULT) {
- 		code = SEGV_PKUERR;
-+		get_paca()->paca_amr = read_amr();
- 		goto bad_area_nosemaphore;
- 	}
- #endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-@@ -451,6 +452,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- #ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
- 	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
- 			is_exec, 0)) {
-+		get_paca()->paca_amr = read_amr();
- 		code = SEGV_PKUERR;
- 		goto bad_area;
- 	}
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ static inline void tm_flush_hash_page(int local)
+ {
 -- 
 1.7.1
