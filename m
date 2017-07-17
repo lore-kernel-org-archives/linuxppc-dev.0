@@ -1,19 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9mlC06hWzDqnl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 12:02:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9mx21lw1zDr1v
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 12:11:02 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Walleij <linus.walleij@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- opensuse-ppc@opensuse.org, stable@vger.kernel.org
-Subject: Re: [PATCH] machintosh: select defaults for cooling
-In-Reply-To: <20170714114629.1512-1-linus.walleij@linaro.org>
-References: <20170714114629.1512-1-linus.walleij@linaro.org>
-Date: Mon, 17 Jul 2017 12:02:29 +1000
-Message-ID: <87pocz253e.fsf@concordia.ellerman.id.au>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, sachinp <sachinp@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, mikey@neuling.org
+Subject: Re: [linux-next][bisected 1c0eaf0f] Today's next kernel fails to boot
+ on ppc bare-metal
+In-Reply-To: <1500025360.5335.37.camel@abdul.in.ibm.com>
+References: <1500025360.5335.37.camel@abdul.in.ibm.com>
+Date: Mon, 17 Jul 2017 12:10:59 +1000
+Message-ID: <87mv8324p8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,75 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linus Walleij <linus.walleij@linaro.org> writes:
+Hi Abdul,
 
-> I have this pretty nasty problem when trying to boot up a fresh
-> openSuSE DVD on a PowerMac G5: the kernel by default does not have
-> CONFIG_WINDFARM_PM72 enabled, with the effect that the cooling
-> is not functioning.
+Thanks for the bug report.
+
+Abdul Haleem <abdhalee@linux.vnet.ibm.com> writes:
+> Hi 
 >
-> The BIOS on the PowerMac G5 reacts to this by, after a grace
-> period when the BIOS has waited for the OS to take over, increasing
-> the fan speeds so it sounds like an airplane is in the room, and
-> after another grace period simply cutting the power to the
-> machine. This is done not beacuse the cooling is not working, but
-> because the BIOS is not recieving handover of cooling from the
-> OS, so it panics and give up. The problem has been reported by
-> Linux users online.
+> Today's linux-next fails to boot on ppc bare-metal
 >
-> Needless to say, this makes it impossible to install the OS
-> before the machine turns itself off.
->
-> The g5_defconfig looks like this:
-> CONFIG_PMAC_SMU=y
-> CONFIG_WINDFARM=y
-> CONFIG_WINDFARM_PM81=y
-> CONFIG_WINDFARM_PM91=y
-> CONFIG_WINDFARM_PM112=y
-> CONFIG_WINDFARM_PM121=y
->
-> Notably PM72 is missing, making the PowerMac G5 fail.
->
-> The defconfig is not the right place to do this: it should be
-> done by default when selecting Mac support for PPC/PPC64 and
-> especially for the Macs CPUfreq driver. We select SMU by default
-> for PPC_PMAC64, WINDFARM by default on PPC_PMAC and all the
-> WINDFARM thermal managers by default if CPU_FREQ_PMAC64 is
-> selected.
+> Test: Boot
+> Machine: Power 8 bare-metal
+> kernel: 4.12.0-next-20170713
+> gcc: version 4.8.5
+> config : Tul-NV-config attached.
 
-I agree with the intent of your patch, but I'm not sure I like the
-implementation.
+[swearing redacted]
 
-> diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-> index 97a420c11eed..d7186d8f30a9 100644
-> --- a/drivers/macintosh/Kconfig
-> +++ b/drivers/macintosh/Kconfig
-> @@ -101,6 +101,7 @@ config ADB_PMU_LED_DISK
->  config PMAC_SMU
->  	bool "Support for SMU  based PowerMacs"
->  	depends on PPC_PMAC64
-> +	default PPC_PMAC64
-
-Defaulting to one of your dependencies is exactly the same as defaulting
-to yes (unless it's a tristate).
-
-I think it's fine to make this default y, it has the dependency on the
-platform so it won't appear for most users.
-
-> @@ -194,11 +195,13 @@ config THERM_ADT746X
->  config WINDFARM
->  	tristate "New PowerMac thermal control infrastructure"
->  	depends on PPC
-> +	default PPC_PMAC
->  
->  config WINDFARM_PM81
->  	tristate "Support for thermal management on iMac G5"
->  	depends on WINDFARM && I2C && CPU_FREQ_PMAC64 && PMAC_SMU
->  	select I2C_POWERMAC
-> +	default CPU_FREQ_PMAC64
->  	help
->  	  This driver provides thermal control for the iMacG5
-
-These I think should all just be 'default m'.
+Does this help?
 
 cheers
+
+
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 9b87abb178f0..cad6b57ce494 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -78,7 +78,7 @@ void opal_configure_cores(void)
+ 	 *  ie. Host hash  supports  hash guests
+ 	 *      Host radix supports  hash/radix guests
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++	if (early_cpu_has_feature(CPU_FTR_ARCH_300)) {
+ 		reinit_flags |= OPAL_REINIT_CPUS_MMU_HASH;
+ 		if (early_radix_enabled())
+ 			reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX;
