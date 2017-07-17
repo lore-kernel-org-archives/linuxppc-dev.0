@@ -1,27 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9ygm1gTQzDrD3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 19:30:12 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id h134so7058683iof.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 02:30:12 -0700 (PDT)
-Message-ID: <1500283754.8256.11.camel@gmail.com>
-Subject: Re: [PATCH v3 02/10] mtd: powernv_flash: Lock around concurrent
- access to OPAL
-From: Balbir Singh <bsingharora@gmail.com>
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mtd@lists.infradead.org
-Cc: stewart@linux.vnet.ibm.com, alistair@popple.id.au, dwmw2@infradead.org,
- rlippert@google.com
-Date: Mon, 17 Jul 2017 19:29:14 +1000
-In-Reply-To: <1500278150.29477.1.camel@gmail.com>
-References: <20170712042304.19745-1-cyrilbur@gmail.com>
- <20170712042304.19745-3-cyrilbur@gmail.com>
- <1500276875.8256.3.camel@gmail.com> <1500278150.29477.1.camel@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9zkV2YkKzDrD4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 20:17:38 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: James Morse <james.morse@arm.com>, linux-kernel@vger.kernel.org
+Cc: Zhou Chengming <zhouchengming1@huawei.com>,
+ Andrey Vagin <avagin@openvz.org>, Roland McGrath <roland@hack.frob.com>,
+ Oleg Nesterov <oleg@redhat.com>, Yury Norov <ynorov@caviumnetworks.com>,
+ James Morse <james.morse@arm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] ptrace: Add compat PTRACE_{G,S}ETSIGMASK handlers
+In-Reply-To: <20170629162637.10676-1-james.morse@arm.com>
+References: <20170629162637.10676-1-james.morse@arm.com>
+Date: Mon, 17 Jul 2017 20:17:35 +1000
+Message-ID: <87k2371i68.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-07-17 at 17:55 +1000, Cyril Bur wrote:
-> On Mon, 2017-07-17 at 17:34 +1000, Balbir Singh wrote:
-> > On Wed, 2017-07-12 at 14:22 +1000, Cyril Bur wrote:
-> > > OPAL can only manage one flash access at a time and will return an
-> > > OPAL_BUSY error for each concurrent access to the flash. The simplest
-> > > way to prevent this from happening is with a mutex.
-> > > 
-> > > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > > ---
-> > 
-> > Should the mutex_lock() be mutex_lock_interruptible()? Are we OK waiting on
-> > the mutex while other operations with the lock are busy?
-> > 
-> 
-> This is a good question. My best interpretation is that
-> _interruptible() should be used when you'll only be coming from a user
-> context. Which is mostly true for this driver, however, MTD does
-> provide kernel interfaces, so I was hesitant, there isn't a great deal
-> of use of _interruptible() in drivers/mtd. 
-> 
-> Thoughts?
+James Morse <james.morse@arm.com> writes:
 
-What are the kernel interfaces (I have not read through mtd in detail)?
-I would still like to see us not blocked in mutex_lock() across threads
-for parallel calls, one option is to use mutex_trylock() and return if
-someone already holds the mutex with -EBUSY, but you'll need to evaluate
-what that means for every call.
+> compat_ptrace_request() lacks handlers for PTRACE_{G,S}ETSIGMASK,
+> instead using those in ptrace_request(). The compat variant should
+> read a compat_sigset_t from userspace instead of ptrace_request()s
+> sigset_t.
+>
+> While compat_sigset_t is the same size as sigset_t, it is defined as
+> 2xu32, instead of a single u64. On a big-endian CPU this means that
+> compat_sigset_t is passed to user-space using middle-endianness,
+> where the least-significant u32 is written most significant byte
+> first.
+>
+> If ptrace_request()s code is used userspace will read the most
+> significant u32 where it expected the least significant.
 
-Balbir Singh.
+But that's what the code has done since 2013.
+
+So won't changing this break userspace that has been written to work
+around that bug? Or do we think nothing actually uses it in the wild and
+we can get away with it?
+
+cheers
