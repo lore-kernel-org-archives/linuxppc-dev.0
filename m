@@ -1,19 +1,21 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9lLw0fhfzDr3P
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 10:59:50 +1000 (AEST)
-Date: Sun, 16 Jul 2017 19:58:46 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Thomas Besemer <thomas.besemer@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: 440EP NOR Flash Mapping with DTS
-Message-ID: <20170717005846.GD13471@gate.crashing.org>
-References: <CAO7m3AkpuUdApRiiDw+Sv6fqyhVsfBOUA8cw1xChJLxT1r6_wA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAO7m3AkpuUdApRiiDw+Sv6fqyhVsfBOUA8cw1xChJLxT1r6_wA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9mlC06hWzDqnl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 12:02:31 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Walleij <linus.walleij@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ opensuse-ppc@opensuse.org, stable@vger.kernel.org
+Subject: Re: [PATCH] machintosh: select defaults for cooling
+In-Reply-To: <20170714114629.1512-1-linus.walleij@linaro.org>
+References: <20170714114629.1512-1-linus.walleij@linaro.org>
+Date: Mon, 17 Jul 2017 12:02:29 +1000
+Message-ID: <87pocz253e.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +25,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 16, 2017 at 05:31:05PM -0700, Thomas Besemer wrote:
-> I'm trying to map some NOR flash in via DTS on a Yosemite
-> style 440EP board. I've tried a few different things, below
-> showing my latest attempt.  During Kernel boot, it does not
-> appear to detect the device, as no messages are emitted.
-> 
-> Flash is Spansion S29GL256P, base address 0xFE000000.
-> 
-> EBC0: ebc {
->        compatible = "ibm,ebc-440ep", "ibm,ebc-440gp", "ibm,ebc";
->        dcr-reg = <0x012 0x002>;
->        #address-cells = <2>;
->        #size-cells = <1>;
->        clock-frequency = <0>; /* Filled in by zImage */
->        interrupts = <0x5 0x1>;
->        interrupt-parent = <&UIC1>;
-> 
->        nor_flash@FE0000000,0 {
+Linus Walleij <linus.walleij@linaro.org> writes:
 
-@0,fe000000
+> I have this pretty nasty problem when trying to boot up a fresh
+> openSuSE DVD on a PowerMac G5: the kernel by default does not have
+> CONFIG_WINDFARM_PM72 enabled, with the effect that the cooling
+> is not functioning.
+>
+> The BIOS on the PowerMac G5 reacts to this by, after a grace
+> period when the BIOS has waited for the OS to take over, increasing
+> the fan speeds so it sounds like an airplane is in the room, and
+> after another grace period simply cutting the power to the
+> machine. This is done not beacuse the cooling is not working, but
+> because the BIOS is not recieving handover of cooling from the
+> OS, so it panics and give up. The problem has been reported by
+> Linux users online.
+>
+> Needless to say, this makes it impossible to install the OS
+> before the machine turns itself off.
+>
+> The g5_defconfig looks like this:
+> CONFIG_PMAC_SMU=y
+> CONFIG_WINDFARM=y
+> CONFIG_WINDFARM_PM81=y
+> CONFIG_WINDFARM_PM91=y
+> CONFIG_WINDFARM_PM112=y
+> CONFIG_WINDFARM_PM121=y
+>
+> Notably PM72 is missing, making the PowerMac G5 fail.
+>
+> The defconfig is not the right place to do this: it should be
+> done by default when selecting Mac support for PPC/PPC64 and
+> especially for the Macs CPUfreq driver. We select SMU by default
+> for PPC_PMAC64, WINDFARM by default on PPC_PMAC and all the
+> WINDFARM thermal managers by default if CPU_FREQ_PMAC64 is
+> selected.
 
->                reg = <0xFE000000 0x02000000>;
+I agree with the intent of your patch, but I'm not sure I like the
+implementation.
 
-reg = <0 0xfe000000 0x02000000>;
+> diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+> index 97a420c11eed..d7186d8f30a9 100644
+> --- a/drivers/macintosh/Kconfig
+> +++ b/drivers/macintosh/Kconfig
+> @@ -101,6 +101,7 @@ config ADB_PMU_LED_DISK
+>  config PMAC_SMU
+>  	bool "Support for SMU  based PowerMacs"
+>  	depends on PPC_PMAC64
+> +	default PPC_PMAC64
 
+Defaulting to one of your dependencies is exactly the same as defaulting
+to yes (unless it's a tristate).
 
-Cheers,
+I think it's fine to make this default y, it has the dependency on the
+platform so it won't appear for most users.
 
+> @@ -194,11 +195,13 @@ config THERM_ADT746X
+>  config WINDFARM
+>  	tristate "New PowerMac thermal control infrastructure"
+>  	depends on PPC
+> +	default PPC_PMAC
+>  
+>  config WINDFARM_PM81
+>  	tristate "Support for thermal management on iMac G5"
+>  	depends on WINDFARM && I2C && CPU_FREQ_PMAC64 && PMAC_SMU
+>  	select I2C_POWERMAC
+> +	default CPU_FREQ_PMAC64
+>  	help
+>  	  This driver provides thermal control for the iMacG5
 
-Segher
+These I think should all just be 'default m'.
+
+cheers
