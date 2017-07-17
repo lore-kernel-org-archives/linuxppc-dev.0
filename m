@@ -1,45 +1,18 @@
-Return-Path: <gromero@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0074.outbound.protection.outlook.com [104.47.40.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xB3Sn1TBtzDrDL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 23:06:00 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6HD5Gf1023304
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 09:05:59 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2br8anu49v-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 09:05:58 -0400
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Mon, 17 Jul 2017 10:05:55 -0300
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6HD5qP81900992
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 10:05:52 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6HD5rhd026781
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 10:05:53 -0300
-Received: from localhost.localdomain ([9.85.136.158])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- v6HD5pIC026749
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 10:05:52 -0300
-Subject: Re: Kernel build issues with upstream binutils
-To: linuxppc-dev@lists.ozlabs.org
-References: <20161128003505.61590f63@roar.ozlabs.ibm.com>
- <596CB425.3000103@linux.vnet.ibm.com>
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Date: Mon, 17 Jul 2017 10:05:45 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xB3ck4xsJzDqq1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 23:12:54 +1000 (AEST)
+From: <laurentiu.tudor@nxp.com>
+To: <oss@buserror.net>, <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
+CC: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Subject: [PATCH v2] powerpc: allow compiling with GENERIC_MSI_IRQ_DOMAIN
+Date: Mon, 17 Jul 2017 16:12:43 +0300
+Message-ID: <20170717131243.2157-1-laurentiu.tudor@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <596CB425.3000103@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <596CB629.3070803@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,31 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-No sure if in reply-to took correct effect, so I'm posting the thread ref explicit:
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-November/151672.html
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-On 17-07-2017 09:57, Gustavo Romero wrote:
-> Hi,
-> 
-> On bissecting kernel on Debian (gcc version 6.3.0 20170516) I've got the same
-> error on linking kernels <= v4.9 as reported previously in this thread:
-> 
-> ld: arch/powerpc/boot/zImage.pseries: Not enough room for program headers, try linking with -N
-> ld: final link failed: Bad value
-> arch/powerpc/boot/Makefile:364: recipe for target 'arch/powerpc/boot/zImage.pseries' failed
-> make[1]: *** [arch/powerpc/boot/zImage.pseries] Error 1
-> arch/powerpc/Makefile:278: recipe for target 'zImage' failed
-> make: *** [zImage] Error 2
-> 
-> Applying the fix proposed by Nicholas resolved the issue.
-> 
-> However that patch is not present - afaics - in > v4.9 (where it builds fine).
-> 
-> Any clue on why that is happening on <= v4.9 but not on kernels above that?
-> 
-> Thank you.
-> 
-> 
-> Regards,
-> Gustavo
-> 
+This allows building powerpc with the GENERIC_MSI_IRQ_DOMAIN
+Kconfig by enabling the asm-generic msi.h in Kbuild. Without
+this, there's a compilation error [1] because powerpc, as most
+arches, doesn't provide an asm/msi.h.
+
+[1] In file included from ./include/linux/kvm_host.h:20:0,
+                 from ./arch/powerpc/include/asm/kvm_ppc.h:30,
+                 from arch/powerpc/kernel/dbell.c:20:
+./include/linux/msi.h:195:21: fatal error: asm/msi.h: No such file or directory
+
+Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+---
+v2:
+ - compilation error happens when GENERIC_MSI_IRQ_DOMAIN is enabled and not
+   GENERIC_MSI_IRQ, so fix commit msg and title
+
+previous version: https://patchwork.ozlabs.org/patch/782735/
+
+ arch/powerpc/include/asm/Kbuild | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
+index 5c4fbc8..2542ea1 100644
+--- a/arch/powerpc/include/asm/Kbuild
++++ b/arch/powerpc/include/asm/Kbuild
+@@ -8,3 +8,4 @@ generic-y += mcs_spinlock.h
+ generic-y += preempt.h
+ generic-y += rwsem.h
+ generic-y += vtime.h
++generic-y += msi.h
+-- 
+2.9.4
