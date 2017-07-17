@@ -3,8 +3,8 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xB7Sd3ktDzDrDq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 02:06:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xB7Sg5CgPzDrDd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 02:06:10 +1000 (AEST)
 From: Mark Brown <broonie@kernel.org>
 To: Gustavo A. R. Silva <garsilva@embeddedor.com>
 Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
@@ -14,10 +14,10 @@ Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
  Takashi Iwai <tiwai@suse.com>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>,
  alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
-In-Reply-To: <20170713072351.GA1485@embeddedgus>
-Message-Id: <E1dX8WP-0004kg-1a@debutante>
-Date: Mon, 17 Jul 2017 17:05:21 +0100
-Subject: Applied "ASoC: fsl_asrc: constify snd_soc_dai_ops structure" to the
+In-Reply-To: <20170713071925.GA32343@embeddedgus>
+Message-Id: <E1dX8WS-0004m0-3i@debutante>
+Date: Mon, 17 Jul 2017 17:05:24 +0100
+Subject: Applied "ASoC: fsl_esai: constify snd_soc_dai_ops structure" to the
  asoc tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,7 +30,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: fsl_asrc: constify snd_soc_dai_ops structure
+   ASoC: fsl_esai: constify snd_soc_dai_ops structure
 
 has been applied to the asoc tree at
 
@@ -55,10 +55,10 @@ to this mail.
 Thanks,
 Mark
 
->From 29a22ebfa4c44bf96b3d00d90b5e3b8128d8a162 Mon Sep 17 00:00:00 2001
+>From 5d29e95eec1451d35ef6ce5b851fbc8b04f82d39 Mon Sep 17 00:00:00 2001
 From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Date: Thu, 13 Jul 2017 02:23:51 -0500
-Subject: [PATCH] ASoC: fsl_asrc: constify snd_soc_dai_ops structure
+Date: Thu, 13 Jul 2017 02:19:25 -0500
+Subject: [PATCH] ASoC: fsl_esai: constify snd_soc_dai_ops structure
 
 This structure is only stored in the ops field of a snd_soc_dai_driver
 structure. That field is declared const, so snd_soc_dai_ops structures
@@ -67,21 +67,21 @@ that have this property can be declared as const also.
 Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_asrc.c | 2 +-
+ sound/soc/fsl/fsl_esai.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 8cfffa70c144..806d39927318 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -542,7 +542,7 @@ static int fsl_asrc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index 809a069d490b..cef79a1a620b 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -620,7 +620,7 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
  	return 0;
  }
  
--static struct snd_soc_dai_ops fsl_asrc_dai_ops = {
-+static const struct snd_soc_dai_ops fsl_asrc_dai_ops = {
- 	.hw_params    = fsl_asrc_dai_hw_params,
- 	.hw_free      = fsl_asrc_dai_hw_free,
- 	.trigger      = fsl_asrc_dai_trigger,
+-static struct snd_soc_dai_ops fsl_esai_dai_ops = {
++static const struct snd_soc_dai_ops fsl_esai_dai_ops = {
+ 	.startup = fsl_esai_startup,
+ 	.shutdown = fsl_esai_shutdown,
+ 	.trigger = fsl_esai_trigger,
 -- 
 2.13.2
