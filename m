@@ -1,37 +1,16 @@
-Return-Path: <Joao.Pinto@synopsys.com>
-Received: from smtprelay.synopsys.com (smtprelay.synopsys.com [198.182.47.9])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xB1Fc33VGzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 21:26:11 +1000 (AEST)
-Subject: Re: [PATCH 1/3] PCI: dwc: Handle host_init failures
-To: Bjorn Andersson <bjorn.andersson@linaro.org>, Kishon Vijay Abraham I
- <kishon@ti.com>, Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han
- <jingoohan1@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski
- <krzk@kernel.org>, Richard Zhu <hongxing.zhu@nxp.com>, Lucas Stach
- <l.stach@pengutronix.de>, Murali Karicheri <m-karicheri2@ti.com>, "Minghuan
- Lian" <minghuan.Lian@freescale.com>, Mingkai Hu <mingkai.hu@freescale.com>,
- Roy Zang <tie-fei.zang@freescale.com>, Thomas Petazzoni
- <thomas.petazzoni@free-electrons.com>, Niklas Cassel
- <niklas.cassel@axis.com>, Jesper Nilsson <jesper.nilsson@axis.com>, "Joao
- Pinto" <Joao.Pinto@synopsys.com>, Xiaowei Song <songxiaowei@hisilicon.com>,
- Binghui Wang <wangbinghui@hisilicon.com>, Stanimir Varbanov
- <svarbanov@mm-sol.com>, Pratyush Anand <pratyush.anand@gmail.com>
-CC: "open list:PCI DRIVER FOR TI DRA7XX" <linux-omap@vger.kernel.org>, "open
- list:PCI DRIVER FOR TI DRA7XX" <linux-pci@vger.kernel.org>, open list
- <linux-kernel@vger.kernel.org>, "moderated list:PCI DRIVER FOR SAMSUNG
- EXYNOS" <linux-arm-kernel@lists.infradead.org>, "moderated list:PCI DRIVER
- FOR SAMSUNG EXYNOS" <linux-samsung-soc@vger.kernel.org>, "open list:PCI
- DRIVER FOR FREESCALE LAYERSCAPE" <linuxppc-dev@lists.ozlabs.org>, "open
- list:PCIE DRIVER FOR AXIS ARTPEC" <linux-arm-kernel@axis.com>, "open
- list:PCIE DRIVER FOR QUALCOMM MSM" <linux-arm-msm@vger.kernel.org>
-References: <20170716063947.3272-1-bjorn.andersson@linaro.org>
-From: Joao Pinto <Joao.Pinto@synopsys.com>
-Message-ID: <73b9c442-38f6-cc5b-c6e0-4ce7187dc0a8@synopsys.com>
-Date: Mon, 17 Jul 2017 12:18:28 +0100
-MIME-Version: 1.0
-In-Reply-To: <20170716063947.3272-1-bjorn.andersson@linaro.org>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xB1MB0ZNpzDrCt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 21:31:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: abdhalee@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/powernv: Fix boot on Power8 bare metal due to
+ opal_configure_cores()
+Date: Mon, 17 Jul 2017 21:31:00 +1000
+Message-Id: <1500291060-8133-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,345 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In commit 1c0eaf0f56d6 ("powerpc/powernv: Tell OPAL about our MMU mode
+on POWER9"), we added additional flags to the OPAL call to configure
+CPUs at boot.
 
-Hi Bjorn Andersson,
+These flags only work on Power9 firmwares, and worse can cause boot
+failures on Power8 machines, so we check for CPU_FTR_ARCH_300 (aka POWER9)
+before adding the extra flags.
 
-Às 7:39 AM de 7/16/2017, Bjorn Andersson escreveu:
-> In several dwc based drivers host_init can fail, so make sure to
-> propagate and handle this to avoid continuing operation of a driver or
-> hardware in an invalid state.
-> 
-> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> ---
->  drivers/pci/dwc/pci-dra7xx.c           |  4 +++-
->  drivers/pci/dwc/pci-exynos.c           |  4 +++-
->  drivers/pci/dwc/pci-imx6.c             |  4 +++-
->  drivers/pci/dwc/pci-keystone.c         |  4 +++-
->  drivers/pci/dwc/pci-layerscape.c       | 14 ++++++++++----
->  drivers/pci/dwc/pcie-armada8k.c        |  4 +++-
->  drivers/pci/dwc/pcie-artpec6.c         |  4 +++-
->  drivers/pci/dwc/pcie-designware-host.c |  7 +++++--
->  drivers/pci/dwc/pcie-designware-plat.c |  4 +++-
->  drivers/pci/dwc/pcie-designware.h      |  2 +-
->  drivers/pci/dwc/pcie-kirin.c           |  4 +++-
->  drivers/pci/dwc/pcie-qcom.c            |  6 ++++--
->  drivers/pci/dwc/pcie-spear13xx.c       |  4 +++-
->  13 files changed, 47 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
-> index f2fc5f47064e..e8c13bb76169 100644
-> --- a/drivers/pci/dwc/pci-dra7xx.c
-> +++ b/drivers/pci/dwc/pci-dra7xx.c
-> @@ -195,7 +195,7 @@ static void dra7xx_pcie_enable_interrupts(struct dra7xx_pcie *dra7xx)
->  	dra7xx_pcie_enable_msi_interrupts(dra7xx);
->  }
->  
-> -static void dra7xx_pcie_host_init(struct pcie_port *pp)
-> +static int dra7xx_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
-> @@ -206,6 +206,8 @@ static void dra7xx_pcie_host_init(struct pcie_port *pp)
->  	dw_pcie_wait_for_link(pci);
->  	dw_pcie_msi_init(pp);
->  	dra7xx_pcie_enable_interrupts(dra7xx);
-> +
-> +	return 0;
->  }
->  
->  static const struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
-> diff --git a/drivers/pci/dwc/pci-exynos.c b/drivers/pci/dwc/pci-exynos.c
-> index c78c06552590..f77f872e8b78 100644
-> --- a/drivers/pci/dwc/pci-exynos.c
-> +++ b/drivers/pci/dwc/pci-exynos.c
-> @@ -581,13 +581,15 @@ static int exynos_pcie_link_up(struct dw_pcie *pci)
->  	return 0;
->  }
->  
-> -static void exynos_pcie_host_init(struct pcie_port *pp)
-> +static int exynos_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct exynos_pcie *ep = to_exynos_pcie(pci);
->  
->  	exynos_pcie_establish_link(ep);
->  	exynos_pcie_enable_interrupts(ep);
-> +
-> +	return 0;
->  }
->  
->  static const struct dw_pcie_host_ops exynos_pcie_host_ops = {
-> diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
-> index bf5c3616e344..20aae4469ee4 100644
-> --- a/drivers/pci/dwc/pci-imx6.c
-> +++ b/drivers/pci/dwc/pci-imx6.c
-> @@ -636,7 +636,7 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
->  	return ret;
->  }
->  
-> -static void imx6_pcie_host_init(struct pcie_port *pp)
-> +static int imx6_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pci);
-> @@ -649,6 +649,8 @@ static void imx6_pcie_host_init(struct pcie_port *pp)
->  
->  	if (IS_ENABLED(CONFIG_PCI_MSI))
->  		dw_pcie_msi_init(pp);
-> +
-> +	return 0;
->  }
->  
->  static int imx6_pcie_link_up(struct dw_pcie *pci)
-> diff --git a/drivers/pci/dwc/pci-keystone.c b/drivers/pci/dwc/pci-keystone.c
-> index 4783cec1f78d..3ad3f8aa27b0 100644
-> --- a/drivers/pci/dwc/pci-keystone.c
-> +++ b/drivers/pci/dwc/pci-keystone.c
-> @@ -261,7 +261,7 @@ static int keystone_pcie_fault(unsigned long addr, unsigned int fsr,
->  	return 0;
->  }
->  
-> -static void __init ks_pcie_host_init(struct pcie_port *pp)
-> +static int __init ks_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct keystone_pcie *ks_pcie = to_keystone_pcie(pci);
-> @@ -289,6 +289,8 @@ static void __init ks_pcie_host_init(struct pcie_port *pp)
->  	 */
->  	hook_fault_code(17, keystone_pcie_fault, SIGBUS, 0,
->  			"Asynchronous external abort");
-> +
-> +	return 0;
->  }
->  
->  static const struct dw_pcie_host_ops keystone_pcie_host_ops = {
-> diff --git a/drivers/pci/dwc/pci-layerscape.c b/drivers/pci/dwc/pci-layerscape.c
-> index fd861289ad8b..7581490f007c 100644
-> --- a/drivers/pci/dwc/pci-layerscape.c
-> +++ b/drivers/pci/dwc/pci-layerscape.c
-> @@ -108,31 +108,35 @@ static int ls1021_pcie_link_up(struct dw_pcie *pci)
->  	return 1;
->  }
->  
-> -static void ls1021_pcie_host_init(struct pcie_port *pp)
-> +static int ls1021_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct ls_pcie *pcie = to_ls_pcie(pci);
->  	struct device *dev = pci->dev;
->  	u32 index[2];
-> +	int ret;
->  
->  	pcie->scfg = syscon_regmap_lookup_by_phandle(dev->of_node,
->  						     "fsl,pcie-scfg");
->  	if (IS_ERR(pcie->scfg)) {
-> +		ret = PTR_ERR(pcie->scfg);
->  		dev_err(dev, "No syscfg phandle specified\n");
->  		pcie->scfg = NULL;
-> -		return;
-> +		return ret;
->  	}
->  
->  	if (of_property_read_u32_array(dev->of_node,
->  				       "fsl,pcie-scfg", index, 2)) {
->  		pcie->scfg = NULL;
-> -		return;
-> +		return -EINVAL;
->  	}
->  	pcie->index = index[1];
->  
->  	dw_pcie_setup_rc(pp);
->  
->  	ls_pcie_drop_msg_tlp(pcie);
-> +
-> +	return 0;
->  }
->  
->  static int ls_pcie_link_up(struct dw_pcie *pci)
-> @@ -150,7 +154,7 @@ static int ls_pcie_link_up(struct dw_pcie *pci)
->  	return 1;
->  }
->  
-> -static void ls_pcie_host_init(struct pcie_port *pp)
-> +static int ls_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct ls_pcie *pcie = to_ls_pcie(pci);
-> @@ -160,6 +164,8 @@ static void ls_pcie_host_init(struct pcie_port *pp)
->  	ls_pcie_clear_multifunction(pcie);
->  	ls_pcie_drop_msg_tlp(pcie);
->  	iowrite32(0, pci->dbi_base + PCIE_DBI_RO_WR_EN);
-> +
-> +	return 0;
->  }
->  
->  static int ls_pcie_msi_host_init(struct pcie_port *pp,
-> diff --git a/drivers/pci/dwc/pcie-armada8k.c b/drivers/pci/dwc/pcie-armada8k.c
-> index ea8f34af6a85..017a727a68db 100644
-> --- a/drivers/pci/dwc/pcie-armada8k.c
-> +++ b/drivers/pci/dwc/pcie-armada8k.c
-> @@ -134,13 +134,15 @@ static void armada8k_pcie_establish_link(struct armada8k_pcie *pcie)
->  		dev_err(pci->dev, "Link not up after reconfiguration\n");
->  }
->  
-> -static void armada8k_pcie_host_init(struct pcie_port *pp)
-> +static int armada8k_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct armada8k_pcie *pcie = to_armada8k_pcie(pci);
->  
->  	dw_pcie_setup_rc(pp);
->  	armada8k_pcie_establish_link(pcie);
-> +
-> +	return 0;
->  }
->  
->  static irqreturn_t armada8k_pcie_irq_handler(int irq, void *arg)
-> diff --git a/drivers/pci/dwc/pcie-artpec6.c b/drivers/pci/dwc/pcie-artpec6.c
-> index 01c6f7823672..5d81f1d884e3 100644
-> --- a/drivers/pci/dwc/pcie-artpec6.c
-> +++ b/drivers/pci/dwc/pcie-artpec6.c
-> @@ -175,13 +175,15 @@ static void artpec6_pcie_enable_interrupts(struct artpec6_pcie *artpec6_pcie)
->  		dw_pcie_msi_init(pp);
->  }
->  
-> -static void artpec6_pcie_host_init(struct pcie_port *pp)
-> +static int artpec6_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct artpec6_pcie *artpec6_pcie = to_artpec6_pcie(pci);
->  
->  	artpec6_pcie_establish_link(artpec6_pcie);
->  	artpec6_pcie_enable_interrupts(artpec6_pcie);
-> +
-> +	return 0;
->  }
->  
->  static const struct dw_pcie_host_ops artpec6_pcie_host_ops = {
-> diff --git a/drivers/pci/dwc/pcie-designware-host.c b/drivers/pci/dwc/pcie-designware-host.c
-> index d29c020da082..157621175147 100644
-> --- a/drivers/pci/dwc/pcie-designware-host.c
-> +++ b/drivers/pci/dwc/pcie-designware-host.c
-> @@ -401,8 +401,11 @@ int dw_pcie_host_init(struct pcie_port *pp)
->  		}
->  	}
->  
-> -	if (pp->ops->host_init)
-> -		pp->ops->host_init(pp);
-> +	if (pp->ops->host_init) {
-> +		ret = pp->ops->host_init(pp);
-> +		if (ret)
-> +			goto error;
-> +	}
->  
->  	pp->root_bus_nr = pp->busn->start;
->  
-> diff --git a/drivers/pci/dwc/pcie-designware-plat.c b/drivers/pci/dwc/pcie-designware-plat.c
-> index 091b4e7ad059..168e2380f493 100644
-> --- a/drivers/pci/dwc/pcie-designware-plat.c
-> +++ b/drivers/pci/dwc/pcie-designware-plat.c
-> @@ -35,7 +35,7 @@ static irqreturn_t dw_plat_pcie_msi_irq_handler(int irq, void *arg)
->  	return dw_handle_msi_irq(pp);
->  }
->  
-> -static void dw_plat_pcie_host_init(struct pcie_port *pp)
-> +static int dw_plat_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  
-> @@ -44,6 +44,8 @@ static void dw_plat_pcie_host_init(struct pcie_port *pp)
->  
->  	if (IS_ENABLED(CONFIG_PCI_MSI))
->  		dw_pcie_msi_init(pp);
-> +
-> +	return 0;
->  }
->  
->  static const struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
-> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-> index b4d2a89f8e58..7366c8167404 100644
-> --- a/drivers/pci/dwc/pcie-designware.h
-> +++ b/drivers/pci/dwc/pcie-designware.h
-> @@ -134,7 +134,7 @@ struct dw_pcie_host_ops {
->  			     unsigned int devfn, int where, int size, u32 *val);
->  	int (*wr_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
->  			     unsigned int devfn, int where, int size, u32 val);
-> -	void (*host_init)(struct pcie_port *pp);
-> +	int (*host_init)(struct pcie_port *pp);
->  	void (*msi_set_irq)(struct pcie_port *pp, int irq);
->  	void (*msi_clear_irq)(struct pcie_port *pp, int irq);
->  	phys_addr_t (*get_msi_addr)(struct pcie_port *pp);
-> diff --git a/drivers/pci/dwc/pcie-kirin.c b/drivers/pci/dwc/pcie-kirin.c
-> index 33fddb9f6739..0b0eb67f2658 100644
-> --- a/drivers/pci/dwc/pcie-kirin.c
-> +++ b/drivers/pci/dwc/pcie-kirin.c
-> @@ -430,9 +430,11 @@ static int kirin_pcie_establish_link(struct pcie_port *pp)
->  	return 0;
->  }
->  
-> -static void kirin_pcie_host_init(struct pcie_port *pp)
-> +static int kirin_pcie_host_init(struct pcie_port *pp)
->  {
->  	kirin_pcie_establish_link(pp);
-> +
-> +	return 0;
->  }
->  
->  static struct dw_pcie_ops kirin_dw_pcie_ops = {
-> diff --git a/drivers/pci/dwc/pcie-qcom.c b/drivers/pci/dwc/pcie-qcom.c
-> index 68c5f2ab5bc8..d15657dc3990 100644
-> --- a/drivers/pci/dwc/pcie-qcom.c
-> +++ b/drivers/pci/dwc/pcie-qcom.c
-> @@ -891,7 +891,7 @@ static int qcom_pcie_link_up(struct dw_pcie *pci)
->  	return !!(val & PCI_EXP_LNKSTA_DLLLA);
->  }
->  
-> -static void qcom_pcie_host_init(struct pcie_port *pp)
-> +static int qcom_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct qcom_pcie *pcie = to_qcom_pcie(pci);
-> @@ -921,12 +921,14 @@ static void qcom_pcie_host_init(struct pcie_port *pp)
->  	if (ret)
->  		goto err;
->  
-> -	return;
-> +	return 0;
->  err:
->  	qcom_ep_reset_assert(pcie);
->  	phy_power_off(pcie->phy);
->  err_deinit:
->  	pcie->ops->deinit(pcie);
-> +
-> +	return ret;
->  }
->  
->  static int qcom_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
-> diff --git a/drivers/pci/dwc/pcie-spear13xx.c b/drivers/pci/dwc/pcie-spear13xx.c
-> index 80897291e0fb..52000bc34600 100644
-> --- a/drivers/pci/dwc/pcie-spear13xx.c
-> +++ b/drivers/pci/dwc/pcie-spear13xx.c
-> @@ -177,13 +177,15 @@ static int spear13xx_pcie_link_up(struct dw_pcie *pci)
->  	return 0;
->  }
->  
-> -static void spear13xx_pcie_host_init(struct pcie_port *pp)
-> +static int spear13xx_pcie_host_init(struct pcie_port *pp)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
->  	struct spear13xx_pcie *spear13xx_pcie = to_spear13xx_pcie(pci);
->  
->  	spear13xx_pcie_establish_link(spear13xx_pcie);
->  	spear13xx_pcie_enable_interrupts(spear13xx_pcie);
-> +
-> +	return 0;
->  }
->  
->  static const struct dw_pcie_host_ops spear13xx_pcie_host_ops = {
-> 
+Unfortunately we forgot that opal_configure_cores() is called before
+the CPU feature checks are dynamically patched, meaning the check
+always returns true.
 
-A step in the right direction :). In the future we should add host init
-validation in the specific SoC drivers, like Layerscape and Qcom have, to assure
-that any problem is treated properly in the core driver.
+We definitely need to do something to make the CPU feature checks less
+prone to bugs like this, but for now the minimal fix is to use
+early_cpu_has_feature().
 
-Acked-by: Joao Pinto <jpinto@synopsys.com>
+Reported-and-tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Fixes: 1c0eaf0f56d6 ("powerpc/powernv: Tell OPAL about our MMU mode on POWER9")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/powernv/opal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 9b87abb178f0..cad6b57ce494 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -78,7 +78,7 @@ void opal_configure_cores(void)
+ 	 *  ie. Host hash  supports  hash guests
+ 	 *      Host radix supports  hash/radix guests
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++	if (early_cpu_has_feature(CPU_FTR_ARCH_300)) {
+ 		reinit_flags |= OPAL_REINIT_CPUS_MMU_HASH;
+ 		if (early_radix_enabled())
+ 			reinit_flags |= OPAL_REINIT_CPUS_MMU_RADIX;
+-- 
+2.7.4
