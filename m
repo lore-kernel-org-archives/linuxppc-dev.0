@@ -1,45 +1,44 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3x9rvz4ndNzDrCn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 15:10:23 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6H58mHU044520
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 01:10:21 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bqfkg9j2n-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3x9sCf4lCWzDrCn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 15:23:57 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6H5JcW3011418
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 01:23:54 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bqf6t23m9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 01:10:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 01:23:54 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 17 Jul 2017 15:10:18 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ Mon, 17 Jul 2017 15:23:51 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6H5AFN823855156
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 15:10:15 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6H5A67L031763
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 15:10:06 +1000
+ v6H5Nfq525624766
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 15:23:49 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6H5NGIL021582
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 15:23:17 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, paulus@samba.org
-Subject: Re: [PATCH v2] powerpc/mm/radix: Workaround prefetch issue with KVM
-In-Reply-To: <1500014988.2865.78.camel@kernel.crashing.org>
-References: <20170714015258.7933-1-benh@kernel.crashing.org>
- <20170714015258.7933-4-benh@kernel.crashing.org>
- <87vamvpnve.fsf@skywalker.in.ibm.com>
- <1500014988.2865.78.camel@kernel.crashing.org>
-Date: Mon, 17 Jul 2017 10:40:10 +0530
+Cc: Michael Ellerman <patch-notifications@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH/RFC] powerpc: Better handle "error" type page faults on
+ book3s64
+In-Reply-To: <1500021087.2865.86.camel@kernel.crashing.org>
+References: <1500021087.2865.86.camel@kernel.crashing.org>
+Date: Mon, 17 Jul 2017 10:52:49 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87poczps25.fsf@skywalker.in.ibm.com>
+Message-Id: <87mv83prh2.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,102 +50,123 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> There's a somewhat architectural issue with Radix MMU and KVM.
+> There are a number of conditions in the DSISR that represent
+> conditions for which there is no point looking for a VMA or
+> trying to update a PTE. In fact, POWER9 adds a few with bad
+> AMOs, bad "paste" instruction etc...
 >
-> When coming out of a guest with AIL (ie, MMU enabled), we start
-> executing hypervisor code with the PID register still containing
-> whatever the guest has been using.
+> This improve our existing code to use symbolic constants for
+> all DSISR bits, properly avoid hash_page() for the new bits,
+> and handle both the old and new bits early in do_page_fault()
 >
-> The problem is that the CPU can (and will) then start prefetching
-> or speculatively load from whatever host context has that same
-> PID (if any), thus bringing translations for that context into
-> the TLB, which Linux doesn't know about.
->
-> This can cause stale translations and subsequent crashes.
->
-> Fixing this in a way that is neither racy nor a huge performance
-> impact is difficult. We could just make the host invalidations
-> always use broadcast forms but that would hurt single threaded
-> programs for example.
->
-> We chose to fix it instead by partitioning the PID space between
-> guest and host. This is possible because today Linux only use 19
-> out of the 20 bits of PID space, so existing guests will work
-> if we make the host use the top half of the 20 bits space.
->
-> We additionally add a property to indicate to Linux the size of
-> the PID register which will be useful if we eventually have
-> processors with a larger PID space available.
->
-> There is still an issue with malicious guests purposefully setting
-> the PID register to a value in the host range. Hopefully future HW
-> can prevent that, but in the meantime, we handle it with a pair of
-> kludges:
->
->  - On the way out of a guest, before we clear the current VCPU
-> in the PACA, we check the PID and if it's outside of the permitted
-> range we flush the TLB for that PID.
->
->  - When context switching, if the mm is "new" on that CPU (the
-> corresponding bit was set for the first time in the mm cpumask), we
-> check if any sibling thread is in KVM (has a non-NULL VCPU pointer
-> in the PACA). If that is the case, we also flush the PID for that
-> CPU (core).
->
-> This second part is needed to handle the case where a process is
-> migrated (or starts a new pthread) on a sibling thread of the CPU
-> coming out of KVM, as there's a window where stale translations
-> can exist before we detect it and flush them out.
->
-> A future optimization could be added by keeping track of whether
-> the PID has ever been used and avoid doing that for completely
-> fresh PIDs. We could similarily mark PIDs that have been the subject of
-> a global invalidation as "fresh". But for now this will do.
->
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> --
+>
+> This obsoletes 
+> [PATCH] powerpc: Hande page faults for bad paste and bad AMO
+>
+> Note: We should further update 32-bit etc... to do something
+> similar, or even consolidate the code.
+>
+> According to architectures back to 1.07 and 32-bit 6xx PEM,
+> those low DSISR bits are 0 on all other implementations, and
+> we do mask out the SRR1 bits on instruction interrupts, so
+> I think such consolidation, at least for BookS should be trivial
+> but I will leave it as a separate patch.
+>
 > ---
+>  arch/powerpc/include/asm/reg.h       | 18 ++++++++++++++++++
+>  arch/powerpc/kernel/exceptions-64s.S |  6 ++++--
+>  arch/powerpc/mm/fault.c              | 21 +++++++++++++++++++++
+>  3 files changed, 43 insertions(+), 2 deletions(-)
 >
-> v2. Do the check on KVM exit *after* we've restored the host PID
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index 7e50e47..bf5f8ff 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -272,16 +272,34 @@
+>  #define SPRN_DAR	0x013	/* Data Address Register */
+>  #define SPRN_DBCR	0x136	/* e300 Data Breakpoint Control Reg */
+>  #define SPRN_DSISR	0x012	/* Data Storage Interrupt Status Register */
+> +#define   DSISR_BAD_DIRECT_ST	0x80000000	/* Direct store error (obsolete) */
+>  #define   DSISR_NOHPTE		0x40000000	/* no translation found */
+> +#define   DSISR_ATT_CONFLICT	0x20000000	/* Attribute conflicts (P9) */
+>  #define   DSISR_PROTFAULT	0x08000000	/* protection fault */
+>  #define   DSISR_BADACCESS	0x04000000	/* bad access to CI or G */
+>  #define   DSISR_ISSTORE		0x02000000	/* access was a store */
+>  #define   DSISR_DABRMATCH	0x00400000	/* hit data breakpoint */
+>  #define   DSISR_NOSEGMENT	0x00200000	/* SLB miss */
+>  #define   DSISR_KEYFAULT	0x00200000	/* Key fault */
+> +#define   DSISR_BAD_EXT_CTRL	0x00100000	/* External control error (obsolete) */
+>  #define   DSISR_UNSUPP_MMU	0x00080000	/* Unsupported MMU config */
+>  #define   DSISR_SET_RC		0x00040000	/* Failed setting of R/C bits */
+>  #define   DSISR_PGDIRFAULT      0x00020000      /* Fault on page directory */
+> +#define   DSISR_BAD_COPYPASTE   0x00000008      /* Copy/Paste on wrong mem type */
+> +#define   DSISR_BAD_AMO		0x00000004	/* Incorrect AMO opcode */
+> +#define   DSISR_BAD_CI_LDST	0x00000002	/* CI load/store with DR=1 or in G=0 HV space */
+> +
+> +/* Don't bother going to hash_page for any of these */
+> +#define   DSISR_DONT_HASH	(DSISR_BAD_DIRECT_ST |	\
+> +				 DSISR_ATT_CONFLICT |	\
+> +				 DSISR_BADACCESS |	\
+> +				 DSISR_DABRMATCH |	\
+> +				 DSISR_BAD_EXT_CTRL |   \
+> +				 DSISR_UNSUPP_MMU |	\
+> +				 DSISR_BAD_COPYPASTE |	\
+> +				 DSISR_BAD_AMO |	\
+> +				 DSISR_BAD_CI_LDST)
+> +
+>  #define SPRN_TBRL	0x10C	/* Time Base Read Lower Register (user, R/O) */
+>  #define SPRN_TBRU	0x10D	/* Time Base Read Upper Register (user, R/O) */
+>  #define SPRN_CIR	0x11B	/* Chip Information Register (hyper, R/0) */
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 5204bd6..58ad8ae 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -1413,8 +1413,10 @@ USE_TEXT_SECTION()
+>  	.balign	IFETCH_ALIGN_BYTES
+>  do_hash_page:
+>  #ifdef CONFIG_PPC_STD_MMU_64
+> -	andis.	r0,r4,0xa450		/* weird error? */
+> -	bne-	handle_page_fault	/* if not, try to insert a HPTE */
+> +	lis	r0,DSISR_DONT_HASH@h
+> +	ori	r0,r0,DSISR_DONT_HASH@l
+> +	and.	r0,r0,r4
+> +	bne-	handle_page_fault
+>  	CURRENT_THREAD_INFO(r11, r1)
+>  	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
+>  	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index 0266c66..e55cb5c 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -337,6 +337,27 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+>  	}
+>  #endif /* CONFIG_PPC_ICSWX */
 >
-....
-
- diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index 6ea4b53..e744d11 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -1522,6 +1522,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
->  	std	r6, VCPU_BESCR(r9)
->  	stw	r7, VCPU_GUEST_PID(r9)
->  	std	r8, VCPU_WORT(r9)
+> +#ifdef CONFIG_PPC_STD_MMU_64
+> +	/*
+> +	 * These faults indicate various errors that can't be recovered
+> +	 * by updating the PTE, there is no point handling them any later
+> +	 * than here. I also noticed in some case the DAR isn't being set
+> +	 * propertly (DSISR_BAD_COPYPASTE for example).
+> +	 */
+> +	if (error_code & (DSISR_ATT_CONFLICT |
+> +			  DSISR_BADACCESS |
+> +			  DSISR_UNSUPP_MMU |
+> +			  DSISR_BAD_COPYPASTE |
+> +			  DSISR_BAD_AMO |
+> +			  DSISR_BAD_CI_LDST)) {
+> +		if (user_mode(regs))
+> +			_exception(SIGBUS, regs, BUS_OBJERR, address);
+> +		else
+> +			rc = SIGBUS;
+> +		goto bail;
+> +	}
+> +#endif /* CONFIG_PPC_STD_MMU_64 */
 > +
->  BEGIN_FTR_SECTION
->  	mfspr	r5, SPRN_TCSCR
->  	mfspr	r6, SPRN_ACOP
-> @@ -1728,6 +1729,19 @@ BEGIN_FTR_SECTION
->  	mtspr	SPRN_PSSCR, r6
->  	mtspr	SPRN_PID, r7
->  	mtspr	SPRN_IAMR, r8
-> +
-> +	/* Handle the case where the guest used an illegal PID */
-> +	LOAD_REG_ADDR(r4, mmu_base_pid)
-> +	lwz	r3, VCPU_GUEST_PID(r9)
-> +	lwz	r5, 0(r4)
-> +	cmpw	cr0,r3,r5
-> +	blt	1f
-> +
-> +	/* Illegal PID, flush the TLB */
-> +	isync
-> +	bl	radix_flush_pid
-> +1:
-
-this need to be done only for radix right ? Do we need radix feature
-check here ?
-
-
-> +
->  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
->  BEGIN_FTR_SECTION
->  	PPC_INVALIDATE_ERAT
-
-
--aneesh
+>  	if (notify_page_fault(regs))
+>  		goto bail;
