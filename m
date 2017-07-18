@@ -1,23 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBQQJ4zMpzDrFG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 13:20:08 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cyril Bur <cyrilbur@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
-Cc: stewart@linux.vnet.ibm.com, alistair@popple.id.au, dwmw2@infradead.org,
- rlippert@google.com
-Subject: Re: [PATCH v3 06/10] powerpc/opal: Rework the opal-async interface
-In-Reply-To: <1500338458.2475.3.camel@gmail.com>
-References: <20170712042304.19745-1-cyrilbur@gmail.com>
- <20170712042304.19745-7-cyrilbur@gmail.com>
- <1500291037.8256.13.camel@gmail.com> <1500338458.2475.3.camel@gmail.com>
-Date: Tue, 18 Jul 2017 13:20:08 +1000
-Message-ID: <8760eq1lef.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBSfz5s1XzDrFb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 15:01:15 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6I4wsVr116731
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 01:01:13 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bsa8s39mw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 01:01:12 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 18 Jul 2017 01:01:12 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Cyril Bur <cyrilbur@gmail.com>, dwmw2@infradead.org,
+ computersforpeace@gmail.com, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 2/2] mtd: powernv_flash: Lock around concurrent access to
+ OPAL
+In-Reply-To: <20170607054355.10590-2-cyrilbur@gmail.com>
+References: <20170607054355.10590-1-cyrilbur@gmail.com>
+ <20170607054355.10590-2-cyrilbur@gmail.com>
+Date: Tue, 18 Jul 2017 15:01:03 +1000
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87r2xecp9s.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +41,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Cyril Bur <cyrilbur@gmail.com> writes:
-> On Mon, 2017-07-17 at 21:30 +1000, Balbir Singh wrote:
->> On Wed, 2017-07-12 at 14:23 +1000, Cyril Bur wrote:
->> >  static int __opal_async_get_token(void)
->> >  {
->> >  	unsigned long flags;
->> >  	int token;
->> >  
->> > -	spin_lock_irqsave(&opal_async_comp_lock, flags);
->> > -	token = find_first_bit(opal_async_complete_map, opal_max_async_tokens);
->> > -	if (token >= opal_max_async_tokens) {
->> > -		token = -EBUSY;
->> > -		goto out;
->> > -	}
->> > -
->> > -	if (__test_and_set_bit(token, opal_async_token_map)) {
->> > -		token = -EBUSY;
->> > -		goto out;
->> > +	for (token = 0; token < opal_max_async_tokens; token++) {
->> > +		spin_lock_irqsave(&opal_async_comp_lock, flags);
->> 
->> Why is the spin lock inside the for loop? If the last token is free, the
->> number of times we'll take and release a lock is extensive, why are we
->> doing it this way?
+> OPAL can only manage one flash access at a time and will return an
+> OPAL_BUSY error for each concurrent access to the flash. The simplest
+> way to prevent this from happening is with a mutex.
 >
-> Otherwise we might hold the lock for quite some time.
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> ---
+> This is to address https://github.com/open-power/skiboot/issues/80
 
-No we won't. A loop over a few 10s or 100s of tokens is not going to
-take long, compared to the overhead of taking the lock every iteration
-through the loop.
+part of me wants to say "let's only take the lock if we ever get back
+OPAL_BUSY" or something like that (have a DT property to say the flash
+supports concurrent ops?)
 
-If the linear search with the lock held is a bottle neck, then you can
-keep a hint variable which tracks the last freed token and start
-searching from there.
+Although the other part of me says "you're overthinking this, get back
+to the work you're meant to be doing" :)
 
-cheers
+-- 
+Stewart Smith
+OPAL Architect, IBM.
