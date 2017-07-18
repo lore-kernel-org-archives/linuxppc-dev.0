@@ -1,39 +1,45 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBjGL4kZyzDrH9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 00:29:14 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6IEOwHL053681
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 10:29:12 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bskfaaave-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBjmv1c2jzDrH1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 00:52:15 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6IEnZZn113209
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 10:52:12 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bskq5tja1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 10:29:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 10:52:11 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 18 Jul 2017 08:29:11 -0600
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powernv/powerpc: Clear PECE1 in LPCR via stop-api only on
- Hotplug
-Date: Tue, 18 Jul 2017 19:58:49 +0530
-In-Reply-To: <cover.1500361607.git.ego@linux.vnet.ibm.com>
-References: <cover.1500361607.git.ego@linux.vnet.ibm.com>
-In-Reply-To: <cover.1500361607.git.ego@linux.vnet.ibm.com>
-References: <cover.1500361607.git.ego@linux.vnet.ibm.com>
-Message-Id: <a3ba2f2ddfbe0145ca28963b487c14473a396269.1500361607.git.ego@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 19 Jul 2017 00:52:08 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6IEq5d625952442
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 00:52:05 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6IEpuKF019309
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 00:51:57 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/hugetlb: fix page rights verification in
+ gup_hugepte()
+In-Reply-To: <20170712150342.136ED6A666@pc13941vm.idsi0.si.c-s.fr>
+References: <20170712150342.136ED6A666@pc13941vm.idsi0.si.c-s.fr>
+Date: Tue, 18 Jul 2017 19:49:29 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87r2xdrfny.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,125 +49,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
+> gup_hugepte() checks if pages are present and readable, and
+> when  'write' is set, also checks if the pages are writable.
+>
+> Initially this was done by checking if _PAGE_PRESENT and
+> _PAGE_READ were set. In addition, _PAGE_WRITE was verified for write
+> accesses.
+>
+> The problem is that we have to handle the three following cases:
+> 1/ The target defines __PAGE_READ and __PAGE_WRITE
+> 2/ The target defines __PAGE_RW
+> 3/ The target defines __PAGE_RO
+>
+> In case 1/, this is obvious
+> In case 2/, __PAGE_READ is defined as 0 and __PAGE_WRITE as __PAGE_RW
+> so it works as well.
+> But in case 3, __PAGE_RW is defined as 0, which means __PAGE_WRITE is 0
+> and then the test returns true (page writable) in all cases.
+>
+> A first correction was attempted in commit 6b8cb66a6a7cc ("powerpc: Fix
+> usage of _PAGE_RO in hugepage"), but that fix is wrong:
+> instead of checking that the page is writable when write is requested,
+> it checks that the page is NOT writable when write is NOT requested.
+>
+> This patch adds a new pte_read() helper to check whether a page is
+> readable or not. This avoids handling all possible cases in
+> gup_hugepte().
+>
+> Then gup_hugepte() is modified to use pte_present(), pte_read()
+> and pte_write() instead of the raw flags.
+>
 
-Currently we use the stop-api provided by the firmware to program the
-SLW engine to restore the values of hypervisor resources that get lost
-on deeper idle states (such as winkle). Since the deep states were
-only used for CPU-Hotplug on POWER8 systems, we would program the LPCR
-to have the PECE1 bit since Hotplugged CPUs shouldn't be spuriously
-woken up by decrementer.
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-On POWER9, some of the deep platform idle states such as stop4 can be
-used in cpuidle as well. In this case, we want the CPU in stop4 to be
-woken up by the decrementer when some timer on the CPU expires.
-
-In this patch, for POWER9, we program the stop-api for LPCR with PECE1
-bit cleared only when we are offlining the CPU.
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/idle.c | 12 +++++++++++-
- arch/powerpc/platforms/powernv/smp.c  | 28 ++++++++++++++++++++++++----
- 2 files changed, 35 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 2abee07..f4a29d4 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -68,7 +68,7 @@ static int pnv_save_sprs_for_deep_states(void)
- 	 * all cpus at boot. Get these reg values of current cpu and use the
- 	 * same across all cpus.
- 	 */
--	uint64_t lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
-+	uint64_t lpcr_val = mfspr(SPRN_LPCR);
- 	uint64_t hid0_val = mfspr(SPRN_HID0);
- 	uint64_t hid1_val = mfspr(SPRN_HID1);
- 	uint64_t hid4_val = mfspr(SPRN_HID4);
-@@ -85,6 +85,16 @@ static int pnv_save_sprs_for_deep_states(void)
- 		if (rc != 0)
- 			return rc;
- 
-+		/*
-+		 * On POWER8, the only state that uses SLW engine is
-+		 * winkle.  This is only used for CPU-Hotplug. So we
-+		 * clear the decrementer bit from LPCR since we
-+		 * don't want to be woken up on decrementer when in
-+		 * winkle.
-+		 */
-+		if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+			lpcr_val = lpcr_val & ~(u64)LPCR_PECE1;
-+
- 		rc = opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
- 		if (rc != 0)
- 			return rc;
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 40dae96..5f2a712 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -143,7 +143,8 @@ static void pnv_smp_cpu_kill_self(void)
- {
- 	unsigned int cpu;
- 	unsigned long srr1, wmask;
--
-+	uint64_t lpcr_val;
-+	uint64_t pir;
- 	/* Standard hot unplug procedure */
- 	/*
- 	 * This hard disables local interurpts, ensuring we have no lazy
-@@ -164,13 +165,17 @@ static void pnv_smp_cpu_kill_self(void)
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		wmask = SRR1_WAKEMASK_P8;
- 
-+	pir = get_hard_smp_processor_id(cpu);
- 	/* We don't want to take decrementer interrupts while we are offline,
- 	 * so clear LPCR:PECE1. We keep PECE2 (and LPCR_PECE_HVEE on P9)
- 	 * enabled as to let IPIs in.
- 	 */
--	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
-+	lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
-+	mtspr(SPRN_LPCR, lpcr_val);
- 
- 	while (!generic_check_cpu_restart(cpu)) {
-+
-+
- 		/*
- 		 * Clear IPI flag, since we don't handle IPIs while
- 		 * offline, except for those when changing micro-threading
-@@ -180,8 +185,15 @@ static void pnv_smp_cpu_kill_self(void)
- 		 */
- 		kvmppc_set_host_ipi(cpu, 0);
- 
-+		/*
-+		 * If the CPU gets woken up by a special wakeup,
-+		 * ensure that the SLW engine sets LPCR with
-+		 * decrementer bit cleared, else we will get spurious
-+		 * wakeups.
-+		 */
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
- 		srr1 = pnv_cpu_offline(cpu);
--
- 		WARN_ON(lazy_irq_pending());
- 
- 		/*
-@@ -220,7 +232,15 @@ static void pnv_smp_cpu_kill_self(void)
- 	}
- 
- 	/* Re-enable decrementer interrupts */
--	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_PECE1);
-+	lpcr_val = mfspr(SPRN_LPCR) | LPCR_PECE1;
-+	mtspr(SPRN_LPCR, lpcr_val);
-+
-+	/*
-+	 * We want stop states to be woken up by decrementer for
-+	 * non-hotplug cases.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
- 	DBG("CPU%d coming online...\n", cpu);
- }
- 
--- 
-1.9.4
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/include/asm/book3s/32/pgtable.h |  1 +
+>  arch/powerpc/include/asm/book3s/64/pgtable.h |  5 +++++
+>  arch/powerpc/include/asm/nohash/pgtable.h    |  1 +
+>  arch/powerpc/mm/hugetlbpage.c                | 15 +++------------
+>  4 files changed, 10 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> index 7fb755880409..2a67b861e6e1 100644
+> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> @@ -301,6 +301,7 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, int flags);
+>  
+>  /* Generic accessors to PTE bits */
+>  static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
+> +static inline int pte_read(pte_t pte)		{ return 1; }
+>  static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
+>  static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
+>  static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index c0737c86a362..83cb73c8c3bb 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -409,6 +409,11 @@ static inline int pte_write(pte_t pte)
+>  	return __pte_write(pte) || pte_savedwrite(pte);
+>  }
+>  
+> +static inline int pte_read(pte_t pte)
+> +{
+> +	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_READ));
+> +}
+> +
+>  #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+>  static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+>  				      pte_t *ptep)
+> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+> index e5805ad78e12..17989c3d9a24 100644
+> --- a/arch/powerpc/include/asm/nohash/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
+> @@ -14,6 +14,7 @@ static inline int pte_write(pte_t pte)
+>  {
+>  	return (pte_val(pte) & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO;
+>  }
+> +static inline int pte_read(pte_t pte)		{ return 1; }
+>  static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+>  static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+>  static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index e1bf5ca397fe..1226932579a0 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -977,7 +977,6 @@ EXPORT_SYMBOL_GPL(__find_linux_pte_or_hugepte);
+>  int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+>  		unsigned long end, int write, struct page **pages, int *nr)
+>  {
+> -	unsigned long mask;
+>  	unsigned long pte_end;
+>  	struct page *head, *page;
+>  	pte_t pte;
+> @@ -988,18 +987,10 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+>  		end = pte_end;
+>  
+>  	pte = READ_ONCE(*ptep);
+> -	mask = _PAGE_PRESENT | _PAGE_READ;
+> -
+> -	/*
+> -	 * On some CPUs like the 8xx, _PAGE_RW hence _PAGE_WRITE is defined
+> -	 * as 0 and _PAGE_RO has to be set when a page is not writable
+> -	 */
+> -	if (write)
+> -		mask |= _PAGE_WRITE;
+> -	else
+> -		mask |= _PAGE_RO;
+>  
+> -	if ((pte_val(pte) & mask) != mask)
+> +	if (!pte_present(pte) || !pte_read(pte))
+> +		return 0;
+> +	if (write && !pte_write(pte))
+>  		return 0;
+>  
+>  	/* hugepages are never "special" */
+> -- 
+> 2.12.0
