@@ -1,23 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <me@tobin.cc>
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBvKC02rzzDrJv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 08:02:22 +1000 (AEST)
-Date: Tue, 18 Jul 2017 14:52:04 -0700 (PDT)
-Message-Id: <20170718.145204.114892351718806712.davem@davemloft.net>
-To: robh@kernel.org
-Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, jslaby@suse.com, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-serial@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH] tty: Convert to using %pOF instead of full_name
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170718214339.7774-54-robh@kernel.org>
-References: <20170718214339.7774-54-robh@kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBwTs5f4gzDrJJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 08:54:57 +1000 (AEST)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+ by mailout.nyi.internal (Postfix) with ESMTP id 9F6E72085D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 18:48:08 -0400 (EDT)
+Received: from localhost (ppp121-44-80-166.bras1.syd7.internode.on.net
+ [121.44.80.166])
+ by mail.messagingengine.com (Postfix) with ESMTPA id E90B27E7D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 18:48:07 -0400 (EDT)
+Date: Wed, 19 Jul 2017 08:48:05 +1000
+From: "Tobin C. Harding" <me@tobin.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <20170718224805.GB2885@eros>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +27,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 18 Jul 2017 16:43:34 -0500
+Reply-To: 
+X-Mailer: Mutt 1.5.24 (2015-08-30)
 
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-
-For sparc bits:
-
-Acked-by: David S. Miller <davem@davemloft.net>
+unsubscribe
