@@ -1,20 +1,19 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-pg0-f66.google.com (mail-pg0-f66.google.com [74.125.83.66])
+Received: from mail-pf0-f193.google.com (mail-pf0-f193.google.com
+ [209.85.192.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBtwX3GZczDrLf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 07:44:28 +1000 (AEST)
-Received: by mail-pg0-f66.google.com with SMTP id y129so4334852pgy.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 14:44:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBtwj62K3zDrJx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 07:44:37 +1000 (AEST)
+Received: by mail-pf0-f193.google.com with SMTP id o88so4065056pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 14:44:37 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
-To: "David S. Miller" <davem@davemloft.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ide: pmac: Convert to using %pOF instead of full_name
-Date: Tue, 18 Jul 2017 16:43:07 -0500
-Message-Id: <20170718214339.7774-27-robh@kernel.org>
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] macintosh: Convert to using %pOF instead of full_name
+Date: Tue, 18 Jul 2017 16:43:12 -0500
+Message-Id: <20170718214339.7774-32-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +28,126 @@ full_name to use %pOF instead. This is preparation to remove storing
 of the full path string for each node.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-ide@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- drivers/ide/pmac.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/macintosh/macio_sysfs.c           | 2 +-
+ drivers/macintosh/rack-meter.c            | 4 ++--
+ drivers/macintosh/smu.c                   | 8 ++++----
+ drivers/macintosh/via-cuda.c              | 4 ++--
+ drivers/macintosh/windfarm_fcu_controls.c | 4 ++--
+ drivers/macintosh/windfarm_lm87_sensor.c  | 4 ++--
+ drivers/macintosh/windfarm_smu_sat.c      | 2 +-
+ 7 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
-index 0c5d3a99468e..c5b902b86b44 100644
---- a/drivers/ide/pmac.c
-+++ b/drivers/ide/pmac.c
-@@ -1145,8 +1145,8 @@ static int pmac_ide_macio_attach(struct macio_dev *mdev,
- 		return -ENOMEM;
+diff --git a/drivers/macintosh/macio_sysfs.c b/drivers/macintosh/macio_sysfs.c
+index 2445274f7e4b..281f5345661e 100644
+--- a/drivers/macintosh/macio_sysfs.c
++++ b/drivers/macintosh/macio_sysfs.c
+@@ -52,7 +52,7 @@ static ssize_t devspec_show(struct device *dev,
+ 	struct platform_device *ofdev;
 
- 	if (macio_resource_count(mdev) == 0) {
--		printk(KERN_WARNING "ide-pmac: no address for %s\n",
--				    mdev->ofdev.dev.of_node->full_name);
-+		printk(KERN_WARNING "ide-pmac: no address for %pOF\n",
-+				    mdev->ofdev.dev.of_node);
+ 	ofdev = to_platform_device(dev);
+-	return sprintf(buf, "%s\n", ofdev->dev.of_node->full_name);
++	return sprintf(buf, "%pOF\n", ofdev->dev.of_node);
+ }
+ static DEVICE_ATTR_RO(modalias);
+ static DEVICE_ATTR_RO(devspec);
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+index e199fd6c71ce..e9da80ceb7c8 100644
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -431,8 +431,8 @@ static int rackmeter_probe(struct macio_dev* mdev,
+ 	    of_address_to_resource(i2s, 0, &ri2s) ||
+ 	    of_address_to_resource(i2s, 1, &rdma)) {
+ 		printk(KERN_ERR
+-		       "rackmeter: found match but lacks resources: %s",
+-		       mdev->ofdev.dev.of_node->full_name);
++		       "rackmeter: found match but lacks resources: %pOF",
++		       mdev->ofdev.dev.of_node);
  		rc = -ENXIO;
- 		goto out_free_pmif;
+ 		goto bail_free;
  	}
-@@ -1154,7 +1154,7 @@ static int pmac_ide_macio_attach(struct macio_dev *mdev,
- 	/* Request memory resource for IO ports */
- 	if (macio_request_resource(mdev, 0, "ide-pmac (ports)")) {
- 		printk(KERN_ERR "ide-pmac: can't request MMIO resource for "
--				"%s!\n", mdev->ofdev.dev.of_node->full_name);
-+				"%pOF!\n", mdev->ofdev.dev.of_node);
- 		rc = -EBUSY;
- 		goto out_free_pmif;
+diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+index 1ac66421877a..ea9bdc85a21d 100644
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -589,14 +589,14 @@ static int smu_late_init(void)
+ 	if (smu->db_node) {
+ 		smu->db_irq = irq_of_parse_and_map(smu->db_node, 0);
+ 		if (!smu->db_irq)
+-			printk(KERN_ERR "smu: failed to map irq for node %s\n",
+-			       smu->db_node->full_name);
++			printk(KERN_ERR "smu: failed to map irq for node %pOF\n",
++			       smu->db_node);
  	}
-@@ -1165,8 +1165,8 @@ static int pmac_ide_macio_attach(struct macio_dev *mdev,
- 	 * where that happens though...
- 	 */
- 	if (macio_irq_count(mdev) == 0) {
--		printk(KERN_WARNING "ide-pmac: no intrs for device %s, using "
--				    "13\n", mdev->ofdev.dev.of_node->full_name);
-+		printk(KERN_WARNING "ide-pmac: no intrs for device %pOF, using "
-+				    "13\n", mdev->ofdev.dev.of_node);
- 		irq = irq_create_mapping(NULL, 13);
- 	} else
- 		irq = macio_irq(mdev, 0);
-@@ -1183,8 +1183,8 @@ static int pmac_ide_macio_attach(struct macio_dev *mdev,
- 	if (macio_resource_count(mdev) >= 2) {
- 		if (macio_request_resource(mdev, 1, "ide-pmac (dma)"))
- 			printk(KERN_WARNING "ide-pmac: can't request DMA "
--					    "resource for %s!\n",
--					    mdev->ofdev.dev.of_node->full_name);
-+					    "resource for %pOF!\n",
-+					    mdev->ofdev.dev.of_node);
- 		else
- 			pmif->dma_regs = ioremap(macio_resource_start(mdev, 1), 0x1000);
- 	} else
-@@ -1274,7 +1274,7 @@ static int pmac_ide_pci_attach(struct pci_dev *pdev,
+ 	if (smu->msg_node) {
+ 		smu->msg_irq = irq_of_parse_and_map(smu->msg_node, 0);
+ 		if (!smu->msg_irq)
+-			printk(KERN_ERR "smu: failed to map irq for node %s\n",
+-			       smu->msg_node->full_name);
++			printk(KERN_ERR "smu: failed to map irq for node %pOF\n",
++			       smu->msg_node);
+ 	}
 
- 	if (pci_enable_device(pdev)) {
- 		printk(KERN_WARNING "ide-pmac: Can't enable PCI device for "
--				    "%s\n", np->full_name);
-+				    "%pOF\n", np);
- 		rc = -ENXIO;
- 		goto out_free_pmif;
+ 	/*
+diff --git a/drivers/macintosh/via-cuda.c b/drivers/macintosh/via-cuda.c
+index c60415958dfe..147da4edd021 100644
+--- a/drivers/macintosh/via-cuda.c
++++ b/drivers/macintosh/via-cuda.c
+@@ -297,8 +297,8 @@ static int __init via_cuda_start(void)
+ #else
+     cuda_irq = irq_of_parse_and_map(vias, 0);
+     if (!cuda_irq) {
+-	printk(KERN_ERR "via-cuda: can't map interrupts for %s\n",
+-	       vias->full_name);
++	printk(KERN_ERR "via-cuda: can't map interrupts for %pOF\n",
++	       vias);
+ 	return -ENODEV;
+     }
+ #endif
+diff --git a/drivers/macintosh/windfarm_fcu_controls.c b/drivers/macintosh/windfarm_fcu_controls.c
+index 0226b796a21c..fab7a21e9577 100644
+--- a/drivers/macintosh/windfarm_fcu_controls.c
++++ b/drivers/macintosh/windfarm_fcu_controls.c
+@@ -470,8 +470,8 @@ static void wf_fcu_lookup_fans(struct wf_fcu_priv *pv)
+ 				id = ((*reg) - 0x30) / 2;
+ 			if (id > 7) {
+ 				pr_warning("wf_fcu: Can't parse "
+-				       "fan ID in device-tree for %s\n",
+-					   np->full_name);
++				       "fan ID in device-tree for %pOF\n",
++					   np);
+ 				break;
+ 			}
+ 			wf_fcu_add_fan(pv, name, type, id);
+diff --git a/drivers/macintosh/windfarm_lm87_sensor.c b/drivers/macintosh/windfarm_lm87_sensor.c
+index c071aab79dd1..913c4bfeef94 100644
+--- a/drivers/macintosh/windfarm_lm87_sensor.c
++++ b/drivers/macintosh/windfarm_lm87_sensor.c
+@@ -126,8 +126,8 @@ static int wf_lm87_probe(struct i2c_client *client,
+ 		}
  	}
-@@ -1282,7 +1282,7 @@ static int pmac_ide_pci_attach(struct pci_dev *pdev,
+ 	if (!name) {
+-		pr_warning("wf_lm87: Unsupported sensor %s\n",
+-			   client->dev.of_node->full_name);
++		pr_warning("wf_lm87: Unsupported sensor %pOF\n",
++			   client->dev.of_node);
+ 		return -ENODEV;
+ 	}
 
- 	if (pci_request_regions(pdev, "Kauai ATA")) {
- 		printk(KERN_ERR "ide-pmac: Cannot obtain PCI resources for "
--				"%s\n", np->full_name);
-+				"%pOF\n", np);
- 		rc = -ENXIO;
- 		goto out_free_pmif;
- 	}
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
+index ad6223e88340..e9c828bf171b 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -248,7 +248,7 @@ static int wf_sat_probe(struct i2c_client *client,
+ 		core = loc[5] - '0';
+ 		if (chip > 1 || core > 1) {
+ 			printk(KERN_ERR "wf_sat_create: don't understand "
+-			       "location %s for %s\n", loc, child->full_name);
++			       "location %s for %pOF\n", loc, child);
+ 			continue;
+ 		}
+ 		cpu = 2 * chip + core;
 --
 2.11.0
