@@ -1,18 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <nicholas.piggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBTMb1R0SzDrFb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 15:32:59 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id o88so1414933pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 22:32:59 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/64s: Fix hypercall entry clobbering r12 input
-Date: Tue, 18 Jul 2017 15:32:44 +1000
-Message-Id: <20170718053244.7665-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBVMZ1B46zDrFb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 16:18:02 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id v190so1600518pgv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 23:18:02 -0700 (PDT)
+Date: Tue, 18 Jul 2017 16:14:44 +1000
+From: Nicholas Piggin <nicholas.piggin@gmail.com>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, herbert@gondor.apana.org.au, mikey@neuling.org,
+ suka@us.ibm.com, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, ddstreet@ieee.org
+Subject: Re: [PATCH V2 0/6] Enable NX 842 compression engine on Power9
+Message-ID: <20170718161444.72252c9c@roar.ozlabs.ibm.com>
+In-Reply-To: <1500334999.995.6.camel@hbabu-laptop>
+References: <1500334999.995.6.camel@hbabu-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,98 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A previous optimisation incorrectly assumed the PAPR hcall does
-not use r12, and clobbers it upon entry. In fact it is used as
-an input. This can result in KVM guests crashing (observed with
-PR KVM).
+On Mon, 17 Jul 2017 16:43:19 -0700
+Haren Myneni <haren@linux.vnet.ibm.com> wrote:
 
-Instead of using r12 to save r13, tihs patch saves r13 in ctr.
-This is more costly, but not as slow as using the SPRG.
+> [PATCH V2 0/6] Enable NX 842 compression engine on Power9
+> 
+> P9 introduces Virtual Accelerator Switchboard (VAS) to communicate
+> with NX 842 engine. icswx function is used to access NX before.
+> On powerNV systems, NX-842 driver invokes VAS functions for
+> configuring RxFIFO (receive window) per each NX engine. VAS uses
+> this FIFO to communicate the request to NX. The kernel opens send
+> window which is used to transfer compression/decompression requests
+> to VAS. It maps the send window to the corresponding RxFIFO.
+> copy/paste instructions are used to pass the CRB to VAS.
+> 
+> This patch series adds P9 NX support for 842 compression engine.
+> First 4 patches reorganize the current code so that VAS function
+> can be added.
+> - nx842_powernv_function points to VAS function if VAS feature is
+>   available. Otherwise icswx function is used.
+> - Move configure CRB code nx842_cfg_crb() 
+> - In addition to freeing co-processor structs for initialization 
+>   failures and exit, both send and receive windows have to closed
+>   for VAS.
+> - Move updating coprocessor info list to nx842_add_coprocs_list().
+> 
+> The last 2 patches adds configuring and invoking VAS, and also
+> checking P9 NX specific errors that are provided in co-processor
+> status block (CSB) for failures.
+> 
+> Patches have been tested on P9 DD1 system using VAS changes and
+> on P8 HW to make sure no regression.
+> 
+> This patchset depends on VAS kernel changes:
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-May/158178.html
 
-Fixes: acd7d8cef0153 ("powerpc/64s: Optimize hypercall/syscall entry")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Just a question, we no longer invalidate the copy buffer on context
+switch after this patch:
 
----
-One brown paper bag please.
+07d2a628bc ("powerpc/64s: Avoid cpabort in context switch when possible")
 
- arch/powerpc/kernel/exceptions-64s.S | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+If your vas address mappings are visible only to kernel, only used in
+process / kthread context, and only used with kernel preemption disabled,
+this is okay.
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d8b4ceed7a74..c174e7db7594 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -824,7 +824,7 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
-  * r3 volatile parameter and return value for status
-  * r4-r10 volatile input and output value
-  * r11 volatile hypercall number and output value
-- * r12 volatile
-+ * r12 volatile input and output value
-  * r13-r31 nonvolatile
-  * LR nonvolatile
-  * CTR volatile
-@@ -834,25 +834,26 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
-  * Other registers nonvolatile
-  *
-  * The intersection of volatile registers that don't contain possible
-- * inputs is: r12, cr0, xer, ctr. We may use these as scratch regs
-- * upon entry without saving.
-+ * inputs is: cr0, xer, ctr. We may use these as scratch regs upon entry
-+ * without saving, though xer is not a good idea to use, as hardware may
-+ * interpret some bits so it may be costly to change them.
-  */
- #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
- 	/*
- 	 * There is a little bit of juggling to get syscall and hcall
--	 * working well. Save r10 in ctr to be restored in case it is a
--	 * hcall.
-+	 * working well. Save r13 in ctr to avoid using SPRG scratch
-+	 * register.
- 	 *
- 	 * Userspace syscalls have already saved the PPR, hcalls must save
- 	 * it before setting HMT_MEDIUM.
- 	 */
- #define SYSCALL_KVMTEST							\
--	mr	r12,r13;						\
-+	mtctr	r13;							\
- 	GET_PACA(r13);							\
--	mtctr	r10;							\
-+	std	r10,PACA_EXGEN+EX_R10(r13);				\
- 	KVMTEST_PR(0xc00); /* uses r10, branch to do_kvm_0xc00_system_call */ \
- 	HMT_MEDIUM;							\
--	mr	r9,r12;							\
-+	mfctr	r9;
- 
- #else
- #define SYSCALL_KVMTEST							\
-@@ -935,8 +936,8 @@ EXC_VIRT_END(system_call, 0x4c00, 0x100)
- 	 * This is a hcall, so register convention is as above, with these
- 	 * differences:
- 	 * r13 = PACA
--	 * r12 = orig r13
--	 * ctr = orig r10
-+	 * ctr = orig r13
-+	 * orig r10 saved in PACA
- 	 */
- TRAMP_KVM_BEGIN(do_kvm_0xc00)
- 	 /*
-@@ -944,14 +945,13 @@ TRAMP_KVM_BEGIN(do_kvm_0xc00)
- 	  * HMT_MEDIUM. That allows the KVM code to save that value into the
- 	  * guest state (it is the guest's PPR value).
- 	  */
--	OPT_GET_SPR(r0, SPRN_PPR, CPU_FTR_HAS_PPR)
-+	OPT_GET_SPR(r10, SPRN_PPR, CPU_FTR_HAS_PPR)
- 	HMT_MEDIUM
--	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r0, CPU_FTR_HAS_PPR)
-+	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r10, CPU_FTR_HAS_PPR)
- 	mfctr	r10
--	SET_SCRATCH0(r12)
-+	SET_SCRATCH0(r10)
- 	std	r9,PACA_EXGEN+EX_R9(r13)
- 	mfcr	r9
--	std	r10,PACA_EXGEN+EX_R10(r13)
- 	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
- #endif
- 
--- 
-2.11.0
+If userspace can possibly copy/paste to the mappings or if you need to
+sleep or call this from interrupt context, we need to work out how to
+invalidate the copy buffer.
+
+Thanks,
+Nick
