@@ -1,36 +1,18 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBSfz5s1XzDrFb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 15:01:15 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6I4wsVr116731
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 01:01:13 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bsa8s39mw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 01:01:12 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 18 Jul 2017 01:01:12 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Cyril Bur <cyrilbur@gmail.com>, dwmw2@infradead.org,
- computersforpeace@gmail.com, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 2/2] mtd: powernv_flash: Lock around concurrent access to
- OPAL
-In-Reply-To: <20170607054355.10590-2-cyrilbur@gmail.com>
-References: <20170607054355.10590-1-cyrilbur@gmail.com>
- <20170607054355.10590-2-cyrilbur@gmail.com>
-Date: Tue, 18 Jul 2017 15:01:03 +1000
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87r2xecp9s.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBTMb1R0SzDrFb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 15:32:59 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id o88so1414933pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jul 2017 22:32:59 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/64s: Fix hypercall entry clobbering r12 input
+Date: Tue, 18 Jul 2017 15:32:44 +1000
+Message-Id: <20170718053244.7665-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,22 +22,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cyril Bur <cyrilbur@gmail.com> writes:
-> OPAL can only manage one flash access at a time and will return an
-> OPAL_BUSY error for each concurrent access to the flash. The simplest
-> way to prevent this from happening is with a mutex.
->
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> ---
-> This is to address https://github.com/open-power/skiboot/issues/80
+A previous optimisation incorrectly assumed the PAPR hcall does
+not use r12, and clobbers it upon entry. In fact it is used as
+an input. This can result in KVM guests crashing (observed with
+PR KVM).
 
-part of me wants to say "let's only take the lock if we ever get back
-OPAL_BUSY" or something like that (have a DT property to say the flash
-supports concurrent ops?)
+Instead of using r12 to save r13, tihs patch saves r13 in ctr.
+This is more costly, but not as slow as using the SPRG.
 
-Although the other part of me says "you're overthinking this, get back
-to the work you're meant to be doing" :)
+Fixes: acd7d8cef0153 ("powerpc/64s: Optimize hypercall/syscall entry")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
+---
+One brown paper bag please.
+
+ arch/powerpc/kernel/exceptions-64s.S | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index d8b4ceed7a74..c174e7db7594 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -824,7 +824,7 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
+  * r3 volatile parameter and return value for status
+  * r4-r10 volatile input and output value
+  * r11 volatile hypercall number and output value
+- * r12 volatile
++ * r12 volatile input and output value
+  * r13-r31 nonvolatile
+  * LR nonvolatile
+  * CTR volatile
+@@ -834,25 +834,26 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
+  * Other registers nonvolatile
+  *
+  * The intersection of volatile registers that don't contain possible
+- * inputs is: r12, cr0, xer, ctr. We may use these as scratch regs
+- * upon entry without saving.
++ * inputs is: cr0, xer, ctr. We may use these as scratch regs upon entry
++ * without saving, though xer is not a good idea to use, as hardware may
++ * interpret some bits so it may be costly to change them.
+  */
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+ 	/*
+ 	 * There is a little bit of juggling to get syscall and hcall
+-	 * working well. Save r10 in ctr to be restored in case it is a
+-	 * hcall.
++	 * working well. Save r13 in ctr to avoid using SPRG scratch
++	 * register.
+ 	 *
+ 	 * Userspace syscalls have already saved the PPR, hcalls must save
+ 	 * it before setting HMT_MEDIUM.
+ 	 */
+ #define SYSCALL_KVMTEST							\
+-	mr	r12,r13;						\
++	mtctr	r13;							\
+ 	GET_PACA(r13);							\
+-	mtctr	r10;							\
++	std	r10,PACA_EXGEN+EX_R10(r13);				\
+ 	KVMTEST_PR(0xc00); /* uses r10, branch to do_kvm_0xc00_system_call */ \
+ 	HMT_MEDIUM;							\
+-	mr	r9,r12;							\
++	mfctr	r9;
+ 
+ #else
+ #define SYSCALL_KVMTEST							\
+@@ -935,8 +936,8 @@ EXC_VIRT_END(system_call, 0x4c00, 0x100)
+ 	 * This is a hcall, so register convention is as above, with these
+ 	 * differences:
+ 	 * r13 = PACA
+-	 * r12 = orig r13
+-	 * ctr = orig r10
++	 * ctr = orig r13
++	 * orig r10 saved in PACA
+ 	 */
+ TRAMP_KVM_BEGIN(do_kvm_0xc00)
+ 	 /*
+@@ -944,14 +945,13 @@ TRAMP_KVM_BEGIN(do_kvm_0xc00)
+ 	  * HMT_MEDIUM. That allows the KVM code to save that value into the
+ 	  * guest state (it is the guest's PPR value).
+ 	  */
+-	OPT_GET_SPR(r0, SPRN_PPR, CPU_FTR_HAS_PPR)
++	OPT_GET_SPR(r10, SPRN_PPR, CPU_FTR_HAS_PPR)
+ 	HMT_MEDIUM
+-	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r0, CPU_FTR_HAS_PPR)
++	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r10, CPU_FTR_HAS_PPR)
+ 	mfctr	r10
+-	SET_SCRATCH0(r12)
++	SET_SCRATCH0(r10)
+ 	std	r9,PACA_EXGEN+EX_R9(r13)
+ 	mfcr	r9
+-	std	r10,PACA_EXGEN+EX_R10(r13)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xc00)
+ #endif
+ 
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+2.11.0
