@@ -1,23 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBQG45N0kzDrDf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 13:13:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBQQJ4zMpzDrFG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 13:20:08 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Cyril Bur <cyrilbur@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
  linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
 Cc: stewart@linux.vnet.ibm.com, alistair@popple.id.au, dwmw2@infradead.org,
  rlippert@google.com
-Subject: Re: [PATCH v3 02/10] mtd: powernv_flash: Lock around concurrent
- access to OPAL
-In-Reply-To: <1500340459.2475.6.camel@gmail.com>
+Subject: Re: [PATCH v3 06/10] powerpc/opal: Rework the opal-async interface
+In-Reply-To: <1500338458.2475.3.camel@gmail.com>
 References: <20170712042304.19745-1-cyrilbur@gmail.com>
- <20170712042304.19745-3-cyrilbur@gmail.com>
- <1500276875.8256.3.camel@gmail.com> <1500278150.29477.1.camel@gmail.com>
- <1500283754.8256.11.camel@gmail.com> <1500340459.2475.6.camel@gmail.com>
-Date: Tue, 18 Jul 2017 13:12:58 +1000
-Message-ID: <878tjm1lqd.fsf@concordia.ellerman.id.au>
+ <20170712042304.19745-7-cyrilbur@gmail.com>
+ <1500291037.8256.13.camel@gmail.com> <1500338458.2475.3.camel@gmail.com>
+Date: Tue, 18 Jul 2017 13:20:08 +1000
+Message-ID: <8760eq1lef.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,46 +28,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Cyril Bur <cyrilbur@gmail.com> writes:
-
-> On Mon, 2017-07-17 at 19:29 +1000, Balbir Singh wrote:
->> On Mon, 2017-07-17 at 17:55 +1000, Cyril Bur wrote:
->> > On Mon, 2017-07-17 at 17:34 +1000, Balbir Singh wrote:
->> > > On Wed, 2017-07-12 at 14:22 +1000, Cyril Bur wrote:
->> > > > OPAL can only manage one flash access at a time and will return an
->> > > > OPAL_BUSY error for each concurrent access to the flash. The simplest
->> > > > way to prevent this from happening is with a mutex.
->> > > > 
->> > > > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
->> > > > ---
->> > > 
->> > > Should the mutex_lock() be mutex_lock_interruptible()? Are we OK waiting on
->> > > the mutex while other operations with the lock are busy?
->> > > 
->> > 
->> > This is a good question. My best interpretation is that
->> > _interruptible() should be used when you'll only be coming from a user
->> > context. Which is mostly true for this driver, however, MTD does
->> > provide kernel interfaces, so I was hesitant, there isn't a great deal
->> > of use of _interruptible() in drivers/mtd. 
->> > 
->> > Thoughts?
+> On Mon, 2017-07-17 at 21:30 +1000, Balbir Singh wrote:
+>> On Wed, 2017-07-12 at 14:23 +1000, Cyril Bur wrote:
+>> >  static int __opal_async_get_token(void)
+>> >  {
+>> >  	unsigned long flags;
+>> >  	int token;
+>> >  
+>> > -	spin_lock_irqsave(&opal_async_comp_lock, flags);
+>> > -	token = find_first_bit(opal_async_complete_map, opal_max_async_tokens);
+>> > -	if (token >= opal_max_async_tokens) {
+>> > -		token = -EBUSY;
+>> > -		goto out;
+>> > -	}
+>> > -
+>> > -	if (__test_and_set_bit(token, opal_async_token_map)) {
+>> > -		token = -EBUSY;
+>> > -		goto out;
+>> > +	for (token = 0; token < opal_max_async_tokens; token++) {
+>> > +		spin_lock_irqsave(&opal_async_comp_lock, flags);
 >> 
->> What are the kernel interfaces (I have not read through mtd in detail)?
->> I would still like to see us not blocked in mutex_lock() across threads
->> for parallel calls, one option is to use mutex_trylock() and return if
->> someone already holds the mutex with -EBUSY, but you'll need to evaluate
->> what that means for every call.
+>> Why is the spin lock inside the for loop? If the last token is free, the
+>> number of times we'll take and release a lock is extensive, why are we
+>> doing it this way?
 >
-> Yeah maybe mutex_trylock() is the way to go, thinking quickly, I don't
-> see how it could be a problem for userspace using powernv_flash. I'm
-> honestly not too sure about the depths of the mtd kernel interfaces but
-> I've seen a tonne of cool stuff you could do, hence my reluctance to go
-> with _interruptible()
+> Otherwise we might hold the lock for quite some time.
 
-If you use trylock that means all your callers now need to handle EBUSY,
-which I doubt they do. Which means it goes up to userspace, which most
-users will just treat as a hard error.
+No we won't. A loop over a few 10s or 100s of tokens is not going to
+take long, compared to the overhead of taking the lock every iteration
+through the loop.
 
-So that sounds like a bad plan to me.
+If the linear search with the lock held is a bottle neck, then you can
+keep a hint variable which tracks the last freed token and start
+searching from there.
 
 cheers
