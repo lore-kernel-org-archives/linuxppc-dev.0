@@ -1,25 +1,25 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-pg0-f67.google.com (mail-pg0-f67.google.com [74.125.83.67])
+Received: from mail-pg0-f66.google.com (mail-pg0-f66.google.com [74.125.83.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBtx04nFlzDrLB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 07:44:52 +1000 (AEST)
-Received: by mail-pg0-f67.google.com with SMTP id d193so4332856pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 14:44:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBtxG1PjLzDrJF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 07:45:06 +1000 (AEST)
+Received: by mail-pg0-f66.google.com with SMTP id y129so4336079pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 14:45:06 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
+To: arm@kernel.org
 Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Jason Cooper <jason@lakedaemon.net>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] PCI: Convert to using %pOF instead of full_name
-Date: Tue, 18 Jul 2017 16:43:21 -0500
-Message-Id: <20170718214339.7774-41-robh@kernel.org>
+ Scott Wood <oss@buserror.net>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>,
+ Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Javier Martinez Canillas <javier@osg.samsung.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org
+Subject: [PATCH] soc: Convert to using %pOF instead of full_name
+Date: Tue, 18 Jul 2017 16:43:29 -0500
+Message-Id: <20170718214339.7774-49-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,180 +34,270 @@ full_name to use %pOF instead. This is preparation to remove storing
 of the full path string for each node.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Jason Cooper <jason@lakedaemon.net>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Jonathan Hunter <jonathanh@nvidia.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-pci@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-tegra@vger.kernel.org
+Cc: Scott Wood <oss@buserror.net>
+Cc: Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Simon Horman <horms@verge.net.au>
+Cc: Magnus Damm <magnus.damm@gmail.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-mediatek@lists.infradead.org
+Cc: linux-renesas-soc@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
 ---
- drivers/pci/host/pci-mvebu.c        | 8 ++++----
- drivers/pci/host/pci-tegra.c        | 3 +--
- drivers/pci/hotplug/pnv_php.c       | 4 ++--
- drivers/pci/hotplug/rpadlpar_core.c | 4 ++--
- drivers/pci/hotplug/rpaphp_core.c   | 2 +-
- drivers/pci/hotplug/rpaphp_pci.c    | 4 ++--
- drivers/pci/hotplug/rpaphp_slot.c   | 4 ++--
- drivers/pci/pci-sysfs.c             | 4 ++--
- drivers/pci/pci.c                   | 4 ++--
- 9 files changed, 18 insertions(+), 19 deletions(-)
+ drivers/soc/fsl/qbman/bman_ccsr.c    | 10 +++++-----
+ drivers/soc/fsl/qbman/bman_portal.c  |  8 +++-----
+ drivers/soc/fsl/qbman/qman_ccsr.c    | 12 ++++++------
+ drivers/soc/fsl/qbman/qman_portal.c  | 11 ++++-------
+ drivers/soc/fsl/qe/gpio.c            |  4 ++--
+ drivers/soc/mediatek/mtk-pmic-wrap.c |  4 ++--
+ drivers/soc/renesas/rcar-rst.c       |  4 ++--
+ drivers/soc/renesas/rcar-sysc.c      |  6 +++---
+ drivers/soc/samsung/pm_domains.c     |  8 ++++----
+ 9 files changed, 31 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/pci/host/pci-mvebu.c b/drivers/pci/host/pci-mvebu.c
-index f353a6eb2f01..424982997eb9 100644
---- a/drivers/pci/host/pci-mvebu.c
-+++ b/drivers/pci/host/pci-mvebu.c
-@@ -1054,8 +1054,8 @@ static int mvebu_pcie_parse_port(struct mvebu_pcie *pcie,
- 	port->pcie = pcie;
+diff --git a/drivers/soc/fsl/qbman/bman_ccsr.c b/drivers/soc/fsl/qbman/bman_ccsr.c
+index a8e8389a6894..eaa9585c7347 100644
+--- a/drivers/soc/fsl/qbman/bman_ccsr.c
++++ b/drivers/soc/fsl/qbman/bman_ccsr.c
+@@ -177,8 +177,8 @@ static int fsl_bman_probe(struct platform_device *pdev)
 
- 	if (of_property_read_u32(child, "marvell,pcie-port", &port->port)) {
--		dev_warn(dev, "ignoring %s, missing pcie-port property\n",
--			 of_node_full_name(child));
-+		dev_warn(dev, "ignoring %pOF, missing pcie-port property\n",
-+			 child);
- 		goto skip;
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+-		dev_err(dev, "Can't get %s property 'IORESOURCE_MEM'\n",
+-			node->full_name);
++		dev_err(dev, "Can't get %pOF property 'IORESOURCE_MEM'\n",
++			node);
+ 		return -ENXIO;
  	}
+ 	bm_ccsr_start = devm_ioremap(dev, res->start, resource_size(res));
+@@ -205,14 +205,14 @@ static int fsl_bman_probe(struct platform_device *pdev)
 
-@@ -1106,8 +1106,8 @@ static int mvebu_pcie_parse_port(struct mvebu_pcie *pcie,
- 		}
-
- 		if (flags & OF_GPIO_ACTIVE_LOW) {
--			dev_info(dev, "%s: reset gpio is active low\n",
--				 of_node_full_name(child));
-+			dev_info(dev, "%pOF: reset gpio is active low\n",
-+				 child);
- 			gpio_flags = GPIOF_ACTIVE_LOW |
- 				     GPIOF_OUT_INIT_LOW;
- 		} else {
-diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index b3722b7709df..7eb9be5ae357 100644
---- a/drivers/pci/host/pci-tegra.c
-+++ b/drivers/pci/host/pci-tegra.c
-@@ -1703,8 +1703,7 @@ static int tegra_pcie_get_legacy_regulators(struct tegra_pcie *pcie)
- 		pcie->num_supplies = 2;
-
- 	if (pcie->num_supplies == 0) {
--		dev_err(dev, "device %s not supported in legacy mode\n",
--			np->full_name);
-+		dev_err(dev, "device %pOF not supported in legacy mode\n", np);
+ 	err_irq = platform_get_irq(pdev, 0);
+ 	if (err_irq <= 0) {
+-		dev_info(dev, "Can't get %s IRQ\n", node->full_name);
++		dev_info(dev, "Can't get %pOF IRQ\n", node);
  		return -ENODEV;
  	}
-
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 7c203198b582..74f6a17e4614 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -163,8 +163,8 @@ static void pnv_php_detach_device_nodes(struct device_node *parent)
- 		of_node_put(dn);
- 		refcount = kref_read(&dn->kobj.kref);
- 		if (refcount != 1)
--			pr_warn("Invalid refcount %d on <%s>\n",
--				refcount, of_node_full_name(dn));
-+			pr_warn("Invalid refcount %d on <%pOF>\n",
-+				refcount, dn);
-
- 		of_detach_node(dn);
+ 	ret = devm_request_irq(dev, err_irq, bman_isr, IRQF_SHARED, "bman-err",
+ 			       dev);
+ 	if (ret)  {
+-		dev_err(dev, "devm_request_irq() failed %d for '%s'\n",
+-			ret, node->full_name);
++		dev_err(dev, "devm_request_irq() failed %d for '%pOF'\n",
++			ret, node);
+ 		return ret;
  	}
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index 3f93a4e79595..a3449d717a99 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -150,8 +150,8 @@ static void dlpar_pci_add_bus(struct device_node *dn)
- 	/* Add EADS device to PHB bus, adding new entry to bus->devices */
- 	dev = of_create_pci_dev(dn, phb->bus, pdn->devfn);
- 	if (!dev) {
--		printk(KERN_ERR "%s: failed to create pci dev for %s\n",
--				__func__, dn->full_name);
-+		printk(KERN_ERR "%s: failed to create pci dev for %pOF\n",
-+				__func__, dn);
- 		return;
+ 	/* Disable Buffer Pool State Change */
+diff --git a/drivers/soc/fsl/qbman/bman_portal.c b/drivers/soc/fsl/qbman/bman_portal.c
+index 8354d4dabdad..39b39c8f1399 100644
+--- a/drivers/soc/fsl/qbman/bman_portal.c
++++ b/drivers/soc/fsl/qbman/bman_portal.c
+@@ -103,16 +103,14 @@ static int bman_portal_probe(struct platform_device *pdev)
+ 	addr_phys[0] = platform_get_resource(pdev, IORESOURCE_MEM,
+ 					     DPAA_PORTAL_CE);
+ 	if (!addr_phys[0]) {
+-		dev_err(dev, "Can't get %s property 'reg::CE'\n",
+-			node->full_name);
++		dev_err(dev, "Can't get %pOF property 'reg::CE'\n", node);
+ 		return -ENXIO;
  	}
 
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 8d132024f06e..1e29abaaea08 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -318,7 +318,7 @@ int rpaphp_add_slot(struct device_node *dn)
- 	if (!is_php_dn(dn, &indexes, &names, &types, &power_domains))
- 		return 0;
-
--	dbg("Entry %s: dn->full_name=%s\n", __func__, dn->full_name);
-+	dbg("Entry %s: dn=%pOF\n", __func__, dn);
-
- 	/* register PCI devices */
- 	name = (char *) &names[1];
-diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
-index ea41ea1d3c00..32aabc533be8 100644
---- a/drivers/pci/hotplug/rpaphp_pci.c
-+++ b/drivers/pci/hotplug/rpaphp_pci.c
-@@ -95,7 +95,7 @@ int rpaphp_enable_slot(struct slot *slot)
-
- 	bus = pci_find_bus_by_node(slot->dn);
- 	if (!bus) {
--		err("%s: no pci_bus for dn %s\n", __func__, slot->dn->full_name);
-+		err("%s: no pci_bus for dn %pOF\n", __func__, slot->dn);
- 		return -EINVAL;
+ 	addr_phys[1] = platform_get_resource(pdev, IORESOURCE_MEM,
+ 					     DPAA_PORTAL_CI);
+ 	if (!addr_phys[1]) {
+-		dev_err(dev, "Can't get %s property 'reg::CI'\n",
+-			node->full_name);
++		dev_err(dev, "Can't get %pOF property 'reg::CI'\n", node);
+ 		return -ENXIO;
  	}
 
-@@ -125,7 +125,7 @@ int rpaphp_enable_slot(struct slot *slot)
+@@ -120,7 +118,7 @@ static int bman_portal_probe(struct platform_device *pdev)
 
- 		if (rpaphp_debug) {
- 			struct pci_dev *dev;
--			dbg("%s: pci_devs of slot[%s]\n", __func__, slot->dn->full_name);
-+			dbg("%s: pci_devs of slot[%pOF]\n", __func__, slot->dn);
- 			list_for_each_entry(dev, &bus->devices, bus_list)
- 				dbg("\t%s\n", pci_name(dev));
- 		}
-diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-index 388c4d8fcdd1..489862360f2c 100644
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -122,8 +122,8 @@ int rpaphp_register_slot(struct slot *slot)
- 	int retval;
- 	int slotno = -1;
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq <= 0) {
+-		dev_err(dev, "Can't get %s IRQ'\n", node->full_name);
++		dev_err(dev, "Can't get %pOF IRQ'\n", node);
+ 		return -ENXIO;
+ 	}
+ 	pcfg->irq = irq;
+diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
+index 90bc40c48675..835ce947ffca 100644
+--- a/drivers/soc/fsl/qbman/qman_ccsr.c
++++ b/drivers/soc/fsl/qbman/qman_ccsr.c
+@@ -695,8 +695,8 @@ static int fsl_qman_probe(struct platform_device *pdev)
 
--	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n",
--		__func__, slot->dn->full_name, slot->index, slot->name,
-+	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
-+		__func__, slot->dn, slot->index, slot->name,
- 		slot->power_domain, slot->type);
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+-		dev_err(dev, "Can't get %s property 'IORESOURCE_MEM'\n",
+-			node->full_name);
++		dev_err(dev, "Can't get %pOF property 'IORESOURCE_MEM'\n",
++			node);
+ 		return -ENXIO;
+ 	}
+ 	qm_ccsr_start = devm_ioremap(dev, res->start, resource_size(res));
+@@ -740,15 +740,15 @@ static int fsl_qman_probe(struct platform_device *pdev)
 
- 	/* should not try to register the same slot twice */
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 2f3780b50723..33d4df7ed591 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -556,9 +556,9 @@ static ssize_t devspec_show(struct device *dev,
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct device_node *np = pci_device_to_OF_node(pdev);
-
--	if (np == NULL || np->full_name == NULL)
-+	if (np == NULL)
- 		return 0;
--	return sprintf(buf, "%s", np->full_name);
-+	return sprintf(buf, "%pOF", np);
- }
- static DEVICE_ATTR_RO(devspec);
- #endif
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index af0cc3456dc1..e8e40dea2842 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -5363,8 +5363,8 @@ static int of_pci_bus_find_domain_nr(struct device *parent)
- 		use_dt_domains = 0;
- 		domain = pci_get_new_domain_nr();
- 	} else {
--		dev_err(parent, "Node %s has inconsistent \"linux,pci-domain\" property in DT\n",
--			parent->of_node->full_name);
-+		dev_err(parent, "Node %pOF has inconsistent \"linux,pci-domain\" property in DT\n",
-+			parent->of_node);
- 		domain = -1;
+ 	err_irq = platform_get_irq(pdev, 0);
+ 	if (err_irq <= 0) {
+-		dev_info(dev, "Can't get %s property 'interrupts'\n",
+-			 node->full_name);
++		dev_info(dev, "Can't get %pOF property 'interrupts'\n",
++			 node);
+ 		return -ENODEV;
+ 	}
+ 	ret = devm_request_irq(dev, err_irq, qman_isr, IRQF_SHARED, "qman-err",
+ 			       dev);
+ 	if (ret)  {
+-		dev_err(dev, "devm_request_irq() failed %d for '%s'\n",
+-			ret, node->full_name);
++		dev_err(dev, "devm_request_irq() failed %d for '%pOF'\n",
++			ret, node);
+ 		return ret;
  	}
 
+diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+index adbaa30d3c5a..cbacdf4f98ed 100644
+--- a/drivers/soc/fsl/qbman/qman_portal.c
++++ b/drivers/soc/fsl/qbman/qman_portal.c
+@@ -237,30 +237,27 @@ static int qman_portal_probe(struct platform_device *pdev)
+ 	addr_phys[0] = platform_get_resource(pdev, IORESOURCE_MEM,
+ 					     DPAA_PORTAL_CE);
+ 	if (!addr_phys[0]) {
+-		dev_err(dev, "Can't get %s property 'reg::CE'\n",
+-			node->full_name);
++		dev_err(dev, "Can't get %pOF property 'reg::CE'\n", node);
+ 		return -ENXIO;
+ 	}
+
+ 	addr_phys[1] = platform_get_resource(pdev, IORESOURCE_MEM,
+ 					     DPAA_PORTAL_CI);
+ 	if (!addr_phys[1]) {
+-		dev_err(dev, "Can't get %s property 'reg::CI'\n",
+-			node->full_name);
++		dev_err(dev, "Can't get %pOF property 'reg::CI'\n", node);
+ 		return -ENXIO;
+ 	}
+
+ 	err = of_property_read_u32(node, "cell-index", &val);
+ 	if (err) {
+-		dev_err(dev, "Can't get %s property 'cell-index'\n",
+-			node->full_name);
++		dev_err(dev, "Can't get %pOF property 'cell-index'\n", node);
+ 		return err;
+ 	}
+ 	pcfg->channel = val;
+ 	pcfg->cpu = -1;
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq <= 0) {
+-		dev_err(dev, "Can't get %s IRQ\n", node->full_name);
++		dev_err(dev, "Can't get %pOF IRQ\n", node);
+ 		return -ENXIO;
+ 	}
+ 	pcfg->irq = irq;
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 0aaf429f31d5..3b27075c21a7 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -304,8 +304,8 @@ static int __init qe_add_gpiochips(void)
+ 			goto err;
+ 		continue;
+ err:
+-		pr_err("%s: registration failed with status %d\n",
+-		       np->full_name, ret);
++		pr_err("%pOF: registration failed with status %d\n",
++		       np, ret);
+ 		kfree(qe_gc);
+ 		/* try others anyway */
+ 	}
+diff --git a/drivers/soc/mediatek/mtk-pmic-wrap.c b/drivers/soc/mediatek/mtk-pmic-wrap.c
+index c80a04e1b2b1..af9768db42b4 100644
+--- a/drivers/soc/mediatek/mtk-pmic-wrap.c
++++ b/drivers/soc/mediatek/mtk-pmic-wrap.c
+@@ -1233,8 +1233,8 @@ static int pwrap_probe(struct platform_device *pdev)
+
+ 	ret = of_platform_populate(np, NULL, NULL, wrp->dev);
+ 	if (ret) {
+-		dev_dbg(wrp->dev, "failed to create child devices at %s\n",
+-				np->full_name);
++		dev_dbg(wrp->dev, "failed to create child devices at %pOF\n",
++				np);
+ 		goto err_out2;
+ 	}
+
+diff --git a/drivers/soc/renesas/rcar-rst.c b/drivers/soc/renesas/rcar-rst.c
+index a6d1c26d3167..78c40d5dd62b 100644
+--- a/drivers/soc/renesas/rcar-rst.c
++++ b/drivers/soc/renesas/rcar-rst.c
+@@ -61,7 +61,7 @@ static int __init rcar_rst_init(void)
+
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+-		pr_warn("%s: Cannot map regs\n", np->full_name);
++		pr_warn("%pOF: Cannot map regs\n", np);
+ 		error = -ENOMEM;
+ 		goto out_put;
+ 	}
+@@ -70,7 +70,7 @@ static int __init rcar_rst_init(void)
+ 	cfg = match->data;
+ 	saved_mode = ioread32(base + cfg->modemr);
+
+-	pr_debug("%s: MODE = 0x%08x\n", np->full_name, saved_mode);
++	pr_debug("%pOF: MODE = 0x%08x\n", np, saved_mode);
+
+ out_put:
+ 	of_node_put(np);
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index 7c8da3c90011..cd387347fa94 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -323,7 +323,7 @@ static int __init rcar_sysc_pd_init(void)
+
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+-		pr_warn("%s: Cannot map regs\n", np->full_name);
++		pr_warn("%pOF: Cannot map regs\n", np);
+ 		error = -ENOMEM;
+ 		goto out_put;
+ 	}
+@@ -348,13 +348,13 @@ static int __init rcar_sysc_pd_init(void)
+ 	 */
+ 	syscimr = ioread32(base + SYSCIMR);
+ 	syscimr |= syscier;
+-	pr_debug("%s: syscimr = 0x%08x\n", np->full_name, syscimr);
++	pr_debug("%pOF: syscimr = 0x%08x\n", np, syscimr);
+ 	iowrite32(syscimr, base + SYSCIMR);
+
+ 	/*
+ 	 * SYSC needs all interrupt sources enabled to control power.
+ 	 */
+-	pr_debug("%s: syscier = 0x%08x\n", np->full_name, syscier);
++	pr_debug("%pOF: syscier = 0x%08x\n", np, syscier);
+ 	iowrite32(syscier, base + SYSCIER);
+
+ 	for (i = 0; i < info->num_areas; i++) {
+diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+index a6a5d807cc2b..c630eba32066 100644
+--- a/drivers/soc/samsung/pm_domains.c
++++ b/drivers/soc/samsung/pm_domains.c
+@@ -237,11 +237,11 @@ static __init int exynos4_pm_init_power_domain(void)
+ 			continue;
+
+ 		if (of_genpd_add_subdomain(&parent, &child))
+-			pr_warn("%s failed to add subdomain: %s\n",
+-				parent.np->full_name, child.np->full_name);
++			pr_warn("%pOF failed to add subdomain: %pOF\n",
++				parent.np, child.np);
+ 		else
+-			pr_info("%s has as child subdomain: %s.\n",
+-				parent.np->full_name, child.np->full_name);
++			pr_info("%pOF has as child subdomain: %pOF.\n",
++				parent.np, child.np);
+ 	}
+
+ 	return 0;
 --
 2.11.0
