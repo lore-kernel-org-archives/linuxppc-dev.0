@@ -1,23 +1,34 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xC8wj14yGzDrT4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 18:15:31 +1000 (AEST)
-Date: Wed, 19 Jul 2017 09:01:50 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, benh@kernel.crashing.org,
- z.liuxinliang@hisilicon.com, zourongrong@gmail.com,
- catalin.marinas@arm.com, gabriele.paoloni@huawei.com,
- bhelgaas@google.com, airlied@linux.ie, daniel.vetter@intel.com,
- alex.williamson@redhat.com
-Subject: Re: [PATCH v2 4/4] arm64: allow non-legacy VGA devices to be default
-Message-ID: <20170719080150.GB13642@arm.com>
-References: <20170719021516.24718-1-dja@axtens.net>
- <20170719021516.24718-5-dja@axtens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170719021516.24718-5-dja@axtens.net>
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC90n5XNmzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 18:19:05 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6J89KL9025323
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 04:19:03 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bsu0sjeuk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 04:19:03 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 19 Jul 2017 04:19:02 -0400
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [v2 PATCH 0/2] powerpc: powernv: Enable stop4 via cpuidle
+Date: Wed, 19 Jul 2017 13:48:48 +0530
+Message-Id: <cover.1500452107.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +38,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 19, 2017 at 12:15:16PM +1000, Daniel Axtens wrote:
-> The VGA arbiter only marks a device as default if it can decode
-> legacy I/O and memory ranges. This is often not the case on arm64,
-> which doesn't use the legacy ranges.
-> 
-> Enable the VGA arbiter to mark the first enabled VGA card as
-> default.
-> 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Acked-by: Will Deacon <will.deacon@arm.com>
+Hi,
 
-Will
+This is the second iteration of the patchset to enable exploitation of
+stop4 idle state on POWER9 via cpuidle.
 
-> ---
-> 
-> Tested on a D05 using the hibmc card.
-> ---
->  arch/arm64/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index dfd908630631..cefcbd442e4f 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -28,6 +28,7 @@ config ARM64
->  	select ARCH_SUPPORTS_NUMA_BALANCING
->  	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
->  	select ARCH_WANT_FRAME_POINTERS
-> +	select ARCH_WANT_VGA_ARB_FALLBACK
->  	select ARCH_HAS_UBSAN_SANITIZE_ALL
->  	select ARM_AMBA
->  	select ARM_ARCH_TIMER
-> -- 
-> 2.11.0
-> 
+The earlier version can be found here :
+https://lkml.org/lkml/2017/7/18/691
+
+The change from the first version is to the second patch titled "
+powernv/powerpc: Clear PECE1 in LPCR via stop-api only on Hotplug"
+where all the LPCR manipulations for CPU-Hotplug are moved into
+arch/powerpc/platforms/powernv/idle.c as per Nicholas Piggin's
+suggestion.
+
+====== Description  ===========================
+The stop4 idle state on POWER9 is a deep idle state which loses
+hypervisor resources, but whose latency is low enough that it can be
+exposed via cpuidle.
+
+Until now, the deep idle states which lose hypervisor resources (eg:
+winkle) were only exposed via CPU-Hotplug.  Hence currently on wakeup
+from such states, barring a few SPRs which need to be restored to
+their older value, rest of the SPRS are reinitialized to their values
+corresponding to that at boot time. When stop4 is used in the context
+of cpuidle, we want these additional SPRs to be restored to their
+older value, to ensure that the context on the CPU coming back from
+idle is same as it was before going idle.
+
+Additionally, the CPU which is in stop4 while idling can be woken up
+by the decrementer interrupts. So we need to ensure that the LPCR is
+programmed with PECE1 bit cleared via the stop-api only for the
+CPU-Hotplug case and not for cpuidle.
+
+The two patches in the series address this problem.
+
+Gautham R. Shenoy (2):
+  powernv/powerpc:Save/Restore additional SPRs for stop4 cpuidle
+  powernv/powerpc: Clear PECE1 in LPCR via stop-api only on Hotplug
+
+ arch/powerpc/include/asm/paca.h       |  7 ++++++
+ arch/powerpc/kernel/asm-offsets.c     | 12 +++++++++
+ arch/powerpc/kernel/idle_book3s.S     | 46 +++++++++++++++++++++++++++++++++--
+ arch/powerpc/platforms/powernv/idle.c | 45 +++++++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/smp.c  | 10 --------
+ 5 files changed, 107 insertions(+), 13 deletions(-)
+
+-- 
+1.9.4
