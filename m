@@ -1,25 +1,29 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <patrice.chotard@st.com>
+Received: from mx07-00178001.pphosted.com (mx08-00178001.pphosted.com
+ [91.207.212.93])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC7cY4SX7zDrS2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 17:16:29 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id z1so5880752pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 00:16:29 -0700 (PDT)
-Date: Wed, 19 Jul 2017 17:16:13 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Mahesh Jagannath Salgaonkar
- <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/3] powerpc/powernv: handle the platform error
- reboot in ppc_md.restart
-Message-ID: <20170719171613.2fbf30f2@roar.ozlabs.ibm.com>
-In-Reply-To: <20170719065912.19183-2-npiggin@gmail.com>
-References: <20170719065912.19183-1-npiggin@gmail.com>
- <20170719065912.19183-2-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC83P72wBzDrTv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 17:36:17 +1000 (AEST)
+From: Patrice CHOTARD <patrice.chotard@st.com>
+To: Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viresh Kumar
+ <viresh.kumar@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "kernel@stlinux.com"
+ <kernel@stlinux.com>
+Subject: Re: [PATCH] cpufreq: Convert to using %pOF instead of full_name
+Date: Wed, 19 Jul 2017 07:06:06 +0000
+Message-ID: <25327197-4a70-e31c-5ccc-8becf4da8395@st.com>
+References: <20170718214339.7774-14-robh@kernel.org>
+In-Reply-To: <20170718214339.7774-14-robh@kernel.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 19 Jul 2017 16:59:10 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> Change this by providing a special crash function which does some of
-> the console flushing from the panic() path before calling firmware to
-> reboot.
-
-Oops, I changed the changelog but not the patch subject. Should
-be something like "flush console before platform error reboot".
-
-Thanks,
-Nick
+DQpPbiAwNy8xOC8yMDE3IDExOjQyIFBNLCBSb2IgSGVycmluZyB3cm90ZToNCj4gTm93IHRoYXQg
+d2UgaGF2ZSBhIGN1c3RvbSBwcmludGYgZm9ybWF0IHNwZWNpZmllciwgY29udmVydCB1c2VycyBv
+Zg0KPiBmdWxsX25hbWUgdG8gdXNlICVwT0YgaW5zdGVhZC4gVGhpcyBpcyBwcmVwYXJhdGlvbiB0
+byByZW1vdmUgc3RvcmluZw0KPiBvZiB0aGUgZnVsbCBwYXRoIHN0cmluZyBmb3IgZWFjaCBub2Rl
+Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4NCj4g
+Q2M6ICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2kubmV0Pg0KPiBDYzogVmlyZXNo
+IEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4gQ2M6IEJlbmphbWluIEhlcnJlbnNj
+aG1pZHQgPGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZz4NCj4gQ2M6IFBhdWwgTWFja2VycmFzIDxw
+YXVsdXNAc2FtYmEub3JnPg0KPiBDYzogTWljaGFlbCBFbGxlcm1hbiA8bXBlQGVsbGVybWFuLmlk
+LmF1Pg0KPiBDYzogUGF0cmljZSBDaG90YXJkIDxwYXRyaWNlLmNob3RhcmRAc3QuY29tPg0KPiBD
+YzogbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZw0KPiBDYzogbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnDQo+IENj
+OiBrZXJuZWxAc3RsaW51eC5jb20NCj4gLS0tDQo+ICAgZHJpdmVycy9jcHVmcmVxL3BtYWM2NC1j
+cHVmcmVxLmMgfCAyICstDQo+ICAgZHJpdmVycy9jcHVmcmVxL3N0aS1jcHVmcmVxLmMgICAgfCA4
+ICsrKystLS0tDQo+ICAgMiBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDUgZGVsZXRp
+b25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3BtYWM2NC1jcHVmcmVx
+LmMgYi9kcml2ZXJzL2NwdWZyZXEvcG1hYzY0LWNwdWZyZXEuYw0KPiBpbmRleCAyNjdlMDg5NGM2
+MmQuLmJlNjIzZGQ3YjlmMiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL3BtYWM2NC1j
+cHVmcmVxLmMNCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL3BtYWM2NC1jcHVmcmVxLmMNCj4gQEAg
+LTUxNiw3ICs1MTYsNyBAQCBzdGF0aWMgaW50IF9faW5pdCBnNV9wbTcyX2NwdWZyZXFfaW5pdChz
+dHJ1Y3QgZGV2aWNlX25vZGUgKmNwdW5vZGUpDQo+ICAgCQlnb3RvIGJhaWw7DQo+ICAgCX0NCj4g
+DQo+IC0JREJHKCJjcHVmcmVxOiBpMmMgY2xvY2sgY2hpcCBmb3VuZDogJXNcbiIsIGh3Y2xvY2st
+PmZ1bGxfbmFtZSk7DQo+ICsJREJHKCJjcHVmcmVxOiBpMmMgY2xvY2sgY2hpcCBmb3VuZDogJXBP
+RlxuIiwgaHdjbG9jayk7DQo+IA0KPiAgIAkvKiBOb3cgZ2V0IGFsbCB0aGUgcGxhdGZvcm0gZnVu
+Y3Rpb25zICovDQo+ICAgCXBmdW5jX2NwdV9nZXRmcmVxID0NCj4gZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvY3B1ZnJlcS9zdGktY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3N0aS1jcHVmcmVxLmMN
+Cj4gaW5kZXggZDJkMDQzMGQwOWQ0Li40NzEwNTczNWRmMTIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZl
+cnMvY3B1ZnJlcS9zdGktY3B1ZnJlcS5jDQo+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9zdGktY3B1
+ZnJlcS5jDQo+IEBAIC02NSw4ICs2NSw4IEBAIHN0YXRpYyBpbnQgc3RpX2NwdWZyZXFfZmV0Y2hf
+bWFqb3Iodm9pZCkgew0KPiAgIAlyZXQgPSBvZl9wcm9wZXJ0eV9yZWFkX3UzMl9pbmRleChucCwg
+InN0LHN5c2NmZyIsDQo+ICAgCQkJCQkgTUFKT1JfSURfSU5ERVgsICZtYWpvcl9vZmZzZXQpOw0K
+PiAgIAlpZiAocmV0KSB7DQo+IC0JCWRldl9lcnIoZGV2LCAiTm8gbWFqb3IgbnVtYmVyIG9mZnNl
+dCBwcm92aWRlZCBpbiAlcyBbJWRdXG4iLA0KPiAtCQkJbnAtPmZ1bGxfbmFtZSwgcmV0KTsNCj4g
+KwkJZGV2X2VycihkZXYsICJObyBtYWpvciBudW1iZXIgb2Zmc2V0IHByb3ZpZGVkIGluICVwT0Yg
+WyVkXVxuIiwNCj4gKwkJCW5wLCByZXQpOw0KPiAgIAkJcmV0dXJuIHJldDsNCj4gICAJfQ0KPiAN
+Cj4gQEAgLTkyLDggKzkyLDggQEAgc3RhdGljIGludCBzdGlfY3B1ZnJlcV9mZXRjaF9taW5vcih2
+b2lkKQ0KPiAgIAkJCQkJIE1JTk9SX0lEX0lOREVYLCAmbWlub3Jfb2Zmc2V0KTsNCj4gICAJaWYg
+KHJldCkgew0KPiAgIAkJZGV2X2VycihkZXYsDQo+IC0JCQkiTm8gbWlub3IgbnVtYmVyIG9mZnNl
+dCBwcm92aWRlZCAlcyBbJWRdXG4iLA0KPiAtCQkJbnAtPmZ1bGxfbmFtZSwgcmV0KTsNCj4gKwkJ
+CSJObyBtaW5vciBudW1iZXIgb2Zmc2V0IHByb3ZpZGVkICVwT0YgWyVkXVxuIiwNCj4gKwkJCW5w
+LCByZXQpOw0KPiAgIAkJcmV0dXJuIHJldDsNCj4gICAJfQ0KPiANCj4gLS0NCj4gMi4xMS4wDQo+
+IA0KDQpGb3IgU1QgY3B1ZnJlcToNCg0KQWNrZWQtYnk6IFBhdHJpY2UgQ2hvdGFyZCA8cGF0cmlj
+ZS5jaG90YXJkQHN0LmNvbT4NCg0KVGhhbmtz
