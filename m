@@ -1,38 +1,30 @@
-Return-Path: <gromero@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <k.kozlowski.k@gmail.com>
+Received: from mail-io0-f193.google.com (mail-io0-f193.google.com
+ [209.85.223.193])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC5b10jHHzDrRg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 15:45:00 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6J5hg2P098968
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 01:44:58 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bsu0scp1k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 01:44:58 -0400
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Wed, 19 Jul 2017 02:44:56 -0300
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6J5eTib28442708
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 02:40:29 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6J2iqUx013398
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 23:44:53 -0300
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: cyrilbur@gmail.com, mpe@ellerman.id.au,
- Gustavo Romero <gromero@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/tm: fix TM SPRs in code dump file
-Date: Wed, 19 Jul 2017 01:44:13 -0400
-Message-Id: <1500443053-1264-1-git-send-email-gromero@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC5z53XFNzDrRs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 16:02:24 +1000 (AEST)
+Received: by mail-io0-f193.google.com with SMTP id f66so3747808iof.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 23:02:24 -0700 (PDT)
+Date: Wed, 19 Jul 2017 08:01:53 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: arm@kernel.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, Scott Wood <oss@buserror.net>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Matthias Brugger <matthias.bgg@gmail.com>,
+ Simon Horman <horms@verge.net.au>,
+ Magnus Damm <magnus.damm@gmail.com>, Kukjin Kim <kgene@kernel.org>,
+ Javier Martinez Canillas <javier@osg.samsung.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org
+Subject: Re: [PATCH] soc: Convert to using %pOF instead of full_name
+Message-ID: <20170719060153.GD6246@kozik-book>
+References: <20170718214339.7774-49-robh@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170718214339.7774-49-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,44 +34,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently flush_tmregs_to_thread() does not update accordingly the thread
-structures from live state before a core dump rendering wrong values of
-THFAR, TFIAR, and TEXASR in core dump files.
+On Tue, Jul 18, 2017 at 04:43:29PM -0500, Rob Herring wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
+> 
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Qiang Zhao <qiang.zhao@nxp.com>
+> Cc: Matthias Brugger <matthias.bgg@gmail.com>
+> Cc: Simon Horman <horms@verge.net.au>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-mediatek@lists.infradead.org
+> Cc: linux-renesas-soc@vger.kernel.org
+> Cc: linux-samsung-soc@vger.kernel.org
+> ---
+>  drivers/soc/fsl/qbman/bman_ccsr.c    | 10 +++++-----
+>  drivers/soc/fsl/qbman/bman_portal.c  |  8 +++-----
+>  drivers/soc/fsl/qbman/qman_ccsr.c    | 12 ++++++------
+>  drivers/soc/fsl/qbman/qman_portal.c  | 11 ++++-------
+>  drivers/soc/fsl/qe/gpio.c            |  4 ++--
+>  drivers/soc/mediatek/mtk-pmic-wrap.c |  4 ++--
+>  drivers/soc/renesas/rcar-rst.c       |  4 ++--
+>  drivers/soc/renesas/rcar-sysc.c      |  6 +++---
+>  drivers/soc/samsung/pm_domains.c     |  8 ++++----
+>  9 files changed, 31 insertions(+), 36 deletions(-)
+> 
 
-That commit fixes it by copying from live state to the appropriate thread
-structures when it's necessary.
+(...)
 
-Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/ptrace.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+> diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+> index a6a5d807cc2b..c630eba32066 100644
+> --- a/drivers/soc/samsung/pm_domains.c
+> +++ b/drivers/soc/samsung/pm_domains.c
+> @@ -237,11 +237,11 @@ static __init int exynos4_pm_init_power_domain(void)
+>  			continue;
+> 
+>  		if (of_genpd_add_subdomain(&parent, &child))
+> -			pr_warn("%s failed to add subdomain: %s\n",
+> -				parent.np->full_name, child.np->full_name);
+> +			pr_warn("%pOF failed to add subdomain: %pOF\n",
+> +				parent.np, child.np);
+>  		else
+> -			pr_info("%s has as child subdomain: %s.\n",
+> -				parent.np->full_name, child.np->full_name);
+> +			pr_info("%pOF has as child subdomain: %pOF.\n",
+> +				parent.np, child.np);
+>  	}
+> 
+>  	return 0;
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 925a4ef..660ed39 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -127,12 +127,19 @@ static void flush_tmregs_to_thread(struct task_struct *tsk)
- 	 * If task is not current, it will have been flushed already to
- 	 * it's thread_struct during __switch_to().
- 	 *
--	 * A reclaim flushes ALL the state.
-+	 * A reclaim flushes ALL the state or if not in TM save TM SPRs
-+	 * in the appropriate thread structures from live.
- 	 */
- 
--	if (tsk == current && MSR_TM_SUSPENDED(mfmsr()))
--		tm_reclaim_current(TM_CAUSE_SIGNAL);
-+	if (tsk != current)
-+		return;
- 
-+	if (MSR_TM_SUSPENDED(mfmsr())) {
-+		tm_reclaim_current(TM_CAUSE_SIGNAL);
-+	} else {
-+		tm_enable();
-+		tm_save_sprs(&(tsk->thread));
-+	}
- }
- #else
- static inline void flush_tmregs_to_thread(struct task_struct *tsk) { }
--- 
-2.7.4
+I guess this will go through arm-soc?
+
+For Samsung, looks good:
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Best regards,
+Krzysztof
