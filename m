@@ -1,42 +1,42 @@
 Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCQpW35BJzDqpF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 04:41:07 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCQpZ3hyczDrCn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 04:41:10 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6JIdEbS007040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:41:04 -0400
+ v6JIeJ1e031128
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:41:08 -0400
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2btcceh8c5-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2btcgkrynw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:41:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:41:08 -0400
 Received: from localhost
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Thu, 20 Jul 2017 04:41:01 +1000
+ Thu, 20 Jul 2017 04:41:06 +1000
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6JIepdL30015538
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 04:40:59 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6JIetLw27984042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 04:41:03 +1000
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6JIeQwE004700
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 04:40:27 +1000
+ v6JIeUrc004785
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 04:40:31 +1000
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V7 2/3] powernv: Add support to set power-shifting-ratio
-Date: Thu, 20 Jul 2017 00:09:55 +0530
+Subject: [PATCH V7 3/3] powernv : Add support to clear sensor groups data
+Date: Thu, 20 Jul 2017 00:09:56 +0530
 In-Reply-To: <1500489596-23255-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1500489596-23255-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1500489596-23255-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-Id: <1500489596-23255-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,264 +46,231 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support to set power-shifting-ratio for CPU-GPU which
-is used by OCC power capping algorithm.
+Adds support for clearing different sensor groups. OCC inband sensor
+groups like CSM, Profiler, Job Scheduler can be cleared using this
+driver. The min/max of all sensors belonging to these sensor groups
+will be cleared.
 
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal-api.h            |   4 +-
- arch/powerpc/include/asm/opal.h                |   3 +
+Changes from V6:
+- Removed a generic read/write interface for all commands. Commands to
+  set powercap and power-shifting-ratio has been implemented as
+  generic framework and this driver supports non-generic platform
+  commands.
+
+ arch/powerpc/include/asm/opal-api.h            |   3 +-
+ arch/powerpc/include/asm/opal.h                |   1 +
+ arch/powerpc/include/uapi/asm/opal-occ.h       |  23 ++++++
  arch/powerpc/platforms/powernv/Makefile        |   2 +-
- arch/powerpc/platforms/powernv/opal-psr.c      | 169 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
+ arch/powerpc/platforms/powernv/opal-occ.c      | 108 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
  arch/powerpc/platforms/powernv/opal.c          |   3 +
- 6 files changed, 181 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-psr.c
+ 7 files changed, 139 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/opal-occ.h
+ create mode 100644 arch/powerpc/platforms/powernv/opal-occ.c
 
 diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index c3e0c4a..0d37315 100644
+index 0d37315..e849bd2 100644
 --- a/arch/powerpc/include/asm/opal-api.h
 +++ b/arch/powerpc/include/asm/opal-api.h
-@@ -193,7 +193,9 @@
- #define OPAL_NPU_MAP_LPAR			148
- #define OPAL_GET_POWERCAP			152
+@@ -195,7 +195,8 @@
  #define OPAL_SET_POWERCAP			153
--#define OPAL_LAST				153
-+#define OPAL_GET_PSR				154
-+#define OPAL_SET_PSR				155
-+#define OPAL_LAST				155
+ #define OPAL_GET_PSR				154
+ #define OPAL_SET_PSR				155
+-#define OPAL_LAST				155
++#define OPAL_CLEAR_SENSOR_GROUPS		156
++#define OPAL_LAST				156
  
  /* Device tree flags */
  
 diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index ec2087c..58b30a4 100644
+index 58b30a4..ccf42ae 100644
 --- a/arch/powerpc/include/asm/opal.h
 +++ b/arch/powerpc/include/asm/opal.h
-@@ -269,6 +269,8 @@ int64_t opal_xive_set_vp_info(uint64_t vp,
- int64_t opal_xive_dump(uint32_t type, uint32_t id);
- int opal_get_powercap(u32 handle, int token, u32 *pcap);
+@@ -271,6 +271,7 @@ int64_t opal_xive_set_vp_info(uint64_t vp,
  int opal_set_powercap(u32 handle, int token, u32 pcap);
-+int opal_get_power_shifting_ratio(u32 handle, int token, u32 *psr);
-+int opal_set_power_shifting_ratio(u32 handle, int token, u32 psr);
+ int opal_get_power_shifting_ratio(u32 handle, int token, u32 *psr);
+ int opal_set_power_shifting_ratio(u32 handle, int token, u32 psr);
++int opal_clear_sensor_groups(u32 group_hndl, int token);
  
  /* Internal functions */
  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-@@ -348,6 +350,7 @@ static inline int opal_get_async_rc(struct opal_msg msg)
- void opal_wake_poller(void);
- 
- void opal_powercap_init(void);
-+void opal_psr_init(void);
- 
- #endif /* __ASSEMBLY__ */
- 
+diff --git a/arch/powerpc/include/uapi/asm/opal-occ.h b/arch/powerpc/include/uapi/asm/opal-occ.h
+new file mode 100644
+index 0000000..97c45e2
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/opal-occ.h
+@@ -0,0 +1,23 @@
++/*
++ * OPAL OCC command interface
++ * Supported on POWERNV platform
++ *
++ * (C) Copyright IBM 2017
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _UAPI_ASM_POWERPC_OPAL_OCC_H_
++#define _UAPI_ASM_POWERPC_OPAL_OCC_H_
++
++#define OPAL_OCC_IOCTL_CLEAR_SENSOR_GROUPS	_IOR('o', 1, u32)
++
++#endif /* _UAPI_ASM_POWERPC_OPAL_OCC_H */
 diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index e79f806..9ed7d33 100644
+index 9ed7d33..f193b33 100644
 --- a/arch/powerpc/platforms/powernv/Makefile
 +++ b/arch/powerpc/platforms/powernv/Makefile
 @@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
  obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
--obj-y			+= opal-kmsg.o opal-powercap.o
-+obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o
+-obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o
++obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-occ.o
  
  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
  obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
-diff --git a/arch/powerpc/platforms/powernv/opal-psr.c b/arch/powerpc/platforms/powernv/opal-psr.c
+diff --git a/arch/powerpc/platforms/powernv/opal-occ.c b/arch/powerpc/platforms/powernv/opal-occ.c
 new file mode 100644
-index 0000000..ca98b181
+index 0000000..76b8526
 --- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-psr.c
-@@ -0,0 +1,169 @@
++++ b/arch/powerpc/platforms/powernv/opal-occ.c
+@@ -0,0 +1,108 @@
 +/*
-+ * PowerNV OPAL Power-Shifting-Ratio interface
++ * Copyright IBM Corporation 2017
 + *
-+ * Copyright 2017 IBM Corp.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
 +
-+#define pr_fmt(fmt)     "opal-psr: " fmt
++#define pr_fmt(fmt) "opal-occ: " fmt
 +
-+#include <linux/of.h>
-+#include <linux/kobject.h>
-+#include <linux/slab.h>
-+
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
 +#include <asm/opal.h>
++#include <asm/opal-occ.h>
 +
-+DEFINE_MUTEX(psr_mutex);
++DEFINE_MUTEX(opal_occ_mutex);
 +
-+static struct kobject *psr_kobj;
++static int send_occ_command(u32 handle)
++{
++	struct opal_msg async_msg;
++	int token, rc;
 +
-+struct psr_attr {
-+	u32 handle;
-+	struct kobj_attribute attr;
++	token = opal_async_get_token_interruptible();
++	if (token < 0) {
++		pr_devel("Failed to get the token %d\n", token);
++		return token;
++	}
++
++	mutex_lock(&opal_occ_mutex);
++	rc = opal_clear_sensor_groups(handle, token);
++	if (rc == OPAL_ASYNC_COMPLETION) {
++		rc = opal_async_wait_response(token, &async_msg);
++		if (rc) {
++			pr_devel("Failed to wait for async response %d\n", rc);
++			goto out;
++		}
++		rc = opal_get_async_rc(async_msg);
++	}
++out:
++	mutex_unlock(&opal_occ_mutex);
++	opal_async_release_token(token);
++	return opal_error_code(rc);
++}
++
++static long opal_occ_ioctl(struct file *file, unsigned int cmd,
++			   unsigned long param)
++{
++	int rc = -EINVAL;
++
++	switch (cmd) {
++	case OPAL_OCC_IOCTL_CLEAR_SENSOR_GROUPS:
++		rc = send_occ_command(param);
++		break;
++	default:
++		break;
++	}
++
++	return rc;
++}
++
++static const struct file_operations opal_occ_fops = {
++	.unlocked_ioctl = opal_occ_ioctl,
++	.owner		= THIS_MODULE,
 +};
 +
-+static struct psr_attr *psr_attrs;
-+static struct kobject *psr_kobj;
++static struct miscdevice occ_dev = {
++	.minor	= MISC_DYNAMIC_MINOR,
++	.name	= "occ",
++	.fops	= &opal_occ_fops,
++};
 +
-+static ssize_t psr_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			char *buf)
++static int opal_occ_probe(struct platform_device *pdev)
 +{
-+	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
-+	struct opal_msg msg;
-+	int psr, ret, token;
-+
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		pr_devel("Failed to get token\n");
-+		return token;
-+	}
-+
-+	mutex_lock(&psr_mutex);
-+	ret = opal_get_power_shifting_ratio(psr_attr->handle, token, &psr);
-+	switch (ret) {
-+	case OPAL_ASYNC_COMPLETION:
-+		ret = opal_async_wait_response(token, &msg);
-+		if (ret) {
-+			pr_devel("Failed to wait for the async response %d\n",
-+				 ret);
-+			goto out;
-+		}
-+		ret = opal_error_code(opal_get_async_rc(msg));
-+		if (!ret)
-+			ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
-+		break;
-+	case OPAL_SUCCESS:
-+		ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
-+		break;
-+	default:
-+		ret = opal_error_code(ret);
-+	}
-+
-+out:
-+	mutex_unlock(&psr_mutex);
-+	opal_async_release_token(token);
-+	return ret;
++	return misc_register(&occ_dev);
 +}
 +
-+static ssize_t psr_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			 const char *buf, size_t count)
++static int opal_occ_remove(struct platform_device *pdev)
 +{
-+	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
-+	struct opal_msg msg;
-+	int psr, ret, token;
-+
-+	ret = sscanf(buf, "%u", &psr);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		pr_devel("Failed to get token\n");
-+		return token;
-+	}
-+
-+	mutex_lock(&psr_mutex);
-+	ret = opal_set_power_shifting_ratio(psr_attr->handle, token, psr);
-+	switch (ret) {
-+	case OPAL_ASYNC_COMPLETION:
-+		ret = opal_async_wait_response(token, &msg);
-+		if (ret) {
-+			pr_devel("Failed to wait for the async response %d\n",
-+				 ret);
-+			goto out;
-+		}
-+		ret = opal_error_code(opal_get_async_rc(msg));
-+		if (!ret)
-+			ret = count;
-+		break;
-+	case OPAL_SUCCESS:
-+		ret = count;
-+		break;
-+	default:
-+		ret = opal_error_code(ret);
-+	}
-+
-+out:
-+	mutex_unlock(&psr_mutex);
-+	opal_async_release_token(token);
-+
-+	return ret;
++	misc_deregister(&occ_dev);
++	return 0;
 +}
 +
-+void __init opal_psr_init(void)
-+{
-+	struct device_node *psr, *node;
-+	int psr_attr_count = 0, i = 0;
++static const struct of_device_id opal_occ_match[] = {
++	{ .compatible = "ibm,opal-occ-sensor-group" },
++	{ },
++};
 +
-+	psr = of_find_node_by_path("/ibm,opal/power-mgt/psr");
-+	if (!psr) {
-+		pr_devel("/ibm,opal/power-mgt/psr node not found\n");
-+		return;
-+	}
++static struct platform_driver opal_occ_driver = {
++	.driver = {
++		.name           = "opal-occ",
++		.of_match_table = opal_occ_match,
++	},
++	.probe	= opal_occ_probe,
++	.remove	= opal_occ_remove,
++};
 +
-+	for_each_child_of_node(psr, node)
-+		psr_attr_count++;
++module_platform_driver(opal_occ_driver);
 +
-+	psr_attrs = kcalloc(psr_attr_count, sizeof(struct psr_attr),
-+			    GFP_KERNEL);
-+	if (!psr_attrs)
-+		return;
-+
-+	for_each_child_of_node(psr, node) {
-+		if (of_property_read_u32(node, "handle",
-+					 &psr_attrs[i].handle))
-+			goto out;
-+
-+		sysfs_attr_init(&psr_attrs[i].attr.attr);
-+		if (of_property_read_string(node, "label",
-+					    &psr_attrs[i].attr.attr.name))
-+			goto out;
-+		psr_attrs[i].attr.attr.mode = 0664;
-+		psr_attrs[i].attr.show = psr_show;
-+		psr_attrs[i].attr.store = psr_store;
-+		i++;
-+	}
-+
-+	psr_kobj = kobject_create_and_add("psr", opal_kobj);
-+	if (!psr_kobj) {
-+		pr_warn("Failed to create psr kobkect\n");
-+		goto out;
-+	}
-+
-+	for (i = 0; i < psr_attr_count; i++)
-+		if (sysfs_create_file(psr_kobj, &psr_attrs[i].attr.attr)) {
-+			pr_devel("Failed to create sysfs file %s\n",
-+				 psr_attrs[i].attr.attr.name);
-+			goto out_kobj;
-+		}
-+
-+	return;
-+out_kobj:
-+	kobject_put(psr_kobj);
-+out:
-+	kfree(psr_attrs);
-+}
++MODULE_DESCRIPTION("PowerNV OPAL-OCC driver");
++MODULE_LICENSE("GPL");
 diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index eff5fe7..9867726 100644
+index 9867726..aae48ed 100644
 --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
 +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -312,3 +312,5 @@ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
- OPAL_CALL(opal_npu_map_lpar,			OPAL_NPU_MAP_LPAR);
- OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
+@@ -314,3 +314,4 @@ OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
  OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
-+OPAL_CALL(opal_get_power_shifting_ratio,	OPAL_GET_PSR);
-+OPAL_CALL(opal_set_power_shifting_ratio,	OPAL_SET_PSR);
+ OPAL_CALL(opal_get_power_shifting_ratio,	OPAL_GET_PSR);
+ OPAL_CALL(opal_set_power_shifting_ratio,	OPAL_SET_PSR);
++OPAL_CALL(opal_clear_sensor_groups,		OPAL_CLEAR_SENSOR_GROUPS);
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index d893cba..f34033f 100644
+index f34033f..9fc4a47 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -839,6 +839,9 @@ static int __init opal_init(void)
- 	/* Initialise OPAL powercap interface */
- 	opal_powercap_init();
+@@ -842,6 +842,9 @@ static int __init opal_init(void)
+ 	/* Initialise OPAL Power-Shifting-Ratio interface */
+ 	opal_psr_init();
  
-+	/* Initialise OPAL Power-Shifting-Ratio interface */
-+	opal_psr_init();
++	/* Initialize platform device: OCC interface */
++	opal_pdev_init("ibm,opal-occ-sensor-group");
 +
  	return 0;
  }
