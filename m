@@ -2,15 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4N120QnzDrLj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:50:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4N510XFzDrM9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:50:28 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 05/24] powerpc/mm: Update bits used to skip hash_page
-Date: Wed, 19 Jul 2017 14:49:27 +1000
-Message-Id: <20170719044946.22030-5-benh@kernel.crashing.org>
+Subject: [PATCH 03/24] powerpc/6xx: Handle DABR match before calling
+ do_page_fault
+Date: Wed, 19 Jul 2017 14:49:25 +1000
+Message-Id: <20170719044946.22030-3-benh@kernel.crashing.org>
 In-Reply-To: <20170719044946.22030-1-benh@kernel.crashing.org>
 References: <20170719044946.22030-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,57 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We test a number of bits from DSISR/SRR1 before deciding
-to call hash_page(). If any of these is set, we go directly
-to do_page_fault() as the bit indicate a fault that needs
-to be handled there (no hashing needed).
-
-This updates the current open-coded masks to use the new
-DSISR definitions.
-
-This *does* change the masks actually used in two ways:
-
- - We used to test various bits that were defined as "always 0"
-in the architecture and could be repurposed for something
-else. From now on, we just ignore such bits.
-
- - We were missing some new bits defined on P9
+On legacy 6xx 32-bit procesors, we checked for the DABR match bit
+in DSISR from do_page_fault(), in the middle of a pile of ifdef's
+because all other CPU types do it in assembly prior to calling
+do_page_fault. Fix that.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 6 ++++--
- arch/powerpc/kernel/head_32.S        | 2 +-
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 11 +++++++++++
+ arch/powerpc/mm/fault.c        |  9 ---------
+ 2 files changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index e6d8354d79ef..0e6aedd7066d 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1477,8 +1477,10 @@ USE_TEXT_SECTION()
-  */
- 	.balign	IFETCH_ALIGN_BYTES
- do_hash_page:
--#ifdef CONFIG_PPC_STD_MMU_64
--	andis.	r0,r4,0xa450		/* weird error? */
-+	#ifdef CONFIG_PPC_STD_MMU_64
-+	lis	r0,DSISR_BAD_FAULT_64S@h
-+	ori	r0,r0,DSISR_BAD_FAULT_64S@l
-+	and.	r0,r4,r0		/* weird error? */
- 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
- 	CURRENT_THREAD_INFO(r11, r1)
- 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index f11d1cd6e314..86ad3eeadf67 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -388,7 +388,7 @@ DataAccess:
- 	EXCEPTION_PROLOG
- 	mfspr	r10,SPRN_DSISR
- 	stw	r10,_DSISR(r11)
--	andis.	r0,r10,0xa470		/* weird error? */
-+	andis.	r0,r10,DSISR_BAD_FAULT_32S@h
- 	bne	1f			/* if not, try to put a PTE */
- 	mfspr	r4,SPRN_DAR		/* into the hash table */
- 	rlwinm	r3,r10,32-15,21,21	/* DSISR_STORE -> _PAGE_RW */
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 8587059ad848..7331df033804 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -586,6 +586,8 @@ ppc_swapcontext:
+ handle_page_fault:
+ 	stw	r4,_DAR(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
++	andis.  r0,r5,DSISR_DABRMATCH@h
++	bne-    handle_dabr_fault
+ 	bl	do_page_fault
+ 	cmpwi	r3,0
+ 	beq+	ret_from_except
+@@ -599,6 +601,15 @@ handle_page_fault:
+ 	bl	bad_page_fault
+ 	b	ret_from_except_full
+ 
++	/* We have a data breakpoint exception - handle it */
++handle_dabr_fault:
++	SAVE_NVGPRS(r1)
++	lwz	r0,_TRAP(r1)
++	clrrwi	r0,r0,1
++	stw	r0,_TRAP(r1)
++	bl      do_break
++	b	ret_from_except_full
++
+ /*
+  * This routine switches between two different tasks.  The process
+  * state of one is saved on its kernel stack.  Then the state
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index f04bc9f6b134..f257965b54b5 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -242,15 +242,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		goto bail;
+ 	}
+ 
+-#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE) || \
+-      defined(CONFIG_PPC_BOOK3S_64) || defined(CONFIG_PPC_8xx))
+-  	if (error_code & DSISR_DABRMATCH) {
+-		/* breakpoint match */
+-		do_break(regs, address, error_code);
+-		goto bail;
+-	}
+-#endif
+-
+ 	/* We restore the interrupt state now */
+ 	if (!arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
 -- 
 2.13.3
