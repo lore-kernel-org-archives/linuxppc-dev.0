@@ -2,15 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4N86R8HzDrM8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:50:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4NF2T3szDrLr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:50:37 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 04/24] powerpc/mm: Update definitions of DSISR bits
-Date: Wed, 19 Jul 2017 14:49:26 +1000
-Message-Id: <20170719044946.22030-4-benh@kernel.crashing.org>
+Subject: [PATCH 06/24] powerpc/mm: Use symbolic constants for filtering SRR1
+ bits on ISIs
+Date: Wed, 19 Jul 2017 14:49:28 +1000
+Message-Id: <20170719044946.22030-6-benh@kernel.crashing.org>
 In-Reply-To: <20170719044946.22030-1-benh@kernel.crashing.org>
 References: <20170719044946.22030-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,123 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This updates the definitions for the various DSISR bits to
-match both some historical stuff and to match new bits on
-POWER9.
-
-In addition, we define some masks corresponding to the "bad"
-faults on Book3S, and some masks corresponding to the bits
-that match between DSISR and SRR1 for a DSI and an ISI.
-
-This comes with a small code update to change the definition
-of DSISR_PGDIRFAULT which becomes DSISR_PRTABLE_FAULT to
-match architecture 3.0B
+This uses the newly defined constants for this rather than open-coded
+numbers. There is a side effect on 64-bit which is to pass through
+some of the new P9 bits which we didn't before.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/reg.h         | 69 +++++++++++++++++++++++++++++-----
- arch/powerpc/kvm/book3s_64_mmu_radix.c |  4 +-
- 2 files changed, 61 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 2 +-
+ arch/powerpc/kernel/head_32.S        | 4 ++--
+ arch/powerpc/kernel/head_8xx.S       | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index a3b6575c7842..73be2f71dbbb 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -272,16 +272,65 @@
- #define SPRN_DAR	0x013	/* Data Address Register */
- #define SPRN_DBCR	0x136	/* e300 Data Breakpoint Control Reg */
- #define SPRN_DSISR	0x012	/* Data Storage Interrupt Status Register */
--#define   DSISR_NOHPTE		0x40000000	/* no translation found */
--#define   DSISR_PROTFAULT	0x08000000	/* protection fault */
--#define   DSISR_BADACCESS	0x04000000	/* bad access to CI or G */
--#define   DSISR_ISSTORE		0x02000000	/* access was a store */
--#define   DSISR_DABRMATCH	0x00400000	/* hit data breakpoint */
--#define   DSISR_NOSEGMENT	0x00200000	/* SLB miss */
--#define   DSISR_KEYFAULT	0x00200000	/* Key fault */
--#define   DSISR_UNSUPP_MMU	0x00080000	/* Unsupported MMU config */
--#define   DSISR_SET_RC		0x00040000	/* Failed setting of R/C bits */
--#define   DSISR_PGDIRFAULT      0x00020000      /* Fault on page directory */
-+#define   DSISR_BAD_DIRECT_ST	0x80000000 /* Obsolete: Direct store error */
-+#define   DSISR_NOHPTE		0x40000000 /* no translation found */
-+#define   DSISR_ATTR_CONFLICT	0x20000000 /* P9: Process vs. Partition attr */
-+#define   DSISR_NOEXEC_OR_G	0x10000000 /* Alias of SRR1 bit, see below */
-+#define   DSISR_PROTFAULT	0x08000000 /* protection fault */
-+#define   DSISR_BADACCESS	0x04000000 /* bad access to CI or G */
-+#define   DSISR_ISSTORE		0x02000000 /* access was a store */
-+#define   DSISR_DABRMATCH	0x00400000 /* hit data breakpoint */
-+#define   DSISR_NOSEGMENT	0x00200000 /* STAB miss (unsupported) */
-+#define   DSISR_KEYFAULT	0x00200000 /* Storage Key fault */
-+#define   DSISR_BAD_EXT_CTRL	0x00100000 /* Obsolete: External ctrl error */
-+#define   DSISR_UNSUPP_MMU	0x00080000 /* P9: Unsupported MMU config */
-+#define   DSISR_SET_RC		0x00040000 /* P9: Failed setting of R/C bits */
-+#define   DSISR_PRTABLE_FAULT   0x00020000 /* P9: Fault on process table */
-+#define   DSISR_ICSWX_NO_CT     0x00004000 /* P7: icswx unavailable cp type */
-+#define   DSISR_BAD_COPYPASTE   0x00000008 /* P9: Copy/Paste on wrong memtype */
-+#define   DSISR_BAD_AMO		0x00000004 /* P9: Incorrect AMO opcode */
-+#define   DSISR_BAD_CI_LDST	0x00000002 /* P8: Bad HV CI load/store */
-+
-+/*
-+ * DSISR_NOEXEC_OR_G doesn't actually exist. This bit is always
-+ * 0 on DSIs. However, on ISIs, the corresponding bit in SRR1
-+ * indicates an attempt at executing from a no-execute PTE
-+ * or segment or from a guarded page.
-+ *
-+ * We add a definition here for completeness as we alias
-+ * DSISR and SRR1 in do_page_fault.
-+ */
-+
-+/*
-+ * DSISR bits that are treated as a fault. Any bit set
-+ * here will skip hash_page, and cause do_page_fault to
-+ * trigger a SIGBUS or SIGSEGV:
-+ */
-+#define   DSISR_BAD_FAULT_32S	(DSISR_BAD_DIRECT_ST	| \
-+				 DSISR_BADACCESS	| \
-+				 DSISR_BAD_EXT_CTRL)
-+#define	  DSISR_BAD_FAULT_64S	(DSISR_BAD_FAULT_32S	| \
-+				 DSISR_ATTR_CONFLICT	| \
-+				 DSISR_KEYFAULT		| \
-+				 DSISR_UNSUPP_MMU	| \
-+				 DSISR_PRTABLE_FAULT	| \
-+				 DSISR_ICSWX_NO_CT	| \
-+				 DSISR_BAD_COPYPASTE	| \
-+				 DSISR_BAD_AMO		| \
-+				 DSISR_BAD_CI_LDST)
-+/*
-+ * These bits are equivalent in SRR1 and DSISR for 0x400
-+ * instruction access interrupts on Book3S
-+ */
-+#define   DSISR_SRR1_MATCH_32S	(DSISR_NOHPTE		| \
-+				 DSISR_NOEXEC_OR_G	| \
-+				 DSISR_PROTFAULT)
-+#define   DSISR_SRR1_MATCH_64S	(DSISR_SRR1_MATCH_32S	| \
-+				 DSISR_KEYFAULT		| \
-+				 DSISR_UNSUPP_MMU	| \
-+				 DSISR_SET_RC		| \
-+				 DSISR_PRTABLE_FAULT)
-+
- #define SPRN_TBRL	0x10C	/* Time Base Read Lower Register (user, R/O) */
- #define SPRN_TBRU	0x10D	/* Time Base Read Upper Register (user, R/O) */
- #define SPRN_CIR	0x11B	/* Chip Information Register (hyper, R/0) */
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index f6b3e67c5762..6d677c79eeb1 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -322,13 +322,13 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	gpa = vcpu->arch.fault_gpa & ~0xfffUL;
- 	gpa &= ~0xF000000000000000ul;
- 	gfn = gpa >> PAGE_SHIFT;
--	if (!(dsisr & DSISR_PGDIRFAULT))
-+	if (!(dsisr & DSISR_PRTABLE_FAULT))
- 		gpa |= ea & 0xfff;
- 	memslot = gfn_to_memslot(kvm, gfn);
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 0e6aedd7066d..3e447e017da2 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -541,7 +541,7 @@ EXC_COMMON_BEGIN(instruction_access_common)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	ld	r12,_MSR(r1)
+ 	ld	r3,_NIP(r1)
+-	andis.	r4,r12,0x5820
++	andis.	r4,r12,DSISR_BAD_FAULT_64S@h
+ 	li	r5,0x400
+ 	std	r3,_DAR(r1)
+ 	std	r4,_DSISR(r1)
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 86ad3eeadf67..463c78286b66 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -403,13 +403,13 @@ DataAccess:
+ 	DO_KVM  0x400
+ InstructionAccess:
+ 	EXCEPTION_PROLOG
+-	andis.	r0,r9,0x4000		/* no pte found? */
++	andis.	r0,r9,SRR1_ISI_NOPT@h	/* no pte found? */
+ 	beq	1f			/* if so, try to put a PTE */
+ 	li	r3,0			/* into the hash table */
+ 	mr	r4,r12			/* SRR0 is fault address */
+ 	bl	hash_page
+ 1:	mr	r4,r12
+-	andis.	r5,r9,0x4820		/* Filter relevant SRR1 bits */
++	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
  
- 	/* No memslot means it's an emulated MMIO region */
- 	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID)) {
--		if (dsisr & (DSISR_PGDIRFAULT | DSISR_BADACCESS |
-+		if (dsisr & (DSISR_PRTABLE_FAULT | DSISR_BADACCESS |
- 			     DSISR_SET_RC)) {
- 			/*
- 			 * Bad address in guest page table tree, or other
+ /* External interrupt */
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index da3afa2c1658..07ddced6bab3 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -569,8 +569,8 @@ _ENTRY(DTLBMiss_jmp)
+ InstructionTLBError:
+ 	EXCEPTION_PROLOG
+ 	mr	r4,r12
+-	andis.	r5,r9,0x4820		/* Filter relevant SRR1 bits */
+-	andis.	r10,r9,0x4000
++	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
++	andis.	r10,r9,SRR1_ISI_NOPT@h
+ 	beq+	1f
+ 	tlbie	r4
+ itlbie:
 -- 
 2.13.3
