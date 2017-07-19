@@ -1,23 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCGfr6QVYzDrW6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 22:33:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: James Morse <james.morse@arm.com>,
- Zhou Chengming <zhouchengming1@huawei.com>
-Cc: linux-kernel@vger.kernel.org, Andrey Vagin <avagin@openvz.org>,
- Roland McGrath <roland@hack.frob.com>, Oleg Nesterov <oleg@redhat.com>,
- Yury Norov <ynorov@caviumnetworks.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] ptrace: Add compat PTRACE_{G,S}ETSIGMASK handlers
-In-Reply-To: <596CDDB1.8010502@arm.com>
-References: <20170629162637.10676-1-james.morse@arm.com>
- <87k2371i68.fsf@concordia.ellerman.id.au> <596CDDB1.8010502@arm.com>
-Date: Wed, 19 Jul 2017 22:33:55 +1000
-Message-ID: <87379sip1o.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCGt11QN9zDrWD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 22:43:36 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6JCfcmI104685
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 08:43:34 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bssry88me-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 08:43:34 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 19 Jul 2017 08:43:33 -0400
+Date: Wed, 19 Jul 2017 18:13:28 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v2 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
+ stop4 cpuidle
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1500452107.git.ego@linux.vnet.ibm.com>
+ <d4dfb8e8daca3af2a2451c6f39f7352852c51f48.1500452107.git.ego@linux.vnet.ibm.com>
+ <20170719190323.42a0c509@roar.ozlabs.ibm.com>
+ <8760eoiqae.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8760eoiqae.fsf@concordia.ellerman.id.au>
+Message-Id: <20170719124328.GB30836@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,79 +48,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-James Morse <james.morse@arm.com> writes:
+Hi Nicholas, Michael,
 
-> Hi Michael,
->
-> On 17/07/17 11:17, Michael Ellerman wrote:
->> James Morse <james.morse@arm.com> writes:
->>> compat_ptrace_request() lacks handlers for PTRACE_{G,S}ETSIGMASK,
->>> instead using those in ptrace_request(). The compat variant should
->>> read a compat_sigset_t from userspace instead of ptrace_request()s
->>> sigset_t.
->>>
->>> While compat_sigset_t is the same size as sigset_t, it is defined as
->>> 2xu32, instead of a single u64. On a big-endian CPU this means that
->>> compat_sigset_t is passed to user-space using middle-endianness,
->>> where the least-significant u32 is written most significant byte
->>> first.
->>>
->>> If ptrace_request()s code is used userspace will read the most
->>> significant u32 where it expected the least significant.
->> 
->> But that's what the code has done since 2013.
->
->> So won't changing this break userspace that has been written to work
->> around that bug?
->
-> Wouldn't the same program then be broken when run natively instead? To work
-> around it userspace would have to know it was running under compat instead of
-> natively.
+On Wed, Jul 19, 2017 at 10:07:05PM +1000, Michael Ellerman wrote:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> >> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> >> index a7b5af3..0262283 100644
+> >> --- a/arch/powerpc/kernel/asm-offsets.c
+> >> +++ b/arch/powerpc/kernel/asm-offsets.c
+> >> @@ -743,6 +743,18 @@ int main(void)
+> >>  	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
+> >>  	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
+> >>  	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
+> >> +
+> >> +	OFFSET(PACA_PID, paca_struct, stop_spr_save_area[0]);
+> >> +	OFFSET(PACA_LDBAR, paca_struct, stop_spr_save_area[1]);
+> >> +	OFFSET(PACA_FSCR, paca_struct, stop_spr_save_area[2]);
+> >> +	OFFSET(PACA_HFSCR, paca_struct, stop_spr_save_area[3]);
+> >> +
+> >> +	/* On POWER9, we are already saving MMCR0 for ESL=EC=1 */
+> >> +	OFFSET(PACA_MMCRA, paca_struct, stop_spr_save_area[4]);
+> >> +	OFFSET(PACA_MMCR1, paca_struct, stop_spr_save_area[5]);
+> >> +	OFFSET(PACA_MMCR2, paca_struct, stop_spr_save_area[6]);
+> >
+> > Don't these offset names go against convention?
+> >
+> > Look at e.g., how PACA_EXGEN is used. I would prefer using that
+> > convention. You could make the name slightly shorter too, e.g.,
+> > just stop_sprs or so.
+> 
+> Yes please.
+> 
+> If I see PACA_MMCRA I'm expecting that's paca->mmcra.
 
-True, it would be a mess to make it work in all cases. But that doesn't
-mean someone hasn't done it :)
+Ah, ok. I will fix this. 
 
-> This only affects this exotic ptrace API for big-endian compat users. I think
-> there are so few users that no-one has noticed its broken.
+> 
+> Also if the same values always go in the same place then please use a
+> proper struct, rather than an array. ie.
 >
-> I'm only aware of CRIU using this[0], and it doesn't look like powerpc has to
-> support compat-criu users:
-> https://github.com/xemul/criu/tree/master/compel/arch
-> only has a ppc64 entry, for which
-> https://github.com/xemul/criu/blob/master/compel/arch/ppc64/plugins/include/asm/syscall-types.h
-> puts 'bits per word' as 64, I don't think it supports ppc32, which is where this
-> bug would be seen.
->
->
->> Or do we think nothing actually uses it in the wild and
->> we can get away with it?
->
-> I think only Zhou Chengming has hit this, and there is no 'in the wild' code
-> that actually inspects the buffer returned by the call.
->
-> Zhou, were you using criu on big-endian ilp32 when you found this? Or was it
-> some other project that uses this API..
-> (ilp32 is a second user of compat on arm64)
-...
->
-> [0]
-> The commit message that added this code points to CRIU and GDB. GDB doesn't use
-> this API. Debian's codesearch (which obviously isn't exhaustive) only finds CRIU
-> and systemtap making these calls.
->
-> It looks like criu just save/restores the sigset_t as a blob:
-> https://sources.debian.net/src/criu/2.12.1-2/criu/parasite-syscall.c/?hl=92#L92
->
-> It's sigset_t helpers aren't aware of this bug:
-> https://github.com/xemul/criu/blob/master/compel/include/uapi/ksigset.h
->
-> Systemtap just makes some calls as part of a self test:
-> https://sources.debian.net/src/systemtap/3.1-2/testsuite/systemtap.syscall/ptrace.c/?hl=198#L198
 
-OK, that's pretty comprehensive.
+Ok, I will add the struct instead of a array.
 
-You should just mention in the changelog that yes this breaks ABI but we
-don't believe there are any users that will be affected, and the broken
-behaviour is not easy to workaround in userspace.
-
-cheers
+> struct stop_sprs
+> {
+> 	u64 pid;
+>         u64 ldbar;
+>         ...
+> }
+> 
+> cheers
+> 
+--
+Thanks and Regards
+gautham.
