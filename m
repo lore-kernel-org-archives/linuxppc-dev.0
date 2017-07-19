@@ -1,28 +1,23 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
- [IPv6:2607:f8b0:400e:c05::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0078.outbound.protection.outlook.com [104.47.1.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC6n13nr6zDrTG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 16:38:45 +1000 (AEST)
-Received: by mail-pg0-x22a.google.com with SMTP id k14so25731939pgr.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 23:38:45 -0700 (PDT)
-Date: Wed, 19 Jul 2017 12:08:40 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Rob Herring <robh@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Patrice Chotard <patrice.chotard@st.com>, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- kernel@stlinux.com
-Subject: Re: [PATCH] cpufreq: Convert to using %pOF instead of full_name
-Message-ID: <20170719063840.GD352@vireshk-i7>
-References: <20170718214339.7774-14-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC6vm3V63zDrTn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 16:44:36 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Valentin Longchamp <valentin.longchamp@keymile.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: "oss@buserror.net" <oss@buserror.net>
+Subject: RE: [PATCH 2/3] soc/fsl/qe: only apply QE_General4 workaround on
+ affected SoCs
+Date: Wed, 19 Jul 2017 06:44:30 +0000
+Message-ID: <AM3PR04MB11856946C0C3F88260E039CF91A60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1487327387-26370-1-git-send-email-valentin.longchamp@keymile.com>
+ <1487327387-26370-3-git-send-email-valentin.longchamp@keymile.com>
+In-Reply-To: <1487327387-26370-3-git-send-email-valentin.longchamp@keymile.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170718214339.7774-14-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,67 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18-07-17, 16:42, Rob Herring wrote:
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Patrice Chotard <patrice.chotard@st.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: kernel@stlinux.com
-> ---
->  drivers/cpufreq/pmac64-cpufreq.c | 2 +-
->  drivers/cpufreq/sti-cpufreq.c    | 8 ++++----
->  2 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-> index 267e0894c62d..be623dd7b9f2 100644
-> --- a/drivers/cpufreq/pmac64-cpufreq.c
-> +++ b/drivers/cpufreq/pmac64-cpufreq.c
-> @@ -516,7 +516,7 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpunode)
->  		goto bail;
->  	}
-> 
-> -	DBG("cpufreq: i2c clock chip found: %s\n", hwclock->full_name);
-> +	DBG("cpufreq: i2c clock chip found: %pOF\n", hwclock);
-> 
->  	/* Now get all the platform functions */
->  	pfunc_cpu_getfreq =
-> diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
-> index d2d0430d09d4..47105735df12 100644
-> --- a/drivers/cpufreq/sti-cpufreq.c
-> +++ b/drivers/cpufreq/sti-cpufreq.c
-> @@ -65,8 +65,8 @@ static int sti_cpufreq_fetch_major(void) {
->  	ret = of_property_read_u32_index(np, "st,syscfg",
->  					 MAJOR_ID_INDEX, &major_offset);
->  	if (ret) {
-> -		dev_err(dev, "No major number offset provided in %s [%d]\n",
-> -			np->full_name, ret);
-> +		dev_err(dev, "No major number offset provided in %pOF [%d]\n",
-> +			np, ret);
->  		return ret;
->  	}
-> 
-> @@ -92,8 +92,8 @@ static int sti_cpufreq_fetch_minor(void)
->  					 MINOR_ID_INDEX, &minor_offset);
->  	if (ret) {
->  		dev_err(dev,
-> -			"No minor number offset provided %s [%d]\n",
-> -			np->full_name, ret);
-> +			"No minor number offset provided %pOF [%d]\n",
-> +			np, ret);
->  		return ret;
->  	}
+Hi Valentin,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch you added make the compiling issue on armv8.
+Could you send another patch to resolve it?
 
--- 
-viresh
+CC      drivers/soc/samsung/pm_domains.o
+  CC      drivers/soc/sunxi/sunxi_sram.o
+  CC      drivers/soc/renesas/rcar-rst.o
+  CC      drivers/soc/fsl/qe/qe_io.o
+drivers/soc/fsl/qe/qe.c: In function 'qe_setbrg':
+drivers/soc/fsl/qe/qe.c:248:2: error: implicit declaration of function 'pvr=
+_version_is' [-Werror=3Dimplicit-function-declaration]
+  if (pvr_version_is(PVR_VER_836x) || pvr_version_is(PVR_VER_832x))
+  ^
+  CC      drivers/soc/fsl/qe/ucc.o
+  CC      drivers/soc/renesas/rcar-sysc.o
+  CHK     kernel/config_data.h
+cc1: some warnings being treated as errors
+  CC      drivers/soc/tegra/fuse/fuse-tegra.o
+  LD      drivers/soc/rockchip/built-in.o
+  CC      drivers/soc/tegra/fuse/fuse-tegra30.o
+scripts/Makefile.build:302: recipe for target 'drivers/soc/fsl/qe/qe.o' fai=
+led
+make[4]: *** [drivers/soc/fsl/qe/qe.o] Error 1
+
+-----Original Message-----
+From: Valentin Longchamp [mailto:valentin.longchamp@keymile.com]=20
+Sent: Friday, February 17, 2017 6:30 PM
+To: linuxppc-dev@lists.ozlabs.org; Qiang Zhao <qiang.zhao@nxp.com>
+Cc: oss@buserror.net; Valentin Longchamp <valentin.longchamp@keymile.com>
+Subject: [PATCH 2/3] soc/fsl/qe: only apply QE_General4 workaround on affec=
+ted SoCs
+
+The QE_General4 workaround is only valid for the MPC832x and MPC836x SoCs. =
+The other SoCs that embed a QUICC engine are not affected by this hardware =
+bug and thus can use the computed divisors (this was successfully tested on=
+ the T1040).
+
+Similalry to what was done in commit 8ce795cb0c6b ("i2c: mpc: assign the co=
+rrect prescaler from SVR") in order to avoid changes in the device tree nod=
+es of the QE (with maybe a variant of the compatible property), the PVR reg=
+ is read out to find out if the workaround must be applied or not.
+
+Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+---
+ drivers/soc/fsl/qe/qe.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c index 03874d=
+f..b66157fc 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -202,6 +202,9 @@ unsigned int qe_get_brg_clk(void)  }  EXPORT_SYMBOL(qe_=
+get_brg_clk);
+=20
++#define PVR_VER_836x	0x8083
++#define PVR_VER_832x	0x8084
++
+ /* Program the BRG to the given sampling rate and multiplier
+  *
+  * @brg: the BRG, QE_BRG1 - QE_BRG16
+@@ -228,8 +231,9 @@ int qe_setbrg(enum qe_clock brg, unsigned int rate, uns=
+igned int multiplier)
+ 	/* Errata QE_General4, which affects some MPC832x and MPC836x SOCs, says
+ 	   that the BRG divisor must be even if you're not using divide-by-16
+ 	   mode. */
+-	if (!div16 && (divisor & 1) && (divisor > 3))
+-		divisor++;
++	if (pvr_version_is(PVR_VER_836x) || pvr_version_is(PVR_VER_832x))
++		if (!div16 && (divisor & 1) && (divisor > 3))
++			divisor++;
+=20
+ 	tempval =3D ((divisor - 1) << QE_BRGC_DIVISOR_SHIFT) |
+ 		QE_BRGC_ENABLE | div16;
+--
+1.8.3.1
