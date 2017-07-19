@@ -2,15 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4MQ4m8NzDrMY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:49:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4Mb06fxzDrMZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:50:02 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 2/4] powerpc/mm/radix: Improve TLB/PWC flushes
-Date: Wed, 19 Jul 2017 14:49:05 +1000
-Message-Id: <20170719044907.21703-2-benh@kernel.crashing.org>
+Subject: [PATCH v2 3/4] powerpc/mm/radix: Avoid flushing the PWC on every
+ flush_tlb_range
+Date: Wed, 19 Jul 2017 14:49:06 +1000
+Message-Id: <20170719044907.21703-3-benh@kernel.crashing.org>
 In-Reply-To: <20170719044907.21703-1-benh@kernel.crashing.org>
 References: <20170719044907.21703-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,198 +23,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment we have to rather sub-optimal flushing behaviours:
-
- - flush_tlb_mm() will flush the PWC which is unnecessary (for example
-   when doing a fork)
-
- - A large unmap will call flush_tlb_pwc() multiple times causing us
-   to perform that fairly expensive operation repeatedly. This happens
-   often in batches of 3 on every new process.
-
-So we change flush_tlb_mm() to only flush the TLB, and we use the
-existing "need_flush_all" flag in struct mmu_gather to indicate
-that the PWC needs flushing.
-
-Unfortunately, flush_tlb_range() still needs to do a full flush
-for now as it's used by the THP collapsing. We will fix that later.
+We do that because it's used by THP pmd collapsing, so use
+instead a dedicated flush function.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  4 +-
- arch/powerpc/mm/tlb-radix.c                        | 66 +++++++++-------------
- 2 files changed, 28 insertions(+), 42 deletions(-)
+
+v2. Add missing #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+---
+ .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  1 +
+ arch/powerpc/mm/pgtable-radix.c                    |  5 ++-
+ arch/powerpc/mm/tlb-radix.c                        | 43 +++++++++++++++++++---
+ 3 files changed, 43 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-index cc7fbde4f53c..7196999cdc82 100644
+index 7196999cdc82..9b433a624bf3 100644
 --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
 +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-@@ -22,22 +22,20 @@ extern void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end
- 
- extern void radix__local_flush_tlb_mm(struct mm_struct *mm);
- extern void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
--extern void radix__local_flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
- extern void radix__local_flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 					      int psize);
- extern void radix__tlb_flush(struct mmu_gather *tlb);
- #ifdef CONFIG_SMP
- extern void radix__flush_tlb_mm(struct mm_struct *mm);
- extern void radix__flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
--extern void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
- extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 					int psize);
- #else
- #define radix__flush_tlb_mm(mm)		radix__local_flush_tlb_mm(mm)
- #define radix__flush_tlb_page(vma,addr)	radix__local_flush_tlb_page(vma,addr)
+@@ -36,6 +36,7 @@ extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmad
  #define radix__flush_tlb_page_psize(mm,addr,p) radix__local_flush_tlb_page_psize(mm,addr,p)
--#define radix__flush_tlb_pwc(tlb, addr)	radix__local_flush_tlb_pwc(tlb, addr)
  #endif
-+extern void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
+ extern void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
++extern void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr);
  extern void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
  				     unsigned long page_size);
  extern void radix__flush_tlb_lpid(unsigned long lpid);
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 8c13e4282308..02134c95a956 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -786,9 +786,12 @@ pmd_t radix__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addre
+ 	 */
+ 	pmd = *pmdp;
+ 	pmd_clear(pmdp);
++
+ 	/*FIXME!!  Verify whether we need this kick below */
+ 	kick_all_cpus_sync();
+-	flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
++
++	radix__flush_tlb_collapsed_pmd(vma->vm_mm, address);
++
+ 	return pmd;
+ }
+ 
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 2f2967a2db93..28f339cdd836 100644
+index 28f339cdd836..18151e9ad694 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -68,17 +68,6 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- 	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
- }
- 
--static inline void tlbiel_pwc(unsigned long pid)
--{
--	asm volatile("ptesync": : :"memory");
--
--	/* For PWC flush, we don't look at set number */
--	__tlbiel_pid(pid, 0, RIC_FLUSH_PWC);
--
--	asm volatile("ptesync": : :"memory");
--	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
--}
--
- static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- {
- 	unsigned long rb,rs,prs,r;
-@@ -149,31 +138,23 @@ void radix__local_flush_tlb_mm(struct mm_struct *mm)
- 	preempt_disable();
- 	pid = mm->context.id;
- 	if (pid != MMU_NO_CONTEXT)
--		_tlbiel_pid(pid, RIC_FLUSH_ALL);
-+		_tlbiel_pid(pid, RIC_FLUSH_TLB);
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__local_flush_tlb_mm);
- 
--void radix__local_flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
-+#ifndef CONFIG_SMP
-+static void radix__local_flush_all_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
--	struct mm_struct *mm = tlb->mm;
--	/*
--	 * If we are doing a full mm flush, we will do a tlb flush
--	 * with RIC_FLUSH_ALL later.
--	 */
--	if (tlb->fullmm)
--		return;
- 
- 	preempt_disable();
--
- 	pid = mm->context.id;
- 	if (pid != MMU_NO_CONTEXT)
--		tlbiel_pwc(pid);
--
-+		_tlbiel_pid(pid, RIC_FLUSH_ALL);
- 	preempt_enable();
- }
--EXPORT_SYMBOL(radix__local_flush_tlb_pwc);
-+#endif /* CONFIG_SMP */
- 
- void radix__local_flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 				       int psize)
-@@ -211,38 +192,35 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- 		goto no_context;
- 
- 	if (!mm_is_thread_local(mm))
--		_tlbie_pid(pid, RIC_FLUSH_ALL);
-+		_tlbie_pid(pid, RIC_FLUSH_TLB);
- 	else
--		_tlbiel_pid(pid, RIC_FLUSH_ALL);
-+		_tlbiel_pid(pid, RIC_FLUSH_TLB);
- no_context:
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__flush_tlb_mm);
- 
--void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
-+static void radix__flush_all_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
--	struct mm_struct *mm = tlb->mm;
- 
--	/*
--	 * If we are doing a full mm flush, we will do a tlb flush
--	 * with RIC_FLUSH_ALL later.
--	 */
--	if (tlb->fullmm)
--		return;
- 	preempt_disable();
--
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
- 		goto no_context;
- 
- 	if (!mm_is_thread_local(mm))
--		_tlbie_pid(pid, RIC_FLUSH_PWC);
-+		_tlbie_pid(pid, RIC_FLUSH_ALL);
- 	else
--		tlbiel_pwc(pid);
-+		_tlbiel_pid(pid, RIC_FLUSH_ALL);
- no_context:
- 	preempt_enable();
- }
-+
-+void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
-+{
-+	tlb->need_flush_all = 1;
-+}
- EXPORT_SYMBOL(radix__flush_tlb_pwc);
- 
- void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
-@@ -274,6 +252,8 @@ void radix__flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
- }
- EXPORT_SYMBOL(radix__flush_tlb_page);
- 
-+#else /* CONFIG_SMP */
-+#define radix__flush_all_mm radix__local_flush_all_mm
- #endif /* CONFIG_SMP */
- 
- void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end)
-@@ -291,7 +271,12 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- 
+@@ -272,11 +272,7 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
  {
  	struct mm_struct *mm = vma->vm_mm;
--	radix__flush_tlb_mm(mm);
-+
-+	/*
-+	 * This is currently used when collapsing THPs so we need to
-+	 * flush the PWC. We should fix this.
-+	 */
-+	radix__flush_all_mm(mm);
+ 
+-	/*
+-	 * This is currently used when collapsing THPs so we need to
+-	 * flush the PWC. We should fix this.
+-	 */
+-	radix__flush_all_mm(mm);
++	radix__flush_tlb_mm(mm);
  }
  EXPORT_SYMBOL(radix__flush_tlb_range);
  
-@@ -322,7 +307,10 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	 */
- 	if (psize != -1 && !tlb->fullmm && !tlb->need_flush_all)
- 		radix__flush_tlb_range_psize(mm, tlb->start, tlb->end, psize);
--	else
-+	else if (tlb->need_flush_all) {
-+		tlb->need_flush_all = 0;
-+		radix__flush_all_mm(mm);
-+	} else
- 		radix__flush_tlb_mm(mm);
+@@ -355,6 +351,43 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+ 	preempt_enable();
  }
  
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
++{
++	int local = mm_is_thread_local(mm);
++	unsigned long ap = mmu_get_ap(mmu_virtual_psize);
++	unsigned long pid, end;
++
++
++	pid = mm ? mm->context.id : 0;
++	if (unlikely(pid == MMU_NO_CONTEXT))
++		goto no_context;
++
++	/* 4k page size, just blow the world */
++	if (PAGE_SIZE == 0x1000) {
++		radix__flush_all_mm(mm);
++		return;
++	}
++
++	/* Otherwise first do the PWC */
++	if (local)
++		_tlbiel_pid(pid, RIC_FLUSH_PWC);
++	else
++		_tlbie_pid(pid, RIC_FLUSH_PWC);
++
++	/* Then iterate the pages */
++	end = addr + HPAGE_PMD_SIZE;
++	for (; addr < end; addr += PAGE_SIZE) {
++		if (local)
++			_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
++		else
++			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
++	}
++no_context:
++	preempt_enable();
++}
++#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
++
+ void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
+ 			      unsigned long page_size)
+ {
 -- 
 2.13.3
