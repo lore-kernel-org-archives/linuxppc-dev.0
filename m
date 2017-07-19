@@ -1,12 +1,12 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xBzw54kbKzDrKP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 11:29:25 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id d193so4848924pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 18:29:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xBzwC455pzDrL7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 11:29:31 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id z1so4871031pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 18:29:31 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
@@ -14,10 +14,10 @@ Cc: benh@kernel.crashing.org, z.liuxinliang@hisilicon.com,
  zourongrong@gmail.com, catalin.marinas@arm.com, will.deacon@arm.com,
  gabriele.paoloni@huawei.com, helgass@kernel.org, airlied@linux.ie,
  daniel.vetter@intel.com, alex.williamson@redhat.com,
- Daniel Axtens <dja@axtens.net>, Brian King <brking@linux.vnet.ibm.com>
-Subject: [PATCH 1/4] powerpc: simplify and fix VGA default device behaviour
-Date: Wed, 19 Jul 2017 11:28:34 +1000
-Message-Id: <20170719012839.20124-2-dja@axtens.net>
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH 2/4] vgaarb: allow non-legacy cards to be marked as default
+Date: Wed, 19 Jul 2017 11:28:35 +1000
+Message-Id: <20170719012839.20124-3-dja@axtens.net>
 In-Reply-To: <20170719012839.20124-1-dja@axtens.net>
 References: <20170719012839.20124-1-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,71 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some powerpc devices provide a PCI display that isn't picked up by
-the VGA arbiter, presumably because it doesn't support the PCI
-legacy VGA ranges.
+The VGA arbiter currently only selects a card as default if it can
+decode legacy I/O and memory ranges.
 
-Commit c2e1d84523ad ("powerpc: Set default VGA device") introduced
-an arch quirk to mark these devices as default to fix X autoconfig.
+However, on some architectures, legacy PCI resources are not used.
+This has lead to a powerpc quirk, and issues on arm64.
 
-The commit message stated that the patch:
+Allow architectures to select ARCH_WANT_VGA_ARB_FALLBACK.
+When that symbol is selected, add a PCI_FIXUP_CLASS_ENABLE hook,
+which will mark the first card that is enabled and that can control
+I/O and memory as the default card.
 
-    Ensures a default VGA is always set if a graphics adapter is present,
-    even if firmware did not initialize it. If more than one graphics
-    adapter is present, ensure the one initialized by firmware is set
-    as the default VGA device.
+Behaviour is unchanged unless arches opt-in by selecting the
+Kconfig option.
 
-The patch used the following test to decide whether or not to mark
-a device as default:
-
-  pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-  if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
-          vga_set_default_device(pdev);
-
-This doesn't seem like it works quite as intended. Because of the
-logical OR, the default device will be set in 2 cases:
-
- 1) if there is no default device
-OR
- 2) if this device has normal memory/IO decoding turned on
-
-This will work as intended if there is only one device, but if
-there are multiple devices, we may override the device the VGA
-arbiter picked.
-
-Instead, set a device as default if there is no default device AND
-this device decodes.
-
-This will not change behaviour on single-headed systems.
-
-Cc: Brian King <brking@linux.vnet.ibm.com>
 Signed-off-by: Daniel Axtens <dja@axtens.net>
-
 ---
+ drivers/gpu/vga/Kconfig  |  7 +++++++
+ drivers/gpu/vga/vgaarb.c | 21 +++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-Tested in TCG (the card provided by qemu doesn't automatically
-register with vgaarb, so the relevant code path has been tested)
-but I would appreciate any tests on real hardware.
----
- arch/powerpc/kernel/pci-common.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 341a7469cab8..c95fdda3a2dc 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1746,8 +1746,11 @@ static void fixup_vga(struct pci_dev *pdev)
- {
- 	u16 cmd;
+diff --git a/drivers/gpu/vga/Kconfig b/drivers/gpu/vga/Kconfig
+index 29437eabe095..1205c6cc1ff5 100644
+--- a/drivers/gpu/vga/Kconfig
++++ b/drivers/gpu/vga/Kconfig
+@@ -17,6 +17,13 @@ config VGA_ARB_MAX_GPUS
+ 	  Reserves space in the kernel to maintain resource locking for
+ 	  multiple GPUS.  The overhead for each GPU is very small.
  
++config ARCH_WANT_VGA_ARB_FALLBACK
++	bool
++	help
++	  Some architectures don't have a concept of "legacy" PCI addresses
++	  which the VGA arbiter relies on. Instead, they can fall back to
++	  selecting the first device that decodes memory and I/O.
++
+ config VGA_SWITCHEROO
+ 	bool "Laptop Hybrid Graphics - GPU switching support"
+ 	depends on X86
+diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
+index 76875f6299b8..2135b04759c5 100644
+--- a/drivers/gpu/vga/vgaarb.c
++++ b/drivers/gpu/vga/vgaarb.c
+@@ -1472,3 +1472,24 @@ static int __init vga_arb_device_init(void)
+ 	return rc;
+ }
+ subsys_initcall(vga_arb_device_init);
++
++#if defined(CONFIG_ARCH_WANT_VGA_ARB_FALLBACK)
++static void vga_arb_fallback_fixup(struct pci_dev *pdev)
++{
++	u16 cmd;
++
 +	if (vga_default_device())
 +		return;
 +
- 	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
--	if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
-+	if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
- 		vga_set_default_device(pdev);
- 
- }
++	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
++	if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
++		vgaarb_info(&pdev->dev, "[fallback]"
++			    " setting as default device\n");
++		vga_set_default_device(pdev);
++	}
++
++}
++DECLARE_PCI_FIXUP_CLASS_ENABLE(PCI_ANY_ID, PCI_ANY_ID,
++			       PCI_CLASS_DISPLAY_VGA, 8,
++			       vga_arb_fallback_fixup);
++#endif
 -- 
 2.11.0
