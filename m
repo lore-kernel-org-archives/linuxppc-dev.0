@@ -2,24 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCG3t4blXzDrW3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 22:07:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCGfr6QVYzDrW6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 22:33:56 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [v2 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
- stop4 cpuidle
-In-Reply-To: <20170719190323.42a0c509@roar.ozlabs.ibm.com>
-References: <cover.1500452107.git.ego@linux.vnet.ibm.com>
- <d4dfb8e8daca3af2a2451c6f39f7352852c51f48.1500452107.git.ego@linux.vnet.ibm.com>
- <20170719190323.42a0c509@roar.ozlabs.ibm.com>
-Date: Wed, 19 Jul 2017 22:07:05 +1000
-Message-ID: <8760eoiqae.fsf@concordia.ellerman.id.au>
+To: James Morse <james.morse@arm.com>,
+ Zhou Chengming <zhouchengming1@huawei.com>
+Cc: linux-kernel@vger.kernel.org, Andrey Vagin <avagin@openvz.org>,
+ Roland McGrath <roland@hack.frob.com>, Oleg Nesterov <oleg@redhat.com>,
+ Yury Norov <ynorov@caviumnetworks.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] ptrace: Add compat PTRACE_{G,S}ETSIGMASK handlers
+In-Reply-To: <596CDDB1.8010502@arm.com>
+References: <20170629162637.10676-1-james.morse@arm.com>
+ <87k2371i68.fsf@concordia.ellerman.id.au> <596CDDB1.8010502@arm.com>
+Date: Wed, 19 Jul 2017 22:33:55 +1000
+Message-ID: <87379sip1o.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,101 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+James Morse <james.morse@arm.com> writes:
 
-> On Wed, 19 Jul 2017 13:48:49 +0530
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+> Hi Michael,
 >
->> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> On 17/07/17 11:17, Michael Ellerman wrote:
+>> James Morse <james.morse@arm.com> writes:
+>>> compat_ptrace_request() lacks handlers for PTRACE_{G,S}ETSIGMASK,
+>>> instead using those in ptrace_request(). The compat variant should
+>>> read a compat_sigset_t from userspace instead of ptrace_request()s
+>>> sigset_t.
+>>>
+>>> While compat_sigset_t is the same size as sigset_t, it is defined as
+>>> 2xu32, instead of a single u64. On a big-endian CPU this means that
+>>> compat_sigset_t is passed to user-space using middle-endianness,
+>>> where the least-significant u32 is written most significant byte
+>>> first.
+>>>
+>>> If ptrace_request()s code is used userspace will read the most
+>>> significant u32 where it expected the least significant.
 >> 
->> The stop4 idle state on POWER9 is a deep idle state which loses
->> hypervisor resources, but whose latency is low enough that it can be
->> exposed via cpuidle.
->> 
->> Until now, the deep idle states which lose hypervisor resources (eg:
->> winkle) were only exposed via CPU-Hotplug.  Hence currently on wakeup
->> from such states, barring a few SPRs which need to be restored to
->> their older value, rest of the SPRS are reinitialized to their values
->> corresponding to that at boot time.
->> 
->> When stop4 is used in the context of cpuidle, we want these additional
->> SPRs to be restored to their older value, to ensure that the context
->> on the CPU coming back from idle is same as it was before going idle.
->> 
->> In this patch, we define a SPR save area in PACA (since we have used
->> up the volatile register space in the stack) and on POWER9, we restore
->> SPRN_PID, SPRN_LDBAR, SPRN_FSCR, SPRN_HFSCR, SPRN_MMCRA, SPRN_MMCR1,
->> SPRN_MMCR2 to the values they had before entering stop.
->> 
->> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/paca.h   |  7 ++++++
->>  arch/powerpc/kernel/asm-offsets.c | 12 ++++++++++
->>  arch/powerpc/kernel/idle_book3s.S | 46 +++++++++++++++++++++++++++++++++++++--
->>  3 files changed, 63 insertions(+), 2 deletions(-)
->> 
->> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
->> index dc88a31..a6b9ea6 100644
->> --- a/arch/powerpc/include/asm/paca.h
->> +++ b/arch/powerpc/include/asm/paca.h
->> @@ -48,6 +48,7 @@
->>  #define get_lppaca()	(get_paca()->lppaca_ptr)
->>  #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
->>  
->> +#define MAX_STOP_SPRS     7
->>  struct task_struct;
->>  
->>  /*
->> @@ -183,6 +184,12 @@ struct paca_struct {
->>  	struct paca_struct **thread_sibling_pacas;
->>  	/* The PSSCR value that the kernel requested before going to stop */
->>  	u64 requested_psscr;
->> +
->> +	/*
->> +	 * Save area for additional SPRs that need to be
->> +	 * saved/restored during cpuidle stop.
->> +	 */
->> +	u64 stop_spr_save_area[MAX_STOP_SPRS];
->>  #endif
->>  
->>  #ifdef CONFIG_PPC_STD_MMU_64
->> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
->> index a7b5af3..0262283 100644
->> --- a/arch/powerpc/kernel/asm-offsets.c
->> +++ b/arch/powerpc/kernel/asm-offsets.c
->> @@ -743,6 +743,18 @@ int main(void)
->>  	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
->>  	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
->>  	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
->> +
->> +	OFFSET(PACA_PID, paca_struct, stop_spr_save_area[0]);
->> +	OFFSET(PACA_LDBAR, paca_struct, stop_spr_save_area[1]);
->> +	OFFSET(PACA_FSCR, paca_struct, stop_spr_save_area[2]);
->> +	OFFSET(PACA_HFSCR, paca_struct, stop_spr_save_area[3]);
->> +
->> +	/* On POWER9, we are already saving MMCR0 for ESL=EC=1 */
->> +	OFFSET(PACA_MMCRA, paca_struct, stop_spr_save_area[4]);
->> +	OFFSET(PACA_MMCR1, paca_struct, stop_spr_save_area[5]);
->> +	OFFSET(PACA_MMCR2, paca_struct, stop_spr_save_area[6]);
+>> But that's what the code has done since 2013.
 >
-> Don't these offset names go against convention?
+>> So won't changing this break userspace that has been written to work
+>> around that bug?
 >
-> Look at e.g., how PACA_EXGEN is used. I would prefer using that
-> convention. You could make the name slightly shorter too, e.g.,
-> just stop_sprs or so.
+> Wouldn't the same program then be broken when run natively instead? To work
+> around it userspace would have to know it was running under compat instead of
+> natively.
 
-Yes please.
+True, it would be a mess to make it work in all cases. But that doesn't
+mean someone hasn't done it :)
 
-If I see PACA_MMCRA I'm expecting that's paca->mmcra.
+> This only affects this exotic ptrace API for big-endian compat users. I think
+> there are so few users that no-one has noticed its broken.
+>
+> I'm only aware of CRIU using this[0], and it doesn't look like powerpc has to
+> support compat-criu users:
+> https://github.com/xemul/criu/tree/master/compel/arch
+> only has a ppc64 entry, for which
+> https://github.com/xemul/criu/blob/master/compel/arch/ppc64/plugins/include/asm/syscall-types.h
+> puts 'bits per word' as 64, I don't think it supports ppc32, which is where this
+> bug would be seen.
+>
+>
+>> Or do we think nothing actually uses it in the wild and
+>> we can get away with it?
+>
+> I think only Zhou Chengming has hit this, and there is no 'in the wild' code
+> that actually inspects the buffer returned by the call.
+>
+> Zhou, were you using criu on big-endian ilp32 when you found this? Or was it
+> some other project that uses this API..
+> (ilp32 is a second user of compat on arm64)
+...
+>
+> [0]
+> The commit message that added this code points to CRIU and GDB. GDB doesn't use
+> this API. Debian's codesearch (which obviously isn't exhaustive) only finds CRIU
+> and systemtap making these calls.
+>
+> It looks like criu just save/restores the sigset_t as a blob:
+> https://sources.debian.net/src/criu/2.12.1-2/criu/parasite-syscall.c/?hl=92#L92
+>
+> It's sigset_t helpers aren't aware of this bug:
+> https://github.com/xemul/criu/blob/master/compel/include/uapi/ksigset.h
+>
+> Systemtap just makes some calls as part of a self test:
+> https://sources.debian.net/src/systemtap/3.1-2/testsuite/systemtap.syscall/ptrace.c/?hl=198#L198
 
-Also if the same values always go in the same place then please use a
-proper struct, rather than an array. ie.
+OK, that's pretty comprehensive.
 
-struct stop_sprs
-{
-	u64 pid;
-        u64 ldbar;
-        ...
-}
+You should just mention in the changelog that yes this breaks ABI but we
+don't believe there are any users that will be affected, and the broken
+behaviour is not easy to workaround in userspace.
 
 cheers
