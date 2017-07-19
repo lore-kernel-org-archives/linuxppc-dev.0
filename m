@@ -1,24 +1,28 @@
-Return-Path: <maxime.ripard@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xC6fz3qxPzDrTB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 16:33:31 +1000 (AEST)
-Date: Wed, 19 Jul 2017 08:24:12 +0200
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c05::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC6n13nr6zDrTG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 16:38:45 +1000 (AEST)
+Received: by mail-pg0-x22a.google.com with SMTP id k14so25731939pgr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jul 2017 23:38:45 -0700 (PDT)
+Date: Wed, 19 Jul 2017 12:08:40 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
 To: Rob Herring <robh@kernel.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@gmail.com>,
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Chen-Yu Tsai <wens@csie.org>,
- Peter Rosin <peda@axentia.se>, linux-i2c@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] i2c: Convert to using %pOF instead of full_name
-Message-ID: <20170719062412.o6mghdmzlhsytkla@flea>
-References: <20170718214339.7774-26-robh@kernel.org>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Patrice Chotard <patrice.chotard@st.com>, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ kernel@stlinux.com
+Subject: Re: [PATCH] cpufreq: Convert to using %pOF instead of full_name
+Message-ID: <20170719063840.GD352@vireshk-i7>
+References: <20170718214339.7774-14-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="tv4e3pgc4wtkta5l"
-In-Reply-To: <20170718214339.7774-26-robh@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170718214339.7774-14-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +32,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---tv4e3pgc4wtkta5l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Jul 18, 2017 at 04:43:06PM -0500, Rob Herring wrote:
+On 18-07-17, 16:42, Rob Herring wrote:
 > Now that we have a custom printf format specifier, convert users of
 > full_name to use %pOF instead. This is preparation to remove storing
 > of the full path string for each node.
->=20
+> 
 > Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Haavard Skinnemoen <hskinnemoen@gmail.com>
-> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
 > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Cc: Paul Mackerras <paulus@samba.org>
 > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Chen-Yu Tsai <wens@csie.org>
-> Cc: Peter Rosin <peda@axentia.se>
-> Cc: linux-i2c@vger.kernel.org
+> Cc: Patrice Chotard <patrice.chotard@st.com>
+> Cc: linux-pm@vger.kernel.org
 > Cc: linuxppc-dev@lists.ozlabs.org
 > Cc: linux-arm-kernel@lists.infradead.org
+> Cc: kernel@stlinux.com
 > ---
->  drivers/i2c/busses/i2c-gpio.c         |  4 ++--
->  drivers/i2c/busses/i2c-powermac.c     | 10 ++++------
->  drivers/i2c/busses/i2c-sun6i-p2wi.c   |  4 ++--
+>  drivers/cpufreq/pmac64-cpufreq.c | 2 +-
+>  drivers/cpufreq/sti-cpufreq.c    | 8 ++++----
+>  2 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+> index 267e0894c62d..be623dd7b9f2 100644
+> --- a/drivers/cpufreq/pmac64-cpufreq.c
+> +++ b/drivers/cpufreq/pmac64-cpufreq.c
+> @@ -516,7 +516,7 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpunode)
+>  		goto bail;
+>  	}
+> 
+> -	DBG("cpufreq: i2c clock chip found: %s\n", hwclock->full_name);
+> +	DBG("cpufreq: i2c clock chip found: %pOF\n", hwclock);
+> 
+>  	/* Now get all the platform functions */
+>  	pfunc_cpu_getfreq =
+> diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
+> index d2d0430d09d4..47105735df12 100644
+> --- a/drivers/cpufreq/sti-cpufreq.c
+> +++ b/drivers/cpufreq/sti-cpufreq.c
+> @@ -65,8 +65,8 @@ static int sti_cpufreq_fetch_major(void) {
+>  	ret = of_property_read_u32_index(np, "st,syscfg",
+>  					 MAJOR_ID_INDEX, &major_offset);
+>  	if (ret) {
+> -		dev_err(dev, "No major number offset provided in %s [%d]\n",
+> -			np->full_name, ret);
+> +		dev_err(dev, "No major number offset provided in %pOF [%d]\n",
+> +			np, ret);
+>  		return ret;
+>  	}
+> 
+> @@ -92,8 +92,8 @@ static int sti_cpufreq_fetch_minor(void)
+>  					 MINOR_ID_INDEX, &minor_offset);
+>  	if (ret) {
+>  		dev_err(dev,
+> -			"No minor number offset provided %s [%d]\n",
+> -			np->full_name, ret);
+> +			"No minor number offset provided %pOF [%d]\n",
+> +			np, ret);
+>  		return ret;
+>  	}
 
-For the P2WI driver:
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Thanks!
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---tv4e3pgc4wtkta5l
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBAgAGBQJZbvsMAAoJEBx+YmzsjxAgRfQP/3G19XUIReb6gzvlyn/cx4+3
-wq13/YtCCWrxiab9iWFP4bd+tck+MGCa4G4mVMIt8aN756+pCY80StlpDbgPHMCg
-CUGFicFhd0t5NWF6iy63Tq7hUevZb/UTWUOA9HPNhm+3EXpcKAof2aI5fWOdI8jt
-TWCGf7xKLND1GRNtLcKCR3RUBzQ/yKA8Hx2us8mawazq/OOkIgVccZkwiOh51PEb
-CoJJBgnFgebsv13UbW9CxcmMxMVpWCkssyD89d+dnpQzZALMvJZ2XvEBzcB/Jg4J
-pRUlRacj/DQb9CW6/IACd2MNG6LlHmnPMjr5bt7S+qL8u98CeDXN3QtgjAPuY6hr
-WaPrzhW+1jepIxksqrBqyJOoqrcxYvtqopXOsf1vpm/KZ0OV9ReRUEQspfYWz4ue
-PLSdiJL+OoKmZ8CTWEmGchfAY0Ao0MHFn9/I64NfW9V9ibIU2FVQKK3xFBZKi/lU
-KFVX3T/fRBd5G+CYAKc8ChhEiTlXLaJERCOyOipAmjbkrC2FGuBXjmHk3Z4tUwWc
-+fEFIulsv+3M4EQvslqm/ACtVFIS/wAzrkbExrGofN8sECU1u2bcVwm5O7NGihcg
-EPPhtdjq+CI05b9W1SNbJ2wa5qwCE0eC2FuPrY/TqXhruUVHcpMaRnt1fgVnXu+h
-gz0QszaMGMyFhh0Vtdyw
-=2zI8
------END PGP SIGNATURE-----
-
---tv4e3pgc4wtkta5l--
+-- 
+viresh
