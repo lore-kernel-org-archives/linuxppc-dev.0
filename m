@@ -1,23 +1,23 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC90v0M1yzDrVJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 18:19:10 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6J8IuYA146913
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC90v59vRzDrVg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 18:19:11 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6J89XtU100863
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 04:19:09 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bt1uv531g-1
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bspja4scn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 04:19:08 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 04:19:09 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 19 Jul 2017 02:19:08 -0600
+ Wed, 19 Jul 2017 04:19:08 -0400
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -26,14 +26,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [v2 PATCH 2/2] powernv/powerpc: Clear PECE1 in LPCR via stop-api only
- on Hotplug
-Date: Wed, 19 Jul 2017 13:48:50 +0530
+Subject: [v2 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for stop4
+ cpuidle
+Date: Wed, 19 Jul 2017 13:48:49 +0530
 In-Reply-To: <cover.1500452107.git.ego@linux.vnet.ibm.com>
 References: <cover.1500452107.git.ego@linux.vnet.ibm.com>
 In-Reply-To: <cover.1500452107.git.ego@linux.vnet.ibm.com>
 References: <cover.1500452107.git.ego@linux.vnet.ibm.com>
-Message-Id: <4142c685fd33835db00eaecedf69186458c1c039.1500452107.git.ego@linux.vnet.ibm.com>
+Message-Id: <d4dfb8e8daca3af2a2451c6f39f7352852c51f48.1500452107.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,146 +45,144 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Currently we use the stop-api provided by the firmware to program the
-SLW engine to restore the values of hypervisor resources that get lost
-on deeper idle states (such as winkle). Since the deep states were
-only used for CPU-Hotplug on POWER8 systems, we would program the LPCR
-to have the PECE1 bit since Hotplugged CPUs shouldn't be spuriously
-woken up by decrementer.
+The stop4 idle state on POWER9 is a deep idle state which loses
+hypervisor resources, but whose latency is low enough that it can be
+exposed via cpuidle.
 
-On POWER9, some of the deep platform idle states such as stop4 can be
-used in cpuidle as well. In this case, we want the CPU in stop4 to be
-woken up by the decrementer when some timer on the CPU expires.
+Until now, the deep idle states which lose hypervisor resources (eg:
+winkle) were only exposed via CPU-Hotplug.  Hence currently on wakeup
+from such states, barring a few SPRs which need to be restored to
+their older value, rest of the SPRS are reinitialized to their values
+corresponding to that at boot time.
 
-In this patch, for POWER9, we program the stop-api for LPCR with PECE1
-bit cleared only when we are offlining the CPU.
+When stop4 is used in the context of cpuidle, we want these additional
+SPRs to be restored to their older value, to ensure that the context
+on the CPU coming back from idle is same as it was before going idle.
+
+In this patch, we define a SPR save area in PACA (since we have used
+up the volatile register space in the stack) and on POWER9, we restore
+SPRN_PID, SPRN_LDBAR, SPRN_FSCR, SPRN_HFSCR, SPRN_MMCRA, SPRN_MMCR1,
+SPRN_MMCR2 to the values they had before entering stop.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/idle.c | 45 ++++++++++++++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/smp.c  | 10 --------
- 2 files changed, 44 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/paca.h   |  7 ++++++
+ arch/powerpc/kernel/asm-offsets.c | 12 ++++++++++
+ arch/powerpc/kernel/idle_book3s.S | 46 +++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 63 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 2abee07..a6c69b7 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -68,7 +68,7 @@ static int pnv_save_sprs_for_deep_states(void)
- 	 * all cpus at boot. Get these reg values of current cpu and use the
- 	 * same across all cpus.
- 	 */
--	uint64_t lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
-+	uint64_t lpcr_val = mfspr(SPRN_LPCR);
- 	uint64_t hid0_val = mfspr(SPRN_HID0);
- 	uint64_t hid1_val = mfspr(SPRN_HID1);
- 	uint64_t hid4_val = mfspr(SPRN_HID4);
-@@ -85,6 +85,16 @@ static int pnv_save_sprs_for_deep_states(void)
- 		if (rc != 0)
- 			return rc;
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index dc88a31..a6b9ea6 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -48,6 +48,7 @@
+ #define get_lppaca()	(get_paca()->lppaca_ptr)
+ #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
  
-+		/*
-+		 * On POWER8, the only state that uses SLW engine is
-+		 * winkle.  This is only used for CPU-Hotplug. So we
-+		 * clear the decrementer bit from LPCR since we
-+		 * don't want to be woken up on decrementer when in
-+		 * winkle.
-+		 */
-+		if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+			lpcr_val = lpcr_val & ~(u64)LPCR_PECE1;
-+
- 		rc = opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
- 		if (rc != 0)
- 			return rc;
-@@ -355,6 +365,15 @@ void power9_idle(void)
- }
++#define MAX_STOP_SPRS     7
+ struct task_struct;
  
- #ifdef CONFIG_HOTPLUG_CPU
-+static void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
-+{
-+	u64 pir = get_hard_smp_processor_id(cpu);
-+
-+	mtspr(SPRN_LPCR, lpcr_val);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-+}
-+
  /*
-  * pnv_cpu_offline: A function that puts the CPU into the deepest
-  * available platform idle state on a CPU-Offline.
-@@ -364,6 +383,20 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- {
- 	unsigned long srr1;
- 	u32 idle_states = pnv_get_supported_cpuidle_states();
-+	u64 lpcr_val;
+@@ -183,6 +184,12 @@ struct paca_struct {
+ 	struct paca_struct **thread_sibling_pacas;
+ 	/* The PSSCR value that the kernel requested before going to stop */
+ 	u64 requested_psscr;
 +
 +	/*
-+	 * We don't want to take decrementer interrupts while we are
-+	 * offline, so clear LPCR:PECE1. We keep PECE2 (and
-+	 * LPCR_PECE_HVEE on P9) enabled as to let IPIs in.
-+	 *
-+	 * If the CPU gets woken up by a special wakeup, ensure that
-+	 * the SLW engine sets LPCR with decrementer bit cleared, else
-+	 * the CPU will come back to the kernel due to a spurious
-+	 * wakeup.
++	 * Save area for additional SPRs that need to be
++	 * saved/restored during cpuidle stop.
 +	 */
-+	lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
-+	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
- 
- 	__ppc64_runlatch_off();
- 
-@@ -394,6 +427,16 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- 
- 	__ppc64_runlatch_on();
- 
-+	/*
-+	 * Re-enable decrementer interrupts in LPCR.
-+	 *
-+	 * Further on POWER9, we want stop states to be woken up by
-+	 * decrementer for non-hotplug cases. So program the LPCR via
-+	 * stop api as well.
-+	 */
-+	lpcr_val = mfspr(SPRN_LPCR) | (u64)LPCR_PECE1;
-+	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
-+
- 	return srr1;
- }
++	u64 stop_spr_save_area[MAX_STOP_SPRS];
  #endif
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 40dae96..9ef6b37 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -164,12 +164,6 @@ static void pnv_smp_cpu_kill_self(void)
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		wmask = SRR1_WAKEMASK_P8;
  
--	/* We don't want to take decrementer interrupts while we are offline,
--	 * so clear LPCR:PECE1. We keep PECE2 (and LPCR_PECE_HVEE on P9)
--	 * enabled as to let IPIs in.
--	 */
--	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
--
- 	while (!generic_check_cpu_restart(cpu)) {
- 		/*
- 		 * Clear IPI flag, since we don't handle IPIs while
-@@ -181,7 +175,6 @@ static void pnv_smp_cpu_kill_self(void)
- 		kvmppc_set_host_ipi(cpu, 0);
+ #ifdef CONFIG_PPC_STD_MMU_64
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index a7b5af3..0262283 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -743,6 +743,18 @@ int main(void)
+ 	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
+ 	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
+ 	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
++
++	OFFSET(PACA_PID, paca_struct, stop_spr_save_area[0]);
++	OFFSET(PACA_LDBAR, paca_struct, stop_spr_save_area[1]);
++	OFFSET(PACA_FSCR, paca_struct, stop_spr_save_area[2]);
++	OFFSET(PACA_HFSCR, paca_struct, stop_spr_save_area[3]);
++
++	/* On POWER9, we are already saving MMCR0 for ESL=EC=1 */
++	OFFSET(PACA_MMCRA, paca_struct, stop_spr_save_area[4]);
++	OFFSET(PACA_MMCR1, paca_struct, stop_spr_save_area[5]);
++	OFFSET(PACA_MMCR2, paca_struct, stop_spr_save_area[6]);
++
++
+ #endif
  
- 		srr1 = pnv_cpu_offline(cpu);
--
- 		WARN_ON(lazy_irq_pending());
+ 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 5adb390e..7083f63 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -84,7 +84,50 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+ 	std	r3,_WORT(r1)
+ 	mfspr	r3,SPRN_WORC
+ 	std	r3,_WORC(r1)
++BEGIN_FTR_SECTION
++	blr
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
++	/* Save additional SPRs for POWER9 */
++power9_save_additional_sprs:
++	mfspr	r3, SPRN_PID
++	mfspr	r4, SPRN_LDBAR
++	std	r3, PACA_PID(r13)
++	std	r4, PACA_LDBAR(r13)
++
++	mfspr	r3, SPRN_FSCR
++	mfspr	r4, SPRN_HFSCR
++	std	r3, PACA_FSCR(r13)
++	std	r4, PACA_HFSCR(r13)
++
++	mfspr	r3, SPRN_MMCRA
++	mfspr	r4, SPRN_MMCR1
++	std	r3, PACA_MMCRA(r13)
++	std	r4, PACA_MMCR1(r13)
++
++	mfspr	r3, SPRN_MMCR2
++	std	r3, PACA_MMCR2(r13)
++	blr
  
- 		/*
-@@ -216,11 +209,8 @@ static void pnv_smp_cpu_kill_self(void)
- 		if (srr1 && !generic_check_cpu_restart(cpu))
- 			DBG("CPU%d Unexpected exit while offline srr1=%lx!\n",
- 					cpu, srr1);
--
- 	}
++power9_restore_additional_sprs:
++	ld	r3,_LPCR(r1)
++	ld	r4, PACA_PID(r13)
++	mtspr	SPRN_LPCR,r3
++	mtspr	SPRN_PID, r4
++
++	ld	r3, PACA_LDBAR(r13)
++	ld	r4, PACA_FSCR(r13)
++	mtspr	SPRN_LDBAR, r3
++	mtspr	SPRN_FSCR, r4
++
++	ld	r3, PACA_HFSCR(r13)
++	ld	r4, PACA_MMCRA(r13)
++	mtspr	SPRN_HFSCR, r3
++	mtspr	SPRN_MMCRA, r4
++	/* We have already restored PACA_MMCR0 */
++	ld	r3, PACA_MMCR1(r13)
++	ld	r4, PACA_MMCR2(r13)
++	mtspr	SPRN_MMCR1, r3
++	mtspr	SPRN_MMCR2, r4
+ 	blr
  
--	/* Re-enable decrementer interrupts */
--	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_PECE1);
- 	DBG("CPU%d coming online...\n", cpu);
- }
+ /*
+@@ -791,8 +834,7 @@ no_segments:
+ 	bctrl
+ 
+ BEGIN_FTR_SECTION
+-	ld	r4,_LPCR(r1)
+-	mtspr	SPRN_LPCR,r4
++	bl 	power9_restore_additional_sprs
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ hypervisor_state_restored:
  
 -- 
 1.9.4
