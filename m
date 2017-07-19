@@ -1,13 +1,13 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCB0J5vTHzDrTX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 19:03:44 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id q85so5778735pfq.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 02:03:44 -0700 (PDT)
-Date: Wed, 19 Jul 2017 19:03:23 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCB710NJQzDrTf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 19:09:33 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id y129so6214536pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 02:09:32 -0700 (PDT)
+Date: Wed, 19 Jul 2017 19:09:13 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
@@ -15,12 +15,12 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
  <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [v2 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
- stop4 cpuidle
-Message-ID: <20170719190323.42a0c509@roar.ozlabs.ibm.com>
-In-Reply-To: <d4dfb8e8daca3af2a2451c6f39f7352852c51f48.1500452107.git.ego@linux.vnet.ibm.com>
+Subject: Re: [v2 PATCH 2/2] powernv/powerpc: Clear PECE1 in LPCR via
+ stop-api only on Hotplug
+Message-ID: <20170719190913.18ca21e5@roar.ozlabs.ibm.com>
+In-Reply-To: <4142c685fd33835db00eaecedf69186458c1c039.1500452107.git.ego@linux.vnet.ibm.com>
 References: <cover.1500452107.git.ego@linux.vnet.ibm.com>
- <d4dfb8e8daca3af2a2451c6f39f7352852c51f48.1500452107.git.ego@linux.vnet.ibm.com>
+ <4142c685fd33835db00eaecedf69186458c1c039.1500452107.git.ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,107 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 19 Jul 2017 13:48:49 +0530
+On Wed, 19 Jul 2017 13:48:50 +0530
 "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
 > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> The stop4 idle state on POWER9 is a deep idle state which loses
-> hypervisor resources, but whose latency is low enough that it can be
-> exposed via cpuidle.
+> Currently we use the stop-api provided by the firmware to program the
+> SLW engine to restore the values of hypervisor resources that get lost
+> on deeper idle states (such as winkle). Since the deep states were
+> only used for CPU-Hotplug on POWER8 systems, we would program the LPCR
+> to have the PECE1 bit since Hotplugged CPUs shouldn't be spuriously
+> woken up by decrementer.
 > 
-> Until now, the deep idle states which lose hypervisor resources (eg:
-> winkle) were only exposed via CPU-Hotplug.  Hence currently on wakeup
-> from such states, barring a few SPRs which need to be restored to
-> their older value, rest of the SPRS are reinitialized to their values
-> corresponding to that at boot time.
+> On POWER9, some of the deep platform idle states such as stop4 can be
+> used in cpuidle as well. In this case, we want the CPU in stop4 to be
+> woken up by the decrementer when some timer on the CPU expires.
 > 
-> When stop4 is used in the context of cpuidle, we want these additional
-> SPRs to be restored to their older value, to ensure that the context
-> on the CPU coming back from idle is same as it was before going idle.
-> 
-> In this patch, we define a SPR save area in PACA (since we have used
-> up the volatile register space in the stack) and on POWER9, we restore
-> SPRN_PID, SPRN_LDBAR, SPRN_FSCR, SPRN_HFSCR, SPRN_MMCRA, SPRN_MMCR1,
-> SPRN_MMCR2 to the values they had before entering stop.
+> In this patch, for POWER9, we program the stop-api for LPCR with PECE1
+> bit cleared only when we are offlining the CPU.
 > 
 > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/paca.h   |  7 ++++++
->  arch/powerpc/kernel/asm-offsets.c | 12 ++++++++++
->  arch/powerpc/kernel/idle_book3s.S | 46 +++++++++++++++++++++++++++++++++++++--
->  3 files changed, 63 insertions(+), 2 deletions(-)
+>  arch/powerpc/platforms/powernv/idle.c | 45 ++++++++++++++++++++++++++++++++++-
+>  arch/powerpc/platforms/powernv/smp.c  | 10 --------
+>  2 files changed, 44 insertions(+), 11 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index dc88a31..a6b9ea6 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -48,6 +48,7 @@
->  #define get_lppaca()	(get_paca()->lppaca_ptr)
->  #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 2abee07..a6c69b7 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -68,7 +68,7 @@ static int pnv_save_sprs_for_deep_states(void)
+>  	 * all cpus at boot. Get these reg values of current cpu and use the
+>  	 * same across all cpus.
+>  	 */
+> -	uint64_t lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
+> +	uint64_t lpcr_val = mfspr(SPRN_LPCR);
+>  	uint64_t hid0_val = mfspr(SPRN_HID0);
+>  	uint64_t hid1_val = mfspr(SPRN_HID1);
+>  	uint64_t hid4_val = mfspr(SPRN_HID4);
+> @@ -85,6 +85,16 @@ static int pnv_save_sprs_for_deep_states(void)
+>  		if (rc != 0)
+>  			return rc;
 >  
-> +#define MAX_STOP_SPRS     7
->  struct task_struct;
->  
->  /*
-> @@ -183,6 +184,12 @@ struct paca_struct {
->  	struct paca_struct **thread_sibling_pacas;
->  	/* The PSSCR value that the kernel requested before going to stop */
->  	u64 requested_psscr;
+> +		/*
+> +		 * On POWER8, the only state that uses SLW engine is
+> +		 * winkle.  This is only used for CPU-Hotplug. So we
+> +		 * clear the decrementer bit from LPCR since we
+> +		 * don't want to be woken up on decrementer when in
+> +		 * winkle.
+> +		 */
+> +		if (!cpu_has_feature(CPU_FTR_ARCH_300))
+> +			lpcr_val = lpcr_val & ~(u64)LPCR_PECE1;
 > +
-> +	/*
-> +	 * Save area for additional SPRs that need to be
-> +	 * saved/restored during cpuidle stop.
-> +	 */
-> +	u64 stop_spr_save_area[MAX_STOP_SPRS];
->  #endif
+>  		rc = opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
+>  		if (rc != 0)
+>  			return rc;
+> @@ -355,6 +365,15 @@ void power9_idle(void)
+>  }
 >  
->  #ifdef CONFIG_PPC_STD_MMU_64
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index a7b5af3..0262283 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -743,6 +743,18 @@ int main(void)
->  	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
->  	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
->  	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
+>  #ifdef CONFIG_HOTPLUG_CPU
+> +static void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
+> +{
+> +	u64 pir = get_hard_smp_processor_id(cpu);
 > +
-> +	OFFSET(PACA_PID, paca_struct, stop_spr_save_area[0]);
-> +	OFFSET(PACA_LDBAR, paca_struct, stop_spr_save_area[1]);
-> +	OFFSET(PACA_FSCR, paca_struct, stop_spr_save_area[2]);
-> +	OFFSET(PACA_HFSCR, paca_struct, stop_spr_save_area[3]);
-> +
-> +	/* On POWER9, we are already saving MMCR0 for ESL=EC=1 */
-> +	OFFSET(PACA_MMCRA, paca_struct, stop_spr_save_area[4]);
-> +	OFFSET(PACA_MMCR1, paca_struct, stop_spr_save_area[5]);
-> +	OFFSET(PACA_MMCR2, paca_struct, stop_spr_save_area[6]);
+> +	mtspr(SPRN_LPCR, lpcr_val);
+> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> +		opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
 
-Don't these offset names go against convention?
+Is opal_slw_set_reg very heavyweight? If not, I would just remove the
+POWER9 special casing entirely from both these functions, which follows
+the principle of least surprise. Otherwise I guess it's reasonable.
 
-Look at e.g., how PACA_EXGEN is used. I would prefer using that
-convention. You could make the name slightly shorter too, e.g.,
-just stop_sprs or so.
-
-
-> @@ -791,8 +834,7 @@ no_segments:
->  	bctrl
->  
->  BEGIN_FTR_SECTION
-> -	ld	r4,_LPCR(r1)
-> -	mtspr	SPRN_LPCR,r4
-> +	bl 	power9_restore_additional_sprs
->  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
->  hypervisor_state_restored:
->  
-
-Also perhaps just a little comment in the code explaining why
-power8 does not need this because it only uses it for hotplug
-as you do in the changelog would help when reading the code.
-
-Sorry I didn't pick this up on your v1 patches. If you change
-those minor things, please add
+Thanks for making those other changes, it looks good.
 
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
-Thanks,
-Nick
