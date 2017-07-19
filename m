@@ -1,40 +1,23 @@
-Return-Path: <joserz@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <thomas.besemer@gmail.com>
+Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
+ [IPv6:2a00:1450:400c:c09::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCSGH0SSgzDrCn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 05:46:46 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6JJhonH002155
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 15:46:44 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2btdkw8k1a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 15:46:44 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
- Wed, 19 Jul 2017 16:46:42 -0300
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6JJkeFt18415664
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 16:46:40 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6JJkgmp025837
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 16:46:42 -0300
-Date: Wed, 19 Jul 2017 16:46:34 -0300
-From: joserz@linux.vnet.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- oohall@gmail.com
-Subject: KVM guests freeze under upstream kernel
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCWRD682NzDr56
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 08:09:44 +1000 (AEST)
+Received: by mail-wm0-x234.google.com with SMTP id k69so10032823wmc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 15:09:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <20170719194634.GA1222@pacoca>
+In-Reply-To: <20170717005846.GD13471@gate.crashing.org>
+References: <CAO7m3AkpuUdApRiiDw+Sv6fqyhVsfBOUA8cw1xChJLxT1r6_wA@mail.gmail.com>
+ <20170717005846.GD13471@gate.crashing.org>
+From: Thomas Besemer <thomas.besemer@gmail.com>
+Date: Wed, 19 Jul 2017 15:09:41 -0700
+Message-ID: <CAO7m3AmDBO29CES2Tu8KvS1Y8FBhFQ7ehA8AKRDkvo_iOWPRgA@mail.gmail.com>
+Subject: Re: 440EP NOR Flash Mapping with DTS
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,34 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+On Sun, Jul 16, 2017 at 5:58 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+> On Sun, Jul 16, 2017 at 05:31:05PM -0700, Thomas Besemer wrote:
+>> I'm trying to map some NOR flash in via DTS on a Yosemite
+>> style 440EP board. I've tried a few different things, below
+>> showing my latest attempt.  During Kernel boot, it does not
+>> appear to detect the device, as no messages are emitted.
+>>
+>> Flash is Spansion S29GL256P, base address 0xFE000000.
+>>
+>> EBC0: ebc {
+>>        compatible = "ibm,ebc-440ep", "ibm,ebc-440gp", "ibm,ebc";
+>>        dcr-reg = <0x012 0x002>;
+>>        #address-cells = <2>;
+>>        #size-cells = <1>;
+>>        clock-frequency = <0>; /* Filled in by zImage */
+>>        interrupts = <0x5 0x1>;
+>>        interrupt-parent = <&UIC1>;
+>>
+>>        nor_flash@FE0000000,0 {
+>
+> @0,fe000000
+>
+>>                reg = <0xFE000000 0x02000000>;
+>
+> reg = <0 0xfe000000 0x02000000>;
+>
+>
+> Cheers,
+>
+>
+> Segher
 
-We're not able to boot any KVM guest using upstream kernel (cb8c65ccff7f77d0285f1b126c72d37b2572c865 - 4.13.0-rc1+).
-After reaching the SLOF initial counting, the guest simply freezes:
+I'm still having trouble with this, and think it's a DTS syntax problem.  I did
+load up kernel with some printk()'s in key areas, and it was not finding the
+device due to invalid ranges.  I simply added 'ranges;' to the EBC entry,
+it detected, but did not properly map in MTD's.  Here is summary of warnings
+on DTS, full DTS, and what it looks like mapped in.
 
-SLOF
-**********************************************************************
-QEMU Starting
- Build Date = Mar  3 2017 13:29:19
-  FW Version = git-66d250ef0fd06bb8
-   Press "s" to enter Open Firmware.
+I will note that I can't find many examples on this, and my syntax is not much
+different than what was originally checked in.  I suspect that the
+'ranges' field
+is wrong, but I can't find documentation on what fields represent.
 
-   C0360
+Thanks.
 
-After bisecting I found the commit:
+DTB Warning:
 
-https://github.com/torvalds/linux/commit/ebd3119
+Warning (ranges_format): /plb/opb/ebc has empty "ranges" property but
+its #address-cells (2) differs from /plb/opb (1)
 
-    powerpc/mm: Add devmap support for ppc64
+DTB Entry:
 
-    Add support for the devmap bit on PTEs and PMDs for PPC64 Book3S.  This
-    is used to differentiate device backed memory from transparent huge
-    pages since they are handled in more or less the same manner by the core
-    mm code.
+POB0: opb {
+        compatible = "ibm,opb-440ep", "ibm,opb-440gp", "ibm,opb";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        /* Bamboo is oddball in the 44x world and doesn't use the ERPN
+         * bits.
+         */
+        ranges = <0x00000000 0x00000000 0x00000000 0x80000000
+                  0x80000000 0x00000000 0x80000000 0x80000000>;
+        interrupt-parent = <&UIC1>;
+        interrupts = <0x7 0x4>;
+        clock-frequency = <0>; /* Filled in by zImage */
 
-Reverting the commit and rebuilding 4.13.0-rc1+ was enough to make a workaround.
-But I'll need some help from you guys in order to solve it.
+        EBC0: ebc {
+                compatible = "ibm,ebc-440ep", "ibm,ebc-440gp", "ibm,ebc";
+                dcr-reg = <0x012 0x002>;
+                clock-frequency = <0>; /* Filled in by zImage */
+                interrupts = <0x5 0x1>;
+                interrupt-parent = <&UIC1>;
+                #address-cells = <2>;
+                #size-cells = <1>;
 
-Thanks!
+                ranges;  /*  WITHOUT THIS, CHIP NOT FOUND   */
 
-Jose Ziviani
+                nor_flash@0,FE000000 {
+                        compatible = "amd,s29gl256p", "cfi-flash";
+                        bank-width = <2>;
+                        reg = <0 0xFE000000 0x02000000>;
+                        #address-cells = <1>;
+                        #size-cells = <1>;
+                        partition@0 {
+                                label = "Kernel";
+                                reg = <0x00000000 0x00180000>;
+                        };
+                        partition@180000 {
+                                label = "OS Filesystem";
+                                reg = <0x00180000 0x01DE0000>;
+                        };
+                };
+        };
+
+Result MTD:
+
+# cat /proc/mtd
+dev:    size   erasesize  name
+mtd0: 02000000 00020000 "fe000000.nor_flash"
+#
+
+Boot Messages:
+
+[    6.272519] fe000000.nor_flash: Found 1 x16 devices at 0x0 in 16-bit bank. Ma
+nufacturer ID 0x000001 Chip ID 0x002201
+[    6.282969] Amd/Fujitsu Extended Query Table at 0x0040
+[    6.288094]   Amd/Fujitsu Extended Query version 1.3.
+[    6.293132] number of CFI chips: 1
