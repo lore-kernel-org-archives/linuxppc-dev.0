@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4Wz4V3gzDrTN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:57:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xC4X172b6zDrSw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jul 2017 14:57:21 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 15/24] powerpc/mm: Move CMO accounting out of do_page_fault
- into a helper
-Date: Wed, 19 Jul 2017 14:49:37 +1000
-Message-Id: <20170719044946.22030-15-benh@kernel.crashing.org>
+Subject: [PATCH 21/24] powerpc/mm: Move page fault VMA access checks to a
+ helper
+Date: Wed, 19 Jul 2017 14:49:43 +1000
+Message-Id: <20170719044946.22030-21-benh@kernel.crashing.org>
 In-Reply-To: <20170719044946.22030-1-benh@kernel.crashing.org>
 References: <20170719044946.22030-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,59 +23,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It makes do_page_fault() more readable. No functional change.
-
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/mm/fault.c | 29 ++++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 11 deletions(-)
+ arch/powerpc/mm/fault.c | 57 ++++++++++++++++++++++++++++---------------------
+ 1 file changed, 33 insertions(+), 24 deletions(-)
 
 diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 0b217947d34f..5ccbf30d8aef 100644
+index 6a938fc8c5fb..2291686d24c6 100644
 --- a/arch/powerpc/mm/fault.c
 +++ b/arch/powerpc/mm/fault.c
-@@ -222,6 +222,23 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
+@@ -222,6 +222,37 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
  	return is_exec || (address >= TASK_SIZE);
  }
  
-+#ifdef CONFIG_PPC_SMLPAR
-+static inline void cmo_account_page_fault(void)
++static bool access_error(bool is_write, bool is_exec,
++			 struct vm_area_struct *vma)
 +{
-+	if (firmware_has_feature(FW_FEATURE_CMO)) {
-+		u32 page_ins;
-+
-+		preempt_disable();
-+		page_ins = be32_to_cpu(get_lppaca()->page_ins);
-+		page_ins += 1 << PAGE_FACTOR;
-+		get_lppaca()->page_ins = cpu_to_be32(page_ins);
-+		preempt_enable();
++	/*
++	 * Allow execution from readable areas if the MMU does not
++	 * provide separate controls over reading and executing.
++	 *
++	 * Note: That code used to not be enabled for 4xx/BookE.
++	 * It is now as I/D cache coherency for these is done at
++	 * set_pte_at() time and I see no reason why the test
++	 * below wouldn't be valid on those processors. This -may-
++	 * break programs compiled with a really old ABI though.
++	 */
++	if (is_exec) {
++		return !(vma->vm_flags & VM_EXEC) &&
++			(cpu_has_feature(CPU_FTR_NOEXECUTE) ||
++			 !(vma->vm_flags & (VM_READ | VM_WRITE)));
 +	}
-+}
-+#else
-+static inline void cmo_account_page_fault(void) { }
-+#endif /* CONFIG_PPC_SMLPAR */
 +
- /*
-  * Define the correct "is_write" bit in error_code based
-  * on the processor family
-@@ -501,17 +518,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 		current->maj_flt++;
- 		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1,
- 			      regs, address);
--#ifdef CONFIG_PPC_SMLPAR
--		if (firmware_has_feature(FW_FEATURE_CMO)) {
--			u32 page_ins;
--
--			preempt_disable();
--			page_ins = be32_to_cpu(get_lppaca()->page_ins);
--			page_ins += 1 << PAGE_FACTOR;
--			get_lppaca()->page_ins = cpu_to_be32(page_ins);
--			preempt_enable();
--		}
--#endif /* CONFIG_PPC_SMLPAR */
-+		cmo_account_page_fault();
- 	} else {
- 		current->min_flt++;
- 		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1,
++	if (is_write) {
++		if (unlikely(!(vma->vm_flags & VM_WRITE)))
++			return true;
++		return false;
++	}
++
++	if (unlikely(!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE))))
++		return true;
++
++	return false;
++}
++
+ #ifdef CONFIG_PPC_SMLPAR
+ static inline void cmo_account_page_fault(void)
+ {
+@@ -461,30 +492,8 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		return bad_area(regs, address);
+ 
+ good_area:
+-	if (is_exec) {
+-		/*
+-		 * Allow execution from readable areas if the MMU does not
+-		 * provide separate controls over reading and executing.
+-		 *
+-		 * Note: That code used to not be enabled for 4xx/BookE.
+-		 * It is now as I/D cache coherency for these is done at
+-		 * set_pte_at() time and I see no reason why the test
+-		 * below wouldn't be valid on those processors. This -may-
+-		 * break programs compiled with a really old ABI though.
+-		 */
+-		if (unlikely(!(vma->vm_flags & VM_EXEC) &&
+-			     (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
+-			      !(vma->vm_flags & (VM_READ | VM_WRITE)))))
+-			return bad_area(regs, address);
+-	/* a write */
+-	} else if (is_write) {
+-		if (unlikely(!(vma->vm_flags & VM_WRITE)))
+-			return bad_area(regs, address);
+-	/* a read */
+-	} else {
+-		if (unlikely(!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE))))
+-			return bad_area(regs, address);
+-	}
++	if (unlikely(access_error(is_write, is_exec, vma)))
++		return bad_area(regs, address);
+ 
+ 	/*
+ 	 * If for any reason at all we couldn't handle the fault,
 -- 
 2.13.3
