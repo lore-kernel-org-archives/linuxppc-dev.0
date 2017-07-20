@@ -1,19 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCsrw5cQNzDrFM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 21:59:44 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id t8so2603065pgs.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 04:59:44 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/pseries: energy driver only print message when LPAR
- guest
-Date: Thu, 20 Jul 2017 21:59:00 +1000
-Message-Id: <20170720115900.455-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCsvB0wqBzDrFQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 22:01:42 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Krzysztof Kozlowski <krzk@kernel.org>, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RESEND PATCH] powerpc: defconfig: Cleanup from old Kconfig
+ options
+In-Reply-To: <1500526827-3961-1-git-send-email-krzk@kernel.org>
+References: <1500526827-3961-1-git-send-email-krzk@kernel.org>
+Date: Thu, 20 Jul 2017 22:01:39 +1000
+Message-ID: <87k233gvvg.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This driver currently reports the H_BEST_ENERGY is unsupported even
-when booting in a non-LPAR environment (e.g., powernv). Prevent it.
+Krzysztof Kozlowski <krzk@kernel.org> writes:
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/platforms/pseries/pseries_energy.c | 3 +++
- 1 file changed, 3 insertions(+)
+> Remove old, dead Kconfig option USB_LED. It is gone since
+> commit a335aaf3125c ("usb: misc: remove outdated USB LED driver").
+>
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  arch/powerpc/configs/c2k_defconfig    | 1 -
+>  arch/powerpc/configs/ppc6xx_defconfig | 1 -
+>  2 files changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
-index 164a13d3998a..832b3d7898a3 100644
---- a/arch/powerpc/platforms/pseries/pseries_energy.c
-+++ b/arch/powerpc/platforms/pseries/pseries_energy.c
-@@ -229,6 +229,9 @@ static int __init pseries_energy_init(void)
- 	int cpu, err;
- 	struct device *cpu_dev;
- 
-+	if (!firmware_has_feature(FW_FEATURE_LPAR))
-+		return 0;
-+
- 	if (!firmware_has_feature(FW_FEATURE_BEST_ENERGY)) {
- 		printk(KERN_INFO "Hypercall H_BEST_ENERGY not supported\n");
- 		return 0;
--- 
-2.11.0
+Thanks. I'm working on cleaning up all the dead options in our
+defconfigs, so I'll make this part of that series.
+
+cheers
