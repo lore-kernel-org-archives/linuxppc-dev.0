@@ -1,42 +1,18 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xClXR6RlFzDrDR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 17:15:03 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6K7DWVx107324
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 03:15:01 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2btpg4b9vs-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 03:15:00 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 20 Jul 2017 17:14:57 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6K7Eso024379418
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 17:14:54 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6K7EqfE032123
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 17:14:53 +1000
-Subject: Re: [PATCH v2 2/3] powerpc/powernv: machine check use kernel crash
- path
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20170719065912.19183-1-npiggin@gmail.com>
- <20170719065912.19183-3-npiggin@gmail.com>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 20 Jul 2017 12:44:52 +0530
-MIME-Version: 1.0
-In-Reply-To: <20170719065912.19183-3-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <5ca83edd-35a7-68ef-73c8-2f0f0c82a335@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCm2466P9zDrF6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 17:37:16 +1000 (AEST)
+Message-ID: <1500536216.3350.66.camel@kernel.crashing.org>
+Subject: [PATCH v4] powerpc/mm/radix: Workaround prefetch issue with KVM
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com, Paul Mackerras
+ <pmac@au1.ibm.com>
+Date: Thu, 20 Jul 2017 17:36:56 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,229 +22,396 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/19/2017 12:29 PM, Nicholas Piggin wrote:
-> There are quite a few machine check exceptions that can be caused by
-> kernel bugs. To make debugging easier, use the kernel crash path in
-> cases of synchronous machine checks that occur in kernel mode, if that
-> would not result in the machine going straight to panic or crash dump.
-> 
-> There is a downside here that die()ing the process in kernel mode can
-> still leave the system unstable. panic_on_oops will always force the
-> system to fail-stop, so systems where that behaviour is important will
-> still do the right thing.
-> 
-> As a test, when triggering an i-side 0111b error (ifetch from foreign
-> address) in kernel mode process context on POWER9, the kernel currently
-> dies quickly like this:
-> 
-> Severe Machine check interrupt [Not recovered]
->   NIP [ffff000000000000]: 0xffff000000000000
->   Initiator: CPU
->   Error type: Real address [Instruction fetch (foreign)]
-> [  127.426651616,0] OPAL: Reboot requested due to Platform error.
->     Effective[  127.426693712,3] OPAL: Reboot requested due to Platform error. address: ffff000000000000
-> opal: Reboot type 1 not supported
-> Kernel panic - not syncing: PowerNV Unrecovered Machine Check
-> CPU: 56 PID: 4425 Comm: syscall Tainted: G   M            4.12.0-rc1-13857-ga4700a261072-dirty #35
-> Call Trace:
-> [  128.017988928,4] IPMI: BUG: Dropping ESEL on the floor due to buggy/mising code in OPAL for this BMCRebooting in 10 seconds..
-> Trying to free IRQ 496 from IRQ context!
-> 
-> 
-> After this patch, the process is killed and the kernel continues with
-> this message, which gives enough information to identify the offending
-> branch (i.e., with CFAR):
-> 
-> Severe Machine check interrupt [Not recovered]
->   NIP [ffff000000000000]: 0xffff000000000000
->   Initiator: CPU
->   Error type: Real address [Instruction fetch (foreign)]
->     Effective address: ffff000000000000
-> Oops: Machine check, sig: 7 [#1]
-> SMP NR_CPUS=2048
-> NUMA
-> PowerNV
-> Modules linked in: iptable_mangle ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 xt_tcpudp tun bridge stp llc kvm_hv kvm iptable_filter binfmt_misc vmx_crypto ip_tables x_tables autofs4 crc32c_vpmsum
-> CPU: 22 PID: 4436 Comm: syscall Tainted: G   M            4.12.0-rc1-13857-ga4700a261072-dirty #36
-> task: c000000932300000 task.stack: c000000932380000
-> NIP: ffff000000000000 LR: 00000000217706a4 CTR: ffff000000000000
-> REGS: c00000000fc8fd80 TRAP: 0200   Tainted: G   M             (4.12.0-rc1-13857-ga4700a261072-dirty)
-> MSR: 90000000001c1003 <SF,HV,ME,RI,LE>
->   CR: 24000484  XER: 20000000
-> CFAR: c000000000004c80 DAR: 0000000021770a90 DSISR: 0a000000 SOFTE: 1
-> GPR00: 0000000000001ebe 00007fffce4818b0 0000000021797f00 0000000000000000
-> GPR04: 00007fff8007ac24 0000000044000484 0000000000004000 00007fff801405e8
-> GPR08: 900000000280f033 0000000024000484 0000000000000000 0000000000000030
-> GPR12: 9000000000001003 00007fff801bc370 0000000000000000 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR28: 00007fff801b0000 0000000000000000 00000000217707a0 00007fffce481918
-> NIP [ffff000000000000] 0xffff000000000000
-> LR [00000000217706a4] 0x217706a4
-> Call Trace:
-> Instruction dump:
-> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-> ---[ end trace 32ae1dabb4f8dae6 ]---
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+There's a somewhat architectural issue with Radix MMU and KVM.
 
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+When coming out of a guest with AIL (ie, MMU enabled), we start
+executing hypervisor code with the PID register still containing
+whatever the guest has been using.
 
-Thanks,
--Mahesh.
+The problem is that the CPU can (and will) then start prefetching
+or speculatively load from whatever host context has that same
+PID (if any), thus bringing translations for that context into
+the TLB, which Linux doesn't know about.
 
-> ---
->  arch/powerpc/include/asm/bug.h        |  1 +
->  arch/powerpc/include/asm/fadump.h     |  2 ++
->  arch/powerpc/kernel/fadump.c          |  9 ++++++++-
->  arch/powerpc/kernel/traps.c           | 22 ++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/opal.c | 32 ++++++++++++++++++++++++++------
->  5 files changed, 59 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-> index 0151af6c2a50..9a918b3ca5ee 100644
-> --- a/arch/powerpc/include/asm/bug.h
-> +++ b/arch/powerpc/include/asm/bug.h
-> @@ -133,6 +133,7 @@ extern int do_page_fault(struct pt_regs *, unsigned long, unsigned long);
->  extern void bad_page_fault(struct pt_regs *, unsigned long, int);
->  extern void _exception(int, struct pt_regs *, int, unsigned long);
->  extern void die(const char *, struct pt_regs *, long);
-> +extern bool die_will_crash(void);
-> 
->  #endif /* !__ASSEMBLY__ */
-> 
-> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-> index ce88bbe1d809..5a23010af600 100644
-> --- a/arch/powerpc/include/asm/fadump.h
-> +++ b/arch/powerpc/include/asm/fadump.h
-> @@ -209,11 +209,13 @@ extern int early_init_dt_scan_fw_dump(unsigned long node,
->  extern int fadump_reserve_mem(void);
->  extern int setup_fadump(void);
->  extern int is_fadump_active(void);
-> +extern int should_fadump_crash(void);
->  extern void crash_fadump(struct pt_regs *, const char *);
->  extern void fadump_cleanup(void);
-> 
->  #else	/* CONFIG_FA_DUMP */
->  static inline int is_fadump_active(void) { return 0; }
-> +static inline int should_fadump_crash(void) { return 0; }
->  static inline void crash_fadump(struct pt_regs *regs, const char *str) { }
->  #endif
->  #endif
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index da8830e49696..8a3058f5943b 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -125,6 +125,13 @@ int is_fadump_boot_memory_area(u64 addr, ulong size)
->  	return (addr + size) > RMA_START && addr <= fw_dump.boot_memory_size;
->  }
-> 
-> +int should_fadump_crash(void)
-> +{
-> +	if (!fw_dump.dump_registered || !fw_dump.fadumphdr_addr)
-> +		return 0;
-> +	return 1;
-> +}
-> +
->  int is_fadump_active(void)
->  {
->  	return fw_dump.dump_active;
-> @@ -518,7 +525,7 @@ void crash_fadump(struct pt_regs *regs, const char *str)
->  	struct fadump_crash_info_header *fdh = NULL;
->  	int old_cpu, this_cpu;
-> 
-> -	if (!fw_dump.dump_registered || !fw_dump.fadumphdr_addr)
-> +	if (!should_fadump_crash())
->  		return;
-> 
->  	/*
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 574e949f8db9..2849c4f50324 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -114,6 +114,28 @@ static void pmac_backlight_unblank(void)
->  static inline void pmac_backlight_unblank(void) { }
->  #endif
-> 
-> +/*
-> + * If oops/die is expected to crash the machine, return true here.
-> + *
-> + * This should not be expected to be 100% accurate, there may be
-> + * notifiers registered or other unexpected conditions that may bring
-> + * down the kernel. Or if the current process in the kernel is holding
-> + * locks or has other critical state, the kernel may become effectively
-> + * unusable anyway.
-> + */
-> +bool die_will_crash(void)
-> +{
-> +	if (should_fadump_crash())
-> +		return true;
-> +	if (kexec_should_crash(current))
-> +		return true;
-> +	if (in_interrupt() || panic_on_oops ||
-> +			!current->pid || is_global_init(current))
-> +		return true;
-> +
-> +	return false;
-> +}
-> +
->  static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;
->  static int die_owner = -1;
->  static unsigned int die_nest_count;
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 96436d129684..140350aacca5 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -34,6 +34,7 @@
->  #include <asm/opal.h>
->  #include <asm/firmware.h>
->  #include <asm/mce.h>
-> +#include <asm/bug.h>
-> 
->  #include "powernv.h"
-> 
-> @@ -426,17 +427,36 @@ static int opal_recover_mce(struct pt_regs *regs,
->  		/* Fatal machine check */
->  		pr_err("Machine check interrupt is fatal\n");
->  		recovered = 0;
-> -	} else if ((evt->severity == MCE_SEV_ERROR_SYNC) &&
-> -			(user_mode(regs) && !is_global_init(current))) {
-> +	}
-> +
-> +	if (!recovered && evt->severity == MCE_SEV_ERROR_SYNC) {
->  		/*
-> -		 * For now, kill the task if we have received exception when
-> -		 * in userspace.
-> +		 * Try to kill processes if we get a synchronous machine check
-> +		 * (e.g., one caused by execution of this instruction). This
-> +		 * will devolve into a panic if we try to kill init or are in
-> +		 * an interrupt etc.
->  		 *
->  		 * TODO: Queue up this address for hwpoisioning later.
-> +		 * TODO: This is not quite right for d-side machine
-> +		 *       checks ->nip is not necessarily the important
-> +		 *       address.
->  		 */
-> -		_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
-> -		recovered = 1;
-> +		if ((user_mode(regs))) {
-> +			_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
-> +			recovered = 1;
-> +		} else if (die_will_crash()) {
-> +			/*
-> +			 * die() would kill the kernel, so better to go via
-> +			 * the platform reboot code that will log the
-> +			 * machine check.
-> +			 */
-> +			recovered = 0;
-> +		} else {
-> +			die("Machine check", regs, SIGBUS);
-> +			recovered = 1;
-> +		}
->  	}
-> +
->  	return recovered;
->  }
-> 
+This can cause stale translations and subsequent crashes.
+
+Fixing this in a way that is neither racy nor a huge performance
+impact is difficult. We could just make the host invalidations
+always use broadcast forms but that would hurt single threaded
+programs for example.
+
+We chose to fix it instead by partitioning the PID space between
+guest and host. This is possible because today Linux only use 19
+out of the 20 bits of PID space, so existing guests will work
+if we make the host use the top half of the 20 bits space.
+
+We additionally add a property to indicate to Linux the size of
+the PID register which will be useful if we eventually have
+processors with a larger PID space available.
+
+There is still an issue with malicious guests purposefully setting
+the PID register to a value in the host range. Hopefully future HW
+can prevent that, but in the meantime, we handle it with a pair of
+kludges:
+
+ - On the way out of a guest, before we clear the current VCPU
+in the PACA, we check the PID and if it's outside of the permitted
+range we flush the TLB for that PID.
+
+ - When context switching, if the mm is "new" on that CPU (the
+corresponding bit was set for the first time in the mm cpumask), we
+check if any sibling thread is in KVM (has a non-NULL VCPU pointer
+in the PACA). If that is the case, we also flush the PID for that
+CPU (core).
+
+This second part is needed to handle the case where a process is
+migrated (or starts a new pthread) on a sibling thread of the CPU
+coming out of KVM, as there's a window where stale translations
+can exist before we detect it and flush them out.
+
+A future optimization could be added by keeping track of whether
+the PID has ever been used and avoid doing that for completely
+fresh PIDs. We could similarily mark PIDs that have been the subject of
+a global invalidation as "fresh". But for now this will do.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+v2. Do the check on KVM exit *after* we've restored the host PID
+
+v3. Properly check for radix in the exit assembly and avoid adding
+    yet another function to tlb-radix.c
+
+v4. Don't add an argument to switch_mmu_context(), instead call a
+    workaround function directly from switch_mm_irqs_off(), which
+    keeps the patch a lot smaller.
+---
+ arch/powerpc/include/asm/book3s/64/mmu.h | 15 +++++-----
+ arch/powerpc/include/asm/mmu_context.h   | 18 ++++++++++--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 49 ++++++++++++++++++++++++++------
+ arch/powerpc/mm/mmu_context_book3s64.c   |  9 ++++--
+ arch/powerpc/mm/pgtable-radix.c          | 34 +++++++++++++++++++++-
+ arch/powerpc/mm/tlb-radix.c              | 45 +++++++++++++++++++++++++++--
+ 6 files changed, 148 insertions(+), 22 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 77529a3e3811..5b4023c616f7 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -59,13 +59,14 @@ extern struct patb_entry *partition_tb;
+ #define PRTS_MASK	0x1f		/* process table size field */
+ #define PRTB_MASK	0x0ffffffffffff000UL
+ 
+-/*
+- * Limit process table to PAGE_SIZE table. This
+- * also limit the max pid we can support.
+- * MAX_USER_CONTEXT * 16 bytes of space.
+- */
+-#define PRTB_SIZE_SHIFT	(CONTEXT_BITS + 4)
+-#define PRTB_ENTRIES	(1ul << CONTEXT_BITS)
++/* Number of supported PID bits */
++extern unsigned int mmu_pid_bits;
++
++/* Base PID to allocate from */
++extern unsigned int mmu_base_pid;
++
++#define PRTB_SIZE_SHIFT	(mmu_pid_bits + 4)
++#define PRTB_ENTRIES	(1ul << mmu_pid_bits)
+ 
+ /*
+  * Power9 currently only support 64K partition table size.
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index da7e9432fa8f..0c76675394c5 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -45,7 +45,7 @@ extern void set_context(unsigned long id, pgd_t *pgd);
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ extern void radix__switch_mmu_context(struct mm_struct *prev,
+-				     struct mm_struct *next);
++				      struct mm_struct *next);
+ static inline void switch_mmu_context(struct mm_struct *prev,
+ 				      struct mm_struct *next,
+ 				      struct task_struct *tsk)
+@@ -67,6 +67,12 @@ extern void __destroy_context(unsigned long context_id);
+ extern void mmu_context_init(void);
+ #endif
+ 
++#if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE) && defined(CONFIG_PPC_RADIX_MMU)
++extern void radix_kvm_prefetch_workaround(struct mm_struct *mm);
++#else
++static inline void radix_kvm_prefetch_workaround(struct mm_struct *mm) { }
++#endif
++
+ extern void switch_cop(struct mm_struct *next);
+ extern int use_cop(unsigned long acop, struct mm_struct *mm);
+ extern void drop_cop(unsigned long acop, struct mm_struct *mm);
+@@ -79,9 +85,13 @@ static inline void switch_mm_irqs_off(struct mm_struct *prev,
+ 				      struct mm_struct *next,
+ 				      struct task_struct *tsk)
+ {
++	bool new_on_cpu = false;
++
+ 	/* Mark this context has been used on the new CPU */
+-	if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next)))
++	if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next))) {
+ 		cpumask_set_cpu(smp_processor_id(), mm_cpumask(next));
++		new_on_cpu = true;
++	}
+ 
+ 	/* 32-bit keeps track of the current PGDIR in the thread struct */
+ #ifdef CONFIG_PPC32
+@@ -109,6 +119,10 @@ static inline void switch_mm_irqs_off(struct mm_struct *prev,
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+ 		asm volatile ("dssall");
+ #endif /* CONFIG_ALTIVEC */
++
++	if (new_on_cpu)
++		radix_kvm_prefetch_workaround(next);
++
+ 	/*
+ 	 * The actual HW switching method differs between the various
+ 	 * sub architectures. Out of line for now
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index cb44065e2946..e160d009952d 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1443,12 +1443,14 @@ mc_cont:
+ 	ori	r6,r6,1
+ 	mtspr	SPRN_CTRLT,r6
+ 4:
+-	/* Read the guest SLB and save it away */
++	/* Check if we are running hash or radix and store it in cr2 */
+ 	ld	r5, VCPU_KVM(r9)
+ 	lbz	r0, KVM_RADIX(r5)
+-	cmpwi	r0, 0
++	cmpwi	cr2,r0,0
++
++	/* Read the guest SLB and save it away */
+ 	li	r5, 0
+-	bne	3f			/* for radix, save 0 entries */
++	bne	cr2, 3f			/* for radix, save 0 entries */
+ 	lwz	r0,VCPU_SLB_NR(r9)	/* number of entries in SLB */
+ 	mtctr	r0
+ 	li	r6,0
+@@ -1530,6 +1532,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	std	r6, VCPU_BESCR(r9)
+ 	stw	r7, VCPU_GUEST_PID(r9)
+ 	std	r8, VCPU_WORT(r9)
++
+ BEGIN_FTR_SECTION
+ 	mfspr	r5, SPRN_TCSCR
+ 	mfspr	r6, SPRN_ACOP
+@@ -1712,11 +1715,6 @@ BEGIN_FTR_SECTION_NESTED(96)
+ END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 22:
+-	/* Clear out SLB */
+-	li	r5,0
+-	slbmte	r5,r5
+-	slbia
+-	ptesync
+ 
+ 	/* Restore host values of some registers */
+ BEGIN_FTR_SECTION
+@@ -1737,10 +1735,45 @@ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_PID, r7
+ 	mtspr	SPRN_IAMR, r8
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++
++	/*
++	 * Are we running hash or radix ?
++	 */
++	bne	cr2,2f
++
++	/* Hash: clear out SLB */
++	li	r5,0
++	slbmte	r5,r5
++	slbia
++	ptesync
++	b	5f
++
++2:	/* Radix: Handle the case where the guest used an illegal PID */
++	LOAD_REG_ADDR(r4, mmu_base_pid)
++	lwz	r3, VCPU_GUEST_PID(r9)
++	lwz	r5, 0(r4)
++	cmpw	cr0,r3,r5
++	blt	4f
++
++	/* Illegal PID, flush the TLB for this PID/LPID */
++	isync
++	ld	r6,VCPU_KVM(r9)
++	lwz	r0,KVM_TLB_SETS(r6)
++	mtctr	r0
++	li	r7,0x400		/* IS field = 0b01 */
++	ptesync
++	sldi	r0,r3,32		/* RS has PID */
++3:	PPC_TLBIEL(7,0,2,1,1)		/* RIC=2, PRS=1, R=1 */
++	addi	r7,r7,0x1000
++	bdnz	3b
++	ptesync
++
++4:	/* Flush the ERAT on radix P9 DD1 guest exit */
+ BEGIN_FTR_SECTION
+ 	PPC_INVALIDATE_ERAT
+ END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1)
+ 
++5:
+ 	/*
+ 	 * POWER7/POWER8 guest -> host partition switch code.
+ 	 * We don't have to lock against tlbies but we do
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index abed1fe6992f..f74455dec087 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -25,6 +25,10 @@
+ #include <asm/mmu_context.h>
+ #include <asm/pgalloc.h>
+ 
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++#include <asm/kvm_book3s_asm.h>
++#endif
++
+ #include "icswx.h"
+ 
+ static DEFINE_SPINLOCK(mmu_context_lock);
+@@ -126,9 +130,10 @@ static int hash__init_new_context(struct mm_struct *mm)
+ static int radix__init_new_context(struct mm_struct *mm)
+ {
+ 	unsigned long rts_field;
+-	int index;
++	int index, max_id;
+ 
+-	index = alloc_context_id(1, PRTB_ENTRIES - 1);
++	max_id = (1 << mmu_pid_bits) - 1;
++	index = alloc_context_id(mmu_base_pid, max_id);
+ 	if (index < 0)
+ 		return index;
+ 
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 02134c95a956..4049113db6d9 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -25,6 +25,9 @@
+ 
+ #include <trace/events/thp.h>
+ 
++unsigned int mmu_pid_bits;
++unsigned int mmu_base_pid;
++
+ static int native_register_process_table(unsigned long base, unsigned long pg_sz,
+ 					 unsigned long table_size)
+ {
+@@ -243,11 +246,34 @@ static void __init radix_init_pgtable(void)
+ 	for_each_memblock(memory, reg)
+ 		WARN_ON(create_physical_mapping(reg->base,
+ 						reg->base + reg->size));
++
++	/* Find out how many PID bits are supported */
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		if (!mmu_pid_bits)
++			mmu_pid_bits = 20;
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++		/*
++		 * When KVM is possible, we only use the top half of the
++		 * PID space to avoid collisions between host and guest PIDs
++		 * which can cause problems due to prefetch when exiting the
++		 * guest with AIL=3
++		 */
++		mmu_base_pid = 1 << (mmu_pid_bits - 1);
++#else
++		mmu_base_pid = 1;
++#endif
++	} else {
++		/* The guest uses the bottom half of the PID space */
++		if (!mmu_pid_bits)
++			mmu_pid_bits = 19;
++		mmu_base_pid = 1;
++	}
++
+ 	/*
+ 	 * Allocate Partition table and process table for the
+ 	 * host.
+ 	 */
+-	BUILD_BUG_ON_MSG((PRTB_SIZE_SHIFT > 36), "Process table size too large.");
++	BUG_ON(PRTB_SIZE_SHIFT > 36);
+ 	process_tb = early_alloc_pgtable(1UL << PRTB_SIZE_SHIFT);
+ 	/*
+ 	 * Fill in the process table.
+@@ -321,6 +347,12 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
+ 	if (type == NULL || strcmp(type, "cpu") != 0)
+ 		return 0;
+ 
++	/* Find MMU PID size */
++	prop = of_get_flat_dt_prop(node, "ibm,mmu-pid-bits", &size);
++	if (prop && size == 4)
++		mmu_pid_bits = be32_to_cpup(prop);
++
++	/* Grab page size encodings */
+ 	prop = of_get_flat_dt_prop(node, "ibm,processor-radix-AP-encodings", &size);
+ 	if (!prop)
+ 		return 0;
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 18151e9ad694..b3e849c4886e 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -12,12 +12,12 @@
+ #include <linux/mm.h>
+ #include <linux/hugetlb.h>
+ #include <linux/memblock.h>
+-#include <asm/ppc-opcode.h>
+ 
++#include <asm/ppc-opcode.h>
+ #include <asm/tlb.h>
+ #include <asm/tlbflush.h>
+ #include <asm/trace.h>
+-
++#include <asm/cputhreads.h>
+ 
+ #define RIC_FLUSH_TLB 0
+ #define RIC_FLUSH_PWC 1
+@@ -478,3 +478,44 @@ void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
+ 	else
+ 		radix__flush_tlb_page_psize(mm, address, mmu_virtual_psize);
+ }
++
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
++{
++	unsigned int pid = mm->context.id;
++
++	if (unlikely(pid == MMU_NO_CONTEXT))
++		return;
++
++	/*
++	 * If this context hasn't run on that CPU before and KVM is
++	 * around, there's a slim chance that the guest on another
++	 * CPU just brought in obsolete translation into the TLB of
++	 * this CPU due to a bad prefetch using the guest PID on
++	 * the way into the hypervisor.
++	 *
++	 * We work around this here. If KVM is possible, we check if
++	 * any sibling thread is in KVM. If it is, the window may exist
++	 * and thus we flush that PID from the core.
++	 *
++	 * A potential future improvement would be to mark which PIDs
++	 * have never been used on the system and avoid it if the PID
++	 * is new and the process has no other cpumask bit set.
++	 */
++	if (cpu_has_feature(CPU_FTR_HVMODE) && radix_enabled()) {
++		int cpu = smp_processor_id();
++		int sib = cpu_first_thread_sibling(cpu);
++		bool flush = false;
++
++		for (; sib <= cpu_last_thread_sibling(cpu) && !flush; sib++) {
++			if (sib == cpu)
++				continue;
++			if (paca[sib].kvm_hstate.kvm_vcpu)
++				flush = true;
++		}
++		if (flush)
++			_tlbiel_pid(pid, RIC_FLUSH_ALL);
++	}
++}
++EXPORT_SYMBOL_GPL(radix_kvm_prefetch_workaround);
++#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
