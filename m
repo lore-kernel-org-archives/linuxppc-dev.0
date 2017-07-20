@@ -1,26 +1,44 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xD7Fp30wRzDrHL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 08:03:42 +1000 (AEST)
-Date: Thu, 20 Jul 2017 17:03:07 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Santosh Sivaraj <santosh@fossix.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Segher Boessenkool <segher.boessenkool@nl.ibm.com>
-Subject: Re: [PATCH] powerpc/vdso64: Add support for
- CLOCK_{REALTIME/MONOTONIC}_COARSE
-Message-ID: <20170720220306.GD13471@gate.crashing.org>
-References: <20170720095834.15153-1-santosh@fossix.org>
- <87bmofgsbh.fsf@concordia.ellerman.id.au>
- <1500585459.10674.8.camel@kernel.crashing.org>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xD7GZ4RZWzDrHy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 08:04:21 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6KM4H57029699
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 18:04:17 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bu23v6qrh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 18:04:17 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Thu, 20 Jul 2017 16:04:10 -0600
+Date: Thu, 20 Jul 2017 15:03:58 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com,
+ mhocko@kernel.org
+Subject: Re: [RFC v6 01/62] powerpc: Free up four 64K PTE bits in 4K backed
+ HPTE pages
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
+ <1500177424-13695-2-git-send-email-linuxram@us.ibm.com>
+ <87d18vr6yw.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1500585459.10674.8.camel@kernel.crashing.org>
+In-Reply-To: <87d18vr6yw.fsf@skywalker.in.ibm.com>
+Message-Id: <20170720220358.GH5487@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,77 +48,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 21, 2017 at 07:17:39AM +1000, Benjamin Herrenschmidt wrote:
-> > Great patch! Always good to see asm replaced with C.
+On Thu, Jul 20, 2017 at 11:21:51AM +0530, Aneesh Kumar K.V wrote:
 > 
-> Yeah ewll ... when C becomes some kind of weird glorifed asm like
-> below, I don't see much of a point ;-)
-
-Yeah.
-
-> > > diff --git a/arch/powerpc/kernel/vdso64/gettime.c b/arch/powerpc/kernel/vdso64/gettime.c
-> > > new file mode 100644
-> > > index 0000000..01f411f
-> > > --- /dev/null
-> > > +++ b/arch/powerpc/kernel/vdso64/gettime.c
-> > > @@ -0,0 +1,162 @@
-> > 
-> > ...
-> > > +static notrace int gettime_syscall_fallback(clockid_t clk_id,
-> > > +					     struct timespec *tp)
-> > > +{
-> > > +	register clockid_t id asm("r3") = clk_id;
-> > > +	register struct timespec *t asm("r4") = tp;
-> > > +	register int nr asm("r0") = __NR_clock_gettime;
-> > > +	register int ret asm("r3");
-> > 
-> > I guess this works. I've always been a bit nervous about register
-> > variables TBH.
+> .....
 > 
-> Does it really work ? That really makes me nervous too, I woudn't do
-> this without a strong ack from a toolchain person... Segher ?
+> >  	/*
+> > @@ -116,8 +104,8 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+> >  		 * On hash insert failure we use old pte value and we don't
+> >  		 * want slot information there if we have a insert failure.
+> >  		 */
+> > -		old_pte &= ~(H_PAGE_HASHPTE | H_PAGE_F_GIX | H_PAGE_F_SECOND);
+> > -		new_pte &= ~(H_PAGE_HASHPTE | H_PAGE_F_GIX | H_PAGE_F_SECOND);
+> > +		old_pte &= ~(H_PAGE_HASHPTE);
+> > +		new_pte &= ~(H_PAGE_HASHPTE);
+> >  		goto htab_insert_hpte;
+> >  	}
+> 
+> With the current path order and above hunk we will breaks the bisect I guess. With the above, when
+> we convert a 64k hpte to 4khpte, since this is the first patch, we
+> should clear that H_PAGE_F_GIX and H_PAGE_F_SECOND. We still use them
+> for 64k. I guess you should move this hunk to second patch.
 
-Local register variables work perfectly well, but only for one thing:
-those variables are guaranteed to be in those registers, _as arguments
-to an asm_.
-
-> > > +	asm volatile("sc"
-> > > +		     : "=r" (ret)
-> > > +		     : "r"(nr), "r"(id), "r"(t)
-> > > +		     : "memory");
-> > 
-> > Not sure we need the memory clobber?
-> > 
-> > It can clobber more registers than that though.
-
-It needs the memory clobber (if the system call accessess any of "your"
-memory).  You need more register clobbers: also for most CR fields,
-CTR, etc.
-
-One trick that often works is doing the system call from within an
-assembler function that uses the C ABI, since that has almost the same
-calling conventions.
-
-Something as simple as
-
-	.globl syscall42
-syscall42:
-	li 0,42
-	sc
-	blr
-
-(and yeah handle the CR bit 3 thing somehow)
-
-and declare it as
-
-int syscall42(some_type r3_arg, another_type r4_arg);
-
-
-Inline asm is good when you want the asm code inlined into the callers,
-potentially with arguments optimised etc.  The only overhead making the
-syscall a function has is that single blr; the only optimisation you
-miss is you could potentially load GPR0 a bit earlier (and you can get
-a tiny bit more scheduling flexibility).
-
-
-Segher
+true. it should move to the next patch. Will fix it.
+RP
