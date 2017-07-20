@@ -1,45 +1,22 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xChhV2KKrzDrDD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 15:06:50 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6K544oN019492
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 01:06:48 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2btcgmbaeg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 01:06:47 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Thu, 20 Jul 2017 15:06:45 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6K56ioX18219154
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 15:06:44 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6K56hqo012851
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 15:06:43 +1000
-Date: Thu, 20 Jul 2017 10:36:29 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <masriniv@in.ibm.com>,
- Anton Blanchard <anton@samba.org>, Michael Neuling <mikey@neuling.org>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] POWER9 PMU stops after idle workaround
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20170720015322.24307-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCj2L0HrVzDrD7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 15:22:18 +1000 (AEST)
+Date: Thu, 20 Jul 2017 15:21:59 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: joserz@linux.vnet.ibm.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, oohall@gmail.com
+Subject: Re: KVM guests freeze under upstream kernel
+Message-ID: <20170720052159.GB8602@fergus.ozlabs.ibm.com>
+References: <20170719194634.GA1222@pacoca>
+ <1500507770.3350.41.camel@kernel.crashing.org>
+ <20170720030222.GA21034@pacoca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20170720015322.24307-1-npiggin@gmail.com>
-Message-Id: <20170720050629.GA13326@drishya.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170720030222.GA21034@pacoca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,46 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Nicholas Piggin <npiggin@gmail.com> [2017-07-20 11:53:22]:
-
-> POWER9 DD2 PMU can stop after a state-loss idle in some conditions.
+On Thu, Jul 20, 2017 at 12:02:23AM -0300, joserz@linux.vnet.ibm.com wrote:
+> On Thu, Jul 20, 2017 at 09:42:50AM +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2017-07-19 at 16:46 -0300, joserz@linux.vnet.ibm.com wrote:
+> > > Hello!
+> > > 
+> > > We're not able to boot any KVM guest using upstream kernel (cb8c65ccff7f77d0285f1b126c72d37b2572c865 - 4.13.0-rc1+).
+> > > After reaching the SLOF initial counting, the guest simply freezes:
+> > 
+> > Can you send our .config ?
 > 
-> A solution is to set then clear MMCRA[60] after wake from state-loss
-> idle.
+> Sure,
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-
-Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-
-
-> ---
->  arch/powerpc/kernel/idle_book3s.S | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
+> Answering Michael as well:
 > 
-> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> index 516ebef905c0..e6252c5a57a4 100644
-> --- a/arch/powerpc/kernel/idle_book3s.S
-> +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -460,11 +460,17 @@ pnv_restore_hyp_resource_arch300:
->  	/*
->  	 * Workaround for POWER9, if we lost resources, the ERAT
->  	 * might have been mixed up and needs flushing. We also need
-> -	 * to reload MMCR0 (see comment above).
-> +	 * to reload MMCR0 (see comment above). We also need to set
-> +	 * then clear bit 60 in MMCRA to ensure the PMU starts running.
->  	 */
->  	blt	cr3,1f
->  	PPC_INVALIDATE_ERAT
->  	ld	r1,PACAR1(r13)
-> +	mfspr	r4,SPRN_MMCRA
-> +	ori	r4,r4,(1 << (63-60))
-> +	mtspr	SPRN_MMCRA,r4
-> +	xori	r4,r4,(1 << (63-60))
-> +	mtspr	SPRN_MMCRA,r4
+> It's a P9 with RHEL kernel 4.11.0-10.el7a.ppc64le installed. The problem
+> was noticed with kernel > 4.13 (I'm currently running 4.13.0-rc1+).
+> 
+> QEMU is https://github.com/dgibson/qemu (ppc-for-2.10) but I gave the
+> default packaged Qemu a try.
+> 
+> For the guest, I tried both a vanilla Ubuntu 17.04 and the host kernel.
+> But they had never a chance to run since the freezing happened in SLOF.
+> 
+> Note that using the 4.11.0-10.el7a.ppc64le kernel it works fine
+> (for any of these Qemu/Guest setup). With 4.13.0-rc1 I have it run after
+> reverting that referred commit.
 
+Is the host kernel running in radix mode?
 
-Timing is ok to resolve the issue?  Does back-to-back bit flip of
-MMCRA[60] gets the job done for all cases?  Just asking since this
-issue in itself is a corner case ;)
+Did you check the host kernel logs for any oops messages?
 
---Vaidy
+Paul.
