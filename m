@@ -1,22 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <victora@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCvbl3T4qzDrF4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 23:18:27 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Santosh Sivaraj <santosh@fossix.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/vdso64: Add support for
- CLOCK_{REALTIME/MONOTONIC}_COARSE
-In-Reply-To: <20170720095834.15153-1-santosh@fossix.org>
-References: <20170720095834.15153-1-santosh@fossix.org>
-Date: Thu, 20 Jul 2017 23:18:26 +1000
-Message-ID: <87bmofgsbh.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xD0Tz60vszDrFh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 02:58:47 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6KGrcp3003592
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 12:58:45 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2btwac9svd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 12:58:45 -0400
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <victora@linux.vnet.ibm.com>;
+ Thu, 20 Jul 2017 13:58:43 -0300
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6KGsFK019988726
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 13:54:16 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6KGwe1O020097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 13:58:40 -0300
+From: Victor Aoqui <victora@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com
+Cc: victora@br.ibm.com, victora@linux.vnet.ibm.com
+Subject: [PATCH v2] powerpc/mm: Implemented default_hugepagesz verification
+ for powerpc
+Date: Thu, 20 Jul 2017 13:58:38 -0300
+Message-Id: <20170720165838.3549-1-victora@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +44,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Santosh Sivaraj <santosh@fossix.org> writes:
+Implemented default hugepage size verification (default_hugepagesz=)
+in order to allow allocation of defined number of pages (hugepages=)
+only for supported hugepage sizes.
 
-> Current vDSO64 implementation does not have support for coarse
-> clocks (CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls
-> back to system call. Below is a benchmark of the difference in execution
-> time with and without vDSO support.
+Signed-off-by: Victor Aoqui <victora@linux.vnet.ibm.com>
+---
+v2:
 
-Hi Santosh,
+- Renamed default_hugepage_setup_sz function to hugetlb_default_size_setup;
 
-Great patch! Always good to see asm replaced with C.
+- Added powerpc string to error message.
 
-> diff --git a/arch/powerpc/kernel/vdso64/gettime.c b/arch/powerpc/kernel/vdso64/gettime.c
-> new file mode 100644
-> index 0000000..01f411f
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/vdso64/gettime.c
-> @@ -0,0 +1,162 @@
-...
-> +static notrace int gettime_syscall_fallback(clockid_t clk_id,
-> +					     struct timespec *tp)
-> +{
-> +	register clockid_t id asm("r3") = clk_id;
-> +	register struct timespec *t asm("r4") = tp;
-> +	register int nr asm("r0") = __NR_clock_gettime;
-> +	register int ret asm("r3");
+ arch/powerpc/mm/hugetlbpage.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-I guess this works. I've always been a bit nervous about register
-variables TBH.
-
-> +	asm volatile("sc"
-> +		     : "=r" (ret)
-> +		     : "r"(nr), "r"(id), "r"(t)
-> +		     : "memory");
-
-Not sure we need the memory clobber?
-
-It can clobber more registers than that though.
-
-See: Documentation/powerpc/syscall64-abi.txt
-
-> diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> index 3820213..1258009 100644
-> --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-> +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> @@ -51,85 +53,21 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
-...
-> +	stwu	r1,-112(r1)
-> +  .cfi_register lr,r6
-> +	std	r6,24(r1)
-> +	bl	V_LOCAL_FUNC(kernel_clock_gettime)
->  	crclr	cr0*4+so
-
-Clearing CR0[SO] says that the syscall always succeeded.
-
-What happens if you call this with a completely bogus clock id?
-
-I think the solution is probably to do the syscall fallback in asm, and
-everything else in C.
-
-cheers
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index e1bf5ca..3a142fe 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -780,6 +780,21 @@ static int __init hugepage_setup_sz(char *str)
+ }
+ __setup("hugepagesz=", hugepage_setup_sz);
+ 
++static int __init hugetlb_default_size_setup(char *str)
++{
++	unsigned long long size;
++
++	size = memparse(str, &str);
++
++	if (add_huge_page_size(size) != 0) {
++		hugetlb_bad_size();
++		pr_err("Invalid powerpc default huge page size specified(%llu)\n", size);
++	}
++
++	return 1;
++}
++__setup("default_hugepagesz=", hugetlb_default_size_setup);
++
+ struct kmem_cache *hugepte_cache;
+ static int __init hugetlbpage_init(void)
+ {
+-- 
+1.8.3.1
