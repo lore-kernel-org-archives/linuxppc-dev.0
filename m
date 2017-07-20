@@ -1,24 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@gate.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xD6L34vCwzDrHG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 07:22:19 +1000 (AEST)
-Message-ID: <1500585713.10674.10.camel@kernel.crashing.org>
-Subject: Re: [PATCH] drivers: cpuidle: Disable preemption before get_lppaca
- function call in pseries_idle_probe function
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Victor Aoqui <victora@linux.vnet.ibm.com>, rjw@rjwysocki.net,
- daniel.lezcano@linaro.org, paulus@samba.org, mpe@ellerman.id.au,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: ltc-interlock@lists.linux.ibm.com, victora@br.ibm.com,
- mauricfo@linux.vnet.ibm.com
-Date: Fri, 21 Jul 2017 07:21:53 +1000
-In-Reply-To: <20170720175735.3957-1-victora@linux.vnet.ibm.com>
-References: <20170720175735.3957-1-victora@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xD7Fp30wRzDrHL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 08:03:42 +1000 (AEST)
+Date: Thu, 20 Jul 2017 17:03:07 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Santosh Sivaraj <santosh@fossix.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Segher Boessenkool <segher.boessenkool@nl.ibm.com>
+Subject: Re: [PATCH] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+Message-ID: <20170720220306.GD13471@gate.crashing.org>
+References: <20170720095834.15153-1-santosh@fossix.org>
+ <87bmofgsbh.fsf@concordia.ellerman.id.au>
+ <1500585459.10674.8.camel@kernel.crashing.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1500585459.10674.8.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +30,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-07-20 at 14:57 -0300, Victor Aoqui wrote:
-> When CONFIG_PREEMPT=y, the following warning shows up:
+On Fri, Jul 21, 2017 at 07:17:39AM +1000, Benjamin Herrenschmidt wrote:
+> > Great patch! Always good to see asm replaced with C.
 > 
-> BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
-> caller is pseries_processor_idle_init+0x58/0x21c
+> Yeah ewll ... when C becomes some kind of weird glorifed asm like
+> below, I don't see much of a point ;-)
+
+Yeah.
+
+> > > diff --git a/arch/powerpc/kernel/vdso64/gettime.c b/arch/powerpc/kernel/vdso64/gettime.c
+> > > new file mode 100644
+> > > index 0000000..01f411f
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/kernel/vdso64/gettime.c
+> > > @@ -0,0 +1,162 @@
+> > 
+> > ...
+> > > +static notrace int gettime_syscall_fallback(clockid_t clk_id,
+> > > +					     struct timespec *tp)
+> > > +{
+> > > +	register clockid_t id asm("r3") = clk_id;
+> > > +	register struct timespec *t asm("r4") = tp;
+> > > +	register int nr asm("r0") = __NR_clock_gettime;
+> > > +	register int ret asm("r3");
+> > 
+> > I guess this works. I've always been a bit nervous about register
+> > variables TBH.
 > 
-> This warning shows up because preemption cannot occur when using
-> get_paca(), otherwise the paca_struct it points to may be the wrong one
-> just after.
-> 
-> For this reason, preemption needs to be disabled before
-> lppaca_shared_proc(get_lppaca()).
+> Does it really work ? That really makes me nervous too, I woudn't do
+> this without a strong ack from a toolchain person... Segher ?
 
-Also chekc the generated assembly. We had all sort of interesting
-issues where gcc would copy the paca pointer or the lppaca pointer
-to a GPR *outside* of the preempt disabled section...
+Local register variables work perfectly well, but only for one thing:
+those variables are guaranteed to be in those registers, _as arguments
+to an asm_.
 
-In that specific case it's not a big deal but overall, I am not
-comfortable with PREEMPT on powerpc until we do something a bit
-more drastic...
+> > > +	asm volatile("sc"
+> > > +		     : "=r" (ret)
+> > > +		     : "r"(nr), "r"(id), "r"(t)
+> > > +		     : "memory");
+> > 
+> > Not sure we need the memory clobber?
+> > 
+> > It can clobber more registers than that though.
 
-I would like to remove all such direct accesses to paca, instead have a
-"new" get_paca() written in asm that does the preempt disable then
-returns the PACA in a GPR (not directly use r13, hide that from gcc),
-and which is paired with a put_paca().
+It needs the memory clobber (if the system call accessess any of "your"
+memory).  You need more register clobbers: also for most CR fields,
+CTR, etc.
 
-The few places where we want to directly access r13 should be hand
-written in asm too to hide r13 from gcc, for accessing the irq_happened
-in the fast path of local_irq_enable/disable/... we should do the same
-with lock tokens.
+One trick that often works is doing the system call from within an
+assembler function that uses the C ABI, since that has almost the same
+calling conventions.
 
-Ben.
+Something as simple as
+
+	.globl syscall42
+syscall42:
+	li 0,42
+	sc
+	blr
+
+(and yeah handle the CR bit 3 thing somehow)
+
+and declare it as
+
+int syscall42(some_type r3_arg, another_type r4_arg);
+
+
+Inline asm is good when you want the asm code inlined into the callers,
+potentially with arguments optimised etc.  The only overhead making the
+syscall a function has is that single blr; the only optimisation you
+miss is you could potentially load GPR0 a bit earlier (and you can get
+a tiny bit more scheduling flexibility).
+
+
+Segher
