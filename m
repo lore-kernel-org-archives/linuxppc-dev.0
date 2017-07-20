@@ -1,41 +1,23 @@
-Return-Path: <victora@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xD1p10LzXzDrF9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 03:57:44 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6KHrw17128766
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 13:57:42 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bu05ju99h-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 13:57:41 -0400
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <victora@linux.vnet.ibm.com>;
- Thu, 20 Jul 2017 14:57:39 -0300
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6KHvbrC4325460
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 14:57:37 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6KHvbHP014335
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 14:57:37 -0300
-From: Victor Aoqui <victora@linux.vnet.ibm.com>
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: ltc-interlock@lists.linux.ibm.com, victora@br.ibm.com,
- victora@linux.vnet.ibm.com, mauricfo@linux.vnet.ibm.com
-Subject: [PATCH] drivers: cpuidle: Disable preemption before get_lppaca
- function call in pseries_idle_probe function
-Date: Thu, 20 Jul 2017 14:57:35 -0300
-Message-Id: <20170720175735.3957-1-victora@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xD6F350HzzDrHB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 07:17:59 +1000 (AEST)
+Message-ID: <1500585459.10674.8.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Santosh Sivaraj
+ <santosh@fossix.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Segher Boessenkool
+ <segher.boessenkool@nl.ibm.com>
+Date: Fri, 21 Jul 2017 07:17:39 +1000
+In-Reply-To: <87bmofgsbh.fsf@concordia.ellerman.id.au>
+References: <20170720095834.15153-1-santosh@fossix.org>
+ <87bmofgsbh.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,44 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_PREEMPT=y, the following warning shows up:
+On Thu, 2017-07-20 at 23:18 +1000, Michael Ellerman wrote:
+> Santosh Sivaraj <santosh@fossix.org> writes:
+> 
+> > Current vDSO64 implementation does not have support for coarse
+> > clocks (CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls
+> > back to system call. Below is a benchmark of the difference in execution
+> > time with and without vDSO support.
+> 
+> Hi Santosh,
+> 
+> Great patch! Always good to see asm replaced with C.
 
-BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
-caller is pseries_processor_idle_init+0x58/0x21c
+Yeah ewll ... when C becomes some kind of weird glorifed asm like
+below, I don't see much of a point ;-)
 
-This warning shows up because preemption cannot occur when using
-get_paca(), otherwise the paca_struct it points to may be the wrong one
-just after.
+> > diff --git a/arch/powerpc/kernel/vdso64/gettime.c b/arch/powerpc/kernel/vdso64/gettime.c
+> > new file mode 100644
+> > index 0000000..01f411f
+> > --- /dev/null
+> > +++ b/arch/powerpc/kernel/vdso64/gettime.c
+> > @@ -0,0 +1,162 @@
+> 
+> ...
+> > +static notrace int gettime_syscall_fallback(clockid_t clk_id,
+> > +					     struct timespec *tp)
+> > +{
+> > +	register clockid_t id asm("r3") = clk_id;
+> > +	register struct timespec *t asm("r4") = tp;
+> > +	register int nr asm("r0") = __NR_clock_gettime;
+> > +	register int ret asm("r3");
+> 
+> I guess this works. I've always been a bit nervous about register
+> variables TBH.
 
-For this reason, preemption needs to be disabled before
-lppaca_shared_proc(get_lppaca()).
+Does it really work ? That really makes me nervous too, I woudn't do
+this without a strong ack from a toolchain person... Segher ?
 
-Signed-off-by: Victor Aoqui <victora@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-pseries.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index e9b3853..d6dda8c 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -233,12 +233,16 @@ static int pseries_cpuidle_driver_init(void)
-  */
- static int pseries_idle_probe(void)
- {
-+	int retval;
- 
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
- 
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		if (lppaca_shared_proc(get_lppaca())) {
-+		preempt_disable();
-+		retval = lppaca_shared_proc(get_lppaca());
-+		preempt_enable();
-+		if (retval) {
- 			cpuidle_state_table = shared_states;
- 			max_idle_state = ARRAY_SIZE(shared_states);
- 		} else {
--- 
-1.8.3.1
+> > +	asm volatile("sc"
+> > +		     : "=r" (ret)
+> > +		     : "r"(nr), "r"(id), "r"(t)
+> > +		     : "memory");
+> 
+> Not sure we need the memory clobber?
+> 
+> It can clobber more registers than that though.
+> 
+> See: Documentation/powerpc/syscall64-abi.txt
+> 
+> > diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+> > index 3820213..1258009 100644
+> > --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
+> > +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+> > @@ -51,85 +53,21 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
+> 
+> ...
+> > +	stwu	r1,-112(r1)
+> > +  .cfi_register lr,r6
+> > +	std	r6,24(r1)
+> > +	bl	V_LOCAL_FUNC(kernel_clock_gettime)
+> >  	crclr	cr0*4+so
+> 
+> Clearing CR0[SO] says that the syscall always succeeded.
+> 
+> What happens if you call this with a completely bogus clock id?
+> 
+> I think the solution is probably to do the syscall fallback in asm, and
+> everything else in C.
+> 
+> cheers
