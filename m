@@ -1,18 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <santosh@fossix.org>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xCm2466P9zDrF6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 17:37:16 +1000 (AEST)
-Message-ID: <1500536216.3350.66.camel@kernel.crashing.org>
-Subject: [PATCH v4] powerpc/mm/radix: Workaround prefetch issue with KVM
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com, Paul Mackerras
- <pmac@au1.ibm.com>
-Date: Thu, 20 Jul 2017 17:36:56 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xCq9R0QJYzDrFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 19:58:50 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id v190so2364040pgv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jul 2017 02:58:50 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+Date: Thu, 20 Jul 2017 15:28:34 +0530
+Message-Id: <20170720095834.15153-1-santosh@fossix.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,396 +25,359 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There's a somewhat architectural issue with Radix MMU and KVM.
+Current vDSO64 implementation does not have support for coarse
+clocks (CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls
+back to system call. Below is a benchmark of the difference in execution
+time with and without vDSO support.
 
-When coming out of a guest with AIL (ie, MMU enabled), we start
-executing hypervisor code with the PID register still containing
-whatever the guest has been using.
+(Non-coarse clocks are also included just for completion)
 
-The problem is that the CPU can (and will) then start prefetching
-or speculatively load from whatever host context has that same
-PID (if any), thus bringing translations for that context into
-the TLB, which Linux doesn't know about.
+Without vDSO support:
+--------------------
+clock-gettime-realtime: syscall: 1547 nsec/call
+clock-gettime-realtime:    libc: 258 nsec/call
+clock-gettime-realtime:    vdso: 180 nsec/call
 
-This can cause stale translations and subsequent crashes.
+clock-gettime-monotonic: syscall: 1399 nsec/call
+clock-gettime-monotonic:    libc: 317 nsec/call
+clock-gettime-monotonic:    vdso: 249 nsec/call
 
-Fixing this in a way that is neither racy nor a huge performance
-impact is difficult. We could just make the host invalidations
-always use broadcast forms but that would hurt single threaded
-programs for example.
+clock-gettime-realtime-coarse: syscall: 1228 nsec/call
+clock-gettime-realtime-coarse:    libc: 1320 nsec/call
+clock-gettime-realtime-coarse:    vdso: 1330 nsec/call
 
-We chose to fix it instead by partitioning the PID space between
-guest and host. This is possible because today Linux only use 19
-out of the 20 bits of PID space, so existing guests will work
-if we make the host use the top half of the 20 bits space.
+clock-gettime-monotonic-coarse: syscall: 1263 nsec/call
+clock-gettime-monotonic-coarse:    libc: 1368 nsec/call
+clock-gettime-monotonic-coarse:    vdso: 1258 nsec/call
 
-We additionally add a property to indicate to Linux the size of
-the PID register which will be useful if we eventually have
-processors with a larger PID space available.
+With vDSO support:
+------------------
+clock-gettime-realtime: syscall: 1660 nsec/call
+clock-gettime-realtime:    libc: 251 nsec/call
+clock-gettime-realtime:    vdso: 180 nsec/call
 
-There is still an issue with malicious guests purposefully setting
-the PID register to a value in the host range. Hopefully future HW
-can prevent that, but in the meantime, we handle it with a pair of
-kludges:
+clock-gettime-monotonic: syscall: 1514 nsec/call
+clock-gettime-monotonic:    libc: 309 nsec/call
+clock-gettime-monotonic:    vdso: 239 nsec/call
 
- - On the way out of a guest, before we clear the current VCPU
-in the PACA, we check the PID and if it's outside of the permitted
-range we flush the TLB for that PID.
+clock-gettime-realtime-coarse: syscall: 1228 nsec/call
+clock-gettime-realtime-coarse:    libc: 172 nsec/call
+clock-gettime-realtime-coarse:    vdso: 101 nsec/call
 
- - When context switching, if the mm is "new" on that CPU (the
-corresponding bit was set for the first time in the mm cpumask), we
-check if any sibling thread is in KVM (has a non-NULL VCPU pointer
-in the PACA). If that is the case, we also flush the PID for that
-CPU (core).
+clock-gettime-monotonic-coarse: syscall: 1347 nsec/call
+clock-gettime-monotonic-coarse:    libc: 187 nsec/call
+clock-gettime-monotonic-coarse:    vdso: 125 nsec/call
 
-This second part is needed to handle the case where a process is
-migrated (or starts a new pthread) on a sibling thread of the CPU
-coming out of KVM, as there's a window where stale translations
-can exist before we detect it and flush them out.
+Used https://github.com/nlynch-mentor/vdsotest.git for the benchmarks.
 
-A future optimization could be added by keeping track of whether
-the PID has ever been used and avoid doing that for completely
-fresh PIDs. We could similarily mark PIDs that have been the subject of
-a global invalidation as "fresh". But for now this will do.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
 ---
+ arch/powerpc/include/asm/vdso.h           |   1 +
+ arch/powerpc/kernel/vdso64/Makefile       |   2 +-
+ arch/powerpc/kernel/vdso64/gettime.c      | 162 ++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/vdso64/gettimeofday.S |  82 ++-------------
+ 4 files changed, 174 insertions(+), 73 deletions(-)
+ create mode 100644 arch/powerpc/kernel/vdso64/gettime.c
 
-v2. Do the check on KVM exit *after* we've restored the host PID
-
-v3. Properly check for radix in the exit assembly and avoid adding
-    yet another function to tlb-radix.c
-
-v4. Don't add an argument to switch_mmu_context(), instead call a
-    workaround function directly from switch_mm_irqs_off(), which
-    keeps the patch a lot smaller.
----
- arch/powerpc/include/asm/book3s/64/mmu.h | 15 +++++-----
- arch/powerpc/include/asm/mmu_context.h   | 18 ++++++++++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 49 ++++++++++++++++++++++++++------
- arch/powerpc/mm/mmu_context_book3s64.c   |  9 ++++--
- arch/powerpc/mm/pgtable-radix.c          | 34 +++++++++++++++++++++-
- arch/powerpc/mm/tlb-radix.c              | 45 +++++++++++++++++++++++++++--
- 6 files changed, 148 insertions(+), 22 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 77529a3e3811..5b4023c616f7 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -59,13 +59,14 @@ extern struct patb_entry *partition_tb;
- #define PRTS_MASK	0x1f		/* process table size field */
- #define PRTB_MASK	0x0ffffffffffff000UL
+diff --git a/arch/powerpc/include/asm/vdso.h b/arch/powerpc/include/asm/vdso.h
+index c53f5f6..721e4cf 100644
+--- a/arch/powerpc/include/asm/vdso.h
++++ b/arch/powerpc/include/asm/vdso.h
+@@ -23,6 +23,7 @@ extern unsigned long vdso32_sigtramp;
+ extern unsigned long vdso32_rt_sigtramp;
  
--/*
-- * Limit process table to PAGE_SIZE table. This
-- * also limit the max pid we can support.
-- * MAX_USER_CONTEXT * 16 bytes of space.
-- */
--#define PRTB_SIZE_SHIFT	(CONTEXT_BITS + 4)
--#define PRTB_ENTRIES	(1ul << CONTEXT_BITS)
-+/* Number of supported PID bits */
-+extern unsigned int mmu_pid_bits;
-+
-+/* Base PID to allocate from */
-+extern unsigned int mmu_base_pid;
-+
-+#define PRTB_SIZE_SHIFT	(mmu_pid_bits + 4)
-+#define PRTB_ENTRIES	(1ul << mmu_pid_bits)
+ int vdso_getcpu_init(void);
++struct vdso_data *__get_datapage(void);
  
- /*
-  * Power9 currently only support 64K partition table size.
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index da7e9432fa8f..0c76675394c5 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -45,7 +45,7 @@ extern void set_context(unsigned long id, pgd_t *pgd);
+ #else /* __ASSEMBLY__ */
  
- #ifdef CONFIG_PPC_BOOK3S_64
- extern void radix__switch_mmu_context(struct mm_struct *prev,
--				     struct mm_struct *next);
-+				      struct mm_struct *next);
- static inline void switch_mmu_context(struct mm_struct *prev,
- 				      struct mm_struct *next,
- 				      struct task_struct *tsk)
-@@ -67,6 +67,12 @@ extern void __destroy_context(unsigned long context_id);
- extern void mmu_context_init(void);
- #endif
+diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
+index 31107bf..8958d87 100644
+--- a/arch/powerpc/kernel/vdso64/Makefile
++++ b/arch/powerpc/kernel/vdso64/Makefile
+@@ -1,6 +1,6 @@
+ # List of files in the vdso, has to be asm only for now
  
-+#if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE) && defined(CONFIG_PPC_RADIX_MMU)
-+extern void radix_kvm_prefetch_workaround(struct mm_struct *mm);
-+#else
-+static inline void radix_kvm_prefetch_workaround(struct mm_struct *mm) { }
-+#endif
-+
- extern void switch_cop(struct mm_struct *next);
- extern int use_cop(unsigned long acop, struct mm_struct *mm);
- extern void drop_cop(unsigned long acop, struct mm_struct *mm);
-@@ -79,9 +85,13 @@ static inline void switch_mm_irqs_off(struct mm_struct *prev,
- 				      struct mm_struct *next,
- 				      struct task_struct *tsk)
- {
-+	bool new_on_cpu = false;
-+
- 	/* Mark this context has been used on the new CPU */
--	if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next)))
-+	if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next))) {
- 		cpumask_set_cpu(smp_processor_id(), mm_cpumask(next));
-+		new_on_cpu = true;
-+	}
+-obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o getcpu.o
++obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o getcpu.o gettime.o
  
- 	/* 32-bit keeps track of the current PGDIR in the thread struct */
- #ifdef CONFIG_PPC32
-@@ -109,6 +119,10 @@ static inline void switch_mm_irqs_off(struct mm_struct *prev,
- 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
- 		asm volatile ("dssall");
- #endif /* CONFIG_ALTIVEC */
-+
-+	if (new_on_cpu)
-+		radix_kvm_prefetch_workaround(next);
-+
- 	/*
- 	 * The actual HW switching method differs between the various
- 	 * sub architectures. Out of line for now
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index cb44065e2946..e160d009952d 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1443,12 +1443,14 @@ mc_cont:
- 	ori	r6,r6,1
- 	mtspr	SPRN_CTRLT,r6
- 4:
--	/* Read the guest SLB and save it away */
-+	/* Check if we are running hash or radix and store it in cr2 */
- 	ld	r5, VCPU_KVM(r9)
- 	lbz	r0, KVM_RADIX(r5)
--	cmpwi	r0, 0
-+	cmpwi	cr2,r0,0
-+
-+	/* Read the guest SLB and save it away */
- 	li	r5, 0
--	bne	3f			/* for radix, save 0 entries */
-+	bne	cr2, 3f			/* for radix, save 0 entries */
- 	lwz	r0,VCPU_SLB_NR(r9)	/* number of entries in SLB */
- 	mtctr	r0
- 	li	r6,0
-@@ -1530,6 +1532,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	std	r6, VCPU_BESCR(r9)
- 	stw	r7, VCPU_GUEST_PID(r9)
- 	std	r8, VCPU_WORT(r9)
-+
- BEGIN_FTR_SECTION
- 	mfspr	r5, SPRN_TCSCR
- 	mfspr	r6, SPRN_ACOP
-@@ -1712,11 +1715,6 @@ BEGIN_FTR_SECTION_NESTED(96)
- END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 22:
--	/* Clear out SLB */
--	li	r5,0
--	slbmte	r5,r5
--	slbia
--	ptesync
+ # Build rules
  
- 	/* Restore host values of some registers */
- BEGIN_FTR_SECTION
-@@ -1737,10 +1735,45 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_PID, r7
- 	mtspr	SPRN_IAMR, r8
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+diff --git a/arch/powerpc/kernel/vdso64/gettime.c b/arch/powerpc/kernel/vdso64/gettime.c
+new file mode 100644
+index 0000000..01f411f
+--- /dev/null
++++ b/arch/powerpc/kernel/vdso64/gettime.c
+@@ -0,0 +1,162 @@
++/*
++ * Userland implementation of gettimeofday() for 64 bits processes in a
++ * ppc64 kernel for use in the vDSO
++ *
++ * Copyright (C) 2017 Santosh Sivaraj (santosh@fossix.org), IBM.
++ *
++ * Originally implemented in assembly by:
++ *   Benjamin Herrenschmuidt (benh@kernel.crashing.org),
++ *                    IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
-+	/*
-+	 * Are we running hash or radix ?
-+	 */
-+	bne	cr2,2f
++#include <linux/compiler.h>
++#include <linux/types.h>
++#include <asm/ppc_asm.h>
++#include <asm/vdso.h>
++#include <asm/vdso_datapage.h>
++#include <asm/time.h>
 +
-+	/* Hash: clear out SLB */
-+	li	r5,0
-+	slbmte	r5,r5
-+	slbia
-+	ptesync
-+	b	5f
-+
-+2:	/* Radix: Handle the case where the guest used an illegal PID */
-+	LOAD_REG_ADDR(r4, mmu_base_pid)
-+	lwz	r3, VCPU_GUEST_PID(r9)
-+	lwz	r5, 0(r4)
-+	cmpw	cr0,r3,r5
-+	blt	4f
-+
-+	/* Illegal PID, flush the TLB for this PID/LPID */
-+	isync
-+	ld	r6,VCPU_KVM(r9)
-+	lwz	r0,KVM_TLB_SETS(r6)
-+	mtctr	r0
-+	li	r7,0x400		/* IS field = 0b01 */
-+	ptesync
-+	sldi	r0,r3,32		/* RS has PID */
-+3:	PPC_TLBIEL(7,0,2,1,1)		/* RIC=2, PRS=1, R=1 */
-+	addi	r7,r7,0x1000
-+	bdnz	3b
-+	ptesync
-+
-+4:	/* Flush the ERAT on radix P9 DD1 guest exit */
- BEGIN_FTR_SECTION
- 	PPC_INVALIDATE_ERAT
- END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1)
- 
-+5:
- 	/*
- 	 * POWER7/POWER8 guest -> host partition switch code.
- 	 * We don't have to lock against tlbies but we do
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index abed1fe6992f..f74455dec087 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -25,6 +25,10 @@
- #include <asm/mmu_context.h>
- #include <asm/pgalloc.h>
- 
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+#include <asm/kvm_book3s_asm.h>
-+#endif
-+
- #include "icswx.h"
- 
- static DEFINE_SPINLOCK(mmu_context_lock);
-@@ -126,9 +130,10 @@ static int hash__init_new_context(struct mm_struct *mm)
- static int radix__init_new_context(struct mm_struct *mm)
- {
- 	unsigned long rts_field;
--	int index;
-+	int index, max_id;
- 
--	index = alloc_context_id(1, PRTB_ENTRIES - 1);
-+	max_id = (1 << mmu_pid_bits) - 1;
-+	index = alloc_context_id(mmu_base_pid, max_id);
- 	if (index < 0)
- 		return index;
- 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 02134c95a956..4049113db6d9 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -25,6 +25,9 @@
- 
- #include <trace/events/thp.h>
- 
-+unsigned int mmu_pid_bits;
-+unsigned int mmu_base_pid;
-+
- static int native_register_process_table(unsigned long base, unsigned long pg_sz,
- 					 unsigned long table_size)
- {
-@@ -243,11 +246,34 @@ static void __init radix_init_pgtable(void)
- 	for_each_memblock(memory, reg)
- 		WARN_ON(create_physical_mapping(reg->base,
- 						reg->base + reg->size));
-+
-+	/* Find out how many PID bits are supported */
-+	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+		if (!mmu_pid_bits)
-+			mmu_pid_bits = 20;
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+		/*
-+		 * When KVM is possible, we only use the top half of the
-+		 * PID space to avoid collisions between host and guest PIDs
-+		 * which can cause problems due to prefetch when exiting the
-+		 * guest with AIL=3
-+		 */
-+		mmu_base_pid = 1 << (mmu_pid_bits - 1);
-+#else
-+		mmu_base_pid = 1;
-+#endif
-+	} else {
-+		/* The guest uses the bottom half of the PID space */
-+		if (!mmu_pid_bits)
-+			mmu_pid_bits = 19;
-+		mmu_base_pid = 1;
-+	}
-+
- 	/*
- 	 * Allocate Partition table and process table for the
- 	 * host.
- 	 */
--	BUILD_BUG_ON_MSG((PRTB_SIZE_SHIFT > 36), "Process table size too large.");
-+	BUG_ON(PRTB_SIZE_SHIFT > 36);
- 	process_tb = early_alloc_pgtable(1UL << PRTB_SIZE_SHIFT);
- 	/*
- 	 * Fill in the process table.
-@@ -321,6 +347,12 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
- 	if (type == NULL || strcmp(type, "cpu") != 0)
- 		return 0;
- 
-+	/* Find MMU PID size */
-+	prop = of_get_flat_dt_prop(node, "ibm,mmu-pid-bits", &size);
-+	if (prop && size == 4)
-+		mmu_pid_bits = be32_to_cpup(prop);
-+
-+	/* Grab page size encodings */
- 	prop = of_get_flat_dt_prop(node, "ibm,processor-radix-AP-encodings", &size);
- 	if (!prop)
- 		return 0;
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 18151e9ad694..b3e849c4886e 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -12,12 +12,12 @@
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
- #include <linux/memblock.h>
--#include <asm/ppc-opcode.h>
- 
-+#include <asm/ppc-opcode.h>
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
- #include <asm/trace.h>
--
-+#include <asm/cputhreads.h>
- 
- #define RIC_FLUSH_TLB 0
- #define RIC_FLUSH_PWC 1
-@@ -478,3 +478,44 @@ void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
- 	else
- 		radix__flush_tlb_page_psize(mm, address, mmu_virtual_psize);
- }
-+
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
++static notrace void kernel_get_tspec(struct timespec *tp,
++				     struct vdso_data *vdata, u32 *wtom_sec,
++				     u32 *wtom_nsec)
 +{
-+	unsigned int pid = mm->context.id;
++	u64 tb;
++	u32 update_count;
 +
-+	if (unlikely(pid == MMU_NO_CONTEXT))
-+		return;
++	do {
++		/* check for update count & load values */
++		update_count = vdata->tb_update_count;
 +
-+	/*
-+	 * If this context hasn't run on that CPU before and KVM is
-+	 * around, there's a slim chance that the guest on another
-+	 * CPU just brought in obsolete translation into the TLB of
-+	 * this CPU due to a bad prefetch using the guest PID on
-+	 * the way into the hypervisor.
-+	 *
-+	 * We work around this here. If KVM is possible, we check if
-+	 * any sibling thread is in KVM. If it is, the window may exist
-+	 * and thus we flush that PID from the core.
-+	 *
-+	 * A potential future improvement would be to mark which PIDs
-+	 * have never been used on the system and avoid it if the PID
-+	 * is new and the process has no other cpumask bit set.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_HVMODE) && radix_enabled()) {
-+		int cpu = smp_processor_id();
-+		int sib = cpu_first_thread_sibling(cpu);
-+		bool flush = false;
++		/* Get TB, offset it and scale result */
++		tb = mulhdu((get_tb() - vdata->tb_orig_stamp) << 12,
++			    vdata->tb_to_xs) + vdata->stamp_sec_fraction;
++		tp->tv_sec = vdata->stamp_xtime.tv_sec;
++		if (wtom_sec)
++			*wtom_sec = vdata->wtom_clock_sec;
++		if (wtom_nsec)
++			*wtom_nsec = vdata->wtom_clock_nsec;
++	} while (update_count != vdata->tb_update_count);
 +
-+		for (; sib <= cpu_last_thread_sibling(cpu) && !flush; sib++) {
-+			if (sib == cpu)
-+				continue;
-+			if (paca[sib].kvm_hstate.kvm_vcpu)
-+				flush = true;
-+		}
-+		if (flush)
-+			_tlbiel_pid(pid, RIC_FLUSH_ALL);
-+	}
++	tp->tv_nsec = ((u64)mulhwu(tb, NSEC_PER_SEC) << 32) >> 32;
++	tp->tv_sec += (tb >> 32);
 +}
-+EXPORT_SYMBOL_GPL(radix_kvm_prefetch_workaround);
-+#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
++
++static notrace int clock_get_realtime(struct timespec *tp,
++				      struct vdso_data *vdata)
++{
++	kernel_get_tspec(tp, vdata, NULL, NULL);
++
++	return 0;
++}
++
++static notrace int clock_get_monotonic(struct timespec *tp,
++				       struct vdso_data *vdata)
++{
++	__s32 wtom_sec, wtom_nsec;
++	u64 nsec;
++
++	kernel_get_tspec(tp, vdata, &wtom_sec, &wtom_nsec);
++
++	tp->tv_sec += wtom_sec;
++
++	nsec = tp->tv_nsec;
++	tp->tv_nsec = 0;
++	timespec_add_ns(tp, nsec + wtom_nsec);
++
++	return 0;
++}
++
++static notrace int clock_realtime_coarse(struct timespec *tp,
++					 struct vdso_data *vdata)
++{
++	u32 update_count;
++
++	do {
++		/* check for update count & load values */
++		update_count = vdata->tb_update_count;
++
++		tp->tv_sec = vdata->stamp_xtime.tv_sec;
++		tp->tv_nsec = vdata->stamp_xtime.tv_nsec;
++	} while (update_count != vdata->tb_update_count);
++
++	return 0;
++}
++
++static notrace int clock_monotonic_coarse(struct timespec *tp,
++					  struct vdso_data *vdata)
++{
++	__s32 wtom_sec, wtom_nsec;
++	u64 nsec;
++	u32 update_count;
++
++	do {
++		/* check for update count & load values */
++		update_count = vdata->tb_update_count;
++
++		tp->tv_sec = vdata->stamp_xtime.tv_sec;
++		tp->tv_nsec = vdata->stamp_xtime.tv_nsec;
++		wtom_sec = vdata->wtom_clock_sec;
++		wtom_nsec = vdata->wtom_clock_nsec;
++	} while (update_count != vdata->tb_update_count);
++
++	tp->tv_sec += wtom_sec;
++	nsec = tp->tv_nsec;
++	tp->tv_nsec = 0;
++	timespec_add_ns(tp, nsec + wtom_nsec);
++
++	return 0;
++}
++
++static notrace int gettime_syscall_fallback(clockid_t clk_id,
++					     struct timespec *tp)
++{
++	register clockid_t id asm("r3") = clk_id;
++	register struct timespec *t asm("r4") = tp;
++	register int nr asm("r0") = __NR_clock_gettime;
++	register int ret asm("r3");
++
++	asm volatile("sc"
++		     : "=r" (ret)
++		     : "r"(nr), "r"(id), "r"(t)
++		     : "memory");
++
++	return ret;
++}
++
++notrace int kernel_clock_gettime(clockid_t clk_id, struct timespec *tp)
++{
++	int ret;
++	struct vdso_data *vdata = __get_datapage();
++
++	if (!tp || !vdata)
++		return -EBADR;
++
++	switch (clk_id) {
++	case CLOCK_REALTIME:
++		ret = clock_get_realtime(tp, vdata);
++		break;
++	case CLOCK_MONOTONIC:
++		ret = clock_get_monotonic(tp, vdata);
++		break;
++	case CLOCK_REALTIME_COARSE:
++		ret = clock_realtime_coarse(tp, vdata);
++		break;
++	case CLOCK_MONOTONIC_COARSE:
++		ret = clock_monotonic_coarse(tp, vdata);
++		break;
++	default:
++		/* fallback to syscall */
++		ret = -1;
++		break;
++	}
++
++	if (ret)
++		ret = gettime_syscall_fallback(clk_id, tp);
++
++	return ret;
++}
+diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+index 3820213..1258009 100644
+--- a/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -16,6 +16,8 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/unistd.h>
+ 
++.global	kernel_clock_gettime
++
+ 	.text
+ /*
+  * Exact prototype of gettimeofday
+@@ -51,85 +53,21 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
+   .cfi_endproc
+ V_FUNCTION_END(__kernel_gettimeofday)
+ 
+-
+-/*
+- * Exact prototype of clock_gettime()
+- *
+- * int __kernel_clock_gettime(clockid_t clock_id, struct timespec *tp);
+- *
+- */
+ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+   .cfi_startproc
+-	/* Check for supported clock IDs */
+-	cmpwi	cr0,r3,CLOCK_REALTIME
+-	cmpwi	cr1,r3,CLOCK_MONOTONIC
+-	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+-	bne	cr0,99f
+-
+-	mflr	r12			/* r12 saves lr */
+-  .cfi_register lr,r12
+-	mr	r11,r4			/* r11 saves tp */
+-	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+-	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
+-	ori	r7,r7,NSEC_PER_SEC@l
+-50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
+-	bne	cr1,80f			/* if not monotonic, all done */
+-
+-	/*
+-	 * CLOCK_MONOTONIC
+-	 */
+-
+-	/* now we must fixup using wall to monotonic. We need to snapshot
+-	 * that value and do the counter trick again. Fortunately, we still
+-	 * have the counter value in r8 that was returned by __do_get_tspec.
+-	 * At this point, r4,r5 contain our sec/nsec values.
+-	 */
+-
+-	lwa	r6,WTOM_CLOCK_SEC(r3)
+-	lwa	r9,WTOM_CLOCK_NSEC(r3)
+-
+-	/* We now have our result in r6,r9. We create a fake dependency
+-	 * on that result and re-check the counter
+-	 */
+-	or	r0,r6,r9
+-	xor	r0,r0,r0
+-	add	r3,r3,r0
+-	ld	r0,CFG_TB_UPDATE_COUNT(r3)
+-        cmpld   cr0,r0,r8		/* check if updated */
+-	bne-	50b
+-
+-	/* Add wall->monotonic offset and check for overflow or underflow.
+-	 */
+-	add	r4,r4,r6
+-	add	r5,r5,r9
+-	cmpd	cr0,r5,r7
+-	cmpdi	cr1,r5,0
+-	blt	1f
+-	subf	r5,r7,r5
+-	addi	r4,r4,1
+-1:	bge	cr1,80f
+-	addi	r4,r4,-1
+-	add	r5,r5,r7
+-
+-80:	std	r4,TSPC64_TV_SEC(r11)
+-	std	r5,TSPC64_TV_NSEC(r11)
+-
+-	mtlr	r12
++	mflr	r6			/* r12 saves lr */
++	stwu	r1,-112(r1)
++  .cfi_register lr,r6
++	std	r6,24(r1)
++	bl	V_LOCAL_FUNC(kernel_clock_gettime)
+ 	crclr	cr0*4+so
+-	li	r3,0
+-	blr
+-
+-	/*
+-	 * syscall fallback
+-	 */
+-99:
+-	li	r0,__NR_clock_gettime
+-	sc
++	ld	r6,24(r1)
++	addi	r1,r1,112
++	mtlr	r6
+ 	blr
+   .cfi_endproc
+ V_FUNCTION_END(__kernel_clock_gettime)
+ 
+-
+ /*
+  * Exact prototype of clock_getres()
+  *
+-- 
+2.9.4
