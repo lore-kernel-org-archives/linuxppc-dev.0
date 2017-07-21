@@ -2,20 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDLYb51DVzDqt0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:33:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDLb35vqjzDqx1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:34:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: svaidy@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: energy driver only print message when
- LPAR guest
-In-Reply-To: <20170721043526.GA12264@drishya.in.ibm.com>
-References: <20170720115900.455-1-npiggin@gmail.com>
- <87eftbgt0m.fsf@concordia.ellerman.id.au>
- <20170721111644.2a6a6610@roar.ozlabs.ibm.com>
- <20170721043526.GA12264@drishya.in.ibm.com>
-Date: Fri, 21 Jul 2017 16:33:07 +1000
-Message-ID: <87pocue1uk.fsf@concordia.ellerman.id.au>
+To: Zhao Qiang <qiang.zhao@nxp.com>, oss@buserror.net
+Cc: valentin.longchamp@keymile.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: Re: [PATCH] qe: fix compile issue for arm64
+In-Reply-To: <1500603550-5567-1-git-send-email-qiang.zhao@nxp.com>
+References: <1500603550-5567-1-git-send-email-qiang.zhao@nxp.com>
+Date: Fri, 21 Jul 2017 16:34:23 +1000
+Message-ID: <87mv7ye1sg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,41 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
-> * Nicholas Piggin <npiggin@gmail.com> [2017-07-21 11:16:44]:
->> diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
->> index 164a13d3998a..35c891aabef0 100644
->> --- a/arch/powerpc/platforms/pseries/pseries_energy.c
->> +++ b/arch/powerpc/platforms/pseries/pseries_energy.c
->> @@ -229,10 +229,9 @@ static int __init pseries_energy_init(void)
->>  	int cpu, err;
->>  	struct device *cpu_dev;
->> 
->> -	if (!firmware_has_feature(FW_FEATURE_BEST_ENERGY)) {
->> -		printk(KERN_INFO "Hypercall H_BEST_ENERGY not supported\n");
->> -		return 0;
->> -	}
->> +	if (!firmware_has_feature(FW_FEATURE_BEST_ENERGY))
->> +		return 0; /* H_BEST_ENERGY hcall not supported */
->> +
+Zhao Qiang <qiang.zhao@nxp.com> writes:
+
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> ---
+>  drivers/soc/fsl/qe/qe.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> The first patch (!firmware_has_feature(FW_FEATURE_LPAR)) would be
-> ideal, but we do not have this in KVM guest case also.
+> diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+> index 2ef6fc6..d48fa4a 100644
+> --- a/drivers/soc/fsl/qe/qe.c
+> +++ b/drivers/soc/fsl/qe/qe.c
+> @@ -229,7 +229,9 @@ int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier)
+>  	/* Errata QE_General4, which affects some MPC832x and MPC836x SOCs, says
+>  	   that the BRG divisor must be even if you're not using divide-by-16
+>  	   mode. */
+> +#ifdef CONFIG_PPC
+>  	if (pvr_version_is(PVR_VER_836x) || pvr_version_is(PVR_VER_832x))
+> +#endif
+>  		if (!div16 && (divisor & 1) && (divisor > 3))
+>  			divisor++;
 
-Yeah we do.
-
-It should really be called FW_FEATURE_RUNNING_UNDER_PAPR_HYPERVISOR.
-
-static int __init probe_fw_features(unsigned long node, const char *uname, int
-				    depth, void *data)
-{
-	....
-	if (!strcmp(uname, "rtas") || !strcmp(uname, "rtas@0")) {
-		prop = of_get_flat_dt_prop(node, "ibm,hypertas-functions", &len);
-		if (prop) {
-			powerpc_firmware_features |= FW_FEATURE_LPAR;
-
-
-Qemu initialises that property unconditionally in spapr_dt_rtas().
+Are you sure that's what you want to do on arm64 ?
 
 cheers
