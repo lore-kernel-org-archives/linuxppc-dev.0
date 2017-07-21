@@ -1,24 +1,23 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-yb0-f195.google.com (mail-yb0-f195.google.com
- [209.85.213.195])
+Received: from mail-yw0-f195.google.com (mail-yw0-f195.google.com
+ [209.85.161.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDgmn6PvRzDqx5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 05:28:57 +1000 (AEST)
-Received: by mail-yb0-f195.google.com with SMTP id z37so1894304ybh.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 12:28:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDgmr0dQGzDqx5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 05:29:00 +1000 (AEST)
+Received: by mail-yw0-f195.google.com with SMTP id a12so2526214ywh.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 12:28:59 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: Takashi Iwai <tiwai@suse.com>,
 	Mark Brown <broonie@kernel.org>
 Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- Johannes Berg <johannes@sipsolutions.net>,
- Jaroslav Kysela <perex@perex.cz>, Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
-Subject: [PATCH v2] sound: Convert to using %pOF instead of full_name
-Date: Fri, 21 Jul 2017 14:28:34 -0500
-Message-Id: <20170721192835.25555-3-robh@kernel.org>
+ Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] sound: fsl_dma: remove dma_object path member
+Date: Fri, 21 Jul 2017 14:28:35 -0500
+Message-Id: <20170721192835.25555-4-robh@kernel.org>
 In-Reply-To: <20170721192835.25555-1-robh@kernel.org>
 References: <20170721192835.25555-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,102 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have a custom printf format specifier, convert users of
-full_name to use %pOF instead. This is preparation to remove storing
-of the full path string for each node.
+dma_object.path is unused, so rather than fix it to work with DT
+full_name changes, just remove it.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.com>
 Cc: Timur Tabi <timur@tabi.org>
 Cc: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Xiubo Li <Xiubo.Lee@gmail.com>
 Cc: Fabio Estevam <fabio.estevam@nxp.com>
 Cc: Liam Girdwood <lgirdwood@gmail.com>
 Cc: Mark Brown <broonie@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
 Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
 v2:
-- Add printf specifier change for fsl_dma.c
+- Move printf specifier change to correct patch
 
- sound/aoa/codecs/tas.c     |  4 ++--
- sound/soc/fsl/fsl_dma.c    |  4 ++--
- sound/soc/fsl/imx-audmux.c | 16 ++++++++--------
- 3 files changed, 12 insertions(+), 12 deletions(-)
+ sound/soc/fsl/fsl_dma.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
-index 733b6365dad6..15c05755d270 100644
---- a/sound/aoa/codecs/tas.c
-+++ b/sound/aoa/codecs/tas.c
-@@ -905,8 +905,8 @@ static int tas_i2c_probe(struct i2c_client *client,
- 		goto fail;
- 	}
- 	printk(KERN_DEBUG
--	       "snd-aoa-codec-tas: tas found, addr 0x%02x on %s\n",
--	       (unsigned int)client->addr, node->full_name);
-+	       "snd-aoa-codec-tas: tas found, addr 0x%02x on %pOF\n",
-+	       (unsigned int)client->addr, node);
- 	return 0;
-  fail:
- 	mutex_destroy(&tas->mtx);
 diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
-index ccadefceeff2..ed8ea002902d 100644
+index ed8ea002902d..b38dd328c783 100644
 --- a/sound/soc/fsl/fsl_dma.c
 +++ b/sound/soc/fsl/fsl_dma.c
-@@ -897,8 +897,8 @@ static int fsl_soc_dma_probe(struct platform_device *pdev)
+@@ -63,7 +63,6 @@ struct dma_object {
+ 	struct ccsr_dma_channel __iomem *channel;
+ 	unsigned int irq;
+ 	bool assigned;
+-	char path[1];
+ };
  
- 	ret = of_address_to_resource(ssi_np, 0, &res);
- 	if (ret) {
--		dev_err(&pdev->dev, "could not determine resources for %s\n",
--			ssi_np->full_name);
-+		dev_err(&pdev->dev, "could not determine resources for %pOF\n",
-+			ssi_np);
- 		of_node_put(ssi_np);
+ /*
+@@ -903,14 +902,13 @@ static int fsl_soc_dma_probe(struct platform_device *pdev)
  		return ret;
  	}
-diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
-index fc57da341d61..392d5eef356d 100644
---- a/sound/soc/fsl/imx-audmux.c
-+++ b/sound/soc/fsl/imx-audmux.c
-@@ -268,13 +268,13 @@ static int imx_audmux_parse_dt_defaults(struct platform_device *pdev,
  
- 		ret = of_property_read_u32(child, "fsl,audmux-port", &port);
- 		if (ret) {
--			dev_warn(&pdev->dev, "Failed to get fsl,audmux-port of child node \"%s\"\n",
--					child->full_name);
-+			dev_warn(&pdev->dev, "Failed to get fsl,audmux-port of child node \"%pOF\"\n",
-+					child);
- 			continue;
- 		}
- 		if (!of_property_read_bool(child, "fsl,port-config")) {
--			dev_warn(&pdev->dev, "child node \"%s\" does not have property fsl,port-config\n",
--					child->full_name);
-+			dev_warn(&pdev->dev, "child node \"%pOF\" does not have property fsl,port-config\n",
-+					child);
- 			continue;
- 		}
+-	dma = kzalloc(sizeof(*dma) + strlen(np->full_name), GFP_KERNEL);
++	dma = kzalloc(sizeof(*dma), GFP_KERNEL);
+ 	if (!dma) {
+ 		dev_err(&pdev->dev, "could not allocate dma object\n");
+ 		of_node_put(ssi_np);
+ 		return -ENOMEM;
+ 	}
  
-@@ -292,15 +292,15 @@ static int imx_audmux_parse_dt_defaults(struct platform_device *pdev,
- 		}
- 
- 		if (ret != -EOVERFLOW) {
--			dev_err(&pdev->dev, "Failed to read u32 at index %d of child %s\n",
--					i, child->full_name);
-+			dev_err(&pdev->dev, "Failed to read u32 at index %d of child %pOF\n",
-+					i, child);
- 			continue;
- 		}
- 
- 		if (audmux_type == IMX31_AUDMUX) {
- 			if (i % 2) {
--				dev_err(&pdev->dev, "One pdcr value is missing in child node %s\n",
--						child->full_name);
-+				dev_err(&pdev->dev, "One pdcr value is missing in child node %pOF\n",
-+						child);
- 				continue;
- 			}
- 			imx_audmux_v2_configure_port(port, ptcr, pdcr);
+-	strcpy(dma->path, np->full_name);
+ 	dma->dai.ops = &fsl_dma_ops;
+ 	dma->dai.pcm_new = fsl_dma_new;
+ 	dma->dai.pcm_free = fsl_dma_free_dma_buffers;
 -- 
 2.11.0
