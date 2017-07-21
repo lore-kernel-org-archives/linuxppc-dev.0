@@ -1,26 +1,18 @@
-Return-Path: <ijc@hellion.org.uk>
-Received: from benson.default.arb33.uk0.bigv.io
- (benson.default.arb33.uk0.bigv.io [IPv6:2001:41c9:1:41d::16])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <lvivier@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDWXw0ZGNzDqrT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 23:18:08 +1000 (AEST)
-Message-ID: <1500642028.3330.8.camel@hellion.org.uk>
-Subject: Re: [PATCH] powerpc/44x/fsp2: correct dtb reg property for
- /sdhci@020c0000
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Ivan Mikhaylov <ivan@de.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh+dt@kernel.org>, Mark
- Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Fri, 21 Jul 2017 14:00:28 +0100
-In-Reply-To: <20170721125427.77668-1-ivan@de.ibm.com>
-References: <20170715090302.23105-1-ijc@hellion.org.uk>
- <20170721125427.77668-1-ivan@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDYcw1pp7zDqv7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 00:51:44 +1000 (AEST)
+From: Laurent Vivier <lvivier@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Thomas Huth <thuth@redhat.com>
+Subject: [PATCH] powerpc/pseries: Fix of_node_put() underflow during pseries
+ remove
+Date: Fri, 21 Jul 2017 16:51:39 +0200
+Message-Id: <20170721145139.9384-1-lvivier@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-07-21 at 15:54 +0300, Ivan Mikhaylov wrote:
-> Hi Ian,
-> > Building the split device-tree tree[0] highlighted that upstream commit
-> > 9eec6cb142bd ("powerpc/44x/fsp2: Add device tree for FSP2 board") introduced
-> > this warning when building the device tree:
-> > 
-> > $ make CROSS_COMPILE=powerpc-linux-gnu- ARCH=powerpc fsp2.dtb
-> >  CHK     scripts/mod/devicetable-offsets.h
-> >  DTC     arch/powerpc/boot/fsp2.dtb
-> > > > arch/powerpc/boot/fsp2.dtb: Warning (reg_format): "reg" property in /sdhci@020c0000 has invalid length (8 bytes) (#address-cells == 2, #size-cells == 1)
-> > 
-> > This commit adds the second adress cell as zeroes to resolve the warning. Note:
-> > I have no access to or information about this platform so this is purely a
-> > guess as to the fix. An alternative would be to adjust #address-cells, but
-> > whether that is correct or not depends on the platform.
-> 
-> Yes, this problem exists on this tag but it is already fixed and waiting for
-> > review by this https://patchwork.kernel.org/patch/9819379/ . You can check it
-> if you want, anyways it will go to powerpc next branch first.
+As for commit 68baf692c435 ("powerpc/pseries: Fix of_node_put()
+underflow during DLPAR remove"), the call to of_node_put()
+must be removed from pSeries_reconfig_remove_node().
 
-Great, thanks for the info.
+dlpar_detach_node() and pSeries_reconfig_remove_node() call
+of_detach_node(), and thus the node should not be released
+in this case too.
+
+Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+---
+ arch/powerpc/platforms/pseries/reconfig.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index e5bf1e8..011ef21 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -82,7 +82,6 @@ static int pSeries_reconfig_remove_node(struct device_node *np)
+ 
+ 	of_detach_node(np);
+ 	of_node_put(parent);
+-	of_node_put(np); /* Must decrement the refcount */
+ 	return 0;
+ }
+ 
+-- 
+2.9.4
