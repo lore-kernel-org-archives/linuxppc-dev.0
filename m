@@ -1,19 +1,23 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0068.outbound.protection.outlook.com [104.47.32.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDFHY1HbpzDrHr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 12:35:35 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <oss@buserror.net>
-CC: <valentin.longchamp@keymile.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH] qe: fix compile issue for arm64
-Date: Fri, 21 Jul 2017 10:19:10 +0800
-Message-ID: <1500603550-5567-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDFxY1dHCzDrHr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 13:05:05 +1000 (AEST)
+Date: Fri, 21 Jul 2017 13:05:03 +1000
+From: Anton Blanchard <anton@ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Santosh Sivaraj <santosh@fossix.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Srikar Dronamraju
+ <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+Message-ID: <20170721130503.6e28a1e0@kryten>
+In-Reply-To: <87bmofgsbh.fsf@concordia.ellerman.id.au>
+References: <20170720095834.15153-1-santosh@fossix.org>
+ <87bmofgsbh.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
----
- drivers/soc/fsl/qe/qe.c | 2 ++
- 1 file changed, 2 insertions(+)
+Hi,
 
-diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-index 2ef6fc6..d48fa4a 100644
---- a/drivers/soc/fsl/qe/qe.c
-+++ b/drivers/soc/fsl/qe/qe.c
-@@ -229,7 +229,9 @@ int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier)
- 	/* Errata QE_General4, which affects some MPC832x and MPC836x SOCs, says
- 	   that the BRG divisor must be even if you're not using divide-by-16
- 	   mode. */
-+#ifdef CONFIG_PPC
- 	if (pvr_version_is(PVR_VER_836x) || pvr_version_is(PVR_VER_832x))
-+#endif
- 		if (!div16 && (divisor & 1) && (divisor > 3))
- 			divisor++;
- 
--- 
-2.1.0.27.g96db324
+> > +static notrace int gettime_syscall_fallback(clockid_t clk_id,
+> > +					     struct timespec *tp)
+> > +{
+> > +	register clockid_t id asm("r3") = clk_id;
+> > +	register struct timespec *t asm("r4") = tp;
+> > +	register int nr asm("r0") = __NR_clock_gettime;
+> > +	register int ret asm("r3");  
+> 
+> I guess this works. I've always been a bit nervous about register
+> variables TBH.
+
+I don't think this works with clang unfortunately.
+
+Anton
