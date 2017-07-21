@@ -1,52 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDLzS4ntDzDqtL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:52:04 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6L6mlpq163037
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 02:52:02 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bu9gbe9wj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 02:52:01 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 21 Jul 2017 16:51:58 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6L6pu1931129752
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:51:56 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6L6psJM019078
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:51:56 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com,
- mhocko@kernel.org
-Subject: Re: [RFC v6 27/62] powerpc: helper to validate key-access permissions
- of a pte
-In-Reply-To: <20170720221504.GJ5487@ram.oc3035372033.ibm.com>
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-28-git-send-email-linuxram@us.ibm.com>
- <87mv7zpq1k.fsf@skywalker.in.ibm.com>
- <20170720221504.GJ5487@ram.oc3035372033.ibm.com>
-Date: Fri, 21 Jul 2017 12:21:50 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDM8871QRzDqtL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:59:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/xmon: support dumping software pagetables
+In-Reply-To: <20170721052406.28960-1-bsingharora@gmail.com>
+References: <20170721052406.28960-1-bsingharora@gmail.com>
+Date: Fri, 21 Jul 2017 16:59:35 +1000
+Message-ID: <87k232e0mg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87k232p9ix.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,80 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
+Nice !
 
-> On Thu, Jul 20, 2017 at 12:12:47PM +0530, Aneesh Kumar K.V wrote:
->> Ram Pai <linuxram@us.ibm.com> writes:
->> 
->> > helper function that checks if the read/write/execute is allowed
->> > on the pte.
->> >
->> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
->> > ---
->> >  arch/powerpc/include/asm/book3s/64/pgtable.h |    4 +++
->> >  arch/powerpc/include/asm/pkeys.h             |   12 +++++++++
->> >  arch/powerpc/mm/pkeys.c                      |   33 ++++++++++++++++++++++++++
->> >  3 files changed, 49 insertions(+), 0 deletions(-)
->> >
->> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> > index 30d7f55..0056e58 100644
->> > --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> > @@ -472,6 +472,10 @@ static inline void write_uamor(u64 value)
->> >  	mtspr(SPRN_UAMOR, value);
->> >  }
->> >
->> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
->> > +extern bool arch_pte_access_permitted(u64 pte, bool write, bool execute);
->> > +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
->> > +
->> >  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
->> >  static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
->> >  				       unsigned long addr, pte_t *ptep)
->> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
->> > index bbb5d85..7a9aade 100644
->> > --- a/arch/powerpc/include/asm/pkeys.h
->> > +++ b/arch/powerpc/include/asm/pkeys.h
->> > @@ -53,6 +53,18 @@ static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
->> >  		((pteflags & H_PAGE_PKEY_BIT4) ? HPTE_R_KEY_BIT4 : 0x0UL));
->> >  }
->> >
->> > +static inline u16 pte_to_pkey_bits(u64 pteflags)
->> > +{
->> > +	if (!pkey_inited)
->> > +		return 0x0UL;
->> 
->> Do we really need that above check ? We should always find it
->> peky_inited to be set. 
+Balbir Singh <bsingharora@gmail.com> writes:
+
+> It would be nice to be able to dump page tables in a
+> particular context
 >
-> Yes. there are cases where pkey_inited is not enabled. 
-> a) if the MMU is radix.
-That should be be a feature check
+> Example use cases
+>
+> Dumping PTE contents to see the keys (useful for debugging)
+>
+> c0000000ba48c880 c0000000bab438b0   2677   2675 T  2 protection_keys
 
-> b) if the PAGE size is 4k.
+What is that ^ ?
 
-That is a kernel config change
+> 0:mon> ds c0000000ba48c880 0x7ffff7f70000
+> translating tsk c0000000ba48c880, addr 7ffff7f70000
+> G: 0xb95b6400   U: 0xb6334000   M: 0xb6543000   PA: 0x012c0000, PTE: 0xd4800000012c0504
 
-> c) if the device tree says the feature is not available
-> d) if the CPU is of a older generation. P6 and older.
+Without reading the code I don't grok what G/U/M mean.
 
-Both feature check.
+Feel free to use more than one line of output :)
 
-how about doing something like
+> Dumping vmalloc space
+>
+> 0:mon> ds 0 d000000000000000
 
-static inline u16 pte_to_pkey_bits(u64 pteflags)
-{
-	if (!(pteflags & H_PAGE_KEY_MASK))
-		return 0x0UL;
+I suspect we will want to do that a lot. So I'd rather the arguments
+were reversed, and the second (task) can be omitted.
 
-	return (((pteflags & H_PAGE_PKEY_BIT0) ? 0x10 : 0x0UL) |
-		((pteflags & H_PAGE_PKEY_BIT1) ? 0x8 : 0x0UL) |
-		((pteflags & H_PAGE_PKEY_BIT2) ? 0x4 : 0x0UL) |
-		((pteflags & H_PAGE_PKEY_BIT3) ? 0x2 : 0x0UL) |
-		((pteflags & H_PAGE_PKEY_BIT4) ? 0x1 : 0x0UL));
-}
+So:
+0:mon> ds x	== translate x via init_mm
+0:mon> ds x y	== translate x via &y->mm
 
-We still have to look at the code generated to see it is really saving
-something.
+I guess it's easier for folks to find a task rather than an mm directly?
+Otherwise it could take an mm not a task.
 
--aneesh
+> translating tsk           (null), addr d000000000000000
+
+We should special case that to say "using kernel page tables" or similar.
+
+> G: 0x3d450400   U: 0xbc184000   M: 0x3d460000   PA: 0x7e010000, PTE: 0xc08000007e01018e
+
+> I did not replicate the complex code of dump_pagetable and have no support
+> for bolted linear mapping, thats why I've called it software pagetable
+> dumping support.
+
+Not sure about that naming. On hash it makes sense, but not on radix or
+on other platforms.
+
+Maybe 'dv' for dump Virtual address ?
+
+It doesn't dump a PTE, it tries to translate an address into a PTE.
+
+cheers
