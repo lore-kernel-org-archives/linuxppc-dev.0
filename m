@@ -1,46 +1,20 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDc5469WwzDqvB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 02:42:48 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6LGeBEu090203
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 12:42:46 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bunb1r282-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 12:42:46 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 21 Jul 2017 12:42:45 -0400
-Date: Fri, 21 Jul 2017 09:42:30 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
- dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com,
- mhocko@kernel.org
-Subject: Re: [RFC v6 27/62] powerpc: helper to validate key-access
- permissions of a pte
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-28-git-send-email-linuxram@us.ibm.com>
- <87mv7zpq1k.fsf@skywalker.in.ibm.com>
- <20170720221504.GJ5487@ram.oc3035372033.ibm.com>
- <87k232p9ix.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDcT22tZ1zDqvG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 03:00:06 +1000 (AEST)
+Date: Fri, 21 Jul 2017 18:59:47 +0200
+Message-ID: <20170721185947.Horde.e8_0DAuKLUb1znI0Zfx-aQ2@messagerie.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 23/24] powerpc/mm: Cleanup check for stack expansion
+References: <20170719044946.22030-1-benh@kernel.crashing.org>
+ <20170719044946.22030-23-benh@kernel.crashing.org>
+In-Reply-To: <20170719044946.22030-23-benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87k232p9ix.fsf@skywalker.in.ibm.com>
-Message-Id: <20170721164230.GK5487@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,94 +24,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 21, 2017 at 12:21:50PM +0530, Aneesh Kumar K.V wrote:
-> Ram Pai <linuxram@us.ibm.com> writes:
-> 
-> > On Thu, Jul 20, 2017 at 12:12:47PM +0530, Aneesh Kumar K.V wrote:
-> >> Ram Pai <linuxram@us.ibm.com> writes:
-> >> 
-> >> > helper function that checks if the read/write/execute is allowed
-> >> > on the pte.
-> >> >
-> >> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> >> > ---
-> >> >  arch/powerpc/include/asm/book3s/64/pgtable.h |    4 +++
-> >> >  arch/powerpc/include/asm/pkeys.h             |   12 +++++++++
-> >> >  arch/powerpc/mm/pkeys.c                      |   33 ++++++++++++++++++++++++++
-> >> >  3 files changed, 49 insertions(+), 0 deletions(-)
-> >> >
-> >> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> >> > index 30d7f55..0056e58 100644
-> >> > --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> >> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> >> > @@ -472,6 +472,10 @@ static inline void write_uamor(u64 value)
-> >> >  	mtspr(SPRN_UAMOR, value);
-> >> >  }
-> >> >
-> >> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> >> > +extern bool arch_pte_access_permitted(u64 pte, bool write, bool execute);
-> >> > +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> >> > +
-> >> >  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
-> >> >  static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
-> >> >  				       unsigned long addr, pte_t *ptep)
-> >> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> >> > index bbb5d85..7a9aade 100644
-> >> > --- a/arch/powerpc/include/asm/pkeys.h
-> >> > +++ b/arch/powerpc/include/asm/pkeys.h
-> >> > @@ -53,6 +53,18 @@ static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
-> >> >  		((pteflags & H_PAGE_PKEY_BIT4) ? HPTE_R_KEY_BIT4 : 0x0UL));
-> >> >  }
-> >> >
-> >> > +static inline u16 pte_to_pkey_bits(u64 pteflags)
-> >> > +{
-> >> > +	if (!pkey_inited)
-> >> > +		return 0x0UL;
-> >> 
-> >> Do we really need that above check ? We should always find it
-> >> peky_inited to be set. 
-> >
-> > Yes. there are cases where pkey_inited is not enabled. 
-> > a) if the MMU is radix.
-> That should be be a feature check
-> 
-> > b) if the PAGE size is 4k.
-> 
-> That is a kernel config change
-> 
-> > c) if the device tree says the feature is not available
-> > d) if the CPU is of a older generation. P6 and older.
-> 
-> Both feature check.
-> 
-> how about doing something like
-> 
-> static inline u16 pte_to_pkey_bits(u64 pteflags)
-> {
-> 	if (!(pteflags & H_PAGE_KEY_MASK))
-> 		return 0x0UL;
+Benjamin Herrenschmidt <benh@kernel.crashing.org> a =C3=A9crit=C2=A0:
 
-This check accomplishes the same thing as the return below.
-When (pteflag & H_PAGE_KEY_MASK) is 0,
-the code below returns the same 0x0UL. 
+> When hitting below a VM_GROWSDOWN vma (typically growing the stack),
+> we check whether it's a valid stack-growing instruction and we
+> check the distance to GPR1. This is largely open coded with lots
+> of comments, so move it out to a helper.
 
+Did you have a look at the following patch ? It's been waiting for=20=20
+application=20for some weeks now.=20=20
+https://patchwork.ozlabs.org/patch/771869
+It=20limits number of calls to get_user()
+Can you have a look and merge it with your serie ?
 
+>
+> While at it, make store_update_sp a boolean.
 
-> 
-> 	return (((pteflags & H_PAGE_PKEY_BIT0) ? 0x10 : 0x0UL) |
-> 		((pteflags & H_PAGE_PKEY_BIT1) ? 0x8 : 0x0UL) |
-> 		((pteflags & H_PAGE_PKEY_BIT2) ? 0x4 : 0x0UL) |
-> 		((pteflags & H_PAGE_PKEY_BIT3) ? 0x2 : 0x0UL) |
-> 		((pteflags & H_PAGE_PKEY_BIT4) ? 0x1 : 0x0UL));
-> }
+My patch requires a tristate here
 
-The idea  behind
-	       if (!pkey_inited)
-	               return 0x0UL;
+Christophe
 
-was to not interpret the ptebits if we knew they were not initialized
-to begin with. 
-
-
--- 
-Ram Pai
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/mm/fault.c | 84=20=20
+>=20++++++++++++++++++++++++++++---------------------
+>  1 file changed, 48 insertions(+), 36 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index a229fd2d82d6..c2720ebb6a62 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -71,15 +71,15 @@ static inline bool notify_page_fault(struct=20=20
+>=20pt_regs *regs)
+>   * Check whether the instruction at regs->nip is a store using
+>   * an update addressing form which will update r1.
+>   */
+> -static int store_updates_sp(struct pt_regs *regs)
+> +static bool store_updates_sp(struct pt_regs *regs)
+>  {
+>  	unsigned int inst;
+>
+>  	if (get_user(inst, (unsigned int __user *)regs->nip))
+> -		return 0;
+> +		return false;
+>  	/* check for 1 in the rA field */
+>  	if (((inst >> 16) & 0x1f) !=3D 1)
+> -		return 0;
+> +		return false;
+>  	/* check major opcode */
+>  	switch (inst >> 26) {
+>  	case 37:	/* stwu */
+> @@ -87,7 +87,7 @@ static int store_updates_sp(struct pt_regs *regs)
+>  	case 45:	/* sthu */
+>  	case 53:	/* stfsu */
+>  	case 55:	/* stfdu */
+> -		return 1;
+> +		return true;
+>  	case 62:	/* std or stdu */
+>  		return (inst & 3) =3D=3D 1;
+>  	case 31:
+> @@ -99,10 +99,10 @@ static int store_updates_sp(struct pt_regs *regs)
+>  		case 439:	/* sthux */
+>  		case 695:	/* stfsux */
+>  		case 759:	/* stfdux */
+> -			return 1;
+> +			return true;
+>  		}
+>  	}
+> -	return 0;
+> +	return false;
+>  }
+>  /*
+>   * do_page_fault error handling helpers
+> @@ -222,6 +222,43 @@ static bool bad_kernel_fault(bool is_exec,=20=20
+>=20unsigned long error_code,
+>  	return is_exec || (address >=3D TASK_SIZE);
+>  }
+>
+> +static bool bad_stack_expansion(struct pt_regs *regs, unsigned long addr=
+ess,
+> +				struct vm_area_struct *vma,
+> +				bool store_update_sp)
+> +{
+> +	/*
+> +	 * N.B. The POWER/Open ABI allows programs to access up to
+> +	 * 288 bytes below the stack pointer.
+> +	 * The kernel signal delivery code writes up to about 1.5kB
+> +	 * below the stack pointer (r1) before decrementing it.
+> +	 * The exec code can write slightly over 640kB to the stack
+> +	 * before setting the user r1.  Thus we allow the stack to
+> +	 * expand to 1MB without further checks.
+> +	 */
+> +	if (address + 0x100000 < vma->vm_end) {
+> +		/* get user regs even if this fault is in kernel mode */
+> +		struct pt_regs *uregs =3D current->thread.regs;
+> +		if (uregs =3D=3D NULL)
+> +			return true;
+> +
+> +		/*
+> +		 * A user-mode access to an address a long way below
+> +		 * the stack pointer is only valid if the instruction
+> +		 * is one which would update the stack pointer to the
+> +		 * address accessed if the instruction completed,
+> +		 * i.e. either stwu rs,n(r1) or stwux rs,r1,rb
+> +		 * (or the byte, halfword, float or double forms).
+> +		 *
+> +		 * If we don't check this then any write to the area
+> +		 * between the last mapped region and the stack will
+> +		 * expand the stack rather than segfaulting.
+> +		 */
+> +		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
+> +			return true;
+> +	}
+> +	return false;
+> +}
+> +
+>  static bool access_error(bool is_write, bool is_exec,
+>  			 struct vm_area_struct *vma)
+>  {
+> @@ -350,7 +387,7 @@ static int __do_page_fault(struct pt_regs *regs,=20=
+=20
+>=20unsigned long address,
+>  	int is_user =3D user_mode(regs);
+>  	int is_write =3D page_fault_is_write(error_code);
+>  	int fault, major =3D 0;
+> -	int store_update_sp =3D 0;
+> +	bool store_update_sp =3D false;
+>
+>  #ifdef CONFIG_PPC_ICSWX
+>  	/*
+> @@ -458,36 +495,11 @@ static int __do_page_fault(struct pt_regs=20=20
+>=20*regs, unsigned long address,
+>  	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN)))
+>  		return bad_area(regs, address);
+>
+> -	/*
+> -	 * N.B. The POWER/Open ABI allows programs to access up to
+> -	 * 288 bytes below the stack pointer.
+> -	 * The kernel signal delivery code writes up to about 1.5kB
+> -	 * below the stack pointer (r1) before decrementing it.
+> -	 * The exec code can write slightly over 640kB to the stack
+> -	 * before setting the user r1.  Thus we allow the stack to
+> -	 * expand to 1MB without further checks.
+> -	 */
+> -	if (address + 0x100000 < vma->vm_end) {
+> -		/* get user regs even if this fault is in kernel mode */
+> -		struct pt_regs *uregs =3D current->thread.regs;
+> -		if (uregs =3D=3D NULL)
+> -			return bad_area(regs, address);
+> +	/* The stack is being expanded, check if it's valid */
+> +	if (unlikely(bad_stack_expansion(regs, address, vma, store_update_sp)))
+> +		return bad_area(regs, address);
+>
+> -		/*
+> -		 * A user-mode access to an address a long way below
+> -		 * the stack pointer is only valid if the instruction
+> -		 * is one which would update the stack pointer to the
+> -		 * address accessed if the instruction completed,
+> -		 * i.e. either stwu rs,n(r1) or stwux rs,r1,rb
+> -		 * (or the byte, halfword, float or double forms).
+> -		 *
+> -		 * If we don't check this then any write to the area
+> -		 * between the last mapped region and the stack will
+> -		 * expand the stack rather than segfaulting.
+> -		 */
+> -		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
+> -			return bad_area(regs, address);
+> -	}
+> +	/* Try to expand it */
+>  	if (unlikely(expand_stack(vma, address)))
+>  		return bad_area(regs, address);
+>
+> --
+> 2.13.3
