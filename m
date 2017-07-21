@@ -1,20 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDcT22tZ1zDqvG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 03:00:06 +1000 (AEST)
-Date: Fri, 21 Jul 2017 18:59:47 +0200
-Message-ID: <20170721185947.Horde.e8_0DAuKLUb1znI0Zfx-aQ2@messagerie.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 23/24] powerpc/mm: Cleanup check for stack expansion
-References: <20170719044946.22030-1-benh@kernel.crashing.org>
- <20170719044946.22030-23-benh@kernel.crashing.org>
-In-Reply-To: <20170719044946.22030-23-benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDcff43TQzDqvB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 03:08:26 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6LH82Vs089206
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 13:08:24 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2buh1s5btk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 13:08:24 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 21 Jul 2017 11:08:23 -0600
+Date: Fri, 21 Jul 2017 10:08:18 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH 1/2] powerpc/xmon: support dumping software pagetables
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <20170721052406.28960-1-bsingharora@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170721052406.28960-1-bsingharora@gmail.com>
+Message-Id: <20170721170818.GC5529@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,177 +38,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> a =C3=A9crit=C2=A0:
+On Fri, Jul 21, 2017 at 03:24:05PM +1000, Balbir Singh wrote:
+> It would be nice to be able to dump page tables in a
+> particular context
+> 
+> Example use cases
+> 
+> Dumping PTE contents to see the keys (useful for debugging)
+> 
+> c0000000ba48c880 c0000000bab438b0   2677   2675 T  2 protection_keys
+> 0:mon> ds c0000000ba48c880 0x7ffff7f70000
+> translating tsk c0000000ba48c880, addr 7ffff7f70000
+> G: 0xb95b6400   U: 0xb6334000   M: 0xb6543000   PA: 0x012c0000, PTE: 0xd4800000012c0504
+> 
+> Dumping vmalloc space
+> 
+> 0:mon> ds 0 d000000000000000
+> translating tsk           (null), addr d000000000000000
+> G: 0x3d450400   U: 0xbc184000   M: 0x3d460000   PA: 0x7e010000, PTE: 0xc08000007e01018e
+> 
+> I did not replicate the complex code of dump_pagetable and have no support
+> for bolted linear mapping, thats why I've called it software pagetable
+> dumping support. The format of the PTE can be expanded to add more useful
+> information about the flags in the PTE if required.
 
-> When hitting below a VM_GROWSDOWN vma (typically growing the stack),
-> we check whether it's a valid stack-growing instruction and we
-> check the distance to GPR1. This is largely open coded with lots
-> of comments, so move it out to a helper.
+yes. a nice way of dumping all the flags in the PTE will be handy.
+especially; my favorite, protection key values.
 
-Did you have a look at the following patch ? It's been waiting for=20=20
-application=20for some weeks now.=20=20
-https://patchwork.ozlabs.org/patch/771869
-It=20limits number of calls to get_user()
-Can you have a look and merge it with your serie ?
-
->
-> While at it, make store_update_sp a boolean.
-
-My patch requires a tristate here
-
-Christophe
-
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 > ---
->  arch/powerpc/mm/fault.c | 84=20=20
->=20++++++++++++++++++++++++++++---------------------
->  1 file changed, 48 insertions(+), 36 deletions(-)
->
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index a229fd2d82d6..c2720ebb6a62 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -71,15 +71,15 @@ static inline bool notify_page_fault(struct=20=20
->=20pt_regs *regs)
->   * Check whether the instruction at regs->nip is a store using
->   * an update addressing form which will update r1.
->   */
-> -static int store_updates_sp(struct pt_regs *regs)
-> +static bool store_updates_sp(struct pt_regs *regs)
->  {
->  	unsigned int inst;
->
->  	if (get_user(inst, (unsigned int __user *)regs->nip))
-> -		return 0;
-> +		return false;
->  	/* check for 1 in the rA field */
->  	if (((inst >> 16) & 0x1f) !=3D 1)
-> -		return 0;
-> +		return false;
->  	/* check major opcode */
->  	switch (inst >> 26) {
->  	case 37:	/* stwu */
-> @@ -87,7 +87,7 @@ static int store_updates_sp(struct pt_regs *regs)
->  	case 45:	/* sthu */
->  	case 53:	/* stfsu */
->  	case 55:	/* stfdu */
-> -		return 1;
-> +		return true;
->  	case 62:	/* std or stdu */
->  		return (inst & 3) =3D=3D 1;
->  	case 31:
-> @@ -99,10 +99,10 @@ static int store_updates_sp(struct pt_regs *regs)
->  		case 439:	/* sthux */
->  		case 695:	/* stfsux */
->  		case 759:	/* stfdux */
-> -			return 1;
-> +			return true;
->  		}
->  	}
-> -	return 0;
-> +	return false;
+>  arch/powerpc/xmon/xmon.c | 97 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 97 insertions(+)
+> 
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 08e367e..8aedfff 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -126,6 +126,7 @@ static void byterev(unsigned char *, int);
+>  static void memex(void);
+>  static int bsesc(void);
+>  static void dump(void);
+> +static void show_pte(unsigned long);
+>  static void prdump(unsigned long, long);
+>  static int ppc_inst_dump(unsigned long, long, int);
+>  static void dump_log_buf(void);
+> @@ -233,6 +234,7 @@ Commands:\n\
+>  #endif
+>    "\
+>    dr	dump stream of raw bytes\n\
+> +  ds	dump software PTEs\n\
+>    dt	dump the tracing buffers (uses printk)\n\
+>  "
+>  #ifdef CONFIG_PPC_POWERNV
+> @@ -2528,6 +2530,9 @@ dump(void)
+>  	} else if (c == 't') {
+>  		ftrace_dump(DUMP_ALL);
+>  		tracing_on();
+> +	} else if (c == 's') {
+> +		/* dump software pte */
+> +		show_pte(adrs);
+>  	} else if (c == 'r') {
+>  		scanhex(&ndump);
+>  		if (ndump == 0)
+> @@ -2860,7 +2865,99 @@ static void show_task(struct task_struct *tsk)
+>  		state, task_thread_info(tsk)->cpu,
+>  		tsk->comm);
 >  }
->  /*
->   * do_page_fault error handling helpers
-> @@ -222,6 +222,43 @@ static bool bad_kernel_fault(bool is_exec,=20=20
->=20unsigned long error_code,
->  	return is_exec || (address >=3D TASK_SIZE);
->  }
->
-> +static bool bad_stack_expansion(struct pt_regs *regs, unsigned long addr=
-ess,
-> +				struct vm_area_struct *vma,
-> +				bool store_update_sp)
+> +void format_pte(unsigned long pte)
 > +{
-> +	/*
-> +	 * N.B. The POWER/Open ABI allows programs to access up to
-> +	 * 288 bytes below the stack pointer.
-> +	 * The kernel signal delivery code writes up to about 1.5kB
-> +	 * below the stack pointer (r1) before decrementing it.
-> +	 * The exec code can write slightly over 640kB to the stack
-> +	 * before setting the user r1.  Thus we allow the stack to
-> +	 * expand to 1MB without further checks.
-> +	 */
-> +	if (address + 0x100000 < vma->vm_end) {
-> +		/* get user regs even if this fault is in kernel mode */
-> +		struct pt_regs *uregs =3D current->thread.regs;
-> +		if (uregs =3D=3D NULL)
-> +			return true;
+> +	unsigned long pa = pte & PTE_RPN_MASK;
 > +
-> +		/*
-> +		 * A user-mode access to an address a long way below
-> +		 * the stack pointer is only valid if the instruction
-> +		 * is one which would update the stack pointer to the
-> +		 * address accessed if the instruction completed,
-> +		 * i.e. either stwu rs,n(r1) or stwux rs,r1,rb
-> +		 * (or the byte, halfword, float or double forms).
-> +		 *
-> +		 * If we don't check this then any write to the area
-> +		 * between the last mapped region and the stack will
-> +		 * expand the stack rather than segfaulting.
-> +		 */
-> +		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
-> +			return true;
-> +	}
-> +	return false;
+> +	printf("PA: 0x%08lx, PTE: 0x%08lx\n", pa, pte);
 > +}
 > +
->  static bool access_error(bool is_write, bool is_exec,
->  			 struct vm_area_struct *vma)
+> +static void show_pte(unsigned long tskv)
+> +{
+> +	unsigned long addr = 0;
+> +	struct task_struct *tsk = NULL;
+> +	struct mm_struct *mm;
+> +	pgd_t *pgdp;
+> +	pud_t *pudp;
+> +	pmd_t *pmdp;
+> +	pte_t *ptep;
+> +
+> +	tsk = (struct task_struct *)tskv;
+> +	if (tsk == NULL)
+> +		mm = &init_mm;
+> +	else
+> +		mm = tsk->active_mm;
+> +
+> +	if (mm == NULL)
+> +		mm = &init_mm;
+> +
+> +	if (!scanhex(&addr))
+> +		printf("need address to translate\n");
+> +
+> +	if (setjmp(bus_error_jmp) != 0) {
+> +		catch_memory_errors = 0;
+> +		printf("*** Error dumping pte for task %p\n", tsk);
+> +		return;
+> +	}
+> +
+> +	catch_memory_errors = 1;
+> +	sync();
+> +
+> +	if (mm == &init_mm)
+> +		pgdp = pgd_offset_k(addr);
+> +	else
+> +		pgdp = pgd_offset(mm, addr);
+> +
+> +	if (pgd_none(*pgdp)) {
+> +		printf("no linux page table for address\n");
+> +		return;
+> +	}
+> 
+> +	if (pgd_huge(*pgdp)) {
+> +		format_pte(pgd_val(*pgdp));
+> +		return;
+> +	}
+> +	printf("G: 0x%8lx\t", pgd_val(*pgdp));
+> +
+> +	pudp = pud_offset(pgdp, addr);
+> +
+> +	if (pud_none(*pudp)) {
+> +		printf("No valid PUD\n");
+> +		return;
+> +	}
+> +
+> +	if (pud_huge(*pudp)) {
+> +		format_pte(pud_val(*pudp));
+> +		return;
+> +	}
+> +	printf("U: 0x%8lx\t", pud_val(*pudp));
+> +
+> +	pmdp = pmd_offset(pudp, addr);
+> +
+> +	if (pmd_none(*pmdp)) {
+> +		printf("No valid PMD\n");
+> +		return;
+> +	}
+> +
+> +	if (pmd_huge(*pmdp)) {
+> +		format_pte(pmd_val(*pmdp));
+> +		return;
+> +	}
+> +	printf("M: 0x%8lx\t", pmd_val(*pmdp));
+> +
+> +	/* pte_offset_map is the same as pte_offset_kernel */
+> +	ptep = pte_offset_kernel(pmdp, addr);
+> +	if (pte_none(*ptep)) {
+> +		printf("no valid PTE\n");
+> +		return;
+> +	}
+> +
+> +	format_pte(pte_val(*ptep));
+> +
+
+These two lines below always go togather. A nice macro
+#define sync_delay() { sync(); __delay(200); }
+can help.
+
+> +	sync();
+> +	__delay(200);
+
+
+> +	catch_memory_errors = 0;
+
+
+> +}
+>  static void show_tasks(void)
 >  {
-> @@ -350,7 +387,7 @@ static int __do_page_fault(struct pt_regs *regs,=20=
-=20
->=20unsigned long address,
->  	int is_user =3D user_mode(regs);
->  	int is_write =3D page_fault_is_write(error_code);
->  	int fault, major =3D 0;
-> -	int store_update_sp =3D 0;
-> +	bool store_update_sp =3D false;
->
->  #ifdef CONFIG_PPC_ICSWX
->  	/*
-> @@ -458,36 +495,11 @@ static int __do_page_fault(struct pt_regs=20=20
->=20*regs, unsigned long address,
->  	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN)))
->  		return bad_area(regs, address);
->
-> -	/*
-> -	 * N.B. The POWER/Open ABI allows programs to access up to
-> -	 * 288 bytes below the stack pointer.
-> -	 * The kernel signal delivery code writes up to about 1.5kB
-> -	 * below the stack pointer (r1) before decrementing it.
-> -	 * The exec code can write slightly over 640kB to the stack
-> -	 * before setting the user r1.  Thus we allow the stack to
-> -	 * expand to 1MB without further checks.
-> -	 */
-> -	if (address + 0x100000 < vma->vm_end) {
-> -		/* get user regs even if this fault is in kernel mode */
-> -		struct pt_regs *uregs =3D current->thread.regs;
-> -		if (uregs =3D=3D NULL)
-> -			return bad_area(regs, address);
-> +	/* The stack is being expanded, check if it's valid */
-> +	if (unlikely(bad_stack_expansion(regs, address, vma, store_update_sp)))
-> +		return bad_area(regs, address);
->
-> -		/*
-> -		 * A user-mode access to an address a long way below
-> -		 * the stack pointer is only valid if the instruction
-> -		 * is one which would update the stack pointer to the
-> -		 * address accessed if the instruction completed,
-> -		 * i.e. either stwu rs,n(r1) or stwux rs,r1,rb
-> -		 * (or the byte, halfword, float or double forms).
-> -		 *
-> -		 * If we don't check this then any write to the area
-> -		 * between the last mapped region and the stack will
-> -		 * expand the stack rather than segfaulting.
-> -		 */
-> -		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
-> -			return bad_area(regs, address);
-> -	}
-> +	/* Try to expand it */
->  	if (unlikely(expand_stack(vma, address)))
->  		return bad_area(regs, address);
->
-> --
-> 2.13.3
+>  	unsigned long tskv;
+> -- 
+> 2.9.4
+
+-- 
+Ram Pai
