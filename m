@@ -1,20 +1,52 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDLb35vqjzDqx1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:34:23 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Zhao Qiang <qiang.zhao@nxp.com>, oss@buserror.net
-Cc: valentin.longchamp@keymile.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: Re: [PATCH] qe: fix compile issue for arm64
-In-Reply-To: <1500603550-5567-1-git-send-email-qiang.zhao@nxp.com>
-References: <1500603550-5567-1-git-send-email-qiang.zhao@nxp.com>
-Date: Fri, 21 Jul 2017 16:34:23 +1000
-Message-ID: <87mv7ye1sg.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDLzS4ntDzDqtL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:52:04 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6L6mlpq163037
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 02:52:02 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bu9gbe9wj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 02:52:01 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 21 Jul 2017 16:51:58 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6L6pu1931129752
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:51:56 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6L6psJM019078
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 16:51:56 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
+ dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
+ akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com,
+ mhocko@kernel.org
+Subject: Re: [RFC v6 27/62] powerpc: helper to validate key-access permissions
+ of a pte
+In-Reply-To: <20170720221504.GJ5487@ram.oc3035372033.ibm.com>
+References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
+ <1500177424-13695-28-git-send-email-linuxram@us.ibm.com>
+ <87mv7zpq1k.fsf@skywalker.in.ibm.com>
+ <20170720221504.GJ5487@ram.oc3035372033.ibm.com>
+Date: Fri, 21 Jul 2017 12:21:50 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87k232p9ix.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +56,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Zhao Qiang <qiang.zhao@nxp.com> writes:
+Ram Pai <linuxram@us.ibm.com> writes:
 
-> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> ---
->  drivers/soc/fsl/qe/qe.c | 2 ++
->  1 file changed, 2 insertions(+)
+> On Thu, Jul 20, 2017 at 12:12:47PM +0530, Aneesh Kumar K.V wrote:
+>> Ram Pai <linuxram@us.ibm.com> writes:
+>> 
+>> > helper function that checks if the read/write/execute is allowed
+>> > on the pte.
+>> >
+>> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+>> > ---
+>> >  arch/powerpc/include/asm/book3s/64/pgtable.h |    4 +++
+>> >  arch/powerpc/include/asm/pkeys.h             |   12 +++++++++
+>> >  arch/powerpc/mm/pkeys.c                      |   33 ++++++++++++++++++++++++++
+>> >  3 files changed, 49 insertions(+), 0 deletions(-)
+>> >
+>> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> > index 30d7f55..0056e58 100644
+>> > --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> > @@ -472,6 +472,10 @@ static inline void write_uamor(u64 value)
+>> >  	mtspr(SPRN_UAMOR, value);
+>> >  }
+>> >
+>> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+>> > +extern bool arch_pte_access_permitted(u64 pte, bool write, bool execute);
+>> > +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+>> > +
+>> >  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+>> >  static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+>> >  				       unsigned long addr, pte_t *ptep)
+>> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+>> > index bbb5d85..7a9aade 100644
+>> > --- a/arch/powerpc/include/asm/pkeys.h
+>> > +++ b/arch/powerpc/include/asm/pkeys.h
+>> > @@ -53,6 +53,18 @@ static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
+>> >  		((pteflags & H_PAGE_PKEY_BIT4) ? HPTE_R_KEY_BIT4 : 0x0UL));
+>> >  }
+>> >
+>> > +static inline u16 pte_to_pkey_bits(u64 pteflags)
+>> > +{
+>> > +	if (!pkey_inited)
+>> > +		return 0x0UL;
+>> 
+>> Do we really need that above check ? We should always find it
+>> peky_inited to be set. 
 >
-> diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-> index 2ef6fc6..d48fa4a 100644
-> --- a/drivers/soc/fsl/qe/qe.c
-> +++ b/drivers/soc/fsl/qe/qe.c
-> @@ -229,7 +229,9 @@ int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier)
->  	/* Errata QE_General4, which affects some MPC832x and MPC836x SOCs, says
->  	   that the BRG divisor must be even if you're not using divide-by-16
->  	   mode. */
-> +#ifdef CONFIG_PPC
->  	if (pvr_version_is(PVR_VER_836x) || pvr_version_is(PVR_VER_832x))
-> +#endif
->  		if (!div16 && (divisor & 1) && (divisor > 3))
->  			divisor++;
+> Yes. there are cases where pkey_inited is not enabled. 
+> a) if the MMU is radix.
+That should be be a feature check
 
-Are you sure that's what you want to do on arm64 ?
+> b) if the PAGE size is 4k.
 
-cheers
+That is a kernel config change
+
+> c) if the device tree says the feature is not available
+> d) if the CPU is of a older generation. P6 and older.
+
+Both feature check.
+
+how about doing something like
+
+static inline u16 pte_to_pkey_bits(u64 pteflags)
+{
+	if (!(pteflags & H_PAGE_KEY_MASK))
+		return 0x0UL;
+
+	return (((pteflags & H_PAGE_PKEY_BIT0) ? 0x10 : 0x0UL) |
+		((pteflags & H_PAGE_PKEY_BIT1) ? 0x8 : 0x0UL) |
+		((pteflags & H_PAGE_PKEY_BIT2) ? 0x4 : 0x0UL) |
+		((pteflags & H_PAGE_PKEY_BIT3) ? 0x2 : 0x0UL) |
+		((pteflags & H_PAGE_PKEY_BIT4) ? 0x1 : 0x0UL));
+}
+
+We still have to look at the code generated to see it is really saving
+something.
+
+-aneesh
