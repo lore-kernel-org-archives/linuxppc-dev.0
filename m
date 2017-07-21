@@ -1,22 +1,33 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-it0-x229.google.com (mail-it0-x229.google.com
- [IPv6:2607:f8b0:4001:c0b::229])
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-it0-x231.google.com (mail-it0-x231.google.com
+ [IPv6:2607:f8b0:4001:c0b::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDPTQ63P4zDqtT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 18:44:42 +1000 (AEST)
-Received: by mail-it0-x229.google.com with SMTP id a62so4462066itd.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 01:44:42 -0700 (PDT)
-Message-ID: <1500626634.8256.21.camel@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/xmon: support dumping software pagetables
-From: Balbir Singh <bsingharora@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 21 Jul 2017 18:43:54 +1000
-In-Reply-To: <87k232e0mg.fsf@concordia.ellerman.id.au>
-References: <20170721052406.28960-1-bsingharora@gmail.com>
- <87k232e0mg.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDPxY2pHJzDqmb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 19:05:36 +1000 (AEST)
+Received: by mail-it0-x231.google.com with SMTP id a62so537398itd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 02:05:36 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <87pocusm2x.fsf@linkitivity.dja.id.au>
+References: <20170719012839.20124-1-dja@axtens.net>
+ <CAKv+Gu-SgeLXVEj_VtZHchaNmOwWO+GmfTg5CYcnOF43AJZGnA@mail.gmail.com>
+ <87pocusm2x.fsf@linkitivity.dja.id.au>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Fri, 21 Jul 2017 10:05:33 +0100
+Message-ID: <CAKv+Gu-O7cyJSgDrqSNi6F_n9eBnFEgz==aqowMqhy+81YK=CQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] Allow non-legacy cards to be vgaarb default
+To: Daniel Axtens <dja@axtens.net>, Hans de Goede <hdegoede@redhat.com>
+Cc: Laszlo Ersek <lersek@redhat.com>, linux-pci <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>, David Airlie <airlied@linux.ie>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Will Deacon <will.deacon@arm.com>,
+ "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Zou Rongrong <zourongrong@gmail.com>,
+ daniel.vetter@intel.com, helgass@kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,76 +37,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-07-21 at 16:59 +1000, Michael Ellerman wrote:
-> Nice !
-> 
-> Balbir Singh <bsingharora@gmail.com> writes:
-> 
-> > It would be nice to be able to dump page tables in a
-> > particular context
-> > 
-> > Example use cases
-> > 
-> > Dumping PTE contents to see the keys (useful for debugging)
-> > 
-> > c0000000ba48c880 c0000000bab438b0   2677   2675 T  2 protection_keys
-> 
-> What is that ^ ?
+(+ Hans)
 
-
-Thats extra, the output of P (print all tasks, I've used that task selection)
-
-> 
-> > 0:mon> ds c0000000ba48c880 0x7ffff7f70000
-> > translating tsk c0000000ba48c880, addr 7ffff7f70000
-> > G: 0xb95b6400   U: 0xb6334000   M: 0xb6543000   PA: 0x012c0000, PTE: 0xd4800000012c0504
-> 
-> Without reading the code I don't grok what G/U/M mean.
-
-PGD, PUD and PMD, I'll expand on them.
-
-> 
-> Feel free to use more than one line of output :)
-> 
-> > Dumping vmalloc space
-> > 
-> > 0:mon> ds 0 d000000000000000
-> 
-> I suspect we will want to do that a lot. So I'd rather the arguments
-> were reversed, and the second (task) can be omitted.
-
-I considered that as well, can do
-
-> 
-> So:
-> 0:mon> ds x	== translate x via init_mm
-> 0:mon> ds x y	== translate x via &y->mm
-> 
-> I guess it's easier for folks to find a task rather than an mm directly?
-> Otherwise it could take an mm not a task.
-> 
-
-we already have commands for task, via (P), which is why I thought
-task makes sense.
-
-> > translating tsk           (null), addr d000000000000000
-> 
-> We should special case that to say "using kernel page tables" or similar.
-> 
-> > G: 0x3d450400   U: 0xbc184000   M: 0x3d460000   PA: 0x7e010000, PTE: 0xc08000007e01018e
-> > I did not replicate the complex code of dump_pagetable and have no support
-> > for bolted linear mapping, thats why I've called it software pagetable
-> > dumping support.
-> 
-> Not sure about that naming. On hash it makes sense, but not on radix or
-> on other platforms.
-> 
-> Maybe 'dv' for dump Virtual address ?
-> 
-> It doesn't dump a PTE, it tries to translate an address into a PTE.
+On 21 July 2017 at 00:52, Daniel Axtens <dja@axtens.net> wrote:
+> Hi Ard,
+>
+>> (+ Laszlo)
+>>
+>> On 19 July 2017 at 02:28, Daniel Axtens <dja@axtens.net> wrote:
+>>> Hi all,
+>>>
+>>> Previously I posted a patch that provided a quirk for a hibmc card
+>>> behind a particular Huawei bridge that allowed it to be marked as the
+>>> default device in the VGA arbiter.[0] This lead to some discussion.[1]
+>>> It was broadly suggested that a more generic solution would be better,
+>>> something in the style of powerpc's fixup_vga() quirk.
+>>>
+>>> Here is my suggested solution:
+>>>
+>>>  - Create a Kconfig option ARCH_WANT_VGA_ARB_FALLBACK
+>>>
+>>>  - if an arch selects that option, install PCI_FIXUP_CLASS_ENABLE
+>>>    hook. This hook fires when a card is enabled, which will require
+>>>    that a driver has been bound.
+>>>
+>>>  - if there is no default device when the hook fires, and the device
+>>>    can control memory and I/O, mark it as default.
+>>>
+>>> The patches are as follows:
+>>>
+>>>  (1) powerpc: simplify and fix VGA default device behaviour
+>>>
+>>>      This cleans up some quirks in the powerpc implementation of the
+>>>      vga_fixup. It should make the behaviour match the original
+>>>      intention.
+>>>
+>>>  (2) vgaarb: allow non-legacy cards to be marked as default
+>>>
+>>>      Add the Kconfig option, and create the fixup in vgaarb.c gated
+>>>      behind the option. Nothing happens at this stage because no arch
+>>>      has selected the option yet.
+>>>
+>>>  (3) powerpc: replace vga_fixup() with generic code
+>>>
+>>>      Select the option on powerpc and remove the old code. The only
+>>>      change is that it moves from being a final fixup to an enable
+>>>      fixup.
+>>>
+>>>  (4) arm64: allow non-legacy VGA devices to be default
+>>>
+>>>      Select the option on arm64. This solves my problem with the D05,
+>>>      but may cause other cards to be marked as default on other
+>>>      boards. This shouldn't cause any real issues but is worth being
+>>>      aware of.
+>>>
+>>
+>> Hi Daniel,
+>>
+>> Given that the whole point of the VGA arbiter is the ability to share
+>> the legacy mem+io ranges between different cards, why do we care about
+>> the VGA arbiter in the first place on arm64?
+>>
+>> AFAIK, there have been some recent changes in Xorg to address the
+>> auto-detection problem. I don't remember the exact details, but I have
+>> added Laszlo, who was involved with this at the time.
+>
+> I haven't been able to locate those changes - I remember that the call
+> to pci_device_is_boot_vga() in xf86pciBus.c [0] was critical and that is
+> still there in the latest git.
+>
+> Indeed, the reason we care about the vga arbiter at all is because of
+> that Xorg dependency on the boot VGA card. pci_device_is_boot_vga()
+> reads a sysfs file, and that sysfs file is populated based on the
+> vga_default_driver(), so it's very difficult to extricate ourselves from
+> the vga arbiter and its concept of the default device.
+>
+> We could make this method an 'either/or' rather than a fallback - so
+> platforms who didn't care about legacy resources didn't bother with
+> those tests, but I'm not sure what benefit that would give and I find it
+> harder to be confident of an absence of unexpected consequences.
 >
 
-Done, will do a v2
+I was referring to this commit
 
-Thanks for the review!
-Balbir Singh. 
+https://cgit.freedesktop.org/xorg/xserver/commit/?id=ca8d88e50310a0d440a127c22a0a383cc149f408
+
+but reading the commit log, it may have less to do with this issue
+than I thought originally.
+
+But the fact remains that we are going about this the wrong way.
+Whether a graphics card decodes legacy VGA ranges or not has *nothing*
+to do with whether or not it is in fact the primary device on a
+non-x86 system, and so I still think the VGA arbiter should be omitted
+entirely for such platforms, and Xorg should be fixed instead.
