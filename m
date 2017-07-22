@@ -1,20 +1,21 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDzwB0jkgzDqpV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 17:36:25 +1000 (AEST)
-Date: Sat, 22 Jul 2017 10:34:57 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Qiang Zhao <qiang.zhao@nxp.com>
-Cc: Li Yang <leoyang.li@nxp.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] fsl/qe: Cleanup error paths in ucc_of_parse_tdm()
-Message-ID: <20170722073457.zyrqoufpopwg6il5@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xFD0h3f8ZzDqy5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2017 02:41:07 +1000 (AEST)
+Date: Sat, 22 Jul 2017 18:40:58 +0200
+Message-ID: <20170722184058.Horde.Y2X8hGdhXLwnxJXZApQEhQ1@messagerie.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 07/24] powerpc/mm: Move out definition of CPU specific
+ is_write bits
+References: <20170719044946.22030-1-benh@kernel.crashing.org>
+ <20170719044946.22030-7-benh@kernel.crashing.org>
+In-Reply-To: <20170719044946.22030-7-benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170722073335.tb6byaaarqvloh3a@mwanda>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,87 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The most important part of this change is that it not propogates error
-codes instead of returning -EINVAL.  There was also a tab missing, and
-a couple other minor cleanups which don't affect runtime.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> a =C3=A9crit=C2=A0:
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
-Not tested, but I don't think propogating the errors will cause a
-problem.
+> Define a common page_fault_is_write() helper and use it
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/mm/fault.c | 18 +++++++++++-------
+>  1 file changed, 11 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index f257965b54b5..26ec0dd4f419 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -183,6 +183,16 @@ static int mm_fault_error(struct pt_regs *regs,=20=
+=20
+>=20unsigned long addr, int fault)
+>  }
+>
+>  /*
+> + * Define the correct "is_write" bit in error_code based
+> + * on the processor family
+> + */
+> +#if (defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+> +#define page_fault_is_write(__err)	((__err) & ESR_DST)
+> +#else
+> +#define page_fault_is_write(__err)	((__err) & DSISR_ISSTORE)
+> +#endif
 
-diff --git a/drivers/soc/fsl/qe/qe_tdm.c b/drivers/soc/fsl/qe/qe_tdm.c
-index ec7a853053c3..ce071a78209b 100644
---- a/drivers/soc/fsl/qe/qe_tdm.c
-+++ b/drivers/soc/fsl/qe/qe_tdm.c
-@@ -42,7 +42,7 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 		     struct ucc_tdm_info *ut_info)
- {
- 	const char *sprop;
--	int ret = 0;
-+	int ret;
- 	u32 val;
- 	struct resource *res;
- 	struct device_node *np2;
-@@ -68,7 +68,7 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 		if ((ut_info->uf_info.tx_sync < QE_CLK_NONE) ||
- 		    (ut_info->uf_info.tx_sync > QE_TSYNC_PIN)) {
- 			pr_err("QE-TDM: Invalid tx-sync-clock property\n");
--		return -EINVAL;
-+			return -EINVAL;
- 		}
- 	} else {
- 		pr_err("QE-TDM: Invalid tx-sync-clock property\n");
-@@ -78,13 +78,12 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 	ret = of_property_read_u32_index(np, "fsl,tx-timeslot-mask", 0, &val);
- 	if (ret) {
- 		pr_err("QE-TDM: Invalid tx-timeslot-mask property\n");
--		return -EINVAL;
-+		return ret;
- 	}
- 	utdm->tx_ts_mask = val;
- 
- 	ret = of_property_read_u32_index(np, "fsl,rx-timeslot-mask", 0, &val);
- 	if (ret) {
--		ret = -EINVAL;
- 		pr_err("QE-TDM: Invalid rx-timeslot-mask property\n");
- 		return ret;
- 	}
-@@ -92,7 +91,6 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 
- 	ret = of_property_read_u32_index(np, "fsl,tdm-id", 0, &val);
- 	if (ret) {
--		ret = -EINVAL;
- 		pr_err("QE-TDM: No fsl,tdm-id property for this UCC\n");
- 		return ret;
- 	}
-@@ -106,18 +104,16 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 
- 	sprop = of_get_property(np, "fsl,tdm-framer-type", NULL);
- 	if (!sprop) {
--		ret = -EINVAL;
- 		pr_err("QE-TDM: No tdm-framer-type property for UCC\n");
--		return ret;
-+		return -EINVAL;
- 	}
- 	ret = set_tdm_framer(sprop);
- 	if (ret < 0)
--		return -EINVAL;
-+		return ret;
- 	utdm->tdm_framer_type = ret;
- 
- 	ret = of_property_read_u32_index(np, "fsl,siram-entry-id", 0, &val);
- 	if (ret) {
--		ret = -EINVAL;
- 		pr_err("QE-TDM: No siram entry id for UCC\n");
- 		return ret;
- 	}
-@@ -164,7 +160,7 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 		siram_init_flag = 1;
- 	}
- 
--	return ret;
-+	return 0;
- }
- EXPORT_SYMBOL(ucc_of_parse_tdm);
- 
+Doesn't linux kernel codying style make preference to static inline=20=20
+functions=20instead of macros ?
+
+> +
+> +/*
+>   * For 600- and 800-family processors, the error_code parameter is DSISR
+>   * for a data fault, SRR1 for an instruction fault. For 400-family=20=20
+>=20processors
+>   * the error_code parameter is ESR for a data fault, 0 for an instructio=
+n
+> @@ -202,18 +212,12 @@ static int __do_page_fault(struct pt_regs=20=20
+>=20*regs, unsigned long address,
+>  	struct mm_struct *mm =3D current->mm;
+>  	unsigned int flags =3D FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+>  	int code =3D SEGV_MAPERR;
+> -	int is_write =3D 0;
+>   	int is_exec =3D TRAP(regs) =3D=3D 0x400;
+>  	int is_user =3D user_mode(regs);
+> +	int is_write =3D page_fault_is_write(error_code);
+>  	int fault;
+>  	int rc =3D 0, store_update_sp =3D 0;
+>
+> -#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+> -	is_write =3D error_code & DSISR_ISSTORE;
+> -#else
+> -	is_write =3D error_code & ESR_DST;
+> -#endif /* CONFIG_4xx || CONFIG_BOOKE */
+> -
+>  #ifdef CONFIG_PPC_ICSWX
+>  	/*
+>  	 * we need to do this early because this "data storage
+> --
+> 2.13.3
