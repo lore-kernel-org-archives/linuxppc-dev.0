@@ -1,33 +1,44 @@
-Return-Path: <haren@linux.vnet.ibm.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDwTx4FPKzDrFS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 15:01:57 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDzNL6qVXzDqxS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 17:12:18 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6M51S41141110
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 01:01:54 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2buyhq90r1-1
+ v6M7B1H9135446
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 03:12:16 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bv10nspq9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 01:01:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 03:12:16 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 22 Jul 2017 01:01:52 -0400
-Subject: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression engine
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, herbert@gondor.apana.org.au
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- mikey@neuling.org, benh@kernel.crashing.org, suka@us.ibm.com,
- ddstreet@ieee.org, linuxram@us.ibm.com, npiggin@gmail.com, hbabu@us.ibm.com
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 21 Jul 2017 22:01:42 -0700
-Mime-Version: 1.0
-Message-Id: <1500699702.23205.8.camel@hbabu-laptop>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sat, 22 Jul 2017 17:12:13 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6M7CBaO29425716
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 17:12:11 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6M7C94B026782
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 17:12:10 +1000
+Subject: Re: [PATCH v13 3/5] powerpc/perf: Add nest imc pmu support
+To: mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Hemant Kumar <hemant@linux.vnet.ibm.com>
+References: <1500413796-18340-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1500413796-18340-4-git-send-email-maddy@linux.vnet.ibm.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Sat, 22 Jul 2017 12:42:06 +0530
+MIME-Version: 1.0
+In-Reply-To: <1500413796-18340-4-git-send-email-maddy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <25f9f2f0-be33-3935-f10f-83c135303fd4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,502 +48,825 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+my bad, missed to change the authership of this patch.
 
-This patch adds P9 NX support for 842 compression engine. Virtual
-Accelerator Switchboard (VAS) is used to access 842 engine on P9.
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 
-For each NX engine per chip, setup receive window using
-vas_rx_win_open() which configures RxFIFo with FIFO address, lpid,
-pid and tid values. This unique (lpid, pid, tid) combination will
-be used to identify the target engine.
-
-For crypto open request, open send window on the NX engine for
-the corresponding chip / cpu where the open request is executed.
-This send window will be closed upon crypto close request.
-
-NX provides high and normal priority FIFOs. For compression /
-decompression requests, we use only hight priority FIFOs in kernel.
-
-Each NX request will be communicated to VAS using copy/paste
-instructions with vas_copy_crb() / vas_paste_crb() functions.
-
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
----
- drivers/crypto/nx/Kconfig          |   1 +
- drivers/crypto/nx/nx-842-powernv.c | 375 ++++++++++++++++++++++++++++++++++++-
- drivers/crypto/nx/nx-842.c         |   2 +-
- 3 files changed, 371 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/crypto/nx/Kconfig b/drivers/crypto/nx/Kconfig
-index ad7552a6998c..cd5dda9c48f4 100644
---- a/drivers/crypto/nx/Kconfig
-+++ b/drivers/crypto/nx/Kconfig
-@@ -38,6 +38,7 @@ config CRYPTO_DEV_NX_COMPRESS_PSERIES
- config CRYPTO_DEV_NX_COMPRESS_POWERNV
- 	tristate "Compression acceleration support on PowerNV platform"
- 	depends on PPC_POWERNV
-+	depends on PPC_VAS
- 	default y
- 	help
- 	  Support for PowerPC Nest (NX) compression acceleration. This
-diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index c0dd4c7e17d3..13089a0b9dfa 100644
---- a/drivers/crypto/nx/nx-842-powernv.c
-+++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -23,6 +23,7 @@
- #include <asm/prom.h>
- #include <asm/icswx.h>
- #include <asm/vas.h>
-+#include <asm/reg.h>
- 
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
-@@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
- 
- #define WORKMEM_ALIGN	(CRB_ALIGN)
- #define CSB_WAIT_MAX	(5000) /* ms */
-+#define VAS_RETRIES	(10)
-+/* # of requests allowed per RxFIFO at a time. 0 for unlimited */
-+#define MAX_CREDITS_PER_RXFIFO	(1024)
- 
- struct nx842_workmem {
- 	/* Below fields must be properly aligned */
-@@ -42,16 +46,27 @@ struct nx842_workmem {
- 
- 	ktime_t start;
- 
-+	struct vas_window *txwin;	/* Used with VAS function */
- 	char padding[WORKMEM_ALIGN]; /* unused, to allow alignment */
- } __packed __aligned(WORKMEM_ALIGN);
- 
- struct nx842_coproc {
- 	unsigned int chip_id;
- 	unsigned int ct;
--	unsigned int ci;
-+	unsigned int ci;	/* Coprocessor instance, used with icswx */
-+	struct {
-+		struct vas_window *rxwin;
-+		int id;
-+	} vas;
- 	struct list_head list;
- };
- 
-+/*
-+ * Send the request to NX engine on the chip for the corresponding CPU
-+ * where the process is executing. Use with VAS function.
-+ */
-+static DEFINE_PER_CPU(struct nx842_coproc *, coproc_inst);
-+
- /* no cpu hotplug on powernv, so this list never changes after init */
- static LIST_HEAD(nx842_coprocs);
- static unsigned int nx842_ct;	/* used in icswx function */
-@@ -513,6 +528,105 @@ static int nx842_exec_icswx(const unsigned char *in, unsigned int inlen,
- }
- 
- /**
-+ * nx842_exec_vas - compress/decompress data using the 842 algorithm
-+ *
-+ * (De)compression provided by the NX842 coprocessor on IBM PowerNV systems.
-+ * This compresses or decompresses the provided input buffer into the provided
-+ * output buffer.
-+ *
-+ * Upon return from this function @outlen contains the length of the
-+ * output data.  If there is an error then @outlen will be 0 and an
-+ * error will be specified by the return code from this function.
-+ *
-+ * The @workmem buffer should only be used by one function call at a time.
-+ *
-+ * @in: input buffer pointer
-+ * @inlen: input buffer size
-+ * @out: output buffer pointer
-+ * @outlenp: output buffer size pointer
-+ * @workmem: working memory buffer pointer, size determined by
-+ *           nx842_powernv_driver.workmem_size
-+ * @fc: function code, see CCW Function Codes in nx-842.h
-+ *
-+ * Returns:
-+ *   0		Success, output of length @outlenp stored in the buffer
-+ *		at @out
-+ *   -ENODEV	Hardware unavailable
-+ *   -ENOSPC	Output buffer is to small
-+ *   -EMSGSIZE	Input buffer too large
-+ *   -EINVAL	buffer constraints do not fix nx842_constraints
-+ *   -EPROTO	hardware error during operation
-+ *   -ETIMEDOUT	hardware did not complete operation in reasonable time
-+ *   -EINTR	operation was aborted
-+ */
-+static int nx842_exec_vas(const unsigned char *in, unsigned int inlen,
-+				  unsigned char *out, unsigned int *outlenp,
-+				  void *workmem, int fc)
-+{
-+	struct coprocessor_request_block *crb;
-+	struct coprocessor_status_block *csb;
-+	struct nx842_workmem *wmem;
-+	struct vas_window *txwin;
-+	int ret, i = 0;
-+	u32 ccw;
-+	unsigned int outlen = *outlenp;
-+
-+	wmem = PTR_ALIGN(workmem, WORKMEM_ALIGN);
-+
-+	*outlenp = 0;
-+
-+	crb = &wmem->crb;
-+	csb = &crb->csb;
-+
-+	ret = nx842_config_crb(in, inlen, out, outlen, wmem);
-+	if (ret)
-+		return ret;
-+
-+	ccw = 0;
-+	ccw = SET_FIELD(CCW_FC_842, ccw, fc);
-+	crb->ccw = cpu_to_be32(ccw);
-+
-+	txwin = wmem->txwin;
-+	/* shoudn't happen, we don't load without a coproc */
-+	if (!txwin) {
-+		pr_err_ratelimited("NX-842 coprocessor is not available");
-+		return -ENODEV;
-+	}
-+
-+	do {
-+		wmem->start = ktime_get();
-+		preempt_disable();
-+		/*
-+		 * VAS copy CRB into L2 cache. Refer <asm/vas.h>.
-+		 * @crb, @offset and @first (must be true)
-+		 */
-+		vas_copy_crb(crb, 0, 1);
-+
-+		/*
-+		 * VAS paste previously copied CRB to NX.
-+		 * @txwin, @offset, @last (must be true) and @re is 
-+		 * expected/assumed to be true for NX windows.
-+		 */
-+		ret = vas_paste_crb(txwin, 0, 1, 1);
-+		preempt_enable();
-+		/*
-+		 * Retry copy/paste function for VAS failures.
-+		 */
-+	} while (ret && (i++ < VAS_RETRIES));
-+
-+	if (ret) {
-+		pr_err_ratelimited("VAS copy/paste failed\n");
-+		return ret;
-+	}
-+
-+	ret = wait_for_csb(wmem, csb);
-+	if (!ret)
-+		*outlenp = be32_to_cpu(csb->count);
-+
-+	return ret;
-+}
-+
-+/**
-  * nx842_powernv_compress - Compress data using the 842 algorithm
-  *
-  * Compression provided by the NX842 coprocessor on IBM PowerNV systems.
-@@ -576,6 +690,198 @@ static inline void nx842_add_coprocs_list(struct nx842_coproc *coproc,
- 	list_add(&coproc->list, &nx842_coprocs);
- }
- 
-+/*
-+ * Identify chip ID for each CPU and save coprocesor adddress for the
-+ * corresponding NX engine in percpu coproc_inst.
-+ * coproc_inst is used in crypto_init to open send window on the NX instance
-+ * for the corresponding CPU / chip where the open request is executed.
-+ */
-+static void nx842_set_per_cpu_coproc(struct nx842_coproc *coproc)
-+{
-+	unsigned int i, chip_id;
-+
-+	for_each_possible_cpu(i) {
-+		chip_id = cpu_to_chip_id(i);
-+
-+		if (coproc->chip_id == chip_id)
-+			per_cpu(coproc_inst, i) = coproc;
-+	}
-+}
-+
-+
-+static struct vas_window *nx842_alloc_txwin(struct nx842_coproc *coproc)
-+{
-+	struct vas_window *txwin = NULL;
-+	struct vas_tx_win_attr txattr;
-+
-+	/*
-+	 * Kernel requests will be high priority. So open send
-+	 * windows only for high priority RxFIFO entries.
-+	 */
-+	vas_init_tx_win_attr(&txattr, coproc->ct);
-+	txattr.lpid = 0;	/* lpid is 0 for kernel requests */
-+	txattr.pid = mfspr(SPRN_PID);
-+
-+	/*
-+	 * Open a VAS send window which is used to send request to NX.
-+	 */
-+	txwin = vas_tx_win_open(coproc->vas.id, coproc->ct, &txattr);
-+	if (IS_ERR(txwin)) {
-+		pr_err("ibm,nx-842: Can not open TX window: %ld\n",
-+				PTR_ERR(txwin));
-+		return NULL;
-+	}
-+
-+	return txwin;
-+}
-+
-+static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
-+					int vasid)
-+{
-+	struct vas_window *rxwin = NULL;
-+	struct vas_rx_win_attr rxattr;
-+	struct nx842_coproc *coproc;
-+	u32 lpid, pid, tid, fifo_size;
-+	u64 rx_fifo;
-+	const char *priority;
-+	int ret;
-+
-+	ret = of_property_read_u64(dn, "rx-fifo-address", (void *)&rx_fifo);
-+	if (ret) {
-+		pr_err("Missing rx-fifo-address property\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(dn, "rx-fifo-size", &fifo_size);
-+	if (ret) {
-+		pr_err("Missing rx-fifo-size property\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(dn, "lpid", &lpid);
-+	if (ret) {
-+		pr_err("Missing lpid property\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(dn, "pid", &pid);
-+	if (ret) {
-+		pr_err("Missing pid property\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(dn, "tid", &tid);
-+	if (ret) {
-+		pr_err("Missing tid property\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_string(dn, "priority", &priority);
-+	if (ret) {
-+		pr_err("Missing priority property\n");
-+		return ret;
-+	}
-+
-+	coproc = kzalloc(sizeof(*coproc), GFP_KERNEL);
-+	if (!coproc)
-+		return -ENOMEM;
-+
-+	if (!strcmp(priority, "High"))
-+		coproc->ct = VAS_COP_TYPE_842_HIPRI;
-+	else if (!strcmp(priority, "Normal"))
-+		coproc->ct = VAS_COP_TYPE_842;
-+	else {
-+		pr_err("Invalid RxFIFO priority value\n");
-+		ret =  -EINVAL;
-+		goto err_out;
-+	}
-+
-+	vas_init_rx_win_attr(&rxattr, coproc->ct);
-+	rxattr.rx_fifo = (void *)rx_fifo;
-+	rxattr.rx_fifo_size = fifo_size;
-+	rxattr.lnotify_lpid = lpid;
-+	rxattr.lnotify_pid = pid;
-+	rxattr.lnotify_tid = tid;
-+	rxattr.wcreds_max = MAX_CREDITS_PER_RXFIFO;
-+
-+	/*
-+	 * Open a VAS receice window which is used to configure RxFIFO
-+	 * for NX.
-+	 */
-+	rxwin = vas_rx_win_open(vasid, coproc->ct, &rxattr);
-+	if (IS_ERR(rxwin)) {
-+		ret = PTR_ERR(rxwin);
-+		pr_err("setting RxFIFO with VAS failed: %d\n",
-+			ret);
-+		goto err_out;
-+	}
-+
-+	coproc->vas.rxwin = rxwin;
-+	coproc->vas.id = vasid;
-+	nx842_add_coprocs_list(coproc, chip_id);
-+
-+	/*
-+	 * Kernel requests use only high priority FIFOs. So save coproc
-+	 * info in percpu coproc_inst which will be used to open send
-+	 * windows for crypto open requests later.
-+	 */
-+	if (coproc->ct == VAS_COP_TYPE_842_HIPRI)
-+		nx842_set_per_cpu_coproc(coproc);
-+
-+	return 0;
-+
-+err_out:
-+	kfree(coproc);
-+	return ret;
-+}
-+
-+
-+static int __init nx842_powernv_probe_vas(struct device_node *pn)
-+{
-+	struct device_node *dn;
-+	int chip_id, vasid, ret = 0;
-+	int nx_fifo_found = 0;
-+
-+	chip_id = of_get_ibm_chip_id(pn);
-+	if (chip_id < 0) {
-+		pr_err("ibm,chip-id missing\n");
-+		return -EINVAL;
-+	}
-+
-+	dn = of_find_compatible_node(pn, NULL, "ibm,power9-vas-x");
-+
-+	if (!dn) {
-+		pr_err("Missing VAS device node\n");
-+		return -EINVAL;
-+	}
-+
-+	if (of_property_read_u32(dn, "ibm,vas-id", &vasid)) {
-+		pr_err("Missing ibm,vas-id device property\n");
-+		of_node_put(dn);
-+		return -EINVAL;
-+	}
-+
-+	of_node_put(dn);
-+
-+	for_each_child_of_node(pn, dn) {
-+		if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
-+			ret = vas_cfg_coproc_info(dn, chip_id, vasid);
-+			if (ret) {
-+				of_node_put(dn);
-+				return ret;
-+			}
-+			nx_fifo_found++;
-+		}
-+	}
-+
-+	if (!nx_fifo_found) {
-+		pr_err("NX842 FIFO nodes are missing\n");
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
- static int __init nx842_powernv_probe(struct device_node *dn)
- {
- 	struct nx842_coproc *coproc;
-@@ -622,6 +928,9 @@ static void nx842_delete_coprocs(void)
- 	struct nx842_coproc *coproc, *n;
- 
- 	list_for_each_entry_safe(coproc, n, &nx842_coprocs, list) {
-+		if (coproc->vas.rxwin)
-+			vas_win_close(coproc->vas.rxwin);
-+
- 		list_del(&coproc->list);
- 		kfree(coproc);
- 	}
-@@ -643,6 +952,46 @@ static struct nx842_driver nx842_powernv_driver = {
- 	.decompress =	nx842_powernv_decompress,
- };
- 
-+static int nx842_powernv_crypto_init_vas(struct crypto_tfm *tfm)
-+{
-+	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct nx842_workmem *wmem;
-+	struct nx842_coproc *coproc;
-+	int ret;
-+
-+	ret = nx842_crypto_init(tfm, &nx842_powernv_driver);
-+
-+	if (ret)
-+		return ret;
-+
-+	wmem = PTR_ALIGN((struct nx842_workmem *)ctx->wmem, WORKMEM_ALIGN);
-+	coproc = per_cpu(coproc_inst, smp_processor_id());
-+
-+	ret = -EINVAL;
-+	if (coproc && coproc->vas.rxwin) {
-+		wmem->txwin = nx842_alloc_txwin(coproc);
-+		if (!IS_ERR(wmem->txwin))
-+			return 0;
-+
-+		ret = PTR_ERR(wmem->txwin);
-+	}
-+
-+	return ret;
-+}
-+
-+void nx842_powernv_crypto_exit_vas(struct crypto_tfm *tfm)
-+{
-+	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct nx842_workmem *wmem;
-+
-+	wmem = PTR_ALIGN((struct nx842_workmem *)ctx->wmem, WORKMEM_ALIGN);
-+
-+	if (wmem && wmem->txwin)
-+		vas_win_close(wmem->txwin);
-+
-+	nx842_crypto_exit(tfm);
-+}
-+
- static int nx842_powernv_crypto_init(struct crypto_tfm *tfm)
- {
- 	return nx842_crypto_init(tfm, &nx842_powernv_driver);
-@@ -676,13 +1025,27 @@ static __init int nx842_powernv_init(void)
- 	BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
- 	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
- 
--	for_each_compatible_node(dn, NULL, "ibm,power-nx")
--		nx842_powernv_probe(dn);
-+	for_each_compatible_node(dn, NULL, "ibm,power9-nx") {
-+		ret = nx842_powernv_probe_vas(dn);
-+		if (ret) {
-+			nx842_delete_coprocs();
-+			return ret;
-+		}
-+	}
- 
--	if (!nx842_ct)
--		return -ENODEV;
-+	if (list_empty(&nx842_coprocs)) {
-+		for_each_compatible_node(dn, NULL, "ibm,power-nx")
-+			nx842_powernv_probe(dn);
-+
-+		if (!nx842_ct)
-+			return -ENODEV;
- 
--	nx842_powernv_exec = nx842_exec_icswx;
-+		nx842_powernv_exec = nx842_exec_icswx;
-+	} else {
-+		nx842_powernv_exec = nx842_exec_vas;
-+		nx842_powernv_alg.cra_init = nx842_powernv_crypto_init_vas;
-+		nx842_powernv_alg.cra_exit = nx842_powernv_crypto_exit_vas;
-+	}
- 
- 	ret = crypto_register_alg(&nx842_powernv_alg);
- 	if (ret) {
-diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
-index d94e25df503b..da3cb8c35ec7 100644
---- a/drivers/crypto/nx/nx-842.c
-+++ b/drivers/crypto/nx/nx-842.c
-@@ -116,7 +116,7 @@ int nx842_crypto_init(struct crypto_tfm *tfm, struct nx842_driver *driver)
- 
- 	spin_lock_init(&ctx->lock);
- 	ctx->driver = driver;
--	ctx->wmem = kmalloc(driver->workmem_size, GFP_KERNEL);
-+	ctx->wmem = kzalloc(driver->workmem_size, GFP_KERNEL);
- 	ctx->sbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
- 	ctx->dbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
- 	if (!ctx->wmem || !ctx->sbounce || !ctx->dbounce) {
--- 
-2.11.0
+On Wednesday 19 July 2017 03:06 AM, Madhavan Srinivasan wrote:
+> Add support to register Nest In-Memory Collection pmu counters.
+> Patch adds a new device file called "imc-pmu.c" under powerpc/perf
+> folder to contain all the device pmu functions.
+>
+> Device tree parser code added to parse the pmu events information
+> and create sysfs event attributes for the pmu.
+>
+> Cpumask attribute added along with Cpu hotplug online/offline functions
+> specific for nest pmu. A new state "CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE"
+> added for the cpu hotplug callbacks. Error handle path frees the memory
+> and unregisters the cpuhotplug callbacks.
+>
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/perf/Makefile                |   1 +
+>   arch/powerpc/perf/imc-pmu.c               | 748 ++++++++++++++++++++++++++++++
+>   arch/powerpc/platforms/powernv/opal-imc.c |   5 +
+>   include/linux/cpuhotplug.h                |   1 +
+>   4 files changed, 755 insertions(+)
+>   create mode 100644 arch/powerpc/perf/imc-pmu.c
+>
+> diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+> index 4d606b99a5cb..3f3a5ce66495 100644
+> --- a/arch/powerpc/perf/Makefile
+> +++ b/arch/powerpc/perf/Makefile
+> @@ -8,6 +8,7 @@ obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
+>   				   isa207-common.o power8-pmu.o power9-pmu.o
+>   obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
+>
+> +obj-$(CONFIG_PPC_POWERNV)	+= imc-pmu.o
+>   obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
+>   obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
+>
+> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+> new file mode 100644
+> index 000000000000..6e00ea7358a2
+> --- /dev/null
+> +++ b/arch/powerpc/perf/imc-pmu.c
+> @@ -0,0 +1,748 @@
+> +/*
+> + * In-Memory Collection (IMC) Performance Monitor counter support.
+> + *
+> + * Copyright (C) 2017 Madhavan Srinivasan, IBM Corporation.
+> + *           (C) 2017 Anju T Sudhakar, IBM Corporation.
+> + *           (C) 2017 Hemant K Shaw, IBM Corporation.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or later version.
+> + */
+> +#include <linux/perf_event.h>
+> +#include <linux/slab.h>
+> +#include <asm/opal.h>
+> +#include <asm/imc-pmu.h>
+> +#include <asm/cputhreads.h>
+> +#include <asm/smp.h>
+> +#include <linux/string.h>
+> +
+> +//Nest imc data structures and variable
+> +/*
+> + * Used to avoid races in counting the nest-pmu units during hotplug
+> + * register and unregister
+> + */
+> +static DEFINE_MUTEX(nest_init_lock);
+> +static DEFINE_PER_CPU(struct imc_pmu_ref *, local_nest_imc_refc);
+> +static struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
+> +static cpumask_t nest_imc_cpumask;
+> +struct imc_pmu_ref *nest_imc_refc;
+> +static int nest_pmus;
+> +
+> +struct imc_pmu *imc_event_to_pmu(struct perf_event *event)
+> +{
+> +	return container_of(event->pmu, struct imc_pmu, pmu);
+> +}
+> +
+> +PMU_FORMAT_ATTR(event, "config:0-40");
+> +PMU_FORMAT_ATTR(offset, "config:0-31");
+> +PMU_FORMAT_ATTR(rvalue, "config:32");
+> +PMU_FORMAT_ATTR(mode, "config:33-40");
+> +static struct attribute *imc_format_attrs[] = {
+> +	&format_attr_event.attr,
+> +	&format_attr_offset.attr,
+> +	&format_attr_rvalue.attr,
+> +	&format_attr_mode.attr,
+> +	NULL,
+> +};
+> +
+> +static struct attribute_group imc_format_group = {
+> +	.name = "format",
+> +	.attrs = imc_format_attrs,
+> +};
+> +
+> +/* Get the cpumask printed to a buffer "buf" */
+> +static ssize_t imc_pmu_cpumask_get_attr(struct device *dev,
+> +					struct device_attribute *attr,
+> +					char *buf)
+> +{
+> +	struct pmu *pmu = dev_get_drvdata(dev);
+> +	struct imc_pmu *imc_pmu = container_of(pmu, struct imc_pmu, pmu);
+> +	cpumask_t *active_mask;
+> +
+> +	/* Subsequenct patch will add more pmu types here */
+> +	switch(imc_pmu->domain){
+> +	case IMC_DOMAIN_NEST:
+> +		active_mask = &nest_imc_cpumask;
+> +		break;
+> +	default:
+> +		return 0;
+> +	}
+> +
+> +	return cpumap_print_to_pagebuf(true, buf, active_mask);
+> +}
+> +
+> +static DEVICE_ATTR(cpumask, S_IRUGO, imc_pmu_cpumask_get_attr, NULL);
+> +
+> +static struct attribute *imc_pmu_cpumask_attrs[] = {
+> +	&dev_attr_cpumask.attr,
+> +	NULL,
+> +};
+> +
+> +static struct attribute_group imc_pmu_cpumask_attr_group = {
+> +	.attrs = imc_pmu_cpumask_attrs,
+> +};
+> +
+> +/* device_str_attr_create : Populate event "name" and string "str" in attribute */
+> +static struct attribute *device_str_attr_create(const char *name, const char *str)
+> +{
+> +	struct perf_pmu_events_attr *attr;
+> +
+> +	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
+> +	if (!attr)
+> +		return NULL;
+> +	sysfs_attr_init(&attr->attr.attr);
+> +
+> +	attr->event_str = str;
+> +	attr->attr.attr.name = name;
+> +	attr->attr.attr.mode = 0444;
+> +	attr->attr.show = perf_event_sysfs_show;
+> +
+> +	return &attr->attr.attr;
+> +}
+> +
+> +struct imc_events *imc_parse_event(struct device_node *np, const char *scale,
+> +				  const char *unit, const char *prefix, u32 base)
+> +{
+> +	struct imc_events *event;
+> +	const char *s;
+> +	u32 reg;
+> +
+> +	event = kzalloc(sizeof(struct imc_events), GFP_KERNEL);
+> +	if (!event)
+> +		return NULL;
+> +
+> +	if (of_property_read_u32(np, "reg", &reg))
+> +		goto error;
+> +	/* Add the base_reg value to the "reg" */
+> +	event->value = base + reg;
+> +
+> +	if (of_property_read_string(np, "event-name", &s))
+> +		goto error;
+> +
+> +	event->name = kasprintf(GFP_KERNEL, "%s%s", prefix, s);
+> +	if (!event->name)
+> +		goto error;
+> +
+> +	if (of_property_read_string(np, "scale", &s))
+> +		s = scale;
+> +
+> +	if (s) {
+> +		event->scale = kstrdup(s, GFP_KERNEL);
+> +		if (!event->scale)
+> +			goto error;
+> +	}
+> +
+> +	if (of_property_read_string(np, "unit", &s))
+> +		s = unit;
+> +
+> +	if (s) {
+> +		event->unit = kstrdup(s, GFP_KERNEL);
+> +		if (!event->unit)
+> +			goto error;
+> +	}
+> +
+> +	return event;
+> +error:
+> +	kfree(event->unit);
+> +	kfree(event->scale);
+> +	kfree(event->name);
+> +	kfree(event);
+> +
+> +	return NULL;
+> +}
+> +
+> +/*
+> + * update_events_in_group: Update the "events" information in an attr_group
+> + *                         and assign the attr_group to the pmu "pmu".
+> + */
+> +static int update_events_in_group(struct device_node *node, struct imc_pmu *pmu)
+> +{
+> +	struct attribute_group *attr_group;
+> +	struct attribute **attrs, *dev_str;
+> +	struct device_node *np, *pmu_events;
+> +	struct imc_events *ev;
+> +	u32 handle, base_reg;
+> +	int i=0, j=0, ct;
+> +	const char *prefix, *g_scale, *g_unit;
+> +	const char *ev_val_str, *ev_scale_str, *ev_unit_str;
+> +
+> +	if (!of_property_read_u32(node, "events", &handle))
+> +		pmu_events = of_find_node_by_phandle(handle);
+> +	else
+> +		return 0;
+> +
+> +	/* Did not find any node with a given phandle */
+> +	if (!pmu_events)
+> +		return 0;
+> +
+> +	/* Get a count of number of child nodes */
+> +	ct = of_get_child_count(pmu_events);
+> +
+> +	/* Get the event prefix */
+> +	if (of_property_read_string(node, "events-prefix", &prefix))
+> +		return 0;
+> +
+> +	/* Get a global unit and scale data if available */
+> +	if (of_property_read_string(node, "scale", &g_scale))
+> +		g_scale = NULL;
+> +
+> +	if (of_property_read_string(node, "unit", &g_unit))
+> +		g_unit = NULL;
+> +
+> +	/* "reg" property gives out the base offset of the counters data */
+> +	of_property_read_u32(node, "reg", &base_reg);
+> +
+> +	/* Allocate memory for the events */
+> +	pmu->events = kcalloc(ct, sizeof(struct imc_events), GFP_KERNEL);
+> +	if (!pmu->events)
+> +		return -ENOMEM;
+> +
+> +	ct = 0;
+> +	/* Parse the events and update the struct */
+> +	for_each_child_of_node(pmu_events, np) {
+> +		ev = imc_parse_event(np, g_scale, g_unit, prefix, base_reg);
+> +		if (ev)
+> +			pmu->events[ct++] = ev;
+> +	}
+> +
+> +	/* Allocate memory for attribute group */
+> +	attr_group = kzalloc(sizeof(*attr_group), GFP_KERNEL);
+> +	if (!attr_group)
+> +		return -ENOMEM;
+> +
+> +	/*
+> +	 * Allocate memory for attributes.
+> +	 * Since we have count of events for this pmu, we also allocate
+> +	 * memory for the scale and unit attribute for now.
+> +	 * "ct" has the total event structs added from the events-parent node.
+> +	 * So allocate three times the "ct" (this includes event, event_scale and
+> +	 * event_unit).
+> +	 */
+> +	attrs = kcalloc(((ct * 3) + 1), sizeof(struct attribute *), GFP_KERNEL);
+> +	if (!attrs) {
+> +		kfree(attr_group);
+> +		kfree(pmu->events);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	attr_group->name = "events";
+> +	attr_group->attrs = attrs;
+> +	do {
+> +		ev_val_str = kasprintf(GFP_KERNEL, "event=0x%x", pmu->events[i]->value);
+> +		dev_str = device_str_attr_create(pmu->events[i]->name, ev_val_str);
+> +		if (!dev_str)
+> +			continue;
+> +
+> +		attrs[j++] = dev_str;
+> +		if (pmu->events[i]->scale) {
+> +			ev_scale_str = kasprintf(GFP_KERNEL, "%s.scale",pmu->events[i]->name);
+> +			dev_str = device_str_attr_create(ev_scale_str, pmu->events[i]->scale);
+> +			if (!dev_str)
+> +				continue;
+> +
+> +			attrs[j++] = dev_str;
+> +		}
+> +
+> +		if (pmu->events[i]->unit) {
+> +			ev_unit_str = kasprintf(GFP_KERNEL, "%s.unit",pmu->events[i]->name);
+> +			dev_str = device_str_attr_create(ev_unit_str, pmu->events[i]->unit);
+> +			if (!dev_str)
+> +				continue;
+> +
+> +			attrs[j++] = dev_str;
+> +		}
+> +	} while (++i < ct);
+> +
+> +	/* Save the event attribute */
+> +	pmu->attr_groups[IMC_EVENT_ATTR] = attr_group;
+> +
+> +	kfree(pmu->events);
+> +	return 0;
+> +}
+> +
+> +/* get_nest_pmu_ref: Return the imc_pmu_ref struct for the given node */
+> +static struct imc_pmu_ref *get_nest_pmu_ref(int cpu)
+> +{
+> +	return per_cpu(local_nest_imc_refc, cpu);
+> +}
+> +
+> +static void nest_change_cpu_context(int old_cpu, int new_cpu)
+> +{
+> +	struct imc_pmu **pn = per_nest_pmu_arr;
+> +	int i;
+> +
+> +	if (old_cpu < 0 || new_cpu < 0)
+> +		return;
+> +
+> +	for (i = 0; *pn && i < IMC_MAX_PMUS; i++, pn++)
+> +		perf_pmu_migrate_context(&(*pn)->pmu, old_cpu, new_cpu);
+> +}
+> +
+> +static int ppc_nest_imc_cpu_offline(unsigned int cpu)
+> +{
+> +	int nid, target = -1;
+> +	const struct cpumask *l_cpumask;
+> +	struct imc_pmu_ref *ref;
+> +
+> +	/*
+> +	 * Check in the designated list for this cpu. Dont bother
+> +	 * if not one of them.
+> +	 */
+> +	if (!cpumask_test_and_clear_cpu(cpu, &nest_imc_cpumask))
+> +		return 0;
+> +
+> +	/*
+> +	 * Now that this cpu is one of the designated,
+> +	 * find a next cpu a) which is online and b) in same chip.
+> +	 */
+> +	nid = cpu_to_node(cpu);
+> +	l_cpumask = cpumask_of_node(nid);
+> +	target = cpumask_any_but(l_cpumask, cpu);
+> +
+> +	/*
+> +	 * Update the cpumask with the target cpu and
+> +	 * migrate the context if needed
+> +	 */
+> +	if (target >= 0 && target < nr_cpu_ids) {
+> +		cpumask_set_cpu(target, &nest_imc_cpumask);
+> +		nest_change_cpu_context(cpu, target);
+> +	} else {
+> +		opal_imc_counters_stop(OPAL_IMC_COUNTERS_NEST,
+> +				       get_hard_smp_processor_id(cpu));
+> +		/*
+> +		 * If this is the last cpu in this chip then, skip the reference
+> +		 * count mutex lock and make the reference count on this chip zero.
+> +		 */
+> +		ref = get_nest_pmu_ref(cpu);
+> +		if (!ref)
+> +			return -EINVAL;
+> +
+> +		ref->refc = 0;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int ppc_nest_imc_cpu_online(unsigned int cpu)
+> +{
+> +	const struct cpumask *l_cpumask;
+> +	static struct cpumask tmp_mask;
+> +	int res;
+> +
+> +	/* Get the cpumask of this node */
+> +	l_cpumask = cpumask_of_node(cpu_to_node(cpu));
+> +
+> +	/*
+> +	 * If this is not the first online CPU on this node, then
+> +	 * just return.
+> +	 */
+> +	if (cpumask_and(&tmp_mask, l_cpumask, &nest_imc_cpumask))
+> +		return 0;
+> +
+> +	/*
+> +	 * If this is the first online cpu on this node
+> +	 * disable the nest counters by making an OPAL call.
+> +	 */
+> +	res = opal_imc_counters_stop(OPAL_IMC_COUNTERS_NEST,
+> +				     get_hard_smp_processor_id(cpu));
+> +	if (res)
+> +		return res;
+> +
+> +	/* Make this CPU the designated target for counter collection */
+> +	cpumask_set_cpu(cpu, &nest_imc_cpumask);
+> +	return 0;
+> +}
+> +
+> +static int nest_pmu_cpumask_init(void)
+> +{
+> +	return cpuhp_setup_state(CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE,
+> +				 "perf/powerpc/imc:online",
+> +				 ppc_nest_imc_cpu_online,
+> +				 ppc_nest_imc_cpu_offline);
+> +}
+> +
+> +static void nest_imc_counters_release(struct perf_event *event)
+> +{
+> +	int rc, node_id;
+> +	struct imc_pmu_ref *ref;
+> +
+> +	if (event->cpu < 0)
+> +		return;
+> +
+> +	node_id = cpu_to_node(event->cpu);
+> +
+> +	/*
+> +	 * See if we need to disable the nest PMU.
+> +	 * If no events are currently in use, then we have to take a
+> +	 * mutex to ensure that we don't race with another task doing
+> +	 * enable or disable the nest counters.
+> +	 */
+> +	ref = get_nest_pmu_ref(event->cpu);
+> +	if (!ref)
+> +		return;
+> +
+> +	/* Take the mutex lock for this node and then decrement the reference count */
+> +	mutex_lock(&ref->lock);
+> +	ref->refc--;
+> +	if (ref->refc == 0) {
+> +		rc = opal_imc_counters_stop(OPAL_IMC_COUNTERS_NEST,
+> +					    get_hard_smp_processor_id(event->cpu));
+> +		if (rc) {
+> +			mutex_unlock(&nest_imc_refc[node_id].lock);
+> +			pr_err("nest-imc: Unable to stop the counters for core %d\n", node_id);
+> +			return;
+> +		}
+> +	} else if (ref->refc < 0) {
+> +		WARN(1, "nest-imc: Invalid event reference count\n");
+> +		ref->refc = 0;
+> +	}
+> +	mutex_unlock(&ref->lock);
+> +}
+> +
+> +static int nest_imc_event_init(struct perf_event *event)
+> +{
+> +	int chip_id, rc, node_id;
+> +	u32 l_config, config = event->attr.config;
+> +	struct imc_mem_info *pcni;
+> +	struct imc_pmu *pmu;
+> +	struct imc_pmu_ref *ref;
+> +	bool flag = false;
+> +
+> +	if (event->attr.type != event->pmu->type)
+> +		return -ENOENT;
+> +
+> +	/* Sampling not supported */
+> +	if (event->hw.sample_period)
+> +		return -EINVAL;
+> +
+> +	/* unsupported modes and filters */
+> +	if (event->attr.exclude_user   ||
+> +	    event->attr.exclude_kernel ||
+> +	    event->attr.exclude_hv     ||
+> +	    event->attr.exclude_idle   ||
+> +	    event->attr.exclude_host   ||
+> +	    event->attr.exclude_guest)
+> +		return -EINVAL;
+> +
+> +	if (event->cpu < 0)
+> +		return -EINVAL;
+> +
+> +	pmu = imc_event_to_pmu(event);
+> +
+> +	/* Sanity check for config (event offset) */
+> +	if ((config & IMC_EVENT_OFFSET_MASK) > pmu->counter_mem_size)
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * Nest HW counter memory resides in a per-chip reserve-memory (HOMER).
+> +	 * Get the base memory addresss for this cpu.
+> +	 */
+> +	chip_id = topology_physical_package_id(event->cpu);
+> +	pcni = pmu->mem_info;
+> +	do {
+> +		if (pcni->id == chip_id) {
+> +			flag = true;
+> +			break;
+> +		}
+> +		pcni++;
+> +	} while (pcni);
+> +
+> +	if (!flag)
+> +		return -ENODEV;
+> +
+> +	/*
+> +	 * Add the event offset to the base address.
+> +	 */
+> +	l_config = config & IMC_EVENT_OFFSET_MASK;
+> +	event->hw.event_base = (u64)pcni->vbase + l_config;
+> +	node_id = cpu_to_node(event->cpu);
+> +
+> +	/*
+> +	 * Get the imc_pmu_ref struct for this node.
+> +	 * Take the mutex lock and then increment the count of nest pmu events
+> +	 * inited.
+> +	 */
+> +	ref = get_nest_pmu_ref(event->cpu);
+> +	if (!ref)
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&ref->lock);
+> +	if (ref->refc == 0) {
+> +		rc = opal_imc_counters_start(OPAL_IMC_COUNTERS_NEST,
+> +					     get_hard_smp_processor_id(event->cpu));
+> +		if (rc) {
+> +			mutex_unlock(&nest_imc_refc[node_id].lock);
+> +			pr_err("nest-imc: Unable to start the counters for node %d\n",
+> +									node_id);
+> +			return rc;
+> +		}
+> +	}
+> +	++ref->refc;
+> +	mutex_unlock(&ref->lock);
+> +
+> +	event->destroy = nest_imc_counters_release;
+> +	return 0;
+> +}
+> +
+> +static u64 * get_event_base_addr(struct perf_event *event)
+> +{
+> +	/*
+> +	 * Subsequent patch will add code to detect caller imc pmu
+> +	 * and return accordingly.
+> +	 */
+> +	return (u64 *)event->hw.event_base;
+> +}
+> +
+> +static u64 imc_read_counter(struct perf_event *event)
+> +{
+> +	u64 *addr, data;
+> +
+> +	/*
+> +	 * In-Memory Collection (IMC) counters are free flowing counters.
+> +	 * So we take a snapshot of the counter value on enable and save it
+> +	 * to calculate the delta at later stage to present the event counter
+> +	 * value.
+> +	 */
+> +	addr = get_event_base_addr(event);
+> +	data = be64_to_cpu(READ_ONCE(*addr));
+> +	local64_set(&event->hw.prev_count, data);
+> +
+> +	return data;
+> +}
+> +
+> +static void imc_event_update(struct perf_event *event)
+> +{
+> +	u64 counter_prev, counter_new, final_count;
+> +
+> +	counter_prev = local64_read(&event->hw.prev_count);
+> +	counter_new = imc_read_counter(event);
+> +	final_count = counter_new - counter_prev;
+> +
+> +	/* Update the delta to the event count */
+> +	local64_add(final_count, &event->count);
+> +}
+> +
+> +static void imc_event_start(struct perf_event *event, int flags)
+> +{
+> +	/*
+> +	 * In Memory Counters are free flowing counters. HW or the microcode
+> +	 * keeps adding to the counter offset in memory. To get event
+> +	 * counter value, we snapshot the value here and we calculate
+> +	 * delta at later point.
+> +	 */
+> +	imc_read_counter(event);
+> +}
+> +
+> +static void imc_event_stop(struct perf_event *event, int flags)
+> +{
+> +	/*
+> +	 * Take a snapshot and calculate the delta and update
+> +	 * the event counter values.
+> +	 */
+> +	imc_event_update(event);
+> +}
+> +
+> +static int imc_event_add(struct perf_event *event, int flags)
+> +{
+> +	if (flags & PERF_EF_START)
+> +		imc_event_start(event, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +/* update_pmu_ops : Populate the appropriate operations for "pmu" */
+> +static int update_pmu_ops(struct imc_pmu *pmu)
+> +{
+> +	pmu->pmu.task_ctx_nr = perf_invalid_context;
+> +	pmu->pmu.add = imc_event_add;
+> +	pmu->pmu.del = imc_event_stop;
+> +	pmu->pmu.start = imc_event_start;
+> +	pmu->pmu.stop = imc_event_stop;
+> +	pmu->pmu.read = imc_event_update;
+> +	pmu->pmu.attr_groups = pmu->attr_groups;
+> +	pmu->attr_groups[IMC_FORMAT_ATTR] = &imc_format_group;
+> +
+> +	/* Subsequenct patch will add more pmu types here */
+> +	switch (pmu->domain) {
+> +	case IMC_DOMAIN_NEST:
+> +		pmu->pmu.event_init = nest_imc_event_init;
+> +		pmu->attr_groups[IMC_CPUMASK_ATTR] = &imc_pmu_cpumask_attr_group;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/* init_nest_pmu_ref: Initialize the imc_pmu_ref struct for all the nodes */
+> +static int init_nest_pmu_ref(void)
+> +{
+> +	int nid, i, cpu;
+> +
+> +	nest_imc_refc = kcalloc(num_possible_nodes(), sizeof(*nest_imc_refc),
+> +								GFP_KERNEL);
+> +
+> +	if (!nest_imc_refc)
+> +		return -ENOMEM;
+> +
+> +	i = 0;
+> +	for_each_node(nid) {
+> +		/*
+> +		 * Mutex lock to avoid races while tracking the number of
+> +		 * sessions using the chip's nest pmu units.
+> +		 */
+> +		mutex_init(&nest_imc_refc[i].lock);
+> +
+> +		/*
+> +		 * Loop to init the "id" with the node_id. Variable "i" initialized to
+> +		 * 0 and will be used as index to the array. "i" will not go off the
+> +		 * end of the array since the "for_each_node" loops for "N_POSSIBLE"
+> +		 * nodes only.
+> +		 */
+> +		nest_imc_refc[i++].id = nid;
+> +	}
+> +
+> +	/*
+> +	 * Loop to init the per_cpu "local_nest_imc_refc" with the proper
+> +	 * "nest_imc_refc" index. This makes get_nest_pmu_ref() alot simple.
+> +	 */
+> +	for_each_possible_cpu(cpu) {
+> +		nid = cpu_to_node(cpu);
+> +		for_each_online_node(i) {
+> +			if (nest_imc_refc[i].id == nid) {
+> +				per_cpu(local_nest_imc_refc, cpu) = &nest_imc_refc[i];
+> +				break;
+> +			}
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Common function to unregister cpu hotplug callback and
+> + * free the memory.
+> + * TODO: Need to handle pmu unregistering, which will be
+> + * done in followup series.
+> + */
+> +static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
+> +{
+> +	if (pmu_ptr->domain == IMC_DOMAIN_NEST) {
+> +		mutex_unlock(&nest_init_lock);
+> +		if (nest_pmus == 1) {
+> +			cpuhp_remove_state(CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE);
+> +			kfree(nest_imc_refc);
+> +		}
+> +
+> +		if (nest_pmus > 0)
+> +			nest_pmus--;
+> +		mutex_unlock(&nest_init_lock);
+> +	}
+> +
+> +	/* Only free the attr_groups which are dynamically allocated  */
+> +	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
+> +	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]);
+> +	kfree(pmu_ptr);
+> +	return;
+> +}
+> +
+> +
+> +/*
+> + * imc_mem_init : Function to support memory allocation for core imc.
+> + */
+> +static int imc_mem_init(struct imc_pmu *pmu_ptr, struct device_node *parent,
+> +								int pmu_index)
+> +{
+> +	const char *s;
+> +
+> +	if (of_property_read_string(parent, "name", &s))
+> +		return -ENODEV;
+> +
+> +	/* Subsequenct patch will add more pmu types here */
+> +	switch (pmu_ptr->domain) {
+> +	case IMC_DOMAIN_NEST:
+> +		/* Update the pmu name */
+> +		pmu_ptr->pmu.name = kasprintf(GFP_KERNEL, "%s%s_imc", "nest_", s);
+> +		if (!pmu_ptr->pmu.name)
+> +			return -ENOMEM;
+> +
+> +		/* Needed for hotplug/migration */
+> +		per_nest_pmu_arr[pmu_index] = pmu_ptr;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * init_imc_pmu : Setup and register the IMC pmu device.
+> + *
+> + * @parent:	Device tree unit node
+> + * @pmu_ptr:	memory allocated for this pmu
+> + * @pmu_idx:	Count of nest pmc registered
+> + *
+> + * init_imc_pmu() setup pmu cpumask and registers for a cpu hotplug callback.
+> + * Handles failure cases and accordingly frees memory.
+> + */
+> +int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_idx)
+> +{
+> +	int ret;
+> +
+> +	ret = imc_mem_init(pmu_ptr, parent, pmu_idx);
+> +	if (ret)
+> +		goto err_free;
+> +
+> +	/* Subsequenct patch will add more pmu types here */
+> +	switch (pmu_ptr->domain) {
+> +	case IMC_DOMAIN_NEST:
+> +		/*
+> +		* Nest imc pmu need only one cpu per chip, we initialize the
+> +		* cpumask for the first nest imc pmu and use the same for the
+> +		* rest. To handle the cpuhotplug callback unregister, we track
+> +		* the number of nest pmus in "nest_pmus".
+> +		*/
+> +		mutex_lock(&nest_init_lock);
+> +		if (nest_pmus == 0) {
+> +			ret = init_nest_pmu_ref();
+> +			if (ret) {
+> +				mutex_unlock(&nest_init_lock);
+> +				goto err_free;
+> +			}
+> +			/* Register for cpu hotplug notification. */
+> +			ret = nest_pmu_cpumask_init();
+> +			if (ret) {
+> +				mutex_unlock(&nest_init_lock);
+> +				goto err_free;
+> +			}
+> +		}
+> +		nest_pmus++;
+> +		mutex_unlock(&nest_init_lock);
+> +		break;
+> +	default:
+> +		return  -1;	/* Unknown domain */
+> +	}
+> +
+> +	ret = update_events_in_group(parent, pmu_ptr);
+> +	if (ret)
+> +		goto err_free;
+> +
+> +	ret = update_pmu_ops(pmu_ptr);
+> +	if (ret)
+> +		goto err_free;
+> +
+> +	ret = perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
+> +	if (ret)
+> +		goto err_free;
+> +
+> +	pr_info("%s performance monitor hardware support registered\n",
+> +							pmu_ptr->pmu.name);
+> +
+> +	return 0;
+> +
+> +err_free:
+> +	imc_common_cpuhp_mem_free(pmu_ptr);
+> +	return ret;
+> +}
+> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+> index f57a6fbd3f57..b903bf5e6006 100644
+> --- a/arch/powerpc/platforms/powernv/opal-imc.c
+> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
+> @@ -108,6 +108,11 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index, int domain)
+>   		}
+>   	}
+>
+> +	/* Function to register IMC pmu */
+> +	ret = init_imc_pmu(parent, pmu_ptr, pmu_index);
+> +	if (ret)
+> +		pr_err("IMC PMU %s Register failed\n", pmu_ptr->pmu.name);
+> +
+>   	return 0;
+>
+>   free_pmu:
+> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+> index b56573bf440d..0853a14b1fa1 100644
+> --- a/include/linux/cpuhotplug.h
+> +++ b/include/linux/cpuhotplug.h
+> @@ -139,6 +139,7 @@ enum cpuhp_state {
+>   	CPUHP_AP_PERF_ARM_L2X0_ONLINE,
+>   	CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
+>   	CPUHP_AP_PERF_ARM_QCOM_L3_ONLINE,
+> +	CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE,
+>   	CPUHP_AP_WORKQUEUE_ONLINE,
+>   	CPUHP_AP_RCUTREE_ONLINE,
+>   	CPUHP_AP_ONLINE_DYN,
