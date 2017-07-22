@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDqWf3GnfzDqy0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 11:18:06 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id z1so6524365pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 18:18:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDqWj25nMzDqy3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 11:18:09 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id k72so2526372pfj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 18:18:09 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH 04/11] powerpc/64s: Relax PACA address limitations
-Date: Sat, 22 Jul 2017 11:17:34 +1000
-Message-Id: <20170722011741.13942-5-npiggin@gmail.com>
+Subject: [RFC PATCH 05/11] powerpc/64s/radix: Do not allocate SLB shadow
+ structures
+Date: Sat, 22 Jul 2017 11:17:35 +1000
+Message-Id: <20170722011741.13942-6-npiggin@gmail.com>
 In-Reply-To: <20170722011741.13942-1-npiggin@gmail.com>
 References: <20170722011741.13942-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,70 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Book3S radix-mode has no SLB interrupt limitation, and hash-mode has
-a 1T limitation on modern CPUs.
-
-Update the paca alloation limits to match the stack allocation. Book3E
-still needs a look.
+These are unused in radix mode.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/paca.c | 37 +++++++++++++++++++++++++++----------
- 1 file changed, 27 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/paca.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 8d63627e067f..fd7deb79110a 100644
+index fd7deb79110a..032b073c2c30 100644
 --- a/arch/powerpc/kernel/paca.c
 +++ b/arch/powerpc/kernel/paca.c
-@@ -194,22 +194,39 @@ void setup_paca(struct paca_struct *new_paca)
- 
- static int __initdata paca_size;
- 
--void __init allocate_pacas(void)
-+static __init unsigned long safe_paca_limit(void)
+@@ -104,13 +104,22 @@ static struct slb_shadow *slb_shadow;
+ static void __init allocate_slb_shadows(int nr_cpus, int limit)
  {
--	u64 limit;
--	int cpu;
-+	unsigned long limit = ULONG_MAX;
+ 	int size = PAGE_ALIGN(sizeof(struct slb_shadow) * nr_cpus);
++
++	if (early_radix_enabled())
++		return;
++
+ 	slb_shadow = __va(memblock_alloc_base(size, PAGE_SIZE, limit));
+ 	memset(slb_shadow, 0, size);
+ }
  
--	limit = ppc64_rma_size;
--
--#ifdef CONFIG_PPC_BOOK3S_64
+ static struct slb_shadow * __init init_slb_shadow(int cpu)
+ {
+-	struct slb_shadow *s = &slb_shadow[cpu];
++	struct slb_shadow *s;
++
++	if (early_radix_enabled())
++		return NULL;
++
++	s = &slb_shadow[cpu];
+ 
  	/*
--	 * We can't take SLB misses on the paca, and we want to access them
--	 * in real mode, so allocate them within the RMA and also within
--	 * the first segment.
-+	 * We access pacas in real mode, so allocate them within real mode
-+	 * constraints.
- 	 */
--	limit = min(0x10000000ULL, limit);
-+	limit = min((unsigned long)ppc64_rma_size, limit);
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (!early_radix_enabled()) {
-+		/*
-+		 * We can't take SLB misses on the paca, so allocate them
-+		 * within the first segment.
-+		 */
-+		if (mmu_has_feature(MMU_FTR_1T_SEGMENT))
-+			limit = min(1UL << SID_SHIFT_1T, limit);
-+		else
-+			limit = min(1UL << SID_SHIFT, limit);
-+	}
- #endif
- 
-+	/* XXX: what about Book3E? (e.g., see safe_stack_limit) */
-+
-+	return limit;
-+}
-+
-+void __init allocate_pacas(void)
-+{
-+	unsigned long limit = safe_paca_limit();
-+	int cpu;
-+
- 	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
- 
- 	paca = __va(memblock_alloc_base(paca_size, PAGE_SIZE, limit));
+ 	 * When we come through here to initialise boot_paca, the slb_shadow
 -- 
 2.11.0
