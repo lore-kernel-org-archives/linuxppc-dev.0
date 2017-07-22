@@ -1,21 +1,37 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDqX35HLPzDqyG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 11:18:27 +1000 (AEST)
-Received: by mail-pf0-x22c.google.com with SMTP id q85so29461557pfq.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jul 2017 18:18:27 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH 11/11] powerpc/64s/radix: allocate kernel page tables
- node-local if possible
-Date: Sat, 22 Jul 2017 11:17:41 +1000
-Message-Id: <20170722011741.13942-12-npiggin@gmail.com>
-In-Reply-To: <20170722011741.13942-1-npiggin@gmail.com>
-References: <20170722011741.13942-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDvV63qP5zDqxZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 14:17:02 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6M4GbuF022128
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 00:16:59 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2buyhrg113-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 00:16:59 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Fri, 21 Jul 2017 22:16:58 -0600
+Date: Fri, 21 Jul 2017 21:16:51 -0700
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Ram Pai <linuxram@us.ibm.com>
+CC: mpe@ellerman.id.au, herbert@gondor.apana.org.au, mikey@neuling.org,
+ suka@us.ibm.com, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, ddstreet@ieee.org
+Subject: Re: [PATCH V2 6/6] crypto/nx: Add P9 NX support for 842 compression
+ engine
+References: <1500335438.995.15.camel@hbabu-laptop>
+ <20170718065318.GA5529@ram.oc3035372033.ibm.com>
+In-Reply-To: <20170718065318.GA5529@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <5972D1B3.5010002@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,422 +41,521 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Try to allocate kernel page tables according to the node of
-the memory they will map.
----
- arch/powerpc/include/asm/book3s/64/hash.h  |   2 +-
- arch/powerpc/include/asm/book3s/64/radix.h |   2 +-
- arch/powerpc/include/asm/sparsemem.h       |   2 +-
- arch/powerpc/kernel/setup_64.c             |   3 +
- arch/powerpc/mm/hash_utils_64.c            |   2 +-
- arch/powerpc/mm/mem.c                      |   4 +-
- arch/powerpc/mm/numa.c                     |   9 +-
- arch/powerpc/mm/pgtable-book3s64.c         |   6 +-
- arch/powerpc/mm/pgtable-radix.c            | 177 +++++++++++++++++++----------
- 9 files changed, 136 insertions(+), 71 deletions(-)
+On 07/17/2017 11:53 PM, Ram Pai wrote:
+> On Mon, Jul 17, 2017 at 04:50:38PM -0700, Haren Myneni wrote:
+>>
+>> This patch adds P9 NX support for 842 compression engine. Virtual
+>> Accelerator Switchboard (VAS) is used to access 842 engine on P9.
+>>
+>> For each NX engine per chip, setup receive window using
+>> vas_rx_win_open() which configures RxFIFo with FIFO address, lpid,
+>> pid and tid values. This unique (lpid, pid, tid) combination will
+>> be used to identify the target engine.
+>>
+>> For crypto open request, open send window on the NX engine for
+>> the corresponding chip / cpu where the open request is executed.
+>> This send window will be closed upon crypto close request.
+>>
+>> NX provides high and normal priority FIFOs. For compression /
+>> decompression requests, we use only hight priority FIFOs in kernel.
+>>
+>> Each NX request will be communicated to VAS using copy/paste
+>> instructions with vas_copy_crb() / vas_paste_crb() functions.
+>>
+>> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+>> ---
+>>  drivers/crypto/nx/Kconfig          |   1 +
+>>  drivers/crypto/nx/nx-842-powernv.c | 369 ++++++++++++++++++++++++++++++++++++-
+>>  drivers/crypto/nx/nx-842.c         |   2 +-
+>>  3 files changed, 365 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/drivers/crypto/nx/Kconfig b/drivers/crypto/nx/Kconfig
+>> index ad7552a6998c..cd5dda9c48f4 100644
+>> --- a/drivers/crypto/nx/Kconfig
+>> +++ b/drivers/crypto/nx/Kconfig
+>> @@ -38,6 +38,7 @@ config CRYPTO_DEV_NX_COMPRESS_PSERIES
+>>  config CRYPTO_DEV_NX_COMPRESS_POWERNV
+>>  	tristate "Compression acceleration support on PowerNV platform"
+>>  	depends on PPC_POWERNV
+>> +	depends on PPC_VAS
+>>  	default y
+>>  	help
+>>  	  Support for PowerPC Nest (NX) compression acceleration. This
+>> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+>> index c0dd4c7e17d3..8d9d21420144 100644
+>> --- a/drivers/crypto/nx/nx-842-powernv.c
+>> +++ b/drivers/crypto/nx/nx-842-powernv.c
+>> @@ -23,6 +23,7 @@
+>>  #include <asm/prom.h>
+>>  #include <asm/icswx.h>
+>>  #include <asm/vas.h>
+>> +#include <asm/reg.h>
+>>
+>>  MODULE_LICENSE("GPL");
+>>  MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
+>> @@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
+>>
+>>  #define WORKMEM_ALIGN	(CRB_ALIGN)
+>>  #define CSB_WAIT_MAX	(5000) /* ms */
+>> +#define VAS_RETRIES	(10)
+>> +/* # of requests allowed per RxFIFO at a time. 0 for unlimited */
+>> +#define MAX_CREDITS_PER_RXFIFO	(64)
+>>
+>>  struct nx842_workmem {
+>>  	/* Below fields must be properly aligned */
+>> @@ -42,16 +46,27 @@ struct nx842_workmem {
+>>
+>>  	ktime_t start;
+>>
+>> +	struct vas_window *txwin;	/* Used with VAS function */
+>>  	char padding[WORKMEM_ALIGN]; /* unused, to allow alignment */
+>>  } __packed __aligned(WORKMEM_ALIGN);
+>>
+>>  struct nx842_coproc {
+>>  	unsigned int chip_id;
+>>  	unsigned int ct;
+>> -	unsigned int ci;
+>> +	unsigned int ci;	/* Coprocessor instance, used with icswx */
+>> +	struct {
+>> +		struct vas_window *rxwin;
+>> +		int id;
+>> +	} vas;
+> 
+> ci and vas are mutually exclusive. a few bytes could be saved by unionizing them?
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 0ce513f2926f..99ca49b0a801 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -199,7 +199,7 @@ extern int __meminit hash__vmemmap_create_mapping(unsigned long start,
- extern void hash__vmemmap_remove_mapping(unsigned long start,
- 				     unsigned long page_size);
- 
--int hash__create_section_mapping(unsigned long start, unsigned long end);
-+int hash__create_section_mapping(unsigned long start, unsigned long end, int nid);
- int hash__remove_section_mapping(unsigned long start, unsigned long end);
- 
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 487709ff6875..d9770ce79ebf 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -315,7 +315,7 @@ static inline unsigned long radix__get_tree_size(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--int radix__create_section_mapping(unsigned long start, unsigned long end);
-+int radix__create_section_mapping(unsigned long start, unsigned long end, int nid);
- int radix__remove_section_mapping(unsigned long start, unsigned long end);
- #endif /* CONFIG_MEMORY_HOTPLUG */
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index c88930c9db7f..5411557d7c1f 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -16,7 +16,7 @@
- #endif /* CONFIG_SPARSEMEM */
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--extern int create_section_mapping(unsigned long start, unsigned long end);
-+extern int create_section_mapping(unsigned long start, unsigned long end, int nid);
- extern int remove_section_mapping(unsigned long start, unsigned long end);
- 
- #ifdef CONFIG_PPC_BOOK3S_64
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 5c89b771ac81..5520fad59cf4 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -269,6 +269,7 @@ static void cpu_ready_for_interrupts(void)
-  * device-tree is not accessible via normal means at this point.
-  */
- 
-+void __init early_initmem_init(void);
- void __init early_setup(unsigned long dt_ptr)
- {
- 	static __initdata struct paca_struct boot_paca;
-@@ -313,6 +314,8 @@ void __init early_setup(unsigned long dt_ptr)
- 	apply_feature_fixups();
- 	setup_feature_keys();
- 
-+	early_initmem_init();
-+
- 	/* Initialize the hash table or TLB handling */
- 	early_init_mmu();
- 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index d3da19cc4867..97bfb356d91d 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -777,7 +777,7 @@ void resize_hpt_for_hotplug(unsigned long new_mem_size)
- 	}
- }
- 
--int hash__create_section_mapping(unsigned long start, unsigned long end)
-+int hash__create_section_mapping(unsigned long start, unsigned long end, int nid)
- {
- 	int rc = htab_bolt_mapping(start, end, __pa(start),
- 				   pgprot_val(PAGE_KERNEL), mmu_linear_psize,
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 8541f18694a4..0542b5f48123 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -117,7 +117,7 @@ int memory_add_physaddr_to_nid(u64 start)
- }
- #endif
- 
--int __weak create_section_mapping(unsigned long start, unsigned long end)
-+int __weak create_section_mapping(unsigned long start, unsigned long end, int nid)
- {
- 	return -ENODEV;
- }
-@@ -136,7 +136,7 @@ int arch_add_memory(int nid, u64 start, u64 size, bool want_memblock)
- 	resize_hpt_for_hotplug(memblock_phys_mem_size());
- 
- 	start = (unsigned long)__va(start);
--	rc = create_section_mapping(start, start + size);
-+	rc = create_section_mapping(start, start + size, nid);
- 	if (rc) {
- 		pr_warning(
- 			"Unable to create mapping for hot added memory 0x%llx..0x%llx: %d\n",
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 55e3fa5fcfb0..4660cf5da6d3 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -892,6 +892,12 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
- 	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
- }
- 
-+void __init early_initmem_init(void)
-+{
-+	if (parse_numa_properties())
-+		setup_nonnuma();
-+}
-+
- void __init initmem_init(void)
- {
- 	int nid, cpu;
-@@ -899,9 +905,6 @@ void __init initmem_init(void)
- 	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
- 	max_pfn = max_low_pfn;
- 
--	if (parse_numa_properties())
--		setup_nonnuma();
--
- 	memblock_dump_all();
- 
- 	/*
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 31eed8fa8e99..390e378a0c57 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -130,12 +130,12 @@ void mmu_cleanup_all(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--int create_section_mapping(unsigned long start, unsigned long end)
-+int create_section_mapping(unsigned long start, unsigned long end, int nid)
- {
- 	if (radix_enabled())
--		return radix__create_section_mapping(start, end);
-+		return radix__create_section_mapping(start, end, nid);
- 
--	return hash__create_section_mapping(start, end);
-+	return hash__create_section_mapping(start, end, nid);
- }
- 
- int remove_section_mapping(unsigned long start, unsigned long end)
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 897655ed067e..97a3c9c4ea5b 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -34,79 +34,126 @@ static int native_register_process_table(unsigned long base, unsigned long pg_sz
- 	return 0;
- }
- 
--static __ref void *early_alloc_pgtable(unsigned long size)
-+static __ref void *early_alloc_pgtable(unsigned long size, int nid)
- {
-+	unsigned long pa = 0;
- 	void *pt;
- 
--	pt = __va(memblock_alloc_base(size, size, MEMBLOCK_ALLOC_ANYWHERE));
-+	if (nid != -1) {
-+		pa = memblock_alloc_base_nid(size, size,
-+						MEMBLOCK_ALLOC_ANYWHERE,
-+						nid, MEMBLOCK_NONE);
-+	}
-+
-+	if (!pa)
-+		pa = memblock_alloc_base(size, size, MEMBLOCK_ALLOC_ANYWHERE);
-+
-+	pt = __va(pa);
- 	memset(pt, 0, size);
- 
- 	return pt;
- }
- 
-+static int early_map_kernel_page(unsigned long ea, unsigned long pa,
-+			  pgprot_t flags,
-+			  unsigned int map_page_size,
-+			  int nid);
-+
- int radix__map_kernel_page(unsigned long ea, unsigned long pa,
- 			  pgprot_t flags,
- 			  unsigned int map_page_size)
- {
-+	unsigned long pfn = pa >> PAGE_SHIFT;
- 	pgd_t *pgdp;
- 	pud_t *pudp;
- 	pmd_t *pmdp;
- 	pte_t *ptep;
-+
- 	/*
- 	 * Make sure task size is correct as per the max adddr
- 	 */
- 	BUILD_BUG_ON(TASK_SIZE_USER64 > RADIX_PGTABLE_RANGE);
--	if (slab_is_available()) {
--		pgdp = pgd_offset_k(ea);
--		pudp = pud_alloc(&init_mm, pgdp, ea);
--		if (!pudp)
--			return -ENOMEM;
--		if (map_page_size == PUD_SIZE) {
--			ptep = (pte_t *)pudp;
--			goto set_the_pte;
--		}
--		pmdp = pmd_alloc(&init_mm, pudp, ea);
--		if (!pmdp)
--			return -ENOMEM;
--		if (map_page_size == PMD_SIZE) {
--			ptep = pmdp_ptep(pmdp);
--			goto set_the_pte;
--		}
--		ptep = pte_alloc_kernel(pmdp, ea);
--		if (!ptep)
--			return -ENOMEM;
--	} else {
--		pgdp = pgd_offset_k(ea);
--		if (pgd_none(*pgdp)) {
--			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
--			BUG_ON(pudp == NULL);
--			pgd_populate(&init_mm, pgdp, pudp);
--		}
--		pudp = pud_offset(pgdp, ea);
--		if (map_page_size == PUD_SIZE) {
--			ptep = (pte_t *)pudp;
--			goto set_the_pte;
--		}
--		if (pud_none(*pudp)) {
--			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
--			BUG_ON(pmdp == NULL);
--			pud_populate(&init_mm, pudp, pmdp);
--		}
--		pmdp = pmd_offset(pudp, ea);
--		if (map_page_size == PMD_SIZE) {
--			ptep = pmdp_ptep(pmdp);
--			goto set_the_pte;
--		}
--		if (!pmd_present(*pmdp)) {
--			ptep = early_alloc_pgtable(PAGE_SIZE);
--			BUG_ON(ptep == NULL);
--			pmd_populate_kernel(&init_mm, pmdp, ptep);
--		}
--		ptep = pte_offset_kernel(pmdp, ea);
-+	if (unlikely(!slab_is_available()))
-+		return early_map_kernel_page(ea, pa, flags, map_page_size, -1);
-+
-+	/*
-+	 * Should make page table allocation functions be able to take a
-+	 * node, so we can place kernel page tables on the right nodes after
-+	 * boot.
-+	 */
-+	pgdp = pgd_offset_k(ea);
-+	pudp = pud_alloc(&init_mm, pgdp, ea);
-+	if (!pudp)
-+		return -ENOMEM;
-+	if (map_page_size == PUD_SIZE) {
-+		ptep = (pte_t *)pudp;
-+		goto set_the_pte;
-+	}
-+	pmdp = pmd_alloc(&init_mm, pudp, ea);
-+	if (!pmdp)
-+		return -ENOMEM;
-+	if (map_page_size == PMD_SIZE) {
-+		ptep = pmdp_ptep(pmdp);
-+		goto set_the_pte;
- 	}
-+	ptep = pte_alloc_kernel(pmdp, ea);
-+	if (!ptep)
-+		return -ENOMEM;
- 
- set_the_pte:
--	set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT, flags));
-+	set_pte_at(&init_mm, ea, ptep, pfn_pte(pfn, flags));
-+	smp_wmb();
-+	return 0;
-+}
-+
-+static int early_map_kernel_page(unsigned long ea, unsigned long pa,
-+			  pgprot_t flags,
-+			  unsigned int map_page_size,
-+			  int nid)
-+{
-+	unsigned long pfn = pa >> PAGE_SHIFT;
-+	pgd_t *pgdp;
-+	pud_t *pudp;
-+	pmd_t *pmdp;
-+	pte_t *ptep;
-+
-+	/*
-+	 * Make sure task size is correct as per the max adddr
-+	 */
-+	BUILD_BUG_ON(TASK_SIZE_USER64 > RADIX_PGTABLE_RANGE);
-+	if (slab_is_available())
-+		return radix__map_kernel_page(ea, pa, flags, map_page_size);
-+
-+	pgdp = pgd_offset_k(ea);
-+	if (pgd_none(*pgdp)) {
-+		pudp = early_alloc_pgtable(PUD_TABLE_SIZE, nid);
-+		BUG_ON(pudp == NULL);
-+		pgd_populate(&init_mm, pgdp, pudp);
-+	}
-+	pudp = pud_offset(pgdp, ea);
-+	if (map_page_size == PUD_SIZE) {
-+		ptep = (pte_t *)pudp;
-+		goto set_the_pte;
-+	}
-+	if (pud_none(*pudp)) {
-+		pmdp = early_alloc_pgtable(PMD_TABLE_SIZE, nid);
-+		BUG_ON(pmdp == NULL);
-+		pud_populate(&init_mm, pudp, pmdp);
-+	}
-+	pmdp = pmd_offset(pudp, ea);
-+	if (map_page_size == PMD_SIZE) {
-+		ptep = pmdp_ptep(pmdp);
-+		goto set_the_pte;
-+	}
-+	if (!pmd_present(*pmdp)) {
-+		ptep = early_alloc_pgtable(PAGE_SIZE, nid);
-+		BUG_ON(ptep == NULL);
-+		pmd_populate_kernel(&init_mm, pmdp, ptep);
-+	}
-+	ptep = pte_offset_kernel(pmdp, ea);
-+
-+set_the_pte:
-+	set_pte_at(&init_mm, ea, ptep, pfn_pte(pfn, flags));
- 	smp_wmb();
- 	return 0;
- }
-@@ -165,7 +212,8 @@ static inline void __meminit print_mapping(unsigned long start,
- }
- 
- static int __meminit create_physical_mapping(unsigned long start,
--					     unsigned long end)
-+					     unsigned long end,
-+					     int nid)
- {
- 	unsigned long vaddr, addr, mapping_size = 0;
- 	pgprot_t prot;
-@@ -221,7 +269,7 @@ static int __meminit create_physical_mapping(unsigned long start,
- 		else
- 			prot = PAGE_KERNEL;
- 
--		rc = radix__map_kernel_page(vaddr, addr, prot, mapping_size);
-+		rc = early_map_kernel_page(vaddr, addr, prot, mapping_size, nid);
- 		if (rc)
- 			return rc;
- 	}
-@@ -230,7 +278,7 @@ static int __meminit create_physical_mapping(unsigned long start,
- 	return 0;
- }
- 
--static void __init radix_init_pgtable(void)
-+void __init radix_init_pgtable(void)
- {
- 	unsigned long rts_field;
- 	struct memblock_region *reg;
-@@ -240,15 +288,17 @@ static void __init radix_init_pgtable(void)
- 	/*
- 	 * Create the linear mapping, using standard page size for now
- 	 */
--	for_each_memblock(memory, reg)
-+	for_each_memblock(memory, reg) {
- 		WARN_ON(create_physical_mapping(reg->base,
--						reg->base + reg->size));
-+						reg->base + reg->size,
-+						reg->nid));
-+	}
- 	/*
- 	 * Allocate Partition table and process table for the
- 	 * host.
- 	 */
- 	BUILD_BUG_ON_MSG((PRTB_SIZE_SHIFT > 36), "Process table size too large.");
--	process_tb = early_alloc_pgtable(1UL << PRTB_SIZE_SHIFT);
-+	process_tb = early_alloc_pgtable(1UL << PRTB_SIZE_SHIFT, -1);
- 	/*
- 	 * Fill in the process table.
- 	 */
-@@ -722,9 +772,9 @@ static void remove_pagetable(unsigned long start, unsigned long end)
- 	radix__flush_tlb_kernel_range(start, end);
- }
- 
--int __ref radix__create_section_mapping(unsigned long start, unsigned long end)
-+int __ref radix__create_section_mapping(unsigned long start, unsigned long end, int nid)
- {
--	return create_physical_mapping(start, end);
-+	return create_physical_mapping(start, end, nid);
- }
- 
- int radix__remove_section_mapping(unsigned long start, unsigned long end)
-@@ -741,8 +791,17 @@ int __meminit radix__vmemmap_create_mapping(unsigned long start,
- {
- 	/* Create a PTE encoding */
- 	unsigned long flags = _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_KERNEL_RW;
-+	int nid = early_pfn_to_nid(phys >> PAGE_SHIFT);
-+	int ret;
-+
-+	if (!slab_is_available())
-+		ret = early_map_kernel_page(start, phys, __pgprot(flags),
-+								page_size, nid);
-+	else
-+		ret = radix__map_kernel_page(start, phys, __pgprot(flags),
-+								page_size);
-+	BUG_ON(ret);
- 
--	BUG_ON(radix__map_kernel_page(start, phys, __pgprot(flags), page_size));
- 	return 0;
- }
- 
--- 
-2.11.0
+We will have few coproc entries - NX engine per chip. 
+> 
+>>  	struct list_head list;
+>>  };
+>>
+>> +/*
+>> + * Send the request to NX engine on the chip for the corresponding CPU
+>> + * where the process is executing. Use with VAS function.
+>> + */
+>> +static DEFINE_PER_CPU(struct nx842_coproc *, coproc_inst);
+>> +
+>>  /* no cpu hotplug on powernv, so this list never changes after init */
+>>  static LIST_HEAD(nx842_coprocs);
+>>  static unsigned int nx842_ct;	/* used in icswx function */
+>> @@ -513,6 +528,108 @@ static int nx842_exec_icswx(const unsigned char *in, unsigned int inlen,
+>>  }
+>>
+>>  /**
+>> + * nx842_exec_vas - compress/decompress data using the 842 algorithm
+>> + *
+>> + * (De)compression provided by the NX842 coprocessor on IBM PowerNV systems.
+>> + * This compresses or decompresses the provided input buffer into the provided
+>> + * output buffer.
+>> + *
+>> + * Upon return from this function @outlen contains the length of the
+>> + * output data.  If there is an error then @outlen will be 0 and an
+>> + * error will be specified by the return code from this function.
+>> + *
+>> + * The @workmem buffer should only be used by one function call at a time.
+>> + *
+>> + * @in: input buffer pointer
+>> + * @inlen: input buffer size
+>> + * @out: output buffer pointer
+>> + * @outlenp: output buffer size pointer
+>> + * @workmem: working memory buffer pointer, size determined by
+>> + *           nx842_powernv_driver.workmem_size
+>> + * @fc: function code, see CCW Function Codes in nx-842.h
+>> + *
+>> + * Returns:
+>> + *   0		Success, output of length @outlenp stored in the buffer
+>> + *		at @out
+>> + *   -ENODEV	Hardware unavailable
+>> + *   -ENOSPC	Output buffer is to small
+>> + *   -EMSGSIZE	Input buffer too large
+>> + *   -EINVAL	buffer constraints do not fix nx842_constraints
+>> + *   -EPROTO	hardware error during operation
+>> + *   -ETIMEDOUT	hardware did not complete operation in reasonable time
+>> + *   -EINTR	operation was aborted
+>> + */
+>> +static int nx842_exec_vas(const unsigned char *in, unsigned int inlen,
+>> +				  unsigned char *out, unsigned int *outlenp,
+>> +				  void *workmem, int fc)
+>> +{
+>> +	struct coprocessor_request_block *crb;
+>> +	struct coprocessor_status_block *csb;
+>> +	struct nx842_workmem *wmem;
+>> +	struct vas_window *txwin;
+>> +	int ret, i = 0;
+>> +	u32 ccw;
+>> +	unsigned int outlen = *outlenp;
+>> +
+>> +	wmem = PTR_ALIGN(workmem, WORKMEM_ALIGN);
+>> +
+>> +	*outlenp = 0;
+>> +
+>> +	crb = &wmem->crb;
+>> +	csb = &crb->csb;
+>> +
+>> +	ret = nx842_config_crb(in, inlen, out, outlen, wmem);
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	ccw = 0;
+>> +	ccw = SET_FIELD(CCW_FC_842, ccw, fc);
+>> +	crb->ccw = cpu_to_be32(ccw);
+>> +
+>> +	txwin = wmem->txwin;
+>> +	/* shoudn't happen, we don't load without a coproc */
+>> +	if (!txwin) {
+>> +		pr_err_ratelimited("NX-842 coprocessor is not available");
+>> +		return -ENODEV;
+>> +	}
+>> +
+>> +	wmem->start = ktime_get();
+>> +
+>> +	/*
+>> +	 * VAS copy CRB into L2 cache. Refer <asm/vas.h>.
+>> +	 * @crb, @offset and @first (must be true)
+>> +	 */
+>> +	vas_copy_crb(crb, 0, 1);
+>> +
+>> +	/*
+>> +	 * VAS paste previously copied CRB to NX.
+>> +	 * @txwin, @offset, @last (must be true) and @re is expected/assumed
+>> +	 * to be true for NX windows.
+>> +	 */
+>> +	ret = vas_paste_crb(txwin, 0, 1, 1);
+>> +
+>> +	/*
+>> +	 * Retry copy/paste function for VAS failures.
+>> +	 */
+>> +	while (ret && (i++ < VAS_RETRIES)) {
+>> +		vas_copy_crb(crb, 0, 1);
+>> +		wmem->start = ktime_get();
+> 
+> should this is be before vas_copy_crb() ?
+
+paste instruction is the one which sends request to NX. So added start time just before paste instead of copy. But I will change to as you mentioned. Needed for copy/paste with preemption disable.  
+> 
+> 
+>> +		ret = vas_paste_crb(wmem->txwin, 0, 1, 1);
+>> +	}
+>> +
+>> +	if (ret) {
+>> +		pr_err_ratelimited("VAS copy/paste failed\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = wait_for_csb(wmem, csb);
+>> +	if (!ret)
+>> +		*outlenp = be32_to_cpu(csb->count);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +/**
+>>   * nx842_powernv_compress - Compress data using the 842 algorithm
+>>   *
+>>   * Compression provided by the NX842 coprocessor on IBM PowerNV systems.
+>> @@ -576,6 +693,191 @@ static inline void nx842_add_coprocs_list(struct nx842_coproc *coproc,
+>>  	list_add(&coproc->list, &nx842_coprocs);
+>>  }
+>>
+>> +/*
+>> + * Identify chip ID for each CPU and save coprocesor adddress for the
+>> + * corresponding NX engine in percpu coproc_inst.
+>> + * coproc_inst is used in crypto_init to open send window on the NX instance
+>> + * for the corresponding CPU / chip where the open request is executed.
+>> + */
+>> +static void nx842_set_per_cpu_coproc(struct nx842_coproc *coproc)
+>> +{
+>> +	unsigned int i, chip_id;
+>> +
+>> +	for_each_possible_cpu(i) {
+>> +		chip_id = cpu_to_chip_id(i);
+>> +
+>> +		if (coproc->chip_id == chip_id)
+>> +			per_cpu(coproc_inst, i) = coproc;
+>> +	}
+>> +}
+>> +
+>> +
+>> +static struct vas_window *nx842_alloc_txwin(struct nx842_coproc *coproc)
+>> +{
+>> +	struct vas_window *txwin = NULL;
+>> +	struct vas_tx_win_attr txattr;
+>> +
+>> +	/*
+>> +	 * Kernel requests will be high priority. So open send
+>> +	 * windows only for high priority RxFIFO entries.
+>> +	 */
+>> +	vas_init_tx_win_attr(&txattr, coproc->ct);
+>> +	txattr.lpid = 0;	/* lpid is 0 for kernel requests */
+>> +	txattr.pid = mfspr(SPRN_PID);
+>> +
+>> +	/*
+>> +	 * Open a VAS send window which is used to send request to NX.
+>> +	 */
+>> +	txwin = vas_tx_win_open(coproc->vas.id, coproc->ct, &txattr);
+>> +	if (IS_ERR(txwin)) {
+>> +		pr_err("ibm,nx-842: Can not open TX window: %ld\n",
+>> +				PTR_ERR(txwin));
+>> +		return NULL;
+>> +	}
+>> +
+>> +	return txwin;
+>> +}
+>> +
+>> +static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+>> +					int vasid)
+>> +{
+>> +	struct vas_window *rxwin = NULL;
+>> +	struct vas_rx_win_attr rxattr;
+>> +	struct nx842_coproc *coproc;
+>> +	u32 lpid, pid, tid, fifo_size;
+>> +	u64 rx_fifo;
+>> +	const char *priority;
+>> +	int ret;
+>> +
+>> +	ret = of_property_read_u64(dn, "rx-fifo-address", (void *)&rx_fifo);
+>> +	if (ret) {
+>> +		pr_err("Missing rx-fifo-address property\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = of_property_read_u32(dn, "rx-fifo-size", &fifo_size);
+>> +	if (ret) {
+>> +		pr_err("Missing rx-fifo-size property\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = of_property_read_u32(dn, "lpid", &lpid);
+>> +	if (ret) {
+>> +		pr_err("Missing lpid property\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = of_property_read_u32(dn, "pid", &pid);
+>> +	if (ret) {
+>> +		pr_err("Missing pid property\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = of_property_read_u32(dn, "tid", &tid);
+>> +	if (ret) {
+>> +		pr_err("Missing tid property\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = of_property_read_string(dn, "priority", &priority);
+>> +	if (ret) {
+>> +		pr_err("Missing priority property\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	coproc = kzalloc(sizeof(*coproc), GFP_KERNEL);
+>> +	if (!coproc)
+>> +		return -ENOMEM;
+>> +
+>> +	if (!strcmp(priority, "High"))
+>> +		coproc->ct = VAS_COP_TYPE_842_HIPRI;
+>> +	else if (!strcmp(priority, "Normal"))
+>> +		coproc->ct = VAS_COP_TYPE_842;
+>> +	else {
+>> +		pr_err("Invalid RxFIFO priority value\n");
+>> +		ret =  -EINVAL;
+>> +		goto err_out;
+>> +	}
+>> +
+>> +	vas_init_rx_win_attr(&rxattr, coproc->ct);
+>> +	rxattr.rx_fifo = (void *)rx_fifo;
+>> +	rxattr.rx_fifo_size = fifo_size;
+>> +	rxattr.lnotify_lpid = lpid;
+>> +	rxattr.lnotify_pid = pid;
+>> +	rxattr.lnotify_tid = tid;
+>> +	rxattr.wcreds_max = MAX_CREDITS_PER_RXFIFO;
+>> +
+>> +	/*
+>> +	 * Open a VAS receice window which is used to configure RxFIFO
+>> +	 * for NX.
+>> +	 */
+>> +	rxwin = vas_rx_win_open(vasid, coproc->ct, &rxattr);
+>> +	if (IS_ERR(rxwin)) {
+>> +		ret = PTR_ERR(rxwin);
+>> +		pr_err("setting RxFIFO with VAS failed: %d\n",
+>> +			ret);
+>> +		goto err_out;
+>> +	}
+>> +
+>> +	coproc->vas.rxwin = rxwin;
+>> +	coproc->vas.id = vasid;
+>> +	nx842_add_coprocs_list(coproc, chip_id);
+>> +
+>> +	/*
+>> +	 * Kernel requests use only high priority FIFOs. So save coproc
+>> +	 * info in percpu coproc_inst which will be used to open send
+>> +	 * windows for crypto open requests later.
+>> +	 */
+>> +	if (coproc->ct == VAS_COP_TYPE_842_HIPRI)
+>> +		nx842_set_per_cpu_coproc(coproc);
+>> +
+>> +	return 0;
+>> +
+>> +err_out:
+>> +	kfree(coproc);
+>> +	return ret;
+>> +}
+>> +
+>> +
+>> +static int __init nx842_powernv_probe_vas(struct device_node *pn)
+>> +{
+>> +	struct device_node *dn;
+>> +	int chip_id, vasid, rc = 0;
+>> +
+>> +	chip_id = of_get_ibm_chip_id(pn);
+>> +	if (chip_id < 0) {
+>> +		pr_err("ibm,chip-id missing\n");
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	dn = of_find_compatible_node(pn, NULL, "ibm,power9-vas-x");
+>> +
+>> +	if (!dn) {
+>> +		pr_err("Missing VAS device node\n");
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	if (of_property_read_u32(dn, "ibm,vas-id", &vasid)) {
+>> +		pr_err("Missing ibm,vas-id device property\n");
+>> +		of_node_put(dn);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	of_node_put(dn);
+>> +
+>> +	for_each_child_of_node(pn, dn) {
+>> +		if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
+>> +			rc = vas_cfg_coproc_info(dn, chip_id, vasid);
+>> +			if (rc) {
+>> +				of_node_put(dn);
+>> +				return rc;
+>> +			}
+>> +		}
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>  static int __init nx842_powernv_probe(struct device_node *dn)
+>>  {
+>>  	struct nx842_coproc *coproc;
+>> @@ -622,6 +924,9 @@ static void nx842_delete_coprocs(void)
+>>  	struct nx842_coproc *coproc, *n;
+>>
+>>  	list_for_each_entry_safe(coproc, n, &nx842_coprocs, list) {
+>> +		if (coproc->vas.rxwin)
+>> +			vas_win_close(coproc->vas.rxwin);
+>> +
+>>  		list_del(&coproc->list);
+>>  		kfree(coproc);
+>>  	}
+>> @@ -643,6 +948,44 @@ static struct nx842_driver nx842_powernv_driver = {
+>>  	.decompress =	nx842_powernv_decompress,
+>>  };
+>>
+>> +static int nx842_powernv_crypto_init_vas(struct crypto_tfm *tfm)
+>> +{
+>> +	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
+>> +	struct nx842_workmem *wmem;
+>> +	struct nx842_coproc *coproc;
+>> +	int ret;
+>> +
+>> +	ret = nx842_crypto_init(tfm, &nx842_powernv_driver);
+>> +
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	wmem = (struct nx842_workmem *)ctx->wmem;
+> 
+> I think, you want to align wmem to WORKMEM_ALIGN boundary
+
+Correct, Missed it. Will change in next version for init/exit(). Thanks for review. 
+.
+> 
+>> +	coproc = per_cpu(coproc_inst, smp_processor_id());
+>> +
+>> +	ret = -EINVAL;
+>> +	if (coproc && coproc->vas.rxwin) {
+>> +		wmem->txwin = nx842_alloc_txwin(coproc);
+>> +		if (!IS_ERR(wmem->txwin))
+>> +			return 0;
+>> +
+>> +		ret = PTR_ERR(wmem->txwin);
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +void nx842_powernv_crypto_exit_vas(struct crypto_tfm *tfm)
+>> +{
+>> +	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
+>> +	struct nx842_workmem *wmem = (struct nx842_workmem *)ctx->wmem;
+> 
+> here as well.
+> 
+>> +
+>> +	if (wmem && wmem->txwin)
+>> +		vas_win_close(wmem->txwin);
+>> +
+>> +	nx842_crypto_exit(tfm);
+>> +}
+>> +
+>>  static int nx842_powernv_crypto_init(struct crypto_tfm *tfm)
+>>  {
+>>  	return nx842_crypto_init(tfm, &nx842_powernv_driver);
+>> @@ -676,13 +1019,27 @@ static __init int nx842_powernv_init(void)
+>>  	BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
+>>  	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
+>>
+>> -	for_each_compatible_node(dn, NULL, "ibm,power-nx")
+>> -		nx842_powernv_probe(dn);
+>> +	for_each_compatible_node(dn, NULL, "ibm,power9-nx") {
+>> +		ret = nx842_powernv_probe_vas(dn);
+>> +		if (ret) {
+>> +			nx842_delete_coprocs();
+>> +			return ret;
+>> +		}
+>> +	}
+>>
+>> -	if (!nx842_ct)
+>> -		return -ENODEV;
+>> +	if (list_empty(&nx842_coprocs)) {
+>> +		for_each_compatible_node(dn, NULL, "ibm,power-nx")
+>> +			nx842_powernv_probe(dn);
+>> +
+>> +		if (!nx842_ct)
+>> +			return -ENODEV;
+>>
+>> -	nx842_powernv_exec = nx842_exec_icswx;
+>> +		nx842_powernv_exec = nx842_exec_icswx;
+>> +	} else {
+>> +		nx842_powernv_exec = nx842_exec_vas;
+>> +		nx842_powernv_alg.cra_init = nx842_powernv_crypto_init_vas;
+>> +		nx842_powernv_alg.cra_exit = nx842_powernv_crypto_exit_vas;
+>> +	}
+>>
+>>  	ret = crypto_register_alg(&nx842_powernv_alg);
+>>  	if (ret) {
+>> diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
+>> index d94e25df503b..da3cb8c35ec7 100644
+>> --- a/drivers/crypto/nx/nx-842.c
+>> +++ b/drivers/crypto/nx/nx-842.c
+>> @@ -116,7 +116,7 @@ int nx842_crypto_init(struct crypto_tfm *tfm, struct nx842_driver *driver)
+>>
+>>  	spin_lock_init(&ctx->lock);
+>>  	ctx->driver = driver;
+>> -	ctx->wmem = kmalloc(driver->workmem_size, GFP_KERNEL);
+>> +	ctx->wmem = kzalloc(driver->workmem_size, GFP_KERNEL);
+>>  	ctx->sbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
+>>  	ctx->dbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
+>>  	if (!ctx->wmem || !ctx->sbounce || !ctx->dbounce) {
+>> -- 
+>> 2.11.0
+>>
+>>
+> 
