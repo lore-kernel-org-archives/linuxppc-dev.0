@@ -1,33 +1,34 @@
 Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xDwRK4yLTzDrMl
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 14:59:41 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xDwSr13ZGzDrQV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 15:00:59 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6M4wP2A014303
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 00:59:39 -0400
+ v6M50emg125482
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 01:00:57 -0400
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2buyhwrxcv-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2buyhvgwxc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 00:59:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jul 2017 01:00:57 -0400
 Received: from localhost
  by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Fri, 21 Jul 2017 22:59:38 -0600
-Subject: [PATCH V3 4/6] crypto/nx: Add nx842_add_coprocs_list function
+ Fri, 21 Jul 2017 23:00:56 -0600
+Subject: [PATCH V3 5/6] crypto/nx: Add P9 NX specific error codes for 842
+ engine
 From: Haren Myneni <haren@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, herbert@gondor.apana.org.au
 Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  mikey@neuling.org, benh@kernel.crashing.org, suka@us.ibm.com,
  ddstreet@ieee.org, linuxram@us.ibm.com, npiggin@gmail.com, hbabu@us.ibm.com
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 21 Jul 2017 21:59:31 -0700
+Date: Fri, 21 Jul 2017 22:00:48 -0700
 Mime-Version: 1.0
-Message-Id: <1500699571.23205.5.camel@hbabu-laptop>
+Message-Id: <1500699648.23205.7.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +39,99 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Updating coprocessor list is moved to nx842_add_coprocs_list().
-This function will be used for both icswx and VAS functions.
+This patch adds changes for checking P9 specific 842 engine
+error codes. These errros are reported in coprocessor status
+block (CSB) for failures.
 
 Signed-off-by: Haren Myneni <haren@us.ibm.com>
 ---
- drivers/crypto/nx/nx-842-powernv.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/icswx.h   |  3 +++
+ drivers/crypto/nx/nx-842-powernv.c | 18 ++++++++++++++++++
+ drivers/crypto/nx/nx-842.h         |  8 ++++++++
+ 3 files changed, 29 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
+index 27e588f6c72e..6a2c87577541 100644
+--- a/arch/powerpc/include/asm/icswx.h
++++ b/arch/powerpc/include/asm/icswx.h
+@@ -69,7 +69,10 @@ struct coprocessor_completion_block {
+ #define CSB_CC_WR_PROTECTION	(16)
+ #define CSB_CC_UNKNOWN_CODE	(17)
+ #define CSB_CC_ABORT		(18)
++#define CSB_CC_EXCEED_BYTE_COUNT	(19)	/* P9 or later */
+ #define CSB_CC_TRANSPORT	(20)
++#define CSB_CC_INVALID_CRB	(21)	/* P9 or later */
++#define CSB_CC_INVALID_DDE	(30)	/* P9 or later */
+ #define CSB_CC_SEGMENTED_DDL	(31)
+ #define CSB_CC_PROGRESS_POINT	(32)
+ #define CSB_CC_DDE_OVERFLOW	(33)
 diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index 67dc06f9b557..829b5cad0043 100644
+index 829b5cad0043..c0dd4c7e17d3 100644
 --- a/drivers/crypto/nx/nx-842-powernv.c
 +++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -550,6 +550,14 @@ static int nx842_powernv_decompress(const unsigned char *in, unsigned int inlen,
- 				      wmem, CCW_FC_842_DECOMP_CRC);
- }
+@@ -243,6 +243,13 @@ static int wait_for_csb(struct nx842_workmem *wmem,
+ 	case CSB_CC_TEMPL_OVERFLOW:
+ 		CSB_ERR(csb, "Compressed data template shows data past end");
+ 		return -EINVAL;
++	case CSB_CC_EXCEED_BYTE_COUNT:	/* P9 or later */
++		/*
++		 * DDE byte count exceeds the limit specified in Maximum
++		 * byte count register.
++		 */
++		CSB_ERR(csb, "DDE byte count exceeds the limit");
++		return -EINVAL;
  
-+static inline void nx842_add_coprocs_list(struct nx842_coproc *coproc,
-+					int chipid)
-+{
-+	coproc->chip_id = chipid;
-+	INIT_LIST_HEAD(&coproc->list);
-+	list_add(&coproc->list, &nx842_coprocs);
-+}
-+
- static int __init nx842_powernv_probe(struct device_node *dn)
- {
- 	struct nx842_coproc *coproc;
-@@ -576,11 +584,9 @@ static int __init nx842_powernv_probe(struct device_node *dn)
- 	if (!coproc)
- 		return -ENOMEM;
+ 	/* these should not happen */
+ 	case CSB_CC_INVALID_ALIGN:
+@@ -284,9 +291,17 @@ static int wait_for_csb(struct nx842_workmem *wmem,
+ 		CSB_ERR(csb, "Too many DDEs in DDL");
+ 		return -EINVAL;
+ 	case CSB_CC_TRANSPORT:
++	case CSB_CC_INVALID_CRB:	/* P9 or later */
+ 		/* shouldn't happen, we setup CRB correctly */
+ 		CSB_ERR(csb, "Invalid CRB");
+ 		return -EINVAL;
++	case CSB_CC_INVALID_DDE:	/* P9 or later */
++		/*
++		 * shouldn't happen, setup_direct/indirect_dde creates
++		 * DDE right
++		 */
++		CSB_ERR(csb, "Invalid DDE");
++		return -EINVAL;
+ 	case CSB_CC_SEGMENTED_DDL:
+ 		/* shouldn't happen, setup_ddl creates DDL right */
+ 		CSB_ERR(csb, "Segmented DDL error");
+@@ -330,6 +345,9 @@ static int wait_for_csb(struct nx842_workmem *wmem,
+ 	case CSB_CC_HW:
+ 		CSB_ERR(csb, "Correctable hardware error");
+ 		return -EPROTO;
++	case CSB_CC_HW_EXPIRED_TIMER:	/* P9 or later */
++		CSB_ERR(csb, "Job did not finish within allowed time");
++		return -EPROTO;
  
--	coproc->chip_id = chip_id;
- 	coproc->ct = ct;
- 	coproc->ci = ci;
--	INIT_LIST_HEAD(&coproc->list);
--	list_add(&coproc->list, &nx842_coprocs);
-+	nx842_add_coprocs_list(coproc, chip_id);
- 
- 	pr_info("coprocessor found on chip %d, CT %d CI %d\n", chip_id, ct, ci);
+ 	default:
+ 		CSB_ERR(csb, "Invalid CC %d", csb->cc);
+diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
+index 30929bd7d1a9..bb2f31792683 100644
+--- a/drivers/crypto/nx/nx-842.h
++++ b/drivers/crypto/nx/nx-842.h
+@@ -76,9 +76,17 @@
+ #define CSB_CC_DECRYPT_OVERFLOW	(64)
+ /* asym crypt codes */
+ #define CSB_CC_MINV_OVERFLOW	(128)
++/*
++ * HW error - Job did not finish in the maximum time allowed.
++ * Job terminated.
++ */
++#define CSB_CC_HW_EXPIRED_TIMER		(224)
+ /* These are reserved for hypervisor use */
+ #define CSB_CC_HYP_RESERVE_START	(240)
+ #define CSB_CC_HYP_RESERVE_END		(253)
++#define CSB_CC_HYP_RESERVE_P9_END	(251)
++/* No valid interrupt server (P9 or later). */
++#define CSB_CC_HYP_RESERVE_NO_INTR_SERVER	(252)
+ #define CSB_CC_HYP_NO_HW		(254)
+ #define CSB_CC_HYP_HANG_ABORTED		(255)
  
 -- 
 2.11.0
