@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xFD0h3f8ZzDqy5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2017 02:41:07 +1000 (AEST)
-Date: Sat, 22 Jul 2017 18:40:58 +0200
-Message-ID: <20170722184058.Horde.Y2X8hGdhXLwnxJXZApQEhQ1@messagerie.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xFD3f3MyMzDqy5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2017 02:43:22 +1000 (AEST)
+Date: Sat, 22 Jul 2017 18:43:14 +0200
+Message-ID: <20170722184314.Horde.gxxJYSiYc2SSqQhjpzVdwQ1@messagerie.c-s.fr>
 From: LEROY Christophe <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 07/24] powerpc/mm: Move out definition of CPU specific
- is_write bits
+Subject: Re: [PATCH 02/24] powerpc/mm: Pre-filter SRR1 bits before
+ do_page_fault()
 References: <20170719044946.22030-1-benh@kernel.crashing.org>
- <20170719044946.22030-7-benh@kernel.crashing.org>
-In-Reply-To: <20170719044946.22030-7-benh@kernel.crashing.org>
+ <20170719044946.22030-2-benh@kernel.crashing.org>
+In-Reply-To: <20170719044946.22030-2-benh@kernel.crashing.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,62 +27,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Benjamin Herrenschmidt <benh@kernel.crashing.org> a =C3=A9crit=C2=A0:
 
-> Define a common page_fault_is_write() helper and use it
+> By filtering the relevant SRR1 bits in the assembly rather than
+> in do_page_fault() itself, we avoid a conditional branch (since we
+> already come from different path for data and instruction faults).
+>
+> This will allow more simplifications later
 >
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
->  arch/powerpc/mm/fault.c | 18 +++++++++++-------
->  1 file changed, 11 insertions(+), 7 deletions(-)
+>  arch/powerpc/kernel/head_32.S  |  2 +-
+>  arch/powerpc/kernel/head_8xx.S |  4 ++--
+>  arch/powerpc/mm/fault.c        | 14 ++------------
+>  3 files changed, 5 insertions(+), 15 deletions(-)
 >
+> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.=
+S
+> index a5301248b098..f11d1cd6e314 100644
+> --- a/arch/powerpc/kernel/head_32.S
+> +++ b/arch/powerpc/kernel/head_32.S
+> @@ -409,7 +409,7 @@ InstructionAccess:
+>  	mr	r4,r12			/* SRR0 is fault address */
+>  	bl	hash_page
+>  1:	mr	r4,r12
+> -	mr	r5,r9
+> +	andis.	r5,r9,0x4820		/* Filter relevant SRR1 bits */
+>  	EXC_XFER_LITE(0x400, handle_page_fault)
+>
+>  /* External interrupt */
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8x=
+x.S
+> index c032fe8c2d26..da3afa2c1658 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -569,8 +569,8 @@ _ENTRY(DTLBMiss_jmp)
+>  InstructionTLBError:
+>  	EXCEPTION_PROLOG
+>  	mr	r4,r12
+> -	mr	r5,r9
+> -	andis.	r10,r5,0x4000
+> +	andis.	r5,r9,0x4820		/* Filter relevant SRR1 bits */
+> +	andis.	r10,r9,0x4000
+>  	beq+	1f
+>  	tlbie	r4
+>  itlbie:
 > diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index f257965b54b5..26ec0dd4f419 100644
+> index faddc87d0205..f04bc9f6b134 100644
 > --- a/arch/powerpc/mm/fault.c
 > +++ b/arch/powerpc/mm/fault.c
-> @@ -183,6 +183,16 @@ static int mm_fault_error(struct pt_regs *regs,=20=
-=20
->=20unsigned long addr, int fault)
->  }
->
->  /*
-> + * Define the correct "is_write" bit in error_code based
-> + * on the processor family
-> + */
-> +#if (defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-> +#define page_fault_is_write(__err)	((__err) & ESR_DST)
-> +#else
-> +#define page_fault_is_write(__err)	((__err) & DSISR_ISSTORE)
-> +#endif
-
-Doesn't linux kernel codying style make preference to static inline=20=20
-functions=20instead of macros ?
-
-> +
-> +/*
->   * For 600- and 800-family processors, the error_code parameter is DSISR
->   * for a data fault, SRR1 for an instruction fault. For 400-family=20=20
->=20processors
->   * the error_code parameter is ESR for a data fault, 0 for an instructio=
-n
-> @@ -202,18 +212,12 @@ static int __do_page_fault(struct pt_regs=20=20
+> @@ -203,23 +203,13 @@ static int __do_page_fault(struct pt_regs=20=20
 >=20*regs, unsigned long address,
->  	struct mm_struct *mm =3D current->mm;
 >  	unsigned int flags =3D FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
 >  	int code =3D SEGV_MAPERR;
-> -	int is_write =3D 0;
->   	int is_exec =3D TRAP(regs) =3D=3D 0x400;
+>  	int is_write =3D 0;
+> -	int trap =3D TRAP(regs);
+> - 	int is_exec =3D trap =3D=3D 0x400;
+> + 	int is_exec =3D TRAP(regs) =3D=3D 0x400;
+
+Don't we have a tab/space issue here ?
+
 >  	int is_user =3D user_mode(regs);
-> +	int is_write =3D page_fault_is_write(error_code);
 >  	int fault;
 >  	int rc =3D 0, store_update_sp =3D 0;
 >
-> -#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-> -	is_write =3D error_code & DSISR_ISSTORE;
-> -#else
-> -	is_write =3D error_code & ESR_DST;
-> -#endif /* CONFIG_4xx || CONFIG_BOOKE */
-> -
->  #ifdef CONFIG_PPC_ICSWX
->  	/*
->  	 * we need to do this early because this "data storage
+>  #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+> -	/*
+> -	 * Fortunately the bit assignments in SRR1 for an instruction
+> -	 * fault and DSISR for a data fault are mostly the same for the
+> -	 * bits we are interested in.  But there are some bits which
+> -	 * indicate errors in DSISR but can validly be set in SRR1.
+> -	 */
+> -	if (is_exec)
+> -		error_code &=3D 0x48200000;
+> -	else
+> -		is_write =3D error_code & DSISR_ISSTORE;
+> +	is_write =3D error_code & DSISR_ISSTORE;
+>  #else
+>  	is_write =3D error_code & ESR_DST;
+>  #endif /* CONFIG_4xx || CONFIG_BOOKE */
 > --
 > 2.13.3
