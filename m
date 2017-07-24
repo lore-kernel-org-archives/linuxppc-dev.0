@@ -1,41 +1,40 @@
-Return-Path: <brijesh.singh@amd.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0086.outbound.protection.outlook.com [104.47.32.86])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <victora@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGWBN5h1tzDrJv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:59 +1000 (AEST)
-From: Brijesh Singh <brijesh.singh@amd.com>
-To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H . Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>, Brijesh Singh <brijesh.singh@amd.com>
-Subject: [RFC Part1 PATCH v3 17/17] X86/KVM: Clear encryption attribute when
- SEV is active
-Date: Mon, 24 Jul 2017 14:07:57 -0500
-Message-Id: <20170724190757.11278-18-brijesh.singh@amd.com>
-In-Reply-To: <20170724190757.11278-1-brijesh.singh@amd.com>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGdTB0Ty6zDrBS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 09:52:13 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6ONmePp094277
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 19:52:10 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bwpb8jupd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 19:52:10 -0400
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <victora@linux.vnet.ibm.com>;
+ Mon, 24 Jul 2017 20:52:08 -0300
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6ONq5le26214508
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 20:52:05 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6ONq6EF031941
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 20:52:06 -0300
+From: Victor Aoqui <victora@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com
+Cc: victora@br.ibm.com, victora@linux.vnet.ibm.com, mauricfo@linux.vnet.ibm.com
+Subject: [PATCH v3] powerpc/mm: Implemented default_hugepagesz verification
+ for powerpc
+Date: Mon, 24 Jul 2017 20:52:02 -0300
+Message-Id: <20170724235202.5675-1-victora@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,153 +44,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The guest physical memory area holding the struct pvclock_wall_clock and
-struct pvclock_vcpu_time_info are shared with the hypervisor. Hypervisor
-periodically updates the contents of the memory. When SEV is active, we
-must clear the encryption attributes from the shared memory pages so that
-both hypervisor and guest can access the data.
+Implemented default hugepage size verification (default_hugepagesz=)
+in order to allow allocation of defined number of pages (hugepages=)
+only for supported hugepage sizes.
 
-Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+Signed-off-by: Victor Aoqui <victora@linux.vnet.ibm.com>
 ---
- arch/x86/entry/vdso/vma.c  |  5 ++--
- arch/x86/kernel/kvmclock.c | 64 +++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 58 insertions(+), 11 deletions(-)
+v2:
 
-diff --git a/arch/x86/entry/vdso/vma.c b/arch/x86/entry/vdso/vma.c
-index 726355c..ff50251 100644
---- a/arch/x86/entry/vdso/vma.c
-+++ b/arch/x86/entry/vdso/vma.c
-@@ -114,10 +114,11 @@ static int vvar_fault(const struct vm_special_mapping *sm,
- 		struct pvclock_vsyscall_time_info *pvti =
- 			pvclock_pvti_cpu0_va();
- 		if (pvti && vclock_was_used(VCLOCK_PVCLOCK)) {
--			ret = vm_insert_pfn(
-+			ret = vm_insert_pfn_prot(
- 				vma,
- 				vmf->address,
--				__pa(pvti) >> PAGE_SHIFT);
-+				__pa(pvti) >> PAGE_SHIFT,
-+				pgprot_decrypted(vma->vm_page_prot));
- 		}
- 	} else if (sym_offset == image->sym_hvclock_page) {
- 		struct ms_hyperv_tsc_page *tsc_pg = hv_get_tsc_page();
-diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
-index d889676..f3a8101 100644
---- a/arch/x86/kernel/kvmclock.c
-+++ b/arch/x86/kernel/kvmclock.c
-@@ -27,6 +27,7 @@
- #include <linux/sched.h>
- #include <linux/sched/clock.h>
- 
-+#include <asm/mem_encrypt.h>
- #include <asm/x86_init.h>
- #include <asm/reboot.h>
- #include <asm/kvmclock.h>
-@@ -45,7 +46,7 @@ early_param("no-kvmclock", parse_no_kvmclock);
- 
- /* The hypervisor will put information about time periodically here */
- static struct pvclock_vsyscall_time_info *hv_clock;
--static struct pvclock_wall_clock wall_clock;
-+static struct pvclock_wall_clock *wall_clock;
- 
- struct pvclock_vsyscall_time_info *pvclock_pvti_cpu0_va(void)
- {
-@@ -64,15 +65,18 @@ static void kvm_get_wallclock(struct timespec *now)
- 	int low, high;
- 	int cpu;
- 
--	low = (int)__pa_symbol(&wall_clock);
--	high = ((u64)__pa_symbol(&wall_clock) >> 32);
-+	if (!wall_clock)
-+		return;
-+
-+	low = (int)slow_virt_to_phys(wall_clock);
-+	high = ((u64)slow_virt_to_phys(wall_clock) >> 32);
- 
- 	native_write_msr(msr_kvm_wall_clock, low, high);
- 
- 	cpu = get_cpu();
- 
- 	vcpu_time = &hv_clock[cpu].pvti;
--	pvclock_read_wallclock(&wall_clock, vcpu_time, now);
-+	pvclock_read_wallclock(wall_clock, vcpu_time, now);
- 
- 	put_cpu();
+- Renamed default_hugepage_setup_sz function to hugetlb_default_size_setup;
+- Added powerpc string to error message.
+
+v3:
+
+- Renamed hugetlb_default_size_setup() to hugepage_default_setup_sz();
+- Implemented hugetlb_bad_default_size();
+- Reimplemented hugepage_setup_sz() to just parse default_hugepagesz= and
+check if it's a supported size;
+- Added verification of default_hugepagesz= value on hugetlb_nrpages_setup()
+before allocating hugepages.
+
+ arch/powerpc/mm/hugetlbpage.c | 15 +++++++++++++++
+ include/linux/hugetlb.h       |  1 +
+ mm/hugetlb.c                  | 17 +++++++++++++++--
+ 3 files changed, 31 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index e1bf5ca..5990381 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -780,6 +780,21 @@ static int __init hugepage_setup_sz(char *str)
  }
-@@ -249,11 +253,39 @@ static void kvm_shutdown(void)
- 	native_machine_shutdown();
- }
+ __setup("hugepagesz=", hugepage_setup_sz);
  
-+static phys_addr_t __init kvm_memblock_alloc(phys_addr_t size,
-+					     phys_addr_t align)
++static int __init hugepage_default_setup_sz(char *str)
 +{
-+	phys_addr_t mem;
++	unsigned long long size;
 +
-+	mem = memblock_alloc(size, align);
-+	if (!mem)
-+		return 0;
++	size = memparse(str, &str);
 +
-+	if (sev_active()) {
-+		if (early_set_memory_decrypted(mem, size))
-+			goto e_free;
++	if (add_huge_page_size(size) != 0) {
++		hugetlb_bad_default_size();
++		pr_err("Invalid ppc default huge page size specified(%llu)\n", size);
 +	}
 +
-+	return mem;
-+e_free:
-+	memblock_free(mem, size);
-+	return 0;
++	return 1;
 +}
++__setup("default_hugepagesz=", hugepage_default_setup_sz);
 +
-+static void __init kvm_memblock_free(phys_addr_t addr, phys_addr_t size)
-+{
-+	if (sev_active())
-+		early_set_memory_encrypted(addr, size);
-+
-+	memblock_free(addr, size);
-+}
-+
- void __init kvmclock_init(void)
+ struct kmem_cache *hugepte_cache;
+ static int __init hugetlbpage_init(void)
  {
- 	struct pvclock_vcpu_time_info *vcpu_time;
--	unsigned long mem;
--	int size, cpu;
-+	unsigned long mem, mem_wall_clock;
-+	int size, cpu, wall_clock_size;
- 	u8 flags;
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 0ed8e41..2927200 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -361,6 +361,7 @@ int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
+ int __init alloc_bootmem_huge_page(struct hstate *h);
  
- 	size = PAGE_ALIGN(sizeof(struct pvclock_vsyscall_time_info)*NR_CPUS);
-@@ -270,15 +302,29 @@ void __init kvmclock_init(void)
- 	printk(KERN_INFO "kvm-clock: Using msrs %x and %x",
- 		msr_kvm_system_time, msr_kvm_wall_clock);
+ void __init hugetlb_bad_size(void);
++void __init hugetlb_bad_default_size(void);
+ void __init hugetlb_add_hstate(unsigned order);
+ struct hstate *size_to_hstate(unsigned long size);
  
--	mem = memblock_alloc(size, PAGE_SIZE);
--	if (!mem)
-+	wall_clock_size = PAGE_ALIGN(sizeof(struct pvclock_wall_clock));
-+	mem_wall_clock = kvm_memblock_alloc(wall_clock_size, PAGE_SIZE);
-+	if (!mem_wall_clock)
- 		return;
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index bc48ee7..3c24266 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -54,6 +54,7 @@
+ static unsigned long __initdata default_hstate_max_huge_pages;
+ static unsigned long __initdata default_hstate_size;
+ static bool __initdata parsed_valid_hugepagesz = true;
++static bool __initdata parsed_valid_default_hugepagesz = true;
+ 
+ /*
+  * Protects updates to hugepage_freelists, hugepage_activelist, nr_huge_pages,
+@@ -2804,6 +2805,12 @@ void __init hugetlb_bad_size(void)
+ 	parsed_valid_hugepagesz = false;
+ }
+ 
++/* Should be called on processing a default_hugepagesz=... option */
++void __init hugetlb_bad_default_size(void)
++{
++	parsed_valid_default_hugepagesz = false;
++}
 +
-+	wall_clock = __va(mem_wall_clock);
-+	memset(wall_clock, 0, wall_clock_size);
-+
-+	mem = kvm_memblock_alloc(size, PAGE_SIZE);
-+	if (!mem) {
-+		kvm_memblock_free(mem_wall_clock, wall_clock_size);
-+		wall_clock = NULL;
-+		return;
+ void __init hugetlb_add_hstate(unsigned int order)
+ {
+ 	struct hstate *h;
+@@ -2846,8 +2853,14 @@ static int __init hugetlb_nrpages_setup(char *s)
+ 	 * !hugetlb_max_hstate means we haven't parsed a hugepagesz= parameter yet,
+ 	 * so this hugepages= parameter goes to the "default hstate".
+ 	 */
+-	else if (!hugetlb_max_hstate)
+-		mhp = &default_hstate_max_huge_pages;
++	else if (!hugetlb_max_hstate) {
++		if (!parsed_valid_default_hugepagesz) {
++			pr_warn("hugepages = %s cannot be allocated for "
++				"unsupported default_hugepagesz, ignoring\n", s);
++			parsed_valid_default_hugepagesz = true;
++		} else
++			mhp = &default_hstate_max_huge_pages;
 +	}
-+
- 	hv_clock = __va(mem);
- 	memset(hv_clock, 0, size);
- 
- 	if (kvm_register_clock("primary cpu clock")) {
- 		hv_clock = NULL;
--		memblock_free(mem, size);
-+		kvm_memblock_free(mem, size);
-+		kvm_memblock_free(mem_wall_clock, wall_clock_size);
-+		wall_clock = NULL;
- 		return;
- 	}
+ 	else
+ 		mhp = &parsed_hstate->max_huge_pages;
  
 -- 
-2.9.4
+1.8.3.1
