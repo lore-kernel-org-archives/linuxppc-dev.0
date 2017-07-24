@@ -3,8 +3,8 @@ Received: from NAM01-SN1-obe.outbound.protection.outlook.com
  (mail-sn1nam01on0086.outbound.protection.outlook.com [104.47.32.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGW9q14dmzDrJx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGW9s5V7VzDrJv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:33 +1000 (AEST)
 From: Brijesh Singh <brijesh.singh@amd.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
@@ -28,10 +28,10 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
  Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
  Christoph Lameter <cl@linux.com>, Brijesh Singh <brijesh.singh@amd.com>
-Subject: [RFC Part1 PATCH v3 03/17] x86/mm: Secure Encrypted Virtualization
- (SEV) support
-Date: Mon, 24 Jul 2017 14:07:43 -0500
-Message-Id: <20170724190757.11278-4-brijesh.singh@amd.com>
+Subject: [RFC Part1 PATCH v3 04/17] x86/mm: Don't attempt to encrypt initrd
+ under SEV
+Date: Mon, 24 Jul 2017 14:07:44 -0500
+Message-Id: <20170724190757.11278-5-brijesh.singh@amd.com>
 In-Reply-To: <20170724190757.11278-1-brijesh.singh@amd.com>
 References: <20170724190757.11278-1-brijesh.singh@amd.com>
 MIME-Version: 1.0
@@ -47,75 +47,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tom Lendacky <thomas.lendacky@amd.com>
 
-Provide support for Secure Encyrpted Virtualization (SEV). This initial
-support defines a flag that is used by the kernel to determine if it is
-running with SEV active.
+When SEV is active the initrd/initramfs will already have already been
+placed in memory encyrpted so do not try to encrypt it.
 
 Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
 ---
- arch/x86/include/asm/mem_encrypt.h | 2 ++
- arch/x86/mm/mem_encrypt.c          | 3 +++
- include/linux/mem_encrypt.h        | 8 +++++++-
- 3 files changed, 12 insertions(+), 1 deletion(-)
+ arch/x86/kernel/setup.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/mem_encrypt.h b/arch/x86/include/asm/mem_encrypt.h
-index 8e618fc..9274ec7 100644
---- a/arch/x86/include/asm/mem_encrypt.h
-+++ b/arch/x86/include/asm/mem_encrypt.h
-@@ -22,6 +22,7 @@
- #ifdef CONFIG_AMD_MEM_ENCRYPT
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 0bfe0c1..01d56a1 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -379,9 +379,11 @@ static void __init reserve_initrd(void)
+ 	 * If SME is active, this memory will be marked encrypted by the
+ 	 * kernel when it is accessed (including relocation). However, the
+ 	 * ramdisk image was loaded decrypted by the bootloader, so make
+-	 * sure that it is encrypted before accessing it.
++	 * sure that it is encrypted before accessing it. For SEV the
++	 * ramdisk will already be encyrpted, so only do this for SME.
+ 	 */
+-	sme_early_encrypt(ramdisk_image, ramdisk_end - ramdisk_image);
++	if (sme_active())
++		sme_early_encrypt(ramdisk_image, ramdisk_end - ramdisk_image);
  
- extern unsigned long sme_me_mask;
-+extern unsigned int sev_enabled;
+ 	initrd_start = 0;
  
- void sme_encrypt_execute(unsigned long encrypted_kernel_vaddr,
- 			 unsigned long decrypted_kernel_vaddr,
-@@ -50,6 +51,7 @@ void swiotlb_set_mem_attributes(void *vaddr, unsigned long size);
- #else	/* !CONFIG_AMD_MEM_ENCRYPT */
- 
- #define sme_me_mask	0UL
-+#define sev_enabled	0
- 
- static inline void __init sme_early_encrypt(resource_size_t paddr,
- 					    unsigned long size) { }
-diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
-index 0fbd092..1e4643e 100644
---- a/arch/x86/mm/mem_encrypt.c
-+++ b/arch/x86/mm/mem_encrypt.c
-@@ -40,6 +40,9 @@ static char sme_cmdline_off[] __initdata = "off";
- unsigned long sme_me_mask __section(.data) = 0;
- EXPORT_SYMBOL_GPL(sme_me_mask);
- 
-+unsigned int sev_enabled __section(.data) = 0;
-+EXPORT_SYMBOL_GPL(sev_enabled);
-+
- /* Buffer used for early in-place encryption by BSP, no locking needed */
- static char sme_early_buffer[PAGE_SIZE] __aligned(PAGE_SIZE);
- 
-diff --git a/include/linux/mem_encrypt.h b/include/linux/mem_encrypt.h
-index 1255f09..ea0831a 100644
---- a/include/linux/mem_encrypt.h
-+++ b/include/linux/mem_encrypt.h
-@@ -22,12 +22,18 @@
- #else	/* !CONFIG_ARCH_HAS_MEM_ENCRYPT */
- 
- #define sme_me_mask	0UL
-+#define sev_enabled	0
- 
- #endif	/* CONFIG_ARCH_HAS_MEM_ENCRYPT */
- 
- static inline bool sme_active(void)
- {
--	return !!sme_me_mask;
-+	return (sme_me_mask && !sev_enabled);
-+}
-+
-+static inline bool sev_active(void)
-+{
-+	return (sme_me_mask && sev_enabled);
- }
- 
- static inline unsigned long sme_get_me_mask(void)
 -- 
 2.9.4
