@@ -3,8 +3,8 @@ Received: from NAM01-SN1-obe.outbound.protection.outlook.com
  (mail-sn1nam01on0086.outbound.protection.outlook.com [104.47.32.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGW9s5V7VzDrJv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGW9x3J3DzDrJx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:36 +1000 (AEST)
 From: Brijesh Singh <brijesh.singh@amd.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
@@ -28,10 +28,10 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
  Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
  Christoph Lameter <cl@linux.com>, Brijesh Singh <brijesh.singh@amd.com>
-Subject: [RFC Part1 PATCH v3 04/17] x86/mm: Don't attempt to encrypt initrd
- under SEV
-Date: Mon, 24 Jul 2017 14:07:44 -0500
-Message-Id: <20170724190757.11278-5-brijesh.singh@amd.com>
+Subject: [RFC Part1 PATCH v3 05/17] x86,
+ realmode: Don't decrypt trampoline area under SEV
+Date: Mon, 24 Jul 2017 14:07:45 -0500
+Message-Id: <20170724190757.11278-6-brijesh.singh@amd.com>
 In-Reply-To: <20170724190757.11278-1-brijesh.singh@amd.com>
 References: <20170724190757.11278-1-brijesh.singh@amd.com>
 MIME-Version: 1.0
@@ -47,32 +47,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tom Lendacky <thomas.lendacky@amd.com>
 
-When SEV is active the initrd/initramfs will already have already been
-placed in memory encyrpted so do not try to encrypt it.
+When SEV is active the trampoline area will need to be in encrypted
+memory so only mark the area decrypted if SME is active.
 
 Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
 ---
- arch/x86/kernel/setup.c | 6 ++++--
+ arch/x86/realmode/init.c | 6 ++++--
  1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 0bfe0c1..01d56a1 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -379,9 +379,11 @@ static void __init reserve_initrd(void)
- 	 * If SME is active, this memory will be marked encrypted by the
- 	 * kernel when it is accessed (including relocation). However, the
- 	 * ramdisk image was loaded decrypted by the bootloader, so make
--	 * sure that it is encrypted before accessing it.
-+	 * sure that it is encrypted before accessing it. For SEV the
-+	 * ramdisk will already be encyrpted, so only do this for SME.
+diff --git a/arch/x86/realmode/init.c b/arch/x86/realmode/init.c
+index 1f71980..c7eeca7 100644
+--- a/arch/x86/realmode/init.c
++++ b/arch/x86/realmode/init.c
+@@ -63,9 +63,11 @@ static void __init setup_real_mode(void)
+ 	/*
+ 	 * If SME is active, the trampoline area will need to be in
+ 	 * decrypted memory in order to bring up other processors
+-	 * successfully.
++	 * successfully. For SEV the trampoline area needs to be in
++	 * encrypted memory, so only do this for SME.
  	 */
--	sme_early_encrypt(ramdisk_image, ramdisk_end - ramdisk_image);
+-	set_memory_decrypted((unsigned long)base, size >> PAGE_SHIFT);
 +	if (sme_active())
-+		sme_early_encrypt(ramdisk_image, ramdisk_end - ramdisk_image);
++		set_memory_decrypted((unsigned long)base, size >> PAGE_SHIFT);
  
- 	initrd_start = 0;
+ 	memcpy(base, real_mode_blob, size);
  
 -- 
 2.9.4
