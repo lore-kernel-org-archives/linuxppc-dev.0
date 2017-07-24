@@ -3,8 +3,8 @@ Received: from NAM01-SN1-obe.outbound.protection.outlook.com
  (mail-sn1nam01on0086.outbound.protection.outlook.com [104.47.32.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGWB159K2zDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGWB50KcrzDrK0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:44 +1000 (AEST)
 From: Brijesh Singh <brijesh.singh@amd.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
@@ -28,10 +28,9 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
  Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
  Christoph Lameter <cl@linux.com>, Brijesh Singh <brijesh.singh@amd.com>
-Subject: [RFC Part1 PATCH v3 08/17] x86/efi: Access EFI data as encrypted when
- SEV is active
-Date: Mon, 24 Jul 2017 14:07:48 -0500
-Message-Id: <20170724190757.11278-9-brijesh.singh@amd.com>
+Subject: [RFC Part1 PATCH v3 09/17] resource: Consolidate resource walking code
+Date: Mon, 24 Jul 2017 14:07:49 -0500
+Message-Id: <20170724190757.11278-10-brijesh.singh@amd.com>
 In-Reply-To: <20170724190757.11278-1-brijesh.singh@amd.com>
 References: <20170724190757.11278-1-brijesh.singh@amd.com>
 MIME-Version: 1.0
@@ -47,69 +46,113 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tom Lendacky <thomas.lendacky@amd.com>
 
-EFI data is encrypted when the kernel is run under SEV. Update the
-page table references to be sure the EFI memory areas are accessed
-encrypted.
+The walk_iomem_res_desc(), walk_system_ram_res() and walk_system_ram_range()
+functions each have much of the same code.  Create a new function that
+consolidates the common code from these functions in one place to reduce
+the amount of duplicated code.
 
 Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
 ---
- arch/x86/platform/efi/efi_64.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ kernel/resource.c | 53 ++++++++++++++++++++++++++---------------------------
+ 1 file changed, 26 insertions(+), 27 deletions(-)
 
-diff --git a/arch/x86/platform/efi/efi_64.c b/arch/x86/platform/efi/efi_64.c
-index 12e8388..1ecb3f6 100644
---- a/arch/x86/platform/efi/efi_64.c
-+++ b/arch/x86/platform/efi/efi_64.c
-@@ -32,6 +32,7 @@
- #include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/ucs2_string.h>
-+#include <linux/mem_encrypt.h>
- 
- #include <asm/setup.h>
- #include <asm/page.h>
-@@ -369,7 +370,10 @@ int __init efi_setup_page_tables(unsigned long pa_memmap, unsigned num_pages)
- 	 * as trim_bios_range() will reserve the first page and isolate it away
- 	 * from memory allocators anyway.
- 	 */
--	if (kernel_map_pages_in_pgd(pgd, 0x0, 0x0, 1, _PAGE_RW)) {
-+	pf = _PAGE_RW;
-+	if (sev_active())
-+		pf |= _PAGE_ENC;
-+	if (kernel_map_pages_in_pgd(pgd, 0x0, 0x0, 1, pf)) {
- 		pr_err("Failed to create 1:1 mapping for the first page!\n");
- 		return 1;
- 	}
-@@ -412,6 +416,9 @@ static void __init __map_region(efi_memory_desc_t *md, u64 va)
- 	if (!(md->attribute & EFI_MEMORY_WB))
- 		flags |= _PAGE_PCD;
- 
-+	if (sev_active())
-+		flags |= _PAGE_ENC;
-+
- 	pfn = md->phys_addr >> PAGE_SHIFT;
- 	if (kernel_map_pages_in_pgd(pgd, pfn, va, md->num_pages, flags))
- 		pr_warn("Error mapping PA 0x%llx -> VA 0x%llx!\n",
-@@ -511,6 +518,9 @@ static int __init efi_update_mappings(efi_memory_desc_t *md, unsigned long pf)
- 	pgd_t *pgd = efi_pgd;
- 	int err1, err2;
- 
-+	if (sev_active())
-+		pf |= _PAGE_ENC;
-+
- 	/* Update the 1:1 mapping */
- 	pfn = md->phys_addr >> PAGE_SHIFT;
- 	err1 = kernel_map_pages_in_pgd(pgd, pfn, md->phys_addr, md->num_pages, pf);
-@@ -589,6 +599,9 @@ void __init efi_runtime_update_mappings(void)
- 			(md->type != EFI_RUNTIME_SERVICES_CODE))
- 			pf |= _PAGE_RW;
- 
-+		if (sev_active())
-+			pf |= _PAGE_ENC;
-+
- 		efi_update_mappings(md, pf);
- 	}
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 9b5f044..7b20b3e 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -397,9 +397,30 @@ static int find_next_iomem_res(struct resource *res, unsigned long desc,
+ 		res->start = p->start;
+ 	if (res->end > p->end)
+ 		res->end = p->end;
++	res->desc = p->desc;
+ 	return 0;
  }
+ 
++static int __walk_iomem_res_desc(struct resource *res, unsigned long desc,
++				 bool first_level_children_only,
++				 void *arg, int (*func)(u64, u64, void *))
++{
++	u64 orig_end = res->end;
++	int ret = -1;
++
++	while ((res->start < res->end) &&
++	       !find_next_iomem_res(res, desc, first_level_children_only)) {
++		ret = (*func)(res->start, res->end, arg);
++		if (ret)
++			break;
++
++		res->start = res->end + 1;
++		res->end = orig_end;
++	}
++
++	return ret;
++}
++
+ /*
+  * Walks through iomem resources and calls func() with matching resource
+  * ranges. This walks through whole tree and not just first level children.
+@@ -418,26 +439,12 @@ int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
+ 		u64 end, void *arg, int (*func)(u64, u64, void *))
+ {
+ 	struct resource res;
+-	u64 orig_end;
+-	int ret = -1;
+ 
+ 	res.start = start;
+ 	res.end = end;
+ 	res.flags = flags;
+-	orig_end = res.end;
+-
+-	while ((res.start < res.end) &&
+-		(!find_next_iomem_res(&res, desc, false))) {
+-
+-		ret = (*func)(res.start, res.end, arg);
+-		if (ret)
+-			break;
+-
+-		res.start = res.end + 1;
+-		res.end = orig_end;
+-	}
+ 
+-	return ret;
++	return __walk_iomem_res_desc(&res, desc, false, arg, func);
+ }
+ 
+ /*
+@@ -451,22 +458,13 @@ int walk_system_ram_res(u64 start, u64 end, void *arg,
+ 				int (*func)(u64, u64, void *))
+ {
+ 	struct resource res;
+-	u64 orig_end;
+-	int ret = -1;
+ 
+ 	res.start = start;
+ 	res.end = end;
+ 	res.flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
+-	orig_end = res.end;
+-	while ((res.start < res.end) &&
+-		(!find_next_iomem_res(&res, IORES_DESC_NONE, true))) {
+-		ret = (*func)(res.start, res.end, arg);
+-		if (ret)
+-			break;
+-		res.start = res.end + 1;
+-		res.end = orig_end;
+-	}
+-	return ret;
++
++	return __walk_iomem_res_desc(&res, IORES_DESC_NONE, true,
++				     arg, func);
+ }
+ 
+ #if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
+@@ -508,6 +506,7 @@ static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
+ {
+ 	return 1;
+ }
++
+ /*
+  * This generic page_is_ram() returns true if specified address is
+  * registered as System RAM in iomem_resource list.
 -- 
 2.9.4
