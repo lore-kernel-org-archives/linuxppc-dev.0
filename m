@@ -1,10 +1,10 @@
 Return-Path: <brijesh.singh@amd.com>
 Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0083.outbound.protection.outlook.com [104.47.32.83])
+ (mail-sn1nam01on0086.outbound.protection.outlook.com [104.47.32.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGWBJ2HVhzDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGWBN5h1tzDrJv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:59 +1000 (AEST)
 From: Brijesh Singh <brijesh.singh@amd.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
@@ -28,10 +28,10 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
  Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
  Christoph Lameter <cl@linux.com>, Brijesh Singh <brijesh.singh@amd.com>
-Subject: [RFC Part1 PATCH v3 16/17] X86/KVM: Provide support to create Guest
- and HV shared per-CPU variables
-Date: Mon, 24 Jul 2017 14:07:56 -0500
-Message-Id: <20170724190757.11278-17-brijesh.singh@amd.com>
+Subject: [RFC Part1 PATCH v3 17/17] X86/KVM: Clear encryption attribute when
+ SEV is active
+Date: Mon, 24 Jul 2017 14:07:57 -0500
+Message-Id: <20170724190757.11278-18-brijesh.singh@amd.com>
 In-Reply-To: <20170724190757.11278-1-brijesh.singh@amd.com>
 References: <20170724190757.11278-1-brijesh.singh@amd.com>
 MIME-Version: 1.0
@@ -45,153 +45,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some KVM specific MSR's (steal-time, asyncpf, avic_eio) allocates per-CPU
-variable at compile time and share its physical address with hypervisor.
-It presents a challege when SEV is active in guest OS, when SEV is active,
-the guest memory is encrypted with guest key hence hypervisor will not
-able to modify the guest memory. When SEV is active, we need to clear the
-encryption attribute (aka C-bit) of shared physical addresses so that both
-guest and hypervisor can access the data.
-
-To solve this problem, I have tried these three options:
-
-1) Convert the static per-CPU to dynamic per-CPU allocation and when SEV
-is detected clear the C-bit from the page table. But while doing so I
-found that per-CPU dynamic allocator was not ready when kvm_guest_cpu_init
-was called.
-
-2) Since the C-bit works on PAGE_SIZE hence add some extra padding to
-'struct kvm-steal-time' to make it PAGE_SIZE and then at runtime
-clear the encryption attribute of the full PAGE. The downside of this -
-we need to modify structure which may break the compatibility.
-
-3) Define a new per-CPU section (.data..percpu.hv_shared) which will be
-used to hold the compile time shared per-CPU variables. When SEV is
-detected we map this section without C-bit.
-
-This patch implements #3. It introduces a new DEFINE_PER_CPU_HV_SHAHRED
-macro to create a compile time per-CPU variable. When SEV is detected we
-clear the C-bit from the shared per-CPU variable.
+The guest physical memory area holding the struct pvclock_wall_clock and
+struct pvclock_vcpu_time_info are shared with the hypervisor. Hypervisor
+periodically updates the contents of the memory. When SEV is active, we
+must clear the encryption attributes from the shared memory pages so that
+both hypervisor and guest can access the data.
 
 Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
 ---
- arch/x86/kernel/kvm.c             | 46 ++++++++++++++++++++++++++++++++++++---
- include/asm-generic/vmlinux.lds.h |  3 +++
- include/linux/percpu-defs.h       | 12 ++++++++++
- 3 files changed, 58 insertions(+), 3 deletions(-)
+ arch/x86/entry/vdso/vma.c  |  5 ++--
+ arch/x86/kernel/kvmclock.c | 64 +++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 58 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index 71c17a5..1f6fec8 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -75,8 +75,8 @@ static int parse_no_kvmclock_vsyscall(char *arg)
+diff --git a/arch/x86/entry/vdso/vma.c b/arch/x86/entry/vdso/vma.c
+index 726355c..ff50251 100644
+--- a/arch/x86/entry/vdso/vma.c
++++ b/arch/x86/entry/vdso/vma.c
+@@ -114,10 +114,11 @@ static int vvar_fault(const struct vm_special_mapping *sm,
+ 		struct pvclock_vsyscall_time_info *pvti =
+ 			pvclock_pvti_cpu0_va();
+ 		if (pvti && vclock_was_used(VCLOCK_PVCLOCK)) {
+-			ret = vm_insert_pfn(
++			ret = vm_insert_pfn_prot(
+ 				vma,
+ 				vmf->address,
+-				__pa(pvti) >> PAGE_SHIFT);
++				__pa(pvti) >> PAGE_SHIFT,
++				pgprot_decrypted(vma->vm_page_prot));
+ 		}
+ 	} else if (sym_offset == image->sym_hvclock_page) {
+ 		struct ms_hyperv_tsc_page *tsc_pg = hv_get_tsc_page();
+diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
+index d889676..f3a8101 100644
+--- a/arch/x86/kernel/kvmclock.c
++++ b/arch/x86/kernel/kvmclock.c
+@@ -27,6 +27,7 @@
+ #include <linux/sched.h>
+ #include <linux/sched/clock.h>
  
- early_param("no-kvmclock-vsyscall", parse_no_kvmclock_vsyscall);
++#include <asm/mem_encrypt.h>
+ #include <asm/x86_init.h>
+ #include <asm/reboot.h>
+ #include <asm/kvmclock.h>
+@@ -45,7 +46,7 @@ early_param("no-kvmclock", parse_no_kvmclock);
  
--static DEFINE_PER_CPU(struct kvm_vcpu_pv_apf_data, apf_reason) __aligned(64);
--static DEFINE_PER_CPU(struct kvm_steal_time, steal_time) __aligned(64);
-+static DEFINE_PER_CPU_HV_SHARED(struct kvm_vcpu_pv_apf_data, apf_reason) __aligned(64);
-+static DEFINE_PER_CPU_HV_SHARED(struct kvm_steal_time, steal_time) __aligned(64);
- static int has_steal_clock = 0;
+ /* The hypervisor will put information about time periodically here */
+ static struct pvclock_vsyscall_time_info *hv_clock;
+-static struct pvclock_wall_clock wall_clock;
++static struct pvclock_wall_clock *wall_clock;
  
- /*
-@@ -303,7 +303,7 @@ static void kvm_register_steal_time(void)
- 		cpu, (unsigned long long) slow_virt_to_phys(st));
- }
- 
--static DEFINE_PER_CPU(unsigned long, kvm_apic_eoi) = KVM_PV_EOI_DISABLED;
-+static DEFINE_PER_CPU_HV_SHARED(unsigned long, kvm_apic_eoi) = KVM_PV_EOI_DISABLED;
- 
- static notrace void kvm_guest_apic_eoi_write(u32 reg, u32 val)
+ struct pvclock_vsyscall_time_info *pvclock_pvti_cpu0_va(void)
  {
-@@ -319,11 +319,51 @@ static notrace void kvm_guest_apic_eoi_write(u32 reg, u32 val)
- 	apic->native_eoi_write(APIC_EOI, APIC_EOI_ACK);
+@@ -64,15 +65,18 @@ static void kvm_get_wallclock(struct timespec *now)
+ 	int low, high;
+ 	int cpu;
+ 
+-	low = (int)__pa_symbol(&wall_clock);
+-	high = ((u64)__pa_symbol(&wall_clock) >> 32);
++	if (!wall_clock)
++		return;
++
++	low = (int)slow_virt_to_phys(wall_clock);
++	high = ((u64)slow_virt_to_phys(wall_clock) >> 32);
+ 
+ 	native_write_msr(msr_kvm_wall_clock, low, high);
+ 
+ 	cpu = get_cpu();
+ 
+ 	vcpu_time = &hv_clock[cpu].pvti;
+-	pvclock_read_wallclock(&wall_clock, vcpu_time, now);
++	pvclock_read_wallclock(wall_clock, vcpu_time, now);
+ 
+ 	put_cpu();
+ }
+@@ -249,11 +253,39 @@ static void kvm_shutdown(void)
+ 	native_machine_shutdown();
  }
  
-+/* NOTE: function is marked as __ref because it is used by __init functions */
-+static int __ref kvm_map_hv_shared_decrypted(void)
++static phys_addr_t __init kvm_memblock_alloc(phys_addr_t size,
++					     phys_addr_t align)
 +{
-+	static int once, ret;
-+	int cpu;
++	phys_addr_t mem;
 +
-+	if (once)
-+		return ret;
++	mem = memblock_alloc(size, align);
++	if (!mem)
++		return 0;
 +
-+	/*
-+	 * Iterate through all possible CPU's and clear the C-bit from
-+	 * percpu variables.
-+	 */
-+	for_each_possible_cpu(cpu) {
-+		struct kvm_vcpu_pv_apf_data *apf;
-+		unsigned long pa;
-+
-+		apf = &per_cpu(apf_reason, cpu);
-+		pa = slow_virt_to_phys(apf);
-+		sme_early_decrypt(pa & PAGE_MASK, PAGE_SIZE);
-+		ret = early_set_memory_decrypted(pa, PAGE_SIZE);
-+		if (ret)
-+			break;
++	if (sev_active()) {
++		if (early_set_memory_decrypted(mem, size))
++			goto e_free;
 +	}
 +
-+	once = 1;
-+	return ret;
++	return mem;
++e_free:
++	memblock_free(mem, size);
++	return 0;
 +}
 +
- static void kvm_guest_cpu_init(void)
++static void __init kvm_memblock_free(phys_addr_t addr, phys_addr_t size)
++{
++	if (sev_active())
++		early_set_memory_encrypted(addr, size);
++
++	memblock_free(addr, size);
++}
++
+ void __init kvmclock_init(void)
  {
- 	if (!kvm_para_available())
- 		return;
+ 	struct pvclock_vcpu_time_info *vcpu_time;
+-	unsigned long mem;
+-	int size, cpu;
++	unsigned long mem, mem_wall_clock;
++	int size, cpu, wall_clock_size;
+ 	u8 flags;
  
-+	/*
-+	 * When SEV is active, map the shared percpu as unencrypted so that
-+	 * both guest and hypervsior can access the data.
-+	 */
-+	if (sev_active()) {
-+		if (kvm_map_hv_shared_decrypted()) {
-+			printk(KERN_ERR "Failed to map percpu as unencrypted\n");
-+			return;
-+		}
+ 	size = PAGE_ALIGN(sizeof(struct pvclock_vsyscall_time_info)*NR_CPUS);
+@@ -270,15 +302,29 @@ void __init kvmclock_init(void)
+ 	printk(KERN_INFO "kvm-clock: Using msrs %x and %x",
+ 		msr_kvm_system_time, msr_kvm_wall_clock);
+ 
+-	mem = memblock_alloc(size, PAGE_SIZE);
+-	if (!mem)
++	wall_clock_size = PAGE_ALIGN(sizeof(struct pvclock_wall_clock));
++	mem_wall_clock = kvm_memblock_alloc(wall_clock_size, PAGE_SIZE);
++	if (!mem_wall_clock)
+ 		return;
++
++	wall_clock = __va(mem_wall_clock);
++	memset(wall_clock, 0, wall_clock_size);
++
++	mem = kvm_memblock_alloc(size, PAGE_SIZE);
++	if (!mem) {
++		kvm_memblock_free(mem_wall_clock, wall_clock_size);
++		wall_clock = NULL;
++		return;
 +	}
 +
- 	if (kvm_para_has_feature(KVM_FEATURE_ASYNC_PF) && kvmapf) {
- 		u64 pa = slow_virt_to_phys(this_cpu_ptr(&apf_reason));
+ 	hv_clock = __va(mem);
+ 	memset(hv_clock, 0, size);
  
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index da0be9a..52854cf 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -783,6 +783,9 @@
- 	. = ALIGN(cacheline);						\
- 	*(.data..percpu)						\
- 	*(.data..percpu..shared_aligned)				\
-+	. = ALIGN(PAGE_SIZE);						\
-+	*(.data..percpu..hv_shared)					\
-+	. = ALIGN(PAGE_SIZE);						\
- 	VMLINUX_SYMBOL(__per_cpu_end) = .;
+ 	if (kvm_register_clock("primary cpu clock")) {
+ 		hv_clock = NULL;
+-		memblock_free(mem, size);
++		kvm_memblock_free(mem, size);
++		kvm_memblock_free(mem_wall_clock, wall_clock_size);
++		wall_clock = NULL;
+ 		return;
+ 	}
  
- /**
-diff --git a/include/linux/percpu-defs.h b/include/linux/percpu-defs.h
-index 8f16299..f74b0c3 100644
---- a/include/linux/percpu-defs.h
-+++ b/include/linux/percpu-defs.h
-@@ -173,6 +173,18 @@
- 	DEFINE_PER_CPU_SECTION(type, name, "..read_mostly")
- 
- /*
-+ * Declaration/definition used for per-CPU variables that must be shared
-+ * between hypervisor and guest OS.
-+ */
-+#ifdef CONFIG_VIRTUALIZATION
-+#define DECLARE_PER_CPU_HV_SHARED(type, name)				\
-+	DECLARE_PER_CPU_SECTION(type, name, "..hv_shared")
-+
-+#define DEFINE_PER_CPU_HV_SHARED(type, name)				\
-+	DEFINE_PER_CPU_SECTION(type, name, "..hv_shared")
-+#endif
-+
-+/*
-  * Intermodule exports for per-CPU variables.  sparse forgets about
-  * address space across EXPORT_SYMBOL(), change EXPORT_SYMBOL() to
-  * noop if __CHECKER__.
 -- 
 2.9.4
