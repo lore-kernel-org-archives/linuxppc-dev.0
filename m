@@ -1,31 +1,20 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGCbb0HZpzDqxk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 17:26:18 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6O7OBXF130793
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 03:26:17 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bw86cqx54-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 03:26:16 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 24 Jul 2017 03:26:15 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: Disable registering 16G hugepage size for powernv
- platform
-Date: Mon, 24 Jul 2017 12:56:07 +0530
-Message-Id: <1500881167-9389-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGCqz0jMlzDqsV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 17:37:02 +1000 (AEST)
+Date: Mon, 24 Jul 2017 02:36:55 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Matt Brown <matthew.brown.dev@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/5] powerpc/lib/sstep: Add popcnt instruction emulation
+Message-ID: <20170724073654.GR13471@gate.crashing.org>
+References: <20170724010109.21263-1-matthew.brown.dev@gmail.com>
+ <20170724010109.21263-2-matthew.brown.dev@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170724010109.21263-2-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We don't support allocating them runtime. Only supported mechanism as of now is
-HMC based hypervisor interface. So disable 16G hugetlb on powernv platform
+Hi Matt,
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
+On Mon, Jul 24, 2017 at 11:01:06AM +1000, Matt Brown wrote:
+> +	for (i = 0; i < (64 / size); i++) {
 
-May be this should go to -stable ?. To show the 16G pagesize in
-/sys/kernel/mm/hugepages/ confuse users
+If you do
 
- arch/powerpc/mm/hugetlbpage.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+  for (i = 0; i < 64; i += size)
 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index e1bf5ca397fe..28ea94da0707 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -24,6 +24,7 @@
- #include <asm/tlb.h>
- #include <asm/setup.h>
- #include <asm/hugetlb.h>
-+#include <asm/machdep.h>
- 
- #ifdef CONFIG_HUGETLB_PAGE
- 
-@@ -749,7 +750,8 @@ static int __init add_huge_page_size(unsigned long long size)
- 				return -EINVAL;
- 		}
- 	} else {
--		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
-+		if ((mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
-+		    || (mmu_psize == MMU_PAGE_16G && machine_is(powernv)))
- 			return -EINVAL;
- 	}
- #endif
--- 
-2.7.4
+things are slightly nicer.
+
+> +		if ((i * size) < 32)
+> +			low |= n << (i * size);
+> +		else
+> +			high |= n << ((i * size) - 32);
+> +	}
+> +	regs->gpr[ra] = (high << 32) | low;
+
+Why have separate high and low vars?
+
+And there are much better ways to calculate popcount, of course.
+
+
+Segher
