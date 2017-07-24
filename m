@@ -1,15 +1,38 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGNYp47p2zDqx9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 00:10:22 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/udbg: Reduce the footgun potential of
- EARLY_DEBUG_LPAR(_HVSI)
-Date: Tue, 25 Jul 2017 00:10:15 +1000
-Message-Id: <1500905415-32225-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGS2Y51MDzDrK8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 02:47:01 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6OGiLqk123110
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 12:46:59 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bwfsypa8y-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 12:46:59 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Mon, 24 Jul 2017 10:46:58 -0600
+Date: Mon, 24 Jul 2017 09:46:50 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, herbert@gondor.apana.org.au,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mikey@neuling.org, benh@kernel.crashing.org, suka@us.ibm.com,
+ ddstreet@ieee.org, npiggin@gmail.com, hbabu@us.ibm.com
+Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
+ engine
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1500699702.23205.8.camel@hbabu-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1500699702.23205.8.camel@hbabu-laptop>
+Message-Id: <20170724164650.GA5628@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,62 +42,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For debugging very early boot problems we have CONFIG_PPC_EARLY_DEBUG,
-which allows configuring the kernel such that it unconditionally writes
-to a particular type of console, regardless of whether that console
-exists or not. This is useful sometimes when the kernel crashes before
-it can even determine what platform it's on, and therefore what consoles
-exist.
+On Fri, Jul 21, 2017 at 10:01:42PM -0700, Haren Myneni wrote:
+> 
+> This patch adds P9 NX support for 842 compression engine. Virtual
+> Accelerator Switchboard (VAS) is used to access 842 engine on P9.
+> 
+> For each NX engine per chip, setup receive window using
+> vas_rx_win_open() which configures RxFIFo with FIFO address, lpid,
+> pid and tid values. This unique (lpid, pid, tid) combination will
+> be used to identify the target engine.
+> 
+> For crypto open request, open send window on the NX engine for
+> the corresponding chip / cpu where the open request is executed.
+> This send window will be closed upon crypto close request.
+> 
+> NX provides high and normal priority FIFOs. For compression /
+> decompression requests, we use only hight priority FIFOs in kernel.
+> 
+> Each NX request will be communicated to VAS using copy/paste
+> instructions with vas_copy_crb() / vas_paste_crb() functions.
+> 
 
-However if you boot a kernel built this way on a different platform, it
-will generally crash because it writes to a console that doesn't exist.
+Reviewed-by: Ram Pai <linuxram@us.ibm.com>
 
-A particularly nasty instance of this is if you enable the hypervisor
-console early debug, and then boot that kernel on bare metal. The result
-is that the kernel calls "the hypervisor" very early in boot, but the
-kernel *is* the hypervisor, so we jump to the system call handler and
-start executing all sorts of code that isn't ready to be run. This may
-lead to a machine check or check stop depending on how lucky you are.
-
-Luckily there is an easy way to avoid this particular case. We simply
-read the MSR before installing the hooks, and if we see MSR_HV is set
-then we are the hypervisor and we definitely should not use the
-hypervisor console.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/tty/hvc/hvc_vio.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/drivers/tty/hvc/hvc_vio.c b/drivers/tty/hvc/hvc_vio.c
-index b05dc5086627..6ffbdd8d50c5 100644
---- a/drivers/tty/hvc/hvc_vio.c
-+++ b/drivers/tty/hvc/hvc_vio.c
-@@ -442,6 +442,14 @@ void __init hvc_vio_init_early(void)
- #ifdef CONFIG_PPC_EARLY_DEBUG_LPAR
- void __init udbg_init_debug_lpar(void)
- {
-+	/*
-+	 * If we're running as a hypervisor then we definitely can't call the
-+	 * hypervisor to print debug output (we *are* the hypervisor), so don't
-+	 * register if we detect that MSR_HV=1.
-+	 */
-+	if (mfmsr() & MSR_HV)
-+		return;
-+
- 	hvterm_privs[0] = &hvterm_priv0;
- 	hvterm_priv0.termno = 0;
- 	hvterm_priv0.proto = HV_PROTOCOL_RAW;
-@@ -455,6 +463,10 @@ void __init udbg_init_debug_lpar(void)
- #ifdef CONFIG_PPC_EARLY_DEBUG_LPAR_HVSI
- void __init udbg_init_debug_lpar_hvsi(void)
- {
-+	/* See comment above in udbg_init_debug_lpar() */
-+	if (mfmsr() & MSR_HV)
-+		return;
-+
- 	hvterm_privs[0] = &hvterm_priv0;
- 	hvterm_priv0.termno = CONFIG_PPC_EARLY_DEBUG_HVSI_VTERMNO;
- 	hvterm_priv0.proto = HV_PROTOCOL_HVSI;
--- 
-2.7.4
+> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+> ---
+>  drivers/crypto/nx/Kconfig          |   1 +
+>  drivers/crypto/nx/nx-842-powernv.c | 375 ++++++++++++++++++++++++++++++++++++-
+>  drivers/crypto/nx/nx-842.c         |   2 +-
+>  3 files changed, 371 insertions(+), 7 deletions(-)
