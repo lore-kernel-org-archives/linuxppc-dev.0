@@ -1,20 +1,27 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <adrian.hunter@intel.com>
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGCqz0jMlzDqsV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 17:37:02 +1000 (AEST)
-Date: Mon, 24 Jul 2017 02:36:55 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Matt Brown <matthew.brown.dev@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/5] powerpc/lib/sstep: Add popcnt instruction emulation
-Message-ID: <20170724073654.GR13471@gate.crashing.org>
-References: <20170724010109.21263-1-matthew.brown.dev@gmail.com>
- <20170724010109.21263-2-matthew.brown.dev@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170724010109.21263-2-matthew.brown.dev@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGDmw4vgSzDqxZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 18:19:28 +1000 (AEST)
+Subject: Re: [PATCH 1/2] mmc/host: add FSP2(ppc476fpe) into depends for
+ sdhci-st
+To: Ivan Mikhaylov <ivan@de.ibm.com>, Alistair Popple
+ <alistair@popple.id.au>, Matt Porter <mporter@kernel.crashing.org>,
+ Patrice Chotard <patrice.chotard@st.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joel Stanley <joel@jms.id.au>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-mmc@vger.kernel.org,
+ kernel@stlinux.com
+References: <20170623154726.15019-2-ivan@de.ibm.com>
+From: Adrian Hunter <adrian.hunter@intel.com>
+Message-ID: <877175d0-1568-d0aa-1084-678d547f054f@intel.com>
+Date: Mon, 24 Jul 2017 11:02:03 +0300
+MIME-Version: 1.0
+In-Reply-To: <20170623154726.15019-2-ivan@de.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Matt,
+On 23/06/17 18:47, Ivan Mikhaylov wrote:
+> * shdci-st driver can be used for ppc476 fsp2 soc
 
-On Mon, Jul 24, 2017 at 11:01:06AM +1000, Matt Brown wrote:
-> +	for (i = 0; i < (64 / size); i++) {
+shdci-st -> sdhci-st
 
-If you do
+> 
+> Signed-off-by: Ivan Mikhaylov <ivan@de.ibm.com>
 
-  for (i = 0; i < 64; i += size)
+Acked-by: Adrian Hunter <adrian.hunter@intel.com>
 
-things are slightly nicer.
-
-> +		if ((i * size) < 32)
-> +			low |= n << (i * size);
-> +		else
-> +			high |= n << ((i * size) - 32);
-> +	}
-> +	regs->gpr[ra] = (high << 32) | low;
-
-Why have separate high and low vars?
-
-And there are much better ways to calculate popcount, of course.
-
-
-Segher
+> ---
+>  drivers/mmc/host/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+> index 2eb9701..e6c0d86 100644
+> --- a/drivers/mmc/host/Kconfig
+> +++ b/drivers/mmc/host/Kconfig
+> @@ -354,8 +354,8 @@ config MMC_MOXART
+>  
+>  config MMC_SDHCI_ST
+>  	tristate "SDHCI support on STMicroelectronics SoC"
+> -	depends on ARCH_STI
+>  	depends on MMC_SDHCI_PLTFM
+> +	depends on ARCH_STI || FSP2
+>  	select MMC_SDHCI_IO_ACCESSORS
+>  	help
+>  	  This selects the Secure Digital Host Controller Interface in
+> 
