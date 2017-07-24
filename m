@@ -1,10 +1,10 @@
 Return-Path: <brijesh.singh@amd.com>
 Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0086.outbound.protection.outlook.com [104.47.32.86])
+ (mail-sn1nam01on0083.outbound.protection.outlook.com [104.47.32.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGWB65NxSzDrJx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGWB91gVczDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:48 +1000 (AEST)
 From: Brijesh Singh <brijesh.singh@amd.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
@@ -28,10 +28,10 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
  Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
  Christoph Lameter <cl@linux.com>, Brijesh Singh <brijesh.singh@amd.com>
-Subject: [RFC Part1 PATCH v3 11/17] x86/mm,
- resource: Use PAGE_KERNEL protection for ioremap of memory pages
-Date: Mon, 24 Jul 2017 14:07:51 -0500
-Message-Id: <20170724190757.11278-12-brijesh.singh@amd.com>
+Subject: [RFC Part1 PATCH v3 12/17] x86/mm: DMA support for SEV memory
+ encryption
+Date: Mon, 24 Jul 2017 14:07:52 -0500
+Message-Id: <20170724190757.11278-13-brijesh.singh@amd.com>
 In-Reply-To: <20170724190757.11278-1-brijesh.singh@amd.com>
 References: <20170724190757.11278-1-brijesh.singh@amd.com>
 MIME-Version: 1.0
@@ -47,107 +47,139 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tom Lendacky <thomas.lendacky@amd.com>
 
-In order for memory pages to be properly mapped when SEV is active, we
-need to use the PAGE_KERNEL protection attribute as the base protection.
-This will insure that memory mapping of, e.g. ACPI tables, receives the
-proper mapping attributes.
+DMA access to memory mapped as encrypted while SEV is active can not be
+encrypted during device write or decrypted during device read. In order
+for DMA to properly work when SEV is active, the SWIOTLB bounce buffers
+must be used.
 
 Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
 ---
- arch/x86/mm/ioremap.c  | 28 ++++++++++++++++++++++++++++
- include/linux/ioport.h |  3 +++
- kernel/resource.c      | 17 +++++++++++++++++
- 3 files changed, 48 insertions(+)
+ arch/x86/mm/mem_encrypt.c | 86 +++++++++++++++++++++++++++++++++++++++++++++++
+ lib/swiotlb.c             |  5 +--
+ 2 files changed, 89 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index c0be7cf..7b27332 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -69,6 +69,26 @@ static int __ioremap_check_ram(unsigned long start_pfn, unsigned long nr_pages,
- 	return 0;
+diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+index 1e4643e..5e5d460 100644
+--- a/arch/x86/mm/mem_encrypt.c
++++ b/arch/x86/mm/mem_encrypt.c
+@@ -191,8 +191,86 @@ void __init sme_early_init(void)
+ 	/* Update the protection map with memory encryption mask */
+ 	for (i = 0; i < ARRAY_SIZE(protection_map); i++)
+ 		protection_map[i] = pgprot_encrypted(protection_map[i]);
++
++	if (sev_active())
++		swiotlb_force = SWIOTLB_FORCE;
++}
++
++static void *sme_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
++		       gfp_t gfp, unsigned long attrs)
++{
++	unsigned long dma_mask;
++	unsigned int order;
++	struct page *page;
++	void *vaddr = NULL;
++
++	dma_mask = dma_alloc_coherent_mask(dev, gfp);
++	order = get_order(size);
++
++	/*
++	 * Memory will be memset to zero after marking decrypted, so don't
++	 * bother clearing it before.
++	 */
++	gfp &= ~__GFP_ZERO;
++
++	page = alloc_pages_node(dev_to_node(dev), gfp, order);
++	if (page) {
++		dma_addr_t addr;
++
++		/*
++		 * Since we will be clearing the encryption bit, check the
++		 * mask with it already cleared.
++		 */
++		addr = __sme_clr(phys_to_dma(dev, page_to_phys(page)));
++		if ((addr + size) > dma_mask) {
++			__free_pages(page, get_order(size));
++		} else {
++			vaddr = page_address(page);
++			*dma_handle = addr;
++		}
++	}
++
++	if (!vaddr)
++		vaddr = swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
++
++	if (!vaddr)
++		return NULL;
++
++	/* Clear the SME encryption bit for DMA use if not swiotlb area */
++	if (!is_swiotlb_buffer(dma_to_phys(dev, *dma_handle))) {
++		set_memory_decrypted((unsigned long)vaddr, 1 << order);
++		memset(vaddr, 0, PAGE_SIZE << order);
++		*dma_handle = __sme_clr(*dma_handle);
++	}
++
++	return vaddr;
++}
++
++static void sme_free(struct device *dev, size_t size, void *vaddr,
++		     dma_addr_t dma_handle, unsigned long attrs)
++{
++	/* Set the SME encryption bit for re-use if not swiotlb area */
++	if (!is_swiotlb_buffer(dma_to_phys(dev, dma_handle)))
++		set_memory_encrypted((unsigned long)vaddr,
++				     1 << get_order(size));
++
++	swiotlb_free_coherent(dev, size, vaddr, dma_handle);
  }
  
-+static int __ioremap_res_desc_other(struct resource *res, void *arg)
-+{
-+	return (res->desc != IORES_DESC_NONE);
-+}
++static const struct dma_map_ops sme_dma_ops = {
++	.alloc                  = sme_alloc,
++	.free                   = sme_free,
++	.map_page               = swiotlb_map_page,
++	.unmap_page             = swiotlb_unmap_page,
++	.map_sg                 = swiotlb_map_sg_attrs,
++	.unmap_sg               = swiotlb_unmap_sg_attrs,
++	.sync_single_for_cpu    = swiotlb_sync_single_for_cpu,
++	.sync_single_for_device = swiotlb_sync_single_for_device,
++	.sync_sg_for_cpu        = swiotlb_sync_sg_for_cpu,
++	.sync_sg_for_device     = swiotlb_sync_sg_for_device,
++	.mapping_error          = swiotlb_dma_mapping_error,
++};
 +
-+/*
-+ * This function returns true if the target memory is marked as
-+ * IORESOURCE_MEM and IORESOURCE_BUSY and described as other than
-+ * IORES_DESC_NONE (e.g. IORES_DESC_ACPI_TABLES).
-+ */
-+static bool __ioremap_check_if_mem(resource_size_t addr, unsigned long size)
-+{
-+	u64 start, end;
-+
-+	start = (u64)addr;
-+	end = start + size - 1;
-+
-+	return (walk_mem_res(start, end, NULL, __ioremap_res_desc_other) == 1);
-+}
-+
- /*
-  * Remap an arbitrary physical address space into the kernel virtual
-  * address space. It transparently creates kernel huge I/O mapping when
-@@ -146,7 +166,15 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		pcm = new_pcm;
- 	}
+ /* Architecture __weak replacement functions */
+ void __init mem_encrypt_init(void)
+ {
+@@ -202,6 +280,14 @@ void __init mem_encrypt_init(void)
+ 	/* Call into SWIOTLB to update the SWIOTLB DMA buffers */
+ 	swiotlb_update_mem_attributes();
  
 +	/*
-+	 * If the page being mapped is in memory and SEV is active then
-+	 * make sure the memory encryption attribute is enabled in the
-+	 * resulting mapping.
++	 * With SEV, DMA operations cannot use encryption. New DMA ops
++	 * are required in order to mark the DMA areas as decrypted or
++	 * to use bounce buffers.
 +	 */
- 	prot = PAGE_KERNEL_IO;
-+	if (sev_active() && __ioremap_check_if_mem(phys_addr, size))
-+		prot = pgprot_encrypted(prot);
++	if (sev_active())
++		dma_ops = &sme_dma_ops;
 +
- 	switch (pcm) {
- 	case _PAGE_CACHE_MODE_UC:
- 	default:
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index 1c66b9c..297f5b8 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -268,6 +268,9 @@ extern int
- walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- 		void *arg, int (*func)(unsigned long, unsigned long, void *));
- extern int
-+walk_mem_res(u64 start, u64 end, void *arg,
-+	     int (*func)(struct resource *, void *));
-+extern int
- walk_system_ram_res(u64 start, u64 end, void *arg,
- 		    int (*func)(struct resource *, void *));
- extern int
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 5f9ee7bb0..ec3fa0c 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -468,6 +468,23 @@ int walk_system_ram_res(u64 start, u64 end, void *arg,
- 				     arg, func);
+ 	pr_info("AMD Secure Memory Encryption (SME) active\n");
  }
  
-+/*
-+ * This function calls the @func callback against all memory ranges, which
-+ * are ranges marked as IORESOURCE_MEM and IORESOUCE_BUSY.
-+ */
-+int walk_mem_res(u64 start, u64 end, void *arg,
-+		 int (*func)(struct resource *, void *))
-+{
-+	struct resource res;
-+
-+	res.start = start;
-+	res.end = end;
-+	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-+
-+	return __walk_iomem_res_desc(&res, IORES_DESC_NONE, true,
-+				     arg, func);
-+}
-+
- #if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 8c6c83e..85fed2f 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -507,8 +507,9 @@ phys_addr_t swiotlb_tbl_map_single(struct device *hwdev,
+ 	if (no_iotlb_memory)
+ 		panic("Can not allocate SWIOTLB buffer earlier and can't now provide you with the DMA bounce buffer");
  
- /*
+-	if (sme_active())
+-		pr_warn_once("SME is active and system is using DMA bounce buffers\n");
++	if (sme_active() || sev_active())
++		pr_warn_once("%s is active and system is using DMA bounce buffers\n",
++			     sme_active() ? "SME" : "SEV");
+ 
+ 	mask = dma_get_seg_boundary(hwdev);
+ 
 -- 
 2.9.4
