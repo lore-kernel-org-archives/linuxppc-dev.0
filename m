@@ -1,36 +1,23 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xG0j05z2TzDqxl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 09:15:16 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id z1so10120409pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jul 2017 16:15:16 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Hans de Goede <hdegoede@redhat.com>
-Cc: Laszlo Ersek <lersek@redhat.com>, linux-pci <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- David Airlie <airlied@linux.ie>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Will Deacon <will.deacon@arm.com>,
- "Liuxinliang \(Matthew Liu\)" <z.liuxinliang@hisilicon.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Zou Rongrong <zourongrong@gmail.com>, daniel.vetter@intel.com,
-Subject: Re: [PATCH 0/4] Allow non-legacy cards to be vgaarb default
-In-Reply-To: <CAKv+Gu-O7cyJSgDrqSNi6F_n9eBnFEgz==aqowMqhy+81YK=CQ@mail.gmail.com>
-References: <20170719012839.20124-1-dja@axtens.net>
- <CAKv+Gu-SgeLXVEj_VtZHchaNmOwWO+GmfTg5CYcnOF43AJZGnA@mail.gmail.com>
- <87pocusm2x.fsf@linkitivity.dja.id.au>
- <CAKv+Gu-O7cyJSgDrqSNi6F_n9eBnFEgz==aqowMqhy+81YK=CQ@mail.gmail.com>
-Date: Mon, 24 Jul 2017 09:15:02 +1000
-Message-ID: <87r2x6vj7t.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xG3296ggDzDqxv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 11:00:17 +1000 (AEST)
+Date: Mon, 24 Jul 2017 10:56:27 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Laurent Vivier <lvivier@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Huth <thuth@redhat.com>
+Subject: Re: [PATCH] powerpc/pseries: Fix of_node_put() underflow during
+ pseries remove
+Message-ID: <20170724005627.GF3717@umbus.fritz.box>
+References: <20170721145139.9384-1-lvivier@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Y1L3PTX8QE8cb2T+"
+In-Reply-To: <20170721145139.9384-1-lvivier@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,35 +27,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ard,
 
-> But the fact remains that we are going about this the wrong way.
-> Whether a graphics card decodes legacy VGA ranges or not has *nothing*
-> to do with whether or not it is in fact the primary device on a
-> non-x86 system, and so I still think the VGA arbiter should be omitted
-> entirely for such platforms, and Xorg should be fixed instead.
+--Y1L3PTX8QE8cb2T+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK, I see where you're coming from. I've been trying to keep my changes
-small as I don't want to end up on the hook for the almost limitless
-range of problems that changing this sort of code can have, but I do
-take your point that it's a bit of an ugly hack of a solution.
+On Fri, Jul 21, 2017 at 04:51:39PM +0200, Laurent Vivier wrote:
+> As for commit 68baf692c435 ("powerpc/pseries: Fix of_node_put()
+> underflow during DLPAR remove"), the call to of_node_put()
+> must be removed from pSeries_reconfig_remove_node().
+>=20
+> dlpar_detach_node() and pSeries_reconfig_remove_node() call
+> of_detach_node(), and thus the node should not be released
+> in this case too.
+>=20
+> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
 
-Say we were to change Xorg instead. What would correct Xorg behaviour
-look like? Xorg would need to honour the boot_vga file if it existed so
-as not to break x86, etc. So your proposed Xorg - if it couldn't find a
-default card that way, and if there was no helpful config file info,
-would arbitrarily pick a card that has an Xorg driver? In other words,
-much like the proposed kernel approach but at a different level of the
-stack?
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Are there other graphical applications we care about (other than Xorg)
-that would need to be patched? I'm happy to do the Xorg patch, but I
-don't know if anything other than Xorg keys off the boot_vga file.
+> ---
+>  arch/powerpc/platforms/pseries/reconfig.c | 1 -
+>  1 file changed, 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/pla=
+tforms/pseries/reconfig.c
+> index e5bf1e8..011ef21 100644
+> --- a/arch/powerpc/platforms/pseries/reconfig.c
+> +++ b/arch/powerpc/platforms/pseries/reconfig.c
+> @@ -82,7 +82,6 @@ static int pSeries_reconfig_remove_node(struct device_n=
+ode *np)
+> =20
+>  	of_detach_node(np);
+>  	of_node_put(parent);
+> -	of_node_put(np); /* Must decrement the refcount */
+>  	return 0;
+>  }
+> =20
 
-I'm not fundamentally opposed to this approach if the Xorg community is
-happy with it, the kernel community is happy with it, and no-one expects
-me to provide patches to any other user-space applications that depend
-on boot_vga.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Regards,
-Daniel
+--Y1L3PTX8QE8cb2T+
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAll1RbsACgkQbDjKyiDZ
+s5J3PBAAoXSTmPQPxIeoL0F8scxSFjPTkE2z8HO+SIOIQjobAOWzntBb0TgPQ0cr
+pRyLKqxKJcUaulHlFXGeNpCwr6GNSfoC9v5P59Jtpg6LjMp9lYr8DL/u0d96H1eV
+MPahCxwJMYwrMHro3G3etewIQySUD4xuR32h6scmHEKe2t1t25Pl2/GcAhHwG0vw
+Pr1/xOdqRZiyuGuXLmDALTuoC9S5ESh0BV7mEE5el24vV7q/6l6NDQDkAXtj6bAF
+Agz+PBI/oK0JUzxCqxYKolN9uZTPppVIQglnWdmB1I4rDszrbav/46BAkNNJc8YQ
+5AjH9ry6jf16JagTjF+QUcLZj9bCIpI0Gaae1Js7aAnaTMDuh7AonI7gHLKhNQke
+iQuEeslLl4s3cieCOGnkOP8PRrUtqbGtR25st90hXRvSnD95VoelP7ZGZsJE4Bil
++FFax4GRkRNjHOqV31vd5dMew7gJ7Pmn89Qg1dbCOgLgMHw57PzUxFx6Zw77gQIA
+v6cvl5eTVGM7E3B7sQ/T11rOK3BLYE7kw1SGl7VjBPuZHC2QpnptGwNxTKVJQEfB
+4mn3ytxw1W6BSJ9LNWhaGJ3S52asJIYr6Ne73fMLT5JaySowDDF6ZkiW0ueXcV/e
+gAYk9XDWObW61DzgYpvU/budE+k1jTp+Zj26WUHAYVw9hU7urgY=
+=428K
+-----END PGP SIGNATURE-----
+
+--Y1L3PTX8QE8cb2T+--
