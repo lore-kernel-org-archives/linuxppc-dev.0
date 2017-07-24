@@ -3,8 +3,8 @@ Received: from NAM01-SN1-obe.outbound.protection.outlook.com
  (mail-sn1nam01on0086.outbound.protection.outlook.com [104.47.32.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGW9j4gWYzDrJx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGW9m6wlhzDrJv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 05:08:28 +1000 (AEST)
 From: Brijesh Singh <brijesh.singh@amd.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
@@ -28,10 +28,10 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
  Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
  Christoph Lameter <cl@linux.com>, Brijesh Singh <brijesh.singh@amd.com>
-Subject: [RFC Part1 PATCH v3 01/17] Documentation/x86: Add AMD Secure
- Encrypted Virtualization (SEV) descrption
-Date: Mon, 24 Jul 2017 14:07:41 -0500
-Message-Id: <20170724190757.11278-2-brijesh.singh@amd.com>
+Subject: [RFC Part1 PATCH v3 02/17] x86/CPU/AMD: Add the Secure Encrypted
+ Virtualization CPU feature
+Date: Mon, 24 Jul 2017 14:07:42 -0500
+Message-Id: <20170724190757.11278-3-brijesh.singh@amd.com>
 In-Reply-To: <20170724190757.11278-1-brijesh.singh@amd.com>
 References: <20170724190757.11278-1-brijesh.singh@amd.com>
 MIME-Version: 1.0
@@ -45,74 +45,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update amd-memory-encryption document describing the AMD Secure Encrypted
-Virtualization (SEV) feature.
+From: Tom Lendacky <thomas.lendacky@amd.com>
 
+Update the CPU features to include identifying and reporting on the
+Secure Encrypted Virtualization (SEV) feature.  SME is identified by
+CPUID 0x8000001f, but requires BIOS support to enable it (set bit 23 of
+MSR_K8_SYSCFG and set bit 0 of MSR_K7_HWCR).  Only show the SEV feature
+as available if reported by CPUID and enabled by BIOS.
+
+Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
 ---
- Documentation/x86/amd-memory-encryption.txt | 29 ++++++++++++++++++++++++++---
- 1 file changed, 26 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/cpufeatures.h |  1 +
+ arch/x86/include/asm/msr-index.h   |  2 ++
+ arch/x86/kernel/cpu/amd.c          | 30 +++++++++++++++++++++++++-----
+ arch/x86/kernel/cpu/scattered.c    |  1 +
+ 4 files changed, 29 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/x86/amd-memory-encryption.txt b/Documentation/x86/amd-memory-encryption.txt
-index f512ab7..747df07 100644
---- a/Documentation/x86/amd-memory-encryption.txt
-+++ b/Documentation/x86/amd-memory-encryption.txt
-@@ -1,4 +1,5 @@
--Secure Memory Encryption (SME) is a feature found on AMD processors.
-+Secure Memory Encryption (SME) and Secure Encrypted Virtualization (SEV) are
-+features found on AMD processors.
+diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+index 14f0f29..b6ae647 100644
+--- a/arch/x86/include/asm/cpufeatures.h
++++ b/arch/x86/include/asm/cpufeatures.h
+@@ -197,6 +197,7 @@
+ #define X86_FEATURE_HW_PSTATE	( 7*32+ 8) /* AMD HW-PState */
+ #define X86_FEATURE_PROC_FEEDBACK ( 7*32+ 9) /* AMD ProcFeedbackInterface */
+ #define X86_FEATURE_SME		( 7*32+10) /* AMD Secure Memory Encryption */
++#define X86_FEATURE_SEV		( 7*32+11) /* AMD Secure Encrypted Virtualization */
  
- SME provides the ability to mark individual pages of memory as encrypted using
- the standard x86 page tables.  A page that is marked encrypted will be
-@@ -6,6 +7,12 @@ automatically decrypted when read from DRAM and encrypted when written to
- DRAM.  SME can therefore be used to protect the contents of DRAM from physical
- attacks on the system.
+ #define X86_FEATURE_INTEL_PPIN	( 7*32+14) /* Intel Processor Inventory Number */
+ #define X86_FEATURE_INTEL_PT	( 7*32+15) /* Intel Processor Trace */
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 17f5c12..e399d68 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -378,6 +378,8 @@
+ #define MSR_K7_PERFCTR3			0xc0010007
+ #define MSR_K7_CLK_CTL			0xc001001b
+ #define MSR_K7_HWCR			0xc0010015
++#define MSR_K7_HWCR_SMMLOCK_BIT		0
++#define MSR_K7_HWCR_SMMLOCK		BIT_ULL(MSR_K7_HWCR_SMMLOCK_BIT)
+ #define MSR_K7_FID_VID_CTL		0xc0010041
+ #define MSR_K7_FID_VID_STATUS		0xc0010042
  
-+SEV enables running encrypted virtual machine (VMs) in which the code and data
-+of the virtual machine are secured so that decrypted version is available only
-+within the VM itself. SEV guest VMs have concept of private and shared memory.
-+Private memory is encrypted with the guest-specific key, while shared memory
-+may be encrypted with hypervisor key.
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 110ca5d..c413f04 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -618,11 +618,16 @@ static void early_init_amd(struct cpuinfo_x86 *c)
+ 		set_cpu_bug(c, X86_BUG_AMD_E400);
+ 
+ 	/*
+-	 * BIOS support is required for SME. If BIOS has enabled SME then
+-	 * adjust x86_phys_bits by the SME physical address space reduction
+-	 * value. If BIOS has not enabled SME then don't advertise the
+-	 * feature (set in scattered.c). Also, since the SME support requires
+-	 * long mode, don't advertise the feature under CONFIG_X86_32.
++	 * BIOS support is required for SME and SEV.
++	 *   For SME: If BIOS has enabled SME then adjust x86_phys_bits by
++	 *	      the SME physical address space reduction value.
++	 *	      If BIOS has not enabled SME then don't advertise the
++	 *	      SME feature (set in scattered.c).
++	 *   For SEV: If BIOS has not enabled SEV then don't advertise the
++	 *            SEV feature (set in scattered.c).
++	 *
++	 *   In all cases, since support for SME and SEV requires long mode,
++	 *   don't advertise the feature under CONFIG_X86_32.
+ 	 */
+ 	if (cpu_has(c, X86_FEATURE_SME)) {
+ 		u64 msr;
+@@ -637,6 +642,21 @@ static void early_init_amd(struct cpuinfo_x86 *c)
+ 			clear_cpu_cap(c, X86_FEATURE_SME);
+ 		}
+ 	}
 +
- A page is encrypted when a page table entry has the encryption bit set (see
- below on how to determine its position).  The encryption bit can also be
- specified in the cr3 register, allowing the PGD table to be encrypted. Each
-@@ -19,11 +26,20 @@ so that the PGD is encrypted, but not set the encryption bit in the PGD entry
- for a PUD which results in the PUD pointed to by that entry to not be
- encrypted.
- 
--Support for SME can be determined through the CPUID instruction. The CPUID
--function 0x8000001f reports information related to SME:
-+When SEV is enabled, certain type of memory (namely insruction pages and guest
-+page tables) are always treated as private. Due to security reasons all DMA
-+operations inside the guest must be performed on shared memory. Since the
-+memory encryption bit is only controllable by the guest OS when it is operating
-+in 64-bit or 32-bit PAE mode, in all other modes the SEV hardware forces memory
-+encryption bit to 1.
++	if (cpu_has(c, X86_FEATURE_SEV)) {
++		if (IS_ENABLED(CONFIG_X86_32)) {
++			clear_cpu_cap(c, X86_FEATURE_SEV);
++		} else {
++			u64 syscfg, hwcr;
 +
-+Support for SME and SEV can be determined through the CPUID instruction. The
-+CPUID function 0x8000001f reports information related to SME:
++			/* Check if SEV is enabled */
++			rdmsrl(MSR_K8_SYSCFG, syscfg);
++			rdmsrl(MSR_K7_HWCR, hwcr);
++			if (!(syscfg & MSR_K8_SYSCFG_MEM_ENCRYPT) ||
++			    !(hwcr & MSR_K7_HWCR_SMMLOCK))
++				clear_cpu_cap(c, X86_FEATURE_SEV);
++		}
++	}
+ }
  
- 	0x8000001f[eax]:
- 		Bit[0] indicates support for SME
-+	0x800001f[eax]:
-+		Bit[1] indicates support for SEV
- 	0x8000001f[ebx]:
- 		Bits[5:0]  pagetable bit number used to activate memory
- 			   encryption
-@@ -39,6 +55,13 @@ determine if SME is enabled and/or to enable memory encryption:
- 		Bit[23]   0 = memory encryption features are disabled
- 			  1 = memory encryption features are enabled
+ static void init_amd_k8(struct cpuinfo_x86 *c)
+diff --git a/arch/x86/kernel/cpu/scattered.c b/arch/x86/kernel/cpu/scattered.c
+index 05459ad..63a78d5 100644
+--- a/arch/x86/kernel/cpu/scattered.c
++++ b/arch/x86/kernel/cpu/scattered.c
+@@ -32,6 +32,7 @@ static const struct cpuid_bit cpuid_bits[] = {
+ 	{ X86_FEATURE_CPB,		CPUID_EDX,  9, 0x80000007, 0 },
+ 	{ X86_FEATURE_PROC_FEEDBACK,    CPUID_EDX, 11, 0x80000007, 0 },
+ 	{ X86_FEATURE_SME,		CPUID_EAX,  0, 0x8000001f, 0 },
++	{ X86_FEATURE_SEV,		CPUID_EAX,  1, 0x8000001f, 0 },
+ 	{ 0, 0, 0, 0, 0 }
+ };
  
-+If SEV is supported, MSR 0xc0010131 (MSR_F17H_SEV) can be used to determine if
-+SEV is active:
-+
-+	0xc0010131:
-+		Bit[0]	  0 = memory encryption is not active
-+			  1 = memory encryption is active
-+
- Linux relies on BIOS to set this bit if BIOS has determined that the reduction
- in the physical address space as a result of enabling memory encryption (see
- CPUID information above) will not conflict with the address space resource
 -- 
 2.9.4
