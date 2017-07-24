@@ -1,23 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <turtle.in.the.kernel@gmail.com>
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGT5345mvzDrFG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 03:34:15 +1000 (AEST)
-Date: Mon, 24 Jul 2017 19:34:02 +0200
-Message-ID: <20170724193402.Horde.6aHXbQVl2cfpW3l9leYB8Q2@messagerie.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 23/24] powerpc/mm: Cleanup check for stack expansion
-References: <20170719044946.22030-1-benh@kernel.crashing.org>
- <20170719044946.22030-23-benh@kernel.crashing.org>
- <20170721185947.Horde.e8_0DAuKLUb1znI0Zfx-aQ2@messagerie.c-s.fr>
- <87pocqjemx.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87pocqjemx.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGVc65XCdzDqww
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 04:42:46 +1000 (AEST)
+Received: by mail-qt0-x244.google.com with SMTP id p3so2412968qtg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jul 2017 11:42:46 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/pseries: Fix of_node_put() underflow during
+ pseries remove
+To: Michael Ellerman <mpe@ellerman.id.au>, Laurent Vivier
+ <lvivier@redhat.com>, linux-kernel@vger.kernel.org
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Huth <thuth@redhat.com>
+References: <20170721145139.9384-1-lvivier@redhat.com>
+ <87tw22jeud.fsf@concordia.ellerman.id.au>
+From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Message-ID: <a4601a62-71c1-8b67-61fe-795dbed8397c@gmail.com>
+Date: Mon, 24 Jul 2017 11:42:40 -0700
 MIME-Version: 1.0
+In-Reply-To: <87tw22jeud.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
-
-> LEROY Christophe <christophe.leroy@c-s.fr> writes:
->
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> a =C3=A9crit=C2=A0:
+On 07/24/2017 03:42 AM, Michael Ellerman wrote:
+> Laurent Vivier <lvivier@redhat.com> writes:
+> 
+>> As for commit 68baf692c435 ("powerpc/pseries: Fix of_node_put()
+>> underflow during DLPAR remove"), the call to of_node_put()
+>> must be removed from pSeries_reconfig_remove_node().
 >>
->>> When hitting below a VM_GROWSDOWN vma (typically growing the stack),
->>> we check whether it's a valid stack-growing instruction and we
->>> check the distance to GPR1. This is largely open coded with lots
->>> of comments, so move it out to a helper.
+>> dlpar_detach_node() and pSeries_reconfig_remove_node() call
+>> of_detach_node(), and thus the node should not be released
+>> in this case too.
 >>
->> Did you have a look at the following patch ? It's been waiting for
->> application for some weeks now.
->> https://patchwork.ozlabs.org/patch/771869
->
-> I actually merged it last merge window, but found I had no good way to
-> test it, so I took it out again until I can write a test case for it.
->
-> The way I realised it wasn't being tested was by removing all the
-> store_updates_sp logic entirely and having my system run happily for
-> several days :}
+>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/reconfig.c | 1 -
+>>  1 file changed, 1 deletion(-)
+> 
+> Thanks. I'll spare you the swearing about why we have the same bug in
+> two places.
 
-Which demonstrates how unlikely this is, hence doing that get_user()=20=20
-at=20every fault is waste of time.
+That's probably my bad. I must have failed to test with older powerpc-util tooling where
+drmgr uses the /proc/ofdt interface for device tree modification.
 
-How do you plan to handle that in parralele to ben's serie ?
+-Tyrel
 
-I'll be back from vacation next week and may help finding a way to=20=20
-test=20that. (A test program using alloca() ?)
-
-Christophe
-
->
+> 
+> As for the other fix, I'll add:
+> 
+> Fixes: 0829f6d1f69e ("of: device_node kobject lifecycle fixes")
+> Cc: stable@vger.kernel.org # v3.15+
+> 
 > cheers
+> 
+>> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+>> index e5bf1e8..011ef21 100644
+>> --- a/arch/powerpc/platforms/pseries/reconfig.c
+>> +++ b/arch/powerpc/platforms/pseries/reconfig.c
+>> @@ -82,7 +82,6 @@ static int pSeries_reconfig_remove_node(struct device_node *np)
+>>  
+>>  	of_detach_node(np);
+>>  	of_node_put(parent);
+>> -	of_node_put(np); /* Must decrement the refcount */
+>>  	return 0;
+>>  }
+>>  
+>> -- 
+>> 2.9.4
