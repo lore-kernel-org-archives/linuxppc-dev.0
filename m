@@ -1,43 +1,43 @@
-Return-Path: <brijesh.singh@amd.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0050.outbound.protection.outlook.com [104.47.34.50])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xH1c94ZcszDqpc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 00:59:37 +1000 (AEST)
-Cc: brijesh.singh@amd.com, linux-kernel@vger.kernel.org, x86@kernel.org,
- linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 01/17] Documentation/x86: Add AMD Secure
- Encrypted Virtualization (SEV) descrption
-To: Borislav Petkov <bp@suse.de>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-2-brijesh.singh@amd.com>
- <20170725054522.GA21822@nazgul.tnic>
-From: Brijesh Singh <brijesh.singh@amd.com>
-Message-ID: <6273a2f0-151a-e8c2-6f4c-09d397446128@amd.com>
-Date: Tue, 25 Jul 2017 09:59:21 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xH1vV2lcTzDqmx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:12:54 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6PFAsbN006080
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 11:12:51 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bx87srv43-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 11:12:50 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Tue, 25 Jul 2017 11:12:49 -0400
+Date: Tue, 25 Jul 2017 08:12:45 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arm-kernel@lists.infradead.org,
+ linuxarm@huawei.com, Andrew Morton <akpm@linux-foundation.org>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Don Zickus <dzickus@redhat.com>, David Miller <davem@davemloft.net>,
+ sparclinux@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n  - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170725193039.00007c80@huawei.com>
+ <20170725222654.5a968588@roar.ozlabs.ibm.com>
+ <20170725134626.GL3730@linux.vnet.ibm.com>
+ <20170725224245.00004e7e@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <20170725054522.GA21822@nazgul.tnic>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170725224245.00004e7e@huawei.com>
+Message-Id: <20170725151245.GO3730@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,117 +47,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jul 25, 2017 at 10:42:45PM +0800, Jonathan Cameron wrote:
+> On Tue, 25 Jul 2017 06:46:26 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Tue, Jul 25, 2017 at 10:26:54PM +1000, Nicholas Piggin wrote:
+> > > On Tue, 25 Jul 2017 19:32:10 +0800
+> > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+> > >   
+> > > > Hi All,
+> > > > 
+> > > > We observed a regression on our d05 boards (but curiously not
+> > > > the fairly similar but single socket / smaller core count
+> > > > d03), initially seen with linux-next prior to the merge window
+> > > > and still present in v4.13-rc2.
+> > > > 
+> > > > The symptom is:  
+> > 
+> > Adding Dave Miller and the sparclinux@vger.kernel.org email on CC, as
+> > they have been seeing something similar, and you might well have saved
+> > them the trouble of bisecting.
+> > 
+> > [ . . . ]
+> > 
+> > > > [ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1  
+> > 
+> > This is the cause from an RCU perspective.  You had a lot of idle CPUs,
+> > and RCU is not permitted to disturb them -- the battery-powered embedded
+> > guys get very annoyed by that sort of thing.  What happens instead is
+> > that each CPU updates a per-CPU state variable when entering or exiting
+> > idle, and the grace-period kthread ("rcu_preempt kthread" in the above
+> > message) checks these state variables, and if when sees an idle CPU,
+> > it reports a quiescent state on that CPU's behalf.
+> > 
+> > But the grace-period kthread can only do this work if it gets a chance
+> > to run.  And the message above says that this kthread hasn't had a chance
+> > to run for a full 5,663 jiffies.  For completeness, the "g1566 c1565"
+> > says that grace period #1566 is in progress, the "f0x0" says that no one
+> > is needing another grace period #1567.  The "RCU_GP_WAIT_FQS(3)" says
+> > that the grace-period kthread has fully initialized the current grace
+> > period and is sleeping for a few jiffies waiting to scan for idle tasks.
+> > Finally, the "->state=0x1" says that the grace-period kthread is in
+> > TASK_INTERRUPTIBLE state, in other words, still sleeping.
+> 
+> Thanks for the explanation!
+> > 
+> > So my first question is "What did commit 05a4a9527 (kernel/watchdog:
+> > split up config options) do to prevent the grace-period kthread from
+> > getting a chance to run?" 
+> 
+> As far as we can tell it was a side effect of that patch.
+> 
+> The real cause is that patch changed the result of defconfigs to stop running
+> the softlockup detector - now CONFIG_SOFTLOCKUP_DETECTOR
+> 
+> Enabling that on 4.13-rc2 (and presumably everything in between)
+> means we don't see the problem any more.
+> 
+> > I must confess that I don't see anything
+> > obvious in that commit, so my second question is "Are we sure that
+> > reverting this commit makes the problem go away?"
+> 
+> Simply enabling CONFIG_SOFTLOCKUP_DETECTOR seems to make it go away.
+> That detector fires up a thread on every cpu, which may be relevant.
 
+Interesting...  Why should it be necessary to fire up a thread on every
+CPU in order to make sure that RCU's grace-period kthreads get some
+CPU time?  Especially give how many idle CPUs you had on your system.
 
-On 07/25/2017 12:45 AM, Borislav Petkov wrote:
-> On Mon, Jul 24, 2017 at 02:07:41PM -0500, Brijesh Singh wrote:
-> 
-> Subject: Re: [RFC Part1 PATCH v3 01/17] Documentation/x86: Add AMD Secure Encrypted Virtualization (SEV) descrption
-> 													 ^^^^^^^^^^
-> 
-> Please introduce a spellchecker into your workflow.
-> 
->> Update amd-memory-encryption document describing the AMD Secure Encrypted
-> 
-> "Update the AMD memory encryption document...
-> 
-> The patch has the proper URL already.
-> 
->> Virtualization (SEV) feature.
->>
->> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
->> ---
->>   Documentation/x86/amd-memory-encryption.txt | 29 ++++++++++++++++++++++++++---
->>   1 file changed, 26 insertions(+), 3 deletions(-)
->>
->> diff --git a/Documentation/x86/amd-memory-encryption.txt b/Documentation/x86/amd-memory-encryption.txt
->> index f512ab7..747df07 100644
->> --- a/Documentation/x86/amd-memory-encryption.txt
->> +++ b/Documentation/x86/amd-memory-encryption.txt
->> @@ -1,4 +1,5 @@
->> -Secure Memory Encryption (SME) is a feature found on AMD processors.
->> +Secure Memory Encryption (SME) and Secure Encrypted Virtualization (SEV) are
->> +features found on AMD processors.
->>   
->>   SME provides the ability to mark individual pages of memory as encrypted using
->>   the standard x86 page tables.  A page that is marked encrypted will be
->> @@ -6,6 +7,12 @@ automatically decrypted when read from DRAM and encrypted when written to
->>   DRAM.  SME can therefore be used to protect the contents of DRAM from physical
->>   attacks on the system.
->>   
->> +SEV enables running encrypted virtual machine (VMs) in which the code and data
-> 
-> 					 machines
-> 
->> +of the virtual machine are secured so that decrypted version is available only
-> 
-> ... of the guest VM ...		  ... so that a decrypted ...
-> 
->> +within the VM itself. SEV guest VMs have concept of private and shared memory.
-> 
-> 				 	have *the* concept - you need to use
-> 					definite and indefinite articles in your
-> 					text.
-> 
->> +Private memory is encrypted with the guest-specific key, while shared memory
->> +may be encrypted with hypervisor key.
-> 
-> And here you explain that the hypervisor key is the same key which we
-> use in SME. So that people can make the connection.
-> 
->> +
->>   A page is encrypted when a page table entry has the encryption bit set (see
->>   below on how to determine its position).  The encryption bit can also be
->>   specified in the cr3 register, allowing the PGD table to be encrypted. Each
->> @@ -19,11 +26,20 @@ so that the PGD is encrypted, but not set the encryption bit in the PGD entry
->>   for a PUD which results in the PUD pointed to by that entry to not be
->>   encrypted.
->>   
->> -Support for SME can be determined through the CPUID instruction. The CPUID
->> -function 0x8000001f reports information related to SME:
->> +When SEV is enabled, certain type of memory (namely insruction pages and guest
-> 
-> When SEV is enabled, instruction pages and guest page tables are ...
-> 
->> +page tables) are always treated as private. Due to security reasons all DMA
-> 
-> security reasons??
-> 
->> +operations inside the guest must be performed on shared memory. Since the
->> +memory encryption bit is only controllable by the guest OS when it is operating
-> 
-> 		     ... is controlled ...
-> 
->> +in 64-bit or 32-bit PAE mode, in all other modes the SEV hardware forces memory
-> 
-> 								... forces the memory ...
-> 
->> +encryption bit to 1.
->> +
->> +Support for SME and SEV can be determined through the CPUID instruction. The
->> +CPUID function 0x8000001f reports information related to SME:
->>   
->>   	0x8000001f[eax]:
->>   		Bit[0] indicates support for SME
->> +	0x800001f[eax]:
-> 
-> There's a 0 missing and you don't really need it as it is already above.
-> 
->> +		Bit[1] indicates support for SEV
->>   	0x8000001f[ebx]:
->>   		Bits[5:0]  pagetable bit number used to activate memory
->>   			   encryption
->> @@ -39,6 +55,13 @@ determine if SME is enabled and/or to enable memory encryption:
->>   		Bit[23]   0 = memory encryption features are disabled
->>   			  1 = memory encryption features are enabled
->>   
->> +If SEV is supported, MSR 0xc0010131 (MSR_F17H_SEV) can be used to determine if
-> 
-> If this MSR is going to be part of the architecture - and I really think
-> it is - then call it MSR_AMD64_SEV.
-> 
+So I have to ask if there is some other bug that the softlockup detector
+is masking.
 
-Thanks Boris, I'll update the doc per your feedbacks. And will rename the MSR to
-MSR_AMD64_SEV.
+> > and my third is "Is
+> > this an intermittent problem that led to a false bisection?"
+> 
+> Whilst it is a bit slow to occur, we verified with long runs on either
+> side of that patch and since with the option enabled on latest mainline.
+> 
+> Also can cause the issue before that patch by disabling the previous
+> relevant option on 4.12.
 
--Brijesh
+OK, thank you -- hard to argue with that!  ;-)
+
+Except that I am still puzzled as to why per-CPU softlockup threads
+are needed for RCU's kthreads to get their wakeups.  We really should
+be able to disable softlockup and still have kthreads get wakeups and
+access to CPU, after all.
+
+> > [ . . . ]
+> > 
+> > > > Reducing the RCU CPU stall timeout makes it happen more often,
+> > > > but we are seeing even with the default value of 24 seconds.
+> > > > 
+> > > > Tends to occur after a period or relatively low usage, but has
+> > > > also been seen mid way through performance tests.
+> > > > 
+> > > > This was not seen with v4.12 so a bisection run later lead to
+> > > > commit 05a4a9527 (kernel/watchdog: split up config options).
+> > > > 
+> > > > Which was odd until we discovered that a side effect of this patch
+> > > > was to change whether the softlockup detector was enabled or not in
+> > > > the arm64 defconfig.
+> > > > 
+> > > > On 4.13-rc2 enabling the softlockup detector indeed stopped us
+> > > > seeing the rcu issue. Disabling the equivalent on 4.12 made the
+> > > > issue occur there as well.
+> > > > 
+> > > > Clearly the softlockup detector results in a thread on every cpu,
+> > > > which might be related but beyond that we are still looking into
+> > > > the issue.
+> > > > 
+> > > > So the obvious question is whether anyone else is seeing this as
+> > > > it might help us to focus in on where to look!  
+> > > 
+> > > Huh. Something similar has been seen very intermittently on powerpc
+> > > as well. We couldn't reproduce it reliably to bisect it already, so
+> > > this is a good help.
+> > > 
+> > > http://marc.info/?l=linuxppc-embedded&m=149872815523646&w=2
+> > > 
+> > > It looks like the watchdog patch has a similar effect on powerpc in
+> > > that it stops enabling the softlockup detector by default. Haven't
+> > > confirmed, but it looks like the same thing.
+> > > 
+> > > A bug in RCU stall detection?  
+> > 
+> > Well, if I am expected to make grace periods complete when my grace-period
+> > kthreads aren't getting any CPU time, I will have to make some substantial
+> > changes.  ;-)
+> > 
+> > One possibility is that the timer isn't firing and another is that the
+> > timer's wakeup is being lost somehow.
+> > 
+> > So another thing to try is to boot with rcutree.rcu_kick_kthreads=1.
+> > This will cause RCU to do redundant wakeups on the grace-period kthread
+> > if the grace period is moving slowly.  This is of course a crude hack,
+> > which is why this boot parameter will also cause a splat if it ever has
+> > to do anything.
+> 
+> Running that now will let you know how it goes.  Not seen the issue yet
+> but might just be a 'lucky' run - will give it a few hours.
+
+Thank you very much!
+
+							Thanx, Paul
+
+> Jonathan
+> > 
+> > Does this help at all?
+> > 
+> > 							Thanx, Paul
+> > 
+> > > > In the meantime we'll carry on digging.
+> > > > 
+> > > > Thanks,
+> > > > 
+> > > > Jonathan
+> > > > 
+> > > > p.s. As a more general question, do we want to have the
+> > > > soft lockup detector enabledon arm64 by default?  
+> > > 
+> > > I've cc'ed Don. My patch should not have changed defconfigs, I
+> > > should have been more careful with that.
+> > > 
+> > > Thanks,
+> > > Nick
+> > >   
+> > 
+> 
+> 
