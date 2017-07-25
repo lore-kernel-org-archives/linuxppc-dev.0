@@ -1,30 +1,39 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xH46q2dN3zDqnn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 02:52:51 +1000 (AEST)
-Date: Wed, 26 Jul 2017 00:52:07 +0800
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: Nicholas Piggin <npiggin@gmail.com>,
- <linux-arm-kernel@lists.infradead.org>, <linuxarm@huawei.com>, "Andrew
- Morton" <akpm@linux-foundation.org>, Abdul Haleem
- <abdhalee@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHCNq6gNRzDqmC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 08:20:27 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id g69so4862353pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 15:20:27 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Laszlo Ersek <lersek@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Hans de Goede <hdegoede@redhat.com>
+Cc: linux-pci <linux-pci@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Don Zickus <dzickus@redhat.com>, David Miller <davem@davemloft.net>,
- <sparclinux@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n  - any one
- else seeing this?
-Message-ID: <20170725175207.000001cb@huawei.com>
-In-Reply-To: <20170725151245.GO3730@linux.vnet.ibm.com>
-References: <20170725193039.00007c80@huawei.com>
- <20170725222654.5a968588@roar.ozlabs.ibm.com>
- <20170725134626.GL3730@linux.vnet.ibm.com>
- <20170725224245.00004e7e@huawei.com>
- <20170725151245.GO3730@linux.vnet.ibm.com>
+ "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ David Airlie <airlied@linux.ie>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Will Deacon <will.deacon@arm.com>,
+ "Liuxinliang \(Matthew Liu\)" <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Zou Rongrong <zourongrong@gmail.com>, daniel.vetter@intel.com
+Subject: Re: [PATCH 0/4] Allow non-legacy cards to be vgaarb default
+In-Reply-To: <a61222c6-e548-1e3b-f6f7-63952b90ac13@redhat.com>
+References: <20170719012839.20124-1-dja@axtens.net>
+ <CAKv+Gu-SgeLXVEj_VtZHchaNmOwWO+GmfTg5CYcnOF43AJZGnA@mail.gmail.com>
+ <87pocusm2x.fsf@linkitivity.dja.id.au>
+ <CAKv+Gu-O7cyJSgDrqSNi6F_n9eBnFEgz==aqowMqhy+81YK=CQ@mail.gmail.com>
+ <87r2x6vj7t.fsf@linkitivity.dja.id.au>
+ <a61222c6-e548-1e3b-f6f7-63952b90ac13@redhat.com>
+Date: Wed, 26 Jul 2017 08:20:18 +1000
+Message-ID: <87lgncupjx.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,191 +43,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 25 Jul 2017 08:12:45 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Hi Laszlo,
 
-> On Tue, Jul 25, 2017 at 10:42:45PM +0800, Jonathan Cameron wrote:
-> > On Tue, 25 Jul 2017 06:46:26 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> >   
-> > > On Tue, Jul 25, 2017 at 10:26:54PM +1000, Nicholas Piggin wrote:  
-> > > > On Tue, 25 Jul 2017 19:32:10 +0800
-> > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
-> > > >     
-> > > > > Hi All,
-> > > > > 
-> > > > > We observed a regression on our d05 boards (but curiously not
-> > > > > the fairly similar but single socket / smaller core count
-> > > > > d03), initially seen with linux-next prior to the merge window
-> > > > > and still present in v4.13-rc2.
-> > > > > 
-> > > > > The symptom is:    
-> > > 
-> > > Adding Dave Miller and the sparclinux@vger.kernel.org email on CC, as
-> > > they have been seeing something similar, and you might well have saved
-> > > them the trouble of bisecting.
-> > > 
-> > > [ . . . ]
-> > >   
-> > > > > [ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1    
-> > > 
-> > > This is the cause from an RCU perspective.  You had a lot of idle CPUs,
-> > > and RCU is not permitted to disturb them -- the battery-powered embedded
-> > > guys get very annoyed by that sort of thing.  What happens instead is
-> > > that each CPU updates a per-CPU state variable when entering or exiting
-> > > idle, and the grace-period kthread ("rcu_preempt kthread" in the above
-> > > message) checks these state variables, and if when sees an idle CPU,
-> > > it reports a quiescent state on that CPU's behalf.
-> > > 
-> > > But the grace-period kthread can only do this work if it gets a chance
-> > > to run.  And the message above says that this kthread hasn't had a chance
-> > > to run for a full 5,663 jiffies.  For completeness, the "g1566 c1565"
-> > > says that grace period #1566 is in progress, the "f0x0" says that no one
-> > > is needing another grace period #1567.  The "RCU_GP_WAIT_FQS(3)" says
-> > > that the grace-period kthread has fully initialized the current grace
-> > > period and is sleeping for a few jiffies waiting to scan for idle tasks.
-> > > Finally, the "->state=0x1" says that the grace-period kthread is in
-> > > TASK_INTERRUPTIBLE state, in other words, still sleeping.  
-> > 
-> > Thanks for the explanation!  
-> > > 
-> > > So my first question is "What did commit 05a4a9527 (kernel/watchdog:
-> > > split up config options) do to prevent the grace-period kthread from
-> > > getting a chance to run?"   
-> > 
-> > As far as we can tell it was a side effect of that patch.
-> > 
-> > The real cause is that patch changed the result of defconfigs to stop running
-> > the softlockup detector - now CONFIG_SOFTLOCKUP_DETECTOR
-> > 
-> > Enabling that on 4.13-rc2 (and presumably everything in between)
-> > means we don't see the problem any more.
-> >   
-> > > I must confess that I don't see anything
-> > > obvious in that commit, so my second question is "Are we sure that
-> > > reverting this commit makes the problem go away?"  
-> > 
-> > Simply enabling CONFIG_SOFTLOCKUP_DETECTOR seems to make it go away.
-> > That detector fires up a thread on every cpu, which may be relevant.  
-> 
-> Interesting...  Why should it be necessary to fire up a thread on every
-> CPU in order to make sure that RCU's grace-period kthreads get some
-> CPU time?  Especially give how many idle CPUs you had on your system.
-> 
-> So I have to ask if there is some other bug that the softlockup detector
-> is masking.
-I am thinking the same.  We can try going back further than 4.12 tomorrow
-(we think we can realistically go back to 4.8 and possibly 4.6
-with this board)
-> 
-> > > and my third is "Is
-> > > this an intermittent problem that led to a false bisection?"  
-> > 
-> > Whilst it is a bit slow to occur, we verified with long runs on either
-> > side of that patch and since with the option enabled on latest mainline.
-> > 
-> > Also can cause the issue before that patch by disabling the previous
-> > relevant option on 4.12.  
-> 
-> OK, thank you -- hard to argue with that!  ;-)
-We thought it was a pretty unlikely a bisection result
-hence hammered it thoroughly ;)
-> 
-> Except that I am still puzzled as to why per-CPU softlockup threads
-> are needed for RCU's kthreads to get their wakeups.  We really should
-> be able to disable softlockup and still have kthreads get wakeups and
-> access to CPU, after all.
-> 
-> > > [ . . . ]
-> > >   
-> > > > > Reducing the RCU CPU stall timeout makes it happen more often,
-> > > > > but we are seeing even with the default value of 24 seconds.
-> > > > > 
-> > > > > Tends to occur after a period or relatively low usage, but has
-> > > > > also been seen mid way through performance tests.
-> > > > > 
-> > > > > This was not seen with v4.12 so a bisection run later lead to
-> > > > > commit 05a4a9527 (kernel/watchdog: split up config options).
-> > > > > 
-> > > > > Which was odd until we discovered that a side effect of this patch
-> > > > > was to change whether the softlockup detector was enabled or not in
-> > > > > the arm64 defconfig.
-> > > > > 
-> > > > > On 4.13-rc2 enabling the softlockup detector indeed stopped us
-> > > > > seeing the rcu issue. Disabling the equivalent on 4.12 made the
-> > > > > issue occur there as well.
-> > > > > 
-> > > > > Clearly the softlockup detector results in a thread on every cpu,
-> > > > > which might be related but beyond that we are still looking into
-> > > > > the issue.
-> > > > > 
-> > > > > So the obvious question is whether anyone else is seeing this as
-> > > > > it might help us to focus in on where to look!    
-> > > > 
-> > > > Huh. Something similar has been seen very intermittently on powerpc
-> > > > as well. We couldn't reproduce it reliably to bisect it already, so
-> > > > this is a good help.
-> > > > 
-> > > > http://marc.info/?l=linuxppc-embedded&m=149872815523646&w=2
-> > > > 
-> > > > It looks like the watchdog patch has a similar effect on powerpc in
-> > > > that it stops enabling the softlockup detector by default. Haven't
-> > > > confirmed, but it looks like the same thing.
-> > > > 
-> > > > A bug in RCU stall detection?    
-> > > 
-> > > Well, if I am expected to make grace periods complete when my grace-period
-> > > kthreads aren't getting any CPU time, I will have to make some substantial
-> > > changes.  ;-)
-> > > 
-> > > One possibility is that the timer isn't firing and another is that the
-> > > timer's wakeup is being lost somehow.
-> > > 
-> > > So another thing to try is to boot with rcutree.rcu_kick_kthreads=1.
-> > > This will cause RCU to do redundant wakeups on the grace-period kthread
-> > > if the grace period is moving slowly.  This is of course a crude hack,
-> > > which is why this boot parameter will also cause a splat if it ever has
-> > > to do anything.  
-> > 
-> > Running that now will let you know how it goes.  Not seen the issue yet
-> > but might just be a 'lucky' run - will give it a few hours.  
-> 
-> Thank you very much!
-So far it's not actually shown any splats.  I did a quick drop back to running
-without the parameter and got the original splat in less that 5 minutes.
+Thanks for your input!
 
-I've spun up another board with this parameter set as well and will leave
-them both running overnight to see if anything interesting happens.
+>> Are there other graphical applications we care about (other than Xorg)
+>> that would need to be patched? I'm happy to do the Xorg patch, but I
+>> don't know if anything other than Xorg keys off the boot_vga file.
+>> 
+>> I'm not fundamentally opposed to this approach if the Xorg community is
+>> happy with it, the kernel community is happy with it, and no-one expects
+>> me to provide patches to any other user-space applications that depend
+>> on boot_vga.
+>
+> Ard both identified the Xorg commit that I would have, and CC'd Hans
+> which I would have recommended as well.
+>
+> I assume the symptom is that now there's a class of platform GPU devices
+> that is neither PCI nor legacy VGA, so neither the kernel's boot_vga
+> logic matches it, nor Xorg's commit in question.
+>
+> I agree that it should be possible to add more logic to Xorg to detect
+> this kind device as primary. However, I share Daniel's worry that it
+> wouldn't cover all user space apps -- I see "Wayland this, Wayland that"
+> on reddit every week.
+>
+> Having practically zero background in gfx development (either kernel or
+> Xorg), I think the problem is that vga_default_device() /
+> vga_set_default_device(), which -- apparently -- "boot_vga" is based
+> upon, come from "drivers/gpu/vga/vgaarb.c". Namely, the concept of
+> "primary / boot display device" is tied to the VGA arbiter, plus only a
+> PCI device can currently be marked as primary/boot display device.
 
-Thanks for your help with this,
+You're right, the issue is that the primary/boot device is tied to the
+VGA arbiter.
 
-Jonathan
+>
+> Can these concepts be split from each other? (I can fully imagine that
+> this would result in a userspace visible interface change (or addition),
+> so that e.g. "/sys/devices/**/boot_gpu" would have to be consulted by
+> display servers.)
 
-> 
-> 							Thanx, Paul
-> 
-> > Jonathan  
-> > > 
-> > > Does this help at all?
-> > > 
-> > > 							Thanx, Paul
-> > >   
-> > > > > In the meantime we'll carry on digging.
-> > > > > 
-> > > > > Thanks,
-> > > > > 
-> > > > > Jonathan
-> > > > > 
-> > > > > p.s. As a more general question, do we want to have the
-> > > > > soft lockup detector enabledon arm64 by default?    
-> > > > 
-> > > > I've cc'ed Don. My patch should not have changed defconfigs, I
-> > > > should have been more careful with that.
-> > > > 
-> > > > Thanks,
-> > > > Nick
-> > > >     
-> > >   
-> > 
-> >   
-> 
+Yes, they can be split or a way of marking the default vga device that
+doesn't depend on the arbiter can be added.
+
+(But there is some question about what it actually means to be a boot
+vga card - it's better defined on an x86 system, but on a ppc or arm64
+system we're reduced to guessing based on the first driver loaded.)
+
+> (Sorry if I'm totally wrong.)
+>
+> ... Hm, reading the thread starter at
+> <https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg120851.html>,
+> and the references within... It looks like this work is motivated by
+> hardware that is supposed to be PCI, but actually breaks the specs. Is
+> that correct? If so, then I don't think I can suggest anything useful.
+> Specs exist so that hardware vendors and software authors follow them.
+> If hardware does not conform, then software should either refuse to work
+> with it, or handle it with quirks, on a case-by-case basis. I guess this
+> means that I don't agree with the
+>
+>   broad[] suggest[ion] that a more generic solution would be better
+>
+> which seems to disqualify me from the discussion, as it must have been
+> suggested by people with incomparably more experience than what I have :)
+
+Originally this was brought to the fore through a PCI bridge that wasn't
+spec compliant, and originally I proposed a simple quirk: [0]. However,
+that highlighted the related issue that platforms that don't use legacy
+resources still go through the VGA arbiter process which is built around
+legacy resource arbitration. Changing that behaviour also fixes the
+issue with the non-spec-compliant bridge because the new model doesn't
+rely upon the particular part of the spec that the bridge violates.
+
+I'm not fussy about how we solve this problem, so long as we solve this
+problem somehow.
+
+Regards,
+Daniel
+
+[0]: https://patchwork.ozlabs.org/patch/787003/
+
+>
+> Thanks
+> Laszlo
