@@ -1,24 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ivan@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGwkZ33z7zDqm7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 21:19:50 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 23/24] powerpc/mm: Cleanup check for stack expansion
-In-Reply-To: <20170724193402.Horde.6aHXbQVl2cfpW3l9leYB8Q2@messagerie.c-s.fr>
-References: <20170719044946.22030-1-benh@kernel.crashing.org>
- <20170719044946.22030-23-benh@kernel.crashing.org>
- <20170721185947.Horde.e8_0DAuKLUb1znI0Zfx-aQ2@messagerie.c-s.fr>
- <87pocqjemx.fsf@concordia.ellerman.id.au>
- <20170724193402.Horde.6aHXbQVl2cfpW3l9leYB8Q2@messagerie.c-s.fr>
-Date: Tue, 25 Jul 2017 21:19:47 +1000
-Message-ID: <87379k7oh8.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGxBC3k2LzDqmH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 21:40:19 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6PBca2J036704
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 07:40:16 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bx3aywe8a-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 07:40:15 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ivan@de.ibm.com>;
+ Tue, 25 Jul 2017 12:40:13 +0100
+From: Ivan Mikhaylov <ivan@de.ibm.com>
+To: Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Adrian Hunter <adrian.hunter@intel.com>,
+ Patrice Chotard <patrice.chotard@st.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joel Stanley <joel@jms.id.au>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-mmc@vger.kernel.org,
+ kernel@stlinux.com, Rob Herring <robh@kernel.org>
+Subject: [PATCH v2 2/2] 44x/fsp2: enable eMMC arasan for fsp2 platform
+Date: Tue, 25 Jul 2017 14:40:04 +0300
+Message-Id: <20170725114004.17819-1-ivan@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +41,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LEROY Christophe <christophe.leroy@c-s.fr> writes:
+Add mmc0 changes for enabling arasan emmc and change
+defconfig appropriately.
 
-> Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
->
->> LEROY Christophe <christophe.leroy@c-s.fr> writes:
->>
->>> Benjamin Herrenschmidt <benh@kernel.crashing.org> a =C3=A9crit=C2=A0:
->>>
->>>> When hitting below a VM_GROWSDOWN vma (typically growing the stack),
->>>> we check whether it's a valid stack-growing instruction and we
->>>> check the distance to GPR1. This is largely open coded with lots
->>>> of comments, so move it out to a helper.
->>>
->>> Did you have a look at the following patch ? It's been waiting for
->>> application for some weeks now.
->>> https://patchwork.ozlabs.org/patch/771869
->>
->> I actually merged it last merge window, but found I had no good way to
->> test it, so I took it out again until I can write a test case for it.
->>
->> The way I realised it wasn't being tested was by removing all the
->> store_updates_sp logic entirely and having my system run happily for
->> several days :}
->
-> Which demonstrates how unlikely this is, hence doing that get_user()=20=20
-> at every fault is waste of time.
+Signed-off-by: Ivan Mikhaylov <ivan@de.ibm.com>
+---
+ arch/powerpc/boot/dts/fsp2.dts          |   33 +++++++++++++++++-------------
+ arch/powerpc/configs/44x/fsp2_defconfig |    2 +
+ 2 files changed, 21 insertions(+), 14 deletions(-)
 
-Yes I agree.
-
-> How do you plan to handle that in parralele to ben's serie ?
-
-Not sure :)
-
-> I'll be back from vacation next week and may help finding a way to=20=20
-> test that. (A test program using alloca() ?)
-
-I was thinking hand-crafted asm, but that might be a pain to get working
-for 32 & 64-bit, in which case alloca() might work.
-
-cheers
+diff --git a/arch/powerpc/boot/dts/fsp2.dts b/arch/powerpc/boot/dts/fsp2.dts
+index 475953a..6a63026 100644
+--- a/arch/powerpc/boot/dts/fsp2.dts
++++ b/arch/powerpc/boot/dts/fsp2.dts
+@@ -52,6 +52,7 @@
+ 	clocks {
+ 		mmc_clk: mmc_clk {
+ 			compatible = "fixed-clock";
++			#clock-cells = <0>;
+ 			clock-frequency = <50000000>;
+ 			clock-output-names = "mmc_clk";
+ 		};
+@@ -359,20 +360,6 @@
+ 		interrupts = <31 0x4 15 0x84>;
+ 	};
+ 
+-	mmc0: sdhci@020c0000 {
+-		compatible	= "st,sdhci-stih407", "st,sdhci";
+-		status		= "disabled";
+-		reg		= <0x020c0000 0x20000>;
+-		reg-names	= "mmc";
+-		interrupt-parent = <&UIC1_3>;
+-		interrupts	= <21 0x4 22 0x4>;
+-		interrupt-names	= "mmcirq";
+-		pinctrl-names	= "default";
+-		pinctrl-0	= <>;
+-		clock-names	= "mmc";
+-		clocks		= <&mmc_clk>;
+-	};
+-
+ 	plb6 {
+ 		compatible = "ibm,plb6";
+ 		#address-cells = <2>;
+@@ -501,6 +488,24 @@
+ 					 /*RXDE*/  4 &UIC1_2 13 0x4>;
+ 		};
+ 
++		mmc0: mmc@20c0000 {
++			compatible	= "st,sdhci-stih407", "st,sdhci";
++			reg		= <0x020c0000 0x20000>;
++			reg-names	= "mmc";
++			interrupts	= <21 0x4>;
++			interrupt-parent = <&UIC1_3>;
++			interrupt-names	= "mmcirq";
++			pinctrl-names	= "default";
++			pinctrl-0	= <>;
++			clock-names	= "mmc";
++			clocks		= <&mmc_clk>;
++			bus-width	= <4>;
++			non-removable;
++			sd-uhs-sdr50;
++			sd-uhs-sdr104;
++			sd-uhs-ddr50;
++		};
++
+ 		opb {
+ 			compatible = "ibm,opb";
+ 			#address-cells = <1>;
+diff --git a/arch/powerpc/configs/44x/fsp2_defconfig b/arch/powerpc/configs/44x/fsp2_defconfig
+index e8e6a69..935aabe 100644
+--- a/arch/powerpc/configs/44x/fsp2_defconfig
++++ b/arch/powerpc/configs/44x/fsp2_defconfig
+@@ -92,8 +92,10 @@ CONFIG_MMC_DEBUG=y
+ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_PLTFM=y
+ CONFIG_MMC_SDHCI_OF_ARASAN=y
++CONFIG_MMC_SDHCI_ST=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_M41T80=y
++CONFIG_RESET_CONTROLLER=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT4_FS=y
+ CONFIG_EXT4_FS_POSIX_ACL=y
+-- 
+1.7.1
