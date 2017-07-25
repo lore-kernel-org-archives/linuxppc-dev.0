@@ -1,49 +1,23 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xH2NB0csmzDqp1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:34:18 +1000 (AEST)
-Date: Tue, 25 Jul 2017 17:33:29 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Brijesh Singh <brijesh.singh@amd.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
- David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 02/17] x86/CPU/AMD: Add the Secure Encrypted
- Virtualization CPU feature
-Message-ID: <20170725153329.GE26029@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-3-brijesh.singh@amd.com>
- <20170725102657.GD21822@nazgul.tnic>
- <7236d267-ebcb-8b45-b8d3-5955903e395f@amd.com>
- <20170725143615.GA26029@nazgul.tnic>
- <47ccc32e-e113-48e0-d2e0-2f23b37cc452@amd.com>
- <20170725151301.GC26029@nazgul.tnic>
- <d6fdba78-034b-d9e2-15ae-00547821a855@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xH2cD0Q4ZzDqmv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:44:43 +1000 (AEST)
+Date: Tue, 25 Jul 2017 09:44:39 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Murilo Opsfelder =?UTF-8?B?QXJhw7pqbw==?= <mopsfelder@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, <aik@ozlabs.ru>, David
+ Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v2] include/linux/vfio.h: Guard powerpc-specific
+ functions with CONFIG_VFIO_SPAPR_EEH
+Message-ID: <20170725094439.7859c41c@w520.home>
+In-Reply-To: <c570cffb-f713-22d9-ebf7-46d752d562be@gmail.com>
+References: <20170718172220.9954-1-mopsfelder@gmail.com>
+ <c570cffb-f713-22d9-ebf7-46d752d562be@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <d6fdba78-034b-d9e2-15ae-00547821a855@amd.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,23 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2017 at 10:29:40AM -0500, Tom Lendacky wrote:
-> But early_identify_cpu() calls get_cpu_cap() which will check for cpuid
-> leaf 0x80000008 support and set x86_phys_bits.
+[cc +Alexey, David]
 
-Right, but it can't be less than 32, can it? And if it is more than 32
-bits, then it probably doesn't really matter on 32-bit. Unless it is
-less than 36 bits and you do PAE...
+Any comments from the usual suspects for vfio/spapr?  Thanks,
 
-> I'll try to build and run a 32-bit kernel and see how this all flows.
+Alex
 
-Yeah, that would be good.
+On Tue, 25 Jul 2017 10:56:38 -0300
+Murilo Opsfelder Ara=C3=BAjo <mopsfelder@gmail.com> wrote:
 
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+> On 07/18/2017 02:22 PM, Murilo Opsfelder Araujo wrote:
+> > When CONFIG_EEH=3Dy and CONFIG_VFIO_SPAPR_EEH=3Dn, build fails with the
+> > following:
+> >=20
+> >     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_release':
+> >     vfio_pci.c:(.text+0xa98): undefined reference to `.vfio_spapr_pci_e=
+eh_release'
+> >     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_open':
+> >     vfio_pci.c:(.text+0x1420): undefined reference to `.vfio_spapr_pci_=
+eeh_open'
+> >=20
+> > In this case, vfio_pci.c should use the empty definitions of
+> > vfio_spapr_pci_eeh_open and vfio_spapr_pci_eeh_release functions.
+> >=20
+> > This patch fixes it by guarding these function definitions with
+> > CONFIG_VFIO_SPAPR_EEH, the symbol that controls whether vfio_spapr_eeh.=
+c is
+> > built, which is where the non-empty versions of these functions are. We=
+ need to
+> > make use of IS_ENABLED() macro because CONFIG_VFIO_SPAPR_EEH is a trist=
+ate
+> > option.
+> >=20
+> > This issue was found during a randconfig build. Logs are here:
+> >=20
+> >     http://kisskb.ellerman.id.au/kisskb/buildresult/12982362/
+> >=20
+> > Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+> > ---
+> >=20
+> > Changes from v1:
+> > - Rebased on top of next-20170718. =20
+>=20
+> Hi, Alex.
+>=20
+> Are you applying this?
+>=20
+> Thanks!
+>=20
