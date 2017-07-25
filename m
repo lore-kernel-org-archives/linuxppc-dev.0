@@ -1,38 +1,42 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bp@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGn5w06YkzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 15:36:03 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6P5ZqaE083125
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 01:36:01 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bwu4pjf5r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 01:36:01 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 25 Jul 2017 15:35:58 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6P5ZtwO28966932
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 15:35:55 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6P5ZkC6016627
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 15:35:46 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/perf: Update default sdar_mode value for power9
-Date: Tue, 25 Jul 2017 11:05:51 +0530
-Message-Id: <1500960951-18017-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGnKb2sRtzDqmW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 15:46:11 +1000 (AEST)
+Date: Tue, 25 Jul 2017 07:45:22 +0200
+From: Borislav Petkov <bp@suse.de>
+To: Brijesh Singh <brijesh.singh@amd.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 01/17] Documentation/x86: Add AMD Secure
+ Encrypted Virtualization (SEV) descrption
+Message-ID: <20170725054522.GA21822@nazgul.tnic>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-2-brijesh.singh@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170724190757.11278-2-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,45 +46,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 20dd4c624d251 ('powerpc/perf: Fix SDAR_MODE value for continous
-sampling on Power9') set the default sdar_mode value in MMCRA[SDAR_MODE]
-to be used as 0b01 (Update on TLB miss). And this value is set if sdar_mode
-from event is zero, or we are in continous sampling mode in power9 dd1.
+On Mon, Jul 24, 2017 at 02:07:41PM -0500, Brijesh Singh wrote:
 
-But it is preferred to have the sdar_mode value for power9 as
-0b10 (Update on dcache miss) for better sampling updates instead
-of 0b01 (Update on TLB miss).
+Subject: Re: [RFC Part1 PATCH v3 01/17] Documentation/x86: Add AMD Secure Encrypted Virtualization (SEV) descrption
+													 ^^^^^^^^^^
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/isa207-common.c | 2 +-
- arch/powerpc/perf/isa207-common.h | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+Please introduce a spellchecker into your workflow.
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 3f3aa9a7063a..582ed2c9bc56 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -99,7 +99,7 @@ static void mmcra_sdar_mode(u64 event, unsigned long *mmcra)
- 		else if (!cpu_has_feature(CPU_FTR_POWER9_DD1) && p9_SDAR_MODE(event))
- 			*mmcra |=  p9_SDAR_MODE(event) << MMCRA_SDAR_MODE_SHIFT;
- 		else
--			*mmcra |= MMCRA_SDAR_MODE_TLB;
-+			*mmcra |= MMCRA_SDAR_MODE_DCACHE;
- 	} else
- 		*mmcra |= MMCRA_SDAR_MODE_TLB;
- }
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 8acbe6e802c7..7a0228bf283c 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -247,6 +247,7 @@
- #define MMCRA_SDAR_MODE_SHIFT		42
- #define MMCRA_SDAR_MODE_TLB		(1ull << MMCRA_SDAR_MODE_SHIFT)
- #define MMCRA_SDAR_MODE_NO_UPDATES	~(0x3ull << MMCRA_SDAR_MODE_SHIFT)
-+#define MMCRA_SDAR_MODE_DCACHE		(2ull << MMCRA_SDAR_MODE_SHIFT)
- #define MMCRA_IFM_SHIFT			30
- #define MMCRA_THR_CTR_MANT_SHIFT	19
- #define MMCRA_THR_CTR_MANT_MASK		0x7Ful
+> Update amd-memory-encryption document describing the AMD Secure Encrypted
+
+"Update the AMD memory encryption document...
+
+The patch has the proper URL already.
+
+> Virtualization (SEV) feature.
+> 
+> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> ---
+>  Documentation/x86/amd-memory-encryption.txt | 29 ++++++++++++++++++++++++++---
+>  1 file changed, 26 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/x86/amd-memory-encryption.txt b/Documentation/x86/amd-memory-encryption.txt
+> index f512ab7..747df07 100644
+> --- a/Documentation/x86/amd-memory-encryption.txt
+> +++ b/Documentation/x86/amd-memory-encryption.txt
+> @@ -1,4 +1,5 @@
+> -Secure Memory Encryption (SME) is a feature found on AMD processors.
+> +Secure Memory Encryption (SME) and Secure Encrypted Virtualization (SEV) are
+> +features found on AMD processors.
+>  
+>  SME provides the ability to mark individual pages of memory as encrypted using
+>  the standard x86 page tables.  A page that is marked encrypted will be
+> @@ -6,6 +7,12 @@ automatically decrypted when read from DRAM and encrypted when written to
+>  DRAM.  SME can therefore be used to protect the contents of DRAM from physical
+>  attacks on the system.
+>  
+> +SEV enables running encrypted virtual machine (VMs) in which the code and data
+
+					 machines
+
+> +of the virtual machine are secured so that decrypted version is available only
+
+... of the guest VM ...		  ... so that a decrypted ...
+
+> +within the VM itself. SEV guest VMs have concept of private and shared memory.
+
+				 	have *the* concept - you need to use
+					definite and indefinite articles in your
+					text.
+
+> +Private memory is encrypted with the guest-specific key, while shared memory
+> +may be encrypted with hypervisor key.
+
+And here you explain that the hypervisor key is the same key which we
+use in SME. So that people can make the connection.
+
+> +
+>  A page is encrypted when a page table entry has the encryption bit set (see
+>  below on how to determine its position).  The encryption bit can also be
+>  specified in the cr3 register, allowing the PGD table to be encrypted. Each
+> @@ -19,11 +26,20 @@ so that the PGD is encrypted, but not set the encryption bit in the PGD entry
+>  for a PUD which results in the PUD pointed to by that entry to not be
+>  encrypted.
+>  
+> -Support for SME can be determined through the CPUID instruction. The CPUID
+> -function 0x8000001f reports information related to SME:
+> +When SEV is enabled, certain type of memory (namely insruction pages and guest
+
+When SEV is enabled, instruction pages and guest page tables are ...
+
+> +page tables) are always treated as private. Due to security reasons all DMA
+
+security reasons??
+
+> +operations inside the guest must be performed on shared memory. Since the
+> +memory encryption bit is only controllable by the guest OS when it is operating
+
+		     ... is controlled ...
+
+> +in 64-bit or 32-bit PAE mode, in all other modes the SEV hardware forces memory
+
+								... forces the memory ...
+
+> +encryption bit to 1.
+> +
+> +Support for SME and SEV can be determined through the CPUID instruction. The
+> +CPUID function 0x8000001f reports information related to SME:
+>  
+>  	0x8000001f[eax]:
+>  		Bit[0] indicates support for SME
+> +	0x800001f[eax]:
+
+There's a 0 missing and you don't really need it as it is already above.
+
+> +		Bit[1] indicates support for SEV
+>  	0x8000001f[ebx]:
+>  		Bits[5:0]  pagetable bit number used to activate memory
+>  			   encryption
+> @@ -39,6 +55,13 @@ determine if SME is enabled and/or to enable memory encryption:
+>  		Bit[23]   0 = memory encryption features are disabled
+>  			  1 = memory encryption features are enabled
+>  
+> +If SEV is supported, MSR 0xc0010131 (MSR_F17H_SEV) can be used to determine if
+
+If this MSR is going to be part of the architecture - and I really think
+it is - then call it MSR_AMD64_SEV.
+
 -- 
-2.7.4
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
