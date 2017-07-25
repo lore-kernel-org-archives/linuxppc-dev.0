@@ -1,24 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGxf43V2bzDqmP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 22:01:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH 5/6] powerpc/mm: Optimize detection of thread local mm's
-In-Reply-To: <20170725103439.5a8851b5@roar.ozlabs.ibm.com>
-References: <20170724042803.25848-1-benh@kernel.crashing.org>
- <20170724042803.25848-5-benh@kernel.crashing.org>
- <20170724212533.195cb92b@roar.ozlabs.ibm.com>
- <87h8y2j6bf.fsf@concordia.ellerman.id.au>
- <20170725103439.5a8851b5@roar.ozlabs.ibm.com>
-Date: Tue, 25 Jul 2017 22:00:59 +1000
-Message-ID: <87zibs6804.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGy8t0FH3zDqmD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 22:24:14 +1000 (AEST)
+Date: Tue, 25 Jul 2017 22:24:10 +1000
+From: Anton Blanchard <anton@ozlabs.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/perf: Update default sdar_mode value for power9
+Message-ID: <20170725222410.2b02bdf7@kryten>
+In-Reply-To: <1500960951-18017-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1500960951-18017-1-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On Tue, 25 Jul 2017 11:05:51 +0530
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
-> On Mon, 24 Jul 2017 23:46:44 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->
->> Nicholas Piggin <npiggin@gmail.com> writes:
->> 
->> > On Mon, 24 Jul 2017 14:28:02 +1000
->> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->> >  
->> >> Instead of comparing the whole CPU mask every time, let's
->> >> keep a counter of how many bits are set in the mask. Thus
->> >> testing for a local mm only requires testing if that counter
->> >> is 1 and the current CPU bit is set in the mask.  
->> ...
->> >
->> > Also does it make sense to define it based on NR_CPUS > BITS_PER_LONG?
->> > If it's <= then it should be similar load and compare, no?  
->> 
->> Do we make a machine with that few CPUs? ;)
->> 
->> I don't think it's worth special casing, all the distros run with much
->> much larger NR_CPUs than that.
->
-> Not further special-casing, but just casing it based on NR_CPUS
-> rather than BOOK3S.
+> Commit 20dd4c624d251 ('powerpc/perf: Fix SDAR_MODE value for continous
+> sampling on Power9') set the default sdar_mode value in
+> MMCRA[SDAR_MODE] to be used as 0b01 (Update on TLB miss). And this
+> value is set if sdar_mode from event is zero, or we are in continous
+> sampling mode in power9 dd1.
+> 
+> But it is preferred to have the sdar_mode value for power9 as
+> 0b10 (Update on dcache miss) for better sampling updates instead
+> of 0b01 (Update on TLB miss).
 
-The problem is the mm_context_t is defined based on BookE vs BookS etc.
-not based on NR_CPUS.
+Acked-by: Anton Blanchard <anton@samba.org>
 
-So we'd have to add the atomic_t to all mm_context_t's, but #ifdef'ed
-based on NR_CPUS.
+Using a bandwidth test case with a 1MB footprint, I profiled cycles and
+chose TLB updates of the SDAR:
 
-But then some platforms don't support SMP, so it's a waste there. The
-existing cpumask check compiles to ~= nothing on UP.
+# perf record -d -e r000400000000001E:u ./bw2001 1M
+                      ^
+                      SDAR TLB
 
-cheers
+# perf report -D | grep PERF_RECORD_SAMPLE | sed 's/.*addr: //' | sort -u | wc -l
+4
+
+I get 4 unique addresses. If I ran with dcache misses:
+
+# perf record -d -e r000800000000001E:u ./bw2001 1M
+                      ^
+                      SDAR dcache miss
+
+# perf report -D|grep PERF_RECORD_SAMPLE| sed 's/.*addr: //'|sort -u | wc -l
+5217
+
+I get 5217 unique addresses. No surprises here, but it does show why
+TLB misses is the wrong event to default to - we get very little useful
+information out of it.
+
+Anton
+
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/perf/isa207-common.c | 2 +-
+>  arch/powerpc/perf/isa207-common.h | 1 +
+>  2 files changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/perf/isa207-common.c
+> b/arch/powerpc/perf/isa207-common.c index 3f3aa9a7063a..582ed2c9bc56
+> 100644 --- a/arch/powerpc/perf/isa207-common.c
+> +++ b/arch/powerpc/perf/isa207-common.c
+> @@ -99,7 +99,7 @@ static void mmcra_sdar_mode(u64 event, unsigned
+> long *mmcra) else if (!cpu_has_feature(CPU_FTR_POWER9_DD1) &&
+> p9_SDAR_MODE(event)) *mmcra |=  p9_SDAR_MODE(event) <<
+> MMCRA_SDAR_MODE_SHIFT; else
+> -			*mmcra |= MMCRA_SDAR_MODE_TLB;
+> +			*mmcra |= MMCRA_SDAR_MODE_DCACHE;
+>  	} else
+>  		*mmcra |= MMCRA_SDAR_MODE_TLB;
+>  }
+> diff --git a/arch/powerpc/perf/isa207-common.h
+> b/arch/powerpc/perf/isa207-common.h index 8acbe6e802c7..7a0228bf283c
+> 100644 --- a/arch/powerpc/perf/isa207-common.h
+> +++ b/arch/powerpc/perf/isa207-common.h
+> @@ -247,6 +247,7 @@
+>  #define MMCRA_SDAR_MODE_SHIFT		42
+>  #define MMCRA_SDAR_MODE_TLB		(1ull <<
+> MMCRA_SDAR_MODE_SHIFT) #define MMCRA_SDAR_MODE_NO_UPDATES
+> ~(0x3ull << MMCRA_SDAR_MODE_SHIFT) +#define
+> MMCRA_SDAR_MODE_DCACHE		(2ull << MMCRA_SDAR_MODE_SHIFT)
+> #define MMCRA_IFM_SHIFT			30 #define
+> MMCRA_THR_CTR_MANT_SHIFT	19 #define
+> MMCRA_THR_CTR_MANT_MASK		0x7Ful
