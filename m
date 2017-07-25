@@ -1,27 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGwBK32XWzDqm4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 20:55:21 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id c23so12661195pfe.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 03:55:21 -0700 (PDT)
-Date: Tue, 25 Jul 2017 20:55:08 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH 5/6] powerpc/mm: Optimize detection of thread local mm's
-Message-ID: <20170725205508.29dba97e@roar.ozlabs.ibm.com>
-In-Reply-To: <1500944625.10674.101.camel@kernel.crashing.org>
-References: <20170724042803.25848-1-benh@kernel.crashing.org>
- <20170724042803.25848-5-benh@kernel.crashing.org>
- <20170724212533.195cb92b@roar.ozlabs.ibm.com>
- <1500929926.10674.86.camel@kernel.crashing.org>
- <20170725104445.13010b5e@roar.ozlabs.ibm.com>
- <1500944625.10674.101.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xGwkZ33z7zDqm7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 21:19:50 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 23/24] powerpc/mm: Cleanup check for stack expansion
+In-Reply-To: <20170724193402.Horde.6aHXbQVl2cfpW3l9leYB8Q2@messagerie.c-s.fr>
+References: <20170719044946.22030-1-benh@kernel.crashing.org>
+ <20170719044946.22030-23-benh@kernel.crashing.org>
+ <20170721185947.Horde.e8_0DAuKLUb1znI0Zfx-aQ2@messagerie.c-s.fr>
+ <87pocqjemx.fsf@concordia.ellerman.id.au>
+ <20170724193402.Horde.6aHXbQVl2cfpW3l9leYB8Q2@messagerie.c-s.fr>
+Date: Tue, 25 Jul 2017 21:19:47 +1000
+Message-ID: <87379k7oh8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 25 Jul 2017 11:03:45 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+LEROY Christophe <christophe.leroy@c-s.fr> writes:
 
-> On Tue, 2017-07-25 at 10:44 +1000, Nicholas Piggin wrote:
-> > The two variants are just cleaner versions of the two variants you
-> > already introduced.
-> > 
-> > static inline bool mm_activate_cpu(struct mm_struct *mm)
-> > {
-> >     if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next))) {
-> >         cpumask_set_cpu(smp_processor_id(), mm_cpumask(next));
-> > #if CONFIG_PPC_BOOK3S_64
-> >         atomic_inc(&mm->context.active_cpus);
-> > #endif
-> >         smp_mb();
-> >         return true;
-> >     }
-> >     return false;
-> > }  
-> 
-> Well the above is what I originally wrote, which Michael encouraged me
-> to turn into a helper ;-) I was removing ifdef's from switch_mm in
-> this series...
+> Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
+>
+>> LEROY Christophe <christophe.leroy@c-s.fr> writes:
+>>
+>>> Benjamin Herrenschmidt <benh@kernel.crashing.org> a =C3=A9crit=C2=A0:
+>>>
+>>>> When hitting below a VM_GROWSDOWN vma (typically growing the stack),
+>>>> we check whether it's a valid stack-growing instruction and we
+>>>> check the distance to GPR1. This is largely open coded with lots
+>>>> of comments, so move it out to a helper.
+>>>
+>>> Did you have a look at the following patch ? It's been waiting for
+>>> application for some weeks now.
+>>> https://patchwork.ozlabs.org/patch/771869
+>>
+>> I actually merged it last merge window, but found I had no good way to
+>> test it, so I took it out again until I can write a test case for it.
+>>
+>> The way I realised it wasn't being tested was by removing all the
+>> store_updates_sp logic entirely and having my system run happily for
+>> several days :}
+>
+> Which demonstrates how unlikely this is, hence doing that get_user()=20=20
+> at every fault is waste of time.
 
-Well I won't harp on about it if you guys prefer the increment helper.
-Just the comment would be good. The rest of the series seems okay to
-me.
+Yes I agree.
 
-Thanks,
-Nick
+> How do you plan to handle that in parralele to ben's serie ?
+
+Not sure :)
+
+> I'll be back from vacation next week and may help finding a way to=20=20
+> test that. (A test program using alloca() ?)
+
+I was thinking hand-crafted asm, but that might be a pain to get working
+for 32 & 64-bit, in which case alloca() might work.
+
+cheers
