@@ -1,42 +1,28 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <santosh@fossix.org>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xGzzv6mL6zDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 23:46:35 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6PDjXRu043111
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 09:46:33 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bx6c2ame4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 09:46:33 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 25 Jul 2017 09:46:32 -0400
-Date: Tue, 25 Jul 2017 06:46:26 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com,
- Andrew Morton <akpm@linux-foundation.org>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Don Zickus <dzickus@redhat.com>, David Miller <davem@davemloft.net>,
- sparclinux@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n  - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170725193039.00007c80@huawei.com>
- <20170725222654.5a968588@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xH00r2RRhzDqp1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 23:47:24 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id d193so14526349pgc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 06:47:24 -0700 (PDT)
+Date: Tue, 25 Jul 2017 19:17:15 +0530
+From: Santosh Sivaraj <santosh@fossix.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH v3] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+Message-ID: <20170725134715.fjkgaexhjzrkolal@santosiv.in.ibm.com>
+References: <20170721090944.16889-1-santosh@fossix.org>
+ <20170725065613.7039-1-santosh@fossix.org>
+ <1500977248.2792.1.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170725222654.5a968588@roar.ozlabs.ibm.com>
-Message-Id: <20170725134626.GL3730@linux.vnet.ibm.com>
+In-Reply-To: <1500977248.2792.1.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,119 +32,257 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2017 at 10:26:54PM +1000, Nicholas Piggin wrote:
-> On Tue, 25 Jul 2017 19:32:10 +0800
-> Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote (on 2017-07-25 20:07:28 +1000):
+
+> On Tue, 2017-07-25 at 12:26 +0530, Santosh Sivaraj wrote:
 > 
-> > Hi All,
-> > 
-> > We observed a regression on our d05 boards (but curiously not
-> > the fairly similar but single socket / smaller core count
-> > d03), initially seen with linux-next prior to the merge window
-> > and still present in v4.13-rc2.
-> > 
-> > The symptom is:
-
-Adding Dave Miller and the sparclinux@vger.kernel.org email on CC, as
-they have been seeing something similar, and you might well have saved
-them the trouble of bisecting.
-
-[ . . . ]
-
-> > [ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
-
-This is the cause from an RCU perspective.  You had a lot of idle CPUs,
-and RCU is not permitted to disturb them -- the battery-powered embedded
-guys get very annoyed by that sort of thing.  What happens instead is
-that each CPU updates a per-CPU state variable when entering or exiting
-idle, and the grace-period kthread ("rcu_preempt kthread" in the above
-message) checks these state variables, and if when sees an idle CPU,
-it reports a quiescent state on that CPU's behalf.
-
-But the grace-period kthread can only do this work if it gets a chance
-to run.  And the message above says that this kthread hasn't had a chance
-to run for a full 5,663 jiffies.  For completeness, the "g1566 c1565"
-says that grace period #1566 is in progress, the "f0x0" says that no one
-is needing another grace period #1567.  The "RCU_GP_WAIT_FQS(3)" says
-that the grace-period kthread has fully initialized the current grace
-period and is sleeping for a few jiffies waiting to scan for idle tasks.
-Finally, the "->state=0x1" says that the grace-period kthread is in
-TASK_INTERRUPTIBLE state, in other words, still sleeping.
-
-So my first question is "What did commit 05a4a9527 (kernel/watchdog:
-split up config options) do to prevent the grace-period kthread from
-getting a chance to run?"  I must confess that I don't see anything
-obvious in that commit, so my second question is "Are we sure that
-reverting this commit makes the problem go away?" and my third is "Is
-this an intermittent problem that led to a false bisection?"
-
-[ . . . ]
-
-> > Reducing the RCU CPU stall timeout makes it happen more often,
-> > but we are seeing even with the default value of 24 seconds.
-> > 
-> > Tends to occur after a period or relatively low usage, but has
-> > also been seen mid way through performance tests.
-> > 
-> > This was not seen with v4.12 so a bisection run later lead to
-> > commit 05a4a9527 (kernel/watchdog: split up config options).
-> > 
-> > Which was odd until we discovered that a side effect of this patch
-> > was to change whether the softlockup detector was enabled or not in
-> > the arm64 defconfig.
-> > 
-> > On 4.13-rc2 enabling the softlockup detector indeed stopped us
-> > seeing the rcu issue. Disabling the equivalent on 4.12 made the
-> > issue occur there as well.
-> > 
-> > Clearly the softlockup detector results in a thread on every cpu,
-> > which might be related but beyond that we are still looking into
-> > the issue.
-> > 
-> > So the obvious question is whether anyone else is seeing this as
-> > it might help us to focus in on where to look!
+> > +static notrace void kernel_get_tspec(struct timespec *tp,
+> > +				     struct vdso_data *vdata, u32 *wtom_sec,
+> > +				     u32 *wtom_nsec)
+> > +{
+> > +	u64 tb;
+> > +	u32 update_count;
 > 
-> Huh. Something similar has been seen very intermittently on powerpc
-> as well. We couldn't reproduce it reliably to bisect it already, so
-> this is a good help.
+> This is broken:
 > 
-> http://marc.info/?l=linuxppc-embedded&m=149872815523646&w=2
+> > +	do {
+> > +		/* check for update count & load values */
+> > +		update_count = vdata->tb_update_count;
+> > +
+> > +		/* Get TB, offset it and scale result */
+> > +		tb = mulhdu((get_tb() - vdata->tb_orig_stamp) << 12,
+> > +			    vdata->tb_to_xs) + vdata->stamp_sec_fraction;
+> > +		tp->tv_sec = vdata->stamp_xtime.tv_sec;
+> > +		if (wtom_sec)
+> > +			*wtom_sec = vdata->wtom_clock_sec;
+> > +		if (wtom_nsec)
+> > +			*wtom_nsec = vdata->wtom_clock_nsec;
+> > +	} while (update_count != vdata->tb_update_count);
 > 
-> It looks like the watchdog patch has a similar effect on powerpc in
-> that it stops enabling the softlockup detector by default. Haven't
-> confirmed, but it looks like the same thing.
+> The assembly code is carefuly crafted to create a chain of data
+> dependencies in order to enforce the ordering in this function,
+> you completely broke it.
 > 
-> A bug in RCU stall detection?
-
-Well, if I am expected to make grace periods complete when my grace-period
-kthreads aren't getting any CPU time, I will have to make some substantial
-changes.  ;-)
-
-One possibility is that the timer isn't firing and another is that the
-timer's wakeup is being lost somehow.
-
-So another thing to try is to boot with rcutree.rcu_kick_kthreads=1.
-This will cause RCU to do redundant wakeups on the grace-period kthread
-if the grace period is moving slowly.  This is of course a crude hack,
-which is why this boot parameter will also cause a splat if it ever has
-to do anything.
-
-Does this help at all?
-
-							Thanx, Paul
-
-> > In the meantime we'll carry on digging.
-> > 
-> > Thanks,
-> > 
-> > Jonathan
-> > 
-> > p.s. As a more general question, do we want to have the
-> > soft lockup detector enabledon arm64 by default?
+> IE. the pointer used to access tb_orig_stamp etc... depends on the
+> initial update count, and the final read of the update count depends
+> on all the previously read values (or should), thus ordering those
+> loads. Withtout that you'll need more expensive lwsync's.
 > 
-> I've cc'ed Don. My patch should not have changed defconfigs, I
-> should have been more careful with that.
+> Additionally, you broke another semantic of the seqlock which is
+> to spin on the first update count if it has an odd value.
 > 
-> Thanks,
-> Nick
+> The same problem exist in all your other implementations.
 > 
+> I am really NOT a fan of that attempt at converting to C. The code is
+> hand crafted assembly for a number of reasons, including the above ones
+> and maximum performance.
+> 
+> As it is, it's deeply broken.
+
+I get the point. I looked at the generated assembly a bit closer, the update
+count is optimized out. Will send the alternative asm only patch.
+
+Thanks,
+Santosh
+> 
+> > +
+> > +	tp->tv_nsec = ((u64)mulhwu(tb, NSEC_PER_SEC) << 32) >> 32;
+> > +	tp->tv_sec += (tb >> 32);
+> > +}
+> > +
+> > +static notrace int clock_get_realtime(struct timespec *tp,
+> > +				      struct vdso_data *vdata)
+> > +{
+> > +	kernel_get_tspec(tp, vdata, NULL, NULL);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static notrace int clock_get_monotonic(struct timespec *tp,
+> > +				       struct vdso_data *vdata)
+> > +{
+> > +	__s32 wtom_sec, wtom_nsec;
+> > +	u64 nsec;
+> > +
+> > +	kernel_get_tspec(tp, vdata, &wtom_sec, &wtom_nsec);
+> > +
+> > +	tp->tv_sec += wtom_sec;
+> > +
+> > +	nsec = tp->tv_nsec;
+> > +	tp->tv_nsec = 0;
+> > +	timespec_add_ns(tp, nsec + wtom_nsec);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static notrace int clock_realtime_coarse(struct timespec *tp,
+> > +					 struct vdso_data *vdata)
+> > +{
+> > +	u32 update_count;
+> > +
+> > +	do {
+> > +		/* check for update count & load values */
+> > +		update_count = vdata->tb_update_count;
+> > +
+> > +		tp->tv_sec = vdata->stamp_xtime.tv_sec;
+> > +		tp->tv_nsec = vdata->stamp_xtime.tv_nsec;
+> > +	} while (update_count != vdata->tb_update_count);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static notrace int clock_monotonic_coarse(struct timespec *tp,
+> > +					  struct vdso_data *vdata)
+> > +{
+> > +	__s32 wtom_sec, wtom_nsec;
+> > +	u64 nsec;
+> > +	u32 update_count;
+> > +
+> > +	do {
+> > +		/* check for update count & load values */
+> > +		update_count = vdata->tb_update_count;
+> > +
+> > +		tp->tv_sec = vdata->stamp_xtime.tv_sec;
+> > +		tp->tv_nsec = vdata->stamp_xtime.tv_nsec;
+> > +		wtom_sec = vdata->wtom_clock_sec;
+> > +		wtom_nsec = vdata->wtom_clock_nsec;
+> > +	} while (update_count != vdata->tb_update_count);
+> > +
+> > +	tp->tv_sec += wtom_sec;
+> > +	nsec = tp->tv_nsec;
+> > +	tp->tv_nsec = 0;
+> > +	timespec_add_ns(tp, nsec + wtom_nsec);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +notrace int kernel_clock_gettime(clockid_t clk_id, struct timespec *tp)
+> > +{
+> > +	int ret;
+> > +	struct vdso_data *vdata = __get_datapage();
+> > +
+> > +	if (!tp || !vdata)
+> > +		return -EBADR;
+> > +
+> > +	switch (clk_id) {
+> > +	case CLOCK_REALTIME:
+> > +		ret = clock_get_realtime(tp, vdata);
+> > +		break;
+> > +	case CLOCK_MONOTONIC:
+> > +		ret = clock_get_monotonic(tp, vdata);
+> > +		break;
+> > +	case CLOCK_REALTIME_COARSE:
+> > +		ret = clock_realtime_coarse(tp, vdata);
+> > +		break;
+> > +	case CLOCK_MONOTONIC_COARSE:
+> > +		ret = clock_monotonic_coarse(tp, vdata);
+> > +		break;
+> > +	default:
+> > +		/* fallback to syscall */
+> > +		ret = -1;
+> > +		break;
+> > +	}
+> > +
+> > +	return ret;
+> > +}
+> > diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+> > index 3820213..c3f6b24 100644
+> > --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
+> > +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+> > @@ -16,6 +16,8 @@
+> >  #include <asm/asm-offsets.h>
+> >  #include <asm/unistd.h>
+> >  
+> > +.global	kernel_clock_gettime
+> > +
+> >  	.text
+> >  /*
+> >   * Exact prototype of gettimeofday
+> > @@ -60,71 +62,23 @@ V_FUNCTION_END(__kernel_gettimeofday)
+> >   */
+> >  V_FUNCTION_BEGIN(__kernel_clock_gettime)
+> >    .cfi_startproc
+> > -	/* Check for supported clock IDs */
+> > -	cmpwi	cr0,r3,CLOCK_REALTIME
+> > -	cmpwi	cr1,r3,CLOCK_MONOTONIC
+> > -	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+> > -	bne	cr0,99f
+> > -
+> > -	mflr	r12			/* r12 saves lr */
+> > -  .cfi_register lr,r12
+> > -	mr	r11,r4			/* r11 saves tp */
+> > -	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+> > -	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
+> > -	ori	r7,r7,NSEC_PER_SEC@l
+> > -50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
+> > -	bne	cr1,80f			/* if not monotonic, all done */
+> > -
+> > -	/*
+> > -	 * CLOCK_MONOTONIC
+> > -	 */
+> > -
+> > -	/* now we must fixup using wall to monotonic. We need to snapshot
+> > -	 * that value and do the counter trick again. Fortunately, we still
+> > -	 * have the counter value in r8 that was returned by __do_get_tspec.
+> > -	 * At this point, r4,r5 contain our sec/nsec values.
+> > -	 */
+> > -
+> > -	lwa	r6,WTOM_CLOCK_SEC(r3)
+> > -	lwa	r9,WTOM_CLOCK_NSEC(r3)
+> > -
+> > -	/* We now have our result in r6,r9. We create a fake dependency
+> > -	 * on that result and re-check the counter
+> > -	 */
+> > -	or	r0,r6,r9
+> > -	xor	r0,r0,r0
+> > -	add	r3,r3,r0
+> > -	ld	r0,CFG_TB_UPDATE_COUNT(r3)
+> > -        cmpld   cr0,r0,r8		/* check if updated */
+> > -	bne-	50b
+> > -
+> > -	/* Add wall->monotonic offset and check for overflow or underflow.
+> > -	 */
+> > -	add	r4,r4,r6
+> > -	add	r5,r5,r9
+> > -	cmpd	cr0,r5,r7
+> > -	cmpdi	cr1,r5,0
+> > -	blt	1f
+> > -	subf	r5,r7,r5
+> > -	addi	r4,r4,1
+> > -1:	bge	cr1,80f
+> > -	addi	r4,r4,-1
+> > -	add	r5,r5,r7
+> > -
+> > -80:	std	r4,TSPC64_TV_SEC(r11)
+> > -	std	r5,TSPC64_TV_NSEC(r11)
+> > -
+> > -	mtlr	r12
+> > +	mflr	r6			/* r12 saves lr */
+> > +	stwu	r1,-112(r1)
+> > +  .cfi_register lr,r6
+> > +	std	r6,24(r1)
+> > +	std	r3,32(r1)
+> > +	std	r4,40(r1)
+> >  	crclr	cr0*4+so
+> > -	li	r3,0
+> > -	blr
+> > -
+> > -	/*
+> > -	 * syscall fallback
+> > -	 */
+> > -99:
+> > +	bl	V_LOCAL_FUNC(kernel_clock_gettime)
+> > +	cmpwi	r3,0
+> > +	beq	77f
+> >  	li	r0,__NR_clock_gettime
+> > +	ld	r3,32(r1)
+> > +	ld	r4,40(r1)
+> >  	sc
+> > +77:	ld	r6,24(r1)
+> > +	addi	r1,r1,112
+> > +	mtlr	r6
+> >  	blr
+> >    .cfi_endproc
+> >  V_FUNCTION_END(__kernel_clock_gettime)
+
+-- 
