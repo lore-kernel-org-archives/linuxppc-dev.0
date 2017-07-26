@@ -1,42 +1,42 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHMZd4Vb7zDqmS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 14:29:29 +1000 (AEST)
-Date: Wed, 26 Jul 2017 06:28:40 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 03/17] x86/mm: Secure Encrypted
- Virtualization (SEV) support
-Message-ID: <20170726042840.GB30702@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-4-brijesh.singh@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHMk74fB8zDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 14:35:59 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6Q4XJW5053128
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 00:35:56 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bxev3mx6y-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 00:35:56 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 26 Jul 2017 14:35:53 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6Q4ZpBc23593192
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 14:35:51 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6Q4Znog004729
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 14:35:50 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Diego Domingos <diegodo@linux.vnet.ibm.com>, linux-mm@kvack.org
+Cc: ltc-interlock@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ diegodo@linux.vnet.ibm.com
+Subject: Re: [ltc-interlock] [PATCH] hugetlb: Fix hot remove for PowerVM
+In-Reply-To: <1500997831-19173-1-git-send-email-diegodo@linux.vnet.ibm.com>
+References: <1500997831-19173-1-git-send-email-diegodo@linux.vnet.ibm.com>
+Date: Wed, 26 Jul 2017 10:05:42 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170724190757.11278-4-brijesh.singh@amd.com>
+Content-Type: text/plain
+Message-Id: <87r2x324td.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,81 +46,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 24, 2017 at 02:07:43PM -0500, Brijesh Singh wrote:
-> From: Tom Lendacky <thomas.lendacky@amd.com>
-> 
-> Provide support for Secure Encyrpted Virtualization (SEV). This initial
+Diego Domingos <diegodo@linux.vnet.ibm.com> writes:
 
-Your subject misses a verb and patch subjects should have an active verb
-denoting what the patch does. The sentence above is a good example.
+> PowerVM has support for 16G huge pages, so the function
+> gigantic_page_supported needs to check if the running system
+> is a pseries and check if there are some gigantic page
+> registered. Then, we must return true - avoiding Segmentation
+> Fault when hot removing memory sections within huge pages.
 
-> support defines a flag that is used by the kernel to determine if it is
-> running with SEV active.
-> 
-> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+That is not correct. Those pages are not in zone/buddy. What
+gigantic_page_supported checks is whether we can allocate pages runtime.
+We scan the zones, check if we have the range that we are looking for
+free for allocation, if so we do runtime allocation of those pages. This
+may include page migration too. But these pages comes from buddy. We
+don't do buddy allocator directly here, because the order of allocation
+we are looking is more than max order.
+
+>
+> Signed-off-by: Diego Domingos <diegodo@linux.vnet.ibm.com>
 > ---
->  arch/x86/include/asm/mem_encrypt.h | 2 ++
->  arch/x86/mm/mem_encrypt.c          | 3 +++
->  include/linux/mem_encrypt.h        | 8 +++++++-
->  3 files changed, 12 insertions(+), 1 deletion(-)
-
-...
-
-> diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
-> index 0fbd092..1e4643e 100644
-> --- a/arch/x86/mm/mem_encrypt.c
-> +++ b/arch/x86/mm/mem_encrypt.c
-> @@ -40,6 +40,9 @@ static char sme_cmdline_off[] __initdata = "off";
->  unsigned long sme_me_mask __section(.data) = 0;
->  EXPORT_SYMBOL_GPL(sme_me_mask);
->  
-> +unsigned int sev_enabled __section(.data) = 0;
-> +EXPORT_SYMBOL_GPL(sev_enabled);
-
-So sev_enabled is a pure bool used only in bool context, not like
-sme_me_mask whose value is read too. Which means, you can make the
-former static and query it only through accessor functions.
-
->  /* Buffer used for early in-place encryption by BSP, no locking needed */
->  static char sme_early_buffer[PAGE_SIZE] __aligned(PAGE_SIZE);
->  
-> diff --git a/include/linux/mem_encrypt.h b/include/linux/mem_encrypt.h
-> index 1255f09..ea0831a 100644
-> --- a/include/linux/mem_encrypt.h
-> +++ b/include/linux/mem_encrypt.h
-> @@ -22,12 +22,18 @@
->  #else	/* !CONFIG_ARCH_HAS_MEM_ENCRYPT */
->  
->  #define sme_me_mask	0UL
-> +#define sev_enabled	0
->  
->  #endif	/* CONFIG_ARCH_HAS_MEM_ENCRYPT */
->  
->  static inline bool sme_active(void)
->  {
-> -	return !!sme_me_mask;
-> +	return (sme_me_mask && !sev_enabled);
-
-You don't need the brackets. Below too.
-
-> +}
+>  arch/powerpc/include/asm/book3s/64/hugetlb.h | 14 +++++++++++++-
+>  1 file changed, 13 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> index 5c28bd6..49e43dd 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> @@ -1,3 +1,5 @@
+> +#include <asm/machdep.h>
 > +
-> +static inline bool sev_active(void)
-> +{
-> +	return (sme_me_mask && sev_enabled);
+>  #ifndef _ASM_POWERPC_BOOK3S_64_HUGETLB_H
+>  #define _ASM_POWERPC_BOOK3S_64_HUGETLB_H
+>  /*
+> @@ -54,9 +56,19 @@ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
+>  #ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+>  static inline bool gigantic_page_supported(void)
+>  {
+> +        struct hstate *h;
+> +
+>  	if (radix_enabled())
+>  		return true;
+> -	return false;
+> +
+> +        /* PowerVM can support 16GB hugepages (requested at boot time) */
+> +        if(machine_is(pseries))
+> +            for_each_hstate(h) {
+> +                if (hstate_get_psize(h) == MMU_PAGE_16G)
+> +                    return true;
+> +            }
+> +        
+> +        return false;
 >  }
-
-So this is confusing, TBH. SME and SEV are not mutually exclusive and
-yet the logic here says so. Why?
-
-I mean, in the hypervisor context, sme_active() is still true.
-
-/me is confused.
-
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+>  #endif
+>
+> -- 
+> 1.8.3.1
+>
+> _______________________________________________________
+> ltc-interlock mailing list <ltc-interlock@lists.linux.ibm.com>
+> To unsubscribe from the list, change your list options
+> or if you have forgotten your list password visit:
+> https://w3-01.ibm.com/stg/linux/ltc/mailinglists/listinfo/ltc-interlock
