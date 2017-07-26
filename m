@@ -1,49 +1,37 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lersek@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHWwH52p1zDqmS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:45:19 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id m65so10681343oik.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 03:45:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHWx76sHczDqpV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:46:03 +1000 (AEST)
+Subject: Re: [PATCH 0/4] Allow non-legacy cards to be vgaarb default
+To: Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Daniel Axtens <dja@axtens.net>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Hans de Goede <hdegoede@redhat.com>
+Cc: linux-pci <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, David Airlie <airlied@linux.ie>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Will Deacon <will.deacon@arm.com>,
+ "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Zou Rongrong <zourongrong@gmail.com>,
+ "daniel.vetter@intel.com" <daniel.vetter@intel.com>
+References: <20170719012839.20124-1-dja@axtens.net>
+ <CAKv+Gu-SgeLXVEj_VtZHchaNmOwWO+GmfTg5CYcnOF43AJZGnA@mail.gmail.com>
+ <87pocusm2x.fsf@linkitivity.dja.id.au>
+ <CAKv+Gu-O7cyJSgDrqSNi6F_n9eBnFEgz==aqowMqhy+81YK=CQ@mail.gmail.com>
+ <87r2x6vj7t.fsf@linkitivity.dja.id.au>
+ <a61222c6-e548-1e3b-f6f7-63952b90ac13@redhat.com>
+ <EE11001F9E5DDD47B7634E2F8A612F2E40B76A1A@FRAEML521-MBX.china.huawei.com>
+From: Laszlo Ersek <lersek@redhat.com>
+Message-ID: <c2d6889e-c8fd-012d-a24b-a72c26850fde@redhat.com>
+Date: Wed, 26 Jul 2017 12:45:53 +0200
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-14-brijesh.singh@amd.com>
- <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 26 Jul 2017 12:45:17 +0200
-Message-ID: <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
-Subject: Re: [RFC Part1 PATCH v3 13/17] x86/io: Unroll string I/O when SEV is
- active
-To: David Laight <David.Laight@aculab.com>
-Cc: Brijesh Singh <brijesh.singh@amd.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>,
- Jonathan Corbet <corbet@lwn.net>,
- =?UTF-8?Q?Radim_Krcm=C3=A1r?= <rkrcmar@redhat.com>,
- Piotr Luc <piotr.luc@intel.com>, Ingo Molnar <mingo@redhat.com>,
- Dave Airlie <airlied@redhat.com>,
- Borislav Petkov <bp@suse.de>, Tom Lendacky <thomas.lendacky@amd.com>,
- Kees Cook <keescook@chromium.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Laura Abbott <labbott@redhat.com>,
- Tony Luck <tony.luck@intel.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Eric Biederman <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <EE11001F9E5DDD47B7634E2F8A612F2E40B76A1A@FRAEML521-MBX.china.huawei.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,134 +41,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2017 at 11:51 AM, David Laight <David.Laight@aculab.com> wrote:
-> From: Brijesh Singh
->> Sent: 24 July 2017 20:08
->> From: Tom Lendacky <thomas.lendacky@amd.com>
+On 07/25/17 17:56, Gabriele Paoloni wrote:
+> Hi Laszlo
+> 
+> [...]
+> 
 >>
->> Secure Encrypted Virtualization (SEV) does not support string I/O, so
->> unroll the string I/O operation into a loop operating on one element at
->> a time.
+>> Having practically zero background in gfx development (either kernel or
+>> Xorg), I think the problem is that vga_default_device() /
+>> vga_set_default_device(), which -- apparently -- "boot_vga" is based
+>> upon, come from "drivers/gpu/vga/vgaarb.c". Namely, the concept of
+>> "primary / boot display device" is tied to the VGA arbiter, plus only a
+>> PCI device can currently be marked as primary/boot display device.
 >>
->> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
->> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
->> ---
->>  arch/x86/include/asm/io.h | 26 ++++++++++++++++++++++----
->>  1 file changed, 22 insertions(+), 4 deletions(-)
+>> Can these concepts be split from each other? (I can fully imagine that
+>> this would result in a userspace visible interface change (or
+>> addition),
+>> so that e.g. "/sys/devices/**/boot_gpu" would have to be consulted by
+>> display servers.)
 >>
->> diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
->> index e080a39..2f3c002 100644
->> --- a/arch/x86/include/asm/io.h
->> +++ b/arch/x86/include/asm/io.h
->> @@ -327,14 +327,32 @@ static inline unsigned type in##bwl##_p(int port)                       \
->>                                                                       \
->>  static inline void outs##bwl(int port, const void *addr, unsigned long count) \
->>  {
+>> (Sorry if I'm totally wrong.)
+>>
+>> ... Hm, reading the thread starter at
+>> <https://www.mail-archive.com/linuxppc-
+>> dev@lists.ozlabs.org/msg120851.html>,
+>> and the references within... It looks like this work is motivated by
+>> hardware that is supposed to be PCI, but actually breaks the specs. Is
+>> that correct? If so, then I don't think I can suggest anything useful.
+> 
+> My understanding is that the current PCIe HW is specs compliant but the
+> vgaarb, in order to make a VGA device the default one, requires all the
+> bridges on top of such device to have the "VGA Enable" bit set (optional
+> bit in the PCI Express™ to PCI/PCI-X Bridge Spec). I.e. all the bridges
+> on top have to support legacy VGA devices; and this is not mandatory
+> from the specs...right?
 
-This will clash with a fix I did to add a "memory" clobber
-for the traditional implementation, see
-https://patchwork.kernel.org/patch/9854573/
+Sounds very plausible to me. And, I guess if the "boot GPU" concept were
+split from the VGA arbiter, then the VGA arbiter's above requirement
+(a) would not have to be disturbed, and
+(b) would no longer interfere with the kind of hardware that's being
+    discussed.
 
-> Is it even worth leaving these as inline functions?
-> Given the speed of IO cycles it is unlikely that the cost of calling a real
-> function will be significant.
-> The code bloat reduction will be significant.
+Thanks
+Laszlo
 
-I think the smallest code would be the original "rep insb" etc, which
-should be smaller than a function call, unlike the loop. Then again,
-there is a rather small number of affected device drivers, almost all
-of them for ancient hardware that you won't even build in a 64-bit
-x86 kernel, see the list below. The only user I found that is actually
-still relevant is drivers/tty/hvc/hvc_xen.c, which uses it for the early
-console.
-
-       Arnd
-
----
-Full list for reference
-
-$ git grep -wl '\(__ide_\|\)\(in\|out\)s\(b\|w\|l\)' drivers sound/
-drivers/atm/horizon.c
-drivers/cdrom/gdrom.c
-drivers/gpu/drm/vmwgfx/vmwgfx_msg.h
-drivers/ide/ide-io-std.c
-drivers/isdn/hardware/avm/avmcard.h
-drivers/isdn/hardware/eicon/divasmain.c
-drivers/isdn/hardware/mISDN/avmfritz.c
-drivers/isdn/hardware/mISDN/iohelper.h
-drivers/isdn/hardware/mISDN/netjet.c
-drivers/isdn/hardware/mISDN/w6692.c
-drivers/isdn/hisax/asuscom.c
-drivers/isdn/hisax/avm_a1.c
-drivers/isdn/hisax/avm_a1p.c
-drivers/isdn/hisax/avm_pci.c
-drivers/isdn/hisax/diva.c
-drivers/isdn/hisax/elsa.c
-drivers/isdn/hisax/gazel.c
-drivers/isdn/hisax/hisax_fcpcipnp.c
-drivers/isdn/hisax/ix1_micro.c
-drivers/isdn/hisax/mic.c
-drivers/isdn/hisax/netjet.c
-drivers/isdn/hisax/niccy.c
-drivers/isdn/hisax/saphir.c
-drivers/isdn/hisax/sedlbauer.c
-drivers/isdn/hisax/sportster.c
-drivers/isdn/hisax/teles3.c
-drivers/isdn/hisax/w6692.c
-drivers/isdn/hisax/w6692.h
-drivers/media/rc/winbond-cir.c
-drivers/mtd/spi-nor/aspeed-smc.c
-drivers/net/appletalk/cops.c
-drivers/net/arcnet/arcdevice.h
-drivers/net/arcnet/com20020.c
-drivers/net/ethernet/3com/3c509.c
-drivers/net/ethernet/3com/3c515.c
-drivers/net/ethernet/3com/3c574_cs.c
-drivers/net/ethernet/3com/3c589_cs.c
-drivers/net/ethernet/8390/axnet_cs.c
-drivers/net/ethernet/8390/mcf8390.c
-drivers/net/ethernet/8390/ne.c
-drivers/net/ethernet/8390/ne2k-pci.c
-drivers/net/ethernet/8390/pcnet_cs.c
-drivers/net/ethernet/8390/smc-ultra.c
-drivers/net/ethernet/amd/nmclan_cs.c
-drivers/net/ethernet/fujitsu/fmvj18x_cs.c
-drivers/net/ethernet/hp/hp100.c
-drivers/net/ethernet/smsc/smc9194.c
-drivers/net/ethernet/smsc/smc91c92_cs.c
-drivers/net/ethernet/smsc/smc91x.h
-drivers/net/ethernet/xircom/xirc2ps_cs.c
-drivers/net/sb1000.c
-drivers/net/wan/sbni.c
-drivers/net/wireless/cisco/airo.c
-drivers/net/wireless/intersil/hostap/hostap_cs.c
-drivers/net/wireless/intersil/hostap/hostap_plx.c
-drivers/net/wireless/marvell/libertas/if_cs.c
-drivers/net/wireless/wl3501_cs.c
-drivers/parport/parport_pc.c
-drivers/pcmcia/m32r_cfc.c
-drivers/scsi/NCR53c406a.c
-drivers/scsi/aha152x.c
-drivers/scsi/eata_pio.c
-drivers/scsi/fdomain.c
-drivers/scsi/g_NCR5380.c
-drivers/scsi/imm.c
-drivers/scsi/nsp32_io.h
-drivers/scsi/pcmcia/nsp_io.h
-drivers/scsi/pcmcia/sym53c500_cs.c
-drivers/scsi/ppa.c
-drivers/scsi/qlogicfas408.c
-drivers/scsi/sym53c416.c
-drivers/staging/comedi/drivers/adl_pci9111.c
-drivers/staging/comedi/drivers/cb_pcidas.c
-drivers/staging/comedi/drivers/das16m1.c
-drivers/staging/comedi/drivers/das1800.c
-drivers/staging/iio/adc/ad7606_par.c
-drivers/tty/hvc/hvc_xen.c
-drivers/tty/isicom.c
-drivers/tty/rocket_int.h
-drivers/usb/host/isp1362.h
-drivers/usb/musb/blackfin.c
-sound/drivers/opl4/opl4_lib.c
-sound/isa/gus/gus_dram.c
-sound/isa/gus/gus_pcm.c
+> BTW my VGA experience is limited too...this is just my understanding...
+> 
+> Gab
+> 
+>> Specs exist so that hardware vendors and software authors follow them.
+>> If hardware does not conform, then software should either refuse to
+>> work
+>> with it, or handle it with quirks, on a case-by-case basis. I guess
+>> this
+>> means that I don't agree with the
+>>
+>>   broad[] suggest[ion] that a more generic solution would be better
+>>
+>> which seems to disqualify me from the discussion, as it must have been
+>> suggested by people with incomparably more experience than what I have
+>> :)
+>>
+>> Thanks
+>> Laszlo
