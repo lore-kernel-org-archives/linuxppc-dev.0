@@ -1,23 +1,40 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHLfB1qtpzDqmS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 13:47:30 +1000 (AEST)
-Date: Wed, 26 Jul 2017 13:25:48 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] include/linux/vfio.h: Guard powerpc-specific
- functions with CONFIG_VFIO_SPAPR_EEH
-Message-ID: <20170726032548.GA31874@umbus.fritz.box>
-References: <20170718172220.9954-1-mopsfelder@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHLmq0sctzDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 13:53:14 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6Q3mwJP083845
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 23:53:12 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bxbbcmufw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 23:53:11 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Tue, 25 Jul 2017 23:53:11 -0400
+Date: Tue, 25 Jul 2017 20:53:06 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arm-kernel@lists.infradead.org,
+ linuxarm@huawei.com, Andrew Morton <akpm@linux-foundation.org>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Don Zickus <dzickus@redhat.com>, David Miller <davem@davemloft.net>,
+ sparclinux@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n  - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170725175207.000001cb@huawei.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
-In-Reply-To: <20170718172220.9954-1-mopsfelder@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170725175207.000001cb@huawei.com>
+Message-Id: <20170726035306.GF3730@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,99 +44,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jul 26, 2017 at 12:52:07AM +0800, Jonathan Cameron wrote:
+> On Tue, 25 Jul 2017 08:12:45 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Tue, Jul 25, 2017 at 10:42:45PM +0800, Jonathan Cameron wrote:
+> > > On Tue, 25 Jul 2017 06:46:26 -0700
+> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > >   
+> > > > On Tue, Jul 25, 2017 at 10:26:54PM +1000, Nicholas Piggin wrote:  
+> > > > > On Tue, 25 Jul 2017 19:32:10 +0800
+> > > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+> > > > >     
+> > > > > > Hi All,
+> > > > > > 
+> > > > > > We observed a regression on our d05 boards (but curiously not
+> > > > > > the fairly similar but single socket / smaller core count
+> > > > > > d03), initially seen with linux-next prior to the merge window
+> > > > > > and still present in v4.13-rc2.
+> > > > > > 
+> > > > > > The symptom is:    
+> > > > 
+> > > > Adding Dave Miller and the sparclinux@vger.kernel.org email on CC, as
+> > > > they have been seeing something similar, and you might well have saved
+> > > > them the trouble of bisecting.
+> > > > 
+> > > > [ . . . ]
+> > > >   
+> > > > > > [ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1    
+> > > > 
+> > > > This is the cause from an RCU perspective.  You had a lot of idle CPUs,
+> > > > and RCU is not permitted to disturb them -- the battery-powered embedded
+> > > > guys get very annoyed by that sort of thing.  What happens instead is
+> > > > that each CPU updates a per-CPU state variable when entering or exiting
+> > > > idle, and the grace-period kthread ("rcu_preempt kthread" in the above
+> > > > message) checks these state variables, and if when sees an idle CPU,
+> > > > it reports a quiescent state on that CPU's behalf.
+> > > > 
+> > > > But the grace-period kthread can only do this work if it gets a chance
+> > > > to run.  And the message above says that this kthread hasn't had a chance
+> > > > to run for a full 5,663 jiffies.  For completeness, the "g1566 c1565"
+> > > > says that grace period #1566 is in progress, the "f0x0" says that no one
+> > > > is needing another grace period #1567.  The "RCU_GP_WAIT_FQS(3)" says
+> > > > that the grace-period kthread has fully initialized the current grace
+> > > > period and is sleeping for a few jiffies waiting to scan for idle tasks.
+> > > > Finally, the "->state=0x1" says that the grace-period kthread is in
+> > > > TASK_INTERRUPTIBLE state, in other words, still sleeping.  
+> > > 
+> > > Thanks for the explanation!  
+> > > > 
+> > > > So my first question is "What did commit 05a4a9527 (kernel/watchdog:
+> > > > split up config options) do to prevent the grace-period kthread from
+> > > > getting a chance to run?"   
+> > > 
+> > > As far as we can tell it was a side effect of that patch.
+> > > 
+> > > The real cause is that patch changed the result of defconfigs to stop running
+> > > the softlockup detector - now CONFIG_SOFTLOCKUP_DETECTOR
+> > > 
+> > > Enabling that on 4.13-rc2 (and presumably everything in between)
+> > > means we don't see the problem any more.
+> > >   
+> > > > I must confess that I don't see anything
+> > > > obvious in that commit, so my second question is "Are we sure that
+> > > > reverting this commit makes the problem go away?"  
+> > > 
+> > > Simply enabling CONFIG_SOFTLOCKUP_DETECTOR seems to make it go away.
+> > > That detector fires up a thread on every cpu, which may be relevant.  
+> > 
+> > Interesting...  Why should it be necessary to fire up a thread on every
+> > CPU in order to make sure that RCU's grace-period kthreads get some
+> > CPU time?  Especially give how many idle CPUs you had on your system.
+> > 
+> > So I have to ask if there is some other bug that the softlockup detector
+> > is masking.
+> I am thinking the same.  We can try going back further than 4.12 tomorrow
+> (we think we can realistically go back to 4.8 and possibly 4.6
+> with this board)
 
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Looking forward to seeing results!
 
-On Tue, Jul 18, 2017 at 02:22:20PM -0300, Murilo Opsfelder Araujo wrote:
-> When CONFIG_EEH=3Dy and CONFIG_VFIO_SPAPR_EEH=3Dn, build fails with the
-> following:
->=20
->     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_release':
->     vfio_pci.c:(.text+0xa98): undefined reference to `.vfio_spapr_pci_eeh=
-_release'
->     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_open':
->     vfio_pci.c:(.text+0x1420): undefined reference to `.vfio_spapr_pci_ee=
-h_open'
->=20
-> In this case, vfio_pci.c should use the empty definitions of
-> vfio_spapr_pci_eeh_open and vfio_spapr_pci_eeh_release functions.
->=20
-> This patch fixes it by guarding these function definitions with
-> CONFIG_VFIO_SPAPR_EEH, the symbol that controls whether vfio_spapr_eeh.c =
-is
-> built, which is where the non-empty versions of these functions are. We n=
-eed to
-> make use of IS_ENABLED() macro because CONFIG_VFIO_SPAPR_EEH is a tristate
-> option.
->=20
-> This issue was found during a randconfig build. Logs are here:
->=20
->     http://kisskb.ellerman.id.au/kisskb/buildresult/12982362/
->=20
-> Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+> > > > and my third is "Is
+> > > > this an intermittent problem that led to a false bisection?"  
+> > > 
+> > > Whilst it is a bit slow to occur, we verified with long runs on either
+> > > side of that patch and since with the option enabled on latest mainline.
+> > > 
+> > > Also can cause the issue before that patch by disabling the previous
+> > > relevant option on 4.12.  
+> > 
+> > OK, thank you -- hard to argue with that!  ;-)
+> 
+> We thought it was a pretty unlikely a bisection result
+> hence hammered it thoroughly ;)
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Glad that I am not the only paranoid one out here.  ;-)
 
-> ---
->=20
-> Changes from v1:
-> - Rebased on top of next-20170718.
->=20
->  include/linux/vfio.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 586809a..a47b985 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -152,7 +152,7 @@ extern int vfio_set_irqs_validate_and_prepare(struct =
-vfio_irq_set *hdr,
->  					      size_t *data_size);
->=20
->  struct pci_dev;
-> -#ifdef CONFIG_EEH
-> +#if IS_ENABLED(CONFIG_VFIO_SPAPR_EEH)
->  extern void vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
->  extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
->  extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
-> @@ -173,7 +173,7 @@ static inline long vfio_spapr_iommu_eeh_ioctl(struct =
-iommu_group *group,
->  {
->  	return -ENOTTY;
->  }
-> -#endif /* CONFIG_EEH */
-> +#endif /* CONFIG_VFIO_SPAPR_EEH */
->=20
->  /*
->   * IRQfd - generic
+> > Except that I am still puzzled as to why per-CPU softlockup threads
+> > are needed for RCU's kthreads to get their wakeups.  We really should
+> > be able to disable softlockup and still have kthreads get wakeups and
+> > access to CPU, after all.
+> > 
+> > > > [ . . . ]
+> > > >   
+> > > > > > Reducing the RCU CPU stall timeout makes it happen more often,
+> > > > > > but we are seeing even with the default value of 24 seconds.
+> > > > > > 
+> > > > > > Tends to occur after a period or relatively low usage, but has
+> > > > > > also been seen mid way through performance tests.
+> > > > > > 
+> > > > > > This was not seen with v4.12 so a bisection run later lead to
+> > > > > > commit 05a4a9527 (kernel/watchdog: split up config options).
+> > > > > > 
+> > > > > > Which was odd until we discovered that a side effect of this patch
+> > > > > > was to change whether the softlockup detector was enabled or not in
+> > > > > > the arm64 defconfig.
+> > > > > > 
+> > > > > > On 4.13-rc2 enabling the softlockup detector indeed stopped us
+> > > > > > seeing the rcu issue. Disabling the equivalent on 4.12 made the
+> > > > > > issue occur there as well.
+> > > > > > 
+> > > > > > Clearly the softlockup detector results in a thread on every cpu,
+> > > > > > which might be related but beyond that we are still looking into
+> > > > > > the issue.
+> > > > > > 
+> > > > > > So the obvious question is whether anyone else is seeing this as
+> > > > > > it might help us to focus in on where to look!    
+> > > > > 
+> > > > > Huh. Something similar has been seen very intermittently on powerpc
+> > > > > as well. We couldn't reproduce it reliably to bisect it already, so
+> > > > > this is a good help.
+> > > > > 
+> > > > > http://marc.info/?l=linuxppc-embedded&m=149872815523646&w=2
+> > > > > 
+> > > > > It looks like the watchdog patch has a similar effect on powerpc in
+> > > > > that it stops enabling the softlockup detector by default. Haven't
+> > > > > confirmed, but it looks like the same thing.
+> > > > > 
+> > > > > A bug in RCU stall detection?    
+> > > > 
+> > > > Well, if I am expected to make grace periods complete when my grace-period
+> > > > kthreads aren't getting any CPU time, I will have to make some substantial
+> > > > changes.  ;-)
+> > > > 
+> > > > One possibility is that the timer isn't firing and another is that the
+> > > > timer's wakeup is being lost somehow.
+> > > > 
+> > > > So another thing to try is to boot with rcutree.rcu_kick_kthreads=1.
+> > > > This will cause RCU to do redundant wakeups on the grace-period kthread
+> > > > if the grace period is moving slowly.  This is of course a crude hack,
+> > > > which is why this boot parameter will also cause a splat if it ever has
+> > > > to do anything.  
+> > > 
+> > > Running that now will let you know how it goes.  Not seen the issue yet
+> > > but might just be a 'lucky' run - will give it a few hours.  
+> > 
+> > Thank you very much!
+> 
+> So far it's not actually shown any splats.  I did a quick drop back to running
+> without the parameter and got the original splat in less that 5 minutes.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+That is a bit strange.  Sensitive to code position or some such???
 
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature; name="signature.asc"
+> I've spun up another board with this parameter set as well and will leave
+> them both running overnight to see if anything interesting happens.
+> 
+> Thanks for your help with this,
 
------BEGIN PGP SIGNATURE-----
+And thanks to you as well!!!
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAll4C7oACgkQbDjKyiDZ
-s5LFFRAAzB3W+HTxJa/3qUHsPpdZkBlNg0rTH1d3/sQJCcBrGVRLnowphSkycB0n
-aFWjQyEhBmimve9IcoMo5i0XH46SVQhk/OqogxgoJqb3qsGV0wEj2aW4lW1jfa1u
-GBMSFNL9qzjDV+4LSAfpHiTbZxKWGMjjMp8qMklK9NNkeIXTMB03OURVO8wNneFM
-IgkHn60LSE4l5yTjuRsjDPcSmlwaiSZosHAjezLoNCT0Ozz3kyY3DGEMUG8B9b1y
-cI6cqZ8DVXydTUJGyo5W8cPU2dVypYZscPrnU8kUw6IK80aYEGBeAucBwLEK9kT0
-ajheFEJ8FYkuP7LPLkzNuBx6R08NLcm4tSaimQxQxJuV5YAmFw4I4X//L2e0seuo
-1A3BkrZPuOuZf8aMg+YERw9zAJUt/nXxcbbxM36uSBmIbz9qKiokVT4R/sqgJZj8
-l5ugqV4Js27myaP7bAO3FRvLMD4tBxnlPv2vszKBfKRqH9aaF+Re8cdDrKWW7Dw2
-SSQ+zTAcLkCHUrc9/h3iCO++U96cxP4PtQiQst3C0AeeArmh/LgHcYkCbeQFzgzK
-XEqbrAwGNdalbOxgC238dqNFnjw01qQUNBs4eshMYb4qiwCN2HtTkAa+i9286zKt
-nWOuA/3GOUMxlbopBnb+rIh6nuOiKI7RbdpK0inP8kULVZoSJQY=
-=JpLZ
------END PGP SIGNATURE-----
+							Thanx, Paul
 
---d6Gm4EdcadzBjdND--
+> Jonathan
+> 
+> > 
+> > 							Thanx, Paul
+> > 
+> > > Jonathan  
+> > > > 
+> > > > Does this help at all?
+> > > > 
+> > > > 							Thanx, Paul
+> > > >   
+> > > > > > In the meantime we'll carry on digging.
+> > > > > > 
+> > > > > > Thanks,
+> > > > > > 
+> > > > > > Jonathan
+> > > > > > 
+> > > > > > p.s. As a more general question, do we want to have the
+> > > > > > soft lockup detector enabledon arm64 by default?    
+> > > > > 
+> > > > > I've cc'ed Don. My patch should not have changed defconfigs, I
+> > > > > should have been more careful with that.
+> > > > > 
+> > > > > Thanks,
+> > > > > Nick
+> > > > >     
+> > > >   
+> > > 
+> > >   
+> > 
+> 
+> 
