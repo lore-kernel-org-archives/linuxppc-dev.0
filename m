@@ -1,41 +1,46 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <brijesh.singh@amd.com>
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0075.outbound.protection.outlook.com [104.47.40.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHjLj3VW4zDqpW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 03:50:21 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6QHi7AL012552
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 13:50:18 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bxvtnsewj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 13:50:17 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Wed, 26 Jul 2017 13:50:16 -0400
-Date: Wed, 26 Jul 2017 10:50:13 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: Jonathan.Cameron@huawei.com, dzickus@redhat.com, sfr@canb.auug.org.au,
- linuxarm@huawei.com, npiggin@gmail.com, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170726152315.00003d61@huawei.com>
- <20170726163340.0000014f@huawei.com>
- <20170726154900.GQ3730@linux.vnet.ibm.com>
- <20170726.095432.169004918437663011.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHlRw6k6fzDqsB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 05:24:59 +1000 (AEST)
+Cc: brijesh.singh@amd.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>,
+ David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>,
+ Jonathan Corbet <corbet@lwn.net>, =?UTF-8?Q?Radim_Krcm=c3=a1r?=
+ <rkrcmar@redhat.com>, Piotr Luc <piotr.luc@intel.com>,
+ Ingo Molnar <mingo@redhat.com>, Dave Airlie <airlied@redhat.com>,
+ Borislav Petkov <bp@suse.de>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Kees Cook <keescook@chromium.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Laura Abbott <labbott@redhat.com>,
+ Tony Luck <tony.luck@intel.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Eric Biederman <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Lu Baolu <baolu.lu@linux.intel.com>
+Subject: Re: [RFC Part1 PATCH v3 13/17] x86/io: Unroll string I/O when SEV is
+ active
+To: Arnd Bergmann <arnd@arndb.de>, David Laight <David.Laight@aculab.com>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-14-brijesh.singh@amd.com>
+ <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
+ <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
+From: Brijesh Singh <brijesh.singh@amd.com>
+Message-ID: <ed6d4ce7-97a6-f664-d7d7-4ff48bc6f06a@amd.com>
+Date: Wed, 26 Jul 2017 14:24:45 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170726.095432.169004918437663011.davem@davemloft.net>
-Message-Id: <20170726175013.GT3730@linux.vnet.ibm.com>
+In-Reply-To: <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,85 +50,219 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 26, 2017 at 09:54:32AM -0700, David Miller wrote:
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Wed, 26 Jul 2017 08:49:00 -0700
+
+Hi Arnd and David,
+
+On 07/26/2017 05:45 AM, Arnd Bergmann wrote:
+> On Tue, Jul 25, 2017 at 11:51 AM, David Laight <David.Laight@aculab.com> wrote:
+>> From: Brijesh Singh
+>>> Sent: 24 July 2017 20:08
+>>> From: Tom Lendacky <thomas.lendacky@amd.com>
+>>>
+>>> Secure Encrypted Virtualization (SEV) does not support string I/O, so
+>>> unroll the string I/O operation into a loop operating on one element at
+>>> a time.
+>>>
+>>> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+>>> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+>>> ---
+>>>   arch/x86/include/asm/io.h | 26 ++++++++++++++++++++++----
+>>>   1 file changed, 22 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+>>> index e080a39..2f3c002 100644
+>>> --- a/arch/x86/include/asm/io.h
+>>> +++ b/arch/x86/include/asm/io.h
+>>> @@ -327,14 +327,32 @@ static inline unsigned type in##bwl##_p(int port)                       \
+>>>                                                                        \
+>>>   static inline void outs##bwl(int port, const void *addr, unsigned long count) \
+>>>   {
 > 
-> > On Wed, Jul 26, 2017 at 04:33:40PM +0100, Jonathan Cameron wrote:
-> >> Didn't leave it long enough. Still bad on 4.10-rc7 just took over
-> >> an hour to occur.
-> > 
-> > And it is quite possible that SOFTLOCKUP_DETECTOR=y and HZ_PERIODIC=y
-> > are just greatly reducing the probability of the problem rather than
-> > completely preventing it.
-> > 
-> > Still, hopefully useful information, thank you for the testing!
+> This will clash with a fix I did to add a "memory" clobber
+> for the traditional implementation, see
+> https://patchwork.kernel.org/patch/9854573/
 > 
-> I guess that invalidates my idea to test reverting recent changes to
-> the tick-sched.c code... :-/
+>> Is it even worth leaving these as inline functions?
+>> Given the speed of IO cycles it is unlikely that the cost of calling a real
+>> function will be significant.
+>> The code bloat reduction will be significant.
 > 
-> In NO_HZ_IDLE mode, what is really supposed to happen on a completely
-> idle system?
-> 
-> All the cpus enter the idle loop, have no timers programmed, and they
-> all just go to sleep until an external event happens.
-> 
-> What ensures that grace periods get processed in this regime?
+> I think the smallest code would be the original "rep insb" etc, which
+> should be smaller than a function call, unlike the loop. Then again,
+> there is a rather small number of affected device drivers, almost all
+> of them for ancient hardware that you won't even build in a 64-bit
+> x86 kernel, see the list below. The only user I found that is actually
+> still relevant is drivers/tty/hvc/hvc_xen.c, which uses it for the early
+> console.
 
-There are several different situations with different mechanisms:
 
-1.	No grace period is in progress and no RCU callbacks are pending
-	anywhere in the system.  In this case, some other event would
-	need to start a grace period, so RCU just stays idle until that
-	happens, possibly indefinitely.  According to the battery-powered
-	embedded guys, this is a feature, not a bug.  ;-)
+There are some indirect user of string I/O functions. The following functions
+defined in lib/iomap.c calls rep version of ins and outs.
 
-2.	No grace period is in progress, but there is at least one RCU
-	callback somewhere in the system.  In this case, the mechanism
-	depends on CONFIG_RCU_FAST_NO_HZ:
+- ioread8_rep, ioread16_rep, ioread32_rep
+- iowrite8_rep, iowrite16_rep, iowrite32_rep
 
-	CONFIG_RCU_FAST_NO_HZ=n:  The CPU on which the callback is
-		queued will return "true" in response to the call to
-		rcu_needs_cpu() that is made shortly before that CPU
-		enters idle.  This will cause the scheduling-clock
-		interrupt to remain on, despite the CPU being idle,
-		which will in turn allow RCU's state machine to continue
-		running out of softirq, triggered by the scheduling-clock
-		interrupts.
+I found that several drivers use above functions.
 
-	CONFIG_RCU_FAST_NO_HZ=y:  The CPU on which the callback is queued
-		will return "false" in response to the call to
-		rcu_needs_cpu() that is made shortly before that CPU
-		enters idle.  However, it will also request a next event
-		about six seconds in the future if all callbacks do
-		nothing but free memory (kfree_rcu()), or about four
-		jiffies in the future if at least one callback does
-		something more than just free memory.
+Here is one approach to convert it into non-inline functions. In this approach,
+I have added a new file arch/x86/kernel/io.c which provides non rep version of
+string I/O routines. The file gets built and used only when AMD_MEM_ENCRYPT is
+enabled. On positive side, if we don't build kernel with AMD_MEM_ENCRYPT support
+then we use inline routines, when AMD_MEM_ENCRYPT is built then we make a function
+call. Inside the function we unroll only when SEV is active.
 
-		There is also a rcu_prepare_for_idle() function that
-		is invoked later in the idle-entry process in this case
-		which will wake up the grace-period kthread if need be.
+Do you see any issue with this approach ? thanks
 
-3.	A grace period is in progress.  In this case the grace-period
-	kthread is either currently running (in which case there will be
-	at least one non-idle CPU) or is in a timed wait for its next
-	scan for idle/offline CPUs (such CPUs need the grace-period
-	kthread to report quiescent states on their behalf).  In this
-	latter case, the timer subsystem will post a next event that
-	will be the wakeup time for the grace-period kthread, or some
-	earlier event.
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index e080a39..104927d 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -323,8 +323,9 @@ static inline unsigned type in##bwl##_p(int port)                   \
+         unsigned type value = in##bwl(port);                            \
+         slow_down_io();                                                 \
+         return value;                                                   \
+-}                                                                      \
+-                                                                       \
++}
++
++#define BUILDIO_REP(bwl, bw, type)                                     \
+  static inline void outs##bwl(int port, const void *addr, unsigned long count) \
+  {                                                                      \
+         asm volatile("rep; outs" #bwl                                   \
+@@ -335,12 +336,31 @@ static inline void ins##bwl(int port, void *addr, unsigned long count)    \
+  {                                                                      \
+         asm volatile("rep; ins" #bwl                                    \
+                      : "+D"(addr), "+c"(count) : "d"(port));            \
+-}
++}                                                                      \
+  
+  BUILDIO(b, b, char)
+  BUILDIO(w, w, short)
+  BUILDIO(l, , int)
+  
++#ifdef CONFIG_AMD_MEM_ENCRYPT
++extern void outsb_try_rep(int port, const void *addr, unsigned long count);
++extern void insb_try_rep(int port, void *addr, unsigned long count);
++extern void outsw_try_rep(int port, const void *addr, unsigned long count);
++extern void insw_try_rep(int port, void *addr, unsigned long count);
++extern void outsl_try_rep(int port, const void *addr, unsigned long count);
++extern void insl_try_rep(int port, void *addr, unsigned long count);
++#define outsb  outsb_try_rep
++#define insb   insb_try_rep
++#define outsw  outsw_try_rep
++#define insw   insw_try_rep
++#define outsl  outsl_try_rep
++#define insl   insl_try_rep
++#else
++BUILDIO_REP(b, b, char)
++BUILDIO_REP(w, w, short)
++BUILDIO_REP(l, , int)
++#endif
++
+  extern void *xlate_dev_mem_ptr(phys_addr_t phys);
+  extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);
 
-	This is where we have been seeing trouble, if for no other
-	reason because RCU CPU stall warnings only happen when there
-	is a grace period in progress.
-
-That is the theory, anyway...
-
-And when I enabled CONFIG_SOFTLOCKUP_DETECTOR, I still see failures.
-I did 24 half-hour rcutorture runs on the TREE01 scenario, and two of them
-saw RCU CPU stall warnings with starvation of the grace-period kthread.
-I just now started another test but without CONFIG_SOFTLOCKUP_DETECTOR
-to see if it makes a significance difference for my testing.  I do have
-CONFIG_RCU_FAST_NO_HZ=y in my runs.
-
-							Thanx, Paul
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index a01892b..3b6e2a3 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -42,6 +42,7 @@ CFLAGS_irq.o := -I$(src)/../include/asm/trace
+  
+  obj-y                  := process_$(BITS).o signal.o
+  obj-$(CONFIG_COMPAT)   += signal_compat.o
++obj-$(CONFIG_AMD_MEM_ENCRYPT) += io.o
+  obj-y                  += traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+  obj-y                  += time.o ioport.o dumpstack.o nmi.o
+  obj-$(CONFIG_MODIFY_LDT_SYSCALL)       += ldt.o
+diff --git a/arch/x86/kernel/io.c b/arch/x86/kernel/io.c
+new file mode 100644
+index 0000000..f58afa9
+--- /dev/null
++++ b/arch/x86/kernel/io.c
+@@ -0,0 +1,87 @@
++#include <linux/types.h>
++#include <linux/io.h>
++#include <asm/io.h>
++
++void outsb_try_rep(int port, const void *addr, unsigned long count)
++{
++       if (sev_active()) {
++               unsigned char *value = (unsigned char *)addr;
++               while (count) {
++                       outb(*value, port);
++                       value++;
++                       count--;
++               }
++       } else {
++               asm volatile("rep; outsb" : "+S"(addr), "+c"(count) : "d"(port));
++       }
++}
++
++void insb_try_rep(int port, void *addr, unsigned long count)
++{
++       if (sev_active()) {
++               unsigned char *value = (unsigned char *)addr;
++               while (count) {
++                       *value = inb(port);
++                       value++;
++                       count--;
++               }
++       } else {
++               asm volatile("rep; insb" : "+D"(addr), "+c"(count) : "d"(port));
++       }
++}
++
++void outsw_try_rep(int port, const void *addr, unsigned long count)
++{
++       if (sev_active()) {
++               unsigned short *value = (unsigned short *)addr;
++               while (count) {
++                       outw(*value, port);
++                       value++;
++                       count--;
++               }
++       } else {
++               asm volatile("rep; outsw" : "+S"(addr), "+c"(count) : "d"(port));
++       }
++}
++void insw_try_rep(int port, void *addr, unsigned long count)
++{
++       if (sev_active()) {
++               unsigned short *value = (unsigned short *)addr;
++               while (count) {
++                       *value = inw(port);
++                       value++;
++                       count--;
++               }
++       } else {
++               asm volatile("rep; insw" : "+D"(addr), "+c"(count) : "d"(port));
++       }
++}
++
++void outsl_try_rep(int port, const void *addr, unsigned long count)
++{
++       if (sev_active()) {
++               unsigned int *value = (unsigned int *)addr;
++               while (count) {
++                       outl(*value, port);
++                       value++;
++                       count--;
++               }
++       } else {
++               asm volatile("rep; outsl" : "+S"(addr), "+c"(count) : "d"(port));
++       }
++}
++
++void insl_try_rep(int port, void *addr, unsigned long count)
++{
++       if (sev_active()) {
++               unsigned int *value = (unsigned int *)addr;
++               while (count) {
++                       *value = inl(port);
++                       value++;
++                       count--;
++               }
++       } else {
++               asm volatile("rep; insl" : "+D"(addr), "+c"(count) : "d"(port));
++       }
++}
