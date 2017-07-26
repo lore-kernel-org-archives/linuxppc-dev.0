@@ -1,16 +1,46 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joserz@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHbK96fP2zDqnP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 23:18:37 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/Makefile: Fix ld version check with 64-bit LE-only
- toolchain
-Date: Wed, 26 Jul 2017 23:18:31 +1000
-Message-Id: <1501075111-20198-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHbKn2QSzzDqp7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 23:19:09 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6QDIxuw078772
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 09:19:07 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bxqghdprq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 09:19:06 -0400
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
+ Wed, 26 Jul 2017 10:19:03 -0300
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6QDJ0TD38863000
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 10:19:00 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6QAJ0cJ029376
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 07:19:00 -0300
+Date: Wed, 26 Jul 2017 10:18:48 -0300
+From: joserz@linux.vnet.ibm.com
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, oohall@gmail.com
+Subject: Re: KVM guests freeze under upstream kernel
+References: <20170719194634.GA1222@pacoca>
+ <1500507770.3350.41.camel@kernel.crashing.org>
+ <20170720030222.GA21034@pacoca>
+ <20170720052159.GB8602@fergus.ozlabs.ibm.com>
+ <20170721011818.GC13187@pacoca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170721011818.GC13187@pacoca>
+Message-Id: <20170726131848.GA13783@pacoca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,82 +50,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit efe0160cfd40 ("powerpc/64: Linker on-demand sfpr functions
-for modules"), we added an ld version check early in the powerpc
-top-level Makefile.
+On Thu, Jul 20, 2017 at 10:18:18PM -0300, joserz@linux.vnet.ibm.com wrote:
+> On Thu, Jul 20, 2017 at 03:21:59PM +1000, Paul Mackerras wrote:
+> > On Thu, Jul 20, 2017 at 12:02:23AM -0300, joserz@linux.vnet.ibm.com wrote:
+> > > On Thu, Jul 20, 2017 at 09:42:50AM +1000, Benjamin Herrenschmidt wrote:
+> > > > On Wed, 2017-07-19 at 16:46 -0300, joserz@linux.vnet.ibm.com wrote:
+> > > > > Hello!
+> > > > > 
+> > > > > We're not able to boot any KVM guest using upstream kernel (cb8c65ccff7f77d0285f1b126c72d37b2572c865 - 4.13.0-rc1+).
+> > > > > After reaching the SLOF initial counting, the guest simply freezes:
+> > > > 
+> > > > Can you send our .config ?
+> > > 
+> > > Sure,
+> > > 
+> > > Answering Michael as well:
+> > > 
+> > > It's a P9 with RHEL kernel 4.11.0-10.el7a.ppc64le installed. The problem
+> > > was noticed with kernel > 4.13 (I'm currently running 4.13.0-rc1+).
+> > > 
+> > > QEMU is https://github.com/dgibson/qemu (ppc-for-2.10) but I gave the
+> > > default packaged Qemu a try.
+> > > 
+> > > For the guest, I tried both a vanilla Ubuntu 17.04 and the host kernel.
+> > > But they had never a chance to run since the freezing happened in SLOF.
+> > > 
+> > > Note that using the 4.11.0-10.el7a.ppc64le kernel it works fine
+> > > (for any of these Qemu/Guest setup). With 4.13.0-rc1 I have it run after
+> > > reverting that referred commit.
+> > 
+> > Is the host kernel running in radix mode?
+> 
+> yes
+> 
+> > 
+> > Did you check the host kernel logs for any oops messages?
+> 
+> dmesg was clean but after sometime waiting (I forgot QEMU running in
+> another terminal) I got the oops below (after rebooting the host I 
+> couldn't reproduce it again).
+> 
+> Another test that I did was:
+> Compile with transparent huge pages disabled: KVM works fine
+> Compile with transparent huge pages enabled: doesn't work
+>   + disabling it in /sys/kernel/mm/transparent_hugepage: doesn't work
+> 
+> Just out of my own curiosity I made this small change:
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> b/arch/powerpc/include
+> index c0737c8..f94a3b6 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -80,7 +80,7 @@
+>  
+>   #define _PAGE_SOFT_DIRTY       _RPAGE_SW3 /* software: software dirty
+>   tracking 
+>    #define _PAGE_SPECIAL          _RPAGE_SW2 /* software: special page */
+>    -#define _PAGE_DEVMAP           _RPAGE_SW1 /* software: ZONE_DEVICE page */
+>    +#define _PAGE_DEVMAP           _RPAGE_RSV3
+>     #define __HAVE_ARCH_PTE_DEVMAP
+> 
+> and it works. I chose _RPAGE_RSV3 because it uses the same value that
+> x86 uses (0x0400000000000000UL) but I don't if it could have any side
+> effect
+> 
 
-Because the Makefile runs before the kernel config is setup, the
-checks for CONFIG_CPU_LITTLE_ENDIAN etc. all take the default case. So
-we end up configuring ld for 32-bit big endian.
+Does this change make any sense to you people?
+I didn't see any side effect expect that devices backed memory will have
+a bigger address space in transparent huge pages IF I understand that
+correctly.
 
-That would be OK, except that for historical (or perhaps no) reason,
-we use 'override LD' to add the endian flags to the LD variable
-itself, rather than the normal approach of adding them to LDFLAGS.
+If so I can send a patch with this change.
 
-The end result is that when we check the ld version we run it as:
-
-  $(CROSS_COMPILE)ld -EB -m elf32ppc --version
-
-This often works, unless you are using a 64-bit only and/or little
-endian only, toolchain. In which case you see something like:
-
-  $ make defconfig
-  powerpc64le-linux-ld: unrecognised emulation mode: elf32ppc
-  Supported emulations: elf64lppc elf32lppc elf32lppclinux elf32lppcsim
-  /bin/sh: 1: [: -ge: unexpected operator
-
-The proper fix is to stop using 'override LD', but that will require a
-fair bit of testing. Instead we can fix it for now just by reordering
-the Makefile to do the version check earlier.
-
-Fixes: efe0160cfd40 ("powerpc/64: Linker on-demand sfpr functions for modules")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Makefile | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 8d4ed73d5490..e2b3e7a00c9e 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -59,6 +59,19 @@ machine-$(CONFIG_PPC64) += 64
- machine-$(CONFIG_CPU_LITTLE_ENDIAN) += le
- UTS_MACHINE := $(subst $(space),,$(machine-y))
- 
-+# XXX This needs to be before we override LD below
-+ifdef CONFIG_PPC32
-+KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
-+else
-+ifeq ($(call ld-ifversion, -ge, 225000000, y),y)
-+# Have the linker provide sfpr if possible.
-+# There is a corresponding test in arch/powerpc/lib/Makefile
-+KBUILD_LDFLAGS_MODULE += --save-restore-funcs
-+else
-+KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
-+endif
-+endif
-+
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
- override LD	+= -EL
- LDEMULATION	:= lppc
-@@ -190,18 +203,6 @@ else
- CHECKFLAGS	+= -D__LITTLE_ENDIAN__
- endif
- 
--ifdef CONFIG_PPC32
--KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
--else
--ifeq ($(call ld-ifversion, -ge, 225000000, y),y)
--# Have the linker provide sfpr if possible.
--# There is a corresponding test in arch/powerpc/lib/Makefile
--KBUILD_LDFLAGS_MODULE += --save-restore-funcs
--else
--KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
--endif
--endif
--
- ifeq ($(CONFIG_476FPE_ERR46),y)
- 	KBUILD_LDFLAGS_MODULE += --ppc476-workaround \
- 		-T $(srctree)/arch/powerpc/platforms/44x/ppc476_modules.lds
--- 
-2.7.4
+Thank you!!
