@@ -1,12 +1,13 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHHK9581tzDqmL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 11:17:33 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id y129so15856924pgy.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 18:17:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHHdV5TXxzDqmL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 11:31:42 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id 1so6055417pfi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 18:31:42 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Subject: Re: [PATCH v2] include/linux/vfio.h: Guard powerpc-specific functions
  with CONFIG_VFIO_SPAPR_EEH
 To: Alex Williamson <alex.williamson@redhat.com>,
@@ -17,9 +18,8 @@ Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
 References: <20170718172220.9954-1-mopsfelder@gmail.com>
  <c570cffb-f713-22d9-ebf7-46d752d562be@gmail.com>
  <20170725094439.7859c41c@w520.home>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <f25119f5-9fe9-0e0d-7a33-8e350319d1d5@ozlabs.ru>
-Date: Wed, 26 Jul 2017 11:17:25 +1000
+Message-ID: <53117866-6a0e-5d37-0c14-2d67b86b4b6a@ozlabs.ru>
+Date: Wed, 26 Jul 2017 11:31:34 +1000
 MIME-Version: 1.0
 In-Reply-To: <20170725094439.7859c41c@w520.home>
 Content-Type: text/plain; charset=UTF-8
@@ -37,6 +37,7 @@ On 26/07/17 01:44, Alex Williamson wrote:
 > 
 > Any comments from the usual suspects for vfio/spapr?  Thanks,
 
+[trying again as mailists rejected the previous response]
 
 Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
