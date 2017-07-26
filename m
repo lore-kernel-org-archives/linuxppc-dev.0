@@ -1,28 +1,25 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHHdV5TXxzDqmL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 11:31:42 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id 1so6055417pfi.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jul 2017 18:31:42 -0700 (PDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v2] include/linux/vfio.h: Guard powerpc-specific functions
- with CONFIG_VFIO_SPAPR_EEH
-To: Alex Williamson <alex.williamson@redhat.com>,
- =?UTF-8?Q?Murilo_Opsfelder_Ara=c3=bajo?= <mopsfelder@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-References: <20170718172220.9954-1-mopsfelder@gmail.com>
- <c570cffb-f713-22d9-ebf7-46d752d562be@gmail.com>
- <20170725094439.7859c41c@w520.home>
-Message-ID: <53117866-6a0e-5d37-0c14-2d67b86b4b6a@ozlabs.ru>
-Date: Wed, 26 Jul 2017 11:31:34 +1000
-MIME-Version: 1.0
-In-Reply-To: <20170725094439.7859c41c@w520.home>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHJKl6cg2zDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 12:03:07 +1000 (AEST)
+Message-ID: <1501034563.2792.16.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Santosh Sivaraj <santosh@fossix.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner
+ <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>
+Date: Wed, 26 Jul 2017 12:02:43 +1000
+In-Reply-To: <20170725134715.fjkgaexhjzrkolal@santosiv.in.ibm.com>
+References: <20170721090944.16889-1-santosh@fossix.org>
+ <20170725065613.7039-1-santosh@fossix.org>
+ <1500977248.2792.1.camel@kernel.crashing.org>
+ <20170725134715.fjkgaexhjzrkolal@santosiv.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,63 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/07/17 01:44, Alex Williamson wrote:
-> [cc +Alexey, David]
-> 
-> Any comments from the usual suspects for vfio/spapr?  Thanks,
+On Tue, 2017-07-25 at 19:17 +0530, Santosh Sivaraj wrote:
+> I get the point. I looked at the generated assembly a bit closer, the update
+> count is optimized out. Will send the alternative asm only patch.
 
-[trying again as mailists rejected the previous response]
+We could do it in C the way x86 does it, using some helpers for
+begin/end and have either an lwsync (but that would be slower than
+the data dependency I think) or carefully crafting the helpers to
+create one (make them return the pointer).
 
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+If you go down that path though, you need to make sure we do not
+generate any TOC reference as the vDSO doesn't have a TOC.
 
-
-Having EEH + VFIO_PCI and not having VFIO_SPAPR_EEH does not make practical
-sense and won't be seen in the wild so EEH + VFIO should enforce
-VFIO_SPAPR_EEH but this is for another patch.
-
-
-> 
-> Alex
-> 
-> On Tue, 25 Jul 2017 10:56:38 -0300
-> Murilo Opsfelder Araújo <mopsfelder@gmail.com> wrote:
-> 
->> On 07/18/2017 02:22 PM, Murilo Opsfelder Araujo wrote:
->>> When CONFIG_EEH=y and CONFIG_VFIO_SPAPR_EEH=n, build fails with the
->>> following:
->>>
->>>     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_release':
->>>     vfio_pci.c:(.text+0xa98): undefined reference to `.vfio_spapr_pci_eeh_release'
->>>     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_open':
->>>     vfio_pci.c:(.text+0x1420): undefined reference to `.vfio_spapr_pci_eeh_open'
->>>
->>> In this case, vfio_pci.c should use the empty definitions of
->>> vfio_spapr_pci_eeh_open and vfio_spapr_pci_eeh_release functions.
->>>
->>> This patch fixes it by guarding these function definitions with
->>> CONFIG_VFIO_SPAPR_EEH, the symbol that controls whether vfio_spapr_eeh.c is
->>> built, which is where the non-empty versions of these functions are. We need to
->>> make use of IS_ENABLED() macro because CONFIG_VFIO_SPAPR_EEH is a tristate
->>> option.
->>>
->>> This issue was found during a randconfig build. Logs are here:
->>>
->>>     http://kisskb.ellerman.id.au/kisskb/buildresult/12982362/
->>>
->>> Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
->>> ---
->>>
->>> Changes from v1:
->>> - Rebased on top of next-20170718.  
->>
->> Hi, Alex.
->>
->> Are you applying this?
->>
->> Thanks!
->>
-> 
-
-
--- 
-Alexey
+Cheers,
+Ben.
