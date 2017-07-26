@@ -1,45 +1,28 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHWjh0zGnzDqmr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:36:07 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6QAZX7p143628
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 06:36:05 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bxnxv25qc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 06:36:05 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 26 Jul 2017 20:36:01 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6QAZxSK26476620
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:35:59 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6QAZnFH018084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:35:50 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- linuxram@us.ibm.com, mhocko@kernel.org
-Subject: Re: [PATCH 1/6] powerpc: Free up four 64K PTE bits in 4K backed HPTE
- pages
-In-Reply-To: <1500663129-10615-2-git-send-email-linuxram@us.ibm.com>
-References: <1500663129-10615-1-git-send-email-linuxram@us.ibm.com>
- <1500663129-10615-2-git-send-email-linuxram@us.ibm.com>
-Date: Wed, 26 Jul 2017 16:05:48 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHWmy6VV6zDqmw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:38:58 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id y129so17030775pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 03:38:58 -0700 (PDT)
+Date: Wed, 26 Jul 2017 20:38:38 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
+ stop4 cpuidle
+Message-ID: <20170726203838.5a2b8dc4@roar.ozlabs.ibm.com>
+In-Reply-To: <57ed82bcd92cd4d0af7ae5113710d597a331c433.1500631040.git.ego@linux.vnet.ibm.com>
+References: <cover.1500631040.git.ego@linux.vnet.ibm.com>
+ <57ed82bcd92cd4d0af7ae5113710d597a331c433.1500631040.git.ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87lgnb1o57.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,137 +32,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
+On Fri, 21 Jul 2017 16:11:37 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-> Rearrange 64K PTE bits to  free  up  bits 3, 4, 5  and  6,
-> in the 4K backed HPTE pages.These bits continue to be used
-> for 64K backed HPTE pages in this patch, but will be freed
-> up in the next patch. The  bit  numbers are big-endian  as
-> defined in the ISA3.0
->
-> The patch does the following change to the 4k htpe backed
-> 64K PTE's format.
->
-> H_PAGE_BUSY moves from bit 3 to bit 9 (B bit in the figure
-> 		below)
-> V0 which occupied bit 4 is not used anymore.
-> V1 which occupied bit 5 is not used anymore.
-> V2 which occupied bit 6 is not used anymore.
-> V3 which occupied bit 7 is not used anymore.
->
-> Before the patch, the 4k backed 64k PTE format was as follows
->
->  0 1 2 3 4  5  6  7  8 9 10...........................63
->  : : : : :  :  :  :  : : :                            :
->  v v v v v  v  v  v  v v v                            v
->
-> ,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
-> |x|x|x|B|V0|V1|V2|V3|x| | |x|x|................|x|x|x|x| <- primary pte
-> '_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
-> |S|G|I|X|S |G |I |X |S|G|I|X|..................|S|G|I|X| <- secondary pte
-> '_'_'_'_'__'__'__'__'_'_'_'_'__________________'_'_'_'_'
->
-> After the patch, the 4k backed 64k PTE format is as follows
->
->  0 1 2 3 4  5  6  7  8 9 10...........................63
->  : : : : :  :  :  :  : : :                            :
->  v v v v v  v  v  v  v v v                            v
->
-> ,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
-> |x|x|x| |  |  |  |  |x|B| |x|x|................|.|.|.|.| <- primary pte
-> '_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
-> |S|G|I|X|S |G |I |X |S|G|I|X|..................|S|G|I|X| <- secondary pte
-> '_'_'_'_'__'__'__'__'_'_'_'_'__________________'_'_'_'_'
->
-> the four  bits S,G,I,X (one quadruplet per 4k HPTE) that
-> cache  the  hash-bucket  slot  value, is initialized  to
-> 1,1,1,1 indicating -- an invalid slot.   If  a HPTE gets
-> cached in a 1111  slot(i.e 7th  slot  of  secondary hash
-> bucket), it is  released  immediately. In  other  words,
-> even  though 1111   is   a valid slot  value in the hash
-> bucket, we consider it invalid and  release the slot and
-> the HPTE.  This  gives  us  the opportunity to determine
-> the validity of S,G,I,X  bits  based on its contents and
-> not on any of the bits V0,V1,V2 or V3 in the primary PTE
->
-> When   we  release  a    HPTE    cached in the 1111 slot
-> we also    release  a  legitimate   slot  in the primary
-> hash bucket  and  unmap  its  corresponding  HPTE.  This
-> is  to  ensure   that  we do get a HPTE cached in a slot
-> of the primary hash bucket, the next time we retry.
->
-> Though  treating  1111  slot  as  invalid,  reduces  the
-> number of  available  slots  in the hash bucket and  may
-> have  an  effect   on the performance, the probabilty of
-> hitting a 1111 slot is extermely low.
->
-> Compared  to  the  current   scheme, the above described
-> scheme  reduces  the  number of false hash table updates
-> significantly   and    has  the   added   advantage   of
-> releasing  four  valuable  PTE bits for other purpose.
->
-> NOTE:even though bits 3, 4, 5, 6, 7 are  not  used  when
-> the  64K  PTE is backed by 4k HPTE,  they continue to be
-> used  if  the  PTE  gets  backed  by 64k HPTE.  The next
-> patch will decouple that aswell, and truely  release the
-> bits.
->
-> This idea was jointly developed by Paul Mackerras,
-> Aneesh, Michael Ellermen and myself.
->
-> 4K PTE format remains unchanged currently.
->
-> The patch does the following code changes
-> a) PTE flags are split between 64k and 4k  header files.
-> b) __hash_page_4K()  is  reimplemented   to reflect the
->    above logic.
->
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> The stop4 idle state on POWER9 is a deep idle state which loses
+> hypervisor resources, but whose latency is low enough that it can be
+> exposed via cpuidle.
+> 
+> Until now, the deep idle states which lose hypervisor resources (eg:
+> winkle) were only exposed via CPU-Hotplug.  Hence currently on wakeup
+> from such states, barring a few SPRs which need to be restored to
+> their older value, rest of the SPRS are reinitialized to their values
+> corresponding to that at boot time.
+> 
+> When stop4 is used in the context of cpuidle, we want these additional
+> SPRs to be restored to their older value, to ensure that the context
+> on the CPU coming back from idle is same as it was before going idle.
+> 
+> In this patch, we define a SPR save area in PACA (since we have used
+> up the volatile register space in the stack) and on POWER9, we restore
+> SPRN_PID, SPRN_LDBAR, SPRN_FSCR, SPRN_HFSCR, SPRN_MMCRA, SPRN_MMCR1,
+> SPRN_MMCR2 to the values they had before entering stop.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+Looks good to me. Keeping in mind we need to tidy up and unify
+all this SPR handling and save/restore etc. in the longer term.
+
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+
 > ---
->  arch/powerpc/include/asm/book3s/64/hash-4k.h  |    2 +
->  arch/powerpc/include/asm/book3s/64/hash-64k.h |    8 +--
->  arch/powerpc/include/asm/book3s/64/hash.h     |    1 -
->  arch/powerpc/mm/hash64_64k.c                  |   74 ++++++++++++++++---------
->  arch/powerpc/mm/hash_utils_64.c               |    4 +-
->  5 files changed, 55 insertions(+), 34 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> index 0c4e470..f959c00 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> @@ -16,6 +16,8 @@
->  #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
->  #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
->
-> +#define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
+> v2-->v3:
+> - Use a structure instead of an array for the stop sprs save area.
+> - Name the offsets into the paca->stop_sprs as STOP_XXX instead of
+>   PACA_XXX.
+> - Add comments in the assembly code explaining why saving/restoring
+>   is not needed on POWER8.
+> v1-->v2:
+> No change
+> 
+>  arch/powerpc/include/asm/cpuidle.h | 11 +++++++
+>  arch/powerpc/include/asm/paca.h    |  7 ++++
+>  arch/powerpc/kernel/asm-offsets.c  |  8 +++++
+>  arch/powerpc/kernel/idle_book3s.S  | 65 ++++++++++++++++++++++++++++++++++++--
+>  4 files changed, 89 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> index 52586f9..8a174cb 100644
+> --- a/arch/powerpc/include/asm/cpuidle.h
+> +++ b/arch/powerpc/include/asm/cpuidle.h
+> @@ -67,6 +67,17 @@
+>  #define ERR_DEEP_STATE_ESL_MISMATCH	-2
+>  
+>  #ifndef __ASSEMBLY__
+> +/* Additional SPRs that need to be saved/restored during stop */
+> +struct stop_sprs {
+> +	u64 pid;
+> +	u64 ldbar;
+> +	u64 fscr;
+> +	u64 hfscr;
+> +	u64 mmcr1;
+> +	u64 mmcr2;
+> +	u64 mmcra;
+> +};
 > +
->  /* PTE flags to conserve for HPTE identification */
->  #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
->  			 H_PAGE_F_SECOND | H_PAGE_F_GIX)
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> index 9732837..62e580c 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> @@ -12,18 +12,14 @@
->   */
->  #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
->  #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
-> +#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
-
-
-Why are we moving H_PAGE_BUSY. Right now 4k and 64k linux page table
-format looks similar. We use the lower RPN bits only for subpage
-tracking/details.
-
-
+>  extern u32 pnv_fastsleep_workaround_at_entry[];
+>  extern u32 pnv_fastsleep_workaround_at_exit[];
+>  
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> index dc88a31..04b60af 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -31,6 +31,7 @@
+>  #endif
+>  #include <asm/accounting.h>
+>  #include <asm/hmi.h>
+> +#include <asm/cpuidle.h>
+>  
+>  register struct paca_struct *local_paca asm("r13");
+>  
+> @@ -183,6 +184,12 @@ struct paca_struct {
+>  	struct paca_struct **thread_sibling_pacas;
+>  	/* The PSSCR value that the kernel requested before going to stop */
+>  	u64 requested_psscr;
 > +
+> +	/*
+> +	 * Save area for additional SPRs that need to be
+> +	 * saved/restored during cpuidle stop.
+> +	 */
+> +	struct stop_sprs stop_sprs;
+>  #endif
+>  
+>  #ifdef CONFIG_PPC_STD_MMU_64
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index a7b5af3..e2a48df 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -743,6 +743,14 @@ int main(void)
+>  	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
+>  	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
+>  	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
+> +#define STOP_SPR(x, f)	OFFSET(x, paca_struct, stop_sprs.f)
+> +	STOP_SPR(STOP_PID, pid);
+> +	STOP_SPR(STOP_LDBAR, ldbar);
+> +	STOP_SPR(STOP_FSCR, fscr);
+> +	STOP_SPR(STOP_HFSCR, hfscr);
+> +	STOP_SPR(STOP_MMCR1, mmcr1);
+> +	STOP_SPR(STOP_MMCR2, mmcr2);
+> +	STOP_SPR(STOP_MMCRA, mmcra);
+>  #endif
+>  
+>  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 5adb390e..5e6af97 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -84,7 +84,61 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+>  	std	r3,_WORT(r1)
+>  	mfspr	r3,SPRN_WORC
+>  	std	r3,_WORC(r1)
+> +/*
+> + * On POWER9, there are idle states such as stop4, invoked via cpuidle,
+> + * that lose hypervisor resources. In such cases, we need to save
+> + * additional SPRs before entering those idle states so that they can
+> + * be restored to their older values on wakeup from the idle state.
+> + *
+> + * On POWER8, the only such deep idle state is winkle which is used
+> + * only in the context of CPU-Hotplug, where these additional SPRs are
+> + * reinitiazed to a sane value. Hence there is no need to save/restore
+> + * these SPRs.
+> + */
+> +BEGIN_FTR_SECTION
+> +	blr
+> +END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+> +
+> +power9_save_additional_sprs:
+> +	mfspr	r3, SPRN_PID
+> +	mfspr	r4, SPRN_LDBAR
+> +	std	r3, STOP_PID(r13)
+> +	std	r4, STOP_LDBAR(r13)
+>  
+> +	mfspr	r3, SPRN_FSCR
+> +	mfspr	r4, SPRN_HFSCR
+> +	std	r3, STOP_FSCR(r13)
+> +	std	r4, STOP_HFSCR(r13)
+> +
+> +	mfspr	r3, SPRN_MMCRA
+> +	mfspr	r4, SPRN_MMCR1
+> +	std	r3, STOP_MMCRA(r13)
+> +	std	r4, STOP_MMCR1(r13)
+> +
+> +	mfspr	r3, SPRN_MMCR2
+> +	std	r3, STOP_MMCR2(r13)
+> +	blr
+> +
+> +power9_restore_additional_sprs:
+> +	ld	r3,_LPCR(r1)
+> +	ld	r4, STOP_PID(r13)
+> +	mtspr	SPRN_LPCR,r3
+> +	mtspr	SPRN_PID, r4
+> +
+> +	ld	r3, STOP_LDBAR(r13)
+> +	ld	r4, STOP_FSCR(r13)
+> +	mtspr	SPRN_LDBAR, r3
+> +	mtspr	SPRN_FSCR, r4
+> +
+> +	ld	r3, STOP_HFSCR(r13)
+> +	ld	r4, STOP_MMCRA(r13)
+> +	mtspr	SPRN_HFSCR, r3
+> +	mtspr	SPRN_MMCRA, r4
+> +	/* We have already restored PACA_MMCR0 */
+> +	ld	r3, STOP_MMCR1(r13)
+> +	ld	r4, STOP_MMCR2(r13)
+> +	mtspr	SPRN_MMCR1, r3
+> +	mtspr	SPRN_MMCR2, r4
+>  	blr
+>  
 >  /*
->   * We need to differentiate between explicit huge page and THP huge
->   * page, since THP huge page also need to track real subpage details
->   */
->  #define H_PAGE_THP_HUGE  H_PAGE_4K_PFN
->
-
-
--aneesh
+> @@ -790,9 +844,16 @@ no_segments:
+>  	mtctr	r12
+>  	bctrl
+>  
+> +/*
+> + * On POWER9, we can come here on wakeup from a cpuidle stop state.
+> + * Hence restore the additional SPRs to the saved value.
+> + *
+> + * On POWER8, we come here only on winkle. Since winkle is used
+> + * only in the case of CPU-Hotplug, we don't need to restore
+> + * the additional SPRs.
+> + */
+>  BEGIN_FTR_SECTION
+> -	ld	r4,_LPCR(r1)
+> -	mtspr	SPRN_LPCR,r4
+> +	bl 	power9_restore_additional_sprs
+>  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>  hypervisor_state_restored:
+>  
