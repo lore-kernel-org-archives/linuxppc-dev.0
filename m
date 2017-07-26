@@ -1,29 +1,22 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHVJw3CxTzDqmm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 19:33:04 +1000 (AEST)
-Date: Wed, 26 Jul 2017 10:32:32 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
- <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
- <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
- <linux-arm-kernel@lists.infradead.org>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170726103232.0000368e@huawei.com>
-In-Reply-To: <20170726091623.000004f7@huawei.com>
-References: <20170725175207.000001cb@huawei.com>
- <20170725.141029.676882447882600000.davem@davemloft.net>
- <20170726035545.GG3730@linux.vnet.ibm.com>
- <20170725.210233.1441906980505926406.davem@davemloft.net>
- <20170726041217.GH3730@linux.vnet.ibm.com>
- <20170726091623.000004f7@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHW033R08zDqmr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:03:31 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>,
+ Matt Brown <matthew.brown.dev@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 4/5] powerpc/lib/sstep: Add prty instruction emulation
+In-Reply-To: <20170725153033.GH13471@gate.crashing.org>
+References: <20170725033320.17893-1-matthew.brown.dev@gmail.com>
+ <20170725033320.17893-4-matthew.brown.dev@gmail.com>
+ <20170725153033.GH13471@gate.crashing.org>
+Date: Wed, 26 Jul 2017 20:03:30 +1000
+Message-ID: <87tw1z5xcd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,69 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Jul 2017 09:16:23 +0100
-Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+Segher Boessenkool <segher@kernel.crashing.org> writes:
 
-> On Tue, 25 Jul 2017 21:12:17 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Tue, Jul 25, 2017 at 09:02:33PM -0700, David Miller wrote:  
-> > > From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> > > Date: Tue, 25 Jul 2017 20:55:45 -0700
-> > >     
-> > > > On Tue, Jul 25, 2017 at 02:10:29PM -0700, David Miller wrote:    
-> > > >> Just to report, turning softlockup back on fixes things for me on
-> > > >> sparc64 too.    
-> > > > 
-> > > > Very good!
-> > > >     
-> > > >> The thing about softlockup is it runs an hrtimer, which seems to run
-> > > >> about every 4 seconds.    
-> > > > 
-> > > > I could see where that could shake things loose, but I am surprised that
-> > > > it would be needed.  I ran a short run with CONFIG_SOFTLOCKUP_DETECTOR=y
-> > > > with no trouble, but I will be running a longer test later on.
-> > > >     
-> > > >> So I wonder if this is a NO_HZ problem.    
-> > > > 
-> > > > Might be.  My tests run with NO_HZ_FULL=n and NO_HZ_IDLE=y.  What are
-> > > > you running?  (Again, my symptoms are slightly different, so I might
-> > > > be seeing a different bug.)    
-> > > 
-> > > I run with NO_HZ_FULL=n and NO_HZ_IDLE=y, just like you.
-> > > 
-> > > To clarify, the symptoms show up with SOFTLOCKUP_DETECTOR disabled.    
-> > 
-> > Same here -- but my failure case happens fairly rarely, so it will take
-> > some time to gain reasonable confidence that enabling SOFTLOCKUP_DETECTOR
-> > had effect.
-> > 
-> > But you are right, might be interesting to try NO_HZ_PERIODIC=y
-> > or NO_HZ_FULL=y.  So many possible tests, and so little time.  ;-)
-> > 
-> > 							Thanx, Paul
-> >   
-> I'll be the headless chicken running around and trying as many tests
-> as I can fit in.  Typical time to see the failure for us is sub 10
-> minutes so we'll see how far we get.
-> 
-> Make me a list to run if you like ;)
-> 
-> NO_HZ_PERIODIC=y running now.
-By which I mean CONFIG_HZ_PERIODIC=y
+> On Tue, Jul 25, 2017 at 01:33:19PM +1000, Matt Brown wrote:
+>> +static nokprobe_inline void do_prty(struct pt_regs *regs, unsigned long v,
+>> +				int size, int ra)
+>> +{
+>> +	unsigned long long res = v;
+>> +
+>> +	res = (0x0001000100010001 & res) + (0x0001000100010001 & (res >> 8));
+>> +	res = (0x0000000700000007 & res) + (0x0000000700000007 & (res >> 16));
+>> +	if (size == 32) {		/* prtyw */
+>> +		regs->gpr[ra] = (0x0000000100000001 & res);
+>> +		return;
+>> +	}
+>> +
+>> +	res = (0x000000000000000f & res) + (0x000000000000000f & (res >> 32));
+>> +	regs->gpr[ra] = res & 1;	/*prtyd */
+>> +}
+>
+> Does 7's and 0xf look strange (since the top bit in the values there
+> is always 0).  You always "and" the values with 1 later, you could do
+> that immediately (and change + to ^).
+>
+> A general question about these patches: some things are inside #ifdef
+> __powerpc64__, some are not.  It seems it is the wrong macro, and it
+> should be used (or not used) consistently?
 
-Anyhow, run for 40 minutes with out seeing a splat but my sanity check
-on the NO_FULL_HZ=n and NO_HZ_IDLE=y this morning took 20 minutes so
-I won't have much confidence until we are a few hours in on this.
+Why is it the wrong macro? Because we tend to use CONFIG_PPC64 you mean?
 
-Anyhow, certainly looking like a promising direction for investigation!
+I thought the reason some are #ifdef'ed is that some are 64-bit only.
+ie. bpermd is 64-bit only ?
 
-Jonathan
-
-> 
-> Jonathan
-> 
-> _______________________________________________
-> linuxarm mailing list
-> linuxarm@huawei.com
-> http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm
+cheers
