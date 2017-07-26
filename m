@@ -1,31 +1,16 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHZhV5ffXzDqnF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 22:50:18 +1000 (AEST)
-Date: Wed, 26 Jul 2017 13:49:43 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
- <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
- <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
- <linux-arm-kernel@lists.infradead.org>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170726134943.00005ff1@huawei.com>
-In-Reply-To: <20170726132801.00001e8c@huawei.com>
-References: <20170725175207.000001cb@huawei.com>
- <20170725.141029.676882447882600000.davem@davemloft.net>
- <20170726035545.GG3730@linux.vnet.ibm.com>
- <20170725.210233.1441906980505926406.davem@davemloft.net>
- <20170726041217.GH3730@linux.vnet.ibm.com>
- <20170726091623.000004f7@huawei.com>
- <20170726103232.0000368e@huawei.com>
- <20170726132801.00001e8c@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHbK96fP2zDqnP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 23:18:37 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH] powerpc/Makefile: Fix ld version check with 64-bit LE-only
+ toolchain
+Date: Wed, 26 Jul 2017 23:18:31 +1000
+Message-Id: <1501075111-20198-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,96 +20,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Jul 2017 13:28:01 +0100
-Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+In commit efe0160cfd40 ("powerpc/64: Linker on-demand sfpr functions
+for modules"), we added an ld version check early in the powerpc
+top-level Makefile.
 
-> On Wed, 26 Jul 2017 10:32:32 +0100
-> Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
-> 
-> > On Wed, 26 Jul 2017 09:16:23 +0100
-> > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
-> >   
-> > > On Tue, 25 Jul 2017 21:12:17 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > >     
-> > > > On Tue, Jul 25, 2017 at 09:02:33PM -0700, David Miller wrote:      
-> > > > > From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> > > > > Date: Tue, 25 Jul 2017 20:55:45 -0700
-> > > > >         
-> > > > > > On Tue, Jul 25, 2017 at 02:10:29PM -0700, David Miller wrote:        
-> > > > > >> Just to report, turning softlockup back on fixes things for me on
-> > > > > >> sparc64 too.        
-> > > > > > 
-> > > > > > Very good!
-> > > > > >         
-> > > > > >> The thing about softlockup is it runs an hrtimer, which seems to run
-> > > > > >> about every 4 seconds.        
-> > > > > > 
-> > > > > > I could see where that could shake things loose, but I am surprised that
-> > > > > > it would be needed.  I ran a short run with CONFIG_SOFTLOCKUP_DETECTOR=y
-> > > > > > with no trouble, but I will be running a longer test later on.
-> > > > > >         
-> > > > > >> So I wonder if this is a NO_HZ problem.        
-> > > > > > 
-> > > > > > Might be.  My tests run with NO_HZ_FULL=n and NO_HZ_IDLE=y.  What are
-> > > > > > you running?  (Again, my symptoms are slightly different, so I might
-> > > > > > be seeing a different bug.)        
-> > > > > 
-> > > > > I run with NO_HZ_FULL=n and NO_HZ_IDLE=y, just like you.
-> > > > > 
-> > > > > To clarify, the symptoms show up with SOFTLOCKUP_DETECTOR disabled.        
-> > > > 
-> > > > Same here -- but my failure case happens fairly rarely, so it will take
-> > > > some time to gain reasonable confidence that enabling SOFTLOCKUP_DETECTOR
-> > > > had effect.
-> > > > 
-> > > > But you are right, might be interesting to try NO_HZ_PERIODIC=y
-> > > > or NO_HZ_FULL=y.  So many possible tests, and so little time.  ;-)
-> > > > 
-> > > > 							Thanx, Paul
-> > > >       
-> > > I'll be the headless chicken running around and trying as many tests
-> > > as I can fit in.  Typical time to see the failure for us is sub 10
-> > > minutes so we'll see how far we get.
-> > > 
-> > > Make me a list to run if you like ;)
-> > > 
-> > > NO_HZ_PERIODIC=y running now.    
-> > By which I mean CONFIG_HZ_PERIODIC=y
-> > 
-> > Anyhow, run for 40 minutes with out seeing a splat but my sanity check
-> > on the NO_FULL_HZ=n and NO_HZ_IDLE=y this morning took 20 minutes so
-> > I won't have much confidence until we are a few hours in on this.
-> > 
-> > Anyhow, certainly looking like a promising direction for investigation!
-> >   
-> Well it's done over 3 hours without a splat so I think it is fine with
-> CONFIG_HZ_PERIODIC=y
-> 
-As I think we expected, the problem occurs with NO_HZ_FULL.
-Happened pretty quickly but given the somewhat random nature,
-might just be coincidence.
+Because the Makefile runs before the kernel config is setup, the
+checks for CONFIG_CPU_LITTLE_ENDIAN etc. all take the default case. So
+we end up configuring ld for 32-bit big endian.
 
-Jonathan
-> 
-> > Jonathan
-> >   
-> > > 
-> > > Jonathan
-> > > 
-> > > _______________________________________________
-> > > linuxarm mailing list
-> > > linuxarm@huawei.com
-> > > http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm    
-> > 
-> > 
-> > _______________________________________________
-> > linuxarm mailing list
-> > linuxarm@huawei.com
-> > http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm  
-> 
-> 
-> _______________________________________________
-> linuxarm mailing list
-> linuxarm@huawei.com
-> http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm
+That would be OK, except that for historical (or perhaps no) reason,
+we use 'override LD' to add the endian flags to the LD variable
+itself, rather than the normal approach of adding them to LDFLAGS.
+
+The end result is that when we check the ld version we run it as:
+
+  $(CROSS_COMPILE)ld -EB -m elf32ppc --version
+
+This often works, unless you are using a 64-bit only and/or little
+endian only, toolchain. In which case you see something like:
+
+  $ make defconfig
+  powerpc64le-linux-ld: unrecognised emulation mode: elf32ppc
+  Supported emulations: elf64lppc elf32lppc elf32lppclinux elf32lppcsim
+  /bin/sh: 1: [: -ge: unexpected operator
+
+The proper fix is to stop using 'override LD', but that will require a
+fair bit of testing. Instead we can fix it for now just by reordering
+the Makefile to do the version check earlier.
+
+Fixes: efe0160cfd40 ("powerpc/64: Linker on-demand sfpr functions for modules")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Makefile | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 8d4ed73d5490..e2b3e7a00c9e 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -59,6 +59,19 @@ machine-$(CONFIG_PPC64) += 64
+ machine-$(CONFIG_CPU_LITTLE_ENDIAN) += le
+ UTS_MACHINE := $(subst $(space),,$(machine-y))
+ 
++# XXX This needs to be before we override LD below
++ifdef CONFIG_PPC32
++KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
++else
++ifeq ($(call ld-ifversion, -ge, 225000000, y),y)
++# Have the linker provide sfpr if possible.
++# There is a corresponding test in arch/powerpc/lib/Makefile
++KBUILD_LDFLAGS_MODULE += --save-restore-funcs
++else
++KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
++endif
++endif
++
+ ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
+ override LD	+= -EL
+ LDEMULATION	:= lppc
+@@ -190,18 +203,6 @@ else
+ CHECKFLAGS	+= -D__LITTLE_ENDIAN__
+ endif
+ 
+-ifdef CONFIG_PPC32
+-KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
+-else
+-ifeq ($(call ld-ifversion, -ge, 225000000, y),y)
+-# Have the linker provide sfpr if possible.
+-# There is a corresponding test in arch/powerpc/lib/Makefile
+-KBUILD_LDFLAGS_MODULE += --save-restore-funcs
+-else
+-KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
+-endif
+-endif
+-
+ ifeq ($(CONFIG_476FPE_ERR46),y)
+ 	KBUILD_LDFLAGS_MODULE += --ppc476-workaround \
+ 		-T $(srctree)/arch/powerpc/platforms/44x/ppc476_modules.lds
+-- 
+2.7.4
