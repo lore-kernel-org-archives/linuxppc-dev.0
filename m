@@ -1,42 +1,33 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jonathan.cameron@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHdFX2XHWzDqp4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 00:45:36 +1000 (AEST)
-Date: Wed, 26 Jul 2017 16:44:50 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 04/17] x86/mm: Don't attempt to encrypt
- initrd under SEV
-Message-ID: <20170726144450.GD30471@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-5-brijesh.singh@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHfLR3CdWzDqpF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 01:34:55 +1000 (AEST)
+Date: Wed, 26 Jul 2017 16:33:40 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
+ <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
+ <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
+ <linux-arm-kernel@lists.infradead.org>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170726163340.0000014f@huawei.com>
+In-Reply-To: <20170726152315.00003d61@huawei.com>
+References: <20170725175207.000001cb@huawei.com>
+ <20170725.141029.676882447882600000.davem@davemloft.net>
+ <20170726035545.GG3730@linux.vnet.ibm.com>
+ <20170725.210233.1441906980505926406.davem@davemloft.net>
+ <20170726041217.GH3730@linux.vnet.ibm.com>
+ <20170726091623.000004f7@huawei.com>
+ <20170726103232.0000368e@huawei.com>
+ <20170726132801.00001e8c@huawei.com>
+ <20170726141417.GJ3730@linux.vnet.ibm.com>
+ <20170726152315.00003d61@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170724190757.11278-5-brijesh.singh@amd.com>
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,35 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 24, 2017 at 02:07:44PM -0500, Brijesh Singh wrote:
-> From: Tom Lendacky <thomas.lendacky@amd.com>
-> 
-> When SEV is active the initrd/initramfs will already have already been
-> placed in memory encyrpted so do not try to encrypt it.
-> 
-> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
-> ---
->  arch/x86/kernel/setup.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 0bfe0c1..01d56a1 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -379,9 +379,11 @@ static void __init reserve_initrd(void)
->  	 * If SME is active, this memory will be marked encrypted by the
->  	 * kernel when it is accessed (including relocation). However, the
->  	 * ramdisk image was loaded decrypted by the bootloader, so make
-> -	 * sure that it is encrypted before accessing it.
-> +	 * sure that it is encrypted before accessing it. For SEV the
-> +	 * ramdisk will already be encyrpted, so only do this for SME.
-				   ^^^^^^^^^
-Please introduce a spellchecker into your patch creation workflow.
+On Wed, 26 Jul 2017 15:23:15 +0100
+Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
 
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+> On Wed, 26 Jul 2017 07:14:17 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Wed, Jul 26, 2017 at 01:28:01PM +0100, Jonathan Cameron wrote:  
+> > > On Wed, 26 Jul 2017 10:32:32 +0100
+> > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+> > >     
+> > > > On Wed, 26 Jul 2017 09:16:23 +0100
+> > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+> > > >     
+> > > > > On Tue, 25 Jul 2017 21:12:17 -0700
+> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > >       
+> > > > > > On Tue, Jul 25, 2017 at 09:02:33PM -0700, David Miller wrote:        
+> > > > > > > From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> > > > > > > Date: Tue, 25 Jul 2017 20:55:45 -0700
+> > > > > > >           
+> > > > > > > > On Tue, Jul 25, 2017 at 02:10:29PM -0700, David Miller wrote:          
+> > > > > > > >> Just to report, turning softlockup back on fixes things for me on
+> > > > > > > >> sparc64 too.          
+> > > > > > > > 
+> > > > > > > > Very good!
+> > > > > > > >           
+> > > > > > > >> The thing about softlockup is it runs an hrtimer, which seems to run
+> > > > > > > >> about every 4 seconds.          
+> > > > > > > > 
+> > > > > > > > I could see where that could shake things loose, but I am surprised that
+> > > > > > > > it would be needed.  I ran a short run with CONFIG_SOFTLOCKUP_DETECTOR=y
+> > > > > > > > with no trouble, but I will be running a longer test later on.
+> > > > > > > >           
+> > > > > > > >> So I wonder if this is a NO_HZ problem.          
+> > > > > > > > 
+> > > > > > > > Might be.  My tests run with NO_HZ_FULL=n and NO_HZ_IDLE=y.  What are
+> > > > > > > > you running?  (Again, my symptoms are slightly different, so I might
+> > > > > > > > be seeing a different bug.)          
+> > > > > > > 
+> > > > > > > I run with NO_HZ_FULL=n and NO_HZ_IDLE=y, just like you.
+> > > > > > > 
+> > > > > > > To clarify, the symptoms show up with SOFTLOCKUP_DETECTOR disabled.          
+> > > > > > 
+> > > > > > Same here -- but my failure case happens fairly rarely, so it will take
+> > > > > > some time to gain reasonable confidence that enabling SOFTLOCKUP_DETECTOR
+> > > > > > had effect.
+> > > > > > 
+> > > > > > But you are right, might be interesting to try NO_HZ_PERIODIC=y
+> > > > > > or NO_HZ_FULL=y.  So many possible tests, and so little time.  ;-)
+> > > > > > 
+> > > > > > 							Thanx, Paul
+> > > > > >         
+> > > > > I'll be the headless chicken running around and trying as many tests
+> > > > > as I can fit in.  Typical time to see the failure for us is sub 10
+> > > > > minutes so we'll see how far we get.
+> > > > > 
+> > > > > Make me a list to run if you like ;)
+> > > > > 
+> > > > > NO_HZ_PERIODIC=y running now.      
+> > > > By which I mean CONFIG_HZ_PERIODIC=y    
+> > 
+> > I did get that messed up, didn't I?  Sorry for my confusion!
+> >   
+> > > > Anyhow, run for 40 minutes with out seeing a splat but my sanity check
+> > > > on the NO_FULL_HZ=n and NO_HZ_IDLE=y this morning took 20 minutes so
+> > > > I won't have much confidence until we are a few hours in on this.
+> > > > 
+> > > > Anyhow, certainly looking like a promising direction for investigation!
+> > > >     
+> > > Well it's done over 3 hours without a splat so I think it is fine with
+> > > CONFIG_HZ_PERIODIC=y    
+> > 
+> > Thank you!
+> > 
+> > If you run with SOFTLOCKUP_DETECTOR=n and NO_HZ_IDLE=y, but have a normal
+> > user task waking up every few seconds on each CPU, does the problem occur?
+> > (The question is whether any disturbance gets things going, or whether there
+> > is something special about SOFTLOCKUP_DETECTOR=y and HZ_PERIODIC=y.
+> > 
+> > Dave, any other ideas on what might be causing this or what might be
+> > tested?
+> > 
+> > 							Thanx, Paul
+> >   
+> 
+> Although it's still early days (40 mins in) it looks like the issue first
+> occurred between 4.10-rc7 and 4.11-rc1 (don't ask why those particular RCs)
+> 
+> Bad as with current kernel on 4.11-rc1 and good on 4.10-rc7.
+Didn't leave it long enough. Still bad on 4.10-rc7 just took over
+an hour to occur.
+> 
+> Could be something different was hiding it in 4.10 though.  We have a fair
+> delta from mainline back then unfortunately so bisecting will be
+> 'interesting'.
+> 
+> I'll see if I can get the test you suggest running.
+> 
+> Jonathan
+> _______________________________________________
+> linuxarm mailing list
+> linuxarm@huawei.com
+> http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm
