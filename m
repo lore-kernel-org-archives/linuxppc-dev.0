@@ -1,28 +1,49 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHWqZ1plPzDqmw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:41:14 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id 123so6429208pgj.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 03:41:14 -0700 (PDT)
-Date: Wed, 26 Jul 2017 20:40:56 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
- <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [RESEND] [v3 PATCH 2/2] powernv/powerpc: Clear PECE1 in LPCR
- via stop-api only on Hotplug
-Message-ID: <20170726204056.36233b13@roar.ozlabs.ibm.com>
-In-Reply-To: <1500634894-18352-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <cover.1500631040.git.ego@linux.vnet.ibm.com>
- <1500634894-18352-1-git-send-email-ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHWwH52p1zDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:45:19 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id m65so10681343oik.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 03:45:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: arndbergmann@gmail.com
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-14-brijesh.singh@amd.com>
+ <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 26 Jul 2017 12:45:17 +0200
+Message-ID: <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
+Subject: Re: [RFC Part1 PATCH v3 13/17] x86/io: Unroll string I/O when SEV is
+ active
+To: David Laight <David.Laight@aculab.com>
+Cc: Brijesh Singh <brijesh.singh@amd.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>,
+ David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>,
+ Jonathan Corbet <corbet@lwn.net>,
+ =?UTF-8?Q?Radim_Krcm=C3=A1r?= <rkrcmar@redhat.com>,
+ Piotr Luc <piotr.luc@intel.com>, Ingo Molnar <mingo@redhat.com>,
+ Dave Airlie <airlied@redhat.com>,
+ Borislav Petkov <bp@suse.de>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Kees Cook <keescook@chromium.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Laura Abbott <labbott@redhat.com>,
+ Tony Luck <tony.luck@intel.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Eric Biederman <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Lu Baolu <baolu.lu@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,134 +53,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 21 Jul 2017 16:31:34 +0530
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+On Tue, Jul 25, 2017 at 11:51 AM, David Laight <David.Laight@aculab.com> wrote:
+> From: Brijesh Singh
+>> Sent: 24 July 2017 20:08
+>> From: Tom Lendacky <thomas.lendacky@amd.com>
+>>
+>> Secure Encrypted Virtualization (SEV) does not support string I/O, so
+>> unroll the string I/O operation into a loop operating on one element at
+>> a time.
+>>
+>> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+>> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+>> ---
+>>  arch/x86/include/asm/io.h | 26 ++++++++++++++++++++++----
+>>  1 file changed, 22 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+>> index e080a39..2f3c002 100644
+>> --- a/arch/x86/include/asm/io.h
+>> +++ b/arch/x86/include/asm/io.h
+>> @@ -327,14 +327,32 @@ static inline unsigned type in##bwl##_p(int port)                       \
+>>                                                                       \
+>>  static inline void outs##bwl(int port, const void *addr, unsigned long count) \
+>>  {
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> Currently we use the stop-api provided by the firmware to program the
-> SLW engine to restore the values of hypervisor resources that get lost
-> on deeper idle states (such as winkle). Since the deep states were
-> only used for CPU-Hotplug on POWER8 systems, we would program the LPCR
-> to have the PECE1 bit since Hotplugged CPUs shouldn't be spuriously
-> woken up by decrementer.
-> 
-> On POWER9, some of the deep platform idle states such as stop4 can be
-> used in cpuidle as well. In this case, we want the CPU in stop4 to be
-> woken up by the decrementer when some timer on the CPU expires.
-> 
-> In this patch, we program the stop-api for LPCR with PECE1
-> bit cleared only when we are offlining the CPU and set it
-> back once the CPU is online.
+This will clash with a fix I did to add a "memory" clobber
+for the traditional implementation, see
+https://patchwork.kernel.org/patch/9854573/
 
-Looks pretty good to me, thanks!
+> Is it even worth leaving these as inline functions?
+> Given the speed of IO cycles it is unlikely that the cost of calling a real
+> function will be significant.
+> The code bloat reduction will be significant.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+I think the smallest code would be the original "rep insb" etc, which
+should be smaller than a function call, unlike the loop. Then again,
+there is a rather small number of affected device drivers, almost all
+of them for ancient hardware that you won't even build in a 64-bit
+x86 kernel, see the list below. The only user I found that is actually
+still relevant is drivers/tty/hvc/hvc_xen.c, which uses it for the early
+console.
 
+       Arnd
 
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
-> v2 --> v3:
-> - Program the LPCR during platform idle entry/exit on both POWER8 and
->   POWER9
-> 
-> v1 --> v2:
-> - Move the LPCR manipulations for CPU-Hotplug into idle.c
-> 
->  arch/powerpc/platforms/powernv/idle.c | 34 +++++++++++++++++++++++++++++++++-
->  arch/powerpc/platforms/powernv/smp.c  |  8 --------
->  2 files changed, 33 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 2abee07..a1296e7 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -68,7 +68,7 @@ static int pnv_save_sprs_for_deep_states(void)
->  	 * all cpus at boot. Get these reg values of current cpu and use the
->  	 * same across all cpus.
->  	 */
-> -	uint64_t lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
-> +	uint64_t lpcr_val = mfspr(SPRN_LPCR);
->  	uint64_t hid0_val = mfspr(SPRN_HID0);
->  	uint64_t hid1_val = mfspr(SPRN_HID1);
->  	uint64_t hid4_val = mfspr(SPRN_HID4);
-> @@ -355,6 +355,14 @@ void power9_idle(void)
->  }
->  
->  #ifdef CONFIG_HOTPLUG_CPU
-> +static void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
-> +{
-> +	u64 pir = get_hard_smp_processor_id(cpu);
-> +
-> +	mtspr(SPRN_LPCR, lpcr_val);
-> +	opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-> +}
-> +
->  /*
->   * pnv_cpu_offline: A function that puts the CPU into the deepest
->   * available platform idle state on a CPU-Offline.
-> @@ -364,6 +372,20 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
->  {
->  	unsigned long srr1;
->  	u32 idle_states = pnv_get_supported_cpuidle_states();
-> +	u64 lpcr_val;
-> +
-> +	/*
-> +	 * We don't want to take decrementer interrupts while we are
-> +	 * offline, so clear LPCR:PECE1. We keep PECE2 (and
-> +	 * LPCR_PECE_HVEE on P9) enabled as to let IPIs in.
-> +	 *
-> +	 * If the CPU gets woken up by a special wakeup, ensure that
-> +	 * the SLW engine sets LPCR with decrementer bit cleared, else
-> +	 * the CPU will come back to the kernel due to a spurious
-> +	 * wakeup.
-> +	 */
-> +	lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
-> +	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
->  
->  	__ppc64_runlatch_off();
->  
-> @@ -394,6 +416,16 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
->  
->  	__ppc64_runlatch_on();
->  
-> +	/*
-> +	 * Re-enable decrementer interrupts in LPCR.
-> +	 *
-> +	 * Further, we want stop states to be woken up by decrementer
-> +	 * for non-hotplug cases. So program the LPCR via stop api as
-> +	 * well.
-> +	 */
-> +	lpcr_val = mfspr(SPRN_LPCR) | (u64)LPCR_PECE1;
-> +	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
-> +
->  	return srr1;
->  }
->  #endif
-> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-> index 40dae96..536b07b 100644
-> --- a/arch/powerpc/platforms/powernv/smp.c
-> +++ b/arch/powerpc/platforms/powernv/smp.c
-> @@ -164,12 +164,6 @@ static void pnv_smp_cpu_kill_self(void)
->  	if (cpu_has_feature(CPU_FTR_ARCH_207S))
->  		wmask = SRR1_WAKEMASK_P8;
->  
-> -	/* We don't want to take decrementer interrupts while we are offline,
-> -	 * so clear LPCR:PECE1. We keep PECE2 (and LPCR_PECE_HVEE on P9)
-> -	 * enabled as to let IPIs in.
-> -	 */
-> -	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
-> -
->  	while (!generic_check_cpu_restart(cpu)) {
->  		/*
->  		 * Clear IPI flag, since we don't handle IPIs while
-> @@ -219,8 +213,6 @@ static void pnv_smp_cpu_kill_self(void)
->  
->  	}
->  
-> -	/* Re-enable decrementer interrupts */
-> -	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_PECE1);
->  	DBG("CPU%d coming online...\n", cpu);
->  }
->  
+---
+Full list for reference
+
+$ git grep -wl '\(__ide_\|\)\(in\|out\)s\(b\|w\|l\)' drivers sound/
+drivers/atm/horizon.c
+drivers/cdrom/gdrom.c
+drivers/gpu/drm/vmwgfx/vmwgfx_msg.h
+drivers/ide/ide-io-std.c
+drivers/isdn/hardware/avm/avmcard.h
+drivers/isdn/hardware/eicon/divasmain.c
+drivers/isdn/hardware/mISDN/avmfritz.c
+drivers/isdn/hardware/mISDN/iohelper.h
+drivers/isdn/hardware/mISDN/netjet.c
+drivers/isdn/hardware/mISDN/w6692.c
+drivers/isdn/hisax/asuscom.c
+drivers/isdn/hisax/avm_a1.c
+drivers/isdn/hisax/avm_a1p.c
+drivers/isdn/hisax/avm_pci.c
+drivers/isdn/hisax/diva.c
+drivers/isdn/hisax/elsa.c
+drivers/isdn/hisax/gazel.c
+drivers/isdn/hisax/hisax_fcpcipnp.c
+drivers/isdn/hisax/ix1_micro.c
+drivers/isdn/hisax/mic.c
+drivers/isdn/hisax/netjet.c
+drivers/isdn/hisax/niccy.c
+drivers/isdn/hisax/saphir.c
+drivers/isdn/hisax/sedlbauer.c
+drivers/isdn/hisax/sportster.c
+drivers/isdn/hisax/teles3.c
+drivers/isdn/hisax/w6692.c
+drivers/isdn/hisax/w6692.h
+drivers/media/rc/winbond-cir.c
+drivers/mtd/spi-nor/aspeed-smc.c
+drivers/net/appletalk/cops.c
+drivers/net/arcnet/arcdevice.h
+drivers/net/arcnet/com20020.c
+drivers/net/ethernet/3com/3c509.c
+drivers/net/ethernet/3com/3c515.c
+drivers/net/ethernet/3com/3c574_cs.c
+drivers/net/ethernet/3com/3c589_cs.c
+drivers/net/ethernet/8390/axnet_cs.c
+drivers/net/ethernet/8390/mcf8390.c
+drivers/net/ethernet/8390/ne.c
+drivers/net/ethernet/8390/ne2k-pci.c
+drivers/net/ethernet/8390/pcnet_cs.c
+drivers/net/ethernet/8390/smc-ultra.c
+drivers/net/ethernet/amd/nmclan_cs.c
+drivers/net/ethernet/fujitsu/fmvj18x_cs.c
+drivers/net/ethernet/hp/hp100.c
+drivers/net/ethernet/smsc/smc9194.c
+drivers/net/ethernet/smsc/smc91c92_cs.c
+drivers/net/ethernet/smsc/smc91x.h
+drivers/net/ethernet/xircom/xirc2ps_cs.c
+drivers/net/sb1000.c
+drivers/net/wan/sbni.c
+drivers/net/wireless/cisco/airo.c
+drivers/net/wireless/intersil/hostap/hostap_cs.c
+drivers/net/wireless/intersil/hostap/hostap_plx.c
+drivers/net/wireless/marvell/libertas/if_cs.c
+drivers/net/wireless/wl3501_cs.c
+drivers/parport/parport_pc.c
+drivers/pcmcia/m32r_cfc.c
+drivers/scsi/NCR53c406a.c
+drivers/scsi/aha152x.c
+drivers/scsi/eata_pio.c
+drivers/scsi/fdomain.c
+drivers/scsi/g_NCR5380.c
+drivers/scsi/imm.c
+drivers/scsi/nsp32_io.h
+drivers/scsi/pcmcia/nsp_io.h
+drivers/scsi/pcmcia/sym53c500_cs.c
+drivers/scsi/ppa.c
+drivers/scsi/qlogicfas408.c
+drivers/scsi/sym53c416.c
+drivers/staging/comedi/drivers/adl_pci9111.c
+drivers/staging/comedi/drivers/cb_pcidas.c
+drivers/staging/comedi/drivers/das16m1.c
+drivers/staging/comedi/drivers/das1800.c
+drivers/staging/iio/adc/ad7606_par.c
+drivers/tty/hvc/hvc_xen.c
+drivers/tty/isicom.c
+drivers/tty/rocket_int.h
+drivers/usb/host/isp1362.h
+drivers/usb/musb/blackfin.c
+sound/drivers/opl4/opl4_lib.c
+sound/isa/gus/gus_dram.c
+sound/isa/gus/gus_pcm.c
