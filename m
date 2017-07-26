@@ -1,19 +1,42 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHNrl13K4zDqmS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:26:47 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: ruscur@russell.cc,
-	benh@kernel.crashing.org,
-	linuxppc-dev
-Cc: mpe@ellerman.id.au,
-	Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH] powerpc/powernv/pci: Return failure for some uses of
- dma_set_mask()
-Date: Wed, 26 Jul 2017 15:26:40 +1000
-Message-Id: <1501046800-6690-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHPWS0brTzDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:56:51 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6Q5rbHR141341
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:56:49 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2bxfeswq7b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:56:48 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Wed, 26 Jul 2017 15:56:46 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6Q5uZCc27394048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:56:43 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6Q5uBOK006031
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:56:11 +1000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: clg@kaod.org, linux@roeck-us.net
+Cc: jdelvare@suse.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linux-hwmon@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
+ stewart@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [RFC] hwmon: (ibmpowernv) Add support for reset-history sensors
+Date: Wed, 26 Jul 2017 11:25:38 +0530
+Message-Id: <1501048538-23160-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +46,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 8e3f1b1d8255 ("powerpc/powernv/pci: Enable 64-bit devices to access
->4GB DMA space") introduced the ability for PCI device drivers to request a
-DMA mask between 64 and 32 bits and actually get a mask greater than
-32-bits. However currently if certain machine configuration dependent
-conditions are not meet the code silently falls back to a 32-bit mask.
+In P9, OCC allows for clearing the sensor min-max history. This patch
+exports attribute to reset history when set will clear the history of
+all the sensors owned by CSM and belonging to the chip.
 
-This makes it hard for device drivers to detect which mask they actually
-got. Instead we should return an error when the request could not be
-fulfilled which allows drivers to either fallback or implement other
-workarounds as documented in DMA-API-HOWTO.txt.
-
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
+This patch is on top of this patchset:
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1453891.html
 
-Ideally we should do the same thing for 64-bit mode as well however there
-are a lot more drivers requesting a dma mask of 64-bits so it's a much
-larger task to audit them all to see if they behave correctly when
-dma_set_mask() fails. Such an audit may be required as previously these
-calls would not have failed on PPC64 (although may have on other
-architectures).
+This patch creates a non-standard attribute called as reset_historyX
+which clears the lowest and highest of all the sensors like power,
+temperature, voltage belonging to the chip.
 
-A quick bit of grepping didn't turn up many drivers requesting 33-63 bit
-dma masks. Most of the ones that do are specific to other HW, although
-there were a couple of more generic drivers requesting eg. 48 bits. However
-those tested the return values of dma_set_mask() and took appropriate
-action (falling back to 32 bits) in the case of failure.
+ drivers/hwmon/ibmpowernv.c | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
-- Alistair
-
-arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 4376135..b900eb1 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1852,6 +1852,14 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
- 			/* 4GB offset bypasses 32-bit space */
- 			set_dma_offset(&pdev->dev, (1ULL << 32));
- 			set_dma_ops(&pdev->dev, &dma_direct_ops);
-+		} else if (dma_mask >> 32 && dma_mask != DMA_BIT_MASK(64)) {
-+			/*
-+			 * Fail the request if a DMA mask between 32 and 64 bits
-+			 * was requested but couldn't be fulfilled. Ideally we
-+			 * would do this for 64-bits but historically we have
-+			 * always fallen back to 32-bits.
-+			 */
-+			return -ENOMEM;
- 		} else {
- 			dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
- 			set_dma_ops(&pdev->dev, &dma_iommu_ops);
+diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+index 5ccdd0b..611e472 100644
+--- a/drivers/hwmon/ibmpowernv.c
++++ b/drivers/hwmon/ibmpowernv.c
+@@ -51,6 +51,7 @@ enum sensors {
+ 	POWER_SUPPLY,
+ 	POWER_INPUT,
+ 	CURRENT,
++	RESET_HISTORY,
+ 	MAX_SENSOR_TYPE,
+ };
+ 
+@@ -78,6 +79,7 @@ enum sensors {
+ 	{ "in"    },
+ 	{ "power" },
+ 	{ "curr"  },
++	{ "reset_history" },
+ };
+ 
+ struct sensor_data {
+@@ -126,6 +128,25 @@ static ssize_t show_label(struct device *dev, struct device_attribute *devattr,
+ 	return sprintf(buf, "%s\n", sdata->label);
+ }
+ 
++static ssize_t store_reset_history(struct device *dev,
++				   struct device_attribute *devattr,
++				   const char *buf, size_t count)
++{
++	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
++						 dev_attr);
++	int rc;
++	int reset;
++
++	rc = kstrtoint(buf, 0, &reset);
++	if (rc)
++		return rc;
++
++	if (reset == 1)
++		rc = opal_sensor_groups_clear_history(sdata->id);
++
++	return rc ? rc : count;
++}
++
+ static int __init get_logical_cpu(int hwcpu)
+ {
+ 	int cpu;
+@@ -458,6 +479,16 @@ static int create_device_attrs(struct platform_device *pdev)
+ 
+ 		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
+ 
++		if (type == RESET_HISTORY) {
++			snprintf(sdata[count].name, MAX_ATTR_LEN, "%s%d",
++				 sensor_groups[type].name,
++				 sdata[count].hwmon_index);
++
++			sdata[count].dev_attr.attr.mode = 0220;
++			sdata[count].dev_attr.store = store_reset_history;
++			sdata[count].dev_attr.show = NULL;
++		}
++
+ 		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+ 				&sdata[count++].dev_attr.attr;
+ 
 -- 
-2.1.4
+1.8.3.1
