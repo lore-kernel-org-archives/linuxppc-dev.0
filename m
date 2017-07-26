@@ -1,34 +1,42 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bp@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHd0x264pzDqnD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 00:34:41 +1000 (AEST)
-Received: from mail-yw0-f169.google.com (mail-yw0-f169.google.com
- [209.85.161.169])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 4B08C22BD1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 14:34:39 +0000 (UTC)
-Received: by mail-yw0-f169.google.com with SMTP id x125so88709740ywa.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 07:34:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHdFX2XHWzDqp4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 00:45:36 +1000 (AEST)
+Date: Wed, 26 Jul 2017 16:44:50 +0200
+From: Borislav Petkov <bp@suse.de>
+To: Brijesh Singh <brijesh.singh@amd.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 04/17] x86/mm: Don't attempt to encrypt
+ initrd under SEV
+Message-ID: <20170726144450.GD30471@nazgul.tnic>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-5-brijesh.singh@amd.com>
 MIME-Version: 1.0
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD00419B2@AcuExch.aculab.com>
-References: <20170725214427.25768-1-robh@kernel.org>
- <20170725214427.25768-4-robh@kernel.org>
- <063D6719AE5E284EB5DD2968C1650D6DD00419B2@AcuExch.aculab.com>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 26 Jul 2017 09:34:17 -0500
-Message-ID: <CAL_JsqK6ioLTv+hgb7kZS2ySnDuM_FuOCUGBhtCG8hT607Js_Q@mail.gmail.com>
-Subject: Re: [PATCH 3/4] powerpc: pseries: only store the device node basename
- in full_name
-To: David Laight <David.Laight@aculab.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Frank Rowand <frowand.list@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170724190757.11278-5-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,36 +46,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 26, 2017 at 5:07 AM, David Laight <David.Laight@aculab.com> wrote:
-> From: Rob Herring
->> Sent: 25 July 2017 22:44
->> With dependencies on full_name containing the entire device node path
->> removed, stop storing the full_name in nodes created by
->> dlpar_configure_connector() and pSeries_reconfig_add_node().
-> ...
->>       dn = kzalloc(sizeof(*dn), GFP_KERNEL);
->>       if (!dn)
->>               return NULL;
->>
->>       name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
->> -     dn->full_name = kasprintf(GFP_KERNEL, "%s/%s", path, name);
->> +     dn->full_name = kasprintf(GFP_KERNEL, "%s", name);
->
-> Isn't this just strdup()?
+On Mon, Jul 24, 2017 at 02:07:44PM -0500, Brijesh Singh wrote:
+> From: Tom Lendacky <thomas.lendacky@amd.com>
+> 
+> When SEV is active the initrd/initramfs will already have already been
+> placed in memory encyrpted so do not try to encrypt it.
+> 
+> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> ---
+>  arch/x86/kernel/setup.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 0bfe0c1..01d56a1 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -379,9 +379,11 @@ static void __init reserve_initrd(void)
+>  	 * If SME is active, this memory will be marked encrypted by the
+>  	 * kernel when it is accessed (including relocation). However, the
+>  	 * ramdisk image was loaded decrypted by the bootloader, so make
+> -	 * sure that it is encrypted before accessing it.
+> +	 * sure that it is encrypted before accessing it. For SEV the
+> +	 * ramdisk will already be encyrpted, so only do this for SME.
+				   ^^^^^^^^^
+Please introduce a spellchecker into your patch creation workflow.
 
-Yes, it can be simplified to that now.
+-- 
+Regards/Gruss,
+    Boris.
 
-> Perhaps you should rename full_name to name - since it is no longer 'full'?
-
-Ideally, yes. However, we still have users in other places tree wide
-(which should still work with the change) and I don't think it is
-worth the additional churn. Also, we already have "name" as that is
-the node name without the unit-address. I'd like to get rid of that,
-but name is special in that it is exposed as a property too. Finally,
-full_name is still the full path on Sparc.
-
-> Maybe you could do a single malloc() for both 'dn' and the name?
-
-Sure.
-
-Rob
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
