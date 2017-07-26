@@ -1,42 +1,42 @@
 Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHNN91Tm9zDqmS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:28 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6Q53W4v043689
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:05:26 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bxj5gnaad-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHNN93jl6zDqmV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:29 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6Q53WRp032348
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:05:27 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bxgqfgw3g-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:05:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:05:27 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jul 2017 15:05:23 +1000
+ Wed, 26 Jul 2017 15:05:25 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6Q55LEK12386390
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:21 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6Q55NZW32047156
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:23 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6Q55BpB031831
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:12 +1000
+ v6Q55D8q031923
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:14 +1000
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V8 1/3] powernv: powercap: Add support for powercap framework
-Date: Wed, 26 Jul 2017 10:35:07 +0530
+Subject: [PATCH V8 2/3] powernv: Add support to set power-shifting-ratio
+Date: Wed, 26 Jul 2017 10:35:08 +0530
 In-Reply-To: <1501045509-21732-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1501045509-21732-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1501045509-21732-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-Id: <1501045509-21732-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,89 +46,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds a generic powercap framework to change the system powercap
-inband through OPAL-OCC command/response interface.
+This patch adds support to set power-shifting-ratio for CPU-GPU which
+is used by OCC power capping algorithm.
 
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
 Changes from V7:
 - Replaced sscanf with kstrtoint
 
- arch/powerpc/include/asm/opal-api.h            |   5 +-
- arch/powerpc/include/asm/opal.h                |   4 +
+ arch/powerpc/include/asm/opal-api.h            |   4 +-
+ arch/powerpc/include/asm/opal.h                |   3 +
  arch/powerpc/platforms/powernv/Makefile        |   2 +-
- arch/powerpc/platforms/powernv/opal-powercap.c | 237 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-psr.c      | 169 +++++++++++++++++++++++++
  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
- arch/powerpc/platforms/powernv/opal.c          |   4 +
- 6 files changed, 252 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-powercap.c
+ arch/powerpc/platforms/powernv/opal.c          |   3 +
+ 6 files changed, 181 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-psr.c
 
 diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 3130a73..c3e0c4a 100644
+index c3e0c4a..0d37315 100644
 --- a/arch/powerpc/include/asm/opal-api.h
 +++ b/arch/powerpc/include/asm/opal-api.h
-@@ -42,6 +42,7 @@
- #define OPAL_I2C_STOP_ERR	-24
- #define OPAL_XIVE_PROVISIONING	-31
- #define OPAL_XIVE_FREE_ACTIVE	-32
-+#define OPAL_TIMEOUT		-33
- 
- /* API Tokens (in r0) */
- #define OPAL_INVALID_CALL		       -1
-@@ -190,7 +191,9 @@
- #define OPAL_NPU_INIT_CONTEXT			146
- #define OPAL_NPU_DESTROY_CONTEXT		147
+@@ -193,7 +193,9 @@
  #define OPAL_NPU_MAP_LPAR			148
--#define OPAL_LAST				148
-+#define OPAL_GET_POWERCAP			152
-+#define OPAL_SET_POWERCAP			153
-+#define OPAL_LAST				153
+ #define OPAL_GET_POWERCAP			152
+ #define OPAL_SET_POWERCAP			153
+-#define OPAL_LAST				153
++#define OPAL_GET_PSR				154
++#define OPAL_SET_PSR				155
++#define OPAL_LAST				155
  
  /* Device tree flags */
  
 diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 588fb1c..ec2087c 100644
+index ec2087c..58b30a4 100644
 --- a/arch/powerpc/include/asm/opal.h
 +++ b/arch/powerpc/include/asm/opal.h
-@@ -267,6 +267,8 @@ int64_t opal_xive_set_vp_info(uint64_t vp,
- int64_t opal_xive_free_irq(uint32_t girq);
- int64_t opal_xive_sync(uint32_t type, uint32_t id);
+@@ -269,6 +269,8 @@ int64_t opal_xive_set_vp_info(uint64_t vp,
  int64_t opal_xive_dump(uint32_t type, uint32_t id);
-+int opal_get_powercap(u32 handle, int token, u32 *pcap);
-+int opal_set_powercap(u32 handle, int token, u32 pcap);
+ int opal_get_powercap(u32 handle, int token, u32 *pcap);
+ int opal_set_powercap(u32 handle, int token, u32 pcap);
++int opal_get_power_shifting_ratio(u32 handle, int token, u32 *psr);
++int opal_set_power_shifting_ratio(u32 handle, int token, u32 psr);
  
  /* Internal functions */
  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-@@ -345,6 +347,8 @@ static inline int opal_get_async_rc(struct opal_msg msg)
- 
+@@ -348,6 +350,7 @@ static inline int opal_get_async_rc(struct opal_msg msg)
  void opal_wake_poller(void);
  
-+void opal_powercap_init(void);
-+
+ void opal_powercap_init(void);
++void opal_psr_init(void);
+ 
  #endif /* __ASSEMBLY__ */
  
- #endif /* _ASM_POWERPC_OPAL_H */
 diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index b5d98cb..e79f806 100644
+index e79f806..9ed7d33 100644
 --- a/arch/powerpc/platforms/powernv/Makefile
 +++ b/arch/powerpc/platforms/powernv/Makefile
 @@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
  obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
--obj-y			+= opal-kmsg.o
-+obj-y			+= opal-kmsg.o opal-powercap.o
+-obj-y			+= opal-kmsg.o opal-powercap.o
++obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o
  
  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
  obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
-diff --git a/arch/powerpc/platforms/powernv/opal-powercap.c b/arch/powerpc/platforms/powernv/opal-powercap.c
+diff --git a/arch/powerpc/platforms/powernv/opal-psr.c b/arch/powerpc/platforms/powernv/opal-psr.c
 new file mode 100644
-index 0000000..7c57f4b
+index 0000000..07e3f78
 --- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-powercap.c
-@@ -0,0 +1,237 @@
++++ b/arch/powerpc/platforms/powernv/opal-psr.c
+@@ -0,0 +1,169 @@
 +/*
-+ * PowerNV OPAL Powercap interface
++ * PowerNV OPAL Power-Shifting-Ratio interface
 + *
 + * Copyright 2017 IBM Corp.
 + *
@@ -138,7 +129,7 @@ index 0000000..7c57f4b
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#define pr_fmt(fmt)     "opal-powercap: " fmt
++#define pr_fmt(fmt)     "opal-psr: " fmt
 +
 +#include <linux/of.h>
 +#include <linux/kobject.h>
@@ -146,26 +137,24 @@ index 0000000..7c57f4b
 +
 +#include <asm/opal.h>
 +
-+DEFINE_MUTEX(powercap_mutex);
++DEFINE_MUTEX(psr_mutex);
 +
-+static struct kobject *powercap_kobj;
++static struct kobject *psr_kobj;
 +
-+struct powercap_attr {
++struct psr_attr {
 +	u32 handle;
 +	struct kobj_attribute attr;
 +};
 +
-+static struct attribute_group *pattr_groups;
-+static struct powercap_attr *pcap_attrs;
++static struct psr_attr *psr_attrs;
++static struct kobject *psr_kobj;
 +
-+static ssize_t powercap_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			     char *buf)
++static ssize_t psr_show(struct kobject *kobj, struct kobj_attribute *attr,
++			char *buf)
 +{
-+	struct powercap_attr *pcap_attr = container_of(attr,
-+						struct powercap_attr, attr);
++	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
 +	struct opal_msg msg;
-+	u32 pcap;
-+	int ret, token;
++	int psr, ret, token;
 +
 +	token = opal_async_get_token_interruptible();
 +	if (token < 0) {
@@ -173,8 +162,8 @@ index 0000000..7c57f4b
 +		return token;
 +	}
 +
-+	mutex_lock(&powercap_mutex);
-+	ret = opal_get_powercap(pcap_attr->handle, token, &pcap);
++	mutex_lock(&psr_mutex);
++	ret = opal_get_power_shifting_ratio(psr_attr->handle, token, &psr);
 +	switch (ret) {
 +	case OPAL_ASYNC_COMPLETION:
 +		ret = opal_async_wait_response(token, &msg);
@@ -185,32 +174,29 @@ index 0000000..7c57f4b
 +		}
 +		ret = opal_error_code(opal_get_async_rc(msg));
 +		if (!ret)
-+			ret = sprintf(buf, "%u\n", be32_to_cpu(pcap));
++			ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
 +		break;
 +	case OPAL_SUCCESS:
-+		ret = sprintf(buf, "%u\n", be32_to_cpu(pcap));
++		ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
 +		break;
 +	default:
 +		ret = opal_error_code(ret);
 +	}
 +
 +out:
-+	mutex_unlock(&powercap_mutex);
++	mutex_unlock(&psr_mutex);
 +	opal_async_release_token(token);
 +	return ret;
 +}
 +
-+static ssize_t powercap_store(struct kobject *kobj,
-+			      struct kobj_attribute *attr, const char *buf,
-+			      size_t count)
++static ssize_t psr_store(struct kobject *kobj, struct kobj_attribute *attr,
++			 const char *buf, size_t count)
 +{
-+	struct powercap_attr *pcap_attr = container_of(attr,
-+						struct powercap_attr, attr);
++	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
 +	struct opal_msg msg;
-+	u32 pcap;
-+	int ret, token;
++	int psr, ret, token;
 +
-+	ret = kstrtoint(buf, 0, &pcap);
++	ret = kstrtoint(buf, 0, &psr);
 +	if (ret)
 +		return ret;
 +
@@ -220,8 +206,8 @@ index 0000000..7c57f4b
 +		return token;
 +	}
 +
-+	mutex_lock(&powercap_mutex);
-+	ret = opal_set_powercap(pcap_attr->handle, token, pcap);
++	mutex_lock(&psr_mutex);
++	ret = opal_set_power_shifting_ratio(psr_attr->handle, token, psr);
 +	switch (ret) {
 +	case OPAL_ASYNC_COMPLETION:
 +		ret = opal_async_wait_response(token, &msg);
@@ -242,159 +228,88 @@ index 0000000..7c57f4b
 +	}
 +
 +out:
-+	mutex_unlock(&powercap_mutex);
++	mutex_unlock(&psr_mutex);
 +	opal_async_release_token(token);
 +
 +	return ret;
 +}
 +
-+static void powercap_add_attr(int handle, const char *name,
-+			      struct powercap_attr *attr)
++void __init opal_psr_init(void)
 +{
-+	attr->handle = handle;
-+	sysfs_attr_init(&attr->attr.attr);
-+	attr->attr.attr.name = name;
-+	attr->attr.attr.mode = 0444;
-+	attr->attr.show = powercap_show;
-+}
++	struct device_node *psr, *node;
++	int psr_attr_count = 0, i = 0;
 +
-+void __init opal_powercap_init(void)
-+{
-+	struct device_node *powercap, *node;
-+	int pattr_group_count = 0, total_attr_count = 0;
-+	int i, count;
-+
-+	powercap = of_find_node_by_path("/ibm,opal/power-mgt/powercap");
-+	if (!powercap) {
-+		pr_devel("/ibm,opal/power-mgt/powercap node not found\n");
++	psr = of_find_node_by_path("/ibm,opal/power-mgt/psr");
++	if (!psr) {
++		pr_devel("/ibm,opal/power-mgt/psr node not found\n");
 +		return;
 +	}
 +
-+	for_each_child_of_node(powercap, node)
-+		pattr_group_count++;
++	for_each_child_of_node(psr, node)
++		psr_attr_count++;
 +
-+	pattr_groups = kcalloc(pattr_group_count,
-+			       sizeof(struct attribute_group), GFP_KERNEL);
-+	if (!pattr_groups)
++	psr_attrs = kcalloc(psr_attr_count, sizeof(struct psr_attr),
++			    GFP_KERNEL);
++	if (!psr_attrs)
 +		return;
 +
-+	i = 0;
-+	for_each_child_of_node(powercap, node) {
-+		int attr_count = 0;
-+
-+		if (of_find_property(node, "powercap-min", NULL))
-+			attr_count++;
-+		if (of_find_property(node, "powercap-max", NULL))
-+			attr_count++;
-+		if (of_find_property(node, "powercap-cur", NULL))
-+			attr_count++;
-+
-+		total_attr_count += attr_count;
-+		pattr_groups[i].attrs = kcalloc(attr_count + 1,
-+						sizeof(struct attribute *),
-+						GFP_KERNEL);
-+		if (!pattr_groups[i].attrs) {
-+			while (--i >= 0)
-+				kfree(pattr_groups[i].attrs);
-+			goto out_pattr_groups;
-+		}
-+		i++;
-+	}
-+
-+	pcap_attrs = kcalloc(total_attr_count, sizeof(struct powercap_attr),
-+			     GFP_KERNEL);
-+	if (!pcap_attrs)
-+		goto out_pattr_groups_attrs;
-+
-+	count = 0;
-+	i = 0;
-+	for_each_child_of_node(powercap, node) {
-+		u32 handle;
-+		int j = 0;
-+
-+		pattr_groups[i].name = node->name;
-+
-+		if (!of_property_read_u32(node, "powercap-min", &handle)) {
-+			powercap_add_attr(handle, "powercap-min",
-+					  &pcap_attrs[count]);
-+			pattr_groups[i].attrs[j++] =
-+				&pcap_attrs[count++].attr.attr;
-+		}
-+
-+		if (!of_property_read_u32(node, "powercap-max", &handle)) {
-+			powercap_add_attr(handle, "powercap-max",
-+					  &pcap_attrs[count]);
-+			pattr_groups[i].attrs[j++] =
-+				&pcap_attrs[count++].attr.attr;
-+		}
-+
-+		if (!of_property_read_u32(node, "powercap-cur", &handle)) {
-+			powercap_add_attr(handle, "powercap-cur",
-+					  &pcap_attrs[count]);
-+			pcap_attrs[count].attr.attr.mode |= 0220;
-+			pcap_attrs[count].attr.store = powercap_store;
-+			pattr_groups[i].attrs[j++] =
-+				&pcap_attrs[count++].attr.attr;
-+		}
-+		i++;
-+	}
-+
-+	powercap_kobj = kobject_create_and_add("powercap", opal_kobj);
-+	if (!powercap_kobj) {
-+		pr_warn("Failed to create powercap kobject\n");
-+		goto out_pcap_attrs;
-+	}
-+
-+	for (i = 0; i < pattr_group_count; i++) {
-+		if (sysfs_create_group(powercap_kobj, &pattr_groups[i])) {
-+			pr_warn("Failed to create powercap attribute group %s\n",
-+				pattr_groups[i].name);
++	for_each_child_of_node(psr, node) {
++		if (of_property_read_u32(node, "handle",
++					 &psr_attrs[i].handle))
 +			goto out;
-+		}
++
++		sysfs_attr_init(&psr_attrs[i].attr.attr);
++		if (of_property_read_string(node, "label",
++					    &psr_attrs[i].attr.attr.name))
++			goto out;
++		psr_attrs[i].attr.attr.mode = 0664;
++		psr_attrs[i].attr.show = psr_show;
++		psr_attrs[i].attr.store = psr_store;
++		i++;
 +	}
++
++	psr_kobj = kobject_create_and_add("psr", opal_kobj);
++	if (!psr_kobj) {
++		pr_warn("Failed to create psr kobkect\n");
++		goto out;
++	}
++
++	for (i = 0; i < psr_attr_count; i++)
++		if (sysfs_create_file(psr_kobj, &psr_attrs[i].attr.attr)) {
++			pr_devel("Failed to create sysfs file %s\n",
++				 psr_attrs[i].attr.attr.name);
++			goto out_kobj;
++		}
 +
 +	return;
++out_kobj:
++	kobject_put(psr_kobj);
 +out:
-+	kobject_put(powercap_kobj);
-+out_pcap_attrs:
-+	kfree(pcap_attrs);
-+out_pattr_groups_attrs:
-+	while (--pattr_group_count >= 0)
-+		kfree(pattr_groups[i].attrs);
-+out_pattr_groups:
-+	kfree(pattr_groups);
++	kfree(psr_attrs);
 +}
 diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 4ca6c26..eff5fe7 100644
+index eff5fe7..9867726 100644
 --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
 +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -310,3 +310,5 @@ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
- OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
- OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+@@ -312,3 +312,5 @@ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
  OPAL_CALL(opal_npu_map_lpar,			OPAL_NPU_MAP_LPAR);
-+OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
-+OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
+ OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
+ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
++OPAL_CALL(opal_get_power_shifting_ratio,	OPAL_GET_PSR);
++OPAL_CALL(opal_set_power_shifting_ratio,	OPAL_SET_PSR);
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index cad6b57..889da97 100644
+index 889da97..280a736 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -836,6 +836,9 @@ static int __init opal_init(void)
- 	/* Initialise OPAL kmsg dumper for flushing console on panic */
- 	opal_kmsg_init();
+@@ -839,6 +839,9 @@ static int __init opal_init(void)
+ 	/* Initialise OPAL powercap interface */
+ 	opal_powercap_init();
  
-+	/* Initialise OPAL powercap interface */
-+	opal_powercap_init();
++	/* Initialise OPAL Power-Shifting-Ratio interface */
++	opal_psr_init();
 +
  	return 0;
  }
  machine_subsys_initcall(powernv, opal_init);
-@@ -952,6 +955,7 @@ int opal_error_code(int rc)
- 	case OPAL_UNSUPPORTED:		return -EIO;
- 	case OPAL_HARDWARE:		return -EIO;
- 	case OPAL_INTERNAL_ERROR:	return -EIO;
-+	case OPAL_TIMEOUT:		return -ETIMEDOUT;
- 	default:
- 		pr_err("%s: unexpected OPAL error %d\n", __func__, rc);
- 		return -EIO;
 -- 
 1.8.3.1
