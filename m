@@ -1,25 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.184])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHW4D6DgvzDqmv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:07:08 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Rob Herring' <robh@kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-CC: Frank Rowand <frowand.list@gmail.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
-Subject: RE: [PATCH 3/4] powerpc: pseries: only store the device node
- basename in full_name
-Date: Wed, 26 Jul 2017 10:07:01 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD00419B2@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHWVj4xj1zDqmv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 20:26:37 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/4] of/fdt: only store the device node basename in
+ full_name
+In-Reply-To: <20170725214427.25768-5-robh@kernel.org>
 References: <20170725214427.25768-1-robh@kernel.org>
- <20170725214427.25768-4-robh@kernel.org>
-In-Reply-To: <20170725214427.25768-4-robh@kernel.org>
-Content-Type: text/plain; charset="Windows-1252"
+ <20170725214427.25768-5-robh@kernel.org>
+Date: Wed, 26 Jul 2017 20:26:36 +1000
+Message-ID: <87r2x35w9v.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rob Herring
-> Sent: 25 July 2017 22:44
-> With dependencies on full_name containing the entire device node path
-> removed, stop storing the full_name in nodes created by
-> dlpar_configure_connector() and pSeries_reconfig_add_node().
-...
->	dn =3D kzalloc(sizeof(*dn), GFP_KERNEL);
-> 	if (!dn)
-> 		return NULL;
->=20
-> 	name =3D (char *)ccwa + be32_to_cpu(ccwa->name_offset);
-> -	dn->full_name =3D kasprintf(GFP_KERNEL, "%s/%s", path, name);
-> +	dn->full_name =3D kasprintf(GFP_KERNEL, "%s", name);
+Rob Herring <robh@kernel.org> writes:
 
-Isn't this just strdup()?
-Perhaps you should rename full_name to name - since it is no longer 'full'?
+> With dependencies on a statically allocated full path name converted to
+> use %pOF format specifier, we can store just the basename of node, and
+> the unflattening of the FDT can be simplified.
+>
+> This commit will affect the remaining users of full_name. After
+> analyzing these users, the remaining cases should only change some print
+> messages. The main users of full_name are providing a name for struct
+> resource. The resource names shouldn't be important other than providing
+> /proc/iomem names.
+>
+> We no longer distinguish between pre and post 0x10 dtb formats as either
+> a full path or basename will work. However, less than 0x10 formats have
+> been broken since the conversion to use libfdt (and no one has cared).
 
-Maybe you could do a single malloc() for both 'dn' and the name?
+For the record - yes we did care. It broke booting with old versions of
+kexec, and it was a royal P.I.T.# to debug :D
 
-	David
+cheers
