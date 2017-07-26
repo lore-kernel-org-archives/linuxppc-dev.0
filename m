@@ -1,21 +1,22 @@
 Return-Path: <paubert@iram.es>
-Received: from cica-lavadora-l1mail3.puc.rediris.es
- (ci-l1mail3-out05a.puc.rediris.es [IPv6:2001:720:418:ca02::31])
+Received: from cica-lavadora-l1mail1v.puc.rediris.es
+ (ci-l1mail1v-out05a.puc.rediris.es [IPv6:2001:720:418:ca02::15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHRZ82XwvzDqmV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 17:29:16 +1000 (AEST)
-Date: Wed, 26 Jul 2017 09:29:00 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHS1M679CzDqmg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 17:49:26 +1000 (AEST)
+Date: Wed, 26 Jul 2017 09:49:15 +0200
 From: Gabriel Paubert <paubert@iram.es>
-To: Matt Brown <matthew.brown.dev@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 2/5] powerpc/lib/sstep: Add popcnt instruction emulation
-Message-ID: <20170726072850.vtmqtrgzyhzh6okl@lt-gp.iram.es>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 4/5] powerpc/lib/sstep: Add prty instruction emulation
+Message-ID: <20170726074915.jtjgtv2rw2bsl7al@lt-gp.iram.es>
 References: <20170725033320.17893-1-matthew.brown.dev@gmail.com>
- <20170725033320.17893-2-matthew.brown.dev@gmail.com>
+ <20170725033320.17893-4-matthew.brown.dev@gmail.com>
+ <1500970085.2611.3.camel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170725033320.17893-2-matthew.brown.dev@gmail.com>
+In-Reply-To: <1500970085.2611.3.camel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,131 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2017 at 01:33:17PM +1000, Matt Brown wrote:
-> This adds emulations for the popcntb, popcntw, and popcntd instructions.
-> Tested for correctness against the popcnt{b,w,d} instructions on ppc64le.
+On Tue, Jul 25, 2017 at 06:08:05PM +1000, Balbir Singh wrote:
+> On Tue, 2017-07-25 at 13:33 +1000, Matt Brown wrote:
+> > This adds emulation for the prtyw and prtyd instructions.
+> > Tested for logical correctness against the prtyw and prtyd instructions
+> > on ppc64le.
+> > 
+> > Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+> > ---
+> > v3:
+> > 	- optimised using the Giles-Miller method of side-ways addition
+> > v2:
+> > 	- fixed opcodes
+> > 	- fixed bitshifting and typecast errors
+> > 	- merged do_prtyw and do_prtyd into single function
+> > ---
+> >  arch/powerpc/lib/sstep.c | 27 +++++++++++++++++++++++++++
+> >  1 file changed, 27 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+> > index 6a79618..0bcf631 100644
+> > --- a/arch/powerpc/lib/sstep.c
+> > +++ b/arch/powerpc/lib/sstep.c
+> > @@ -655,6 +655,25 @@ static nokprobe_inline void do_bpermd(struct pt_regs *regs, unsigned long v1,
+> >  	regs->gpr[ra] = perm;
+> >  }
+> >  #endif /* __powerpc64__ */
+> > +/*
+> > + * The size parameter adjusts the equivalent prty instruction.
+> > + * prtyw = 32, prtyd = 64
+> > + */
+> > +static nokprobe_inline void do_prty(struct pt_regs *regs, unsigned long v,
+> > +				int size, int ra)
+> > +{
+> > +	unsigned long long res = v;
+> > +
+> > +	res = (0x0001000100010001 & res) + (0x0001000100010001 & (res >> 8));
+> > +	res = (0x0000000700000007 & res) + (0x0000000700000007 & (res >> 16));
+> > +	if (size == 32) {		/* prtyw */
+> > +		regs->gpr[ra] = (0x0000000100000001 & res);
+> > +		return;
+> > +	}
+> > +
+> > +	res = (0x000000000000000f & res) + (0x000000000000000f & (res >> 32));
+> > +	regs->gpr[ra] = res & 1;	/*prtyd */
 > 
-> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
-> ---
-> v3:
-> 	- optimised using the Giles-Miller method of side-ways addition
-> v2:
-> 	- fixed opcodes
-> 	- fixed typecasting
-> 	- fixed bitshifting error for both 32 and 64bit arch
-> ---
->  arch/powerpc/lib/sstep.c | 40 +++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 39 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> index 87d277f..c1f9cdb 100644
-> --- a/arch/powerpc/lib/sstep.c
-> +++ b/arch/powerpc/lib/sstep.c
-> @@ -612,6 +612,32 @@ static nokprobe_inline void do_cmpb(struct pt_regs *regs, unsigned long v1,
->  	regs->gpr[rd] = out_val;
->  }
->  
-> +/*
-> + * The size parameter is used to adjust the equivalent popcnt instruction.
-> + * popcntb = 8, popcntw = 32, popcntd = 64
-> + */
-> +static nokprobe_inline void do_popcnt(struct pt_regs *regs, unsigned long v1,
-> +				int size, int ra)
-> +{
-> +	unsigned long long out = v1;
-> +
-> +	out = (0x5555555555555555 & out) + (0x5555555555555555 & (out >> 1));
+> Looks good, you can also xor instead of adding, but the masks would need
+> to change in that case.
 
-This can be simplified in a less obvious way as:
-	out -= (out >> 1) & 0x5555555555555555;
+Actually, I'd prefer to use xor for this case, since you hardly ever
+need any mask, except at the end. Most masks are only needed because of
+carry propagation, which the xor completely avoid.
 
-which maps each pair of bits according to the following:
-00 -> 00
-01 -> 01
-10 -> 01
-11 -> 10
+In other words:
 
-This should save one instruction.
+	unsigned long long res = v ^ (v >> 8);
+	res ^= res >> 16; 
+	if (size == 32) {
+		regs->gpr[ra] = res & 0x0000000100000001;
+		return;
+	}
+	res ^= res >> 32;
+	regs-> gpr[ra] = res & 1;
 
-> +	out = (0x3333333333333333 & out) + (0x3333333333333333 & (out >> 2));
-
-Ok, but now each nibble is between 0 and 4, so the addition of two
-nibbles can't overflow or generate carry into the higher one.
-
-> +	out = (0x0f0f0f0f0f0f0f0f & out) + (0x0f0f0f0f0f0f0f0f & (out >> 4));
-
-	out += out >> 4;
-	out &= 0x0f0f0f0f0f0f0f0f;
-
-which should also save one instruction
-
-> +	if (size == 8) {	/* popcntb */
-> +		regs->gpr[ra] = out;
-> +		return;
-> +	}
-
-At this point each count occupies at least one byte and can no more
-overflow, so masking is only needed before returning.
-
-> +	out = (0x001f001f001f001f & out) + (0x001f001f001f001f & (out >> 8));
-	out += out >> 8;
-
-> +	out = (0x0000003f0000003f & out) + (0x0000003f0000003f & (out >> 16));
-
-	out += out >> 16;
-
-> +	if (size == 32) {	/* popcntw */
-> +		regs->gpr[ra] = out;
-		regs->gpr[ra] = out & 0x0000003f0000003f;
-
-> +		return;
-> +	}
-> +	out = (0x000000000000007f & out) + (0x000000000000007f & (out >> 32));
-	out = (out + (out >> 32)) & 0x7f;
-
+should work, but I've not even compiled it.
 
 	Gabriel
-
-> +	regs->gpr[ra] = out;	/* popcntd */
-> +}
-> +
->  static nokprobe_inline int trap_compare(long v1, long v2)
->  {
->  	int ret = 0;
-> @@ -1194,6 +1220,10 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
->  			regs->gpr[ra] = regs->gpr[rd] & ~regs->gpr[rb];
->  			goto logical_done;
->  
-> +		case 122:	/* popcntb */
-> +			do_popcnt(regs, regs->gpr[rd], 8, ra);
-> +			goto logical_done;
-> +
->  		case 124:	/* nor */
->  			regs->gpr[ra] = ~(regs->gpr[rd] | regs->gpr[rb]);
->  			goto logical_done;
-> @@ -1206,6 +1236,10 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
->  			regs->gpr[ra] = regs->gpr[rd] ^ regs->gpr[rb];
->  			goto logical_done;
->  
-> +		case 378:	/* popcntw */
-> +			do_popcnt(regs, regs->gpr[rd], 32, ra);
-> +			goto logical_done;
-> +
->  		case 412:	/* orc */
->  			regs->gpr[ra] = regs->gpr[rd] | ~regs->gpr[rb];
->  			goto logical_done;
-> @@ -1217,7 +1251,11 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
->  		case 476:	/* nand */
->  			regs->gpr[ra] = ~(regs->gpr[rd] & regs->gpr[rb]);
->  			goto logical_done;
-> -
-> +#ifdef __powerpc64__
-> +		case 506:	/* popcntd */
-> +			do_popcnt(regs, regs->gpr[rd], 64, ra);
-> +			goto logical_done;
-> +#endif
->  		case 922:	/* extsh */
->  			regs->gpr[ra] = (signed short) regs->gpr[rd];
->  			goto logical_done;
-> -- 
-> 2.9.3
