@@ -1,22 +1,27 @@
-Return-Path: <paubert@iram.es>
-Received: from cica-lavadora-l1mail1v.puc.rediris.es
- (ci-l1mail1v-out05a.puc.rediris.es [IPv6:2001:720:418:ca02::15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jonathan.cameron@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHS1M679CzDqmg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 17:49:26 +1000 (AEST)
-Date: Wed, 26 Jul 2017 09:49:15 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 4/5] powerpc/lib/sstep: Add prty instruction emulation
-Message-ID: <20170726074915.jtjgtv2rw2bsl7al@lt-gp.iram.es>
-References: <20170725033320.17893-1-matthew.brown.dev@gmail.com>
- <20170725033320.17893-4-matthew.brown.dev@gmail.com>
- <1500970085.2611.3.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHS4w1BJczDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 17:52:30 +1000 (AEST)
+Date: Wed, 26 Jul 2017 08:51:43 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: Nicholas Piggin <npiggin@gmail.com>,
+ <linux-arm-kernel@lists.infradead.org>, <linuxarm@huawei.com>, "Andrew
+ Morton" <akpm@linux-foundation.org>, Abdul Haleem
+ <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Don Zickus <dzickus@redhat.com>, David Miller <davem@davemloft.net>,
+ <sparclinux@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n  - any one
+ else seeing this?
+Message-ID: <20170726085143.00007689@huawei.com>
+In-Reply-To: <20170726035306.GF3730@linux.vnet.ibm.com>
+References: <20170725175207.000001cb@huawei.com>
+ <20170726035306.GF3730@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1500970085.2611.3.camel@gmail.com>
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +31,217 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2017 at 06:08:05PM +1000, Balbir Singh wrote:
-> On Tue, 2017-07-25 at 13:33 +1000, Matt Brown wrote:
-> > This adds emulation for the prtyw and prtyd instructions.
-> > Tested for logical correctness against the prtyw and prtyd instructions
-> > on ppc64le.
-> > 
-> > Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
-> > ---
-> > v3:
-> > 	- optimised using the Giles-Miller method of side-ways addition
-> > v2:
-> > 	- fixed opcodes
-> > 	- fixed bitshifting and typecast errors
-> > 	- merged do_prtyw and do_prtyd into single function
-> > ---
-> >  arch/powerpc/lib/sstep.c | 27 +++++++++++++++++++++++++++
-> >  1 file changed, 27 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> > index 6a79618..0bcf631 100644
-> > --- a/arch/powerpc/lib/sstep.c
-> > +++ b/arch/powerpc/lib/sstep.c
-> > @@ -655,6 +655,25 @@ static nokprobe_inline void do_bpermd(struct pt_regs *regs, unsigned long v1,
-> >  	regs->gpr[ra] = perm;
-> >  }
-> >  #endif /* __powerpc64__ */
-> > +/*
-> > + * The size parameter adjusts the equivalent prty instruction.
-> > + * prtyw = 32, prtyd = 64
-> > + */
-> > +static nokprobe_inline void do_prty(struct pt_regs *regs, unsigned long v,
-> > +				int size, int ra)
-> > +{
-> > +	unsigned long long res = v;
-> > +
-> > +	res = (0x0001000100010001 & res) + (0x0001000100010001 & (res >> 8));
-> > +	res = (0x0000000700000007 & res) + (0x0000000700000007 & (res >> 16));
-> > +	if (size == 32) {		/* prtyw */
-> > +		regs->gpr[ra] = (0x0000000100000001 & res);
-> > +		return;
-> > +	}
-> > +
-> > +	res = (0x000000000000000f & res) + (0x000000000000000f & (res >> 32));
-> > +	regs->gpr[ra] = res & 1;	/*prtyd */
+On Tue, 25 Jul 2017 20:53:06 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+
+> On Wed, Jul 26, 2017 at 12:52:07AM +0800, Jonathan Cameron wrote:
+> > On Tue, 25 Jul 2017 08:12:45 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >   
+> > > On Tue, Jul 25, 2017 at 10:42:45PM +0800, Jonathan Cameron wrote:  
+> > > > On Tue, 25 Jul 2017 06:46:26 -0700
+> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > >     
+> > > > > On Tue, Jul 25, 2017 at 10:26:54PM +1000, Nicholas Piggin wrote:    
+> > > > > > On Tue, 25 Jul 2017 19:32:10 +0800
+> > > > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+> > > > > >       
+> > > > > > > Hi All,
+> > > > > > > 
+> > > > > > > We observed a regression on our d05 boards (but curiously not
+> > > > > > > the fairly similar but single socket / smaller core count
+> > > > > > > d03), initially seen with linux-next prior to the merge window
+> > > > > > > and still present in v4.13-rc2.
+> > > > > > > 
+> > > > > > > The symptom is:      
+> > > > > 
+> > > > > Adding Dave Miller and the sparclinux@vger.kernel.org email on CC, as
+> > > > > they have been seeing something similar, and you might well have saved
+> > > > > them the trouble of bisecting.
+> > > > > 
+> > > > > [ . . . ]
+> > > > >     
+> > > > > > > [ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1      
+> > > > > 
+> > > > > This is the cause from an RCU perspective.  You had a lot of idle CPUs,
+> > > > > and RCU is not permitted to disturb them -- the battery-powered embedded
+> > > > > guys get very annoyed by that sort of thing.  What happens instead is
+> > > > > that each CPU updates a per-CPU state variable when entering or exiting
+> > > > > idle, and the grace-period kthread ("rcu_preempt kthread" in the above
+> > > > > message) checks these state variables, and if when sees an idle CPU,
+> > > > > it reports a quiescent state on that CPU's behalf.
+> > > > > 
+> > > > > But the grace-period kthread can only do this work if it gets a chance
+> > > > > to run.  And the message above says that this kthread hasn't had a chance
+> > > > > to run for a full 5,663 jiffies.  For completeness, the "g1566 c1565"
+> > > > > says that grace period #1566 is in progress, the "f0x0" says that no one
+> > > > > is needing another grace period #1567.  The "RCU_GP_WAIT_FQS(3)" says
+> > > > > that the grace-period kthread has fully initialized the current grace
+> > > > > period and is sleeping for a few jiffies waiting to scan for idle tasks.
+> > > > > Finally, the "->state=0x1" says that the grace-period kthread is in
+> > > > > TASK_INTERRUPTIBLE state, in other words, still sleeping.    
+> > > > 
+> > > > Thanks for the explanation!    
+> > > > > 
+> > > > > So my first question is "What did commit 05a4a9527 (kernel/watchdog:
+> > > > > split up config options) do to prevent the grace-period kthread from
+> > > > > getting a chance to run?"     
+> > > > 
+> > > > As far as we can tell it was a side effect of that patch.
+> > > > 
+> > > > The real cause is that patch changed the result of defconfigs to stop running
+> > > > the softlockup detector - now CONFIG_SOFTLOCKUP_DETECTOR
+> > > > 
+> > > > Enabling that on 4.13-rc2 (and presumably everything in between)
+> > > > means we don't see the problem any more.
+> > > >     
+> > > > > I must confess that I don't see anything
+> > > > > obvious in that commit, so my second question is "Are we sure that
+> > > > > reverting this commit makes the problem go away?"    
+> > > > 
+> > > > Simply enabling CONFIG_SOFTLOCKUP_DETECTOR seems to make it go away.
+> > > > That detector fires up a thread on every cpu, which may be relevant.    
+> > > 
+> > > Interesting...  Why should it be necessary to fire up a thread on every
+> > > CPU in order to make sure that RCU's grace-period kthreads get some
+> > > CPU time?  Especially give how many idle CPUs you had on your system.
+> > > 
+> > > So I have to ask if there is some other bug that the softlockup detector
+> > > is masking.  
+> > I am thinking the same.  We can try going back further than 4.12 tomorrow
+> > (we think we can realistically go back to 4.8 and possibly 4.6
+> > with this board)  
 > 
-> Looks good, you can also xor instead of adding, but the masks would need
-> to change in that case.
+> Looking forward to seeing results!
+> 
+> > > > > and my third is "Is
+> > > > > this an intermittent problem that led to a false bisection?"    
+> > > > 
+> > > > Whilst it is a bit slow to occur, we verified with long runs on either
+> > > > side of that patch and since with the option enabled on latest mainline.
+> > > > 
+> > > > Also can cause the issue before that patch by disabling the previous
+> > > > relevant option on 4.12.    
+> > > 
+> > > OK, thank you -- hard to argue with that!  ;-)  
+> > 
+> > We thought it was a pretty unlikely a bisection result
+> > hence hammered it thoroughly ;)  
+> 
+> Glad that I am not the only paranoid one out here.  ;-)
+> 
+> > > Except that I am still puzzled as to why per-CPU softlockup threads
+> > > are needed for RCU's kthreads to get their wakeups.  We really should
+> > > be able to disable softlockup and still have kthreads get wakeups and
+> > > access to CPU, after all.
+> > >   
+> > > > > [ . . . ]
+> > > > >     
+> > > > > > > Reducing the RCU CPU stall timeout makes it happen more often,
+> > > > > > > but we are seeing even with the default value of 24 seconds.
+> > > > > > > 
+> > > > > > > Tends to occur after a period or relatively low usage, but has
+> > > > > > > also been seen mid way through performance tests.
+> > > > > > > 
+> > > > > > > This was not seen with v4.12 so a bisection run later lead to
+> > > > > > > commit 05a4a9527 (kernel/watchdog: split up config options).
+> > > > > > > 
+> > > > > > > Which was odd until we discovered that a side effect of this patch
+> > > > > > > was to change whether the softlockup detector was enabled or not in
+> > > > > > > the arm64 defconfig.
+> > > > > > > 
+> > > > > > > On 4.13-rc2 enabling the softlockup detector indeed stopped us
+> > > > > > > seeing the rcu issue. Disabling the equivalent on 4.12 made the
+> > > > > > > issue occur there as well.
+> > > > > > > 
+> > > > > > > Clearly the softlockup detector results in a thread on every cpu,
+> > > > > > > which might be related but beyond that we are still looking into
+> > > > > > > the issue.
+> > > > > > > 
+> > > > > > > So the obvious question is whether anyone else is seeing this as
+> > > > > > > it might help us to focus in on where to look!      
+> > > > > > 
+> > > > > > Huh. Something similar has been seen very intermittently on powerpc
+> > > > > > as well. We couldn't reproduce it reliably to bisect it already, so
+> > > > > > this is a good help.
+> > > > > > 
+> > > > > > http://marc.info/?l=linuxppc-embedded&m=149872815523646&w=2
+> > > > > > 
+> > > > > > It looks like the watchdog patch has a similar effect on powerpc in
+> > > > > > that it stops enabling the softlockup detector by default. Haven't
+> > > > > > confirmed, but it looks like the same thing.
+> > > > > > 
+> > > > > > A bug in RCU stall detection?      
+> > > > > 
+> > > > > Well, if I am expected to make grace periods complete when my grace-period
+> > > > > kthreads aren't getting any CPU time, I will have to make some substantial
+> > > > > changes.  ;-)
+> > > > > 
+> > > > > One possibility is that the timer isn't firing and another is that the
+> > > > > timer's wakeup is being lost somehow.
+> > > > > 
+> > > > > So another thing to try is to boot with rcutree.rcu_kick_kthreads=1.
+> > > > > This will cause RCU to do redundant wakeups on the grace-period kthread
+> > > > > if the grace period is moving slowly.  This is of course a crude hack,
+> > > > > which is why this boot parameter will also cause a splat if it ever has
+> > > > > to do anything.    
+> > > > 
+> > > > Running that now will let you know how it goes.  Not seen the issue yet
+> > > > but might just be a 'lucky' run - will give it a few hours.    
+> > > 
+> > > Thank you very much!  
+> > 
+> > So far it's not actually shown any splats.  I did a quick drop back to running
+> > without the parameter and got the original splat in less that 5 minutes.  
+> 
+> That is a bit strange.  Sensitive to code position or some such???
+> 
+Could be.  An overnight run on two boards showed no splats either.
 
-Actually, I'd prefer to use xor for this case, since you hardly ever
-need any mask, except at the end. Most masks are only needed because of
-carry propagation, which the xor completely avoid.
+If we are looking at code position then we may find it is hidden again
+in older kernels even if nothing 'relevant' changed.
 
-In other words:
+Jonathan
 
-	unsigned long long res = v ^ (v >> 8);
-	res ^= res >> 16; 
-	if (size == 32) {
-		regs->gpr[ra] = res & 0x0000000100000001;
-		return;
-	}
-	res ^= res >> 32;
-	regs-> gpr[ra] = res & 1;
-
-should work, but I've not even compiled it.
-
-	Gabriel
+> > I've spun up another board with this parameter set as well and will leave
+> > them both running overnight to see if anything interesting happens.
+> > 
+> > Thanks for your help with this,  
+> 
+> And thanks to you as well!!!
+> 
+> 							Thanx, Paul
+> 
+> > Jonathan
+> >   
+> > > 
+> > > 							Thanx, Paul
+> > >   
+> > > > Jonathan    
+> > > > > 
+> > > > > Does this help at all?
+> > > > > 
+> > > > > 							Thanx, Paul
+> > > > >     
+> > > > > > > In the meantime we'll carry on digging.
+> > > > > > > 
+> > > > > > > Thanks,
+> > > > > > > 
+> > > > > > > Jonathan
+> > > > > > > 
+> > > > > > > p.s. As a more general question, do we want to have the
+> > > > > > > soft lockup detector enabledon arm64 by default?      
+> > > > > > 
+> > > > > > I've cc'ed Don. My patch should not have changed defconfigs, I
+> > > > > > should have been more careful with that.
+> > > > > > 
+> > > > > > Thanks,
+> > > > > > Nick
+> > > > > >       
+> > > > >     
+> > > > 
+> > > >     
+> > >   
+> > 
+> >   
+> 
