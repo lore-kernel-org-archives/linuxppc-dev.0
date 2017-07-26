@@ -1,46 +1,21 @@
-Return-Path: <brijesh.singh@amd.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0075.outbound.protection.outlook.com [104.47.40.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHlRw6k6fzDqsB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 05:24:59 +1000 (AEST)
-Cc: brijesh.singh@amd.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>,
- Jonathan Corbet <corbet@lwn.net>, =?UTF-8?Q?Radim_Krcm=c3=a1r?=
- <rkrcmar@redhat.com>, Piotr Luc <piotr.luc@intel.com>,
- Ingo Molnar <mingo@redhat.com>, Dave Airlie <airlied@redhat.com>,
- Borislav Petkov <bp@suse.de>, Tom Lendacky <thomas.lendacky@amd.com>,
- Kees Cook <keescook@chromium.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Laura Abbott <labbott@redhat.com>,
- Tony Luck <tony.luck@intel.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Eric Biederman <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>
-Subject: Re: [RFC Part1 PATCH v3 13/17] x86/io: Unroll string I/O when SEV is
- active
-To: Arnd Bergmann <arnd@arndb.de>, David Laight <David.Laight@aculab.com>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-14-brijesh.singh@amd.com>
- <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
- <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
-From: Brijesh Singh <brijesh.singh@amd.com>
-Message-ID: <ed6d4ce7-97a6-f664-d7d7-4ff48bc6f06a@amd.com>
-Date: Wed, 26 Jul 2017 14:24:45 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHlk65WQ0zDrCt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 05:37:18 +1000 (AEST)
+Date: Wed, 26 Jul 2017 13:37:15 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] include/linux/vfio.h: Guard powerpc-specific
+ functions with CONFIG_VFIO_SPAPR_EEH
+Message-ID: <20170726133715.7cb039cb@w520.home>
+In-Reply-To: <20170718172220.9954-1-mopsfelder@gmail.com>
+References: <20170718172220.9954-1-mopsfelder@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,219 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 18 Jul 2017 14:22:20 -0300
+Murilo Opsfelder Araujo <mopsfelder@gmail.com> wrote:
 
-Hi Arnd and David,
-
-On 07/26/2017 05:45 AM, Arnd Bergmann wrote:
-> On Tue, Jul 25, 2017 at 11:51 AM, David Laight <David.Laight@aculab.com> wrote:
->> From: Brijesh Singh
->>> Sent: 24 July 2017 20:08
->>> From: Tom Lendacky <thomas.lendacky@amd.com>
->>>
->>> Secure Encrypted Virtualization (SEV) does not support string I/O, so
->>> unroll the string I/O operation into a loop operating on one element at
->>> a time.
->>>
->>> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
->>> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
->>> ---
->>>   arch/x86/include/asm/io.h | 26 ++++++++++++++++++++++----
->>>   1 file changed, 22 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
->>> index e080a39..2f3c002 100644
->>> --- a/arch/x86/include/asm/io.h
->>> +++ b/arch/x86/include/asm/io.h
->>> @@ -327,14 +327,32 @@ static inline unsigned type in##bwl##_p(int port)                       \
->>>                                                                        \
->>>   static inline void outs##bwl(int port, const void *addr, unsigned long count) \
->>>   {
+> When CONFIG_EEH=y and CONFIG_VFIO_SPAPR_EEH=n, build fails with the
+> following:
 > 
-> This will clash with a fix I did to add a "memory" clobber
-> for the traditional implementation, see
-> https://patchwork.kernel.org/patch/9854573/
+>     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_release':
+>     vfio_pci.c:(.text+0xa98): undefined reference to `.vfio_spapr_pci_eeh_release'
+>     drivers/vfio/pci/vfio_pci.o: In function `.vfio_pci_open':
+>     vfio_pci.c:(.text+0x1420): undefined reference to `.vfio_spapr_pci_eeh_open'
 > 
->> Is it even worth leaving these as inline functions?
->> Given the speed of IO cycles it is unlikely that the cost of calling a real
->> function will be significant.
->> The code bloat reduction will be significant.
+> In this case, vfio_pci.c should use the empty definitions of
+> vfio_spapr_pci_eeh_open and vfio_spapr_pci_eeh_release functions.
 > 
-> I think the smallest code would be the original "rep insb" etc, which
-> should be smaller than a function call, unlike the loop. Then again,
-> there is a rather small number of affected device drivers, almost all
-> of them for ancient hardware that you won't even build in a 64-bit
-> x86 kernel, see the list below. The only user I found that is actually
-> still relevant is drivers/tty/hvc/hvc_xen.c, which uses it for the early
-> console.
+> This patch fixes it by guarding these function definitions with
+> CONFIG_VFIO_SPAPR_EEH, the symbol that controls whether vfio_spapr_eeh.c is
+> built, which is where the non-empty versions of these functions are. We need to
+> make use of IS_ENABLED() macro because CONFIG_VFIO_SPAPR_EEH is a tristate
+> option.
+> 
+> This issue was found during a randconfig build. Logs are here:
+> 
+>     http://kisskb.ellerman.id.au/kisskb/buildresult/12982362/
+> 
+> Signed-off-by: Murilo Opsfelder Araujo <mopsfelder@gmail.com>
+> ---
 
+Applied to my for-linus branch with David and Alexey's R-b for v4.13.
+Thanks,
 
-There are some indirect user of string I/O functions. The following functions
-defined in lib/iomap.c calls rep version of ins and outs.
+Alex
 
-- ioread8_rep, ioread16_rep, ioread32_rep
-- iowrite8_rep, iowrite16_rep, iowrite32_rep
-
-I found that several drivers use above functions.
-
-Here is one approach to convert it into non-inline functions. In this approach,
-I have added a new file arch/x86/kernel/io.c which provides non rep version of
-string I/O routines. The file gets built and used only when AMD_MEM_ENCRYPT is
-enabled. On positive side, if we don't build kernel with AMD_MEM_ENCRYPT support
-then we use inline routines, when AMD_MEM_ENCRYPT is built then we make a function
-call. Inside the function we unroll only when SEV is active.
-
-Do you see any issue with this approach ? thanks
-
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index e080a39..104927d 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -323,8 +323,9 @@ static inline unsigned type in##bwl##_p(int port)                   \
-         unsigned type value = in##bwl(port);                            \
-         slow_down_io();                                                 \
-         return value;                                                   \
--}                                                                      \
--                                                                       \
-+}
-+
-+#define BUILDIO_REP(bwl, bw, type)                                     \
-  static inline void outs##bwl(int port, const void *addr, unsigned long count) \
-  {                                                                      \
-         asm volatile("rep; outs" #bwl                                   \
-@@ -335,12 +336,31 @@ static inline void ins##bwl(int port, void *addr, unsigned long count)    \
-  {                                                                      \
-         asm volatile("rep; ins" #bwl                                    \
-                      : "+D"(addr), "+c"(count) : "d"(port));            \
--}
-+}                                                                      \
-  
-  BUILDIO(b, b, char)
-  BUILDIO(w, w, short)
-  BUILDIO(l, , int)
-  
-+#ifdef CONFIG_AMD_MEM_ENCRYPT
-+extern void outsb_try_rep(int port, const void *addr, unsigned long count);
-+extern void insb_try_rep(int port, void *addr, unsigned long count);
-+extern void outsw_try_rep(int port, const void *addr, unsigned long count);
-+extern void insw_try_rep(int port, void *addr, unsigned long count);
-+extern void outsl_try_rep(int port, const void *addr, unsigned long count);
-+extern void insl_try_rep(int port, void *addr, unsigned long count);
-+#define outsb  outsb_try_rep
-+#define insb   insb_try_rep
-+#define outsw  outsw_try_rep
-+#define insw   insw_try_rep
-+#define outsl  outsl_try_rep
-+#define insl   insl_try_rep
-+#else
-+BUILDIO_REP(b, b, char)
-+BUILDIO_REP(w, w, short)
-+BUILDIO_REP(l, , int)
-+#endif
-+
-  extern void *xlate_dev_mem_ptr(phys_addr_t phys);
-  extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);
-
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index a01892b..3b6e2a3 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -42,6 +42,7 @@ CFLAGS_irq.o := -I$(src)/../include/asm/trace
-  
-  obj-y                  := process_$(BITS).o signal.o
-  obj-$(CONFIG_COMPAT)   += signal_compat.o
-+obj-$(CONFIG_AMD_MEM_ENCRYPT) += io.o
-  obj-y                  += traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
-  obj-y                  += time.o ioport.o dumpstack.o nmi.o
-  obj-$(CONFIG_MODIFY_LDT_SYSCALL)       += ldt.o
-diff --git a/arch/x86/kernel/io.c b/arch/x86/kernel/io.c
-new file mode 100644
-index 0000000..f58afa9
---- /dev/null
-+++ b/arch/x86/kernel/io.c
-@@ -0,0 +1,87 @@
-+#include <linux/types.h>
-+#include <linux/io.h>
-+#include <asm/io.h>
-+
-+void outsb_try_rep(int port, const void *addr, unsigned long count)
-+{
-+       if (sev_active()) {
-+               unsigned char *value = (unsigned char *)addr;
-+               while (count) {
-+                       outb(*value, port);
-+                       value++;
-+                       count--;
-+               }
-+       } else {
-+               asm volatile("rep; outsb" : "+S"(addr), "+c"(count) : "d"(port));
-+       }
-+}
-+
-+void insb_try_rep(int port, void *addr, unsigned long count)
-+{
-+       if (sev_active()) {
-+               unsigned char *value = (unsigned char *)addr;
-+               while (count) {
-+                       *value = inb(port);
-+                       value++;
-+                       count--;
-+               }
-+       } else {
-+               asm volatile("rep; insb" : "+D"(addr), "+c"(count) : "d"(port));
-+       }
-+}
-+
-+void outsw_try_rep(int port, const void *addr, unsigned long count)
-+{
-+       if (sev_active()) {
-+               unsigned short *value = (unsigned short *)addr;
-+               while (count) {
-+                       outw(*value, port);
-+                       value++;
-+                       count--;
-+               }
-+       } else {
-+               asm volatile("rep; outsw" : "+S"(addr), "+c"(count) : "d"(port));
-+       }
-+}
-+void insw_try_rep(int port, void *addr, unsigned long count)
-+{
-+       if (sev_active()) {
-+               unsigned short *value = (unsigned short *)addr;
-+               while (count) {
-+                       *value = inw(port);
-+                       value++;
-+                       count--;
-+               }
-+       } else {
-+               asm volatile("rep; insw" : "+D"(addr), "+c"(count) : "d"(port));
-+       }
-+}
-+
-+void outsl_try_rep(int port, const void *addr, unsigned long count)
-+{
-+       if (sev_active()) {
-+               unsigned int *value = (unsigned int *)addr;
-+               while (count) {
-+                       outl(*value, port);
-+                       value++;
-+                       count--;
-+               }
-+       } else {
-+               asm volatile("rep; outsl" : "+S"(addr), "+c"(count) : "d"(port));
-+       }
-+}
-+
-+void insl_try_rep(int port, void *addr, unsigned long count)
-+{
-+       if (sev_active()) {
-+               unsigned int *value = (unsigned int *)addr;
-+               while (count) {
-+                       *value = inl(port);
-+                       value++;
-+                       count--;
-+               }
-+       } else {
-+               asm volatile("rep; insl" : "+D"(addr), "+c"(count) : "d"(port));
-+       }
-+}
+> 
+> Changes from v1:
+> - Rebased on top of next-20170718.
+> 
+>  include/linux/vfio.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+> index 586809a..a47b985 100644
+> --- a/include/linux/vfio.h
+> +++ b/include/linux/vfio.h
+> @@ -152,7 +152,7 @@ extern int vfio_set_irqs_validate_and_prepare(struct vfio_irq_set *hdr,
+>  					      size_t *data_size);
+> 
+>  struct pci_dev;
+> -#ifdef CONFIG_EEH
+> +#if IS_ENABLED(CONFIG_VFIO_SPAPR_EEH)
+>  extern void vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
+>  extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
+>  extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+> @@ -173,7 +173,7 @@ static inline long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+>  {
+>  	return -ENOTTY;
+>  }
+> -#endif /* CONFIG_EEH */
+> +#endif /* CONFIG_VFIO_SPAPR_EEH */
+> 
+>  /*
+>   * IRQfd - generic
+> --
+> 2.9.4
