@@ -1,42 +1,19 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHNNH568VzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:35 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6Q53UL4144639
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:05:33 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2bxkvd9kx4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 01:05:32 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 26 Jul 2017 15:05:27 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6Q55PPT26935480
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:25 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6Q55Gk7031975
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:05:16 +1000
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V8 3/3] powernv: Add support to clear sensor groups data
-Date: Wed, 26 Jul 2017 10:35:09 +0530
-In-Reply-To: <1501045509-21732-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1501045509-21732-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1501045509-21732-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHNrl13K4zDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 15:26:47 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: ruscur@russell.cc,
+	benh@kernel.crashing.org,
+	linuxppc-dev
+Cc: mpe@ellerman.id.au,
+	Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH] powerpc/powernv/pci: Return failure for some uses of
+ dma_set_mask()
+Date: Wed, 26 Jul 2017 15:26:40 +1000
+Message-Id: <1501046800-6690-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,240 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds support for clearing different sensor groups. OCC inband sensor
-groups like CSM, Profiler, Job Scheduler can be cleared using this
-driver. The min/max of all sensors belonging to these sensor groups
-will be cleared.
+Commit 8e3f1b1d8255 ("powerpc/powernv/pci: Enable 64-bit devices to access
+>4GB DMA space") introduced the ability for PCI device drivers to request a
+DMA mask between 64 and 32 bits and actually get a mask greater than
+32-bits. However currently if certain machine configuration dependent
+conditions are not meet the code silently falls back to a 32-bit mask.
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+This makes it hard for device drivers to detect which mask they actually
+got. Instead we should return an error when the request could not be
+fulfilled which allows drivers to either fallback or implement other
+workarounds as documented in DMA-API-HOWTO.txt.
+
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
-Changes from V7:
-- s/send_occ_command/opal_sensor_groups_clear_history
 
- arch/powerpc/include/asm/opal-api.h            |   3 +-
- arch/powerpc/include/asm/opal.h                |   2 +
- arch/powerpc/include/uapi/asm/opal-occ.h       |  23 ++++++
- arch/powerpc/platforms/powernv/Makefile        |   2 +-
- arch/powerpc/platforms/powernv/opal-occ.c      | 109 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
- arch/powerpc/platforms/powernv/opal.c          |   3 +
- 7 files changed, 141 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/include/uapi/asm/opal-occ.h
- create mode 100644 arch/powerpc/platforms/powernv/opal-occ.c
+Ideally we should do the same thing for 64-bit mode as well however there
+are a lot more drivers requesting a dma mask of 64-bits so it's a much
+larger task to audit them all to see if they behave correctly when
+dma_set_mask() fails. Such an audit may be required as previously these
+calls would not have failed on PPC64 (although may have on other
+architectures).
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0d37315..342738a 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -195,7 +195,8 @@
- #define OPAL_SET_POWERCAP			153
- #define OPAL_GET_PSR				154
- #define OPAL_SET_PSR				155
--#define OPAL_LAST				155
-+#define OPAL_SENSOR_GROUPS_CLEAR		156
-+#define OPAL_LAST				156
- 
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 58b30a4..92db6af 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -271,6 +271,7 @@ int64_t opal_xive_set_vp_info(uint64_t vp,
- int opal_set_powercap(u32 handle, int token, u32 pcap);
- int opal_get_power_shifting_ratio(u32 handle, int token, u32 *psr);
- int opal_set_power_shifting_ratio(u32 handle, int token, u32 psr);
-+int opal_sensor_groups_clear(u32 group_hndl, int token);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-@@ -351,6 +352,7 @@ static inline int opal_get_async_rc(struct opal_msg msg)
- 
- void opal_powercap_init(void);
- void opal_psr_init(void);
-+int opal_sensor_groups_clear_history(u32 handle);
- 
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/powerpc/include/uapi/asm/opal-occ.h b/arch/powerpc/include/uapi/asm/opal-occ.h
-new file mode 100644
-index 0000000..97c45e2
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/opal-occ.h
-@@ -0,0 +1,23 @@
-+/*
-+ * OPAL OCC command interface
-+ * Supported on POWERNV platform
-+ *
-+ * (C) Copyright IBM 2017
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#ifndef _UAPI_ASM_POWERPC_OPAL_OCC_H_
-+#define _UAPI_ASM_POWERPC_OPAL_OCC_H_
-+
-+#define OPAL_OCC_IOCTL_CLEAR_SENSOR_GROUPS	_IOR('o', 1, u32)
-+
-+#endif /* _UAPI_ASM_POWERPC_OPAL_OCC_H */
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 9ed7d33..f193b33 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
- obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
--obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o
-+obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-occ.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
-diff --git a/arch/powerpc/platforms/powernv/opal-occ.c b/arch/powerpc/platforms/powernv/opal-occ.c
-new file mode 100644
-index 0000000..d1d4b28
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-occ.c
-@@ -0,0 +1,109 @@
-+/*
-+ * Copyright IBM Corporation 2017
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#define pr_fmt(fmt) "opal-occ: " fmt
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/miscdevice.h>
-+#include <linux/fs.h>
-+#include <asm/opal.h>
-+#include <asm/opal-occ.h>
-+
-+DEFINE_MUTEX(opal_occ_mutex);
-+
-+int opal_sensor_groups_clear_history(u32 handle)
-+{
-+	struct opal_msg async_msg;
-+	int token, rc;
-+
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		pr_devel("Failed to get the token %d\n", token);
-+		return token;
-+	}
-+
-+	mutex_lock(&opal_occ_mutex);
-+	rc = opal_sensor_groups_clear(handle, token);
-+	if (rc == OPAL_ASYNC_COMPLETION) {
-+		rc = opal_async_wait_response(token, &async_msg);
-+		if (rc) {
-+			pr_devel("Failed to wait for async response %d\n", rc);
-+			goto out;
-+		}
-+		rc = opal_get_async_rc(async_msg);
-+	}
-+out:
-+	mutex_unlock(&opal_occ_mutex);
-+	opal_async_release_token(token);
-+	return opal_error_code(rc);
-+}
-+EXPORT_SYMBOL_GPL(opal_sensor_groups_clear_history);
-+
-+static long opal_occ_ioctl(struct file *file, unsigned int cmd,
-+			   unsigned long param)
-+{
-+	int rc = -EINVAL;
-+
-+	switch (cmd) {
-+	case OPAL_OCC_IOCTL_CLEAR_SENSOR_GROUPS:
-+		rc = opal_sensor_groups_clear_history(param);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+static const struct file_operations opal_occ_fops = {
-+	.unlocked_ioctl = opal_occ_ioctl,
-+	.owner		= THIS_MODULE,
-+};
-+
-+static struct miscdevice occ_dev = {
-+	.minor	= MISC_DYNAMIC_MINOR,
-+	.name	= "occ",
-+	.fops	= &opal_occ_fops,
-+};
-+
-+static int opal_occ_probe(struct platform_device *pdev)
-+{
-+	return misc_register(&occ_dev);
-+}
-+
-+static int opal_occ_remove(struct platform_device *pdev)
-+{
-+	misc_deregister(&occ_dev);
-+	return 0;
-+}
-+
-+static const struct of_device_id opal_occ_match[] = {
-+	{ .compatible = "ibm,opal-occ-sensor-group" },
-+	{ },
-+};
-+
-+static struct platform_driver opal_occ_driver = {
-+	.driver = {
-+		.name           = "opal-occ",
-+		.of_match_table = opal_occ_match,
-+	},
-+	.probe	= opal_occ_probe,
-+	.remove	= opal_occ_remove,
-+};
-+
-+module_platform_driver(opal_occ_driver);
-+
-+MODULE_DESCRIPTION("PowerNV OPAL-OCC driver");
-+MODULE_LICENSE("GPL");
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 9867726..c1130e8 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -314,3 +314,4 @@ OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
- OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
- OPAL_CALL(opal_get_power_shifting_ratio,	OPAL_GET_PSR);
- OPAL_CALL(opal_set_power_shifting_ratio,	OPAL_SET_PSR);
-+OPAL_CALL(opal_sensor_groups_clear,		OPAL_SENSOR_GROUPS_CLEAR);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 280a736..097c33c 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -842,6 +842,9 @@ static int __init opal_init(void)
- 	/* Initialise OPAL Power-Shifting-Ratio interface */
- 	opal_psr_init();
- 
-+	/* Initialize platform device: OCC interface */
-+	opal_pdev_init("ibm,opal-occ-sensor-group");
-+
- 	return 0;
- }
- machine_subsys_initcall(powernv, opal_init);
+A quick bit of grepping didn't turn up many drivers requesting 33-63 bit
+dma masks. Most of the ones that do are specific to other HW, although
+there were a couple of more generic drivers requesting eg. 48 bits. However
+those tested the return values of dma_set_mask() and took appropriate
+action (falling back to 32 bits) in the case of failure.
+
+- Alistair
+
+arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 4376135..b900eb1 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1852,6 +1852,14 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+ 			/* 4GB offset bypasses 32-bit space */
+ 			set_dma_offset(&pdev->dev, (1ULL << 32));
+ 			set_dma_ops(&pdev->dev, &dma_direct_ops);
++		} else if (dma_mask >> 32 && dma_mask != DMA_BIT_MASK(64)) {
++			/*
++			 * Fail the request if a DMA mask between 32 and 64 bits
++			 * was requested but couldn't be fulfilled. Ideally we
++			 * would do this for 64-bits but historically we have
++			 * always fallen back to 32-bits.
++			 */
++			return -ENOMEM;
+ 		} else {
+ 			dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+ 			set_dma_ops(&pdev->dev, &dma_iommu_ops);
 -- 
-1.8.3.1
+2.1.4
