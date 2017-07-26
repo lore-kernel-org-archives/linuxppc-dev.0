@@ -1,42 +1,42 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bp@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHMBy65DmzDqmS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 14:12:26 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6Q4AgN3062995
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 00:12:24 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bxgqff8a5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 00:12:24 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Wed, 26 Jul 2017 00:12:23 -0400
-Date: Tue, 25 Jul 2017 21:12:17 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: Jonathan.Cameron@huawei.com, npiggin@gmail.com,
- linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com,
- akpm@linux-foundation.org, abdhalee@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, dzickus@redhat.com,
- sparclinux@vger.kernel.org, sfr@canb.auug.org.au
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170725175207.000001cb@huawei.com>
- <20170725.141029.676882447882600000.davem@davemloft.net>
- <20170726035545.GG3730@linux.vnet.ibm.com>
- <20170725.210233.1441906980505926406.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHMZd4Vb7zDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 14:29:29 +1000 (AEST)
+Date: Wed, 26 Jul 2017 06:28:40 +0200
+From: Borislav Petkov <bp@suse.de>
+To: Brijesh Singh <brijesh.singh@amd.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 03/17] x86/mm: Secure Encrypted
+ Virtualization (SEV) support
+Message-ID: <20170726042840.GB30702@nazgul.tnic>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-4-brijesh.singh@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170725.210233.1441906980505926406.davem@davemloft.net>
-Message-Id: <20170726041217.GH3730@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170724190757.11278-4-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,38 +46,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2017 at 09:02:33PM -0700, David Miller wrote:
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Tue, 25 Jul 2017 20:55:45 -0700
+On Mon, Jul 24, 2017 at 02:07:43PM -0500, Brijesh Singh wrote:
+> From: Tom Lendacky <thomas.lendacky@amd.com>
 > 
-> > On Tue, Jul 25, 2017 at 02:10:29PM -0700, David Miller wrote:
-> >> Just to report, turning softlockup back on fixes things for me on
-> >> sparc64 too.
-> > 
-> > Very good!
-> > 
-> >> The thing about softlockup is it runs an hrtimer, which seems to run
-> >> about every 4 seconds.
-> > 
-> > I could see where that could shake things loose, but I am surprised that
-> > it would be needed.  I ran a short run with CONFIG_SOFTLOCKUP_DETECTOR=y
-> > with no trouble, but I will be running a longer test later on.
-> > 
-> >> So I wonder if this is a NO_HZ problem.
-> > 
-> > Might be.  My tests run with NO_HZ_FULL=n and NO_HZ_IDLE=y.  What are
-> > you running?  (Again, my symptoms are slightly different, so I might
-> > be seeing a different bug.)
+> Provide support for Secure Encyrpted Virtualization (SEV). This initial
+
+Your subject misses a verb and patch subjects should have an active verb
+denoting what the patch does. The sentence above is a good example.
+
+> support defines a flag that is used by the kernel to determine if it is
+> running with SEV active.
 > 
-> I run with NO_HZ_FULL=n and NO_HZ_IDLE=y, just like you.
-> 
-> To clarify, the symptoms show up with SOFTLOCKUP_DETECTOR disabled.
+> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> ---
+>  arch/x86/include/asm/mem_encrypt.h | 2 ++
+>  arch/x86/mm/mem_encrypt.c          | 3 +++
+>  include/linux/mem_encrypt.h        | 8 +++++++-
+>  3 files changed, 12 insertions(+), 1 deletion(-)
 
-Same here -- but my failure case happens fairly rarely, so it will take
-some time to gain reasonable confidence that enabling SOFTLOCKUP_DETECTOR
-had effect.
+...
 
-But you are right, might be interesting to try NO_HZ_PERIODIC=y
-or NO_HZ_FULL=y.  So many possible tests, and so little time.  ;-)
+> diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+> index 0fbd092..1e4643e 100644
+> --- a/arch/x86/mm/mem_encrypt.c
+> +++ b/arch/x86/mm/mem_encrypt.c
+> @@ -40,6 +40,9 @@ static char sme_cmdline_off[] __initdata = "off";
+>  unsigned long sme_me_mask __section(.data) = 0;
+>  EXPORT_SYMBOL_GPL(sme_me_mask);
+>  
+> +unsigned int sev_enabled __section(.data) = 0;
+> +EXPORT_SYMBOL_GPL(sev_enabled);
 
-							Thanx, Paul
+So sev_enabled is a pure bool used only in bool context, not like
+sme_me_mask whose value is read too. Which means, you can make the
+former static and query it only through accessor functions.
+
+>  /* Buffer used for early in-place encryption by BSP, no locking needed */
+>  static char sme_early_buffer[PAGE_SIZE] __aligned(PAGE_SIZE);
+>  
+> diff --git a/include/linux/mem_encrypt.h b/include/linux/mem_encrypt.h
+> index 1255f09..ea0831a 100644
+> --- a/include/linux/mem_encrypt.h
+> +++ b/include/linux/mem_encrypt.h
+> @@ -22,12 +22,18 @@
+>  #else	/* !CONFIG_ARCH_HAS_MEM_ENCRYPT */
+>  
+>  #define sme_me_mask	0UL
+> +#define sev_enabled	0
+>  
+>  #endif	/* CONFIG_ARCH_HAS_MEM_ENCRYPT */
+>  
+>  static inline bool sme_active(void)
+>  {
+> -	return !!sme_me_mask;
+> +	return (sme_me_mask && !sev_enabled);
+
+You don't need the brackets. Below too.
+
+> +}
+> +
+> +static inline bool sev_active(void)
+> +{
+> +	return (sme_me_mask && sev_enabled);
+>  }
+
+So this is confusing, TBH. SME and SEV are not mutually exclusive and
+yet the logic here says so. Why?
+
+I mean, in the hypervisor context, sme_active() is still true.
+
+/me is confused.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
