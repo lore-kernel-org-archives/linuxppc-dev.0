@@ -1,45 +1,30 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jonathan.cameron@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJClY3lK7zDqmg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 23:40:09 +1000 (AEST)
-Date: Thu, 27 Jul 2017 15:39:27 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Brijesh Singh <brijesh.singh@amd.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
- David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 03/17] x86/mm: Secure Encrypted
- Virtualization (SEV) support
-Message-ID: <20170727133927.GC28553@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-4-brijesh.singh@amd.com>
- <20170726042840.GB30702@nazgul.tnic>
- <facf3ac6-ebda-57a7-f961-6029b3ac7be7@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJCyR6qqWzDrFD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 23:49:35 +1000 (AEST)
+Date: Thu, 27 Jul 2017 14:49:03 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: Nicholas Piggin <npiggin@gmail.com>, David Miller <davem@davemloft.net>,
+ <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
+ <abdhalee@linux.vnet.ibm.com>, <sparclinux@vger.kernel.org>,
+ <akpm@linux-foundation.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@lists.infradead.org>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170727144903.000022a1@huawei.com>
+In-Reply-To: <20170727124913.GL3730@linux.vnet.ibm.com>
+References: <20170726223658.GA27617@linux.vnet.ibm.com>
+ <20170726.154540.150558937277891719.davem@davemloft.net>
+ <20170726231505.GG3730@linux.vnet.ibm.com>
+ <20170726.162200.1904949371593276937.davem@davemloft.net>
+ <20170727014214.GH3730@linux.vnet.ibm.com>
+ <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
+ <20170727124913.GL3730@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <facf3ac6-ebda-57a7-f961-6029b3ac7be7@amd.com>
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,38 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 26, 2017 at 11:47:32AM -0500, Tom Lendacky wrote:
-> If it's made static then the sme_active()/sev_active() inline functions
-> would need to be turned into functions within the mem_encrypt.c file. So
-> there's a trade-off to do that, which is the better one?
+On Thu, 27 Jul 2017 05:49:13 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-Simple: why do we have functions if the variables are exported?
+> On Thu, Jul 27, 2017 at 02:34:00PM +1000, Nicholas Piggin wrote:
+> > On Wed, 26 Jul 2017 18:42:14 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >   
+> > > On Wed, Jul 26, 2017 at 04:22:00PM -0700, David Miller wrote:  
+> >   
+> > > > Indeed, that really wouldn't explain how we end up with a RCU stall
+> > > > dump listing almost all of the cpus as having missed a grace period.    
+> > > 
+> > > I have seen stranger things, but admittedly not often.  
+> > 
+> > So the backtraces show the RCU gp thread in schedule_timeout.
+> > 
+> > Are you sure that it's timeout has expired and it's not being scheduled,
+> > or could it be a bad (large) timeout (looks unlikely) or that it's being
+> > scheduled but not correctly noting gps on other CPUs?
+> > 
+> > It's not in R state, so if it's not being scheduled at all, then it's
+> > because the timer has not fired:  
+> 
+> Good point, Nick!
+> 
+> Jonathan, could you please reproduce collecting timer event tracing?
+I'm a little new to tracing (only started playing with it last week)
+so fingers crossed I've set it up right.  No splats yet.  Was getting
+splats on reading out the trace when running with the RCU stall timer
+set to 4 so have increased that back to the default and am rerunning.
 
-The reasoning for sme_me_mask is more or less obvious but for sev_enabled...
+This may take a while.  Correct me if I've gotten this wrong to save time
 
-IOW, either make the bool static and unlinine the function - this way
-you're free to change how you determine whether SEV is enabled later as
-callers will be using the function.
+echo "timer:*" > /sys/kernel/debug/tracing/set_event
 
-Or, if it doesn't really matter because you can always change callers
-later, simply drop sev_active() the function and use a bool sev_active
-everywhere.
+when it dumps, just send you the relevant part of what is in
+/sys/kernel/debug/tracing/trace?
 
-> The kernel needs to distinguish between running under SME and running
-> under SEV. SME and SEV are similar but not the same. The trampoline code
-> is a good example.  Before paging is activated, SME will access all
-> memory as decrypted, but SEV will access all memory as encrypted.  So
-> when APs are being brought up under SME the trampoline area cannot be
-> encrypted, whereas under SEV the trampoline area must be encrypted.
+Thanks,
 
-I guess you're sensing by now that we need this clarification in a
-comment above it...
-
-:-)
-
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+Jonathan
+> 
+> 							Thanx, Paul
+> 
+> > [ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
+> > [ 1984.638153] rcu_preempt     S    0     9      2 0x00000000
+> > [ 1984.643626] Call trace:
+> > [ 1984.646059] [<ffff000008084fb0>] __switch_to+0x90/0xa8
+> > [ 1984.651189] [<ffff000008962274>] __schedule+0x19c/0x5d8
+> > [ 1984.656400] [<ffff0000089626e8>] schedule+0x38/0xa0
+> > [ 1984.661266] [<ffff000008965844>] schedule_timeout+0x124/0x218
+> > [ 1984.667002] [<ffff000008121424>] rcu_gp_kthread+0x4fc/0x748
+> > [ 1984.672564] [<ffff0000080df0b4>] kthread+0xfc/0x128
+> > [ 1984.677429] [<ffff000008082ec0>] ret_from_fork+0x10/0x50
+> >   
+> 
