@@ -1,41 +1,32 @@
-Return-Path: <linuxram@us.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ4D34tYNzDrG3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:00:51 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ53F071VzDrGD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:38:16 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6R7wuei087277
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 04:00:49 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2by4fybpew-1
+ v6R8ZSeq124298
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 04:38:15 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2byc082ahw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 04:00:49 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 04:38:14 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 27 Jul 2017 02:00:48 -0600
-Date: Thu, 27 Jul 2017 01:00:36 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org
-Subject: Re: [PATCH 1/6] powerpc: Free up four 64K PTE bits in 4K backed HPTE
- pages
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1500663129-10615-1-git-send-email-linuxram@us.ibm.com>
- <1500663129-10615-2-git-send-email-linuxram@us.ibm.com>
- <87lgnb1o57.fsf@linux.vnet.ibm.com>
- <20170726160651.GA5664@ram.oc3035372033.ibm.com>
- <0aef1bef-c4ad-f745-5efa-07c4c9ae11d5@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0aef1bef-c4ad-f745-5efa-07c4c9ae11d5@linux.vnet.ibm.com>
-Message-Id: <20170727080035.GC5664@ram.oc3035372033.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 27 Jul 2017 02:38:14 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ "Kirill A . Shutemov" <kirill@shutemov.name>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 1/3] powerpc/mm: update pmdp_invalidate to return old pmd
+ value
+Date: Thu, 27 Jul 2017 14:07:54 +0530
+Message-Id: <20170727083756.32217-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,60 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 27, 2017 at 07:29:32AM +0530, Aneesh Kumar K.V wrote:
-> 
-> 
-> On 07/26/2017 09:36 PM, Ram Pai wrote:
-> >On Wed, Jul 26, 2017 at 04:05:48PM +0530, Aneesh Kumar K.V wrote:
-> >>Ram Pai <linuxram@us.ibm.com> writes:
-> >>
-> 
-> >>>diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> >>>index 9732837..62e580c 100644
-> >>>--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> >>>+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> >>>@@ -12,18 +12,14 @@
-> >>>   */
-> >>>  #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
-> >>>  #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
-> >>>+#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
-> >>
-> >>
-> >>Why are we moving H_PAGE_BUSY. Right now 4k and 64k linux page table
-> >>format looks similar.
-> >
-> >The goal is to clear off all the _RPAGE_RSV* bits so that they can be
-> >used for protection keys.  the aim is to keep the protection-bits in the
-> >_RPAGE_RSV* bits, so that they will work as-is whenever radix MMU enables
-> >protection keys.
-> >
-> >Yes this makes the PTE format differ from 4k PTE. Hopefully it is a
-> >small inconvenience. The PTE format for 4K is anyway not exactly the
-> >same compared to 64K PTE format. For example, higher RPN bits are
-> >used on 4K but not on 64k. lower RPN bits are used on 64k but not
-> >on 4k.
-> I was wondering why in this patch ? You do in the next patch
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 4 ++--
+ arch/powerpc/mm/pgtable-book3s64.c           | 9 ++++++---
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
-True. because in this patch, we have not yet freed up bit
-_RPAGE_RPN44. _RPAGE_RPN44 bit is still used by H_PAGE_F_GIX for 64K
-backed HPTEs.  Hence I have temporarily parked H_PAGE_BUSY at
-_RPAGE_RPN42.
-
-I could leave H_PAGE_BUSY at bit _RPAGE_RSV1  and move it to 
-_RPAGE_RPN44 in the next patch. But by doing so, i would have not
-truely released bit _RPAGE_RSV1 for 4K backed hptes; as claimed in the title
-of this patch....  
-
-> 
-> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> @@ -12,7 +12,7 @@
->   */
->  #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
->  #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
-> -#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
-> +#define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
-> 
-...
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 41d484ac0822..ece6912fae8e 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -1119,8 +1119,8 @@ static inline pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm,
+ }
+ 
+ #define __HAVE_ARCH_PMDP_INVALIDATE
+-extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+-			    pmd_t *pmdp);
++extern pmd_t pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
++			     pmd_t *pmdp);
+ 
+ #define __HAVE_ARCH_PMDP_HUGE_SPLIT_PREPARE
+ static inline void pmdp_huge_split_prepare(struct vm_area_struct *vma,
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index 3b65917785a5..0bb7f824ecdd 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -90,16 +90,19 @@ void serialize_against_pte_lookup(struct mm_struct *mm)
+  * We use this to invalidate a pmdp entry before switching from a
+  * hugepte to regular pmd entry.
+  */
+-void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+-		     pmd_t *pmdp)
++pmd_t pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
++		      pmd_t *pmdp)
+ {
+-	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, 0);
++	unsigned long old_pmd;
++
++	old_pmd = pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, 0);
+ 	flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+ 	/*
+ 	 * This ensures that generic code that rely on IRQ disabling
+ 	 * to prevent a parallel THP split work as expected.
+ 	 */
+ 	serialize_against_pte_lookup(vma->vm_mm);
++	return __pmd(old_pmd);
+ }
+ 
+ static pmd_t pmd_set_protbits(pmd_t pmd, pgprot_t pgprot)
 -- 
-Ram Pai
+2.13.3
