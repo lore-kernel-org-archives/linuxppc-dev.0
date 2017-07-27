@@ -3,30 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ25l3KdhzDrD4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 16:25:15 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6R6O4eV029732
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 02:25:12 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2by2jwv0g8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ25n3VdgzDrGC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 16:25:17 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6R6O2Bc022562
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 02:25:15 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2by8xdmnt4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 02:25:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 02:25:15 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 02:25:12 -0400
+ Thu, 27 Jul 2017 02:25:14 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v3 2/3] powerpc/mm: Don't send IPI to all cpus on THP updates
-Date: Thu, 27 Jul 2017 11:54:54 +0530
+Subject: [PATCH v3 3/3] powerpc/mm/cxl: Add the fault handling cpu to mm
+ cpumask
+Date: Thu, 27 Jul 2017 11:54:55 +0530
 In-Reply-To: <20170727062455.15404-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20170727062455.15404-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20170727062455.15404-2-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20170727062455.15404-3-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,163 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we made sure that lockless walk of linux page table is mostly limitted
-to current task(current->mm->pgdir) we can update the THP update sequence to
-only send IPI to cpus on which this task has run. This helps in reducing the IPI
-overload on systems with large number of CPUs.
+We use mm cpumask for serializing against lockless page table walk. Anybody
+who is doing a lockless page table walk is expected to disable irq and only
+cpus in mm cpumask is expected do the lockless walk. This ensure that
+a THP split can send IPI to only cpus in the mm cpumask, to make sure there
+are no parallel lockless page table walk.
 
-W.r.t kvm even though kvm is walking page table with vpc->arch.pgdir, it is
-done only on secondary cpus and in that case we have primary cpu added to
-task's mm cpumask. Sending an IPI to primary will force the secondary to do
-a vm exit and hence this mm cpumask usage is safe here.
+Add the CAPI fault handling cpu to the mm cpumask so that we can do the lockless
+page table walk while inserting hash page table entries.
 
-W.r.t CAPI, we still end up walking linux page table with capi context MM. For
-now the pte lookup serialization sends an IPI to all cpus in CPI is in use. We
-can further improve this by adding the CAPI interrupt handling cpu to task
-mm cpumask. That will be done in a later patch.
-
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
- arch/powerpc/mm/pgtable-book3s64.c           | 32 +++++++++++++++++++++++++++-
- arch/powerpc/mm/pgtable-hash64.c             |  8 +++----
- arch/powerpc/mm/pgtable-radix.c              |  8 +++----
- 4 files changed, 40 insertions(+), 9 deletions(-)
+ arch/powerpc/mm/pgtable-book3s64.c | 10 +---------
+ drivers/misc/cxl/fault.c           |  6 ++++++
+ 2 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index d1da415e283c..f349f5388af6 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1159,6 +1159,7 @@ static inline bool arch_needs_pgtable_deposit(void)
- 		return false;
- 	return true;
- }
-+extern void serialize_against_pte_lookup(struct mm_struct *mm);
- 
- 
- static inline pmd_t pmd_mkdevmap(pmd_t pmd)
 diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 31eed8fa8e99..57b947cde2bf 100644
+index 57b947cde2bf..3b65917785a5 100644
 --- a/arch/powerpc/mm/pgtable-book3s64.c
 +++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -9,6 +9,7 @@
- 
- #include <linux/sched.h>
- #include <linux/mm_types.h>
-+#include <misc/cxl-base.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/tlb.h>
-@@ -64,6 +65,35 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
- 	trace_hugepage_set_pmd(addr, pmd_val(pmd));
- 	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
+@@ -83,15 +83,7 @@ static void do_nothing(void *unused)
+ void serialize_against_pte_lookup(struct mm_struct *mm)
+ {
+ 	smp_mb();
+-	/*
+-	 * Cxl fault handling requires us to do a lockless page table
+-	 * walk while inserting hash page table entry with mm tracked
+-	 * in cxl context. Hence we need to do a global flush.
+-	 */
+-	if (cxl_ctx_in_use())
+-		smp_call_function(do_nothing, NULL, 1);
+-	else
+-		smp_call_function_many(mm_cpumask(mm), do_nothing, NULL, 1);
++	smp_call_function_many(mm_cpumask(mm), do_nothing, NULL, 1);
  }
-+
-+static void do_nothing(void *unused)
-+{
-+
-+}
-+/*
-+ * Serialize against find_current_mm_pte which does lock-less
-+ * lookup in page tables with local interrupts disabled. For huge pages
-+ * it casts pmd_t to pte_t. Since format of pte_t is different from
-+ * pmd_t we want to prevent transit from pmd pointing to page table
-+ * to pmd pointing to huge page (and back) while interrupts are disabled.
-+ * We clear pmd to possibly replace it with page table pointer in
-+ * different code paths. So make sure we wait for the parallel
-+ * find_current_mm_pte to finish.
-+ */
-+void serialize_against_pte_lookup(struct mm_struct *mm)
-+{
-+	smp_mb();
-+	/*
-+	 * Cxl fault handling requires us to do a lockless page table
-+	 * walk while inserting hash page table entry with mm tracked
-+	 * in cxl context. Hence we need to do a global flush.
-+	 */
-+	if (cxl_ctx_in_use())
-+		smp_call_function(do_nothing, NULL, 1);
-+	else
-+		smp_call_function_many(mm_cpumask(mm), do_nothing, NULL, 1);
-+}
-+
+ 
  /*
-  * We use this to invalidate a pmdp entry before switching from a
-  * hugepte to regular pmd entry.
-@@ -77,7 +107,7 @@ void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
- 	 * This ensures that generic code that rely on IRQ disabling
- 	 * to prevent a parallel THP split work as expected.
- 	 */
--	kick_all_cpus_sync();
-+	serialize_against_pte_lookup(vma->vm_mm);
- }
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index 6eed7d03e2b5..ab507e4ed69b 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -138,6 +138,12 @@ int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar)
+ 	int result;
+ 	unsigned long access, flags, inv_flags = 0;
  
- static pmd_t pmd_set_protbits(pmd_t pmd, pgprot_t pgprot)
-diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-index 443a2c66a304..c0a7372bdaa6 100644
---- a/arch/powerpc/mm/pgtable-hash64.c
-+++ b/arch/powerpc/mm/pgtable-hash64.c
-@@ -239,7 +239,7 @@ pmd_t hash__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addres
- 	 * by sending an IPI to all the cpus and executing a dummy
- 	 * function there.
- 	 */
--	kick_all_cpus_sync();
-+	serialize_against_pte_lookup(vma->vm_mm);
- 	/*
- 	 * Now invalidate the hpte entries in the range
- 	 * covered by pmd. This make sure we take a
-@@ -380,16 +380,16 @@ pmd_t hash__pmdp_huge_get_and_clear(struct mm_struct *mm,
- 	 */
- 	memset(pgtable, 0, PTE_FRAG_SIZE);
- 	/*
--	 * Serialize against find_linux_pte_or_hugepte which does lock-less
-+	 * Serialize against find_current_mm_pte variants which does lock-less
- 	 * lookup in page tables with local interrupts disabled. For huge pages
- 	 * it casts pmd_t to pte_t. Since format of pte_t is different from
- 	 * pmd_t we want to prevent transit from pmd pointing to page table
- 	 * to pmd pointing to huge page (and back) while interrupts are disabled.
- 	 * We clear pmd to possibly replace it with page table pointer in
- 	 * different code paths. So make sure we wait for the parallel
--	 * find_linux_pte_or_hugepage to finish.
-+	 * find_curren_mm_pte to finish.
- 	 */
--	kick_all_cpus_sync();
-+	serialize_against_pte_lookup(mm);
- 	return old_pmd;
- }
- 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 5cc50d47ce3f..299532f81592 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -805,7 +805,7 @@ pmd_t radix__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addre
- 	pmd = *pmdp;
- 	pmd_clear(pmdp);
- 	/*FIXME!!  Verify whether we need this kick below */
--	kick_all_cpus_sync();
-+	serialize_against_pte_lookup(vma->vm_mm);
- 	flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
- 	return pmd;
- }
-@@ -865,16 +865,16 @@ pmd_t radix__pmdp_huge_get_and_clear(struct mm_struct *mm,
- 	old = radix__pmd_hugepage_update(mm, addr, pmdp, ~0UL, 0);
- 	old_pmd = __pmd(old);
- 	/*
--	 * Serialize against find_linux_pte_or_hugepte which does lock-less
-+	 * Serialize against find_current_mm_pte which does lock-less
- 	 * lookup in page tables with local interrupts disabled. For huge pages
- 	 * it casts pmd_t to pte_t. Since format of pte_t is different from
- 	 * pmd_t we want to prevent transit from pmd pointing to page table
- 	 * to pmd pointing to huge page (and back) while interrupts are disabled.
- 	 * We clear pmd to possibly replace it with page table pointer in
- 	 * different code paths. So make sure we wait for the parallel
--	 * find_linux_pte_or_hugepage to finish.
-+	 * find_current_mm_pte to finish.
- 	 */
--	kick_all_cpus_sync();
-+	serialize_against_pte_lookup(mm);
- 	return old_pmd;
- }
- 
++	/*
++	 * Add the fault handling cpu to task mm cpumask so that we
++	 * can do a safe lockless page table walk when inserting the
++	 * hash page table entry.
++	 */
++	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
+ 	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
+ 		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
+ 		return result;
 -- 
 2.13.3
