@@ -1,23 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHxsy3kdgzDrF2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 13:14:46 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: joserz@linux.vnet.ibm.com, Paul Mackerras <paulus@ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, oohall@gmail.com
-Subject: Re: KVM guests freeze under upstream kernel
-In-Reply-To: <20170726131848.GA13783@pacoca>
-References: <20170719194634.GA1222@pacoca>
- <1500507770.3350.41.camel@kernel.crashing.org>
- <20170720030222.GA21034@pacoca> <20170720052159.GB8602@fergus.ozlabs.ibm.com>
- <20170721011818.GC13187@pacoca> <20170726131848.GA13783@pacoca>
-Date: Thu, 27 Jul 2017 13:14:45 +1000
-Message-ID: <87d18mfu56.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHzdm4k44zDrFD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 14:34:20 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id y25so9726406pfk.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 21:34:20 -0700 (PDT)
+Date: Thu, 27 Jul 2017 14:34:00 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: David Miller <davem@davemloft.net>, Jonathan.Cameron@huawei.com,
+ dzickus@redhat.com, sfr@canb.auug.org.au, linuxarm@huawei.com,
+ abdhalee@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
+In-Reply-To: <20170727014214.GH3730@linux.vnet.ibm.com>
+References: <20170726223658.GA27617@linux.vnet.ibm.com>
+ <20170726.154540.150558937277891719.davem@davemloft.net>
+ <20170726231505.GG3730@linux.vnet.ibm.com>
+ <20170726.162200.1904949371593276937.davem@davemloft.net>
+ <20170727014214.GH3730@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-joserz@linux.vnet.ibm.com writes:
-> On Thu, Jul 20, 2017 at 10:18:18PM -0300, joserz@linux.vnet.ibm.com wrote:
->> On Thu, Jul 20, 2017 at 03:21:59PM +1000, Paul Mackerras wrote:
->> > 
->> > Did you check the host kernel logs for any oops messages?
->> 
->> dmesg was clean but after sometime waiting (I forgot QEMU running in
->> another terminal) I got the oops below (after rebooting the host I 
->> couldn't reproduce it again).
->> 
->> Another test that I did was:
->> Compile with transparent huge pages disabled: KVM works fine
->> Compile with transparent huge pages enabled: doesn't work
->>   + disabling it in /sys/kernel/mm/transparent_hugepage: doesn't work
->> 
->> Just out of my own curiosity I made this small change:
->> 
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> b/arch/powerpc/include
->> index c0737c8..f94a3b6 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -80,7 +80,7 @@
->>  
->>   #define _PAGE_SOFT_DIRTY       _RPAGE_SW3 /* software: software dirty
->>   tracking 
->>    #define _PAGE_SPECIAL          _RPAGE_SW2 /* software: special page */
->>    -#define _PAGE_DEVMAP           _RPAGE_SW1 /* software: ZONE_DEVICE page */
->>    +#define _PAGE_DEVMAP           _RPAGE_RSV3
->>     #define __HAVE_ARCH_PTE_DEVMAP
->> 
->> and it works. I chose _RPAGE_RSV3 because it uses the same value that
->> x86 uses (0x0400000000000000UL) but I don't if it could have any side
->> effect
->> 
->
-> Does this change make any sense to you people?
+On Wed, 26 Jul 2017 18:42:14 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-No :)
+> On Wed, Jul 26, 2017 at 04:22:00PM -0700, David Miller wrote:
 
-I think it's just hiding the bug somehow. Presumably we have some code
-somewhere that is getting confused by _RPAGE_SW1 being set, or setting
-that bit incorrectly.
+> > Indeed, that really wouldn't explain how we end up with a RCU stall
+> > dump listing almost all of the cpus as having missed a grace period.  
+> 
+> I have seen stranger things, but admittedly not often.
 
-cheers
+So the backtraces show the RCU gp thread in schedule_timeout.
+
+Are you sure that it's timeout has expired and it's not being scheduled,
+or could it be a bad (large) timeout (looks unlikely) or that it's being
+scheduled but not correctly noting gps on other CPUs?
+
+It's not in R state, so if it's not being scheduled at all, then it's
+because the timer has not fired:
+
+[ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
+[ 1984.638153] rcu_preempt     S    0     9      2 0x00000000
+[ 1984.643626] Call trace:
+[ 1984.646059] [<ffff000008084fb0>] __switch_to+0x90/0xa8
+[ 1984.651189] [<ffff000008962274>] __schedule+0x19c/0x5d8
+[ 1984.656400] [<ffff0000089626e8>] schedule+0x38/0xa0
+[ 1984.661266] [<ffff000008965844>] schedule_timeout+0x124/0x218
+[ 1984.667002] [<ffff000008121424>] rcu_gp_kthread+0x4fc/0x748
+[ 1984.672564] [<ffff0000080df0b4>] kthread+0xfc/0x128
+[ 1984.677429] [<ffff000008082ec0>] ret_from_fork+0x10/0x50
