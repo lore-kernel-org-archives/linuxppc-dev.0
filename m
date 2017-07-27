@@ -1,28 +1,41 @@
-Return-Path: <Liam.Howlett@Oracle.com>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+Return-Path: <joserz@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJKMV4VpszDrKw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 03:53:10 +1000 (AEST)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v6RHcO18006557
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:38:25 GMT
-Date: Thu, 27 Jul 2017 13:38:06 -0400
-From: "Liam R. Howlett" <Liam.Howlett@Oracle.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the
- weak function
-Message-ID: <20170727173805.igvpvr755qzgztmm@oracle.com>
-References: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
- <20170727152556.s4uw5cuvdf36hodl@oracle.com>
- <da6a497b-e65c-b0db-3dab-83aa300a75ca@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJQYx4dL2zDrKw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 07:47:33 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6RLhlQu191522
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:47:30 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2byj7a8pk4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:47:30 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
+ Thu, 27 Jul 2017 18:47:28 -0300
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6RLlRnF23199966
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:47:27 -0300
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6RLlTJx002227
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:47:30 -0300
+Date: Thu, 27 Jul 2017 18:47:21 -0300
+From: joserz@linux.vnet.ibm.com
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, sjitindarsingh@gmail.com
+Subject: Re: [PATCH v2] powerpc/mm: Check for _PAGE_PTE in *_devmap()
+References: <20170727153553.9160-1-oohall@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <da6a497b-e65c-b0db-3dab-83aa300a75ca@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170727153553.9160-1-oohall@gmail.com>
+Message-Id: <20170727214721.GA595@pacoca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +45,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> [170727 12:12]:
+On Fri, Jul 28, 2017 at 01:35:53AM +1000, Oliver O'Halloran wrote:
+> The ISA radix translation tree contains two different types of entry,
+> directories and leaves. The formats of the two entries are different
+> with the directory entries containing no spare bits for use by software.
+> As a result we need to ensure that the *_devmap() family of functions
+> check fail for everything except leaf (PTE) entries.
 > 
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+> "i'll just tweak the mbox before i sent it, what's the worst that can happen"
+> *completely breaks KVM*
+> "..."
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgtable.h | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> On 07/27/2017 08:55 PM, Liam R. Howlett wrote:
-> > * Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> [170727 02:18]:
-> > > For ppc64, we want to call this function when we are not running as guest.
-> > > Also, if we failed to allocate hugepages, let the user know.
-> > > 
-> > [...]
-> > > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> > > index bc48ee783dd9..a3a7a7e6339e 100644
-> > > --- a/mm/hugetlb.c
-> > > +++ b/mm/hugetlb.c
-> > > @@ -2083,7 +2083,9 @@ struct page *alloc_huge_page_noerr(struct vm_area_struct *vma,
-> > >   	return page;
-> > >   }
-> > > -int __weak alloc_bootmem_huge_page(struct hstate *h)
-> > > +int alloc_bootmem_huge_page(struct hstate *h)
-> > > +	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
-> > > +int __alloc_bootmem_huge_page(struct hstate *h)
-> > >   {
-> > >   	struct huge_bootmem_page *m;
-> > >   	int nr_nodes, node;
-> > > @@ -2104,6 +2106,7 @@ int __weak alloc_bootmem_huge_page(struct hstate *h)
-> > >   			goto found;
-> > >   		}
-> > >   	}
-> > > +	pr_info("Failed to allocate hugepage of size %ld\n", huge_page_size(h));
-> > >   	return 0;
-> > >   found:
-> > 
-> > There is already a call to warn the user in the
-> > hugetlb_hstate_alloc_pages function.  If you look there, you will see
-> > that the huge_page_size was translated into a more user friendly format
-> > and the count prior to the failure is included.  What call path are you
-> > trying to cover?  Also, you may want your print to be a pr_warn since it
-> > is a failure?
-> > 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index d1da415..6bc6248 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -610,7 +610,9 @@ static inline pte_t pte_mkdevmap(pte_t pte)
 > 
-> Sorry I missed that in the recent kernel. I wrote the above before the
-> mentioned changes was done. I will drop the pr_info from the patch.
+>  static inline int pte_devmap(pte_t pte)
+>  {
+> -	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP));
+> +	uint64_t mask = cpu_to_be64(_PAGE_DEVMAP | _PAGE_PTE);
+> +
+> +	return (pte_raw(pte) & mask) == mask;
+>  }
+> 
+>  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+> -- 
+> 2.7.4
+> 
 
-Okay, thanks.  I didn't think there was a code path that was missed on
-boot.
+Michael should thank you because I was about to send another insane
+suggestion and ask him if that makes sense. :-D
 
-Cheers,
-Liam
+Tested-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
