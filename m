@@ -1,41 +1,39 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHvqM01y0zDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 11:42:22 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6R1ctLc080710
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 21:42:20 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2by4fxwafp-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHwCN468zzDqnP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 11:59:44 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6R1wbfA069704
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 21:59:41 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2by364gp4h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 21:42:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 21:59:41 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Wed, 26 Jul 2017 21:42:19 -0400
-Date: Wed, 26 Jul 2017 18:42:14 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: Jonathan.Cameron@huawei.com, dzickus@redhat.com, sfr@canb.auug.org.au,
- linuxarm@huawei.com, npiggin@gmail.com, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170726223658.GA27617@linux.vnet.ibm.com>
- <20170726.154540.150558937277891719.davem@davemloft.net>
- <20170726231505.GG3730@linux.vnet.ibm.com>
- <20170726.162200.1904949371593276937.davem@davemloft.net>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 26 Jul 2017 19:59:40 -0600
+Subject: Re: [PATCH 1/6] powerpc: Free up four 64K PTE bits in 4K backed HPTE
+ pages
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
+ hbabu@us.ibm.com, mhocko@kernel.org
+References: <1500663129-10615-1-git-send-email-linuxram@us.ibm.com>
+ <1500663129-10615-2-git-send-email-linuxram@us.ibm.com>
+ <87lgnb1o57.fsf@linux.vnet.ibm.com>
+ <20170726160651.GA5664@ram.oc3035372033.ibm.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 27 Jul 2017 07:29:32 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170726.162200.1904949371593276937.davem@davemloft.net>
-Message-Id: <20170727014214.GH3730@linux.vnet.ibm.com>
+In-Reply-To: <20170726160651.GA5664@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <0aef1bef-c4ad-f745-5efa-07c4c9ae11d5@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,63 +43,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 26, 2017 at 04:22:00PM -0700, David Miller wrote:
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Wed, 26 Jul 2017 16:15:05 -0700
-> 
-> > On Wed, Jul 26, 2017 at 03:45:40PM -0700, David Miller wrote:
-> >> Just out of curiousity, what x86 idle method is your machine using?
-> >> The mwait one or the one which simply uses 'halt'?  The mwait variant
-> >> might mask this bug, and halt would be a lot closer to how sparc64 and
-> >> Jonathan's system operates.
-> > 
-> > My kernel builds with CONFIG_INTEL_IDLE=n, which I believe means that
-> > I am not using the mwait one.  Here is a grep for IDLE in my .config:
-> > 
-> > 	CONFIG_NO_HZ_IDLE=y
-> > 	CONFIG_GENERIC_SMP_IDLE_THREAD=y
-> > 	# CONFIG_IDLE_PAGE_TRACKING is not set
-> > 	CONFIG_ACPI_PROCESSOR_IDLE=y
-> > 	CONFIG_CPU_IDLE=y
-> > 	# CONFIG_CPU_IDLE_GOV_LADDER is not set
-> > 	CONFIG_CPU_IDLE_GOV_MENU=y
-> > 	# CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is not set
-> > 	# CONFIG_INTEL_IDLE is not set
-> 
-> No, that doesn't influence it.  It is determined by cpu features at
-> run time.
-> 
-> If you are using mwait, it'll say so in your kernel log like this:
-> 
-> 	using mwait in idle threads
 
-Thank you for the hint!
 
-And vim says:
+On 07/26/2017 09:36 PM, Ram Pai wrote:
+> On Wed, Jul 26, 2017 at 04:05:48PM +0530, Aneesh Kumar K.V wrote:
+>> Ram Pai <linuxram@us.ibm.com> writes:
+>>
 
-"E486: Pattern not found: using mwait in idle threads"
-
-> >> On sparc64 the cpu yield we do in the idle loop sleeps the cpu.  It's
-> >> local TICK register keeps advancing, and the local timer therefore
-> >> will still trigger.  Also, any externally generated interrupts
-> >> (including cross calls) will wake up the cpu as well.
-> >> 
-> >> The tick-sched code is really tricky wrt. NO_HZ even in the NO_HZ_IDLE
-> >> case.  One of my running theories is that we miss scheduling a tick
-> >> due to a race.  That would be consistent with the behavior we see
-> >> in the RCU dumps, I think.
-> > 
-> > But wouldn't you have to miss a -lot- of ticks to get an RCU CPU stall
-> > warning?  By default, your grace period needs to extend for more than
-> > 21 seconds (more than one-third of a -minute-) to get one.  Or do
-> > you mean that the ticks get shut off now and forever, as opposed to
-> > just losing one of them?
+>>> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+>>> index 9732837..62e580c 100644
+>>> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+>>> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+>>> @@ -12,18 +12,14 @@
+>>>    */
+>>>   #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+>>>   #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
+>>> +#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
+>>
+>>
+>> Why are we moving H_PAGE_BUSY. Right now 4k and 64k linux page table
+>> format looks similar.
 > 
-> Hmmm, good point.  And I was talking about simply missing one tick.
+> The goal is to clear off all the _RPAGE_RSV* bits so that they can be
+> used for protection keys.  the aim is to keep the protection-bits in the
+> _RPAGE_RSV* bits, so that they will work as-is whenever radix MMU enables
+> protection keys.
 > 
-> Indeed, that really wouldn't explain how we end up with a RCU stall
-> dump listing almost all of the cpus as having missed a grace period.
+> Yes this makes the PTE format differ from 4k PTE. Hopefully it is a
+> small inconvenience. The PTE format for 4K is anyway not exactly the
+> same compared to 64K PTE format. For example, higher RPN bits are
+> used on 4K but not on 64k. lower RPN bits are used on 64k but not
+> on 4k.
+I was wondering why in this patch ? You do in the next patch
 
-I have seen stranger things, but admittedly not often.
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -12,7 +12,7 @@
+   */
+  #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+  #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
+-#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
++#define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
 
-							Thanx, Paul
+
+
+-aneesh
