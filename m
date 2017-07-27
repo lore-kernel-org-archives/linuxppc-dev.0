@@ -1,37 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJGpP37QqzDrK8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 01:57:49 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6RFuULK119861
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 11:57:47 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2byk5cgc4f-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJH3p0ZTlzDrKK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 02:09:25 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6RG7j1X126777
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:09:23 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2byjfub014-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 11:57:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:09:22 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 09:57:45 -0600
-Subject: Re: [RFC PATCH 3/3] mm/hugetlb: Remove pmd_huge_split_prepare
-To: Michal Hocko <mhocko@kernel.org>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- "Kirill A . Shutemov" <kirill@shutemov.name>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-References: <20170727083756.32217-1-aneesh.kumar@linux.vnet.ibm.com>
- <20170727083756.32217-3-aneesh.kumar@linux.vnet.ibm.com>
- <20170727125756.GD27766@dhcp22.suse.cz>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 27 Jul 2017 21:27:37 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 27 Jul 2017 10:09:22 -0600
+To: linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, Michael Bringmann <mwb@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH V2 0/4] powerpc/devtree: Add support for 'ibm,drc-info'
+ property
+Date: Thu, 27 Jul 2017 11:09:19 -0500
 MIME-Version: 1.0
-In-Reply-To: <20170727125756.GD27766@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <6d836bdb-0bf4-e855-e3d8-01a622714d1b@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <e884f428-c76d-112a-aa2f-f57a94de55fb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,32 +37,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+Several properties in the DRC device tree format are replaced by
+more compact representations to allow, for example, for the encoding
+of vast amounts of memory, and or reduced duplication of information
+in related data structures.
 
-On 07/27/2017 06:27 PM, Michal Hocko wrote:
-> On Thu 27-07-17 14:07:56, Aneesh Kumar K.V wrote:
->> Instead of marking the pmd ready for split, invalidate the pmd. This should
->> take care of powerpc requirement.
-> 
-> which is?
+"ibm,drc-info": This property, when present, replaces the following
+four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains".  This property is defined for all
+dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
+are intended to provide a more compact representation, and reduce some
+search overhead.
 
-I can add the commit which explain details here. Or add more details 
-from the older commit here.
+"ibm,architecture.vec": Bidirectional communication mechanism between
+the host system and the front end processor indicating what features
+the host system supports and what features the front end processor will
+actually provide.  In this case, we are indicating that the host system
+can support the new device tree structure "ibm,drc-info".
 
-c777e2a8b65420b31dac28a453e35be984f5808b
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-powerpc/mm: Fix Multi hit ERAT cause by recent THP update
-
-
-> 
->> Only side effect is that we mark the pmd
->> invalid early. This can result in us blocking access to the page a bit longer
->> if we race against a thp split.
-> 
-> Again, this doesn't tell me what is the problem and why do we care.
-
-Primary motivation is code reduction.
-
-   7 files changed, 35 insertions(+), 87 deletions(-)
-
-
--aneesh
+Michael Bringmann (4):
+  powerpc/firmware: Add definitions for new drc-info firmware feature.
+  pseries/drc-info: Search new DRC properties for CPU indexes
+  hotplug/drc-info: Add code to search new devtree property
+  powerpc: Enable support for new DRC devtree property
+---
+Changes in V2:
+  -- Minor changes to integrate to latest 4.13 code
