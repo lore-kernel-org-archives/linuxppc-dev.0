@@ -1,26 +1,21 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBqk0nCLzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:58:40 +1000 (AEST)
-Received: by mail-wm0-x243.google.com with SMTP id y206so594246wmd.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 05:58:40 -0700 (PDT)
-Date: Thu, 27 Jul 2017 15:58:35 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBtx1LpxzDrRX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 23:01:29 +1000 (AEST)
+Date: Thu, 27 Jul 2017 15:01:23 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH 1/3] powerpc/mm: update pmdp_invalidate to return old
- pmd value
-Message-ID: <20170727125835.4vtk25cttgs5awk2@node.shutemov.name>
-References: <20170727083756.32217-1-aneesh.kumar@linux.vnet.ibm.com>
- <20170727125449.GB27766@dhcp22.suse.cz>
+Subject: Re: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the
+ weak function
+Message-ID: <20170727130123.GE27766@dhcp22.suse.cz>
+References: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170727125449.GB27766@dhcp22.suse.cz>
+In-Reply-To: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 27, 2017 at 02:54:49PM +0200, Michal Hocko wrote:
-> EMISSING_CHANGELOG
+On Thu 27-07-17 11:48:26, Aneesh Kumar K.V wrote:
+> For ppc64, we want to call this function when we are not running as guest.
+
+What does this mean?
+
+> Also, if we failed to allocate hugepages, let the user know.
 > 
-> besides that no user actually uses the return value. Please fold this
-> into the patch which uses the new functionality.
-
-That's for patchset I'm working on[1].
-
-[1] http://lkml.kernel.org/r/20170615145224.66200-1-kirill.shutemov@linux.intel.com
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  include/linux/hugetlb.h | 1 +
+>  mm/hugetlb.c            | 5 ++++-
+>  2 files changed, 5 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index 0ed8e41aaf11..8bbbd37ab105 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -358,6 +358,7 @@ int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
+>  			pgoff_t idx);
+>  
+>  /* arch callback */
+> +int __init __alloc_bootmem_huge_page(struct hstate *h);
+>  int __init alloc_bootmem_huge_page(struct hstate *h);
+>  
+>  void __init hugetlb_bad_size(void);
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index bc48ee783dd9..a3a7a7e6339e 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -2083,7 +2083,9 @@ struct page *alloc_huge_page_noerr(struct vm_area_struct *vma,
+>  	return page;
+>  }
+>  
+> -int __weak alloc_bootmem_huge_page(struct hstate *h)
+> +int alloc_bootmem_huge_page(struct hstate *h)
+> +	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
+> +int __alloc_bootmem_huge_page(struct hstate *h)
+>  {
+>  	struct huge_bootmem_page *m;
+>  	int nr_nodes, node;
+> @@ -2104,6 +2106,7 @@ int __weak alloc_bootmem_huge_page(struct hstate *h)
+>  			goto found;
+>  		}
+>  	}
+> +	pr_info("Failed to allocate hugepage of size %ld\n", huge_page_size(h));
+>  	return 0;
+>  
+>  found:
+> -- 
+> 2.13.3
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
 -- 
- Kirill A. Shutemov
+Michal Hocko
+SUSE Labs
