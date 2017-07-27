@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBNQ1xzpzDrJP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:38:30 +1000 (AEST)
-In-Reply-To: <20170721145139.9384-1-lvivier@redhat.com>
-To: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBNR2wFqzDrJ6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:38:31 +1000 (AEST)
+In-Reply-To: <1500983262-8040-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Thomas Huth <thuth@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: powerpc/pseries: Fix of_node_put() underflow during pseries remove
-Message-Id: <3xJBNQ0hqTz9s76@ozlabs.org>
-Date: Thu, 27 Jul 2017 22:38:29 +1000 (AEST)
+Cc: paulus@samba.org
+Subject: Re: [v6] powerpc/mm/radix: Workaround prefetch issue with KVM
+Message-Id: <3xJBNQ6vjBz9sDB@ozlabs.org>
+Date: Thu, 27 Jul 2017 22:38:30 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-07-21 at 14:51:39 UTC, Laurent Vivier wrote:
-> As for commit 68baf692c435 ("powerpc/pseries: Fix of_node_put()
-> underflow during DLPAR remove"), the call to of_node_put()
-> must be removed from pSeries_reconfig_remove_node().
+On Tue, 2017-07-25 at 11:47:42 UTC, Michael Ellerman wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> dlpar_detach_node() and pSeries_reconfig_remove_node() call
-> of_detach_node(), and thus the node should not be released
-> in this case too.
+> There's a somewhat architectural issue with Radix MMU and KVM.
 > 
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> When coming out of a guest with AIL (Alternate Interrupt Location, ie,
+> MMU enabled), we start executing hypervisor code with the PID register
+> still containing whatever the guest has been using.
+...
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> [mpe: Rework the asm to build with CONFIG_PPC_RADIX_MMU=n, drop
+>       unneeded include of kvm_book3s_asm.h]
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/4fd1bd443e80b12f0a01a45fb9a793
+https://git.kernel.org/powerpc/c/a25bd72badfa793ab5aeafd50dbd9d
 
 cheers
