@@ -1,20 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ0R91BqrzDrFp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 15:10:13 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Jens Axboe" <axboe@fb.com>
-Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel\@vger.kernel.org"  <linux-kernel@vger.kernel.org>,
- "linux block" <linux-block@vger.kernel.org>
-Subject: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
- {IN-SOFTIRQ-W} usage
-Date: Thu, 27 Jul 2017 15:10:09 +1000
-Message-ID: <87a83qfosu.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ1yL2VgyzDrFq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 16:18:49 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6R6DfPq094449
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 02:18:46 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2by6pthyp1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 02:18:45 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 27 Jul 2017 02:18:45 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the weak
+ function
+Date: Thu, 27 Jul 2017 11:48:26 +0530
+Message-Id: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,94 +35,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jens,
+For ppc64, we want to call this function when we are not running as guest.
+Also, if we failed to allocate hugepages, let the user know.
 
-I'm seeing the lockdep warning below on shutdown on a Power8 machine
-using IPR.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ include/linux/hugetlb.h | 1 +
+ mm/hugetlb.c            | 5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-If I'm reading it right it looks like the spin_lock() (non-irq) in
-blk_mq_sched_insert_request() is the immediate cause.
-
-Looking at blk_mq_requeue_work() (the caller), it is doing
-spin_lock_irqsave(). So is switching blk_mq_sched_insert_request() to
-spin_lock_irqsave() the right fix?
-
-cheers
-
-
-ipr 0001:08:00.0: shutdown
-
-================================
-WARNING: inconsistent lock state
-4.13.0-rc2-gcc6x-gf74c89b #1 Not tainted
---------------------------------
-inconsistent {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
-swapper/28/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
- (&(&hctx->lock)->rlock){+.?...}, at: [<c0000000005b60f4>] blk_mq_sched_dispatch_requests+0xa4/0x2a0
-{SOFTIRQ-ON-W} state was registered at:
-  lock_acquire+0xec/0x2e0
-  _raw_spin_lock+0x44/0x70
-  blk_mq_sched_insert_request+0x88/0x1f0
-  blk_mq_requeue_work+0x108/0x180
-  process_one_work+0x310/0x800
-  worker_thread+0x88/0x520
-  kthread+0x164/0x1b0
-  ret_from_kernel_thread+0x5c/0x74
-irq event stamp: 3572314
-hardirqs last  enabled at (3572314): [<c000000000b71998>] _raw_spin_unlock_irqrestore+0x58/0xb0
-hardirqs last disabled at (3572313): [<c000000000b716ec>] _raw_spin_lock_irqsave+0x3c/0x90
-softirqs last  enabled at (3572302): [<c0000000000df17c>] irq_enter+0x9c/0xe0
-softirqs last disabled at (3572303): [<c0000000000df2c8>] irq_exit+0x108/0x150
-
-other info that might help us debug this:
- Possible unsafe locking scenario:
-
-       CPU0
-       ----
-  lock(&(&hctx->lock)->rlock);
-  <Interrupt>
-    lock(&(&hctx->lock)->rlock);
-
- *** DEADLOCK ***
-
-2 locks held by swapper/28/0:
- #0:  ((&ipr_cmd->timer)){+.-...}, at: [<c0000000001936f0>] call_timer_fn+0x10/0x4b0
- #1:  (rcu_read_lock){......}, at: [<c0000000005aca60>] __blk_mq_run_hw_queue+0xa0/0x2c0
-
-stack backtrace:
-CPU: 28 PID: 0 Comm: swapper/28 Not tainted 4.13.0-rc2-gcc6x-gf74c89b #1
-Call Trace:
-[c000001fffe97550] [c000000000b50818] dump_stack+0xe8/0x160 (unreliable)
-[c000001fffe97590] [c0000000001586d0] print_usage_bug+0x2d0/0x390
-[c000001fffe97640] [c000000000158f34] mark_lock+0x7a4/0x8e0
-[c000001fffe976f0] [c00000000015a000] __lock_acquire+0x6a0/0x1a70
-[c000001fffe97860] [c00000000015befc] lock_acquire+0xec/0x2e0
-[c000001fffe97930] [c000000000b71514] _raw_spin_lock+0x44/0x70
-[c000001fffe97960] [c0000000005b60f4] blk_mq_sched_dispatch_requests+0xa4/0x2a0
-[c000001fffe979c0] [c0000000005acac0] __blk_mq_run_hw_queue+0x100/0x2c0
-[c000001fffe97a00] [c0000000005ad478] __blk_mq_delay_run_hw_queue+0x118/0x130
-[c000001fffe97a40] [c0000000005ad61c] blk_mq_start_hw_queues+0x6c/0xa0
-[c000001fffe97a80] [c000000000797aac] scsi_kick_queue+0x2c/0x60
-[c000001fffe97aa0] [c000000000797cf0] scsi_run_queue+0x210/0x360
-[c000001fffe97b10] [c00000000079b888] scsi_run_host_queues+0x48/0x80
-[c000001fffe97b40] [c0000000007b6090] ipr_ioa_bringdown_done+0x70/0x1e0
-[c000001fffe97bc0] [c0000000007bc860] ipr_reset_ioa_job+0x80/0xf0
-[c000001fffe97bf0] [c0000000007b4d50] ipr_reset_timer_done+0xd0/0x100
-[c000001fffe97c30] [c0000000001937bc] call_timer_fn+0xdc/0x4b0
-[c000001fffe97cf0] [c000000000193d08] expire_timers+0x178/0x330
-[c000001fffe97d60] [c0000000001940c8] run_timer_softirq+0xb8/0x120
-[c000001fffe97de0] [c000000000b726a8] __do_softirq+0x168/0x6d8
-[c000001fffe97ef0] [c0000000000df2c8] irq_exit+0x108/0x150
-[c000001fffe97f10] [c000000000017bf4] __do_irq+0x2a4/0x4a0
-[c000001fffe97f90] [c00000000002da50] call_do_irq+0x14/0x24
-[c0000007fad93aa0] [c000000000017e8c] do_IRQ+0x9c/0x140
-[c0000007fad93af0] [c000000000008b98] hardware_interrupt_common+0x138/0x140
---- interrupt: 501 at .L1.42+0x0/0x4
-    LR = arch_local_irq_restore.part.4+0x84/0xb0
-[c0000007fad93de0] [c0000007ffc1f7d8] 0xc0000007ffc1f7d8 (unreliable)
-[c0000007fad93e00] [c000000000988d3c] cpuidle_enter_state+0x1bc/0x530
-[c0000007fad93e60] [c0000000001457cc] call_cpuidle+0x4c/0x90
-[c0000007fad93e80] [c000000000145b28] do_idle+0x208/0x2f0
-[c0000007fad93ef0] [c000000000145f8c] cpu_startup_entry+0x3c/0x50
-[c0000007fad93f20] [c000000000042bc0] start_secondary+0x3b0/0x4b0
-[c0000007fad93f90] [c00000000000ac6c] start_secondary_prolog+0x10/0x14
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 0ed8e41aaf11..8bbbd37ab105 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -358,6 +358,7 @@ int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
+ 			pgoff_t idx);
+ 
+ /* arch callback */
++int __init __alloc_bootmem_huge_page(struct hstate *h);
+ int __init alloc_bootmem_huge_page(struct hstate *h);
+ 
+ void __init hugetlb_bad_size(void);
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index bc48ee783dd9..a3a7a7e6339e 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -2083,7 +2083,9 @@ struct page *alloc_huge_page_noerr(struct vm_area_struct *vma,
+ 	return page;
+ }
+ 
+-int __weak alloc_bootmem_huge_page(struct hstate *h)
++int alloc_bootmem_huge_page(struct hstate *h)
++	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
++int __alloc_bootmem_huge_page(struct hstate *h)
+ {
+ 	struct huge_bootmem_page *m;
+ 	int nr_nodes, node;
+@@ -2104,6 +2106,7 @@ int __weak alloc_bootmem_huge_page(struct hstate *h)
+ 			goto found;
+ 		}
+ 	}
++	pr_info("Failed to allocate hugepage of size %ld\n", huge_page_size(h));
+ 	return 0;
+ 
+ found:
+-- 
+2.13.3
