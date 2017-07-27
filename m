@@ -1,49 +1,26 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <Liam.Howlett@Oracle.com>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJP5s4DmzzDrLR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 06:41:37 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6RKfUbs089427
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 16:41:34 -0400
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2byny43rxh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 16:41:33 -0400
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 17:40:58 -0300
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6RKeuO721496030
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:40:56 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6RKewmM022674
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:40:59 -0300
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-16-git-send-email-linuxram@us.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- arnd@arndb.de, corbet@lwn.net, mhocko@kernel.org,
- dave.hansen@intel.com, mingo@redhat.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, akpm@linux-foundation.org,
- khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v6 15/62] powerpc: helper functions to initialize AMR,
- IAMR and UMOR registers
-In-reply-to: <1500177424-13695-16-git-send-email-linuxram@us.ibm.com>
-Date: Thu, 27 Jul 2017 17:40:44 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJH2f0gB3zDrKK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 02:08:25 +1000 (AEST)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ v6RFQBuI032471
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 15:26:12 GMT
+Date: Thu, 27 Jul 2017 11:25:56 -0400
+From: "Liam R. Howlett" <Liam.Howlett@Oracle.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the
+ weak function
+Message-ID: <20170727152556.s4uw5cuvdf36hodl@oracle.com>
+References: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <877eyt4nqr.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,42 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> [170727 02:18]:
+> For ppc64, we want to call this function when we are not running as guest.
+> Also, if we failed to allocate hugepages, let the user know.
+> 
+[...]
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index bc48ee783dd9..a3a7a7e6339e 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -2083,7 +2083,9 @@ struct page *alloc_huge_page_noerr(struct vm_area_struct *vma,
+>  	return page;
+>  }
+>  
+> -int __weak alloc_bootmem_huge_page(struct hstate *h)
+> +int alloc_bootmem_huge_page(struct hstate *h)
+> +	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
+> +int __alloc_bootmem_huge_page(struct hstate *h)
+>  {
+>  	struct huge_bootmem_page *m;
+>  	int nr_nodes, node;
+> @@ -2104,6 +2106,7 @@ int __weak alloc_bootmem_huge_page(struct hstate *h)
+>  			goto found;
+>  		}
+>  	}
+> +	pr_info("Failed to allocate hugepage of size %ld\n", huge_page_size(h));
+>  	return 0;
+>  
+>  found:
 
-Ram Pai <linuxram@us.ibm.com> writes:
+There is already a call to warn the user in the
+hugetlb_hstate_alloc_pages function.  If you look there, you will see
+that the huge_page_size was translated into a more user friendly format
+and the count prior to the failure is included.  What call path are you
+trying to cover?  Also, you may want your print to be a pr_warn since it
+is a failure?
 
-> Introduce helper functions that can initialize the bits in the AMR,
-> IAMR and UMOR register; the bits that correspond to the given pkey.
->
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-
-s/UMOR/UAMOR/ here and in the subject as well.
-
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -16,3 +16,47 @@
->  #include <linux/pkeys.h>                /* PKEY_*                       */
->
->  bool pkey_inited;
-> +#define pkeyshift(pkey) ((arch_max_pkey()-pkey-1) * AMR_BITS_PER_PKEY)
-> +
-> +static inline void init_amr(int pkey, u8 init_bits)
-> +{
-> +	u64 new_amr_bits = (((u64)init_bits & 0x3UL) << pkeyshift(pkey));
-> +	u64 old_amr = read_amr() & ~((u64)(0x3ul) << pkeyshift(pkey));
-> +
-> +	write_amr(old_amr | new_amr_bits);
-> +}
-> +
-> +static inline void init_iamr(int pkey, u8 init_bits)
-> +{
-> +	u64 new_iamr_bits = (((u64)init_bits & 0x3UL) << pkeyshift(pkey));
-> +	u64 old_iamr = read_iamr() & ~((u64)(0x3ul) << pkeyshift(pkey));
-> +
-> +	write_amr(old_iamr | new_iamr_bits);
-> +}
-
-init_iamr should call write_iamr, not write_amr.
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Thanks,
+Liam
