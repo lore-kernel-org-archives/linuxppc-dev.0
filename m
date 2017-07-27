@@ -1,49 +1,19 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJDXp6hhczDrJM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 00:15:54 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6REEqL2104098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 10:15:52 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2byfh9xt7v-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 10:15:52 -0400
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 11:15:50 -0300
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6REFlWN23920652
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 11:15:48 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6RBFlaC021682
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 08:15:48 -0300
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-18-git-send-email-linuxram@us.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- arnd@arndb.de, corbet@lwn.net, mhocko@kernel.org,
- dave.hansen@intel.com, mingo@redhat.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, akpm@linux-foundation.org,
- khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v6 17/62] powerpc: implementation for
- arch_set_user_pkey_access()
-In-reply-to: <1500177424-13695-18-git-send-email-linuxram@us.ibm.com>
-Date: Thu, 27 Jul 2017 11:15:36 -0300
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87d18m3r07.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJF764BwGzDrJT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 00:42:10 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id q85so18295404pfq.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 07:42:10 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, sjitindarsingh@gmail.com, joserz@linux.vnet.ibm.com,
+ Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH] powerpc/mm: Check for _PAGE_PTE in *_devmap()
+Date: Fri, 28 Jul 2017 00:41:55 +1000
+Message-Id: <20170727144155.3370-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,32 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The ISA radix translation tree contains two different types of entry,
+directories and leaves. The formats of the two entries are different
+with the directory entries containing no spare bits for use by software.
+As a result we need to ensure that the *_devmap() family of functions
+check fail for everything except leaf (PTE) entries.
 
-Ram Pai <linuxram@us.ibm.com> writes:
-> @@ -113,10 +117,14 @@ static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
->  	return 0;
->  }
->
-> +extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> +		unsigned long init_val);
->  static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
->  		unsigned long init_val)
->  {
-> -	return 0;
-> +	if (!pkey_inited)
-> +		return -1;
-> +	return __arch_set_user_pkey_access(tsk, pkey, init_val);
->  }
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If non-zero, the return value of this function will be passed to
-userspace by the pkey_alloc syscall. Shouldn't it be returning an errno
-macro such as -EPERM?
-
-Also, why are there both arch_set_user_pkey_access and
-__arch_set_user_pkey_access? Is it a speed optimization so that the
-early return is inlined into the caller? Ditto for execute_only_pkey
-and __arch_override_mprotect_pkey.
-
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index c0737c8..e1989dd 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -610,7 +610,7 @@ static inline pte_t pte_mkdevmap(pte_t pte)
+ 
+ static inline int pte_devmap(pte_t pte)
+ {
+-	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP));
++	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP | _PAGE_PTE));
+ }
+ 
+ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
 -- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+2.9.3
