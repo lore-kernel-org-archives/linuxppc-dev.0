@@ -1,36 +1,28 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-it0-x22b.google.com (mail-it0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c0b::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJHJs2RvzzDrL8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 02:20:45 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6RGJIEc127929
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:20:43 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2byjw2j5fu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:20:43 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 10:20:41 -0600
-Subject: Re: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the
- weak function
-To: Michal Hocko <mhocko@kernel.org>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-References: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
- <20170727130123.GE27766@dhcp22.suse.cz>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 27 Jul 2017 21:50:35 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJHRZ0VgBzDrGp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 02:26:33 +1000 (AEST)
+Received: by mail-it0-x22b.google.com with SMTP id h199so85148960ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 09:26:33 -0700 (PDT)
+Subject: Re: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
+ {IN-SOFTIRQ-W} usage
+To: Bart Van Assche <Bart.VanAssche@wdc.com>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>
+References: <87a83qfosu.fsf@concordia.ellerman.id.au>
+ <073ed79c-11ce-e86c-a905-91fd28675d47@kernel.dk>
+ <1501166846.2516.1.camel@wdc.com>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <5b85a365-faa1-3987-9b6b-270399c30686@kernel.dk>
+Date: Thu, 27 Jul 2017 10:26:29 -0600
 MIME-Version: 1.0
-In-Reply-To: <20170727130123.GE27766@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <e963e910-1999-ddff-87cf-9e8c356fea82@linux.vnet.ibm.com>
+In-Reply-To: <1501166846.2516.1.camel@wdc.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,28 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 07/27/2017 06:31 PM, Michal Hocko wrote:
-> On Thu 27-07-17 11:48:26, Aneesh Kumar K.V wrote:
->> For ppc64, we want to call this function when we are not running as guest.
+On 07/27/2017 08:47 AM, Bart Van Assche wrote:
+> On Thu, 2017-07-27 at 08:02 -0600, Jens Axboe wrote:
+>> The bug looks like SCSI running the queue inline from IRQ
+>> context, that's not a good idea. Can you confirm the below works for
+>> you?
+>>
+>>
+>> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+>> index f6097b89d5d3..78740ebf966c 100644
+>> --- a/drivers/scsi/scsi_lib.c
+>> +++ b/drivers/scsi/scsi_lib.c
+>> @@ -497,7 +497,7 @@ static void scsi_run_queue(struct request_queue *q)
+>>  		scsi_starved_list_run(sdev->host);
+>>  
+>>  	if (q->mq_ops)
+>> -		blk_mq_run_hw_queues(q, false);
+>> +		blk_mq_run_hw_queues(q, true);
+>>  	else
+>>  		blk_run_queue(q);
+>>  }
 > 
-> What does this mean?
+> Hello Jens,
 > 
+> scsi_run_queue() works fine if no scheduler is configured. Additionally, that
+> code predates the introduction of blk-mq I/O schedulers. I think it is
+> nontrivial for block driver authors to figure out that a queue has to be run
+> from process context if a scheduler has been configured that does not support
+> to be run from interrupt context.
 
-ppc64 guest (aka LPAR) support a different mechanism for hugetlb 
-allocation/reservation. The LPAR management application called HMC can 
-be used to reserve a set of hugepages and we pass the details of 
-reserved pages via device tree to the guest. You can find the details in
-htab_dt_scan_hugepage_blocks() . We do the memblock_reserve of the range 
-and later in the boot sequence, we just add the reserved range to
-huge_boot_pages.
+No it doesn't, you could never run the queue from interrupt context with
+async == false. So I don't think that's confusing at all, you should
+always be aware of the context.
 
-For baremetal config (when we are not running as guest) we want to 
-follow what other architecture does, that is look at the command line 
-and do memblock allocation. Hence the need to call generic function 
-__alloc_bootmem_huge_page() in that case.
+> How about adding WARN_ON_ONCE(in_interrupt()) to
+> blk_mq_start_hw_queue() or replacing the above patch by the following:
 
-I can add all these details in to the commit message if that makes it easy ?
+No, I hate having dependencies like that, because they always just catch
+one of them. Looks like the IPR path that hits this should just offload
+to a workqueue or similar, you don't have to make any scsi_run_queue()
+async.
 
--aneesh
+-- 
+Jens Axboe
