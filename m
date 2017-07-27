@@ -1,42 +1,24 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Bart.VanAssche@wdc.com>
+Received: from esa4.hgst.iphmx.com (esa4.hgst.iphmx.com [216.71.154.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJFVj6YCwzDrH2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 00:59:09 +1000 (AEST)
-Date: Thu, 27 Jul 2017 16:58:41 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 07/17] x86/mm: Include SEV for encryption
- memory attribute changes
-Message-ID: <20170727145841.GG28553@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-8-brijesh.singh@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJFTD3HmdzDrJT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 00:57:50 +1000 (AEST)
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+To: "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "axboe@kernel.dk"
+ <axboe@kernel.dk>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>
+Subject: Re: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
+ {IN-SOFTIRQ-W} usage
+Date: Thu, 27 Jul 2017 14:47:28 +0000
+Message-ID: <1501166846.2516.1.camel@wdc.com>
+References: <87a83qfosu.fsf@concordia.ellerman.id.au>
+ <073ed79c-11ce-e86c-a905-91fd28675d47@kernel.dk>
+In-Reply-To: <073ed79c-11ce-e86c-a905-91fd28675d47@kernel.dk>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170724190757.11278-8-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,49 +28,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 24, 2017 at 02:07:47PM -0500, Brijesh Singh wrote:
-> From: Tom Lendacky <thomas.lendacky@amd.com>
-> 
-> The current code checks only for sme_active() when determining whether
-> to perform the encryption attribute change.  Include sev_active() in this
-> check so that memory attribute changes can occur under SME and SEV.
-> 
-> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
-> ---
->  arch/x86/mm/pageattr.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-> index dfb7d65..b726b23 100644
-> --- a/arch/x86/mm/pageattr.c
-> +++ b/arch/x86/mm/pageattr.c
-> @@ -1781,8 +1781,8 @@ static int __set_memory_enc_dec(unsigned long addr, int numpages, bool enc)
->  	unsigned long start;
->  	int ret;
->  
-> -	/* Nothing to do if the SME is not active */
-> -	if (!sme_active())
-> +	/* Nothing to do if SME and SEV are not active */
-> +	if (!sme_active() && !sev_active())
+On Thu, 2017-07-27 at 08:02 -0600, Jens Axboe wrote:
+> The bug looks like SCSI running the queue inline from IRQ
+> context, that's not a good idea. Can you confirm the below works for
+> you?
+>=20
+>=20
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index f6097b89d5d3..78740ebf966c 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -497,7 +497,7 @@ static void scsi_run_queue(struct request_queue *q)
+>  		scsi_starved_list_run(sdev->host);
+> =20
+>  	if (q->mq_ops)
+> -		blk_mq_run_hw_queues(q, false);
+> +		blk_mq_run_hw_queues(q, true);
+>  	else
+>  		blk_run_queue(q);
+>  }
 
-This is the second place which does
+Hello Jens,
 
-	if (!SME && !SEV)
+scsi_run_queue() works fine if no scheduler is configured. Additionally, th=
+at
+code predates the introduction of blk-mq I/O schedulers. I think it is
+nontrivial for block driver authors to figure out that a queue has to be ru=
+n
+from process context if a scheduler has been configured that does not suppo=
+rt
+to be run from interrupt context. How about adding WARN_ON_ONCE(in_interrup=
+t())
+to blk_mq_start_hw_queue() or replacing the above patch by the following:
 
-I wonder if, instead of sprinking those, we should have a
 
-	if (mem_enc_active())
+Subject: [PATCH] blk-mq: Make it safe to call blk_mq_start_hw_queues() from=
+ interrupt context
 
-or so which unifies all those memory encryption logic tests and makes
-the code more straightforward for readers who don't have to pay
-attention to SME vs SEV ...
+blk_mq_start_hw_queues() triggers a queue run. Some functions that
+get called to run a queue, e.g. dd_dispatch_request(), are not IRQ-safe.
+Hence run the queue asynchronously if blk_mq_start_hw_queues() is called
+from interrupt context.
 
-Just a thought.
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+---
+ block/blk-mq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--- 
-Regards/Gruss,
-    Boris.
+diff --git a/block/blk-mq.c b/block/blk-mq.c
+index 041f7b7fa0d6..c5cb3b2aabcf 100644
+--- a/block/blk-mq.c
++++ b/block/blk-mq.c
+@@ -1251,7 +1251,7 @@ void blk_mq_start_hw_queue(struct blk_mq_hw_ctx *hctx=
+)
+ {
+ 	clear_bit(BLK_MQ_S_STOPPED, &hctx->state);
+=20
+-	blk_mq_run_hw_queue(hctx, false);
++	blk_mq_run_hw_queue(hctx, in_interrupt());
+ }
+ EXPORT_SYMBOL(blk_mq_start_hw_queue);
+=20
+Thanks,
 
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+Bart.=
