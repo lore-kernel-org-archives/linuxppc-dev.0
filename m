@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBLz4qLszDrGy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:37:15 +1000 (AEST)
-In-Reply-To: <0b7273a9720afeea6a42a10f38ebb09b6489adc3.1493381148.git.geliangtang@gmail.com>
-To: Geliang Tang <geliangtang@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBM06b3qzDrGy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:37:16 +1000 (AEST)
+In-Reply-To: <20170625023905.24649-1-oss@buserror.net>
+To: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Geliang Tang <geliangtang@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: powerpc/pseries: use memdup_user_nul
-Message-Id: <3xJBLz3ptlz9s1h@ozlabs.org>
-Date: Thu, 27 Jul 2017 22:37:15 +1000 (AEST)
+Cc: Scott Wood <oss@buserror.net>, Jurgen Schindele <schindele@nentec.de>
+Subject: Re: powerpc/ipic: Support edge on IRQ0
+Message-Id: <3xJBM04WhRz9s8V@ozlabs.org>
+Date: Thu, 27 Jul 2017 22:37:16 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,13 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-04-29 at 01:45:15 UTC, Geliang Tang wrote:
-> Use memdup_user_nul() helper instead of open-coding to simplify the code.
+On Sun, 2017-06-25 at 02:39:05 UTC, Scott Wood wrote:
+> External IRQ0 has the same capabilities as the other IRQ1-7 and is
+> handled by the same register IPIC_SEPNR.  When this register is not
+> specified for "ack" in "ipic_info", you cannot configure this IRQ as
+> IRQ_TYPE_EDGE_FALLING.  This oversight was probably due to the
+> non-contiguous hwirq numbering of IRQ0 in the IPIC.
 > 
-> Signed-off-by: Geliang Tang <geliangtang@gmail.com>
+> Signed-off-by: Jurgen Schindele <schindele@nentec.de>
+> [scottwood: Cleaned up commit message and posted as a proper patch]
+> Signed-off-by: Scott Wood <oss@buserror.net>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/3783225130f01ea86fc0ee477a0e72
+https://git.kernel.org/powerpc/c/446183e4069e0b62cedfd72ccb90b8
 
 cheers
