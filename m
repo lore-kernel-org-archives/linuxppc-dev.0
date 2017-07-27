@@ -1,17 +1,44 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBNS5g6WzDrJV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:38:32 +1000 (AEST)
-In-Reply-To: <1501075111-20198-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: npiggin@gmail.com
-Subject: Re: powerpc/Makefile: Fix ld version check with 64-bit LE-only
- toolchain
-Message-Id: <3xJBNS1KFNz9sN5@ozlabs.org>
-Date: Thu, 27 Jul 2017 22:38:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBfG3XCRzDrKM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:50:30 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6RCoIXR044927
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 08:50:27 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2bydde8u5n-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 08:50:24 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Thu, 27 Jul 2017 08:49:18 -0400
+Date: Thu, 27 Jul 2017 05:49:13 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: David Miller <davem@davemloft.net>, Jonathan.Cameron@huawei.com,
+ dzickus@redhat.com, sfr@canb.auug.org.au, linuxarm@huawei.com,
+ abdhalee@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170726223658.GA27617@linux.vnet.ibm.com>
+ <20170726.154540.150558937277891719.davem@davemloft.net>
+ <20170726231505.GG3730@linux.vnet.ibm.com>
+ <20170726.162200.1904949371593276937.davem@davemloft.net>
+ <20170727014214.GH3730@linux.vnet.ibm.com>
+ <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
+Message-Id: <20170727124913.GL3730@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,40 +48,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-07-26 at 13:18:31 UTC, Michael Ellerman wrote:
-> In commit efe0160cfd40 ("powerpc/64: Linker on-demand sfpr functions
-> for modules"), we added an ld version check early in the powerpc
-> top-level Makefile.
+On Thu, Jul 27, 2017 at 02:34:00PM +1000, Nicholas Piggin wrote:
+> On Wed, 26 Jul 2017 18:42:14 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> Because the Makefile runs before the kernel config is setup, the
-> checks for CONFIG_CPU_LITTLE_ENDIAN etc. all take the default case. So
-> we end up configuring ld for 32-bit big endian.
+> > On Wed, Jul 26, 2017 at 04:22:00PM -0700, David Miller wrote:
 > 
-> That would be OK, except that for historical (or perhaps no) reason,
-> we use 'override LD' to add the endian flags to the LD variable
-> itself, rather than the normal approach of adding them to LDFLAGS.
+> > > Indeed, that really wouldn't explain how we end up with a RCU stall
+> > > dump listing almost all of the cpus as having missed a grace period.  
+> > 
+> > I have seen stranger things, but admittedly not often.
 > 
-> The end result is that when we check the ld version we run it as:
+> So the backtraces show the RCU gp thread in schedule_timeout.
 > 
->   $(CROSS_COMPILE)ld -EB -m elf32ppc --version
+> Are you sure that it's timeout has expired and it's not being scheduled,
+> or could it be a bad (large) timeout (looks unlikely) or that it's being
+> scheduled but not correctly noting gps on other CPUs?
 > 
-> This often works, unless you are using a 64-bit only and/or little
-> endian only, toolchain. In which case you see something like:
-> 
->   $ make defconfig
->   powerpc64le-linux-ld: unrecognised emulation mode: elf32ppc
->   Supported emulations: elf64lppc elf32lppc elf32lppclinux elf32lppcsim
->   /bin/sh: 1: [: -ge: unexpected operator
-> 
-> The proper fix is to stop using 'override LD', but that will require a
-> fair bit of testing. Instead we can fix it for now just by reordering
-> the Makefile to do the version check earlier.
-> 
-> Fixes: efe0160cfd40 ("powerpc/64: Linker on-demand sfpr functions for modules")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> It's not in R state, so if it's not being scheduled at all, then it's
+> because the timer has not fired:
 
-Applied to powerpc fixes.
+Good point, Nick!
 
-https://git.kernel.org/powerpc/c/b40b2386bce982ad97f3683b2b34e5
+Jonathan, could you please reproduce collecting timer event tracing?
 
-cheers
+							Thanx, Paul
+
+> [ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
+> [ 1984.638153] rcu_preempt     S    0     9      2 0x00000000
+> [ 1984.643626] Call trace:
+> [ 1984.646059] [<ffff000008084fb0>] __switch_to+0x90/0xa8
+> [ 1984.651189] [<ffff000008962274>] __schedule+0x19c/0x5d8
+> [ 1984.656400] [<ffff0000089626e8>] schedule+0x38/0xa0
+> [ 1984.661266] [<ffff000008965844>] schedule_timeout+0x124/0x218
+> [ 1984.667002] [<ffff000008121424>] rcu_gp_kthread+0x4fc/0x748
+> [ 1984.672564] [<ffff0000080df0b4>] kthread+0xfc/0x128
+> [ 1984.677429] [<ffff000008082ec0>] ret_from_fork+0x10/0x50
+> 
