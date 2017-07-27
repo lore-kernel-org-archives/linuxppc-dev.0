@@ -1,28 +1,42 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.182])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ3q91Pt4zDqmW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:42:44 +1000 (AEST)
-Date: Thu, 27 Jul 2017 08:41:56 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: David Miller <davem@davemloft.net>
-CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
- <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
- <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
- <paulmck@linux.vnet.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170727084156.000055d2@huawei.com>
-In-Reply-To: <20170726181312.0000040d@huawei.com>
-References: <20170726152315.00003d61@huawei.com>
- <20170726163340.0000014f@huawei.com>
- <20170726154900.GQ3730@linux.vnet.ibm.com>
- <20170726.095432.169004918437663011.davem@davemloft.net>
- <20170726181312.0000040d@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ3tc41DHzDqpR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:45:44 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Brijesh Singh' <brijesh.singh@amd.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Arnd Bergmann <arnd@arndb.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org"
+ <linux-efi@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>,
+ David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Christoph Lameter <cl@linux.com>, Jonathan Corbet <corbet@lwn.net>,
+ =?utf-8?B?UmFkaW0gS3JjbcOhcg==?= <rkrcmar@redhat.com>, Piotr Luc
+ <piotr.luc@intel.com>, Ingo Molnar <mingo@redhat.com>, Dave Airlie
+ <airlied@redhat.com>, Borislav Petkov <bp@suse.de>, Tom Lendacky
+ <thomas.lendacky@amd.com>, Kees Cook <keescook@chromium.org>, "Konrad
+ Rzeszutek Wilk" <konrad.wilk@oracle.com>, Reza Arbab
+ <arbab@linux.vnet.ibm.com>, Andy Lutomirski <luto@kernel.org>, "Thomas
+ Gleixner" <tglx@linutronix.de>, Laura Abbott <labbott@redhat.com>, Tony Luck
+ <tony.luck@intel.com>, "Ard.Biesheuvel@zytor.com" <Ard.Biesheuvel@zytor.com>
+Subject: RE: [RFC Part1 PATCH v3 13/17] x86/io: Unroll string I/O when SEV
+ is active
+Date: Thu, 27 Jul 2017 07:45:25 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD00436A7@AcuExch.aculab.com>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-14-brijesh.singh@amd.com>
+ <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
+ <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
+ <ed6d4ce7-97a6-f664-d7d7-4ff48bc6f06a@amd.com>
+ <201707261927.v6QJR228008075@mail.zytor.com>
+ <589d65a4-eb09-bae9-e8b4-a2d78ca6b509@amd.com>
+In-Reply-To: <589d65a4-eb09-bae9-e8b4-a2d78ca6b509@amd.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,48 +46,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Jul 2017 18:13:12 +0100
-Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
-
-> On Wed, 26 Jul 2017 09:54:32 -0700
-> David Miller <davem@davemloft.net> wrote:
-> 
-> > From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> > Date: Wed, 26 Jul 2017 08:49:00 -0700
-> >   
-> > > On Wed, Jul 26, 2017 at 04:33:40PM +0100, Jonathan Cameron wrote:    
-> > >> Didn't leave it long enough. Still bad on 4.10-rc7 just took over
-> > >> an hour to occur.    
-> > > 
-> > > And it is quite possible that SOFTLOCKUP_DETECTOR=y and HZ_PERIODIC=y
-> > > are just greatly reducing the probability of the problem rather than
-> > > completely preventing it.
-> > > 
-> > > Still, hopefully useful information, thank you for the testing!    
-> 
-> Not sure it actually gives us much information, but no issues yet
-> with a simple program running every cpu that wakes up every 3 seconds.
-> 
-> Will leave it running overnight and report back in the morning.
-Perhaps unsurprisingly the above test didn't show any splats.
-
-So it appears a userspace wakeup is enough to stop the issue happening
-(or at least make it a lot less likely).
-
-Jonathan
-> 
-> > 
-> > I guess that invalidates my idea to test reverting recent changes to
-> > the tick-sched.c code... :-/
-> > 
-> > In NO_HZ_IDLE mode, what is really supposed to happen on a completely
-> > idle system?
-> > 
-> > All the cpus enter the idle loop, have no timers programmed, and they
-> > all just go to sleep until an external event happens.
-> > 
-> > What ensures that grace periods get processed in this regime?  
-> _______________________________________________
-> linuxarm mailing list
-> linuxarm@huawei.com
-> http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm
+RnJvbTogQnJpamVzaCBTaW5naA0KPiBTZW50OiAyNiBKdWx5IDIwMTcgMjE6MDcNCi4uLg0KPiBJ
+IGFtIG5vdCBzdXJlIGlmIEkgdW5kZXJzdGFuZCB5b3VyIGNvbmNlcm4uDQo+IA0KPiBBcmUgeW91
+IGNvbW1lbnRpbmcgb24gYW1vdW50IG9mIGNvZGUgZHVwbGljYXRpb24gPyBJZiBzbywgSSBjYW4g
+Y2VydGFpbmx5IGltcHJvdmUNCj4gYW5kIHVzZSB0aGUgc2ltaWxhciBtYWNybyB1c2VkIGludG8g
+aGVhZGVyIGZpbGUgdG8gZ2VuZXJhdGUgdGhlIGZ1bmN0aW9ucyBib2R5Lg0KDQpJZiB5b3UgYXJl
+IGNhcmVmdWwgdGhlIHJlYWwgZnVuY3Rpb25zIGNvdWxkIGV4cGFuZCB0aGUgaW5saW5lIGZ1bmN0
+aW9ucw0KdGhhdCBnZXQgdXNlZCB3aGVuIFNFViBpcyBjb21waWxlZCBvdXQuDQoNCk9oLCBpZiB5
+b3UgYXJlIGxvb2tpbmcgYXQgdGhpcywgY2FuIHlvdSBmaXggbWVtY3B5X3RvX2lvKCkNCnNvIHRo
+YXQgaXQgaXMgbmV2ZXIgJ3JlcCBtb3ZzYic/DQoNCglEYXZpZA0KDQo=
