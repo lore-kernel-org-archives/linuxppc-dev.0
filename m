@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBM441txzDrJ6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:37:20 +1000 (AEST)
-In-Reply-To: <1500413796-18340-2-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBNP4BqdzDrK1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 22:38:29 +1000 (AEST)
+In-Reply-To: <1497709855-25788-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, Ram Pai <linuxram@us.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Subject: Re: [v13,1/5] powerpc/platform/powernv: Update IMC OPAL APIs
-Message-Id: <3xJBM42LFFz9sN5@ozlabs.org>
-Date: Thu, 27 Jul 2017 22:37:20 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm/hash: Free the subpage_prot_table correctly
+Message-Id: <3xJBNP0Clgz9s5L@ozlabs.org>
+Date: Thu, 27 Jul 2017 22:38:28 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-07-18 at 21:36:32 UTC, Madhavan Srinivasan wrote:
-> In-Memory Collection (IMC) counters are performance monitoring infrastrcuture.
-> These counters need special sequence of scoms to init/start/stop which is handled
-> by OPAL. And OPAL provides three APIs to init and control these IMC engines.
-> 
-> OPAL API documentation:
->   https://github.com/open-power/skiboot/blob/master/doc/opal-api/opal-imc-counters.rst
-> 
-> Patch updates the kernel side powernv platform code to support the new OPAL APIs
-> 
-> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+On Sat, 2017-06-17 at 14:30:55 UTC, "Aneesh Kumar K.V" wrote:
+> Fixes: dad6f37c2602e ("powerpc: subpage_protect: Increase the array size to take care of 64TB")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Tested-by: Ram Pai <linuxram@us.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/28a5db0061014c8afbbb98560cf420
+https://git.kernel.org/powerpc/c/0da12a7a81f1e2255e89dc783c565e
 
 cheers
