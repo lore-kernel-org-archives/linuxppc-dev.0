@@ -1,16 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJCNh0r8WzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 23:23:48 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: tglx@linutronix.de
-Subject: [PATCH] powerpc/smp: Call smp_ops->setup_cpu() directly on the boot
- CPU
-Date: Thu, 27 Jul 2017 23:23:37 +1000
-Message-Id: <1501161817-4654-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJCPc1NnhzDrH5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 23:24:36 +1000 (AEST)
+Date: Thu, 27 Jul 2017 15:24:29 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Possible circular locking dependency detected between
+ cpu_hotplug_lock.rw_sem and wfc.work
+In-Reply-To: <871sp2f20c.fsf@concordia.ellerman.id.au>
+Message-ID: <alpine.DEB.2.20.1707271523120.1903@nanos>
+References: <87mv7r5s1y.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.20.1707261437510.2186@nanos>
+ <871sp2f20c.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,78 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In smp_cpus_done() we need to call smp_ops->setup_cpu() for the boot
-CPU, which means it has to run *on* the boot CPU.
+On Thu, 27 Jul 2017, Michael Ellerman wrote:
+> Thomas Gleixner <tglx@linutronix.de> writes:
+> 
+> > On Wed, 26 Jul 2017, Michael Ellerman wrote:
+> >
+> >> Hi Thomas,
+> >> 
+> >> I'm seeing the lockdep barf below on some bare metal Power8 machines.
+> >> 
+> >> This seems to be caused by our smp_cpus_done(), which does:
+> >> 
+> >>   void __init smp_cpus_done(unsigned int max_cpus)
+> >>   {
+> >>   	/*
+> >>   	 * We want the setup_cpu() here to be called on the boot CPU, but
+> >>   	 * init might run on any CPU, so make sure it's invoked on the boot
+> >>   	 * CPU.
+> >>   	 */
+> >>   	if (smp_ops && smp_ops->setup_cpu)
+> >>   		work_on_cpu_safe(boot_cpuid, smp_setup_cpu_workfn, NULL);
+> >> 
+> >> 
+> >> I don't think CPU hotplug can happen at this point, so I don't think
+> >> there's really a bug.
+> >> 
+> >> But it looks like the work_on_cpu_safe() call could just go away, since
+> >> you pinned init to the boot CPU in 8fb12156b8db ("init: Pin init task to
+> >> the boot CPU, initially"). Though I can't see where init is unpinned, so
+> >> maybe we do still need to do it?
+> >
+> > It's undone in sched_init_smp(). So it looks safe. The call order is:
+> >
+> >      smp_init()
+> > 	...
+> > 	smp_cpus_done()
+> >
+> >      sched_init_smp()
+> 
+> Great thanks.
+> 
+> Patch on the way.
 
-In the past we ensured it ran on the boot CPU by changing the CPU
-affinity mask of current directly. That was removed in commit
-6d11b87d55eb ("powerpc/smp: Replace open coded task affinity logic"),
-and replaced with a work queue call.
+Hmm. Second thoughts. The issue is the stability of the CPUs. Surely the
+boot CPU can't go away at that point, but the debug stuff does not know
+about it. maybe I'm missing something ....
 
-Unfortunately using a work queue leads to a lockdep warning, now that
-the CPU hotplug lock is a regular semaphore:
+Thanks,
 
-  ======================================================
-  WARNING: possible circular locking dependency detected
-  ...
-  kworker/0:1/971 is trying to acquire lock:
-   (cpu_hotplug_lock.rw_sem){++++++}, at: [<c000000000100974>] apply_workqueue_attrs+0x34/0xa0
-
-  but task is already holding lock:
-   ((&wfc.work)){+.+.+.}, at: [<c0000000000fdb2c>] process_one_work+0x25c/0x800
-  ...
-       CPU0                    CPU1
-       ----                    ----
-  lock((&wfc.work));
-                               lock(cpu_hotplug_lock.rw_sem);
-                               lock((&wfc.work));
-  lock(cpu_hotplug_lock.rw_sem);
-
-Although the deadlock can't happen in practice, because
-smp_cpus_done() only runs in early boot before CPU hotplug is allowed,
-lockdep can't tell that.
-
-Luckily in commit 8fb12156b8db ("init: Pin init task to the boot CPU,
-initially") tglx changed the generic code to pin init to the boot CPU
-to begin with. The unpinning of init from the boot CPU happens in
-sched_init_smp(), which is called after smp_cpus_done().
-
-So smp_cpus_done() is always called on the boot CPU, which means we
-don't need the work queue call at all - and the lockdep warning goes
-away.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/smp.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 997c88d54acf..cf0e1245b8cc 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1003,21 +1003,13 @@ static struct sched_domain_topology_level powerpc_topology[] = {
- 	{ NULL, },
- };
- 
--static __init long smp_setup_cpu_workfn(void *data __always_unused)
--{
--	smp_ops->setup_cpu(boot_cpuid);
--	return 0;
--}
--
- void __init smp_cpus_done(unsigned int max_cpus)
- {
- 	/*
--	 * We want the setup_cpu() here to be called on the boot CPU, but
--	 * init might run on any CPU, so make sure it's invoked on the boot
--	 * CPU.
-+	 * We are running pinned to the boot CPU, see rest_init().
- 	 */
- 	if (smp_ops && smp_ops->setup_cpu)
--		work_on_cpu_safe(boot_cpuid, smp_setup_cpu_workfn, NULL);
-+		smp_ops->setup_cpu(boot_cpuid);
- 
- 	if (smp_ops && smp_ops->bringup_done)
- 		smp_ops->bringup_done();
--- 
-2.7.4
+	tglx
