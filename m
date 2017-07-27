@@ -1,21 +1,23 @@
-Return-Path: <douly.fnst@cn.fujitsu.com>
-Received: from heian.cn.fujitsu.com (unknown [59.151.112.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xHxJw52nKzDrCv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:49:36 +1000 (AEST)
-Subject: Re: [PATCH 05/11] powerpc/topology: Remove the unused parent_node()
- macro
-To: Michael Ellerman <mpe@ellerman.id.au>, <linux-kernel@vger.kernel.org>
-References: <1501076076-1974-1-git-send-email-douly.fnst@cn.fujitsu.com>
- <1501076076-1974-6-git-send-email-douly.fnst@cn.fujitsu.com>
- <87fudifwlj.fsf@concordia.ellerman.id.au>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-From: Dou Liyang <douly.fnst@cn.fujitsu.com>
-Message-ID: <af21ddf9-10cc-d8ed-8962-9b6d4eb5230b@cn.fujitsu.com>
-Date: Thu, 27 Jul 2017 10:49:31 +0800
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xHxsy3kdgzDrF2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 13:14:46 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: joserz@linux.vnet.ibm.com, Paul Mackerras <paulus@ozlabs.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, oohall@gmail.com
+Subject: Re: KVM guests freeze under upstream kernel
+In-Reply-To: <20170726131848.GA13783@pacoca>
+References: <20170719194634.GA1222@pacoca>
+ <1500507770.3350.41.camel@kernel.crashing.org>
+ <20170720030222.GA21034@pacoca> <20170720052159.GB8602@fergus.ozlabs.ibm.com>
+ <20170721011818.GC13187@pacoca> <20170726131848.GA13783@pacoca>
+Date: Thu, 27 Jul 2017 13:14:45 +1000
+Message-ID: <87d18mfu56.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87fudifwlj.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="gbk"; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+joserz@linux.vnet.ibm.com writes:
+> On Thu, Jul 20, 2017 at 10:18:18PM -0300, joserz@linux.vnet.ibm.com wrote:
+>> On Thu, Jul 20, 2017 at 03:21:59PM +1000, Paul Mackerras wrote:
+>> > 
+>> > Did you check the host kernel logs for any oops messages?
+>> 
+>> dmesg was clean but after sometime waiting (I forgot QEMU running in
+>> another terminal) I got the oops below (after rebooting the host I 
+>> couldn't reproduce it again).
+>> 
+>> Another test that I did was:
+>> Compile with transparent huge pages disabled: KVM works fine
+>> Compile with transparent huge pages enabled: doesn't work
+>>   + disabling it in /sys/kernel/mm/transparent_hugepage: doesn't work
+>> 
+>> Just out of my own curiosity I made this small change:
+>> 
+>> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> b/arch/powerpc/include
+>> index c0737c8..f94a3b6 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> @@ -80,7 +80,7 @@
+>>  
+>>   #define _PAGE_SOFT_DIRTY       _RPAGE_SW3 /* software: software dirty
+>>   tracking 
+>>    #define _PAGE_SPECIAL          _RPAGE_SW2 /* software: special page */
+>>    -#define _PAGE_DEVMAP           _RPAGE_SW1 /* software: ZONE_DEVICE page */
+>>    +#define _PAGE_DEVMAP           _RPAGE_RSV3
+>>     #define __HAVE_ARCH_PTE_DEVMAP
+>> 
+>> and it works. I chose _RPAGE_RSV3 because it uses the same value that
+>> x86 uses (0x0400000000000000UL) but I don't if it could have any side
+>> effect
+>> 
+>
+> Does this change make any sense to you people?
 
-At 07/27/2017 10:21 AM, Michael Ellerman wrote:
-> Dou Liyang <douly.fnst@cn.fujitsu.com> writes:
->
->> Commit a7be6e5a7f8d ("mm: drop useless local parameters of
->> __register_one_node()") removes the last user of parent_node().
->>
->> The parent_node() macro in POWERPC platform is unnecessary.
->>
->> Remove it for cleanup.
->>
->> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
->> Signed-off-by: Dou Liyang <douly.fnst@cn.fujitsu.com>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: linuxppc-dev@lists.ozlabs.org
->> ---
->>  arch/powerpc/include/asm/topology.h | 2 --
->>  1 file changed, 2 deletions(-)
->
-> Thanks for doing this series.
->
+No :)
 
-It's my pleasure. :)
+I think it's just hiding the bug somehow. Presumably we have some code
+somewhere that is getting confused by _RPAGE_SW1 being set, or setting
+that bit incorrectly.
 
-Sincerely,
-
-	dou
-
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->
-> cheers
->
->
->
+cheers
