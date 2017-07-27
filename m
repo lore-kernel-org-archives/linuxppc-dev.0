@@ -1,42 +1,41 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.182])
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ3tc41DHzDqpR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:45:44 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Brijesh Singh' <brijesh.singh@amd.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Arnd Bergmann <arnd@arndb.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org"
- <linux-efi@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Christoph Lameter <cl@linux.com>, Jonathan Corbet <corbet@lwn.net>,
- =?utf-8?B?UmFkaW0gS3JjbcOhcg==?= <rkrcmar@redhat.com>, Piotr Luc
- <piotr.luc@intel.com>, Ingo Molnar <mingo@redhat.com>, Dave Airlie
- <airlied@redhat.com>, Borislav Petkov <bp@suse.de>, Tom Lendacky
- <thomas.lendacky@amd.com>, Kees Cook <keescook@chromium.org>, "Konrad
- Rzeszutek Wilk" <konrad.wilk@oracle.com>, Reza Arbab
- <arbab@linux.vnet.ibm.com>, Andy Lutomirski <luto@kernel.org>, "Thomas
- Gleixner" <tglx@linutronix.de>, Laura Abbott <labbott@redhat.com>, Tony Luck
- <tony.luck@intel.com>, "Ard.Biesheuvel@zytor.com" <Ard.Biesheuvel@zytor.com>
-Subject: RE: [RFC Part1 PATCH v3 13/17] x86/io: Unroll string I/O when SEV
- is active
-Date: Thu, 27 Jul 2017 07:45:25 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD00436A7@AcuExch.aculab.com>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-14-brijesh.singh@amd.com>
- <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
- <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
- <ed6d4ce7-97a6-f664-d7d7-4ff48bc6f06a@amd.com>
- <201707261927.v6QJR228008075@mail.zytor.com>
- <589d65a4-eb09-bae9-e8b4-a2d78ca6b509@amd.com>
-In-Reply-To: <589d65a4-eb09-bae9-e8b4-a2d78ca6b509@amd.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ4D34tYNzDrG3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:00:51 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6R7wuei087277
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 04:00:49 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2by4fybpew-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 04:00:49 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Thu, 27 Jul 2017 02:00:48 -0600
+Date: Thu, 27 Jul 2017 01:00:36 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
+ hbabu@us.ibm.com, mhocko@kernel.org
+Subject: Re: [PATCH 1/6] powerpc: Free up four 64K PTE bits in 4K backed HPTE
+ pages
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1500663129-10615-1-git-send-email-linuxram@us.ibm.com>
+ <1500663129-10615-2-git-send-email-linuxram@us.ibm.com>
+ <87lgnb1o57.fsf@linux.vnet.ibm.com>
+ <20170726160651.GA5664@ram.oc3035372033.ibm.com>
+ <0aef1bef-c4ad-f745-5efa-07c4c9ae11d5@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0aef1bef-c4ad-f745-5efa-07c4c9ae11d5@linux.vnet.ibm.com>
+Message-Id: <20170727080035.GC5664@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,12 +45,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQnJpamVzaCBTaW5naA0KPiBTZW50OiAyNiBKdWx5IDIwMTcgMjE6MDcNCi4uLg0KPiBJ
-IGFtIG5vdCBzdXJlIGlmIEkgdW5kZXJzdGFuZCB5b3VyIGNvbmNlcm4uDQo+IA0KPiBBcmUgeW91
-IGNvbW1lbnRpbmcgb24gYW1vdW50IG9mIGNvZGUgZHVwbGljYXRpb24gPyBJZiBzbywgSSBjYW4g
-Y2VydGFpbmx5IGltcHJvdmUNCj4gYW5kIHVzZSB0aGUgc2ltaWxhciBtYWNybyB1c2VkIGludG8g
-aGVhZGVyIGZpbGUgdG8gZ2VuZXJhdGUgdGhlIGZ1bmN0aW9ucyBib2R5Lg0KDQpJZiB5b3UgYXJl
-IGNhcmVmdWwgdGhlIHJlYWwgZnVuY3Rpb25zIGNvdWxkIGV4cGFuZCB0aGUgaW5saW5lIGZ1bmN0
-aW9ucw0KdGhhdCBnZXQgdXNlZCB3aGVuIFNFViBpcyBjb21waWxlZCBvdXQuDQoNCk9oLCBpZiB5
-b3UgYXJlIGxvb2tpbmcgYXQgdGhpcywgY2FuIHlvdSBmaXggbWVtY3B5X3RvX2lvKCkNCnNvIHRo
-YXQgaXQgaXMgbmV2ZXIgJ3JlcCBtb3ZzYic/DQoNCglEYXZpZA0KDQo=
+On Thu, Jul 27, 2017 at 07:29:32AM +0530, Aneesh Kumar K.V wrote:
+> 
+> 
+> On 07/26/2017 09:36 PM, Ram Pai wrote:
+> >On Wed, Jul 26, 2017 at 04:05:48PM +0530, Aneesh Kumar K.V wrote:
+> >>Ram Pai <linuxram@us.ibm.com> writes:
+> >>
+> 
+> >>>diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> >>>index 9732837..62e580c 100644
+> >>>--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> >>>+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> >>>@@ -12,18 +12,14 @@
+> >>>   */
+> >>>  #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+> >>>  #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
+> >>>+#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
+> >>
+> >>
+> >>Why are we moving H_PAGE_BUSY. Right now 4k and 64k linux page table
+> >>format looks similar.
+> >
+> >The goal is to clear off all the _RPAGE_RSV* bits so that they can be
+> >used for protection keys.  the aim is to keep the protection-bits in the
+> >_RPAGE_RSV* bits, so that they will work as-is whenever radix MMU enables
+> >protection keys.
+> >
+> >Yes this makes the PTE format differ from 4k PTE. Hopefully it is a
+> >small inconvenience. The PTE format for 4K is anyway not exactly the
+> >same compared to 64K PTE format. For example, higher RPN bits are
+> >used on 4K but not on 64k. lower RPN bits are used on 64k but not
+> >on 4k.
+> I was wondering why in this patch ? You do in the next patch
+
+True. because in this patch, we have not yet freed up bit
+_RPAGE_RPN44. _RPAGE_RPN44 bit is still used by H_PAGE_F_GIX for 64K
+backed HPTEs.  Hence I have temporarily parked H_PAGE_BUSY at
+_RPAGE_RPN42.
+
+I could leave H_PAGE_BUSY at bit _RPAGE_RSV1  and move it to 
+_RPAGE_RPN44 in the next patch. But by doing so, i would have not
+truely released bit _RPAGE_RSV1 for 4K backed hptes; as claimed in the title
+of this patch....  
+
+> 
+> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> @@ -12,7 +12,7 @@
+>   */
+>  #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+>  #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
+> -#define H_PAGE_BUSY	_RPAGE_RPN42     /* software: PTE & hash are busy */
+> +#define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
+> 
+...
+-- 
+Ram Pai
