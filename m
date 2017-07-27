@@ -1,35 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ7zw0vDwzDrFw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 20:50:35 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6RAmirj120619
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 06:50:33 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2bydde3v2u-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 06:50:32 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 06:50:32 -0400
-Subject: Re: [RFC PATCH 3/3] mm/hugetlb: Remove pmd_huge_split_prepare
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- "Kirill A . Shutemov" <kirill@shutemov.name>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-References: <20170727083756.32217-1-aneesh.kumar@linux.vnet.ibm.com>
- <20170727083756.32217-3-aneesh.kumar@linux.vnet.ibm.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 27 Jul 2017 16:20:25 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ8RK46YXzDrH5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 21:10:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, joserz@linux.vnet.ibm.com,
+ Paul Mackerras <paulus@ozlabs.org>
+Cc: oohall@gmail.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: KVM guests freeze under upstream kernel
+In-Reply-To: <1501138604.14223.1.camel@gmail.com>
+References: <20170719194634.GA1222@pacoca>
+ <1500507770.3350.41.camel@kernel.crashing.org>
+ <20170720030222.GA21034@pacoca> <20170720052159.GB8602@fergus.ozlabs.ibm.com>
+ <20170721011818.GC13187@pacoca> <20170726131848.GA13783@pacoca>
+ <87d18mfu56.fsf@concordia.ellerman.id.au>
+ <1501138604.14223.1.camel@gmail.com>
+Date: Thu, 27 Jul 2017 21:10:51 +1000
+Message-ID: <877eyuf83o.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170727083756.32217-3-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <912dcb7d-4dff-979a-3777-2e9e13a7adda@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,52 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+>
+...
+> kernel BUG at /scratch/surajjs/linux/arch/powerpc/include/asm/book3s/64/radix.h:260!
 
+Next thing to try would be something like below.
 
-On 07/27/2017 02:07 PM, Aneesh Kumar K.V wrote:
+cheers
 
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> index 8c8fb6fbdabe..b856e130c678 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> @@ -164,8 +164,6 @@ extern pmd_t hash__pmdp_collapse_flush(struct vm_area_struct *vma,
->   extern void hash__pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
->   					 pgtable_t pgtable);
->   extern pgtable_t hash__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
-> -extern void hash__pmdp_huge_split_prepare(struct vm_area_struct *vma,
-> 
-> @@ -1956,14 +1956,39 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
->   		return __split_huge_zero_page_pmd(vma, haddr, pmd);
->   	}
-> 
-
-
-....
-
-> +	 */
-> +	old_pmd = pmdp_invalidate(vma, haddr, pmd);
-> +
-> +	page = pmd_page(old_pmd);
->   	VM_BUG_ON_PAGE(!page_count(page), page);
->   	page_ref_add(page, HPAGE_PMD_NR - 1);
-> -	write = pmd_write(*pmd);
-> -	young = pmd_young(*pmd);
-> -	soft_dirty = pmd_soft_dirty(*pmd);
-> -
-> -	pmdp_huge_split_prepare(vma, haddr, pmd);
-> +	write = pmd_write(old_pmd);
-> +	young = pmd_young(old_pmd);
-> +	dirty = pmd_dirty(*pmd);
-
-This should be
-
-	dirty = pmd_dirty(old_pmd);
-
-
-> +	soft_dirty = pmd_soft_dirty(old_pmd);
-> +	/*
-> +	 * withdraw the table only after we mark the pmd entry invalid
-> +	 */
->   	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-
--aneesh
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index d1da415e283c..c749a757738e 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -1016,6 +1016,7 @@ static inline unsigned long
+ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
+ 		    unsigned long clr, unsigned long set)
+ {
++	BUG_ON(set & PAGE_DEVMAP);
+ 	if (radix_enabled())
+ 		return radix__pmd_hugepage_update(mm, addr, pmdp, clr, set);
+ 	return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index 31eed8fa8e99..55c443a3dd5b 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -31,6 +31,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 			  pmd_t *pmdp, pmd_t entry, int dirty)
+ {
+ 	int changed;
++	BUG_ON(pmd & PAGE_DEVMAP);
+ #ifdef CONFIG_DEBUG_VM
+ 	WARN_ON(!pmd_trans_huge(*pmdp) && !pmd_devmap(*pmdp));
+ 	assert_spin_locked(&vma->vm_mm->page_table_lock);
+@@ -56,6 +57,7 @@ int pmdp_test_and_clear_young(struct vm_area_struct *vma,
+ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+ 		pmd_t *pmdp, pmd_t pmd)
+ {
++	BUG_ON(pmd & PAGE_DEVMAP);
+ #ifdef CONFIG_DEBUG_VM
+ 	WARN_ON(pte_present(pmd_pte(*pmdp)) && !pte_protnone(pmd_pte(*pmdp)));
+ 	assert_spin_locked(&mm->page_table_lock);
