@@ -1,31 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xHzdm4k44zDrFD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 14:34:20 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id y25so9726406pfk.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jul 2017 21:34:20 -0700 (PDT)
-Date: Thu, 27 Jul 2017 14:34:00 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: David Miller <davem@davemloft.net>, Jonathan.Cameron@huawei.com,
- dzickus@redhat.com, sfr@canb.auug.org.au, linuxarm@huawei.com,
- abdhalee@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
-In-Reply-To: <20170727014214.GH3730@linux.vnet.ibm.com>
-References: <20170726223658.GA27617@linux.vnet.ibm.com>
- <20170726.154540.150558937277891719.davem@davemloft.net>
- <20170726231505.GG3730@linux.vnet.ibm.com>
- <20170726.162200.1904949371593276937.davem@davemloft.net>
- <20170727014214.GH3730@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJ0R91BqrzDrFp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 15:10:13 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Jens Axboe" <axboe@fb.com>
+Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org"  <linux-kernel@vger.kernel.org>,
+ "linux block" <linux-block@vger.kernel.org>
+Subject: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
+ {IN-SOFTIRQ-W} usage
+Date: Thu, 27 Jul 2017 15:10:09 +1000
+Message-ID: <87a83qfosu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +24,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Jul 2017 18:42:14 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Hi Jens,
 
-> On Wed, Jul 26, 2017 at 04:22:00PM -0700, David Miller wrote:
+I'm seeing the lockdep warning below on shutdown on a Power8 machine
+using IPR.
 
-> > Indeed, that really wouldn't explain how we end up with a RCU stall
-> > dump listing almost all of the cpus as having missed a grace period.  
-> 
-> I have seen stranger things, but admittedly not often.
+If I'm reading it right it looks like the spin_lock() (non-irq) in
+blk_mq_sched_insert_request() is the immediate cause.
 
-So the backtraces show the RCU gp thread in schedule_timeout.
+Looking at blk_mq_requeue_work() (the caller), it is doing
+spin_lock_irqsave(). So is switching blk_mq_sched_insert_request() to
+spin_lock_irqsave() the right fix?
 
-Are you sure that it's timeout has expired and it's not being scheduled,
-or could it be a bad (large) timeout (looks unlikely) or that it's being
-scheduled but not correctly noting gps on other CPUs?
+cheers
 
-It's not in R state, so if it's not being scheduled at all, then it's
-because the timer has not fired:
 
-[ 1984.628602] rcu_preempt kthread starved for 5663 jiffies! g1566 c1565 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
-[ 1984.638153] rcu_preempt     S    0     9      2 0x00000000
-[ 1984.643626] Call trace:
-[ 1984.646059] [<ffff000008084fb0>] __switch_to+0x90/0xa8
-[ 1984.651189] [<ffff000008962274>] __schedule+0x19c/0x5d8
-[ 1984.656400] [<ffff0000089626e8>] schedule+0x38/0xa0
-[ 1984.661266] [<ffff000008965844>] schedule_timeout+0x124/0x218
-[ 1984.667002] [<ffff000008121424>] rcu_gp_kthread+0x4fc/0x748
-[ 1984.672564] [<ffff0000080df0b4>] kthread+0xfc/0x128
-[ 1984.677429] [<ffff000008082ec0>] ret_from_fork+0x10/0x50
+ipr 0001:08:00.0: shutdown
+
+================================
+WARNING: inconsistent lock state
+4.13.0-rc2-gcc6x-gf74c89b #1 Not tainted
+--------------------------------
+inconsistent {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
+swapper/28/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
+ (&(&hctx->lock)->rlock){+.?...}, at: [<c0000000005b60f4>] blk_mq_sched_dispatch_requests+0xa4/0x2a0
+{SOFTIRQ-ON-W} state was registered at:
+  lock_acquire+0xec/0x2e0
+  _raw_spin_lock+0x44/0x70
+  blk_mq_sched_insert_request+0x88/0x1f0
+  blk_mq_requeue_work+0x108/0x180
+  process_one_work+0x310/0x800
+  worker_thread+0x88/0x520
+  kthread+0x164/0x1b0
+  ret_from_kernel_thread+0x5c/0x74
+irq event stamp: 3572314
+hardirqs last  enabled at (3572314): [<c000000000b71998>] _raw_spin_unlock_irqrestore+0x58/0xb0
+hardirqs last disabled at (3572313): [<c000000000b716ec>] _raw_spin_lock_irqsave+0x3c/0x90
+softirqs last  enabled at (3572302): [<c0000000000df17c>] irq_enter+0x9c/0xe0
+softirqs last disabled at (3572303): [<c0000000000df2c8>] irq_exit+0x108/0x150
+
+other info that might help us debug this:
+ Possible unsafe locking scenario:
+
+       CPU0
+       ----
+  lock(&(&hctx->lock)->rlock);
+  <Interrupt>
+    lock(&(&hctx->lock)->rlock);
+
+ *** DEADLOCK ***
+
+2 locks held by swapper/28/0:
+ #0:  ((&ipr_cmd->timer)){+.-...}, at: [<c0000000001936f0>] call_timer_fn+0x10/0x4b0
+ #1:  (rcu_read_lock){......}, at: [<c0000000005aca60>] __blk_mq_run_hw_queue+0xa0/0x2c0
+
+stack backtrace:
+CPU: 28 PID: 0 Comm: swapper/28 Not tainted 4.13.0-rc2-gcc6x-gf74c89b #1
+Call Trace:
+[c000001fffe97550] [c000000000b50818] dump_stack+0xe8/0x160 (unreliable)
+[c000001fffe97590] [c0000000001586d0] print_usage_bug+0x2d0/0x390
+[c000001fffe97640] [c000000000158f34] mark_lock+0x7a4/0x8e0
+[c000001fffe976f0] [c00000000015a000] __lock_acquire+0x6a0/0x1a70
+[c000001fffe97860] [c00000000015befc] lock_acquire+0xec/0x2e0
+[c000001fffe97930] [c000000000b71514] _raw_spin_lock+0x44/0x70
+[c000001fffe97960] [c0000000005b60f4] blk_mq_sched_dispatch_requests+0xa4/0x2a0
+[c000001fffe979c0] [c0000000005acac0] __blk_mq_run_hw_queue+0x100/0x2c0
+[c000001fffe97a00] [c0000000005ad478] __blk_mq_delay_run_hw_queue+0x118/0x130
+[c000001fffe97a40] [c0000000005ad61c] blk_mq_start_hw_queues+0x6c/0xa0
+[c000001fffe97a80] [c000000000797aac] scsi_kick_queue+0x2c/0x60
+[c000001fffe97aa0] [c000000000797cf0] scsi_run_queue+0x210/0x360
+[c000001fffe97b10] [c00000000079b888] scsi_run_host_queues+0x48/0x80
+[c000001fffe97b40] [c0000000007b6090] ipr_ioa_bringdown_done+0x70/0x1e0
+[c000001fffe97bc0] [c0000000007bc860] ipr_reset_ioa_job+0x80/0xf0
+[c000001fffe97bf0] [c0000000007b4d50] ipr_reset_timer_done+0xd0/0x100
+[c000001fffe97c30] [c0000000001937bc] call_timer_fn+0xdc/0x4b0
+[c000001fffe97cf0] [c000000000193d08] expire_timers+0x178/0x330
+[c000001fffe97d60] [c0000000001940c8] run_timer_softirq+0xb8/0x120
+[c000001fffe97de0] [c000000000b726a8] __do_softirq+0x168/0x6d8
+[c000001fffe97ef0] [c0000000000df2c8] irq_exit+0x108/0x150
+[c000001fffe97f10] [c000000000017bf4] __do_irq+0x2a4/0x4a0
+[c000001fffe97f90] [c00000000002da50] call_do_irq+0x14/0x24
+[c0000007fad93aa0] [c000000000017e8c] do_IRQ+0x9c/0x140
+[c0000007fad93af0] [c000000000008b98] hardware_interrupt_common+0x138/0x140
+--- interrupt: 501 at .L1.42+0x0/0x4
+    LR = arch_local_irq_restore.part.4+0x84/0xb0
+[c0000007fad93de0] [c0000007ffc1f7d8] 0xc0000007ffc1f7d8 (unreliable)
+[c0000007fad93e00] [c000000000988d3c] cpuidle_enter_state+0x1bc/0x530
+[c0000007fad93e60] [c0000000001457cc] call_cpuidle+0x4c/0x90
+[c0000007fad93e80] [c000000000145b28] do_idle+0x208/0x2f0
+[c0000007fad93ef0] [c000000000145f8c] cpu_startup_entry+0x3c/0x50
+[c0000007fad93f20] [c000000000042bc0] start_secondary+0x3b0/0x4b0
+[c0000007fad93f90] [c00000000000ac6c] start_secondary_prolog+0x10/0x14
