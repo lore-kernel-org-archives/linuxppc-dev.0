@@ -1,19 +1,37 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJGKN4DcbzDrJs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 01:36:08 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id k72so15046254pfj.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 08:36:08 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, sjitindarsingh@gmail.com, joserz@linux.vnet.ibm.com,
- Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH v2] powerpc/mm: Check for _PAGE_PTE in *_devmap()
-Date: Fri, 28 Jul 2017 01:35:53 +1000
-Message-Id: <20170727153553.9160-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJGcs4BN7zDrJs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 01:49:32 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6RFnLPk093230
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 11:49:28 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2byjwe0njf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 11:49:20 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 27 Jul 2017 09:48:48 -0600
+Subject: Re: [RFC PATCH 1/3] powerpc/mm: update pmdp_invalidate to return old
+ pmd value
+To: Michal Hocko <mhocko@kernel.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+References: <20170727083756.32217-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20170727125449.GB27766@dhcp22.suse.cz>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 27 Jul 2017 21:18:35 +0530
+MIME-Version: 1.0
+In-Reply-To: <20170727125449.GB27766@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <a30c566c-20ab-d3ad-1f5f-47524a97c2a3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +41,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ISA radix translation tree contains two different types of entry,
-directories and leaves. The formats of the two entries are different
-with the directory entries containing no spare bits for use by software.
-As a result we need to ensure that the *_devmap() family of functions
-check fail for everything except leaf (PTE) entries.
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
-"i'll just tweak the mbox before i sent it, what's the worst that can happen"
-*completely breaks KVM*
-"..."
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index d1da415..6bc6248 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -610,7 +610,9 @@ static inline pte_t pte_mkdevmap(pte_t pte)
- 
- static inline int pte_devmap(pte_t pte)
- {
--	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP));
-+	uint64_t mask = cpu_to_be64(_PAGE_DEVMAP | _PAGE_PTE);
-+
-+	return (pte_raw(pte) & mask) == mask;
- }
- 
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
--- 
-2.7.4
+On 07/27/2017 06:24 PM, Michal Hocko wrote:
+> EMISSING_CHANGELOG
+> 
+> besides that no user actually uses the return value. Please fold this
+> into the patch which uses the new functionality.
+
+
+The patch series was suppose to help Kirill to make progress with the 
+his series at
+
+
+https://lkml.kernel.org/r/20170615145224.66200-1-kirill.shutemov@linux.intel.com
+
+It is essentially implementing the pmdp_invalidate update for ppc64. His 
+series does it for x86-64.
+
+-aneesh
