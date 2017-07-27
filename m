@@ -1,33 +1,36 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJH5H3YvnzDrKt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 02:10:43 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJH710GlPzDrLF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 02:12:12 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6RGAfoW029652
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:10:42 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2byk5cgxv7-1
+ v6RG7hpo031353
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:12:11 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2byjkxjvax-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:10:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 12:12:10 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 10:10:34 -0600
-To: linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, Michael Bringmann <mwb@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V2 3/4] hotplug/drc-info: Add code to search ibm,drc-info
- property
-In-Reply-To: <e884f428-c76d-112a-aa2f-f57a94de55fb@linux.vnet.ibm.com>
-Date: Thu, 27 Jul 2017 11:10:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 27 Jul 2017 10:12:10 -0600
+Subject: Re: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the
+ weak function
+To: "Liam R. Howlett" <Liam.Howlett@Oracle.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+References: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20170727152556.s4uw5cuvdf36hodl@oracle.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 27 Jul 2017 21:42:04 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <a3ba92fc-d73b-0435-3132-e9f23970d868@linux.vnet.ibm.com>
+In-Reply-To: <20170727152556.s4uw5cuvdf36hodl@oracle.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <da6a497b-e65c-b0db-3dab-83aa300a75ca@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,230 +41,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-rpadlpar_core.c: Provide parallel routines to search the older device-
-tree properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
-and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
 
-The interface to examine the DRC information is changed from a "get"
-function that returns values for local verification elsewhere, to a
-"check" function that validates the 'name' and/or 'type' of a device
-node.  This update hides the format of the underlying device-tree
-properties, and concentrates the value checks into a single function
-without requiring the user to verify whether a search was successful.
+On 07/27/2017 08:55 PM, Liam R. Howlett wrote:
+> * Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> [170727 02:18]:
+>> For ppc64, we want to call this function when we are not running as guest.
+>> Also, if we failed to allocate hugepages, let the user know.
+>>
+> [...]
+>> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+>> index bc48ee783dd9..a3a7a7e6339e 100644
+>> --- a/mm/hugetlb.c
+>> +++ b/mm/hugetlb.c
+>> @@ -2083,7 +2083,9 @@ struct page *alloc_huge_page_noerr(struct vm_area_struct *vma,
+>>   	return page;
+>>   }
+>>   
+>> -int __weak alloc_bootmem_huge_page(struct hstate *h)
+>> +int alloc_bootmem_huge_page(struct hstate *h)
+>> +	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
+>> +int __alloc_bootmem_huge_page(struct hstate *h)
+>>   {
+>>   	struct huge_bootmem_page *m;
+>>   	int nr_nodes, node;
+>> @@ -2104,6 +2106,7 @@ int __weak alloc_bootmem_huge_page(struct hstate *h)
+>>   			goto found;
+>>   		}
+>>   	}
+>> +	pr_info("Failed to allocate hugepage of size %ld\n", huge_page_size(h));
+>>   	return 0;
+>>   
+>>   found:
+> 
+> There is already a call to warn the user in the
+> hugetlb_hstate_alloc_pages function.  If you look there, you will see
+> that the huge_page_size was translated into a more user friendly format
+> and the count prior to the failure is included.  What call path are you
+> trying to cover?  Also, you may want your print to be a pr_warn since it
+> is a failure?
+> 
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- drivers/pci/hotplug/rpadlpar_core.c |   13 ++--
- drivers/pci/hotplug/rpaphp.h        |    4 +
- drivers/pci/hotplug/rpaphp_core.c   |  109 +++++++++++++++++++++++++++--------
- 3 files changed, 91 insertions(+), 35 deletions(-)
+Sorry I missed that in the recent kernel. I wrote the above before the 
+mentioned changes was done. I will drop the pr_info from the patch.
 
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index 3f93a4e..e6924de 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -27,6 +27,7 @@
- #include <linux/mutex.h>
- #include <asm/rtas.h>
- #include <asm/vio.h>
-+#include <linux/firmware.h>
- 
- #include "../pci.h"
- #include "rpaphp.h"
-@@ -44,15 +45,14 @@ static struct device_node *find_vio_slot_node(char *drc_name)
- {
- 	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
- 	struct device_node *dn = NULL;
--	char *name;
- 	int rc;
- 
- 	if (!parent)
- 		return NULL;
- 
- 	while ((dn = of_get_next_child(parent, dn))) {
--		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
--		if ((rc == 0) && (!strcmp(drc_name, name)))
-+		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
-+		if (rc == 0)
- 			break;
- 	}
- 
-@@ -64,15 +64,12 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
- 						  char *drc_type)
- {
- 	struct device_node *np = NULL;
--	char *name;
--	char *type;
- 	int rc;
- 
- 	while ((np = of_find_node_by_name(np, "pci"))) {
--		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
-+		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
- 		if (rc == 0)
--			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
--				break;
-+			break;
- 	}
- 
- 	return np;
-diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
-index 7db024e..8db5f2e 100644
---- a/drivers/pci/hotplug/rpaphp.h
-+++ b/drivers/pci/hotplug/rpaphp.h
-@@ -91,8 +91,8 @@ struct slot {
- 
- /* rpaphp_core.c */
- int rpaphp_add_slot(struct device_node *dn);
--int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
--		char **drc_name, char **drc_type, int *drc_power_domain);
-+int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
-+		char *drc_type);
- 
- /* rpaphp_slot.c */
- void dealloc_slot_struct(struct slot *slot);
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 8d13202..a3c8a1c 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -30,6 +30,7 @@
- #include <linux/smp.h>
- #include <linux/init.h>
- #include <linux/vmalloc.h>
-+#include <asm/firmware.h>
- #include <asm/eeh.h>       /* for eeh_add_device() */
- #include <asm/rtas.h>		/* rtas_call */
- #include <asm/pci-bridge.h>	/* for pci_controller */
-@@ -196,25 +197,21 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
- 	return 0;
- }
- 
--/* To get the DRC props describing the current node, first obtain it's
-- * my-drc-index property.  Next obtain the DRC list from it's parent.  Use
-- * the my-drc-index for correlation, and obtain the requested properties.
-+
-+/* Verify the existence of 'drc_name' and/or 'drc_type' within the
-+ * current node.  First obtain it's my-drc-index property.  Next,
-+ * obtain the DRC info from it's parent.  Use the my-drc-index for
-+ * correlation, and obtain/validate the requested properties.
-  */
--int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
--		char **drc_name, char **drc_type, int *drc_power_domain)
-+
-+static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
-+				char *drc_type, unsigned int my_index)
- {
-+	char *name_tmp, *type_tmp;
- 	const int *indexes, *names;
- 	const int *types, *domains;
--	const unsigned int *my_index;
--	char *name_tmp, *type_tmp;
- 	int i, rc;
- 
--	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
--	if (!my_index) {
--		/* Node isn't DLPAR/hotplug capable */
--		return -EINVAL;
--	}
--
- 	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
- 	if (rc < 0) {
- 		return -EINVAL;
-@@ -225,24 +222,86 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
- 
- 	/* Iterate through parent properties, looking for my-drc-index */
- 	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
--		if ((unsigned int) indexes[i + 1] == *my_index) {
--			if (drc_name)
--				*drc_name = name_tmp;
--			if (drc_type)
--				*drc_type = type_tmp;
--			if (drc_index)
--				*drc_index = be32_to_cpu(*my_index);
--			if (drc_power_domain)
--				*drc_power_domain = be32_to_cpu(domains[i+1]);
--			return 0;
--		}
-+		if ((unsigned int) indexes[i + 1] == my_index)
-+			break;
-+
- 		name_tmp += (strlen(name_tmp) + 1);
- 		type_tmp += (strlen(type_tmp) + 1);
- 	}
- 
-+	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
-+	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
-+		return 0;
-+
- 	return -EINVAL;
- }
--EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
-+
-+static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
-+				char *drc_type, unsigned int my_index)
-+{
-+	struct property *info;
-+	unsigned int entries;
-+	u32 drc_index_start = 0, last_drc_index = 0;
-+	u32 num_sequential_elems = 0, sequential_inc = 0;
-+	char *name_tmp, *type_tmp;
-+	void *value;
-+	int j;
-+
-+	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
-+	if (info == NULL)
-+		return -EINVAL;
-+
-+	value = info->value;
-+	value = (void *)of_prop_next_u32(info, value, &entries);
-+	if (!value)
-+		return -EINVAL;
-+
-+	for (j = 0; j < entries; j++) {
-+		of_one_drc_info(&info, &value, &type_tmp, &name_tmp,
-+				&drc_index_start, &num_sequential_elems,
-+				&sequential_inc, &last_drc_index);
-+
-+		/* Should now know end of current entry */
-+
-+		WARN_ON((my_index < drc_index_start) ||
-+			(((my_index-drc_index_start)%sequential_inc) != 0));
-+
-+		if (my_index > last_drc_index)
-+			continue;
-+
-+		break;
-+	}
-+	/* Found it */
-+
-+	if (((drc_name == NULL) ||
-+	     (drc_name && !strcmp(drc_name, name_tmp))) &&
-+	    ((drc_type == NULL) ||
-+	     (drc_type && !strcmp(drc_type, type_tmp))))
-+		return 0;
-+
-+	return -EINVAL;
-+}
-+
-+int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
-+			char *drc_type)
-+{
-+	const unsigned int *my_index;
-+
-+	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
-+	if (!my_index) {
-+		/* Node isn't DLPAR/hotplug capable */
-+		return -EINVAL;
-+	}
-+
-+	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
-+		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
-+						*my_index);
-+	else
-+		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
-+						*my_index);
-+}
-+EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
-+
- 
- static int is_php_type(char *drc_type)
- {
+Thanks
+-aneesh
