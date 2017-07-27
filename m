@@ -1,21 +1,21 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJBtx1LpxzDrRX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 23:01:29 +1000 (AEST)
-Date: Thu, 27 Jul 2017 15:01:23 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the
- weak function
-Message-ID: <20170727130123.GE27766@dhcp22.suse.cz>
-References: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJCM85CBXzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 23:22:28 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Possible circular locking dependency detected between
+ cpu_hotplug_lock.rw_sem and wfc.work
+In-Reply-To: <alpine.DEB.2.20.1707261437510.2186@nanos>
+References: <87mv7r5s1y.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.20.1707261437510.2186@nanos>
+Date: Thu, 27 Jul 2017 23:22:27 +1000
+Message-ID: <871sp2f20c.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 27-07-17 11:48:26, Aneesh Kumar K.V wrote:
-> For ppc64, we want to call this function when we are not running as guest.
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-What does this mean?
+> On Wed, 26 Jul 2017, Michael Ellerman wrote:
+>
+>> Hi Thomas,
+>> 
+>> I'm seeing the lockdep barf below on some bare metal Power8 machines.
+>> 
+>> This seems to be caused by our smp_cpus_done(), which does:
+>> 
+>>   void __init smp_cpus_done(unsigned int max_cpus)
+>>   {
+>>   	/*
+>>   	 * We want the setup_cpu() here to be called on the boot CPU, but
+>>   	 * init might run on any CPU, so make sure it's invoked on the boot
+>>   	 * CPU.
+>>   	 */
+>>   	if (smp_ops && smp_ops->setup_cpu)
+>>   		work_on_cpu_safe(boot_cpuid, smp_setup_cpu_workfn, NULL);
+>> 
+>> 
+>> I don't think CPU hotplug can happen at this point, so I don't think
+>> there's really a bug.
+>> 
+>> But it looks like the work_on_cpu_safe() call could just go away, since
+>> you pinned init to the boot CPU in 8fb12156b8db ("init: Pin init task to
+>> the boot CPU, initially"). Though I can't see where init is unpinned, so
+>> maybe we do still need to do it?
+>
+> It's undone in sched_init_smp(). So it looks safe. The call order is:
+>
+>      smp_init()
+> 	...
+> 	smp_cpus_done()
+>
+>      sched_init_smp()
 
-> Also, if we failed to allocate hugepages, let the user know.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  include/linux/hugetlb.h | 1 +
->  mm/hugetlb.c            | 5 ++++-
->  2 files changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> index 0ed8e41aaf11..8bbbd37ab105 100644
-> --- a/include/linux/hugetlb.h
-> +++ b/include/linux/hugetlb.h
-> @@ -358,6 +358,7 @@ int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
->  			pgoff_t idx);
->  
->  /* arch callback */
-> +int __init __alloc_bootmem_huge_page(struct hstate *h);
->  int __init alloc_bootmem_huge_page(struct hstate *h);
->  
->  void __init hugetlb_bad_size(void);
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index bc48ee783dd9..a3a7a7e6339e 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -2083,7 +2083,9 @@ struct page *alloc_huge_page_noerr(struct vm_area_struct *vma,
->  	return page;
->  }
->  
-> -int __weak alloc_bootmem_huge_page(struct hstate *h)
-> +int alloc_bootmem_huge_page(struct hstate *h)
-> +	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
-> +int __alloc_bootmem_huge_page(struct hstate *h)
->  {
->  	struct huge_bootmem_page *m;
->  	int nr_nodes, node;
-> @@ -2104,6 +2106,7 @@ int __weak alloc_bootmem_huge_page(struct hstate *h)
->  			goto found;
->  		}
->  	}
-> +	pr_info("Failed to allocate hugepage of size %ld\n", huge_page_size(h));
->  	return 0;
->  
->  found:
-> -- 
-> 2.13.3
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Great thanks.
 
--- 
-Michal Hocko
-SUSE Labs
+Patch on the way.
+
+cheers
