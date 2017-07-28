@@ -1,30 +1,49 @@
-Return-Path: <axboe@kernel.dk>
-Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
- [IPv6:2607:f8b0:4001:c06::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJrjr6FZ7zDrRp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 00:25:52 +1000 (AEST)
-Received: by mail-io0-x231.google.com with SMTP id l7so91046966iof.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 07:25:52 -0700 (PDT)
-Subject: Re: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
- {IN-SOFTIRQ-W} usage
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Bart Van Assche <Bart.VanAssche@wdc.com>, Brian J King <bjking1@us.ibm.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>
-References: <87a83qfosu.fsf@concordia.ellerman.id.au>
- <073ed79c-11ce-e86c-a905-91fd28675d47@kernel.dk>
- <1501166846.2516.1.camel@wdc.com>
- <5b85a365-faa1-3987-9b6b-270399c30686@kernel.dk>
- <87lgn9dqx3.fsf@concordia.ellerman.id.au>
-From: Jens Axboe <axboe@kernel.dk>
-Message-ID: <92379297-9667-ae52-b05c-6c8a0ce4751c@kernel.dk>
-Date: Fri, 28 Jul 2017 08:25:48 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJsND1wdFzDrRp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 00:55:40 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6SErvup017350
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 10:55:36 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c05cy8yms-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 10:55:36 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Fri, 28 Jul 2017 10:55:35 -0400
+Date: Fri, 28 Jul 2017 07:55:30 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com,
+ Nicholas Piggin <npiggin@gmail.com>, abdhalee@linux.vnet.ibm.com,
+ sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170726231505.GG3730@linux.vnet.ibm.com>
+ <20170726.162200.1904949371593276937.davem@davemloft.net>
+ <20170727014214.GH3730@linux.vnet.ibm.com>
+ <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
+ <20170727124913.GL3730@linux.vnet.ibm.com>
+ <20170727144903.000022a1@huawei.com>
+ <20170727173923.000001b2@huawei.com>
+ <20170727165245.GD3730@linux.vnet.ibm.com>
+ <20170728084411.00001ddb@huawei.com>
+ <20170728125416.j7gcgvnxgv2gq73u@tardis>
 MIME-Version: 1.0
-In-Reply-To: <87lgn9dqx3.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170728125416.j7gcgvnxgv2gq73u@tardis>
+Message-Id: <20170728145530.GE3730@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,157 +53,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/28/2017 12:19 AM, Michael Ellerman wrote:
-> Jens Axboe <axboe@kernel.dk> writes:
->> On 07/27/2017 08:47 AM, Bart Van Assche wrote:
->>> On Thu, 2017-07-27 at 08:02 -0600, Jens Axboe wrote:
->>>> The bug looks like SCSI running the queue inline from IRQ
->>>> context, that's not a good idea.
-> ...
->>>
->>> scsi_run_queue() works fine if no scheduler is configured. Additionally, that
->>> code predates the introduction of blk-mq I/O schedulers. I think it is
->>> nontrivial for block driver authors to figure out that a queue has to be run
->>> from process context if a scheduler has been configured that does not support
->>> to be run from interrupt context.
->>
->> No it doesn't, you could never run the queue from interrupt context with
->> async == false. So I don't think that's confusing at all, you should
->> always be aware of the context.
->>
->>> How about adding WARN_ON_ONCE(in_interrupt()) to
->>> blk_mq_start_hw_queue() or replacing the above patch by the following:
->>
->> No, I hate having dependencies like that, because they always just catch
->> one of them. Looks like the IPR path that hits this should just offload
->> to a workqueue or similar, you don't have to make any scsi_run_queue()
->> async.
+On Fri, Jul 28, 2017 at 08:54:16PM +0800, Boqun Feng wrote:
+> Hi Jonathan,
 > 
-> OK, so the resolution is "fix it in IPR" ?
+> FWIW, there is wakeup-missing issue in swake_up() and swake_up_all():
+> 
+> 	https://marc.info/?l=linux-kernel&m=149750022019663
+> 
+> and RCU begins to use swait/wake last year, so I thought this could be
+> relevant.
+> 
+> Could you try the following patch and see if it works? Thanks.
+> 
+> Regards,
+> Boqun
+> 
+> ------------------>8
+> Subject: [PATCH] swait: Remove the lockless swait_active() check in
+>  swake_up*()
+> 
+> Steven Rostedt reported a potential race in RCU core because of
+> swake_up():
+> 
+>         CPU0                            CPU1
+>         ----                            ----
+>                                 __call_rcu_core() {
+> 
+>                                  spin_lock(rnp_root)
+>                                  need_wake = __rcu_start_gp() {
+>                                   rcu_start_gp_advanced() {
+>                                    gp_flags = FLAG_INIT
+>                                   }
+>                                  }
+> 
+>  rcu_gp_kthread() {
+>    swait_event_interruptible(wq,
+>         gp_flags & FLAG_INIT) {
 
-I'll leave that to the SCSI crew. But at least one bug is in IPR, if you
-look at the call trace:
+So the idea is that we get the old value of ->gp_flags here, correct?
 
-- timer function triggers, runs ipr_reset_timer_done(), which grabs the
-  host lock AND disables interrupts.
-- further down in the call path, ipr_ioa_bringdown_done() uncondtionally
-  enables interrupts:
+>    spin_lock(q->lock)
+> 
+>                                 *fetch wq->task_list here! *
 
-                spin_unlock_irq(ioa_cfg->host->host_lock);
-                scsi_unblock_requests(ioa_cfg->host);
-                spin_lock_irq(ioa_cfg->host->host_lock); 
+And the above fetch is really part of the swait_active() called out
+below, right?
 
-And the call to scsi_unblock_requests() is the one that ultimately runs
-the queue. The IRQ issue aside here, scsi_unblock_requests() could run
-the queue async, and we could retain the normal sync run otherwise.
+>    list_add(wq->task_list, q->task_list)
+>    spin_unlock(q->lock);
+> 
+>    *fetch old value of gp_flags here *
 
-Can you try the below fix? Should be more palatable than the previous
-one. Brian, maybe you can take a look at the IRQ issue mentioned above?
+And here we fetch the old value of ->gp_flags again, this time under
+the lock, right?
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index f6097b89d5d3..dfb89596af81 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -481,13 +481,14 @@ static void scsi_starved_list_run(struct Scsi_Host *shost)
-  * Purpose:    Select a proper request queue to serve next
-  *
-  * Arguments:  q       - last request's queue
-+ *             async   - run queues async, if we need to
-  *
-  * Returns:     Nothing
-  *
-  * Notes:      The previous command was completely finished, start
-  *             a new one if possible.
-  */
--static void scsi_run_queue(struct request_queue *q)
-+static void scsi_run_queue(struct request_queue *q, bool async)
- {
- 	struct scsi_device *sdev = q->queuedata;
- 
-@@ -497,7 +498,7 @@ static void scsi_run_queue(struct request_queue *q)
- 		scsi_starved_list_run(sdev->host);
- 
- 	if (q->mq_ops)
--		blk_mq_run_hw_queues(q, false);
-+		blk_mq_run_hw_queues(q, async);
- 	else
- 		blk_run_queue(q);
- }
-@@ -509,7 +510,7 @@ void scsi_requeue_run_queue(struct work_struct *work)
- 
- 	sdev = container_of(work, struct scsi_device, requeue_work);
- 	q = sdev->request_queue;
--	scsi_run_queue(q);
-+	scsi_run_queue(q, false);
- }
- 
- /*
-@@ -543,17 +544,22 @@ static void scsi_requeue_command(struct request_queue *q, struct scsi_cmnd *cmd)
- 	blk_requeue_request(q, req);
- 	spin_unlock_irqrestore(q->queue_lock, flags);
- 
--	scsi_run_queue(q);
-+	scsi_run_queue(q, true);
- 
- 	put_device(&sdev->sdev_gendev);
- }
- 
--void scsi_run_host_queues(struct Scsi_Host *shost)
-+static void __scsi_run_host_queues(struct Scsi_Host *shost, bool async)
- {
- 	struct scsi_device *sdev;
- 
- 	shost_for_each_device(sdev, shost)
--		scsi_run_queue(sdev->request_queue);
-+		scsi_run_queue(sdev->request_queue, async);
-+}
-+
-+void scsi_run_host_queues(struct Scsi_Host *shost)
-+{
-+	__scsi_run_host_queues(shost, false);
- }
- 
- static void scsi_uninit_cmd(struct scsi_cmnd *cmd)
-@@ -671,7 +677,7 @@ static bool scsi_end_request(struct request *req, blk_status_t error,
- 		blk_finish_request(req, error);
- 		spin_unlock_irqrestore(q->queue_lock, flags);
- 
--		scsi_run_queue(q);
-+		scsi_run_queue(q, false);
- 	}
- 
- 	put_device(&sdev->sdev_gendev);
-@@ -2293,7 +2299,7 @@ EXPORT_SYMBOL(scsi_block_requests);
- void scsi_unblock_requests(struct Scsi_Host *shost)
- {
- 	shost->host_self_blocked = 0;
--	scsi_run_host_queues(shost);
-+	__scsi_run_host_queues(shost, true);
- }
- EXPORT_SYMBOL(scsi_unblock_requests);
- 
-@@ -2897,10 +2903,10 @@ scsi_device_quiesce(struct scsi_device *sdev)
- 	if (err)
- 		return err;
- 
--	scsi_run_queue(sdev->request_queue);
-+	scsi_run_queue(sdev->request_queue, false);
- 	while (atomic_read(&sdev->device_busy)) {
- 		msleep_interruptible(200);
--		scsi_run_queue(sdev->request_queue);
-+		scsi_run_queue(sdev->request_queue, false);
- 	}
- 	return 0;
- }
-@@ -2924,7 +2930,7 @@ void scsi_device_resume(struct scsi_device *sdev)
- 	mutex_lock(&sdev->state_mutex);
- 	if (sdev->sdev_state == SDEV_QUIESCE &&
- 	    scsi_device_set_state(sdev, SDEV_RUNNING) == 0)
--		scsi_run_queue(sdev->request_queue);
-+		scsi_run_queue(sdev->request_queue, false);
- 	mutex_unlock(&sdev->state_mutex);
- }
- EXPORT_SYMBOL(scsi_device_resume);
+>                                  spin_unlock(rnp_root)
+> 
+>                                  rcu_gp_kthread_wake() {
+>                                   swake_up(wq) {
+>                                    swait_active(wq) {
+>                                     list_empty(wq->task_list)
+> 
+>                                    } * return false *
+> 
+>   if (condition) * false *
+>     schedule();
+> 
+> In this case, a wakeup is missed, which could cause the rcu_gp_kthread
+> waits for a long time.
+> 
+> The reason of this is that we do a lockless swait_active() check in
+> swake_up(). To fix this, we can either 1) add a smp_mb() in swake_up()
+> before swait_active() to provide the proper order or 2) simply remove
+> the swait_active() in swake_up().
+> 
+> The solution 2 not only fixes this problem but also keeps the swait and
+> wait API as close as possible, as wake_up() doesn't provide a full
+> barrier and doesn't do a lockless check of the wait queue either.
+> Moreover, there are users already using swait_active() to do their quick
+> checks for the wait queues, so it make less sense that swake_up() and
+> swake_up_all() do this on their own.
+> 
+> This patch then removes the lockless swait_active() check in swake_up()
+> and swake_up_all().
+> 
+> Reported-by: Steven Rostedt <rostedt@goodmis.org>
+> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
 
--- 
-Jens Axboe
+Even though Jonathan's testing indicates that it didn't fix this
+particular problem:
+
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> ---
+>  kernel/sched/swait.c | 6 ------
+>  1 file changed, 6 deletions(-)
+> 
+> diff --git a/kernel/sched/swait.c b/kernel/sched/swait.c
+> index 3d5610dcce11..2227e183e202 100644
+> --- a/kernel/sched/swait.c
+> +++ b/kernel/sched/swait.c
+> @@ -33,9 +33,6 @@ void swake_up(struct swait_queue_head *q)
+>  {
+>  	unsigned long flags;
+> 
+> -	if (!swait_active(q))
+> -		return;
+> -
+>  	raw_spin_lock_irqsave(&q->lock, flags);
+>  	swake_up_locked(q);
+>  	raw_spin_unlock_irqrestore(&q->lock, flags);
+> @@ -51,9 +48,6 @@ void swake_up_all(struct swait_queue_head *q)
+>  	struct swait_queue *curr;
+>  	LIST_HEAD(tmp);
+> 
+> -	if (!swait_active(q))
+> -		return;
+> -
+>  	raw_spin_lock_irq(&q->lock);
+>  	list_splice_init(&q->task_list, &tmp);
+>  	while (!list_empty(&tmp)) {
+> -- 
+> 2.13.0
+> 
