@@ -1,41 +1,29 @@
-Return-Path: <joserz@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-qt0-x234.google.com (mail-qt0-x234.google.com
+ [IPv6:2607:f8b0:400d:c0d::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJQYx4dL2zDrKw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 07:47:33 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6RLhlQu191522
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:47:30 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2byj7a8pk4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:47:30 -0400
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
- Thu, 27 Jul 2017 18:47:28 -0300
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6RLlRnF23199966
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:47:27 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6RLlTJx002227
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:47:30 -0300
-Date: Thu, 27 Jul 2017 18:47:21 -0300
-From: joserz@linux.vnet.ibm.com
-To: "Oliver O'Halloran" <oohall@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, sjitindarsingh@gmail.com
-Subject: Re: [PATCH v2] powerpc/mm: Check for _PAGE_PTE in *_devmap()
-References: <20170727153553.9160-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJVZx5SRSzDrLX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 10:48:41 +1000 (AEST)
+Received: by mail-qt0-x234.google.com with SMTP id s6so81772685qtc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 17:48:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170727153553.9160-1-oohall@gmail.com>
-Message-Id: <20170727214721.GA595@pacoca>
+In-Reply-To: <87iniefz50.fsf@concordia.ellerman.id.au>
+References: <20170725033320.17893-1-matthew.brown.dev@gmail.com>
+ <20170725033320.17893-4-matthew.brown.dev@gmail.com>
+ <20170725153033.GH13471@gate.crashing.org>
+ <87tw1z5xcd.fsf@concordia.ellerman.id.au>
+ <20170726160255.GO13471@gate.crashing.org>
+ <87iniefz50.fsf@concordia.ellerman.id.au>
+From: Matt Brown <matthew.brown.dev@gmail.com>
+Date: Fri, 28 Jul 2017 10:48:38 +1000
+Message-ID: <CAPoR37Z5oDfqLkYYKF6rPFzfJ5y0RArPFJjiiXshRPsnFCKbhQ@mail.gmail.com>
+Subject: Re: [PATCH v3 4/5] powerpc/lib/sstep: Add prty instruction emulation
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,42 +33,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 28, 2017 at 01:35:53AM +1000, Oliver O'Halloran wrote:
-> The ISA radix translation tree contains two different types of entry,
-> directories and leaves. The formats of the two entries are different
-> with the directory entries containing no spare bits for use by software.
-> As a result we need to ensure that the *_devmap() family of functions
-> check fail for everything except leaf (PTE) entries.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
-> "i'll just tweak the mbox before i sent it, what's the worst that can happen"
-> *completely breaks KVM*
-> "..."
-> ---
->  arch/powerpc/include/asm/book3s/64/pgtable.h | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index d1da415..6bc6248 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -610,7 +610,9 @@ static inline pte_t pte_mkdevmap(pte_t pte)
-> 
->  static inline int pte_devmap(pte_t pte)
->  {
-> -	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP));
-> +	uint64_t mask = cpu_to_be64(_PAGE_DEVMAP | _PAGE_PTE);
-> +
-> +	return (pte_raw(pte) & mask) == mask;
->  }
-> 
->  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-> -- 
-> 2.7.4
-> 
+On Thu, Jul 27, 2017 at 11:26 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Segher Boessenkool <segher@kernel.crashing.org> writes:
+>
+>> On Wed, Jul 26, 2017 at 08:03:30PM +1000, Michael Ellerman wrote:
+>>> Segher Boessenkool <segher@kernel.crashing.org> writes:
+>>> > A general question about these patches: some things are inside #ifdef
+>>> > __powerpc64__, some are not.  It seems it is the wrong macro, and it
+>>> > should be used (or not used) consistently?
+>>>
+>>> Why is it the wrong macro? Because we tend to use CONFIG_PPC64 you mean?
+>>
+>> Yeah.  But I see sstep.c already mixes those two at will (or if there
+>> is a distinction, I'm not seeing it :-) )
+>
+> Yeah OK. In practice they're equivalent, if CONFIG_PPC64=y then the
+> kernel is built 64-bit and therefore __powerpc64__ is defined.
+>
+> But I agree it's a mess, we should use CONFIG_PPC64 exclusively unless
+> there's some reason not to (which I don't think there ever is).
+>
+>>> I thought the reason some are #ifdef'ed is that some are 64-bit only.
+>>> ie. bpermd is 64-bit only ?
+>>
+>> 64-bit only, in what way?  It's not clear what the rules are.
+>
+> Instructions that have "d" in the name? :P
+>
+>> It's not instructions that can only run in 64-bit mode.
+>> It's not instructions that only give a usable result with 64-bit regs
+>> implemented.
+>> It's not instructions only implemented on 64-bit CPUs.
+>
+> I think it's trying to be that ^
+>
+> If you build a 32-bit kernel then instructions that are only defined on
+> 64-bit CPUs should be treated as illegal, so the easiest way to achieve
+> that is to #ifdef off the code for those instructions.
+>
 
-Michael should thank you because I was about to send another insane
-suggestion and ask him if that makes sense. :-D
+I'll fixup this up to use the xor implementation, and change the
+series to use CONFIG_PPC64 for the ifdef.
 
-Tested-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+Thanks,
+Matt
+> cheers
