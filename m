@@ -1,48 +1,44 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
+Return-Path: <bjking1@us.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xK3B367tFzDrVd
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 08:17:31 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJssp4kVSzDrRq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 01:17:50 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6SMDX5h001216
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 18:17:28 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c085jqg0r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 18:17:28 -0400
+ v6SFGDO3083577
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 11:17:48 -0400
+Received: from smtp.notes.na.collabserv.com (smtp.notes.na.collabserv.com
+ [192.155.248.67])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c05cya8yd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 11:17:47 -0400
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 28 Jul 2017 19:17:26 -0300
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6SMHOJt21495912
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 19:17:24 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6SMHOqG007958
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 19:17:25 -0300
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-22-git-send-email-linuxram@us.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- arnd@arndb.de, corbet@lwn.net, mhocko@kernel.org,
- dave.hansen@intel.com, mingo@redhat.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, akpm@linux-foundation.org,
- khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v6 21/62] powerpc: introduce execute-only pkey
-In-reply-to: <1500177424-13695-22-git-send-email-linuxram@us.ibm.com>
-Date: Fri, 28 Jul 2017 19:17:13 -0300
+ by smtp.notes.na.collabserv.com with smtp.notes.na.collabserv.com ESMTP
+ for <linuxppc-dev@lists.ozlabs.org> from <bjking1@us.ibm.com>;
+ Fri, 28 Jul 2017 15:17:47 -0000
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87shhgdx5i.fsf@linux.vnet.ibm.com>
+In-Reply-To: <92379297-9667-ae52-b05c-6c8a0ce4751c@kernel.dk>
+Subject: Re: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
+ {IN-SOFTIRQ-W} usage
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Bart Van Assche <Bart.VanAssche@wdc.com>, "linux-block@vger.kernel.org"
+ <linux-block@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, brking@linux.vnet.ibm.com
+From: "Brian J King" <bjking1@us.ibm.com>
+Date: Fri, 28 Jul 2017 10:17:38 -0500
+References: <87a83qfosu.fsf@concordia.ellerman.id.au>
+ <073ed79c-11ce-e86c-a905-91fd28675d47@kernel.dk>
+ <1501166846.2516.1.camel@wdc.com>
+ <5b85a365-faa1-3987-9b6b-270399c30686@kernel.dk>
+ <87lgn9dqx3.fsf@concordia.ellerman.id.au>
+ <92379297-9667-ae52-b05c-6c8a0ce4751c@kernel.dk>
+Content-type: multipart/alternative;
+ Boundary="0__=09BB0BF8DFC04E1E8f9e8a93df938690918c09BB0BF8DFC04E1E"
+Message-Id: <OF186C0C54.7E077412-ON8625816B.0053C88E-8625816B.00540312@notes.na.collabserv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,81 +49,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Ram Pai <linuxram@us.ibm.com> writes:
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -97,3 +97,60 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
->  	init_iamr(pkey, new_iamr_bits);
->  	return 0;
->  }
-> +
-> +static inline bool pkey_allows_readwrite(int pkey)
-> +{
-> +	int pkey_shift = pkeyshift(pkey);
-> +
-> +	if (!(read_uamor() & (0x3UL << pkey_shift)))
-> +		return true;
-> +
-> +	return !(read_amr() & ((AMR_RD_BIT|AMR_WR_BIT) << pkey_shift));
-> +}
-> +
-> +int __execute_only_pkey(struct mm_struct *mm)
-> +{
-> +	bool need_to_set_mm_pkey = false;
-> +	int execute_only_pkey = mm->context.execute_only_pkey;
-> +	int ret;
-> +
-> +	/* Do we need to assign a pkey for mm's execute-only maps? */
-> +	if (execute_only_pkey == -1) {
-> +		/* Go allocate one to use, which might fail */
-> +		execute_only_pkey = mm_pkey_alloc(mm);
-> +		if (execute_only_pkey < 0)
-> +			return -1;
-> +		need_to_set_mm_pkey = true;
-> +	}
-> +
-> +	/*
-> +	 * We do not want to go through the relatively costly
-> +	 * dance to set AMR if we do not need to.  Check it
-> +	 * first and assume that if the execute-only pkey is
-> +	 * readwrite-disabled than we do not have to set it
-> +	 * ourselves.
-> +	 */
-> +	if (!need_to_set_mm_pkey &&
-> +	    !pkey_allows_readwrite(execute_only_pkey))
-> +		return execute_only_pkey;
-> +
-> +	/*
-> +	 * Set up AMR so that it denies access for everything
-> +	 * other than execution.
-> +	 */
-> +	ret = __arch_set_user_pkey_access(current, execute_only_pkey,
-> +			(PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
-> +	/*
-> +	 * If the AMR-set operation failed somehow, just return
-> +	 * 0 and effectively disable execute-only support.
-> +	 */
-> +	if (ret) {
-> +		mm_set_pkey_free(mm, execute_only_pkey);
-> +		return -1;
-> +	}
-> +
-> +	/* We got one, store it and use it from here on out */
-> +	if (need_to_set_mm_pkey)
-> +		mm->context.execute_only_pkey = execute_only_pkey;
-> +	return execute_only_pkey;
-> +}
+--0__=09BB0BF8DFC04E1E8f9e8a93df938690918c09BB0BF8DFC04E1E
+Content-Transfer-Encoding: quoted-printable
+Content-type: text/plain; charset=US-ASCII
 
-If you follow the code flow in __execute_only_pkey, the AMR and UAMOR
-are read 3 times in total, and AMR is written twice. IAMR is read and
-written twice. Since they are SPRs and access to them is slow (or isn't
-it?), is it worth it to read them once in __execute_only_pkey and pass
-down their values to the callees, and then write them once at the end of
-the function?
+Jens Axboe <axboe@kernel.dk> wrote on 07/28/2017 09:25:48 AM:
 
-This function is used both by the mmap syscall and the mprotect syscall
-(but not by pkey_mprotect) if the requested protection is execute-only.
+> Can you try the below fix? Should be more palatable than the previous
+> one. Brian, maybe you can take a look at the IRQ issue mentioned above?
 
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Working on an ipr change to address the IRQ issue.
+
+-Brian
+
+--0__=09BB0BF8DFC04E1E8f9e8a93df938690918c09BB0BF8DFC04E1E
+Content-Transfer-Encoding: quoted-printable
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
+
+<html><body><p><tt><font size=3D"2">Jens Axboe &lt;axboe@kernel.dk&gt; wrot=
+e on 07/28/2017 09:25:48 AM:<br><br>&gt; Can you try the below fix? Should =
+be more palatable than the previous<br>&gt; one. Brian, maybe you can take =
+a look at the IRQ issue mentioned above?</font></tt><br><br><tt><font size=
+=3D"2">Working on an ipr change to address the IRQ issue.</font></tt><br><b=
+r><tt><font size=3D"2">-Brian</font></tt><br><BR>
+</body></html>
+
+--0__=09BB0BF8DFC04E1E8f9e8a93df938690918c09BB0BF8DFC04E1E--
