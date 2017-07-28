@@ -1,23 +1,24 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50043.outbound.protection.outlook.com [40.107.5.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJfyb4cVMzDqmr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 17:06:15 +1000 (AEST)
-Date: Fri, 28 Jul 2017 09:06:12 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [PATCH v3 1/3] mm/hugetlb: Allow arch to override and call the
- weak function
-Message-ID: <20170728070611.GG2274@dhcp22.suse.cz>
-References: <20170727061828.11406-1-aneesh.kumar@linux.vnet.ibm.com>
- <20170727130123.GE27766@dhcp22.suse.cz>
- <e963e910-1999-ddff-87cf-9e8c356fea82@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJg7w6qJxzDrLS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 17:14:20 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "oss@buserror.net"
+ <oss@buserror.net>
+CC: "valentin.longchamp@keymile.com" <valentin.longchamp@keymile.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2] qe: fix compile issue for arm64
+Date: Fri, 28 Jul 2017 07:14:15 +0000
+Message-ID: <AM3PR04MB118514C540F2A3FF383FC4AD91BF0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1500867555-36277-1-git-send-email-qiang.zhao@nxp.com>
+ <87o9s5dr6n.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87o9s5dr6n.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e963e910-1999-ddff-87cf-9e8c356fea82@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 27-07-17 21:50:35, Aneesh Kumar K.V wrote:
-> 
-> 
-> On 07/27/2017 06:31 PM, Michal Hocko wrote:
-> >On Thu 27-07-17 11:48:26, Aneesh Kumar K.V wrote:
-> >>For ppc64, we want to call this function when we are not running as guest.
-> >
-> >What does this mean?
-> >
-> 
-> ppc64 guest (aka LPAR) support a different mechanism for hugetlb
-> allocation/reservation. The LPAR management application called HMC can be
-> used to reserve a set of hugepages and we pass the details of reserved pages
-> via device tree to the guest. You can find the details in
-> htab_dt_scan_hugepage_blocks() . We do the memblock_reserve of the range and
-> later in the boot sequence, we just add the reserved range to
-> huge_boot_pages.
-> 
-> For baremetal config (when we are not running as guest) we want to follow
-> what other architecture does, that is look at the command line and do
-> memblock allocation. Hence the need to call generic function
-> __alloc_bootmem_huge_page() in that case.
-> 
-> I can add all these details in to the commit message if that makes it easy ?
+Fri 7/28/2017 2:14 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-It certainly helped me to understand the context much better. Thanks! As
-you are patching a generic code this would be appropriate IMHO.
--- 
-Michal Hocko
-SUSE Labs
+> -----Original Message-----
+> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+> Sent: Friday, July 28, 2017 2:14 PM
+> To: Qiang Zhao <qiang.zhao@nxp.com>; oss@buserror.net
+> Cc: valentin.longchamp@keymile.com; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; Qiang Zhao <qiang.zhao@nxp.com>
+> Subject: Re: [PATCH v2] qe: fix compile issue for arm64
+>=20
+> Zhao Qiang <qiang.zhao@nxp.com> writes:
+>=20
+> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> > ---
+> > Changes for v2:
+> > 	- include all Errata QE_General4 in #ifdef
+> >
+> >  drivers/soc/fsl/qe/qe.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+>=20
+> AFAICS this driver can only be built on PPC, what am I missing?
+>=20
+> config QUICC_ENGINE
+>         bool "Freescale QUICC Engine (QE) Support"
+>         depends on FSL_SOC && PPC32
+>=20
+> cheers
+
+I sent another patchset to support it on arm64.
+Thank you!=20
+
+Best Regards
+Qiang Zhao
