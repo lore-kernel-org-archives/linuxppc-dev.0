@@ -1,34 +1,30 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
+ [IPv6:2607:f8b0:4001:c06::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJqM21jBrzDrRn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 23:24:29 +1000 (AEST)
-Date: Fri, 28 Jul 2017 14:24:03 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
- Nicholas Piggin <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
- <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
- <linux-arm-kernel@lists.infradead.org>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170728142403.0000122b@huawei.com>
-In-Reply-To: <20170728084411.00001ddb@huawei.com>
-References: <20170726223658.GA27617@linux.vnet.ibm.com>
- <20170726.154540.150558937277891719.davem@davemloft.net>
- <20170726231505.GG3730@linux.vnet.ibm.com>
- <20170726.162200.1904949371593276937.davem@davemloft.net>
- <20170727014214.GH3730@linux.vnet.ibm.com>
- <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
- <20170727124913.GL3730@linux.vnet.ibm.com>
- <20170727144903.000022a1@huawei.com>
- <20170727173923.000001b2@huawei.com>
- <20170727165245.GD3730@linux.vnet.ibm.com>
- <20170728084411.00001ddb@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJrjr6FZ7zDrRp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 00:25:52 +1000 (AEST)
+Received: by mail-io0-x231.google.com with SMTP id l7so91046966iof.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 07:25:52 -0700 (PDT)
+Subject: Re: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
+ {IN-SOFTIRQ-W} usage
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Bart Van Assche <Bart.VanAssche@wdc.com>, Brian J King <bjking1@us.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>
+References: <87a83qfosu.fsf@concordia.ellerman.id.au>
+ <073ed79c-11ce-e86c-a905-91fd28675d47@kernel.dk>
+ <1501166846.2516.1.camel@wdc.com>
+ <5b85a365-faa1-3987-9b6b-270399c30686@kernel.dk>
+ <87lgn9dqx3.fsf@concordia.ellerman.id.au>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <92379297-9667-ae52-b05c-6c8a0ce4751c@kernel.dk>
+Date: Fri, 28 Jul 2017 08:25:48 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <87lgn9dqx3.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,80 +34,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 28 Jul 2017 08:44:11 +0100
-Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
-
-> On Thu, 27 Jul 2017 09:52:45 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On 07/28/2017 12:19 AM, Michael Ellerman wrote:
+> Jens Axboe <axboe@kernel.dk> writes:
+>> On 07/27/2017 08:47 AM, Bart Van Assche wrote:
+>>> On Thu, 2017-07-27 at 08:02 -0600, Jens Axboe wrote:
+>>>> The bug looks like SCSI running the queue inline from IRQ
+>>>> context, that's not a good idea.
+> ...
+>>>
+>>> scsi_run_queue() works fine if no scheduler is configured. Additionally, that
+>>> code predates the introduction of blk-mq I/O schedulers. I think it is
+>>> nontrivial for block driver authors to figure out that a queue has to be run
+>>> from process context if a scheduler has been configured that does not support
+>>> to be run from interrupt context.
+>>
+>> No it doesn't, you could never run the queue from interrupt context with
+>> async == false. So I don't think that's confusing at all, you should
+>> always be aware of the context.
+>>
+>>> How about adding WARN_ON_ONCE(in_interrupt()) to
+>>> blk_mq_start_hw_queue() or replacing the above patch by the following:
+>>
+>> No, I hate having dependencies like that, because they always just catch
+>> one of them. Looks like the IPR path that hits this should just offload
+>> to a workqueue or similar, you don't have to make any scsi_run_queue()
+>> async.
 > 
-> > On Thu, Jul 27, 2017 at 05:39:23PM +0100, Jonathan Cameron wrote:  
-> > > On Thu, 27 Jul 2017 14:49:03 +0100
-> > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
-> > >     
-> > > > On Thu, 27 Jul 2017 05:49:13 -0700
-> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > >     
-> > > > > On Thu, Jul 27, 2017 at 02:34:00PM +1000, Nicholas Piggin wrote:      
-> > > > > > On Wed, 26 Jul 2017 18:42:14 -0700
-> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > >         
-> > > > > > > On Wed, Jul 26, 2017 at 04:22:00PM -0700, David Miller wrote:        
-> > > > > >         
-> > > > > > > > Indeed, that really wouldn't explain how we end up with a RCU stall
-> > > > > > > > dump listing almost all of the cpus as having missed a grace period.          
-> > > > > > > 
-> > > > > > > I have seen stranger things, but admittedly not often.        
-> > > > > > 
-> > > > > > So the backtraces show the RCU gp thread in schedule_timeout.
-> > > > > > 
-> > > > > > Are you sure that it's timeout has expired and it's not being scheduled,
-> > > > > > or could it be a bad (large) timeout (looks unlikely) or that it's being
-> > > > > > scheduled but not correctly noting gps on other CPUs?
-> > > > > > 
-> > > > > > It's not in R state, so if it's not being scheduled at all, then it's
-> > > > > > because the timer has not fired:        
-> > > > > 
-> > > > > Good point, Nick!
-> > > > > 
-> > > > > Jonathan, could you please reproduce collecting timer event tracing?      
-> > > > I'm a little new to tracing (only started playing with it last week)
-> > > > so fingers crossed I've set it up right.  No splats yet.  Was getting
-> > > > splats on reading out the trace when running with the RCU stall timer
-> > > > set to 4 so have increased that back to the default and am rerunning.
-> > > > 
-> > > > This may take a while.  Correct me if I've gotten this wrong to save time
-> > > > 
-> > > > echo "timer:*" > /sys/kernel/debug/tracing/set_event
-> > > > 
-> > > > when it dumps, just send you the relevant part of what is in
-> > > > /sys/kernel/debug/tracing/trace?    
-> > > 
-> > > Interestingly the only thing that can make trip for me with tracing on
-> > > is peaking in the tracing buffers.  Not sure this is a valid case or
-> > > not.
-> > > 
-> > > Anyhow all timer activity seems to stop around the area of interest.
-> > > 
-> > > 
+> OK, so the resolution is "fix it in IPR" ?
 
-Firstly sorry to those who got the rather silly length email a minute ago.
-It bounced on the list (fair enough - I was just being lazy on getting
-data past our firewalls).
+I'll leave that to the SCSI crew. But at least one bug is in IPR, if you
+look at the call trace:
 
-Ok.  Some info.  I disabled a few driver (usb and SAS) in the interest of having
-fewer timer events.  Issue became much easier to trigger (on some runs before
-I could get tracing up and running)
+- timer function triggers, runs ipr_reset_timer_done(), which grabs the
+  host lock AND disables interrupts.
+- further down in the call path, ipr_ioa_bringdown_done() uncondtionally
+  enables interrupts:
 
-So logs are large enough that pastebin doesn't like them - please shout if
-another timer period is of interest.
+                spin_unlock_irq(ioa_cfg->host->host_lock);
+                scsi_unblock_requests(ioa_cfg->host);
+                spin_lock_irq(ioa_cfg->host->host_lock); 
 
-https://pastebin.com/iUZDfQGM for the timer trace.
-https://pastebin.com/3w1F7amH for dmesg.  
+And the call to scsi_unblock_requests() is the one that ultimately runs
+the queue. The IRQ issue aside here, scsi_unblock_requests() could run
+the queue async, and we could retain the normal sync run otherwise.
 
-The relevant timeout on the RCU stall detector was 8 seconds.  Event is
-detected around 835.
+Can you try the below fix? Should be more palatable than the previous
+one. Brian, maybe you can take a look at the IRQ issue mentioned above?
 
-It's a lot of logs, so I haven't identified a smoking gun yet but there
-may well be one in there.
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index f6097b89d5d3..dfb89596af81 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -481,13 +481,14 @@ static void scsi_starved_list_run(struct Scsi_Host *shost)
+  * Purpose:    Select a proper request queue to serve next
+  *
+  * Arguments:  q       - last request's queue
++ *             async   - run queues async, if we need to
+  *
+  * Returns:     Nothing
+  *
+  * Notes:      The previous command was completely finished, start
+  *             a new one if possible.
+  */
+-static void scsi_run_queue(struct request_queue *q)
++static void scsi_run_queue(struct request_queue *q, bool async)
+ {
+ 	struct scsi_device *sdev = q->queuedata;
+ 
+@@ -497,7 +498,7 @@ static void scsi_run_queue(struct request_queue *q)
+ 		scsi_starved_list_run(sdev->host);
+ 
+ 	if (q->mq_ops)
+-		blk_mq_run_hw_queues(q, false);
++		blk_mq_run_hw_queues(q, async);
+ 	else
+ 		blk_run_queue(q);
+ }
+@@ -509,7 +510,7 @@ void scsi_requeue_run_queue(struct work_struct *work)
+ 
+ 	sdev = container_of(work, struct scsi_device, requeue_work);
+ 	q = sdev->request_queue;
+-	scsi_run_queue(q);
++	scsi_run_queue(q, false);
+ }
+ 
+ /*
+@@ -543,17 +544,22 @@ static void scsi_requeue_command(struct request_queue *q, struct scsi_cmnd *cmd)
+ 	blk_requeue_request(q, req);
+ 	spin_unlock_irqrestore(q->queue_lock, flags);
+ 
+-	scsi_run_queue(q);
++	scsi_run_queue(q, true);
+ 
+ 	put_device(&sdev->sdev_gendev);
+ }
+ 
+-void scsi_run_host_queues(struct Scsi_Host *shost)
++static void __scsi_run_host_queues(struct Scsi_Host *shost, bool async)
+ {
+ 	struct scsi_device *sdev;
+ 
+ 	shost_for_each_device(sdev, shost)
+-		scsi_run_queue(sdev->request_queue);
++		scsi_run_queue(sdev->request_queue, async);
++}
++
++void scsi_run_host_queues(struct Scsi_Host *shost)
++{
++	__scsi_run_host_queues(shost, false);
+ }
+ 
+ static void scsi_uninit_cmd(struct scsi_cmnd *cmd)
+@@ -671,7 +677,7 @@ static bool scsi_end_request(struct request *req, blk_status_t error,
+ 		blk_finish_request(req, error);
+ 		spin_unlock_irqrestore(q->queue_lock, flags);
+ 
+-		scsi_run_queue(q);
++		scsi_run_queue(q, false);
+ 	}
+ 
+ 	put_device(&sdev->sdev_gendev);
+@@ -2293,7 +2299,7 @@ EXPORT_SYMBOL(scsi_block_requests);
+ void scsi_unblock_requests(struct Scsi_Host *shost)
+ {
+ 	shost->host_self_blocked = 0;
+-	scsi_run_host_queues(shost);
++	__scsi_run_host_queues(shost, true);
+ }
+ EXPORT_SYMBOL(scsi_unblock_requests);
+ 
+@@ -2897,10 +2903,10 @@ scsi_device_quiesce(struct scsi_device *sdev)
+ 	if (err)
+ 		return err;
+ 
+-	scsi_run_queue(sdev->request_queue);
++	scsi_run_queue(sdev->request_queue, false);
+ 	while (atomic_read(&sdev->device_busy)) {
+ 		msleep_interruptible(200);
+-		scsi_run_queue(sdev->request_queue);
++		scsi_run_queue(sdev->request_queue, false);
+ 	}
+ 	return 0;
+ }
+@@ -2924,7 +2930,7 @@ void scsi_device_resume(struct scsi_device *sdev)
+ 	mutex_lock(&sdev->state_mutex);
+ 	if (sdev->sdev_state == SDEV_QUIESCE &&
+ 	    scsi_device_set_state(sdev, SDEV_RUNNING) == 0)
+-		scsi_run_queue(sdev->request_queue);
++		scsi_run_queue(sdev->request_queue, false);
+ 	mutex_unlock(&sdev->state_mutex);
+ }
+ EXPORT_SYMBOL(scsi_device_resume);
 
-Jonathan
+-- 
+Jens Axboe
