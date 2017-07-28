@@ -1,42 +1,51 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJlXl2NGZzDqmX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 20:32:38 +1000 (AEST)
-Date: Fri, 28 Jul 2017 12:31:52 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 08/17] x86/efi: Access EFI data as encrypted
- when SEV is active
-Message-ID: <20170728103152.GE1889@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-9-brijesh.singh@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170724190757.11278-9-brijesh.singh@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJpMr5ymLzDrRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 22:40:08 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6SCdv9r004833
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 08:40:05 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c0466mt44-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 08:40:05 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Fri, 28 Jul 2017 22:39:43 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6SCdeeh27787298
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 22:39:40 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6SCdcd7010926
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 22:39:39 +1000
+Subject: Re: [PATCH v3 1/7] integrity: Introduce struct evm_hmac_xattr
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-security-module@vger.kernel.org
+Cc: linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>, "Serge E. Hallyn"
+ <serge@hallyn.com>, David Howells <dhowells@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>, Rusty Russell
+ <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David
+ S. Miller" <davem@davemloft.net>, "AKASHI, Takahiro"
+ <takahiro.akashi@linaro.org>
+Date: Fri, 28 Jul 2017 08:39:26 -0400
+In-Reply-To: <20170706221753.17380-2-bauerman@linux.vnet.ibm.com>
+References: <20170706221753.17380-1-bauerman@linux.vnet.ibm.com>
+ <20170706221753.17380-2-bauerman@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1501245566.10288.35.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,88 +55,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 24, 2017 at 02:07:48PM -0500, Brijesh Singh wrote:
-> From: Tom Lendacky <thomas.lendacky@amd.com>
+Hi Thiago,
+
+On Thu, 2017-07-06 at 19:17 -0300, Thiago Jung Bauermann wrote:
+> Even though struct evm_ima_xattr_data includes a fixed-size array to hold a
+> SHA1 digest, most of the code ignores the array and uses the struct to mean
+> "type indicator followed by data of unspecified size" and tracks the real
+> size of what the struct represents in a separate length variable.
 > 
-> EFI data is encrypted when the kernel is run under SEV. Update the
-> page table references to be sure the EFI memory areas are accessed
-> encrypted.
+> The only exception to that is the EVM code, which correctly uses the
+> definition of struct evm_ima_xattr_data.
+
+Right, the current EVM code converts the EVM signature to an HMAC the
+first time the file is accessed.  So most of the code is based on the
+HMAC.
+
 > 
-> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> This patch makes this explicit in the code by removing the length
+> specification from the array in struct evm_ima_xattr_data. It also changes
+> the name of the element from digest to data, since in most places the array
+> doesn't hold a digest.
+> 
+> A separate struct evm_hmac_xattr is introduced, with the original
+> definition of evm_ima_xattr_data to be used in the places that actually
+> expect that definition.
+
+The new structure name implies that the xattr can only be an HMAC.  By
+moving the new structure to evm.h we also loose the connection that it
+has to the evm_ima_xattr_type enumeration.
+
+Instead, how about defining the new struct in terms of the modified
+evm_ima_xattr_data struct?  Please leave the new structure in
+integrity.h.
+
+Mimi
+
+> 
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+
 > ---
->  arch/x86/platform/efi/efi_64.c | 15 ++++++++++++++-
->  1 file changed, 14 insertions(+), 1 deletion(-)
+>  security/integrity/evm/evm.h          | 5 +++++
+>  security/integrity/evm/evm_crypto.c   | 2 +-
+>  security/integrity/evm/evm_main.c     | 8 ++++----
+>  security/integrity/ima/ima_appraise.c | 7 ++++---
+>  security/integrity/integrity.h        | 2 +-
+>  5 files changed, 15 insertions(+), 9 deletions(-)
 > 
-> diff --git a/arch/x86/platform/efi/efi_64.c b/arch/x86/platform/efi/efi_64.c
-> index 12e8388..1ecb3f6 100644
-> --- a/arch/x86/platform/efi/efi_64.c
-> +++ b/arch/x86/platform/efi/efi_64.c
-> @@ -32,6 +32,7 @@
->  #include <linux/reboot.h>
->  #include <linux/slab.h>
->  #include <linux/ucs2_string.h>
-> +#include <linux/mem_encrypt.h>
->  
->  #include <asm/setup.h>
->  #include <asm/page.h>
-> @@ -369,7 +370,10 @@ int __init efi_setup_page_tables(unsigned long pa_memmap, unsigned num_pages)
->  	 * as trim_bios_range() will reserve the first page and isolate it away
->  	 * from memory allocators anyway.
->  	 */
-> -	if (kernel_map_pages_in_pgd(pgd, 0x0, 0x0, 1, _PAGE_RW)) {
-> +	pf = _PAGE_RW;
-> +	if (sev_active())
-> +		pf |= _PAGE_ENC;
-
-\n here
-
-> +	if (kernel_map_pages_in_pgd(pgd, 0x0, 0x0, 1, pf)) {
->  		pr_err("Failed to create 1:1 mapping for the first page!\n");
->  		return 1;
->  	}
-> @@ -412,6 +416,9 @@ static void __init __map_region(efi_memory_desc_t *md, u64 va)
->  	if (!(md->attribute & EFI_MEMORY_WB))
->  		flags |= _PAGE_PCD;
->  
-> +	if (sev_active())
-> +		flags |= _PAGE_ENC;
+> diff --git a/security/integrity/evm/evm.h b/security/integrity/evm/evm.h
+> index f5f12727771a..e1081cf2f9c5 100644
+> --- a/security/integrity/evm/evm.h
+> +++ b/security/integrity/evm/evm.h
+> @@ -24,6 +24,11 @@
+>  #define EVM_INIT_HMAC	0x0001
+>  #define EVM_INIT_X509	0x0002
+> 
+> +struct evm_hmac_xattr {
+> +	u8 type;	/* Should be EVM_XATTR_HMAC. */
+> +	u8 digest[SHA1_DIGEST_SIZE];
+> +} __packed;
 > +
->  	pfn = md->phys_addr >> PAGE_SHIFT;
->  	if (kernel_map_pages_in_pgd(pgd, pfn, va, md->num_pages, flags))
->  		pr_warn("Error mapping PA 0x%llx -> VA 0x%llx!\n",
-> @@ -511,6 +518,9 @@ static int __init efi_update_mappings(efi_memory_desc_t *md, unsigned long pf)
->  	pgd_t *pgd = efi_pgd;
->  	int err1, err2;
->  
-> +	if (sev_active())
-> +		pf |= _PAGE_ENC;
-
-Move this assignment to the caller efi_update_mem_attr() where pf is being
-set...
-
-> +
->  	/* Update the 1:1 mapping */
->  	pfn = md->phys_addr >> PAGE_SHIFT;
->  	err1 = kernel_map_pages_in_pgd(pgd, pfn, md->phys_addr, md->num_pages, pf);
-> @@ -589,6 +599,9 @@ void __init efi_runtime_update_mappings(void)
->  			(md->type != EFI_RUNTIME_SERVICES_CODE))
->  			pf |= _PAGE_RW;
->  
-> +		if (sev_active())
-> +			pf |= _PAGE_ENC;
-
-... just like here.
-
-> +
->  		efi_update_mappings(md, pf);
-
-In general, I'm not totally excited about that sprinkling of if
-(sev_active())... :-\
-
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+>  extern int evm_initialized;
+>  extern char *evm_hmac;
+>  extern char *evm_hash;
+> diff --git a/security/integrity/evm/evm_crypto.c b/security/integrity/evm/evm_crypto.c
+> index d7f282d75cc1..08dde59f3128 100644
+> --- a/security/integrity/evm/evm_crypto.c
+> +++ b/security/integrity/evm/evm_crypto.c
+> @@ -252,7 +252,7 @@ int evm_update_evmxattr(struct dentry *dentry, const char *xattr_name,
+>  			const char *xattr_value, size_t xattr_value_len)
+>  {
+>  	struct inode *inode = d_backing_inode(dentry);
+> -	struct evm_ima_xattr_data xattr_data;
+> +	struct evm_hmac_xattr xattr_data;
+>  	int rc = 0;
+> 
+>  	rc = evm_calc_hmac(dentry, xattr_name, xattr_value,
+> diff --git a/security/integrity/evm/evm_main.c b/security/integrity/evm/evm_main.c
+> index 063d38aef64e..b7c1e11a915e 100644
+> --- a/security/integrity/evm/evm_main.c
+> +++ b/security/integrity/evm/evm_main.c
+> @@ -116,7 +116,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+>  					     struct integrity_iint_cache *iint)
+>  {
+>  	struct evm_ima_xattr_data *xattr_data = NULL;
+> -	struct evm_ima_xattr_data calc;
+> +	struct evm_hmac_xattr calc;
+>  	enum integrity_status evm_status = INTEGRITY_PASS;
+>  	int rc, xattr_len;
+> 
+> @@ -147,7 +147,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+>  	/* check value type */
+>  	switch (xattr_data->type) {
+>  	case EVM_XATTR_HMAC:
+> -		if (xattr_len != sizeof(struct evm_ima_xattr_data)) {
+> +		if (xattr_len != sizeof(struct evm_hmac_xattr)) {
+>  			evm_status = INTEGRITY_FAIL;
+>  			goto out;
+>  		}
+> @@ -155,7 +155,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+>  				   xattr_value_len, calc.digest);
+>  		if (rc)
+>  			break;
+> -		rc = crypto_memneq(xattr_data->digest, calc.digest,
+> +		rc = crypto_memneq(xattr_data->data, calc.digest,
+>  			    sizeof(calc.digest));
+>  		if (rc)
+>  			rc = -EINVAL;
+> @@ -467,7 +467,7 @@ int evm_inode_init_security(struct inode *inode,
+>  				 const struct xattr *lsm_xattr,
+>  				 struct xattr *evm_xattr)
+>  {
+> -	struct evm_ima_xattr_data *xattr_data;
+> +	struct evm_hmac_xattr *xattr_data;
+>  	int rc;
+> 
+>  	if (!evm_initialized || !evm_protected_xattr(lsm_xattr->name))
+> diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
+> index 809ba70fbbbf..87d2b601cf8e 100644
+> --- a/security/integrity/ima/ima_appraise.c
+> +++ b/security/integrity/ima/ima_appraise.c
+> @@ -156,7 +156,8 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+>  		return sig->hash_algo;
+>  		break;
+>  	case IMA_XATTR_DIGEST_NG:
+> -		ret = xattr_value->digest[0];
+> +		/* first byte contains algorithm id */
+> +		ret = xattr_value->data[0];
+>  		if (ret < HASH_ALGO__LAST)
+>  			return ret;
+>  		break;
+> @@ -164,7 +165,7 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+>  		/* this is for backward compatibility */
+>  		if (xattr_len == 21) {
+>  			unsigned int zero = 0;
+> -			if (!memcmp(&xattr_value->digest[16], &zero, 4))
+> +			if (!memcmp(&xattr_value->data[16], &zero, 4))
+>  				return HASH_ALGO_MD5;
+>  			else
+>  				return HASH_ALGO_SHA1;
+> @@ -253,7 +254,7 @@ int ima_appraise_measurement(enum ima_hooks func,
+>  			/* xattr length may be longer. md5 hash in previous
+>  			   version occupied 20 bytes in xattr, instead of 16
+>  			 */
+> -			rc = memcmp(&xattr_value->digest[hash_start],
+> +			rc = memcmp(&xattr_value->data[hash_start],
+>  				    iint->ima_hash->digest,
+>  				    iint->ima_hash->length);
+>  		else
+> diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
+> index a53e7e4ab06c..874211aba6e9 100644
+> --- a/security/integrity/integrity.h
+> +++ b/security/integrity/integrity.h
+> @@ -63,7 +63,7 @@ enum evm_ima_xattr_type {
+> 
+>  struct evm_ima_xattr_data {
+>  	u8 type;
+> -	u8 digest[SHA1_DIGEST_SIZE];
+> +	u8 data[];
+>  } __packed;
+> 
+>  #define IMA_MAX_DIGEST_SIZE	64
