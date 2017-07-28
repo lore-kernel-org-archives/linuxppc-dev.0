@@ -1,37 +1,20 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJphS6xVYzDrRd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 22:54:32 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id k72so17291827pfj.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 05:54:32 -0700 (PDT)
-Date: Fri, 28 Jul 2017 20:54:16 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, dzickus@redhat.com,
- sfr@canb.auug.org.au, linuxarm@huawei.com,
- Nicholas Piggin <npiggin@gmail.com>, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170728125416.j7gcgvnxgv2gq73u@tardis>
-References: <20170726.154540.150558937277891719.davem@davemloft.net>
- <20170726231505.GG3730@linux.vnet.ibm.com>
- <20170726.162200.1904949371593276937.davem@davemloft.net>
- <20170727014214.GH3730@linux.vnet.ibm.com>
- <20170727143400.23e4d2b2@roar.ozlabs.ibm.com>
- <20170727124913.GL3730@linux.vnet.ibm.com>
- <20170727144903.000022a1@huawei.com>
- <20170727173923.000001b2@huawei.com>
- <20170727165245.GD3730@linux.vnet.ibm.com>
- <20170728084411.00001ddb@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJpqC5mHyzDrRh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 23:00:23 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ lvivier@redhat.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.13-4 tag
+Date: Fri, 28 Jul 2017 23:00:18 +1000
+Message-ID: <87inicemxp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170728084411.00001ddb@huawei.com>
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,109 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jonathan,
+--=-=-=
+Content-Type: text/plain
 
-FWIW, there is wakeup-missing issue in swake_up() and swake_up_all():
+Hi Linus,
 
-	https://marc.info/?l=linux-kernel&m=149750022019663
+Please pull some more powerpc fixes for 4.13:
 
-and RCU begins to use swait/wake last year, so I thought this could be
-relevant.
+The following changes since commit 029d9252b116fa52a95150819e62af1f6e420fe5:
 
-Could you try the following patch and see if it works? Thanks.
+  powerpc/mm: Mark __init memory no-execute when STRICT_KERNEL_RWX=y (2017-07-18 19:54:24 +1000)
 
-Regards,
-Boqun
+are available in the git repository at:
 
------------------->8
-Subject: [PATCH] swait: Remove the lockless swait_active() check in
- swake_up*()
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.13-4
 
-Steven Rostedt reported a potential race in RCU core because of
-swake_up():
+for you to fetch changes up to 0da12a7a81f1e2255e89dc783c565e84801475a2:
 
-        CPU0                            CPU1
-        ----                            ----
-                                __call_rcu_core() {
+  powerpc/mm/hash: Free the subpage_prot_table correctly (2017-07-27 13:05:50 +1000)
 
-                                 spin_lock(rnp_root)
-                                 need_wake = __rcu_start_gp() {
-                                  rcu_start_gp_advanced() {
-                                   gp_flags = FLAG_INIT
-                                  }
-                                 }
+----------------------------------------------------------------
+powerpc fixes for 4.13 #4
 
- rcu_gp_kthread() {
-   swait_event_interruptible(wq,
-        gp_flags & FLAG_INIT) {
-   spin_lock(q->lock)
+The highlight is Ben's patch to work around a host killing bug when running KVM
+guests with the Radix MMU on Power9. See the long change log of that commit for
+more detail.
 
-                                *fetch wq->task_list here! *
+And then three fairly minor fixes:
+ - Fix of_node_put() underflow during reconfig remove, using old DLPAR tools.
+ - Fix recently introduced ld version check with 64-bit LE-only toolchain.
+ - Free the subpage_prot_table correctly, avoiding a memory leak.
 
-   list_add(wq->task_list, q->task_list)
-   spin_unlock(q->lock);
+Thanks to:
+  Aneesh Kumar K.V, Benjamin Herrenschmidt, Laurent Vivier.
 
-   *fetch old value of gp_flags here *
+----------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc/mm/hash: Free the subpage_prot_table correctly
 
-                                 spin_unlock(rnp_root)
+Benjamin Herrenschmidt (1):
+      powerpc/mm/radix: Workaround prefetch issue with KVM
 
-                                 rcu_gp_kthread_wake() {
-                                  swake_up(wq) {
-                                   swait_active(wq) {
-                                    list_empty(wq->task_list)
+Laurent Vivier (1):
+      powerpc/pseries: Fix of_node_put() underflow during reconfig remove
 
-                                   } * return false *
+Michael Ellerman (1):
+      powerpc/Makefile: Fix ld version check with 64-bit LE-only toolchain
 
-  if (condition) * false *
-    schedule();
+ arch/powerpc/Makefile                     | 25 ++++++-------
+ arch/powerpc/include/asm/book3s/64/mmu.h  | 15 ++++----
+ arch/powerpc/include/asm/mmu_context.h    | 18 ++++++++--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 59 ++++++++++++++++++++++++++-----
+ arch/powerpc/mm/mmu_context_book3s64.c    |  5 +--
+ arch/powerpc/mm/pgtable-radix.c           | 34 +++++++++++++++++-
+ arch/powerpc/mm/subpage-prot.c            |  2 +-
+ arch/powerpc/mm/tlb-radix.c               | 45 +++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/reconfig.c |  1 -
+ 9 files changed, 168 insertions(+), 36 deletions(-)
 
-In this case, a wakeup is missed, which could cause the rcu_gp_kthread
-waits for a long time.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-The reason of this is that we do a lockless swait_active() check in
-swake_up(). To fix this, we can either 1) add a smp_mb() in swake_up()
-before swait_active() to provide the proper order or 2) simply remove
-the swait_active() in swake_up().
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-The solution 2 not only fixes this problem but also keeps the swait and
-wait API as close as possible, as wake_up() doesn't provide a full
-barrier and doesn't do a lockless check of the wait queue either.
-Moreover, there are users already using swait_active() to do their quick
-checks for the wait queues, so it make less sense that swake_up() and
-swake_up_all() do this on their own.
-
-This patch then removes the lockless swait_active() check in swake_up()
-and swake_up_all().
-
-Reported-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
----
- kernel/sched/swait.c | 6 ------
- 1 file changed, 6 deletions(-)
-
-diff --git a/kernel/sched/swait.c b/kernel/sched/swait.c
-index 3d5610dcce11..2227e183e202 100644
---- a/kernel/sched/swait.c
-+++ b/kernel/sched/swait.c
-@@ -33,9 +33,6 @@ void swake_up(struct swait_queue_head *q)
- {
- 	unsigned long flags;
- 
--	if (!swait_active(q))
--		return;
--
- 	raw_spin_lock_irqsave(&q->lock, flags);
- 	swake_up_locked(q);
- 	raw_spin_unlock_irqrestore(&q->lock, flags);
-@@ -51,9 +48,6 @@ void swake_up_all(struct swait_queue_head *q)
- 	struct swait_queue *curr;
- 	LIST_HEAD(tmp);
- 
--	if (!swait_active(q))
--		return;
--
- 	raw_spin_lock_irq(&q->lock);
- 	list_splice_init(&q->task_list, &tmp);
- 	while (!list_empty(&tmp)) {
--- 
-2.13.0
+iQIcBAEBAgAGBQJZezVjAAoJEFHr6jzI4aWArEkP/3CSmvqbMsdVlf/2tbulhGA9
+KrCpM/AQsMireqP3gng3uTIfxT6Ge1SAiPWmiWEurpufuMwVb4wotUdtBhMHOntG
+iijYUyj8pa+PMtyHVQ7IroPiUMu2LO1V6o81KgrLZQbj3s/X6rybnY1kV5GOACr3
+Go5xfJ6DY8BuW1wJv3b0Xo9UxwXg0z7U/CyRw6eJOCHKFZ6PP+JNTs4a6nj314nW
+bjIkTA4409Y1QQN90pyE4yEaZ0kbnCqmQSEGei0RxATruNNxdfx+mGth6LYFmGn0
+lGzWv4ICA/sR/zLbwnur7cR2/17ASUgH7nejzkSNoy4tJuICYFzahfgCSWPNSdeV
+c0IkSG5bMC4i0J3QRT9tIv5rbkIYRGwPWTEdCLbCCkDbKWlwNq1F8c9B+nNjL1V/
+AGtUnK7tI+TA26U2mzvUj6lESUXXxUsSYY3rRFxMuEJedni3Bw4pDhgKW3VkbfyC
+Te3XWau32sINrXzkgQnY1+QkbWsp38k7qwIh9lr2GkiKWFXqAaqmUlSis8PgSgvu
+wrM7iZsy3iSmT3mfMF2jorQP+b9AH/4QgU+QBEIYF0F08DjhHEvKmxIkmLkekZwZ
+aWL4KPMVP0Yo3PJxhJQPZmm2iZiEqpuzcifZpVGkyRgGuvISi3xheDgHB0Z5UW0p
+YG6ROyFxFjpIn98++7M2
+=cE70
+-----END PGP SIGNATURE-----
+--=-=-=--
