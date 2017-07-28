@@ -1,22 +1,27 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJW9B4KRfzDrLs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 11:14:54 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id d193so22022453pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jul 2017 18:14:54 -0700 (PDT)
-Message-ID: <1501204487.14223.3.camel@gmail.com>
-Subject: Re: [PATCH v2] powerpc/mm: Check for _PAGE_PTE in *_devmap()
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, joserz@linux.vnet.ibm.com
-Date: Fri, 28 Jul 2017 11:14:47 +1000
-In-Reply-To: <20170727153553.9160-1-oohall@gmail.com>
-References: <20170727153553.9160-1-oohall@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJWWn1fBfzDrLv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 11:31:01 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Matt Brown <matthew.brown.dev@gmail.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3 4/5] powerpc/lib/sstep: Add prty instruction emulation
+In-Reply-To: <CAPoR37Z5oDfqLkYYKF6rPFzfJ5y0RArPFJjiiXshRPsnFCKbhQ@mail.gmail.com>
+References: <20170725033320.17893-1-matthew.brown.dev@gmail.com>
+ <20170725033320.17893-4-matthew.brown.dev@gmail.com>
+ <20170725153033.GH13471@gate.crashing.org>
+ <87tw1z5xcd.fsf@concordia.ellerman.id.au>
+ <20170726160255.GO13471@gate.crashing.org>
+ <87iniefz50.fsf@concordia.ellerman.id.au>
+ <CAPoR37Z5oDfqLkYYKF6rPFzfJ5y0RArPFJjiiXshRPsnFCKbhQ@mail.gmail.com>
+Date: Fri, 28 Jul 2017 11:31:00 +1000
+Message-ID: <87shhhe4a3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-07-28 at 01:35 +1000, Oliver O'Halloran wrote:
-> The ISA radix translation tree contains two different types of entry,
-s/entry/entries
-> > directories and leaves. The formats of the two entries are
-> different
-> with the directory entries containing no spare bits for use by
-> software.
+Matt Brown <matthew.brown.dev@gmail.com> writes:
 
-Rather than saying the directory entries contain no spare bits, would
-it be better to say something like: the devmap property only relates to
-pte (leaf) entries and so we shouldn't perform the check on/should
-always return false for page directory entries?
+> On Thu, Jul 27, 2017 at 11:26 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Segher Boessenkool <segher@kernel.crashing.org> writes:
+>>
+>>> On Wed, Jul 26, 2017 at 08:03:30PM +1000, Michael Ellerman wrote:
+>>>> Segher Boessenkool <segher@kernel.crashing.org> writes:
+>>>> > A general question about these patches: some things are inside #ifdef
+>>>> > __powerpc64__, some are not.  It seems it is the wrong macro, and it
+>>>> > should be used (or not used) consistently?
+>>>>
+>>>> Why is it the wrong macro? Because we tend to use CONFIG_PPC64 you mean?
+>>>
+>>> Yeah.  But I see sstep.c already mixes those two at will (or if there
+>>> is a distinction, I'm not seeing it :-) )
+>>
+>> Yeah OK. In practice they're equivalent, if CONFIG_PPC64=y then the
+>> kernel is built 64-bit and therefore __powerpc64__ is defined.
+>>
+>> But I agree it's a mess, we should use CONFIG_PPC64 exclusively unless
+>> there's some reason not to (which I don't think there ever is).
+>>
+>>>> I thought the reason some are #ifdef'ed is that some are 64-bit only.
+>>>> ie. bpermd is 64-bit only ?
+>>>
+>>> 64-bit only, in what way?  It's not clear what the rules are.
+>>
+>> Instructions that have "d" in the name? :P
+>>
+>>> It's not instructions that can only run in 64-bit mode.
+>>> It's not instructions that only give a usable result with 64-bit regs
+>>> implemented.
+>>> It's not instructions only implemented on 64-bit CPUs.
+>>
+>> I think it's trying to be that ^
+>>
+>> If you build a 32-bit kernel then instructions that are only defined on
+>> 64-bit CPUs should be treated as illegal, so the easiest way to achieve
+>> that is to #ifdef off the code for those instructions.
+>
+> I'll fixup this up to use the xor implementation, and change the
+> series to use CONFIG_PPC64 for the ifdef.
 
-> As a result we need to ensure that the *_devmap() family of functions
-> check fail for everything except leaf (PTE) entries.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
-> "i'll just tweak the mbox before i sent it, what's the worst that can
-> happen"
-> *completely breaks KVM*
-> "..."
-> ---
->  arch/powerpc/include/asm/book3s/64/pgtable.h | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index d1da415..6bc6248 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -610,7 +610,9 @@ static inline pte_t pte_mkdevmap(pte_t pte)
->  
->  static inline int pte_devmap(pte_t pte)
->  {
-> -	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP));
-> +	uint64_t mask = cpu_to_be64(_PAGE_DEVMAP | _PAGE_PTE);
-> +
-> +	return (pte_raw(pte) & mask) == mask;
->  }
->  
->  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+Thanks.
 
-Reviewed-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+In terms of the actual algorithms, we want to use something reasonably
+efficient, but don't sweat too much on the performance. The overhead of
+the emulation is in the exception we took to get there. So readable and
+obviously correct source is the main goal.
+
+cheers
