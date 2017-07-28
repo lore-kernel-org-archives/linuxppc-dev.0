@@ -1,50 +1,46 @@
-Return-Path: <srs0=11tg=67=linux.vnet.ibm.com=aneesh.kumar@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xJYb65fblzDrM9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 13:04:02 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xJYb64mMmz8sy4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 13:04:02 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xJYb60ytKz9s71
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2017 13:04:01 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xJZyZ1Qf2zDrMC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 14:05:58 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6S2wt3t052009
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2017 23:04:00 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2byqnv3dun-1
+ v6S43kXr085869
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 00:05:55 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2byw119txe-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2017 23:03:59 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 00:05:55 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 28 Jul 2017 13:03:56 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6S33sqa26148890
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2017 13:03:54 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6S33qYJ019973
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2017 13:03:53 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: joserz@linux.vnet.ibm.com, oohall@gmail.com, sjitindarsingh@gmail.com,
- david@gibson.dropbear.id.au
-Subject: Re: [PATCH v2] powerpc/mm: Fix pmd/pte_devmap() on non-leaf entries
-In-Reply-To: <1501207681-2576-1-git-send-email-mpe@ellerman.id.au>
-References: <1501207681-2576-1-git-send-email-mpe@ellerman.id.au>
-Date: Fri, 28 Jul 2017 08:33:47 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Fri, 28 Jul 2017 14:05:53 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6S45f6U30736630
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 14:05:49 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6S45EVb015984
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jul 2017 14:05:17 +1000
+Subject: Re: [PATCH V8 1/3] powernv: powercap: Add support for powercap
+ framework
+To: Cyril Bur <cyrilbur@gmail.com>, stewart@linux.vnet.ibm.com
+References: <1501045509-21732-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1501045509-21732-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1501205974.3324.1.camel@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Date: Fri, 28 Jul 2017 09:34:53 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87d18l1cvg.fsf@linux.vnet.ibm.com>
+In-Reply-To: <1501205974.3324.1.camel@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <9b884a27-0b1e-f8b0-c2c5-3246432c6853@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,64 +50,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Hi Cyril,
 
-> From: Oliver O'Halloran <oohall@gmail.com>
->
-> The Radix MMU translation tree as defined in ISA v3.0 contains two
-> different types of entry, directories and leaves. Leaves are
-> identified by _PAGE_PTE being set.
->
-> The formats of the two entries are different, with the directory
-> entries containing no spare bits for use by software. In particular
-> the bit we use for _PAGE_DEVMAP is not reserved for software, and is
-> part of the NLB (Next Level Base) field, essentially the address of
-> the next level in the tree.
->
-> Note that the Linux pte_t is not == _PAGE_PTE. A huge page pmd
-> entry (or devmap!) is also a leaf and so has _PAGE_PTE set, even
-> though we use a pmd_t for it in Linux.
->
-> The fix is to ensure that the pmd/pte_devmap() confirm they are
-> looking at a leaf entry (_PAGE_PTE) as well as checking _PAGE_DEVMAP.
->
+On 07/28/2017 07:09 AM, Cyril Bur wrote:
+> Is there any reason that pcap_attrs needs to be contiguous? If not, I
+> feel like you could eliminate the entire loop below (and the last one
+> as well maybe) and just do the assignment of pattr_groups[].attrs[] up
+> there.
+> 
+> In fact do you even need to store pcap_attrs? If you kcalloc them as
+> you need them (in the loop above), you can always free them again on
+> error by freeing pattr_groups[].attrs[] right?
+> 
+> I'll admit I've become quite confused as to the layout of the sysfs dir
+>  that you're creating here - would you mind showing what the expected
+> layout will be?
+> 
+> I'll take more of a look once thats more clear in my head
+> 
+> Thanks,
+> 
+> Cyril
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+The sysfs layout looks as below:
+# ls /sys/firmware/opal/powercap/
+system-powercap
 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> Tested-by: Laurent Vivier <lvivier@redhat.com>
-> Tested-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
-> Reviewed-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> [mpe: Add a comment in the code and flesh out change log]
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/book3s/64/pgtable.h | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
->
-> v2: Add a comment in the code and flesh out change log
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index d1da415e283c..818a58fc3f4f 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -608,9 +608,17 @@ static inline pte_t pte_mkdevmap(pte_t pte)
->  	return __pte(pte_val(pte) | _PAGE_SPECIAL|_PAGE_DEVMAP);
->  }
->  
-> +/*
-> + * This is potentially called with a pmd as the argument, in which case it's not
-> + * safe to check _PAGE_DEVMAP unless we also confirm that _PAGE_PTE is set.
-> + * That's because the bit we use for _PAGE_DEVMAP is not reserved for software
-> + * use in page directory entries (ie. non-ptes).
-> + */
->  static inline int pte_devmap(pte_t pte)
->  {
-> -	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DEVMAP));
-> +	u64 mask = cpu_to_be64(_PAGE_DEVMAP | _PAGE_PTE);
-> +
-> +	return (pte_raw(pte) & mask) == mask;
->  }
->  
->  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-> -- 
-> 2.7.4
+# ls /sys/firmware/opal/powercap/system-powercap/
+powercap-current  powercap-max  powercap-min
+
+# grep .  /sys/firmware/opal/powercap/system-powercap/*
+/sys/firmware/opal/powercap/system-powercap/powercap-current:2375
+/sys/firmware/opal/powercap/system-powercap/powercap-max:2375
+/sys/firmware/opal/powercap/system-powercap/powercap-min:1945
+
+Thanks and Regards,
+Shilpa
