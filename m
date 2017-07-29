@@ -2,10 +2,10 @@ Return-Path: <lin.sunze@gmail.com>
 Received: from mail-pg0-f68.google.com (mail-pg0-f68.google.com [74.125.83.68])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xKHKz4Y0kzDrLs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 17:25:11 +1000 (AEST)
-Received: by mail-pg0-f68.google.com with SMTP id d193so25548876pgc.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 00:25:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xKHL01zC2zDrLv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 17:25:12 +1000 (AEST)
+Received: by mail-pg0-f68.google.com with SMTP id v190so25593081pgv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jul 2017 00:25:12 -0700 (PDT)
 From: SZ Lin <sz.lin@moxa.com>
 To: ashleydlai@gmail.com
 Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
@@ -13,9 +13,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  jgunthorpe@obsidianresearch.com, tpmdd-devel@lists.sourceforge.net,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  SZ Lin <sz.lin@moxa.com>
-Subject: [PATCH 2/5] Fix "ERROR: code indent should use tabs where possible"
-Date: Sat, 29 Jul 2017 15:24:30 +0800
-Message-Id: <20170729072433.13194-3-sz.lin@moxa.com>
+Subject: [PATCH 4/5] Remove unneccessary 'out of memory' message
+Date: Sat, 29 Jul 2017 15:24:32 +0800
+Message-Id: <20170729072433.13194-5-sz.lin@moxa.com>
 In-Reply-To: <20170729072433.13194-1-sz.lin@moxa.com>
 References: <20170729072433.13194-1-sz.lin@moxa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,26 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ERROR: code indent should use tabs where possible
-+^I^I         "Need to wait for TPM to finish\n");$
+WARNING: Possible unnecessary 'out of memory' message
++                       if (!ibmvtpm->rtce_buf) {
++                               dev_err(ibmvtpm->dev, "Failed to allocate memory for rtce buffer\n");
+
+WARNING: Possible unnecessary 'out of memory' message
++       if (!ibmvtpm) {
++               dev_err(dev, "kzalloc for ibmvtpm failed\n");
 
 Signed-off-by: SZ Lin <sz.lin@moxa.com>
 ---
- drivers/char/tpm/tpm_ibmvtpm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/char/tpm/tpm_ibmvtpm.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index f01d083eced2..23913fc86158 100644
+index e53b9fb517d9..e75a674b44ac 100644
 --- a/drivers/char/tpm/tpm_ibmvtpm.c
 +++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -127,7 +127,7 @@ static int tpm_ibmvtpm_send(struct tpm_chip *chip, u8 *buf, size_t count)
+@@ -501,10 +501,8 @@ static void ibmvtpm_crq_process(struct ibmvtpm_crq *crq,
+ 			ibmvtpm->rtce_size = be16_to_cpu(crq->len);
+ 			ibmvtpm->rtce_buf = kmalloc(ibmvtpm->rtce_size,
+ 						    GFP_ATOMIC);
+-			if (!ibmvtpm->rtce_buf) {
+-				dev_err(ibmvtpm->dev, "Failed to allocate memory for rtce buffer\n");
++			if (!ibmvtpm->rtce_buf)
+ 				return;
+-			}
  
- 	if (ibmvtpm->tpm_processing_cmd) {
- 		dev_info(ibmvtpm->dev,
--		         "Need to wait for TPM to finish\n");
-+			"Need to wait for TPM to finish\n");
- 		/* wait for previous command to finish */
- 		sig = wait_event_interruptible(ibmvtpm->wq, !ibmvtpm->tpm_processing_cmd);
- 		if (sig)
+ 			ibmvtpm->rtce_dma_handle = dma_map_single(ibmvtpm->dev,
+ 				ibmvtpm->rtce_buf, ibmvtpm->rtce_size,
+@@ -584,10 +582,8 @@ static int tpm_ibmvtpm_probe(struct vio_dev *vio_dev,
+ 		return PTR_ERR(chip);
+ 
+ 	ibmvtpm = kzalloc(sizeof(struct ibmvtpm_dev), GFP_KERNEL);
+-	if (!ibmvtpm) {
+-		dev_err(dev, "kzalloc for ibmvtpm failed\n");
++	if (!ibmvtpm)
+ 		goto cleanup;
+-	}
+ 
+ 	ibmvtpm->dev = dev;
+ 	ibmvtpm->vdev = vio_dev;
 -- 
 2.13.3
