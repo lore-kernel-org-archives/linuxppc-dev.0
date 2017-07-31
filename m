@@ -1,29 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLfhQ3l9RzDsVT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 23:00:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ram Pai <linuxram@us.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linux-arch@vger.kernel.org, corbet@lwn.net, arnd@arndb.de,
- linux-doc@vger.kernel.org, x86@kernel.org, dave.hansen@intel.com,
- linux-kernel@vger.kernel.org, mhocko@kernel.org, linux-mm@kvack.org,
- mingo@redhat.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
- linux-kselftest@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v6 20/62] powerpc: store and restore the pkey state across
- context switches
-In-Reply-To: <20170729233113.GH5664@ram.oc3035372033.ibm.com>
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-21-git-send-email-linuxram@us.ibm.com>
- <878tj94wfo.fsf@linux.vnet.ibm.com>
- <20170729233113.GH5664@ram.oc3035372033.ibm.com>
-Date: Mon, 31 Jul 2017 23:00:53 +1000
-Message-ID: <87wp6o4v7e.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLgHd58zlzDrjJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 23:27:57 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'SZ Lin' <sz.lin@moxa.com>, "ashleydlai@gmail.com" <ashleydlai@gmail.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "jarkko.sakkinen@linux.intel.com" <jarkko.sakkinen@linux.intel.com>,
+ "jgunthorpe@obsidianresearch.com" <jgunthorpe@obsidianresearch.com>,
+ "tpmdd-devel@lists.sourceforge.net" <tpmdd-devel@lists.sourceforge.net>,
+ "paulus@samba.org" <paulus@samba.org>, "peterhuewe@gmx.de"
+ <peterhuewe@gmx.de>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "tpmdd@selhorst.ne" <tpmdd@selhorst.ne>
+Subject: RE: [PATCH 1/5] Fix packed and aligned attribute warnings.
+Date: Mon, 31 Jul 2017 13:27:47 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0047420@AcuExch.aculab.com>
+References: <20170729072433.13194-1-sz.lin@moxa.com>
+ <20170729072433.13194-2-sz.lin@moxa.com>
+In-Reply-To: <20170729072433.13194-2-sz.lin@moxa.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
-> On Thu, Jul 27, 2017 at 02:32:59PM -0300, Thiago Jung Bauermann wrote:
->> Ram Pai <linuxram@us.ibm.com> writes:
->> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
->> > index 2ad725e..9429361 100644
->> > --- a/arch/powerpc/kernel/process.c
->> > +++ b/arch/powerpc/kernel/process.c
->> > @@ -1096,6 +1096,11 @@ static inline void save_sprs(struct thread_struct *t)
->> >  		t->tar = mfspr(SPRN_TAR);
->> >  	}
->> >  #endif
->> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
->> > +	t->amr = mfspr(SPRN_AMR);
->> > +	t->iamr = mfspr(SPRN_IAMR);
->> > +	t->uamor = mfspr(SPRN_UAMOR);
->> > +#endif
->> >  }
->> >
->> >  static inline void restore_sprs(struct thread_struct *old_thread,
->> > @@ -1131,6 +1136,14 @@ static inline void restore_sprs(struct thread_struct *old_thread,
->> >  			mtspr(SPRN_TAR, new_thread->tar);
->> >  	}
->> >  #endif
->> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
->> > +	if (old_thread->amr != new_thread->amr)
->> > +		mtspr(SPRN_AMR, new_thread->amr);
->> > +	if (old_thread->iamr != new_thread->iamr)
->> > +		mtspr(SPRN_IAMR, new_thread->iamr);
->> > +	if (old_thread->uamor != new_thread->uamor)
->> > +		mtspr(SPRN_UAMOR, new_thread->uamor);
->> > +#endif
->> >  }
->> 
->> Shouldn't the saving and restoring of the SPRs be guarded by a check for
->> whether memory protection keys are enabled? What happens when trying to
->> access these registers on a CPU which doesn't have them?
->
-> Good point. need to guard it.  However; i think, these registers have been
-> available since power6.
+From: SZ Lin
+> Sent: 29 July 2017 08:24
+...
+> diff --git a/drivers/char/tpm/tpm_ibmvtpm.h b/drivers/char/tpm/tpm_ibmvtp=
+m.h
+> index 91dfe766d080..9f708ca3dc84 100644
+> --- a/drivers/char/tpm/tpm_ibmvtpm.h
+> +++ b/drivers/char/tpm/tpm_ibmvtpm.h
+> @@ -25,7 +25,7 @@ struct ibmvtpm_crq {
+>  	__be16 len;
+>  	__be32 data;
+>  	__be64 reserved;
+> -} __attribute__((packed, aligned(8)));
+> +} __packed __aligned(8);
 
-The kernel runs on CPUs much older than that.
+You can't need __packed and __aligned(8) on that structure.
+There are no gaps and you are saying it is always aligned.
 
-IAMR was added on Power8.
+So just remove the pointless attributes.
 
-And performance is also an issue, so we should only switch them when we
-need to.
-
-cheers
+	David
