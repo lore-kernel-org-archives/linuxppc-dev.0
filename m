@@ -1,31 +1,34 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLr1Q57X9zDsQ8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 06:01:13 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6VJx4KD174373
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 16:01:11 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c26dsx97j-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLr1W3011zDsRq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 06:01:19 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6VJx1gl089125
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 16:01:16 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c27csudn3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 16:01:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 16:01:16 -0400
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 31 Jul 2017 16:01:10 -0400
-Subject: [RFC PATCH 0/3] Separate LMB data from device tree format
+ Mon, 31 Jul 2017 16:01:15 -0400
+Subject: [RFC PATCH 1/3] powerpc/numa: Get device node whenn retreiving
+ associativity arrays
 To: linuxppc-dev@lists.ozlabs.org
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 Cc: jallen@linux.vnet.ibm.com, mwb@linux.vnet.ibm.com
-Date: Mon, 31 Jul 2017 15:48:09 -0400
+Date: Mon, 31 Jul 2017 15:48:15 -0400
+In-Reply-To: <20170731193259.8956.18833.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+References: <20170731193259.8956.18833.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20170731193259.8956.18833.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Message-Id: <20170731194815.8956.88849.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,58 +38,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the upcoming introduction of a new device tree property format
-for memory (ibm,dynamic-memory-v2), we should separate LMB data
-from the device tree format used to represent them. Doing this
-allows any consumer of LMB information, currently the mm/numa
-and pseries/hotplug-memory code, to access it directly without
-having to worry about device tree format and how to parse it.
+When we move to using the kernel lmb structs instead of accessing
+the device tree directly for LMB information we will no longer have
+a pointer to the device node for memory to pass to of_get_assoc_arrays().
 
-This patch set attempts to solve this by creating an array of LMB
-information at boot time which holds all relevant data presented in
-the device tree for each LMB; base address, drc index, associativity
-array index, and flags.
+This patch updates of_get_assoc_arrays() to no longer take a device node
+pointer and does the lookup of the memory device node itself.
 
-The first two patches are small updates to two routines to have them
-look up the memory device node instead of having it passed to them.
-This is needed since the new code will not need to look at the
-device tree when getting LMB information.
-
-The third patch introduces the new LMB data array in lmb.h and the
-set of routines needed to initialize and access the array. The data
-is intialized from parse_numa_properties() and the routines in numa.c
-are updated to use the new LMB array.
-
-A few notes:
-
-This code has only been boot-tested. I would like to get some feedback
-on this approach before venturing too far down this design path.
-
-I considered intializing the lmb array in prom.c to avoid having to
-write a new routine there to parse the -v2 property. My concern is
-allocating the array for this information that early in boot, the
-number of LMBs can get very large on systems with 16, 32 TB.
-
-The code for memory DLPAR (pseries/hotplug-memory.c) still needs
-to be updated to use the new LMB array.
-
-
-Any thoughts, feedback, comments (good and bad) would be appreciated.
-
-Thanks,
--Nathan
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
+ arch/powerpc/mm/numa.c |   18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-Nathan Fontenot (3):
-      powerpc/numa: Get device node whenn retreiving associativity arrays
-      powerpc/numa: Get device node whenn retreiving usm memory
-      powerpc/mm: Separate LMB information from device tree format
-
-
- arch/powerpc/include/asm/lmb.h |   44 ++++++++
- arch/powerpc/mm/Makefile       |    2 
- arch/powerpc/mm/lmb.c          |  146 ++++++++++++++++++++++++++++
- arch/powerpc/mm/numa.c         |  211 ++++++++++------------------------------
- 4 files changed, 244 insertions(+), 159 deletions(-)
- create mode 100644 arch/powerpc/include/asm/lmb.h
- create mode 100644 arch/powerpc/mm/lmb.c
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 371792e..9c21953 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -466,19 +466,27 @@ struct assoc_arrays {
+  * indicating the size of each associativity array, followed by a list
+  * of N associativity arrays.
+  */
+-static int of_get_assoc_arrays(struct device_node *memory,
+-			       struct assoc_arrays *aa)
++static int of_get_assoc_arrays(struct assoc_arrays *aa)
+ {
++	struct device_node *memory;
+ 	const __be32 *prop;
+ 	u32 len;
+ 
++	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!memory)
++		return -1;
++
+ 	prop = of_get_property(memory, "ibm,associativity-lookup-arrays", &len);
+-	if (!prop || len < 2 * sizeof(unsigned int))
++	if (!prop || len < 2 * sizeof(unsigned int)) {
++		of_node_put(memory);
+ 		return -1;
++	}
+ 
+ 	aa->n_arrays = of_read_number(prop++, 1);
+ 	aa->array_sz = of_read_number(prop++, 1);
+ 
++	of_node_put(memory);
++
+ 	/* Now that we know the number of arrays and size of each array,
+ 	 * revalidate the size of the property read in.
+ 	 */
+@@ -661,7 +669,7 @@ static void __init parse_drconf_memory(struct device_node *memory)
+ 	if (!lmb_size)
+ 		return;
+ 
+-	rc = of_get_assoc_arrays(memory, &aa);
++	rc = of_get_assoc_arrays(&aa);
+ 	if (rc)
+ 		return;
+ 
+@@ -996,7 +1004,7 @@ static int hot_add_drconf_scn_to_nid(struct device_node *memory,
+ 	if (!lmb_size)
+ 		return -1;
+ 
+-	rc = of_get_assoc_arrays(memory, &aa);
++	rc = of_get_assoc_arrays(&aa);
+ 	if (rc)
+ 		return -1;
+ 
