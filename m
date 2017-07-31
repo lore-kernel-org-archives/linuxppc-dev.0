@@ -1,21 +1,41 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLMdG3YZKzDrJP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 11:42:10 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id t83so37100pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 18:42:10 -0700 (PDT)
-Message-ID: <1501465323.3751.0.camel@gmail.com>
-Subject: Re: [PATCH v4 1/5] powerpc/lib/sstep: Add cmpb instruction emulation
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 31 Jul 2017 11:42:03 +1000
-In-Reply-To: <20170731005826.32044-1-matthew.brown.dev@gmail.com>
-References: <20170731005826.32044-1-matthew.brown.dev@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLNZ92kXdzDrLX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 12:24:33 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6V2NsYs008404
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 22:24:30 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c11c7tqw8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 22:24:30 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Mon, 31 Jul 2017 12:24:28 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6V2OPxY33357912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 12:24:25 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6V2OOR3013440
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 12:24:25 +1000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH V9 0/3] powernv : Add support for OPAL-OCC command/response
+ interface
+Date: Mon, 31 Jul 2017 07:54:15 +0530
+Message-Id: <1501467858-8887-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +45,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-07-31 at 10:58 +1000, Matt Brown wrote:
-> This patch adds emulation of the cmpb instruction, enabling xmon to
-> emulate this instruction.
-> Tested for correctness against the cmpb asm instruction on ppc64le.
-> 
-> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+In P9, OCC (On-Chip-Controller) supports shared memory based
+commad-response interface. Within the shared memory there is an OPAL
+command buffer and OCC response buffer that can be used to send
+inband commands to OCC. The following commands are supported:
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+1) Set system powercap
+2) Set CPU-GPU power shifting ratio
+3) Clear min/max for OCC sensor groups
 
-> ---
-> v2: 
-> 	- fixed opcode
-> 	- fixed mask typecasting
-> ---
->  arch/powerpc/lib/sstep.c | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> index 33117f8..87d277f 100644
-> --- a/arch/powerpc/lib/sstep.c
-> +++ b/arch/powerpc/lib/sstep.c
-> @@ -596,6 +596,22 @@ static nokprobe_inline void do_cmp_unsigned(struct pt_regs *regs, unsigned long
->  	regs->ccr = (regs->ccr & ~(0xf << shift)) | (crval << shift);
->  }
->  
-> +static nokprobe_inline void do_cmpb(struct pt_regs *regs, unsigned long v1,
-> +				unsigned long v2, int rd)
-> +{
-> +	unsigned long long out_val, mask;
-> +	int i;
-> +
-> +	out_val = 0;
-> +	for (i = 0; i < 8; i++) {
-> +		mask = 0xffUL << (i * 8);
-> +		if ((v1 & mask) == (v2 & mask))
-> +			out_val |= mask;
-> +	}
-> +
-> +	regs->gpr[rd] = out_val;
-> +}
-> +
->  static nokprobe_inline int trap_compare(long v1, long v2)
->  {
->  	int ret = 0;
-> @@ -1049,6 +1065,10 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
->  			do_cmp_unsigned(regs, val, val2, rd >> 2);
->  			goto instr_done;
->  
-> +		case 508: /* cmpb */
-> +			do_cmpb(regs, regs->gpr[rd], regs->gpr[rb], ra);
-> +			goto instr_done;
-> +
->  /*
->   * Arithmetic instructions
->   */
+Shilpasri G Bhat (3):
+  powernv: powercap: Add support for powercap framework
+  powernv: Add support to set power-shifting-ratio
+  powernv: Add support to clear sensor groups data
+
+ arch/powerpc/include/asm/opal-api.h            |   8 +-
+ arch/powerpc/include/asm/opal.h                |   9 +
+ arch/powerpc/include/uapi/asm/opal-occ.h       |  23 +++
+ arch/powerpc/platforms/powernv/Makefile        |   2 +-
+ arch/powerpc/platforms/powernv/opal-occ.c      | 115 ++++++++++++
+ arch/powerpc/platforms/powernv/opal-powercap.c | 243 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-psr.c      | 173 ++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   5 +
+ arch/powerpc/platforms/powernv/opal.c          |  10 +
+ 9 files changed, 586 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/opal-occ.h
+ create mode 100644 arch/powerpc/platforms/powernv/opal-occ.c
+ create mode 100644 arch/powerpc/platforms/powernv/opal-powercap.c
+ create mode 100644 arch/powerpc/platforms/powernv/opal-psr.c
+
+-- 
+1.8.3.1
