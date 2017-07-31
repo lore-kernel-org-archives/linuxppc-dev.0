@@ -1,15 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLV3J4Ds3zDrJh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 16:31:40 +1000 (AEST)
-In-Reply-To: <1500443053-1264-1-git-send-email-gromero@linux.vnet.ibm.com>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLV3K05HJzDrJh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 16:31:41 +1000 (AEST)
+In-Reply-To: <1501046800-6690-1-git-send-email-alistair@popple.id.au>
+To: Alistair Popple <alistair@popple.id.au>, ruscur@russell.cc,
+ benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: cyrilbur@gmail.com, Gustavo Romero <gromero@linux.vnet.ibm.com>
-Subject: Re: powerpc/tm: fix TM SPRs in code dump file
-Message-Id: <3xLV3J3Yrjz9tW3@ozlabs.org>
+Cc: Alistair Popple <alistair@popple.id.au>
+Subject: Re: powerpc/powernv/pci: Return failure for some uses of
+ dma_set_mask()
+Message-Id: <3xLV3J5Sl6z9tWD@ozlabs.org>
 Date: Mon, 31 Jul 2017 16:31:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,19 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-07-19 at 05:44:13 UTC, Gustavo Romero wrote:
-> Currently flush_tmregs_to_thread() does not update accordingly the thread
-> structures from live state before a core dump rendering wrong values of
-> THFAR, TFIAR, and TEXASR in core dump files.
+On Wed, 2017-07-26 at 05:26:40 UTC, Alistair Popple wrote:
+> Commit 8e3f1b1d8255 ("powerpc/powernv/pci: Enable 64-bit devices to access
+> >4GB DMA space") introduced the ability for PCI device drivers to request a
+> DMA mask between 64 and 32 bits and actually get a mask greater than
+> 32-bits. However currently if certain machine configuration dependent
+> conditions are not meet the code silently falls back to a 32-bit mask.
 > 
-> That commit fixes it by copying from live state to the appropriate thread
-> structures when it's necessary.
+> This makes it hard for device drivers to detect which mask they actually
+> got. Instead we should return an error when the request could not be
+> fulfilled which allows drivers to either fallback or implement other
+> workarounds as documented in DMA-API-HOWTO.txt.
 > 
-> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
-> Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Acked-by: Russell Currey <ruscur@russell.cc>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/cd63f3cf1d59b7ad8419eba1cac8f9
+https://git.kernel.org/powerpc/c/253fd51e2f533552ae35a0c661705d
 
 cheers
