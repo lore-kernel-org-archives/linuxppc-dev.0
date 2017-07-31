@@ -3,40 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLWWb0dyrzDrnG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:37:46 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLWgj5FlzzDsPX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:44:49 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6V7YS80142192
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 03:37:45 -0400
+ v6V7iQOb099214
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 03:44:46 -0400
 Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c1xugugkv-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c1w1wy4ry-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 03:37:44 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 03:44:46 -0400
 Received: from localhost
  by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Mon, 31 Jul 2017 17:37:42 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6V7aOd031588602
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:36:24 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6V7aEFS013420
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:36:15 +1000
+ Mon, 31 Jul 2017 17:44:43 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6V7iX3W27852990
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:44:41 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6V7i8Yf006380
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:44:09 +1000
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V9 1/3] powernv: powercap: Add support for powercap framework
-Date: Mon, 31 Jul 2017 13:06:03 +0530
-In-Reply-To: <1501486565-16079-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1501486565-16079-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1501486565-16079-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [RESEND][PATCH V10 1/3] powernv: powercap: Add support for powercap
+ framework
+Date: Mon, 31 Jul 2017 13:13:27 +0530
+In-Reply-To: <1501487009-16435-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1501487009-16435-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-Id: <1501487009-16435-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
