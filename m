@@ -1,44 +1,50 @@
-Return-Path: <javier@dowhile0.org>
-Received: from mail-io0-x235.google.com (mail-io0-x235.google.com
- [IPv6:2607:f8b0:4001:c06::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLl3T6blBzDqpF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 02:17:41 +1000 (AEST)
-Received: by mail-io0-x235.google.com with SMTP id g13so112671000ioj.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 09:17:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLl680yf6zDqr6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 02:19:59 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v6VGJTZT135242
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 12:19:57 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c27cshw90-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 12:19:57 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Mon, 31 Jul 2017 13:19:54 -0300
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v6VGJqn622413426
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 13:19:53 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v6VGJq1d026816
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 13:19:53 -0300
+References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
+ <1500177424-13695-22-git-send-email-linuxram@us.ibm.com>
+ <87shhgdx5i.fsf@linux.vnet.ibm.com>
+ <20170730005137.GK5664@ram.oc3035372033.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ arnd@arndb.de, corbet@lwn.net, mhocko@kernel.org,
+ dave.hansen@intel.com, mingo@redhat.com, paulus@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ khandual@linux.vnet.ibm.com
+Subject: Re: [RFC v6 21/62] powerpc: introduce execute-only pkey
+In-reply-to: <20170730005137.GK5664@ram.oc3035372033.ibm.com>
+Date: Mon, 31 Jul 2017 13:19:40 -0300
 MIME-Version: 1.0
-In-Reply-To: <20170731153009.xkjknygpmckv2pfp@ninjato>
-References: <20170615185418.13980-1-javier@dowhile0.org>
- <20170731153009.xkjknygpmckv2pfp@ninjato>
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Date: Mon, 31 Jul 2017 18:17:38 +0200
-Message-ID: <CABxcv=mdbE0QGjoi3aLzxRqM3-MbkQ_Ai6fShcGVUGSNNqqrqw@mail.gmail.com>
-Subject: Re: [RESEND PATCH v5 00/16] eeprom: at24: Add OF device ID table
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
- Florian Larysch <fl@n621.de>, David Lechner <david@lechnology.com>,
- Rob Herring <robh+dt@kernel.org>,
- Andy Shevchenko <andy.shevchenko@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
- Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
- Dinh Nguyen <dinguyen@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Will Deacon <will.deacon@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Joachim Eastwood <manabian@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Magnus Damm <magnus.damm@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <kernel@pengutronix.de>,
- Linux I2C <linux-i2c@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+Message-Id: <87efsw60kj.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,33 +54,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
 
-On Mon, Jul 31, 2017 at 5:30 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+Ram Pai <linuxram@us.ibm.com> writes:
+
+> On Fri, Jul 28, 2017 at 07:17:13PM -0300, Thiago Jung Bauermann wrote:
+>> 
+>> Ram Pai <linuxram@us.ibm.com> writes:
+>> > --- a/arch/powerpc/mm/pkeys.c
+>> > +++ b/arch/powerpc/mm/pkeys.c
+>> > @@ -97,3 +97,60 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+>> >  	init_iamr(pkey, new_iamr_bits);
+>> >  	return 0;
+>> >  }
+>> > +
+>> > +static inline bool pkey_allows_readwrite(int pkey)
+>> > +{
+>> > +	int pkey_shift = pkeyshift(pkey);
+>> > +
+>> > +	if (!(read_uamor() & (0x3UL << pkey_shift)))
+>> > +		return true;
+>> > +
+>> > +	return !(read_amr() & ((AMR_RD_BIT|AMR_WR_BIT) << pkey_shift));
+>> > +}
+>> > +
+>> > +int __execute_only_pkey(struct mm_struct *mm)
+>> > +{
+>> > +	bool need_to_set_mm_pkey = false;
+>> > +	int execute_only_pkey = mm->context.execute_only_pkey;
+>> > +	int ret;
+>> > +
+>> > +	/* Do we need to assign a pkey for mm's execute-only maps? */
+>> > +	if (execute_only_pkey == -1) {
+>> > +		/* Go allocate one to use, which might fail */
+>> > +		execute_only_pkey = mm_pkey_alloc(mm);
+>> > +		if (execute_only_pkey < 0)
+>> > +			return -1;
+>> > +		need_to_set_mm_pkey = true;
+>> > +	}
+>> > +
+>> > +	/*
+>> > +	 * We do not want to go through the relatively costly
+>> > +	 * dance to set AMR if we do not need to.  Check it
+>> > +	 * first and assume that if the execute-only pkey is
+>> > +	 * readwrite-disabled than we do not have to set it
+>> > +	 * ourselves.
+>> > +	 */
+>> > +	if (!need_to_set_mm_pkey &&
+>> > +	    !pkey_allows_readwrite(execute_only_pkey))
+> 		^^^^^
+> 	Here uamor and amr is read once each.
+
+You are right. What confused me was that the call to mm_pkey_alloc above
+also reads uamor and amr (and also iamr, and writes to all of those) but
+if that function is called, then need_to_set_mm_pkey is true and
+pkey_allows_readwrite won't be called.
+
+>> > +		return execute_only_pkey;
+>> > +
+>> > +	/*
+>> > +	 * Set up AMR so that it denies access for everything
+>> > +	 * other than execution.
+>> > +	 */
+>> > +	ret = __arch_set_user_pkey_access(current, execute_only_pkey,
+>> > +			(PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
+> 		^^^^^^^
+> 		here amr and iamr are written once each if the
+> 		the function returns successfully.
+
+__arch_set_user_pkey_access also reads uamor for the second time in its
+call to is_pkey_enabled, and reads amr for the second time as well in
+its calls to init_amr. The first reads are in either
+pkey_allows_readwrite or pkey_status_change (called from
+__arch_activate_pkey).
+
+If need_to_set_mm_pkey is true, then the iamr read in init_iamr is the
+2nd one during __execute_only_pkey's execution. In this case the writes
+to amr and iamr will be the 2nd ones as well. The first reads and writes
+are in pkey_status_change.
+
+>> > +	/*
+>> > +	 * If the AMR-set operation failed somehow, just return
+>> > +	 * 0 and effectively disable execute-only support.
+>> > +	 */
+>> > +	if (ret) {
+>> > +		mm_set_pkey_free(mm, execute_only_pkey);
+> 		^^^
+> 		here only if __arch_set_user_pkey_access() fails
+> 		amr and iamr and uamor will be written once each.
+
+I assume the error case isn't perfomance sensitive and didn't account
+for mm_set_pkey_free in my analysis.
+
+>> > +		return -1;
+>> > +	}
+>> > +
+>> > +	/* We got one, store it and use it from here on out */
+>> > +	if (need_to_set_mm_pkey)
+>> > +		mm->context.execute_only_pkey = execute_only_pkey;
+>> > +	return execute_only_pkey;
+>> > +}
+>> 
+>> If you follow the code flow in __execute_only_pkey, the AMR and UAMOR
+>> are read 3 times in total, and AMR is written twice. IAMR is read and
+>> written twice. Since they are SPRs and access to them is slow (or isn't
+>> it?), is it worth it to read them once in __execute_only_pkey and pass
+>> down their values to the callees, and then write them once at the end of
+>> the function?
 >
->> Patches can be applied independently since the DTS changes without driver
->> changes are no-op and the OF table won't be used without the DTS changes.
->
-> But there is a dependency, no? If I apply the driver patch,
-> non-converted device trees will not find their eeproms anymore. So, I
+> If my calculations are right: 
+> 	uamor may be read once and may be written once.
+> 	amr may be read once and is written once.
+> 	iamr is written once.
+> So not that bad, i think.
 
-I don't think that's correct. If you apply this patch before the DTS
-changes, the driver will still match using the I2C device ID table
-like it has been doing it until today.
+If I'm following the code correctly:
+    if need_to_set_mm_pkey = true:
+        uamor is read twice and written once.
+        amr is read twice and written twice.
+        iamr is read twice and written twice.
+    if need_to_set_mm_pkey = false:
+        uamor is read twice.
+        amr is read once or twice (depending on the value of uamor) and written once.
+        iamr is read once and written once.
 
-IOW, this is what will happen:
-
-1- an OF device is registered with the wrong compatible (not found in
-the OF table)
-2- the I2C core strips the vendor part and fills the struct i2c_client
-.name with the device part.
-3- i2c_device_match() will be called since a new device has been registered
-4- i2c_of_match_device() will fail because there's no OF entry that
-matches the device compatible
-5- the I2C core fallbacks to i2c_match_id() and matches using the I2C
-device ID table.
-
-So no noticeable difference AFAICT in that case.
-
-Best regards,
-Javier
+-- 
+Thiago Jung Bauermann
+IBM Linux Technology Center
