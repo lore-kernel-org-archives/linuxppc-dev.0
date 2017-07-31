@@ -1,42 +1,23 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLXck5x2HzDrK8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 18:27:18 +1000 (AEST)
-Date: Mon, 31 Jul 2017 10:26:31 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 10/17] resource: Provide resource struct in
- resource walk callback
-Message-ID: <20170731082631.GA8672@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-11-brijesh.singh@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLXxL3PDqzDqBf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 18:41:41 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/asm/cacheflush: Cleanup cacheflush function params
+To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-ide@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-mmc@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-usb@vger.kernel.org
+References: <20170720062850.2195-1-matthew.brown.dev@gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <25421c43-7371-c23e-e784-f4df61400cd0@c-s.fr>
+Date: Mon, 31 Jul 2017 10:41:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170724190757.11278-11-brijesh.singh@amd.com>
+In-Reply-To: <20170720062850.2195-1-matthew.brown.dev@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,32 +27,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 24, 2017 at 02:07:50PM -0500, Brijesh Singh wrote:
-> From: Tom Lendacky <thomas.lendacky@amd.com>
+
+
+Le 20/07/2017 à 08:28, Matt Brown a écrit :
+> The cacheflush prototypes currently use start and stop values and each
+> call requires typecasting the address to an unsigned long.
+> This patch changes the cacheflush prototypes to follow the x86 style of
+> using a base and size values, with base being a void pointer.
 > 
-> In prep for a new function that will need additional resource information
-> during the resource walk, update the resource walk callback to pass the
-> resource structure.  Since the current callback start and end arguments
-> are pulled from the resource structure, the callback functions can obtain
-> them from the resource structure directly.
+> All callers of the cacheflush functions, including drivers, have been
+> modified to conform to the new prototypes.
 > 
-> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> The 64 bit cacheflush functions which were implemented in assembly code
+> (flush_dcache_range, flush_inval_dcache_range) have been translated into
+> C for readability and coherence.
+> 
+> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
 > ---
->  arch/powerpc/kernel/machine_kexec_file_64.c | 12 +++++++++---
->  arch/x86/kernel/crash.c                     | 18 +++++++++---------
->  arch/x86/kernel/pmem.c                      |  2 +-
->  include/linux/ioport.h                      |  4 ++--
->  include/linux/kexec.h                       |  2 +-
->  kernel/kexec_file.c                         |  5 +++--
->  kernel/resource.c                           |  9 +++++----
->  7 files changed, 30 insertions(+), 22 deletions(-)
+>   arch/powerpc/include/asm/cacheflush.h        | 47 +++++++++++++++++--------
+>   arch/powerpc/kernel/misc_64.S                | 52 ----------------------------
+>   arch/powerpc/mm/dma-noncoherent.c            | 15 ++++----
+>   arch/powerpc/platforms/512x/mpc512x_shared.c | 10 +++---
+>   arch/powerpc/platforms/85xx/smp.c            |  6 ++--
+>   arch/powerpc/sysdev/dart_iommu.c             |  5 +--
+>   drivers/ata/pata_bf54x.c                     |  3 +-
+>   drivers/char/agp/uninorth-agp.c              |  6 ++--
+>   drivers/gpu/drm/drm_cache.c                  |  3 +-
+>   drivers/macintosh/smu.c                      | 15 ++++----
+>   drivers/mmc/host/bfin_sdh.c                  |  3 +-
+>   drivers/mtd/nand/bf5xx_nand.c                |  6 ++--
+>   drivers/soc/fsl/qbman/dpaa_sys.h             |  2 +-
+>   drivers/soc/fsl/qbman/qman_ccsr.c            |  3 +-
+>   drivers/spi/spi-bfin5xx.c                    | 10 +++---
+>   drivers/tty/serial/mpsc.c                    | 46 ++++++++----------------
+>   drivers/usb/musb/blackfin.c                  |  6 ++--
+>   17 files changed, 86 insertions(+), 152 deletions(-)
+> 
 
-Reviewed-by: Borislav Petkov <bp@suse.de>
+[...]
 
--- 
-Regards/Gruss,
-    Boris.
+> diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+> index 3825284..5fd3171 100644
+> --- a/arch/powerpc/mm/dma-noncoherent.c
+> +++ b/arch/powerpc/mm/dma-noncoherent.c
+> @@ -204,9 +204,9 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
+>   	 * kernel direct-mapped region for device DMA.
+>   	 */
+>   	{
+> -		unsigned long kaddr = (unsigned long)page_address(page);
+> +		void *kaddr = page_address(page);
+>   		memset(page_address(page), 0, size);
+> -		flush_dcache_range(kaddr, kaddr + size);
+> +		flush_dcache_range(kaddr, size);
+>   	}
+>   
+>   	/*
+> @@ -316,9 +316,6 @@ EXPORT_SYMBOL(__dma_free_coherent);
+>    */
+>   void __dma_sync(void *vaddr, size_t size, int direction)
+>   {
+> -	unsigned long start = (unsigned long)vaddr;
+> -	unsigned long end   = start + size;
+> -
+>   	switch (direction) {
+>   	case DMA_NONE:
+>   		BUG();
+> @@ -328,15 +325,15 @@ void __dma_sync(void *vaddr, size_t size, int direction)
+>   		 * the potential for discarding uncommitted data from the cache
+>   		 */
+>   		if ((start | end) & (L1_CACHE_BYTES - 1))
 
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+How can the above compile when 'start' and 'end' are removed ?
+Shouldn't it be replaced by
+
+if ((vaddr | size) & (L1_CACHE_BYTES - 1))
+
+> -			flush_dcache_range(start, end);
+> +			flush_dcache_range(vaddr, size);
+>   		else
+> -			invalidate_dcache_range(start, end);
+> +			invalidate_dcache_range(vaddr, size);
+>   		break;
+>   	case DMA_TO_DEVICE:		/* writeback only */
+> -		clean_dcache_range(start, end);
+> +		clean_dcache_range(vaddr, size);
+>   		break;
+>   	case DMA_BIDIRECTIONAL:	/* writeback and invalidate */
+> -		flush_dcache_range(start, end);
+> +		flush_dcache_range(vaddr, size);
+>   		break;
+>   	}
+>   }
+
+[...]
+
+Christophe
