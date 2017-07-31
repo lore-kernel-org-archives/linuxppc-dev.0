@@ -1,28 +1,25 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLcfV3rlwzDsRN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 21:29:06 +1000 (AEST)
-Date: Mon, 31 Jul 2017 12:09:08 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: David Miller <davem@davemloft.net>, <dzickus@redhat.com>,
- <sfr@canb.auug.org.au>, <linuxarm@huawei.com>, <npiggin@gmail.com>,
- <abdhalee@linux.vnet.ibm.com>, <sparclinux@vger.kernel.org>,
- <akpm@linux-foundation.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170731120908.00002e28@huawei.com>
-In-Reply-To: <20170726231505.GG3730@linux.vnet.ibm.com>
-References: <20170726.095432.169004918437663011.davem@davemloft.net>
- <20170726175013.GT3730@linux.vnet.ibm.com>
- <20170726223658.GA27617@linux.vnet.ibm.com>
- <20170726.154540.150558937277891719.davem@davemloft.net>
- <20170726231505.GG3730@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLcrR21ctzDsSL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 21:37:43 +1000 (AEST)
+Subject: Re: [PATCH 23/24] powerpc/mm: Cleanup check for stack expansion
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20170719044946.22030-1-benh@kernel.crashing.org>
+ <20170719044946.22030-23-benh@kernel.crashing.org>
+ <20170721185947.Horde.e8_0DAuKLUb1znI0Zfx-aQ2@messagerie.c-s.fr>
+ <87pocqjemx.fsf@concordia.ellerman.id.au>
+ <20170724193402.Horde.6aHXbQVl2cfpW3l9leYB8Q2@messagerie.c-s.fr>
+ <87379k7oh8.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <05ff40cc-0247-1be9-9b68-f8c6c1e740f7@c-s.fr>
+Date: Mon, 31 Jul 2017 13:37:37 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <87379k7oh8.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,74 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Jul 2017 16:15:05 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-> On Wed, Jul 26, 2017 at 03:45:40PM -0700, David Miller wrote:
-> > From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> > Date: Wed, 26 Jul 2017 15:36:58 -0700
-> >   
-> > > And without CONFIG_SOFTLOCKUP_DETECTOR, I see five runs of 24 with RCU
-> > > CPU stall warnings.  So it seems likely that CONFIG_SOFTLOCKUP_DETECTOR
-> > > really is having an effect.  
-> > 
-> > Thanks for all of the info Paul, I'll digest this and scan over the
-> > code myself.
-> > 
-> > Just out of curiousity, what x86 idle method is your machine using?
-> > The mwait one or the one which simply uses 'halt'?  The mwait variant
-> > might mask this bug, and halt would be a lot closer to how sparc64 and
-> > Jonathan's system operates.  
-> 
-> My kernel builds with CONFIG_INTEL_IDLE=n, which I believe means that
-> I am not using the mwait one.  Here is a grep for IDLE in my .config:
-> 
-> 	CONFIG_NO_HZ_IDLE=y
-> 	CONFIG_GENERIC_SMP_IDLE_THREAD=y
-> 	# CONFIG_IDLE_PAGE_TRACKING is not set
-> 	CONFIG_ACPI_PROCESSOR_IDLE=y
-> 	CONFIG_CPU_IDLE=y
-> 	# CONFIG_CPU_IDLE_GOV_LADDER is not set
-> 	CONFIG_CPU_IDLE_GOV_MENU=y
-> 	# CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is not set
-> 	# CONFIG_INTEL_IDLE is not set
-> 
-> > On sparc64 the cpu yield we do in the idle loop sleeps the cpu.  It's
-> > local TICK register keeps advancing, and the local timer therefore
-> > will still trigger.  Also, any externally generated interrupts
-> > (including cross calls) will wake up the cpu as well.
-> > 
-> > The tick-sched code is really tricky wrt. NO_HZ even in the NO_HZ_IDLE
-> > case.  One of my running theories is that we miss scheduling a tick
-> > due to a race.  That would be consistent with the behavior we see
-> > in the RCU dumps, I think.  
-> 
-> But wouldn't you have to miss a -lot- of ticks to get an RCU CPU stall
-> warning?  By default, your grace period needs to extend for more than
-> 21 seconds (more than one-third of a -minute-) to get one.  Or do
-> you mean that the ticks get shut off now and forever, as opposed to
-> just losing one of them?
-> 
-> > Anyways, just a theory, and that's why I keep mentioning that commit
-> > about the revert of the revert (specifically
-> > 411fe24e6b7c283c3a1911450cdba6dd3aaea56e).
-> > 
-> > :-)  
-> 
-> I am running an overnight test in preparation for attempting to push
-> some fixes for regressions into 4.12, but will try reverting this
-> and enabling CONFIG_HZ_PERIODIC tomorrow.
-> 
-> Jonathan, might the commit that Dave points out above be what reduces
-> the probability of occurrence as you test older releases?
-I just got around to trying this out of curiosity.  Superficially it did
-appear to possibly make the issue harder to hit took over 30 minutes
-but the issue otherwise looks much the same with or without that patch.
 
-Just out of curiosity, next thing on my list is to disable hrtimers entirely
-and see what happens.
-
-Jonathan
+Le 25/07/2017 à 13:19, Michael Ellerman a écrit :
+> LEROY Christophe <christophe.leroy@c-s.fr> writes:
 > 
-> 							Thanx, Paul
+>> Michael Ellerman <mpe@ellerman.id.au> a écrit :
+>>
+>>> LEROY Christophe <christophe.leroy@c-s.fr> writes:
+>>>
+>>>> Benjamin Herrenschmidt <benh@kernel.crashing.org> a écrit :
+>>>>
+>>>>> When hitting below a VM_GROWSDOWN vma (typically growing the stack),
+>>>>> we check whether it's a valid stack-growing instruction and we
+>>>>> check the distance to GPR1. This is largely open coded with lots
+>>>>> of comments, so move it out to a helper.
+>>>>
+>>>> Did you have a look at the following patch ? It's been waiting for
+>>>> application for some weeks now.
+>>>> https://patchwork.ozlabs.org/patch/771869
+>>>
+>>> I actually merged it last merge window, but found I had no good way to
+>>> test it, so I took it out again until I can write a test case for it.
+>>>
+>>> The way I realised it wasn't being tested was by removing all the
+>>> store_updates_sp logic entirely and having my system run happily for
+>>> several days :}
+>>
+>> Which demonstrates how unlikely this is, hence doing that get_user()
+>> at every fault is waste of time.
+> 
+> Yes I agree.
+> 
+>> How do you plan to handle that in parralele to ben's serie ?
+> 
+> Not sure :)
+> 
+>> I'll be back from vacation next week and may help finding a way to
+>> test that. (A test program using alloca() ?)
+> 
+> I was thinking hand-crafted asm, but that might be a pain to get working
+> for 32 & 64-bit, in which case alloca() might work.
+
+No need of very sofisticated thing indeed.
+The following app makes the trick. If I modify store_updates_sp() to 
+always return 0, the app gets a SIGSEGV.
+
+#include <stdlib.h>
+#include <stdio.h>
+
+int main(int argc, char **argv)
+{
+	char buf[1024 * 1025];
+
+	sprintf(buf, "Hello world !\n");
+	printf(buf);
+
+	exit(0);
+}
+
+Christophe
+
+> 
+> cheers
 > 
