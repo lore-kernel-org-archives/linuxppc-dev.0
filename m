@@ -2,22 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLbDc3R6PzDsRR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 20:25:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLbVp3grQzDrfj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 20:37:22 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: SZ Lin <sz.lin@moxa.com>, ashleydlai@gmail.com
-Cc: benh@kernel.crashing.org, paulus@samba.org, peterhuewe@gmx.de,
- tpmdd@selhorst.ne, jarkko.sakkinen@linux.intel.com,
- jgunthorpe@obsidianresearch.com, tpmdd-devel@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- SZ Lin <sz.lin@moxa.com>
-Subject: Re: [PATCH 2/5] Fix "ERROR: code indent should use tabs where
- possible"
-In-Reply-To: <20170729072433.13194-3-sz.lin@moxa.com>
-References: <20170729072433.13194-1-sz.lin@moxa.com>
- <20170729072433.13194-3-sz.lin@moxa.com>
-Date: Mon, 31 Jul 2017 20:25:03 +1000
-Message-ID: <87bmo06gzk.fsf@concordia.ellerman.id.au>
+To: Qiang Zhao <qiang.zhao@nxp.com>, "oss\@buserror.net" <oss@buserror.net>
+Cc: "valentin.longchamp\@keymile.com" <valentin.longchamp@keymile.com>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2] qe: fix compile issue for arm64
+In-Reply-To: <AM3PR04MB118514C540F2A3FF383FC4AD91BF0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1500867555-36277-1-git-send-email-qiang.zhao@nxp.com>
+ <87o9s5dr6n.fsf@concordia.ellerman.id.au>
+ <AM3PR04MB118514C540F2A3FF383FC4AD91BF0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Date: Mon, 31 Jul 2017 20:37:21 +1000
+Message-ID: <877eyo6gf2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,28 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SZ Lin <sz.lin@moxa.com> writes:
+Qiang Zhao <qiang.zhao@nxp.com> writes:
 
-> ERROR: code indent should use tabs where possible
-> +^I^I         "Need to wait for TPM to finish\n");$
+> Fri 7/28/2017 2:14 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
-> Signed-off-by: SZ Lin <sz.lin@moxa.com>
-> ---
->  drivers/char/tpm/tpm_ibmvtpm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>> -----Original Message-----
+>> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+>> Sent: Friday, July 28, 2017 2:14 PM
+>> To: Qiang Zhao <qiang.zhao@nxp.com>; oss@buserror.net
+>> Cc: valentin.longchamp@keymile.com; linuxppc-dev@lists.ozlabs.org; linux-
+>> kernel@vger.kernel.org; Qiang Zhao <qiang.zhao@nxp.com>
+>> Subject: Re: [PATCH v2] qe: fix compile issue for arm64
+>> 
+>> Zhao Qiang <qiang.zhao@nxp.com> writes:
+>> 
+>> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+>> > ---
+>> > Changes for v2:
+>> > 	- include all Errata QE_General4 in #ifdef
+>> >
+>> >  drivers/soc/fsl/qe/qe.c | 2 ++
+>> >  1 file changed, 2 insertions(+)
+>> 
+>> AFAICS this driver can only be built on PPC, what am I missing?
+>> 
+>> config QUICC_ENGINE
+>>         bool "Freescale QUICC Engine (QE) Support"
+>>         depends on FSL_SOC && PPC32
+>> 
+>> cheers
 >
-> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-> index f01d083eced2..23913fc86158 100644
-> --- a/drivers/char/tpm/tpm_ibmvtpm.c
-> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
-> @@ -127,7 +127,7 @@ static int tpm_ibmvtpm_send(struct tpm_chip *chip, u8 *buf, size_t count)
->  
->  	if (ibmvtpm->tpm_processing_cmd) {
->  		dev_info(ibmvtpm->dev,
-> -		         "Need to wait for TPM to finish\n");
-> +			"Need to wait for TPM to finish\n");
+> I sent another patchset to support it on arm64.
 
-There's no reason for that to be on a separate line at all. Just make it
-a single line dev_info( ... );
+Where? I don't see it.
+
+Shouldn't this patch be part of that series? Otherwise when that series
+is merged the build will break on arm64.
 
 cheers
