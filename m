@@ -1,24 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLZnD61bFzDsSP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 20:04:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLb3Z3Jm0zDrCm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 20:17:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <oss@buserror.net>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- Kumar Gala <galak@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH] mpc832x_rdb: fix of_irq_to_resource() error check
-In-Reply-To: <1501379504.3739.4.camel@buserror.net>
-References: <20170729195217.214940504@cogentembedded.com>
- <1501379504.3739.4.camel@buserror.net>
-Date: Mon, 31 Jul 2017 20:04:47 +1000
-Message-ID: <87h8xs6hxc.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC PATCH] powerpc: improve accounting of non maskable interrupts
+In-Reply-To: <20170729132257.8132-1-npiggin@gmail.com>
+References: <20170729132257.8132-1-npiggin@gmail.com>
+Date: Mon, 31 Jul 2017 20:17:13 +1000
+Message-ID: <87efsw6hcm.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <oss@buserror.net> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Sat, 2017-07-29 at 22:52 +0300, Sergei Shtylyov wrote:
->> of_irq_to_resource() has recently been=C2=A0=C2=A0fixed to return negati=
-ve error #'s
->> along with 0 in case of failure,=C2=A0=C2=A0however the Freescale MPC832=
-x RDB board
->> code still only regards 0 as as failure indication -- fix it up.
->>=20
->> Fixes: 7a4228bbff76 ("of: irq: use of_irq_get() in of_irq_to_resource()")
->> Signed-off-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
->>=20
->> ---
->> The patch is against the 'master' branch of Scott Wood's 'linux.git' repo
->> (the 'fixes' branch is too much behind).
+> This fixes a case of double counting MCEs on PowerNV.
 >
-> The master branch is also old.  Those branches are only used when needed =
-to
-> apply patches; I don't update them just to sync up.  If they're older than
-> what's in Michael's or Linus's tree (as they almost always are), then use
-> those instead.
+> Adds a counter for the system reset interrupt, which will
+> see more use as a debugging NMI.
 >
-> Not that I expect it to make a difference to this patch...
+> Adds a soft-NMI counter for the 64s watchdog. Although this could cause
+> confusion because it only fires when interrupts are soft-disabled, so it
+> won't increment much even when the watchdog is running.
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> I can split these out or drop any objectionable bits. At least the
+> MCE we should fix, not sure if the other bits are wanted.
 
-Do you want me to grab this as a fix for 4.13 ?
+Yeah if you can split it please that would be good.
+
+I'm not sure how useful it is to count the SOFT NMIs. I guess it's not
+much overhead so we may as well, if nothing else it might be handy for
+us debugging.
+
+If you can make the ifdef look less horrendous that would be great :D -
+perhaps a kconfig symbol that keys off both.
 
 cheers
