@@ -1,48 +1,25 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLjQn30NgzDrKP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 01:04:17 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6VExTVe126721
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 11:04:14 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c24v7f4ah-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 11:04:14 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 31 Jul 2017 11:04:13 -0400
-Date: Mon, 31 Jul 2017 08:04:11 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: dzickus@redhat.com, sfr@canb.auug.org.au, linuxarm@huawei.com,
- Nicholas Piggin <npiggin@gmail.com>, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, tglx@linutronix.de
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170727124913.GL3730@linux.vnet.ibm.com>
- <20170727144903.000022a1@huawei.com>
- <20170727173923.000001b2@huawei.com>
- <20170727165245.GD3730@linux.vnet.ibm.com>
- <20170728084411.00001ddb@huawei.com>
- <20170728142403.0000122b@huawei.com>
- <20170728165529.GF3730@linux.vnet.ibm.com>
- <20170728182053.000072aa@huawei.com>
- <20170728190349.GM3730@linux.vnet.ibm.com>
- <20170731120847.00003d5c@huawei.com>
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xLjvr4V69zDrLN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 01:26:00 +1000 (AEST)
+Date: Mon, 31 Jul 2017 17:19:57 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Rob Herring <robh@kernel.org>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Chen-Yu Tsai <wens@csie.org>, Peter Rosin <peda@axentia.se>,
+ linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] i2c: Convert to using %pOF instead of full_name
+Message-ID: <20170731151957.jjq43coqlsql3v2x@ninjato>
+References: <20170718214339.7774-26-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170731120847.00003d5c@huawei.com>
-Message-Id: <20170731150411.GA3730@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="djgytsdz3wtc2dzp"
+In-Reply-To: <20170718214339.7774-26-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,97 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 31, 2017 at 12:08:47PM +0100, Jonathan Cameron wrote:
-> On Fri, 28 Jul 2017 12:03:50 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Fri, Jul 28, 2017 at 06:27:05PM +0100, Jonathan Cameron wrote:
-> > > On Fri, 28 Jul 2017 09:55:29 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > >   
-> > > > On Fri, Jul 28, 2017 at 02:24:03PM +0100, Jonathan Cameron wrote:  
-> > > > > On Fri, 28 Jul 2017 08:44:11 +0100
-> > > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:    
-> > > > 
-> > > > [ . . . ]
-> > > >   
-> > > > > Ok.  Some info.  I disabled a few driver (usb and SAS) in the interest of having
-> > > > > fewer timer events.  Issue became much easier to trigger (on some runs before
-> > > > > I could get tracing up and running)
-> > > > >e
-> > > > > So logs are large enough that pastebin doesn't like them - please shoet if    
-> > > > >>e another timer period is of interest.    
-> > > > > 
-> > > > > https://pastebin.com/iUZDfQGM for the timer trace.
-> > > > > https://pastebin.com/3w1F7amH for dmesg.  
-> > > > > 
-> > > > > The relevant timeout on the RCU stall detector was 8 seconds.  Event is
-> > > > > detected around 835.
-> > > > > 
-> > > > > It's a lot of logs, so I haven't identified a smoking gun yet but there
-> > > > > may well be one in there.    
-> > > > 
-> > > > The dmesg says:
-> > > > 
-> > > > rcu_preempt kthread starved for 2508 jiffies! g112 c111 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
-> > > > 
-> > > > So I look for "rcu_preempt" timer events and find these:
-> > > > 
-> > > > rcu_preempt-9     [019] ....   827.579114: timer_init: timer=ffff8017d5fc7da0
-> > > > rcu_preempt-9     [019] d..1   827.579115: timer_start: timer=ffff8017d5fc7da0 function=process_timeout 
-> > > > 
-> > > > Next look for "ffff8017d5fc7da0" and I don't find anything else.  
-> > > It does show up off the bottom of what would fit in pastebin...
-> > > 
-> > >      rcu_preempt-9     [001] d..1   837.681077: timer_cancel: timer=ffff8017d5fc7da0
-> > >      rcu_preempt-9     [001] ....   837.681086: timer_init: timer=ffff8017d5fc7da0
-> > >      rcu_preempt-9     [001] d..1   837.681087: timer_start: timer=ffff8017d5fc7da0 function=process_timeout expires=4295101298 [timeout=1] cpu=1 idx=0 flags=  
-> > 
-> > Odd.  I would expect an expiration...  And ten seconds is way longer
-> > than the requested one jiffy!
-> > 
-> > > > The timeout was one jiffy, and more than a second later, no expiration.
-> > > > Is it possible that this event was lost?  I am not seeing any sign of
-> > > > this is the trace.
-> > > > 
-> > > > I don't see any sign of CPU hotplug (and I test with lots of that in
-> > > > any case).
-> > > > 
-> > > > The last time we saw something like this it was a timer HW/driver problem,
-> > > > but it is a bit hard to imagine such a problem affecting both ARM64
-> > > > and SPARC.  ;-)  
-> > > Could be different issues, both of which were hidden by that lockup detector.
-> > > 
-> > > There is an errata work around for the timers on this particular board.
-> > > I'm only vaguely aware of it, so may be unconnected.
-> > > 
-> > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clocksource/arm_arch_timer.c?h=v4.13-rc2&id=bb42ca47401010fc02901b5e8f79e40a26f208cb
-> > > 
-> > > Seems unlikely though! + we've not yet seen it on the other chips that
-> > > errata effects (not that that means much).  
-> > 
-> > If you can reproduce quickly, might be worth trying anyway...
-> > 
-> > 							Thanx, Paul
-> Errata fix is running already and was for all those tests.
 
-I was afraid of that...  ;-)
+--djgytsdz3wtc2dzp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I'll have a dig into the timers today and see where I get to.
+On Tue, Jul 18, 2017 at 04:43:06PM -0500, Rob Herring wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
+>=20
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Haavard Skinnemoen <hskinnemoen@gmail.com>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Cc: Chen-Yu Tsai <wens@csie.org>
+> Cc: Peter Rosin <peda@axentia.se>
+> Cc: linux-i2c@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
 
-Look forward to seeing what you find!
+Applied to for-next, thanks!
 
-							Thanx, Paul
 
-> Jonathan
-> > 
-> > > Jonathan
-> > >   
-> > > > 
-> > > > Thomas, any debugging suggestions?
-> > > > 
-> > > > 							Thanx, Paul
-> > > >   
-> > >   
-> > 
-> 
+--djgytsdz3wtc2dzp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAll/Sp0ACgkQFA3kzBSg
+KbYJJQ/+K+iyWbEUv/vHUQ1Yvs8XlbdXptbUdySw1CnyAWEFbl3BqWFUwELLX4mL
+W07E53al1sfRi1XfhSgdbeQiEOueoDKg+Gmc2qSvpqaCwplh6Z6HNcH0iYr0aVqJ
+OFKXXfjU0X2uF37LnXJ50nUJdlPaofNSW3ldLo8SB7NO+ptxDMdiHwuor/YU0HH6
+voNvszqQP/4XE2degPMpzxNdU3YLmAkSiHjKCoJRv4nnAoKWBgX2HPvTJLCimYnQ
+ipzpalDUEWqMHyySXnlbVN6YamzC54RrUy87iA84D0ynPm3Opo0um03k8XMEk0Wx
+yA19e0s6npr50yuFLMO4icHcGd+Pt/54DZEfQnkwnxYSTp4WHZ7c++WKx5bRS9Jd
++YZ8g/wuG3tKUUYujPi56NijN2g9TtUeS2DX1BuDM/isJNuH1L0/CK1vTz/KKmoM
+R65u9UKRmhXXewKpG5yEeL+zhyt7xRvNWqEnOdsggrPC7+CGnsPN5y0hoGglcSbW
+4R0Vactq0icSBPmwnHp4HotDRQm4cNyxPqC+rUTzDsuFjUchk4Abdv6AH0oL3Ln5
+WmGdhWPDqxoyftL6zwuoEkOXnch4lmJPMJHk1dInK7OtB9E/GjuMVEeqHOCCFxm2
+6iRCVjiiTpjXfQjqcI7ualreNc/W4sOI7XVdH9ibzUPuWxKzgA4=
+=bf8t
+-----END PGP SIGNATURE-----
+
+--djgytsdz3wtc2dzp--
