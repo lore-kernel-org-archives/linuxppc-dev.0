@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLKcl02w7zDr6m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 10:11:34 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id d10so15665690qtb.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 17:11:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLKcm2Rm8zDr99
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 10:11:36 +1000 (AEST)
+Received: by mail-qt0-x242.google.com with SMTP id d10so15665736qtb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 17:11:36 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
@@ -14,10 +14,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, hbabu@us.ibm.com, linuxram@us.ibm.com,
  bauerman@linux.vnet.ibm.com, mhocko@kernel.org
-Subject: [PATCH 4/7] powerpc: capture the PTE format changes in the dump pte
- report
-Date: Sun, 30 Jul 2017 17:11:13 -0700
-Message-Id: <1501459876-11357-5-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH 5/7] powerpc: introduce pte_set_hash_slot() helper
+Date: Sun, 30 Jul 2017 17:11:14 -0700
+Message-Id: <1501459876-11357-6-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1501459876-11357-1-git-send-email-linuxram@us.ibm.com>
 References: <1501459876-11357-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,35 +28,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The H_PAGE_F_SECOND,H_PAGE_F_GIX are not in the 64K main-PTE.
-capture these changes in the dump pte report.
+Introduce pte_set_hash_slot().It  sets the (H_PAGE_F_SECOND|H_PAGE_F_GIX)
+bits at  the   appropriate   location   in   the   PTE  of  4K  PTE.  For
+64K PTE, it  sets  the  bits  in  the  second  part  of  the  PTE. Though
+the implementation  for the former just needs the slot parameter, it does
+take some additional parameters to keep the prototype consistent.
+
+This function  will  be  handy  as  we   work   towards  re-arranging the
+bits in the later patches.
 
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/mm/dump_linuxpagetables.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |   15 +++++++++++++++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |   25 +++++++++++++++++++++++++
+ 2 files changed, 40 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index 44fe483..5627edd 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -213,7 +213,7 @@ struct flag_info {
- 		.val	= H_PAGE_4K_PFN,
- 		.set	= "4K_pfn",
- 	}, {
--#endif
-+#else /* CONFIG_PPC_64K_PAGES */
- 		.mask	= H_PAGE_F_GIX,
- 		.val	= H_PAGE_F_GIX,
- 		.set	= "f_gix",
-@@ -224,6 +224,7 @@ struct flag_info {
- 		.val	= H_PAGE_F_SECOND,
- 		.set	= "f_second",
- 	}, {
-+#endif /* CONFIG_PPC_64K_PAGES */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 778e2f4..5187249 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -54,6 +54,21 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
+ }
  #endif
- 		.mask	= _PAGE_SPECIAL,
- 		.val	= _PAGE_SPECIAL,
+ 
++/*
++ * 4k pte format is  different  from  64k  pte  format.  Saving  the
++ * hash_slot is just a matter of returning the pte bits that need to
++ * be modified. On 64k pte, things are a  little  more  involved and
++ * hence  needs   many   more  parameters  to  accomplish  the  same.
++ * However we  want  to abstract this out from the caller by keeping
++ * the prototype consistent across the two formats.
++ */
++static inline unsigned long pte_set_hash_slot(pte_t *ptep, real_pte_t rpte,
++			unsigned int subpg_index, unsigned long slot)
++{
++	return (slot << H_PAGE_F_GIX_SHIFT) &
++		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
++}
++
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ 
+ static inline char *get_hpte_slot_array(pmd_t *pmdp)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index e83ae86..8576060 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -68,6 +68,31 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+ 	return ((rpte.hidx >> (index<<2)) & 0xfUL);
+ }
+ 
++/*
++ * Commit the hash slot and return pte bits that needs to be modified.
++ * The caller is expected to modify the pte bits accordingly and
++ * commit the pte to memory.
++ */
++static inline unsigned long pte_set_hash_slot(pte_t *ptep, real_pte_t rpte,
++		unsigned int subpg_index, unsigned long slot)
++{
++	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
++
++	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
++	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
++	/*
++	 * Commit the hidx bits to memory before returning.
++	 * Anyone reading  pte  must  ensure hidx bits are
++	 * read  only  after  reading the pte by using the
++	 * read-side  barrier  smp_rmb(). __real_pte() can
++	 * help ensure that.
++	 */
++	smp_wmb();
++
++	/* no pte bits to be modified, return 0x0UL */
++	return 0x0UL;
++}
++
+ #define __rpte_to_pte(r)	((r).pte)
+ extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
+ /*
 -- 
 1.7.1
