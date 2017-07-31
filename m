@@ -1,41 +1,26 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <dan.carpenter@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLWj12MhtzDrnY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:45:57 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6V7j5dr022455
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 03:45:55 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c1xugutdp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 03:45:55 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Mon, 31 Jul 2017 17:45:52 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v6V7iQ4R12976202
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:44:34 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v6V7i2dr006207
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:44:02 +1000
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [RESEND][PATCH V10 0/3] powernv : Add support for OPAL-OCC
- command/response interface
-Date: Mon, 31 Jul 2017 13:13:26 +0530
-Message-Id: <1501487009-16435-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLWvl4bzDzDr5G
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 17:55:15 +1000 (AEST)
+Date: Mon, 31 Jul 2017 10:54:46 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: Alexander Graf <agraf@suse.com>, Scott Wood <scottwood@freescale.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/2] KVM: PPC: e500: fix some NULL dereferences on error
+Message-ID: <20170731075446.5rdxjcir4jmsed7q@mwanda>
+References: <20170713073829.dqjahnakxqvpne7x@mwanda>
+ <20170731060340.yw45r7dewrdvocx3@oak.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170731060340.yw45r7dewrdvocx3@oak.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,45 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In P9, OCC (On-Chip-Controller) supports shared memory based
-commad-response interface. Within the shared memory there is an OPAL
-command buffer and OCC response buffer that can be used to send
-inband commands to OCC. The following commands are supported:
+On Mon, Jul 31, 2017 at 04:03:40PM +1000, Paul Mackerras wrote:
+> On Thu, Jul 13, 2017 at 10:38:29AM +0300, Dan Carpenter wrote:
+> > There are some error paths in kvmppc_core_vcpu_create_e500() where we
+> > forget to set the error code.  It means that we return ERR_PTR(0) which
+> > is NULL and it results in a NULL pointer dereference in the caller.
+> > 
+> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> Are these user-triggerable, and therefore needing to go into 4.13
+> and be back-ported to the stable trees?  Or can they wait for 4.14?
+> 
 
-1) Set system powercap
-2) Set CPU-GPU power shifting ratio
-3) Clear min/max for OCC sensor groups
+These are static checker fixes...  I imagine that they might be user
+triggerable with quite a bit of work but it's a only NULL derefence.
 
-Changes from V9:
-- Fixed return after erroring from mutex_lock_interruptible()
-- Added documentation
-- [RESEND] Fixed the version number of the patch-set in Subject
-
-Shilpasri G Bhat (3):
-  powernv: powercap: Add support for powercap framework
-  powernv: Add support to set power-shifting-ratio
-  powernv: Add support to clear sensor groups data
-
- .../ABI/testing/sysfs-firmware-opal-powercap       |  31 +++
- Documentation/ABI/testing/sysfs-firmware-opal-psr  |  18 ++
- .../bindings/powerpc/opal/sensor-groups.txt        |  23 ++
- arch/powerpc/include/asm/opal-api.h                |   8 +-
- arch/powerpc/include/asm/opal.h                    |   9 +
- arch/powerpc/include/uapi/asm/opal-occ.h           |  23 ++
- arch/powerpc/platforms/powernv/Makefile            |   2 +-
- arch/powerpc/platforms/powernv/opal-occ.c          | 116 ++++++++++
- arch/powerpc/platforms/powernv/opal-powercap.c     | 244 +++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-psr.c          | 175 +++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S     |   5 +
- arch/powerpc/platforms/powernv/opal.c              |  10 +
- 12 files changed, 662 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-powercap
- create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-psr
- create mode 100644 Documentation/devicetree/bindings/powerpc/opal/sensor-groups.txt
- create mode 100644 arch/powerpc/include/uapi/asm/opal-occ.h
- create mode 100644 arch/powerpc/platforms/powernv/opal-occ.c
- create mode 100644 arch/powerpc/platforms/powernv/opal-powercap.c
- create mode 100644 arch/powerpc/platforms/powernv/opal-psr.c
-
--- 
-1.8.3.1
+regards,
+dan carpenter
