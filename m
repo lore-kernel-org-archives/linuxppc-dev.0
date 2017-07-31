@@ -2,8 +2,8 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xLffW1StxzDsSY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 22:59:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLfhQ3l9RzDsVT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 23:00:54 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Ram Pai <linuxram@us.ibm.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
@@ -13,14 +13,15 @@ Cc: linux-arch@vger.kernel.org, corbet@lwn.net, arnd@arndb.de,
  mingo@redhat.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
  linux-kselftest@vger.kernel.org, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v6 19/62] powerpc: ability to create execute-disabled pkeys
-In-Reply-To: <20170729232446.GG5664@ram.oc3035372033.ibm.com>
+Subject: Re: [RFC v6 20/62] powerpc: store and restore the pkey state across
+ context switches
+In-Reply-To: <20170729233113.GH5664@ram.oc3035372033.ibm.com>
 References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-20-git-send-email-linuxram@us.ibm.com>
- <87bmo63p7c.fsf@linux.vnet.ibm.com>
- <20170729232446.GG5664@ram.oc3035372033.ibm.com>
-Date: Mon, 31 Jul 2017 22:59:14 +1000
-Message-ID: <87zibk4va5.fsf@concordia.ellerman.id.au>
+ <1500177424-13695-21-git-send-email-linuxram@us.ibm.com>
+ <878tj94wfo.fsf@linux.vnet.ibm.com>
+ <20170729233113.GH5664@ram.oc3035372033.ibm.com>
+Date: Mon, 31 Jul 2017 23:00:53 +1000
+Message-ID: <87wp6o4v7e.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,54 +34,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Ram Pai <linuxram@us.ibm.com> writes:
-
-> On Thu, Jul 27, 2017 at 11:54:31AM -0300, Thiago Jung Bauermann wrote:
->> 
+> On Thu, Jul 27, 2017 at 02:32:59PM -0300, Thiago Jung Bauermann wrote:
 >> Ram Pai <linuxram@us.ibm.com> writes:
->> 
->> > --- a/arch/powerpc/include/asm/pkeys.h
->> > +++ b/arch/powerpc/include/asm/pkeys.h
->> > @@ -2,6 +2,18 @@
->> >  #define _ASM_PPC64_PKEYS_H
+>> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+>> > index 2ad725e..9429361 100644
+>> > --- a/arch/powerpc/kernel/process.c
+>> > +++ b/arch/powerpc/kernel/process.c
+>> > @@ -1096,6 +1096,11 @@ static inline void save_sprs(struct thread_struct *t)
+>> >  		t->tar = mfspr(SPRN_TAR);
+>> >  	}
+>> >  #endif
+>> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+>> > +	t->amr = mfspr(SPRN_AMR);
+>> > +	t->iamr = mfspr(SPRN_IAMR);
+>> > +	t->uamor = mfspr(SPRN_UAMOR);
+>> > +#endif
+>> >  }
 >> >
->> >  extern bool pkey_inited;
->> > +/* override any generic PKEY Permission defines */
->> > +#undef  PKEY_DISABLE_ACCESS
->> > +#define PKEY_DISABLE_ACCESS    0x1
->> > +#undef  PKEY_DISABLE_WRITE
->> > +#define PKEY_DISABLE_WRITE     0x2
->> > +#undef  PKEY_DISABLE_EXECUTE
->> > +#define PKEY_DISABLE_EXECUTE   0x4
->> > +#undef  PKEY_ACCESS_MASK
->> > +#define PKEY_ACCESS_MASK       (PKEY_DISABLE_ACCESS |\
->> > +				PKEY_DISABLE_WRITE  |\
->> > +				PKEY_DISABLE_EXECUTE)
->> > +
+>> >  static inline void restore_sprs(struct thread_struct *old_thread,
+>> > @@ -1131,6 +1136,14 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+>> >  			mtspr(SPRN_TAR, new_thread->tar);
+>> >  	}
+>> >  #endif
+>> > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+>> > +	if (old_thread->amr != new_thread->amr)
+>> > +		mtspr(SPRN_AMR, new_thread->amr);
+>> > +	if (old_thread->iamr != new_thread->iamr)
+>> > +		mtspr(SPRN_IAMR, new_thread->iamr);
+>> > +	if (old_thread->uamor != new_thread->uamor)
+>> > +		mtspr(SPRN_UAMOR, new_thread->uamor);
+>> > +#endif
+>> >  }
 >> 
->> Is it ok to #undef macros from another header? Especially since said
->> header is in uapi (include/uapi/asm-generic/mman-common.h).
->> 
->> Also, it's unnecessary to undef the _ACCESS and _WRITE macros since they
->> are identical to the original definition. And since these macros are
->> originally defined in an uapi header, the powerpc-specific ones should
->> be in an uapi header as well, if I understand it correctly.
+>> Shouldn't the saving and restoring of the SPRs be guarded by a check for
+>> whether memory protection keys are enabled? What happens when trying to
+>> access these registers on a CPU which doesn't have them?
 >
-> The architectural neutral code allows the implementation to define the
-> macros to its taste. powerpc headers due to legacy reason includes the
-> include/uapi/asm-generic/mman-common.h header. That header includes the
-> generic definitions of only PKEY_DISABLE_ACCESS and PKEY_DISABLE_WRITE.
-> Unfortunately we end up importing them. I dont want to depend on them.
-> Any changes there could effect us. Example if the generic uapi header
-> changed PKEY_DISABLE_ACCESS to 0x4, we will have a conflict with
-> PKEY_DISABLE_EXECUTE.  Hence I undef them and define the it my way.
+> Good point. need to guard it.  However; i think, these registers have been
+> available since power6.
 
-Don't do that.
+The kernel runs on CPUs much older than that.
 
-The generic header can't change the values, it's an ABI.
+IAMR was added on Power8.
 
-Doing it this way risks the uapi value diverging from the value used in
-the powerpc code (due to a change in the powerpc version), which would
-mean userspace and the kernel wouldn't agree on what the values meant
-... which would be exciting.
+And performance is also an issue, so we should only switch them when we
+need to.
 
 cheers
