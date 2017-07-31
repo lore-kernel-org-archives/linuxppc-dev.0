@@ -1,21 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jonathan.cameron@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMBd3073KzDrk2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 19:59:51 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- nfont@linux.vnet.ibm.com <nfont@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH] powerpc: Disabling MEMORY_HOTPLUG_DEFAULT_ONLINE
- option for PPC64 arch
-In-Reply-To: <20170731181759.13839-1-danielhb@linux.vnet.ibm.com>
-References: <20170731181759.13839-1-danielhb@linux.vnet.ibm.com>
-Date: Tue, 01 Aug 2017 19:59:48 +1000
-Message-ID: <87y3r3sj57.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMBhg6CQtzDrL8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 20:02:59 +1000 (AEST)
+Date: Mon, 31 Jul 2017 12:55:48 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
+ <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
+ <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
+ <linux-arm-kernel@lists.infradead.org>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170731125548.00007b68@huawei.com>
+In-Reply-To: <20170731120908.00002e28@huawei.com>
+References: <20170726.095432.169004918437663011.davem@davemloft.net>
+ <20170726175013.GT3730@linux.vnet.ibm.com>
+ <20170726223658.GA27617@linux.vnet.ibm.com>
+ <20170726.154540.150558937277891719.davem@davemloft.net>
+ <20170726231505.GG3730@linux.vnet.ibm.com>
+ <20170731120908.00002e28@huawei.com>
+Content-Type: text/plain; charset="US-ASCII"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +33,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com> writes:
+On Mon, 31 Jul 2017 12:09:08 +0100
+Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
 
-> Commit 943db62c316c ("powerpc/pseries: Revert 'Auto-online
-> hotplugged memory'") reverted the auto-online feature for pseries due
-> to problems with LMB removals not updating the device struct properly.
-> Among other things, this commit made the following change in
-> arch/powerpc/configs/pseries_defconfig:
->
-> @@ -58,7 +58,6 @@ CONFIG_KEXEC_FILE=y
->  CONFIG_IRQ_ALL_CPUS=y
->  CONFIG_MEMORY_HOTPLUG=y
->  CONFIG_MEMORY_HOTREMOVE=y
-> -CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=y
->  CONFIG_KSM=y
->
-> The intent was to disable the option in the defconfig of pseries, since
-> after that the code doesn't have this support anymore.
-
-It's always polite to Cc the author of a commit you're referring to, so
-I added Nathan.
-
-The intention when we merged that fix was that the auto-online code
-would be "fixed" to mark the device online. I say "fixed" because it
-wasn't entirely clear if that was the correct behaviour, though it
-definitely seemed like it should be.
-
-I've lost track of where/if the discussion got to on whether the
-auto-online code should do that or not. Did anything get resolved?
-
-> However, this change
-> alone isn't enough to prevent situations such as [1], where
-> distros can enable the option unaware of the consequences of
-> doing it (e.g. breaking LMB hotplug altogether).
->
-> Instead of relying on all distros knowing that pseries can't handle
-> CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=y after 943db62c316c, this patch
-> changes mm/Kconfig to make the MEMORY_HOTPLUG_DEFAULT_ONLINE config
-> unavailable for the PPC64 arch.
->
-> [1] https://bugzilla.redhat.com/show_bug.cgi?id=1476380
->
-> Fixes: 943db62c316c ("powerpc/pseries: Revert 'Auto-online hotplugged memory'")
-> Signed-off-by: Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>
-> ---
->  mm/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-
-I don't own that file, so we at least need an Ack from the mm folks.
-
-cheers
-
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index 48b1af4..a342c77 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -169,7 +169,7 @@ config MEMORY_HOTPLUG_SPARSE
->  config MEMORY_HOTPLUG_DEFAULT_ONLINE
->          bool "Online the newly added memory blocks by default"
->          default n
-> -        depends on MEMORY_HOTPLUG
-> +        depends on MEMORY_HOTPLUG && !PPC64
->          help
->  	  This option sets the default policy setting for memory hotplug
->  	  onlining policy (/sys/devices/system/memory/auto_online_blocks) which
-> -- 
-> 2.9.4
+> On Wed, 26 Jul 2017 16:15:05 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Wed, Jul 26, 2017 at 03:45:40PM -0700, David Miller wrote:  
+> > > From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> > > Date: Wed, 26 Jul 2017 15:36:58 -0700
+> > >     
+> > > > And without CONFIG_SOFTLOCKUP_DETECTOR, I see five runs of 24 with RCU
+> > > > CPU stall warnings.  So it seems likely that CONFIG_SOFTLOCKUP_DETECTOR
+> > > > really is having an effect.    
+> > > 
+> > > Thanks for all of the info Paul, I'll digest this and scan over the
+> > > code myself.
+> > > 
+> > > Just out of curiousity, what x86 idle method is your machine using?
+> > > The mwait one or the one which simply uses 'halt'?  The mwait variant
+> > > might mask this bug, and halt would be a lot closer to how sparc64 and
+> > > Jonathan's system operates.    
+> > 
+> > My kernel builds with CONFIG_INTEL_IDLE=n, which I believe means that
+> > I am not using the mwait one.  Here is a grep for IDLE in my .config:
+> > 
+> > 	CONFIG_NO_HZ_IDLE=y
+> > 	CONFIG_GENERIC_SMP_IDLE_THREAD=y
+> > 	# CONFIG_IDLE_PAGE_TRACKING is not set
+> > 	CONFIG_ACPI_PROCESSOR_IDLE=y
+> > 	CONFIG_CPU_IDLE=y
+> > 	# CONFIG_CPU_IDLE_GOV_LADDER is not set
+> > 	CONFIG_CPU_IDLE_GOV_MENU=y
+> > 	# CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is not set
+> > 	# CONFIG_INTEL_IDLE is not set
+> >   
+> > > On sparc64 the cpu yield we do in the idle loop sleeps the cpu.  It's
+> > > local TICK register keeps advancing, and the local timer therefore
+> > > will still trigger.  Also, any externally generated interrupts
+> > > (including cross calls) will wake up the cpu as well.
+> > > 
+> > > The tick-sched code is really tricky wrt. NO_HZ even in the NO_HZ_IDLE
+> > > case.  One of my running theories is that we miss scheduling a tick
+> > > due to a race.  That would be consistent with the behavior we see
+> > > in the RCU dumps, I think.    
+> > 
+> > But wouldn't you have to miss a -lot- of ticks to get an RCU CPU stall
+> > warning?  By default, your grace period needs to extend for more than
+> > 21 seconds (more than one-third of a -minute-) to get one.  Or do
+> > you mean that the ticks get shut off now and forever, as opposed to
+> > just losing one of them?
+> >   
+> > > Anyways, just a theory, and that's why I keep mentioning that commit
+> > > about the revert of the revert (specifically
+> > > 411fe24e6b7c283c3a1911450cdba6dd3aaea56e).
+> > > 
+> > > :-)    
+> > 
+> > I am running an overnight test in preparation for attempting to push
+> > some fixes for regressions into 4.12, but will try reverting this
+> > and enabling CONFIG_HZ_PERIODIC tomorrow.
+> > 
+> > Jonathan, might the commit that Dave points out above be what reduces
+> > the probability of occurrence as you test older releases?  
+> I just got around to trying this out of curiosity.  Superficially it did
+> appear to possibly make the issue harder to hit took over 30 minutes
+> but the issue otherwise looks much the same with or without that patch.
+> 
+> Just out of curiosity, next thing on my list is to disable hrtimers entirely
+> and see what happens.
+> 
+> Jonathan
+> > 
+> > 							Thanx, Paul
+> >   
+> 
+> _______________________________________________
+> linuxarm mailing list
+> linuxarm@huawei.com
+> http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm
