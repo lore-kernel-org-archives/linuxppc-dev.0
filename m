@@ -1,49 +1,22 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xL81n2CqHzDr46
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 02:59:09 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v6UGwdp5160706
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 12:59:05 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c1eewg570-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 12:59:04 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Sun, 30 Jul 2017 12:59:04 -0400
-Date: Sun, 30 Jul 2017 09:59:01 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
- sfr@canb.auug.org.au, linuxarm@huawei.com,
- Nicholas Piggin <npiggin@gmail.com>, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170727124913.GL3730@linux.vnet.ibm.com>
- <20170727144903.000022a1@huawei.com>
- <20170727173923.000001b2@huawei.com>
- <20170727165245.GD3730@linux.vnet.ibm.com>
- <20170728084411.00001ddb@huawei.com>
- <20170728125416.j7gcgvnxgv2gq73u@tardis>
- <20170728145530.GE3730@linux.vnet.ibm.com>
- <20170728184129.GA24364@linux.vnet.ibm.com>
- <20170728190956.GA26640@linux.vnet.ibm.com>
- <20170730133747.anusyacw2l5hhjgx@tardis>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170730133747.anusyacw2l5hhjgx@tardis>
-Message-Id: <20170730165901.GX3730@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xLKcc3S1dzDr4T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jul 2017 10:11:28 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id m84so537061qki.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jul 2017 17:11:28 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, linuxram@us.ibm.com,
+ bauerman@linux.vnet.ibm.com, mhocko@kernel.org
+Subject: [PATCH 0/7] powerpc: Free up RPAGE_RSV bits
+Date: Sun, 30 Jul 2017 17:11:09 -0700
+Message-Id: <1501459876-11357-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,40 +26,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 30, 2017 at 09:37:47PM +0800, Boqun Feng wrote:
-> On Fri, Jul 28, 2017 at 12:09:56PM -0700, Paul E. McKenney wrote:
-> > On Fri, Jul 28, 2017 at 11:41:29AM -0700, Paul E. McKenney wrote:
-> > > On Fri, Jul 28, 2017 at 07:55:30AM -0700, Paul E. McKenney wrote:
-> > > > On Fri, Jul 28, 2017 at 08:54:16PM +0800, Boqun Feng wrote:
-> > 
-> > [ . . . ]
-> > 
-> > > > Even though Jonathan's testing indicates that it didn't fix this
-> > > > particular problem:
-> > > > 
-> > > > Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > 
-> > > And while we are at it:
-> > > 
-> > > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > Not because it it fixed the TREE01 issue -- it did not.  But as near
-> > as I can see, it didn't cause any additional issues.
-> > 
-> 
-> Understood.
-> 
-> Still work on waketorture for a test case which could trigger this
-> problem in a real world. My old plan is to send this out when I could
-> use waketorture to show this patch actually resolves some potential
-> bugs, but just put it ahead here in case it may help.
-> 
-> Will send it out with your Tested-by and Acked-by and continue to work
-> on waketorture.
+RPAGE_RSV0..4 pte bits are currently used for hpte slot
+tracking. We  need  these bits   for  memory-protection
+keys. Luckily these  four bits   are  relatively easier 
+to move among all the other candidate bits.
 
-Sounds good!
+For  64K   linux-ptes   backed  by 4k hptes, these bits
+are   used for tracking the  validity of the slot value
+stored   in the second-part-of-the-pte. We device a new
+mechanism for  tracking   the   validity  without using
+those bits. The    mechanism  is explained in the first
+patch.
 
-Given that Jonathan's traces didn't show a timer expiration, the problems
-might be in timers.
+For 64K  linux-pte  backed by 64K hptes, we simply move
+the   slot  tracking bits to the second-part-of-the-pte.
 
-							Thanx, Paul
+The above  mechanism  is also used to free the bits for
+hugetlb linux-ptes.
+
+For 4k linux-pte, we  have only 3 free  bits  available.
+We swizzle around the bits and release RPAGE_RSV{2,3,4}
+for memory protection keys.
+
+Testing:
+--------
+has survived  kernel  compilation on multiple platforms
+p8 powernv hash-mode, p9 powernv hash-mode,  p7 powervm,
+p8-powervm, p8-kvm-guest.
+
+Has survived git-bisect on p8  power-nv  with  64K page
+and 4K page.
+
+History:
+-------
+This patchset  is  a  spin-off from the memkey patchset.
+
+version v8:
+	(1) an  additional  patch   added  to  free  up
+             RSV{2,3,4} on 4K linux-pte.
+
+version v7:
+	(1) GIX bit reset change  moved  to  the second
+		patch  -- noticed by Aneesh.
+	(2) Separated this patches from memkey patchset
+	(3) merged a  bunch  of  patches, that used the
+       		helper function, into one.
+version v6:
+	(1) No changes related to pte.
+
+version v5:
+	(1) No changes related to pte.
+
+version v4:
+	(1) No changes related to pte.
+
+version v3:
+	(1) split the patches into smaller consumable
+		patches.
+	(2) A bug fix while  invalidating a hpte slot
+		in __hash_page_4K()
+       		-- noticed by Aneesh
+	
+
+version v2:
+ 	(1) fixed a  bug  in 4k  hpte  backed 64k pte
+       		where  page    invalidation   was not
+		done  correctly,  and  initialization
+	       	of    second-part-of-the-pte  was not
+		done    correctly  if the pte was not
+	       	yet Hashed with a hpte.
+	       	   --	Reported by Aneesh.
+	
+
+version v1: Initial version
+
+Ram Pai (7):
+  powerpc: Free up four 64K PTE bits in 4K backed HPTE pages
+  powerpc: Free up four 64K PTE bits in 64K backed HPTE pages
+  powerpc: Swizzle around 4K PTE bits to free up bit 5 and bit 6
+  powerpc: capture the PTE format changes in the dump pte report
+  powerpc: introduce pte_set_hash_slot() helper
+  powerpc: introduce pte_get_hash_gslot() helper
+  powerpc: use helper functions to get and set hash slots
+
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |   21 ++++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |   61 ++++++++----
+ arch/powerpc/include/asm/book3s/64/hash.h     |    8 +-
+ arch/powerpc/mm/dump_linuxpagetables.c        |    3 +-
+ arch/powerpc/mm/hash64_4k.c                   |   14 +--
+ arch/powerpc/mm/hash64_64k.c                  |  124 +++++++++++++------------
+ arch/powerpc/mm/hash_utils_64.c               |   35 +++++--
+ arch/powerpc/mm/hugetlbpage-hash64.c          |   16 +--
+ 8 files changed, 167 insertions(+), 115 deletions(-)
