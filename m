@@ -1,26 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMCtG43VrzDrhD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 20:56:22 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
- stop4 cpuidle
-In-Reply-To: <57ed82bcd92cd4d0af7ae5113710d597a331c433.1500631040.git.ego@linux.vnet.ibm.com>
-References: <cover.1500631040.git.ego@linux.vnet.ibm.com>
- <57ed82bcd92cd4d0af7ae5113710d597a331c433.1500631040.git.ego@linux.vnet.ibm.com>
-Date: Tue, 01 Aug 2017 20:56:18 +1000
-Message-ID: <87r2wvsgj1.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMDXH2vFyzDrjJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 21:25:51 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id t86so2065252pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 04:25:50 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com,
+	Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v1 0/3] Implement set_memory_xx for ppc64 book3s
+Date: Tue,  1 Aug 2017 21:25:32 +1000
+Message-Id: <20170801112535.20765-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,12 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
->
-> Subject: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for stop4 cpuidle
+After implementing STRICT_KERNEL_RWX, it turns out that implementing
+set_memory_ro/rw/x/nx is quite easy. The first patch is applied on
+top (http://patchwork.ozlabs.org/patch/795745/).
 
-I know it's not a big deal, but can we agree on the subject format?
+The first patch implements the various routines, the second patch
+enables ARCH_HAS_SET_MEMORY for PPC_BOOK3S_64 and the third patch
+enables the BPF infrastructure to use the set_memory_ro and
+set_memory_rw routines.
 
-  powerpc/powernv: Save/Restore additional SPRs for stop4 cpuidle
+Balbir Singh (3):
+  arch/powerpc/set_memory: Implement set_memory_xx routines
+  Enable ARCH_HAS_SET_MEMORY
+  arch/powerpc/net/bpf: Basic EBPF support
 
-cheers
+ arch/powerpc/Kconfig                       |  1 +
+ arch/powerpc/include/asm/book3s/64/hash.h  |  6 +++
+ arch/powerpc/include/asm/book3s/64/radix.h |  6 +++
+ arch/powerpc/include/asm/set_memory.h      | 34 +++++++++++++++
+ arch/powerpc/mm/pgtable-hash64.c           | 51 ++++++++++++++++++++--
+ arch/powerpc/mm/pgtable-radix.c            | 26 ++++++------
+ arch/powerpc/mm/pgtable_64.c               | 68 ++++++++++++++++++++++++++++++
+ arch/powerpc/net/bpf_jit_comp64.c          | 13 +-----
+ 8 files changed, 177 insertions(+), 28 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/set_memory.h
+
+-- 
+2.9.4
