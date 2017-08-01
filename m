@@ -1,48 +1,32 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
+ [IPv6:2607:f8b0:4001:c06::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMKmL4kwQzDqn8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 01:21:38 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v71FKRXn018270
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Aug 2017 11:21:35 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c2unmhyxu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 11:21:35 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Tue, 1 Aug 2017 09:21:34 -0600
-Subject: [PATCH] ipr: Fix scsi-mq lockdep issue
-To: linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMKsd1xh9zDrFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 01:26:13 +1000 (AEST)
+Received: by mail-io0-x231.google.com with SMTP id c74so9551195iod.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 08:26:13 -0700 (PDT)
+Subject: Re: blk_mq_sched_insert_request: inconsistent {SOFTIRQ-ON-W} ->
+ {IN-SOFTIRQ-W} usage
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Bart Van Assche <Bart.VanAssche@wdc.com>, Brian J King <bjking1@us.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
- Bart Van Assche <Bart.VanAssche@wdc.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Wendy Xiong <wenxiong@linux.vnet.ibm.com>
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>
 References: <87a83qfosu.fsf@concordia.ellerman.id.au>
  <073ed79c-11ce-e86c-a905-91fd28675d47@kernel.dk>
  <1501166846.2516.1.camel@wdc.com>
  <5b85a365-faa1-3987-9b6b-270399c30686@kernel.dk>
  <87lgn9dqx3.fsf@concordia.ellerman.id.au>
  <92379297-9667-ae52-b05c-6c8a0ce4751c@kernel.dk>
- <OF186C0C54.7E077412-ON8625816B.0053C88E-8625816B.00540312@notes.na.collabserv.com>
- <5dcfe3ac-50c7-86a6-e571-fe5a1c1dc316@linux.vnet.ibm.com>
- <87379c6cfh.fsf@concordia.ellerman.id.au>
- <87a83ju6av.fsf@concordia.ellerman.id.au>
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Tue, 1 Aug 2017 10:21:30 -0500
+ <877eynu69j.fsf@concordia.ellerman.id.au>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <c4fb0293-d0cb-ebff-cddf-a4e301826fbc@kernel.dk>
+Date: Tue, 1 Aug 2017 09:26:09 -0600
 MIME-Version: 1.0
-In-Reply-To: <87a83ju6av.fsf@concordia.ellerman.id.au>
+In-Reply-To: <877eynu69j.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <6d2bbcc8-3f4b-9b41-45b2-160f4817e439@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,126 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixes the following lockdep warning that can occur when scsi-mq is enabled
-with ipr due to ipr calling scsi_unblock_requests from irq context. The fix
-is to move the call to scsi_unblock_requests to ipr's existing workqueue.
+On 08/01/2017 12:55 AM, Michael Ellerman wrote:
+> Jens Axboe <axboe@kernel.dk> writes:
+> ...
+>>
+>> Can you try the below fix? Should be more palatable than the previous
+>> one. Brian, maybe you can take a look at the IRQ issue mentioned above?
+> 
+> Given the patch from Brian fixed the lockdep warning, do you still want
+> me to try and test this one?
 
-stack backtrace:
-CPU: 28 PID: 0 Comm: swapper/28 Not tainted 4.13.0-rc2-gcc6x-gf74c89b #1
-Call Trace:
-[c000001fffe97550] [c000000000b50818] dump_stack+0xe8/0x160 (unreliable)
-[c000001fffe97590] [c0000000001586d0] print_usage_bug+0x2d0/0x390
-[c000001fffe97640] [c000000000158f34] mark_lock+0x7a4/0x8e0
-[c000001fffe976f0] [c00000000015a000] __lock_acquire+0x6a0/0x1a70
-[c000001fffe97860] [c00000000015befc] lock_acquire+0xec/0x2e0
-[c000001fffe97930] [c000000000b71514] _raw_spin_lock+0x44/0x70
-[c000001fffe97960] [c0000000005b60f4] blk_mq_sched_dispatch_requests+0xa4/0x2a0
-[c000001fffe979c0] [c0000000005acac0] __blk_mq_run_hw_queue+0x100/0x2c0
-[c000001fffe97a00] [c0000000005ad478] __blk_mq_delay_run_hw_queue+0x118/0x130
-[c000001fffe97a40] [c0000000005ad61c] blk_mq_start_hw_queues+0x6c/0xa0
-[c000001fffe97a80] [c000000000797aac] scsi_kick_queue+0x2c/0x60
-[c000001fffe97aa0] [c000000000797cf0] scsi_run_queue+0x210/0x360
-[c000001fffe97b10] [c00000000079b888] scsi_run_host_queues+0x48/0x80
-[c000001fffe97b40] [c0000000007b6090] ipr_ioa_bringdown_done+0x70/0x1e0
-[c000001fffe97bc0] [c0000000007bc860] ipr_reset_ioa_job+0x80/0xf0
-[c000001fffe97bf0] [c0000000007b4d50] ipr_reset_timer_done+0xd0/0x100
-[c000001fffe97c30] [c0000000001937bc] call_timer_fn+0xdc/0x4b0
-[c000001fffe97cf0] [c000000000193d08] expire_timers+0x178/0x330
-[c000001fffe97d60] [c0000000001940c8] run_timer_softirq+0xb8/0x120
-[c000001fffe97de0] [c000000000b726a8] __do_softirq+0x168/0x6d8
-[c000001fffe97ef0] [c0000000000df2c8] irq_exit+0x108/0x150
-[c000001fffe97f10] [c000000000017bf4] __do_irq+0x2a4/0x4a0
-[c000001fffe97f90] [c00000000002da50] call_do_irq+0x14/0x24
-[c0000007fad93aa0] [c000000000017e8c] do_IRQ+0x9c/0x140
-[c0000007fad93af0] [c000000000008b98] hardware_interrupt_common+0x138/0x140
+Nope, we don't have to do that. I'd much rather just add a WARN_ON()
+or similar to make sure we catch buggy users earlier. scsi_run_queue()
+needs a
 
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+WARN_ON(in_interrupt());
 
-Index: linux-2.6.git/drivers/scsi/ipr.c
-===================================================================
---- linux-2.6.git.orig/drivers/scsi/ipr.c
-+++ linux-2.6.git/drivers/scsi/ipr.c
-@@ -3351,6 +3351,16 @@ static void ipr_worker_thread(struct wor
- 		return;
- 	}
- 
-+	if (ioa_cfg->scsi_unblock) {
-+		ioa_cfg->scsi_unblock = 0;
-+		ioa_cfg->scsi_blocked = 0;
-+		spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
-+		scsi_unblock_requests(ioa_cfg->host);
-+		spin_lock_irqsave(ioa_cfg->host->host_lock, lock_flags);
-+		if (ioa_cfg->scsi_blocked)
-+			scsi_block_requests(ioa_cfg->host);
-+	}
-+
- 	if (!ioa_cfg->scan_enabled) {
- 		spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
- 		return;
-@@ -7211,9 +7221,8 @@ static int ipr_ioa_bringdown_done(struct
- 	ENTER;
- 	if (!ioa_cfg->hrrq[IPR_INIT_HRRQ].removing_ioa) {
- 		ipr_trace;
--		spin_unlock_irq(ioa_cfg->host->host_lock);
--		scsi_unblock_requests(ioa_cfg->host);
--		spin_lock_irq(ioa_cfg->host->host_lock);
-+		ioa_cfg->scsi_unblock = 1;
-+		schedule_work(&ioa_cfg->work_q);
- 	}
- 
- 	ioa_cfg->in_reset_reload = 0;
-@@ -7287,13 +7296,7 @@ static int ipr_ioa_reset_done(struct ipr
- 	list_add_tail(&ipr_cmd->queue, &ipr_cmd->hrrq->hrrq_free_q);
- 	wake_up_all(&ioa_cfg->reset_wait_q);
- 
--	spin_unlock(ioa_cfg->host->host_lock);
--	scsi_unblock_requests(ioa_cfg->host);
--	spin_lock(ioa_cfg->host->host_lock);
--
--	if (!ioa_cfg->hrrq[IPR_INIT_HRRQ].allow_cmds)
--		scsi_block_requests(ioa_cfg->host);
--
-+	ioa_cfg->scsi_unblock = 1;
- 	schedule_work(&ioa_cfg->work_q);
- 	LEAVE;
- 	return IPR_RC_JOB_RETURN;
-@@ -9249,8 +9252,11 @@ static void _ipr_initiate_ioa_reset(stru
- 		spin_unlock(&ioa_cfg->hrrq[i]._lock);
- 	}
- 	wmb();
--	if (!ioa_cfg->hrrq[IPR_INIT_HRRQ].removing_ioa)
-+	if (!ioa_cfg->hrrq[IPR_INIT_HRRQ].removing_ioa) {
-+		ioa_cfg->scsi_unblock = 0;
-+		ioa_cfg->scsi_blocked = 1;
- 		scsi_block_requests(ioa_cfg->host);
-+	}
- 
- 	ipr_cmd = ipr_get_free_ipr_cmnd(ioa_cfg);
- 	ioa_cfg->reset_cmd = ipr_cmd;
-@@ -9306,9 +9312,8 @@ static void ipr_initiate_ioa_reset(struc
- 			wake_up_all(&ioa_cfg->reset_wait_q);
- 
- 			if (!ioa_cfg->hrrq[IPR_INIT_HRRQ].removing_ioa) {
--				spin_unlock_irq(ioa_cfg->host->host_lock);
--				scsi_unblock_requests(ioa_cfg->host);
--				spin_lock_irq(ioa_cfg->host->host_lock);
-+				ioa_cfg->scsi_unblock = 1;
-+				schedule_work(&ioa_cfg->work_q);
- 			}
- 			return;
- 		} else {
-Index: linux-2.6.git/drivers/scsi/ipr.h
-===================================================================
---- linux-2.6.git.orig/drivers/scsi/ipr.h
-+++ linux-2.6.git/drivers/scsi/ipr.h
-@@ -1488,6 +1488,8 @@ struct ipr_ioa_cfg {
- 	u8 cfg_locked:1;
- 	u8 clear_isr:1;
- 	u8 probe_done:1;
-+	u8 scsi_unblock:1;
-+	u8 scsi_blocked:1;
- 
- 	u8 revid;
- 
+but it might be better to put that in __blk_mq_run_hw_queue().
+
+-- 
+Jens Axboe
