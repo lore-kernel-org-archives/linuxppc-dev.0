@@ -1,36 +1,24 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qk0-f196.google.com (mail-qk0-f196.google.com
+ [209.85.220.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMJ4M2jHnzDrJP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 00:05:23 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v71E4S7k009971
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Aug 2017 10:05:21 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c2nd2265r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 10:05:20 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 1 Aug 2017 08:05:20 -0600
-Subject: Re: [RFC PATCH] powerpc: Disabling MEMORY_HOTPLUG_DEFAULT_ONLINE
- option for PPC64 arch
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20170731181759.13839-1-danielhb@linux.vnet.ibm.com>
- <87y3r3sj57.fsf@concordia.ellerman.id.au>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 1 Aug 2017 09:05:17 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMJRN4KjDzDqgY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 00:21:52 +1000 (AEST)
+Received: by mail-qk0-f196.google.com with SMTP id m84so1649231qki.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 07:21:52 -0700 (PDT)
+Date: Tue, 1 Aug 2017 11:21:46 -0300
+From: Breno Leitao <leitao@debian.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/3] powerpc/xmon: Disable and enable tracing command
+Message-ID: <20170801142145.ill2cpq5grybflwp@gmail.com>
+References: <1501521731-12123-1-git-send-email-leitao@debian.org>
+ <1501521731-12123-2-git-send-email-leitao@debian.org>
+ <20170801064024.colxo4i3z764m36k@naverao1-tp.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <87y3r3sj57.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <9f4cbb26-f8f4-7f42-0c73-deab23bd83d6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170801064024.colxo4i3z764m36k@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,91 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/01/2017 04:59 AM, Michael Ellerman wrote:
-> Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com> writes:
-> 
->> Commit 943db62c316c ("powerpc/pseries: Revert 'Auto-online
->> hotplugged memory'") reverted the auto-online feature for pseries due
->> to problems with LMB removals not updating the device struct properly.
->> Among other things, this commit made the following change in
->> arch/powerpc/configs/pseries_defconfig:
->>
->> @@ -58,7 +58,6 @@ CONFIG_KEXEC_FILE=y
->>  CONFIG_IRQ_ALL_CPUS=y
->>  CONFIG_MEMORY_HOTPLUG=y
->>  CONFIG_MEMORY_HOTREMOVE=y
->> -CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=y
->>  CONFIG_KSM=y
->>
->> The intent was to disable the option in the defconfig of pseries, since
->> after that the code doesn't have this support anymore.
-> 
-> It's always polite to Cc the author of a commit you're referring to, so
-> I added Nathan.
-> 
-> The intention when we merged that fix was that the auto-online code
-> would be "fixed" to mark the device online. I say "fixed" because it
-> wasn't entirely clear if that was the correct behaviour, though it
-> definitely seemed like it should be.
-> 
-> I've lost track of where/if the discussion got to on whether the
-> auto-online code should do that or not. Did anything get resolved?
+Hi Naveen,
 
-I think, though I should go back and test to be sure, that everything
-works in the latest mainline code. The issue causing this to be a problem
-was in the original implementation of auto_online support. If you wanted
-to auto online memory, the code was calling memory_block_change_state().
-This worked but did not update the device struct for each of the memory
-block that was online'ed such that dev->offline == true even after the
-memory was online.
+On Tue, Aug 01, 2017 at 12:10:24PM +0530, Naveen N. Rao wrote:
+> On 2017/07/31 02:22PM, Breno Leitao wrote:
+> > If tracing is enabled and you get into xmon, the tracing buffer
+> > continues to be updated, causing possible loss of data due to buffer
+> > overflow and unnecessary tracing information coming from xmon functions.
+> > 
+> > This patch adds a new option that allows the tracing to be disabled and
+> > re-enabled from inside xmon.
+> 
+> How is this new option useful? In the next patch, you disable tracing by 
+> default -- in what scenario do you expect to have to re-enable tracing 
+> from within xmon?
 
-I sent a patch earlier this year (commit dc18d706a436) that corrected
-this to call device_online() instead of memory_block_change_state().
-With this fix (appears to have gone into the 4.11 kernel) it should be
-possible to use auto_online on power systems.
+I see it being useful on two different scenarios:
 
-At this point I don't think we need this patch to disable auto online
-for ppc64. I would be curious if this is still broken with the latest
-mainline code though.
+1) You can reenable tracing if you want to call a function from xmon
+(with 'p'), or even for code stepping (with 's').
 
--Nathan
-  
+2) You may also want to reenable tracing once you resume from xmon with
+'zr'.
+
+> > +		case 'v':
+> > +			if (tracing_is_on()) {
+> > +				printk("Disabling tracing\n");
+> > +				tracing_enabled = 0;
+> > +				tracing_off();
 > 
->> However, this change
->> alone isn't enough to prevent situations such as [1], where
->> distros can enable the option unaware of the consequences of
->> doing it (e.g. breaking LMB hotplug altogether).
->>
->> Instead of relying on all distros knowing that pseries can't handle
->> CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=y after 943db62c316c, this patch
->> changes mm/Kconfig to make the MEMORY_HOTPLUG_DEFAULT_ONLINE config
->> unavailable for the PPC64 arch.
->>
->> [1] https://bugzilla.redhat.com/show_bug.cgi?id=1476380
->>
->> Fixes: 943db62c316c ("powerpc/pseries: Revert 'Auto-online hotplugged memory'")
->> Signed-off-by: Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>
->> ---
->>  mm/Kconfig | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> I don't own that file, so we at least need an Ack from the mm folks.
-> 
-> cheers
-> 
->> diff --git a/mm/Kconfig b/mm/Kconfig
->> index 48b1af4..a342c77 100644
->> --- a/mm/Kconfig
->> +++ b/mm/Kconfig
->> @@ -169,7 +169,7 @@ config MEMORY_HOTPLUG_SPARSE
->>  config MEMORY_HOTPLUG_DEFAULT_ONLINE
->>          bool "Online the newly added memory blocks by default"
->>          default n
->> -        depends on MEMORY_HOTPLUG
->> +        depends on MEMORY_HOTPLUG && !PPC64
->>          help
->>  	  This option sets the default policy setting for memory hotplug
->>  	  onlining policy (/sys/devices/system/memory/auto_online_blocks) which
->> -- 
->> 2.9.4
-> 
+> This only disables trace buffer updates - ftrace (and all its callbacks, 
+> et al) remains active, which isn't desirable.
+
+Why isn't it desirable? In fact, I thought it would be *the* desirable
+function to call, since it does not do a lot of stuff, as disabling
+tracing, in xmon mode, but, just disable the tracing buffer to be updated.
+
+Since we are in xmon, we are in a very bad state, and something went
+very wrong. Disabling the whole tracing might not be what we want to do
+in this scenario, since it can hit the broken subsystem causing xmon to
+fail.
+
+For bad state scenario, I understand that it is desirable to be less
+instrusive as possible, and tracing_off() does exactly it.
+
+> Can you see if this works for you:
+> https://patchwork.ozlabs.org/patch/769611/
+
+Well, I understand that this patch solves a different issue, this does
+not reduce the tracing caused by function tracer after you got into into
+xmon.
+
+As for example, with your patch applied, I can see a lot of xmon
+functions polluting the tracing buffer as:
+
+	1:mon> dt
+	[  359.196593] Dumping ftrace buffer:
+	[  359.196689] ---------------------------------
+	[  359.196904]   1)               |          xmon_printf() {
+	<110+ lines snipped>
+	[  359.197727]   1) + 22.930 us   |          }
+	[  359.199405]   1)               |          skipbl() {
+	<50+ lines snipped>
+	[  359.225069]   1) + 23.750 us   |          }
+
+
+Since tracing continues to be enabled during xmon, these messages
+continue to show up. That is exactly what I am trying to avoid with this
+current patchset. Avoiding all xmon-related tracing is my main goal.
+
+Thanks for your review,
+Breno
