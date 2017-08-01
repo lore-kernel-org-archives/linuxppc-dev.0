@@ -1,48 +1,22 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMQKB4lV5zDr2k
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 04:46:54 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v71Icrqd027018
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Aug 2017 14:46:51 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c2tu45jhe-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 14:46:51 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 1 Aug 2017 14:46:50 -0400
-Date: Tue, 1 Aug 2017 11:46:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: dzickus@redhat.com, sfr@canb.auug.org.au, linuxarm@huawei.com,
- Nicholas Piggin <npiggin@gmail.com>, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, tglx@linutronix.de
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170727173923.000001b2@huawei.com>
- <20170727165245.GD3730@linux.vnet.ibm.com>
- <20170728084411.00001ddb@huawei.com>
- <20170728142403.0000122b@huawei.com>
- <20170728165529.GF3730@linux.vnet.ibm.com>
- <20170728182053.000072aa@huawei.com>
- <20170728190349.GM3730@linux.vnet.ibm.com>
- <20170731120847.00003d5c@huawei.com>
- <20170731150411.GA3730@linux.vnet.ibm.com>
- <20170731162757.000058ba@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMQpb0ZmbzDrDb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 05:08:54 +1000 (AEST)
+Subject: Re: [PATCH v1 1/3] arch/powerpc/set_memory: Implement set_memory_xx
+ routines
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+References: <20170801112535.20765-1-bsingharora@gmail.com>
+ <20170801112535.20765-2-bsingharora@gmail.com>
+Cc: naveen.n.rao@linux.vnet.ibm.com
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <c0303243-e20a-a2ee-7d5c-7660c10daedc@c-s.fr>
+Date: Tue, 1 Aug 2017 21:08:49 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170731162757.000058ba@huawei.com>
-Message-Id: <20170801184646.GE3730@linux.vnet.ibm.com>
+In-Reply-To: <20170801112535.20765-2-bsingharora@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,106 +26,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 31, 2017 at 04:27:57PM +0100, Jonathan Cameron wrote:
-> On Mon, 31 Jul 2017 08:04:11 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Mon, Jul 31, 2017 at 12:08:47PM +0100, Jonathan Cameron wrote:
-> > > On Fri, 28 Jul 2017 12:03:50 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > >   
-> > > > On Fri, Jul 28, 2017 at 06:27:05PM +0100, Jonathan Cameron wrote:  
-> > > > > On Fri, 28 Jul 2017 09:55:29 -0700
-> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > >     
-> > > > > > On Fri, Jul 28, 2017 at 02:24:03PM +0100, Jonathan Cameron wrote:    
-> > > > > > > On Fri, 28 Jul 2017 08:44:11 +0100
-> > > > > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:      
-> > > > > > 
-> > > > > > [ . . . ]
-> > > > > >     
-> > > > > > > Ok.  Some info.  I disabled a few driver (usb and SAS) in the interest of having
-> > > > > > > fewer timer events.  Issue became much easier to trigger (on some runs before
-> > > > > > > I could get tracing up and running)
-> > > > > > >e
-> > > > > > > So logs are large enough that pastebin doesn't like them - please shoet if      
-> > > > > > >>e another timer period is of interest.      
-> > > > > > > 
-> > > > > > > https://pastebin.com/iUZDfQGM for the timer trace.
-> > > > > > > https://pastebin.com/3w1F7amH for dmesg.  
-> > > > > > > 
-> > > > > > > The relevant timeout on the RCU stall detector was 8 seconds.  Event is
-> > > > > > > detected around 835.
-> > > > > > > 
-> > > > > > > It's a lot of logs, so I haven't identified a smoking gun yet but there
-> > > > > > > may well be one in there.      
-> > > > > > 
-> > > > > > The dmesg says:
-> > > > > > 
-> > > > > > rcu_preempt kthread starved for 2508 jiffies! g112 c111 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
-> > > > > > 
-> > > > > > So I look for "rcu_preempt" timer events and find these:
-> > > > > > 
-> > > > > > rcu_preempt-9     [019] ....   827.579114: timer_init: timer=ffff8017d5fc7da0
-> > > > > > rcu_preempt-9     [019] d..1   827.579115: timer_start: timer=ffff8017d5fc7da0 function=process_timeout 
-> > > > > > 
-> > > > > > Next look for "ffff8017d5fc7da0" and I don't find anything else.    
-> > > > > It does show up off the bottom of what would fit in pastebin...
-> > > > > 
-> > > > >      rcu_preempt-9     [001] d..1   837.681077: timer_cancel: timer=ffff8017d5fc7da0
-> > > > >      rcu_preempt-9     [001] ....   837.681086: timer_init: timer=ffff8017d5fc7da0
-> > > > >      rcu_preempt-9     [001] d..1   837.681087: timer_start: timer=ffff8017d5fc7da0 function=process_timeout expires=4295101298 [timeout=1] cpu=1 idx=0 flags=    
-> > > > 
-> > > > Odd.  I would expect an expiration...  And ten seconds is way longer
-> > > > than the requested one jiffy!
-> > > >   
-> > > > > > The timeout was one jiffy, and more than a second later, no expiration.
-> > > > > > Is it possible that this event was lost?  I am not seeing any sign of
-> > > > > > this is the trace.
-> > > > > > 
-> > > > > > I don't see any sign of CPU hotplug (and I test with lots of that in
-> > > > > > any case).
-> > > > > > 
-> > > > > > The last time we saw something like this it was a timer HW/driver problem,
-> > > > > > but it is a bit hard to imagine such a problem affecting both ARM64
-> > > > > > and SPARC.  ;-)    
-> > > > > Could be different issues, both of which were hidden by that lockup detector.
-> > > > > 
-> > > > > There is an errata work around for the timers on this particular board.
-> > > > > I'm only vaguely aware of it, so may be unconnected.
-> > > > > 
-> > > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clocksource/arm_arch_timer.c?h=v4.13-rc2&id=bb42ca47401010fc02901b5e8f79e40a26f208cb
-> > > > > 
-> > > > > Seems unlikely though! + we've not yet seen it on the other chips that
-> > > > > errata effects (not that that means much).    
-> > > > 
-> > > > If you can reproduce quickly, might be worth trying anyway...
-> > > > 
-> > > > 							Thanx, Paul  
-> > > Errata fix is running already and was for all those tests.  
-> > 
-> > I was afraid of that...  ;-)
-> It's a pretty rare errata it seems.  Not actually managed to catch
-> one yet. 
-> > 
-> > > I'll have a dig into the timers today and see where I get to.  
-> > 
-> > Look forward to seeing what you find!
-> Nothing obvious turning up other than we don't seem to have issue
-> when we aren't running hrtimers.
-> 
-> On a plus side I just got a report that it is effecting our d03
-> boards which is good on the basis I couldn't tell what the difference
-> could be wrt to this issue!
-> 
-> It indeed looks like we are consistently missing a timer before
-> the rcu splat occurs.
 
-And for my part, my tests with CONFIG_HZ_PERIODIC=y and
-CONFIG_RCU_FAST_NO_HZ=n showed roughly the same failure rate
-as other runs.
 
-Missing a timer can most certainly give RCU severe heartburn!  ;-)
-Do you have what you need to track down the missing timer?  
+Le 01/08/2017 à 13:25, Balbir Singh a écrit :
+> Add support for set_memory_xx routines. With the STRICT_KERNEL_RWX
+> feature support we got support for changing the page permissions
+> for pte ranges. This patch adds support for both radix and hash
+> so that we can change their permissions via set/clear masks.
+>
+> A new helper is required for hash (hash__change_memory_range()
+> is changed to hash__change_boot_memory_range() as it deals with
+> bolted PTE's).
+>
+> hash__change_memory_range() works with vmalloc'ed PAGE_SIZE requests
+> for permission changes. hash__change_memory_range() does not invoke
+> updatepp, instead it changes the software PTE and invalidates the PTE.
+>
+> For radix, radix__change_memory_range() is setup to do the right
+> thing for vmalloc'd addresses. It takes a new parameter to decide
+> what attributes to set.
+>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hash.h  |  6 +++
+>  arch/powerpc/include/asm/book3s/64/radix.h |  6 +++
+>  arch/powerpc/include/asm/set_memory.h      | 34 +++++++++++++++
+>  arch/powerpc/mm/pgtable-hash64.c           | 51 ++++++++++++++++++++--
+>  arch/powerpc/mm/pgtable-radix.c            | 26 ++++++------
+>  arch/powerpc/mm/pgtable_64.c               | 68 ++++++++++++++++++++++++++++++
+>  6 files changed, 175 insertions(+), 16 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/set_memory.h
+>
 
-							Thanx, Paul
+[...]
+
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index 0736e94..3ee4c7d 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -514,3 +514,71 @@ void mark_initmem_nx(void)
+>  		hash__mark_initmem_nx();
+>  }
+>  #endif
+> +
+> +#ifdef CONFIG_ARCH_HAS_SET_MEMORY
+> +/*
+> + * Some of these bits are taken from arm64/mm/page_attr.c
+> + */
+> +static int change_memory_common(unsigned long addr, int numpages,
+> +				unsigned long set, unsigned long clear)
+> +{
+> +	unsigned long start = addr;
+> +	unsigned long size = PAGE_SIZE*numpages;
+> +	unsigned long end = start + size;
+> +	struct vm_struct *area;
+> +
+> +	if (!PAGE_ALIGNED(addr)) {
+> +		start &= PAGE_MASK;
+> +		end = start + size;
+> +		WARN_ON_ONCE(1);
+> +	}
+
+Why not just set start = addr & PAGE_MASK, then just do 
+WARN_ON_ONCE(start != addr), instead of that if ()
+
+> +
+> +	/*
+> +	 * So check whether the [addr, addr + size) interval is entirely
+> +	 * covered by precisely one VM area that has the VM_ALLOC flag set.
+> +	 */
+> +	area = find_vm_area((void *)addr);
+> +	if (!area ||
+> +	    end > (unsigned long)area->addr + area->size ||
+> +	    !(area->flags & VM_ALLOC))
+> +		return -EINVAL;
+> +
+> +	if (!numpages)
+> +		return 0;
+
+Shouldn't that be tested earlier ?
+
+> +
+> +	if (radix_enabled())
+> +		return radix__change_memory_range(start, start + size,
+> +							set, clear);
+> +	else
+> +		return hash__change_memory_range(start, start + size,
+> +							set, clear);
+> +}
+
+The following functions should go in a place common to PPC32 and PPC64, 
+otherwise they will have to be duplicated when implementing for PPC32.
+Maybe the above function should also go in a common place, only the last 
+part should remain in a PPC64 dedicated part. It could be called 
+change_memory_range(), something like
+
+int change_memory_range(unsigned long start, unsigned long end,
+			unsigned long set, unsigned long clear)
+{
+	if (radix_enabled())
+		return radix__change_memory_range(start, end,
+						  set, clear);
+	return hash__change_memory_range(start, end, set, clear);
+}
+
+Then change_memory_range() could also be implemented for PPC32 later.
+
+> +
+> +int set_memory_ro(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_common(addr, numpages,
+> +					0, _PAGE_WRITE);
+> +}
+> +EXPORT_SYMBOL(set_memory_ro);
+
+Take care that _PAGE_WRITE has value 0 when _PAGE_RO instead of _PAGE_RW 
+is defined (eg for the 8xx).
+
+It would be better to use accessors like pte_wrprotect() and pte_mkwrite()
+
+> +
+> +int set_memory_rw(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_common(addr, numpages,
+> +					_PAGE_WRITE, 0);
+> +}
+> +EXPORT_SYMBOL(set_memory_rw);
+> +
+> +int set_memory_nx(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_common(addr, numpages,
+> +					0, _PAGE_EXEC);
+> +}
+> +EXPORT_SYMBOL(set_memory_nx);
+> +
+> +int set_memory_x(unsigned long addr, int numpages)
+> +{
+> +	return change_memory_common(addr, numpages,
+> +					_PAGE_EXEC, 0);
+> +}
+> +EXPORT_SYMBOL(set_memory_x);
+> +#endif
+>
+
+Christophe
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
