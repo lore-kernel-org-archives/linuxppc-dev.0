@@ -1,18 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jonathan.cameron@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMCHF0qThzDrhD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 20:29:29 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org,
-	aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH 3/3] powerpc/mm/hash64: Make vmalloc 56T on hash
-Date: Tue,  1 Aug 2017 20:29:24 +1000
-Message-Id: <1501583364-14909-3-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1501583364-14909-1-git-send-email-mpe@ellerman.id.au>
-References: <1501583364-14909-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMCqB3q05zDrMP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Aug 2017 20:53:42 +1000 (AEST)
+Date: Tue, 1 Aug 2017 11:53:09 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
+ <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
+ <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
+ <linux-arm-kernel@lists.infradead.org>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170801115309.000070fd@huawei.com>
+In-Reply-To: <20170731125548.00007b68@huawei.com>
+References: <20170726.095432.169004918437663011.davem@davemloft.net>
+ <20170726175013.GT3730@linux.vnet.ibm.com>
+ <20170726223658.GA27617@linux.vnet.ibm.com>
+ <20170726.154540.150558937277891719.davem@davemloft.net>
+ <20170726231505.GG3730@linux.vnet.ibm.com>
+ <20170731120908.00002e28@huawei.com>
+ <20170731125548.00007b68@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,79 +34,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 64-bit book3s, with the hash MMU, we currently define the kernel
-virtual space (vmalloc, ioremap etc.), to be 16T in size. This is a
-leftover from pre v3.7 when our user VM was also 16T.
 
-Of that 16T we split it 50/50, with half used for PCI IO and ioremap
-and the other 8T for vmalloc.
+Sorry - accidental send.  No content!
 
-We never bothered to make it any bigger because 8T of vmalloc ought to
-be enough for anybody. But it turns out that's not true, the per cpu
-allocator wants large amounts of vmalloc space, not to make large
-allocations, but to allow a large stride between allocations, because
-we use pcpu_embed_first_chunk().
+Jonathan
 
-With a bit of juggling we can keep 8T for the IO etc. and make the
-vmalloc space 56T. The only complication is the check of the address
-in the SLB miss handler, see the comment in the code.
+On Mon, 31 Jul 2017 12:55:48 +0100
+Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/book3s/64/hash.h |  4 ++--
- arch/powerpc/mm/slb_low.S                 | 18 +++++++++++++++---
- 2 files changed, 17 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index d613653ed5b9..f88452019114 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -40,7 +40,7 @@
-  * Define the address range of the kernel non-linear virtual area
-  */
- #define H_KERN_VIRT_START ASM_CONST(0xD000000000000000)
--#define H_KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
-+#define H_KERN_VIRT_SIZE  ASM_CONST(0x0000400000000000) /* 64T */
- 
- /*
-  * The vmalloc space starts at the beginning of that region, and
-@@ -48,7 +48,7 @@
-  * (we keep a quarter for the virtual memmap)
-  */
- #define H_VMALLOC_START	H_KERN_VIRT_START
--#define H_VMALLOC_SIZE	(H_KERN_VIRT_SIZE >> 1)
-+#define H_VMALLOC_SIZE	ASM_CONST(0x380000000000) /* 56T */
- #define H_VMALLOC_END	(H_VMALLOC_START + H_VMALLOC_SIZE)
- 
- #define H_KERN_IO_START	H_VMALLOC_END
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 2eb1b92a68ff..906a86fe457b 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -121,9 +121,21 @@ slb_miss_kernel_load_vmemmap:
- 1:
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
- 
--	clrldi	r11,r10,48
--	cmpldi	r11,(H_VMALLOC_SIZE >> 28) - 1
--	bgt	5f
-+	/*
-+	 * r10 contains the ESID, which is the original faulting EA shifted
-+	 * right by 28 bits. We need to compare that with (H_VMALLOC_END >> 28)
-+	 * which is 0xd00038000. That can't be used as an immediate, even if we
-+	 * ignored the 0xd, so we have to load it into a register, and we only
-+	 * have one register free. So we must load all of (H_VMALLOC_END >> 28)
-+	 * into a register and compare ESID against that.
-+	 */
-+	lis	r11,(H_VMALLOC_END >> 32)@h	// r11 = 0xffffffffd0000000
-+	ori	r11,r11,(H_VMALLOC_END >> 32)@l	// r11 = 0xffffffffd0003800
-+	// Rotate left 4, then mask with 0xffffffff0
-+	rldic	r11,r11,4,28			// r11 = 0xd00038000
-+	cmpld	r10,r11				// if r10 >= r11
-+	bge	5f				//   goto io_mapping
-+
- 	/*
- 	 * vmalloc mapping gets the encoding from the PACA as the mapping
- 	 * can be demoted from 64K -> 4K dynamically on some machines.
--- 
-2.7.4
+> On Mon, 31 Jul 2017 12:09:08 +0100
+> Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:
+> 
+> > On Wed, 26 Jul 2017 16:15:05 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >   
+> > > On Wed, Jul 26, 2017 at 03:45:40PM -0700, David Miller wrote:    
+> > > > From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> > > > Date: Wed, 26 Jul 2017 15:36:58 -0700
+> > > >       
+> > > > > And without CONFIG_SOFTLOCKUP_DETECTOR, I see five runs of 24 with RCU
+> > > > > CPU stall warnings.  So it seems likely that CONFIG_SOFTLOCKUP_DETECTOR
+> > > > > really is having an effect.      
+> > > > 
+> > > > Thanks for all of the info Paul, I'll digest this and scan over the
+> > > > code myself.
+> > > > 
+> > > > Just out of curiousity, what x86 idle method is your machine using?
+> > > > The mwait one or the one which simply uses 'halt'?  The mwait variant
+> > > > might mask this bug, and halt would be a lot closer to how sparc64 and
+> > > > Jonathan's system operates.      
+> > > 
+> > > My kernel builds with CONFIG_INTEL_IDLE=n, which I believe means that
+> > > I am not using the mwait one.  Here is a grep for IDLE in my .config:
+> > > 
+> > > 	CONFIG_NO_HZ_IDLE=y
+> > > 	CONFIG_GENERIC_SMP_IDLE_THREAD=y
+> > > 	# CONFIG_IDLE_PAGE_TRACKING is not set
+> > > 	CONFIG_ACPI_PROCESSOR_IDLE=y
+> > > 	CONFIG_CPU_IDLE=y
+> > > 	# CONFIG_CPU_IDLE_GOV_LADDER is not set
+> > > 	CONFIG_CPU_IDLE_GOV_MENU=y
+> > > 	# CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is not set
+> > > 	# CONFIG_INTEL_IDLE is not set
+> > >     
+> > > > On sparc64 the cpu yield we do in the idle loop sleeps the cpu.  It's
+> > > > local TICK register keeps advancing, and the local timer therefore
+> > > > will still trigger.  Also, any externally generated interrupts
+> > > > (including cross calls) will wake up the cpu as well.
+> > > > 
+> > > > The tick-sched code is really tricky wrt. NO_HZ even in the NO_HZ_IDLE
+> > > > case.  One of my running theories is that we miss scheduling a tick
+> > > > due to a race.  That would be consistent with the behavior we see
+> > > > in the RCU dumps, I think.      
+> > > 
+> > > But wouldn't you have to miss a -lot- of ticks to get an RCU CPU stall
+> > > warning?  By default, your grace period needs to extend for more than
+> > > 21 seconds (more than one-third of a -minute-) to get one.  Or do
+> > > you mean that the ticks get shut off now and forever, as opposed to
+> > > just losing one of them?
+> > >     
+> > > > Anyways, just a theory, and that's why I keep mentioning that commit
+> > > > about the revert of the revert (specifically
+> > > > 411fe24e6b7c283c3a1911450cdba6dd3aaea56e).
+> > > > 
+> > > > :-)      
+> > > 
+> > > I am running an overnight test in preparation for attempting to push
+> > > some fixes for regressions into 4.12, but will try reverting this
+> > > and enabling CONFIG_HZ_PERIODIC tomorrow.
+> > > 
+> > > Jonathan, might the commit that Dave points out above be what reduces
+> > > the probability of occurrence as you test older releases?    
+> > I just got around to trying this out of curiosity.  Superficially it did
+> > appear to possibly make the issue harder to hit took over 30 minutes
+> > but the issue otherwise looks much the same with or without that patch.
+> > 
+> > Just out of curiosity, next thing on my list is to disable hrtimers entirely
+> > and see what happens.
+> > 
+> > Jonathan  
+> > > 
+> > > 							Thanx, Paul
+> > >     
+> > 
+> > _______________________________________________
+> > linuxarm mailing list
+> > linuxarm@huawei.com
+> > http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm  
+> 
+> _______________________________________________
+> linuxarm mailing list
+> linuxarm@huawei.com
+> http://rnd-openeuler.huawei.com/mailman/listinfo/linuxarm
