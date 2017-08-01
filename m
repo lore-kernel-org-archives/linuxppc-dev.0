@@ -3,17 +3,19 @@ Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
  [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMWDD1skczDqtV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 08:27:55 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id l64so4323884pge.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 15:27:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMWz81tRxzDqkv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 09:01:39 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id u185so4421006pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 16:01:39 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v5 1/2] lib/raid6: Build proper files on corresponding arch
-In-Reply-To: <20170428055809.2675-1-matthew.brown.dev@gmail.com>
+Subject: Re: [v5 2/2] raid6/altivec: Add vpermxor implementation for raid6 Q
+ syndrome
+In-Reply-To: <20170428055809.2675-2-matthew.brown.dev@gmail.com>
 References: <20170428055809.2675-1-matthew.brown.dev@gmail.com>
-Date: Wed, 02 Aug 2017 08:27:43 +1000
-Message-ID: <87bmnysz34.fsf@linkitivity.dja.id.au>
+ <20170428055809.2675-2-matthew.brown.dev@gmail.com>
+Date: Wed, 02 Aug 2017 09:01:26 +1000
+Message-ID: <878tj2sxix.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,40 +29,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Matt,
 
-> --- a/lib/raid6/test/Makefile
-> +++ b/lib/raid6/test/Makefile
-> @@ -44,10 +44,12 @@ else ifeq ($(HAS_NEON),yes)
->          CFLAGS += -DCONFIG_KERNEL_MODE_NEON=1
->  else
->          HAS_ALTIVEC := $(shell printf '\#include <altivec.h>\nvector int a;\n' |\
-> -                         gcc -c -x c - >&/dev/null && \
-> -                         rm ./-.o && echo yes)
-> +                         gcc -c -x c - >/dev/null && rm ./-.o && echo yes)
+> The raid6 Q syndrome check has been optimised using the vpermxor
+> instruction.
 
->From memory the change here (s/>&/>/) was necessary to get the build to
-succeed - did we ever figure out why that was? I'm not enough of a shell
-guru to grok the difference. If it's easy to explain it would be good to
-put it in the commit message, rather than just saying you fixed an
-unspecified bug.
+Very much a nit, but normally we'd write the change that the patch makes
+as a command: "Optimise the raid6 Q syndrome generation using the
+vpermxor instruction" - see
+https://www.kernel.org/doc/html/v4.11/process/submitting-patches.html#describe-your-changes
 
->          ifeq ($(HAS_ALTIVEC),yes)
-> -                OBJS += altivec1.o altivec2.o altivec4.o altivec8.o
-> +                CFLAGS += -I../../../arch/powerpc/include
-> +                CFLAGS += -DCONFIG_ALTIVEC
-> +                OBJS += altivec1.o altivec2.o altivec4.o altivec8.o \
-> +                        vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
+> +static void noinline raid6_vpermxor$#_gen_syndrome_real(int disks, size_t bytes,
+> +							void **ptrs)
+> +{
+> +	u8 **dptr = (u8 **)ptrs;
+> +	u8 *p, *q;
+> +	int d, z, z0;
+> +	unative_t wp$$, wq$$, wd$$;
+> +
+> +	z0 = disks - 3;		/* Highest data disk */
+> +	p = dptr[z0+1];		/* XOR parity */
+> +	q = dptr[z0+2];		/* RS syndrome */
+> +
+> +	for (d = 0; d < bytes; d += NSIZE*$#) {
+> +		wp$$ = wq$$ = *(unative_t *)&dptr[z0][d+$$*NSIZE];
+> +
+> +		for (z = z0-1; z>=0; z--) {
+> +			wd$$ = *(unative_t *)&dptr[z][d+$$*NSIZE];
+> +			/* P syndrome */
+> +			wp$$ = vec_xor(wp$$, wd$$);
+> +
+> +			/*Q syndrome */
+> +			asm("vpermxor %0,%1,%2,%3":"=v"(wq$$):"v"(gf_high), "v"(gf_low), "v"(wq$$));
 
-You've added vpermxor here, but you don't define them until the next
-patch, so the tests will fail. Please move the change to OBJS to the
-next patch.
+Initially I thought "why can't we break this over 2 lines?" and then I
+remembered that the awk script can't handle that. A space between /* and
+Q would be good though.
 
-With that change, I'd be happy to formally Review this patch.
+> +			wq$$ = vec_xor(wq$$, wd$$);
+
+I generated some of the unrolled code and inspected it. It's non-trivial
+to follow but that's justifiable, it's due to:
+ - the complex maths
+ - the unrolling process
+ - consistency with the altivec code, which I think is worth keeping
+I am not sure how you could make it any easier to read, so I don't think
+that should block its acceptance into the kernel.
+
+I am confident that this code works correctly and as described.
+
+Reviewed-by: Daniel Axtens <dja@axtens.net>
 
 Regards,
 Daniel
 
->          endif
->  endif
->  ifeq ($(ARCH),tilegx)
 > -- 
 > 2.9.3
