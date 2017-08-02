@@ -2,13 +2,13 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4mn0m7pzDqnl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:39:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4mn6vd0zDr1g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:39:37 +1000 (AEST)
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v72KdXPT003051
+ v72KdZDo003087
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 20:39:33 GMT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 20:39:35 GMT
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -16,9 +16,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  mhocko@kernel.org
-Subject: [v4 01/15] x86/mm: reserve only exiting low pages
-Date: Wed,  2 Aug 2017 16:38:10 -0400
-Message-Id: <1501706304-869240-2-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v4 10/15] x86/kasan: explicitly zero kasan shadow memory
+Date: Wed,  2 Aug 2017 16:38:19 -0400
+Message-Id: <1501706304-869240-11-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1501706304-869240-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1501706304-869240-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,58 +30,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Struct pages are initialized by going through __init_single_page(). Since
-the existing physical memory in memblock is represented in memblock.memory
-list, struct page for every page from this list goes through
-__init_single_page().
+To optimize the performance of struct page initialization,
+vmemmap_populate() will no longer zero memory.
 
-The second memblock list: memblock.reserved, manages the allocated memory.
-The memory that won't be available to kernel allocator. So, every page from
-this list goes through reserve_bootmem_region(), where certain struct page
-fields are set, the assumption being that the struct pages have been
-initialized beforehand.
-
-In trim_low_memory_range() we unconditionally reserve memoryfrom PFN 0, but
-memblock.memory might start at a later PFN. For example, in QEMU,
-e820__memblock_setup() can use PFN 1 as the first PFN in memblock.memory,
-so PFN 0 is not on memblock.memory (and hence isn't initialized via
-__init_single_page) but is on memblock.reserved (and hence we set fields in
-the uninitialized struct page).
-
-Currently, the struct page memory is always zeroed during allocation,
-which prevents this problem from being detected. But, if some asserts
-provided by CONFIG_DEBUG_VM_PGFLAGS are tighten, this problem may become
-visible in existing kernels.
-
-In this patchset we will stop zeroing struct page memory during allocation.
-Therefore, this bug must be fixed in order to avoid random assert failures
-caused by CONFIG_DEBUG_VM_PGFLAGS triggers.
-
-The fix is to reserve memory from the first existing PFN.
+We must explicitly zero the memory that is allocated by vmemmap_populate()
+for kasan, as this memory does not go through struct page initialization
+path.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- arch/x86/kernel/setup.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/x86/mm/kasan_init_64.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 3486d0498800..489cdc141bcb 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -790,7 +790,10 @@ early_param("reservelow", parse_reservelow);
+diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
+index 02c9d7553409..7d06cf0b0b6e 100644
+--- a/arch/x86/mm/kasan_init_64.c
++++ b/arch/x86/mm/kasan_init_64.c
+@@ -84,6 +84,28 @@ static struct notifier_block kasan_die_notifier = {
+ };
+ #endif
  
- static void __init trim_low_memory_range(void)
- {
--	memblock_reserve(0, ALIGN(reserve_low, PAGE_SIZE));
-+	unsigned long min_pfn = find_min_pfn_with_active_regions();
-+	phys_addr_t base = min_pfn << PAGE_SHIFT;
++/*
++ * Memory that was allocated by vmemmap_populate is not zeroed, so we must
++ * zero it here explicitly.
++ */
++static void
++zero_vemmap_populated_memory(void)
++{
++	u64 i, start, end;
 +
-+	memblock_reserve(base, ALIGN(reserve_low, PAGE_SIZE));
- }
- 	
- /*
++	for (i = 0; i < E820_MAX_ENTRIES && pfn_mapped[i].end; i++) {
++		void *kaddr_start = pfn_to_kaddr(pfn_mapped[i].start);
++		void *kaddr_end = pfn_to_kaddr(pfn_mapped[i].end);
++
++		start = (u64)kasan_mem_to_shadow(kaddr_start);
++		end = (u64)kasan_mem_to_shadow(kaddr_end);
++		memset((void *)start, 0, end - start);
++	}
++	start = (u64)kasan_mem_to_shadow(_stext);
++	end = (u64)kasan_mem_to_shadow(_end);
++	memset((void *)start, 0, end - start);
++}
++
+ void __init kasan_early_init(void)
+ {
+ 	int i;
+@@ -156,6 +178,13 @@ void __init kasan_init(void)
+ 		pte_t pte = __pte(__pa(kasan_zero_page) | __PAGE_KERNEL_RO);
+ 		set_pte(&kasan_zero_pte[i], pte);
+ 	}
++
++	/*
++	 * vmemmap_populate does not zero the memory, so we need to zero it
++	 * explicitly
++	 */
++	zero_vemmap_populated_memory();
++
+ 	/* Flush TLBs again to be sure that write protection applied. */
+ 	__flush_tlb_all();
+ 
 -- 
 2.13.3
