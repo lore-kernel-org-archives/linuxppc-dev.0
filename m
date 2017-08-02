@@ -1,16 +1,16 @@
 Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4CX21gSzDqnP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:14:15 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4CZ3tF0zDqnP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:14:18 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v72KDcdX055779
+ v72KDefu090750
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 16:14:13 -0400
 Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3ft6spk4-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c3g8hr169-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 16:14:13 -0400
 Received: from localhost
@@ -20,19 +20,20 @@ Received: from localhost
  Wed, 2 Aug 2017 14:14:12 -0600
 Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
  by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v72KE9Z461997094
+ v72KE9gR61341834
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 13:14:10 -0700
 Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
  by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v72KEA36004909
+ v72KEAHd004917
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 17:14:10 -0300
 From: Breno Leitao <leitao@debian.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Breno Leitao <leitao@debian.org>
-Subject: [PATCH v3 1/2] powerpc/xmon: Dump ftrace buffers for the current CPU
- only
-Date: Wed,  2 Aug 2017 17:14:05 -0300
-Message-Id: <1501704846-22625-1-git-send-email-leitao@debian.org>
+Subject: [PATCH v3 2/2] powerpc/xmon: Disable tracing when entering xmon
+Date: Wed,  2 Aug 2017 17:14:06 -0300
+In-Reply-To: <1501704846-22625-1-git-send-email-leitao@debian.org>
+References: <1501704846-22625-1-git-send-email-leitao@debian.org>
+Message-Id: <1501704846-22625-2-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,72 +43,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current xmon 'dt' command dumps the tracing buffer for all the CPUs,
-which makes it very hard to read due to the fact that most of
-powerpc machines currently have many CPUs. Other than that, the CPU
-lines are interleaved in the ftrace log.
+If tracing is enabled and you get into xmon, the tracing buffer
+continues to be updated, causing possible loss of data and unnecessary
+tracing information coming from xmon functions.
 
-This new option just dumps the ftrace buffer for the current CPU.
+This patch simple disables tracing when entering xmon, and re-enables it
+if the kernel is resumed (with 'x').
 
 Signed-off-by: Breno Leitao <leitao@debian.org>
 Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/xmon/xmon.c | 22 +++++++++++++++++++---
- 1 file changed, 19 insertions(+), 3 deletions(-)
+ arch/powerpc/xmon/xmon.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 08e367e3e8c3..e0522f60f0ee 100644
+index e0522f60f0ee..d038e7db44c4 100644
 --- a/arch/powerpc/xmon/xmon.c
 +++ b/arch/powerpc/xmon/xmon.c
-@@ -234,6 +234,7 @@ Commands:\n\
-   "\
-   dr	dump stream of raw bytes\n\
-   dt	dump the tracing buffers (uses printk)\n\
-+  dtc	dump the tracing buffers for current CPU (uses printk)\n\
- "
- #ifdef CONFIG_PPC_POWERNV
- "  dx#   dump xive on CPU #\n\
-@@ -2231,6 +2232,19 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
- 	printf("\n");
+@@ -89,6 +89,7 @@ static unsigned long nidump = 16;
+ static unsigned long ncsum = 4096;
+ static int termch;
+ static char tmpstr[128];
++static int tracing_enabled;
+ 
+ static long bus_error_jmp[JMP_BUF_LEN];
+ static int catch_memory_errors;
+@@ -462,6 +463,9 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+ 	local_irq_save(flags);
+ 	hard_irq_disable();
+ 
++	tracing_enabled = tracing_is_on();
++	tracing_off();
++
+ 	bp = in_breakpoint_table(regs->nip, &offset);
+ 	if (bp != NULL) {
+ 		regs->nip = bp->address + offset;
+@@ -982,6 +986,8 @@ cmds(struct pt_regs *excp)
+ 			break;
+ 		case 'x':
+ 		case 'X':
++			if (tracing_enabled)
++				tracing_on();
+ 			return cmd;
+ 		case EOF:
+ 			printf(" <no input ...>\n");
+@@ -2241,8 +2247,6 @@ static void dump_tracing(void)
+ 		ftrace_dump(DUMP_ORIG);
+ 	else
+ 		ftrace_dump(DUMP_ALL);
+-
+-	tracing_on();
  }
  
-+static void dump_tracing(void)
-+{
-+	int c;
-+
-+	c = inchar();
-+	if (c == 'c')
-+		ftrace_dump(DUMP_ORIG);
-+	else
-+		ftrace_dump(DUMP_ALL);
-+
-+	tracing_on();
-+}
-+
  #ifdef CONFIG_PPC64
- static void dump_one_paca(int cpu)
- {
-@@ -2507,6 +2521,11 @@ dump(void)
- 	}
- #endif
- 
-+	if (c == 't') {
-+		dump_tracing();
-+		return;
-+	}
-+
- 	if (c == '\n')
- 		termch = c;
- 
-@@ -2525,9 +2544,6 @@ dump(void)
- 		dump_log_buf();
- 	} else if (c == 'o') {
- 		dump_opal_msglog();
--	} else if (c == 't') {
--		ftrace_dump(DUMP_ALL);
--		tracing_on();
- 	} else if (c == 'r') {
- 		scanhex(&ndump);
- 		if (ndump == 0)
 -- 
 2.13.2
