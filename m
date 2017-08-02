@@ -1,28 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMp8g71tyzDsP3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 19:40:51 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: Ram Pai <linuxram@us.ibm.com>, linux-arch@vger.kernel.org, corbet@lwn.net,
- arnd@arndb.de, linux-doc@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, mhocko@kernel.org, linux-mm@kvack.org,
- dave.hansen@intel.com, mingo@redhat.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, linux-kselftest@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v6 21/62] powerpc: introduce execute-only pkey
-In-Reply-To: <87d18fw9it.fsf@linux.vnet.ibm.com>
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-22-git-send-email-linuxram@us.ibm.com>
- <87shhgdx5i.fsf@linux.vnet.ibm.com> <87d18fu6o1.fsf@concordia.ellerman.id.au>
- <87d18fw9it.fsf@linux.vnet.ibm.com>
-Date: Wed, 02 Aug 2017 19:40:46 +1000
-Message-ID: <871sous3xd.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMppn29wFzDsSf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 20:10:25 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v72AAFIO053884
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 06:10:23 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c3a6x7b32-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 06:10:20 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 2 Aug 2017 20:09:56 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v72A9raS24510612
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 20:09:53 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v72A9qGY012887
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 20:09:53 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com
+Subject: Re: [PATCH v1 1/3] arch/powerpc/set_memory: Implement set_memory_xx
+ routines
+In-Reply-To: <20170801112535.20765-2-bsingharora@gmail.com>
+References: <20170801112535.20765-1-bsingharora@gmail.com>
+ <20170801112535.20765-2-bsingharora@gmail.com>
+Date: Wed, 02 Aug 2017 15:39:47 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87pocez3f8.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,49 +48,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+> Add support for set_memory_xx routines. With the STRICT_KERNEL_RWX
+> feature support we got support for changing the page permissions
+> for pte ranges. This patch adds support for both radix and hash
+> so that we can change their permissions via set/clear masks.
 >
->> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
->>> Ram Pai <linuxram@us.ibm.com> writes:
->> ...
->>>> +
->>>> +	/* We got one, store it and use it from here on out */
->>>> +	if (need_to_set_mm_pkey)
->>>> +		mm->context.execute_only_pkey = execute_only_pkey;
->>>> +	return execute_only_pkey;
->>>> +}
->>>
->>> If you follow the code flow in __execute_only_pkey, the AMR and UAMOR
->>> are read 3 times in total, and AMR is written twice. IAMR is read and
->>> written twice. Since they are SPRs and access to them is slow (or isn't
->>> it?),
->>
->> SPRs read/writes are slow, but they're not *that* slow in comparison to
->> a system call (which I think is where this code is being called?).
+> A new helper is required for hash (hash__change_memory_range()
+> is changed to hash__change_boot_memory_range() as it deals with
+> bolted PTE's).
 >
-> Yes, this code runs on mprotect and mmap syscalls if the memory is
-> requested to have execute but not read nor write permissions.
-
-Yep. That's not in the fast path for key usage, ie. the fast path is
-userspace changing the AMR itself, and the overhead of a syscall is
-already hundreds of cycles.
-
->> So we should try to avoid too many SPR read/writes, but at the same time
->> we can accept more than the minimum if it makes the code much easier to
->> follow.
+> hash__change_memory_range() works with vmalloc'ed PAGE_SIZE requests
+> for permission changes. hash__change_memory_range() does not invoke
+> updatepp, instead it changes the software PTE and invalidates the PTE.
 >
-> Ok. Ram had asked me to suggest a way to optimize the SPR reads and
-> writes and I came up with the patch below. Do you think it's worth it?
+> For radix, radix__change_memory_range() is setup to do the right
+> thing for vmalloc'd addresses. It takes a new parameter to decide
+> what attributes to set.
+>
+....
 
-At a glance no I don't think it is. Sorry you spent that much time on it.
+> +int hash__change_memory_range(unsigned long start, unsigned long end,
+> +				unsigned long set, unsigned long clear)
+> +{
+> +	unsigned long idx;
+> +	pgd_t *pgdp;
+> +	pud_t *pudp;
+> +	pmd_t *pmdp;
+> +	pte_t *ptep;
+> +
+> +	start = ALIGN_DOWN(start, PAGE_SIZE);
+> +	end = PAGE_ALIGN(end); // aligns up
+> +
+> +	/*
+> +	 * Update the software PTE and flush the entry.
+> +	 * This should cause a new fault with the right
+> +	 * things setup in the hash page table
+> +	 */
+> +	pr_debug("Changing flags on range %lx-%lx setting 0x%lx removing 0x%lx\n",
+> +		 start, end, set, clear);
+> +
+> +	for (idx = start; idx < end; idx += PAGE_SIZE) {
 
-I think we can probably reduce the number of SPR accesses without
-needing to go to that level of complexity.
 
-But don't throw the patch away, I may eat my words once I have the full
-series applied and am looking at it hard - at the moment I'm just
-reviewing the patches piecemeal as I get time.
+> +		pgdp = pgd_offset_k(idx);
+> +		pudp = pud_alloc(&init_mm, pgdp, idx);
+> +		if (!pudp)
+> +			return -1;
+> +		pmdp = pmd_alloc(&init_mm, pudp, idx);
+> +		if (!pmdp)
+> +			return -1;
+> +		ptep = pte_alloc_kernel(pmdp, idx);
+> +		if (!ptep)
+> +			return -1;
+> +		hash__pte_update(&init_mm, idx, ptep, clear, set, 0);
+> +		hash__flush_tlb_kernel_range(idx, idx + PAGE_SIZE);
+> +	}
 
-cheers
+You can use find_linux_pte_or_hugepte. with my recent patch series
+find_init_mm_pte() ?
+
+-aneesh
