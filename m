@@ -2,13 +2,13 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4n70GZwzDqpF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:39:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4nB24kPzDqnQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:39:58 +1000 (AEST)
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v72Kdr33026603
+ v72KduI0026612
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 20:39:53 GMT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 20:39:56 GMT
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -16,9 +16,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  mhocko@kernel.org
-Subject: [v4 08/15] mm: zero struct pages during initialization
-Date: Wed,  2 Aug 2017 16:38:17 -0400
-Message-Id: <1501706304-869240-9-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v4 15/15] mm: debug for raw alloctor
+Date: Wed,  2 Aug 2017 16:38:24 -0400
+Message-Id: <1501706304-869240-16-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1501706304-869240-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1501706304-869240-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,49 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add struct page zeroing as a part of initialization of other fields in
-__init_single_page().
+When CONFIG_DEBUG_VM is enabled, this patch sets all the memory that is
+returned by memblock_virt_alloc_try_nid_raw() to ones to ensure that no
+places excpect zeroed memory.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- include/linux/mm.h | 9 +++++++++
- mm/page_alloc.c    | 1 +
- 2 files changed, 10 insertions(+)
+ mm/memblock.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 46b9ac5e8569..183ac5e733db 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -94,6 +94,15 @@ extern int mmap_rnd_compat_bits __read_mostly;
- #endif
- 
- /*
-+ * On some architectures it is expensive to call memset() for small sizes.
-+ * Those architectures should provide their own implementation of "struct page"
-+ * zeroing by defining this macro in <asm/pgtable.h>.
-+ */
-+#ifndef mm_zero_struct_page
-+#define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
-+#endif
-+
-+/*
-  * Default maximum number of active map areas, this limits the number of vmas
-  * per mm struct. Users can overwrite this number by sysctl but there is a
-  * problem.
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 99b9e2e06319..debea7c0febb 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1168,6 +1168,7 @@ static void free_one_page(struct zone *zone,
- static void __meminit __init_single_page(struct page *page, unsigned long pfn,
- 				unsigned long zone, int nid)
+diff --git a/mm/memblock.c b/mm/memblock.c
+index bdf31f207fa4..b6f90e75946c 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -1363,12 +1363,19 @@ void * __init memblock_virt_alloc_try_nid_raw(
+ 			phys_addr_t min_addr, phys_addr_t max_addr,
+ 			int nid)
  {
-+	mm_zero_struct_page(page);
- 	set_page_links(page, zone, nid, pfn);
- 	init_page_count(page);
- 	page_mapcount_reset(page);
++	void *ptr;
++
+ 	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
+ 		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
+ 		     (u64)max_addr, (void *)_RET_IP_);
+ 
+-	return memblock_virt_alloc_internal(size, align,
+-					    min_addr, max_addr, nid);
++	ptr = memblock_virt_alloc_internal(size, align,
++					   min_addr, max_addr, nid);
++#ifdef CONFIG_DEBUG_VM
++	if (ptr && size > 0)
++		memset(ptr, 0xff, size);
++#endif
++	return ptr;
+ }
+ 
+ /**
 -- 
 2.13.3
