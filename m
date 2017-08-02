@@ -1,39 +1,19 @@
-Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMxCf4ckvzDrJm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 00:58:54 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v72EujU5108873
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 10:58:52 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3e4vhr8s-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 10:58:52 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Wed, 2 Aug 2017 11:58:50 -0300
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v72Ewk5327262986
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 11:58:46 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v72Ewlc7016173
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 11:58:47 -0300
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: naveen.n.rao@linux.vnet.ibm.com, Breno Leitao <leitao@debian.org>
-Subject: [PATCH 2/2] powerpc/xmon: Disable tracing when entering xmon
-Date: Wed,  2 Aug 2017 11:58:26 -0300
-In-Reply-To: <1501685906-10169-1-git-send-email-leitao@debian.org>
-References: <1501685906-10169-1-git-send-email-leitao@debian.org>
-Message-Id: <1501685906-10169-2-git-send-email-leitao@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMxN42lshzDrGr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 01:06:12 +1000 (AEST)
+Date: Wed, 2 Aug 2017 12:06:05 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] perf/python: Add ppc64le to audit uname list
+Message-ID: <20170802150605.GH12201@kernel.org>
+References: <20170802144216.12494-1-naveen.n.rao@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170802144216.12494-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,56 +23,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If tracing is enabled and you get into xmon, the tracing buffer
-continues to be updated, causing possible loss of data and unnecessary
-tracing information coming from xmon functions.
+Em Wed, Aug 02, 2017 at 08:12:16PM +0530, Naveen N. Rao escreveu:
+> Before patch:
+>   $ uname -m
+>   ppc64le
 
-This patch simple disables tracing when entering xmon, and reenables it
-if the kernel is resumed (with 'x').
+Thanks, applied,
 
-Signed-off-by: Breno Leitao <leitao@debian.org>
----
- arch/powerpc/xmon/xmon.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+- Arnaldo
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 0cbd910193fa..0b766d7780fa 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -89,6 +89,7 @@ static unsigned long nidump = 16;
- static unsigned long ncsum = 4096;
- static int termch;
- static char tmpstr[128];
-+static char tracing_enabled;
- 
- static long bus_error_jmp[JMP_BUF_LEN];
- static int catch_memory_errors;
-@@ -462,6 +463,9 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 	local_irq_save(flags);
- 	hard_irq_disable();
- 
-+	tracing_enabled = tracing_is_on();
-+	tracing_off();
-+
- 	bp = in_breakpoint_table(regs->nip, &offset);
- 	if (bp != NULL) {
- 		regs->nip = bp->address + offset;
-@@ -982,6 +986,8 @@ cmds(struct pt_regs *excp)
- 			break;
- 		case 'x':
- 		case 'X':
-+			if (tracing_enabled)
-+				tracing_on();
- 			return cmd;
- 		case EOF:
- 			printf(" <no input ...>\n");
-@@ -2353,7 +2359,6 @@ static void dump_tracing(void)
- 	else
- 		ftrace_dump(DUMP_ALL);
- 
--	tracing_on();
- }
- 
- static void dump_all_pacas(void)
--- 
-2.13.2
+>   $ ./perf script -s ./scripts/python/syscall-counts.py
+>   Install the audit-libs-python package to get syscall names.
+>   For example:
+>     # apt-get install python-audit (Ubuntu)
+>     # yum install audit-libs-python (Fedora)
+>     etc.
+> 
+>   Press control+C to stop and show the summary
+>   ^CWarning:
+>   4 out of order events recorded.
+> 
+>   syscall events:
+> 
+>   event                                          count
+>   ----------------------------------------  -----------
+>   4                                             504638
+>   54                                              1206
+>   221                                               42
+>   55                                                21
+>   3                                                 12
+>   167                                               10
+>   11                                                 8
+>   6                                                  7
+>   125                                                6
+>   5                                                  6
+>   108                                                5
+>   162                                                4
+>   90                                                 4
+>   45                                                 3
+>   33                                                 3
+>   311                                                1
+>   246                                                1
+>   238                                                1
+>   93                                                 1
+>   91                                                 1
+> 
+> After patch:
+>   ./perf script -s ./scripts/python/syscall-counts.py
+>   Press control+C to stop and show the summary
+>   ^CWarning:
+>   5 out of order events recorded.
+> 
+>   syscall events:
+> 
+>   event                                          count
+>   ----------------------------------------  -----------
+>   write                                         643411
+>   ioctl                                           1206
+>   futex                                             54
+>   fcntl                                             27
+>   poll                                              14
+>   read                                              12
+>   execve                                             8
+>   close                                              7
+>   mprotect                                           6
+>   open                                               6
+>   nanosleep                                          5
+>   fstat                                              5
+>   mmap                                               4
+>   inotify_add_watch                                  3
+>   brk                                                3
+>   access                                             3
+>   timerfd_settime                                    1
+>   clock_gettime                                      1
+>   epoll_wait                                         1
+>   ftruncate                                          1
+>   munmap                                             1
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
+> index 1d95009592eb..f6c84966e4f8 100644
+> --- a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
+> +++ b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
+> @@ -57,6 +57,7 @@ try:
+>  		'ia64'	: audit.MACH_IA64,
+>  		'ppc'	: audit.MACH_PPC,
+>  		'ppc64'	: audit.MACH_PPC64,
+> +		'ppc64le' : audit.MACH_PPC64LE,
+>  		's390'	: audit.MACH_S390,
+>  		's390x'	: audit.MACH_S390X,
+>  		'i386'	: audit.MACH_X86,
+> -- 
+> 2.13.3
