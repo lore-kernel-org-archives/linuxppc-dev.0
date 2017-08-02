@@ -1,31 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMhqd0SLszDrVk
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 15:40:44 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMhqh3wXDzDrVk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 15:40:48 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v725UPPs134705
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 01:40:42 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c31j9t8fp-1
+ v725TkrL065421
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 01:40:46 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c32gxg1th-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 01:40:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 01:40:46 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 1 Aug 2017 23:40:41 -0600
+ Tue, 1 Aug 2017 23:40:45 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Anton Blanchard <anton@ozlabs.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH 00/17] Remove slot tracking from linux page table
-Date: Wed,  2 Aug 2017 11:09:59 +0530
-Message-Id: <20170802054016.8927-1-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 01/17] powerpc/mm: Update native_hpte_find to return hash
+ pte
+Date: Wed,  2 Aug 2017 11:10:00 +0530
+In-Reply-To: <20170802054016.8927-1-aneesh.kumar@linux.vnet.ibm.com>
+References: <20170802054016.8927-1-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20170802054016.8927-2-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,91 +38,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The helper now also does a secondary hash search so that we can use this in other
+functions.
 
-This patch series removes hash pte slot tracking in linux page table.
-This free up 4 bits from linux page table and brings the hash and radix
-linux page table closer. The series also attempt remove __real_pte_t
-because without slot tracking 4k subpage and 64k page , pte formats
-are similar. 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/hash_native_64.c | 70 +++++++++++++++++++++++-----------------
+ 1 file changed, 40 insertions(+), 30 deletions(-)
 
-However not tracking slot implies we search the hash group during invalidate
-and updatepp operations. That involves searching max 16 slots to find the
-matching hash page table entry. W.r.t subpages, since we don't track the
-validity of slots, when invalidating 64K page, we ends up calling invalidate
-for all subpages irrespective of whether we have taken a subpage
-fault or not.
-
-W.r.t THP, we skip the above and still track slots in level deposited page table.
-
-The patch series do have an impact, hence i am sending this as an RFC series
-before doing further measurements with kvm. On baremetal a kernel build gives.
-
-Without patch:
-/usr/bin/time -p make  vmlinux modules > /dev/null
-real 270.70
-user 280.23
-sys 57.99
-
-With patch
-/usr/bin/time -p make  vmlinux modules > /dev/null
-real 272.97
-user 281.32
-sys 61.46
-
-That is 6% impact on system time:  The real time impact is within the runtime
-variance. 
-
-Let me know if you think we should continue with this approach.
-
--aneesh
-
-Aneesh Kumar K.V (17):
-  powerpc/mm: Update native_hpte_find to return hash pte
-  powerpc/pseries: Update hpte find helper to take hash value
-  powerpc/ps3/mm: Add helper for finding hash pte slot using hash value
-  powerpc/mm: Add hash invalidate callback
-  powerpc/mm: use hash_invalidate for __kernel_map_pages()
-  powerpc/mm: Switch flush_hash_range to not use slot
-  powerpc/mm: Add hash updatepp callback
-  powerpc/mm/hash: Don't track hash pte slot number in linux page table.
-  powerpc/mm: Remove unused flag arg in global_invalidates
-  powerpc/mm: Add new firmware feature HASH API
-  powerpc/kvm/hash: Implement HASH_REMOVE hcall
-  powerpc/kvm/hash: Implement HASH_PROTECT hcall
-  powerpc/kvm/hash: Implement HASH_BULK_REMOVE hcall
-  powerpc/mm/pseries: Use HASH_PROTECT hcall in guest
-  powerpc/mm/pseries: Use HASH_REMOVE hcall in guest
-  powerpc/mm/pseries: Move slot based bulk remove to helper
-  powerpc/mm/pseries: Use HASH_BULK_REMOVE hcall in guest
-
- arch/powerpc/include/asm/book3s/64/hash-4k.h       |  16 +-
- arch/powerpc/include/asm/book3s/64/hash-64k.h      |  44 +--
- arch/powerpc/include/asm/book3s/64/hash.h          |   5 +-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h      |  12 +
- arch/powerpc/include/asm/book3s/64/pgtable.h       |  26 --
- arch/powerpc/include/asm/book3s/64/tlbflush-hash.h |   3 +-
- arch/powerpc/include/asm/firmware.h                |   3 +-
- arch/powerpc/include/asm/hvcall.h                  |   5 +-
- arch/powerpc/include/asm/pgtable-be-types.h        |  10 -
- arch/powerpc/include/asm/pgtable-types.h           |   9 -
- arch/powerpc/include/asm/plpar_wrappers.h          |  23 ++
- arch/powerpc/kvm/book3s_hv.c                       |   3 +
- arch/powerpc/kvm/book3s_hv_rm_mmu.c                | 306 ++++++++++++++++++---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   4 +
- arch/powerpc/kvm/powerpc.c                         |   4 +
- arch/powerpc/mm/dump_linuxpagetables.c             |  10 -
- arch/powerpc/mm/hash64_4k.c                        |   9 +-
- arch/powerpc/mm/hash64_64k.c                       | 108 ++------
- arch/powerpc/mm/hash_native_64.c                   | 172 ++++++++----
- arch/powerpc/mm/hash_utils_64.c                    |  65 +----
- arch/powerpc/mm/hugetlbpage-hash64.c               |  13 +-
- arch/powerpc/mm/tlb_hash64.c                       |   9 +-
- arch/powerpc/platforms/ps3/htab.c                  |  88 ++++++
- arch/powerpc/platforms/pseries/firmware.c          |   1 +
- arch/powerpc/platforms/pseries/lpar.c              | 193 ++++++++++---
- include/uapi/linux/kvm.h                           |   1 +
- 26 files changed, 736 insertions(+), 406 deletions(-)
-
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 3848af167df9..4b3f6d66e7f0 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -351,32 +351,44 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	return ret;
+ }
+ 
+-static long native_hpte_find(unsigned long vpn, int psize, int ssize)
++/* returns a locked hash pte */
++struct hash_pte *native_hpte_find(unsigned long hash, unsigned long vpn,
++				  unsigned long bpsize, unsigned long ssize)
+ {
++	int i;
++	unsigned long hpte_v;
+ 	struct hash_pte *hptep;
+-	unsigned long hash;
+-	unsigned long i;
+-	long slot;
+-	unsigned long want_v, hpte_v;
+-
+-	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
+-	want_v = hpte_encode_avpn(vpn, psize, ssize);
++	unsigned long want_v, slot;
++	bool secondary_search = false;
+ 
+-	/* Bolted mappings are only ever in the primary group */
++	want_v = hpte_encode_avpn(vpn, bpsize, ssize);
+ 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-	for (i = 0; i < HPTES_PER_GROUP; i++) {
+-		hptep = htab_address + slot;
++
++	/*
++	 * search for hpte in the primary group
++	 */
++search_again:
++	hptep = htab_address + slot;
++	for (i = 0; i < HPTES_PER_GROUP; i++, hptep++) {
++		/*
++		 * FIXME!! Should we check locklessly check first ?
++		 */
++		native_lock_hpte(hptep);
+ 		hpte_v = be64_to_cpu(hptep->v);
+ 		if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 			hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
+-
+-		if (HPTE_V_COMPARE(hpte_v, want_v) && (hpte_v & HPTE_V_VALID))
+-			/* HPTE matches */
+-			return slot;
+-		++slot;
++		if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID))
++			native_unlock_hpte(hptep);
++		else
++			return hptep;
+ 	}
+-
+-	return -1;
++	if (!secondary_search) {
++		/* Search for hpte in the secondary group */
++		slot = (~hash & htab_hash_mask) * HPTES_PER_GROUP;
++		secondary_search = true;
++		goto search_again;
++	}
++	return NULL;
+ }
+ 
+ /*
+@@ -389,23 +401,22 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
+ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
+ 				       int psize, int ssize)
+ {
+-	unsigned long vpn;
+-	unsigned long vsid;
+-	long slot;
++	unsigned long hash;
++	unsigned long vpn, vsid;
+ 	struct hash_pte *hptep;
+ 
+ 	vsid = get_kernel_vsid(ea, ssize);
+ 	vpn = hpt_vpn(ea, vsid, ssize);
+-
+-	slot = native_hpte_find(vpn, psize, ssize);
+-	if (slot == -1)
++	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
++	hptep = native_hpte_find(hash, vpn, psize, ssize);
++	if (!hptep)
+ 		panic("could not find page to bolt\n");
+-	hptep = htab_address + slot;
+ 
+ 	/* Update the HPTE */
+ 	hptep->r = cpu_to_be64((be64_to_cpu(hptep->r) &
+ 				~(HPTE_R_PPP | HPTE_R_N)) |
+ 			       (newpp & (HPTE_R_PPP | HPTE_R_N)));
++	native_unlock_hpte(hptep);
+ 	/*
+ 	 * Ensure it is out of the tlb too. Bolted entries base and
+ 	 * actual page size will be same.
+@@ -422,18 +433,17 @@ static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
+ {
+ 	unsigned long vpn;
+ 	unsigned long vsid;
+-	long slot;
++	unsigned long hash;
+ 	struct hash_pte *hptep;
+ 
+ 	vsid = get_kernel_vsid(ea, ssize);
+ 	vpn = hpt_vpn(ea, vsid, ssize);
++	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
+ 
+-	slot = native_hpte_find(vpn, psize, ssize);
+-	if (slot == -1)
++	hptep = native_hpte_find(hash, vpn, psize, ssize);
++	if (!hptep)
+ 		return -ENOENT;
+ 
+-	hptep = htab_address + slot;
+-
+ 	VM_WARN_ON(!(be64_to_cpu(hptep->v) & HPTE_V_BOLTED));
+ 
+ 	/* Invalidate the hpte */
 -- 
 2.13.3
