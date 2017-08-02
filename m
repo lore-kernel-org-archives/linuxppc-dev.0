@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMvjX5f7wzDsWZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 23:51:12 +1000 (AEST)
-Message-Id: <9924769359ceed81eac6938b56e2aa03c990ecba.1501679954.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMvjZ1PL9zDsTg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 23:51:13 +1000 (AEST)
+Message-Id: <5f9949c1e1cc35493262a15759912133e22f5140.1501679954.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1501679953.git.christophe.leroy@c-s.fr>
 References: <cover.1501679953.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 3/5] powerpc/mm: Implement STRICT_KERNEL_RWX on PPC32
+Subject: [PATCH v3 5/5] powerpc/mm: Simplify __set_fixmap()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>, Balbir Singh <bsingharora@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  2 Aug 2017 15:51:05 +0200 (CEST)
+Date: Wed,  2 Aug 2017 15:51:09 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,108 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch implements STRICT_KERNEL_RWX on PPC32.
+__set_fixmap() uses __fix_to_virt() then does the boundary checks
+by it self. Instead, we can use fix_to_virt() which does the
+verification at build time. For this, we need to use it inline
+so that GCC can see the real value of idx at buildtime.
 
-As for CONFIG_DEBUG_PAGEALLOC, it deactivates BAT and LTLB mappings
-in order to allow page protection setup at the level of each page.
-
-As BAT/LTLB mappings are deactivated, there might be a performance
-impact.
+In the meantime, we remove the 'fixmaps' variable.
+This variable is set but has never been used from the beginning
+(commit 2c419bdeca1d9 ("[POWERPC] Port fixmap from x86 and use
+for kmap_atomic"))
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
  v3: no change
 
- arch/powerpc/Kconfig              |  2 +-
- arch/powerpc/kernel/vmlinux.lds.S |  2 +-
- arch/powerpc/mm/init_32.c         |  6 ++++++
- arch/powerpc/mm/pgtable_32.c      | 24 ++++++++++++++++++++++++
- 4 files changed, 32 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/fixmap.h | 10 +++++++---
+ arch/powerpc/mm/pgtable_32.c      | 15 ---------------
+ 2 files changed, 7 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 5e9de178b557..02d91ee1b601 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -165,7 +165,7 @@ config PPC
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_TRACEHOOK
--	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S_64 && !RELOCATABLE && !HIBERNATION)
-+	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
- 	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
- 	select HAVE_CBPF_JIT			if !PPC64
- 	select HAVE_CONTEXT_TRACKING		if PPC64
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index b1a250560198..882628fa6987 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -8,7 +8,7 @@
- #include <asm/cache.h>
- #include <asm/thread_info.h>
+diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
+index 4508b322f2cd..6c40dfda5912 100644
+--- a/arch/powerpc/include/asm/fixmap.h
++++ b/arch/powerpc/include/asm/fixmap.h
+@@ -17,6 +17,7 @@
+ #ifndef __ASSEMBLY__
+ #include <linux/kernel.h>
+ #include <asm/page.h>
++#include <asm/pgtable.h>
+ #ifdef CONFIG_HIGHMEM
+ #include <linux/threads.h>
+ #include <asm/kmap_types.h>
+@@ -62,9 +63,6 @@ enum fixed_addresses {
+ 	__end_of_fixed_addresses
+ };
  
--#ifdef CONFIG_STRICT_KERNEL_RWX
-+#if defined(CONFIG_STRICT_KERNEL_RWX) && !defined(CONFIG_PPC32)
- #define STRICT_ALIGN_SIZE	(1 << 24)
- #else
- #define STRICT_ALIGN_SIZE	PAGE_SIZE
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 8a7c38b8d335..7d5fee1bb116 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -113,6 +113,12 @@ void __init MMU_setup(void)
- 		__map_without_bats = 1;
- 		__map_without_ltlbs = 1;
- 	}
-+#ifdef CONFIG_STRICT_KERNEL_RWX
-+	if (rodata_enabled) {
-+		__map_without_bats = 1;
-+		__map_without_ltlbs = 1;
-+	}
-+#endif
- }
+-extern void __set_fixmap (enum fixed_addresses idx,
+-					phys_addr_t phys, pgprot_t flags);
+-
+ #define __FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
+ #define FIXADDR_START		(FIXADDR_TOP - __FIXADDR_SIZE)
  
- /*
+@@ -72,5 +70,11 @@ extern void __set_fixmap (enum fixed_addresses idx,
+ 
+ #include <asm-generic/fixmap.h>
+ 
++static inline void __set_fixmap(enum fixed_addresses idx,
++				phys_addr_t phys, pgprot_t flags)
++{
++	map_kernel_page(fix_to_virt(idx), phys, pgprot_val(flags));
++}
++
+ #endif /* !__ASSEMBLY__ */
+ #endif
 diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 85e8f0e0efe6..4a3dd9fc6989 100644
+index 57f89cd88568..65eda1997c3f 100644
 --- a/arch/powerpc/mm/pgtable_32.c
 +++ b/arch/powerpc/mm/pgtable_32.c
-@@ -34,6 +34,7 @@
- #include <asm/fixmap.h>
- #include <asm/io.h>
- #include <asm/setup.h>
-+#include <asm/sections.h>
- 
- #include "mmu_decl.h"
- 
-@@ -375,6 +376,29 @@ void mark_initmem_nx(void)
- 	change_page_attr(page, numpages, PAGE_KERNEL);
+@@ -408,18 +408,3 @@ void __kernel_map_pages(struct page *page, int numpages, int enable)
+ 	change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
  }
- 
-+#ifdef CONFIG_STRICT_KERNEL_RWX
-+void mark_rodata_ro(void)
-+{
-+	struct page *page;
-+	unsigned long numpages;
-+
-+	page = virt_to_page(_stext);
-+	numpages = PFN_UP((unsigned long)_etext) -
-+		   PFN_DOWN((unsigned long)_stext);
-+
-+	change_page_attr(page, numpages, PAGE_KERNEL_ROX);
-+	/*
-+	 * mark .rodata as read only. Use __init_begin rather than __end_rodata
-+	 * to cover NOTES and EXCEPTION_TABLE.
-+	 */
-+	page = virt_to_page(__start_rodata);
-+	numpages = PFN_UP((unsigned long)__init_begin) -
-+		   PFN_DOWN((unsigned long)__start_rodata);
-+
-+	change_page_attr(page, numpages, PAGE_KERNEL_RO);
-+}
-+#endif
-+
- #ifdef CONFIG_DEBUG_PAGEALLOC
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
+ #endif /* CONFIG_DEBUG_PAGEALLOC */
+-
+-static int fixmaps;
+-
+-void __set_fixmap (enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
+-{
+-	unsigned long address = __fix_to_virt(idx);
+-
+-	if (idx >= __end_of_fixed_addresses) {
+-		BUG();
+-		return;
+-	}
+-
+-	map_kernel_page(address, phys, pgprot_val(flags));
+-	fixmaps++;
+-}
 -- 
 2.13.3
