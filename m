@@ -1,42 +1,34 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jonathan.cameron@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMz735R2WzDrL7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 02:25:03 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v72GOqLR082049
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 12:25:01 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3e4vnkcn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 12:25:00 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 3 Aug 2017 02:23:41 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v72GNceK19529812
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 02:23:38 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v72GNb3c021265
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 02:23:38 +1000
-Date: Wed, 2 Aug 2017 21:53:35 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Breno Leitao <leitao@debian.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc/xmon: Disable tracing when entering xmon
-References: <1501685906-10169-1-git-send-email-leitao@debian.org>
- <1501685906-10169-2-git-send-email-leitao@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMz8h3r6QzDscW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 02:26:27 +1000 (AEST)
+Date: Wed, 2 Aug 2017 17:25:55 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
+ Nicholas Piggin <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
+ <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
+ <linux-arm-kernel@lists.infradead.org>, <tglx@linutronix.de>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170802172555.0000468a@huawei.com>
+In-Reply-To: <20170801184646.GE3730@linux.vnet.ibm.com>
+References: <20170727173923.000001b2@huawei.com>
+ <20170727165245.GD3730@linux.vnet.ibm.com>
+ <20170728084411.00001ddb@huawei.com>
+ <20170728142403.0000122b@huawei.com>
+ <20170728165529.GF3730@linux.vnet.ibm.com>
+ <20170728182053.000072aa@huawei.com>
+ <20170728190349.GM3730@linux.vnet.ibm.com>
+ <20170731120847.00003d5c@huawei.com>
+ <20170731150411.GA3730@linux.vnet.ibm.com>
+ <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1501685906-10169-2-git-send-email-leitao@debian.org>
-Message-Id: <20170802162335.q2cqo2buimzqaepw@naverao1-tp.localdomain>
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,67 +38,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/08/02 11:58AM, Breno Leitao wrote:
-> If tracing is enabled and you get into xmon, the tracing buffer
-> continues to be updated, causing possible loss of data and unnecessary
-> tracing information coming from xmon functions.
-> 
-> This patch simple disables tracing when entering xmon, and reenables it
-> if the kernel is resumed (with 'x').
-> 
-> Signed-off-by: Breno Leitao <leitao@debian.org>
+On Tue, 1 Aug 2017 11:46:46 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-Two minor nits...
-
-> ---
->  arch/powerpc/xmon/xmon.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+> On Mon, Jul 31, 2017 at 04:27:57PM +0100, Jonathan Cameron wrote:
+> > On Mon, 31 Jul 2017 08:04:11 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >   
+> > > On Mon, Jul 31, 2017 at 12:08:47PM +0100, Jonathan Cameron wrote:  
+> > > > On Fri, 28 Jul 2017 12:03:50 -0700
+> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > >     
+> > > > > On Fri, Jul 28, 2017 at 06:27:05PM +0100, Jonathan Cameron wrote:    
+> > > > > > On Fri, 28 Jul 2017 09:55:29 -0700
+> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > >       
+> > > > > > > On Fri, Jul 28, 2017 at 02:24:03PM +0100, Jonathan Cameron wrote:      
+> > > > > > > > On Fri, 28 Jul 2017 08:44:11 +0100
+> > > > > > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:        
+> > > > > > > 
+> > > > > > > [ . . . ]
+> > > > > > >       
+> > > > > > > > Ok.  Some info.  I disabled a few driver (usb and SAS) in the interest of having
+> > > > > > > > fewer timer events.  Issue became much easier to trigger (on some runs before
+> > > > > > > > I could get tracing up and running)
+> > > > > > > >e
+> > > > > > > > So logs are large enough that pastebin doesn't like them - please shoet if        
+> > > > > > > >>e another timer period is of interest.        
+> > > > > > > > 
+> > > > > > > > https://pastebin.com/iUZDfQGM for the timer trace.
+> > > > > > > > https://pastebin.com/3w1F7amH for dmesg.  
+> > > > > > > > 
+> > > > > > > > The relevant timeout on the RCU stall detector was 8 seconds.  Event is
+> > > > > > > > detected around 835.
+> > > > > > > > 
+> > > > > > > > It's a lot of logs, so I haven't identified a smoking gun yet but there
+> > > > > > > > may well be one in there.        
+> > > > > > > 
+> > > > > > > The dmesg says:
+> > > > > > > 
+> > > > > > > rcu_preempt kthread starved for 2508 jiffies! g112 c111 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
+> > > > > > > 
+> > > > > > > So I look for "rcu_preempt" timer events and find these:
+> > > > > > > 
+> > > > > > > rcu_preempt-9     [019] ....   827.579114: timer_init: timer=ffff8017d5fc7da0
+> > > > > > > rcu_preempt-9     [019] d..1   827.579115: timer_start: timer=ffff8017d5fc7da0 function=process_timeout 
+> > > > > > > 
+> > > > > > > Next look for "ffff8017d5fc7da0" and I don't find anything else.      
+> > > > > > It does show up off the bottom of what would fit in pastebin...
+> > > > > > 
+> > > > > >      rcu_preempt-9     [001] d..1   837.681077: timer_cancel: timer=ffff8017d5fc7da0
+> > > > > >      rcu_preempt-9     [001] ....   837.681086: timer_init: timer=ffff8017d5fc7da0
+> > > > > >      rcu_preempt-9     [001] d..1   837.681087: timer_start: timer=ffff8017d5fc7da0 function=process_timeout expires=4295101298 [timeout=1] cpu=1 idx=0 flags=      
+> > > > > 
+> > > > > Odd.  I would expect an expiration...  And ten seconds is way longer
+> > > > > than the requested one jiffy!
+> > > > >     
+> > > > > > > The timeout was one jiffy, and more than a second later, no expiration.
+> > > > > > > Is it possible that this event was lost?  I am not seeing any sign of
+> > > > > > > this is the trace.
+> > > > > > > 
+> > > > > > > I don't see any sign of CPU hotplug (and I test with lots of that in
+> > > > > > > any case).
+> > > > > > > 
+> > > > > > > The last time we saw something like this it was a timer HW/driver problem,
+> > > > > > > but it is a bit hard to imagine such a problem affecting both ARM64
+> > > > > > > and SPARC.  ;-)      
+> > > > > > Could be different issues, both of which were hidden by that lockup detector.
+> > > > > > 
+> > > > > > There is an errata work around for the timers on this particular board.
+> > > > > > I'm only vaguely aware of it, so may be unconnected.
+> > > > > > 
+> > > > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clocksource/arm_arch_timer.c?h=v4.13-rc2&id=bb42ca47401010fc02901b5e8f79e40a26f208cb
+> > > > > > 
+> > > > > > Seems unlikely though! + we've not yet seen it on the other chips that
+> > > > > > errata effects (not that that means much).      
+> > > > > 
+> > > > > If you can reproduce quickly, might be worth trying anyway...
+> > > > > 
+> > > > > 							Thanx, Paul    
+> > > > Errata fix is running already and was for all those tests.    
+> > > 
+> > > I was afraid of that...  ;-)  
+> > It's a pretty rare errata it seems.  Not actually managed to catch
+> > one yet.   
+> > >   
+> > > > I'll have a dig into the timers today and see where I get to.    
+> > > 
+> > > Look forward to seeing what you find!  
+> > Nothing obvious turning up other than we don't seem to have issue
+> > when we aren't running hrtimers.
+> > 
+> > On a plus side I just got a report that it is effecting our d03
+> > boards which is good on the basis I couldn't tell what the difference
+> > could be wrt to this issue!
+> > 
+> > It indeed looks like we are consistently missing a timer before
+> > the rcu splat occurs.  
 > 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 0cbd910193fa..0b766d7780fa 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -89,6 +89,7 @@ static unsigned long nidump = 16;
->  static unsigned long ncsum = 4096;
->  static int termch;
->  static char tmpstr[128];
-> +static char tracing_enabled;
-	  ^^^^
-	  int
+> And for my part, my tests with CONFIG_HZ_PERIODIC=y and
+> CONFIG_RCU_FAST_NO_HZ=n showed roughly the same failure rate
+> as other runs.
+> 
+> Missing a timer can most certainly give RCU severe heartburn!  ;-)
+> Do you have what you need to track down the missing timer?  
+
+Not managed to make much progress yet.  Turning on any additional tracing
+in that area seems to make the issue stop happening or at least
+occur very infrequently. Which certainly makes it 'fun' to find.
+
+As a long shot I applied a locking fix from another reported issue that
+was causing rcu stalls and it seemed good for much longer, but
+eventually still occurred.
+
+(from the thread rcu_sched stall while waiting in csd_lock_wait())
+
+Jonathan
+
 
 > 
->  static long bus_error_jmp[JMP_BUF_LEN];
->  static int catch_memory_errors;
-> @@ -462,6 +463,9 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
->  	local_irq_save(flags);
->  	hard_irq_disable();
+> 							Thanx, Paul
 > 
-> +	tracing_enabled = tracing_is_on();
-> +	tracing_off();
-> +
->  	bp = in_breakpoint_table(regs->nip, &offset);
->  	if (bp != NULL) {
->  		regs->nip = bp->address + offset;
-> @@ -982,6 +986,8 @@ cmds(struct pt_regs *excp)
->  			break;
->  		case 'x':
->  		case 'X':
-> +			if (tracing_enabled)
-> +				tracing_on();
->  			return cmd;
->  		case EOF:
->  			printf(" <no input ...>\n");
-> @@ -2353,7 +2359,6 @@ static void dump_tracing(void)
->  	else
->  		ftrace_dump(DUMP_ALL);
-> 
-> -	tracing_on();
->  }
-
-I'd also remove the extra blank line there.
-
-Apart from those:
-Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-
-Thanks,
-Naveen
