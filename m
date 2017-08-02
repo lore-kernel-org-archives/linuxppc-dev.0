@@ -1,24 +1,53 @@
-Return-Path: <clg@kaod.org>
-Received: from 10.mo178.mail-out.ovh.net (10.mo178.mail-out.ovh.net
- [46.105.76.150])
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMzkg4NJQzDqmg
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 02:52:27 +1000 (AEST)
-Received: from player715.ha.ovh.net (b9.ovh.net [213.186.33.59])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id CD6294B14F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 18:44:09 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH] powerpc/xive: fix the fuzz value in xive_pick_irq_target()
-Date: Wed,  2 Aug 2017 18:43:50 +0200
-Message-Id: <1501692230-20789-1-git-send-email-clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN0HT0QXCzDqHl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 03:17:24 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v72HGVef072013
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 13:17:22 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c3e4vr0p7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 13:17:22 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Wed, 2 Aug 2017 11:17:21 -0600
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v72HHI3Z31719642
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 10:17:19 -0700
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v72EHHSL012288
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 11:17:18 -0300
+References: <20170706221753.17380-1-bauerman@linux.vnet.ibm.com>
+ <20170706221753.17380-2-bauerman@linux.vnet.ibm.com>
+ <1501245566.10288.35.camel@linux.vnet.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, David Howells <dhowells@redhat.com>,
+ David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>
+Subject: Re: [PATCH v3 1/7] integrity: Introduce struct evm_hmac_xattr
+In-reply-to: <1501245566.10288.35.camel@linux.vnet.ibm.com>
+Date: Wed, 02 Aug 2017 14:17:05 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+Message-Id: <87h8xpyjn2.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +57,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If xive_find_target_in_mask() fails to find a cpu, the fuzz value used
-in xive_pick_irq_target() is decremented and reused in the last
-returning call to xive_find_target_in_mask(). This can result in such
-WARNINGs if the initial fuzz value is zero :
 
-   [    0.094480] WARNING: CPU: 10 PID: 1 at ../arch/powerpc/sysdev/xive/common.c:476 xive_find_target_in_mask+0x110/0x2f0
-   [    0.094486] Modules linked in:
-   [    0.094491] CPU: 10 PID: 1 Comm: swapper/0 Not tainted 4.12.0+ #3
-   [    0.094496] task: c0000003fae4f200 task.stack: c0000003fe108000
-   [    0.094501] NIP: c00000000008a310 LR: c00000000008a2e4 CTR: 000000000072ca34
-   [    0.094506] REGS: c0000003fe10b360 TRAP: 0700   Not tainted  (4.12.0+)
-   [    0.094510] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>
-   [    0.094515]   CR: 88000222  XER: 20040008
-   [    0.094521] CFAR: c00000000008a2cc SOFTE: 0
-   [    0.094521] GPR00: c00000000008a274 c0000003fe10b5e0 c000000001428f00 0000000000000010
-   [    0.094521] GPR04: 0000000000000010 0000000000000010 0000000000000010 0000000000000099
-   [    0.094521] GPR08: 0000000000000010 0000000000000001 ffffffffffff0000 0000000000000000
-   [    0.094521] GPR12: 0000000000000000 c00000000fff2d00 c00000000000d4d8 0000000000000000
-   [    0.094521] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-   [    0.094521] GPR20: 0000000000000000 0000000000000000 0000000000000000 c000000000b451e8
-   [    0.094521] GPR24: 00000000ffffffff c000000001462354 0000000000000800 00000000000007ff
-   [    0.094521] GPR28: c000000001462354 0000000000000010 c0000003f857e418 0000000000000010
-   [    0.094580] NIP [c00000000008a310] xive_find_target_in_mask+0x110/0x2f0
-   [    0.094585] LR [c00000000008a2e4] xive_find_target_in_mask+0xe4/0x2f0
-   [    0.094589] Call Trace:
-   [    0.094593] [c0000003fe10b5e0] [c00000000008a274] xive_find_target_in_mask+0x74/0x2f0 (unreliable)
-   [    0.094601] [c0000003fe10b690] [c00000000008abf0] xive_pick_irq_target.isra.1+0x200/0x230
-   [    0.094608] [c0000003fe10b830] [c00000000008b250] xive_irq_startup+0x60/0x180
-   [    0.094614] [c0000003fe10b8b0] [c0000000001608f0] irq_startup+0x70/0xd0
-   [    0.094620] [c0000003fe10b8f0] [c00000000015df7c] __setup_irq+0x7bc/0x880
-   [    0.094626] [c0000003fe10ba90] [c00000000015e30c] request_threaded_irq+0x14c/0x2c0
-   [    0.094632] [c0000003fe10baf0] [c0000000000aeb00] request_event_sources_irqs+0x100/0x180
-   [    0.094639] [c0000003fe10bc10] [c000000000e7d2f8] __machine_initcall_pseries_init_ras_IRQ+0x104/0x134
-   [    0.094646] [c0000003fe10bc40] [c00000000000cc88] do_one_initcall+0x68/0x1d0
-   [    0.094652] [c0000003fe10bd00] [c000000000e643c8] kernel_init_freeable+0x290/0x374
-   [    0.094658] [c0000003fe10bdc0] [c00000000000d4f4] kernel_init+0x24/0x170
-   [    0.094664] [c0000003fe10be30] [c00000000000b268] ret_from_kernel_thread+0x5c/0x74
-   [    0.094669] Instruction dump:
-   [    0.094673] 48586529 60000000 e8dc0002 393f0001 7f9b4800 7c7d07b4 7d3f07b4 409effcc
-   [    0.094682] 7f9d3000 7d26e850 79290fe0 69290001 <0b090000> 409c0194 3f620004 3b7b8ec8
+Hello Mimi,
 
-Fix this problem by checking the fuzz value before decrementing it.
+Thanks for your review!
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/common.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+The patch at the end of the email implements your suggestions, what do
+you think?
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 6595462b1fc8..50ce48983340 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -516,7 +516,8 @@ static int xive_pick_irq_target(struct irq_data *d,
- 		free_cpumask_var(mask);
- 		if (cpu >= 0)
- 			return cpu;
--		fuzz--;
-+		if (fuzz)
-+			fuzz--;
- 	}
- 
- 	/* No chip IDs, fallback to using the affinity mask */
+Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+> On Thu, 2017-07-06 at 19:17 -0300, Thiago Jung Bauermann wrote:
+>> A separate struct evm_hmac_xattr is introduced, with the original
+>> definition of evm_ima_xattr_data to be used in the places that actually
+>> expect that definition.
+>
+> The new structure name implies that the xattr can only be an HMAC. By
+> moving the new structure to evm.h we also loose the connection that it
+> has to theevm_ima_xattr_type enumeration.
+
+Ok, I renamed it to struct evm_xattr.
+
+> Instead, how about defining the new struct in terms of the modified
+> evm_ima_xattr_data struct?
+
+IMHO IMA and EVM's practice of mixing and matching structs to compose
+its data structures makes the code somewhat confusing and harder to see
+where the actual storage used by a given field is actually allocated.
+
+But I don't feel strongly about it, so the patch at the end of this
+emails defines it as:
+
+struct evm_xattr {
+	struct evm_ima_xattr_data data;
+	u8 digest[SHA1_DIGEST_SIZE];
+} __packed;
+
+Another disadvantage of the above is that you have two fields pointing
+to the same place: evm_xattr.data.data and evm_xattr.digest.
+
+> Please leave the new structure in integrity.h.
+
+I think that moving the structure in evm.h is helpful. It immediately
+conveys that nothing outside of security/integrity/evm/ interprets the
+xattr data in the way defined by struct evm_xattr.
+
+But I also don't feel strongly about it, so I moved it to integrity.h.
+
 -- 
-2.7.5
+Thiago Jung Bauermann
+IBM Linux Technology Center
+
+
+>From df2e29f29c99f5c986d8005d8af8409b3c4d115c Mon Sep 17 00:00:00 2001
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Date: Tue, 16 May 2017 17:14:49 -0300
+Subject: [PATCH v4 1/7] integrity: Introduce struct evm_xattr
+
+Even though struct evm_ima_xattr_data includes a fixed-size array to hold a
+SHA1 digest, most of the code ignores the array and uses the struct to mean
+"type indicator followed by data of unspecified size" and tracks the real
+size of what the struct represents in a separate length variable.
+
+The only exception to that is the EVM code, which correctly uses the
+definition of struct evm_ima_xattr_data.
+
+This patch makes this explicit in the code by removing the length
+specification from the array in struct evm_ima_xattr_data. It also changes
+the name of the element from digest to data, since in most places the array
+doesn't hold a digest.
+
+A separate struct evm_xattr is introduced, with the original definition of
+evm_ima_xattr_data to be used in the places that actually expect that
+definition.
+
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+---
+ security/integrity/evm/evm_crypto.c   |  4 ++--
+ security/integrity/evm/evm_main.c     | 10 +++++-----
+ security/integrity/ima/ima_appraise.c |  7 ++++---
+ security/integrity/integrity.h        |  5 +++++
+ 4 files changed, 16 insertions(+), 10 deletions(-)
+
+diff --git a/security/integrity/evm/evm_crypto.c b/security/integrity/evm/evm_crypto.c
+index d7f282d75cc1..d902a18ef66f 100644
+--- a/security/integrity/evm/evm_crypto.c
++++ b/security/integrity/evm/evm_crypto.c
+@@ -252,13 +252,13 @@ int evm_update_evmxattr(struct dentry *dentry, const char *xattr_name,
+ 			const char *xattr_value, size_t xattr_value_len)
+ {
+ 	struct inode *inode = d_backing_inode(dentry);
+-	struct evm_ima_xattr_data xattr_data;
++	struct evm_xattr xattr_data;
+ 	int rc = 0;
+ 
+ 	rc = evm_calc_hmac(dentry, xattr_name, xattr_value,
+ 			   xattr_value_len, xattr_data.digest);
+ 	if (rc == 0) {
+-		xattr_data.type = EVM_XATTR_HMAC;
++		xattr_data.data.type = EVM_XATTR_HMAC;
+ 		rc = __vfs_setxattr_noperm(dentry, XATTR_NAME_EVM,
+ 					   &xattr_data,
+ 					   sizeof(xattr_data), 0);
+diff --git a/security/integrity/evm/evm_main.c b/security/integrity/evm/evm_main.c
+index 063d38aef64e..536694499515 100644
+--- a/security/integrity/evm/evm_main.c
++++ b/security/integrity/evm/evm_main.c
+@@ -116,7 +116,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+ 					     struct integrity_iint_cache *iint)
+ {
+ 	struct evm_ima_xattr_data *xattr_data = NULL;
+-	struct evm_ima_xattr_data calc;
++	struct evm_xattr calc;
+ 	enum integrity_status evm_status = INTEGRITY_PASS;
+ 	int rc, xattr_len;
+ 
+@@ -147,7 +147,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+ 	/* check value type */
+ 	switch (xattr_data->type) {
+ 	case EVM_XATTR_HMAC:
+-		if (xattr_len != sizeof(struct evm_ima_xattr_data)) {
++		if (xattr_len != sizeof(struct evm_xattr)) {
+ 			evm_status = INTEGRITY_FAIL;
+ 			goto out;
+ 		}
+@@ -155,7 +155,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
+ 				   xattr_value_len, calc.digest);
+ 		if (rc)
+ 			break;
+-		rc = crypto_memneq(xattr_data->digest, calc.digest,
++		rc = crypto_memneq(xattr_data->data, calc.digest,
+ 			    sizeof(calc.digest));
+ 		if (rc)
+ 			rc = -EINVAL;
+@@ -467,7 +467,7 @@ int evm_inode_init_security(struct inode *inode,
+ 				 const struct xattr *lsm_xattr,
+ 				 struct xattr *evm_xattr)
+ {
+-	struct evm_ima_xattr_data *xattr_data;
++	struct evm_xattr *xattr_data;
+ 	int rc;
+ 
+ 	if (!evm_initialized || !evm_protected_xattr(lsm_xattr->name))
+@@ -477,7 +477,7 @@ int evm_inode_init_security(struct inode *inode,
+ 	if (!xattr_data)
+ 		return -ENOMEM;
+ 
+-	xattr_data->type = EVM_XATTR_HMAC;
++	xattr_data->data.type = EVM_XATTR_HMAC;
+ 	rc = evm_init_hmac(inode, lsm_xattr, xattr_data->digest);
+ 	if (rc < 0)
+ 		goto out;
+diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
+index 809ba70fbbbf..87d2b601cf8e 100644
+--- a/security/integrity/ima/ima_appraise.c
++++ b/security/integrity/ima/ima_appraise.c
+@@ -156,7 +156,8 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+ 		return sig->hash_algo;
+ 		break;
+ 	case IMA_XATTR_DIGEST_NG:
+-		ret = xattr_value->digest[0];
++		/* first byte contains algorithm id */
++		ret = xattr_value->data[0];
+ 		if (ret < HASH_ALGO__LAST)
+ 			return ret;
+ 		break;
+@@ -164,7 +165,7 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+ 		/* this is for backward compatibility */
+ 		if (xattr_len == 21) {
+ 			unsigned int zero = 0;
+-			if (!memcmp(&xattr_value->digest[16], &zero, 4))
++			if (!memcmp(&xattr_value->data[16], &zero, 4))
+ 				return HASH_ALGO_MD5;
+ 			else
+ 				return HASH_ALGO_SHA1;
+@@ -253,7 +254,7 @@ int ima_appraise_measurement(enum ima_hooks func,
+ 			/* xattr length may be longer. md5 hash in previous
+ 			   version occupied 20 bytes in xattr, instead of 16
+ 			 */
+-			rc = memcmp(&xattr_value->digest[hash_start],
++			rc = memcmp(&xattr_value->data[hash_start],
+ 				    iint->ima_hash->digest,
+ 				    iint->ima_hash->length);
+ 		else
+diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
+index a53e7e4ab06c..9b1762076f38 100644
+--- a/security/integrity/integrity.h
++++ b/security/integrity/integrity.h
+@@ -63,6 +63,11 @@ enum evm_ima_xattr_type {
+ 
+ struct evm_ima_xattr_data {
+ 	u8 type;
++	u8 data[];
++} __packed;
++
++struct evm_xattr {
++	struct evm_ima_xattr_data data;
+ 	u8 digest[SHA1_DIGEST_SIZE];
+ } __packed;
+ 
+-- 
+2.13.0
