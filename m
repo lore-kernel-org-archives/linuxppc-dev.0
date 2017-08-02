@@ -1,37 +1,26 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qt0-f193.google.com (mail-qt0-f193.google.com
+ [209.85.216.193])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMwt06fyvzDsRy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 00:43:36 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v72EhY3S028413
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 10:43:34 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3cs6mw1v-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 10:42:31 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 3 Aug 2017 00:42:28 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v72EgPW828115104
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 00:42:25 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v72EgGUc024583
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 00:42:16 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMwwd3bwtzDsTD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 00:45:53 +1000 (AEST)
+Received: by mail-qt0-f193.google.com with SMTP id t37so4762394qtg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 07:45:53 -0700 (PDT)
+Date: Wed, 2 Aug 2017 11:45:47 -0300
+From: Breno Leitao <leitao@debian.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] perf/python: Add ppc64le to audit uname list
-Date: Wed,  2 Aug 2017 20:12:16 +0530
-Message-Id: <20170802144216.12494-1-naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] powerpc/xmon: Disable and enable tracing command
+Message-ID: <20170802144546.pxmahau6tksw4u4e@gmail.com>
+References: <1501521731-12123-1-git-send-email-leitao@debian.org>
+ <1501521731-12123-2-git-send-email-leitao@debian.org>
+ <20170801064024.colxo4i3z764m36k@naverao1-tp.localdomain>
+ <20170801142145.ill2cpq5grybflwp@gmail.com>
+ <20170802132124.4ik7govvogeud7pp@naverao1-tp.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170802132124.4ik7govvogeud7pp@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,93 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before patch:
-  $ uname -m
-  ppc64le
-  $ ./perf script -s ./scripts/python/syscall-counts.py
-  Install the audit-libs-python package to get syscall names.
-  For example:
-    # apt-get install python-audit (Ubuntu)
-    # yum install audit-libs-python (Fedora)
-    etc.
+On Wed, Aug 02, 2017 at 06:51:24PM +0530, Naveen N. Rao wrote:
+> On 2017/08/01 11:21AM, Breno Leitao wrote:
+> > Hi Naveen,
+> > 
+> > On Tue, Aug 01, 2017 at 12:10:24PM +0530, Naveen N. Rao wrote:
+> > > On 2017/07/31 02:22PM, Breno Leitao wrote:
+> > > > If tracing is enabled and you get into xmon, the tracing buffer
+> > > > continues to be updated, causing possible loss of data due to buffer
+> > > > overflow and unnecessary tracing information coming from xmon functions.
+> > > > 
+> > > > This patch adds a new option that allows the tracing to be disabled and
+> > > > re-enabled from inside xmon.
+> > > 
+> > > How is this new option useful? In the next patch, you disable tracing by 
+> > > default -- in what scenario do you expect to have to re-enable tracing 
+> > > from within xmon?
+> > 
+> > I see it being useful on two different scenarios:
+> > 
+> > 1) You can reenable tracing if you want to call a function from xmon
+> > (with 'p'), or even for code stepping (with 's').
+> 
+> Hmm... those are just debugging aids, so I don't see why enabling the 
+> function tracer helps, unless you're debugging the tracer itself..
+> 
+> > 
+> > 2) You may also want to reenable tracing once you resume from xmon with
+> > 'zr'.
+> 
+> 'zr' is for reboot, so not sure what you meant there...
 
-  Press control+C to stop and show the summary
-  ^CWarning:
-  4 out of order events recorded.
+I meant 'x' in fact, which means 'exit monitor and recover'. This will
+resume the kernel after getting into xmon.
 
-  syscall events:
+> If tracing was enabled before we went into xmon, I think that we should 
+> just restore it by default.
 
-  event                                          count
-  ----------------------------------------  -----------
-  4                                             504638
-  54                                              1206
-  221                                               42
-  55                                                21
-  3                                                 12
-  167                                               10
-  11                                                 8
-  6                                                  7
-  125                                                6
-  5                                                  6
-  108                                                5
-  162                                                4
-  90                                                 4
-  45                                                 3
-  33                                                 3
-  311                                                1
-  246                                                1
-  238                                                1
-  93                                                 1
-  91                                                 1
+Makes sense. So, I will get ride of this 'v' feature and disable tracing
+when entering the xmon, and reenabling it on recovering. That way, we
+will avoid xmon functions showing up on the tracing buffer.
 
-After patch:
-  ./perf script -s ./scripts/python/syscall-counts.py
-  Press control+C to stop and show the summary
-  ^CWarning:
-  5 out of order events recorded.
+I will send a new patchset soon!
 
-  syscall events:
-
-  event                                          count
-  ----------------------------------------  -----------
-  write                                         643411
-  ioctl                                           1206
-  futex                                             54
-  fcntl                                             27
-  poll                                              14
-  read                                              12
-  execve                                             8
-  close                                              7
-  mprotect                                           6
-  open                                               6
-  nanosleep                                          5
-  fstat                                              5
-  mmap                                               4
-  inotify_add_watch                                  3
-  brk                                                3
-  access                                             3
-  timerfd_settime                                    1
-  clock_gettime                                      1
-  epoll_wait                                         1
-  ftruncate                                          1
-  munmap                                             1
-
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
-index 1d95009592eb..f6c84966e4f8 100644
---- a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
-+++ b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
-@@ -57,6 +57,7 @@ try:
- 		'ia64'	: audit.MACH_IA64,
- 		'ppc'	: audit.MACH_PPC,
- 		'ppc64'	: audit.MACH_PPC64,
-+		'ppc64le' : audit.MACH_PPC64LE,
- 		's390'	: audit.MACH_S390,
- 		's390x'	: audit.MACH_S390X,
- 		'i386'	: audit.MACH_X86,
--- 
-2.13.3
+Thanks,
+Breno
