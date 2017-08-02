@@ -1,18 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMbxy2KmCzDsQ5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 12:00:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMc1p483bzDrn8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 12:04:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Daniel Axtens <dja@axtens.net>, Matt Brown <matthew.brown.dev@gmail.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v5 1/2] lib/raid6: Build proper files on corresponding arch
-In-Reply-To: <87bmnysz34.fsf@linkitivity.dja.id.au>
+Subject: Re: [v5 2/2] raid6/altivec: Add vpermxor implementation for raid6 Q
+ syndrome
+In-Reply-To: <878tj2sxix.fsf@linkitivity.dja.id.au>
 References: <20170428055809.2675-1-matthew.brown.dev@gmail.com>
- <87bmnysz34.fsf@linkitivity.dja.id.au>
-Date: Wed, 02 Aug 2017 12:00:53 +1000
-Message-ID: <87fudasp7u.fsf@concordia.ellerman.id.au>
+ <20170428055809.2675-2-matthew.brown.dev@gmail.com>
+ <878tj2sxix.fsf@linkitivity.dja.id.au>
+Date: Wed, 02 Aug 2017 12:04:14 +1000
+Message-ID: <87d18esp29.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,23 +30,29 @@ Daniel Axtens <dja@axtens.net> writes:
 
 > Hi Matt,
 >
->> --- a/lib/raid6/test/Makefile
->> +++ b/lib/raid6/test/Makefile
->> @@ -44,10 +44,12 @@ else ifeq ($(HAS_NEON),yes)
->>          CFLAGS += -DCONFIG_KERNEL_MODE_NEON=1
->>  else
->>          HAS_ALTIVEC := $(shell printf '\#include <altivec.h>\nvector int a;\n' |\
->> -                         gcc -c -x c - >&/dev/null && \
->> -                         rm ./-.o && echo yes)
->> +                         gcc -c -x c - >/dev/null && rm ./-.o && echo yes)
+>> The raid6 Q syndrome check has been optimised using the vpermxor
+>> instruction.
 >
-> From memory the change here (s/>&/>/) was necessary to get the build to
-> succeed - did we ever figure out why that was? I'm not enough of a shell
-> guru to grok the difference.
+> Very much a nit, but normally we'd write the change that the patch makes
+> as a command: "Optimise the raid6 Q syndrome generation using the
+> vpermxor instruction" - see
+> https://www.kernel.org/doc/html/v4.11/process/submitting-patches.html#describe-your-changes
 
-Using >& redirects stdout and stderr, whereas > only redirects stdout.
+There's a good list here:
+  https://chris.beams.io/posts/git-commit/
 
-So possibly it doesn't fix anything, but rather lets you see any error
-emitted by the compiler rather than swallowing it?
+Which includes "Use the imperative mood in the subject line".
+
+And has a good rule of thumb:
+
+  A properly formed Git commit subject line should always be able to
+  complete the following sentence:
+  
+  If applied, this commit will [your subject line here]
+
+
+In this case Matt's subject is fine, but IMHO you should also use the
+imperative mood for the body of the change log - which is basically what
+you said :)
 
 cheers
