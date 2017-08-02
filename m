@@ -1,31 +1,29 @@
-Return-Path: <srs0=ublm=7e=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xN7155Fj1zDrHV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 08:20:25 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xN71546Sbz8vl5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 08:20:25 +1000 (AEST)
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xN71254xtz9sCZ
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2017 08:20:22 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id d136so5957351qkg.3
- for <linuxppc-dev@ozlabs.org>; Wed, 02 Aug 2017 15:20:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN7R82YH6zDqnP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 08:39:32 +1000 (AEST)
+Date: Wed, 2 Aug 2017 17:39:28 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Jason Cooper <jason@lakedaemon.net>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-pci@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] PCI: Convert to using %pOF instead of full_name
+Message-ID: <20170802223928.GQ20308@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170718214339.7774-41-robh@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <1501583364-14909-1-git-send-email-mpe@ellerman.id.au>
-References: <1501583364-14909-1-git-send-email-mpe@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Thu, 3 Aug 2017 08:20:19 +1000
-Message-ID: <CAKTCnzmyPz0yEA5R2DA4qSs5t-QdJfAcn9R1codUV9fKmWiBMQ@mail.gmail.com>
-Subject: Re: [PATCH 1/3] powerpc/mm/book3s64: Make KERN_IO_START a variable
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170718214339.7774-41-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +33,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 1, 2017 at 8:29 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Currently KERN_IO_START is defined as:
->
->  #define KERN_IO_START  (KERN_VIRT_START + (KERN_VIRT_SIZE >> 1))
->
-> Although it looks like a constant, both the components are actually
-> variables, to allow us to have a different value between Radix and
-> Hash with a single kernel.
->
-> However that still requires both Radix and Hash to place the kernel IO
-> region at the same location relative to the start and end of the
-> kernel virtual region (namely 1/2 way through it), and we'd like to
-> change that.
->
-> So split KERN_IO_START out into its own variable, and initialise it
-> for Radix and Hash. In the medium term we should be able to
-> reconsolidate this, by doing a more involved rearrangement of the
-> location of the regions.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Tue, Jul 18, 2017 at 04:43:21PM -0500, Rob Herring wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
+> 
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-tegra@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+
+Applied to pci/misc for v4.14, thanks!
+
 > ---
-
-Makes sense
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+>  drivers/pci/host/pci-mvebu.c        | 8 ++++----
+>  drivers/pci/host/pci-tegra.c        | 3 +--
+>  drivers/pci/hotplug/pnv_php.c       | 4 ++--
+>  drivers/pci/hotplug/rpadlpar_core.c | 4 ++--
+>  drivers/pci/hotplug/rpaphp_core.c   | 2 +-
+>  drivers/pci/hotplug/rpaphp_pci.c    | 4 ++--
+>  drivers/pci/hotplug/rpaphp_slot.c   | 4 ++--
+>  drivers/pci/pci-sysfs.c             | 4 ++--
+>  drivers/pci/pci.c                   | 4 ++--
+>  9 files changed, 18 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/pci/host/pci-mvebu.c b/drivers/pci/host/pci-mvebu.c
+> index f353a6eb2f01..424982997eb9 100644
+> --- a/drivers/pci/host/pci-mvebu.c
+> +++ b/drivers/pci/host/pci-mvebu.c
+> @@ -1054,8 +1054,8 @@ static int mvebu_pcie_parse_port(struct mvebu_pcie *pcie,
+>  	port->pcie = pcie;
+> 
+>  	if (of_property_read_u32(child, "marvell,pcie-port", &port->port)) {
+> -		dev_warn(dev, "ignoring %s, missing pcie-port property\n",
+> -			 of_node_full_name(child));
+> +		dev_warn(dev, "ignoring %pOF, missing pcie-port property\n",
+> +			 child);
+>  		goto skip;
+>  	}
+> 
+> @@ -1106,8 +1106,8 @@ static int mvebu_pcie_parse_port(struct mvebu_pcie *pcie,
+>  		}
+> 
+>  		if (flags & OF_GPIO_ACTIVE_LOW) {
+> -			dev_info(dev, "%s: reset gpio is active low\n",
+> -				 of_node_full_name(child));
+> +			dev_info(dev, "%pOF: reset gpio is active low\n",
+> +				 child);
+>  			gpio_flags = GPIOF_ACTIVE_LOW |
+>  				     GPIOF_OUT_INIT_LOW;
+>  		} else {
+> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> index b3722b7709df..7eb9be5ae357 100644
+> --- a/drivers/pci/host/pci-tegra.c
+> +++ b/drivers/pci/host/pci-tegra.c
+> @@ -1703,8 +1703,7 @@ static int tegra_pcie_get_legacy_regulators(struct tegra_pcie *pcie)
+>  		pcie->num_supplies = 2;
+> 
+>  	if (pcie->num_supplies == 0) {
+> -		dev_err(dev, "device %s not supported in legacy mode\n",
+> -			np->full_name);
+> +		dev_err(dev, "device %pOF not supported in legacy mode\n", np);
+>  		return -ENODEV;
+>  	}
+> 
+> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+> index 7c203198b582..74f6a17e4614 100644
+> --- a/drivers/pci/hotplug/pnv_php.c
+> +++ b/drivers/pci/hotplug/pnv_php.c
+> @@ -163,8 +163,8 @@ static void pnv_php_detach_device_nodes(struct device_node *parent)
+>  		of_node_put(dn);
+>  		refcount = kref_read(&dn->kobj.kref);
+>  		if (refcount != 1)
+> -			pr_warn("Invalid refcount %d on <%s>\n",
+> -				refcount, of_node_full_name(dn));
+> +			pr_warn("Invalid refcount %d on <%pOF>\n",
+> +				refcount, dn);
+> 
+>  		of_detach_node(dn);
+>  	}
+> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+> index 3f93a4e79595..a3449d717a99 100644
+> --- a/drivers/pci/hotplug/rpadlpar_core.c
+> +++ b/drivers/pci/hotplug/rpadlpar_core.c
+> @@ -150,8 +150,8 @@ static void dlpar_pci_add_bus(struct device_node *dn)
+>  	/* Add EADS device to PHB bus, adding new entry to bus->devices */
+>  	dev = of_create_pci_dev(dn, phb->bus, pdn->devfn);
+>  	if (!dev) {
+> -		printk(KERN_ERR "%s: failed to create pci dev for %s\n",
+> -				__func__, dn->full_name);
+> +		printk(KERN_ERR "%s: failed to create pci dev for %pOF\n",
+> +				__func__, dn);
+>  		return;
+>  	}
+> 
+> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+> index 8d132024f06e..1e29abaaea08 100644
+> --- a/drivers/pci/hotplug/rpaphp_core.c
+> +++ b/drivers/pci/hotplug/rpaphp_core.c
+> @@ -318,7 +318,7 @@ int rpaphp_add_slot(struct device_node *dn)
+>  	if (!is_php_dn(dn, &indexes, &names, &types, &power_domains))
+>  		return 0;
+> 
+> -	dbg("Entry %s: dn->full_name=%s\n", __func__, dn->full_name);
+> +	dbg("Entry %s: dn=%pOF\n", __func__, dn);
+> 
+>  	/* register PCI devices */
+>  	name = (char *) &names[1];
+> diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
+> index ea41ea1d3c00..32aabc533be8 100644
+> --- a/drivers/pci/hotplug/rpaphp_pci.c
+> +++ b/drivers/pci/hotplug/rpaphp_pci.c
+> @@ -95,7 +95,7 @@ int rpaphp_enable_slot(struct slot *slot)
+> 
+>  	bus = pci_find_bus_by_node(slot->dn);
+>  	if (!bus) {
+> -		err("%s: no pci_bus for dn %s\n", __func__, slot->dn->full_name);
+> +		err("%s: no pci_bus for dn %pOF\n", __func__, slot->dn);
+>  		return -EINVAL;
+>  	}
+> 
+> @@ -125,7 +125,7 @@ int rpaphp_enable_slot(struct slot *slot)
+> 
+>  		if (rpaphp_debug) {
+>  			struct pci_dev *dev;
+> -			dbg("%s: pci_devs of slot[%s]\n", __func__, slot->dn->full_name);
+> +			dbg("%s: pci_devs of slot[%pOF]\n", __func__, slot->dn);
+>  			list_for_each_entry(dev, &bus->devices, bus_list)
+>  				dbg("\t%s\n", pci_name(dev));
+>  		}
+> diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+> index 388c4d8fcdd1..489862360f2c 100644
+> --- a/drivers/pci/hotplug/rpaphp_slot.c
+> +++ b/drivers/pci/hotplug/rpaphp_slot.c
+> @@ -122,8 +122,8 @@ int rpaphp_register_slot(struct slot *slot)
+>  	int retval;
+>  	int slotno = -1;
+> 
+> -	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n",
+> -		__func__, slot->dn->full_name, slot->index, slot->name,
+> +	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
+> +		__func__, slot->dn, slot->index, slot->name,
+>  		slot->power_domain, slot->type);
+> 
+>  	/* should not try to register the same slot twice */
+> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+> index 2f3780b50723..33d4df7ed591 100644
+> --- a/drivers/pci/pci-sysfs.c
+> +++ b/drivers/pci/pci-sysfs.c
+> @@ -556,9 +556,9 @@ static ssize_t devspec_show(struct device *dev,
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+>  	struct device_node *np = pci_device_to_OF_node(pdev);
+> 
+> -	if (np == NULL || np->full_name == NULL)
+> +	if (np == NULL)
+>  		return 0;
+> -	return sprintf(buf, "%s", np->full_name);
+> +	return sprintf(buf, "%pOF", np);
+>  }
+>  static DEVICE_ATTR_RO(devspec);
+>  #endif
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index af0cc3456dc1..e8e40dea2842 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -5363,8 +5363,8 @@ static int of_pci_bus_find_domain_nr(struct device *parent)
+>  		use_dt_domains = 0;
+>  		domain = pci_get_new_domain_nr();
+>  	} else {
+> -		dev_err(parent, "Node %s has inconsistent \"linux,pci-domain\" property in DT\n",
+> -			parent->of_node->full_name);
+> +		dev_err(parent, "Node %pOF has inconsistent \"linux,pci-domain\" property in DT\n",
+> +			parent->of_node);
+>  		domain = -1;
+>  	}
+> 
+> --
+> 2.11.0
+> 
