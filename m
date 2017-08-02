@@ -1,25 +1,50 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=wwrk=7e=linux.vnet.ibm.com=aneesh.kumar@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMm8C262lzDrM4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 18:10:19 +1000 (AEST)
-Subject: Re: [PATCH v4 2/3] powerpc/mm/hugetlb: Add support for reserving
- gigantic huge pages via kernel command line
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- Scott Wood <oss@buserror.net>
-References: <20170728050127.28338-1-aneesh.kumar@linux.vnet.ibm.com>
- <20170728050127.28338-2-aneesh.kumar@linux.vnet.ibm.com>
- <64014b48-a04f-92a7-f561-7ffd386fabc6@c-s.fr>
- <877eym1l4m.fsf@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <4d4e90d3-2d5b-7a38-0575-f03e5f225af5@c-s.fr>
-Date: Wed, 2 Aug 2017 10:10:14 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMmNN3HPPzDsPm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 18:20:52 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xMmNM31QPz8t9V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 18:20:51 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xMmNL4FTBz9sxR
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2017 18:20:50 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v728DhTm069132
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Aug 2017 04:20:48 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c3469khxu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 02 Aug 2017 04:20:47 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 2 Aug 2017 18:20:43 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v728KXqb19988694
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Aug 2017 18:20:41 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v728K9QJ032647
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Aug 2017 18:20:09 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: anton@samba.org
+Subject: Re: [PATCH 3/3] powerpc/mm/hash64: Make vmalloc 56T on hash
+In-Reply-To: <1501583364-14909-3-git-send-email-mpe@ellerman.id.au>
+References: <1501583364-14909-1-git-send-email-mpe@ellerman.id.au>
+ <1501583364-14909-3-git-send-email-mpe@ellerman.id.au>
+Date: Wed, 02 Aug 2017 13:49:29 +0530
 MIME-Version: 1.0
-In-Reply-To: <877eym1l4m.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
+Message-Id: <874ltq1iwe.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,173 +54,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael Ellerman <mpe@ellerman.id.au> writes:
+
+> On 64-bit book3s, with the hash MMU, we currently define the kernel
+> virtual space (vmalloc, ioremap etc.), to be 16T in size. This is a
+> leftover from pre v3.7 when our user VM was also 16T.
+>
+> Of that 16T we split it 50/50, with half used for PCI IO and ioremap
+> and the other 8T for vmalloc.
+>
+> We never bothered to make it any bigger because 8T of vmalloc ought to
+> be enough for anybody. But it turns out that's not true, the per cpu
+> allocator wants large amounts of vmalloc space, not to make large
+> allocations, but to allow a large stride between allocations, because
+> we use pcpu_embed_first_chunk().
+>
+> With a bit of juggling we can keep 8T for the IO etc. and make the
+> vmalloc space 56T. The only complication is the check of the address
+
+What is the significance of 56T number ? Can you add a comment regarding
+why 56TB was selected ?
 
 
-Le 02/08/2017 à 09:31, Aneesh Kumar K.V a écrit :
-> Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> 
->> Hi,
->>
->> Le 28/07/2017 à 07:01, Aneesh Kumar K.V a écrit :
->>> With commit aa888a74977a8 ("hugetlb: support larger than MAX_ORDER") we added
->>> support for allocating gigantic hugepages via kernel command line. Switch
->>> ppc64 arch specific code to use that.
->>>
->>> W.r.t FSL support, we now limit our allocation range using BOOTMEM_ALLOC_ACCESSIBLE.
->>>
->>> We use the kernel command line to do reservation of hugetlb pages on powernv
->>> platforms. On pseries hash mmu mode the supported gigantic huge page size is
->>> 16GB and that can only be allocated with hypervisor assist. For pseries the
->>> command line option doesn't do the allocation. Instead pseries does gigantic
->>> hugepage allocation based on hypervisor hint that is specified via
->>> "ibm,expected#pages" property of the memory node.
->>
->> It looks like it doesn't work on the 8xx:
->>
->> root@vgoip:~# dmesg | grep -i huge
->> [    0.000000] Kernel command line: console=ttyCPM0,115200N8
->> ip=172.25.231.25:172.25.231.1::255.0.0.0:vgoip:eth0:off hugepagesz=8M
->> hugepages=4
->> [    0.416722] HugeTLB registered 8.00 MiB page size, pre-allocated 4 pages
->> [    0.423184] HugeTLB registered 512 KiB page size, pre-allocated 0 pages
->> root@vgoip:~# cat /proc/meminfo
->> MemTotal:         123388 kB
->> MemFree:           77900 kB
->> MemAvailable:      78412 kB
->> Buffers:               0 kB
->> Cached:             3964 kB
->> SwapCached:            0 kB
->> Active:             3788 kB
->> Inactive:           1680 kB
->> Active(anon):       1636 kB
->> Inactive(anon):       20 kB
->> Active(file):       2152 kB
->> Inactive(file):     1660 kB
->> Unevictable:           0 kB
->> Mlocked:               0 kB
->> SwapTotal:             0 kB
->> SwapFree:              0 kB
->> Dirty:                 0 kB
->> Writeback:             0 kB
->> AnonPages:          1552 kB
->> Mapped:             2404 kB
->> Shmem:               152 kB
->> Slab:                  0 kB
->> SReclaimable:          0 kB
->> SUnreclaim:            0 kB
->> KernelStack:         304 kB
->> PageTables:          208 kB
->> NFS_Unstable:          0 kB
->> Bounce:                0 kB
->> WritebackTmp:          0 kB
->> CommitLimit:       45308 kB
->> Committed_AS:      16664 kB
->> VmallocTotal:     866304 kB
->> VmallocUsed:           0 kB
->> VmallocChunk:          0 kB
->> HugePages_Total:       0
->> HugePages_Free:        0
->> HugePages_Rsvd:        0
->> HugePages_Surp:        0
->> Hugepagesize:        512 kB
-> 
-> But you are printing above the default hugepaeg details. You haven't
-> changed that in kernel command line. What does
-> /sys/kernel/mm/hugepages/<hugepages-size>/nr_hugepages show ?
-
-It says 4, so indeed it seems to work.
-
-> 
-> To change the default hugepage size you may want to use
-> default_hugepagesz=8M
-> 
-
-Ah ? Documentation/admin-guide/kernel-parameters.txt says it is the same 
-as hugepagesz:
-
-	default_hugepagesz=
-		[same as hugepagesz=] The size of the default
-		HugeTLB page size. This is the size represented by
-		the legacy /proc/ hugepages APIs, used for SHM, and
-		default size when mounting hugetlbfs filesystems.
-		Defaults to the default architecture's huge page size
-		if not specified.
-
-
-You are right, with default_hugepagesz instead of hugepagesz I get the 
-following in 16k page sizes mode (ie 8M is < MAX_ORDER)
-
-root@vgoip:~# dmesg | grep -i huge
-[    0.000000] Kernel command line: console=ttyCPM0,115200N8 
-ip=172.25.231.25:172.25.231.1::255.0.0.0:vgoip:eth0:off 
-default_hugepagesz=8M hugepages=4
-[    0.410451] HugeTLB registered 512 KiB page size, pre-allocated 0 pages
-[    0.417091] HugeTLB registered 8.00 MiB page size, pre-allocated 4 pages
-root@vgoip:~# cat /proc/meminfo
-MemTotal:         123968 kB
-MemFree:           73248 kB
-MemAvailable:      75120 kB
-Buffers:               0 kB
-Cached:             5936 kB
-SwapCached:            0 kB
-Active:             6912 kB
-Inactive:           2496 kB
-Active(anon):       3664 kB
-Inactive(anon):       80 kB
-Active(file):       3248 kB
-Inactive(file):     2416 kB
-Unevictable:           0 kB
-Mlocked:               0 kB
-SwapTotal:             0 kB
-SwapFree:              0 kB
-Dirty:                 0 kB
-Writeback:             0 kB
-AnonPages:          3536 kB
-Mapped:             3216 kB
-Shmem:               272 kB
-Slab:                  0 kB
-SReclaimable:          0 kB
-SUnreclaim:            0 kB
-KernelStack:         304 kB
-PageTables:          672 kB
-NFS_Unstable:          0 kB
-Bounce:                0 kB
-WritebackTmp:          0 kB
-CommitLimit:       45600 kB
-Committed_AS:      18528 kB
-VmallocTotal:     866304 kB
-VmallocUsed:           0 kB
-VmallocChunk:          0 kB
-HugePages_Total:       4
-HugePages_Free:        4
-HugePages_Rsvd:        0
-HugePages_Surp:        0
-Hugepagesize:       8192 kB
-
-However, in 4K pages mode, ie (8M > MAX_ORDER), I get
-
-root@vgoip:~# dmesg | grep -i huge
-[    0.000000] Kernel command line: console=ttyCPM0,115200N8 
-ip=172.25.231.25:172.25.231.1::255.0.0.0:vgoip:eth0:off 
-default_hugepagesz=8M hugepages=4
-[    0.413274] HugeTLB registered 512 KiB page size, pre-allocated 0 pages
-[    0.419844] HugeTLB registered 8.00 MiB page size, pre-allocated 0 pages
-
-root@vgoip:~# cat /proc/meminfo
-...
-HugePages_Total:       0
-HugePages_Free:        0
-HugePages_Rsvd:        0
-HugePages_Surp:        0
-Hugepagesize:       8192 kB
-
-Looks like for gigantic pages, we have to specify both 
-default_hugepagesz=8M and hugepagesz=8M. When we do it it works back:
-
-[    0.000000] Kernel command line: console=ttyCPM0,115200N8 
-ip=172.25.231.25:172.25.231.1::255.0.0.0:vgoip:eth0:off 
-default_hugepagesz=8M hugepagesz=8M hugepages=4
-[    0.420093] HugeTLB registered 8.00 MiB page size, pre-allocated 4 pages
-[    0.426538] HugeTLB registered 512 KiB page size, pre-allocated 0 pages
-
-Christophe
+> in the SLB miss handler, see the comment in the code.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hash.h |  4 ++--
+>  arch/powerpc/mm/slb_low.S                 | 18 +++++++++++++++---
+>  2 files changed, 17 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+> index d613653ed5b9..f88452019114 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
+> @@ -40,7 +40,7 @@
+>   * Define the address range of the kernel non-linear virtual area
+>   */
+>  #define H_KERN_VIRT_START ASM_CONST(0xD000000000000000)
+> -#define H_KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
+> +#define H_KERN_VIRT_SIZE  ASM_CONST(0x0000400000000000) /* 64T */
+>
+>  /*
+>   * The vmalloc space starts at the beginning of that region, and
+> @@ -48,7 +48,7 @@
+>   * (we keep a quarter for the virtual memmap)
+>   */
+>  #define H_VMALLOC_START	H_KERN_VIRT_START
+> -#define H_VMALLOC_SIZE	(H_KERN_VIRT_SIZE >> 1)
+> +#define H_VMALLOC_SIZE	ASM_CONST(0x380000000000) /* 56T */
+>  #define H_VMALLOC_END	(H_VMALLOC_START + H_VMALLOC_SIZE)
+>
+>  #define H_KERN_IO_START	H_VMALLOC_END
+> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+> index 2eb1b92a68ff..906a86fe457b 100644
+> --- a/arch/powerpc/mm/slb_low.S
+> +++ b/arch/powerpc/mm/slb_low.S
+> @@ -121,9 +121,21 @@ slb_miss_kernel_load_vmemmap:
+>  1:
+>  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+>
+> -	clrldi	r11,r10,48
+> -	cmpldi	r11,(H_VMALLOC_SIZE >> 28) - 1
+> -	bgt	5f
+> +	/*
+> +	 * r10 contains the ESID, which is the original faulting EA shifted
+> +	 * right by 28 bits. We need to compare that with (H_VMALLOC_END >> 28)
+> +	 * which is 0xd00038000. That can't be used as an immediate, even if we
+> +	 * ignored the 0xd, so we have to load it into a register, and we only
+> +	 * have one register free. So we must load all of (H_VMALLOC_END >> 28)
+> +	 * into a register and compare ESID against that.
+> +	 */
+> +	lis	r11,(H_VMALLOC_END >> 32)@h	// r11 = 0xffffffffd0000000
+> +	ori	r11,r11,(H_VMALLOC_END >> 32)@l	// r11 = 0xffffffffd0003800
+> +	// Rotate left 4, then mask with 0xffffffff0
+> +	rldic	r11,r11,4,28			// r11 = 0xd00038000
+> +	cmpld	r10,r11				// if r10 >= r11
+> +	bge	5f				//   goto io_mapping
+> +
+>  	/*
+>  	 * vmalloc mapping gets the encoding from the PACA as the mapping
+>  	 * can be demoted from 64K -> 4K dynamically on some machines.
+> -- 
+> 2.7.4
