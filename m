@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4YP5276zDr5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:29:45 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4YR4y3qzDrFK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:29:47 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v72KT0s5018736
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 16:29:43 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3g4j9hp9-1
+ v72KSsOG012002
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 16:29:44 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c3mxwaech-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 16:29:43 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 16:29:44 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 2 Aug 2017 21:29:41 +0100
+ Wed, 2 Aug 2017 21:29:42 +0100
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  linuxppc-dev@lists.ozlabs.org
 Cc: clombard@linux.vnet.ibm.com, alistair@popple.id.au,
  vaibhav@linux.vnet.ibm.com
-Subject: [PATCH v3 2/3] cxl: Mark context requiring global TLBIs
-Date: Wed,  2 Aug 2017 22:29:29 +0200
+Subject: [PATCH v3 3/3] cxl: Add memory barrier to guarantee TLBI scope
+Date: Wed,  2 Aug 2017 22:29:30 +0200
 In-Reply-To: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
 References: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
-Message-Id: <20170802202930.5616-3-fbarrat@linux.vnet.ibm.com>
+Message-Id: <20170802202930.5616-4-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,101 +37,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL and XSL need to see all TLBIs pertinent to the memory contexts
-used on the adapter. For the hash memory model, it is done by making
-all TLBIs global as soon as the cxl driver is in use. For radix, we
-need something similar, but we can refine and only convert to global
-the invalidations for contexts actually used by the device.
-
-So mark the contexts being attached to the cxl adapter as requiring
-global TLBIs.
+With the hash memory model, all TLBIs become global when the cxl
+driver is active, i.e. as soon as one context is open.
+It is theoretically possible to send a TLBI with the wrong scope as
+there's currently no memory barrier between when the driver is marked
+as in use, and attaching a context to the device, therefore we are
+exposed to re-ordering. It is highly unlikely as the use count for the
+driver is incremented on open() and the attachment to the device
+happens on a different system call (ioctl)
 
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- drivers/misc/cxl/api.c    | 12 ++++++++++--
- drivers/misc/cxl/cxllib.c |  7 +++++++
- drivers/misc/cxl/file.c   | 12 ++++++++++--
- 3 files changed, 27 insertions(+), 4 deletions(-)
+ include/misc/cxl-base.h | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 1a138c83f877..d3f3fdede755 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -332,8 +332,17 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 		cxl_context_mm_count_get(ctx);
+diff --git a/include/misc/cxl-base.h b/include/misc/cxl-base.h
+index b2ebc91fe09a..25afe6bbe0a9 100644
+--- a/include/misc/cxl-base.h
++++ b/include/misc/cxl-base.h
+@@ -25,17 +25,33 @@ extern atomic_t cxl_use_count;
  
- 		/* decrement the use count */
--		if (ctx->mm)
-+		if (ctx->mm) {
- 			mmput(ctx->mm);
-+#ifdef CONFIG_PPC_BOOK3S_64
-+			mm_context_set_global_tlbi(&ctx->mm->context);
-+			/*
-+			 * Barrier guarantees that the device will
-+			 * receive all TLBIs from that point on
-+			 */
-+			wmb();
-+#endif
-+		}
- 	}
+ static inline bool cxl_ctx_in_use(void)
+ {
+-       return (atomic_read(&cxl_use_count) != 0);
++	/*
++	 * This is called when sending an TLBI, to know whether it
++	 * should be global or local.
++	 *
++	 * We need to make sure the PTE update is happening before
++	 * reading the context global flag. Otherwise, reading the
++	 * flag may be re-ordered and happen first, and we could end
++	 * up in a situation where the old PTE is seen by the device,
++	 * but the TLBI is not global.
++	 */
++	mb();
++	return (atomic_read(&cxl_use_count) != 0);
+ }
  
- 	cxl_ctx_get();
-@@ -347,7 +356,6 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 			cxl_context_mm_count_put(ctx);
- 		goto out;
- 	}
--
- 	ctx->status = STARTED;
- out:
- 	mutex_unlock(&ctx->status_mutex);
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index 5dba23ca2e5f..00b8125752d9 100644
---- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -198,6 +198,13 @@ int cxllib_get_PE_attributes(struct task_struct *task,
- 		 * as XSL uses the memory context
- 		 */
- 		attr->pid = mm->context.id;
-+#ifdef CONFIG_PPC_BOOK3S_64
-+		mm_context_set_global_tlbi(&mm->context);
-+		/*
-+		 * barrier guarantees that XSL receives all invalidations
-+		 */
-+		wmb();
-+#endif
- 		mmput(mm);
- 	} else {
- 		attr->pid = 0;
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 0761271d68c5..efdf9483275c 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -222,8 +222,17 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	cxl_context_mm_count_get(ctx);
+ static inline void cxl_ctx_get(void)
+ {
+-       atomic_inc(&cxl_use_count);
++	atomic_inc(&cxl_use_count);
++	/*
++	 * Barrier guarantees that the device will receive all TLBIs
++	 * from that point on
++	 */
++	wmb();
+ }
  
- 	/* decrement the use count */
--	if (ctx->mm)
-+	if (ctx->mm) {
- 		mmput(ctx->mm);
-+#ifdef CONFIG_PPC_BOOK3S_64
-+		mm_context_set_global_tlbi(&ctx->mm->context);
-+		/*
-+		 * Barrier guarantees that the device will receive all
-+		 * TLBIs from that point on
-+		 */
-+		wmb();
-+#endif
-+	}
+ static inline void cxl_ctx_put(void)
+ {
+-       atomic_dec(&cxl_use_count);
++	atomic_dec(&cxl_use_count);
+ }
  
- 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
- 
-@@ -236,7 +245,6 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 		cxl_context_mm_count_put(ctx);
- 		goto out;
- 	}
--
- 	ctx->status = STARTED;
- 	rc = 0;
- out:
+ struct cxl_afu *cxl_afu_get(struct cxl_afu *afu);
 -- 
 2.11.0
