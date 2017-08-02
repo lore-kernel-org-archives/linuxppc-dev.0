@@ -1,42 +1,25 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMfgn12QyzDrJ6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 14:03:48 +1000 (AEST)
-Date: Wed, 2 Aug 2017 06:02:56 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 11/17] x86/mm, resource: Use PAGE_KERNEL
- protection for ioremap of memory pages
-Message-ID: <20170802040255.GA4336@nazgul.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-12-brijesh.singh@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170724190757.11278-12-brijesh.singh@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMfj40jxbzDsRL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 14:04:56 +1000 (AEST)
+Message-ID: <1501646674.3739.6.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, Sergei Shtylyov
+ <sergei.shtylyov@cogentembedded.com>, Kumar Gala
+ <galak@kernel.crashing.org>,  Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Date: Tue, 01 Aug 2017 23:04:34 -0500
+In-Reply-To: <87h8xs6hxc.fsf@concordia.ellerman.id.au>
+References: <20170729195217.214940504@cogentembedded.com>
+ <1501379504.3739.4.camel@buserror.net>
+ <87h8xs6hxc.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH] mpc832x_rdb: fix of_irq_to_resource() error check
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,76 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 24, 2017 at 02:07:51PM -0500, Brijesh Singh wrote:
-> From: Tom Lendacky <thomas.lendacky@amd.com>
+On Mon, 2017-07-31 at 20:04 +1000, Michael Ellerman wrote:
+> Scott Wood <oss@buserror.net> writes:
 > 
-> In order for memory pages to be properly mapped when SEV is active, we
-> need to use the PAGE_KERNEL protection attribute as the base protection.
-> This will insure that memory mapping of, e.g. ACPI tables, receives the
-> proper mapping attributes.
+> > On Sat, 2017-07-29 at 22:52 +0300, Sergei Shtylyov wrote:
+> > > of_irq_to_resource() has recently been  fixed to return negative error
+> > > #'s
+> > > along with 0 in case of failure,  however the Freescale MPC832x RDB
+> > > board
+> > > code still only regards 0 as as failure indication -- fix it up.
+> > > 
+> > > Fixes: 7a4228bbff76 ("of: irq: use of_irq_get() in
+> > > of_irq_to_resource()")
+> > > Signed-off-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+> > > 
+> > > ---
+> > > The patch is against the 'master' branch of Scott Wood's 'linux.git'
+> > > repo
+> > > (the 'fixes' branch is too much behind).
+> > 
+> > The master branch is also old.  Those branches are only used when needed
+> > to
+> > apply patches; I don't update them just to sync up.  If they're older than
+> > what's in Michael's or Linus's tree (as they almost always are), then use
+> > those instead.
+> > 
+> > Not that I expect it to make a difference to this patch...
 > 
-> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
-> ---
->  arch/x86/mm/ioremap.c  | 28 ++++++++++++++++++++++++++++
->  include/linux/ioport.h |  3 +++
->  kernel/resource.c      | 17 +++++++++++++++++
->  3 files changed, 48 insertions(+)
-> 
-> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-> index c0be7cf..7b27332 100644
-> --- a/arch/x86/mm/ioremap.c
-> +++ b/arch/x86/mm/ioremap.c
-> @@ -69,6 +69,26 @@ static int __ioremap_check_ram(unsigned long start_pfn, unsigned long nr_pages,
->  	return 0;
->  }
->  
-> +static int __ioremap_res_desc_other(struct resource *res, void *arg)
-> +{
-> +	return (res->desc != IORES_DESC_NONE);
-> +}
-> +
-> +/*
-> + * This function returns true if the target memory is marked as
-> + * IORESOURCE_MEM and IORESOURCE_BUSY and described as other than
-> + * IORES_DESC_NONE (e.g. IORES_DESC_ACPI_TABLES).
-> + */
-> +static bool __ioremap_check_if_mem(resource_size_t addr, unsigned long size)
-> +{
-> +	u64 start, end;
-> +
-> +	start = (u64)addr;
-> +	end = start + size - 1;
-> +
-> +	return (walk_mem_res(start, end, NULL, __ioremap_res_desc_other) == 1);
-> +}
-> +
->  /*
->   * Remap an arbitrary physical address space into the kernel virtual
->   * address space. It transparently creates kernel huge I/O mapping when
-> @@ -146,7 +166,15 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
->  		pcm = new_pcm;
->  	}
->  
-> +	/*
-> +	 * If the page being mapped is in memory and SEV is active then
-> +	 * make sure the memory encryption attribute is enabled in the
-> +	 * resulting mapping.
-> +	 */
->  	prot = PAGE_KERNEL_IO;
-> +	if (sev_active() && __ioremap_check_if_mem(phys_addr, size))
-> +		prot = pgprot_encrypted(prot);
+> Do you want me to grab this as a fix for 4.13 ?
 
-Hmm, so this function already does walk_system_ram_range() a bit
-earlier and now on SEV systems we're going to do it again. Can we make
-walk_system_ram_range() return a distinct value for SEV systems and act
-accordingly in __ioremap_caller() instead of repeating the operation?
+Sure:
+Acked-by: Scott Wood <oss@buserror.net>
 
-It looks to me like we could...
-
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+-Scott
