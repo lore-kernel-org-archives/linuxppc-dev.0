@@ -1,33 +1,26 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4YR4y3qzDrFK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:29:47 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v72KSsOG012002
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 16:29:44 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3mxwaech-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 16:29:44 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 2 Aug 2017 21:29:42 +0100
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.vnet.ibm.com, alistair@popple.id.au,
- vaibhav@linux.vnet.ibm.com
-Subject: [PATCH v3 3/3] cxl: Add memory barrier to guarantee TLBI scope
-Date: Wed,  2 Aug 2017 22:29:30 +0200
-In-Reply-To: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
-References: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
-Message-Id: <20170802202930.5616-4-fbarrat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN4mj10S4zDqjF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 06:39:32 +1000 (AEST)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ v72KdUhI026551
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 20:39:31 GMT
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org
+Subject: [v4 03/15] sparc64/mm: setting fields in deferred pages
+Date: Wed,  2 Aug 2017 16:38:12 -0400
+Message-Id: <1501706304-869240-4-git-send-email-pasha.tatashin@oracle.com>
+In-Reply-To: <1501706304-869240-1-git-send-email-pasha.tatashin@oracle.com>
+References: <1501706304-869240-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,60 +30,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the hash memory model, all TLBIs become global when the cxl
-driver is active, i.e. as soon as one context is open.
-It is theoretically possible to send a TLBI with the wrong scope as
-there's currently no memory barrier between when the driver is marked
-as in use, and attaching a context to the device, therefore we are
-exposed to re-ordering. It is highly unlikely as the use count for the
-driver is incremented on open() and the attachment to the device
-happens on a different system call (ioctl)
+Without deferred struct page feature (CONFIG_DEFERRED_STRUCT_PAGE_INIT),
+flags and other fields in "struct page"es are never changed prior to first
+initializing struct pages by going through __init_single_page().
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+With deferred struct page feature enabled there is a case where we set some
+fields prior to initializing:
+
+ mem_init() {
+	 register_page_bootmem_info();
+	 free_all_bootmem();
+	 ...
+ }
+
+When register_page_bootmem_info() is called only non-deferred struct pages
+are initialized. But, this function goes through some reserved pages which
+might be part of the deferred, and thus are not yet initialized.
+
+mem_init
+register_page_bootmem_info
+ register_page_bootmem_info_node
+  get_page_bootmem
+   .. setting fields here ..
+   such as: page->freelist = (void *)type;
+
+We end-up with similar issue as in the previous patch, where currently we
+do not observe problem as memory is zeroed. But, if flag asserts are
+changed we can start hitting issues.
+
+Also, because in this patch series we will stop zeroing struct page memory
+during allocation, we must make sure that struct pages are properly
+initialized prior to using them.
+
+The deferred-reserved pages are initialized in free_all_bootmem().
+Therefore, the fix is to switch the above calls.
+
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- include/misc/cxl-base.h | 22 +++++++++++++++++++---
- 1 file changed, 19 insertions(+), 3 deletions(-)
+ arch/sparc/mm/init_64.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/include/misc/cxl-base.h b/include/misc/cxl-base.h
-index b2ebc91fe09a..25afe6bbe0a9 100644
---- a/include/misc/cxl-base.h
-+++ b/include/misc/cxl-base.h
-@@ -25,17 +25,33 @@ extern atomic_t cxl_use_count;
- 
- static inline bool cxl_ctx_in_use(void)
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index 3c40ebd50f92..ba957b763c07 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -2464,9 +2464,15 @@ void __init mem_init(void)
  {
--       return (atomic_read(&cxl_use_count) != 0);
-+	/*
-+	 * This is called when sending an TLBI, to know whether it
-+	 * should be global or local.
-+	 *
-+	 * We need to make sure the PTE update is happening before
-+	 * reading the context global flag. Otherwise, reading the
-+	 * flag may be re-ordered and happen first, and we could end
-+	 * up in a situation where the old PTE is seen by the device,
-+	 * but the TLBI is not global.
+ 	high_memory = __va(last_valid_pfn << PAGE_SHIFT);
+ 
+-	register_page_bootmem_info();
+ 	free_all_bootmem();
+ 
++	/* Must be done after boot memory is put on freelist, because here we
++	 * might set fields in deferred struct pages that have not yet been
++	 * initialized, and free_all_bootmem() initializes all the reserved
++	 * deferred pages for us.
 +	 */
-+	mb();
-+	return (atomic_read(&cxl_use_count) != 0);
- }
- 
- static inline void cxl_ctx_get(void)
- {
--       atomic_inc(&cxl_use_count);
-+	atomic_inc(&cxl_use_count);
-+	/*
-+	 * Barrier guarantees that the device will receive all TLBIs
-+	 * from that point on
-+	 */
-+	wmb();
- }
- 
- static inline void cxl_ctx_put(void)
- {
--       atomic_dec(&cxl_use_count);
-+	atomic_dec(&cxl_use_count);
- }
- 
- struct cxl_afu *cxl_afu_get(struct cxl_afu *afu);
++	register_page_bootmem_info();
++
+ 	/*
+ 	 * Set up the zero page, mark it reserved, so that page count
+ 	 * is not manipulated when freeing the page from user ptes.
 -- 
-2.11.0
+2.13.3
