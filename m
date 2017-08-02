@@ -1,26 +1,42 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bp@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xMdRT6j6kzDrLS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 13:08:05 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id t86so4588801pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Aug 2017 20:08:05 -0700 (PDT)
-Date: Wed, 2 Aug 2017 13:07:30 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- naveen.n.rao@linux.vnet.ibm.com
-Subject: Re: [PATCH v1 1/3] arch/powerpc/set_memory: Implement set_memory_xx
- routines
-Message-ID: <20170802130730.5ccc0b6c@firefly.ozlabs.ibm.com>
-In-Reply-To: <c0303243-e20a-a2ee-7d5c-7660c10daedc@c-s.fr>
-References: <20170801112535.20765-1-bsingharora@gmail.com>
- <20170801112535.20765-2-bsingharora@gmail.com>
- <c0303243-e20a-a2ee-7d5c-7660c10daedc@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xMfgn12QyzDrJ6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Aug 2017 14:03:48 +1000 (AEST)
+Date: Wed, 2 Aug 2017 06:02:56 +0200
+From: Borislav Petkov <bp@suse.de>
+To: Brijesh Singh <brijesh.singh@amd.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 11/17] x86/mm, resource: Use PAGE_KERNEL
+ protection for ioremap of memory pages
+Message-ID: <20170802040255.GA4336@nazgul.tnic>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-12-brijesh.singh@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170724190757.11278-12-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,170 +46,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 1 Aug 2017 21:08:49 +0200
-christophe leroy <christophe.leroy@c-s.fr> wrote:
+On Mon, Jul 24, 2017 at 02:07:51PM -0500, Brijesh Singh wrote:
+> From: Tom Lendacky <thomas.lendacky@amd.com>
+> 
+> In order for memory pages to be properly mapped when SEV is active, we
+> need to use the PAGE_KERNEL protection attribute as the base protection.
+> This will insure that memory mapping of, e.g. ACPI tables, receives the
+> proper mapping attributes.
+> 
+> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> ---
+>  arch/x86/mm/ioremap.c  | 28 ++++++++++++++++++++++++++++
+>  include/linux/ioport.h |  3 +++
+>  kernel/resource.c      | 17 +++++++++++++++++
+>  3 files changed, 48 insertions(+)
+> 
+> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+> index c0be7cf..7b27332 100644
+> --- a/arch/x86/mm/ioremap.c
+> +++ b/arch/x86/mm/ioremap.c
+> @@ -69,6 +69,26 @@ static int __ioremap_check_ram(unsigned long start_pfn, unsigned long nr_pages,
+>  	return 0;
+>  }
+>  
+> +static int __ioremap_res_desc_other(struct resource *res, void *arg)
+> +{
+> +	return (res->desc != IORES_DESC_NONE);
+> +}
+> +
+> +/*
+> + * This function returns true if the target memory is marked as
+> + * IORESOURCE_MEM and IORESOURCE_BUSY and described as other than
+> + * IORES_DESC_NONE (e.g. IORES_DESC_ACPI_TABLES).
+> + */
+> +static bool __ioremap_check_if_mem(resource_size_t addr, unsigned long size)
+> +{
+> +	u64 start, end;
+> +
+> +	start = (u64)addr;
+> +	end = start + size - 1;
+> +
+> +	return (walk_mem_res(start, end, NULL, __ioremap_res_desc_other) == 1);
+> +}
+> +
+>  /*
+>   * Remap an arbitrary physical address space into the kernel virtual
+>   * address space. It transparently creates kernel huge I/O mapping when
+> @@ -146,7 +166,15 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
+>  		pcm = new_pcm;
+>  	}
+>  
+> +	/*
+> +	 * If the page being mapped is in memory and SEV is active then
+> +	 * make sure the memory encryption attribute is enabled in the
+> +	 * resulting mapping.
+> +	 */
+>  	prot = PAGE_KERNEL_IO;
+> +	if (sev_active() && __ioremap_check_if_mem(phys_addr, size))
+> +		prot = pgprot_encrypted(prot);
 
-> Le 01/08/2017 =C3=A0 13:25, Balbir Singh a =C3=A9crit :
-> > Add support for set_memory_xx routines. With the STRICT_KERNEL_RWX
-> > feature support we got support for changing the page permissions
-> > for pte ranges. This patch adds support for both radix and hash
-> > so that we can change their permissions via set/clear masks.
-> >
-> > A new helper is required for hash (hash__change_memory_range()
-> > is changed to hash__change_boot_memory_range() as it deals with
-> > bolted PTE's).
-> >
-> > hash__change_memory_range() works with vmalloc'ed PAGE_SIZE requests
-> > for permission changes. hash__change_memory_range() does not invoke
-> > updatepp, instead it changes the software PTE and invalidates the PTE.
-> >
-> > For radix, radix__change_memory_range() is setup to do the right
-> > thing for vmalloc'd addresses. It takes a new parameter to decide
-> > what attributes to set.
-> >
-> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> > ---
-> >  arch/powerpc/include/asm/book3s/64/hash.h  |  6 +++
-> >  arch/powerpc/include/asm/book3s/64/radix.h |  6 +++
-> >  arch/powerpc/include/asm/set_memory.h      | 34 +++++++++++++++
-> >  arch/powerpc/mm/pgtable-hash64.c           | 51 ++++++++++++++++++++--
-> >  arch/powerpc/mm/pgtable-radix.c            | 26 ++++++------
-> >  arch/powerpc/mm/pgtable_64.c               | 68 ++++++++++++++++++++++=
-++++++++
-> >  6 files changed, 175 insertions(+), 16 deletions(-)
-> >  create mode 100644 arch/powerpc/include/asm/set_memory.h
-> > =20
->=20
-> [...]
->=20
-> > diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> > index 0736e94..3ee4c7d 100644
-> > --- a/arch/powerpc/mm/pgtable_64.c
-> > +++ b/arch/powerpc/mm/pgtable_64.c
-> > @@ -514,3 +514,71 @@ void mark_initmem_nx(void)
-> >  		hash__mark_initmem_nx();
-> >  }
-> >  #endif
-> > +
-> > +#ifdef CONFIG_ARCH_HAS_SET_MEMORY
-> > +/*
-> > + * Some of these bits are taken from arm64/mm/page_attr.c
-> > + */
-> > +static int change_memory_common(unsigned long addr, int numpages,
-> > +				unsigned long set, unsigned long clear)
-> > +{
-> > +	unsigned long start =3D addr;
-> > +	unsigned long size =3D PAGE_SIZE*numpages;
-> > +	unsigned long end =3D start + size;
-> > +	struct vm_struct *area;
-> > +
-> > +	if (!PAGE_ALIGNED(addr)) {
-> > +		start &=3D PAGE_MASK;
-> > +		end =3D start + size;
-> > +		WARN_ON_ONCE(1);
-> > +	} =20
->=20
-> Why not just set start =3D addr & PAGE_MASK, then just do=20
-> WARN_ON_ONCE(start !=3D addr), instead of that if ()
+Hmm, so this function already does walk_system_ram_range() a bit
+earlier and now on SEV systems we're going to do it again. Can we make
+walk_system_ram_range() return a distinct value for SEV systems and act
+accordingly in __ioremap_caller() instead of repeating the operation?
 
-The code has been taken from arch/arm64/mm/page_attr.c. I did
-not change any bits, but we could make changes.
+It looks to me like we could...
 
->=20
-> > +
-> > +	/*
-> > +	 * So check whether the [addr, addr + size) interval is entirely
-> > +	 * covered by precisely one VM area that has the VM_ALLOC flag set.
-> > +	 */
-> > +	area =3D find_vm_area((void *)addr);
-> > +	if (!area ||
-> > +	    end > (unsigned long)area->addr + area->size ||
-> > +	    !(area->flags & VM_ALLOC))
-> > +		return -EINVAL;
-> > +
-> > +	if (!numpages)
-> > +		return 0; =20
->=20
-> Shouldn't that be tested earlier ?
->=20
+-- 
+Regards/Gruss,
+    Boris.
 
-Same as above
-
-> > +
-> > +	if (radix_enabled())
-> > +		return radix__change_memory_range(start, start + size,
-> > +							set, clear);
-> > +	else
-> > +		return hash__change_memory_range(start, start + size,
-> > +							set, clear);
-> > +} =20
->=20
-> The following functions should go in a place common to PPC32 and PPC64,=20
-> otherwise they will have to be duplicated when implementing for PPC32.
-> Maybe the above function should also go in a common place, only the last=
-=20
-> part should remain in a PPC64 dedicated part. It could be called=20
-> change_memory_range(), something like
->=20
-> int change_memory_range(unsigned long start, unsigned long end,
-> 			unsigned long set, unsigned long clear)
-> {
-> 	if (radix_enabled())
-> 		return radix__change_memory_range(start, end,
-> 						  set, clear);
-> 	return hash__change_memory_range(start, end, set, clear);
-> }
->=20
-> Then change_memory_range() could also be implemented for PPC32 later.
-
-I was hoping that when we implement support for PPC32, we
-could refactor the code then and move it to arch/powerpc/mm/page_attr.c
-if required. What do you think?
-
->=20
-> > +
-> > +int set_memory_ro(unsigned long addr, int numpages)
-> > +{
-> > +	return change_memory_common(addr, numpages,
-> > +					0, _PAGE_WRITE);
-> > +}
-> > +EXPORT_SYMBOL(set_memory_ro); =20
->=20
-> Take care that _PAGE_WRITE has value 0 when _PAGE_RO instead of _PAGE_RW=
-=20
-> is defined (eg for the 8xx).
->=20
-> It would be better to use accessors like pte_wrprotect() and pte_mkwrite()
->
-
-Sure we can definitely refactor this for PPC32, pte_wrprotect()
-and pte_mkwrite() would require us to make the changes when we've
-walked down to the pte and then invoke different functions based
-on the flag, I kind of like the addr and permission abstraction<`2`><`2`>
-
-> > +
-> > +int set_memory_rw(unsigned long addr, int numpages)
-> > +{
-> > +	return change_memory_common(addr, numpages,
-> > +					_PAGE_WRITE, 0);
-> > +}
-> > +EXPORT_SYMBOL(set_memory_rw);
-> > +
-> > +int set_memory_nx(unsigned long addr, int numpages)
-> > +{
-> > +	return change_memory_common(addr, numpages,
-> > +					0, _PAGE_EXEC);
-> > +}
-> > +EXPORT_SYMBOL(set_memory_nx);
-> > +
-> > +int set_memory_x(unsigned long addr, int numpages)
-> > +{
-> > +	return change_memory_common(addr, numpages,
-> > +					_PAGE_EXEC, 0);
-> > +}
-> > +EXPORT_SYMBOL(set_memory_x);
-> > +#endif
-> > =20
->=20
-Thanks for the review
-Balbir
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
