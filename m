@@ -1,24 +1,19 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNQlh1jM1zDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 20:09:52 +1000 (AEST)
-Date: Thu, 3 Aug 2017 18:09:29 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Haren Myneni <haren@linux.vnet.ibm.com>, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mikey@neuling.org,
- benh@kernel.crashing.org, suka@us.ibm.com, ddstreet@ieee.org,
- linuxram@us.ibm.com, npiggin@gmail.com, hbabu@us.ibm.com
-Subject: Re: [PATCH V3 2/6] crypto/nx: Create nx842_configure_crb function
-Message-ID: <20170803100929.GA13298@gondor.apana.org.au>
-References: <1500699459.23205.3.camel@hbabu-laptop>
- <20170803055850.GA11987@gondor.apana.org.au>
- <87bmnxq8oj.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87bmnxq8oj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNQyy22YfzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 20:19:38 +1000 (AEST)
+In-Reply-To: <20170720015322.24307-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Madhavan Srinivasan <masriniv@in.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: POWER9 PMU stops after idle workaround
+Message-Id: <3xNQyy1Ck3z9s7v@ozlabs.org>
+Date: Thu,  3 Aug 2017 20:19:38 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 03, 2017 at 07:53:16PM +1000, Michael Ellerman wrote:
-> Herbert Xu <herbert@gondor.apana.org.au> writes:
+On Thu, 2017-07-20 at 01:53:22 UTC, Nicholas Piggin wrote:
+> POWER9 DD2 PMU can stop after a state-loss idle in some conditions.
 > 
-> > On Fri, Jul 21, 2017 at 09:57:39PM -0700, Haren Myneni wrote:
-> >> 
-> >> Configure CRB is moved to nx842_configure_crb() so that it can
-> >> be used for icswx and VAS exec functions. VAS function will be
-> >> added later with P9 support.
-> >> 
-> >> Signed-off-by: Haren Myneni <haren@us.ibm.com>
-> >
-> > Your patch does not apply against cryptodev.  Please rebase.
+> A solution is to set then clear MMCRA[60] after wake from state-loss
+> idle.
 > 
-> It depends on another series that will go via my tree, so it might be
-> better if this series goes via my tree too?
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Acked-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Acked-by: Anton Blanchard <anton@samba.org>
 
-Sure, that's fine by me.
+Applied to powerpc fixes, thanks.
 
-Cheers,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+https://git.kernel.org/powerpc/c/bdd21ddb919d28f9c62cdc6286cac9
+
+cheers
