@@ -1,29 +1,24 @@
-Return-Path: <clg@kaod.org>
-Received: from 13.mo1.mail-out.ovh.net (13.mo1.mail-out.ovh.net
- [178.33.253.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNcnj1V4nzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 03:42:10 +1000 (AEST)
-Received: from player795.ha.ovh.net (b9.ovh.net [213.186.33.59])
- by mo1.mail-out.ovh.net (Postfix) with ESMTP id 9BC4189FAB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 14:55:54 +0200 (CEST)
-Subject: Re: [PATCH] powerpc/xive: fix the fuzz value in xive_pick_irq_target()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <1501692230-20789-1-git-send-email-clg@kaod.org>
- <1501711052.2664.7.camel@kernel.crashing.org>
- <62a8ad99-137f-765c-aa1b-ad5ba22231d0@kaod.org>
- <1501747359.2664.41.camel@kernel.crashing.org>
- <87efstq8qd.fsf@concordia.ellerman.id.au>
- <1501761126.2664.42.camel@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <b7d2a634-9e8c-bb36-e23b-bc45db49d46d@kaod.org>
-Date: Thu, 3 Aug 2017 14:55:43 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNcz42xBqzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 03:50:24 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id h75so971584pfh.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 10:50:24 -0700 (PDT)
+Date: Fri, 4 Aug 2017 03:50:05 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, anton@samba.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v9 14/14] powerpc: rewrite local_t using soft_irq
+Message-ID: <20170804035005.1d462325@roar.ozlabs.ibm.com>
+In-Reply-To: <1501732158-19009-15-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1501732158-19009-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1501732158-19009-15-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1501761126.2664.42.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/03/2017 01:52 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2017-08-03 at 19:52 +1000, Michael Ellerman wrote:
->> What if num is 0?
->>
->> Which it would be in the fallback case, if the affinity mask is empty,
->> AFAICS.
-> 
-> How can the mask be empty though ? But yes, as I noted there is a
-> problem if the value is 0. Not sure what to do if we are given an empty
-> mask though.
+On Thu,  3 Aug 2017 09:19:18 +0530
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
-I am seeing different problems. 
+> @@ -14,6 +17,202 @@ typedef struct
+>  #define local_read(l)	atomic_long_read(&(l)->a)
+>  #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
+>  
+> +#ifdef CONFIG_PPC64
+> +
+> +static __inline__ void local_add(long i, local_t *l)
+> +{
+> +	long t;
+> +	unsigned long flags;
+> +
+> +	powerpc_local_irq_pmu_save(flags);
+> +	__asm__ __volatile__(
+> +	PPC_LL" %0,0(%2)\n\
+> +	add	%0,%1,%0\n"
+> +	PPC_STL" %0,0(%2)\n"
+> +	: "=&r" (t)
+> +	: "r" (i), "r" (&(l->a.counter)));
+> +	powerpc_local_irq_pmu_restore(flags);
+> +}
 
-The fuzz value was one but that was due to the fact that the spapr 
-backend did not set the chip_id of the xive_irq_data. I should have 
-fix that now. But in some other situations, the weight of the 
-'affinity' mask is 2048 (and 'nr_cpu_ids') and that also breaks 
-the 'first' calculation. 
+Hey, so... why are any of these implemented in asm? We should
+just do them all in C, right? I looked a bit harder at code gen
+and a couple of them are still emitting larx/stcx.
 
-I am currently tracking this with the xive support for spapr. I will 
-send a fix with the patchset.
+> +
+> +#define local_cmpxchg(l, o, n) \
+> +	(cmpxchg_local(&((l)->a.counter), (o), (n)))
+> +#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
+
+e.g., these.
 
 Thanks,
-
-C.   
+Nick
