@@ -2,20 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xN9FM3DmGzDrJ2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 10:01:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xN9HX3xjDzDrRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 10:03:04 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?utf-8?Q?C=C3=A9dr?=
- =?utf-8?Q?ic?= Le Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/xive: fix the fuzz value in xive_pick_irq_target()
-In-Reply-To: <1501711052.2664.7.camel@kernel.crashing.org>
-References: <1501692230-20789-1-git-send-email-clg@kaod.org>
- <1501711052.2664.7.camel@kernel.crashing.org>
-Date: Thu, 03 Aug 2017 10:01:10 +1000
-Message-ID: <87r2wtr03d.fsf@concordia.ellerman.id.au>
+To: Paul Clarke <pc@us.ibm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] perf/python: Add ppc64le to audit uname list
+In-Reply-To: <28cdd58e-326d-ff93-e820-2ae47104ee0b@us.ibm.com>
+References: <20170802144216.12494-1-naveen.n.rao@linux.vnet.ibm.com>
+ <20170802150605.GH12201@kernel.org>
+ <28cdd58e-326d-ff93-e820-2ae47104ee0b@us.ibm.com>
+Date: Thu, 03 Aug 2017 10:03:03 +1000
+Message-ID: <87o9rxr008.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Paul Clarke <pc@us.ibm.com> writes:
 
-> On Wed, 2017-08-02 at 18:43 +0200, C=C3=A9dric Le Goater wrote:
->> If xive_find_target_in_mask() fails to find a cpu, the fuzz value used
->> in xive_pick_irq_target() is decremented and reused in the last
->> returning call to xive_find_target_in_mask(). This can result in such
->> WARNINGs if the initial fuzz value is zero :
->
-> Ah indeed ... would have worked better if "fuzz" had been unsigned.
+> Coincidentally, I just saw a developer stumble upon this within the last
+> week.  Could this be pushed upstream soon?
 
-Is that an ack or a changes requested?
+acme's tree is upstream for perf.
 
-chers
+I assume you mean into Linus' tree? If so this should land in 4.14.
+
+cheers
