@@ -1,22 +1,57 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.14])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNg7S3JzDzDqJC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 05:27:48 +1000 (AEST)
-Subject: [PATCH 2/4] axonram: Improve a size determination in axon_ram_probe()
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jan Kara <jack@suse.cz>,
- Jens Axboe <axboe@fb.com>, Dan Williams <dan.j.williams@intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <009fdef0-b2c9-5e98-d32d-14149aec92c5@users.sourceforge.net>
-Message-ID: <5dff1619-f3df-a6ef-7a75-11bae170e0d1@users.sourceforge.net>
-Date: Thu, 3 Aug 2017 21:14:21 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNjCY0p8czDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 07:01:28 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v73KwvJ0001411
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 17:01:25 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c45c8uu6r-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 17:01:25 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 3 Aug 2017 15:01:23 -0600
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v73L1KtG54460428
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 14:01:20 -0700
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v73I1J7J021580
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 15:01:20 -0300
+References: <20170706221753.17380-1-bauerman@linux.vnet.ibm.com>
+ <20170706221753.17380-8-bauerman@linux.vnet.ibm.com>
+ <1501424988.9230.67.camel@linux.vnet.ibm.com>
+ <87fud9yig8.fsf@linux.vnet.ibm.com>
+ <1501714334.27872.38.camel@linux.vnet.ibm.com>
+ <1501771065.27872.63.camel@linux.vnet.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, David Howells <dhowells@redhat.com>,
+ David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>
+Subject: Re: [PATCH v3 7/7] ima: Support module-style appended signatures for
+ appraisal
+In-reply-to: <1501771065.27872.63.camel@linux.vnet.ibm.com>
+Date: Thu, 03 Aug 2017 18:01:06 -0300
 MIME-Version: 1.0
-In-Reply-To: <009fdef0-b2c9-5e98-d32d-14149aec92c5@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
+Message-Id: <87y3r0xt65.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +61,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 3 Aug 2017 20:00:16 +0200
 
-Replace the specification of a data structure by a pointer dereference
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
+Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/sysdev/axonram.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> On Wed, 2017-08-02 at 18:52 -0400, Mimi Zohar wrote:
+>> On Wed, 2017-08-02 at 14:42 -0300, Thiago Jung Bauermann wrote:
+>> > Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+>
+>> > >> @@ -229,8 +251,24 @@ int ima_appraise_measurement(enum ima_hooks func,
+>> > >>  		goto out;
+>> > >>  	}
+>> > >> 
+>> > >> -	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value, rc, iint);
+>> > >> -	if ((status != INTEGRITY_PASS) && (status != INTEGRITY_UNKNOWN)) {
+>> > >> +	/*
+>> > >> +	 * Appended signatures aren't protected by EVM but we still call
+>> > >> +	 * evm_verifyxattr to check other security xattrs, if they exist.
+>> > >> +	 */
+>> > >> +	if (appraising_modsig) {
+>> > >> +		xattr_value_evm = NULL;
+>> > >> +		xattr_len_evm = 0;
+>> > >> +	} else {
+>> > >> +		xattr_value_evm = xattr_value;
+>> > >> +		xattr_len_evm = xattr_len;
+>> > >> +	}
+>> > >> +
+>> > >> +	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value_evm,
+>> > >> +				 xattr_len_evm, iint);
+>> > >> +	if (appraising_modsig && status == INTEGRITY_FAIL) {
+>> > >> +		cause = "invalid-HMAC";
+>> > >> +		goto out;
+>> > >
+>> > > "modsig" is special, because having any security xattrs is not
+>> > > required. This test doesn't prevent status from being set to
+>> > > "missing-HMAC". This test is redundant with the original tests below.
+>> > 
+>> > Indeed, that is wrong. I'm still a bit fuzzy about how EVM works and how
+>> > it interacts with IMA. The only way I can think of singling out modsig
+>> > without reintroduced the complex expression you didn't like in v2 is as
+>> > below. What do you think?
+>> 
+>> The original code, without any extra tests, should be fine.
+>
+> There is one major difference.
+>
+> EVM verifies a file's metadata has not been modified based on either
+> an HMAC or signature stored as security.evm. Prior to the appended
+> signatures patch set, all files in policy required a security.evm
+> xattr. With IMA enabled we could guarantee that at least one security
+> xattr existed. The only exception were new files, which hadn't yet
+> been labeled.
+>
+> With appended signatures, there is now no guarantee that at least one
+> security xattr exists.
+>
+> Perhaps the code snippet below will help clarify the meaning of the
+> integrity_status results.
+>
+>     switch (status) {
+> case INTEGRITY_PASS:
+> case INTEGRITY_UNKNOWN:   
+>        break;		
+>     case INTEGRITY_NOXATTRS:/* no EVM protected xattrs */
+> if (appraising_modsig)
+> break;
+> case INTEGRITY_NOLABEL:/* no security.evm xattr */
+> cause = "missing-HMAC";
+> fail = 1;
+> break;
+> case INTEGRITY_FAIL:/* invalid HMAC/signature */
+> default:
+> cause = "invalid-HMAC";
+> fail = 1;
+> break;
+> }
 
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index b82d1b023a15..bf1506ec2ca4 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -191,7 +191,7 @@ static int axon_ram_probe(struct platform_device *device)
- 	dev_info(&device->dev, "Found memory controller on %s\n",
- 			device->dev.of_node->full_name);
- 
--	bank = kzalloc(sizeof(struct axon_ram_bank), GFP_KERNEL);
-+	bank = kzalloc(sizeof(*bank), GFP_KERNEL);
- 	if (bank == NULL) {
- 		rc = -ENOMEM;
- 		goto failed;
+Thanks! I'll use the switch above in the next version of the patch.
+
 -- 
-2.13.4
+Thiago Jung Bauermann
+IBM Linux Technology Center
