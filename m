@@ -1,23 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNQMJ5HTlzDr57
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 19:52:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNQNY4tQ0zDrFq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 19:53:17 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?utf-8?Q?C=C3=A9dr?=
- =?utf-8?Q?ic?= Le Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/xive: fix the fuzz value in xive_pick_irq_target()
-In-Reply-To: <1501747359.2664.41.camel@kernel.crashing.org>
-References: <1501692230-20789-1-git-send-email-clg@kaod.org>
- <1501711052.2664.7.camel@kernel.crashing.org>
- <62a8ad99-137f-765c-aa1b-ad5ba22231d0@kaod.org>
- <1501747359.2664.41.camel@kernel.crashing.org>
-Date: Thu, 03 Aug 2017 19:52:10 +1000
-Message-ID: <87efstq8qd.fsf@concordia.ellerman.id.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mikey@neuling.org, benh@kernel.crashing.org, suka@us.ibm.com,
+ ddstreet@ieee.org, linuxram@us.ibm.com, npiggin@gmail.com, hbabu@us.ibm.com
+Subject: Re: [PATCH V3 2/6] crypto/nx: Create nx842_configure_crb function
+In-Reply-To: <20170803055850.GA11987@gondor.apana.org.au>
+References: <1500699459.23205.3.camel@hbabu-laptop>
+ <20170803055850.GA11987@gondor.apana.org.au>
+Date: Thu, 03 Aug 2017 19:53:16 +1000
+Message-ID: <87bmnxq8oj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Herbert Xu <herbert@gondor.apana.org.au> writes:
 
-> On Thu, 2017-08-03 at 09:45 +0200, C=C3=A9dric Le Goater wrote:
->> On 08/02/2017 11:57 PM, Benjamin Herrenschmidt wrote:
->> > On Wed, 2017-08-02 at 18:43 +0200, C=C3=A9dric Le Goater wrote:
->> > > If xive_find_target_in_mask() fails to find a cpu, the fuzz value us=
-ed
->> > > in xive_pick_irq_target() is decremented and reused in the last
->> > > returning call to xive_find_target_in_mask(). This can result in such
->> > > WARNINGs if the initial fuzz value is zero :
->> >=20
->> > Ah indeed ... would have worked better if "fuzz" had been unsigned.
->>=20
->> but 'fuzz' is unsigned !=20
+> On Fri, Jul 21, 2017 at 09:57:39PM -0700, Haren Myneni wrote:
+>> 
+>> Configure CRB is moved to nx842_configure_crb() so that it can
+>> be used for icswx and VAS exec functions. VAS function will be
+>> added later with P9 support.
+>> 
+>> Signed-off-by: Haren Myneni <haren@us.ibm.com>
 >
-> Haha right.
->
->> With a -1, unsigned or not, the 'first' cpu  becomes out of range for
->> the calculation below :
->>=20
->> 	/* Pick up a starting point CPU in the mask based on  fuzz */
->> 	num =3D cpumask_weight(mask);
->> 	first =3D fuzz % num;
->
-> How can it ? fuzz % num should then return something that's
->
-> 	0 <=3D first < num
->
-> Regardless of the value of fuzz.
+> Your patch does not apply against cryptodev.  Please rebase.
 
-What if num is 0?
-
-Which it would be in the fallback case, if the affinity mask is empty,
-AFAICS.
+It depends on another series that will go via my tree, so it might be
+better if this series goes via my tree too?
 
 cheers
