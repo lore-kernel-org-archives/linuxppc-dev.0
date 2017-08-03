@@ -1,51 +1,23 @@
-Return-Path: <srs0=5zt0=7f=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNPmz0nMMzDr5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 19:25:55 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xNPmy5xCnz8syC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 19:25:54 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xNPmy1lkSz9s82
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2017 19:25:54 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v739OwIM147377
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2017 05:25:52 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3wyajqv1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 03 Aug 2017 05:25:52 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Thu, 3 Aug 2017 19:25:50 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v739Pcap27590740
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2017 19:25:46 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v739PDpr020458
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2017 19:25:14 +1000
-Subject: [PATCH 2/4] powerpc/prom: fix early parsing of parameters
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: ben@codiert.org, Michael Ellerman <mpe@ellerman.id.au>,
- stable@vger.kernel.org#2.6.15+, Paul Mackerras <paulus@samba.org>,
- sjitindarsingh@gmail.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 03 Aug 2017 14:54:47 +0530
-In-Reply-To: <150175227508.9806.17545018023658850483.stgit@hbathini.in.ibm.com>
-References: <150175227508.9806.17545018023658850483.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNQMJ5HTlzDr57
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 19:52:12 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?utf-8?Q?C=C3=A9dr?=
+ =?utf-8?Q?ic?= Le Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/xive: fix the fuzz value in xive_pick_irq_target()
+In-Reply-To: <1501747359.2664.41.camel@kernel.crashing.org>
+References: <1501692230-20789-1-git-send-email-clg@kaod.org>
+ <1501711052.2664.7.camel@kernel.crashing.org>
+ <62a8ad99-137f-765c-aa1b-ad5ba22231d0@kaod.org>
+ <1501747359.2664.41.camel@kernel.crashing.org>
+Date: Thu, 03 Aug 2017 19:52:10 +1000
+Message-ID: <87efstq8qd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <150175228769.9806.13262099086753853191.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,57 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Parameters 'mem=', 'iommu=' and the like, which affect the iommu are
-parsed early in the boot process. This parser looks for a parameter
-substring like 'iommu=' in the cmdline string but it could also succeed
-when cmdline string contains parameters like 'x_iommu=' or such leading
-to undesired results. Add support to skip proceeding in such cases.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Fixes: 9b6b563c0d2d ("powerpc: Merge in the ppc64 version of the prom code.")
-Cc: stable@vger.kernel.org # 2.6.15+
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/prom_init.c |   22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+> On Thu, 2017-08-03 at 09:45 +0200, C=C3=A9dric Le Goater wrote:
+>> On 08/02/2017 11:57 PM, Benjamin Herrenschmidt wrote:
+>> > On Wed, 2017-08-02 at 18:43 +0200, C=C3=A9dric Le Goater wrote:
+>> > > If xive_find_target_in_mask() fails to find a cpu, the fuzz value us=
+ed
+>> > > in xive_pick_irq_target() is decremented and reused in the last
+>> > > returning call to xive_find_target_in_mask(). This can result in such
+>> > > WARNINGs if the initial fuzz value is zero :
+>> >=20
+>> > Ah indeed ... would have worked better if "fuzz" had been unsigned.
+>>=20
+>> but 'fuzz' is unsigned !=20
+>
+> Haha right.
+>
+>> With a -1, unsigned or not, the 'first' cpu  becomes out of range for
+>> the calculation below :
+>>=20
+>> 	/* Pick up a starting point CPU in the mask based on  fuzz */
+>> 	num =3D cpumask_weight(mask);
+>> 	first =3D fuzz % num;
+>
+> How can it ? fuzz % num should then return something that's
+>
+> 	0 <=3D first < num
+>
+> Regardless of the value of fuzz.
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 723df83..7030145 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -594,6 +594,26 @@ static unsigned long prom_memparse(const char *ptr, const char **retptr)
- }
- 
- /*
-+ * Check if str is a suffix of another param as "mem=" could
-+ * be "iomem=" as well.
-+ */
-+static bool is_substring_param(const char *cmdline, const char *str)
-+{
-+	char *p;
-+	bool ret = false;
-+
-+	if (cmdline == str)
-+		ret = true;
-+	else {
-+		p = (char *)(str - 1);
-+		if (*p == ' ' || *p == '"')
-+			ret = true;
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-  * Early parsing of the command line passed to the kernel, used for
-  * "mem=x" and the options that affect the iommu
-  */
-@@ -617,7 +637,7 @@ static void __init early_cmdline_parse(void)
- 
- #ifdef CONFIG_PPC64
- 	opt = strstr(prom_cmd_line, "iommu=");
--	if (opt) {
-+	if (opt && is_substring_param(prom_cmd_line, opt)) {
- 		prom_printf("iommu opt is: %s\n", opt);
- 		opt += 6;
- 		while (*opt && *opt == ' ')
+What if num is 0?
+
+Which it would be in the fallback case, if the affinity mask is empty,
+AFAICS.
+
+cheers
