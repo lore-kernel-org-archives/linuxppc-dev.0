@@ -2,8 +2,8 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNjlF2N0zzDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 07:25:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNjlF0Z6wzDqJC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 07:25:28 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -11,9 +11,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  mhocko@kernel.org
-Subject: [v5 15/15] mm: debug for raw alloctor
-Date: Thu,  3 Aug 2017 17:23:53 -0400
-Message-Id: <1501795433-982645-16-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v5 11/15] arm64/kasan: explicitly zero kasan shadow memory
+Date: Thu,  3 Aug 2017 17:23:49 -0400
+Message-Id: <1501795433-982645-12-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1501795433-982645-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1501795433-982645-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,43 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_DEBUG_VM is enabled, this patch sets all the memory that is
-returned by memblock_virt_alloc_try_nid_raw() to ones to ensure that no
-places excpect zeroed memory.
+To optimize the performance of struct page initialization,
+vmemmap_populate() will no longer zero memory.
+
+We must explicitly zero the memory that is allocated by vmemmap_populate()
+for kasan, as this memory does not go through struct page initialization
+path.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- mm/memblock.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ arch/arm64/mm/kasan_init.c | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-diff --git a/mm/memblock.c b/mm/memblock.c
-index bdf31f207fa4..b6f90e75946c 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -1363,12 +1363,19 @@ void * __init memblock_virt_alloc_try_nid_raw(
- 			phys_addr_t min_addr, phys_addr_t max_addr,
- 			int nid)
- {
-+	void *ptr;
-+
- 	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
- 		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
- 		     (u64)max_addr, (void *)_RET_IP_);
- 
--	return memblock_virt_alloc_internal(size, align,
--					    min_addr, max_addr, nid);
-+	ptr = memblock_virt_alloc_internal(size, align,
-+					   min_addr, max_addr, nid);
-+#ifdef CONFIG_DEBUG_VM
-+	if (ptr && size > 0)
-+		memset(ptr, 0xff, size);
-+#endif
-+	return ptr;
+diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+index 81f03959a4ab..a57104bc54b8 100644
+--- a/arch/arm64/mm/kasan_init.c
++++ b/arch/arm64/mm/kasan_init.c
+@@ -135,6 +135,31 @@ static void __init clear_pgds(unsigned long start,
+ 		set_pgd(pgd_offset_k(start), __pgd(0));
  }
  
- /**
++/*
++ * Memory that was allocated by vmemmap_populate is not zeroed, so we must
++ * zero it here explicitly.
++ */
++static void
++zero_vemmap_populated_memory(void)
++{
++	struct memblock_region *reg;
++	u64 start, end;
++
++	for_each_memblock(memory, reg) {
++		start = __phys_to_virt(reg->base);
++		end = __phys_to_virt(reg->base + reg->size);
++
++		if (start >= end)
++			break;
++
++		memset((void *)start, 0, end - start);
++	}
++
++	start = (u64)kasan_mem_to_shadow(_stext);
++	end = (u64)kasan_mem_to_shadow(_end);
++	memset((void *)start, 0, end - start);
++}
++
+ void __init kasan_init(void)
+ {
+ 	u64 kimg_shadow_start, kimg_shadow_end;
+@@ -205,6 +230,13 @@ void __init kasan_init(void)
+ 			pfn_pte(sym_to_pfn(kasan_zero_page), PAGE_KERNEL_RO));
+ 
+ 	memset(kasan_zero_page, 0, PAGE_SIZE);
++
++	/*
++	 * vmemmap_populate does not zero the memory, so we need to zero it
++	 * explicitly
++	 */
++	zero_vemmap_populated_memory();
++
+ 	cpu_replace_ttbr1(lm_alias(swapper_pg_dir));
+ 
+ 	/* At this point kasan is fully initialized. Enable error messages */
 -- 
 2.13.4
