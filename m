@@ -1,42 +1,19 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0055.outbound.protection.outlook.com [104.47.33.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNGMt068GzDr3D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 13:52:09 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v733msp0029438
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Aug 2017 23:52:07 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c3mxwtmqm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Aug 2017 23:52:07 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 3 Aug 2017 13:52:05 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v733odVT26345472
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 13:50:47 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v733oE9K015735
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 13:50:15 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, anton@samba.org, paulus@samba.org,
- npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v9 03/14] powerpc: Use soft_enabled_set api to update
- paca->soft_enabled
-Date: Thu,  3 Aug 2017 09:19:07 +0530
-In-Reply-To: <1501732158-19009-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1501732158-19009-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1501732158-19009-4-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNGR61vlJzDrJV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Aug 2017 13:54:58 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <tglx@linutronix.de>
+CC: <oss@buserror.net>, <xiaobo.xie@nxp.com>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH v9 0/4] this patchset is to remove PPCisms for QEIC
+Date: Thu, 3 Aug 2017 11:38:06 +0800
+Message-ID: <1501731490-34402-1-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,122 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Force use of soft_enabled_set() wrapper to update paca-soft_enabled
-wherever possisble. Also add a new wrapper function, soft_enabled_set_return(),
-added to force the paca->soft_enabled updates.
+QEIC is supported more than just powerpc boards, so remove PPCisms.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hw_irq.h  | 14 ++++++++++++++
- arch/powerpc/include/asm/kvm_ppc.h |  2 +-
- arch/powerpc/kernel/irq.c          |  2 +-
- arch/powerpc/kernel/setup_64.c     |  4 ++--
- arch/powerpc/kernel/time.c         |  6 +++---
- 5 files changed, 21 insertions(+), 7 deletions(-)
+changelog:
+	Changes for v8:
+	- use IRQCHIP_DECLARE() instead of subsys_initcall in qeic driver
+	- remove include/soc/fsl/qe/qe_ic.h
+	Changes for v9:
+	- rebase 
+	- fix the compile issue when apply the second patch, in fact, there was no compile issue 
+	  when apply all the patches of this patchset
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 29f04e287845..6bbcacaa4bd4 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -62,6 +62,20 @@ static inline notrace void soft_enabled_set(unsigned long enable)
- 	: "memory");
- }
- 
-+static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
-+{
-+	unsigned long flags;
-+
-+	asm volatile(
-+		"lbz %0,%1(13); stb %2,%1(13)"
-+		: "=r" (flags)
-+		: "i" (offsetof(struct paca_struct, soft_enabled)),\
-+		  "r" (enable)
-+		: "memory");
-+
-+	return flags;
-+}
-+
- static inline unsigned long arch_local_save_flags(void)
- {
- 	unsigned long flags;
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index d3608fe43245..76f82014cd80 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -869,7 +869,7 @@ static inline void kvmppc_fix_ee_before_entry(void)
- 
- 	/* Only need to enable IRQs by hard enabling them after this */
- 	local_paca->irq_happened = 0;
--	local_paca->soft_enabled = IRQ_ENABLED;
-+	soft_enabled_set(IRQ_ENABLED);
- #endif
- }
- 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index d5b90b8e13dc..d482f9a7e6a9 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -337,7 +337,7 @@ bool prep_irq_for_idle(void)
- 	 * of entering the low power state.
- 	 */
- 	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
--	local_paca->soft_enabled = IRQ_ENABLED;
-+	soft_enabled_set(IRQ_ENABLED);
- 
- 	/* Tell the caller to enter the low power state */
- 	return true;
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 946e6131ff25..4e77972edfac 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -189,7 +189,7 @@ static void __init fixup_boot_paca(void)
- 	/* Allow percpu accesses to work until we setup percpu data */
- 	get_paca()->data_offset = 0;
- 	/* Mark interrupts disabled in PACA */
--	get_paca()->soft_enabled = IRQ_DISABLED;
-+	soft_enabled_set(IRQ_DISABLED);
- }
- 
- static void __init configure_exceptions(void)
-@@ -345,7 +345,7 @@ void __init early_setup(unsigned long dt_ptr)
- void early_setup_secondary(void)
- {
- 	/* Mark interrupts disabled in PACA */
--	get_paca()->soft_enabled = 0;
-+	soft_enabled_set(IRQ_DISABLED);
- 
- 	/* Initialize the hash table or TLB handling */
- 	early_init_mmu_secondary();
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index d0d730c61758..f495956a3664 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -244,7 +244,7 @@ static u64 scan_dispatch_log(u64 stop_tb)
- void accumulate_stolen_time(void)
- {
- 	u64 sst, ust;
--	u8 save_soft_enabled = local_paca->soft_enabled;
-+	unsigned long save_soft_enabled;
- 	struct cpu_accounting_data *acct = &local_paca->accounting;
- 
- 	/* We are called early in the exception entry, before
-@@ -253,7 +253,7 @@ void accumulate_stolen_time(void)
- 	 * needs to reflect that so various debug stuff doesn't
- 	 * complain
- 	 */
--	local_paca->soft_enabled = IRQ_DISABLED;
-+	save_soft_enabled = soft_enabled_set_return(IRQ_DISABLED);
- 
- 	sst = scan_dispatch_log(acct->starttime_user);
- 	ust = scan_dispatch_log(acct->starttime);
-@@ -261,7 +261,7 @@ void accumulate_stolen_time(void)
- 	acct->utime -= ust;
- 	acct->steal_time += ust + sst;
- 
--	local_paca->soft_enabled = save_soft_enabled;
-+	soft_enabled_set(save_soft_enabled);
- }
- 
- static inline u64 calculate_stolen_time(u64 stop_tb)
+Zhao Qiang (4):
+  irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
+	Changes for v2:
+		- modify the subject and commit msg
+	Changes for v3:
+		- merge .h file to .c, rename it with irq-qeic.c
+	Changes for v4:
+		- modify comments
+	Changes for v5:
+		- disable rename detection
+	Changes for v6:
+		- rebase
+	Changes for v7:
+		- na
+
+  irqchip/qeic: merge qeic init code from platforms to a common function
+	Changes for v2:
+		- modify subject and commit msg
+		- add check for qeic by type
+	Changes for v3:
+		- na
+	Changes for v4:
+		- na
+	Changes for v5:
+		- na
+	Changes for v6:
+		- rebase
+	Changes for v7:
+		- na
+	Changes for v8:
+		- use IRQCHIP_DECLARE() instead of subsys_initcall
+
+  irqchip/qeic: merge qeic_of_init into qe_ic_init
+	Changes for v2:
+		- modify subject and commit msg
+		- return 0 and add put node when return in qe_ic_init
+	Changes for v3:
+		- na
+	Changes for v4:
+		- na
+	Changes for v5:
+		- na
+	Changes for v6:
+		- rebase
+	Changes for v7:
+		- na
+
+  irqchip/qeic: remove PPCisms for QEIC
+	Changes for v6:
+		- new added
+	Changes for v7:
+		- fix warning
+	Changes for v8:
+		- remove include/soc/fsl/qe/qe_ic.h
+
+Zhao Qiang (4):
+  irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
+  irqchip/qeic: merge qeic init code from platforms to a common function
+  irqchip/qeic: merge qeic_of_init into qe_ic_init
+  irqchip/qeic: remove PPCisms for QEIC
+
+ MAINTAINERS                                   |   6 +
+ arch/powerpc/platforms/83xx/km83xx.c          |   1 -
+ arch/powerpc/platforms/83xx/misc.c            |  16 -
+ arch/powerpc/platforms/83xx/mpc832x_mds.c     |   1 -
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   1 -
+ arch/powerpc/platforms/83xx/mpc836x_mds.c     |   1 -
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   1 -
+ arch/powerpc/platforms/85xx/corenet_generic.c |  10 -
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c     |  15 -
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |  17 -
+ arch/powerpc/platforms/85xx/twr_p102x.c       |  15 -
+ drivers/irqchip/Makefile                      |   1 +
+ drivers/irqchip/irq-qeic.c                    | 605 ++++++++++++++++++++++++++
+ drivers/soc/fsl/qe/Makefile                   |   2 +-
+ drivers/soc/fsl/qe/qe_ic.c                    | 512 ----------------------
+ drivers/soc/fsl/qe/qe_ic.h                    | 103 -----
+ include/soc/fsl/qe/qe_ic.h                    | 139 ------
+ 17 files changed, 613 insertions(+), 833 deletions(-)
+ create mode 100644 drivers/irqchip/irq-qeic.c
+ delete mode 100644 drivers/soc/fsl/qe/qe_ic.c
+ delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
+ delete mode 100644 include/soc/fsl/qe/qe_ic.h
+
 -- 
-2.7.4
+2.1.0.27.g96db324
