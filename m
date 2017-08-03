@@ -1,57 +1,46 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNjCY0p8czDqHq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 07:01:28 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v73KwvJ0001411
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 17:01:25 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c45c8uu6r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 17:01:25 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 3 Aug 2017 15:01:23 -0600
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v73L1KtG54460428
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 14:01:20 -0700
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v73I1J7J021580
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 15:01:20 -0300
-References: <20170706221753.17380-1-bauerman@linux.vnet.ibm.com>
- <20170706221753.17380-8-bauerman@linux.vnet.ibm.com>
- <1501424988.9230.67.camel@linux.vnet.ibm.com>
- <87fud9yig8.fsf@linux.vnet.ibm.com>
- <1501714334.27872.38.camel@linux.vnet.ibm.com>
- <1501771065.27872.63.camel@linux.vnet.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-security-module@vger.kernel.org,
- linux-ima-devel@lists.sourceforge.net, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- James Morris <james.l.morris@oracle.com>,
- "Serge E. Hallyn" <serge@hallyn.com>, David Howells <dhowells@redhat.com>,
- David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>,
- Rusty Russell <rusty@rustcorp.com.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>
-Subject: Re: [PATCH v3 7/7] ima: Support module-style appended signatures for
- appraisal
-In-reply-to: <1501771065.27872.63.camel@linux.vnet.ibm.com>
-Date: Thu, 03 Aug 2017 18:01:06 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNjcL2HrdzDqG5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 07:19:30 +1000 (AEST)
+Date: Thu, 3 Aug 2017 16:19:25 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Jingoo Han <jingoohan1@gmail.com>, Kukjin Kim <kgene@kernel.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Richard Zhu <hongxing.zhu@nxp.com>,
+ Lucas Stach <l.stach@pengutronix.de>,
+ Murali Karicheri <m-karicheri2@ti.com>,
+ Minghuan Lian <minghuan.Lian@freescale.com>,
+ Mingkai Hu <mingkai.hu@freescale.com>,
+ Roy Zang <tie-fei.zang@freescale.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Niklas Cassel <niklas.cassel@axis.com>,
+ Jesper Nilsson <jesper.nilsson@axis.com>,
+ Joao Pinto <Joao.Pinto@synopsys.com>,
+ Xiaowei Song <songxiaowei@hisilicon.com>,
+ Binghui Wang <wangbinghui@hisilicon.com>,
+ Stanimir Varbanov <svarbanov@mm-sol.com>,
+ Pratyush Anand <pratyush.anand@gmail.com>,
+ "moderated list:PCI DRIVER FOR SAMSUNG EXYNOS"
+ <linux-samsung-soc@vger.kernel.org>,
+ "open list:PCI DRIVER FOR TI DRA7XX" <linux-pci@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ "open list:PCIE DRIVER FOR AXIS ARTPEC" <linux-arm-kernel@axis.com>,
+ "open list:PCIE DRIVER FOR QUALCOMM MSM" <linux-arm-msm@vger.kernel.org>,
+ "open list:PCI DRIVER FOR TI DRA7XX" <linux-omap@vger.kernel.org>,
+ "open list:PCI DRIVER FOR FREESCALE LAYERSCAPE"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:PCI DRIVER FOR SAMSUNG EXYNOS"
+ <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 1/3] PCI: dwc: Handle host_init failures
+Message-ID: <20170803211925.GZ20308@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170716063947.3272-1-bjorn.andersson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87y3r0xt65.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170716063947.3272-1-bjorn.andersson@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,83 +50,346 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Jul 15, 2017 at 11:39:45PM -0700, Bjorn Andersson wrote:
+> In several dwc based drivers host_init can fail, so make sure to
+> propagate and handle this to avoid continuing operation of a driver or
+> hardware in an invalid state.
+> 
+> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
-Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+Applied patches 1-3 to pci/host-designware for v4.14, thanks!
 
-> On Wed, 2017-08-02 at 18:52 -0400, Mimi Zohar wrote:
->> On Wed, 2017-08-02 at 14:42 -0300, Thiago Jung Bauermann wrote:
->> > Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
->
->> > >> @@ -229,8 +251,24 @@ int ima_appraise_measurement(enum ima_hooks func,
->> > >>  		goto out;
->> > >>  	}
->> > >> 
->> > >> -	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value, rc, iint);
->> > >> -	if ((status != INTEGRITY_PASS) && (status != INTEGRITY_UNKNOWN)) {
->> > >> +	/*
->> > >> +	 * Appended signatures aren't protected by EVM but we still call
->> > >> +	 * evm_verifyxattr to check other security xattrs, if they exist.
->> > >> +	 */
->> > >> +	if (appraising_modsig) {
->> > >> +		xattr_value_evm = NULL;
->> > >> +		xattr_len_evm = 0;
->> > >> +	} else {
->> > >> +		xattr_value_evm = xattr_value;
->> > >> +		xattr_len_evm = xattr_len;
->> > >> +	}
->> > >> +
->> > >> +	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value_evm,
->> > >> +				 xattr_len_evm, iint);
->> > >> +	if (appraising_modsig && status == INTEGRITY_FAIL) {
->> > >> +		cause = "invalid-HMAC";
->> > >> +		goto out;
->> > >
->> > > "modsig" is special, because having any security xattrs is not
->> > > required. This test doesn't prevent status from being set to
->> > > "missing-HMAC". This test is redundant with the original tests below.
->> > 
->> > Indeed, that is wrong. I'm still a bit fuzzy about how EVM works and how
->> > it interacts with IMA. The only way I can think of singling out modsig
->> > without reintroduced the complex expression you didn't like in v2 is as
->> > below. What do you think?
->> 
->> The original code, without any extra tests, should be fine.
->
-> There is one major difference.
->
-> EVM verifies a file's metadata has not been modified based on either
-> an HMAC or signature stored as security.evm. Prior to the appended
-> signatures patch set, all files in policy required a security.evm
-> xattr. With IMA enabled we could guarantee that at least one security
-> xattr existed. The only exception were new files, which hadn't yet
-> been labeled.
->
-> With appended signatures, there is now no guarantee that at least one
-> security xattr exists.
->
-> Perhaps the code snippet below will help clarify the meaning of the
-> integrity_status results.
->
->     switch (status) {
-> case INTEGRITY_PASS:
-> case INTEGRITY_UNKNOWN:   
->        break;		
->     case INTEGRITY_NOXATTRS:/* no EVM protected xattrs */
-> if (appraising_modsig)
-> break;
-> case INTEGRITY_NOLABEL:/* no security.evm xattr */
-> cause = "missing-HMAC";
-> fail = 1;
-> break;
-> case INTEGRITY_FAIL:/* invalid HMAC/signature */
-> default:
-> cause = "invalid-HMAC";
-> fail = 1;
-> break;
-> }
-
-Thanks! I'll use the switch above in the next version of the patch.
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> ---
+>  drivers/pci/dwc/pci-dra7xx.c           |  4 +++-
+>  drivers/pci/dwc/pci-exynos.c           |  4 +++-
+>  drivers/pci/dwc/pci-imx6.c             |  4 +++-
+>  drivers/pci/dwc/pci-keystone.c         |  4 +++-
+>  drivers/pci/dwc/pci-layerscape.c       | 14 ++++++++++----
+>  drivers/pci/dwc/pcie-armada8k.c        |  4 +++-
+>  drivers/pci/dwc/pcie-artpec6.c         |  4 +++-
+>  drivers/pci/dwc/pcie-designware-host.c |  7 +++++--
+>  drivers/pci/dwc/pcie-designware-plat.c |  4 +++-
+>  drivers/pci/dwc/pcie-designware.h      |  2 +-
+>  drivers/pci/dwc/pcie-kirin.c           |  4 +++-
+>  drivers/pci/dwc/pcie-qcom.c            |  6 ++++--
+>  drivers/pci/dwc/pcie-spear13xx.c       |  4 +++-
+>  13 files changed, 47 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
+> index f2fc5f47064e..e8c13bb76169 100644
+> --- a/drivers/pci/dwc/pci-dra7xx.c
+> +++ b/drivers/pci/dwc/pci-dra7xx.c
+> @@ -195,7 +195,7 @@ static void dra7xx_pcie_enable_interrupts(struct dra7xx_pcie *dra7xx)
+>  	dra7xx_pcie_enable_msi_interrupts(dra7xx);
+>  }
+>  
+> -static void dra7xx_pcie_host_init(struct pcie_port *pp)
+> +static int dra7xx_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
+> @@ -206,6 +206,8 @@ static void dra7xx_pcie_host_init(struct pcie_port *pp)
+>  	dw_pcie_wait_for_link(pci);
+>  	dw_pcie_msi_init(pp);
+>  	dra7xx_pcie_enable_interrupts(dra7xx);
+> +
+> +	return 0;
+>  }
+>  
+>  static const struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
+> diff --git a/drivers/pci/dwc/pci-exynos.c b/drivers/pci/dwc/pci-exynos.c
+> index c78c06552590..f77f872e8b78 100644
+> --- a/drivers/pci/dwc/pci-exynos.c
+> +++ b/drivers/pci/dwc/pci-exynos.c
+> @@ -581,13 +581,15 @@ static int exynos_pcie_link_up(struct dw_pcie *pci)
+>  	return 0;
+>  }
+>  
+> -static void exynos_pcie_host_init(struct pcie_port *pp)
+> +static int exynos_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct exynos_pcie *ep = to_exynos_pcie(pci);
+>  
+>  	exynos_pcie_establish_link(ep);
+>  	exynos_pcie_enable_interrupts(ep);
+> +
+> +	return 0;
+>  }
+>  
+>  static const struct dw_pcie_host_ops exynos_pcie_host_ops = {
+> diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
+> index bf5c3616e344..20aae4469ee4 100644
+> --- a/drivers/pci/dwc/pci-imx6.c
+> +++ b/drivers/pci/dwc/pci-imx6.c
+> @@ -636,7 +636,7 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
+>  	return ret;
+>  }
+>  
+> -static void imx6_pcie_host_init(struct pcie_port *pp)
+> +static int imx6_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pci);
+> @@ -649,6 +649,8 @@ static void imx6_pcie_host_init(struct pcie_port *pp)
+>  
+>  	if (IS_ENABLED(CONFIG_PCI_MSI))
+>  		dw_pcie_msi_init(pp);
+> +
+> +	return 0;
+>  }
+>  
+>  static int imx6_pcie_link_up(struct dw_pcie *pci)
+> diff --git a/drivers/pci/dwc/pci-keystone.c b/drivers/pci/dwc/pci-keystone.c
+> index 4783cec1f78d..3ad3f8aa27b0 100644
+> --- a/drivers/pci/dwc/pci-keystone.c
+> +++ b/drivers/pci/dwc/pci-keystone.c
+> @@ -261,7 +261,7 @@ static int keystone_pcie_fault(unsigned long addr, unsigned int fsr,
+>  	return 0;
+>  }
+>  
+> -static void __init ks_pcie_host_init(struct pcie_port *pp)
+> +static int __init ks_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct keystone_pcie *ks_pcie = to_keystone_pcie(pci);
+> @@ -289,6 +289,8 @@ static void __init ks_pcie_host_init(struct pcie_port *pp)
+>  	 */
+>  	hook_fault_code(17, keystone_pcie_fault, SIGBUS, 0,
+>  			"Asynchronous external abort");
+> +
+> +	return 0;
+>  }
+>  
+>  static const struct dw_pcie_host_ops keystone_pcie_host_ops = {
+> diff --git a/drivers/pci/dwc/pci-layerscape.c b/drivers/pci/dwc/pci-layerscape.c
+> index fd861289ad8b..7581490f007c 100644
+> --- a/drivers/pci/dwc/pci-layerscape.c
+> +++ b/drivers/pci/dwc/pci-layerscape.c
+> @@ -108,31 +108,35 @@ static int ls1021_pcie_link_up(struct dw_pcie *pci)
+>  	return 1;
+>  }
+>  
+> -static void ls1021_pcie_host_init(struct pcie_port *pp)
+> +static int ls1021_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct ls_pcie *pcie = to_ls_pcie(pci);
+>  	struct device *dev = pci->dev;
+>  	u32 index[2];
+> +	int ret;
+>  
+>  	pcie->scfg = syscon_regmap_lookup_by_phandle(dev->of_node,
+>  						     "fsl,pcie-scfg");
+>  	if (IS_ERR(pcie->scfg)) {
+> +		ret = PTR_ERR(pcie->scfg);
+>  		dev_err(dev, "No syscfg phandle specified\n");
+>  		pcie->scfg = NULL;
+> -		return;
+> +		return ret;
+>  	}
+>  
+>  	if (of_property_read_u32_array(dev->of_node,
+>  				       "fsl,pcie-scfg", index, 2)) {
+>  		pcie->scfg = NULL;
+> -		return;
+> +		return -EINVAL;
+>  	}
+>  	pcie->index = index[1];
+>  
+>  	dw_pcie_setup_rc(pp);
+>  
+>  	ls_pcie_drop_msg_tlp(pcie);
+> +
+> +	return 0;
+>  }
+>  
+>  static int ls_pcie_link_up(struct dw_pcie *pci)
+> @@ -150,7 +154,7 @@ static int ls_pcie_link_up(struct dw_pcie *pci)
+>  	return 1;
+>  }
+>  
+> -static void ls_pcie_host_init(struct pcie_port *pp)
+> +static int ls_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct ls_pcie *pcie = to_ls_pcie(pci);
+> @@ -160,6 +164,8 @@ static void ls_pcie_host_init(struct pcie_port *pp)
+>  	ls_pcie_clear_multifunction(pcie);
+>  	ls_pcie_drop_msg_tlp(pcie);
+>  	iowrite32(0, pci->dbi_base + PCIE_DBI_RO_WR_EN);
+> +
+> +	return 0;
+>  }
+>  
+>  static int ls_pcie_msi_host_init(struct pcie_port *pp,
+> diff --git a/drivers/pci/dwc/pcie-armada8k.c b/drivers/pci/dwc/pcie-armada8k.c
+> index ea8f34af6a85..017a727a68db 100644
+> --- a/drivers/pci/dwc/pcie-armada8k.c
+> +++ b/drivers/pci/dwc/pcie-armada8k.c
+> @@ -134,13 +134,15 @@ static void armada8k_pcie_establish_link(struct armada8k_pcie *pcie)
+>  		dev_err(pci->dev, "Link not up after reconfiguration\n");
+>  }
+>  
+> -static void armada8k_pcie_host_init(struct pcie_port *pp)
+> +static int armada8k_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct armada8k_pcie *pcie = to_armada8k_pcie(pci);
+>  
+>  	dw_pcie_setup_rc(pp);
+>  	armada8k_pcie_establish_link(pcie);
+> +
+> +	return 0;
+>  }
+>  
+>  static irqreturn_t armada8k_pcie_irq_handler(int irq, void *arg)
+> diff --git a/drivers/pci/dwc/pcie-artpec6.c b/drivers/pci/dwc/pcie-artpec6.c
+> index 01c6f7823672..5d81f1d884e3 100644
+> --- a/drivers/pci/dwc/pcie-artpec6.c
+> +++ b/drivers/pci/dwc/pcie-artpec6.c
+> @@ -175,13 +175,15 @@ static void artpec6_pcie_enable_interrupts(struct artpec6_pcie *artpec6_pcie)
+>  		dw_pcie_msi_init(pp);
+>  }
+>  
+> -static void artpec6_pcie_host_init(struct pcie_port *pp)
+> +static int artpec6_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct artpec6_pcie *artpec6_pcie = to_artpec6_pcie(pci);
+>  
+>  	artpec6_pcie_establish_link(artpec6_pcie);
+>  	artpec6_pcie_enable_interrupts(artpec6_pcie);
+> +
+> +	return 0;
+>  }
+>  
+>  static const struct dw_pcie_host_ops artpec6_pcie_host_ops = {
+> diff --git a/drivers/pci/dwc/pcie-designware-host.c b/drivers/pci/dwc/pcie-designware-host.c
+> index d29c020da082..157621175147 100644
+> --- a/drivers/pci/dwc/pcie-designware-host.c
+> +++ b/drivers/pci/dwc/pcie-designware-host.c
+> @@ -401,8 +401,11 @@ int dw_pcie_host_init(struct pcie_port *pp)
+>  		}
+>  	}
+>  
+> -	if (pp->ops->host_init)
+> -		pp->ops->host_init(pp);
+> +	if (pp->ops->host_init) {
+> +		ret = pp->ops->host_init(pp);
+> +		if (ret)
+> +			goto error;
+> +	}
+>  
+>  	pp->root_bus_nr = pp->busn->start;
+>  
+> diff --git a/drivers/pci/dwc/pcie-designware-plat.c b/drivers/pci/dwc/pcie-designware-plat.c
+> index 091b4e7ad059..168e2380f493 100644
+> --- a/drivers/pci/dwc/pcie-designware-plat.c
+> +++ b/drivers/pci/dwc/pcie-designware-plat.c
+> @@ -35,7 +35,7 @@ static irqreturn_t dw_plat_pcie_msi_irq_handler(int irq, void *arg)
+>  	return dw_handle_msi_irq(pp);
+>  }
+>  
+> -static void dw_plat_pcie_host_init(struct pcie_port *pp)
+> +static int dw_plat_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  
+> @@ -44,6 +44,8 @@ static void dw_plat_pcie_host_init(struct pcie_port *pp)
+>  
+>  	if (IS_ENABLED(CONFIG_PCI_MSI))
+>  		dw_pcie_msi_init(pp);
+> +
+> +	return 0;
+>  }
+>  
+>  static const struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
+> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
+> index b4d2a89f8e58..7366c8167404 100644
+> --- a/drivers/pci/dwc/pcie-designware.h
+> +++ b/drivers/pci/dwc/pcie-designware.h
+> @@ -134,7 +134,7 @@ struct dw_pcie_host_ops {
+>  			     unsigned int devfn, int where, int size, u32 *val);
+>  	int (*wr_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
+>  			     unsigned int devfn, int where, int size, u32 val);
+> -	void (*host_init)(struct pcie_port *pp);
+> +	int (*host_init)(struct pcie_port *pp);
+>  	void (*msi_set_irq)(struct pcie_port *pp, int irq);
+>  	void (*msi_clear_irq)(struct pcie_port *pp, int irq);
+>  	phys_addr_t (*get_msi_addr)(struct pcie_port *pp);
+> diff --git a/drivers/pci/dwc/pcie-kirin.c b/drivers/pci/dwc/pcie-kirin.c
+> index 33fddb9f6739..0b0eb67f2658 100644
+> --- a/drivers/pci/dwc/pcie-kirin.c
+> +++ b/drivers/pci/dwc/pcie-kirin.c
+> @@ -430,9 +430,11 @@ static int kirin_pcie_establish_link(struct pcie_port *pp)
+>  	return 0;
+>  }
+>  
+> -static void kirin_pcie_host_init(struct pcie_port *pp)
+> +static int kirin_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	kirin_pcie_establish_link(pp);
+> +
+> +	return 0;
+>  }
+>  
+>  static struct dw_pcie_ops kirin_dw_pcie_ops = {
+> diff --git a/drivers/pci/dwc/pcie-qcom.c b/drivers/pci/dwc/pcie-qcom.c
+> index 68c5f2ab5bc8..d15657dc3990 100644
+> --- a/drivers/pci/dwc/pcie-qcom.c
+> +++ b/drivers/pci/dwc/pcie-qcom.c
+> @@ -891,7 +891,7 @@ static int qcom_pcie_link_up(struct dw_pcie *pci)
+>  	return !!(val & PCI_EXP_LNKSTA_DLLLA);
+>  }
+>  
+> -static void qcom_pcie_host_init(struct pcie_port *pp)
+> +static int qcom_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct qcom_pcie *pcie = to_qcom_pcie(pci);
+> @@ -921,12 +921,14 @@ static void qcom_pcie_host_init(struct pcie_port *pp)
+>  	if (ret)
+>  		goto err;
+>  
+> -	return;
+> +	return 0;
+>  err:
+>  	qcom_ep_reset_assert(pcie);
+>  	phy_power_off(pcie->phy);
+>  err_deinit:
+>  	pcie->ops->deinit(pcie);
+> +
+> +	return ret;
+>  }
+>  
+>  static int qcom_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
+> diff --git a/drivers/pci/dwc/pcie-spear13xx.c b/drivers/pci/dwc/pcie-spear13xx.c
+> index 80897291e0fb..52000bc34600 100644
+> --- a/drivers/pci/dwc/pcie-spear13xx.c
+> +++ b/drivers/pci/dwc/pcie-spear13xx.c
+> @@ -177,13 +177,15 @@ static int spear13xx_pcie_link_up(struct dw_pcie *pci)
+>  	return 0;
+>  }
+>  
+> -static void spear13xx_pcie_host_init(struct pcie_port *pp)
+> +static int spear13xx_pcie_host_init(struct pcie_port *pp)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>  	struct spear13xx_pcie *spear13xx_pcie = to_spear13xx_pcie(pci);
+>  
+>  	spear13xx_pcie_establish_link(spear13xx_pcie);
+>  	spear13xx_pcie_enable_interrupts(spear13xx_pcie);
+> +
+> +	return 0;
+>  }
+>  
+>  static const struct dw_pcie_host_ops spear13xx_pcie_host_ops = {
+> -- 
+> 2.12.0
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
