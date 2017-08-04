@@ -1,32 +1,39 @@
-Return-Path: <James.Hogan@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xP9dX0T9qzDqJC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 01:22:07 +1000 (AEST)
-Date: Fri, 4 Aug 2017 16:22:04 +0100
-From: James Hogan <james.hogan@imgtec.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "Dmitry V. Levin" <ldv@altlinux.org>, <linux-mips@linux-mips.org>,
- <linux-ia64@vger.kernel.org>, <linux-xtensa@linux-xtensa.org>, Heiko Carstens
- <heiko.carstens@de.ibm.com>, David Howells <dhowells@redhat.com>, Max
- Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>, "H. Peter
- Anvin" <hpa@zytor.com>, <sparclinux@vger.kernel.org>, Hans-Christian Egtvedt
- <egtvedt@samfundet.no>, linux-arch <linux-arch@vger.kernel.org>,
- <linux-s390@vger.kernel.org>, <linux-am33-list@redhat.com>, <x86@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>, Linux
- Kernel Mailing List <linux-kernel@vger.kernel.org>, Ralf Baechle
- <ralf@linux-mips.org>, <linux-alpha@vger.kernel.org>, Martin Schwidefsky
- <schwidefsky@de.ibm.com>, <linuxppc-dev@lists.ozlabs.org>, "David S. Miller"
- <davem@davemloft.net>
-Subject: Re: [PATCH] uapi: fix another asm/shmbuf.h userspace compilation error
-Message-ID: <20170804152203.GA31455@jhogan-linux.le.imgtec.org>
-References: <20170302004607.GE27132@altlinux.org>
- <CAK8P3a1=-Q=gVRyk+PwqxTeTPXa4yrmqWKG7SyZng2d7bcbG=g@mail.gmail.com>
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xPCL76pL6zDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 02:38:55 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v74GYfoP109203
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Aug 2017 12:38:52 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c4r439dq9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Aug 2017 12:38:51 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Fri, 4 Aug 2017 10:38:51 -0600
+Subject: Re: [PATCH] PCI: Convert to using %pOF instead of full_name
+To: Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras
+ <paulus@samba.org>, linux-tegra@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+References: <20170718214339.7774-41-robh@kernel.org>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Fri, 4 Aug 2017 09:38:42 -0700
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ofekNuVaYCKmvJ0U"
-In-Reply-To: <CAK8P3a1=-Q=gVRyk+PwqxTeTPXa4yrmqWKG7SyZng2d7bcbG=g@mail.gmail.com>
+In-Reply-To: <20170718214339.7774-41-robh@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <dd5a317b-9e72-97bc-0386-8470998421c3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,55 +43,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---ofekNuVaYCKmvJ0U
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 07/18/2017 02:43 PM, Rob Herring wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
+> 
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-tegra@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  drivers/pci/host/pci-mvebu.c        | 8 ++++----
+>  drivers/pci/host/pci-tegra.c        | 3 +--
+>  drivers/pci/hotplug/pnv_php.c       | 4 ++--
+>  drivers/pci/hotplug/rpadlpar_core.c | 4 ++--
+>  drivers/pci/hotplug/rpaphp_core.c   | 2 +-
+>  drivers/pci/hotplug/rpaphp_pci.c    | 4 ++--
+>  drivers/pci/hotplug/rpaphp_slot.c   | 4 ++--
+>  drivers/pci/pci-sysfs.c             | 4 ++--
+>  drivers/pci/pci.c                   | 4 ++--
+>  9 files changed, 18 insertions(+), 19 deletions(-)
+> 
 
-On Thu, Mar 02, 2017 at 02:07:20PM +0100, Arnd Bergmann wrote:
-> On Thu, Mar 2, 2017 at 1:46 AM, Dmitry V. Levin <ldv@altlinux.org> wrote:
-> > Replace size_t with __kernel_size_t to fix asm/shmbuf.h userspace
-> > compilation errors like this:
-> >
-> > /usr/include/asm-generic/shmbuf.h:28:2: error: unknown type name 'size_=
-t'
-> >   size_t   shm_segsz; /* size of segment (bytes) */
-> >
-> > x32 is the only architecture where sizeof(size_t) is less than
-> > sizeof(__kernel_size_t), but as the kernel treats shm_segsz field as
-> > __kernel_size_t anyway, UAPI should follow.  Thanks to little-endiannes
-> > of x32 and 64-bit alignment of the field following shm_segsz, this
-> > change doesn't break ABI, and the difference doesn't manifest itself
-> > easily.
-> >
-> > Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
->=20
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-
-Out of interest, is there a plan for merging these patches from Dmitry?
-
-Cheers
-James
-
---ofekNuVaYCKmvJ0U
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEd80NauSabkiESfLYbAtpk944dnoFAlmEkRMACgkQbAtpk944
-dnrAMg/+K3doXr6onSUJPfVtAuAORRxr6EypmBdFZs5/qV4cwNTkljJ0c/yGAKaM
-fUM6pJ9n56h7YGG0/y2m+YCI56TPWyh8HnoKTNyhgDtg+Sn1e2Ub4dXyEjYdQhXN
-TMTzPsP/COyFkrStEulbLuGoaU4t7UMFk5nU7FTQ1BpCeyuEO5opnUpA3JMZwehK
-KK7orqZYUE+iZ8QfbEXiuHr68EsvpMeHj0z6WNkXD/8gRzSFTMqf5wHFpm3cNTJ7
-3BRJx3LOkkE3amkPOm1kIOPWkMAEIFF11hRc79e4Wpkak6tnoCowkLvVNadB+UH2
-bb5BTgwifuU83lrWsqC6gzs6e4PR0DEAgQofoLy5uGQjVgYqJ970Q8/Cl4xsfvcL
-qVVFp8oGN5oZoXFiMWhYVQydG4m9TaruA2vOZK3F9fdrNBmd4t+fNxF+l3CTfa79
-dAGLliqjUunWrW8WBrFmIySw9Sxl8DbJKyl0jxaJUbfGCnmsmkCZO4fP8h3BK37Y
-mjMPsH3AjUnkBSLRBK+d261LMYCBgMY/SpUWwR7RqRbtxrqO7voVeNcyXQ1c4tVE
-cYJhQpy57wjDKE0luxGSU0o1ATJst6xcL+URKTvRoxIWrkZXUBPnwfusoedLqTxd
-f5AIFSEhwz7t8hBSEweo8qITuBmr86QmyKPwYN4R9xkonfb2Kis=
-=9M2T
------END PGP SIGNATURE-----
-
---ofekNuVaYCKmvJ0U--
+Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
