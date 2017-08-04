@@ -1,31 +1,17 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xP7sR46ZZzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 00:02:19 +1000 (AEST)
-Subject: Re: [v5 11/15] arm64/kasan: explicitly zero kasan shadow memory
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Will Deacon <will.deacon@arm.com>, Catalin Marinas
- <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "x86@kernel.org" <x86@kernel.org>,
- kasan-dev <kasan-dev@googlegroups.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, willy@infradead.org,
- mhocko@kernel.org
-References: <1501795433-982645-1-git-send-email-pasha.tatashin@oracle.com>
- <1501795433-982645-12-git-send-email-pasha.tatashin@oracle.com>
- <CAKv+Gu_V_T56qPS=c3kq73TLFwqpP4YHtggCrjGRmgW1itq3pQ@mail.gmail.com>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <85cce150-74b7-c89b-678c-8fdd0be6c066@oracle.com>
-Date: Fri, 4 Aug 2017 10:01:15 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xP8FJ1PvlzDq7Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 00:19:32 +1000 (AEST)
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: Is SPARSE_IRQ really needed for all powerpcs ?
+Message-ID: <557c11e6-2585-19c3-d246-2ac54368c62d@c-s.fr>
+Date: Fri, 4 Aug 2017 16:18:42 +0200
 MIME-Version: 1.0
-In-Reply-To: <CAKv+Gu_V_T56qPS=c3kq73TLFwqpP4YHtggCrjGRmgW1itq3pQ@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,60 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ard,
+The help associated with SPARSE_IRQ says:
 
-Thank you very much for reviewing this. I will fix the bug you found in 
-the next iteration.
->> +zero_vemmap_populated_memory(void)
-> 
-> Typo here: vemmap -> vmemmap
 
-Yeap, will rename here, and in Intel variant.
+   Sparse irq numbering is useful for distro kernels that want
+   to define a high CONFIG_NR_CPUS value but still want to have
+   low kernel memory footprint on smaller machines.
 
-> 
->> +{
->> +       struct memblock_region *reg;
->> +       u64 start, end;
->> +
->> +       for_each_memblock(memory, reg) {
->> +               start = __phys_to_virt(reg->base);
->> +               end = __phys_to_virt(reg->base + reg->size);
->> +
->> +               if (start >= end)
-> How would this ever be true? And why is it a stop condition?
+   ( Sparse irqs can also be beneficial on NUMA boxes, as they spread
+     out the interrupt descriptors in a more NUMA-friendly way. )
 
-Yes this is a stop condition. Also look at the way kasan allocates its 
-shadow memory in this file kasan_init():
+   If you don't know what to do here, say N.
 
-187  	for_each_memblock(memory, reg) {
-188  		void *start = (void *)__phys_to_virt(reg->base);
-189  		void *end = (void *)__phys_to_virt(reg->base + reg->size);
-190
-191  		if (start >= end)
-192  			break;
-...
-200  		vmemmap_populate(...)
 
->> +
-> 
-> Are you missing a couple of kasan_mem_to_shadow() calls here? I can't
-> believe your intention is to wipe all of DRAM.
 
-True. Thank you for catching this bug. I have not really tested on arm, 
-only compiled for sanity checking. Need to figure out how to configure 
-qemu to run most generic arm code. I tested on x86 and sparc both real 
-and qemu hardware.
+Is it really usefull/necessary to select it for all powerpc as done by 
+arch/powerpc/Kconfig ?
 
-> 
-> KASAN uses vmemmap_populate as a convenience: kasan has nothing to do
-> with vmemmap, but the function already existed and happened to do what
-> KASAN requires.
-> 
-> Given that that will no longer be the case, it would be far better to
-> stop using vmemmap_populate altogether, and clone it into a KASAN
-> specific version (with an appropriate name) with the zeroing folded
-> into it.
+Shouldn't we at least make if conditionnal to SMP ?
 
-I agree, but this would be outside of the scope of this project.
-
-Pasha
+Christophe
