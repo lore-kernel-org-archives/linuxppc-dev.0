@@ -1,25 +1,44 @@
-Return-Path: <sam@ravnborg.org>
-Received: from asavdk4.altibox.net (asavdk4.altibox.net [109.247.116.15])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNwnb4YnpzDqG5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 15:43:15 +1000 (AEST)
-Date: Fri, 4 Aug 2017 07:37:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org
-Subject: Re: [v5 09/15] sparc64: optimized struct page zeroing
-Message-ID: <20170804053701.GA30068@ravnborg.org>
-References: <1501795433-982645-1-git-send-email-pasha.tatashin@oracle.com>
- <1501795433-982645-10-git-send-email-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNx6w6HfpzDqG5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 15:58:16 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v745s3sx023316
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Aug 2017 01:58:14 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c4h1pq1xk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Aug 2017 01:58:14 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 4 Aug 2017 15:58:11 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v745w1pS26542104
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Aug 2017 15:58:09 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v745vaRt003780
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Aug 2017 15:57:37 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Victor Aoqui <victora@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com
+Cc: victora@br.ibm.com, victora@linux.vnet.ibm.com, mauricfo@linux.vnet.ibm.com
+Subject: Re: [PATCH v3] powerpc/mm: Implemented default_hugepagesz
+ verification for powerpc
+In-Reply-To: <20170724235202.5675-1-victora@linux.vnet.ibm.com>
+References: <20170724235202.5675-1-victora@linux.vnet.ibm.com>
+Date: Fri, 04 Aug 2017 11:27:07 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1501795433-982645-10-git-send-email-pasha.tatashin@oracle.com>
+Content-Type: text/plain
+Message-Id: <87zibf3mfg.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +48,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Pavel.
+Victor Aoqui <victora@linux.vnet.ibm.com> writes:
 
-On Thu, Aug 03, 2017 at 05:23:47PM -0400, Pavel Tatashin wrote:
-> Add an optimized mm_zero_struct_page(), so struct page's are zeroed without
-> calling memset(). We do eight regular stores, thus avoid cost of membar.
+> Implemented default hugepage size verification (default_hugepagesz=)
+> in order to allow allocation of defined number of pages (hugepages=)
+> only for supported hugepage sizes.
+>
+> Signed-off-by: Victor Aoqui <victora@linux.vnet.ibm.com>
 
-The commit message does no longer reflect the implementation,
-and should be updated.
+I am still not sure about this. With current upstream we get
 
-> 
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-> Reviewed-by: Bob Picco <bob.picco@oracle.com>
-> ---
->  arch/sparc/include/asm/pgtable_64.h | 32 ++++++++++++++++++++++++++++++++
->  1 file changed, 32 insertions(+)
-> 
-> diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-> index 6fbd931f0570..be47537e84c5 100644
-> --- a/arch/sparc/include/asm/pgtable_64.h
-> +++ b/arch/sparc/include/asm/pgtable_64.h
-> @@ -230,6 +230,38 @@ extern unsigned long _PAGE_ALL_SZ_BITS;
->  extern struct page *mem_map_zero;
->  #define ZERO_PAGE(vaddr)	(mem_map_zero)
->  
-> +/* This macro must be updated when the size of struct page grows above 80
-> + * or reduces below 64.
-> + * The idea that compiler optimizes out switch() statement, and only
-> + * leaves clrx instructions or memset() call.
-> + */
-> +#define	mm_zero_struct_page(pp) do {					\
-> +	unsigned long *_pp = (void *)(pp);				\
-> +									\
-> +	/* Check that struct page is 8-byte aligned */			\
-> +	BUILD_BUG_ON(sizeof(struct page) & 7);				\
-Would also be good to catch if sizeof > 80 so we do not silently
-migrate to the suboptimal version (silent at build time).
-Can you at build time catch if size is no any of: 64, 72, 80
-and simplify the below a little?
+ PCI: Probing PCI hardware                                     
+ PCI: Probing PCI hardware done                                                                                                                       
+ HugeTLB: unsupported default_hugepagesz 2097152. Reverting to 16777216                                                                               
+ HugeTLB registered 16.0 MiB page size, pre-allocated 0 pages                                                                                         
+ HugeTLB registered 16.0 GiB page size, pre-allocated 0 pages  
 
-	Sam
+That warning is added by
+
+d715cf804a0318e83c75c0a7abd1a4b9ce13e8da
+
+Which should be good enough right ?
+
+-aneesh
