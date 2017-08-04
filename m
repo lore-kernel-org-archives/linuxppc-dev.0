@@ -1,21 +1,33 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-it0-x234.google.com (mail-it0-x234.google.com
+ [IPv6:2607:f8b0:4001:c0b::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNjlG2n8bzDqZy
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 07:25:30 +1000 (AEST)
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org
-Subject: [v5 07/15] mm: defining memblock_virt_alloc_try_nid_raw
-Date: Thu,  3 Aug 2017 17:23:45 -0400
-Message-Id: <1501795433-982645-8-git-send-email-pasha.tatashin@oracle.com>
-In-Reply-To: <1501795433-982645-1-git-send-email-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNnVj34rmzDqG5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 10:14:52 +1000 (AEST)
+Received: by mail-it0-x234.google.com with SMTP id h199so1045981ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 17:14:52 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1501795433-982645-12-git-send-email-pasha.tatashin@oracle.com>
 References: <1501795433-982645-1-git-send-email-pasha.tatashin@oracle.com>
+ <1501795433-982645-12-git-send-email-pasha.tatashin@oracle.com>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Fri, 4 Aug 2017 01:14:49 +0100
+Message-ID: <CAKv+Gu_V_T56qPS=c3kq73TLFwqpP4YHtggCrjGRmgW1itq3pQ@mail.gmail.com>
+Subject: Re: [v5 11/15] arm64/kasan: explicitly zero kasan shadow memory
+To: Pavel Tatashin <pasha.tatashin@oracle.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ sparclinux@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "x86@kernel.org" <x86@kernel.org>, kasan-dev <kasan-dev@googlegroups.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>, willy@infradead.org,
+ mhocko@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,181 +37,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A new variant of memblock_virt_alloc_* allocations:
-memblock_virt_alloc_try_nid_raw()
-    - Does not zero the allocated memory
-    - Does not panic if request cannot be satisfied
+(+ arm64 maintainers)
 
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Reviewed-by: Bob Picco <bob.picco@oracle.com>
----
- include/linux/bootmem.h | 27 +++++++++++++++++++++++++
- mm/memblock.c           | 53 ++++++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 73 insertions(+), 7 deletions(-)
+Hi Pavel,
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index e223d91b6439..ea30b3987282 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -160,6 +160,9 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
- #define BOOTMEM_ALLOC_ANYWHERE		(~(phys_addr_t)0)
- 
- /* FIXME: Move to memblock.h at a point where we remove nobootmem.c */
-+void *memblock_virt_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
-+				      phys_addr_t min_addr,
-+				      phys_addr_t max_addr, int nid);
- void *memblock_virt_alloc_try_nid_nopanic(phys_addr_t size,
- 		phys_addr_t align, phys_addr_t min_addr,
- 		phys_addr_t max_addr, int nid);
-@@ -176,6 +179,14 @@ static inline void * __init memblock_virt_alloc(
- 					    NUMA_NO_NODE);
- }
- 
-+static inline void * __init memblock_virt_alloc_raw(
-+					phys_addr_t size,  phys_addr_t align)
-+{
-+	return memblock_virt_alloc_try_nid_raw(size, align, BOOTMEM_LOW_LIMIT,
-+					    BOOTMEM_ALLOC_ACCESSIBLE,
-+					    NUMA_NO_NODE);
-+}
-+
- static inline void * __init memblock_virt_alloc_nopanic(
- 					phys_addr_t size, phys_addr_t align)
- {
-@@ -257,6 +268,14 @@ static inline void * __init memblock_virt_alloc(
- 	return __alloc_bootmem(size, align, BOOTMEM_LOW_LIMIT);
- }
- 
-+static inline void * __init memblock_virt_alloc_raw(
-+					phys_addr_t size,  phys_addr_t align)
-+{
-+	if (!align)
-+		align = SMP_CACHE_BYTES;
-+	return __alloc_bootmem_nopanic(size, align, BOOTMEM_LOW_LIMIT);
-+}
-+
- static inline void * __init memblock_virt_alloc_nopanic(
- 					phys_addr_t size, phys_addr_t align)
- {
-@@ -309,6 +328,14 @@ static inline void * __init memblock_virt_alloc_try_nid(phys_addr_t size,
- 					  min_addr);
- }
- 
-+static inline void * __init memblock_virt_alloc_try_nid_raw(
-+			phys_addr_t size, phys_addr_t align,
-+			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
-+{
-+	return ___alloc_bootmem_node_nopanic(NODE_DATA(nid), size, align,
-+				min_addr, max_addr);
-+}
-+
- static inline void * __init memblock_virt_alloc_try_nid_nopanic(
- 			phys_addr_t size, phys_addr_t align,
- 			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
-diff --git a/mm/memblock.c b/mm/memblock.c
-index e6df054e3180..bdf31f207fa4 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -1327,7 +1327,6 @@ static void * __init memblock_virt_alloc_internal(
- 	return NULL;
- done:
- 	ptr = phys_to_virt(alloc);
--	memset(ptr, 0, size);
- 
- 	/*
- 	 * The min_count is set to 0 so that bootmem allocated blocks
-@@ -1341,6 +1340,38 @@ static void * __init memblock_virt_alloc_internal(
- }
- 
- /**
-+ * memblock_virt_alloc_try_nid_raw - allocate boot memory block without zeroing
-+ * memory and without panicking
-+ * @size: size of memory block to be allocated in bytes
-+ * @align: alignment of the region and block's size
-+ * @min_addr: the lower bound of the memory region from where the allocation
-+ *	  is preferred (phys address)
-+ * @max_addr: the upper bound of the memory region from where the allocation
-+ *	      is preferred (phys address), or %BOOTMEM_ALLOC_ACCESSIBLE to
-+ *	      allocate only from memory limited by memblock.current_limit value
-+ * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-+ *
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. Does not zero allocated memory, does not panic if request
-+ * cannot be satisfied.
-+ *
-+ * RETURNS:
-+ * Virtual address of allocated memory block on success, NULL on failure.
-+ */
-+void * __init memblock_virt_alloc_try_nid_raw(
-+			phys_addr_t size, phys_addr_t align,
-+			phys_addr_t min_addr, phys_addr_t max_addr,
-+			int nid)
-+{
-+	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
-+		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
-+		     (u64)max_addr, (void *)_RET_IP_);
-+
-+	return memblock_virt_alloc_internal(size, align,
-+					    min_addr, max_addr, nid);
-+}
-+
-+/**
-  * memblock_virt_alloc_try_nid_nopanic - allocate boot memory block
-  * @size: size of memory block to be allocated in bytes
-  * @align: alignment of the region and block's size
-@@ -1351,8 +1382,8 @@ static void * __init memblock_virt_alloc_internal(
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public version of _memblock_virt_alloc_try_nid_nopanic() which provides
-- * additional debug information (including caller info), if enabled.
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. This function zeroes the allocated memory.
-  *
-  * RETURNS:
-  * Virtual address of allocated memory block on success, NULL on failure.
-@@ -1362,11 +1393,17 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
- 				phys_addr_t min_addr, phys_addr_t max_addr,
- 				int nid)
- {
-+	void *ptr;
-+
- 	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
- 		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
- 		     (u64)max_addr, (void *)_RET_IP_);
--	return memblock_virt_alloc_internal(size, align, min_addr,
--					     max_addr, nid);
-+
-+	ptr = memblock_virt_alloc_internal(size, align,
-+					   min_addr, max_addr, nid);
-+	if (ptr)
-+		memset(ptr, 0, size);
-+	return ptr;
- }
- 
- /**
-@@ -1380,7 +1417,7 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public panicking version of _memblock_virt_alloc_try_nid_nopanic()
-+ * Public panicking version of memblock_virt_alloc_try_nid_nopanic()
-  * which provides debug information (including caller info), if enabled,
-  * and panics if the request can not be satisfied.
-  *
-@@ -1399,8 +1436,10 @@ void * __init memblock_virt_alloc_try_nid(
- 		     (u64)max_addr, (void *)_RET_IP_);
- 	ptr = memblock_virt_alloc_internal(size, align,
- 					   min_addr, max_addr, nid);
--	if (ptr)
-+	if (ptr) {
-+		memset(ptr, 0, size);
- 		return ptr;
-+	}
- 
- 	panic("%s: Failed to allocate %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx\n",
- 	      __func__, (u64)size, (u64)align, nid, (u64)min_addr,
--- 
-2.13.4
+On 3 August 2017 at 22:23, Pavel Tatashin <pasha.tatashin@oracle.com> wrote:
+> To optimize the performance of struct page initialization,
+> vmemmap_populate() will no longer zero memory.
+>
+> We must explicitly zero the memory that is allocated by vmemmap_populate()
+> for kasan, as this memory does not go through struct page initialization
+> path.
+>
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+> ---
+>  arch/arm64/mm/kasan_init.c | 32 ++++++++++++++++++++++++++++++++
+>  1 file changed, 32 insertions(+)
+>
+> diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+> index 81f03959a4ab..a57104bc54b8 100644
+> --- a/arch/arm64/mm/kasan_init.c
+> +++ b/arch/arm64/mm/kasan_init.c
+> @@ -135,6 +135,31 @@ static void __init clear_pgds(unsigned long start,
+>                 set_pgd(pgd_offset_k(start), __pgd(0));
+>  }
+>
+> +/*
+> + * Memory that was allocated by vmemmap_populate is not zeroed, so we must
+> + * zero it here explicitly.
+> + */
+> +static void
+> +zero_vemmap_populated_memory(void)
+
+Typo here: vemmap -> vmemmap
+
+> +{
+> +       struct memblock_region *reg;
+> +       u64 start, end;
+> +
+> +       for_each_memblock(memory, reg) {
+> +               start = __phys_to_virt(reg->base);
+> +               end = __phys_to_virt(reg->base + reg->size);
+> +
+> +               if (start >= end)
+
+How would this ever be true? And why is it a stop condition?
+
+> +                       break;
+> +
+
+Are you missing a couple of kasan_mem_to_shadow() calls here? I can't
+believe your intention is to wipe all of DRAM.
+
+> +               memset((void *)start, 0, end - start);
+> +       }
+> +
+> +       start = (u64)kasan_mem_to_shadow(_stext);
+> +       end = (u64)kasan_mem_to_shadow(_end);
+> +       memset((void *)start, 0, end - start);
+> +}
+> +
+>  void __init kasan_init(void)
+>  {
+>         u64 kimg_shadow_start, kimg_shadow_end;
+> @@ -205,6 +230,13 @@ void __init kasan_init(void)
+>                         pfn_pte(sym_to_pfn(kasan_zero_page), PAGE_KERNEL_RO));
+>
+>         memset(kasan_zero_page, 0, PAGE_SIZE);
+> +
+> +       /*
+> +        * vmemmap_populate does not zero the memory, so we need to zero it
+> +        * explicitly
+> +        */
+> +       zero_vemmap_populated_memory();
+> +
+>         cpu_replace_ttbr1(lm_alias(swapper_pg_dir));
+>
+>         /* At this point kasan is fully initialized. Enable error messages */
+> --
+> 2.13.4
+>
+
+KASAN uses vmemmap_populate as a convenience: kasan has nothing to do
+with vmemmap, but the function already existed and happened to do what
+KASAN requires.
+
+Given that that will no longer be the case, it would be far better to
+stop using vmemmap_populate altogether, and clone it into a KASAN
+specific version (with an appropriate name) with the zeroing folded
+into it.
