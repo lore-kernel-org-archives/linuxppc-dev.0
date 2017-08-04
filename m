@@ -1,18 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xP8FJ1PvlzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 00:19:32 +1000 (AEST)
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: Is SPARSE_IRQ really needed for all powerpcs ?
-Message-ID: <557c11e6-2585-19c3-d246-2ac54368c62d@c-s.fr>
-Date: Fri, 4 Aug 2017 16:18:42 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xP8sK2MJgzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 00:47:16 +1000 (AEST)
+To: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Russell Currey <ruscur@russell.cc>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] powerpc/eeh: Delete an error message for a failed memory
+ allocation in two functions
+Message-ID: <0a35cb55-9f6b-21ca-565f-cab26237c962@users.sourceforge.net>
+Date: Fri, 4 Aug 2017 16:46:51 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The help associated with SPARSE_IRQ says:
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 4 Aug 2017 16:37:56 +0200
 
+Omit an extra message for a memory allocation failure in these functions.
 
-   Sparse irq numbering is useful for distro kernels that want
-   to define a high CONFIG_NR_CPUS value but still want to have
-   low kernel memory footprint on smaller machines.
+This issue was detected by using the Coccinelle software.
 
-   ( Sparse irqs can also be beneficial on NUMA boxes, as they spread
-     out the interrupt descriptors in a more NUMA-friendly way. )
+Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ arch/powerpc/kernel/eeh_dev.c   | 5 +----
+ arch/powerpc/kernel/eeh_event.c | 5 ++---
+ 2 files changed, 3 insertions(+), 7 deletions(-)
 
-   If you don't know what to do here, say N.
-
-
-
-Is it really usefull/necessary to select it for all powerpc as done by 
-arch/powerpc/Kconfig ?
-
-Shouldn't we at least make if conditionnal to SMP ?
-
-Christophe
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index d6b2ca70d14d..2742ecbadf18 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -55,11 +55,8 @@ struct eeh_dev *eeh_dev_init(struct pci_dn *pdn)
+ 
+ 	/* Allocate EEH device */
+ 	edev = kzalloc(sizeof(*edev), GFP_KERNEL);
+-	if (!edev) {
+-		pr_warn("%s: out of memory\n",
+-			__func__);
++	if (!edev)
+ 		return NULL;
+-	}
+ 
+ 	/* Associate EEH device with OF node */
+ 	pdn->edev = edev;
+diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
+index accbf8b5fd46..c62bd90e038f 100644
+--- a/arch/powerpc/kernel/eeh_event.c
++++ b/arch/powerpc/kernel/eeh_event.c
+@@ -132,10 +132,9 @@ int eeh_send_failure_event(struct eeh_pe *pe)
+ 	struct eeh_event *event;
+ 
+ 	event = kzalloc(sizeof(*event), GFP_ATOMIC);
+-	if (!event) {
+-		pr_err("EEH: out of memory, event not handled\n");
++	if (!event)
+ 		return -ENOMEM;
+-	}
++
+ 	event->pe = pe;
+ 
+ 	/* We may or may not be called in an interrupt context */
+-- 
+2.13.4
