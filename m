@@ -1,6 +1,6 @@
 Return-Path: <boris.brezillon@free-electrons.com>
 Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xP9zn1C7QzDqJC
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xP9zn1C73zDqJ7
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 01:37:56 +1000 (AEST)
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
 To: Boris Brezillon <boris.brezillon@free-electrons.com>,
@@ -51,8 +51,10 @@ Cc: David Woodhouse <dwmw2@infradead.org>,
  linux-oxnas@lists.tuxfamily.org, linuxppc-dev@lists.ozlabs.org,
  devel@driverdev.osuosl.org
 Subject: [PATCH] mtd: nand: Rename nand.h into rawnand.h
-Date: Fri,  4 Aug 2017 17:29:09 +0200
-Message-Id: <1501860550-16506-1-git-send-email-boris.brezillon@free-electrons.com>
+Date: Fri,  4 Aug 2017 17:29:10 +0200
+Message-Id: <1501860550-16506-2-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1501860550-16506-1-git-send-email-boris.brezillon@free-electrons.com>
+References: <1501860550-16506-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
