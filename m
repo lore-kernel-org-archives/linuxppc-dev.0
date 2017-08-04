@@ -1,20 +1,44 @@
-Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNt6v6YpgzDqJC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 13:43:03 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id j68so615844pfc.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 20:43:03 -0700 (PDT)
-From: Matt Brown <matthew.brown.dev@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: dja@axtens.net
-Subject: [v6 2/2] lib/raid6: Build proper raid6test files on powerpc
-Date: Fri,  4 Aug 2017 13:42:33 +1000
-Message-Id: <20170804034233.13628-2-matthew.brown.dev@gmail.com>
-In-Reply-To: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
-References: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNtGG2lzbzDqG5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 13:49:26 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v743mllp070068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Aug 2017 23:49:23 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c4dx7gceb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 23:49:23 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 4 Aug 2017 13:49:20 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v743nIxv25231496
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Aug 2017 13:49:18 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v743n9xZ005873
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Aug 2017 13:49:09 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Subject: Re: [PATCH] powerpc/mm: Invalidate partition table cache on host proc
+ tbl base update
+In-Reply-To: <20170803041551.7934-1-sjitindarsingh@gmail.com>
+References: <20170803041551.7934-1-sjitindarsingh@gmail.com>
+Date: Fri, 04 Aug 2017 09:19:04 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87wp6kngb3.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,58 +48,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously the raid6 test Makefile did not build the POWER specific files
-(altivec and vpermxor).
-This patch fixes the bug, so that all appropriate files for powerpc are built.
+Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
 
-This patch also fixes the missing and mismatched ifdef statements to allow the
-altivec.uc file to be built correctly.
+> The host process table base is stored in the partition table by calling
+> the function native_register_process_table(). Currently this just sets
+> the entry in memory and is missing a proceeding cache invalidation
+> instruction. Any update to the partition table should be followed by a
+> cache invalidation instruction specifying invalidation of the caching of
+> any partition table entries (RIC = 2, PRS = 0).
+>
+> We already have a function to update the partition table with the
+> required cache invalidation instructions - mmu_partition_table_set_entry().
+> Update the native_register_process_table() function to call
+> mmu_partition_table_set_entry(), this ensures all appropriate
+> invalidation will be performed.
+>
 
-Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
----
-v6:
-	- remove vpermxor objs from this patch
-v5:
-	- moved altivec.uc fix into this patch
----
- lib/raid6/altivec.uc    | 3 +++
- lib/raid6/test/Makefile | 5 +++--
- 2 files changed, 6 insertions(+), 2 deletions(-)
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-diff --git a/lib/raid6/altivec.uc b/lib/raid6/altivec.uc
-index 682aae8..d20ed0d 100644
---- a/lib/raid6/altivec.uc
-+++ b/lib/raid6/altivec.uc
-@@ -24,10 +24,13 @@
- 
- #include <linux/raid/pq.h>
- 
-+#ifdef CONFIG_ALTIVEC
-+
- #include <altivec.h>
- #ifdef __KERNEL__
- # include <asm/cputable.h>
- # include <asm/switch_to.h>
-+#endif /* __KERNEL__ */
- 
- /*
-  * This is the C data type to use.  We use a vector of
-diff --git a/lib/raid6/test/Makefile b/lib/raid6/test/Makefile
-index a14be53..b64a267 100644
---- a/lib/raid6/test/Makefile
-+++ b/lib/raid6/test/Makefile
-@@ -44,9 +44,10 @@ else ifeq ($(HAS_NEON),yes)
-         CFLAGS += -DCONFIG_KERNEL_MODE_NEON=1
- else
-         HAS_ALTIVEC := $(shell printf '\#include <altivec.h>\nvector int a;\n' |\
--                         gcc -c -x c - >&/dev/null && \
--                         rm ./-.o && echo yes)
-+                         gcc -c -x c - >/dev/null && rm ./-.o && echo yes)
-         ifeq ($(HAS_ALTIVEC),yes)
-+                CFLAGS += -I../../../arch/powerpc/include
-+                CFLAGS += -DCONFIG_ALTIVEC
-                 OBJS += altivec1.o altivec2.o altivec4.o altivec8.o \
-                         vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
-         endif
--- 
-2.9.3
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> ---
+>  arch/powerpc/mm/pgtable-radix.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> index 671a45d..1d5178f 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -33,7 +33,8 @@ static int native_register_process_table(unsigned long base, unsigned long pg_sz
+>  {
+>  	unsigned long patb1 = base | table_size | PATB_GR;
+>
+> -	partition_tb->patb1 = cpu_to_be64(patb1);
+> +	mmu_partition_table_set_entry(0, be64_to_cpu(partition_tb->patb0),
+> +				      patb1);
+>  	return 0;
+>  }
+>
+> -- 
+> 2.9.4
