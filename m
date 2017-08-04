@@ -1,26 +1,23 @@
-Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-qk0-x236.google.com (mail-qk0-x236.google.com
- [IPv6:2607:f8b0:400d:c09::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNqPb6K4GzDqG5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 11:40:35 +1000 (AEST)
-Received: by mail-qk0-x236.google.com with SMTP id z18so1900517qka.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 18:40:35 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <87379astus.fsf@linkitivity.dja.id.au>
-References: <20170428055809.2675-1-matthew.brown.dev@gmail.com>
- <20170428055809.2675-2-matthew.brown.dev@gmail.com>
- <87379astus.fsf@linkitivity.dja.id.au>
-From: Matt Brown <matthew.brown.dev@gmail.com>
-Date: Fri, 4 Aug 2017 11:40:32 +1000
-Message-ID: <CAPoR37Zefef-o4sXfUtTd-VsQK87Y+2dQNrsY=fT2s4Sp08Xdg@mail.gmail.com>
-Subject: Re: [v5 2/2] raid6/altivec: Add vpermxor implementation for raid6 Q
- syndrome
-To: Daniel Axtens <dja@axtens.net>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNqQ53TMjzDqgJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 11:41:01 +1000 (AEST)
+Message-ID: <1501810843.2664.63.camel@kernel.crashing.org>
+Subject: Re: [PATCH v9 14/14] powerpc: rewrite local_t using soft_irq
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>, Madhavan Srinivasan
+ <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, anton@samba.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Fri, 04 Aug 2017 11:40:43 +1000
+In-Reply-To: <20170804035005.1d462325@roar.ozlabs.ibm.com>
+References: <1501732158-19009-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1501732158-19009-15-git-send-email-maddy@linux.vnet.ibm.com>
+ <20170804035005.1d462325@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 2, 2017 at 10:20 AM, Daniel Axtens <dja@axtens.net> wrote:
-> Oh, one final thing - I just realised there's a .gitignore file in
-> lib/raid6/.gitignore that needs to be updated to include the vpermxor
-> generated files. That should be part of this patch.
->
+On Fri, 2017-08-04 at 03:50 +1000, Nicholas Piggin wrote:
+> Hey, so... why are any of these implemented in asm? We should
+> just do them all in C, right? I looked a bit harder at code gen
+> and a couple of them are still emitting larx/stcx.
 
-Oh, I managed to miss that!
-I'll add that and fix up that comment spacing.
+As long as we can guarantee that the C compiler won't play games
+moving stuff around. But yes, I tend to agree.
 
-Thanks,
-Matt
-
-
-
-> Regards,
-> Daniel
+Cheers,
+Ben.
