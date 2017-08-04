@@ -1,36 +1,19 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNybg1RstzDqG5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 17:04:46 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7473nDs066697
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Aug 2017 03:04:43 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c4ckgch06-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Aug 2017 03:04:43 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 4 Aug 2017 01:04:42 -0600
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH] powernv:idle: Disable LOSE_FULL_CONTEXT states when stop-api
- fails.
-Date: Fri,  4 Aug 2017 12:34:22 +0530
-Message-Id: <1501830262-32399-1-git-send-email-ego@linux.vnet.ibm.com>
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xNzJr1yp6zDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 17:36:59 +1000 (AEST)
+Subject: Re: [PATCH v9 4/4] irqchip/qeic: remove PPCisms for QEIC
+To: Zhao Qiang <qiang.zhao@nxp.com>, tglx@linutronix.de
+References: <1501731490-34402-1-git-send-email-qiang.zhao@nxp.com>
+ <1501731490-34402-5-git-send-email-qiang.zhao@nxp.com>
+Cc: oss@buserror.net, xiaobo.xie@nxp.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+From: Marc Zyngier <marc.zyngier@arm.com>
+Message-ID: <76c2673a-af7d-45d1-85d3-7d328808d292@arm.com>
+Date: Fri, 4 Aug 2017 08:31:25 +0100
+MIME-Version: 1.0
+In-Reply-To: <1501731490-34402-5-git-send-email-qiang.zhao@nxp.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,257 +23,234 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+[Please add all the irqchip maintainers when posting irqchip patches...]
 
-Currently, we use the opal call opal_slw_set_reg() to inform the
-Sleep-Winkle Engine (SLW) to restore the contents of some of the
-Hypervisor state on wakeup from deep idle states that lose full
-hypervisor context (characterized by the flag
-OPAL_PM_LOSE_FULL_CONTEXT).
+On 03/08/17 04:38, Zhao Qiang wrote:
+> QEIC was supported on PowerPC, and dependent on PPC,
+> Now it is supported on other platforms, so remove PPCisms.
+> 
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> ---
+>  arch/powerpc/platforms/83xx/km83xx.c          |   1 -
+>  arch/powerpc/platforms/83xx/misc.c            |   1 -
+>  arch/powerpc/platforms/83xx/mpc832x_mds.c     |   1 -
+>  arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   1 -
+>  arch/powerpc/platforms/83xx/mpc836x_mds.c     |   1 -
+>  arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   1 -
+>  arch/powerpc/platforms/85xx/corenet_generic.c |   1 -
+>  arch/powerpc/platforms/85xx/mpc85xx_mds.c     |   1 -
+>  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |   1 -
+>  arch/powerpc/platforms/85xx/twr_p102x.c       |   1 -
+>  drivers/irqchip/irq-qeic.c                    | 219 +++++++++++++-------------
+>  include/soc/fsl/qe/qe_ic.h                    | 132 ----------------
+>  12 files changed, 111 insertions(+), 250 deletions(-)
+>  delete mode 100644 include/soc/fsl/qe/qe_ic.h
+> 
 
-However, the current code has a bug in that if opal_slw_set_reg()
-fails, we don't disable the use of these deep states (winkle on
-POWER8, stop4 onwards on POWER9).
+[...]
 
-This patch fixes this bug by ensuring that if programing the
-sleep-winkle engine to restore the hypervisor states in
-pnv_save_sprs_for_deep_states() fails, then we exclude such states by
-excluding their flags supported_cpuidle_states. Further, we ensure in
-the initialization of the cpuidle-powernv driver to only include those
-states whose flags are present in supported_cpuidle_states.
+> diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
+> index a2d8084..21e3b43 100644
+> --- a/drivers/irqchip/irq-qeic.c
+> +++ b/drivers/irqchip/irq-qeic.c
+> @@ -18,8 +18,11 @@
+>  #include <linux/of_address.h>
+>  #include <linux/kernel.h>
+>  #include <linux/init.h>
+> +#include <linux/irqdomain.h>
+>  #include <linux/irqchip.h>
+>  #include <linux/errno.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/reboot.h>
+>  #include <linux/slab.h>
+>  #include <linux/stddef.h>
+> @@ -27,9 +30,8 @@
+>  #include <linux/signal.h>
+>  #include <linux/device.h>
+>  #include <linux/spinlock.h>
+> -#include <asm/irq.h>
+> +#include <linux/irq.h>
+>  #include <asm/io.h>
+> -#include <soc/fsl/qe/qe_ic.h>
+>  
+>  #define NR_QE_IC_INTS		64
+>  
+> @@ -87,6 +89,43 @@
+>  #define SIGNAL_HIGH		2
+>  #define SIGNAL_LOW		0
+>  
+> +#define NUM_OF_QE_IC_GROUPS	6
+> +
+> +/* Flags when we init the QE IC */
+> +#define QE_IC_SPREADMODE_GRP_W			0x00000001
+> +#define QE_IC_SPREADMODE_GRP_X			0x00000002
+> +#define QE_IC_SPREADMODE_GRP_Y			0x00000004
+> +#define QE_IC_SPREADMODE_GRP_Z			0x00000008
+> +#define QE_IC_SPREADMODE_GRP_RISCA		0x00000010
+> +#define QE_IC_SPREADMODE_GRP_RISCB		0x00000020
+> +
+> +#define QE_IC_LOW_SIGNAL			0x00000100
+> +#define QE_IC_HIGH_SIGNAL			0x00000200
+> +
+> +#define QE_IC_GRP_W_PRI0_DEST_SIGNAL_HIGH	0x00001000
+> +#define QE_IC_GRP_W_PRI1_DEST_SIGNAL_HIGH	0x00002000
+> +#define QE_IC_GRP_X_PRI0_DEST_SIGNAL_HIGH	0x00004000
+> +#define QE_IC_GRP_X_PRI1_DEST_SIGNAL_HIGH	0x00008000
+> +#define QE_IC_GRP_Y_PRI0_DEST_SIGNAL_HIGH	0x00010000
+> +#define QE_IC_GRP_Y_PRI1_DEST_SIGNAL_HIGH	0x00020000
+> +#define QE_IC_GRP_Z_PRI0_DEST_SIGNAL_HIGH	0x00040000
+> +#define QE_IC_GRP_Z_PRI1_DEST_SIGNAL_HIGH	0x00080000
+> +#define QE_IC_GRP_RISCA_PRI0_DEST_SIGNAL_HIGH	0x00100000
+> +#define QE_IC_GRP_RISCA_PRI1_DEST_SIGNAL_HIGH	0x00200000
+> +#define QE_IC_GRP_RISCB_PRI0_DEST_SIGNAL_HIGH	0x00400000
+> +#define QE_IC_GRP_RISCB_PRI1_DEST_SIGNAL_HIGH	0x00800000
+> +#define QE_IC_GRP_W_DEST_SIGNAL_SHIFT		(12)
+> +
+> +/* QE interrupt sources groups */
+> +enum qe_ic_grp_id {
+> +	QE_IC_GRP_W = 0,	/* QE interrupt controller group W */
+> +	QE_IC_GRP_X,		/* QE interrupt controller group X */
+> +	QE_IC_GRP_Y,		/* QE interrupt controller group Y */
+> +	QE_IC_GRP_Z,		/* QE interrupt controller group Z */
+> +	QE_IC_GRP_RISCA,	/* QE interrupt controller RISC group A */
+> +	QE_IC_GRP_RISCB		/* QE interrupt controller RISC group B */
+> +};
+> +
+>  struct qe_ic {
+>  	/* Control registers offset */
+>  	u32 __iomem *regs;
+> @@ -265,15 +304,15 @@ static struct qe_ic_info qe_ic_info[] = {
+>  		},
+>  };
+>  
+> -static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
+> +static inline u32 qe_ic_read(__be32  __iomem *base, unsigned int reg)
 
-Fixes: 1e1601b38e6 ("powerpc/powernv/idle: Restore SPRs for deep idle
-states via stop API.")
+Why are these tagged "inline"? In general, the compiler does a pretty
+good job at inlining what makes sense to be inlined without having to be
+told so.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/idle.c | 126 +++++++++++++++++++++++++++-------
- drivers/cpuidle/cpuidle-powernv.c     |   9 +++
- 2 files changed, 110 insertions(+), 25 deletions(-)
+>  {
+> -	return in_be32(base + (reg >> 2));
+> +	return ioread32be(base + (reg >> 2));
+>  }
+>  
+> -static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
+> +static inline void qe_ic_write(__be32  __iomem *base, unsigned int reg,
+>  			       u32 value)
+>  {
+> -	out_be32(base + (reg >> 2), value);
+> +	iowrite32be(value, base + (reg >> 2));
+>  }
+>  
+>  static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
+> @@ -375,8 +414,8 @@ static const struct irq_domain_ops qe_ic_host_ops = {
+>  	.xlate = irq_domain_xlate_onetwocell,
+>  };
+>  
+> -/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
+> -unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
+> +/* Return an interrupt vector or 0 if no interrupt is pending. */
+> +static unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
+>  {
+>  	int irq;
+>  
+> @@ -386,13 +425,13 @@ unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
+>  	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
+>  
+>  	if (irq == 0)
+> -		return NO_IRQ;
+> +		return 0;
+>  
+>  	return irq_linear_revmap(qe_ic->irqhost, irq);
+>  }
+>  
+> -/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
+> -unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+> +/* Return an interrupt vector or 0 if no interrupt is pending. */
+> +static unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+>  {
+>  	int irq;
+>  
+> @@ -402,11 +441,69 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+>  	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
+>  
+>  	if (irq == 0)
+> -		return NO_IRQ;
+> +		return 0;
+>  
+>  	return irq_linear_revmap(qe_ic->irqhost, irq);
+>  }
+>  
+> +static inline void qe_ic_cascade_low_ipic(struct irq_desc *desc)
+> +{
+> +	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
+> +	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
+> +
+> +	if (cascade_irq != 0)
+> +		generic_handle_irq(cascade_irq);
+> +}
+> +
+> +static inline void qe_ic_cascade_high_ipic(struct irq_desc *desc)
+> +{
+> +	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
+> +	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
+> +
+> +	if (cascade_irq != 0)
+> +		generic_handle_irq(cascade_irq);
+> +}
+> +
+> +static inline void qe_ic_cascade_low_mpic(struct irq_desc *desc)
+> +{
+> +	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
+> +	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
+> +	struct irq_chip *chip = irq_desc_get_chip(desc);
+> +
+> +	if (cascade_irq != 0)
+> +		generic_handle_irq(cascade_irq);
+> +
+> +	chip->irq_eoi(&desc->irq_data);
+> +}
+> +
+> +static inline void qe_ic_cascade_high_mpic(struct irq_desc *desc)
+> +{
+> +	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
+> +	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
+> +	struct irq_chip *chip = irq_desc_get_chip(desc);
+> +
+> +	if (cascade_irq != 0)
+> +		generic_handle_irq(cascade_irq);
+> +
+> +	chip->irq_eoi(&desc->irq_data);
+> +}
+> +
+> +static inline void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
+> +{
+> +	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
+> +	unsigned int cascade_irq;
+> +	struct irq_chip *chip = irq_desc_get_chip(desc);
+> +
+> +	cascade_irq = qe_ic_get_high_irq(qe_ic);
+> +	if (cascade_irq == 0)
+> +		cascade_irq = qe_ic_get_low_irq(qe_ic);
+> +
+> +	if (cascade_irq != 0)
+> +		generic_handle_irq(cascade_irq);
+> +
+> +	chip->irq_eoi(&desc->irq_data);
+> +}
+> +
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 2abee07..5f4c206 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -184,9 +184,6 @@ static void pnv_alloc_idle_core_states(void)
- 	}
- 
- 	update_subcore_sibling_mask();
--
--	if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT)
--		pnv_save_sprs_for_deep_states();
- }
- 
- u32 pnv_get_supported_cpuidle_states(void)
-@@ -467,8 +464,39 @@ int validate_psscr_val_mask(u64 *psscr_val, u64 *psscr_mask, u32 flags)
- 	return err;
- }
- 
-+static void __init pnv_power8_idle_init(struct device_node *np, u32 *flags,
-+					int dt_idle_states)
-+{
-+	bool disable_full_context_loss = false;
-+	bool sprs_for_lose_full_context_saved = false;
-+
-+	int rc = 0, i;
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+		if (flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) {
-+			if (sprs_for_lose_full_context_saved)
-+				goto add_flags;
-+
-+			if (disable_full_context_loss)
-+				continue;
-+
-+			rc = pnv_save_sprs_for_deep_states();
-+
-+			if (unlikely(rc)) {
-+				pr_warn("cpuidle-powernv: Disabling full context loss idle states.\n");
-+				pr_warn("cpuidle-powernv: Offlined CPUs will be put to shallow idle state.\n");
-+				disable_full_context_loss = true;
-+				continue;
-+			}
-+
-+			sprs_for_lose_full_context_saved = true;
-+		}
-+add_flags:
-+		supported_cpuidle_states |= flags[i];
-+	}
-+}
- /*
-- * pnv_arch300_idle_init: Initializes the default idle state, first
-+ * pnv_power9_idle_init: Initializes the default idle state, first
-  *                        deep idle state and deepest idle state on
-  *                        ISA 3.0 CPUs.
-  *
-@@ -485,6 +513,9 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
- 	u32 *residency_ns = NULL;
- 	u64 max_residency_ns = 0;
- 	int rc = 0, i;
-+	bool save_sprs_for_full_context_loss = false;
-+	bool disable_full_context_loss = false;
-+	unsigned long invalid_states_mask = 0;
- 
- 	psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val), GFP_KERNEL);
- 	psscr_mask = kcalloc(dt_idle_states, sizeof(*psscr_mask), GFP_KERNEL);
-@@ -521,35 +552,83 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
- 	}
- 
- 	/*
-+	 * States that have OPAL_PM_LOSE_FULL_CONTEXT flag set require
-+	 * the assistance of the slw engine to restore certain SPRs on
-+	 * wakeup from these states. The function to program the slw
-+	 * engine via stop-api expects pnv_deep_stop_psscr_val to be
-+	 * set before it is called.
-+	 *
-+	 * Hence, we first set the pnv_deepest_stop_psscr_{val,mask}
-+	 * to the value corresponding to deepest state.
-+	 */
-+	for (i = 0; i < dt_idle_states; i++) {
-+		int err;
-+
-+		err = validate_psscr_val_mask(&psscr_val[i], &psscr_mask[i],
-+					      flags[i]);
-+		if (err) {
-+			report_invalid_psscr_val(psscr_val[i], err);
-+			set_bit(i, &invalid_states_mask);
-+			continue;
-+		}
-+
-+		if (flags[i] & OPAL_PM_LOSE_FULL_CONTEXT)
-+			save_sprs_for_full_context_loss = true;
-+
-+		if (max_residency_ns < residency_ns[i]) {
-+			max_residency_ns = residency_ns[i];
-+			pnv_deepest_stop_psscr_val = psscr_val[i];
-+			pnv_deepest_stop_psscr_mask = psscr_mask[i];
-+			deepest_stop_found = true;
-+		}
-+	}
-+
-+	/*
-+	 * Program the SLW via stop-api to restore some of the SPRs
-+	 * after wakeup from a LOSE_FULL_CONTEXT idle state.
-+	 */
-+	if (save_sprs_for_full_context_loss) {
-+		int rc;
-+
-+		rc = pnv_save_sprs_for_deep_states();
-+		if (unlikely(rc)) {
-+			pr_warn("cpuidle-powernv: Disabling full context loss idle states.\n");
-+			pr_warn("cpuidle-powernv: Idle powersavings impacted.\n");
-+			disable_full_context_loss = true;
-+			max_residency_ns = 0;
-+			deepest_stop_found = false;
-+		}
-+	}
-+
-+	/*
- 	 * Set pnv_first_deep_stop_state, pnv_deepest_stop_psscr_{val,mask},
- 	 * and the pnv_default_stop_{val,mask}.
- 	 *
- 	 * pnv_first_deep_stop_state should be set to the first stop
- 	 * level to cause hypervisor state loss.
- 	 *
--	 * pnv_deepest_stop_{val,mask} should be set to values corresponding to
--	 * the deepest stop state.
-+	 * If the stop-api failed above, then pnv_deepest_stop_{val,mask}
-+	 * should be set to values corresponding to the deepest stop
-+	 * state that doesn't have OPAL_PM_LOSE_FULL_CONTEXT set.
- 	 *
- 	 * pnv_default_stop_{val,mask} should be set to values corresponding to
- 	 * the shallowest (OPAL_PM_STOP_INST_FAST) loss-less stop state.
- 	 */
- 	pnv_first_deep_stop_state = MAX_STOP_STATE;
- 	for (i = 0; i < dt_idle_states; i++) {
--		int err;
- 		u64 psscr_rl = psscr_val[i] & PSSCR_RL_MASK;
- 
--		if ((flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) &&
--		     (pnv_first_deep_stop_state > psscr_rl))
--			pnv_first_deep_stop_state = psscr_rl;
--
--		err = validate_psscr_val_mask(&psscr_val[i], &psscr_mask[i],
--					      flags[i]);
--		if (err) {
--			report_invalid_psscr_val(psscr_val[i], err);
-+		if (test_bit(i, &invalid_states_mask))
- 			continue;
-+
-+		if (flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) {
-+			if (disable_full_context_loss)
-+				continue;
-+			else if (pnv_first_deep_stop_state > psscr_rl)
-+				pnv_first_deep_stop_state = psscr_rl;
- 		}
- 
--		if (max_residency_ns < residency_ns[i]) {
-+		if (unlikely(max_residency_ns < residency_ns[i])) {
- 			max_residency_ns = residency_ns[i];
- 			pnv_deepest_stop_psscr_val = psscr_val[i];
- 			pnv_deepest_stop_psscr_mask = psscr_mask[i];
-@@ -562,6 +641,8 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
- 			pnv_default_stop_mask = psscr_mask[i];
- 			default_stop_found = true;
- 		}
-+
-+		supported_cpuidle_states |= flags[i];
- 	}
- 
- 	if (unlikely(!default_stop_found)) {
-@@ -597,7 +678,6 @@ static void __init pnv_probe_idle_states(void)
- 	struct device_node *np;
- 	int dt_idle_states;
- 	u32 *flags = NULL;
--	int i;
- 
- 	np = of_find_node_by_path("/ibm,opal/power-mgt");
- 	if (!np) {
-@@ -619,14 +699,10 @@ static void __init pnv_probe_idle_states(void)
- 		goto out;
- 	}
- 
--	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
--		if (pnv_power9_idle_init(np, flags, dt_idle_states))
--			goto out;
--	}
--
--	for (i = 0; i < dt_idle_states; i++)
--		supported_cpuidle_states |= flags[i];
--
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		pnv_power9_idle_init(np, flags, dt_idle_states);
-+	else
-+		pnv_power8_idle_init(np, flags, dt_idle_states);
- out:
- 	kfree(flags);
- }
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 37b0698..1a5875e 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -235,6 +235,7 @@ static inline int validate_dt_prop_sizes(const char *prop1, int prop1_len,
- 	return -1;
- }
- 
-+extern u32 pnv_get_supported_cpuidle_states(void);
- static int powernv_add_idle_states(void)
- {
- 	struct device_node *power_mgt;
-@@ -362,6 +363,14 @@ static int powernv_add_idle_states(void)
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
- 		bool stops_timebase = false;
-+		u32 supported_flags = pnv_get_supported_cpuidle_states();
-+
-+		/*
-+		 * If a certain deep state isn't marked in
-+		 * supported_cpuidle_states, we skip it here.
-+		 */
-+		if ((flags[i] & supported_flags) != flags[i])
-+			continue;
- 		/*
- 		 * If an idle state has exit latency beyond
- 		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+There is an incredible amount of duplication in this code. You should be
+able to do a better job at refactoring this code.
+
+And clearly, none of these should ever be tagged "inline". Please leave
+the compiler's job to the compiler unless you have an actual reason to
+do so (but then "inline" is the wrong keyword).
+
+Thanks,
+
+	M.
 -- 
-1.8.3.1
+Jazz is not dead. It just smells funny...
