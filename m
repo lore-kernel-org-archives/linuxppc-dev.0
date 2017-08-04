@@ -1,26 +1,18 @@
 Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xNpkR0pTfzDqG5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 11:10:07 +1000 (AEST)
-Received: by mail-qt0-x242.google.com with SMTP id d10so325181qtb.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 18:10:07 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170801125735.GJ13471@gate.crashing.org>
-References: <20170707070249.15773-1-matthew.brown.dev@gmail.com>
- <87lgn555vs.fsf@concordia.ellerman.id.au>
- <20170801125735.GJ13471@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xNpnH0P78zDqG5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Aug 2017 11:12:34 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id t86so332428pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Aug 2017 18:12:34 -0700 (PDT)
 From: Matt Brown <matthew.brown.dev@gmail.com>
-Date: Fri, 4 Aug 2017 11:10:04 +1000
-Message-ID: <CAPoR37b+J19h06cgOeLYuU6WO_-rsu49a8S3MCQ1dQEVwbXHGg@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/powernv: Use darn instr for random_seed on p9
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Subject: [PATCH v3] powerpc/powernv: Use darn instr for random_seed on p9
+Date: Fri,  4 Aug 2017 11:12:18 +1000
+Message-Id: <20170804011218.10489-1-matthew.brown.dev@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +22,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 1, 2017 at 10:57 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
-> On Mon, Jul 31, 2017 at 07:10:15PM +1000, Michael Ellerman wrote:
->> And ___PPC_RA() is not quite right. The L field is only 2 bits wide, not
->> the 5 that ___PPC_RA() allows.
->>
->> We don't have a __PPC_L() macro, because L fields vary in size and
->> location. So I think you're best of open coding it, eg:
->>
->> +#define PPC_DARN(t, l)               stringify_in_c(.long PPC_INST_DARN |  \
->> +                                             __PPC_RT(t)        |  \
->> +                                             (((l) & 0x3) << 16))
->
-> It would be better if you could do a compile-time error if the L value
-> is out of range.  Hrm, nothing else does such checking either?
->
+This adds the powernv_get_random_darn function which utilises the darn
+instruction, introduced in POWER9. The powernv_get_random_darn function
+is used as the ppc_md.get_random_seed on P9.
 
-Yeah currently the only checks are whether the register value is
-valid, using the __PPC_R{A,B,S,T} macros.
-However, we can't use these macros for inline asm because we're
-passing a variable into it
-so the pre-processor attempts to look for register %0 which breaks it.
-(Have to use triple underscore versions)
+The DARN instruction can potentially throw an error, so we attempt to
+register the powernv_get_random_darn function up to 10 times before
+failing.
 
-We could add more checking to validate the L value, but I don't know
-how much of an issue it currently is.
-A question for mpe I guess.
+Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+---
+v3:
+	- add repeat attempts to register the ppc_md.get_random_seed
+	- fixed the PPC_DARN macro
+	- move DARN_ERR definition
+	- fixed commit message
+v2:
+	- remove repeat darn attempts
+	- move hook to rng_init
+---
+ arch/powerpc/include/asm/ppc-opcode.h |  4 ++++
+ arch/powerpc/platforms/powernv/rng.c  | 35 ++++++++++++++++++++++++++++++++++-
+ 2 files changed, 38 insertions(+), 1 deletion(-)
 
-Thanks,
-Matt
-
-
->
-> Segher
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index c4ced1d..aabd150 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -134,6 +134,7 @@
+ #define PPC_INST_COPY			0x7c00060c
+ #define PPC_INST_COPY_FIRST		0x7c20060c
+ #define PPC_INST_CP_ABORT		0x7c00068c
++#define PPC_INST_DARN			0x7c0005e6
+ #define PPC_INST_DCBA			0x7c0005ec
+ #define PPC_INST_DCBA_MASK		0xfc0007fe
+ #define PPC_INST_DCBAL			0x7c2005ec
+@@ -325,6 +326,9 @@
+ 
+ /* Deal with instructions that older assemblers aren't aware of */
+ #define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
++#define PPC_DARN(t, l)		stringify_in_c(.long PPC_INST_DARN |  \
++						___PPC_RT(t)	   |  \
++						(((l) & 0x3) << 16))
+ #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
+ 					__PPC_RA(a) | __PPC_RB(b))
+ #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+index 5dcbdea..83b925c 100644
+--- a/arch/powerpc/platforms/powernv/rng.c
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -16,11 +16,13 @@
+ #include <linux/slab.h>
+ #include <linux/smp.h>
+ #include <asm/archrandom.h>
++#include <asm/cputable.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+ #include <asm/smp.h>
+ 
++#define DARN_ERR 0xFFFFFFFFFFFFFFFFul
+ 
+ struct powernv_rng {
+ 	void __iomem *regs;
+@@ -67,6 +69,21 @@ int powernv_get_random_real_mode(unsigned long *v)
+ 	return 1;
+ }
+ 
++int powernv_get_random_darn(unsigned long *v)
++{
++	unsigned long val;
++
++	/* Using DARN with L=1 - 64-bit conditioned random number */
++	asm volatile(PPC_DARN(%0, 1) : "=r"(val));
++
++	if (val == DARN_ERR)
++		return 0;
++
++	*v = val;
++
++	return 1;
++}
++
+ int powernv_get_random_long(unsigned long *v)
+ {
+ 	struct powernv_rng *rng;
+@@ -135,8 +152,9 @@ static __init int rng_create(struct device_node *dn)
+ 
+ static __init int rng_init(void)
+ {
++	unsigned long darn_test;
+ 	struct device_node *dn;
+-	int rc;
++	int rc, i;
+ 
+ 	for_each_compatible_node(dn, NULL, "ibm,power-rng") {
+ 		rc = rng_create(dn);
+@@ -150,6 +168,21 @@ static __init int rng_init(void)
+ 		of_platform_device_create(dn, NULL, NULL);
+ 	}
+ 
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		for (i = 0; i < 10; i++) {
++			if (powernv_get_random_darn(&darn_test)) {
++				ppc_md.get_random_seed =
++					powernv_get_random_darn;
++				break;
++			}
++
++			if (i == 9) {
++				pr_warn("Failed to use powernv_get_random_darn"\
++					"as get_random_seed");
++			}
++		}
++	}
++
+ 	return 0;
+ }
+ machine_subsys_initcall(powernv, rng_init);
+-- 
+2.9.3
