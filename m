@@ -1,21 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xPqr83CBfzDqkr
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2017 03:03:36 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id p13so4853409pfd.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Aug 2017 10:03:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xPqrC3RkkzDqk0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2017 03:03:39 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id u185so4758948pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Aug 2017 10:03:39 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH 12/13] powerpc/64s: idle POWER9 can execute stop in virtual
- mode
-Date: Sun,  6 Aug 2017 03:02:40 +1000
-Message-Id: <20170805170241.22966-13-npiggin@gmail.com>
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH 13/13] powerpc/64s: idle ESL=0 stop can avoid all save/restore
+ overhead
+Date: Sun,  6 Aug 2017 03:02:41 +1000
+Message-Id: <20170805170241.22966-14-npiggin@gmail.com>
 In-Reply-To: <20170805170241.22966-1-npiggin@gmail.com>
 References: <20170805170241.22966-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,35 +26,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hardware can execute stop in any context, and KVM does not
-require real mode. This saves a switch to real-mode when going
-idle.
+When stop is executed with EC=ESL=0, it appears to execute like a
+normal instruction (resuming from NIP when woken by interrupt).
+So all the save/restore handling can be avoided completely. In
+particular NV GPRs do not have to be saved, and MSR does not have
+to be switched back to kernel MSR.
+
+So move the test for "lite" sleep states out to power9_idle_stop.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/idle_book3s.S | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/powerpc/kernel/idle_book3s.S | 38 +++++++++++++-------------------------
+ 1 file changed, 13 insertions(+), 25 deletions(-)
 
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 75746111e2c4..8ac366a51bb5 100644
+index 8ac366a51bb5..9eb47c99dc39 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -141,7 +141,16 @@ pnv_powersave_common:
- 	std	r5,_CCR(r1)
- 	std	r1,PACAR1(r13)
- 
-+BEGIN_FTR_SECTION
-+	/*
-+	 * POWER9 does not require real mode to stop, and does not set
-+	 * hwthread_state for KVM (threads don't share MMU context), so
-+	 * we can remain in virtual mode for this.
-+	 */
-+	bctr
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+@@ -251,31 +251,8 @@ enter_winkle:
+ /*
+  * r3 - PSSCR value corresponding to the requested stop state.
+  */
+-power_enter_stop:
+-/*
+- * Check if we are executing the lite variant with ESL=EC=0
+- */
+-	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
++power_enter_stop_esl:
+ 	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
+-	bne	 .Lhandle_esl_ec_set
+-	PPC_STOP
+-	li	r3,0  /* Since we didn't lose state, return 0 */
+-
+-	/*
+-	 * pnv_wakeup_noloss() expects r12 to contain the SRR1 value so
+-	 * it can determine if the wakeup reason is an HMI in
+-	 * CHECK_HMI_INTERRUPT.
+-	 *
+-	 * However, when we wakeup with ESL=0, SRR1 will not contain the wakeup
+-	 * reason, so there is no point setting r12 to SRR1.
+-	 *
+-	 * Further, we clear r12 here, so that we don't accidentally enter the
+-	 * HMI in pnv_wakeup_noloss() if the value of r12[42:45] == WAKE_HMI.
+-	 */
+-	li	r12, 0
+-	b 	pnv_wakeup_noloss
+-
+-.Lhandle_esl_ec_set:
  	/*
-+	 * POWER8
- 	 * Go to real mode to do the nap, as required by the architecture.
- 	 * Also, we need to be in real mode before setting hwthread_state,
- 	 * because as soon as we do that, another thread can switch
+ 	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
+ 	 * state-loss idle. Saving and restoring MMCR0 over idle is a
+@@ -348,9 +325,20 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+  * r3 contains desired PSSCR register value.
+  */
+ _GLOBAL(power9_idle_stop)
++	/*
++	 * Check if we are executing the lite variant with ESL=EC=0
++	 * This case resumes execution after the stop instruction without
++	 * losing any state, so nothing has to be saved.
++	 */
++	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
++	bne	1f
++	PPC_STOP
++	li	r3,0  /* Since we didn't lose state, return 0 */
++	blr
++1:	/* state-loss idle */
+ 	std	r3, PACA_REQ_PSSCR(r13)
+ 	mtspr 	SPRN_PSSCR,r3
+-	LOAD_REG_ADDR(r4,power_enter_stop)
++	LOAD_REG_ADDR(r4,power_enter_stop_esl)
+ 	b	pnv_powersave_common
+ 	/* No return */
+ 
 -- 
 2.11.0
