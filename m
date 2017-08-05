@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xPqqg2HQ1zDqmD
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2017 03:03:11 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id 83so4725010pgb.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Aug 2017 10:03:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xPqqk0nWXzDqmP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2017 03:03:14 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id u185so4758265pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Aug 2017 10:03:14 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 04/13] powerpc/64: cleanup __check_irq_replay
-Date: Sun,  6 Aug 2017 03:02:32 +1000
-Message-Id: <20170805170241.22966-5-npiggin@gmail.com>
+Subject: [PATCH 05/13] powerpc/64s: irq replay merge HV and non-HV paths for
+ doorbell replay
+Date: Sun,  6 Aug 2017 03:02:33 +1000
+Message-Id: <20170805170241.22966-6-npiggin@gmail.com>
 In-Reply-To: <20170805170241.22966-1-npiggin@gmail.com>
 References: <20170805170241.22966-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,91 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the clearing of irq_happened bits into the condition where
-they were found to be set. This reduces instruction count slightly,
-and reduces stores into irq_happened.
+This results in smaller code, and fewer branches.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/irq.c | 45 +++++++++++++++++++++++----------------------
- 1 file changed, 23 insertions(+), 22 deletions(-)
+ arch/powerpc/kernel/entry_64.S       | 6 +-----
+ arch/powerpc/kernel/exceptions-64s.S | 2 +-
+ arch/powerpc/kernel/irq.c            | 2 --
+ 3 files changed, 2 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 49d8422767b4..ec67f67dafab 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -990,11 +990,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ #ifdef CONFIG_PPC_BOOK3E
+ 	cmpwi	cr0,r3,0x280
+ #else
+-	BEGIN_FTR_SECTION
+-		cmpwi	cr0,r3,0xe80
+-	FTR_SECTION_ELSE
+-		cmpwi	cr0,r3,0xa00
+-	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
++	cmpwi	cr0,r3,0xa00
+ #endif /* CONFIG_PPC_BOOK3E */
+ 	bne	1f
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 67321be3122c..f9d0796fb2c9 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1674,7 +1674,7 @@ _GLOBAL(__replay_interrupt)
+ 	cmpwi	r3,0x500
+ 	beq	hardware_interrupt_common
+ BEGIN_FTR_SECTION
+-	cmpwi	r3,0xe80
++	cmpwi	r3,0xa00
+ 	beq	h_doorbell_common_msgclr
+ 	cmpwi	r3,0xea0
+ 	beq	h_virt_irq_common
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index f291f7826abc..7c46e0cce054 100644
+index 7c46e0cce054..60ee6d7251b8 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -143,9 +143,10 @@ notrace unsigned int __check_irq_replay(void)
- 	 */
- 	unsigned char happened = local_paca->irq_happened;
- 
--	/* Clear bit 0 which we wouldn't clear otherwise */
--	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
- 	if (happened & PACA_IRQ_HARD_DIS) {
-+		/* Clear bit 0 which we wouldn't clear otherwise */
-+		local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
-+
- 		/*
- 		 * We may have missed a decrementer interrupt if hard disabled.
- 		 * Check the decrementer register in case we had a rollover
-@@ -173,39 +174,39 @@ notrace unsigned int __check_irq_replay(void)
- 	 * This is a higher priority interrupt than the others, so
- 	 * replay it first.
- 	 */
--	local_paca->irq_happened &= ~PACA_IRQ_HMI;
--	if (happened & PACA_IRQ_HMI)
-+	if (happened & PACA_IRQ_HMI) {
-+		local_paca->irq_happened &= ~PACA_IRQ_HMI;
- 		return 0xe60;
-+	}
- 
--	/*
--	 * We may have missed a decrementer interrupt. We check the
--	 * decrementer itself rather than the paca irq_happened field
--	 * in case we also had a rollover while hard disabled
--	 */
--	local_paca->irq_happened &= ~PACA_IRQ_DEC;
--	if (happened & PACA_IRQ_DEC)
-+	if (happened & PACA_IRQ_DEC) {
-+		local_paca->irq_happened &= ~PACA_IRQ_DEC;
- 		return 0x900;
-+	}
- 
--	/* Finally check if an external interrupt happened */
--	local_paca->irq_happened &= ~PACA_IRQ_EE;
--	if (happened & PACA_IRQ_EE)
-+	if (happened & PACA_IRQ_EE) {
-+		local_paca->irq_happened &= ~PACA_IRQ_EE;
- 		return 0x500;
-+	}
- 
- #ifdef CONFIG_PPC_BOOK3E
--	/* Finally check if an EPR external interrupt happened
--	 * this bit is typically set if we need to handle another
--	 * "edge" interrupt from within the MPIC "EPR" handler
-+	/*
-+	 * Check if an EPR external interrupt happened this bit is typically
-+	 * set if we need to handle another "edge" interrupt from within the
-+	 * MPIC "EPR" handler.
- 	 */
--	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
--	if (happened & PACA_IRQ_EE_EDGE)
-+	if (happened & PACA_IRQ_EE_EDGE) {
-+		local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
- 		return 0x500;
-+	}
- 
--	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
--	if (happened & PACA_IRQ_DBELL)
-+	if (happened & PACA_IRQ_DBELL) {
-+		local_paca->irq_happened &= ~PACA_IRQ_DBELL;
- 		return 0x280;
-+	}
+@@ -207,8 +207,6 @@ notrace unsigned int __check_irq_replay(void)
  #else
--	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
  	if (happened & PACA_IRQ_DBELL) {
-+		local_paca->irq_happened &= ~PACA_IRQ_DBELL;
- 		if (cpu_has_feature(CPU_FTR_HVMODE))
- 			return 0xe80;
+ 		local_paca->irq_happened &= ~PACA_IRQ_DBELL;
+-		if (cpu_has_feature(CPU_FTR_HVMODE))
+-			return 0xe80;
  		return 0xa00;
+ 	}
+ #endif /* CONFIG_PPC_BOOK3E */
 -- 
 2.11.0
