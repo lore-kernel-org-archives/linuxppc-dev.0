@@ -1,32 +1,19 @@
-Return-Path: <srs0=b2td=7h=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xPlJs00WpzDqjF
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 23:39:41 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xPlJr6Nrwz8t7L
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 23:39:40 +1000 (AEST)
-Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
- [IPv6:2607:f8b0:400e:c05::22a])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xPlJq2yWrz9sN7
- for <linuxppc-dev@ozlabs.org>; Sat,  5 Aug 2017 23:39:37 +1000 (AEST)
-Received: by mail-pg0-x22a.google.com with SMTP id v189so18077057pgd.2
- for <linuxppc-dev@ozlabs.org>; Sat, 05 Aug 2017 06:39:37 -0700 (PDT)
-Date: Sat, 5 Aug 2017 23:39:17 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xPqqS5PdFzDqjm
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Aug 2017 03:03:00 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id c65so4851719pfl.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Aug 2017 10:03:00 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: 4.13-rc3: Unrecoverable exception 4100
-Message-ID: <20170805233917.72e49d2f@roar.ozlabs.ibm.com>
-In-Reply-To: <877eyjkt0u.fsf@linux-m68k.org>
-References: <87vam3lhtn.fsf__12885.8019285419$1501844971$gmane$org@linux-m68k.org>
- <87fud7ktqf.fsf__17563.3519575515$1501875675$gmane$org@linux-m68k.org>
- <877eyjkt0u.fsf@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 00/13] idle and soft-irq improvements and POWER9 idle
+ optimisation
+Date: Sun,  6 Aug 2017 03:02:28 +1000
+Message-Id: <20170805170241.22966-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,26 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 04 Aug 2017 21:54:57 +0200
-Andreas Schwab <schwab@linux-m68k.org> wrote:
+The first 9 patches are a bunch of independent small cleanups
+and improvements I've collected. The next 4 are improvements to
+POWER9 idle state entry and exit. They significantly change how
+we enter idle, now in virtual mode and without ptesync. EC=0 idle
+is significantly simplified from there, and does not save anything.
 
-> No, this is really a 4.13-rc1 regression.
-> 
-> Andreas.
-> 
+This runs fine on a DD1 test machine, but the hardware has some
+problem with performance all over the place, so I'm not able to get
+anything meaningful there yet.
 
-SLB miss with MSR[RI]=0 on
+Thanks,
+Nick
 
-lbz     r0,THREAD+THREAD_LOAD_FP(r7)
+Nicholas Piggin (13):
+  powerpc/64s: masked interrupt avoid branch
+  powerpc/64s: masked interrupt avoid instruction
+  powerpc/64s: masked interrupt returns to kernel so avoid r13 restore
+  powerpc/64: cleanup __check_irq_replay
+  powerpc/64s: irq replay merge HV and non-HV paths for doorbell replay
+  powerpc/64s: irq replay external use the HV handler in HV mode on
+    POWER9
+  powerpc/64: remove redundant instruction in interrupt replay
+  powerpc/64s: irq replay remove spurious irq reason
+  powerpc/64: runlatch CTRL[RUN] set optimisation
+  powerpc/64s: idle simplify KVM idle on POWER9
+  powerpc/64s: idle POWER9 can execute stop without ptesync
+  powerpc/64s: idle POWER9 can execute stop in virtual mode
+  powerpc/64s: idle ESL=0 stop can avoid all save/restore overhead
 
-Caused by bc4f65e4cf9d6cc43e0e9ba0b8648cf9201cd55f
+ arch/powerpc/include/asm/kvm_book3s_asm.h |  4 +++
+ arch/powerpc/kernel/entry_64.S            |  7 +---
+ arch/powerpc/kernel/exceptions-64s.S      | 19 +++++-----
+ arch/powerpc/kernel/idle_book3s.S         | 60 ++++++++++++++-----------------
+ arch/powerpc/kernel/irq.c                 | 47 ++++++++++++------------
+ arch/powerpc/kernel/process.c             | 35 +++++++++++++-----
+ arch/powerpc/kvm/book3s_hv.c              | 37 ++++++++++++++++---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 32 ++++++++++-------
+ 8 files changed, 143 insertions(+), 98 deletions(-)
 
-Hmm, I'll see if something can be done, but that MSR_RI stuff in syscall
-exit makes things fairly difficult (and will reduce performance improvement
-of this patch anyway).
-
-I'm trying to work to a point where we have a soft-RI bit for these kinds of
-uses that would avoid all this complexity. Until then it may be best to
-just revert this patch.
-
-Thanks for the report
+-- 
+2.11.0
