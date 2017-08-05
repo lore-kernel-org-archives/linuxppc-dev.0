@@ -1,27 +1,32 @@
-Return-Path: <lukas@wunner.de>
-Received: from mailout2.hostsharing.net (mailout2.hostsharing.net
- [83.223.90.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=b2td=7h=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xPZbP2BlJzDqjF
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 17:06:41 +1000 (AEST)
-Date: Sat, 5 Aug 2017 08:57:54 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, benh@kernel.crashing.org,
- z.liuxinliang@hisilicon.com, zourongrong@gmail.com,
- catalin.marinas@arm.com, will.deacon@arm.com,
- gabriele.paoloni@huawei.com, bhelgaas@google.com, airlied@linux.ie,
- daniel.vetter@intel.com, alex.williamson@redhat.com,
- dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 2/3] Split VGA default device handler out of VGA arbiter
-Message-ID: <20170805065754.GA8509@wunner.de>
-References: <20170804102033.27731-1-dja@axtens.net>
- <20170804102033.27731-3-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xPlJs00WpzDqjF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 23:39:41 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xPlJr6Nrwz8t7L
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Aug 2017 23:39:40 +1000 (AEST)
+Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c05::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xPlJq2yWrz9sN7
+ for <linuxppc-dev@ozlabs.org>; Sat,  5 Aug 2017 23:39:37 +1000 (AEST)
+Received: by mail-pg0-x22a.google.com with SMTP id v189so18077057pgd.2
+ for <linuxppc-dev@ozlabs.org>; Sat, 05 Aug 2017 06:39:37 -0700 (PDT)
+Date: Sat, 5 Aug 2017 23:39:17 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: 4.13-rc3: Unrecoverable exception 4100
+Message-ID: <20170805233917.72e49d2f@roar.ozlabs.ibm.com>
+In-Reply-To: <877eyjkt0u.fsf@linux-m68k.org>
+References: <87vam3lhtn.fsf__12885.8019285419$1501844971$gmane$org@linux-m68k.org>
+ <87fud7ktqf.fsf__17563.3519575515$1501875675$gmane$org@linux-m68k.org>
+ <877eyjkt0u.fsf@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170804102033.27731-3-dja@axtens.net>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 04, 2017 at 08:20:32PM +1000, Daniel Axtens wrote:
-> A system without PCI legacy resources (e.g. ARM64, powerpc) may
-> find that no default/boot VGA device has been marked, because the
-> VGA arbiter checks for legacy resource decoding before marking a
-> card as default.
+On Fri, 04 Aug 2017 21:54:57 +0200
+Andreas Schwab <schwab@linux-m68k.org> wrote:
 
-Would it be feasible to just sprinkle some "if (IS_ENABLED(CONFIG_X86))"
-over the portions of vgaarb.c that deal with legacy resources?
+> No, this is really a 4.13-rc1 regression.
+> 
+> Andreas.
+> 
 
-I'm missing some context as to the negative consequences you're
-experiencing on other arches (the cover letter merely refers to
-"quirks in ppc and concerns in arm land" and is missing links to
-archived versions of v1 and v2), but clearly legacy resources are
-x86-specific so any code dealing with them seems superfluous on
-other arches and should be marked as such.
+SLB miss with MSR[RI]=0 on
 
-Please cc dri-devel when proposing changes to vgaarb.c (see
-MAINTAINERS).
+lbz     r0,THREAD+THREAD_LOAD_FP(r7)
 
-Thanks,
+Caused by bc4f65e4cf9d6cc43e0e9ba0b8648cf9201cd55f
 
-Lukas
+Hmm, I'll see if something can be done, but that MSR_RI stuff in syscall
+exit makes things fairly difficult (and will reduce performance improvement
+of this patch anyway).
+
+I'm trying to work to a point where we have a soft-RI bit for these kinds of
+uses that would avoid all this complexity. Until then it may be best to
+just revert this patch.
+
+Thanks for the report
