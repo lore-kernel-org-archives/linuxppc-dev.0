@@ -1,21 +1,22 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.14])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQvWk2Rw4zDqjB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 20:53:05 +1000 (AEST)
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] block/ps3vram: Delete an error message for a failed memory
- allocation in ps3vram_cache_init()
-Message-ID: <e22ee16a-5f34-46bd-577f-9b7ca75e9035@users.sourceforge.net>
-Date: Mon, 7 Aug 2017 12:52:10 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQw6s0H5HzDqjB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 21:20:05 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: 4.13-rc3: Unrecoverable exception 4100
+In-Reply-To: <mvma83boe46.fsf@linux-m68k.org>
+References: <87vam3lhtn.fsf__12885.8019285419$1501844971$gmane$org@linux-m68k.org>
+ <87fud7ktqf.fsf__17563.3519575515$1501875675$gmane$org@linux-m68k.org>
+ <877eyjkt0u.fsf@linux-m68k.org> <20170805233917.72e49d2f@roar.ozlabs.ibm.com>
+ <877eyfpupf.fsf@concordia.ellerman.id.au> <mvma83boe46.fsf@linux-m68k.org>
+Date: Mon, 07 Aug 2017 21:20:03 +1000
+Message-ID: <87y3qvoc9o.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 7 Aug 2017 12:37:01 +0200
+Andreas Schwab <schwab@linux-m68k.org> writes:
 
-Omit an extra message for a memory allocation failure in this function.
+> On Aug 07 2017, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> Ah of course. Not sure why I haven't seen it in any of my testing :/
+>
+> It took me a whole gcc bootstrap to trigger it.
 
-This issue was detected by using the Coccinelle software.
+OK. I tried a few kernel builds, but I guess a GCC bootstrap takes a
+while longer ;)
 
-Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/block/ps3vram.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+The other thing is most of our systems now have 1T segments, which means
+you're less likely to take an SLB miss in the first place. Though we do
+have disable_1t_segments for turning them off, precisely to test this
+kind of code.
 
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index e0e81cacd781..ba97d037279e 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -409,10 +409,8 @@ static int ps3vram_cache_init(struct ps3_system_bus_device *dev)
- 	priv->cache.page_size = CACHE_PAGE_SIZE;
- 	priv->cache.tags = kzalloc(sizeof(struct ps3vram_tag) *
- 				   CACHE_PAGE_COUNT, GFP_KERNEL);
--	if (priv->cache.tags == NULL) {
--		dev_err(&dev->core, "Could not allocate cache tags\n");
-+	if (!priv->cache.tags)
- 		return -ENOMEM;
--	}
- 
- 	dev_info(&dev->core, "Created ram cache: %d entries, %d KiB each\n",
- 		CACHE_PAGE_COUNT, CACHE_PAGE_SIZE / 1024);
--- 
-2.13.4
+cheers
