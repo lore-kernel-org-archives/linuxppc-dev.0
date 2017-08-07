@@ -1,25 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQpln3qY2zDqkF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 17:18:13 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: gabriele.paoloni@huawei.com, airlied@linux.ie,
- Brian King <brking@linux.vnet.ibm.com>, will.deacon@arm.com,
- z.liuxinliang@hisilicon.com, bhelgaas@google.com, alex.williamson@redhat.com,
- catalin.marinas@arm.com, zourongrong@gmail.com, daniel.vetter@intel.com,
- Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH 3/3] powerpc: replace vga_fixup() with generic code
-In-Reply-To: <20170804102033.27731-4-dja@axtens.net>
-References: <20170804102033.27731-1-dja@axtens.net>
- <20170804102033.27731-4-dja@axtens.net>
-Date: Mon, 07 Aug 2017 17:18:12 +1000
-Message-ID: <87efsnq217.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xQq5R4sWKzDqnQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 17:33:30 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
+ Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Jike Song <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
+ Arvind Yadav <arvind.yadav.cs@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Kirti Wankhede <kwankhede@nvidia.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
+ Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org
+Subject: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
+Date: Mon,  7 Aug 2017 17:25:43 +1000
+Message-Id: <20170807072548.3023-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Axtens <dja@axtens.net> writes:
 
-> Currently, we do a PCI fixup to mark a default card so that Xorg
-> autoconfiguration works.
->
-> There is a new generic method to do this sort of vga fixup, and
-> it occurs by default.
->
-> Drop our old method.
->
-> This method is different:
->  - it will only mark a card as default if a driver is bound
->  - the marking will happen at late_initcall time, or even later
->    if a card is enabled later on (via an ENABLE hook). Currently
->    things are enabled in a FINAL hook.
->
-> This *does* change behaviour under some circumstances.
->
-> For example, pseries_le_defconfig doesn't have DRM drivers for
-> many of the qemu GPU models, including the 'standard' vga.
+This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
+http://www.spinics.net/lists/kvm/msg152232.html
 
-Should we enable them/it?
+This time it is using "caps" in IOMMU groups. The main question is if PCI
+bus flags or IOMMU domains are still better (and which one).
 
-cheers
+
+
+Here is some background:
+
+Current vfio-pci implementation disallows to mmap the page
+containing MSI-X table in case that users can write directly
+to MSI-X table and generate an incorrect MSIs.
+
+However, this will cause some performance issue when there
+are some critical device registers in the same page as the
+MSI-X table. We have to handle the mmio access to these
+registers in QEMU emulation rather than in guest.
+
+To solve this issue, this series allows to expose MSI-X table
+to userspace when hardware enables the capability of interrupt
+remapping which can ensure that a given PCI device can only
+shoot the MSIs assigned for it. And we introduce a new bus_flags
+PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
+for different archs.
+
+
+This is based on sha1
+26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
+
+Please comment. Thanks.
+
+Changelog:
+
+v5:
+* redid the whole thing via so-called IOMMU group capabilities
+
+v4:
+* rebased on recent upstream
+* got all 6 patches from v2 (v3 was missing some)
+
+
+
+
+Alexey Kardashevskiy (5):
+  iommu: Add capabilities to a group
+  iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
+    remapping
+  iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
+    enabled
+  powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
+  vfio-pci: Allow to expose MSI-X table to userspace when safe
+
+ include/linux/iommu.h            | 20 ++++++++++++++++++++
+ include/linux/vfio.h             |  1 +
+ arch/powerpc/kernel/iommu.c      |  1 +
+ drivers/iommu/amd_iommu.c        |  3 +++
+ drivers/iommu/intel-iommu.c      |  3 +++
+ drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
+ drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
+ drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
+ drivers/vfio/vfio.c              | 15 +++++++++++++++
+ 9 files changed, 99 insertions(+), 4 deletions(-)
+
+-- 
+2.11.0
