@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xQqCF4XY1zDqnn
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 17:38:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xQqCn23P6zDr57
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 17:39:00 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -19,10 +19,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
  Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
  linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v5 2/5] iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI
- controller enables IRQ remapping
-Date: Mon,  7 Aug 2017 17:25:45 +1000
-Message-Id: <20170807072548.3023-3-aik@ozlabs.ru>
+Subject: [RFC PATCH v5 4/5] powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
+Date: Mon,  7 Aug 2017 17:25:47 +1000
+Message-Id: <20170807072548.3023-5-aik@ozlabs.ru>
 In-Reply-To: <20170807072548.3023-1-aik@ozlabs.ru>
 References: <20170807072548.3023-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,45 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This sets IOMMU_GROUP_CAP_ISOLATE_MSIX to a group if MSI remapping is
-enabled on an IRQ domain; this is expected to set the capability
-on ARM.
+This sets IOMMU_GROUP_CAP_ISOLATE_MSIX to a group unconditionally as
+there is no IOMMU-capable hardware without such a feature.
+
+On IBM POWERPC (POWER8) [1], PCI host bridge maintains BFDN-to-PE
+translation (PE stands for "partitionable endpoint"), and PE index is used
+to look at Interrupt Vector Table (IVT) to identify the interrupt server.
+Without these translations in place, MSIX messages won't pass PHB.
+
+[1] 3.2.4. MSI Design
+http://openpowerfoundation.org/wp-content/uploads/resources/IODA2Spec/IODA2WGSpec-1.0.0-20160217.pdf
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/iommu/iommu.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/kernel/iommu.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index 6b2c34fe2c3d..e720e90fa93c 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -32,6 +32,7 @@
- #include <linux/pci.h>
- #include <linux/bitops.h>
- #include <linux/property.h>
-+#include <linux/irqdomain.h>
- #include <trace/events/iommu.h>
- 
- static struct kset *iommu_group_kset;
-@@ -1028,6 +1029,7 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
- 	const struct iommu_ops *ops = dev->bus->iommu_ops;
- 	struct iommu_group *group;
- 	int ret;
-+	struct irq_domain *d = dev_get_msi_domain(dev);
- 
- 	group = iommu_group_get(dev);
- 	if (group)
-@@ -1070,6 +1072,11 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
- 		return ERR_PTR(ret);
- 	}
- 
-+	if (d && irq_domain_is_msi(d) &&
-+			irq_domain_hierarchical_is_msi_remap(d))
-+		iommu_group_set_caps(group, 0,
-+				IOMMU_GROUP_CAP_ISOLATE_MSIX);
-+
- 	return group;
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 233ca3fe4754..dca0a83f1560 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -936,6 +936,7 @@ void iommu_register_group(struct iommu_table_group *table_group,
+ 	if (!name)
+ 		return;
+ 	iommu_group_set_name(grp, name);
++	iommu_group_set_caps(grp, 0, IOMMU_GROUP_CAP_ISOLATE_MSIX);
+ 	kfree(name);
  }
  
 -- 
