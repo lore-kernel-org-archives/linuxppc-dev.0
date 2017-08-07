@@ -2,8 +2,8 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xR8YD2BQ4zDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 06:40:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xR8YD2lWBzDqpK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 06:40:16 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -12,9 +12,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org
-Subject: [v6 13/15] mm: stop zeroing memory during allocation in vmemmap
-Date: Mon,  7 Aug 2017 16:38:47 -0400
-Message-Id: <1502138329-123460-14-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
+Date: Mon,  7 Aug 2017 16:38:45 -0400
+Message-Id: <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,62 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace allocators in sprase-vmemmap to use the non-zeroing version. So,
-we will get the performance improvement by zeroing the memory in parallel
-when struct pages are zeroed.
+To optimize the performance of struct page initialization,
+vmemmap_populate() will no longer zero memory.
+
+We must explicitly zero the memory that is allocated by vmemmap_populate()
+for kasan, as this memory does not go through struct page initialization
+path.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- mm/sparse-vmemmap.c | 6 +++---
- mm/sparse.c         | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index d40c721ab19f..3b646b5ce1b6 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -41,7 +41,7 @@ static void * __ref __earlyonly_bootmem_alloc(int node,
- 				unsigned long align,
- 				unsigned long goal)
- {
--	return memblock_virt_alloc_try_nid(size, align, goal,
-+	return memblock_virt_alloc_try_nid_raw(size, align, goal,
- 					    BOOTMEM_ALLOC_ACCESSIBLE, node);
+diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+index 81f03959a4ab..e78a9ecbb687 100644
+--- a/arch/arm64/mm/kasan_init.c
++++ b/arch/arm64/mm/kasan_init.c
+@@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
+ 		set_pgd(pgd_offset_k(start), __pgd(0));
  }
  
-@@ -56,11 +56,11 @@ void * __meminit vmemmap_alloc_block(unsigned long size, int node)
++/*
++ * Memory that was allocated by vmemmap_populate is not zeroed, so we must
++ * zero it here explicitly.
++ */
++static void
++zero_vmemmap_populated_memory(void)
++{
++	struct memblock_region *reg;
++	u64 start, end;
++
++	for_each_memblock(memory, reg) {
++		start = __phys_to_virt(reg->base);
++		end = __phys_to_virt(reg->base + reg->size);
++
++		if (start >= end)
++			break;
++
++		start = (u64)kasan_mem_to_shadow((void *)start);
++		end = (u64)kasan_mem_to_shadow((void *)end);
++
++		/* Round to the start end of the mapped pages */
++		start = round_down(start, SWAPPER_BLOCK_SIZE);
++		end = round_up(end, SWAPPER_BLOCK_SIZE);
++		memset((void *)start, 0, end - start);
++	}
++
++	start = (u64)kasan_mem_to_shadow(_text);
++	end = (u64)kasan_mem_to_shadow(_end);
++
++	/* Round to the start end of the mapped pages */
++	start = round_down(start, SWAPPER_BLOCK_SIZE);
++	end = round_up(end, SWAPPER_BLOCK_SIZE);
++	memset((void *)start, 0, end - start);
++}
++
+ void __init kasan_init(void)
+ {
+ 	u64 kimg_shadow_start, kimg_shadow_end;
+@@ -205,8 +240,15 @@ void __init kasan_init(void)
+ 			pfn_pte(sym_to_pfn(kasan_zero_page), PAGE_KERNEL_RO));
  
- 		if (node_state(node, N_HIGH_MEMORY))
- 			page = alloc_pages_node(
--				node, GFP_KERNEL | __GFP_ZERO | __GFP_RETRY_MAYFAIL,
-+				node, GFP_KERNEL | __GFP_RETRY_MAYFAIL,
- 				get_order(size));
- 		else
- 			page = alloc_pages(
--				GFP_KERNEL | __GFP_ZERO | __GFP_RETRY_MAYFAIL,
-+				GFP_KERNEL | __GFP_RETRY_MAYFAIL,
- 				get_order(size));
- 		if (page)
- 			return page_address(page);
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 7b4be3fd5cac..0e315766ad11 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -441,9 +441,9 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
- 	}
+ 	memset(kasan_zero_page, 0, PAGE_SIZE);
++
+ 	cpu_replace_ttbr1(lm_alias(swapper_pg_dir));
  
- 	size = PAGE_ALIGN(size);
--	map = memblock_virt_alloc_try_nid(size * map_count,
--					  PAGE_SIZE, __pa(MAX_DMA_ADDRESS),
--					  BOOTMEM_ALLOC_ACCESSIBLE, nodeid);
-+	map = memblock_virt_alloc_try_nid_raw(size * map_count,
-+					      PAGE_SIZE, __pa(MAX_DMA_ADDRESS),
-+					      BOOTMEM_ALLOC_ACCESSIBLE, nodeid);
- 	if (map) {
- 		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
- 			if (!present_section_nr(pnum))
++	/*
++	 * vmemmap_populate does not zero the memory, so we need to zero it
++	 * explicitly
++	 */
++	zero_vmemmap_populated_memory();
++
+ 	/* At this point kasan is fully initialized. Enable error messages */
+ 	init_task.kasan_depth = 0;
+ 	pr_info("KernelAddressSanitizer initialized\n");
 -- 
 2.14.0
