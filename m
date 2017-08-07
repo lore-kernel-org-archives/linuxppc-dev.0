@@ -3,16 +3,18 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xR7sm5PDyzDqp9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xR7sm5LyLzDqp8
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 06:09:32 +1000 (AEST)
-Message-Id: <1c2ef56f08fcfcf74aa281c33363197f8c01e5ab.1502135910.git.geoff@infradead.org>
+Message-Id: <f1d16f5ac3eb170493ca7835a7c39c1b4675a81f.1502135910.git.geoff@infradead.org>
 In-Reply-To: <cover.1502135910.git.geoff@infradead.org>
 References: <cover.1502135910.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 3/3] powerpc/ps3: Refresh ps3_defconfig
+Subject: [PATCH 2/3] block/ps3vram: Check return of ps3vram_cache_init
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org, Jim Paris <jim@jtan.com>,
+ Jens Axboe <axboe@kernel.dk>,
+ Markus Elfring <elfring@users.sourceforge.net>
 Date: Mon, 07 Aug 2017 20:09:20 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,30 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Cc: Markus Elfring <elfring@users.sourceforge.net>
+Cc: Jim Paris <jim@jtan.com>
+Cc: Jens Axboe <axboe@kernel.dk>
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/configs/ps3_defconfig | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/block/ps3vram.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
-index ee0ec5a682fc..378382683180 100644
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -5,7 +5,6 @@ CONFIG_SMP=y
- CONFIG_NR_CPUS=2
- CONFIG_SYSVIPC=y
- CONFIG_POSIX_MQUEUE=y
--CONFIG_FHANDLE=y
- CONFIG_HIGH_RES_TIMERS=y
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-@@ -94,7 +93,6 @@ CONFIG_USB_USBNET=m
- # CONFIG_USB_NET_CDC_SUBSET is not set
- # CONFIG_USB_NET_ZAURUS is not set
- CONFIG_INPUT_FF_MEMLESS=m
--# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
- CONFIG_INPUT_JOYDEV=m
- CONFIG_INPUT_EVDEV=m
- # CONFIG_INPUT_KEYBOARD is not set
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index ba97d037279e..6a55959cbf78 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -741,7 +741,11 @@ static int ps3vram_probe(struct ps3_system_bus_device *dev)
+ 		goto out_unmap_reports;
+ 	}
+ 
+-	ps3vram_cache_init(dev);
++	error = ps3vram_cache_init(dev);
++	if (error < 0) {
++		goto out_unmap_reports;
++	}
++
+ 	ps3vram_proc_init(dev);
+ 
+ 	queue = blk_alloc_queue(GFP_KERNEL);
 -- 
 2.11.0
