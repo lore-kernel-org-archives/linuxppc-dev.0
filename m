@@ -1,16 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQvGs1VG0zDqpM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 20:41:57 +1000 (AEST)
-In-Reply-To: <1500905415-32225-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/udbg: Reduce the footgun potential of
- EARLY_DEBUG_LPAR(_HVSI)
-Message-Id: <3xQvGr4cKrz9sR9@ozlabs.org>
-Date: Mon,  7 Aug 2017 20:41:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQvWk2Rw4zDqjB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 20:53:05 +1000 (AEST)
+To: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] block/ps3vram: Delete an error message for a failed memory
+ allocation in ps3vram_cache_init()
+Message-ID: <e22ee16a-5f34-46bd-577f-9b7ca75e9035@users.sourceforge.net>
+Date: Mon, 7 Aug 2017 12:52:10 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,33 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-07-24 at 14:10:15 UTC, Michael Ellerman wrote:
-> For debugging very early boot problems we have CONFIG_PPC_EARLY_DEBUG,
-> which allows configuring the kernel such that it unconditionally writes
-> to a particular type of console, regardless of whether that console
-> exists or not. This is useful sometimes when the kernel crashes before
-> it can even determine what platform it's on, and therefore what consoles
-> exist.
-> 
-> However if you boot a kernel built this way on a different platform, it
-> will generally crash because it writes to a console that doesn't exist.
-> 
-> A particularly nasty instance of this is if you enable the hypervisor
-> console early debug, and then boot that kernel on bare metal. The result
-> is that the kernel calls "the hypervisor" very early in boot, but the
-> kernel *is* the hypervisor, so we jump to the system call handler and
-> start executing all sorts of code that isn't ready to be run. This may
-> lead to a machine check or check stop depending on how lucky you are.
-> 
-> Luckily there is an easy way to avoid this particular case. We simply
-> read the MSR before installing the hooks, and if we see MSR_HV is set
-> then we are the hypervisor and we definitely should not use the
-> hypervisor console.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 7 Aug 2017 12:37:01 +0200
 
-Applied to powerpc next.
+Omit an extra message for a memory allocation failure in this function.
 
-https://git.kernel.org/powerpc/c/9227f0431435c9d664771b112c230e
+This issue was detected by using the Coccinelle software.
 
-cheers
+Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/block/ps3vram.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index e0e81cacd781..ba97d037279e 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -409,10 +409,8 @@ static int ps3vram_cache_init(struct ps3_system_bus_device *dev)
+ 	priv->cache.page_size = CACHE_PAGE_SIZE;
+ 	priv->cache.tags = kzalloc(sizeof(struct ps3vram_tag) *
+ 				   CACHE_PAGE_COUNT, GFP_KERNEL);
+-	if (priv->cache.tags == NULL) {
+-		dev_err(&dev->core, "Could not allocate cache tags\n");
++	if (!priv->cache.tags)
+ 		return -ENOMEM;
+-	}
+ 
+ 	dev_info(&dev->core, "Created ram cache: %d entries, %d KiB each\n",
+ 		CACHE_PAGE_COUNT, CACHE_PAGE_SIZE / 1024);
+-- 
+2.13.4
