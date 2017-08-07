@@ -1,6 +1,6 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xQq5R4sWKzDqnQ
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xQq5R4d74zDqkF
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 17:33:30 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
@@ -19,9 +19,12 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
  Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
  linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
-Date: Mon,  7 Aug 2017 17:25:43 +1000
-Message-Id: <20170807072548.3023-1-aik@ozlabs.ru>
+Subject: [RFC PATCH v5 3/5] iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
+ if IRQ remapping is enabled
+Date: Mon,  7 Aug 2017 17:25:46 +1000
+Message-Id: <20170807072548.3023-4-aik@ozlabs.ru>
+In-Reply-To: <20170807072548.3023-1-aik@ozlabs.ru>
+References: <20170807072548.3023-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,70 +34,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This sets IOMMU_GROUP_CAP_ISOLATE_MSIX to a group if IRQ remapping
+is enabled. For Intel, this checks disable_sourceid_checking in addition;
+AMD ignores the "nosid" kernel parameters.
 
-This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
-http://www.spinics.net/lists/kvm/msg152232.html
+Here is some background on how the isolation works:
 
-This time it is using "caps" in IOMMU groups. The main question is if PCI
-bus flags or IOMMU domains are still better (and which one).
+On Intel VT-d [1], there is an Interrupt Remapping Table, one entry per
+interrupt, has a source-id (i.e. BDFN) of allowed device.
 
+On AMD IOMMU [2], there is a Device Table, each entry is indexed by
+DevideID which is BDFN.
 
+[1] 9.10 Interrupt Remapping Table Entry (IRTE) for Remapped Interrupts
+https://www.intel.com/content/dam/www/public/us/en/documents/product-specifications/vt-directed-io-spec.pdf
 
-Here is some background:
+[2] "2.2 Data Structures" and "2.2.5 Interrupt Remapping Tables"
+https://support.amd.com/TechDocs/48882_IOMMU.pdf
 
-Current vfio-pci implementation disallows to mmap the page
-containing MSI-X table in case that users can write directly
-to MSI-X table and generate an incorrect MSIs.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ drivers/iommu/amd_iommu.c   | 3 +++
+ drivers/iommu/intel-iommu.c | 3 +++
+ 2 files changed, 6 insertions(+)
 
-However, this will cause some performance issue when there
-are some critical device registers in the same page as the
-MSI-X table. We have to handle the mmio access to these
-registers in QEMU emulation rather than in guest.
-
-To solve this issue, this series allows to expose MSI-X table
-to userspace when hardware enables the capability of interrupt
-remapping which can ensure that a given PCI device can only
-shoot the MSIs assigned for it. And we introduce a new bus_flags
-PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
-for different archs.
-
-
-This is based on sha1
-26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
-
-Please comment. Thanks.
-
-Changelog:
-
-v5:
-* redid the whole thing via so-called IOMMU group capabilities
-
-v4:
-* rebased on recent upstream
-* got all 6 patches from v2 (v3 was missing some)
-
-
-
-
-Alexey Kardashevskiy (5):
-  iommu: Add capabilities to a group
-  iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
-    remapping
-  iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
-    enabled
-  powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
-  vfio-pci: Allow to expose MSI-X table to userspace when safe
-
- include/linux/iommu.h            | 20 ++++++++++++++++++++
- include/linux/vfio.h             |  1 +
- arch/powerpc/kernel/iommu.c      |  1 +
- drivers/iommu/amd_iommu.c        |  3 +++
- drivers/iommu/intel-iommu.c      |  3 +++
- drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
- drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
- drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
- drivers/vfio/vfio.c              | 15 +++++++++++++++
- 9 files changed, 99 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
+index 688e77576e5a..d55fcbf3267e 100644
+--- a/drivers/iommu/amd_iommu.c
++++ b/drivers/iommu/amd_iommu.c
+@@ -470,6 +470,9 @@ static void init_iommu_group(struct device *dev)
+ 	if (IS_ERR(group))
+ 		return;
+ 
++	if (irq_remapping_enabled)
++		iommu_group_set_caps(group, 0, IOMMU_GROUP_CAP_ISOLATE_MSIX);
++
+ 	iommu_group_put(group);
+ }
+ 
+diff --git a/drivers/iommu/intel-iommu.c b/drivers/iommu/intel-iommu.c
+index b7e670a7c243..3896c2d44bfa 100644
+--- a/drivers/iommu/intel-iommu.c
++++ b/drivers/iommu/intel-iommu.c
+@@ -5233,6 +5233,9 @@ static int intel_iommu_add_device(struct device *dev)
+ 	if (IS_ERR(group))
+ 		return PTR_ERR(group);
+ 
++	if (irq_remapping_enabled && !disable_sourceid_checking)
++		iommu_group_set_caps(group, 0, IOMMU_GROUP_CAP_ISOLATE_MSIX);
++
+ 	iommu_group_put(group);
+ 	return 0;
+ }
 -- 
 2.11.0
