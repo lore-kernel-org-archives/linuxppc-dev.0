@@ -1,57 +1,42 @@
-Return-Path: <Wenyou.Yang@microchip.com>
-Received: from esa4.microchip.iphmx.com (esa4.microchip.iphmx.com
- [68.232.154.123])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQfVZ2hcnzDqZy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 11:06:14 +1000 (AEST)
-Subject: Re: [PATCH] mtd: nand: Rename nand.h into rawnand.h
-To: Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger
- <richard@nod.at>, <linux-mtd@lists.infradead.org>
-CC: David Woodhouse <dwmw2@infradead.org>, Brian Norris
- <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille
- Pitchen <cyrille.pitchen@wedev4u.fr>, Peter Pan <peterpandong@micron.com>,
- Jonathan Corbet <corbet@lwn.net>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman
- <khilman@kernel.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn
- <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Gregory Clement <gregory.clement@free-electrons.com>, Hartley Sweeten
- <hsweeten@visionengravers.com>, Alexander Sverdlin
- <alexander.sverdlin@gmail.com>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer
- <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Imre Kaloz
- <kaloz@openwrt.org>, Krzysztof Halasa <khalasa@piap.pl>, Eric Miao
- <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Aaro
- Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>, Alexander
- Clouter <alex@digriz.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik
- <robert.jarzmik@free.fr>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski
- <krzk@kernel.org>, Simtec Linux Team <linux@simtec.co.uk>, Steven Miao
- <realmz6@gmail.com>, Mikael Starvik <starvik@axis.com>, Jesper Nilsson
- <jesper.nilsson@axis.com>, Ralf Baechle <ralf@linux-mips.org>, Yoshinori Sato
- <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Wenyou Yang
- <wenyou.yang@atmel.com>, Josh Wu <rainyfeeling@outlook.com>, Kamal Dasu
- <kdasu.kdev@gmail.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Han
- Xu <han.xu@nxp.com>, Harvey Hunt <harveyhuntnexus@gmail.com>, Vladimir
- Zapolskiy <vz@mleia.com>, Sylvain Lemieux <slemieux.tyco@gmail.com>, Matthias
- Brugger <matthias.bgg@gmail.com>, Wan ZongShun <mcuos.com@gmail.com>, Neil
- Armstrong <narmstrong@baylibre.com>, Ezequiel Garcia
- <ezequiel.garcia@free-electrons.com>, Maxim Levitsky
- <maximlevitsky@gmail.com>, Marc Gonzalez <marc_gonzalez@sigmadesigns.com>,
- Stefan Agner <stefan@agner.ch>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- <linux-doc@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-omap@vger.kernel.org>, <linux-samsung-soc@vger.kernel.org>,
- <adi-buildroot-devel@lists.sourceforge.net>, <linux-cris-kernel@axis.com>,
- <linux-mips@linux-mips.org>, <linux-sh@vger.kernel.org>,
- <bcm-kernel-feedback-list@broadcom.com>,
- <linux-mediatek@lists.infradead.org>, <linux-oxnas@lists.tuxfamily.org>,
- <linuxppc-dev@lists.ozlabs.org>, <devel@driverdev.osuosl.org>
-References: <1501860550-16506-1-git-send-email-boris.brezillon@free-electrons.com>
- <1501860550-16506-2-git-send-email-boris.brezillon@free-electrons.com>
-From: "Yang, Wenyou" <Wenyou.Yang@Microchip.com>
-Message-ID: <fc6e4906-5d76-ab7f-f177-95d77492ba79@Microchip.com>
-Date: Mon, 7 Aug 2017 08:55:15 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQmCd4483zDqkM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 15:23:41 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v775JhZ4053245
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Aug 2017 01:23:38 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c65e9mwr1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 01:23:37 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 7 Aug 2017 01:23:36 -0400
+Date: Mon, 7 Aug 2017 10:53:31 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
+ stop4 cpuidle
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1500631040.git.ego@linux.vnet.ibm.com>
+ <57ed82bcd92cd4d0af7ae5113710d597a331c433.1500631040.git.ego@linux.vnet.ibm.com>
+ <87r2wvsgj1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1501860550-16506-2-git-send-email-boris.brezillon@free-electrons.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87r2wvsgj1.fsf@concordia.ellerman.id.au>
+Message-Id: <20170807052331.GA30140@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,101 +46,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Michael,
 
 
-On 2017/8/4 23:29, Boris Brezillon wrote:
-> We are planning to share more code between different NAND based
-> devices (SPI NAND, OneNAND and raw NANDs), but before doing that
-> we need to move the existing include/linux/mtd/nand.h file into
-> include/linux/mtd/rawnand.h so we can later create a nand.h header
-> containing all common structure and function prototypes.
->
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> Signed-off-by: Peter Pan <peterpandong@micron.com>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Sekhar Nori <nsekhar@ti.com>
-> Cc: Kevin Hilman <khilman@kernel.org>
-> Cc: Jason Cooper <jason@lakedaemon.net>
-> Cc: Andrew Lunn <andrew@lunn.ch>
-> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> Cc: Gregory Clement <gregory.clement@free-electrons.com>
-> Cc: Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Alexander Sverdlin <alexander.sverdlin@gmail.com>
-> Cc: Shawn Guo <shawnguo@kernel.org>
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> Cc: Imre Kaloz <kaloz@openwrt.org>
-> Cc: Krzysztof Halasa <khalasa@piap.pl>
-> Cc: Eric Miao <eric.y.miao@gmail.com>
-> Cc: Haojian Zhuang <haojian.zhuang@gmail.com>
-> Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Alexander Clouter <alex@digriz.org.uk>
-> Cc: Daniel Mack <daniel@zonque.org>
-> Cc: Robert Jarzmik <robert.jarzmik@free.fr>
-> Cc: Marek Vasut <marek.vasut@gmail.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: Simtec Linux Team <linux@simtec.co.uk>
-> Cc: Steven Miao <realmz6@gmail.com>
-> Cc: Mikael Starvik <starvik@axis.com>
-> Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: Wenyou Yang <wenyou.yang@atmel.com>
-> Cc: Josh Wu <rainyfeeling@outlook.com>
-> Cc: Kamal Dasu <kdasu.kdev@gmail.com>
-> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Cc: Han Xu <han.xu@nxp.com>
-> Cc: Harvey Hunt <harveyhuntnexus@gmail.com>
-> Cc: Vladimir Zapolskiy <vz@mleia.com>
-> Cc: Sylvain Lemieux <slemieux.tyco@gmail.com>
-> Cc: Matthias Brugger <matthias.bgg@gmail.com>
-> Cc: Wan ZongShun <mcuos.com@gmail.com>
-> Cc: Neil Armstrong <narmstrong@baylibre.com>
-> Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-> Cc: Maxim Levitsky <maximlevitsky@gmail.com>
-> Cc: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-> Cc: Stefan Agner <stefan@agner.ch>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Cc: linux-doc@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Cc: adi-buildroot-devel@lists.sourceforge.net
-> Cc: linux-cris-kernel@axis.com
-> Cc: linux-mips@linux-mips.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: bcm-kernel-feedback-list@broadcom.com
-> Cc: linux-mediatek@lists.infradead.org
-> Cc: linux-oxnas@lists.tuxfamily.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: devel@driverdev.osuosl.org
-> ---
-> Hi All,
->
-> Sorry for the huge Cc list, but I'd like to collect as much acks as
-> possible for this patch which is actually part of a bigger series [1].
->
-> Note that there's nothing complicated here, it's just a mechanical
-> s/nand\.h/rawnand\.h/ replacement, but it impacts several architectures,
-> the doc and staging directories.
->
-> Regards,
->
-> Boris
->
-> [1]https://lwn.net/Articles/723694/
-> ---
-> [...]
->   drivers/mtd/nand/atmel/nand-controller.c        | 2 +-
->   drivers/mtd/nand/atmel/pmecc.c                  | 2 +-
-For the Atmel drivers,
+On Tue, Aug 01, 2017 at 08:56:18PM +1000, Michael Ellerman wrote:
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+> >
+> > Subject: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for stop4 cpuidle
+> 
+> I know it's not a big deal, but can we agree on the subject format?
+> 
+>   powerpc/powernv: Save/Restore additional SPRs for stop4 cpuidle
 
-Acked-by: Wenyou Yang <wenyou.yang@microchip.com>
+Sure. I will repost with the updated subject.
 
-
-Best Regards,
-Wenyou Yang
+> 
+> cheers
+> 
+--
+Thanks and Regards
+gautham.
