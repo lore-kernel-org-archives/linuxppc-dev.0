@@ -1,42 +1,23 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQmCd4483zDqkM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 15:23:41 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v775JhZ4053245
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Aug 2017 01:23:38 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c65e9mwr1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 01:23:37 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 7 Aug 2017 01:23:36 -0400
-Date: Mon, 7 Aug 2017 10:53:31 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
- stop4 cpuidle
-Reply-To: ego@linux.vnet.ibm.com
-References: <cover.1500631040.git.ego@linux.vnet.ibm.com>
- <57ed82bcd92cd4d0af7ae5113710d597a331c433.1500631040.git.ego@linux.vnet.ibm.com>
- <87r2wvsgj1.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQmc86wfDzDqkM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 15:41:28 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Matt Brown <matthew.brown.dev@gmail.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3] powerpc/powernv: Use darn instr for random_seed on p9
+In-Reply-To: <CAPoR37Ykavb9_V2a9abJ9vTPMqXTMLMp4LxvRmCHiCKm51g5xw@mail.gmail.com>
+References: <20170804011218.10489-1-matthew.brown.dev@gmail.com>
+ <ff133efb-7cd5-1c50-ee71-e8bb941ea492@linux.vnet.ibm.com>
+ <CAPoR37Ykavb9_V2a9abJ9vTPMqXTMLMp4LxvRmCHiCKm51g5xw@mail.gmail.com>
+Date: Mon, 07 Aug 2017 15:41:25 +1000
+Message-ID: <87o9rsory2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87r2wvsgj1.fsf@concordia.ellerman.id.au>
-Message-Id: <20170807052331.GA30140@in.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,23 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Matt Brown <matthew.brown.dev@gmail.com> writes:
+> On Sat, Aug 5, 2017 at 3:06 AM, Tyrel Datwyler <tyreld@linux.vnet.ibm.com> wrote:
+>> On 08/03/2017 06:12 PM, Matt Brown wrote:
+>>> @@ -135,8 +152,9 @@ static __init int rng_create(struct device_node *dn)
+>>>
+>>>  static __init int rng_init(void)
+>>>  {
+>>> +     unsigned long darn_test;
+>>>       struct device_node *dn;
+>>> -     int rc;
+>>> +     int rc, i;
+>>>
+>>>       for_each_compatible_node(dn, NULL, "ibm,power-rng") {
+>>>               rc = rng_create(dn);
+>>> @@ -150,6 +168,21 @@ static __init int rng_init(void)
+>>>               of_platform_device_create(dn, NULL, NULL);
+>>>       }
+>>>
+>>> +     if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+>>> +             for (i = 0; i < 10; i++) {
+>>> +                     if (powernv_get_random_darn(&darn_test)) {
+>>> +                             ppc_md.get_random_seed =
+>>> +                                     powernv_get_random_darn;
+>>> +                             break;
+>>
+>> If you return directly here you can avoid the (i == 9) conditional every iteration of the
+>> loop by moving the pr_warn to just outside the loop.
+>
+> That's true, although it is very unlikely for the
+> powernv_get_random_darn to fail. So in practice we should never reach
+> the (i == 9) conditional.
+> The loop is more of a backup in the rare case that it does fail.
 
+All true, the runtime overhead is really not an issue. It's more that
+testing for loop almost-termination in the loop is a bit gross :)
 
-On Tue, Aug 01, 2017 at 08:56:18PM +1000, Michael Ellerman wrote:
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
-> >
-> > Subject: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for stop4 cpuidle
-> 
-> I know it's not a big deal, but can we agree on the subject format?
-> 
->   powerpc/powernv: Save/Restore additional SPRs for stop4 cpuidle
+I think the best solution is to just pull it out into a separate
+function, it also avoids adding sometimes unused variables to the outer
+function, eg:
 
-Sure. I will repost with the updated subject.
+static int initialise_darn(void)
+{
+	unsigned long val;
 
-> 
-> cheers
-> 
---
-Thanks and Regards
-gautham.
+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+		return -ENODEV;
+
+	for (i = 0; i < 10; i++) {
+		if (powernv_get_random_darn(&val)) {
+			ppc_md.get_random_seed = powernv_get_random_darn;
+			return 0;
+		}
+	}
+
+	return -EIO;
+}
+
+cheers
