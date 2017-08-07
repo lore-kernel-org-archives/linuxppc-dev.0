@@ -1,18 +1,27 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQqlm2c9czDqkF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 18:03:15 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id c65so8329568pfl.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 01:03:15 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/64e: Fix perf hardlockup detector build
-Date: Mon,  7 Aug 2017 18:02:57 +1000
-Message-Id: <20170807080257.13708-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQrGw33GyzDqkF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 18:26:48 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for
+ stop4 cpuidle
+In-Reply-To: <20170807052331.GA30140@in.ibm.com>
+References: <cover.1500631040.git.ego@linux.vnet.ibm.com>
+ <57ed82bcd92cd4d0af7ae5113710d597a331c433.1500631040.git.ego@linux.vnet.ibm.com>
+ <87r2wvsgj1.fsf@concordia.ellerman.id.au> <20170807052331.GA30140@in.ibm.com>
+Date: Mon, 07 Aug 2017 18:26:44 +1000
+Message-ID: <87bmnrpyuz.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,68 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a couple more bits of fallout when enabling the hardlockup
-detector for 64e.
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
+> On Tue, Aug 01, 2017 at 08:56:18PM +1000, Michael Ellerman wrote:
+>> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+>> >
+>> > Subject: [v3 PATCH 1/2] powernv/powerpc:Save/Restore additional SPRs for stop4 cpuidle
+>> 
+>> I know it's not a big deal, but can we agree on the subject format?
+>> 
+>>   powerpc/powernv: Save/Restore additional SPRs for stop4 cpuidle
+>
+> Sure. I will repost with the updated subject.
 
-It restores the required hw_nmi_get_sample_period() function for the
-perf watchdog, and restores disabling of the watchdog there. It also
-removes API definitions that are only defined for 64s.
+Sorry I had merged them, and fixed the subject up myself. But I didn't
+make that very clear in my mail.
 
-Fixes: 2104180a53 ("powerpc/64s: implement arch-specific hardlockup watchdog")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
+So I've merged v3.
 
-This patch should go on top of the previous:
-
-http://patchwork.ozlabs.org/patch/796202/
-
- arch/powerpc/include/asm/nmi.h |  3 +--
- arch/powerpc/kernel/setup_64.c | 21 +++++++++++++++++++++
- 2 files changed, 22 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
-index 6f8e79cd35d8..3760150a0ff0 100644
---- a/arch/powerpc/include/asm/nmi.h
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -1,9 +1,8 @@
- #ifndef _ASM_NMI_H
- #define _ASM_NMI_H
- 
--#ifdef CONFIG_HARDLOCKUP_DETECTOR
-+#ifdef CONFIG_PPC_WATCHDOG
- extern void arch_touch_nmi_watchdog(void);
--
- extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
- 					   bool exclude_self);
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index af23d4b576ec..5db2ddd8c31d 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -751,3 +751,24 @@ unsigned long memory_block_size_bytes(void)
- struct ppc_pci_io ppc_pci_io;
- EXPORT_SYMBOL(ppc_pci_io);
- #endif
-+
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR_PERF
-+u64 hw_nmi_get_sample_period(int watchdog_thresh)
-+{
-+	return ppc_proc_freq * watchdog_thresh;
-+}
-+
-+/*
-+ * The perf based hardlockup detector breaks PMU event based branches and is
-+ * likely to get false positives in KVM guests, so disable it by default.
-+ * Book3S has a soft-nmi version based on the decrementer interrupt so it does
-+ * not suffer from these problems.
-+ */
-+static int __init disable_hardlockup_detector(void)
-+{
-+	hardlockup_detector_disable();
-+
-+	return 0;
-+}
-+early_initcall(disable_hardlockup_detector);
-+#endif
--- 
-2.13.3
+cheers
