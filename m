@@ -2,8 +2,8 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xR8YF17D0zDqps
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 06:40:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xR8YF5NKszDqpP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 06:40:17 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -12,9 +12,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org
-Subject: [v6 10/15] x86/kasan: explicitly zero kasan shadow memory
-Date: Mon,  7 Aug 2017 16:38:44 -0400
-Message-Id: <1502138329-123460-11-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v6 04/15] mm: discard memblock data later
+Date: Mon,  7 Aug 2017 16:38:38 -0400
+Message-Id: <1502138329-123460-5-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,105 +26,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To optimize the performance of struct page initialization,
-vmemmap_populate() will no longer zero memory.
+There is existing use after free bug when deferred struct pages are
+enabled:
 
-We must explicitly zero the memory that is allocated by vmemmap_populate()
-for kasan, as this memory does not go through struct page initialization
-path.
+The memblock_add() allocates memory for the memory array if more than
+128 entries are needed.  See comment in e820__memblock_setup():
+
+  * The bootstrap memblock region count maximum is 128 entries
+  * (INIT_MEMBLOCK_REGIONS), but EFI might pass us more E820 entries
+  * than that - so allow memblock resizing.
+
+This memblock memory is freed here:
+        free_low_memory_core_early()
+
+We access the freed memblock.memory later in boot when deferred pages are
+initialized in this path:
+
+        deferred_init_memmap()
+                for_each_mem_pfn_range()
+                  __next_mem_pfn_range()
+                    type = &memblock.memory;
+
+One possible explanation for why this use-after-free hasn't been hit
+before is that the limit of INIT_MEMBLOCK_REGIONS has never been exceeded
+at least on systems where deferred struct pages were enabled.
+
+Another reason why we want this problem fixed in this patch series is,
+in the next patch, we will need to access memblock.reserved from
+deferred_init_memmap().
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- arch/x86/mm/kasan_init_64.c | 67 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ include/linux/memblock.h |  6 ++++--
+ mm/memblock.c            | 38 +++++++++++++++++---------------------
+ mm/nobootmem.c           | 16 ----------------
+ mm/page_alloc.c          |  4 ++++
+ 4 files changed, 25 insertions(+), 39 deletions(-)
 
-diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
-index 02c9d7553409..ec6b2272fd80 100644
---- a/arch/x86/mm/kasan_init_64.c
-+++ b/arch/x86/mm/kasan_init_64.c
-@@ -84,6 +84,66 @@ static struct notifier_block kasan_die_notifier = {
- };
+diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+index 77d427974f57..bae11c7e7bf3 100644
+--- a/include/linux/memblock.h
++++ b/include/linux/memblock.h
+@@ -61,6 +61,7 @@ extern int memblock_debug;
+ #ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
+ #define __init_memblock __meminit
+ #define __initdata_memblock __meminitdata
++void memblock_discard(void);
+ #else
+ #define __init_memblock
+ #define __initdata_memblock
+@@ -74,8 +75,6 @@ phys_addr_t memblock_find_in_range_node(phys_addr_t size, phys_addr_t align,
+ 					int nid, ulong flags);
+ phys_addr_t memblock_find_in_range(phys_addr_t start, phys_addr_t end,
+ 				   phys_addr_t size, phys_addr_t align);
+-phys_addr_t get_allocated_memblock_reserved_regions_info(phys_addr_t *addr);
+-phys_addr_t get_allocated_memblock_memory_regions_info(phys_addr_t *addr);
+ void memblock_allow_resize(void);
+ int memblock_add_node(phys_addr_t base, phys_addr_t size, int nid);
+ int memblock_add(phys_addr_t base, phys_addr_t size);
+@@ -110,6 +109,9 @@ void __next_mem_range_rev(u64 *idx, int nid, ulong flags,
+ void __next_reserved_mem_region(u64 *idx, phys_addr_t *out_start,
+ 				phys_addr_t *out_end);
+ 
++void __memblock_free_early(phys_addr_t base, phys_addr_t size);
++void __memblock_free_late(phys_addr_t base, phys_addr_t size);
++
+ /**
+  * for_each_mem_range - iterate through memblock areas from type_a and not
+  * included in type_b. Or just type_a if type_b is NULL.
+diff --git a/mm/memblock.c b/mm/memblock.c
+index 2cb25fe4452c..bf14aea6ab70 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -285,31 +285,27 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type, u
+ }
+ 
+ #ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
+-
+-phys_addr_t __init_memblock get_allocated_memblock_reserved_regions_info(
+-					phys_addr_t *addr)
+-{
+-	if (memblock.reserved.regions == memblock_reserved_init_regions)
+-		return 0;
+-
+-	*addr = __pa(memblock.reserved.regions);
+-
+-	return PAGE_ALIGN(sizeof(struct memblock_region) *
+-			  memblock.reserved.max);
+-}
+-
+-phys_addr_t __init_memblock get_allocated_memblock_memory_regions_info(
+-					phys_addr_t *addr)
++/**
++ * Discard memory and reserved arrays if they were allocated
++ */
++void __init memblock_discard(void)
+ {
+-	if (memblock.memory.regions == memblock_memory_init_regions)
+-		return 0;
++	phys_addr_t addr, size;
+ 
+-	*addr = __pa(memblock.memory.regions);
++	if (memblock.reserved.regions != memblock_reserved_init_regions) {
++		addr = __pa(memblock.reserved.regions);
++		size = PAGE_ALIGN(sizeof(struct memblock_region) *
++				  memblock.reserved.max);
++		__memblock_free_late(addr, size);
++	}
+ 
+-	return PAGE_ALIGN(sizeof(struct memblock_region) *
+-			  memblock.memory.max);
++	if (memblock.memory.regions == memblock_memory_init_regions) {
++		addr = __pa(memblock.memory.regions);
++		size = PAGE_ALIGN(sizeof(struct memblock_region) *
++				  memblock.memory.max);
++		__memblock_free_late(addr, size);
++	}
+ }
+-
  #endif
  
-+/*
-+ * x86 variant of vmemmap_populate() uses either PMD_SIZE pages or base pages
-+ * to map allocated memory.  This routine determines the page size for the given
-+ * address from vmemmap.
-+ */
-+static u64 get_vmemmap_pgsz(u64 addr)
-+{
-+	pgd_t *pgd;
-+	p4d_t *p4d;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+
-+	pgd = pgd_offset_k(addr);
-+	BUG_ON(pgd_none(*pgd) || pgd_large(*pgd));
-+
-+	p4d = p4d_offset(pgd, addr);
-+	BUG_ON(p4d_none(*p4d) || p4d_large(*p4d));
-+
-+	pud = pud_offset(p4d, addr);
-+	BUG_ON(pud_none(*pud) || pud_large(*pud));
-+
-+	pmd = pmd_offset(pud, addr);
-+	BUG_ON(pmd_none(*pmd));
-+
-+	if (pmd_large(*pmd))
-+		return PMD_SIZE;
-+	return PAGE_SIZE;
-+}
-+
-+/*
-+ * Memory that was allocated by vmemmap_populate is not zeroed, so we must
-+ * zero it here explicitly.
-+ */
-+static void
-+zero_vmemmap_populated_memory(void)
-+{
-+	u64 i, start, end;
-+
-+	for (i = 0; i < E820_MAX_ENTRIES && pfn_mapped[i].end; i++) {
-+		void *kaddr_start = pfn_to_kaddr(pfn_mapped[i].start);
-+		void *kaddr_end = pfn_to_kaddr(pfn_mapped[i].end);
-+
-+		start = (u64)kasan_mem_to_shadow(kaddr_start);
-+		end = (u64)kasan_mem_to_shadow(kaddr_end);
-+
-+		/* Round to the start end of the mapped pages */
-+		start = rounddown(start, get_vmemmap_pgsz(start));
-+		end = roundup(end, get_vmemmap_pgsz(start));
-+		memset((void *)start, 0, end - start);
-+	}
-+
-+	start = (u64)kasan_mem_to_shadow(_stext);
-+	end = (u64)kasan_mem_to_shadow(_end);
-+
-+	/* Round to the start end of the mapped pages */
-+	start = rounddown(start, get_vmemmap_pgsz(start));
-+	end = roundup(end, get_vmemmap_pgsz(start));
-+	memset((void *)start, 0, end - start);
-+}
-+
- void __init kasan_early_init(void)
- {
- 	int i;
-@@ -156,6 +216,13 @@ void __init kasan_init(void)
- 		pte_t pte = __pte(__pa(kasan_zero_page) | __PAGE_KERNEL_RO);
- 		set_pte(&kasan_zero_pte[i], pte);
- 	}
-+
-+	/*
-+	 * vmemmap_populate does not zero the memory, so we need to zero it
-+	 * explicitly
-+	 */
-+	zero_vmemmap_populated_memory();
-+
- 	/* Flush TLBs again to be sure that write protection applied. */
- 	__flush_tlb_all();
+ /**
+diff --git a/mm/nobootmem.c b/mm/nobootmem.c
+index 36454d0f96ee..3637809a18d0 100644
+--- a/mm/nobootmem.c
++++ b/mm/nobootmem.c
+@@ -146,22 +146,6 @@ static unsigned long __init free_low_memory_core_early(void)
+ 				NULL)
+ 		count += __free_memory_core(start, end);
  
+-#ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
+-	{
+-		phys_addr_t size;
+-
+-		/* Free memblock.reserved array if it was allocated */
+-		size = get_allocated_memblock_reserved_regions_info(&start);
+-		if (size)
+-			count += __free_memory_core(start, start + size);
+-
+-		/* Free memblock.memory array if it was allocated */
+-		size = get_allocated_memblock_memory_regions_info(&start);
+-		if (size)
+-			count += __free_memory_core(start, start + size);
+-	}
+-#endif
+-
+ 	return count;
+ }
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index fc32aa81f359..63d16c185736 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1584,6 +1584,10 @@ void __init page_alloc_init_late(void)
+ 	/* Reinit limits that are based on free pages after the kernel is up */
+ 	files_maxfiles_init();
+ #endif
++#ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
++	/* Discard memblock private memory */
++	memblock_discard();
++#endif
+ 
+ 	for_each_populated_zone(zone)
+ 		set_zone_contiguous(zone);
 -- 
 2.14.0
