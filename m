@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQvGm2bGXzDqnm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 20:41:52 +1000 (AEST)
-In-Reply-To: <20170719044946.22030-1-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQvGn4FstzDqp1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 20:41:53 +1000 (AEST)
+In-Reply-To: <20170720172606.3811-1-victora@linux.vnet.ibm.com>
+To: victora <victora@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [01/24] powerpc/mm: Move exception_enter/exit to a do_page_fault
- wrapper
-Message-Id: <3xQvGm0kQ5z9sR9@ozlabs.org>
-Date: Mon,  7 Aug 2017 20:41:51 +1000 (AEST)
+Cc: victora@br.ibm.com, mauricfo@linux.vnet.ibm.com, victora@linux.vnet.ibm.com
+Subject: Re: powerpc/kernel: Avoid preemption check during iommu_range_alloc
+Message-Id: <3xQvGn0rbmz9tWP@ozlabs.org>
+Date: Mon,  7 Aug 2017 20:41:52 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,13 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-07-19 at 04:49:23 UTC, Benjamin Herrenschmidt wrote:
-> This will allow simplifying the returns from do_page_fault
+On Thu, 2017-07-20 at 17:26:06 UTC, victora wrote:
+> Replaced __this_cpu_read function call by raw_cpu_read in
+> iommu_range_alloc function.
+> Preemption doesn't need to be disabled since any CPU can safely
+> use IOMMU pool.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Victor Aoqui <victora@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7afad422ac61067473d5f3d20bbd54
+https://git.kernel.org/powerpc/c/75f327c6b75715f3a090daeb33e050
 
 cheers
