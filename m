@@ -1,29 +1,26 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xQqCn23P6zDr57
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 17:39:00 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
- Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Jike Song <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
- Arvind Yadav <arvind.yadav.cs@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Woodhouse <dwmw2@infradead.org>,
- Kirti Wankhede <kwankhede@nvidia.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
- Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQqKV00GtzDqkF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 17:43:57 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id j68so8294372pfc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 00:43:57 -0700 (PDT)
+Date: Mon, 7 Aug 2017 17:43:29 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling
+ <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v5 4/5] powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
-Date: Mon,  7 Aug 2017 17:25:47 +1000
-Message-Id: <20170807072548.3023-5-aik@ozlabs.ru>
-In-Reply-To: <20170807072548.3023-1-aik@ozlabs.ru>
-References: <20170807072548.3023-1-aik@ozlabs.ru>
+Subject: Re: [v4 PATCH 0/2] powerpc/powernv: Enable stop4 via cpuidle
+Message-ID: <20170807174329.51dd531a@roar.ozlabs.ibm.com>
+In-Reply-To: <cover.1502084311.git.ego@linux.vnet.ibm.com>
+References: <cover.1502084311.git.ego@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This sets IOMMU_GROUP_CAP_ISOLATE_MSIX to a group unconditionally as
-there is no IOMMU-capable hardware without such a feature.
+On Mon,  7 Aug 2017 11:12:42 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-On IBM POWERPC (POWER8) [1], PCI host bridge maintains BFDN-to-PE
-translation (PE stands for "partitionable endpoint"), and PE index is used
-to look at Interrupt Vector Table (IVT) to identify the interrupt server.
-Without these translations in place, MSIX messages won't pass PHB.
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> Hi,
+> 
+> This is the fourth iteration of the patchset to enable exploitation of
+> stop4 idle state on POWER9 via cpuidle.
 
-[1] 3.2.4. MSI Design
-http://openpowerfoundation.org/wp-content/uploads/resources/IODA2Spec/IODA2WGSpec-1.0.0-20160217.pdf
+These look good to me, thanks. I think the SPR saving is moving in the
+right direction too. We should get this enabled stream as soon as possible.
+For both patches,
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/kernel/iommu.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 233ca3fe4754..dca0a83f1560 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -936,6 +936,7 @@ void iommu_register_group(struct iommu_table_group *table_group,
- 	if (!name)
- 		return;
- 	iommu_group_set_name(grp, name);
-+	iommu_group_set_caps(grp, 0, IOMMU_GROUP_CAP_ISOLATE_MSIX);
- 	kfree(name);
- }
- 
--- 
-2.11.0
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
