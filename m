@@ -2,7 +2,7 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xR8Y63mLFzDqp7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xR8Y65B16zDqp8
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 06:40:09 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
@@ -12,11 +12,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org
-Subject: [v6 12/15] mm: explicitly zero pagetable memory
-Date: Mon,  7 Aug 2017 16:38:46 -0400
-Message-Id: <1502138329-123460-13-git-send-email-pasha.tatashin@oracle.com>
-In-Reply-To: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+Subject: [v6 00/15] complete deferred page initialization
+Date: Mon,  7 Aug 2017 16:38:34 -0400
+Message-Id: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Soon vmemmap_alloc_block() will no longer zero the block, so zero memory
-at its call sites for everything except struct pages.  Struct page memory
-is zero'd by struct page initialization.
+Changelog:
+v6 - v4
+- Fixed ARM64 + kasan code, as reported by Ard Biesheuvel
+- Tested ARM64 code in qemu and found few more issues, that I fixed in this
+  iteration
+- Added page roundup/rounddown to x86 and arm zeroing routines to zero the
+  whole allocated range, instead of only provided address range.
+- Addressed SPARC related comment from Sam Ravnborg
+- Fixed section mismatch warnings related to memblock_discard().
 
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Reviewed-by: Bob Picco <bob.picco@oracle.com>
----
- mm/sparse-vmemmap.c | 4 ++++
- 1 file changed, 4 insertions(+)
+v5 - v4
+- Fixed build issues reported by kbuild on various configurations
 
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index c50b1a14d55e..d40c721ab19f 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -191,6 +191,7 @@ pmd_t * __meminit vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node)
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
-+		memset(p, 0, PAGE_SIZE);
- 		pmd_populate_kernel(&init_mm, pmd, p);
- 	}
- 	return pmd;
-@@ -203,6 +204,7 @@ pud_t * __meminit vmemmap_pud_populate(p4d_t *p4d, unsigned long addr, int node)
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
-+		memset(p, 0, PAGE_SIZE);
- 		pud_populate(&init_mm, pud, p);
- 	}
- 	return pud;
-@@ -215,6 +217,7 @@ p4d_t * __meminit vmemmap_p4d_populate(pgd_t *pgd, unsigned long addr, int node)
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
-+		memset(p, 0, PAGE_SIZE);
- 		p4d_populate(&init_mm, p4d, p);
- 	}
- 	return p4d;
-@@ -227,6 +230,7 @@ pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
- 		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
-+		memset(p, 0, PAGE_SIZE);
- 		pgd_populate(&init_mm, pgd, p);
- 	}
- 	return pgd;
+v4 - v3
+- Rewrote code to zero sturct pages in __init_single_page() as
+  suggested by Michal Hocko
+- Added code to handle issues related to accessing struct page
+  memory before they are initialized.
+
+v3 - v2
+- Addressed David Miller comments about one change per patch:
+    * Splited changes to platforms into 4 patches
+    * Made "do not zero vmemmap_buf" as a separate patch
+
+v2 - v1
+- Per request, added s390 to deferred "struct page" zeroing
+- Collected performance data on x86 which proofs the importance to
+  keep memset() as prefetch (see below).
+
+SMP machines can benefit from the DEFERRED_STRUCT_PAGE_INIT config option,
+which defers initializing struct pages until all cpus have been started so
+it can be done in parallel.
+
+However, this feature is sub-optimal, because the deferred page
+initialization code expects that the struct pages have already been zeroed,
+and the zeroing is done early in boot with a single thread only.  Also, we
+access that memory and set flags before struct pages are initialized. All
+of this is fixed in this patchset.
+
+In this work we do the following:
+- Never read access struct page until it was initialized
+- Never set any fields in struct pages before they are initialized
+- Zero struct page at the beginning of struct page initialization
+
+Performance improvements on x86 machine with 8 nodes:
+Intel(R) Xeon(R) CPU E7-8895 v3 @ 2.60GHz
+
+Single threaded struct page init: 7.6s/T improvement
+Deferred struct page init: 10.2s/T improvement
+
+Pavel Tatashin (15):
+  x86/mm: reserve only exiting low pages
+  x86/mm: setting fields in deferred pages
+  sparc64/mm: setting fields in deferred pages
+  mm: discard memblock data later
+  mm: don't accessed uninitialized struct pages
+  sparc64: simplify vmemmap_populate
+  mm: defining memblock_virt_alloc_try_nid_raw
+  mm: zero struct pages during initialization
+  sparc64: optimized struct page zeroing
+  x86/kasan: explicitly zero kasan shadow memory
+  arm64/kasan: explicitly zero kasan shadow memory
+  mm: explicitly zero pagetable memory
+  mm: stop zeroing memory during allocation in vmemmap
+  mm: optimize early system hash allocations
+  mm: debug for raw alloctor
+
+ arch/arm64/mm/kasan_init.c          |  42 ++++++++++
+ arch/sparc/include/asm/pgtable_64.h |  30 +++++++
+ arch/sparc/mm/init_64.c             |  31 +++-----
+ arch/x86/kernel/setup.c             |   5 +-
+ arch/x86/mm/init_64.c               |   9 ++-
+ arch/x86/mm/kasan_init_64.c         |  67 ++++++++++++++++
+ include/linux/bootmem.h             |  27 +++++++
+ include/linux/memblock.h            |   9 ++-
+ include/linux/mm.h                  |   9 +++
+ mm/memblock.c                       | 152 ++++++++++++++++++++++++++++--------
+ mm/nobootmem.c                      |  16 ----
+ mm/page_alloc.c                     |  31 +++++---
+ mm/sparse-vmemmap.c                 |  10 ++-
+ mm/sparse.c                         |   6 +-
+ 14 files changed, 356 insertions(+), 88 deletions(-)
+
 -- 
 2.14.0
