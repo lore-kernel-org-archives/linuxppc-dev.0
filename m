@@ -1,21 +1,22 @@
-Return-Path: <aryabinin@virtuozzo.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0117.outbound.protection.outlook.com [104.47.0.117])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <machek@atrey.karlin.mff.cuni.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+ [195.113.26.193])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQxjj4h8LzDqkF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 22:31:53 +1000 (AEST)
-Subject: Re: [RFC PATCH v1] powerpc/radix/kasan: KASAN support for Radix
-To: Balbir Singh <bsingharora@gmail.com>, mpe@ellerman.id.au
-Cc: kasan-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, glider@google.com, dvyukov@google.com
-References: <20170729140901.5887-1-bsingharora@gmail.com>
-From: Andrey Ryabinin <aryabinin@virtuozzo.com>
-Message-ID: <d00f364a-1683-7981-f912-7014d48dc9ad@virtuozzo.com>
-Date: Mon, 7 Aug 2017 15:30:55 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQzK42ypWzDqkF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 23:44:08 +1000 (AEST)
+Date: Mon, 7 Aug 2017 15:38:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Linux 4.13: Reported regressions as of Sunday, 2017-08-06
+Message-ID: <20170807133815.GA18965@atrey.karlin.mff.cuni.cz>
+References: <a6b015b1-a4da-c56b-89e4-629c873af4d0@leemhuis.info>
 MIME-Version: 1.0
-In-Reply-To: <20170729140901.5887-1-bsingharora@gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <a6b015b1-a4da-c56b-89e4-629c873af4d0@leemhuis.info>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2017 05:09 PM, Balbir Singh wrote:
-> This is the first attempt to implement KASAN for radix
-> on powerpc64. Aneesh Kumar implemented KASAN for hash 64
-> in limited mode (support only for kernel linear mapping)
-> (https://lwn.net/Articles/655642/)
-> 
-> This patch does the following:
-> 1. Defines its own zero_page,pte,pmd and pud because
-> the generic PTRS_PER_PTE, etc are variables on ppc64
-> book3s. Since the implementation is for radix, we use
-> the radix constants. This patch uses ARCH_DEFINES_KASAN_ZERO_PTE
-> for that purpose
-> 2. There is a new function check_return_arch_not_ready()
-> which is defined for ppc64/book3s/radix and overrides the
-> checks in check_memory_region_inline() until the arch has
-> done kasan setup is done for the architecture. This is needed
-> for powerpc. A lot of functions are called in real mode prior
-> to MMU paging init, we could fix some of this by using
-> the kasan_early_init() bits, but that just maps the zero
-> page and does not do useful reporting. For this RFC we
-> just delay the checks in mem* functions till kasan_init()
+Hi!
 
-check_return_arch_not_ready() works only for outline instrumentation
-and without stack instrumentation.
+> Hi! Find below my second regression report for Linux 4.13. It lists 10
+> regressions I'm currently aware of (albeit in one case it's not entirely
+> clear yet if it's a regression in 4.13). One regression got fixed since
+> last weeks report. You can also find the report at
+> http://bit.ly/lnxregrep413 where I try to update it every now and then.
+> 
+> As always: Are you aware of any other regressions? Then please let me
+> know. For details see http://bit.ly/lnxregtrackid And please tell me if
+> there is anything in the report that shouldn't be there.
 
-I guess this works for you only because CONFIG_KASAN_SHADOW_OFFSET is not defined.
-Therefore test for CFLAGS_KASAN can't pass, as '-fasan-shadow-offset= ' is invalid option,
-so CFLAGS_KASAN_MINIMAL is used instead. Or maybe you just used gcc 4.9.x which don't have
-full kasan support.
-This is also the reason why some tests doesn't pass for you.
+There's compile-time regression in et8ek8, with patch available.
 
-For stack instrumentation you'll have to implement kasan_early_init() and define CONFIG_KASAN_SHADOW_OFFSET.
+On 2017-06-08 02:01, Arnd Bergmann wrote:
+> This one got applied twice, causing a build error with clang:
+>
+> drivers/media/i2c/et8ek8/et8ek8_driver.c:1499:1: error: redefinition
+> of '__mod_of__et8ek8_of_table_device_table'
+>
+> Fixes: 9ae05fd1e791 ("[media] et8ek8: Export OF device ID as module
+aliases")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-> 3. This patch renames memcpy/memset/memmove to their
-> equivalent __memcpy/__memset/__memmove and for files
-> that skip KASAN via KASAN_SANITIZE, we use the __
-> variants. This is largely based on Aneesh's patchset
-> mentioned above
-> 4. In paca.c, some explicit memcpy inserted by the
-> compiler/linker is replaced via explicit memcpy
-> for structure content copying
-> 5. prom_init and a few other files have KASAN_SANITIZE
-> set to n, I think with the delayed checks (#2 above)
-> we might be able to work around many of them
-> 6. Resizing of virtual address space is done a little
-> aggressively the size is reduced to 1/4 and totally
-> to 1/2. For the RFC it was considered OK, since this
-> is just a debug tool for developers. This can be revisited
-> in the final implementation
-> 
-> Tests:
-> 
-> I ran test_kasan.ko and it reported errors for all test
-> cases except for
-> 
-> kasan test: memcg_accounted_kmem_cache allocate memcg accounted object
-> kasan test: kasan_stack_oob out-of-bounds on stack
-> kasan test: kasan_global_oob out-of-bounds global variable
-> kasan test: use_after_scope_test use-after-scope on int
-> kasan test: use_after_scope_test use-after-scope on array
-> 
-> Based on my understanding of the test, which is an expected
-> kasan bug report after each test starting with a "===" line.
-> 
-
-Right, with exception of memc_accounted_kmem_cache test.
-The rest are expected to produce the kasan report unless CLFAGS_KASAN_MINIMAL
-used.
-use_after_scope tests also require fresh gcc 7.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
