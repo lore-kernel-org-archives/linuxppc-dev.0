@@ -1,24 +1,20 @@
-Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xQgj76pW2zDqnQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 12:00:27 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id d136so6474291qkg.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Aug 2017 19:00:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xQjCp6x5WzDqkM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 13:08:38 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: Re: [PATCH] powerpc/64s: Add support for ASB_Notify on POWER9
+In-Reply-To: <1501858572-29641-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1501858572-29641-1-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Mon, 07 Aug 2017 13:08:37 +1000
+Message-ID: <87tw1koz0q.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <ff133efb-7cd5-1c50-ee71-e8bb941ea492@linux.vnet.ibm.com>
-References: <20170804011218.10489-1-matthew.brown.dev@gmail.com>
- <ff133efb-7cd5-1c50-ee71-e8bb941ea492@linux.vnet.ibm.com>
-From: Matt Brown <matthew.brown.dev@gmail.com>
-Date: Mon, 7 Aug 2017 12:00:24 +1000
-Message-ID: <CAPoR37Ykavb9_V2a9abJ9vTPMqXTMLMp4LxvRmCHiCKm51g5xw@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/powernv: Use darn instr for random_seed on p9
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,142 +24,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 5, 2017 at 3:06 AM, Tyrel Datwyler
-<tyreld@linux.vnet.ibm.com> wrote:
-> On 08/03/2017 06:12 PM, Matt Brown wrote:
->> This adds the powernv_get_random_darn function which utilises the darn
->> instruction, introduced in POWER9. The powernv_get_random_darn function
->> is used as the ppc_md.get_random_seed on P9.
->>
->> The DARN instruction can potentially throw an error, so we attempt to
->> register the powernv_get_random_darn function up to 10 times before
->> failing.
->>
->> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
->> ---
->> v3:
->>       - add repeat attempts to register the ppc_md.get_random_seed
->>       - fixed the PPC_DARN macro
->>       - move DARN_ERR definition
->>       - fixed commit message
->> v2:
->>       - remove repeat darn attempts
->>       - move hook to rng_init
->> ---
->>  arch/powerpc/include/asm/ppc-opcode.h |  4 ++++
->>  arch/powerpc/platforms/powernv/rng.c  | 35 ++++++++++++++++++++++++++++++++++-
->>  2 files changed, 38 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
->> index c4ced1d..aabd150 100644
->> --- a/arch/powerpc/include/asm/ppc-opcode.h
->> +++ b/arch/powerpc/include/asm/ppc-opcode.h
->> @@ -134,6 +134,7 @@
->>  #define PPC_INST_COPY                        0x7c00060c
->>  #define PPC_INST_COPY_FIRST          0x7c20060c
->>  #define PPC_INST_CP_ABORT            0x7c00068c
->> +#define PPC_INST_DARN                        0x7c0005e6
->>  #define PPC_INST_DCBA                        0x7c0005ec
->>  #define PPC_INST_DCBA_MASK           0xfc0007fe
->>  #define PPC_INST_DCBAL                       0x7c2005ec
->> @@ -325,6 +326,9 @@
->>
->>  /* Deal with instructions that older assemblers aren't aware of */
->>  #define      PPC_CP_ABORT            stringify_in_c(.long PPC_INST_CP_ABORT)
->> +#define PPC_DARN(t, l)               stringify_in_c(.long PPC_INST_DARN |  \
->> +                                             ___PPC_RT(t)       |  \
->> +                                             (((l) & 0x3) << 16))
->>  #define      PPC_DCBAL(a, b)         stringify_in_c(.long PPC_INST_DCBAL | \
->>                                       __PPC_RA(a) | __PPC_RB(b))
->>  #define      PPC_DCBZL(a, b)         stringify_in_c(.long PPC_INST_DCBZL | \
->> diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
->> index 5dcbdea..83b925c 100644
->> --- a/arch/powerpc/platforms/powernv/rng.c
->> +++ b/arch/powerpc/platforms/powernv/rng.c
->> @@ -16,11 +16,13 @@
->>  #include <linux/slab.h>
->>  #include <linux/smp.h>
->>  #include <asm/archrandom.h>
->> +#include <asm/cputable.h>
->>  #include <asm/io.h>
->>  #include <asm/prom.h>
->>  #include <asm/machdep.h>
->>  #include <asm/smp.h>
->>
->> +#define DARN_ERR 0xFFFFFFFFFFFFFFFFul
->>
->>  struct powernv_rng {
->>       void __iomem *regs;
->> @@ -67,6 +69,21 @@ int powernv_get_random_real_mode(unsigned long *v)
->>       return 1;
->>  }
->>
->> +int powernv_get_random_darn(unsigned long *v)
->> +{
->> +     unsigned long val;
->> +
->> +     /* Using DARN with L=1 - 64-bit conditioned random number */
->> +     asm volatile(PPC_DARN(%0, 1) : "=r"(val));
->> +
->> +     if (val == DARN_ERR)
->> +             return 0;
->> +
->> +     *v = val;
->> +
->> +     return 1;
->> +}
->> +
->>  int powernv_get_random_long(unsigned long *v)
->>  {
->>       struct powernv_rng *rng;
->> @@ -135,8 +152,9 @@ static __init int rng_create(struct device_node *dn)
->>
->>  static __init int rng_init(void)
->>  {
->> +     unsigned long darn_test;
->>       struct device_node *dn;
->> -     int rc;
->> +     int rc, i;
->>
->>       for_each_compatible_node(dn, NULL, "ibm,power-rng") {
->>               rc = rng_create(dn);
->> @@ -150,6 +168,21 @@ static __init int rng_init(void)
->>               of_platform_device_create(dn, NULL, NULL);
->>       }
->>
->> +     if (cpu_has_feature(CPU_FTR_ARCH_300)) {
->> +             for (i = 0; i < 10; i++) {
->> +                     if (powernv_get_random_darn(&darn_test)) {
->> +                             ppc_md.get_random_seed =
->> +                                     powernv_get_random_darn;
->> +                             break;
->
-> If you return directly here you can avoid the (i == 9) conditional every iteration of the
-> loop by moving the pr_warn to just outside the loop.
+Hi Christophe,
 
-That's true, although it is very unlikely for the
-powernv_get_random_darn to fail. So in practice we should never reach
-the (i == 9) conditional.
-The loop is more of a backup in the rare case that it does fail.
-
-Thanks,
-Matt
+I'm not across any of the details of this so hopefully most of these
+comments aren't too stupid :)
 
 
->
-> -Tyrel
->
->> +                     }
->> +
->> +                     if (i == 9) {
->> +                             pr_warn("Failed to use powernv_get_random_darn"\
->> +                                     "as get_random_seed");
->> +                     }
->> +             }
->> +     }
->> +
->>       return 0;
->>  }
->>  machine_subsys_initcall(powernv, rng_init);
->>
->
+Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+
+> The POWER9 core supports a new feature: ASB_Notify which requires the
+> support of the Special Purpose Register: TIDR.
+
+TIDR is defined in ISA 3.0B, which would be worth mentioning.
+
+Can you spell out what an ASB_Notifiy is.
+
+> The ASB_Notify command, generated by the AFU, will attempt to
+
+And please tell us what an AFU is, this patch and the code it touches
+are not obviously CAPI related, so the reader may not know what an AFU
+is, or the broader context.
+
+> wake-up the host thread identified by the particular LPID:PID:TID.
+
+Host implies it doesn't work for threads in guests, but then LPID
+implies it does.
+
+You say "PID" a few times here, but I think you always mean PIDR? It
+would be worth spelling that out, otherwise people will assume you're
+talking about the Linux "pid" (which is actually the thread group id
+(TGID)), which is not the same as PIDR.
+
+> The special register TIDR has to be updated to with the same value
+> present in the process element.
+
+What's a process element? :)
+
+> If the length of the register TIDR is 64bits, the CAPI Translation
+
+Is it 64-bits? The architecture says it is.
+
+> Service Layer core (XSL9) for Power9 systems limits the size (16bits) of
+> the Thread ID when it generates the ASB_Notify message adding
+> PID:LPID:TID information from the context.
+
+When you say "Thread ID" here I think you're referring to the "TID" in
+the "PID:LPID:TID" tuple, and you're saying it is limited to 16-bits, by
+the P9 CAPI hardware.
+
+> The content of the internal kernel Thread ID (32bits) can not therefore
+
+"as returned by sys_gettid()" would help to disambiguate here.
+
+> be used to fulfill the register TIDR.
+
+.. if you're intention is to use TIDR with CAPI.
+
+
+I'm assuming here that by "kernel Thread ID" you mean the kernel "pid"
+which is returned to userspace as the "TID" by gettid().
+
+That value is global in the system, so it's overkill for this usage, as
+all you need is a value unique to all threads that share a PIDR
+(== mm_struct).
+
+So it seems like we could also solve this by simply having a counter in
+the mm_struct (actually mm_context_t), and handing that out when
+userspace tries to read TIDR.
+
+Or we could do the same and have some other API for reading it, ie. not
+using mfspr() but an actual CAPI API. Or does userspace even need the
+raw value?
+
+Is there a usecase where multiple threads would assign themselves the
+same TIDR so that all (some? one?) of them is woken up by the
+ASB_notify? Or is that an error?
+
+> This patch allows to avoid this limitation by adding a new interface
+
+This doesn't avoid the 16-bit CAPI limitation AFAICS. What it does is
+let (force) userspace manage the values of TIDR, and therefore it can
+control them such that they fit in 16-bits.
+
+> for the user. The instructions mfspr/mtspr SPRN_TIDR are emulated,
+> save/restore SPRs (context switch) are updated and a new feature
+> (CPU_FTR_TIDR) is added to POWER9 system.
+
+I'm not clear if we need a CPU feature.
+
+TIDR is defined in ISA 3.0B, so anything that implements ISA 3.0B must
+implemented TIDR.
+
+It's not entirely clear if the kernel's CPU_FTR_ARCH_300 means 3.0 or
+3.0B, but given 3.0B is essentially "what got implemented in P9" it
+should probably be the latter.
+
+In which case CPU_FTR_TIDR == CPU_FTR_ARCH_300.
+
+I see you don't define it on P9 DD1, but that could be handled as a DD1
+workaround, rather than a separate feature bit for TIDR on non-DD1.
+
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index d02ad93..706f668 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -215,6 +215,7 @@ enum {
+>  #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
+>  #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
+>  #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
+> +#define CPU_FTR_TIDR			LONG_ASM_CONST(0x8000000000000000)
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -474,7 +475,8 @@ enum {
+>  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+>  	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+>  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
+> -	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
+> +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | \
+> +	    CPU_FTR_TIDR)
+>  #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
+>  			     (~CPU_FTR_SAO))
+>  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+> diff --git a/arch/powerpc/include/asm/emulated_ops.h b/arch/powerpc/include/asm/emulated_ops.h
+> index f00e10e..e83ad42 100644
+> --- a/arch/powerpc/include/asm/emulated_ops.h
+> +++ b/arch/powerpc/include/asm/emulated_ops.h
+> @@ -54,6 +54,8 @@ extern struct ppc_emulated {
+>  #ifdef CONFIG_PPC64
+>  	struct ppc_emulated_entry mfdscr;
+>  	struct ppc_emulated_entry mtdscr;
+> +	struct ppc_emulated_entry mftidr;
+> +	struct ppc_emulated_entry mttidr;
+>  	struct ppc_emulated_entry lq_stq;
+>  #endif
+>  } ppc_emulated;
+> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+> index fa9ebae..3ebc446 100644
+> --- a/arch/powerpc/include/asm/ppc-opcode.h
+> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> @@ -241,6 +241,10 @@
+>  #define PPC_INST_MFSPR_DSCR_USER_MASK	0xfc1ffffe
+>  #define PPC_INST_MTSPR_DSCR_USER	0x7c0303a6
+>  #define PPC_INST_MTSPR_DSCR_USER_MASK	0xfc1ffffe
+> +#define PPC_INST_MFSPR_TIDR		0x7d2452a6
+
+Are you sure that's right?
+
+The arch says TIDR is SPR 144 == 0x90.
+
+Binutils tells me that ^ is:
+
+mfspr   r9,324
+
+Which is 0x144 ?
+
+> +#define PPC_INST_MFSPR_TIDR_MASK	0xfd2ffffe
+> +#define PPC_INST_MTSPR_TIDR		0x7d2453a6
+> +#define PPC_INST_MTSPR_TIDR_MASK	0xfd2ffffe
+>  #define PPC_INST_MFVSRD			0x7c000066
+>  #define PPC_INST_MTVSRD			0x7c000166
+>  #define PPC_INST_SLBFEE			0x7c0007a7
+> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+> index fab7ff8..58cc212 100644
+> --- a/arch/powerpc/include/asm/processor.h
+> +++ b/arch/powerpc/include/asm/processor.h
+> @@ -329,6 +329,7 @@ struct thread_struct {
+>  	 */
+>  	int		dscr_inherit;
+>  	unsigned long	ppr;	/* used to save/restore SMT priority */
+> +	unsigned long	tidr;
+>  #endif
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>  	unsigned long	tar;
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 9f3e2c9..f06ea10 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1084,6 +1084,9 @@ static inline void save_sprs(struct thread_struct *t)
+>  	if (cpu_has_feature(CPU_FTR_DSCR))
+>  		t->dscr = mfspr(SPRN_DSCR);
+>  
+> +	if (cpu_has_feature(CPU_FTR_TIDR))
+> +		t->tidr = mfspr(SPRN_TIDR);
+
+You shouldn't ever need to save it here.
+
+It's only ever written by the emulated mtspr, so the kernel can save the
+new value when that happens, meaning we don't have to save it on every
+context switch of every process.
+
+In fact you already do that, so you can just drop this hunk.
+
+> @@ -1120,6 +1123,11 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+>  			mtspr(SPRN_DSCR, dscr);
+>  	}
+>  
+> +	if (cpu_has_feature(CPU_FTR_TIDR)) {
+> +		if (old_thread->tidr != new_thread->tidr)
+> +			mtspr(SPRN_TIDR, new_thread->tidr);
+> +	}
+
+We could also optimise this for the common case of threads that don't
+use TIDR at all.
+
+Can we declare TIDR = 0 invalid? If so that could become:
+
+		if (new_thread->tidr && (old_thread->tidr != new_thread->tidr))
+			mtspr(SPRN_TIDR, new_thread->tidr);
+
+
+Or if TIDR = 0 needs to be allowed, we could add flag to the thread struct
+saying whether TIDR has been read or written.
+
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index bfcfd9e..b829de7 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -1141,6 +1141,25 @@ static int emulate_instruction(struct pt_regs *regs)
+>  		mtspr(SPRN_DSCR, current->thread.dscr);
+>  		return 0;
+>  	}
+> +	/* Emulate the mfspr rD, TIDR. */
+> +	if (((instword & PPC_INST_MFSPR_TIDR_MASK) ==
+> +		PPC_INST_MFSPR_TIDR) &&
+> +			cpu_has_feature(CPU_FTR_TIDR)) {
+> +		PPC_WARN_EMULATED(mftidr, regs);
+> +		rd = (instword >> 21) & 0x1f;
+> +		regs->gpr[rd] = mfspr(SPRN_TIDR);
+> +		return 0;
+> +	}
+> +	/* Emulate the mtspr TIDR, rD. */
+> +	if (((instword & PPC_INST_MTSPR_TIDR_MASK) ==
+> +		PPC_INST_MTSPR_TIDR) &&
+> +			cpu_has_feature(CPU_FTR_TIDR)) {
+> +		PPC_WARN_EMULATED(mttidr, regs);
+> +		rd = (instword >> 21) & 0x1f;
+> +		current->thread.tidr = regs->gpr[rd];
+> +		mtspr(SPRN_TIDR, regs->gpr[rd]);
+> +		return 0;
+> +	}
+>  #endif
+
+
+
+cheers
