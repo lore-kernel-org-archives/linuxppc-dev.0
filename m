@@ -1,28 +1,31 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRD0H37ffzDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 09:15:27 +1000 (AEST)
+Received: from mail-qt0-f172.google.com (mail-qt0-f172.google.com
+ [209.85.216.172])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRCgt09hPzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 09:01:13 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id y192so1588552pgd.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 16:01:13 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: gabriele.paoloni@huawei.com, airlied@linux.ie,
- Brian King <brking@linux.vnet.ibm.com>, will.deacon@arm.com,
- z.liuxinliang@hisilicon.com, bhelgaas@google.com, alex.williamson@redhat.com,
- catalin.marinas@arm.com, zourongrong@gmail.com, daniel.vetter@intel.com
-Subject: Re: [PATCH 3/3] powerpc: replace vga_fixup() with generic code
-In-Reply-To: <87efsnq217.fsf@concordia.ellerman.id.au>
-References: <20170804102033.27731-1-dja@axtens.net>
- <20170804102033.27731-4-dja@axtens.net>
- <87efsnq217.fsf@concordia.ellerman.id.au>
-Date: Tue, 08 Aug 2017 09:01:06 +1000
-Message-ID: <87wp6fq8y5.fsf@linkitivity.dja.id.au>
+ by mail.kernel.org (Postfix) with ESMTPSA id DA90623695
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Aug 2017 23:15:24 +0000 (UTC)
+Received: by mail-qt0-f172.google.com with SMTP id v29so11251491qtv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 16:15:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170725214427.25768-1-robh@kernel.org>
+References: <20170725214427.25768-1-robh@kernel.org>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 7 Aug 2017 18:15:03 -0500
+Message-ID: <CAL_Jsq+tarBMM-frN+V9GYa-ZAzfJO4sv2owdOS3Ks+urned1g@mail.gmail.com>
+Subject: Re: [PATCH 0/4] Removing full paths from DT full_name
+To: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,54 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-
-> Daniel Axtens <dja@axtens.net> writes:
+On Tue, Jul 25, 2017 at 4:44 PM, Rob Herring <robh@kernel.org> wrote:
+> This series is the last steps to remove storing the full path for every
+> DT node. Instead, we can create full path strings dynamically as needed
+> with printf %pOF specifiers (commit ce4fecf1fe15). There are a number of
+> remaining direct users of full_name after this series. I don't believe
+> there should be any functional impact for those users with the change to
+> only the node name (+unit-address). The majority are for struct
+> resource.name. This should only affect /proc/iomem display.
 >
->> Currently, we do a PCI fixup to mark a default card so that Xorg
->> autoconfiguration works.
->>
->> There is a new generic method to do this sort of vga fixup, and
->> it occurs by default.
->>
->> Drop our old method.
->>
->> This method is different:
->>  - it will only mark a card as default if a driver is bound
->>  - the marking will happen at late_initcall time, or even later
->>    if a card is enabled later on (via an ENABLE hook). Currently
->>    things are enabled in a FINAL hook.
->>
->> This *does* change behaviour under some circumstances.
->>
->> For example, pseries_le_defconfig doesn't have DRM drivers for
->> many of the qemu GPU models, including the 'standard' vga.
+> Patches 1 and 2 can be applied now for 4.14. For patches 3 and 4, my
+> target is 4.15 after all the dependencies have been merged.
 >
-> Should we enable them/it?
+> PPC folks, Please test! The PPC parts are untested. A git branch with
+> all the dependencies is here[1].
 
-Hard to say.
+PPC folks, any chance to test this?
 
-The 'standard' vga module (bochs_drm) was blacklisted by Ubuntu -
-apparently at IBM's request [0] - some years back. Even if you
-un-blacklist it, I had trouble with getting it and the openfirmware
-framebuffer driver to play nicely together. It may not be worth the
-trouble for bochs_drm.
-
-There's a better case for including some of the more modern drivers -
-maybe QXL and virtio - but I wasn't able to test them: my particular
-build of qemu/TCG refused to start with them and I didn't feel like
-rebuilding/debugging qemu.
-
-It would also be legitmate to say that you're focussing on headless use
-with pseries_*defconfig and not include them: you need to bring in the
-DRM core if you want these drivers.
-
-HTH.
-
-Regards,
-Daniel
-
-[0] https://bugs.launchpad.net/ubuntu/+source/kmod/+bug/1378648
-
->
-> cheers
+Rob
