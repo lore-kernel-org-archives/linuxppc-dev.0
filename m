@@ -1,65 +1,28 @@
-Return-Path: <harveyhuntnexus@gmail.com>
-Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
- [IPv6:2a00:1450:400c:c0c::242])
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xR7cg6BSkzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 05:58:11 +1000 (AEST)
-Received: by mail-wr0-x242.google.com with SMTP id 12so999545wrb.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 12:58:11 -0700 (PDT)
-Subject: Re: [PATCH] mtd: nand: Rename nand.h into rawnand.h
-To: Boris Brezillon <boris.brezillon@free-electrons.com>,
- Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org
-Cc: David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- Marek Vasut <marek.vasut@gmail.com>,
- Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>,
- Peter Pan <peterpandong@micron.com>, Jonathan Corbet <corbet@lwn.net>,
- Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>,
- Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Gregory Clement <gregory.clement@free-electrons.com>,
- Hartley Sweeten <hsweeten@visionengravers.com>,
- Alexander Sverdlin <alexander.sverdlin@gmail.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>,
- Fabio Estevam <fabio.estevam@nxp.com>, Imre Kaloz <kaloz@openwrt.org>,
- Krzysztof Halasa <khalasa@piap.pl>, Eric Miao <eric.y.miao@gmail.com>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>,
- Alexander Clouter <alex@digriz.org.uk>, Daniel Mack <daniel@zonque.org>,
- Robert Jarzmik <robert.jarzmik@free.fr>, Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, Simtec Linux Team
- <linux@simtec.co.uk>, Steven Miao <realmz6@gmail.com>,
- Mikael Starvik <starvik@axis.com>, Jesper Nilsson <jesper.nilsson@axis.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- Wenyou Yang <wenyou.yang@atmel.com>, Josh Wu <rainyfeeling@outlook.com>,
- Kamal Dasu <kdasu.kdev@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, Han Xu <han.xu@nxp.com>,
- Vladimir Zapolskiy <vz@mleia.com>, Sylvain Lemieux
- <slemieux.tyco@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>, Neil Armstrong
- <narmstrong@baylibre.com>,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
- Maxim Levitsky <maximlevitsky@gmail.com>,
- Marc Gonzalez <marc_gonzalez@sigmadesigns.com>,
- Stefan Agner <stefan@agner.ch>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, linux-doc@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
- linux-samsung-soc@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
- linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- bcm-kernel-feedback-list@broadcom.com, linux-mediatek@lists.infradead.org,
- linux-oxnas@lists.tuxfamily.org, linuxppc-dev@lists.ozlabs.org,
- devel@driverdev.osuosl.org
-References: <1501860550-16506-1-git-send-email-boris.brezillon@free-electrons.com>
-From: Harvey Hunt <harveyhuntnexus@gmail.com>
-Message-ID: <8fa469f8-63d6-9305-db8e-88416ea2c6cc@gmail.com>
-Date: Mon, 7 Aug 2017 20:58:43 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRCgt09hPzDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 09:01:13 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id y192so1588552pgd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 16:01:13 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: gabriele.paoloni@huawei.com, airlied@linux.ie,
+ Brian King <brking@linux.vnet.ibm.com>, will.deacon@arm.com,
+ z.liuxinliang@hisilicon.com, bhelgaas@google.com, alex.williamson@redhat.com,
+ catalin.marinas@arm.com, zourongrong@gmail.com, daniel.vetter@intel.com
+Subject: Re: [PATCH 3/3] powerpc: replace vga_fixup() with generic code
+In-Reply-To: <87efsnq217.fsf@concordia.ellerman.id.au>
+References: <20170804102033.27731-1-dja@axtens.net>
+ <20170804102033.27731-4-dja@axtens.net>
+ <87efsnq217.fsf@concordia.ellerman.id.au>
+Date: Tue, 08 Aug 2017 09:01:06 +1000
+Message-ID: <87wp6fq8y5.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1501860550-16506-1-git-send-email-boris.brezillon@free-electrons.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -69,13 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Boris,
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-On 08/04/2017 04:29 PM, Boris Brezillon wrote:
-[...]
->   drivers/mtd/nand/jz4780_nand.c                  | 2 +-
-[...]
+> Daniel Axtens <dja@axtens.net> writes:
+>
+>> Currently, we do a PCI fixup to mark a default card so that Xorg
+>> autoconfiguration works.
+>>
+>> There is a new generic method to do this sort of vga fixup, and
+>> it occurs by default.
+>>
+>> Drop our old method.
+>>
+>> This method is different:
+>>  - it will only mark a card as default if a driver is bound
+>>  - the marking will happen at late_initcall time, or even later
+>>    if a card is enabled later on (via an ENABLE hook). Currently
+>>    things are enabled in a FINAL hook.
+>>
+>> This *does* change behaviour under some circumstances.
+>>
+>> For example, pseries_le_defconfig doesn't have DRM drivers for
+>> many of the qemu GPU models, including the 'standard' vga.
+>
+> Should we enable them/it?
 
-For JZ4780,
+Hard to say.
 
-Acked-By: Harvey Hunt <harveyhuntnexus@gmail.com>
+The 'standard' vga module (bochs_drm) was blacklisted by Ubuntu -
+apparently at IBM's request [0] - some years back. Even if you
+un-blacklist it, I had trouble with getting it and the openfirmware
+framebuffer driver to play nicely together. It may not be worth the
+trouble for bochs_drm.
+
+There's a better case for including some of the more modern drivers -
+maybe QXL and virtio - but I wasn't able to test them: my particular
+build of qemu/TCG refused to start with them and I didn't feel like
+rebuilding/debugging qemu.
+
+It would also be legitmate to say that you're focussing on headless use
+with pseries_*defconfig and not include them: you need to bring in the
+DRM core if you want these drivers.
+
+HTH.
+
+Regards,
+Daniel
+
+[0] https://bugs.launchpad.net/ubuntu/+source/kmod/+bug/1378648
+
+>
+> cheers
