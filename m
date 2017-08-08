@@ -1,23 +1,25 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRJ1R1zgSzDqkp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 12:16:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRJ6k3SSSzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 12:21:18 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Michael Ellerman <patch-notifications@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [01/24] powerpc/mm: Move exception_enter/exit to a do_page_fault
- wrapper
-In-Reply-To: <dca04b16-c97a-3d8c-a748-7945d0fb80dd@c-s.fr>
-References: <3xQvGm0kQ5z9sR9@ozlabs.org>
- <dca04b16-c97a-3d8c-a748-7945d0fb80dd@c-s.fr>
-Date: Tue, 08 Aug 2017 12:16:42 +1000
-Message-ID: <87poc6olbp.fsf@concordia.ellerman.id.au>
+To: Rob Herring <robh@kernel.org>,
+ "devicetree\@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/4] Removing full paths from DT full_name
+In-Reply-To: <CAL_Jsq+tarBMM-frN+V9GYa-ZAzfJO4sv2owdOS3Ks+urned1g@mail.gmail.com>
+References: <20170725214427.25768-1-robh@kernel.org>
+ <CAL_Jsq+tarBMM-frN+V9GYa-ZAzfJO4sv2owdOS3Ks+urned1g@mail.gmail.com>
+Date: Tue, 08 Aug 2017 12:21:18 +1000
+Message-ID: <87mv7aol41.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
+Rob Herring <robh@kernel.org> writes:
 
-> Le 07/08/2017 =C3=A0 12:41, Michael Ellerman a =C3=A9crit :
->> On Wed, 2017-07-19 at 04:49:23 UTC, Benjamin Herrenschmidt wrote:
->>> This will allow simplifying the returns from do_page_fault
->>>
->>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>=20
->> Series applied to powerpc next, thanks.
->>=20
->> https://git.kernel.org/powerpc/c/7afad422ac61067473d5f3d20bbd54
+> On Tue, Jul 25, 2017 at 4:44 PM, Rob Herring <robh@kernel.org> wrote:
+>> This series is the last steps to remove storing the full path for every
+>> DT node. Instead, we can create full path strings dynamically as needed
+>> with printf %pOF specifiers (commit ce4fecf1fe15). There are a number of
+>> remaining direct users of full_name after this series. I don't believe
+>> there should be any functional impact for those users with the change to
+>> only the node name (+unit-address). The majority are for struct
+>> resource.name. This should only affect /proc/iomem display.
+>>
+>> Patches 1 and 2 can be applied now for 4.14. For patches 3 and 4, my
+>> target is 4.15 after all the dependencies have been merged.
+>>
+>> PPC folks, Please test! The PPC parts are untested. A git branch with
+>> all the dependencies is here[1].
 >
-> Boot failure on the 8xx:
->
-> [    6.029556] Failed to execute /init (error -14)
-> [    6.034623] Starting init: /bin/sh exists but couldn't execute it=20
-> (error -14)
-> [    6.041489] Kernel panic - not syncing: No working init found.  Try=20
-> passing init=3D option to kernel. See Linux=20
-> Documentation/admin-guide/init.rst for guidance.
-> [    6.055518] CPU: 0 PID: 1 Comm: init Not tainted=20
-> 4.13.0-rc3-s3k-dev-00143-g7aa62e972a56 #56
-> [    6.063745] Call Trace:
-> [    6.066224] [c60f1ed0] [c001a624] panic+0x108/0x250 (unreliable)
-> [    6.072140] [c60f1f30] [c0002640] rootfs_mount+0x0/0x58
-> [    6.077311] [c60f1f40] [c000cb80] ret_from_kernel_thread+0x5c/0x64
-> [    6.083405] Rebooting in 180 seconds..
->
->
-> Bisected to c433ec0455f921eaf8dd0262a718ce6f8ad62ea2 ("powerpc/mm:=20
-> Pre-filter SRR1 bits before do_page_fault()")
+> PPC folks, any chance to test this?
 
-Sorry about that. I don't have a way to test 8xx.
+I got stuck on your %pOF conversion, which broke the vio.c code, because of:
 
-> Will see tomorrow what's wrong with that.
+-		if (!strcmp(parent_node->full_name, "/ibm,platform-facilities"))
++		if (!strcmp(parent_node->full_name, "ibm,platform-facilities"))
 
-Thanks.
+But full_name hasn't been changed yet.
+
+But patch 1 here should fix that, so I'll pull it all together and try
+and get it tested.
 
 cheers
