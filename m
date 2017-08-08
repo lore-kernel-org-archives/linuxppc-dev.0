@@ -2,22 +2,21 @@ Return-Path: <clg@kaod.org>
 Received: from 7.mo3.mail-out.ovh.net (7.mo3.mail-out.ovh.net [46.105.57.200])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRSvW3zjQzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 18:57:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRT2M1JBxzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 19:03:07 +1000 (AEST)
 Received: from player797.ha.ovh.net (b9.ovh.net [213.186.33.59])
- by mo3.mail-out.ovh.net (Postfix) with ESMTP id BDA4312AF0C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 10:57:08 +0200 (CEST)
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id 14E0612AF41
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 11:03:04 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH 06/10] powerpc/xive: introduce H_INT_ESB hcall
-Date: Tue,  8 Aug 2017 10:56:16 +0200
-Message-Id: <1502182579-990-7-git-send-email-clg@kaod.org>
-In-Reply-To: <1502182579-990-1-git-send-email-clg@kaod.org>
-References: <1502182579-990-1-git-send-email-clg@kaod.org>
+Subject: [PATCH 10/10] powerpc/xive: fix the size of the cpumask used in
+ xive_find_target_in_mask()
+Date: Tue,  8 Aug 2017 11:02:49 +0200
+Message-Id: <1502182969-3180-1-git-send-email-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,144 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The H_INT_ESB hcall() is used to issue a load or store to the ESB page
-instead of using the MMIO pages. This can be used as a workaround on
-some HW issues. The OS knows that this hcall should be used on an
-interrupt source when the ESB hcall flag is set to 1 in the hcall
-H_INT_GET_SOURCE_INFO.
+When called from xive_irq_startup(), the size of the cpumask can be
+larger than nr_cpu_ids. Most of time, its value is NR_CPUS (2048).
+This can result in such WARNINGs in xive_find_target_in_mask():
 
-To maintain the frontier between the xive frontend and backend, we
-introduce a new xive operation 'esb_rw' to be used in the routines
-doing memory accesses on the ESBs.
+   [    0.094480] WARNING: CPU: 10 PID: 1 at ../arch/powerpc/sysdev/xive/common.c:476 xive_find_target_in_mask+0x110/0x2f0
+   [    0.094486] Modules linked in:
+   [    0.094491] CPU: 10 PID: 1 Comm: swapper/0 Not tainted 4.12.0+ #3
+   [    0.094496] task: c0000003fae4f200 task.stack: c0000003fe108000
+   [    0.094501] NIP: c00000000008a310 LR: c00000000008a2e4 CTR: 000000000072ca34
+   [    0.094506] REGS: c0000003fe10b360 TRAP: 0700   Not tainted  (4.12.0+)
+   [    0.094510] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>
+   [    0.094515]   CR: 88000222  XER: 20040008
+   [    0.094521] CFAR: c00000000008a2cc SOFTE: 0
+   [    0.094521] GPR00: c00000000008a274 c0000003fe10b5e0 c000000001428f00 0000000000000010
+   [    0.094521] GPR04: 0000000000000010 0000000000000010 0000000000000010 0000000000000099
+   [    0.094521] GPR08: 0000000000000010 0000000000000001 ffffffffffff0000 0000000000000000
+   [    0.094521] GPR12: 0000000000000000 c00000000fff2d00 c00000000000d4d8 0000000000000000
+   [    0.094521] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+   [    0.094521] GPR20: 0000000000000000 0000000000000000 0000000000000000 c000000000b451e8
+   [    0.094521] GPR24: 00000000ffffffff c000000001462354 0000000000000800 00000000000007ff
+   [    0.094521] GPR28: c000000001462354 0000000000000010 c0000003f857e418 0000000000000010
+   [    0.094580] NIP [c00000000008a310] xive_find_target_in_mask+0x110/0x2f0
+   [    0.094585] LR [c00000000008a2e4] xive_find_target_in_mask+0xe4/0x2f0
+   [    0.094589] Call Trace:
+   [    0.094593] [c0000003fe10b5e0] [c00000000008a274] xive_find_target_in_mask+0x74/0x2f0 (unreliable)
+   [    0.094601] [c0000003fe10b690] [c00000000008abf0] xive_pick_irq_target.isra.1+0x200/0x230
+   [    0.094608] [c0000003fe10b830] [c00000000008b250] xive_irq_startup+0x60/0x180
+   [    0.094614] [c0000003fe10b8b0] [c0000000001608f0] irq_startup+0x70/0xd0
+   [    0.094620] [c0000003fe10b8f0] [c00000000015df7c] __setup_irq+0x7bc/0x880
+   [    0.094626] [c0000003fe10ba90] [c00000000015e30c] request_threaded_irq+0x14c/0x2c0
+   [    0.094632] [c0000003fe10baf0] [c0000000000aeb00] request_event_sources_irqs+0x100/0x180
+   [    0.094639] [c0000003fe10bc10] [c000000000e7d2f8] __machine_initcall_pseries_init_ras_IRQ+0x104/0x134
+   [    0.094646] [c0000003fe10bc40] [c00000000000cc88] do_one_initcall+0x68/0x1d0
+   [    0.094652] [c0000003fe10bd00] [c000000000e643c8] kernel_init_freeable+0x290/0x374
+   [    0.094658] [c0000003fe10bdc0] [c00000000000d4f4] kernel_init+0x24/0x170
+   [    0.094664] [c0000003fe10be30] [c00000000000b268] ret_from_kernel_thread+0x5c/0x74
+   [    0.094669] Instruction dump:
+   [    0.094673] 48586529 60000000 e8dc0002 393f0001 7f9b4800 7c7d07b4 7d3f07b4 409effcc
+   [    0.094682] 7f9d3000 7d26e850 79290fe0 69290001 <0b090000> 409c0194 3f620004 3b7b8ec8
+
+Fix this problem by using a minimum value.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/include/asm/xive.h          |  1 +
- arch/powerpc/sysdev/xive/common.c        | 10 ++++++--
- arch/powerpc/sysdev/xive/spapr.c         | 44 +++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/xive/xive-internal.h |  1 +
- 4 files changed, 53 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/xive/common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-index 6d097a18d3ae..c6a4eede7733 100644
---- a/arch/powerpc/include/asm/xive.h
-+++ b/arch/powerpc/include/asm/xive.h
-@@ -56,6 +56,7 @@ struct xive_irq_data {
- #define XIVE_IRQ_FLAG_SHIFT_BUG	0x04
- #define XIVE_IRQ_FLAG_MASK_FW	0x08
- #define XIVE_IRQ_FLAG_EOI_FW	0x10
-+#define XIVE_IRQ_FLAG_H_INT_ESB	0x20
- 
- #define XIVE_INVALID_CHIP_ID	-1
- 
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 22b6f8954083..891d24c82e03 100644
+index 536ee15f61fb..4dac7d560a42 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -198,7 +198,10 @@ static u8 xive_peek_esb(struct xive_irq_data *xd, u32 offset)
- 	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
- 		offset |= offset << 4;
+@@ -463,7 +463,7 @@ static int xive_find_target_in_mask(const struct cpumask *mask,
+ 	int cpu, first, num, i;
  
--	val = in_be64(xd->eoi_mmio + offset);
-+	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
-+		val = xive_ops->esb_rw(xd->hw_irq, offset, 0, 0);
-+	else
-+		val = in_be64(xd->eoi_mmio + offset);
+ 	/* Pick up a starting point CPU in the mask based on  fuzz */
+-	num = cpumask_weight(mask);
++	num = min_t(int, cpumask_weight(mask), nr_cpu_ids);
+ 	first = fuzz % num;
  
- 	return (u8)val;
- }
-@@ -209,7 +212,10 @@ static void xive_esb_write(struct xive_irq_data *xd, u32 offset, u64 data)
- 	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
- 		offset |= offset << 4;
- 
--	out_be64(xd->eoi_mmio + offset, data);
-+	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
-+		xive_ops->esb_rw(xd->hw_irq, offset, data, 1);
-+	else
-+		out_be64(xd->eoi_mmio + offset, data);
- }
- 
- #ifdef CONFIG_XMON
-diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-index 9a0fd9f7e38a..7fc40047c23d 100644
---- a/arch/powerpc/sysdev/xive/spapr.c
-+++ b/arch/powerpc/sysdev/xive/spapr.c
-@@ -224,7 +224,46 @@ static long plpar_int_sync(unsigned long flags)
- 	return 0;
- }
- 
--#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60)) /* TODO */
-+#define XIVE_ESB_FLAG_STORE (1ull << (63 - 63))
-+
-+static long plpar_int_esb(unsigned long flags,
-+			  unsigned long lisn,
-+			  unsigned long offset,
-+			  unsigned long in_data,
-+			  unsigned long *out_data)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
-+
-+	pr_devel("H_INT_ESB flags=%lx lisn=%lx offset=%lx in=%lx\n",
-+		flags,  lisn, offset, in_data);
-+
-+	rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset, in_data);
-+	if (rc) {
-+		pr_err("H_INT_ESB lisn=%ld offset=%ld returned %ld\n",
-+		       lisn, offset, rc);
-+		return  rc;
-+	}
-+
-+	*out_data = retbuf[0];
-+
-+	return 0;
-+}
-+
-+static u64 xive_spapr_esb_rw(u32 lisn, u32 offset, u64 data, bool write)
-+{
-+	unsigned long read_data;
-+	long rc;
-+
-+	rc = plpar_int_esb(write ? XIVE_ESB_FLAG_STORE : 0,
-+			   lisn, offset, data, &read_data);
-+	if (rc)
-+		return -1;
-+
-+	return write ? 0 : read_data;
-+}
-+
-+#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60))
- #define XIVE_SRC_LSI           (1ull << (63 - 61))
- #define XIVE_SRC_TRIGGER       (1ull << (63 - 62))
- #define XIVE_SRC_STORE_EOI     (1ull << (63 - 63))
-@@ -244,6 +283,8 @@ static int xive_spapr_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
- 	if (rc)
- 		return  -EINVAL;
- 
-+	if (flags & XIVE_SRC_H_INT_ESB)
-+		data->flags  |= XIVE_IRQ_FLAG_H_INT_ESB;
- 	if (flags & XIVE_SRC_STORE_EOI)
- 		data->flags  |= XIVE_IRQ_FLAG_STORE_EOI;
- 	if (flags & XIVE_SRC_LSI)
-@@ -483,6 +524,7 @@ static const struct xive_ops xive_spapr_ops = {
- 	.setup_cpu		= xive_spapr_setup_cpu,
- 	.teardown_cpu		= xive_spapr_teardown_cpu,
- 	.sync_source		= xive_spapr_sync_source,
-+	.esb_rw			= xive_spapr_esb_rw,
- #ifdef CONFIG_SMP
- 	.get_ipi		= xive_spapr_get_ipi,
- 	.put_ipi		= xive_spapr_put_ipi,
-diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
-index d07ef2d29caf..c99a100abf02 100644
---- a/arch/powerpc/sysdev/xive/xive-internal.h
-+++ b/arch/powerpc/sysdev/xive/xive-internal.h
-@@ -47,6 +47,7 @@ struct xive_ops {
- 	void	(*update_pending)(struct xive_cpu *xc);
- 	void	(*eoi)(u32 hw_irq);
- 	void	(*sync_source)(u32 hw_irq);
-+	u64	(*esb_rw)(u32 hw_irq, u32 offset, u64 data, bool write);
- #ifdef CONFIG_SMP
- 	int	(*get_ipi)(unsigned int cpu, struct xive_cpu *xc);
- 	void	(*put_ipi)(unsigned int cpu, struct xive_cpu *xc);
+ 	/* Locate it */
 -- 
 2.7.5
