@@ -1,19 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRWKS5TT6zDqpN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 20:46:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Breno Leitao <leitao@debian.org>
-Subject: Re: [PATCH] powerpc/xmon: Exclude all of xmon/ from ftrace
-In-Reply-To: <20170802182538.26526-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20170802182538.26526-1-naveen.n.rao@linux.vnet.ibm.com>
-Date: Tue, 08 Aug 2017 20:46:19 +1000
-Message-ID: <87wp6emj5w.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRWPM4gWLzDqjB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 20:49:43 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v78AnOHA079547
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Aug 2017 06:49:41 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c7a63web5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Aug 2017 06:49:40 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 8 Aug 2017 04:49:40 -0600
+Date: Tue, 8 Aug 2017 16:19:35 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 13/13] powerpc/64s: idle ESL=0 stop can avoid all
+ save/restore overhead
+Reply-To: ego@linux.vnet.ibm.com
+References: <20170805170241.22966-1-npiggin@gmail.com>
+ <20170805170241.22966-14-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170805170241.22966-14-npiggin@gmail.com>
+Message-Id: <20170808104935.GD9107@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +41,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+On Sun, Aug 06, 2017 at 03:02:41AM +1000, Nicholas Piggin wrote:
+> When stop is executed with EC=ESL=0, it appears to execute like a
+> normal instruction (resuming from NIP when woken by interrupt).
+> So all the save/restore handling can be avoided completely. In
+> particular NV GPRs do not have to be saved, and MSR does not have
+> to be switched back to kernel MSR.
+> 
+> So move the test for "lite" sleep states out to power9_idle_stop.
 
-> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-> index 0b2f771593eb..5f95af64cb8f 100644
-> --- a/arch/powerpc/xmon/Makefile
-> +++ b/arch/powerpc/xmon/Makefile
-> @@ -7,6 +7,19 @@ UBSAN_SANITIZE := n
->  
->  ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
->  
-> +ifdef CONFIG_FUNCTION_TRACER
-> +CFLAGS_REMOVE_xmon.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> +CFLAGS_REMOVE_nonstdio.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> +ifdef CONFIG_XMON_DISASSEMBLY
-> +CFLAGS_REMOVE_ppc-dis.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> +CFLAGS_REMOVE_ppc-opc.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> +ifdef CONFIG_SPU_BASE
-> +CFLAGS_REMOVE_spu-dis.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> +CFLAGS_REMOVE_spu-opc.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> +endif
-> +endif
-> +endif
+Nice optimization!
 
-Urk.
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-We want to disable it for everything in the directory, so can you do
-something like:
-
-  ORIG_CFLAGS := $(KBUILD_CFLAGS)
-  KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
-
-cheers
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kernel/idle_book3s.S | 38 +++++++++++++-------------------------
+>  1 file changed, 13 insertions(+), 25 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 8ac366a51bb5..9eb47c99dc39 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -251,31 +251,8 @@ enter_winkle:
+>  /*
+>   * r3 - PSSCR value corresponding to the requested stop state.
+>   */
+> -power_enter_stop:
+> -/*
+> - * Check if we are executing the lite variant with ESL=EC=0
+> - */
+> -	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
+> +power_enter_stop_esl:
+>  	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
+> -	bne	 .Lhandle_esl_ec_set
+> -	PPC_STOP
+> -	li	r3,0  /* Since we didn't lose state, return 0 */
+> -
+> -	/*
+> -	 * pnv_wakeup_noloss() expects r12 to contain the SRR1 value so
+> -	 * it can determine if the wakeup reason is an HMI in
+> -	 * CHECK_HMI_INTERRUPT.
+> -	 *
+> -	 * However, when we wakeup with ESL=0, SRR1 will not contain the wakeup
+> -	 * reason, so there is no point setting r12 to SRR1.
+> -	 *
+> -	 * Further, we clear r12 here, so that we don't accidentally enter the
+> -	 * HMI in pnv_wakeup_noloss() if the value of r12[42:45] == WAKE_HMI.
+> -	 */
+> -	li	r12, 0
+> -	b 	pnv_wakeup_noloss
+> -
+> -.Lhandle_esl_ec_set:
+>  	/*
+>  	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
+>  	 * state-loss idle. Saving and restoring MMCR0 over idle is a
+> @@ -348,9 +325,20 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+>   * r3 contains desired PSSCR register value.
+>   */
+>  _GLOBAL(power9_idle_stop)
+> +	/*
+> +	 * Check if we are executing the lite variant with ESL=EC=0
+> +	 * This case resumes execution after the stop instruction without
+> +	 * losing any state, so nothing has to be saved.
+> +	 */
+> +	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
+> +	bne	1f
+> +	PPC_STOP
+> +	li	r3,0  /* Since we didn't lose state, return 0 */
+> +	blr
+> +1:	/* state-loss idle */
+>  	std	r3, PACA_REQ_PSSCR(r13)
+>  	mtspr 	SPRN_PSSCR,r3
+> -	LOAD_REG_ADDR(r4,power_enter_stop)
+> +	LOAD_REG_ADDR(r4,power_enter_stop_esl)
+>  	b	pnv_powersave_common
+>  	/* No return */
+> 
+> -- 
+> 2.11.0
+> 
