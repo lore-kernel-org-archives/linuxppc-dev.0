@@ -1,20 +1,26 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXxQ4fcRzDqp9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:59:06 +1000 (AEST)
-Message-Id: <66f1ce3afcc79a8828ada3cebec8f6278b874ab2.1502191399.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1502191399.git.christophe.leroy@c-s.fr>
-References: <cover.1502191399.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 12/12] powerpc/8xx: Remove cpu dependent macro instructions
- from head_8xx
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  8 Aug 2017 13:59:02 +0200 (CEST)
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xRYdx1HPyzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 22:30:44 +1000 (AEST)
+Date: Tue, 8 Aug 2017 13:30:43 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org,
+ catalin.marinas@arm.com, sam@ravnborg.org
+Subject: Re: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
+Message-ID: <20170808123042.GG13355@arm.com>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
+ <20170808090743.GA12887@arm.com>
+ <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-head_8xx is dedicated to 8xx so no need to use macros that
-depends on the CPU
+On Tue, Aug 08, 2017 at 07:49:22AM -0400, Pasha Tatashin wrote:
+> Hi Will,
+> 
+> Thank you for looking at this change. What you described was in my previous
+> iterations of this project.
+> 
+> See for example here: https://lkml.org/lkml/2017/5/5/369
+> 
+> I was asked to remove that flag, and only zero memory in place when needed.
+> Overall the current approach is better everywhere else in the kernel, but it
+> adds a little extra code to kasan initialization.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+Damn, I actually prefer the flag :)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index a1c2a2cfec7e..471936704261 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -123,7 +123,6 @@ turn_on_mmu:
- 	lis	r0,start_here@h
- 	ori	r0,r0,start_here@l
- 	mtspr	SPRN_SRR0,r0
--	SYNC
- 	rfi				/* enables MMU */
- 
- /*
-@@ -170,7 +169,7 @@ turn_on_mmu:
- 	stw	r1,0(r11);	\
- 	tovirt(r1,r11);			/* set new kernel sp */	\
- 	li	r10,MSR_KERNEL & ~(MSR_IR|MSR_DR); /* can take exceptions */ \
--	MTMSRD(r10);			/* (except for mach check in rtas) */ \
-+	mtmsr	r10;		\
- 	stw	r0,GPR0(r11);	\
- 	SAVE_4GPRS(3, r11);	\
- 	SAVE_2GPRS(7, r11)
-@@ -915,10 +914,8 @@ start_here:
- 	rfi
- /* Load up the kernel context */
- 2:
--	SYNC			/* Force all PTE updates to finish */
- 	tlbia			/* Clear all TLB entries */
- 	sync			/* wait for tlbia/tlbie to finish */
--	TLBSYNC			/* ... on all CPUs */
- 
- 	/* set up the PTE pointers for the Abatron bdiGDB.
- 	*/
--- 
-2.13.3
+But actually, if you look at our implementation of vmemmap_populate, then we
+have our own version of vmemmap_populate_basepages that terminates at the
+pmd level anyway if ARM64_SWAPPER_USES_SECTION_MAPS. If there's resistance
+to do this in the core code, then I'd be inclined to replace our
+vmemmap_populate implementation in the arm64 code with a single version that
+can terminate at either the PMD or the PTE level, and do zeroing if
+required. We're already special-casing it, so we don't really lose anything
+imo.
+
+Will
