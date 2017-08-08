@@ -1,41 +1,41 @@
 Return-Path: <srs0=ev05=7k=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmv3s3ZzDqqX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:43 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmv2fYGz8vqD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:43 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmw1CStzDqrC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:44 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmw08Qhz8tnp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:44 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xRqmt5Fzdz9tWq
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:42 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v78N4CcB111364
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:39 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c7kkg8bft-1
+ by ozlabs.org (Postfix) with ESMTPS id 3xRqmv30KPz9tWp
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:43 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v78N6dO8068990
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:41 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c7jrecam2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:39 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:41 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 8 Aug 2017 19:07:38 -0400
+ Tue, 8 Aug 2017 19:07:40 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
  oohall@gmail.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v6 13/17] powerpc/vas: Define copy/paste interfaces
-Date: Tue,  8 Aug 2017 16:06:58 -0700
+Subject: [PATCH v6 14/17] powerpc: Add support for setting SPRN_TIDR
+Date: Tue,  8 Aug 2017 16:06:59 -0700
 In-Reply-To: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1502233622-9330-14-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1502233622-9330-15-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,234 +45,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define interfaces (wrappers) to the 'copy' and 'paste' instructions
-(which are new in PowerISA 3.0). These are intended to be used to
-by NX driver(s) to submit Coprocessor Request Blocks (CRBs) to the
-NX hardware engines.
+We need the SPRN_TIDR to bet set for use with fast thread-wakeup
+(core-to-core wakeup).  Each thread in a process needs to have a
+unique id within the process but as explained below, for now, we
+assign globally unique thread ids to all threads in the system.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-
 ---
-Changelog[v4]
-	- Export symbols
-Changelog[v3]
-	- Map raw CR value from paste instruction into an error code.
----
- MAINTAINERS                                 |  1 +
- arch/powerpc/include/asm/vas.h              | 13 +++++
- arch/powerpc/platforms/powernv/copy-paste.h | 74 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/vas-window.c | 52 ++++++++++++++++++++
- arch/powerpc/platforms/powernv/vas.h        | 15 ++++++
- 5 files changed, 155 insertions(+)
- create mode 100644 arch/powerpc/platforms/powernv/copy-paste.h
+ arch/powerpc/include/asm/processor.h |  4 ++
+ arch/powerpc/kernel/process.c        | 74 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index edc58c9..c3f156c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6430,6 +6430,7 @@ M:	Sukadev Bhattiprolu
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Supported
- F:	arch/powerpc/platforms/powernv/vas*
-+F:	arch/powerpc/platforms/powernv/copy-paste.h
- F:	arch/powerpc/include/asm/vas.h
- F:	arch/powerpc/include/uapi/asm/vas.h
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index fab7ff8..bf6ba63 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -232,6 +232,10 @@ struct debug_reg {
+ struct thread_struct {
+ 	unsigned long	ksp;		/* Kernel stack pointer */
  
-diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index 3fc6435..f9779c4 100644
---- a/arch/powerpc/include/asm/vas.h
-+++ b/arch/powerpc/include/asm/vas.h
-@@ -140,4 +140,17 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
-  */
- int vas_win_close(struct vas_window *win);
++#ifdef CONFIG_PPC_VAS
++	unsigned long	tidr;
++#endif
++
+ #ifdef CONFIG_PPC64
+ 	unsigned long	ksp_vsid;
+ #endif
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 9f3e2c9..6123859 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1213,6 +1213,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 		hard_irq_disable();
+ 	}
  
-+/*
-+ * Copy the co-processor request block (CRB) @crb into the local L2 cache.
-+ * For now, @offset must be 0 and @first must be true.
-+ */
-+extern int vas_copy_crb(void *crb, int offset, bool first);
-+
-+/*
-+ * Paste a previously copied CRB (see vas_copy_crb()) from the L2 cache to
-+ * the hardware address associated with the window @win. For now, @off must
-+ * 0 and @last must be true. @re is expected/assumed to be true for NX windows.
-+ */
-+extern int vas_paste_crb(struct vas_window *win, int off, bool last, bool re);
-+
- #endif /* _MISC_VAS_H */
-diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
-new file mode 100644
-index 0000000..7783bb8
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/copy-paste.h
-@@ -0,0 +1,74 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+/*
-+ * Macros taken from tools/testing/selftests/powerpc/context_switch/cp_abort.c
-+ */
-+#define PASTE(RA, RB, L, RC) \
-+	.long (0x7c00070c | (RA) << (31-15) | (RB) << (31-20) \
-+			  | (L) << (31-10) | (RC) << (31-31))
-+
-+#define COPY(RA, RB, L) \
-+	.long (0x7c00060c | (RA) << (31-15) | (RB) << (31-20) \
-+			  | (L) << (31-10))
-+
-+#define CR0_FXM		"0x80"
-+#define CR0_SHIFT	28
-+#define CR0_MASK	0xF
-+/*
-+ * Copy/paste instructions:
-+ *
-+ *	copy RA,RB,L
-+ *		Copy contents of address (RA) + effective_address(RB)
-+ *		to internal copy-buffer.
-+ *
-+ *		L == 1 indicates this is the first copy.
-+ *
-+ *		L == 0 indicates its a continuation of a prior first copy.
-+ *
-+ *	paste RA,RB,L
-+ *		Paste contents of internal copy-buffer to the address
-+ *		(RA) + effective_address(RB)
-+ *
-+ *		L == 0 indicates its a continuation of a prior paste. i.e.
-+ *		don't wait for the completion or update status.
-+ *
-+ *		L == 1 indicates this is the last paste in the group (i.e.
-+ *		wait for the group to complete and update status in CR0).
-+ *
-+ *	For Power9, the L bit must be 'true' in both copy and paste.
-+ */
-+
-+static inline int vas_copy(void *crb, int offset, int first)
-+{
-+	WARN_ON_ONCE(!first);
-+
-+	__asm__ __volatile(stringify_in_c(COPY(%0, %1, %2))";"
-+		:
-+		: "b" (offset), "b" (crb), "i" (1)
-+		: "memory");
-+
-+	return 0;
-+}
-+
-+static inline int vas_paste(void *paste_address, int offset, int last)
-+{
-+	unsigned long long cr;
-+
-+	WARN_ON_ONCE(!last);
-+
-+	cr = 0;
-+	__asm__ __volatile(stringify_in_c(PASTE(%1, %2, 1, 1))";"
-+		"mfocrf %0," CR0_FXM ";"
-+		: "=r" (cr)
-+		: "b" (paste_address), "b" (offset)
-+		: "memory");
-+
-+	return cr;
-+}
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index 3e2655c..63367c7 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -16,6 +16,7 @@
- #include <linux/cred.h>
- 
- #include "vas.h"
-+#include "copy-paste.h"
- 
- /*
-  * Compute the paste address region for the window @window using the
-@@ -1084,6 +1085,57 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
- }
- EXPORT_SYMBOL_GPL(vas_tx_win_open);
- 
-+int vas_copy_crb(void *crb, int offset, bool first)
-+{
-+	if (!vas_initialized())
-+		return -1;
-+
-+	return vas_copy(crb, offset, first);
-+}
-+EXPORT_SYMBOL_GPL(vas_copy_crb);
-+
-+#define RMA_LSMP_REPORT_ENABLE PPC_BIT(53)
-+int vas_paste_crb(struct vas_window *txwin, int offset, bool last, bool re)
-+{
-+	int rc;
-+	uint64_t val;
-+	void *addr;
-+
-+	if (!vas_initialized())
-+		return -1;
++#ifdef CONFIG_PPC_VAS
++	mtspr(SPRN_TIDR, new->thread.tidr);
++#endif
 +	/*
-+	 * Only NX windows are supported for now and hardware assumes
-+	 * report-enable flag is set for NX windows. Ensure software
-+	 * complies too.
++	 * We can't take a PMU exception inside _switch() since there is a
++	 * window where the kernel stack SLB and the kernel stack are out
++	 * of sync. Hard disable here.
 +	 */
-+	WARN_ON_ONCE(!re);
++	hard_irq_disable();
 +
-+	addr = txwin->paste_kaddr;
-+	if (re) {
-+		/*
-+		 * Set the REPORT_ENABLE bit (equivalent to writing
-+		 * to 1K offset of the paste address)
-+		 */
-+		val = SET_FIELD(RMA_LSMP_REPORT_ENABLE, 0ULL, 1);
-+		addr += val;
+ 	/*
+ 	 * Call restore_sprs() before calling _switch(). If we move it after
+ 	 * _switch() then we miss out on calling it for new tasks. The reason
+@@ -1449,9 +1459,70 @@ void flush_thread(void)
+ #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ }
+ 
++#ifdef CONFIG_PPC_VAS
++static DEFINE_SPINLOCK(vas_thread_id_lock);
++static DEFINE_IDA(vas_thread_ida);
++
++/*
++ * We need to assign an unique thread id to each thread in a process. This
++ * thread id is intended to be used with the Fast Thread-wakeup (aka Core-
++ * to-core wakeup) mechanism being implemented on top of Virtual Accelerator
++ * Switchboard (VAS).
++ *
++ * To get a unique thread-id per process we could simply use task_pid_nr()
++ * but the problem is that task_pid_nr() is not yet available for the thread
++ * when copy_thread() is called. Fixing that would require changing more
++ * intrusive arch-neutral code in code path in copy_process()?.
++ *
++ * Further, to assign unique thread ids within each process, we need an
++ * atomic field (or an IDR) in task_struct, which again intrudes into the
++ * arch-neutral code.
++ *
++ * So try to assign globally unique thraed ids for now.
++ */
++static int assign_thread_id(void)
++{
++	int index;
++	int err;
++
++again:
++	if (!ida_pre_get(&vas_thread_ida, GFP_KERNEL))
++		return -ENOMEM;
++
++	spin_lock(&vas_thread_id_lock);
++	err = ida_get_new_above(&vas_thread_ida, 1, &index);
++	spin_unlock(&vas_thread_id_lock);
++
++	if (err == -EAGAIN)
++		goto again;
++	else if (err)
++		return err;
++
++	if (index > MAX_USER_CONTEXT) {
++		spin_lock(&vas_thread_id_lock);
++		ida_remove(&vas_thread_ida, index);
++		spin_unlock(&vas_thread_id_lock);
++		return -ENOMEM;
 +	}
 +
-+	/*
-+	 * Map the raw CR value from vas_paste() to an error code (there
-+	 * is just pass or fail for now though).
-+	 */
-+	rc = vas_paste(addr, offset, last);
-+	if (rc == 0x20000000)
-+		rc = 0;
-+	else
-+		rc = -EINVAL;
-+
-+	print_fifo_msg_count(txwin);
-+
-+	return rc;
++	return index;
 +}
-+EXPORT_SYMBOL_GPL(vas_paste_crb);
 +
- static void poll_window_busy_state(struct vas_window *window)
- {
- 	int busy;
-diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index 61fd80f..4e3e5fe 100644
---- a/arch/powerpc/platforms/powernv/vas.h
-+++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -482,4 +482,19 @@ static inline void decode_pswid(u32 pswid, int *vasid, int *winid)
- 	if (winid)
- 		*winid = pswid & 0xFFFF;
- }
-+
-+#ifdef vas_debug
-+
-+static void print_fifo_msg_count(struct vas_window *txwin)
++static void free_thread_id(int id)
 +{
-+	uint64_t read_hvwc_reg(struct vas_window *w, char *n, uint64_t o);
-+	pr_devel("Winid %d, Msg count %llu\n", txwin->winid,
-+			(uint64_t)read_hvwc_reg(txwin, VREG(LRFIFO_PUSH)));
++	spin_lock(&vas_thread_id_lock);
++	ida_remove(&vas_thread_ida, id);
++	spin_unlock(&vas_thread_id_lock);
 +}
-+#else	/* vas_debug */
++#endif /* CONFIG_PPC_VAS */
 +
-+#define print_fifo_msg_count(window)
 +
-+#endif	/* vas_debug */
-+
- #endif /* _VAS_H */
+ void
+ release_thread(struct task_struct *t)
+ {
++#ifdef CONFIG_PPC_VAS
++	free_thread_id(t->thread.tidr);
++#endif
+ }
+ 
+ /*
+@@ -1587,6 +1658,9 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ #endif
+ 
+ 	setup_ksp_vsid(p, sp);
++#ifdef CONFIG_PPC_VAS
++	p->thread.tidr = assign_thread_id();
++#endif
+ 
+ #ifdef CONFIG_PPC64 
+ 	if (cpu_has_feature(CPU_FTR_DSCR)) {
 -- 
 2.7.4
