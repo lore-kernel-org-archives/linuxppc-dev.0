@@ -1,26 +1,24 @@
-Return-Path: <clg@kaod.org>
-Received: from 12.mo3.mail-out.ovh.net (12.mo3.mail-out.ovh.net
- [188.165.41.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRT3P1BkyzDqpj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 19:03:59 +1000 (AEST)
-Received: from player797.ha.ovh.net (b9.ovh.net [213.186.33.59])
- by mo3.mail-out.ovh.net (Postfix) with ESMTP id E831F12AF34
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 10:57:14 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH 07/10] powerpc/xive: add XIVE exploitation mode to CAS
-Date: Tue,  8 Aug 2017 10:56:17 +0200
-Message-Id: <1502182579-990-8-git-send-email-clg@kaod.org>
-In-Reply-To: <1502182579-990-1-git-send-email-clg@kaod.org>
-References: <1502182579-990-1-git-send-email-clg@kaod.org>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xRT7l4SCqzDqvG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 19:07:47 +1000 (AEST)
+Date: Tue, 8 Aug 2017 10:07:44 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org,
+ catalin.marinas@arm.com, sam@ravnborg.org
+Subject: Re: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
+Message-ID: <20170808090743.GA12887@arm.com>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER9, the Client Architecture Support (CAS) negotiation process
-determines whether the guest operates in XIVE Legacy compatibility or
-in XIVE exploitation mode.
+On Mon, Aug 07, 2017 at 04:38:45PM -0400, Pavel Tatashin wrote:
+> To optimize the performance of struct page initialization,
+> vmemmap_populate() will no longer zero memory.
+> 
+> We must explicitly zero the memory that is allocated by vmemmap_populate()
+> for kasan, as this memory does not go through struct page initialization
+> path.
+> 
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+> ---
+>  arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+> 
+> diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+> index 81f03959a4ab..e78a9ecbb687 100644
+> --- a/arch/arm64/mm/kasan_init.c
+> +++ b/arch/arm64/mm/kasan_init.c
+> @@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
+>  		set_pgd(pgd_offset_k(start), __pgd(0));
+>  }
+>  
+> +/*
+> + * Memory that was allocated by vmemmap_populate is not zeroed, so we must
+> + * zero it here explicitly.
+> + */
+> +static void
+> +zero_vmemmap_populated_memory(void)
+> +{
+> +	struct memblock_region *reg;
+> +	u64 start, end;
+> +
+> +	for_each_memblock(memory, reg) {
+> +		start = __phys_to_virt(reg->base);
+> +		end = __phys_to_virt(reg->base + reg->size);
+> +
+> +		if (start >= end)
+> +			break;
+> +
+> +		start = (u64)kasan_mem_to_shadow((void *)start);
+> +		end = (u64)kasan_mem_to_shadow((void *)end);
+> +
+> +		/* Round to the start end of the mapped pages */
+> +		start = round_down(start, SWAPPER_BLOCK_SIZE);
+> +		end = round_up(end, SWAPPER_BLOCK_SIZE);
+> +		memset((void *)start, 0, end - start);
+> +	}
+> +
+> +	start = (u64)kasan_mem_to_shadow(_text);
+> +	end = (u64)kasan_mem_to_shadow(_end);
+> +
+> +	/* Round to the start end of the mapped pages */
+> +	start = round_down(start, SWAPPER_BLOCK_SIZE);
+> +	end = round_up(end, SWAPPER_BLOCK_SIZE);
+> +	memset((void *)start, 0, end - start);
+> +}
 
-Now that we have initial guest support for the XIVE interrupt
-controller, let's inform the hypervisor what we can do.
+I can't help but think this would be an awful lot nicer if you made
+vmemmap_alloc_block take extra GFP flags as a parameter. That way, we could
+implement a version of vmemmap_populate that does the zeroing when we need
+it, without having to duplicate a bunch of the code like this. I think it
+would also be less error-prone, because you wouldn't have to do the
+allocation and the zeroing in two separate steps.
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/kernel/prom_init.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 613f79f03877..25c14f543bd7 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -177,6 +177,7 @@ struct platform_support {
- 	bool hash_mmu;
- 	bool radix_mmu;
- 	bool radix_gtse;
-+	bool xive;
- };
- 
- /* Platforms codes are now obsolete in the kernel. Now only used within this
-@@ -1054,6 +1055,12 @@ static void __init prom_parse_platform_support(u8 index, u8 val,
- 			support->radix_gtse = true;
- 		}
- 		break;
-+	case OV5_INDX(OV5_XIVE_SUPPORT): /* XIVE Exploitation mode */
-+		if (val & OV5_FEAT(OV5_XIVE_SUPPORT)) {
-+			prom_debug("XIVE - exploitation mode\n");
-+			support->xive = true;
-+		}
-+		break;
- 	}
- }
- 
-@@ -1062,7 +1069,8 @@ static void __init prom_check_platform_support(void)
- 	struct platform_support supported = {
- 		.hash_mmu = false,
- 		.radix_mmu = false,
--		.radix_gtse = false
-+		.radix_gtse = false,
-+		.xive = false
- 	};
- 	int prop_len = prom_getproplen(prom.chosen,
- 				       "ibm,arch-vec-5-platform-support");
-@@ -1095,6 +1103,11 @@ static void __init prom_check_platform_support(void)
- 		/* We're probably on a legacy hypervisor */
- 		prom_debug("Assuming legacy hash support\n");
- 	}
-+
-+	if (supported.xive) {
-+		prom_debug("Asking for XIVE\n");
-+		ibm_architecture_vec.vec5.intarch = OV5_FEAT(OV5_XIVE_EXPLOIT);
-+	}
- }
- 
- static void __init prom_send_capabilities(void)
--- 
-2.7.5
+Will
