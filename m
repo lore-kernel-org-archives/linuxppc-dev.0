@@ -1,27 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRHxQ6hKMzDqkp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 12:13:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRJ1R1zgSzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 12:16:43 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
- kernel-janitors@vger.kernel.org
-Subject: Re: block/ps3vram: Delete an error message for a failed memory
- allocation in ps3vram_cache_init()
-In-Reply-To: <57b472a0-0245-f821-cea8-171c34cc9df7@users.sourceforge.net>
-References: <e22ee16a-5f34-46bd-577f-9b7ca75e9035@users.sourceforge.net>
- <b6b5f2f0-bbfe-8471-d8fc-e236ea0b1ea4@infradead.org>
- <dd16f28c-1613-cfb2-5349-07aaac2f2f5a@users.sourceforge.net>
- <8d140d00-935c-da0a-ff2e-167abe642bda@infradead.org>
- <32cdcd8a-1000-223c-71da-4c9119954d4e@users.sourceforge.net>
- <3a657b44-2bc8-ee05-3a42-db7af354967e@infradead.org>
- <57b472a0-0245-f821-cea8-171c34cc9df7@users.sourceforge.net>
-Date: Tue, 08 Aug 2017 12:13:12 +1000
-Message-ID: <87shh2olhj.fsf@concordia.ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [01/24] powerpc/mm: Move exception_enter/exit to a do_page_fault
+ wrapper
+In-Reply-To: <dca04b16-c97a-3d8c-a748-7945d0fb80dd@c-s.fr>
+References: <3xQvGm0kQ5z9sR9@ozlabs.org>
+ <dca04b16-c97a-3d8c-a748-7945d0fb80dd@c-s.fr>
+Date: Tue, 08 Aug 2017 12:16:42 +1000
+Message-ID: <87poc6olbp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,28 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SF Markus Elfring <elfring@users.sourceforge.net> writes:
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
->>>> I didn't consider one would be triggered by the kzalloc failure.
+> Le 07/08/2017 =C3=A0 12:41, Michael Ellerman a =C3=A9crit :
+>> On Wed, 2017-07-19 at 04:49:23 UTC, Benjamin Herrenschmidt wrote:
+>>> This will allow simplifying the returns from do_page_fault
 >>>
->>> Do you reconsider any special system settings for further
->>> software evolution then?
+>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 >>=20
->> Sorry, I don't quite understand your question.
+>> Series applied to powerpc next, thanks.
+>>=20
+>> https://git.kernel.org/powerpc/c/7afad422ac61067473d5f3d20bbd54
 >
-> Do you try to configure the Linux error reporting to any special needs?
+> Boot failure on the 8xx:
+>
+> [    6.029556] Failed to execute /init (error -14)
+> [    6.034623] Starting init: /bin/sh exists but couldn't execute it=20
+> (error -14)
+> [    6.041489] Kernel panic - not syncing: No working init found.  Try=20
+> passing init=3D option to kernel. See Linux=20
+> Documentation/admin-guide/init.rst for guidance.
+> [    6.055518] CPU: 0 PID: 1 Comm: init Not tainted=20
+> 4.13.0-rc3-s3k-dev-00143-g7aa62e972a56 #56
+> [    6.063745] Call Trace:
+> [    6.066224] [c60f1ed0] [c001a624] panic+0x108/0x250 (unreliable)
+> [    6.072140] [c60f1f30] [c0002640] rootfs_mount+0x0/0x58
+> [    6.077311] [c60f1f40] [c000cb80] ret_from_kernel_thread+0x5c/0x64
+> [    6.083405] Rebooting in 180 seconds..
 >
 >
->> I think your original patch is OK,
->
-> How does this feedback fit to the initial response =E2=80=9CNot Applicabl=
-e=E2=80=9D?
-> https://patchwork.ozlabs.org/patch/798575/
+> Bisected to c433ec0455f921eaf8dd0262a718ce6f8ad62ea2 ("powerpc/mm:=20
+> Pre-filter SRR1 bits before do_page_fault()")
 
-That comes from me, and means "I can't apply this patch", because it's
-not a powerpc patch.
+Sorry about that. I don't have a way to test 8xx.
 
-Looking at the maintainers output though maybe that is meant to go via
-the powerpc tree.
+> Will see tomorrow what's wrong with that.
+
+Thanks.
 
 cheers
