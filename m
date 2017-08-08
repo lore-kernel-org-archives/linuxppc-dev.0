@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRcQy3dBZzDqps
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 00:36:26 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRcQz48xvzDqqQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 00:36:27 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v78EXa7v123922
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Aug 2017 10:36:24 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c7eqnjk9t-1
+ v78EYHdU146025
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Aug 2017 10:36:25 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c7emvjwht-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Aug 2017 10:36:24 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 8 Aug 2017 15:36:19 +0100
+ Tue, 8 Aug 2017 15:36:13 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -30,11 +30,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH 11/16] mm: Introduce __page_add_new_anon_rmap()
-Date: Tue,  8 Aug 2017 16:35:44 +0200
+Subject: [PATCH 08/16] mm: Try spin lock in speculative path
+Date: Tue,  8 Aug 2017 16:35:41 +0200
 In-Reply-To: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1502202949-8138-12-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1502202949-8138-9-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,88 +44,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When dealing with speculative page fault handler, we may race with VMA
-being split or merged. In this case the vma->vm_start and vm->vm_end
-fields may not match the address the page fault is occurring.
+There is a deadlock when a CPU is doing a speculative page fault and
+another one is calling do_unmap().
 
-This can only happens when the VMA is split but in that case, the
-anon_vma pointer of the new VMA will be the same as the original one,
-because in __split_vma the new->anon_vma is set to src->anon_vma when
-*new = *vma.
+The deadlock occurred because the speculative path try to spinlock the
+pte while the interrupt are disabled. When the other CPU in the
+unmap's path has locked the pte then is waiting for all the CPU to
+invalidate the TLB. As the CPU doing the speculative fault have the
+interrupt disable it can't invalidate the TLB, and can't get the lock.
 
-So even if the VMA boundaries are not correct, the anon_vma pointer is
-still valid.
+Since we are in a speculative path, we can race with other mm action.
+So let assume that the lock may not get acquired and fail the
+speculative page fault.
 
-If the VMA has been merged, then the VMA in which it has been merged
-must have the same anon_vma pointer otherwise the merge can't be done.
+Here are the stacks captured during the deadlock:
 
-So in all the case we know that the anon_vma is valid, since we have
-checked before starting the speculative page fault that the anon_vma
-pointer is valid for this VMA and since there is an anon_vma this
-means that at one time a page has been backed and that before the VMA
-is cleaned, the page table lock would have to be grab to clean the
-PTE, and the anon_vma field is checked once the PTE is locked.
+	CPU 0
+	native_flush_tlb_others+0x7c/0x260
+	flush_tlb_mm_range+0x6a/0x220
+	tlb_flush_mmu_tlbonly+0x63/0xc0
+	unmap_page_range+0x897/0x9d0
+	? unmap_single_vma+0x7d/0xe0
+	? release_pages+0x2b3/0x360
+	unmap_single_vma+0x7d/0xe0
+	unmap_vmas+0x51/0xa0
+	unmap_region+0xbd/0x130
+	do_munmap+0x279/0x460
+	SyS_munmap+0x53/0x70
 
-This patch introduce a new __page_add_new_anon_rmap() service which
-doesn't check for the VMA boundaries, and create a new inline one
-which do the check. Currently __page_add_new_anon_rmap() is only
-called during the speculative page fault path.
+	CPU 1
+	do_raw_spin_lock+0x14e/0x160
+	_raw_spin_lock+0x5d/0x80
+	? pte_map_lock+0x169/0x1b0
+	pte_map_lock+0x169/0x1b0
+	handle_pte_fault+0xbf2/0xd80
+	? trace_hardirqs_on+0xd/0x10
+	handle_speculative_fault+0x272/0x280
+	handle_speculative_fault+0x5/0x280
+	__do_page_fault+0x187/0x580
+	trace_do_page_fault+0x52/0x260
+	do_async_page_fault+0x19/0x70
+	async_page_fault+0x28/0x30
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/rmap.h | 12 ++++++++++--
- mm/rmap.c            |  5 ++---
- 2 files changed, 12 insertions(+), 5 deletions(-)
+ mm/memory.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index 43ef2c30cb0f..f5cd4dbc78b0 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -170,8 +170,16 @@ void page_add_anon_rmap(struct page *, struct vm_area_struct *,
- 		unsigned long, bool);
- void do_page_add_anon_rmap(struct page *, struct vm_area_struct *,
- 			   unsigned long, int);
--void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
--		unsigned long, bool);
-+void __page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
-+			      unsigned long, bool);
-+static inline void page_add_new_anon_rmap(struct page *page,
-+					  struct vm_area_struct *vma,
-+					  unsigned long address, bool compound)
-+{
-+	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
-+	__page_add_new_anon_rmap(page, vma, address, compound);
-+}
+diff --git a/mm/memory.c b/mm/memory.c
+index 14236d98a5c5..519c28507a93 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2259,7 +2259,8 @@ static bool pte_spinlock(struct vm_fault *vmf)
+ 		goto out;
+ 
+ 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+-	spin_lock(vmf->ptl);
++	if (unlikely(!spin_trylock(vmf->ptl)))
++		goto out;
+ 
+ 	if (vma_has_changed(vmf)) {
+ 		spin_unlock(vmf->ptl);
+@@ -2295,8 +2296,20 @@ static bool pte_map_lock(struct vm_fault *vmf)
+ 	if (vma_has_changed(vmf))
+ 		goto out;
+ 
+-	pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
+-				  vmf->address, &ptl);
++	/*
++	 * Same as pte_offset_map_lock() except that we call
++	 * spin_trylock() in place of spin_lock() to avoid race with
++	 * unmap path which may have the lock and wait for this CPU
++	 * to invalidate TLB but this CPU has irq disabled.
++	 * Since we are in a speculative patch, accept it could fail
++	 */
++	ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
++	pte = pte_offset_map(vmf->pmd, vmf->address);
++	if (unlikely(!spin_trylock(ptl))) {
++		pte_unmap(pte);
++		goto out;
++	}
 +
- void page_add_file_rmap(struct page *, bool);
- void page_remove_rmap(struct page *, bool);
- 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index c8993c63eb25..e99f9cd7b399 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -1117,7 +1117,7 @@ void do_page_add_anon_rmap(struct page *page,
- }
- 
- /**
-- * page_add_new_anon_rmap - add pte mapping to a new anonymous page
-+ * __page_add_new_anon_rmap - add pte mapping to a new anonymous page
-  * @page:	the page to add the mapping to
-  * @vma:	the vm area in which the mapping is added
-  * @address:	the user virtual address mapped
-@@ -1127,12 +1127,11 @@ void do_page_add_anon_rmap(struct page *page,
-  * This means the inc-and-test can be bypassed.
-  * Page does not have to be locked.
-  */
--void page_add_new_anon_rmap(struct page *page,
-+void __page_add_new_anon_rmap(struct page *page,
- 	struct vm_area_struct *vma, unsigned long address, bool compound)
- {
- 	int nr = compound ? hpage_nr_pages(page) : 1;
- 
--	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
- 	__SetPageSwapBacked(page);
- 	if (compound) {
- 		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
+ 	if (vma_has_changed(vmf)) {
+ 		pte_unmap_unlock(pte, ptl);
+ 		goto out;
 -- 
 2.7.4
