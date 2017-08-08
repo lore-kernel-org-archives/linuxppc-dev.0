@@ -1,14 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXcM46RhzDqs7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:44:19 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/xive: Fix section mismatch warnings
-Date: Tue,  8 Aug 2017 21:44:14 +1000
-Message-Id: <1502192654-1167-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXlY2PkQzDqjB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:50:33 +1000 (AEST)
+Subject: Re: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
+To: Will Deacon <will.deacon@arm.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, catalin.marinas@arm.com,
+ sam@ravnborg.org
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
+ <20170808090743.GA12887@arm.com>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
+Date: Tue, 8 Aug 2017 07:49:22 -0400
+MIME-Version: 1.0
+In-Reply-To: <20170808090743.GA12887@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,42 +31,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Both xive_core_init() and xive_native_init() are called from and call
-__init routines, so they should also be __init.
+Hi Will,
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/sysdev/xive/common.c | 4 ++--
- arch/powerpc/sysdev/xive/native.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Thank you for looking at this change. What you described was in my 
+previous iterations of this project.
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 6595462b1fc8..739ce590fa9d 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1395,8 +1395,8 @@ void xive_shutdown(void)
- 	xive_ops->shutdown();
- }
- 
--bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
--		    u8 max_prio)
-+bool __init xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
-+			   u8 max_prio)
- {
- 	xive_tima = area;
- 	xive_tima_offset = offset;
-diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-index 0f95476b01f6..1dbf782c9239 100644
---- a/arch/powerpc/sysdev/xive/native.c
-+++ b/arch/powerpc/sysdev/xive/native.c
-@@ -531,7 +531,7 @@ u32 xive_native_default_eq_shift(void)
- }
- EXPORT_SYMBOL_GPL(xive_native_default_eq_shift);
- 
--bool xive_native_init(void)
-+bool __init xive_native_init(void)
- {
- 	struct device_node *np;
- 	struct resource r;
--- 
-2.7.4
+See for example here: https://lkml.org/lkml/2017/5/5/369
+
+I was asked to remove that flag, and only zero memory in place when 
+needed. Overall the current approach is better everywhere else in the 
+kernel, but it adds a little extra code to kasan initialization.
+
+Pasha
+
+On 08/08/2017 05:07 AM, Will Deacon wrote:
+> On Mon, Aug 07, 2017 at 04:38:45PM -0400, Pavel Tatashin wrote:
+>> To optimize the performance of struct page initialization,
+>> vmemmap_populate() will no longer zero memory.
+>>
+>> We must explicitly zero the memory that is allocated by vmemmap_populate()
+>> for kasan, as this memory does not go through struct page initialization
+>> path.
+>>
+>> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+>> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+>> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+>> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+>> ---
+>>   arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+>>   1 file changed, 42 insertions(+)
+>>
+>> diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+>> index 81f03959a4ab..e78a9ecbb687 100644
+>> --- a/arch/arm64/mm/kasan_init.c
+>> +++ b/arch/arm64/mm/kasan_init.c
+>> @@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
+>>   		set_pgd(pgd_offset_k(start), __pgd(0));
+>>   }
+>>   
+>> +/*
+>> + * Memory that was allocated by vmemmap_populate is not zeroed, so we must
+>> + * zero it here explicitly.
+>> + */
+>> +static void
+>> +zero_vmemmap_populated_memory(void)
+>> +{
+>> +	struct memblock_region *reg;
+>> +	u64 start, end;
+>> +
+>> +	for_each_memblock(memory, reg) {
+>> +		start = __phys_to_virt(reg->base);
+>> +		end = __phys_to_virt(reg->base + reg->size);
+>> +
+>> +		if (start >= end)
+>> +			break;
+>> +
+>> +		start = (u64)kasan_mem_to_shadow((void *)start);
+>> +		end = (u64)kasan_mem_to_shadow((void *)end);
+>> +
+>> +		/* Round to the start end of the mapped pages */
+>> +		start = round_down(start, SWAPPER_BLOCK_SIZE);
+>> +		end = round_up(end, SWAPPER_BLOCK_SIZE);
+>> +		memset((void *)start, 0, end - start);
+>> +	}
+>> +
+>> +	start = (u64)kasan_mem_to_shadow(_text);
+>> +	end = (u64)kasan_mem_to_shadow(_end);
+>> +
+>> +	/* Round to the start end of the mapped pages */
+>> +	start = round_down(start, SWAPPER_BLOCK_SIZE);
+>> +	end = round_up(end, SWAPPER_BLOCK_SIZE);
+>> +	memset((void *)start, 0, end - start);
+>> +}
+> 
+> I can't help but think this would be an awful lot nicer if you made
+> vmemmap_alloc_block take extra GFP flags as a parameter. That way, we could
+> implement a version of vmemmap_populate that does the zeroing when we need
+> it, without having to duplicate a bunch of the code like this. I think it
+> would also be less error-prone, because you wouldn't have to do the
+> allocation and the zeroing in two separate steps.
+> 
+> Will
+> 
