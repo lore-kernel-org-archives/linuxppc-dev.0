@@ -1,25 +1,17 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0076.outbound.protection.outlook.com [104.47.0.76])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRPRh5XDvzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 16:21:20 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, "tglx@linutronix.de"
- <tglx@linutronix.de>
-CC: "oss@buserror.net" <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
-Date: Tue, 8 Aug 2017 06:21:12 +0000
-Message-ID: <AM3PR04MB1185747366C53DCC51A8A88F918A0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
- <1502075236-24078-5-git-send-email-qiang.zhao@nxp.com>
- <87h8xjq2rw.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87h8xjq2rw.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRPpJ1F5xzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 16:37:28 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/32: Fix boot failure on non 6xx platforms
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20170808063724.B755C653E1@po15668-vm-win7.idsi0.si.c-s.fr>
+Date: Tue,  8 Aug 2017 08:37:24 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 8/7/2017 3:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+commit d300627c6a536 ("powerpc/6xx: Handle DABR match before
+calling do_page_fault") breaks non 6xx platforms.
 
-> -----Original Message-----
-> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
-> Sent: Monday, August 07, 2017 3:02 PM
-> To: Qiang Zhao <qiang.zhao@nxp.com>; tglx@linutronix.de
-> Cc: oss@buserror.net; Qiang Zhao <qiang.zhao@nxp.com>; linuxppc-
-> dev@lists.ozlabs.org; Xiaobo Xie <xiaobo.xie@nxp.com>; linux-
-> kernel@vger.kernel.org
-> Subject: Re: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
->=20
-> Zhao Qiang <qiang.zhao@nxp.com> writes:
->=20
-> > QEIC was supported on PowerPC, and dependent on PPC, Now it is
-> > supported on other platforms, so remove PPCisms.
-> >
-> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > ---
-> >  arch/powerpc/platforms/83xx/km83xx.c          |   1 -
-> >  arch/powerpc/platforms/83xx/misc.c            |   1 -
-> >  arch/powerpc/platforms/83xx/mpc832x_mds.c     |   1 -
-> >  arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   1 -
-> >  arch/powerpc/platforms/83xx/mpc836x_mds.c     |   1 -
-> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   1 -
-> >  arch/powerpc/platforms/85xx/corenet_generic.c |   1 -
-> >  arch/powerpc/platforms/85xx/mpc85xx_mds.c     |   1 -
-> >  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |   1 -
-> >  arch/powerpc/platforms/85xx/twr_p102x.c       |   1 -
-> >  drivers/irqchip/irq-qeic.c                    | 188 +++++++++++-------=
---------
-> >  include/soc/fsl/qe/qe_ic.h                    | 132 ------------------
-> >  12 files changed, 80 insertions(+), 250 deletions(-)  delete mode
-> > 100644 include/soc/fsl/qe/qe_ic.h
-> >
-> > diff --git a/arch/powerpc/platforms/83xx/km83xx.c
-> > b/arch/powerpc/platforms/83xx/km83xx.c
-> > index d8642a4..b1cef0a 100644
-> > --- a/arch/powerpc/platforms/83xx/km83xx.c
-> > +++ b/arch/powerpc/platforms/83xx/km83xx.c
-> > @@ -38,7 +38,6 @@
-> >  #include <sysdev/fsl_soc.h>
-> >  #include <sysdev/fsl_pci.h>
-> >  #include <soc/fsl/qe/qe.h>
-> > -#include <soc/fsl/qe/qe_ic.h>
->=20
-> You deleted that file in patch 2. So didn't you just break the build for =
-the last two
-> commits?
+[    6.029556] Failed to execute /init (error -14)
+[    6.034623] Starting init: /bin/sh exists but couldn't execute it
+(error -14)
+[    6.041489] Kernel panic - not syncing: No working init found.  Try
+passing init= option to kernel. See Linux
+Documentation/admin-guide/init.rst for guidance.
+[    6.055518] CPU: 0 PID: 1 Comm: init Not tainted
+4.13.0-rc3-s3k-dev-00143-g7aa62e972a56 #56
+[    6.063745] Call Trace:
+[    6.066224] [c60f1ed0] [c001a624] panic+0x108/0x250 (unreliable)
+[    6.072140] [c60f1f30] [c0002640] rootfs_mount+0x0/0x58
+[    6.077311] [c60f1f40] [c000cb80] ret_from_kernel_thread+0x5c/0x64
+[    6.083405] Rebooting in 180 seconds..
 
-Sorry, I am not sure what you said. Could you explain?
-Thank you!
+This is because in handle_page_fault(), the call to do_page_fault()
+has been mistakenly enclosed inside an #ifdef CONFIG_6xx
 
-BR
-Qiang Zhao
+Fixes: d300627c6a536 ("powerpc/6xx: Handle DABR match before
+calling do_page_fault")
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/entry_32.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index dff51ea52e49..b14bf7def2e2 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -586,11 +586,11 @@ ppc_swapcontext:
+ handle_page_fault:
+ 	stw	r4,_DAR(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	andis.  r0,r5,DSISR_DABRMATCH@h
+ #ifdef CONFIG_6xx
++	andis.  r0,r5,DSISR_DABRMATCH@h
+ 	bne-    handle_dabr_fault
+-	bl	do_page_fault
+ #endif
++	bl	do_page_fault
+ 	cmpwi	r3,0
+ 	beq+	ret_from_except
+ 	SAVE_NVGPRS(r1)
+-- 
+2.13.3
