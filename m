@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXx16LZ4zDqpF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:58:45 +1000 (AEST)
-Message-Id: <3d39290f4a49b8cedd6306513b1b2999d1aeb053.1502191399.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXx40FpnzDqpF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:58:47 +1000 (AEST)
+Message-Id: <84c91953e3f80f7d6def45fdb5512c098ba854a2.1502191399.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1502191399.git.christophe.leroy@c-s.fr>
 References: <cover.1502191399.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 02/12] powerpc/8xx: Move 8xx machine check handlers into
- platforms/8xx
+Subject: [PATCH 03/12] powerpc/8xx: Remove SoftwareEmulation()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  8 Aug 2017 13:58:42 +0200 (CEST)
+Date: Tue,  8 Aug 2017 13:58:44 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,108 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the same spirit as what was done for 4xx and 44x, move
-the 8xx machine check into platforms/8xx
+Since commit aa42c69c67f82 ("[POWERPC] Add support for FP emulation
+for the e300c2 core"), program_check_exception() can be called for
+math emulation. In that case, 'reason' is 0.
+
+On the 8xx, there is a Software Emulation interrupt which is
+called for all unimplemented and illegal instructions. This
+interrupt calls SoftwareEmulation() which does almost the
+same as program_check_exception() called with reason = 0.
+
+The Software Emulation interrupt sets all reason bits to 0,
+it is therefore possible to call program_check_exception()
+directly from the interrupt handler.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/traps.c                | 25 --------------------
- arch/powerpc/platforms/8xx/Makefile        |  2 +-
- arch/powerpc/platforms/8xx/machine_check.c | 37 ++++++++++++++++++++++++++++++
- 3 files changed, 38 insertions(+), 26 deletions(-)
- create mode 100644 arch/powerpc/platforms/8xx/machine_check.c
+ arch/powerpc/kernel/head_8xx.S |  2 +-
+ arch/powerpc/kernel/traps.c    | 18 ------------------
+ 2 files changed, 1 insertion(+), 19 deletions(-)
 
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 07ddced6bab3..778a0e11d0e6 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -300,7 +300,7 @@ SystemCall:
+ /* On the MPC8xx, this is a software emulation interrupt.  It occurs
+  * for all unimplemented and illegal instructions.
+  */
+-	EXCEPTION(0x1000, SoftEmu, SoftwareEmulation, EXC_XFER_STD)
++	EXCEPTION(0x1000, SoftEmu, program_check_exception, EXC_XFER_STD)
+ 
+ 	. = 0x1100
+ /*
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 9107f7f86058..b328ca2aef9c 100644
+index b328ca2aef9c..9d1f600bda08 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -558,31 +558,6 @@ int machine_check_e200(struct pt_regs *regs)
- 
- 	return 0;
+@@ -1518,24 +1518,6 @@ void performance_monitor_exception(struct pt_regs *regs)
+ 	perf_irq(regs);
  }
--#elif defined(CONFIG_PPC_8xx)
--int machine_check_8xx(struct pt_regs *regs)
+ 
+-#ifdef CONFIG_8xx
+-void SoftwareEmulation(struct pt_regs *regs)
 -{
--	unsigned long reason = regs->msr;
+-	CHECK_FULL_REGS(regs);
 -
--	pr_err("Machine check in kernel mode.\n");
--	pr_err("Caused by (from SRR1=%lx): ", reason);
--	if (reason & 0x40000000)
--		pr_err("Fetch error at address %lx\n", regs->nip);
--	else
--		pr_err("Data access error at address %lx\n", regs->dar);
+-	if (!user_mode(regs)) {
+-		debugger(regs);
+-		die("Kernel Mode Unimplemented Instruction or SW FPU Emulation",
+-			regs, SIGFPE);
+-	}
 -
--#ifdef CONFIG_PCI
--	/* the qspan pci read routines can cause machine checks -- Cort
--	 *
--	 * yuck !!! that totally needs to go away ! There are better ways
--	 * to deal with that than having a wart in the mcheck handler.
--	 * -- BenH
--	 */
--	bad_page_fault(regs, regs->dar, SIGBUS);
--	return 1;
--#else
--	return 0;
--#endif
+-	if (!emulate_math(regs))
+-		return;
+-
+-	_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
 -}
- #elif defined(CONFIG_PPC32)
- int machine_check_generic(struct pt_regs *regs)
+-#endif /* CONFIG_8xx */
+-
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ static void handle_debug(struct pt_regs *regs, unsigned long debug_status)
  {
-diff --git a/arch/powerpc/platforms/8xx/Makefile b/arch/powerpc/platforms/8xx/Makefile
-index 161f367ebf1e..756be8345868 100644
---- a/arch/powerpc/platforms/8xx/Makefile
-+++ b/arch/powerpc/platforms/8xx/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the PowerPC 8xx linux kernel.
- #
--obj-y			+= m8xx_setup.o
-+obj-y			+= m8xx_setup.o machine_check.o
- obj-$(CONFIG_MPC885ADS)   += mpc885ads_setup.o
- obj-$(CONFIG_MPC86XADS)   += mpc86xads_setup.o
- obj-$(CONFIG_PPC_EP88XC)  += ep88xc.o
-diff --git a/arch/powerpc/platforms/8xx/machine_check.c b/arch/powerpc/platforms/8xx/machine_check.c
-new file mode 100644
-index 000000000000..402016705a39
---- /dev/null
-+++ b/arch/powerpc/platforms/8xx/machine_check.c
-@@ -0,0 +1,37 @@
-+/*
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/printk.h>
-+#include <linux/ptrace.h>
-+
-+#include <asm/reg.h>
-+
-+int machine_check_8xx(struct pt_regs *regs)
-+{
-+	unsigned long reason = regs->msr;
-+
-+	pr_err("Machine check in kernel mode.\n");
-+	pr_err("Caused by (from SRR1=%lx): ", reason);
-+	if (reason & 0x40000000)
-+		pr_err("Fetch error at address %lx\n", regs->nip);
-+	else
-+		pr_err("Data access error at address %lx\n", regs->dar);
-+
-+#ifdef CONFIG_PCI
-+	/* the qspan pci read routines can cause machine checks -- Cort
-+	 *
-+	 * yuck !!! that totally needs to go away ! There are better ways
-+	 * to deal with that than having a wart in the mcheck handler.
-+	 * -- BenH
-+	 */
-+	bad_page_fault(regs, regs->dar, SIGBUS);
-+	return 1;
-+#else
-+	return 0;
-+#endif
-+}
 -- 
 2.13.3
