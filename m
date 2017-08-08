@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXxL1GrNzDqpP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:59:02 +1000 (AEST)
-Message-Id: <75790d577495824f18f00baf5791a106d9afa7d4.1502191399.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXxN2RPHzDqpD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:59:04 +1000 (AEST)
+Message-Id: <c6a874f71f818f0f9559b4960b3a1e2aeebb9a19.1502191399.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1502191399.git.christophe.leroy@c-s.fr>
 References: <cover.1502191399.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 10/12] powerpc/8xx: Use symbolic PVR value
+Subject: [PATCH 11/12] powerpc/8xx: Use symbolic names for DSISR bits in DSI
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  8 Aug 2017 13:58:58 +0200 (CEST)
+Date: Tue,  8 Aug 2017 13:59:00 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the 8xx, PVR values defined in arch/powerpc/include/asm/reg.h
-are nowhere used.
-
-Remove all defines and add PVR_8xx
-
-Use it in arch/powerpc/kernel/cputable.c
+Use symbolic names for DSISR bits in DSI
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/reg.h | 6 ++----
- arch/powerpc/kernel/cputable.c | 2 +-
- 2 files changed, 3 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 2 +-
+ arch/powerpc/mm/fault.c        | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 70722e5b93e7..c36823d64ec9 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1247,10 +1247,8 @@
-  * differentiated by the version number in the Communication Processor
-  * Module (CPM).
-  */
--#define PVR_821		0x00500000
--#define PVR_823		PVR_821
--#define PVR_850		PVR_821
--#define PVR_860		PVR_821
-+#define PVR_8xx		0x00500000
-+
- #define PVR_8240	0x00810100
- #define PVR_8245	0x80811014
- #define PVR_8260	PVR_8240
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index e9ba5b84ac9b..760872916013 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1262,7 +1262,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #ifdef CONFIG_PPC_8xx
- 	{	/* 8xx */
- 		.pvr_mask		= 0xffff0000,
--		.pvr_value		= 0x00500000,
-+		.pvr_value		= PVR_8xx,
- 		.cpu_name		= "8xx",
- 		/* CPU_FTR_MAYBE_CAN_DOZE is possible,
- 		 * if the 8xx code is there.... */
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 778a0e11d0e6..a1c2a2cfec7e 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -595,7 +595,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+ 	mfspr	r5,SPRN_DSISR
+ 	stw	r5,_DSISR(r11)
+ 	mfspr	r4,SPRN_DAR
+-	andis.	r10,r5,0x4000
++	andis.	r10,r5,DSISR_NOHPTE@h
+ 	beq+	1f
+ 	tlbie	r4
+ dtlbie:
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 7a218f69f956..6948d0628cde 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -392,7 +392,7 @@ static void sanity_check_fault(bool is_write, unsigned long error_code) { }
+ #else
+ #define page_fault_is_write(__err)	((__err) & DSISR_ISSTORE)
+ #if defined(CONFIG_PPC_8xx)
+-#define page_fault_is_bad(__err)	((__err) & 0x10000000)
++#define page_fault_is_bad(__err)	((__err) & DSISR_NOEXEC_OR_G)
+ #elif defined(CONFIG_PPC64)
+ #define page_fault_is_bad(__err)	((__err) & DSISR_BAD_FAULT_64S)
+ #else
 -- 
 2.13.3
