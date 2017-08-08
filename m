@@ -1,26 +1,25 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xRYdx1HPyzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 22:30:44 +1000 (AEST)
-Date: Tue, 8 Aug 2017 13:30:43 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Pasha Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org,
- catalin.marinas@arm.com, sam@ravnborg.org
-Subject: Re: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
-Message-ID: <20170808123042.GG13355@arm.com>
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
- <20170808090743.GA12887@arm.com>
- <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRYwN1fDxzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 22:43:16 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id t86so2952567pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Aug 2017 05:43:16 -0700 (PDT)
+Date: Tue, 8 Aug 2017 22:42:57 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
+ kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 10/13] powerpc/64s: idle simplify KVM idle on POWER9
+Message-ID: <20170808224257.720e85d6@roar.ozlabs.ibm.com>
+In-Reply-To: <20170808103643.GA9107@in.ibm.com>
+References: <20170805170241.22966-1-npiggin@gmail.com>
+ <20170805170241.22966-11-npiggin@gmail.com>
+ <20170808103643.GA9107@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +29,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 08, 2017 at 07:49:22AM -0400, Pasha Tatashin wrote:
-> Hi Will,
-> 
-> Thank you for looking at this change. What you described was in my previous
-> iterations of this project.
-> 
-> See for example here: https://lkml.org/lkml/2017/5/5/369
-> 
-> I was asked to remove that flag, and only zero memory in place when needed.
-> Overall the current approach is better everywhere else in the kernel, but it
-> adds a little extra code to kasan initialization.
+On Tue, 8 Aug 2017 16:06:43 +0530
+Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
 
-Damn, I actually prefer the flag :)
+> Hi Nicholas,
+> 
+> On Sun, Aug 06, 2017 at 03:02:38AM +1000, Nicholas Piggin wrote:
+> > POWER9 CPUs have independent MMU contexts per thread so KVM
+> > does not have to bring sibling threads into real-mode when
+> > switching MMU mode to guest. This can simplify POWER9 sleep/wake
+> > paths and avoids hwsyncs.
+> > 
 
-But actually, if you look at our implementation of vmemmap_populate, then we
-have our own version of vmemmap_populate_basepages that terminates at the
-pmd level anyway if ARM64_SWAPPER_USES_SECTION_MAPS. If there's resistance
-to do this in the core code, then I'd be inclined to replace our
-vmemmap_populate implementation in the arm64 code with a single version that
-can terminate at either the PMD or the PTE level, and do zeroing if
-required. We're already special-casing it, so we don't really lose anything
-imo.
 
-Will
+> > @@ -444,6 +439,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+> >  	beq	1f
+> >  	b	kvm_start_guest
+> >  1:
+> > +END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)  
+> 
+> This would be 7 nops on power9. Should we move this to a different
+> function and do a bl to that?
+
+Yes that's a good idea.
+
+> > +static void kvmppc_release_hwthread_secondary(int cpu)
+> > +{
+> > +	struct paca_struct *tpaca;
+> > +
+> > +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> > +		WARN_ON(1);
+> > +		return;
+> > +	}
+> > +
+> > +	tpaca = &paca[cpu];
+> > +	tpaca->kvm_hstate.hwthread_req = 0;
+> > +	kvmppc_release_hwthread(cpu);
+> > +}
+> > +
+> > +  
+> 
+> Extra blank line not needed.
+
+Sure.
+
+> > @@ -2858,11 +2883,13 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+> > 
+> >  	/* Let secondaries go back to the offline loop */
+> >  	for (i = 0; i < controlled_threads; ++i) {
+> > -		kvmppc_release_hwthread(pcpu + i);
+> >  		if (sip && sip->napped[i])
+> >  			kvmppc_ipi_thread(pcpu + i);
+> >  		cpumask_clear_cpu(pcpu + i, &vc->kvm->arch.cpu_in_guest);
+> >  	}  
+> 
+> We are sending an IPI to the thread that has exited the guest and is
+> currently napping. The IPI wakes it up so that it can executes
+> offline loop. But we haven't released the hwthread yet, which means
+> that hwthread_req for this thread is still set.
+> 
+> The thread wakes up from nap, executes the pnv_powersave_wakeup code
+> where it can enter kvm_start_guest. Is this a legitimate race or am I
+> missing something?
+
+Oh I think it's just a silly mistake in my patch, good catch.
+Would moving this loop below the one below solve it? I wasn't
+completely happy with uglifying these loops by making the
+primary release different than secondary... maybe I will just
+move the difference into kvmppc_release_hwthread and which is
+less intrusive to callers.
+
+Thanks,
+Nick
