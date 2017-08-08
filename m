@@ -1,25 +1,25 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0076.outbound.protection.outlook.com [104.47.0.76])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRKbn2Y8XzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 13:28:05 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id y192so1963827pgd.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 20:28:05 -0700 (PDT)
-Date: Mon, 7 Aug 2017 20:27:43 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org
-Subject: Re: [PATCH v3] ASoC: fsl: Convert to using %pOF instead of full_name
-Message-ID: <20170808032742.GA10188@Asurada>
-References: <20170807232919.30247-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRPRh5XDvzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 16:21:20 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "tglx@linutronix.de"
+ <tglx@linutronix.de>
+CC: "oss@buserror.net" <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
+Date: Tue, 8 Aug 2017 06:21:12 +0000
+Message-ID: <AM3PR04MB1185747366C53DCC51A8A88F918A0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
+ <1502075236-24078-5-git-send-email-qiang.zhao@nxp.com>
+ <87h8xjq2rw.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87h8xjq2rw.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170807232919.30247-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,89 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 07, 2017 at 06:29:18PM -0500, Rob Herring wrote:
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Timur Tabi <timur@tabi.org>
-> Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+On Mon 8/7/2017 3:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> -----Original Message-----
+> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+> Sent: Monday, August 07, 2017 3:02 PM
+> To: Qiang Zhao <qiang.zhao@nxp.com>; tglx@linutronix.de
+> Cc: oss@buserror.net; Qiang Zhao <qiang.zhao@nxp.com>; linuxppc-
+> dev@lists.ozlabs.org; Xiaobo Xie <xiaobo.xie@nxp.com>; linux-
+> kernel@vger.kernel.org
+> Subject: Re: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
+>=20
+> Zhao Qiang <qiang.zhao@nxp.com> writes:
+>=20
+> > QEIC was supported on PowerPC, and dependent on PPC, Now it is
+> > supported on other platforms, so remove PPCisms.
+> >
+> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> > ---
+> >  arch/powerpc/platforms/83xx/km83xx.c          |   1 -
+> >  arch/powerpc/platforms/83xx/misc.c            |   1 -
+> >  arch/powerpc/platforms/83xx/mpc832x_mds.c     |   1 -
+> >  arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   1 -
+> >  arch/powerpc/platforms/83xx/mpc836x_mds.c     |   1 -
+> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   1 -
+> >  arch/powerpc/platforms/85xx/corenet_generic.c |   1 -
+> >  arch/powerpc/platforms/85xx/mpc85xx_mds.c     |   1 -
+> >  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |   1 -
+> >  arch/powerpc/platforms/85xx/twr_p102x.c       |   1 -
+> >  drivers/irqchip/irq-qeic.c                    | 188 +++++++++++-------=
+--------
+> >  include/soc/fsl/qe/qe_ic.h                    | 132 ------------------
+> >  12 files changed, 80 insertions(+), 250 deletions(-)  delete mode
+> > 100644 include/soc/fsl/qe/qe_ic.h
+> >
+> > diff --git a/arch/powerpc/platforms/83xx/km83xx.c
+> > b/arch/powerpc/platforms/83xx/km83xx.c
+> > index d8642a4..b1cef0a 100644
+> > --- a/arch/powerpc/platforms/83xx/km83xx.c
+> > +++ b/arch/powerpc/platforms/83xx/km83xx.c
+> > @@ -38,7 +38,6 @@
+> >  #include <sysdev/fsl_soc.h>
+> >  #include <sysdev/fsl_pci.h>
+> >  #include <soc/fsl/qe/qe.h>
+> > -#include <soc/fsl/qe/qe_ic.h>
+>=20
+> You deleted that file in patch 2. So didn't you just break the build for =
+the last two
+> commits?
 
-Thanks
+Sorry, I am not sure what you said. Could you explain?
+Thank you!
 
-> Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-> Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> Cc: Liam Girdwood <lgirdwood@gmail.com>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: alsa-devel@alsa-project.org
-> ---
-> v3: Split ASoC changes to separate patch
-> 
->  sound/soc/fsl/fsl_dma.c    |  4 ++--
->  sound/soc/fsl/imx-audmux.c | 16 ++++++++--------
->  2 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
-> index ccadefceeff2..ed8ea002902d 100644
-> --- a/sound/soc/fsl/fsl_dma.c
-> +++ b/sound/soc/fsl/fsl_dma.c
-> @@ -897,8 +897,8 @@ static int fsl_soc_dma_probe(struct platform_device *pdev)
->  
->  	ret = of_address_to_resource(ssi_np, 0, &res);
->  	if (ret) {
-> -		dev_err(&pdev->dev, "could not determine resources for %s\n",
-> -			ssi_np->full_name);
-> +		dev_err(&pdev->dev, "could not determine resources for %pOF\n",
-> +			ssi_np);
->  		of_node_put(ssi_np);
->  		return ret;
->  	}
-> diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
-> index fc57da341d61..392d5eef356d 100644
-> --- a/sound/soc/fsl/imx-audmux.c
-> +++ b/sound/soc/fsl/imx-audmux.c
-> @@ -268,13 +268,13 @@ static int imx_audmux_parse_dt_defaults(struct platform_device *pdev,
->  
->  		ret = of_property_read_u32(child, "fsl,audmux-port", &port);
->  		if (ret) {
-> -			dev_warn(&pdev->dev, "Failed to get fsl,audmux-port of child node \"%s\"\n",
-> -					child->full_name);
-> +			dev_warn(&pdev->dev, "Failed to get fsl,audmux-port of child node \"%pOF\"\n",
-> +					child);
->  			continue;
->  		}
->  		if (!of_property_read_bool(child, "fsl,port-config")) {
-> -			dev_warn(&pdev->dev, "child node \"%s\" does not have property fsl,port-config\n",
-> -					child->full_name);
-> +			dev_warn(&pdev->dev, "child node \"%pOF\" does not have property fsl,port-config\n",
-> +					child);
->  			continue;
->  		}
->  
-> @@ -292,15 +292,15 @@ static int imx_audmux_parse_dt_defaults(struct platform_device *pdev,
->  		}
->  
->  		if (ret != -EOVERFLOW) {
-> -			dev_err(&pdev->dev, "Failed to read u32 at index %d of child %s\n",
-> -					i, child->full_name);
-> +			dev_err(&pdev->dev, "Failed to read u32 at index %d of child %pOF\n",
-> +					i, child);
->  			continue;
->  		}
->  
->  		if (audmux_type == IMX31_AUDMUX) {
->  			if (i % 2) {
-> -				dev_err(&pdev->dev, "One pdcr value is missing in child node %s\n",
-> -						child->full_name);
-> +				dev_err(&pdev->dev, "One pdcr value is missing in child node %pOF\n",
-> +						child);
->  				continue;
->  			}
->  			imx_audmux_v2_configure_port(port, ptcr, pdcr);
-> -- 
-> 2.11.0
-> 
+BR
+Qiang Zhao
