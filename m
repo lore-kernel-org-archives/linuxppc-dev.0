@@ -2,24 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRVJP0t9pzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 20:00:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRVPj3w4BzDqp9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 20:04:57 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Michael Ellerman <patch-notifications@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [01/24] powerpc/mm: Move exception_enter/exit to a do_page_fault
- wrapper
-In-Reply-To: <24c35bb0-2152-f381-9783-6fc820a0e72c@c-s.fr>
-References: <3xQvGm0kQ5z9sR9@ozlabs.org>
- <dca04b16-c97a-3d8c-a748-7945d0fb80dd@c-s.fr>
- <87poc6olbp.fsf@concordia.ellerman.id.au>
- <24c35bb0-2152-f381-9783-6fc820a0e72c@c-s.fr>
-Date: Tue, 08 Aug 2017 20:00:20 +1000
-Message-ID: <87bmnqnzuz.fsf@concordia.ellerman.id.au>
+To: Qiang Zhao <qiang.zhao@nxp.com>, "tglx\@linutronix.de" <tglx@linutronix.de>
+Cc: "oss\@buserror.net" <oss@buserror.net>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
+In-Reply-To: <AM3PR04MB1185747366C53DCC51A8A88F918A0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
+ <1502075236-24078-5-git-send-email-qiang.zhao@nxp.com>
+ <87h8xjq2rw.fsf@concordia.ellerman.id.au>
+ <AM3PR04MB1185747366C53DCC51A8A88F918A0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Date: Tue, 08 Aug 2017 20:04:56 +1000
+Message-ID: <878tiunznb.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +29,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
+Qiang Zhao <qiang.zhao@nxp.com> writes:
 
-> Le 08/08/2017 =C3=A0 04:16, Michael Ellerman a =C3=A9crit :
->> Christophe LEROY <christophe.leroy@c-s.fr> writes:
->>=20
->>> Le 07/08/2017 =C3=A0 12:41, Michael Ellerman a =C3=A9crit :
->>>> On Wed, 2017-07-19 at 04:49:23 UTC, Benjamin Herrenschmidt wrote:
->>>>> This will allow simplifying the returns from do_page_fault
->>>>>
->>>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>>
->>>> Series applied to powerpc next, thanks.
->>>>
->>>> https://git.kernel.org/powerpc/c/7afad422ac61067473d5f3d20bbd54
->>>
->>> Boot failure on the 8xx:
->>>
->>> [    6.029556] Failed to execute /init (error -14)
->>> [    6.034623] Starting init: /bin/sh exists but couldn't execute it
->>> (error -14)
->>> [    6.041489] Kernel panic - not syncing: No working init found.  Try
->>> passing init=3D option to kernel. See Linux
->>> Documentation/admin-guide/init.rst for guidance.
->>> [    6.055518] CPU: 0 PID: 1 Comm: init Not tainted
->>> 4.13.0-rc3-s3k-dev-00143-g7aa62e972a56 #56
->>> [    6.063745] Call Trace:
->>> [    6.066224] [c60f1ed0] [c001a624] panic+0x108/0x250 (unreliable)
->>> [    6.072140] [c60f1f30] [c0002640] rootfs_mount+0x0/0x58
->>> [    6.077311] [c60f1f40] [c000cb80] ret_from_kernel_thread+0x5c/0x64
->>> [    6.083405] Rebooting in 180 seconds..
->>>
->>>
->>> Bisected to c433ec0455f921eaf8dd0262a718ce6f8ad62ea2 ("powerpc/mm:
->>> Pre-filter SRR1 bits before do_page_fault()")
->>=20
->> Sorry about that. I don't have a way to test 8xx.
+> On Mon 8/7/2017 3:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
-> Looks like I concluded too quickly yesterday night, indeed the above=20
-> commit is the last good one. The faulty one is=20
-> d300627c6a53693fb01479b59b0cdd293761b1fa("powerpc/6xx: Handle DABR match=
-=20
-> before calling do_page_fault")
+>> -----Original Message-----
+>> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+>> Sent: Monday, August 07, 2017 3:02 PM
+>> To: Qiang Zhao <qiang.zhao@nxp.com>; tglx@linutronix.de
+>> Cc: oss@buserror.net; Qiang Zhao <qiang.zhao@nxp.com>; linuxppc-
+>> dev@lists.ozlabs.org; Xiaobo Xie <xiaobo.xie@nxp.com>; linux-
+>> kernel@vger.kernel.org
+>> Subject: Re: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
+>> 
+>> Zhao Qiang <qiang.zhao@nxp.com> writes:
+>> 
+>> > QEIC was supported on PowerPC, and dependent on PPC, Now it is
+>> > supported on other platforms, so remove PPCisms.
+>> >
+>> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+>> > ---
+>> >  arch/powerpc/platforms/83xx/km83xx.c          |   1 -
+>> >  arch/powerpc/platforms/83xx/misc.c            |   1 -
+>> >  arch/powerpc/platforms/83xx/mpc832x_mds.c     |   1 -
+>> >  arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   1 -
+>> >  arch/powerpc/platforms/83xx/mpc836x_mds.c     |   1 -
+>> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   1 -
+>> >  arch/powerpc/platforms/85xx/corenet_generic.c |   1 -
+>> >  arch/powerpc/platforms/85xx/mpc85xx_mds.c     |   1 -
+>> >  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |   1 -
+>> >  arch/powerpc/platforms/85xx/twr_p102x.c       |   1 -
+>> >  drivers/irqchip/irq-qeic.c                    | 188 +++++++++++---------------
+>> >  include/soc/fsl/qe/qe_ic.h                    | 132 ------------------
+>> >  12 files changed, 80 insertions(+), 250 deletions(-)  delete mode
+>> > 100644 include/soc/fsl/qe/qe_ic.h
+>> >
+>> > diff --git a/arch/powerpc/platforms/83xx/km83xx.c
+>> > b/arch/powerpc/platforms/83xx/km83xx.c
+>> > index d8642a4..b1cef0a 100644
+>> > --- a/arch/powerpc/platforms/83xx/km83xx.c
+>> > +++ b/arch/powerpc/platforms/83xx/km83xx.c
+>> > @@ -38,7 +38,6 @@
+>> >  #include <sysdev/fsl_soc.h>
+>> >  #include <sysdev/fsl_pci.h>
+>> >  #include <soc/fsl/qe/qe.h>
+>> > -#include <soc/fsl/qe/qe_ic.h>
+>> 
+>> You deleted that file in patch 2. So didn't you just break the build for the last two
+>> commits?
 >
->>=20
->>> Will see tomorrow what's wrong with that.
->>=20
->> Thanks.
->
-> This is because the 'bl do_page_fault' has been enclosed inside the=20
-> #ifdef CONFIG_6xx
->
-> See patch at https://patchwork.ozlabs.org/patch/799039/
+> Sorry, I am not sure what you said. Could you explain?
 
-Oops :}
+Don't worry about it. I was confused by the fact that we have both:
 
-Thanks for the fix.
+  drivers/soc/fsl/qe/qe_ic.h
+
+and:
+
+  include/soc/fsl/qe/qe_ic.h
 
 cheers
