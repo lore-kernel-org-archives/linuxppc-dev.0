@@ -1,41 +1,41 @@
 Return-Path: <srs0=ev05=7k=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmn1ZxKzDqqV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:37 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmm0zpRz8vqD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmr1xw7zDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:40 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmq62Pvz8vqD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:39 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xRqml2hmhz9tWp
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:35 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v78N4DWt111426
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:33 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c7kkg8bd3-1
+ by ozlabs.org (Postfix) with ESMTPS id 3xRqmp6X4Sz9s7F
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:38 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v78N4DLN032808
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:37 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c7ng7ty94-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:33 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:36 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 8 Aug 2017 19:07:32 -0400
+ Tue, 8 Aug 2017 19:07:36 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
  oohall@gmail.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v6 10/17] powerpc/vas: Define vas_rx_win_open() interface
-Date: Tue,  8 Aug 2017 16:06:55 -0700
+Subject: [PATCH v6 11/17] powerpc/vas: Define vas_win_close() interface
+Date: Tue,  8 Aug 2017 16:06:56 -0700
 In-Reply-To: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1502233622-9330-11-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1502233622-9330-12-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,48 +45,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define the vas_rx_win_open() interface. This interface is intended to be
-used by the Nest Accelerator (NX) driver(s) to setup receive windows for
-one or more NX engines (which implement compression/encryption algorithms
-in the hardware).
+Define the vas_win_close() interface which should be used to close a
+send or receive windows.
 
-Follow-on patches will provide an interface to close the window and to open
-a send window that kenrel subsystems can use to access the NX engines.
-
-The interface to open a receive window is expected to be invoked for each
-instance of VAS in the system.
+While the hardware configurations required to open send and receive windows
+differ, the configuration to close a window is the same for both. So we use
+a single interface to close the window.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
-
-Changelog[v6]:
-	- Add support for FTW windows
-
 Changelog[v4]:
-	- Export the symbols
+	- Drop the poll for credits return (we can set the required credit,
+	  but cannot really find the available credit at a point in time)
+	- Export the symbol
 
 Changelog[v3]:
-	- Fault receive windows must enable interrupts and disable
-	  notifications. NX Windows are opposite.
-	- Use macros rather than enum for threshold-control mode
-	- Ignore irq_ports for in-kernel windows. They are needed for
-	  user space windows and will be added later
+	- Fix order of parameters in GET_FIELD().
+	- Update references and sequence for closing/quiescing a window.
 ---
- arch/powerpc/platforms/powernv/vas-window.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/vas.h              |  7 ++
+ arch/powerpc/platforms/powernv/vas-window.c | 99 +++++++++++++++++++++++++++--
+ 2 files changed, 101 insertions(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+index a3778d7..e1c5376 100644
+--- a/arch/powerpc/include/asm/vas.h
++++ b/arch/powerpc/include/asm/vas.h
+@@ -91,4 +91,11 @@ extern void vas_init_rx_win_attr(struct vas_rx_win_attr *rxattr,
+ extern struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+ 			struct vas_rx_win_attr *attr);
+ 
++/*
++ * Close the send or receive window identified by @win. For receive windows
++ * return -EAGAIN if there are active send windows attached to this receive
++ * window.
++ */
++int vas_win_close(struct vas_window *win);
++
+ #endif /* _MISC_VAS_H */
 diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index ff64022..dfa7e67 100644
+index dfa7e67..9704a3b 100644
 --- a/arch/powerpc/platforms/powernv/vas-window.c
 +++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -717,7 +717,7 @@ void clear_vinst_win(struct vas_window *window)
+@@ -139,7 +139,7 @@ static void unmap_region(void *addr, uint64_t start, int len)
+ /*
+  * Unmap the paste address region for a window.
+  */
+-void unmap_paste_region(struct vas_window *window)
++static void unmap_paste_region(struct vas_window *window)
+ {
+ 	int len;
+ 	uint64_t busaddr_start;
+@@ -535,7 +535,7 @@ int vas_assign_window_id(struct ida *ida)
+ 	return winid;
+ }
  
- 	mutex_lock(&vinst->mutex);
+-void vas_window_free(struct vas_window *window)
++static void vas_window_free(struct vas_window *window)
+ {
+ 	int winid = window->winid;
+ 	struct vas_instance *vinst = window->vinst;
+@@ -609,6 +609,14 @@ static bool valid_permissions(struct vas_window *rxwin)
+ 	return rc;
+ }
  
--	if (!window->tx_win) {
-+	if (!window->user_win && !window->tx_win) {
- 		WARN_ON_ONCE(!vinst->rxwin[window->cop]);
- 		vinst->rxwin[window->cop] = NULL;
- 	}
++static void put_rx_win(struct vas_window *rxwin)
++{
++	/* Better not be a send window! */
++	WARN_ON_ONCE(rxwin->tx_win);
++
++	atomic_dec(&rxwin->num_txwins);
++}
++
+ /*
+  * Find the user space receive window given the @pswid.
+  *
+@@ -710,7 +718,7 @@ static void set_vinst_win(struct vas_instance *vinst,
+  * Clear this window from the table(s) of windows for this VAS instance.
+  * See also function header of set_vinst_win().
+  */
+-void clear_vinst_win(struct vas_window *window)
++static void clear_vinst_win(struct vas_window *window)
+ {
+ 	int id = window->winid;
+ 	struct vas_instance *vinst = window->vinst;
+@@ -925,11 +933,92 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+ }
+ EXPORT_SYMBOL_GPL(vas_rx_win_open);
+ 
+-/* stub for now */
++static void poll_window_busy_state(struct vas_window *window)
++{
++	int busy;
++	uint64_t val;
++
++retry:
++	/*
++	 * Poll Window Busy flag
++	 */
++	val = read_hvwc_reg(window, VREG(WIN_STATUS));
++	busy = GET_FIELD(VAS_WIN_BUSY, val);
++	if (busy) {
++		val = 0;
++		schedule_timeout(2000);
++		goto retry;
++	}
++}
++
++static void poll_window_castout(struct vas_window *window)
++{
++	int cached;
++	uint64_t val;
++
++	/* Cast window context out of the cache */
++retry:
++	val = read_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL));
++	cached = GET_FIELD(VAS_WIN_CACHE_STATUS, val);
++	if (cached) {
++		val = 0ULL;
++		val = SET_FIELD(VAS_CASTOUT_REQ, val, 1);
++		val = SET_FIELD(VAS_PUSH_TO_MEM, val, 0);
++		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), val);
++
++		schedule_timeout(2000);
++		goto retry;
++	}
++}
++
++/*
++ * Close a window.
++ *
++ * See Section 1.12.1 of VAS workbook v1.05 for details on closing window:
++ *	- Disable new paste operations (unmap paste address)
++ *	- Poll for the "Window Busy" bit to be cleared
++ *	- Clear the Open/Enable bit for the Window.
++ *	- Poll for return of window Credits (implies FIFO empty for Rx win?)
++ *	- Unpin and cast window context out of cache
++ *
++ * Besides the hardware, kernel has some bookkeeping of course.
++ */
+ int vas_win_close(struct vas_window *window)
+ {
+-	return -1;
++	uint64_t val;
++
++	if (!window)
++		return 0;
++
++	if (!window->tx_win && atomic_read(&window->num_txwins) != 0) {
++		pr_devel("VAS: Attempting to close an active Rx window!\n");
++		WARN_ON_ONCE(1);
++		return -EAGAIN;
++	}
++
++	unmap_paste_region(window);
++
++	clear_vinst_win(window);
++
++	poll_window_busy_state(window);
++
++	/* Unpin window from cache and close it */
++	val = read_hvwc_reg(window, VREG(WINCTL));
++	val = SET_FIELD(VAS_WINCTL_PIN, val, 0);
++	val = SET_FIELD(VAS_WINCTL_OPEN, val, 0);
++	write_hvwc_reg(window, VREG(WINCTL), val);
++
++	poll_window_castout(window);
++
++	/* if send window, drop reference to matching receive window */
++	if (window->tx_win)
++		put_rx_win(window->rxwin);
++
++	vas_window_free(window);
++
++	return 0;
+ }
++EXPORT_SYMBOL_GPL(vas_win_close);
+ 
+ /*
+  * Return a system-wide unique window id for the window @win.
 -- 
 2.7.4
