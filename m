@@ -2,40 +2,40 @@ Return-Path: <srs0=ev05=7k=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqn05D2tzDqrC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:48 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqn03bM6z8vqD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqn22S3CzDqrS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:50 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqn20ND2z8sxC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:50 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xRqmz0ds9z9sNd
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:46 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3xRqn133Kxz9t2y
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:49 +1000 (AEST)
 Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v78N62pj067687
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:45 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c7jrecaps-1
+ v78N7QFm070775
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:47 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c7jrecar2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:45 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:47 -0400
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 8 Aug 2017 19:07:44 -0400
+ Tue, 8 Aug 2017 19:07:46 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
  oohall@gmail.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v6 16/17] powerpc/vas: Implement a simple FTW driver
-Date: Tue,  8 Aug 2017 16:07:01 -0700
+Subject: [PATCH v6 17/17] powerpc/vas: Document FTW API/usage
+Date: Tue,  8 Aug 2017 16:07:02 -0700
 In-Reply-To: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1502233622-9330-17-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1502233622-9330-18-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,558 +45,397 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Fast Thread Wake-up (FTW) driver provides user space applications an
-interface to the Core-to-Core functionality in POWER9. The driver provides
-the device node/ioctl API to applications and uses the external interfaces
-to the VAS driver to interact with the VAS hardware.
+Document the usage of the VAS Fast thread-wakeup API.
 
-A follow-on patch provides detailed description of the API for the driver.
+Thanks for input/comments from Benjamin Herrenschmidt, Michael Neuling,
+Michael Ellerman, Robert Blackmore, Ian Munsie, Haren Myneni, Paul Mackerras.
 
+Cc:Ian Munsie <imunsie@au1.ibm.com>
+Cc:Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- MAINTAINERS                             |   1 +
- arch/powerpc/platforms/powernv/Kconfig  |  16 ++
- arch/powerpc/platforms/powernv/Makefile |   1 +
- arch/powerpc/platforms/powernv/nx-ftw.c | 486 ++++++++++++++++++++++++++++++++
- 4 files changed, 504 insertions(+)
- create mode 100644 arch/powerpc/platforms/powernv/nx-ftw.c
+ Documentation/powerpc/ftw-api.txt | 373 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 373 insertions(+)
+ create mode 100644 Documentation/powerpc/ftw-api.txt
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c3f156c..a45c0c4 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6431,6 +6431,7 @@ L:	linuxppc-dev@lists.ozlabs.org
- S:	Supported
- F:	arch/powerpc/platforms/powernv/vas*
- F:	arch/powerpc/platforms/powernv/copy-paste.h
-+F:	arch/powerpc/platforms/powernv/nx-ftw*
- F:	arch/powerpc/include/asm/vas.h
- F:	arch/powerpc/include/uapi/asm/vas.h
- 
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index f565454..67ea0ff 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -44,3 +44,19 @@ config PPC_VAS
- 	  VAS adapters are found in POWER9 based systems.
- 
- 	  If unsure, say N.
-+
-+config PPC_FTW
-+	bool "IBM Fast Thread-Wakeup (FTW)"
-+	depends on PPC_VAS
-+	default n
-+	help
-+	  This enables support for IBM Fast Thread-Wakeup driver.
-+
-+	  The FTW driver allows applications to utilize a low overhead
-+	  core-to-core wake up mechansim in the IBM Virtual Accelerator
-+	  Switchboard (VAS) to improve performance.
-+
-+	  VAS adapters are found in POWER9 based systems and are required
-+	  for the FTW driver to be operational.
-+
-+	  If unsure, say N.
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index e4db292..dc60046 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -13,3 +13,4 @@ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
- obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
- obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
- obj-$(CONFIG_PPC_VAS)	+= vas.o vas-window.o
-+obj-$(CONFIG_PPC_FTW)	+= nx-ftw.o
-diff --git a/arch/powerpc/platforms/powernv/nx-ftw.c b/arch/powerpc/platforms/powernv/nx-ftw.c
+diff --git a/Documentation/powerpc/ftw-api.txt b/Documentation/powerpc/ftw-api.txt
 new file mode 100644
-index 0000000..a0b6388
+index 0000000..0b3f16f
 --- /dev/null
-+++ b/arch/powerpc/platforms/powernv/nx-ftw.c
-@@ -0,0 +1,486 @@
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/export.h>
-+#include <asm/cputable.h>
-+#include <linux/device.h>
-+#include <linux/debugfs.h>
-+#include <linux/cdev.h>
-+#include <linux/mutex.h>
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/sched.h>
-+#include <linux/uaccess.h>
-+#include <linux/bootmem.h>
-+#include <asm/opal-api.h>
-+#include <asm/opal.h>
-+#include <asm/page.h>
-+#include <asm/vas.h>
-+#include <asm/reg.h>
-+
-+/*
-+ * NX-FTW is a device driver used to provide user space access to the
-+ * Core-to-Core aka Fast Thread Wakeup (FTW) functionality provided by
-+ * the Virtual Accelerator Subsystem (VAS) in POWER9 systems. See also
-+ * arch/powerpc/platforms/powernv/vas*.
-+ *
-+ * The driver creates the device node /dev/crypto/nx-ftw that can be
-+ * used as follows:
-+ *
-+ *	fd = open("/dev/crypto/nx-ftw", O_RDWR);
-+ *	rc = ioctl(fd, VAS_RX_WIN_OPEN, &rxattr);
-+ *	rc = ioctl(fd, VAS_TX_WIN_OPEN, &txattr);
-+ *	paste_addr = mmap(NULL, PAGE_SIZE, prot, MAP_SHARED, fd, 0ULL).
-+ *	vas_copy(&crb, 0, 1);
-+ *	vas_paste(paste_addr, 0, 1);
-+ *
-+ * where "vas_copy" and "vas_paste" are defined in copy-paste.h.
-+ */
-+
-+static char		*nxftw_dev_name = "nx-ftw";
-+static atomic_t		nxftw_instid = ATOMIC_INIT(0);
-+static dev_t		nxftw_devt;
-+static struct dentry	*nxftw_debugfs;
-+static struct class	*nxftw_dbgfs_class;
-+
-+/*
-+ * Wrapper object for the nx-ftw device node - there is just one
-+ * instance of this node for the whole system.
-+ */
-+struct nxftw_dev {
-+	struct cdev cdev;
-+	struct device *device;
-+	char *name;
-+	atomic_t refcount;
-+} nxftw_device;
-+
-+/*
-+ * One instance per open of a nx-ftw device. Each nxftw_instance is
-+ * associated with a VAS window, after the caller issues VAS_RX_WIN_OPEN
-+ * or VAS_TX_WIN_OPEN ioctl.
-+ */
-+struct nxftw_instance {
-+	int instance;
-+	bool tx_win;
-+	struct vas_window *window;
-+};
-+
-+#define VAS_DEFAULT_VAS_ID	0
-+#define POWERNV_LPID		0	/* TODO: For VM/KVM guests? */
-+
-+static char *nxftw_devnode(struct device *dev, umode_t *mode)
-+{
-+	return kasprintf(GFP_KERNEL, "crypto/%s", dev_name(dev));
-+}
-+
-+static int nxftw_open(struct inode *inode, struct file *fp)
-+{
-+	int minor;
-+	struct nxftw_instance *nxti;
-+
-+	minor = MINOR(inode->i_rdev);
-+
-+	nxti = kzalloc(sizeof(*nxti), GFP_KERNEL);
-+	if (!nxti)
-+		return -ENOMEM;
-+
-+	nxti->instance = atomic_inc_return(&nxftw_instid);
-+	nxti->window = NULL;
-+
-+	fp->private_data = nxti;
-+	return 0;
-+}
-+
-+static int validate_txwin_user_attr(struct vas_tx_win_open_attr *uattr)
-+{
-+	int i;
-+
-+	if (uattr->version != 1)
-+		return -EINVAL;
-+
-+	if (uattr->flags & ~VAS_FLAGS_HIGH_PRI)
-+		return -EINVAL;
-+
-+	if (uattr->reserved1 || uattr->reserved2)
-+		return -EINVAL;
-+
-+	for (i = 0; i < sizeof(uattr->reserved3) / sizeof(uint64_t); i++) {
-+		if (uattr->reserved3[i])
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static bool validate_rxwin_user_attr(struct vas_rx_win_open_attr *uattr)
-+{
-+	int i;
-+
-+	if (uattr->version != 1)
-+		return -EINVAL;
-+
-+	for (i = 0; i < sizeof(uattr->reserved) / sizeof(uint64_t); i++) {
-+		if (uattr->reserved[i])
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+#ifdef vas_debug
-+static inline void dump_rx_win_attr(struct vas_rx_win_attr *attr)
-+{
-+	pr_err("NX-FTW: user %d, nx %d, fault %d, ntfy %d, intr %d early %d\n",
-+			attr->user_win ? 1 : 0,
-+			attr->nx_win ? 1 : 0,
-+			attr->fault_win ? 1 : 0,
-+			attr->notify_disable ? 1 : 0,
-+			attr->intr_disable ? 1 : 0,
-+			attr->notify_early ? 1 : 0);
-+
-+	pr_err("NX-FTW: rx_fifo %p, rx_fifo_size %d, max value 0x%x\n",
-+			attr->rx_fifo, attr->rx_fifo_size,
-+			VAS_RX_FIFO_SIZE_MAX);
-+
-+}
-+#else
-+static inline void dump_rx_win_attr(struct vas_rx_win_attr *attr)
-+{
-+}
-+#endif
-+
-+static int nxftw_ioc_open_rx_window(struct file *fp, unsigned long arg)
-+{
-+	int rc;
-+	struct vas_rx_win_open_attr uattr;
-+	struct vas_rx_win_attr rxattr;
-+	struct nxftw_instance *nxti = fp->private_data;
-+	struct vas_window *win;
-+
-+	rc = copy_from_user(&uattr, (void *)arg, sizeof(uattr));
-+	if (rc) {
-+		pr_devel("%s(): copy_from_user() returns %d\n", __func__, rc);
-+		return -EFAULT;
-+	}
-+
-+	rc = validate_rxwin_user_attr(&uattr);
-+	if (rc)
-+		return rc;
-+
-+	memset(&rxattr, 0, sizeof(rxattr));
-+
-+	rxattr.lnotify_lpid = POWERNV_LPID;
-+
-+	/*
-+	 * Only caller can own the window for now. Not sure if there is need
-+	 * for process P1 to make P2 the owner of a window. If so, we need to
-+	 * find P2, make sure we have permissions, get a reference etc.
-+	 */
-+	rxattr.lnotify_pid = mfspr(SPRN_PID);
-+	rxattr.lnotify_tid = mfspr(SPRN_TIDR);
-+	rxattr.rx_fifo = NULL;
-+	rxattr.rx_fifo_size = 0;
-+	rxattr.intr_disable = true;
-+	rxattr.user_win = true;
-+
-+	dump_rx_win_attr(&rxattr);
-+
-+	/*
-+	 * TODO: Rather than the default vas id, choose an instance of VAS
-+	 *	 based on the chip the caller is running.
-+	 */
-+	win = vas_rx_win_open(VAS_DEFAULT_VAS_ID, VAS_COP_TYPE_FTW, &rxattr);
-+	if (IS_ERR(win)) {
-+		pr_devel("%s() vas_rx_win_open() failed, %ld\n", __func__,
-+				PTR_ERR(win));
-+		return PTR_ERR(win);
-+	}
-+
-+	nxti->window = win;
-+	uattr.rx_win_handle = vas_win_id(win);
-+
-+	rc = copy_to_user((void *)arg, &uattr, sizeof(uattr));
-+	if (rc) {
-+		pr_devel("%s(): copy_to_user() failed, %d\n", __func__, rc);
-+		return -EFAULT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int nxftw_ioc_open_tx_window(struct file *fp, unsigned long arg)
-+{
-+	int rc;
-+	enum vas_cop_type cop;
-+	struct vas_window *win;
-+	struct vas_tx_win_open_attr uattr;
-+	struct vas_tx_win_attr txattr;
-+	struct nxftw_instance *nxti = fp->private_data;
-+
-+	rc = copy_from_user(&uattr, (void *)arg, sizeof(uattr));
-+	if (rc) {
-+		pr_devel("%s(): copy_from_user() failed, %d\n", __func__, rc);
-+		return -EFAULT;
-+	}
-+
-+	cop = VAS_COP_TYPE_FTW;
-+
-+	rc = validate_txwin_user_attr(&uattr);
-+	if (rc)
-+		return rc;
-+
-+	pr_devel("Pid %d: Opening txwin, cop %d, PIDR %ld\n",
-+				task_pid_nr(current), cop, mfspr(SPRN_PID));
-+
-+	vas_init_tx_win_attr(&txattr, cop);
-+
-+	txattr.lpid = POWERNV_LPID;
-+	txattr.pidr = mfspr(SPRN_PID);
-+	txattr.pid = task_pid_nr(current);
-+	txattr.user_win = true;
-+	txattr.pswid = uattr.rx_win_handle;
-+
-+	win = vas_tx_win_open(VAS_DEFAULT_VAS_ID, cop, &txattr);
-+	if (IS_ERR(win)) {
-+		pr_devel("%s() vas_tx_win_open() failed, %ld\n", __func__,
-+					PTR_ERR(win));
-+		return PTR_ERR(win);
-+	}
-+	nxti->window = win;
-+	nxti->tx_win = true;
-+
-+	return 0;
-+}
-+
-+static int nxftw_release(struct inode *inode, struct file *fp)
-+{
-+	struct nxftw_instance *nxti;
-+
-+	nxti = fp->private_data;
-+
-+	vas_win_close(nxti->window);
-+	nxti->window = NULL;
-+
-+	kfree(nxti);
-+	fp->private_data = NULL;
-+	atomic_dec(&nxftw_instid);
-+
-+	return 0;
-+}
-+
-+static ssize_t nxftw_write(struct file *fp, const char __user *buf,
-+			size_t len, loff_t *offsetp)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+static ssize_t nxftw_read(struct file *fp, char __user *buf, size_t len,
-+			loff_t *offsetp)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+static int nxftw_vma_fault(struct vm_fault *vmf)
-+{
-+	u64 offset;
-+	unsigned long vaddr;
-+	uint64_t pbaddr_start;
-+	struct nxftw_instance *nxti;
-+	struct vm_area_struct *vma = vmf->vma;
-+
-+	nxti = vma->vm_private_data;
-+	offset = vmf->pgoff << PAGE_SHIFT;
-+	vaddr = (unsigned long)vmf->address;
-+
-+	pbaddr_start = vas_win_paste_addr(nxti->window);
-+
-+	pr_devel("%s() instance %d, pbaddr 0x%llx, vaddr 0x%lx,"
-+			"offset %llx, pgoff 0x%lx, vma-start 0x%zx,"
-+			"size %zd\n", __func__, nxti->instance,
-+			pbaddr_start, vaddr, offset, vmf->pgoff,
-+			vma->vm_start, vma->vm_end-vma->vm_start);
-+
-+	vm_insert_pfn(vma, vaddr, (pbaddr_start + offset) >> PAGE_SHIFT);
-+
-+	return VM_FAULT_NOPAGE;
-+}
-+
-+const struct vm_operations_struct nxftw_vm_ops = {
-+	.fault = nxftw_vma_fault,
-+};
-+
-+static int nxftw_mmap(struct file *fp, struct vm_area_struct *vma)
-+{
-+	struct nxftw_instance *nxti = fp->private_data;
-+
-+	if ((vma->vm_end - vma->vm_start) > PAGE_SIZE) {
-+		pr_devel("%s(): size 0x%zx, PAGE_SIZE 0x%zx\n", __func__,
-+				(vma->vm_end - vma->vm_start), PAGE_SIZE);
-+		return -EINVAL;
-+	}
-+
-+	/* Ensure instance has an open send window */
-+	if (!nxti->window || !nxti->tx_win) {
-+		pr_devel("%s(): No send window open?\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	/* flags, page_prot from cxl_mmap(), except we want cachable */
-+	vma->vm_flags |= VM_IO | VM_PFNMAP;
-+	vma->vm_page_prot = pgprot_cached(vma->vm_page_prot);
-+
-+	vma->vm_ops = &nxftw_vm_ops;
-+	vma->vm_private_data = nxti;
-+
-+	return 0;
-+}
-+
-+static long nxftw_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
-+{
-+	struct nxftw_instance *nxti;
-+
-+	nxti = fp->private_data;
-+
-+	pr_devel("%s() cmd 0x%x, TX_WIN_OPEN 0x%lx\n", __func__, cmd,
-+			VAS_TX_WIN_OPEN);
-+	switch (cmd) {
-+
-+	case VAS_TX_WIN_OPEN:
-+		return nxftw_ioc_open_tx_window(fp, arg);
-+
-+	case VAS_RX_WIN_OPEN:
-+		return nxftw_ioc_open_rx_window(fp, arg);
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+const struct file_operations nxftw_fops = {
-+	.owner = THIS_MODULE,
-+	.open = nxftw_open,
-+	.release = nxftw_release,
-+	.read = nxftw_read,
-+	.write = nxftw_write,
-+	.mmap = nxftw_mmap,
-+	.unlocked_ioctl = nxftw_ioctl,
-+};
-+
-+
-+int nxftw_file_init(void)
-+{
-+	int rc;
-+	dev_t devno;
-+
-+	rc = alloc_chrdev_region(&nxftw_devt, 1, 1, "nx-ftw");
-+	if (rc) {
-+		pr_err("Unable to allocate nxftw major number: %i\n", rc);
-+		return rc;
-+	}
-+
-+	pr_devel("NX-FTW device allocated, dev [%i,%i]\n", MAJOR(nxftw_devt),
-+			MINOR(nxftw_devt));
-+
-+	nxftw_dbgfs_class = class_create(THIS_MODULE, "nxftw");
-+	if (IS_ERR(nxftw_dbgfs_class)) {
-+		pr_err("Unable to create NX-FTW class\n");
-+		rc = PTR_ERR(nxftw_dbgfs_class);
-+		goto err;
-+	}
-+	nxftw_dbgfs_class->devnode = nxftw_devnode;
-+
-+	cdev_init(&nxftw_device.cdev, &nxftw_fops);
-+
-+	devno = MKDEV(MAJOR(nxftw_devt), 0);
-+	if (cdev_add(&nxftw_device.cdev, devno, 1)) {
-+		pr_err("NX-FTW: cdev_add() failed\n");
-+		goto err;
-+	}
-+
-+	nxftw_device.device = device_create(nxftw_dbgfs_class, NULL,
-+			devno, NULL, nxftw_dev_name, MINOR(devno));
-+	if (IS_ERR(nxftw_device.device)) {
-+		pr_err("Unable to create nxftw-%d\n", MINOR(devno));
-+		goto err;
-+	}
-+
-+	pr_devel("%s: Added dev [%d,%d]\n", __func__, MAJOR(devno),
-+			MINOR(devno));
-+	return 0;
-+
-+err:
-+	unregister_chrdev_region(nxftw_devt, 1);
-+	return rc;
-+}
-+
-+void nxftw_file_exit(void)
-+{
-+	dev_t devno;
-+
-+	pr_devel("NX-FTW: %s entered\n", __func__);
-+
-+	cdev_del(&nxftw_device.cdev);
-+	devno = MKDEV(MAJOR(nxftw_devt), MINOR(nxftw_devt));
-+	device_destroy(nxftw_dbgfs_class, devno);
-+
-+	class_destroy(nxftw_dbgfs_class);
-+	unregister_chrdev_region(nxftw_devt, 1);
-+}
-+
-+
-+/*
-+ * Create a debugfs entry. Not sure what for yet, though
-+ */
-+int __init nxftw_debugfs_init(void)
-+{
-+	struct dentry *ent;
-+
-+	ent = debugfs_create_dir("nxftw", NULL);
-+	if (IS_ERR(ent)) {
-+		pr_devel("nxftw: %s(): error creating dbgfs dir\n", __func__);
-+		return PTR_ERR(ent);
-+	}
-+	nxftw_debugfs = ent;
-+
-+	return 0;
-+}
-+
-+void nxftw_debugfs_exit(void)
-+{
-+	debugfs_remove_recursive(nxftw_debugfs);
-+}
-+
-+int __init nxftw_init(void)
-+{
-+	int rc;
-+
-+	rc = nxftw_file_init();
-+	if (rc)
-+		return rc;
-+
-+	rc = nxftw_debugfs_init();
-+	if (rc)
-+		goto free_file;
-+
-+	pr_err("NX-FTW Device initialized\n");
-+
-+	return 0;
-+
-+free_file:
-+	nxftw_file_exit();
-+	return rc;
-+}
-+
-+void __init nxftw_exit(void)
-+{
-+	pr_devel("NX-FTW Device exiting\n");
-+	nxftw_debugfs_exit();
-+	nxftw_file_exit();
-+}
-+
-+module_init(nxftw_init);
-+module_exit(nxftw_exit);
-+
-+MODULE_DESCRIPTION("IBM NX Fast Thread Wakeup Device");
-+MODULE_AUTHOR("Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>");
-+MODULE_LICENSE("GPL");
++++ b/Documentation/powerpc/ftw-api.txt
+@@ -0,0 +1,373 @@
++Virtual Accelerator Switchboard and Fast Thread-Wakeup API
++
++    Power9 processor supports a hardware subystem known as the Virtual
++    Accelerator Switchboard (VAS) which allows two entities in the Power9
++    system to efficiently exchange messages. Messages must be formatted as
++    Coprocessor Reqeust Blocks (CRB) and be submitted using the COPY/PASTE
++    instructions (new in Power9).
++
++    Usage of VAS depends on the entities exchanging the messages and
++    currently two usages have been identified.
++
++    First usage of VAS, referred to as VAS/NX involves a software thread
++    submitting data compression requests to a co-processor (hardware/nest
++    accelerator) aka NX engine. The API for this usage is described in the
++    VAS/NX API document.
++
++    Alternatively, VAS can be used by two software threads to efficiently
++    exchange messages. Initially, this mechanism is intended to wake up a
++    waiting thread quickly - i.e "fast thread wake-up (FTW)". This document
++    describes the user API for this VAS/FTW mechanism.
++
++    Application access to the FTW mechanism is provided through the NX-FTW
++    device node (/dev/crypto/nx-ftw) implemented by the VAS/FTW device
++    driver.
++
++    A software thread T1 that intends to wait for an event must first setup
++    a receive window, by opening the NX-FTW device and using the
++    VAS_RX_WIN_OPEN ioctl. Upon successful return from the VAS_RX_WIN_OPEN
++    ioctl, an rx_win_handle is returned.
++
++    A software thread T2 that intends to wake up T1 at some point, must first
++    set up a "send window" using the VAS_TX_WIN_OPEN ioctl and specify the
++    rx_win_handle obtained by T1. After a successful VAS_TX_WIN_OPEN ioctl the
++    send window of T2 is considered paired with the receive window of T1. The
++    thread T2 must then use mmap() to obtain a "paste address" for the send
++    window.
++
++    With this set up, thread T1 can wait for an event using the WAIT
++    instruction.
++
++    Thread T2 can wake up T1 by using the "COPY/PASTE" instructions and
++    submitting an empty/NULL CRB to the send window's paste address. The
++    wait/wake up process can be repeated as long as the threads have the
++    send/receive windows open.
++
++1. NX-FTW Device Node
++
++    There is one /dev/crypto/nx-ftw node in the system and it provides
++    access to the VAS/FTW functionality.
++
++    The only valid operations on the NX-FTW node are:
++
++        - open() the device for read and write.
++
++        - issue either VAS_RX_WIN_OPEN or VAS_TX_WIN_OPEN ioctls to set up
++          receive or send (only one of them per open).
++
++        - if the open is associated with send window (i.e VAS_TX_WIN_OPEN
++          ioctl was issued) mmap() the send window into the application's
++          virtual address space. (i.e get a 'paste_address' for the send
++          window).
++
++        - close the device node.
++
++    Other file operations on the NX-FTW node are undefined.
++
++    Note tHAT the COPY and PASTE operations go directly to the hardware
++    and not go through the NX-FTW device.
++
++    Although a system may have several instances of the VAS in the system
++    (typically, one per P9 chip) there is just one NX-FTW device node in
++    the system.
++
++	When the NX-FTW device node is opened, the kernel assigns a suitable
++	instance of VAS to the process. Kernel will make a best-effort attempt
++	to assign an optimal instance of VAS for the process. In the initial
++    release, the kernel does not support migrating the VAS instance if the
++    process migrates from a processor on one chip to a processor on another
++    chip.
++
++    Applications may chose a specific instance of the VAS using the 'vas_id'
++    field in the VAS_TX_WIN_OPEN and VAS_RX_WIN_OPEN ioctls as detailed below.
++
++2. Open NX-FTW node
++
++    The device should be opened for read and write. No special privileges
++    are needed to open the device. The device may be opened multiple times.
++
++    Each open() of the NX-FTW device may be associated with either a send
++    window or receive window but not both.
++
++    See open(2) system call man pages for other details such as return
++    values, error codes and restrictions.
++
++3. Setup Receive window (VAS_RX_WIN_OPEN ioctl)
++
++    A thread that expects to wait for events and be woken up using COPY/PASTE
++    must first set up a receive window by issuing the VAS_RX_WIN_OPEN ioctl.
++
++        #include <asm/vas.h>
++
++        struct vas_rx_win_open_attr rxattr;
++
++        rc = ioctl(fd, VAS_RX_WIN_OPEN, &rxattr);
++
++    The attributes of rxattr are as follows:
++
++        struct vas_rx_win_open_attr {
++                int16_t       version;
++                int16_t       vas_id;
++                int32_t       rx_win_handle;    /* output field */
++                int64_t       reserved[8];
++        };
++
++    The version field identifies the version of the API and must currently
++    be set to 1.
++
++    The vas_id field identifies a specific instance of the VAS that the
++    application wishes to access. See section on VAS ID below.
++
++    The reserved field must be set to all zeroes.
++
++    Upon successful return from the ioctl, the rx_win_handle field contains
++    an identifier for the VAS window associated with this "sleeping" thread.
++
++    This rx_win_handle field is used to "pair" this receive window with a
++    send window and must be specified when opening the corresponding send
++    window (see struct vas_tx_win_open_attr below).
++
++    Return value:
++
++    The VAS_RX_WIN_OPEN ioctl returns 0 on success. On error, it returns -1
++    and sets the errno variable to indicate the error.
++
++    Error codes:
++
++        EINVAL      version is invalid
++
++        EINVAL      vas_id is invalid
++
++        EINVAL      reserved field is not set to zeroes
++
++        EINVAL      fd is already associated with a send window
++
++
++3. Set up a Send window (VAS_TX_WIN_OPEN ioctl)
++
++    An application thread that expects to wake up a waiting thread using
++    copy/paste, must first set up a send window that is paired with the
++    receive window of the waiting thread. This is accomplished using the
++    VAS_TX_WIN_OPEN ioctl.
++
++        #include <asm/vas.h>
++
++        struct vas_tx_win_open_attr txattr;
++
++        rc = ioctl(fd, VAS_TX_WIN_OPEN, &txattr);
++
++    The attributes 'txattr' for the VAS_TX_WIN_OPEN ioctl are defined as
++    follows:
++
++        struct vas_tx_win_open_attr {
++            int32_t       version;
++            int16_t       vas_id;
++            uint32_t      rx_win_handle;
++
++            int64_t       reserved1;
++
++            int64_t       flags;
++            int64_t       reserved2;
++
++            int32_t       tc_mode;
++            int32_t       rsvd_txbuf;
++            int64_t       reserved3[6];
++        };
++
++    The version field must currently be set to 1.
++
++    The vas_id field identifies a specific instance of the VAS that the
++    application wishes to access. See section on VAS ID below.
++
++    The rx_win_handle field must be set to the rx_win_handle returned by
++    a prior successful call to VAS_RX_WIN_OPEN ioctl (see above). This
++    field is used to pair this send window with a receive window. The
++    process must have sufficient permissions to communicate with the
++    process owning the receive window identified by rx_win_handle.
++
++    The tc_mode and  rsvd_txbuf fields are currently unused and must be
++    set to 0
++
++    The flags field specifies additional attributes to the window. The
++    only valid bit in the flag are for FTW windows is:
++
++        VAS_FLAGS_PIN_WINDOW    if set, indicates the a window should be
++                                pinned in cache. This flag is restricted
++                                to privileged users. See Pinning windows
++                                below.
++
++    All the other bits in the flags field must be set to 0.
++
++    The fields reserved1, reserved2 and reserved3 are for future extension
++    and must be set to 0.
++
++    Return value:
++
++    The VAS_TX_WIN_OPEN ioctl returns 0 on success. On error, it returns -1
++    and sets the errno variable to indicate the error.
++
++    Error conditions:
++
++        EINVAL      version, vas_id or rx_win_handle fields are invalid
++
++        EINVAL      fd does not refer to a valid VAS device.
++
++        EINVAL      fd is already associated with a receive window
++
++        ENOSPC      System has too many active windows (connections) open,
++
++        EINVAL      For FTW windows, rsvd_txbuf is not 0.
++
++        EINVAL      For FTW windows, tc_mode is not VAS_THRESH_DISABLED.
++
++        EPERM       VAS_FLAGS_PIN_WINDOW is set in 'flags' field and process
++                    is not privileged.
++
++        EPERM       VAS_FLAGS_HIGH_PRI is set in 'flags' field and process
++                    is not privileged.
++
++        EINVAL      an invalid flag is set in the 'flags' field. (For FTW
++                    windows, VAS_FLAGS_HIGH_PRI is also invalid).
++
++        EINVAL      reserved fields are not set to 0.
++
++    See the ioctl(2) man page for more details, error codes and restrictions.
++
++4. mmap() NX-FTW device fd
++
++    The mmap() system call for a NX-FTW device fd returns a "paste address"
++    that the application can use to COPY/PASTE a CRB to the waiting thread.
++
++        paste_addr = mmap(NULL, size, prot, flags, fd, offset);
++
++    The mmap() operation is only valid on a file descriptor associated
++    with a send window.
++
++    Only restrictions on mmap for a NX-FTW device fd are:
++
++        - size parameter should be one page size
++
++        - offset parameter should be 0ULL.
++
++    Refer to mmap(2) man page for additional details/restrictions.
++
++    In addition to the error conditions listed on the mmap(2) man page,
++    mmap() can also fail with one of following error codes:
++
++        EINVAL      fd is not associated with an open send window (i.e mmap()
++                    does not follow a successful call to the VAS_TX_WIN_OPEN
++                    ioctl).
++
++        EINVAL      offset field is not 0ULL.
++
++
++5. VAS ID
++
++    A system may have several instances of VAS in the hardware, typically
++    one per POWER 9 chip. The choice of a specific instance of VAS can have
++    significant impact on the performance, specially if the application
++    migrates from one CPU to another. Applications can specify a vas_id
++    using the VAS_TX_WIN_OPEN and VAS_RX_WIN_OPEN ioctls and should be
++    prudent in choosing an instance of VAS.
++
++    The vas_id for each instance of VAS is listed as the device tree
++    property 'ibm,vas-id'. Determining the specific vas_id to use for
++    a specific application thread is beyond the scope of this API.
++
++    If the application has no preference, the vas_id field may be set to
++    -1 and the kernel will choose a suitable instance of the VAS engine.
++
++6. COPY/PASTE operations:
++
++    Applications should use the COPY and PASTE instructions defined in
++    the RFC to copy/paste the CRB. For VAS/FTW usage, the contents of
++    CRB if any, are ignored. CRB can be NULL.
++
++7. Interrupt completion and signal handling
++
++    No VAS-specific signals will be generated to the application threads
++    with the VAS/FTW usage.
++
++
++8. Example/Proposed usage of the VAS/FTW API
++
++    In the following example we use two threads that use the VAS/FTW API.
++    Thread T1 uses the WAIT instruction to wait for an event. Thread T2
++    uses copy/paste instructions to wake up T1.
++
++    Common interfaces:
++
++        static bool paste_done;
++        uint32_t rx_win_handle;
++
++        #define WAIT    .long (0x7C00003C)
++
++        static inline int do_wait(void)
++        {
++                __asm__ __volatile(stringify_in_c(WAIT)";");
++        }
++
++        /*
++         * Check if paste_done is true
++         */
++        static bool is_paste_done(void)
++        {
++                return __sync_bool_compare_and_swap(&paste_done, 1, 0);
++
++        }
++
++        /*
++         * Set paste_done to true
++         */
++        static inline void set_paste_done(void)
++        {
++                __sync_bool_compare_and_swap(&paste_done, 0, 1);
++        }
++
++    Thread T1:
++
++        struct vas_rx_win_open_attr rxattr;
++
++        fd = open("/dev/crypto/nx-ftw", O_RDWR);
++
++        memset(&rxattr, 0, sizeof(rxattr));
++        rxattr.version = 1;
++
++        rc = ioctl(fd, VAS_RX_WIN_OPEN, &rxattr);
++
++        rx_win_handle = rxattr.rx_win_handle;
++
++        /* Tell T2 that Rx window is ready to be paired */
++        pthread_cond_signal(&rx_win_ready);
++
++        /* Rx set up done */
++
++        /* later, wait for an event to occur */
++
++        while(!is_paste_done())
++            do_wait();
++
++    Thread T2:
++
++        struct vas_tx_win_open_attr txattr;
++
++        fd = open("/dev/crypto/nx-ftw", O_RDWR);
++
++        /* Wait for Rx window to be set up first */
++        pthread_cond_wait(&rx_win_ready);
++
++        memset(&txattr, 0, sizeof(txattr));
++        txattr.version = 1;
++        txattr.rx_win_handle = rx_win_handle;
++
++        rc = ioctl(fd, VAS_TX_WIN_OPEN, &txattr);
++
++        prot = PROT_READ|PROT_WRITE;
++        paste_addr = mmap(NULL, 4096, prot, MAP_SHARED, fd, 0ULL);
++
++        /* Tx setup done */
++
++        /* later ... */
++
++        set_paste_done();           /* ... event occured */
++        write_null_crb(paste_addr); /* wake up T1 */
 -- 
 2.7.4
