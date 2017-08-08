@@ -1,17 +1,18 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRWw92DlszDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:12:57 +1000 (AEST)
-In-Reply-To: <1502189757-11623-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: schwab@linux-m68k.org, npiggin@gmail.com
-Subject: Re: Revert "powerpc/64: Avoid restore_math call if possible in
- syscall exit"
-Message-Id: <3xRWw904g6z9s83@ozlabs.org>
-Date: Tue,  8 Aug 2017 21:12:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXM1425RzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:32:45 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: fix invalid use of register expressions
+In-Reply-To: <878tixj3wg.fsf@linux-m68k.org>
+References: <878tixj3wg.fsf@linux-m68k.org>
+Date: Tue, 08 Aug 2017 21:32:44 +1000
+Message-ID: <87poc6mh0j.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,46 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-08-08 at 10:55:57 UTC, Michael Ellerman wrote:
-> This reverts commit bc4f65e4cf9d6cc43e0e9ba0b8648cf9201cd55f.
-> 
-> As reported by Andreas, this commit is causing unrecoverable SLB misses in the
-> system call exit path:
-> 
->   Unrecoverable exception 4100 at c00000000000a1ec
->   Oops: Unrecoverable exception, sig: 6 [#1]
->   SMP NR_CPUS=2 PowerMac
->   ...
->   CPU: 0 PID: 18626 Comm: rm Not tainted 4.13.0-rc3 #1
->   task: c00000018335e080 task.stack: c000000139e50000
->   NIP: c00000000000a1ec LR: c00000000000a118 CTR: 0000000000000000
->   REGS: c000000139e53bb0 TRAP: 4100   Not tainted  (4.13.0-rc3)
->   MSR: 9000000000001030 <SF,HV,ME,IR,DR> CR: 24000044  XER: 20000000 SOFTE: 1
->   GPR00: 0000000000000000 c000000139e53e30 c000000000abb500 fffffffffffffffe
->   GPR04: c0000001eb866298 0000000000000000 0000000000000000 c00000018335e080
->   GPR08: 900000000000d032 0000000000000000 0000000000000002 fffffffffffff001
->   GPR12: c000000139e50000 c00000000ffff000 00003fffa8c0dca0 00003fffa8c0dc88
->   GPR16: 0000000010000000 0000000000000001 00003fffa8c0eaa0 0000000000000000
->   GPR20: 00003fffa8c27528 00003fffa8c27b00 0000000000000000 0000000000000000
->   GPR24: 00003fffa8c0d918 00003ffff1b3efa0 00003fffa8c26d68 0000000000000000
->   GPR28: 00003fffa8c249e8 00003fffa8c263d0 00003fffa8c27550 00003ffff1b3ef10
->   NIP [c00000000000a1ec] system_call_exit+0xc0/0x21c
->   LR [c00000000000a118] system_call+0x58/0x6c
->   Call Trace:
->   [c000000139e53e30] [c00000000000a118] system_call+0x58/0x6c (unreliable)
->   Instruction dump:
->   64a51000 7c6300d0 f8a101a0 4bffff9c 3c000000 60000006 780007c6 64000000
->   60000000 7c004039 4082001c e8ed0170 <88070b78> 88c70b79 7c003214 2c200000
-> 
-> This is caused by us trying to load THREAD_LOAD_FP with MSR_RI=0, and taking an
-> SLB miss on the thread struct.
-> 
-> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-> Diagnosed-by: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Andreas Schwab <schwab@linux-m68k.org> writes:
 
-Applied to powerpc fixes.
+> binutils >= 2.26 now warns about misuse of register expressions in
+> assembler operands that are actually literals, for example:
+>
+> arch/powerpc/kernel/entry_64.S:535: Warning: invalid register expression
+>
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> ---
+>  arch/powerpc/include/asm/ppc_asm.h |  2 +-
+>  arch/powerpc/kernel/swsusp_asm64.S |  2 +-
+>  arch/powerpc/kvm/book3s_64_slb.S   |  2 +-
+>  arch/powerpc/lib/copypage_power7.S | 14 ++++----
+>  arch/powerpc/lib/copyuser_power7.S | 66 +++++++++++++++++++-------------------
+>  arch/powerpc/lib/memcpy_power7.S   | 66 +++++++++++++++++++-------------------
+>  arch/powerpc/lib/string_64.S       |  2 +-
+>  7 files changed, 77 insertions(+), 77 deletions(-)
 
-https://git.kernel.org/powerpc/c/44a12806d010944a5727f1dc991231
+Thanks. I updated the change log to mention that it's almost always
+s/r0/0/.
+
+And I folded in:
+
+diff --git a/arch/powerpc/purgatory/trampoline.S b/arch/powerpc/purgatory/trampoline.S
+index 3696ea6c4826..30277446892c 100644
+--- a/arch/powerpc/purgatory/trampoline.S
++++ b/arch/powerpc/purgatory/trampoline.S
+@@ -67,7 +67,7 @@ master:
+ 	mr	%r16,%r3	/* save dt address in reg16 */
+ 	li	%r4,20
+ 	LWZX_BE	%r6,%r3,%r4	/* fetch __be32 version number at byte 20 */
+-	cmpwi	%r0,%r6,2	/* v2 or later? */
++	cmpwi	%cr0,%r6,2	/* v2 or later? */
+ 	blt	1f
+ 	li	%r4,28
+ 	STWX_BE	%r17,%r3,%r4	/* Store my cpu as __be32 at byte 28 */
 
 cheers
