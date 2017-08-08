@@ -1,24 +1,15 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRPzt2qWnzDrFt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 16:45:46 +1000 (AEST)
-Subject: Re: [01/24] powerpc/mm: Move exception_enter/exit to a do_page_fault
- wrapper
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Michael Ellerman <patch-notifications@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-References: <3xQvGm0kQ5z9sR9@ozlabs.org>
- <dca04b16-c97a-3d8c-a748-7945d0fb80dd@c-s.fr>
- <87poc6olbp.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <24c35bb0-2152-f381-9783-6fc820a0e72c@c-s.fr>
-Date: Tue, 8 Aug 2017 08:45:42 +0200
-MIME-Version: 1.0
-In-Reply-To: <87poc6olbp.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRQRt0YfRzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 17:06:34 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/iommu: Avoid undefined right shift in
+ iommu_range_alloc()
+Date: Tue,  8 Aug 2017 17:06:32 +1000
+Message-Id: <1502175992-13626-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In iommu_range_alloc() we generate a mask by right shifting ~0,
+however if the specified alignment is 0 then we right shift by 64,
+which is undefined. UBSAN tells us so:
 
+  UBSAN: Undefined behaviour in ../arch/powerpc/kernel/iommu.c:193:35
+  shift exponent 64 is too large for 64-bit type 'long unsigned int'
 
-Le 08/08/2017 à 04:16, Michael Ellerman a écrit :
-> Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> 
->> Le 07/08/2017 à 12:41, Michael Ellerman a écrit :
->>> On Wed, 2017-07-19 at 04:49:23 UTC, Benjamin Herrenschmidt wrote:
->>>> This will allow simplifying the returns from do_page_fault
->>>>
->>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>
->>> Series applied to powerpc next, thanks.
->>>
->>> https://git.kernel.org/powerpc/c/7afad422ac61067473d5f3d20bbd54
->>
->> Boot failure on the 8xx:
->>
->> [    6.029556] Failed to execute /init (error -14)
->> [    6.034623] Starting init: /bin/sh exists but couldn't execute it
->> (error -14)
->> [    6.041489] Kernel panic - not syncing: No working init found.  Try
->> passing init= option to kernel. See Linux
->> Documentation/admin-guide/init.rst for guidance.
->> [    6.055518] CPU: 0 PID: 1 Comm: init Not tainted
->> 4.13.0-rc3-s3k-dev-00143-g7aa62e972a56 #56
->> [    6.063745] Call Trace:
->> [    6.066224] [c60f1ed0] [c001a624] panic+0x108/0x250 (unreliable)
->> [    6.072140] [c60f1f30] [c0002640] rootfs_mount+0x0/0x58
->> [    6.077311] [c60f1f40] [c000cb80] ret_from_kernel_thread+0x5c/0x64
->> [    6.083405] Rebooting in 180 seconds..
->>
->>
->> Bisected to c433ec0455f921eaf8dd0262a718ce6f8ad62ea2 ("powerpc/mm:
->> Pre-filter SRR1 bits before do_page_fault()")
-> 
-> Sorry about that. I don't have a way to test 8xx.
+We can avoid it by instead generating the mask with:
 
-Looks like I concluded too quickly yesterday night, indeed the above 
-commit is the last good one. The faulty one is 
-d300627c6a53693fb01479b59b0cdd293761b1fa("powerpc/6xx: Handle DABR match 
-before calling do_page_fault")
+  align_mask = (1ull << align_order) - 1;
 
-> 
->> Will see tomorrow what's wrong with that.
-> 
-> Thanks.
+That will also generate an undefined shift if align_order is 64 or
+greater, but that shouldn't be a problem for a while.
 
-This is because the 'bl do_page_fault' has been enclosed inside the 
-#ifdef CONFIG_6xx
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/iommu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-See patch at https://patchwork.ozlabs.org/patch/799039/
-
-Christophe
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 0e49a4560cff..e0af6cd7ba4f 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -190,7 +190,7 @@ static unsigned long iommu_range_alloc(struct device *dev,
+ 	unsigned int pool_nr;
+ 	struct iommu_pool *pool;
+ 
+-	align_mask = 0xffffffffffffffffl >> (64 - align_order);
++	align_mask = (1ull << align_order) - 1;
+ 
+ 	/* This allocator was derived from x86_64's bit string search */
+ 
+-- 
+2.7.4
