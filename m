@@ -1,34 +1,41 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=ev05=7k=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRd8q4209zDqkp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 01:09:15 +1000 (AEST)
-Received: from mail-qt0-f180.google.com (mail-qt0-f180.google.com
- [209.85.216.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmV2PddzDqkQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:22 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmV0VCNz8vqD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:22 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9C7B322DA6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 15:09:13 +0000 (UTC)
-Received: by mail-qt0-f180.google.com with SMTP id v29so21193256qtv.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Aug 2017 08:09:13 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <87mv7aol41.fsf@concordia.ellerman.id.au>
-References: <20170725214427.25768-1-robh@kernel.org>
- <CAL_Jsq+tarBMM-frN+V9GYa-ZAzfJO4sv2owdOS3Ks+urned1g@mail.gmail.com>
- <87mv7aol41.fsf@concordia.ellerman.id.au>
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 8 Aug 2017 10:08:52 -0500
-Message-ID: <CAL_Jsq+-GuQKgM5uWpBDW8cwcT6_3x5ksYY1qMY1MLvSvP-vPg@mail.gmail.com>
-Subject: Re: [PATCH 0/4] Removing full paths from DT full_name
+ by ozlabs.org (Postfix) with ESMTPS id 3xRqmS3GHsz9s7F
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:20 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v78N7Im8022370
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:18 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c7k46jmqc-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:18 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 8 Aug 2017 19:07:17 -0400
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset="UTF-8"
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v6 02/17] powerpc/vas: Move GET_FIELD/SET_FIELD to vas.h
+Date: Tue,  8 Aug 2017 16:06:47 -0700
+In-Reply-To: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1502233622-9330-3-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,48 +45,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 7, 2017 at 9:21 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Rob Herring <robh@kernel.org> writes:
->
->> On Tue, Jul 25, 2017 at 4:44 PM, Rob Herring <robh@kernel.org> wrote:
->>> This series is the last steps to remove storing the full path for every
->>> DT node. Instead, we can create full path strings dynamically as needed
->>> with printf %pOF specifiers (commit ce4fecf1fe15). There are a number of
->>> remaining direct users of full_name after this series. I don't believe
->>> there should be any functional impact for those users with the change to
->>> only the node name (+unit-address). The majority are for struct
->>> resource.name. This should only affect /proc/iomem display.
->>>
->>> Patches 1 and 2 can be applied now for 4.14. For patches 3 and 4, my
->>> target is 4.15 after all the dependencies have been merged.
->>>
->>> PPC folks, Please test! The PPC parts are untested. A git branch with
->>> all the dependencies is here[1].
->>
->> PPC folks, any chance to test this?
->
-> I got stuck on your %pOF conversion, which broke the vio.c code, because of:
->
-> -               if (!strcmp(parent_node->full_name, "/ibm,platform-facilities"))
-> +               if (!strcmp(parent_node->full_name, "ibm,platform-facilities"))
->
-> But full_name hasn't been changed yet.
+Move the GET_FIELD and SET_FIELD macros to vas.h as VAS and other
+users of VAS, including NX-842 can use those macros.
 
-Ah, those lines need to be dropped from the %pOF conversion. I'll send
-a new version.
+There is a lot of related code between the VAS/NX kernel drivers
+and skiboot. For consistency switch the order of parameters in
+SET_FIELD to match the order in skiboot.
 
-What I was originally considering here was just:
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Reviewed-by: Dan Streetman <ddstreet@ieee.org>
+---
 
-strcmp(kbasename(parent_node->full_name), "ibm,platform-facilities")
+Changelog[v3]
+	- Fix order of parameters in nx-842 driver.
+---
+ arch/powerpc/include/uapi/asm/vas.h | 8 ++++++++
+ drivers/crypto/nx/nx-842-powernv.c  | 7 ++++---
+ drivers/crypto/nx/nx-842.h          | 5 -----
+ 3 files changed, 12 insertions(+), 8 deletions(-)
 
-That would work for "/foo/ibm,platform-facilities" too, but IMO
-validation of the DT is not the kernel's job (if it is, we're doing a
-horrible job). But in the end here, I decided to keep the existing
-full path matching as patch 1 does.
-
-> But patch 1 here should fix that, so I'll pull it all together and try
-> and get it tested.
-
-Thanks.
-
-Rob
+diff --git a/arch/powerpc/include/uapi/asm/vas.h b/arch/powerpc/include/uapi/asm/vas.h
+index ddfe046..21249f5 100644
+--- a/arch/powerpc/include/uapi/asm/vas.h
++++ b/arch/powerpc/include/uapi/asm/vas.h
+@@ -22,4 +22,12 @@
+ #define VAS_THRESH_FIFO_GT_QTR_FULL	2
+ #define VAS_THRESH_FIFO_GT_EIGHTH_FULL	3
+ 
++/*
++ * Get/Set bit fields
++ */
++#define GET_FIELD(m, v)		(((v) & (m)) >> MASK_LSH(m))
++#define MASK_LSH(m)		(__builtin_ffsl(m) - 1)
++#define SET_FIELD(m, v, val)	\
++		(((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
++
+ #endif /* _UAPI_MISC_VAS_H */
+diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+index 1710f80..3abb045 100644
+--- a/drivers/crypto/nx/nx-842-powernv.c
++++ b/drivers/crypto/nx/nx-842-powernv.c
+@@ -22,6 +22,7 @@
+ 
+ #include <asm/prom.h>
+ #include <asm/icswx.h>
++#include <asm/vas.h>
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
+@@ -424,9 +425,9 @@ static int nx842_powernv_function(const unsigned char *in, unsigned int inlen,
+ 
+ 	/* set up CCW */
+ 	ccw = 0;
+-	ccw = SET_FIELD(ccw, CCW_CT, nx842_ct);
+-	ccw = SET_FIELD(ccw, CCW_CI_842, 0); /* use 0 for hw auto-selection */
+-	ccw = SET_FIELD(ccw, CCW_FC_842, fc);
++	ccw = SET_FIELD(CCW_CT, ccw, nx842_ct);
++	ccw = SET_FIELD(CCW_CI_842, ccw, 0); /* use 0 for hw auto-selection */
++	ccw = SET_FIELD(CCW_FC_842, ccw, fc);
+ 
+ 	/* set up CRB's CSB addr */
+ 	csb_addr = nx842_get_pa(csb) & CRB_CSB_ADDRESS;
+diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
+index a4eee3b..30929bd 100644
+--- a/drivers/crypto/nx/nx-842.h
++++ b/drivers/crypto/nx/nx-842.h
+@@ -100,11 +100,6 @@ static inline unsigned long nx842_get_pa(void *addr)
+ 	return page_to_phys(vmalloc_to_page(addr)) + offset_in_page(addr);
+ }
+ 
+-/* Get/Set bit fields */
+-#define MASK_LSH(m)		(__builtin_ffsl(m) - 1)
+-#define GET_FIELD(v, m)		(((v) & (m)) >> MASK_LSH(m))
+-#define SET_FIELD(v, m, val)	(((v) & ~(m)) | (((val) << MASK_LSH(m)) & (m)))
+-
+ /**
+  * This provides the driver's constraints.  Different nx842 implementations
+  * may have varying requirements.  The constraints are:
+-- 
+2.7.4
