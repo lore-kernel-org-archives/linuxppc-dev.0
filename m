@@ -1,41 +1,39 @@
 Return-Path: <srs0=ev05=7k=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmb57gNzDqrL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:27 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmb3clGz8t2S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmN1RmgzDqkQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:16 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmN0lzgz8t6s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:16 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xRqmZ67LPz9s7F
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:26 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3xRqmM49Ycz9s71
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:15 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v78N4EKu109835
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:25 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c7nwy1tv6-1
+ v78N4DDi111394
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:13 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c7kkg8b0w-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:24 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:13 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 8 Aug 2017 19:07:24 -0400
+ Tue, 8 Aug 2017 19:07:12 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
  oohall@gmail.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v6 05/17] powerpc/vas: Define helpers to init window context
-Date: Tue,  8 Aug 2017 16:06:50 -0700
-In-Reply-To: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1502233622-9330-6-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v6 00/17] powerpc/vas: Enable VAS
+Date: Tue,  8 Aug 2017 16:06:45 -0700
+Message-Id: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,431 +43,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define helpers to initialize window context registers of the VAS
-hardware. These will be used in follow-on patches when opening/closing
-VAS windows.
+POWER9 introduces a hardware subsystem referred to as the Virtual
+Accelerator Switchboard (VAS). VAS allows kernel subsystems and user
+space processes to directly access the Nest Accelerator (NX) engines
+which implement compression and encryption algorithms in the hardware.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
+NX has been in Power processors since Power7+, but access to the NX
+engines was through the 'icswx' instruction which is only available
+to the kernel/hypervisor. Starting with POWER9, access to the NX
+engines is provided to both kernel and user space processes through
+VAS.
+
+The switchboard (i.e VAS) multiplexes accesses between "receivers" and
+"senders", where the "receivers" are typically the NX engines and the
+"senders" are the kernel subsystems and user processors that wish to
+access the receivers (NX engines).  Once a sender is "connected" to
+a receiver through the switchboard, the senders can submit compression/
+encryption requests to the hardware using the new (PowerISA 3.0)
+"copy" and "paste" instructions.
+
+Senders can also send "empty" messages to the receiver. If the receiver
+is executing a WAIT instruction, this empty message serves to have the
+receiver resume from the next instruction. (i.e acts as "wake up" message).
+This usage of VAS is referred to as "Fast thread-wakeup".
+
+Provides:
+
+	This patch set:
+		- configures the VAS subsystems in the hardware
+
+		- provides kernel interfaces to drivers like NX-842 and
+		  NX-FTW (new) to open receive and send/receive windows
+		  and to submit copy/paste (i.e compression) requests to
+		  the NX engines.
+
+		- implements an NX-FTW driver for the fast thread-wake up
+		  mechanism.  It provides the /dev/crypto/nx-ftw device node,
+		  and ioctls to allow users to use the FTW mechanism in VAS.
+
+	Follow-on patch set(s) will allow user space processes to submit
+	requests to the NX-GZIP engine (and possibly other engines).
+
+Requires:
+
+	This patch set needs corresponding VAS/NX skiboot patches which
+	were merged into skiboot tree. i.e skiboot must include:
+
+	commit 3b3c596 (NX: Add P9 NX support for 842 compression engine)
+
+Testing:
+
+	In-kernel compression requests were tested on DD1 POWER9 hardware
+	using the following NX-842 patch set from Haren Myneni:
+		
+	https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-July/160620.html
+
+	The ability to setup user space send/receive windows for FTW was
+	tested on DD1 hardware. The actual copy/paste of the empty messages
+	is not yet supported in hardware and that functionality was tested
+	on DD2 simics software.
+
+Git Tree:
+
+	https://github.com/sukadev/linux/ 	
+
+	Branch: vas-kern-v6
+
+Thanks to input from Ben Herrenschmidt, Michael Neuling, Michael Ellerman,
+Robert Blackmore and Haren Myneni.
+
 Changelog[v6]
-	- Add support for FTW windows and drop the fault window id
-	  code since it is not needed for FTW/kernel windows.
+	- Add support for user space send/receive FTW windows
+	- Add a new, NX-FTW driver which provides the FTW user interface
+
 Changelog[v5]
-	- Fix: Copy the FIFO address into LFIFO_BAR register as is (don't
-	  shift address into bits 8:53).
+	- [Ben Herrenschmidt] Make VAS a platform device in the device tree
+	  and use the core platform functions to parse the VAS properties.
+	  Map the VAS MMIO regions as non-cachable and paste regions as
+	  cachable. Use CONFIG_PPC_VAS rather than CONFIG_VAS; Don't assume
+	  VAS ids are sequential.
+	- Copy the FIFO address as is into LFIFO_BAR (don't shift it).
 
 Changelog[v4]
-	- Michael Neuling] Use ilog2(), radix_enabled() helpers;
-	  drop warning when 32-bit app uses VAS (a follow-on patch
-	  will check and return error). Set MSR_PR state to 0 for
-	  kernel (rather than reading from MSR).
+	Comments from Michael Neuling:
+	- Move VAS code from drivers/misc/vas to arch/powerpc/platforms/powernv
+	  since VAS only provides interfaces to other drivers like NX-842.
+	- Drop vas-internal.h and use vas.h in separate dirs for VAS
+	  internal, kernel API and user API
+	- Rather than create 6 separate device tree properties windows
+	  and window context, combine them into 6 "reg" properties.
+	- Drop vas_window_reset() since windows are reset/cleared before
+	  being assigned to kernel/users.
+	- Use ilog2() and radix_enabled() helpers
 
 Changelog[v3]
-	- Have caller, rather than init_xlate_regs() reset window regs
-	  so we don't reset any settings caller may already have set.
-	- Translation mode should be 0x3 (0b11) not 0x11.
-	- Skip initilaizing read-only registers NX_UTIL and NX_UTIL_SE
-	- Skip initializing adder registers from UWC - they are already
-	  initialized from the HVWC.
-	- Check winctx->user_win when setting translation registers
----
- arch/powerpc/platforms/powernv/vas-window.c | 305 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/vas.h        |  55 +++++
- 2 files changed, 360 insertions(+)
+	- Rebase to v4.11-rc1
+	- Add interfaces to initialize send/receive window attributes to
+	  defaults that drivers can use (see arch/powerpc/include/asm/vas.h)
+	- Modify interface vas_paste() to return 0 or error code
+	- Fix a bug in setting Translation Control Mode (0b11 not 0x11)
+	- Enable send-window-credit checking 
+	- Reorg code  in vas_win_close()
+	- Minor reorgs and tweaks to register field settings to make it
+	  easier to add support for user space windows.
+	- Skip writing to read-only registers
+	- Start window indexing from 0 rather than 1
 
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index a3a705a..3a50d6a 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -11,6 +11,7 @@
- #include <linux/mutex.h>
- #include <linux/slab.h>
- #include <linux/io.h>
-+#include <linux/log2.h>
- 
- #include "vas.h"
- 
-@@ -185,6 +186,310 @@ int map_winctx_mmio_bars(struct vas_window *window)
- 	return 0;
- }
- 
-+/*
-+ * Reset all valid registers in the HV and OS/User Window Contexts for
-+ * the window identified by @window.
-+ *
-+ * NOTE: We cannot really use a for loop to reset window context. Not all
-+ *	 offsets in a window context are valid registers and the valid
-+ *	 registers are not sequential. And, we can only write to offsets
-+ *	 with valid registers (or is that only in Simics?).
-+ */
-+void reset_window_regs(struct vas_window *window)
-+{
-+	write_hvwc_reg(window, VREG(LPID), 0ULL);
-+	write_hvwc_reg(window, VREG(PID), 0ULL);
-+	write_hvwc_reg(window, VREG(XLATE_MSR), 0ULL);
-+	write_hvwc_reg(window, VREG(XLATE_LPCR), 0ULL);
-+	write_hvwc_reg(window, VREG(XLATE_CTL), 0ULL);
-+	write_hvwc_reg(window, VREG(AMR), 0ULL);
-+	write_hvwc_reg(window, VREG(SEIDR), 0ULL);
-+	write_hvwc_reg(window, VREG(FAULT_TX_WIN), 0ULL);
-+	write_hvwc_reg(window, VREG(OSU_INTR_SRC_RA), 0ULL);
-+	write_hvwc_reg(window, VREG(HV_INTR_SRC_RA), 0ULL);
-+	write_hvwc_reg(window, VREG(PSWID), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE1), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE2), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE3), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE4), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE5), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE6), 0ULL);
-+	write_hvwc_reg(window, VREG(LFIFO_BAR), 0ULL);
-+	write_hvwc_reg(window, VREG(LDATA_STAMP_CTL), 0ULL);
-+	write_hvwc_reg(window, VREG(LDMA_CACHE_CTL), 0ULL);
-+	write_hvwc_reg(window, VREG(LRFIFO_PUSH), 0ULL);
-+	write_hvwc_reg(window, VREG(CURR_MSG_COUNT), 0ULL);
-+	write_hvwc_reg(window, VREG(LNOTIFY_AFTER_COUNT), 0ULL);
-+	write_hvwc_reg(window, VREG(LRX_WCRED), 0ULL);
-+	write_hvwc_reg(window, VREG(LRX_WCRED_ADDER), 0ULL);
-+	write_hvwc_reg(window, VREG(TX_WCRED), 0ULL);
-+	write_hvwc_reg(window, VREG(TX_WCRED_ADDER), 0ULL);
-+	write_hvwc_reg(window, VREG(LFIFO_SIZE), 0ULL);
-+	write_hvwc_reg(window, VREG(WINCTL), 0ULL);
-+	write_hvwc_reg(window, VREG(WIN_STATUS), 0ULL);
-+	write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), 0ULL);
-+	write_hvwc_reg(window, VREG(TX_RSVD_BUF_COUNT), 0ULL);
-+	write_hvwc_reg(window, VREG(LRFIFO_WIN_PTR), 0ULL);
-+	write_hvwc_reg(window, VREG(LNOTIFY_CTL), 0ULL);
-+	write_hvwc_reg(window, VREG(LNOTIFY_PID), 0ULL);
-+	write_hvwc_reg(window, VREG(LNOTIFY_LPID), 0ULL);
-+	write_hvwc_reg(window, VREG(LNOTIFY_TID), 0ULL);
-+	write_hvwc_reg(window, VREG(LNOTIFY_SCOPE), 0ULL);
-+	write_hvwc_reg(window, VREG(NX_UTIL_ADDER), 0ULL);
-+
-+	/* Skip read-only registers: NX_UTIL and NX_UTIL_SE */
-+
-+	/*
-+	 * The send and receive window credit adder registers are also
-+	 * accessible from HVWC and have been initialized above. We don't
-+	 * need to initialize from the OS/User Window Context, so skip
-+	 * following calls:
-+	 *
-+	 *	write_uwc_reg(window, VREG(TX_WCRED_ADDER), 0ULL);
-+	 *	write_uwc_reg(window, VREG(LRX_WCRED_ADDER), 0ULL);
-+	 */
-+}
-+
-+/*
-+ * Initialize window context registers related to Address Translation.
-+ * These registers are common to send/receive windows although they
-+ * differ for user/kernel windows. As we resolve the TODOs we may
-+ * want to add fields to vas_winctx and move the initialization to
-+ * init_vas_winctx_regs().
-+ */
-+static void init_xlate_regs(struct vas_window *window, bool user_win)
-+{
-+	uint64_t lpcr, val;
-+
-+	/*
-+	 * MSR_TA, MSR_US are false for both kernel and user.
-+	 * MSR_DR and MSR_PR are false for kernel.
-+	 */
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_XLATE_MSR_HV, val, true);
-+	val = SET_FIELD(VAS_XLATE_MSR_SF, val, true);
-+	if (user_win) {
-+		val = SET_FIELD(VAS_XLATE_MSR_DR, val, true);
-+		val = SET_FIELD(VAS_XLATE_MSR_PR, val, true);
-+	}
-+	write_hvwc_reg(window, VREG(XLATE_MSR), val);
-+
-+	lpcr = mfspr(SPRN_LPCR);
-+	val = 0ULL;
-+	/*
-+	 * NOTE: From Section 5.7.6.1 Segment Lookaside Buffer of the
-+	 *	 Power ISA, v2.07, Page size encoding is 0 = 4KB, 5 = 64KB.
-+	 *
-+	 * NOTE: From Section 1.3.1, Address Translation Context of the
-+	 *	 Nest MMU Workbook, LPCR_SC should be 0 for Power9.
-+	 */
-+	val = SET_FIELD(VAS_XLATE_LPCR_PAGE_SIZE, val, 5);
-+	val = SET_FIELD(VAS_XLATE_LPCR_ISL, val, lpcr & LPCR_ISL);
-+	val = SET_FIELD(VAS_XLATE_LPCR_TC, val, lpcr & LPCR_TC);
-+	val = SET_FIELD(VAS_XLATE_LPCR_SC, val, 0);
-+	write_hvwc_reg(window, VREG(XLATE_LPCR), val);
-+
-+	/*
-+	 * Section 1.3.1 (Address translation Context) of NMMU workbook.
-+	 *	0b00	Hashed Page Table mode
-+	 *	0b01	Reserved
-+	 *	0b10	Radix on HPT
-+	 *	0b11	Radix on Radix
-+	 */
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_XLATE_MODE, val, radix_enabled() ? 3 : 2);
-+	write_hvwc_reg(window, VREG(XLATE_CTL), val);
-+
-+	/*
-+	 * TODO: Can we mfspr(AMR) even for user windows?
-+	 */
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_AMR, val, mfspr(SPRN_AMR));
-+	write_hvwc_reg(window, VREG(AMR), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_SEIDR, val, 0);
-+	write_hvwc_reg(window, VREG(SEIDR), val);
-+}
-+
-+/*
-+ * Initialize Reserved Send Buffer Count for the send window. It involves
-+ * writing to the register, reading it back to confirm that the hardware
-+ * has enough buffers to reserve. See section 1.3.1.2.1 of VAS workbook.
-+ *
-+ * Since we can only make a best-effort attempt to fulfill the request,
-+ * we don't return any errors if we cannot.
-+ *
-+ * TODO: Reserved (aka dedicated) send buffers are not supported yet.
-+ */
-+static void init_rsvd_tx_buf_count(struct vas_window *txwin,
-+				struct vas_winctx *winctx)
-+{
-+	write_hvwc_reg(txwin, VREG(TX_RSVD_BUF_COUNT), 0ULL);
-+}
-+
-+/*
-+ * init_winctx_regs()
-+ *	Initialize window context registers for a receive window.
-+ *	Except for caching control and marking window open, the registers
-+ *	are initialized in the order listed in Section 3.1.4 (Window Context
-+ *	Cache Register Details) of the VAS workbook although they don't need
-+ *	to be.
-+ *
-+ * Design note: For NX receive windows, NX allocates the FIFO buffer in OPAL
-+ *	(so that it can get a large contiguous area) and passes that buffer
-+ *	to kernel via device tree. We now write that buffer address to the
-+ *	FIFO BAR. Would it make sense to do this all in OPAL? i.e have OPAL
-+ *	write the per-chip RX FIFO addresses to the windows during boot-up
-+ *	as a one-time task? That could work for NX but what about other
-+ *	receivers?  Let the receivers tell us the rx-fifo buffers for now.
-+ */
-+int init_winctx_regs(struct vas_window *window, struct vas_winctx *winctx)
-+{
-+	uint64_t val;
-+	int fifo_size;
-+
-+	reset_window_regs(window);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LPID, val, winctx->lpid);
-+	write_hvwc_reg(window, VREG(LPID), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_PID_ID, val, winctx->pidr);
-+	write_hvwc_reg(window, VREG(PID), val);
-+
-+	init_xlate_regs(window, winctx->user_win);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_FAULT_TX_WIN, val, 0);
-+	write_hvwc_reg(window, VREG(FAULT_TX_WIN), val);
-+
-+	/* In PowerNV, interrupts go to HV. */
-+	write_hvwc_reg(window, VREG(OSU_INTR_SRC_RA), 0ULL);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_HV_INTR_SRC_RA, val, winctx->irq_port);
-+	write_hvwc_reg(window, VREG(HV_INTR_SRC_RA), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_PSWID_EA_HANDLE, val, winctx->pswid);
-+	write_hvwc_reg(window, VREG(PSWID), val);
-+
-+	write_hvwc_reg(window, VREG(SPARE1), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE2), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE3), 0ULL);
-+
-+	/*
-+	 * NOTE: VAS expects the FIFO address to be copied into the LFIFO_BAR
-+	 *	 register as is - do NOT shift the address into VAS_LFIFO_BAR
-+	 *	 bit fields! Ok to set the page migration select fields -
-+	 *	 VAS ignores the lower 10+ bits in the address anyway, because
-+	 *	 the minimum FIFO size is 1K?
-+	 *
-+	 * See also: Design note in function header.
-+	 */
-+	val = __pa(winctx->rx_fifo);
-+	val = SET_FIELD(VAS_PAGE_MIGRATION_SELECT, val, 0);
-+	write_hvwc_reg(window, VREG(LFIFO_BAR), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LDATA_STAMP, val, winctx->data_stamp);
-+	write_hvwc_reg(window, VREG(LDATA_STAMP_CTL), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LDMA_TYPE, val, winctx->dma_type);
-+	val = SET_FIELD(VAS_LDMA_FIFO_DISABLE, val, winctx->fifo_disable);
-+	write_hvwc_reg(window, VREG(LDMA_CACHE_CTL), val);
-+
-+	write_hvwc_reg(window, VREG(LRFIFO_PUSH), 0ULL);
-+	write_hvwc_reg(window, VREG(CURR_MSG_COUNT), 0ULL);
-+	write_hvwc_reg(window, VREG(LNOTIFY_AFTER_COUNT), 0ULL);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LRX_WCRED, val, winctx->wcreds_max);
-+	write_hvwc_reg(window, VREG(LRX_WCRED), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_TX_WCRED, val, winctx->wcreds_max);
-+	write_hvwc_reg(window, VREG(TX_WCRED), val);
-+
-+	write_hvwc_reg(window, VREG(LRX_WCRED_ADDER), 0ULL);
-+	write_hvwc_reg(window, VREG(TX_WCRED_ADDER), 0ULL);
-+
-+	fifo_size = winctx->rx_fifo_size / 1024;
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LFIFO_SIZE, val, ilog2(fifo_size));
-+	write_hvwc_reg(window, VREG(LFIFO_SIZE), val);
-+
-+	/* Update window control and caching control registers last so
-+	 * we mark the window open only after fully initializing it and
-+	 * pushing context to cache.
-+	 */
-+
-+	write_hvwc_reg(window, VREG(WIN_STATUS), 0ULL);
-+
-+	init_rsvd_tx_buf_count(window, winctx);
-+
-+	/* for a send window, point to the matching receive window */
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LRX_WIN_ID, val, winctx->rx_win_id);
-+	write_hvwc_reg(window, VREG(LRFIFO_WIN_PTR), val);
-+
-+	write_hvwc_reg(window, VREG(SPARE4), 0ULL);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_NOTIFY_DISABLE, val, winctx->notify_disable);
-+	val = SET_FIELD(VAS_INTR_DISABLE, val, winctx->intr_disable);
-+	val = SET_FIELD(VAS_NOTIFY_EARLY, val, winctx->notify_early);
-+	val = SET_FIELD(VAS_NOTIFY_OSU_INTR, val, winctx->notify_os_intr_reg);
-+	write_hvwc_reg(window, VREG(LNOTIFY_CTL), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LNOTIFY_PID, val, winctx->lnotify_pid);
-+	write_hvwc_reg(window, VREG(LNOTIFY_PID), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LNOTIFY_LPID, val, winctx->lnotify_lpid);
-+	write_hvwc_reg(window, VREG(LNOTIFY_LPID), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LNOTIFY_TID, val, winctx->lnotify_tid);
-+	write_hvwc_reg(window, VREG(LNOTIFY_TID), val);
-+
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_LNOTIFY_MIN_SCOPE, val, winctx->min_scope);
-+	val = SET_FIELD(VAS_LNOTIFY_MAX_SCOPE, val, winctx->max_scope);
-+	write_hvwc_reg(window, VREG(LNOTIFY_SCOPE), val);
-+
-+	/* Skip read-only registers NX_UTIL and NX_UTIL_SE */
-+
-+	write_hvwc_reg(window, VREG(SPARE5), 0ULL);
-+	write_hvwc_reg(window, VREG(NX_UTIL_ADDER), 0ULL);
-+	write_hvwc_reg(window, VREG(SPARE6), 0ULL);
-+
-+	/* Finally, push window context to memory and... */
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_PUSH_TO_MEM, val, 1);
-+	write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), val);
-+
-+	/* ... mark the window open for business */
-+	val = 0ULL;
-+	val = SET_FIELD(VAS_WINCTL_REJ_NO_CREDIT, val, winctx->rej_no_credit);
-+	val = SET_FIELD(VAS_WINCTL_PIN, val, winctx->pin_win);
-+	val = SET_FIELD(VAS_WINCTL_TX_WCRED_MODE, val, winctx->tx_wcred_mode);
-+	val = SET_FIELD(VAS_WINCTL_RX_WCRED_MODE, val, winctx->rx_wcred_mode);
-+	val = SET_FIELD(VAS_WINCTL_TX_WORD_MODE, val, winctx->tx_word_mode);
-+	val = SET_FIELD(VAS_WINCTL_RX_WORD_MODE, val, winctx->rx_word_mode);
-+	val = SET_FIELD(VAS_WINCTL_FAULT_WIN, val, winctx->fault_win);
-+	val = SET_FIELD(VAS_WINCTL_NX_WIN, val, winctx->nx_win);
-+	val = SET_FIELD(VAS_WINCTL_OPEN, val, 1);
-+	write_hvwc_reg(window, VREG(WINCTL), val);
-+
-+	return 0;
-+}
-+
- /* stub for now */
- int vas_win_close(struct vas_window *window)
- {
-diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index 150d7b1..7b2bcd0 100644
---- a/arch/powerpc/platforms/powernv/vas.h
-+++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -12,6 +12,7 @@
- #include <linux/atomic.h>
- #include <linux/idr.h>
- #include <asm/vas.h>
-+#include <linux/io.h>
- 
- /*
-  * Overview of Virtual Accelerator Switchboard (VAS).
-@@ -385,4 +386,58 @@ struct vas_winctx {
- extern bool vas_initialized(void);
- extern struct vas_instance *find_vas_instance(int vasid);
- 
-+/*
-+ * VREG(x):
-+ * Expand a register's short name (eg: LPID) into two parameters:
-+ *	- the register's short name in string form ("LPID"), and
-+ *	- the name of the macro (eg: VAS_LPID_OFFSET), defining the
-+ *	  register's offset in the window context
-+ */
-+#define VREG_SFX(n, s)	__stringify(n), VAS_##n##s
-+#define VREG(r)		VREG_SFX(r, _OFFSET)
-+
-+#ifdef vas_debug
-+static inline void vas_log_write(struct vas_window *win, char *name,
-+			void *regptr, uint64_t val)
-+{
-+	if (val)
-+		pr_err("%swin #%d: %s reg %p, val 0x%016llx\n",
-+				win->tx_win ? "Tx" : "Rx", win->winid, name,
-+				regptr, val);
-+}
-+
-+#else	/* vas_debug */
-+
-+#define vas_log_write(win, name, reg, val)
-+
-+#endif	/* vas_debug */
-+
-+static inline void write_uwc_reg(struct vas_window *win, char *name,
-+			int32_t reg, uint64_t val)
-+{
-+	void *regptr;
-+
-+	regptr = win->uwc_map + reg;
-+	vas_log_write(win, name, regptr, val);
-+
-+	out_be64(regptr, val);
-+}
-+
-+static inline void write_hvwc_reg(struct vas_window *win, char *name,
-+			int32_t reg, uint64_t val)
-+{
-+	void *regptr;
-+
-+	regptr = win->hvwc_map + reg;
-+	vas_log_write(win, name, regptr, val);
-+
-+	out_be64(regptr, val);
-+}
-+
-+static inline uint64_t read_hvwc_reg(struct vas_window *win,
-+			char *name __maybe_unused, int32_t reg)
-+{
-+	return in_be64(win->hvwc_map+reg);
-+}
-+
- #endif /* _VAS_H */
+Changelog[v2]
+	- Use vas-id, HVWC, UWC and paste address, entries from device tree
+	  rather than defining/computing them in kernel and reorg code.
+
+Sukadev Bhattiprolu (17):
+  powerpc/vas: Define macros, register fields and structures
+  Move GET_FIELD/SET_FIELD to vas.h
+  powerpc/vas: Define vas_init() and vas_exit()
+  powerpc/vas: Define helpers to access MMIO regions
+  powerpc/vas: Define helpers to init window context
+  powerpc/vas: Define helpers to alloc/free windows
+  powerpc/vas: Define vas_win_paste_addr()
+  powerpc/vas: Define vas_win_id()
+  powerpc/vas: Define vas_rx_win_open() interface
+  powerpc/vas: Define vas_rx_win_open() interface
+  powerpc/vas: Define vas_win_close() interface
+  powerpc/vas: Define vas_tx_win_open()
+  powerpc/vas: Define copy/paste interfaces
+  powerpc: Add support for setting SPRN_TIDR
+  powerpc/vas: Define window open ioctls API
+  powerpc/vas: Implement a simple FTW driver
+  VAS: Document FTW API/usage
+
+ .../devicetree/bindings/powerpc/ibm,vas.txt        |   24 +
+ Documentation/powerpc/ftw-api.txt                  |  373 ++++++
+ MAINTAINERS                                        |   20 +
+ arch/powerpc/include/asm/processor.h               |    4 +
+ arch/powerpc/include/asm/vas.h                     |  156 +++
+ arch/powerpc/include/uapi/asm/vas.h                |   63 +
+ arch/powerpc/kernel/process.c                      |   74 ++
+ arch/powerpc/platforms/powernv/Kconfig             |   30 +
+ arch/powerpc/platforms/powernv/Makefile            |    2 +
+ arch/powerpc/platforms/powernv/copy-paste.h        |   74 ++
+ arch/powerpc/platforms/powernv/nx-ftw.c            |  486 ++++++++
+ arch/powerpc/platforms/powernv/vas-window.c        | 1233 ++++++++++++++++++++
+ arch/powerpc/platforms/powernv/vas.c               |  183 +++
+ arch/powerpc/platforms/powernv/vas.h               |  500 ++++++++
+ drivers/crypto/nx/nx-842-powernv.c                 |    7 +-
+ drivers/crypto/nx/nx-842.h                         |    5 -
+ 16 files changed, 3226 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+ create mode 100644 Documentation/powerpc/ftw-api.txt
+ create mode 100644 arch/powerpc/include/asm/vas.h
+ create mode 100644 arch/powerpc/include/uapi/asm/vas.h
+ create mode 100644 arch/powerpc/platforms/powernv/copy-paste.h
+ create mode 100644 arch/powerpc/platforms/powernv/nx-ftw.c
+ create mode 100644 arch/powerpc/platforms/powernv/vas-window.c
+ create mode 100644 arch/powerpc/platforms/powernv/vas.c
+ create mode 100644 arch/powerpc/platforms/powernv/vas.h
+
 -- 
 2.7.4
