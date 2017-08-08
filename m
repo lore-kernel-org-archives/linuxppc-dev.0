@@ -1,25 +1,28 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRYwN1fDxzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 22:43:16 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id t86so2952567pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Aug 2017 05:43:16 -0700 (PDT)
-Date: Tue, 8 Aug 2017 22:42:57 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
- kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 10/13] powerpc/64s: idle simplify KVM idle on POWER9
-Message-ID: <20170808224257.720e85d6@roar.ozlabs.ibm.com>
-In-Reply-To: <20170808103643.GA9107@in.ibm.com>
-References: <20170805170241.22966-1-npiggin@gmail.com>
- <20170805170241.22966-11-npiggin@gmail.com>
- <20170808103643.GA9107@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRZ6j31lHzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 22:52:12 +1000 (AEST)
+Subject: Re: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
+To: Will Deacon <will.deacon@arm.com>, ard.biesheuvel@linaro.org
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, catalin.marinas@arm.com, sam@ravnborg.org
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
+ <20170808090743.GA12887@arm.com>
+ <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
+ <20170808123042.GG13355@arm.com>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <a777718a-00b5-fb3a-75d6-03cc7ad181d9@oracle.com>
+Date: Tue, 8 Aug 2017 08:49:55 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170808123042.GG13355@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,75 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 8 Aug 2017 16:06:43 +0530
-Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+Hi Will,
 
-> Hi Nicholas,
-> 
-> On Sun, Aug 06, 2017 at 03:02:38AM +1000, Nicholas Piggin wrote:
-> > POWER9 CPUs have independent MMU contexts per thread so KVM
-> > does not have to bring sibling threads into real-mode when
-> > switching MMU mode to guest. This can simplify POWER9 sleep/wake
-> > paths and avoids hwsyncs.
-> > 
+ > Damn, I actually prefer the flag :)
+ >
+ > But actually, if you look at our implementation of vmemmap_populate, 
+then we
+ > have our own version of vmemmap_populate_basepages that terminates at the
+ > pmd level anyway if ARM64_SWAPPER_USES_SECTION_MAPS. If there's 
+resistance
+ > to do this in the core code, then I'd be inclined to replace our
+ > vmemmap_populate implementation in the arm64 code with a single 
+version that
+ > can terminate at either the PMD or the PTE level, and do zeroing if
+ > required. We're already special-casing it, so we don't really lose 
+anything
+ > imo.
 
+Another approach is to create a new mapping interface for kasan only. As 
+what Ard Biesheuvel wrote:
 
-> > @@ -444,6 +439,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
-> >  	beq	1f
-> >  	b	kvm_start_guest
-> >  1:
-> > +END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)  
-> 
-> This would be 7 nops on power9. Should we move this to a different
-> function and do a bl to that?
+ > KASAN uses vmemmap_populate as a convenience: kasan has nothing to do
+ > with vmemmap, but the function already existed and happened to do what
+ > KASAN requires.
+ >
+ > Given that that will no longer be the case, it would be far better to
+ > stop using vmemmap_populate altogether, and clone it into a KASAN
+ > specific version (with an appropriate name) with the zeroing folded
+ > into it.
 
-Yes that's a good idea.
+I agree with this statement, but I think it should not be part of this 
+project.
 
-> > +static void kvmppc_release_hwthread_secondary(int cpu)
-> > +{
-> > +	struct paca_struct *tpaca;
-> > +
-> > +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> > +		WARN_ON(1);
-> > +		return;
-> > +	}
-> > +
-> > +	tpaca = &paca[cpu];
-> > +	tpaca->kvm_hstate.hwthread_req = 0;
-> > +	kvmppc_release_hwthread(cpu);
-> > +}
-> > +
-> > +  
-> 
-> Extra blank line not needed.
-
-Sure.
-
-> > @@ -2858,11 +2883,13 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
-> > 
-> >  	/* Let secondaries go back to the offline loop */
-> >  	for (i = 0; i < controlled_threads; ++i) {
-> > -		kvmppc_release_hwthread(pcpu + i);
-> >  		if (sip && sip->napped[i])
-> >  			kvmppc_ipi_thread(pcpu + i);
-> >  		cpumask_clear_cpu(pcpu + i, &vc->kvm->arch.cpu_in_guest);
-> >  	}  
-> 
-> We are sending an IPI to the thread that has exited the guest and is
-> currently napping. The IPI wakes it up so that it can executes
-> offline loop. But we haven't released the hwthread yet, which means
-> that hwthread_req for this thread is still set.
-> 
-> The thread wakes up from nap, executes the pnv_powersave_wakeup code
-> where it can enter kvm_start_guest. Is this a legitimate race or am I
-> missing something?
-
-Oh I think it's just a silly mistake in my patch, good catch.
-Would moving this loop below the one below solve it? I wasn't
-completely happy with uglifying these loops by making the
-primary release different than secondary... maybe I will just
-move the difference into kvmppc_release_hwthread and which is
-less intrusive to callers.
-
-Thanks,
-Nick
+Pasha
