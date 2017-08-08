@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXxJ3kXbzDqpF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:59:00 +1000 (AEST)
-Message-Id: <f324c47296dee3a6779480434425c592aeb6e277.1502191399.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXxL1GrNzDqpP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:59:02 +1000 (AEST)
+Message-Id: <75790d577495824f18f00baf5791a106d9afa7d4.1502191399.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1502191399.git.christophe.leroy@c-s.fr>
 References: <cover.1502191399.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 09/12] powerpc/8xx: remove CONFIG_8xx
+Subject: [PATCH 10/12] powerpc/8xx: Use symbolic PVR value
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  8 Aug 2017 13:58:56 +0200 (CEST)
+Date: Tue,  8 Aug 2017 13:58:58 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Two config options exist to define powerpc MPC8xx:
-* CONFIG_PPC_8xx
-* CONFIG_8xx
+For the 8xx, PVR values defined in arch/powerpc/include/asm/reg.h
+are nowhere used.
 
-arch/powerpc/platforms/Kconfig.cputype has contained the following
-comment about CONFIG_8xx item for some years:
-"# this is temp to handle compat with arch=ppc"
+Remove all defines and add PVR_8xx
 
-There is no more users of CONFIG_8xx, so remove it.
+Use it in arch/powerpc/kernel/cputable.c
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/platforms/Kconfig.cputype | 5 -----
- 1 file changed, 5 deletions(-)
+ arch/powerpc/include/asm/reg.h | 6 ++----
+ arch/powerpc/kernel/cputable.c | 2 +-
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 395593ef580c..13663efc1d31 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -32,7 +32,6 @@ config PPC_85xx
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
--	select 8xx
- 	select PPC_LIB_RHEAP
- 	select SYS_SUPPORTS_HUGETLBFS
- 
-@@ -149,10 +148,6 @@ config 6xx
- 	depends on PPC32 && PPC_BOOK3S
- 	select PPC_HAVE_PMU_SUPPORT
- 
--# this is temp to handle compat with arch=ppc
--config 8xx
--	bool
--
- config E500
- 	select FSL_EMB_PERFMON
- 	select PPC_FSL_BOOK3E
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 70722e5b93e7..c36823d64ec9 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1247,10 +1247,8 @@
+  * differentiated by the version number in the Communication Processor
+  * Module (CPM).
+  */
+-#define PVR_821		0x00500000
+-#define PVR_823		PVR_821
+-#define PVR_850		PVR_821
+-#define PVR_860		PVR_821
++#define PVR_8xx		0x00500000
++
+ #define PVR_8240	0x00810100
+ #define PVR_8245	0x80811014
+ #define PVR_8260	PVR_8240
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index e9ba5b84ac9b..760872916013 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1262,7 +1262,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ #ifdef CONFIG_PPC_8xx
+ 	{	/* 8xx */
+ 		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x00500000,
++		.pvr_value		= PVR_8xx,
+ 		.cpu_name		= "8xx",
+ 		/* CPU_FTR_MAYBE_CAN_DOZE is possible,
+ 		 * if the 8xx code is there.... */
 -- 
 2.13.3
