@@ -1,27 +1,17 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXlY2PkQzDqjB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:50:33 +1000 (AEST)
-Subject: Re: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
-To: Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, catalin.marinas@arm.com,
- sam@ravnborg.org
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
- <20170808090743.GA12887@arm.com>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
-Date: Tue, 8 Aug 2017 07:49:22 -0400
-MIME-Version: 1.0
-In-Reply-To: <20170808090743.GA12887@arm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRXwy475VzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 21:58:42 +1000 (AEST)
+Message-Id: <cover.1502191399.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 00/12] powerpc/8xx: Some cleanup
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue,  8 Aug 2017 13:58:37 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,85 +21,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Will,
+This serie does some cleanup in the area of the 8xx.
 
-Thank you for looking at this change. What you described was in my 
-previous iterations of this project.
+In the same spirit as what Michael did for 4xx, move 8xx
+specific stuff into platforms/8xx
 
-See for example here: https://lkml.org/lkml/2017/5/5/369
+Then try to reduce the amount of #ifdefs specific to 8xx
 
-I was asked to remove that flag, and only zero memory in place when 
-needed. Overall the current approach is better everywhere else in the 
-kernel, but it adds a little extra code to kasan initialization.
+Remove the CONFIG_8xx which is redundant with CONFIG_PPC_8xx
 
-Pasha
+Plus some misc cleanups
 
-On 08/08/2017 05:07 AM, Will Deacon wrote:
-> On Mon, Aug 07, 2017 at 04:38:45PM -0400, Pavel Tatashin wrote:
->> To optimize the performance of struct page initialization,
->> vmemmap_populate() will no longer zero memory.
->>
->> We must explicitly zero the memory that is allocated by vmemmap_populate()
->> for kasan, as this memory does not go through struct page initialization
->> path.
->>
->> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
->> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
->> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
->> Reviewed-by: Bob Picco <bob.picco@oracle.com>
->> ---
->>   arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
->>   1 file changed, 42 insertions(+)
->>
->> diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
->> index 81f03959a4ab..e78a9ecbb687 100644
->> --- a/arch/arm64/mm/kasan_init.c
->> +++ b/arch/arm64/mm/kasan_init.c
->> @@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
->>   		set_pgd(pgd_offset_k(start), __pgd(0));
->>   }
->>   
->> +/*
->> + * Memory that was allocated by vmemmap_populate is not zeroed, so we must
->> + * zero it here explicitly.
->> + */
->> +static void
->> +zero_vmemmap_populated_memory(void)
->> +{
->> +	struct memblock_region *reg;
->> +	u64 start, end;
->> +
->> +	for_each_memblock(memory, reg) {
->> +		start = __phys_to_virt(reg->base);
->> +		end = __phys_to_virt(reg->base + reg->size);
->> +
->> +		if (start >= end)
->> +			break;
->> +
->> +		start = (u64)kasan_mem_to_shadow((void *)start);
->> +		end = (u64)kasan_mem_to_shadow((void *)end);
->> +
->> +		/* Round to the start end of the mapped pages */
->> +		start = round_down(start, SWAPPER_BLOCK_SIZE);
->> +		end = round_up(end, SWAPPER_BLOCK_SIZE);
->> +		memset((void *)start, 0, end - start);
->> +	}
->> +
->> +	start = (u64)kasan_mem_to_shadow(_text);
->> +	end = (u64)kasan_mem_to_shadow(_end);
->> +
->> +	/* Round to the start end of the mapped pages */
->> +	start = round_down(start, SWAPPER_BLOCK_SIZE);
->> +	end = round_up(end, SWAPPER_BLOCK_SIZE);
->> +	memset((void *)start, 0, end - start);
->> +}
-> 
-> I can't help but think this would be an awful lot nicer if you made
-> vmemmap_alloc_block take extra GFP flags as a parameter. That way, we could
-> implement a version of vmemmap_populate that does the zeroing when we need
-> it, without having to duplicate a bunch of the code like this. I think it
-> would also be less error-prone, because you wouldn't have to do the
-> allocation and the zeroing in two separate steps.
-> 
-> Will
-> 
+Christophe Leroy (12):
+  powerpc/8xx: Simplify CONFIG_8xx checks in Makefile
+  powerpc/8xx: Move 8xx machine check handlers into platforms/8xx
+  powerpc/8xx: Remove SoftwareEmulation()
+  powerpc/cpm1: link to CONFIG_CPM1 instead of CONFIG_8xx
+  powerpc/8xx: Move mpc8xx_pic.c from sysdev to platform/8xx
+  powerpc/time: refactor MFTB() to limit number of ifdefs
+  powerpc/kconfig: Simplify PCI_QSPAN selection
+  powerpc/8xx: Getting rid of remaining use of CONFIG_8xx
+  powerpc/8xx: remove CONFIG_8xx
+  powerpc/8xx: Use symbolic PVR value
+  powerpc/8xx: Use symbolic names for DSISR bits in DSI
+  powerpc/8xx: Remove cpu dependent macro instructions from head_8xx
+
+ arch/powerpc/Kconfig                               |  8 ++--
+ arch/powerpc/Makefile                              |  2 +-
+ arch/powerpc/boot/Makefile                         |  4 +-
+ arch/powerpc/boot/ppc_asm.h                        |  8 ++++
+ arch/powerpc/boot/util.S                           | 24 +++---------
+ arch/powerpc/include/asm/cache.h                   |  2 +-
+ arch/powerpc/include/asm/cputable.h                |  4 +-
+ arch/powerpc/include/asm/fs_pd.h                   |  2 +-
+ arch/powerpc/include/asm/nohash/32/pgtable.h       |  2 +-
+ arch/powerpc/include/asm/ppc_asm.h                 | 14 +++++--
+ arch/powerpc/include/asm/reg.h                     | 16 ++++----
+ arch/powerpc/include/asm/timex.h                   |  6 +--
+ arch/powerpc/kernel/Makefile                       |  2 +-
+ arch/powerpc/kernel/cputable.c                     |  6 +--
+ arch/powerpc/kernel/head_8xx.S                     |  9 ++---
+ arch/powerpc/kernel/irq.c                          |  2 +-
+ arch/powerpc/kernel/kgdb.c                         |  4 +-
+ arch/powerpc/kernel/traps.c                        | 43 ----------------------
+ arch/powerpc/kernel/vdso32/gettimeofday.S          | 12 ++----
+ arch/powerpc/mm/fault.c                            |  4 +-
+ arch/powerpc/mm/mem.c                              |  2 +-
+ arch/powerpc/mm/mmu_decl.h                         | 10 ++---
+ arch/powerpc/mm/tlb_nohash_low.S                   |  2 +-
+ arch/powerpc/platforms/8xx/Kconfig                 |  1 -
+ arch/powerpc/platforms/8xx/Makefile                |  2 +-
+ arch/powerpc/platforms/8xx/m8xx_setup.c            |  2 +-
+ arch/powerpc/platforms/8xx/machine_check.c         | 37 +++++++++++++++++++
+ .../{sysdev/mpc8xx_pic.c => platforms/8xx/pic.c}   |  2 +-
+ .../{sysdev/mpc8xx_pic.h => platforms/8xx/pic.h}   |  0
+ arch/powerpc/platforms/Kconfig.cputype             |  7 +---
+ arch/powerpc/sysdev/Makefile                       |  2 +-
+ arch/powerpc/sysdev/fsl_soc.c                      |  2 +-
+ arch/powerpc/sysdev/fsl_soc.h                      |  2 +-
+ 33 files changed, 109 insertions(+), 136 deletions(-)
+ create mode 100644 arch/powerpc/platforms/8xx/machine_check.c
+ rename arch/powerpc/{sysdev/mpc8xx_pic.c => platforms/8xx/pic.c} (99%)
+ rename arch/powerpc/{sysdev/mpc8xx_pic.h => platforms/8xx/pic.h} (100%)
+
+-- 
+2.13.3
