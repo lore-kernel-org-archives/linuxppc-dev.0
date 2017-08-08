@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRPrl4FqrzDqp8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRPrl6VmrzDqp8
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 16:39:35 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/9] powerpc/47x: Guard 47x cputable entries with
- CONFIG_PPC_47x
-Date: Tue,  8 Aug 2017 16:39:17 +1000
-Message-Id: <1502174365-8293-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/9] powerpc/44x: Simplify CONFIG_44x checks in Makefile
+Date: Tue,  8 Aug 2017 16:39:18 +1000
+Message-Id: <1502174365-8293-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1502174365-8293-1-git-send-email-mpe@ellerman.id.au>
+References: <1502174365-8293-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,38 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we build the 47x cputable entries even when CONFIG_PPC_47x is
-disabled. That means a kernel built without CONFIG_PPC_47x will claim to
-support a 47x CPU and start booting, only to break somewhere later
-because it doesn't have 47x support compiled in.
-
-So guard the 47x cputable entries with CONFIG_PPC_47x. Note that this is
-inside the #ifdef CONFIG_44x section, because 47x depends on 44x.
+The entire 44x directory is omitted if CONFIG_44x is not enabled, so
+within the 44x/Makefile CONFIG_44x is always y. So convert
+obj-$(CONFIG_44x) to the more obvious obj-y.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/cputable.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/44x/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 6f849832a669..080bf51e0104 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1936,6 +1936,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_440A,
- 		.platform		= "ppc440",
- 	},
-+#ifdef CONFIG_PPC_47x
- 	{ /* 476 DD2 core */
- 		.pvr_mask		= 0xffffffff,
- 		.pvr_value		= 0x11a52080,
-@@ -1992,6 +1993,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_47x,
- 		.platform		= "ppc470",
- 	},
-+#endif /* CONFIG_PPC_47x */
- 	{	/* default match */
- 		.pvr_mask		= 0x00000000,
- 		.pvr_value		= 0x00000000,
+diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+index 72b824160660..71a7fccef675 100644
+--- a/arch/powerpc/platforms/44x/Makefile
++++ b/arch/powerpc/platforms/44x/Makefile
+@@ -1,6 +1,6 @@
+-obj-$(CONFIG_44x)	+= misc_44x.o
++obj-y	+= misc_44x.o
+ ifneq ($(CONFIG_PPC4xx_CPM),y)
+-obj-$(CONFIG_44x)	+= idle.o
++obj-y	+= idle.o
+ endif
+ obj-$(CONFIG_PPC44x_SIMPLE) += ppc44x_simple.o
+ obj-$(CONFIG_EBONY)	+= ebony.o
 -- 
 2.7.4
