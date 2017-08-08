@@ -1,38 +1,26 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c00::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRb3d24BzzDqp8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 23:34:37 +1000 (AEST)
-Subject: Re: [v6 11/15] arm64/kasan: explicitly zero kasan shadow memory
-To: David Laight <David.Laight@ACULAB.COM>, Will Deacon <will.deacon@arm.com>
-Cc: "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "ard.biesheuvel@linaro.org" <ard.biesheuvel@linaro.org>,
- "sam@ravnborg.org" <sam@ravnborg.org>,
- "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "x86@kernel.org" <x86@kernel.org>,
- "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>,
- "mhocko@kernel.org" <mhocko@kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "willy@infradead.org" <willy@infradead.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-12-git-send-email-pasha.tatashin@oracle.com>
- <20170808090743.GA12887@arm.com>
- <f8b2b9ed-abf0-0c16-faa2-98b66dcbed78@oracle.com>
- <063D6719AE5E284EB5DD2968C1650D6DD004DA79@AcuExch.aculab.com>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <43c261e5-7568-0d5b-70ab-d1f82ef257ec@oracle.com>
-Date: Tue, 8 Aug 2017 09:30:58 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRcBy5kQmzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 00:26:02 +1000 (AEST)
+Received: by mail-pf0-x22e.google.com with SMTP id c28so15216302pfe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Aug 2017 07:26:02 -0700 (PDT)
+Subject: Re: [PATCH 0/3] Minor updates for PS3
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Jim Paris <jim@jtan.com>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ Geoff Levand <geoff@infradead.org>
+References: <cover.1502135910.git.geoff@infradead.org>
+ <873792nz4d.fsf@concordia.ellerman.id.au>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <ee0efa27-2807-373f-b215-2ee6ab096374@kernel.dk>
+Date: Tue, 8 Aug 2017 08:25:58 -0600
 MIME-Version: 1.0
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD004DA79@AcuExch.aculab.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <873792nz4d.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,27 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017-08-08 09:15, David Laight wrote:
-> From: Pasha Tatashin
->> Sent: 08 August 2017 12:49
->> Thank you for looking at this change. What you described was in my
->> previous iterations of this project.
->>
->> See for example here: https://lkml.org/lkml/2017/5/5/369
->>
->> I was asked to remove that flag, and only zero memory in place when
->> needed. Overall the current approach is better everywhere else in the
->> kernel, but it adds a little extra code to kasan initialization.
+On 08/08/2017 04:16 AM, Michael Ellerman wrote:
+> Geoff Levand <geoff@infradead.org> writes:
 > 
-> Perhaps you could #define the function prototype(s?) so that the flags
-> are not passed unless it is a kasan build?
+>> Hi Michael,
+>>
+>> A few very minor updates for PS3.  Please apply.
 > 
+> Jens do you want to take the block ones, or should I just take the lot?
 
-Hi David,
+Up to you, I'm fine either way.
 
-Thank you for suggestion. I think a kasan specific vmemmap (what I 
-described in the previous e-mail) would be a better solution over having 
-different prototypes with different builds.  It would be cleaner to have 
-all kasan specific code in one place.
-
-Pasha
+-- 
+Jens Axboe
