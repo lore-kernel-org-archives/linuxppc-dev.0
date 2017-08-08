@@ -2,40 +2,40 @@ Return-Path: <srs0=ev05=7k=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmg0VQZzDqrC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRqmj75ZGzDqr6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:33 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmf6Dv9z8t2S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:30 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xRqmj28CNz8vqD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 09:07:33 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xRqmd4D1yz9tWf
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:29 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v78N5nnT027487
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:28 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c7mxummtd-1
+ by ozlabs.org (Postfix) with ESMTPS id 3xRqmh0Qspz9s7F
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2017 09:07:31 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v78N4Mbm048262
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2017 19:07:30 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c7mnqd6jy-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:27 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Aug 2017 19:07:29 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 8 Aug 2017 19:07:26 -0400
+ Tue, 8 Aug 2017 19:07:29 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
  oohall@gmail.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v6 07/17] powerpc/vas: Define vas_win_paste_addr()
-Date: Tue,  8 Aug 2017 16:06:52 -0700
+Subject: [PATCH v6 08/17] powerpc/vas: Define vas_win_id()
+Date: Tue,  8 Aug 2017 16:06:53 -0700
 In-Reply-To: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1502233622-9330-8-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1502233622-9330-9-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,65 +45,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define an interface that the NX drivers can use to find the physical
-paste address of a send window. This interface is expected to be used
-with the mmap() operation of the NX driver's device. i.e the user space
-process can use driver's mmap() operation to map the send window's paste
-address into their address space and then use copy and paste instructions
-to submit the CRBs to the NX engine.
+Define an interface to return a system-wide unique id for a given VAS
+window.
 
-Note that kernel drivers will use vas_paste_crb() directly and don't need
-this interface.
+The vas_win_id() will be used in a follow-on patch to generate an unique
+handle for a user space receive window. Applications can use this handle
+to pair send and receive windows for fast thread-wakeup.
+
+The hardware refers to this system-wide unique id as a Partition Send
+Window ID which is expected to be used during fault handling. Hence the
+"pswid" in the function names.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/vas.h              |  7 +++++++
- arch/powerpc/platforms/powernv/vas-window.c | 10 ++++++++++
- 2 files changed, 17 insertions(+)
+ arch/powerpc/include/asm/vas.h              |  5 +++++
+ arch/powerpc/platforms/powernv/vas-window.c |  9 +++++++++
+ arch/powerpc/platforms/powernv/vas.h        | 28 ++++++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index 2c8558a..2b35b95 100644
+index 2b35b95..30667db 100644
 --- a/arch/powerpc/include/asm/vas.h
 +++ b/arch/powerpc/include/asm/vas.h
-@@ -12,6 +12,8 @@
- 
- #include <uapi/asm/vas.h>
- 
-+struct vas_window;
-+
- /*
-  * Min and max FIFO sizes are based on Version 1.05 Section 3.1.4.25
-  * (Local FIFO Size Register) of the VAS workbook.
-@@ -32,4 +34,9 @@ enum vas_cop_type {
- 	VAS_COP_TYPE_MAX,
+@@ -35,6 +35,11 @@ enum vas_cop_type {
  };
  
-+/*
-+ * Return the power bus paste address associated with @win so the caller
-+ * can map that address into their address space.
+ /*
++ * Return a system-wide unique id for the VAS window @win.
 + */
-+extern uint64_t vas_win_paste_addr(struct vas_window *win);
- #endif /* _MISC_VAS_H */
++extern uint32_t vas_win_id(struct vas_window *win);
++
++/*
+  * Return the power bus paste address associated with @win so the caller
+  * can map that address into their address space.
+  */
 diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index 9c12919..3a4599f 100644
+index 3a4599f..42c1d4f 100644
 --- a/arch/powerpc/platforms/powernv/vas-window.c
 +++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -35,6 +35,16 @@ void compute_paste_address(struct vas_window *window, uint64_t *addr, int *len)
- 	pr_debug("Txwin #%d: Paste addr 0x%llx\n", winid, *addr);
+@@ -575,3 +575,12 @@ int vas_win_close(struct vas_window *window)
+ {
+ 	return -1;
+ }
++
++/*
++ * Return a system-wide unique window id for the window @win.
++ */
++uint32_t vas_win_id(struct vas_window *win)
++{
++	return encode_pswid(win->vinst->vas_id, win->winid);
++}
++EXPORT_SYMBOL_GPL(vas_win_id);
+diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
+index 7b2bcd0..3eadf90 100644
+--- a/arch/powerpc/platforms/powernv/vas.h
++++ b/arch/powerpc/platforms/powernv/vas.h
+@@ -440,4 +440,32 @@ static inline uint64_t read_hvwc_reg(struct vas_window *win,
+ 	return in_be64(win->hvwc_map+reg);
  }
  
-+uint64_t vas_win_paste_addr(struct vas_window *win)
++/*
++ * Encode/decode the Partition Send Window ID (PSWID) for a window in
++ * a way that we can uniquely identify any window in the system. i.e.
++ * we should be able to locate the 'struct vas_window' given the PSWID.
++ *
++ *	Bits	Usage
++ *	0:7	VAS id (8 bits)
++ *	8:15	Unused, 0 (3 bits)
++ *	16:31	Window id (16 bits)
++ */
++static inline u32 encode_pswid(int vasid, int winid)
 +{
-+	uint64_t addr;
++	u32 pswid = 0;
 +
-+	compute_paste_address(win, &addr, NULL);
++	pswid |= vasid << (31 - 7);
++	pswid |= winid;
 +
-+	return addr;
++	return pswid;
 +}
-+EXPORT_SYMBOL(vas_win_paste_addr);
 +
- static inline void get_hvwc_mmio_bar(struct vas_window *window,
- 			uint64_t *start, int *len)
- {
++static inline void decode_pswid(u32 pswid, int *vasid, int *winid)
++{
++	if (vasid)
++		*vasid = pswid >> (31 - 7) & 0xFF;
++
++	if (winid)
++		*winid = pswid & 0xFFFF;
++}
+ #endif /* _VAS_H */
 -- 
 2.7.4
