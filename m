@@ -1,25 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRJ6k3SSSzDqkp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 12:21:18 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Herring <robh@kernel.org>,
- "devicetree\@vger.kernel.org" <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 0/4] Removing full paths from DT full_name
-In-Reply-To: <CAL_Jsq+tarBMM-frN+V9GYa-ZAzfJO4sv2owdOS3Ks+urned1g@mail.gmail.com>
-References: <20170725214427.25768-1-robh@kernel.org>
- <CAL_Jsq+tarBMM-frN+V9GYa-ZAzfJO4sv2owdOS3Ks+urned1g@mail.gmail.com>
-Date: Tue, 08 Aug 2017 12:21:18 +1000
-Message-ID: <87mv7aol41.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRKbn2Y8XzDqp8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Aug 2017 13:28:05 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id y192so1963827pgd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Aug 2017 20:28:05 -0700 (PDT)
+Date: Mon, 7 Aug 2017 20:27:43 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org
+Subject: Re: [PATCH v3] ASoC: fsl: Convert to using %pOF instead of full_name
+Message-ID: <20170808032742.GA10188@Asurada>
+References: <20170807232919.30247-1-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170807232919.30247-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +29,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Herring <robh@kernel.org> writes:
+On Mon, Aug 07, 2017 at 06:29:18PM -0500, Rob Herring wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
+> 
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Timur Tabi <timur@tabi.org>
+> Cc: Nicolin Chen <nicoleotsuka@gmail.com>
 
-> On Tue, Jul 25, 2017 at 4:44 PM, Rob Herring <robh@kernel.org> wrote:
->> This series is the last steps to remove storing the full path for every
->> DT node. Instead, we can create full path strings dynamically as needed
->> with printf %pOF specifiers (commit ce4fecf1fe15). There are a number of
->> remaining direct users of full_name after this series. I don't believe
->> there should be any functional impact for those users with the change to
->> only the node name (+unit-address). The majority are for struct
->> resource.name. This should only affect /proc/iomem display.
->>
->> Patches 1 and 2 can be applied now for 4.14. For patches 3 and 4, my
->> target is 4.15 after all the dependencies have been merged.
->>
->> PPC folks, Please test! The PPC parts are untested. A git branch with
->> all the dependencies is here[1].
->
-> PPC folks, any chance to test this?
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
 
-I got stuck on your %pOF conversion, which broke the vio.c code, because of:
+Thanks
 
--		if (!strcmp(parent_node->full_name, "/ibm,platform-facilities"))
-+		if (!strcmp(parent_node->full_name, "ibm,platform-facilities"))
-
-But full_name hasn't been changed yet.
-
-But patch 1 here should fix that, so I'll pull it all together and try
-and get it tested.
-
-cheers
+> Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: Liam Girdwood <lgirdwood@gmail.com>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: alsa-devel@alsa-project.org
+> ---
+> v3: Split ASoC changes to separate patch
+> 
+>  sound/soc/fsl/fsl_dma.c    |  4 ++--
+>  sound/soc/fsl/imx-audmux.c | 16 ++++++++--------
+>  2 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+> index ccadefceeff2..ed8ea002902d 100644
+> --- a/sound/soc/fsl/fsl_dma.c
+> +++ b/sound/soc/fsl/fsl_dma.c
+> @@ -897,8 +897,8 @@ static int fsl_soc_dma_probe(struct platform_device *pdev)
+>  
+>  	ret = of_address_to_resource(ssi_np, 0, &res);
+>  	if (ret) {
+> -		dev_err(&pdev->dev, "could not determine resources for %s\n",
+> -			ssi_np->full_name);
+> +		dev_err(&pdev->dev, "could not determine resources for %pOF\n",
+> +			ssi_np);
+>  		of_node_put(ssi_np);
+>  		return ret;
+>  	}
+> diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+> index fc57da341d61..392d5eef356d 100644
+> --- a/sound/soc/fsl/imx-audmux.c
+> +++ b/sound/soc/fsl/imx-audmux.c
+> @@ -268,13 +268,13 @@ static int imx_audmux_parse_dt_defaults(struct platform_device *pdev,
+>  
+>  		ret = of_property_read_u32(child, "fsl,audmux-port", &port);
+>  		if (ret) {
+> -			dev_warn(&pdev->dev, "Failed to get fsl,audmux-port of child node \"%s\"\n",
+> -					child->full_name);
+> +			dev_warn(&pdev->dev, "Failed to get fsl,audmux-port of child node \"%pOF\"\n",
+> +					child);
+>  			continue;
+>  		}
+>  		if (!of_property_read_bool(child, "fsl,port-config")) {
+> -			dev_warn(&pdev->dev, "child node \"%s\" does not have property fsl,port-config\n",
+> -					child->full_name);
+> +			dev_warn(&pdev->dev, "child node \"%pOF\" does not have property fsl,port-config\n",
+> +					child);
+>  			continue;
+>  		}
+>  
+> @@ -292,15 +292,15 @@ static int imx_audmux_parse_dt_defaults(struct platform_device *pdev,
+>  		}
+>  
+>  		if (ret != -EOVERFLOW) {
+> -			dev_err(&pdev->dev, "Failed to read u32 at index %d of child %s\n",
+> -					i, child->full_name);
+> +			dev_err(&pdev->dev, "Failed to read u32 at index %d of child %pOF\n",
+> +					i, child);
+>  			continue;
+>  		}
+>  
+>  		if (audmux_type == IMX31_AUDMUX) {
+>  			if (i % 2) {
+> -				dev_err(&pdev->dev, "One pdcr value is missing in child node %s\n",
+> -						child->full_name);
+> +				dev_err(&pdev->dev, "One pdcr value is missing in child node %pOF\n",
+> +						child);
+>  				continue;
+>  			}
+>  			imx_audmux_v2_configure_port(port, ptcr, pdcr);
+> -- 
+> 2.11.0
+> 
