@@ -1,20 +1,19 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xS7xR69gWzDr2j
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 21:16:11 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Michal Suchanek <msuchanek@suse.de>
-Subject: [PATCH] ibmvnic: Fix unused variable warning
-Date: Wed,  9 Aug 2017 13:16:02 +0200
-Message-Id: <20170809111602.12170-1-msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xS9rG1nLYzDqvc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 22:41:49 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id h75so6053022pfh.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 05:41:49 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/6] watchdog and NMI IPI locking improvements
+Date: Wed,  9 Aug 2017 22:41:20 +1000
+Message-Id: <20170809124126.28907-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixes: a248878d7a1d ("ibmvnic: Check for transport event on driver resume")
+It was noticed that the watchdog was causing hangs and lockups in
+some cases, hammering on the watchdog lock, so I've found a few
+other improvements and bugs. Thanks to Paulus for finding the problem
+and fixing the lock primitives (I fixed it a bit differently but the
+idea is his).
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- drivers/net/ethernet/ibm/ibmvnic.c | 1 -
- 1 file changed, 1 deletion(-)
+Thanks,
+Nick
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 99576ba4187f..09c20d3b1b79 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -3948,7 +3948,6 @@ static int ibmvnic_resume(struct device *dev)
- {
- 	struct net_device *netdev = dev_get_drvdata(dev);
- 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
--	int i;
- 
- 	if (adapter->state != VNIC_OPEN)
- 		return 0;
+Nicholas Piggin (6):
+  powerpc: NMI IPI improve lock primitive
+  powerpc/watchdog: Improve watchdog lock primitive
+  powerpc/watchdog: Moderate touch_nmi_watchdog overhead
+  powerpc/watchdog: Fix final-check recovered case
+  powerpc/watchdog: Fix marking of stuck CPUs
+  powerpc/watchdog: add locking around init/exit functions
+
+ arch/powerpc/kernel/smp.c      |  6 +++---
+ arch/powerpc/kernel/watchdog.c | 49 +++++++++++++++++++++++++++++++-----------
+ 2 files changed, 39 insertions(+), 16 deletions(-)
+
 -- 
-2.10.2
+2.13.3
