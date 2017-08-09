@@ -1,22 +1,21 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRzgQ16G8zDqvG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 15:03:29 +1000 (AEST)
-Subject: Re: [RFC] hwmon: (ibmpowernv) Add support for reset-history sensors
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, clg@kaod.org
-Cc: jdelvare@suse.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linux-hwmon@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, stewart@linux.vnet.ibm.com
-References: <1501048538-23160-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <7783ed56-74fb-cd6c-f971-6b7922d11a35@roeck-us.net>
-Date: Tue, 8 Aug 2017 21:32:51 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xS1Gc51wZzDqvc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 16:15:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, tglx@linutronix.de,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: xive: ensure active irqd when setting affinity
+In-Reply-To: <20170809000034.GB17162@us.ibm.com>
+References: <20170803013822.GD28905@us.ibm.com>
+ <87zibamjfi.fsf@concordia.ellerman.id.au> <20170809000034.GB17162@us.ibm.com>
+Date: Wed, 09 Aug 2017 16:15:36 +1000
+Message-ID: <87a839nu5z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1501048538-23160-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,93 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/25/2017 10:55 PM, Shilpasri G Bhat wrote:
-> In P9, OCC allows for clearing the sensor min-max history. This patch
-> exports attribute to reset history when set will clear the history of
-> all the sensors owned by CSM and belonging to the chip.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
-> This patch is on top of this patchset:
-> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1453891.html
-> 
-> This patch creates a non-standard attribute called as reset_historyX
-> which clears the lowest and highest of all the sensors like power,
-> temperature, voltage belonging to the chip.
-> 
->   drivers/hwmon/ibmpowernv.c | 31 +++++++++++++++++++++++++++++++
->   1 file changed, 31 insertions(+)
-> 
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index 5ccdd0b..611e472 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -51,6 +51,7 @@ enum sensors {
->   	POWER_SUPPLY,
->   	POWER_INPUT,
->   	CURRENT,
-> +	RESET_HISTORY,
->   	MAX_SENSOR_TYPE,
->   };
->   
-> @@ -78,6 +79,7 @@ enum sensors {
->   	{ "in"    },
->   	{ "power" },
->   	{ "curr"  },
-> +	{ "reset_history" },
->   };
->   
->   struct sensor_data {
-> @@ -126,6 +128,25 @@ static ssize_t show_label(struct device *dev, struct device_attribute *devattr,
->   	return sprintf(buf, "%s\n", sdata->label);
->   }
->   
-> +static ssize_t store_reset_history(struct device *dev,
-> +				   struct device_attribute *devattr,
-> +				   const char *buf, size_t count)
-> +{
-> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
-> +						 dev_attr);
-> +	int rc;
-> +	int reset;
-> +
-> +	rc = kstrtoint(buf, 0, &reset);
-> +	if (rc)
-> +		return rc;
-> +
-> +	if (reset == 1)
-> +		rc = opal_sensor_groups_clear_history(sdata->id);
-> +
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> Michael Ellerman [mpe@ellerman.id.au] wrote:
+>> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+>> > From fd0abf5c61b6041fdb75296e8580b86dc91d08d6 Mon Sep 17 00:00:00 2001
+>> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> > Date: Tue, 1 Aug 2017 20:54:41 -0500
+>> > Subject: [PATCH] powerpc: xive: ensure active irqd when setting affinity
+>> >
+>> > Ensure irqd is active before attempting to set affinity. This should
+>> > make the set affinity code more robust. For instance, this prevents
+>> > these messages seen on a 4.12 based kernel when taking cpus offline:
+>> >
+>> >    [  123.053037264,3] XIVE[ IC 00  ] ISN 2 lead to invalid IVE !
+>> >    [   77.885859] xive: Error -6 reconfiguring irq 17
+>> >    [   77.885862] IRQ17: set affinity failed(-6).
+>> >
+>> > The underlying problem with taking cpus offline was fixed in 4.13-rc1 by:
+>> >
+>> >    commit 91f26cb4cd3c ("genirq/cpuhotplug: Do not migrated shutdown irqs")
+>> 
+>> So do we still need this? Or is the above only a partial fix?
+>
+> It would be good to have this fix.
+>
+> Commit 91f26cb4cd3c fixes the problem, so we wont see the errors with
+> that commit applied. But if such a problem were to show up again, xive
+> will handle them earlier before hitting those errors.
 
-Which of course doesn't exist, so it is hard to determine if this is
-all that is offered.
+I'm not sure I'm convinced. We can't handle every possible case of the
+higher level code calling us in situations we don't expect.
 
-I'd rather stick with the existing ABI, which resets the history either
-per sensor(inX_reset_history) or per group (in_reset_history).
+For example irq_data could be NULL, but we trust the higher level code
+not to do that to us.
 
-Guenter
+Also I don't see any other driver doing this check.
 
-> +	return rc ? rc : count;
-> +}
-> +
->   static int __init get_logical_cpu(int hwcpu)
->   {
->   	int cpu;
-> @@ -458,6 +479,16 @@ static int create_device_attrs(struct platform_device *pdev)
->   
->   		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
->   
-> +		if (type == RESET_HISTORY) {
-> +			snprintf(sdata[count].name, MAX_ATTR_LEN, "%s%d",
-> +				 sensor_groups[type].name,
-> +				 sdata[count].hwmon_index);
-> +
-> +			sdata[count].dev_attr.attr.mode = 0220;
-> +			sdata[count].dev_attr.store = store_reset_history;
-> +			sdata[count].dev_attr.show = NULL;
-> +		}
-> +
->   		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
->   				&sdata[count++].dev_attr.attr;
->   
-> 
+  $ git grep irqd_is_started
+  include/linux/irq.h:static inline bool irqd_is_started(struct irq_data *d)
+  kernel/irq/chip.c:      if (irqd_is_started(d)) {
+  kernel/irq/chip.c:      if (irqd_is_started(&desc->irq_data)) {
+  kernel/irq/cpuhotplug.c:        if (irqd_is_per_cpu(d) || !irqd_is_started(d) || !irq_needs_fixup(d)) {
+
+
+cheers
