@@ -1,45 +1,15 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xS7SD69jbzDr2T
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 20:54:20 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v79Arc5L038516
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 06:54:17 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c7x3utbbk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 06:54:17 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 9 Aug 2017 11:54:14 +0100
-Subject: Re: [PATCH 02/16] mm: Prepare for FAULT_FLAG_SPECULATIVE
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1502202949-8138-3-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170809100835.5kz3zf5sd3oqrrj4@node.shutemov.name>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 9 Aug 2017 12:54:06 +0200
-MIME-Version: 1.0
-In-Reply-To: <20170809100835.5kz3zf5sd3oqrrj4@node.shutemov.name>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <d75b8f01-4fc0-bb29-cf80-0e91d91f238f@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xS7Xq4fgDzDr2T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 20:58:19 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH] powerpc/configs: Re-enable HARD/SOFT lockup detectors
+Date: Wed,  9 Aug 2017 20:57:55 +1000
+Message-Id: <1502276275-13639-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,21 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/08/2017 12:08, Kirill A. Shutemov wrote:
-> On Tue, Aug 08, 2017 at 04:35:35PM +0200, Laurent Dufour wrote:
->> @@ -2295,7 +2302,11 @@ static int wp_page_copy(struct vm_fault *vmf)
->>  	/*
->>  	 * Re-check the pte - we dropped the lock
->>  	 */
->> -	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
->> +	if (!pte_map_lock(vmf)) {
->> +		mem_cgroup_cancel_charge(new_page, memcg, false);
->> +		ret = VM_FAULT_RETRY;
->> +		goto oom_free_new;
-> 
-> With the change, label is misleading.
+In commit 05a4a9527931 ("kernel/watchdog: split up config options"),
+CONFIG_LOCKUP_DETECTOR was split into two separate config options,
+CONFIG_HARDLOCKUP_DETECTOR and CONFIG_SOFTLOCKUP_DETECTOR.
 
-That's right.
-But I'm wondering renaming it out to 'out_free_new' and replacing all the
-matching 'goto' where the label was making sense will help readability ?
-Have you better idea ?
+Our defconfigs still have CONFIG_LOCKUP_DETECTOR=y, but that is no longer
+user selectable, and we don't mention the new options, so we end up with
+none of them enabled.
+
+So update the defconfigs to turn on the new SOFT and HARD options, the
+end result being the same as what we had previously.
+
+Fixes: 05a4a9527931 ("kernel/watchdog: split up config options")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/configs/powernv_defconfig | 3 ++-
+ arch/powerpc/configs/ppc64_defconfig   | 3 ++-
+ arch/powerpc/configs/pseries_defconfig | 3 ++-
+ 3 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index 0695ce047d56..34fc9bbfca9e 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -293,7 +293,8 @@ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_STACK_USAGE=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+-CONFIG_LOCKUP_DETECTOR=y
++CONFIG_SOFTLOCKUP_DETECTOR=y
++CONFIG_HARDLOCKUP_DETECTOR=y
+ CONFIG_LATENCYTOP=y
+ CONFIG_SCHED_TRACER=y
+ CONFIG_BLK_DEV_IO_TRACE=y
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 5175028c56ce..c5246d29f385 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -324,7 +324,8 @@ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_STACK_USAGE=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+-CONFIG_LOCKUP_DETECTOR=y
++CONFIG_SOFTLOCKUP_DETECTOR=y
++CONFIG_HARDLOCKUP_DETECTOR=y
+ CONFIG_DEBUG_MUTEXES=y
+ CONFIG_LATENCYTOP=y
+ CONFIG_SCHED_TRACER=y
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 1a61aa20dfba..fd5d98a0b95c 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -291,7 +291,8 @@ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_STACK_USAGE=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+-CONFIG_LOCKUP_DETECTOR=y
++CONFIG_SOFTLOCKUP_DETECTOR=y
++CONFIG_HARDLOCKUP_DETECTOR=y
+ CONFIG_LATENCYTOP=y
+ CONFIG_SCHED_TRACER=y
+ CONFIG_BLK_DEV_IO_TRACE=y
+-- 
+2.7.4
