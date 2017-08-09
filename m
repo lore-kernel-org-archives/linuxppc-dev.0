@@ -1,35 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xS2Fv2r9xzDqvG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 17:00:03 +1000 (AEST)
-Date: Wed, 9 Aug 2017 16:59:55 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
- Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Jike Song <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
- Arvind Yadav <arvind.yadav.cs@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Woodhouse <dwmw2@infradead.org>,
- Kirti Wankhede <kwankhede@nvidia.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
- Vlad Tsyrklevich <vlad@tsyrklevich.net>,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH v5 5/5] vfio-pci: Allow to expose MSI-X table to
- userspace when safe
-Message-ID: <20170809065955.GL13670@umbus.fritz.box>
-References: <20170807072548.3023-1-aik@ozlabs.ru>
- <20170807072548.3023-6-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xS2Ps4ytdzDqty
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 17:06:57 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>,
+ =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH 10/10] powerpc/xive: fix the size of the cpumask used in
+ xive_find_target_in_mask()
+In-Reply-To: <1502182969-3180-1-git-send-email-clg@kaod.org>
+References: <1502182969-3180-1-git-send-email-clg@kaod.org>
+Date: Wed, 09 Aug 2017 17:06:57 +1000
+Message-ID: <874lthnrse.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="UUBKWyapWpFAak7q"
-In-Reply-To: <20170807072548.3023-6-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,202 +27,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+C=C3=A9dric Le Goater <clg@kaod.org> writes:
+> When called from xive_irq_startup(), the size of the cpumask can be
+> larger than nr_cpu_ids. Most of time, its value is NR_CPUS (2048).
 
---UUBKWyapWpFAak7q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ugh, you're right.
 
-On Mon, Aug 07, 2017 at 05:25:48PM +1000, Alexey Kardashevskiy wrote:
-1;4803;0c> Some devices have a MSIX BAR not aligned to the system page size
-> greater than 4K (like 64k for ppc64) which at the moment prevents
-> such MMIO pages from being mapped to the userspace for the sake of
-> the MSIX BAR content protection. If such page happens to share
-> the same system page with some frequently accessed registers,
-> the entire system page will be emulated which can seriously affect
-> performance.
->=20
-> This allows mapping of MSI-X tables to userspace if hardware provides
-> MSIX isolation via interrupt remapping or filtering; in other words
-> allowing direct access to the MSIX BAR won't do any harm to other devices
-> or cause spurious interrupts visible to the kernel.
->=20
-> This adds a wrapping helper to check if a capability is supported by
-> an IOMMU group.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+  #define nr_cpumask_bits	((unsigned int)NR_CPUS)
+  ...
+  /**
+   * cpumask_weight - Count of bits in *srcp
+   * @srcp: the cpumask to count bits (< nr_cpu_ids) in.
+   */
+  static inline unsigned int cpumask_weight(const struct cpumask *srcp)
+  {
+  	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
+  }
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
+I don't know what the comment on srcp is trying to say. It's not true
+that it only counts nr_cpu_ids worth of bits.
+
+So it does seem if we're passed a mask with > nr_cpu_ids bits set then
+cpumask_weight() will return > nr_cpu_ids, which is .. unhelpful.
+
+
+BUT, I don't see other code handling cpumask_weight() returning >
+nr_cpu_ids - at least I can't find any with some grepping.
+
+
+So what is going wrong here that we're being passed a mask with more
+than nr_cpu_ids bits set?
+
+I think the affinity mask is copied to the desc in desc_smp_init(), and
+the call chain will be:
+
+  irq_create_mapping()
+    -> irq_domain_alloc_descs()
+       -> __irq_alloc_descs()
+          -> alloc_descs()
+             -> alloc_desc()
+                -> desc_set_defaults()
+                   -> desc_smp_init()
+
+irq_create_mapping() is doing:
+
+  virq =3D irq_domain_alloc_descs(-1, 1, hwirq, of_node_to_nid(of_node), NU=
+LL);
+
+Where the affinity mask is the NULL at the end.
+
+So presumably we're hitting the irq_default_affinity case here:
+
+  static void desc_smp_init(struct irq_desc *desc, int node,
+  			  const struct cpumask *affinity)
+  {
+  	if (!affinity)
+  		affinity =3D irq_default_affinity;
+  	cpumask_copy(desc->irq_common_data.affinity, affinity);
+
+
+Which comes from:
+
+  static void __init init_irq_default_affinity(void)
+  {
+  #ifdef CONFIG_CPUMASK_OFFSTACK
+  	if (!irq_default_affinity)
+  		zalloc_cpumask_var(&irq_default_affinity, GFP_NOWAIT);
+  #endif
+  	if (cpumask_empty(irq_default_affinity))
+  		cpumask_setall(irq_default_affinity);
+  }
+
+And cpumask_setall() will indeed set NR_CPUs bits.
+
+
+So that all seems sane, except that it does mean cpumask_weight() can
+return > nr_cpu_ids which is awkward.
+
+I guess this patch is a good fix, I'll expand the change log a bit.
+
+cheers
+
+
+> This can result in such WARNINGs in xive_find_target_in_mask():
+>
+>    [    0.094480] WARNING: CPU: 10 PID: 1 at ../arch/powerpc/sysdev/xive/=
+common.c:476 xive_find_target_in_mask+0x110/0x2f0
+>    [    0.094486] Modules linked in:
+>    [    0.094491] CPU: 10 PID: 1 Comm: swapper/0 Not tainted 4.12.0+ #3
+>    [    0.094496] task: c0000003fae4f200 task.stack: c0000003fe108000
+>    [    0.094501] NIP: c00000000008a310 LR: c00000000008a2e4 CTR: 0000000=
+00072ca34
+>    [    0.094506] REGS: c0000003fe10b360 TRAP: 0700   Not tainted  (4.12.=
+0+)
+>    [    0.094510] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>
+>    [    0.094515]   CR: 88000222  XER: 20040008
+>    [    0.094521] CFAR: c00000000008a2cc SOFTE: 0
+>    [    0.094521] GPR00: c00000000008a274 c0000003fe10b5e0 c000000001428f=
+00 0000000000000010
+>    [    0.094521] GPR04: 0000000000000010 0000000000000010 00000000000000=
+10 0000000000000099
+>    [    0.094521] GPR08: 0000000000000010 0000000000000001 ffffffffffff00=
+00 0000000000000000
+>    [    0.094521] GPR12: 0000000000000000 c00000000fff2d00 c00000000000d4=
+d8 0000000000000000
+>    [    0.094521] GPR16: 0000000000000000 0000000000000000 00000000000000=
+00 0000000000000000
+>    [    0.094521] GPR20: 0000000000000000 0000000000000000 00000000000000=
+00 c000000000b451e8
+>    [    0.094521] GPR24: 00000000ffffffff c000000001462354 00000000000008=
+00 00000000000007ff
+>    [    0.094521] GPR28: c000000001462354 0000000000000010 c0000003f857e4=
+18 0000000000000010
+>    [    0.094580] NIP [c00000000008a310] xive_find_target_in_mask+0x110/0=
+x2f0
+>    [    0.094585] LR [c00000000008a2e4] xive_find_target_in_mask+0xe4/0x2=
+f0
+>    [    0.094589] Call Trace:
+>    [    0.094593] [c0000003fe10b5e0] [c00000000008a274] xive_find_target_=
+in_mask+0x74/0x2f0 (unreliable)
+>    [    0.094601] [c0000003fe10b690] [c00000000008abf0] xive_pick_irq_tar=
+get.isra.1+0x200/0x230
+>    [    0.094608] [c0000003fe10b830] [c00000000008b250] xive_irq_startup+=
+0x60/0x180
+>    [    0.094614] [c0000003fe10b8b0] [c0000000001608f0] irq_startup+0x70/=
+0xd0
+>    [    0.094620] [c0000003fe10b8f0] [c00000000015df7c] __setup_irq+0x7bc=
+/0x880
+>    [    0.094626] [c0000003fe10ba90] [c00000000015e30c] request_threaded_=
+irq+0x14c/0x2c0
+>    [    0.094632] [c0000003fe10baf0] [c0000000000aeb00] request_event_sou=
+rces_irqs+0x100/0x180
+>    [    0.094639] [c0000003fe10bc10] [c000000000e7d2f8] __machine_initcal=
+l_pseries_init_ras_IRQ+0x104/0x134
+>    [    0.094646] [c0000003fe10bc40] [c00000000000cc88] do_one_initcall+0=
+x68/0x1d0
+>    [    0.094652] [c0000003fe10bd00] [c000000000e643c8] kernel_init_freea=
+ble+0x290/0x374
+>    [    0.094658] [c0000003fe10bdc0] [c00000000000d4f4] kernel_init+0x24/=
+0x170
+>    [    0.094664] [c0000003fe10be30] [c00000000000b268] ret_from_kernel_t=
+hread+0x5c/0x74
+>    [    0.094669] Instruction dump:
+>    [    0.094673] 48586529 60000000 e8dc0002 393f0001 7f9b4800 7c7d07b4 7=
+d3f07b4 409effcc
+>    [    0.094682] 7f9d3000 7d26e850 79290fe0 69290001 <0b090000> 409c0194=
+ 3f620004 3b7b8ec8
+>
+> Fix this problem by using a minimum value.
+>
+> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 > ---
->  include/linux/vfio.h             |  1 +
->  drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
->  drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
->  drivers/vfio/vfio.c              | 15 +++++++++++++++
->  4 files changed, 37 insertions(+), 4 deletions(-)
->=20
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 586809abb273..7110bca2fb60 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -46,6 +46,7 @@ struct vfio_device_ops {
-> =20
->  extern struct iommu_group *vfio_iommu_group_get(struct device *dev);
->  extern void vfio_iommu_group_put(struct iommu_group *group, struct devic=
-e *dev);
-> +extern bool vfio_iommu_group_is_capable(struct device *dev, unsigned lon=
-g cap);
-
-This diff probably belongs in the earlier patch adding the function,
-rather than here where it's first used.  Not worth respinning just for
-that, though.
-
->  extern int vfio_add_group_dev(struct device *dev,
->  			      const struct vfio_device_ops *ops,
-> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-> index d87a0a3cda14..c4c39ed64b1e 100644
-> --- a/drivers/vfio/pci/vfio_pci.c
-> +++ b/drivers/vfio/pci/vfio_pci.c
-> @@ -561,11 +561,17 @@ static int msix_sparse_mmap_cap(struct vfio_pci_dev=
-ice *vdev,
->  	struct vfio_region_info_cap_sparse_mmap *sparse;
->  	size_t end, size;
->  	int nr_areas =3D 2, i =3D 0, ret;
-> +	bool is_msix_isolated =3D vfio_iommu_group_is_capable(&vdev->pdev->dev,
-> +			IOMMU_GROUP_CAP_ISOLATE_MSIX);
-> =20
->  	end =3D pci_resource_len(vdev->pdev, vdev->msix_bar);
-> =20
-> -	/* If MSI-X table is aligned to the start or end, only one area */
-> -	if (((vdev->msix_offset & PAGE_MASK) =3D=3D 0) ||
-> +	/*
-> +	 * If MSI-X table is allowed to mmap because of the capability
-> +	 * of IRQ remapping or aligned to the start or end, only one area
-> +	 */
-> +	if (is_msix_isolated ||
-> +	    ((vdev->msix_offset & PAGE_MASK) =3D=3D 0) ||
->  	    (PAGE_ALIGN(vdev->msix_offset + vdev->msix_size) >=3D end))
->  		nr_areas =3D 1;
-> =20
-> @@ -577,6 +583,12 @@ static int msix_sparse_mmap_cap(struct vfio_pci_devi=
-ce *vdev,
-> =20
->  	sparse->nr_areas =3D nr_areas;
-> =20
-> +	if (is_msix_isolated) {
-> +		sparse->areas[i].offset =3D 0;
-> +		sparse->areas[i].size =3D end;
-> +		return 0;
-> +	}
-> +
->  	if (vdev->msix_offset & PAGE_MASK) {
->  		sparse->areas[i].offset =3D 0;
->  		sparse->areas[i].size =3D vdev->msix_offset & PAGE_MASK;
-> @@ -1094,6 +1106,8 @@ static int vfio_pci_mmap(void *device_data, struct =
-vm_area_struct *vma)
->  	unsigned int index;
->  	u64 phys_len, req_len, pgoff, req_start;
->  	int ret;
-> +	bool is_msix_isolated =3D vfio_iommu_group_is_capable(&vdev->pdev->dev,
-> +			IOMMU_GROUP_CAP_ISOLATE_MSIX);
-> =20
->  	index =3D vma->vm_pgoff >> (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT);
-> =20
-> @@ -1115,7 +1129,7 @@ static int vfio_pci_mmap(void *device_data, struct =
-vm_area_struct *vma)
->  	if (req_start + req_len > phys_len)
->  		return -EINVAL;
-> =20
-> -	if (index =3D=3D vdev->msix_bar) {
-> +	if (index =3D=3D vdev->msix_bar && !is_msix_isolated) {
->  		/*
->  		 * Disallow mmaps overlapping the MSI-X table; users don't
->  		 * get to touch this directly.  We could find somewhere
-> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci=
-_rdwr.c
-> index 357243d76f10..7514206a5ea7 100644
-> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
-> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
-> @@ -18,6 +18,7 @@
->  #include <linux/uaccess.h>
->  #include <linux/io.h>
->  #include <linux/vgaarb.h>
-> +#include <linux/vfio.h>
-> =20
->  #include "vfio_pci_private.h"
-> =20
-> @@ -123,6 +124,8 @@ ssize_t vfio_pci_bar_rw(struct vfio_pci_device *vdev,=
- char __user *buf,
->  	resource_size_t end;
->  	void __iomem *io;
->  	ssize_t done;
-> +	bool is_msix_isolated =3D vfio_iommu_group_is_capable(&vdev->pdev->dev,
-> +			IOMMU_GROUP_CAP_ISOLATE_MSIX);
-> =20
->  	if (pci_resource_start(pdev, bar))
->  		end =3D pci_resource_len(pdev, bar);
-> @@ -164,7 +167,7 @@ ssize_t vfio_pci_bar_rw(struct vfio_pci_device *vdev,=
- char __user *buf,
->  	} else
->  		io =3D vdev->barmap[bar];
-> =20
-> -	if (bar =3D=3D vdev->msix_bar) {
-> +	if (bar =3D=3D vdev->msix_bar && !is_msix_isolated) {
->  		x_start =3D vdev->msix_offset;
->  		x_end =3D vdev->msix_offset + vdev->msix_size;
->  	}
-> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> index 330d50582f40..5292c4a5ae8f 100644
-> --- a/drivers/vfio/vfio.c
-> +++ b/drivers/vfio/vfio.c
-> @@ -169,6 +169,21 @@ void vfio_iommu_group_put(struct iommu_group *group,=
- struct device *dev)
->  }
->  EXPORT_SYMBOL_GPL(vfio_iommu_group_put);
-> =20
-> +bool vfio_iommu_group_is_capable(struct device *dev, unsigned long cap)
-> +{
-> +	bool ret =3D false;
-> +	struct iommu_group *group =3D vfio_iommu_group_get(dev);
-> +
-> +	if (group) {
-> +		ret =3D iommu_group_is_capable(group, cap);
-> +
-> +		vfio_iommu_group_put(group, dev);
-> +	}
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_iommu_group_is_capable);
-> +
->  #ifdef CONFIG_VFIO_NOIOMMU
->  static void *vfio_noiommu_open(unsigned long arg)
->  {
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---UUBKWyapWpFAak7q
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlmKsukACgkQbDjKyiDZ
-s5K+xhAApKQABfyNWe9y/xjrCNibbHa6WBTyNix2cca6qN86b//+LwByM40Lk7Di
-5VnZcK3oZCYrHi5alI2Wmar6LoLW9zfJIdxfrS8VjMo1H1EGtlkrlpmjdd5ttKe2
-tacCYW7EN4n1/W4JJbJrfTwIVvL+CvhrE5xp1L6LDFyXOCXckObNB677ku1MNy1U
-mMV6InwSK5I3WQe6TyZRjOv/fC++FKO9bWb9gATixj0DuCoM1EpfERsgYbEdp5X3
-1dLzjo51na0oEdj9RZKSPPJeafg+buDiynPiTGUEzAK/9du0BxD3q7yl6/lCEEBS
-j9vukaevolLscoNLXkBHo7vkqdRC4giFm0WEVi6zUgEfu/PXXllPfN6o5W1HkE8V
-XY1+YL6yYXFes+BFfW4834jb5+i4N78Wc20TMWwHhI/U8E2CSjnMIYLdHwZ9e2TB
-u4gEVfbSJdtiVbMznu+6JUW0rKobyA4CuBENujRxj+FMlVdCKgNo4gLnELQ49o9Q
-/6GHMKQaN8fCdDnbwHo/QuJpEOrvlG6FkIer4o+3Z9P1gjl11rRawizWnnjzX1Rt
-OpsneNU133RI1f6HcK+fMO8s83KYTZRzDsD5haktns2UDKAuVGX/YD2M6qScX661
-OF7BAZoVp7u4ircwf+a9lpIBL7BAG3wLHuK8395V6/cLgrX4vF8=
-=NhNC
------END PGP SIGNATURE-----
-
---UUBKWyapWpFAak7q--
+>  arch/powerpc/sysdev/xive/common.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+> index 536ee15f61fb..4dac7d560a42 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -463,7 +463,7 @@ static int xive_find_target_in_mask(const struct cpum=
+ask *mask,
+>  	int cpu, first, num, i;
+>=20=20
+>  	/* Pick up a starting point CPU in the mask based on  fuzz */
+> -	num =3D cpumask_weight(mask);
+> +	num =3D min_t(int, cpumask_weight(mask), nr_cpu_ids);
+>  	first =3D fuzz % num;
+>=20=20
+>  	/* Locate it */
+> --=20
+> 2.7.5
