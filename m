@@ -1,44 +1,20 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSBqF63LXzDqZy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 23:26:01 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v79DNrOt110524
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 09:25:59 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c807u3k5b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 09:25:58 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 9 Aug 2017 14:25:56 +0100
-Subject: Re: [PATCH 13/16] perf: Add a speculative page fault sw events
-To: Michael Ellerman <mpe@ellerman.id.au>, paulmck@linux.vnet.ibm.com,
- peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1502202949-8138-14-git-send-email-ldufour@linux.vnet.ibm.com>
- <87lgmsnalk.fsf@concordia.ellerman.id.au>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 9 Aug 2017 15:25:48 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSBrJ6fCpzDrCt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 23:26:56 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: dja@axtens.net
+Subject: Re: [v6 1/2] raid6/altivec: Add vpermxor implementation for raid6 Q
+ syndrome
+In-Reply-To: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
+References: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
+Date: Wed, 09 Aug 2017 23:26:56 +1000
+Message-ID: <87h8xgna73.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87lgmsnalk.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <f934bc94-d250-1d43-d796-de39231ae713@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,37 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/08/2017 15:18, Michael Ellerman wrote:
-> Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
-> 
->> Add new software events to count succeeded and failed speculative page
->> faults.
->>
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->> ---
->>  include/uapi/linux/perf_event.h | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
->> index b1c0b187acfe..fbfb03dff334 100644
->> --- a/include/uapi/linux/perf_event.h
->> +++ b/include/uapi/linux/perf_event.h
->> @@ -111,6 +111,8 @@ enum perf_sw_ids {
->>  	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
->>  	PERF_COUNT_SW_DUMMY			= 9,
->>  	PERF_COUNT_SW_BPF_OUTPUT		= 10,
->> +	PERF_COUNT_SW_SPF_DONE			= 11,
->> +	PERF_COUNT_SW_SPF_FAILED		= 12,
-> 
-> Can't you calculate:
-> 
->   PERF_COUNT_SW_SPF_FAILED = PERF_COUNT_SW_PAGE_FAULTS - PERF_COUNT_SW_SPF_DONE
-> 
-> ie. do you need a separate event for it?
+Matt Brown <matthew.brown.dev@gmail.com> writes:
 
-Unfortunately not, because PERF_COUNT_SW_PAGE_FAULTS counts also page
-faults from the kernel space, while SPF is only concerning user space page
-faults.
+> This patch uses the vpermxor instruction to optimise the raid6 Q syndrome.
+> This instruction was made available with POWER8, ISA version 2.07.
+> It allows for both vperm and vxor instructions to be done in a single
+> instruction. This has been tested for correctness on a ppc64le vm with a
+> basic RAID6 setup containing 5 drives.
+>
+> The performance benchmarks are from the raid6test in the /lib/raid6/test
+> directory. These results are from an IBM Firestone machine with ppc64le
+> architecture. The benchmark results show a 35% speed increase over the best
+> existing algorithm for powerpc (altivec). The raid6test has also been run
+> on a big-endian ppc64 vm to ensure it also works for big-endian
+> architectures.
+>
+> Performance benchmarks:
+> 		raid6: altivecx4 gen() 18773 MB/s
+> 		raid6: altivecx8 gen() 19438 MB/s
+>
+> 		raid6: vpermxor4 gen() 25112 MB/s
+> 		raid6: vpermxor8 gen() 26279 MB/s
+>
+> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> ---
+> v6:
+> 	- added vpermxor files to .gitignore
+> 	- fixup whitespace
+> 	- added vpermxor objs to test/Makefile
+> v5:
+> 	- moved altivec.uc fix into other patch in series
+> ---
+>  include/linux/raid/pq.h |   4 ++
+>  lib/raid6/.gitignore    |   1 +
+>  lib/raid6/Makefile      |  27 ++++++++++++-
+>  lib/raid6/algos.c       |   4 ++
+>  lib/raid6/test/Makefile |  17 +++++++-
+>  lib/raid6/vpermxor.uc   | 104 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  6 files changed, 154 insertions(+), 3 deletions(-)
+>  create mode 100644 lib/raid6/vpermxor.uc
 
-Cheers,
-Laurent.
+This version at least is not Cc'ed to any of the folks that
+get_maintainers.pl identifies for these files:
+
+$ ./scripts/get_maintainer.pl -f lib/raid6
+shli@fb.com
+gayatri.kammela@intel.com
+fenghua.yu@intel.com
+megha.dey@linux.intel.com
+schwidefsky@de.ibm.com
+anup.patel@broadcom.com
+linux-kernel@vger.kernel.org
+
+
+This seems like mostly a list of random folks who've touched this code,
+but maybe some of them would have comments?
+
+cheers
