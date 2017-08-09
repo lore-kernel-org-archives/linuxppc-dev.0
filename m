@@ -1,38 +1,27 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSQRq3qcqzDqjB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 08:09:59 +1000 (AEST)
-Received: from mail-qt0-f170.google.com (mail-qt0-f170.google.com
- [209.85.216.170])
+Return-Path: <matthew.brown.dev@gmail.com>
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9064022C9A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 22:09:57 +0000 (UTC)
-Received: by mail-qt0-f170.google.com with SMTP id p3so44631872qtg.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 15:09:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSSTD0NTczDqrP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 09:41:19 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id q66so7142863qki.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 16:41:19 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170718214339.7774-49-robh@kernel.org>
-References: <20170718214339.7774-49-robh@kernel.org>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 9 Aug 2017 17:09:36 -0500
-Message-ID: <CAL_JsqLYz9ACd-YAtU0gEHkY8A++cCeBTW9jvUyc5OheEq4scQ@mail.gmail.com>
-Subject: Re: [PATCH] soc: Convert to using %pOF instead of full_name
-To: "arm@kernel.org" <arm@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Scott Wood <oss@buserror.net>,
- Qiang Zhao <qiang.zhao@nxp.com>, Matthias Brugger <matthias.bgg@gmail.com>,
- Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>,
- Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
- Javier Martinez Canillas <javier@osg.samsung.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-mediatek@lists.infradead.org,
- "open list:MEDIA DRIVERS FOR RENESAS - FCP"
- <linux-renesas-soc@vger.kernel.org>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+In-Reply-To: <87h8xgna73.fsf@concordia.ellerman.id.au>
+References: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
+ <87h8xgna73.fsf@concordia.ellerman.id.au>
+From: Matt Brown <matthew.brown.dev@gmail.com>
+Date: Thu, 10 Aug 2017 09:41:16 +1000
+Message-ID: <CAPoR37bE=WfpfKYdYz-L3y7XNjeTqYj7BQm=MoEVe8V08360ZA@mail.gmail.com>
+Subject: Re: [v6 1/2] raid6/altivec: Add vpermxor implementation for raid6 Q
+ syndrome
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>,
+ gayatri.kammela@intel.com, shli@fb.com, fenghua.yu@intel.com,
+ megha.dey@linux.intel.com, schwidefsky@de.ibm.com,
+ linux-kernel@vger.kernel.org, anup.patel@broadcom.com
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,39 +32,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 18, 2017 at 4:43 PM, Rob Herring <robh@kernel.org> wrote:
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
+On Wed, Aug 9, 2017 at 11:26 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Matt Brown <matthew.brown.dev@gmail.com> writes:
 >
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Scott Wood <oss@buserror.net>
-> Cc: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: Matthias Brugger <matthias.bgg@gmail.com>
-> Cc: Simon Horman <horms@verge.net.au>
-> Cc: Magnus Damm <magnus.damm@gmail.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-mediatek@lists.infradead.org
-> Cc: linux-renesas-soc@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> ---
->  drivers/soc/fsl/qbman/bman_ccsr.c    | 10 +++++-----
->  drivers/soc/fsl/qbman/bman_portal.c  |  8 +++-----
->  drivers/soc/fsl/qbman/qman_ccsr.c    | 12 ++++++------
->  drivers/soc/fsl/qbman/qman_portal.c  | 11 ++++-------
->  drivers/soc/fsl/qe/gpio.c            |  4 ++--
->  drivers/soc/mediatek/mtk-pmic-wrap.c |  4 ++--
->  drivers/soc/renesas/rcar-rst.c       |  4 ++--
->  drivers/soc/renesas/rcar-sysc.c      |  6 +++---
->  drivers/soc/samsung/pm_domains.c     |  8 ++++----
->  9 files changed, 31 insertions(+), 36 deletions(-)
+>> This patch uses the vpermxor instruction to optimise the raid6 Q syndrome.
+>> This instruction was made available with POWER8, ISA version 2.07.
+>> It allows for both vperm and vxor instructions to be done in a single
+>> instruction. This has been tested for correctness on a ppc64le vm with a
+>> basic RAID6 setup containing 5 drives.
+>>
+>> The performance benchmarks are from the raid6test in the /lib/raid6/test
+>> directory. These results are from an IBM Firestone machine with ppc64le
+>> architecture. The benchmark results show a 35% speed increase over the best
+>> existing algorithm for powerpc (altivec). The raid6test has also been run
+>> on a big-endian ppc64 vm to ensure it also works for big-endian
+>> architectures.
+>>
+>> Performance benchmarks:
+>>               raid6: altivecx4 gen() 18773 MB/s
+>>               raid6: altivecx8 gen() 19438 MB/s
+>>
+>>               raid6: vpermxor4 gen() 25112 MB/s
+>>               raid6: vpermxor8 gen() 26279 MB/s
+>>
+>> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+>> Reviewed-by: Daniel Axtens <dja@axtens.net>
+>> ---
+>> v6:
+>>       - added vpermxor files to .gitignore
+>>       - fixup whitespace
+>>       - added vpermxor objs to test/Makefile
+>> v5:
+>>       - moved altivec.uc fix into other patch in series
+>> ---
+>>  include/linux/raid/pq.h |   4 ++
+>>  lib/raid6/.gitignore    |   1 +
+>>  lib/raid6/Makefile      |  27 ++++++++++++-
+>>  lib/raid6/algos.c       |   4 ++
+>>  lib/raid6/test/Makefile |  17 +++++++-
+>>  lib/raid6/vpermxor.uc   | 104 ++++++++++++++++++++++++++++++++++++++++++++++++
+>>  6 files changed, 154 insertions(+), 3 deletions(-)
+>>  create mode 100644 lib/raid6/vpermxor.uc
+>
+> This version at least is not Cc'ed to any of the folks that
+> get_maintainers.pl identifies for these files:
+>
+> $ ./scripts/get_maintainer.pl -f lib/raid6
+> shli@fb.com
+> gayatri.kammela@intel.com
+> fenghua.yu@intel.com
+> megha.dey@linux.intel.com
+> schwidefsky@de.ibm.com
+> anup.patel@broadcom.com
+> linux-kernel@vger.kernel.org
+>
+>
+> This seems like mostly a list of random folks who've touched this code,
+> but maybe some of them would have comments?
+>
 
-Arnd, Olof,
+Ah my bad. I've CC'ed them into this email chain.
+Apologies for not including you guys in the original email.
+Here is a link to the patchworks patch:
+http://patchwork.ozlabs.org/patch/797576/
 
-Can you please apply this one.
-
-Rob
+Thanks,
+Matt Brown
