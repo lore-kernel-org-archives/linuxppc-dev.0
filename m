@@ -1,38 +1,49 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Thomas.Lendacky@amd.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0083.outbound.protection.outlook.com [104.47.37.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSHnZ6sQ0zDqjk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 03:09:54 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v79H3iuh145688
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 13:08:51 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c82vrxpry-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 13:08:51 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 9 Aug 2017 11:03:49 -0600
-Subject: Re: [PATCH] ibmvnic: Fix unused variable warning
-To: Michal Suchanek <msuchanek@suse.de>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSKJX49GHzDqjk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 04:18:20 +1000 (AEST)
+Subject: Re: [RFC Part1 PATCH v3 02/17] x86/CPU/AMD: Add the Secure Encrypted
+ Virtualization CPU feature
+To: Borislav Petkov <bp@suse.de>
+Cc: Brijesh Singh <brijesh.singh@amd.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
+ David Howells <dhowells@redhat.com>, Matt Fleming
+ <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>, Ard Biesheuvel
+ <ard.biesheuvel@linaro.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20170809111602.12170-1-msuchanek@suse.de>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Wed, 9 Aug 2017 10:03:42 -0700
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-3-brijesh.singh@amd.com>
+ <20170725102657.GD21822@nazgul.tnic>
+ <7236d267-ebcb-8b45-b8d3-5955903e395f@amd.com>
+ <20170725143615.GA26029@nazgul.tnic>
+ <47ccc32e-e113-48e0-d2e0-2f23b37cc452@amd.com>
+ <20170725151301.GC26029@nazgul.tnic>
+ <d6fdba78-034b-d9e2-15ae-00547821a855@amd.com>
+ <20170725153329.GE26029@nazgul.tnic>
+From: Tom Lendacky <thomas.lendacky@amd.com>
+Message-ID: <b2aedd44-ebbc-b196-31d0-0b423f4fa632@amd.com>
+Date: Wed, 9 Aug 2017 13:17:54 -0500
 MIME-Version: 1.0
-In-Reply-To: <20170809111602.12170-1-msuchanek@suse.de>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <7872eab5-9af4-a622-990c-59bf92834c05@linux.vnet.ibm.com>
+In-Reply-To: <20170725153329.GE26029@nazgul.tnic>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,10 +53,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2017 04:16 AM, Michal Suchanek wrote:
-> Fixes: a248878d7a1d ("ibmvnic: Check for transport event on driver resume")
+On 7/25/2017 10:33 AM, Borislav Petkov wrote:
+> On Tue, Jul 25, 2017 at 10:29:40AM -0500, Tom Lendacky wrote:
+>> But early_identify_cpu() calls get_cpu_cap() which will check for cpuid
+>> leaf 0x80000008 support and set x86_phys_bits.
 > 
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> ---
+> Right, but it can't be less than 32, can it? And if it is more than 32
+> bits, then it probably doesn't really matter on 32-bit. Unless it is
+> less than 36 bits and you do PAE...
+> 
+>> I'll try to build and run a 32-bit kernel and see how this all flows.
+> 
+> Yeah, that would be good.
 
-Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Ok, finally got around to running a 32-bit kernel and it reports
+x86_phys_bits as 48.
+
+Thanks,
+Tom
+
+> 
+> Thanks.
+> 
