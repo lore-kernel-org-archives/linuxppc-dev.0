@@ -1,49 +1,31 @@
-Return-Path: <Thomas.Lendacky@amd.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0083.outbound.protection.outlook.com [104.47.37.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSKJX49GHzDqjk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 04:18:20 +1000 (AEST)
-Subject: Re: [RFC Part1 PATCH v3 02/17] x86/CPU/AMD: Add the Secure Encrypted
- Virtualization CPU feature
-To: Borislav Petkov <bp@suse.de>
-Cc: Brijesh Singh <brijesh.singh@amd.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
- David Howells <dhowells@redhat.com>, Matt Fleming
- <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-3-brijesh.singh@amd.com>
- <20170725102657.GD21822@nazgul.tnic>
- <7236d267-ebcb-8b45-b8d3-5955903e395f@amd.com>
- <20170725143615.GA26029@nazgul.tnic>
- <47ccc32e-e113-48e0-d2e0-2f23b37cc452@amd.com>
- <20170725151301.GC26029@nazgul.tnic>
- <d6fdba78-034b-d9e2-15ae-00547821a855@amd.com>
- <20170725153329.GE26029@nazgul.tnic>
-From: Tom Lendacky <thomas.lendacky@amd.com>
-Message-ID: <b2aedd44-ebbc-b196-31d0-0b423f4fa632@amd.com>
-Date: Wed, 9 Aug 2017 13:17:54 -0500
-MIME-Version: 1.0
-In-Reply-To: <20170725153329.GE26029@nazgul.tnic>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSPWp2BhFzDqrP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 07:28:22 +1000 (AEST)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ v79LSJib016494
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 21:28:19 GMT
+From: Khalid Aziz <khalid.aziz@oracle.com>
+To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, davem@davemloft.net, dave.hansen@linux.intel.com
+Cc: Khalid Aziz <khalid.aziz@oracle.com>, bsingharora@gmail.com,
+ dja@axtens.net, tglx@linutronix.de, mgorman@suse.de,
+ aarcange@redhat.com, kirill.shutemov@linux.intel.com,
+ heiko.carstens@de.ibm.com, ak@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ Khalid Aziz <khalid@gonehiking.org>
+Subject: [PATCH v7 7/9] mm: Add address parameter to arch_validate_prot()
+Date: Wed,  9 Aug 2017 15:26:00 -0600
+Message-Id: <43c120f0cbbebd1398997b9521013ced664e5053.1502219353.git.khalid.aziz@oracle.com>
+In-Reply-To: <cover.1502219353.git.khalid.aziz@oracle.com>
+References: <cover.1502219353.git.khalid.aziz@oracle.com>
+In-Reply-To: <cover.1502219353.git.khalid.aziz@oracle.com>
+References: <cover.1502219353.git.khalid.aziz@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,25 +35,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/25/2017 10:33 AM, Borislav Petkov wrote:
-> On Tue, Jul 25, 2017 at 10:29:40AM -0500, Tom Lendacky wrote:
->> But early_identify_cpu() calls get_cpu_cap() which will check for cpuid
->> leaf 0x80000008 support and set x86_phys_bits.
-> 
-> Right, but it can't be less than 32, can it? And if it is more than 32
-> bits, then it probably doesn't really matter on 32-bit. Unless it is
-> less than 36 bits and you do PAE...
-> 
->> I'll try to build and run a 32-bit kernel and see how this all flows.
-> 
-> Yeah, that would be good.
+A protection flag may not be valid across entire address space and
+hence arch_validate_prot() might need the address a protection bit is
+being set on to ensure it is a valid protection flag. For example, sparc
+processors support memory corruption detection (as part of ADI feature)
+flag on memory addresses mapped on to physical RAM but not on PFN mapped
+pages or addresses mapped on to devices. This patch adds address to the
+parameters being passed to arch_validate_prot() so protection bits can
+be validated in the relevant context.
 
-Ok, finally got around to running a 32-bit kernel and it reports
-x86_phys_bits as 48.
+Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
+Cc: Khalid Aziz <khalid@gonehiking.org>
+---
+v7:
+	- new patch
 
-Thanks,
-Tom
+ arch/powerpc/include/asm/mman.h | 2 +-
+ arch/powerpc/kernel/syscalls.c  | 2 +-
+ include/linux/mman.h            | 2 +-
+ mm/mprotect.c                   | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-> 
-> Thanks.
-> 
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index 30922f699341..bc74074304a2 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
+ 		return false;
+ 	return true;
+ }
+-#define arch_validate_prot(prot) arch_validate_prot(prot)
++#define arch_validate_prot(prot, addr) arch_validate_prot(prot)
+ 
+ #endif /* CONFIG_PPC64 */
+ #endif	/* _ASM_POWERPC_MMAN_H */
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index a877bf8269fe..6d90ddbd2d11 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -48,7 +48,7 @@ static inline long do_mmap2(unsigned long addr, size_t len,
+ {
+ 	long ret = -EINVAL;
+ 
+-	if (!arch_validate_prot(prot))
++	if (!arch_validate_prot(prot, addr))
+ 		goto out;
+ 
+ 	if (shift) {
+diff --git a/include/linux/mman.h b/include/linux/mman.h
+index 634c4c51fe3a..1693d95a88ee 100644
+--- a/include/linux/mman.h
++++ b/include/linux/mman.h
+@@ -49,7 +49,7 @@ static inline void vm_unacct_memory(long pages)
+  *
+  * Returns true if the prot flags are valid
+  */
+-static inline bool arch_validate_prot(unsigned long prot)
++static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
+ {
+ 	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
+ }
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index 8edd0d576254..beac2dfbb5fa 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -396,7 +396,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
+ 	end = start + len;
+ 	if (end <= start)
+ 		return -ENOMEM;
+-	if (!arch_validate_prot(prot))
++	if (!arch_validate_prot(prot, start))
+ 		return -EINVAL;
+ 
+ 	reqprot = prot;
+-- 
+2.11.0
