@@ -1,21 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xS9rb3lm9zDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 22:42:07 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id t83so6059674pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 05:42:07 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/6] powerpc/watchdog: add locking around init/exit functions
-Date: Wed,  9 Aug 2017 22:41:26 +1000
-Message-Id: <20170809124126.28907-7-npiggin@gmail.com>
-In-Reply-To: <20170809124126.28907-1-npiggin@gmail.com>
-References: <20170809124126.28907-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSBY32lzfzDqjk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 23:13:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/3] powerpc/mm: Mark __init memory no-execute when
+ STRICT_KERNEL_RWX=y
+In-Reply-To: <4c7613b9-c37e-295a-8e38-04aa34455350@c-s.fr>
+References: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
+ <1500015083-23511-3-git-send-email-mpe@ellerman.id.au>
+ <2111e0d8-3b77-20a0-aab9-3572467eb0d4@c-s.fr>
+ <87d185o4m7.fsf@concordia.ellerman.id.au>
+ <4c7613b9-c37e-295a-8e38-04aa34455350@c-s.fr>
+Date: Wed, 09 Aug 2017 23:13:42 +1000
+Message-ID: <87o9ronat5.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,64 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CPUs start and stop the watchdog, they manipulate shared data
-that is normally protected by the lock. Other CPUs can be running
-concurrently at this time, so it's a good idea to use locking here
-to be on the safe side.
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+...
+> At least it is correct for the ones that use regular pages, and kernel 
+> can also be started with nobats or noltlbs at command line, in which 
+> case it is usefull to have the page tables correct.
 
-Remove the barrier which is undocumented and didn't do anything.
+Yep OK.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/watchdog.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+>> So yes we *should* always mark it no-execute but in practice we can't
+>> because it's not page aligned.
+>
+> On 32 bit it seems to always be aligned to the normal page size, so no 
+> problem.
+>
+>> But if that's different on (some?) 32-bit then we could introduce a new
+>> CONFIG symbol that is enabled in the right cases.
+>
+> For the time being, I have added an "|| CONFIG_PPC32 " on the ifdef, is 
+> that OK ?
+> See https://patchwork.ozlabs.org/patch/796625/
 
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index b84351f359ea..2f6eadd9408d 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -300,6 +300,8 @@ static void stop_watchdog_timer_on(unsigned int cpu)
- 
- static int start_wd_on_cpu(unsigned int cpu)
- {
-+	unsigned long flags;
-+
- 	if (cpumask_test_cpu(cpu, &wd_cpus_enabled)) {
- 		WARN_ON(1);
- 		return 0;
-@@ -314,12 +316,14 @@ static int start_wd_on_cpu(unsigned int cpu)
- 	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
- 		return 0;
- 
-+	wd_smp_lock(&flags);
- 	cpumask_set_cpu(cpu, &wd_cpus_enabled);
- 	if (cpumask_weight(&wd_cpus_enabled) == 1) {
- 		cpumask_set_cpu(cpu, &wd_smp_cpus_pending);
- 		wd_smp_last_reset_tb = get_tb();
- 	}
--	smp_wmb();
-+	wd_smp_unlock(&flags);
-+
- 	start_watchdog_timer_on(cpu);
- 
- 	return 0;
-@@ -327,12 +331,17 @@ static int start_wd_on_cpu(unsigned int cpu)
- 
- static int stop_wd_on_cpu(unsigned int cpu)
- {
-+	unsigned long flags;
-+
- 	if (!cpumask_test_cpu(cpu, &wd_cpus_enabled))
- 		return 0; /* Can happen in CPU unplug case */
- 
- 	stop_watchdog_timer_on(cpu);
- 
-+	wd_smp_lock(&flags);
- 	cpumask_clear_cpu(cpu, &wd_cpus_enabled);
-+	wd_smp_unlock(&flags);
-+
- 	wd_smp_clear_cpu_pending(cpu, get_tb());
- 
- 	return 0;
--- 
-2.13.3
+Yeah looks fine.
+
+cheers
