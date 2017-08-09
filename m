@@ -2,20 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xS2w65DfpzDqw8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 17:29:42 +1000 (AEST)
-Message-ID: <1502263749.2563.36.camel@kernel.crashing.org>
-Subject: Re: [PATCH 10/10] powerpc/xive: fix the size of the cpumask used in
- xive_find_target_in_mask()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xS33p2glfzDqwP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 17:36:22 +1000 (AEST)
+Message-ID: <1502264039.2563.38.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: xive: ensure active irqd when setting affinity
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, =?ISO-8859-1?Q?C=E9dric?= Le
- Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@samba.org>, David Gibson
- <david@gibson.dropbear.id.au>
-Date: Wed, 09 Aug 2017 17:29:09 +1000
-In-Reply-To: <874lthnrse.fsf@concordia.ellerman.id.au>
-References: <1502182969-3180-1-git-send-email-clg@kaod.org>
- <874lthnrse.fsf@concordia.ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Sukadev Bhattiprolu
+ <sukadev@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 09 Aug 2017 17:33:59 +1000
+In-Reply-To: <87a839nu5z.fsf@concordia.ellerman.id.au>
+References: <20170803013822.GD28905@us.ibm.com>
+ <87zibamjfi.fsf@concordia.ellerman.id.au>
+ <20170809000034.GB17162@us.ibm.com>
+ <87a839nu5z.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,22 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-09 at 17:06 +1000, Michael Ellerman wrote:
->   /**
->    * cpumask_weight - Count of bits in *srcp
->    * @srcp: the cpumask to count bits (< nr_cpu_ids) in.
->    */
->   static inline unsigned int cpumask_weight(const struct cpumask *srcp)
->   {
->         return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
->   }
+On Wed, 2017-08-09 at 16:15 +1000, Michael Ellerman wrote:
+> I'm not sure I'm convinced. We can't handle every possible case of the
+> higher level code calling us in situations we don't expect.
 > 
+> For example irq_data could be NULL, but we trust the higher level code
+> not to do that to us.
 > 
-> I don't know what the comment on srcp is trying to say. It's not true
-> that it only counts nr_cpu_ids worth of bits.
+> Also I don't see any other driver doing this check.
+> 
+>   $ git grep irqd_is_started
+>   include/linux/irq.h:static inline bool irqd_is_started(struct irq_data *d)
+>   kernel/irq/chip.c:      if (irqd_is_started(d)) {
+>   kernel/irq/chip.c:      if (irqd_is_started(&desc->irq_data)) {
+>   kernel/irq/cpuhotplug.c:        if (irqd_is_per_cpu(d) || !irqd_is_started(d) || !irq_needs_fixup(d)) {
 
-Right, and that's what bit me. We should report that on lkml and maybe
-propose a patch that crops the result...
+irqd_is_started is brand new so you won't find any :-)
+
+For most cases the problem is a non-issue. Due to how xive works, it's
+more of a problem for us because a non-started interrupt has no
+targetting information at all.
+
+So this is *somewhat* related to xive internal and I'd rather have
+that sanity check in there.
 
 Cheers,
 Ben.
