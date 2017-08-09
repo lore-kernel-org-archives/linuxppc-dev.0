@@ -1,21 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50088.outbound.protection.outlook.com [40.107.5.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xRwG93dnwzDqvM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 12:29:53 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/3] powerpc/mm: Mark __init memory no-execute when
- STRICT_KERNEL_RWX=y
-In-Reply-To: <2111e0d8-3b77-20a0-aab9-3572467eb0d4@c-s.fr>
-References: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
- <1500015083-23511-3-git-send-email-mpe@ellerman.id.au>
- <2111e0d8-3b77-20a0-aab9-3572467eb0d4@c-s.fr>
-Date: Wed, 09 Aug 2017 12:29:52 +1000
-Message-ID: <87d185o4m7.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xRwPB3kN6zDqvG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 12:35:58 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "tglx@linutronix.de"
+ <tglx@linutronix.de>
+CC: "oss@buserror.net" <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
+Date: Wed, 9 Aug 2017 02:35:51 +0000
+Message-ID: <AM3PR04MB1185B031156ECC7FA92C6A9C918B0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
+ <1502075236-24078-5-git-send-email-qiang.zhao@nxp.com>
+ <87h8xjq2rw.fsf@concordia.ellerman.id.au>
+ <AM3PR04MB1185747366C53DCC51A8A88F918A0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <878tiunznb.fsf@concordia.ellerman.id.au>
+In-Reply-To: <878tiunznb.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +31,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> Le 14/07/2017 =C3=A0 08:51, Michael Ellerman a =C3=A9crit :
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc=
-/include/asm/book3s/64/pgtable.h
->> index c0737c86a362..3d562b210c65 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -1192,5 +1192,12 @@ static inline const int pud_pfn(pud_t pud)
->>   	BUILD_BUG();
->>   	return 0;
->>   }
->> +
->> +#ifdef CONFIG_STRICT_KERNEL_RWX
->> +void mark_initmem_nx(void);
->> +#else
->> +static inline void mark_initmem_nx(void) { }
->> +#endif
->> +
->
-> Why do we want to limit that to CONFIG_STRICT_KERNEL_RWX ?
-> Only the kernel text is marked X, even without CONFIG_STRICT_KERNEL_RWX=20
-> (at least on PPC32), so I believe we should clear X on init text in any=20
-> case, shouldn't we ?
+On Tue 8/8/2017 6:05 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-You're right, but ..
+> -----Original Message-----
+> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+> Sent: Tuesday, August 08, 2017 6:05 PM
+> To: Qiang Zhao <qiang.zhao@nxp.com>; tglx@linutronix.de
+> Cc: oss@buserror.net; linuxppc-dev@lists.ozlabs.org; Xiaobo Xie
+> <xiaobo.xie@nxp.com>; linux-kernel@vger.kernel.org
+> Subject: RE: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
+>=20
+> Qiang Zhao <qiang.zhao@nxp.com> writes:
+>=20
+> > On Mon 8/7/2017 3:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >
+> >> -----Original Message-----
+> >> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+> >> Sent: Monday, August 07, 2017 3:02 PM
+> >> To: Qiang Zhao <qiang.zhao@nxp.com>; tglx@linutronix.de
+> >> Cc: oss@buserror.net; Qiang Zhao <qiang.zhao@nxp.com>; linuxppc-
+> >> dev@lists.ozlabs.org; Xiaobo Xie <xiaobo.xie@nxp.com>; linux-
+> >> kernel@vger.kernel.org
+> >> Subject: Re: [PATCH v10 4/4] irqchip/qeic: remove PPCisms for QEIC
+> >>
+> >> Zhao Qiang <qiang.zhao@nxp.com> writes:
+> >>
+> >> > QEIC was supported on PowerPC, and dependent on PPC, Now it is
+> >> > supported on other platforms, so remove PPCisms.
+> >> >
+> >> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> >> > ---
+> >> >  arch/powerpc/platforms/83xx/km83xx.c          |   1 -
+> >> >  arch/powerpc/platforms/83xx/misc.c            |   1 -
+> >> >  arch/powerpc/platforms/83xx/mpc832x_mds.c     |   1 -
+> >> >  arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   1 -
+> >> >  arch/powerpc/platforms/83xx/mpc836x_mds.c     |   1 -
+> >> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   1 -
+> >> >  arch/powerpc/platforms/85xx/corenet_generic.c |   1 -
+> >> >  arch/powerpc/platforms/85xx/mpc85xx_mds.c     |   1 -
+> >> >  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |   1 -
+> >> >  arch/powerpc/platforms/85xx/twr_p102x.c       |   1 -
+> >> >  drivers/irqchip/irq-qeic.c                    | 188 +++++++++++----=
+-----------
+> >> >  include/soc/fsl/qe/qe_ic.h                    | 132 ---------------=
+---
+> >> >  12 files changed, 80 insertions(+), 250 deletions(-)  delete mode
+> >> > 100644 include/soc/fsl/qe/qe_ic.h
+> >> >
+> >> > diff --git a/arch/powerpc/platforms/83xx/km83xx.c
+> >> > b/arch/powerpc/platforms/83xx/km83xx.c
+> >> > index d8642a4..b1cef0a 100644
+> >> > --- a/arch/powerpc/platforms/83xx/km83xx.c
+> >> > +++ b/arch/powerpc/platforms/83xx/km83xx.c
+> >> > @@ -38,7 +38,6 @@
+> >> >  #include <sysdev/fsl_soc.h>
+> >> >  #include <sysdev/fsl_pci.h>
+> >> >  #include <soc/fsl/qe/qe.h>
+> >> > -#include <soc/fsl/qe/qe_ic.h>
+> >>
+> >> You deleted that file in patch 2. So didn't you just break the build
+> >> for the last two commits?
+> >
+> > Sorry, I am not sure what you said. Could you explain?
+>=20
+> Don't worry about it. I was confused by the fact that we have both:
+>=20
+>   drivers/soc/fsl/qe/qe_ic.h
+>=20
+> and:
+>=20
+>   include/soc/fsl/qe/qe_ic.h
+>=20
+> cheers
 
-On 64-bit when STRICT_KERNEL_RWX=3Dn we make no effort to ensure the
-start/end of the init text is on a page boundary.
+I think this is a issue left over by history.
+In patch with commit id 7aa1aa6ecec2af19d9aa85430ce3e56119e21626, I just mo=
+ve them out from arch/powerpc. =20
+Maybe need to ask the original author why there are 2 qe_ic.h.
 
-eg. on 64-bit hash we will typically use a 16M page to map the whole
-kernel, text/data/init_text/etc.
-
-So yes we *should* always mark it no-execute but in practice we can't
-because it's not page aligned.
-
-But if that's different on (some?) 32-bit then we could introduce a new
-CONFIG symbol that is enabled in the right cases.
-
-cheers
+Best Regards
+Qiang Zhao
