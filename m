@@ -1,19 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xS1Gc51wZzDqvc
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 16:15:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xS1HW0b8KzDr5n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 16:16:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, tglx@linutronix.de,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: xive: ensure active irqd when setting affinity
-In-Reply-To: <20170809000034.GB17162@us.ibm.com>
-References: <20170803013822.GD28905@us.ibm.com>
- <87zibamjfi.fsf@concordia.ellerman.id.au> <20170809000034.GB17162@us.ibm.com>
-Date: Wed, 09 Aug 2017 16:15:36 +1000
-Message-ID: <87a839nu5z.fsf@concordia.ellerman.id.au>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Jim Paris <jim@jtan.com>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH 0/3] Minor updates for PS3
+In-Reply-To: <ee0efa27-2807-373f-b215-2ee6ab096374@kernel.dk>
+References: <cover.1502135910.git.geoff@infradead.org>
+ <873792nz4d.fsf@concordia.ellerman.id.au>
+ <ee0efa27-2807-373f-b215-2ee6ab096374@kernel.dk>
+Date: Wed, 09 Aug 2017 16:16:22 +1000
+Message-ID: <877eydnu4p.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,47 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
-> Michael Ellerman [mpe@ellerman.id.au] wrote:
->> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
->> > From fd0abf5c61b6041fdb75296e8580b86dc91d08d6 Mon Sep 17 00:00:00 2001
->> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> > Date: Tue, 1 Aug 2017 20:54:41 -0500
->> > Subject: [PATCH] powerpc: xive: ensure active irqd when setting affinity
->> >
->> > Ensure irqd is active before attempting to set affinity. This should
->> > make the set affinity code more robust. For instance, this prevents
->> > these messages seen on a 4.12 based kernel when taking cpus offline:
->> >
->> >    [  123.053037264,3] XIVE[ IC 00  ] ISN 2 lead to invalid IVE !
->> >    [   77.885859] xive: Error -6 reconfiguring irq 17
->> >    [   77.885862] IRQ17: set affinity failed(-6).
->> >
->> > The underlying problem with taking cpus offline was fixed in 4.13-rc1 by:
->> >
->> >    commit 91f26cb4cd3c ("genirq/cpuhotplug: Do not migrated shutdown irqs")
+Jens Axboe <axboe@kernel.dk> writes:
+
+> On 08/08/2017 04:16 AM, Michael Ellerman wrote:
+>> Geoff Levand <geoff@infradead.org> writes:
 >> 
->> So do we still need this? Or is the above only a partial fix?
+>>> Hi Michael,
+>>>
+>>> A few very minor updates for PS3.  Please apply.
+>> 
+>> Jens do you want to take the block ones, or should I just take the lot?
 >
-> It would be good to have this fix.
->
-> Commit 91f26cb4cd3c fixes the problem, so we wont see the errors with
-> that commit applied. But if such a problem were to show up again, xive
-> will handle them earlier before hitting those errors.
+> Up to you, I'm fine either way.
 
-I'm not sure I'm convinced. We can't handle every possible case of the
-higher level code calling us in situations we don't expect.
-
-For example irq_data could be NULL, but we trust the higher level code
-not to do that to us.
-
-Also I don't see any other driver doing this check.
-
-  $ git grep irqd_is_started
-  include/linux/irq.h:static inline bool irqd_is_started(struct irq_data *d)
-  kernel/irq/chip.c:      if (irqd_is_started(d)) {
-  kernel/irq/chip.c:      if (irqd_is_started(&desc->irq_data)) {
-  kernel/irq/cpuhotplug.c:        if (irqd_is_per_cpu(d) || !irqd_is_started(d) || !irq_needs_fixup(d)) {
-
+OK I'll grab them.
 
 cheers
