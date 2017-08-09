@@ -1,21 +1,27 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSBY32lzfzDqjk
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 23:13:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSBfJ6CqRzDqjk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Aug 2017 23:18:16 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/3] powerpc/mm: Mark __init memory no-execute when
- STRICT_KERNEL_RWX=y
-In-Reply-To: <4c7613b9-c37e-295a-8e38-04aa34455350@c-s.fr>
-References: <1500015083-23511-1-git-send-email-mpe@ellerman.id.au>
- <1500015083-23511-3-git-send-email-mpe@ellerman.id.au>
- <2111e0d8-3b77-20a0-aab9-3572467eb0d4@c-s.fr>
- <87d185o4m7.fsf@concordia.ellerman.id.au>
- <4c7613b9-c37e-295a-8e38-04aa34455350@c-s.fr>
-Date: Wed, 09 Aug 2017 23:13:42 +1000
-Message-ID: <87o9ronat5.fsf@concordia.ellerman.id.au>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH 13/16] perf: Add a speculative page fault sw events
+In-Reply-To: <1502202949-8138-14-git-send-email-ldufour@linux.vnet.ibm.com>
+References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1502202949-8138-14-git-send-email-ldufour@linux.vnet.ibm.com>
+Date: Wed, 09 Aug 2017 23:18:15 +1000
+Message-ID: <87lgmsnalk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,27 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-...
-> At least it is correct for the ones that use regular pages, and kernel 
-> can also be started with nobats or noltlbs at command line, in which 
-> case it is usefull to have the page tables correct.
+Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
 
-Yep OK.
+> Add new software events to count succeeded and failed speculative page
+> faults.
+>
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> ---
+>  include/uapi/linux/perf_event.h | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+> index b1c0b187acfe..fbfb03dff334 100644
+> --- a/include/uapi/linux/perf_event.h
+> +++ b/include/uapi/linux/perf_event.h
+> @@ -111,6 +111,8 @@ enum perf_sw_ids {
+>  	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
+>  	PERF_COUNT_SW_DUMMY			= 9,
+>  	PERF_COUNT_SW_BPF_OUTPUT		= 10,
+> +	PERF_COUNT_SW_SPF_DONE			= 11,
+> +	PERF_COUNT_SW_SPF_FAILED		= 12,
 
->> So yes we *should* always mark it no-execute but in practice we can't
->> because it's not page aligned.
->
-> On 32 bit it seems to always be aligned to the normal page size, so no 
-> problem.
->
->> But if that's different on (some?) 32-bit then we could introduce a new
->> CONFIG symbol that is enabled in the right cases.
->
-> For the time being, I have added an "|| CONFIG_PPC32 " on the ifdef, is 
-> that OK ?
-> See https://patchwork.ozlabs.org/patch/796625/
+Can't you calculate:
 
-Yeah looks fine.
+  PERF_COUNT_SW_SPF_FAILED = PERF_COUNT_SW_PAGE_FAULTS - PERF_COUNT_SW_SPF_DONE
+
+ie. do you need a separate event for it?
 
 cheers
