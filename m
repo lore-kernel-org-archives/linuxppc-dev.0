@@ -1,21 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSpTn09mpzDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 23:13:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSpWq1k2FzDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 23:14:47 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 08/13] powerpc/64s: irq replay remove spurious irq reason
-In-Reply-To: <20170806105106.1362d100@roar.ozlabs.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 10/13] powerpc/64s: idle simplify KVM idle on POWER9
+In-Reply-To: <20170805170241.22966-11-npiggin@gmail.com>
 References: <20170805170241.22966-1-npiggin@gmail.com>
- <20170805170241.22966-9-npiggin@gmail.com>
- <1501974032.2664.135.camel@au1.ibm.com>
- <20170806105106.1362d100@roar.ozlabs.ibm.com>
-Date: Thu, 10 Aug 2017 23:12:57 +1000
-Message-ID: <87378zmuqu.fsf@concordia.ellerman.id.au>
+ <20170805170241.22966-11-npiggin@gmail.com>
+Date: Thu, 10 Aug 2017 23:14:46 +1000
+Message-ID: <87zib7lg3d.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,40 +27,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Sun, 06 Aug 2017 09:00:32 +1000
-> Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
+> POWER9 CPUs have independent MMU contexts per thread so KVM
+> does not have to bring sibling threads into real-mode when
+> switching MMU mode to guest. This can simplify POWER9 sleep/wake
+> paths and avoids hwsyncs.
 >
->> On Sun, 2017-08-06 at 03:02 +1000, Nicholas Piggin wrote:
->> > HVI interrupts have always used 0x500, so remove the dead branch.  
->> 
->> Maybe we should fix that and "catch" in incorrect entry via 0x500
->> which would mean the XIVE is trying to deliver guest irqs to the OS...
->
-> I should be more clear, when I say 0x500, it is only in reference to
-> the constant used by the soft-irq replay. After patch 6 the replay is
-> sent to the 0xea0 common handler.
->
->> That can happen if some LPCR bits aren't set properly and/or KVM
->> doesn't pull the guest in time. I had bugs like that in my early
->> dev so I've been running with a b . at 0x500 for a while :-)
->
-> So that's a separate issue of hardware actually doing a 0x500. I
-> had this
->
-> http://patchwork.ozlabs.org/patch/750033/
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/include/asm/kvm_book3s_asm.h |  4 ++++
+>  arch/powerpc/kernel/idle_book3s.S         |  8 ++-----
+>  arch/powerpc/kvm/book3s_hv.c              | 37 ++++++++++++++++++++++++++-----
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  8 +++++++
 
-Hmm, yeah I was going to merge that.
+This will need to go via, or at least be shared with Paul's tree.
 
-But I got side tracked by HVICE, ie. the "interrupts don't go to 0x500"
-is only true if we set HVICE.
-
-Which we currently always do, in __setup_cpu_power9(), but then we have
-a DT CPU feature for it, so we really shouldn't be always enabling
-HVICE, we should leave it up to the DT CPU feature code.
-
-And then it becomes controlled by the device tree, which makes your
-patch potentially wrong depending on the device tree CPU features.
-
-Ugh.
+So if it's possible, splitting it out of this series would be easier.
 
 cheers
