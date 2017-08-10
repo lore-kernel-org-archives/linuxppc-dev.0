@@ -1,20 +1,42 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=wkuz=7m=linux.vnet.ibm.com=arbab@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xStpd1mjNzDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 02:27:53 +1000 (AEST)
-Subject: Re: [PATCH] powerpc/pseries: Check memory device state before
- onlining/offlining
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: danielhb@linux.vnet.ibm.com
-References: <20170802180322.8245.55722.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <e14fe546-9977-e299-cc11-11c5d9974ee1@redhat.com>
-Date: Thu, 10 Aug 2017 18:27:49 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSvJg51yjzDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 02:50:27 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xSvJg4H4dz8vp3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 02:50:27 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xSvJg0X1Hz9s7M
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2017 02:50:26 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7AGnTIE102071
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2017 12:50:23 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c8u3bgt85-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2017 12:50:23 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Thu, 10 Aug 2017 12:50:22 -0400
+Date: Thu, 10 Aug 2017 11:50:19 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, nfont@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [FIX PATCH v0] powerpc: Fix memory unplug failure on radix guest
+References: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20170802180322.8245.55722.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
+Message-Id: <20170810165019.unrvv6id2daqazju@arbab-laptop.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,68 +46,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/08/2017 20:03, Nathan Fontenot wrote:
-> When DLPAR adding or removing memory we need to check the device
-> offline status before trying to online/offline the memory. This is
-> needed because calls device_online() and device_offline() will return
-> non-zero for memory that is already online and offline respectively.
-> 
-> This update resolves two scenarios. First, for kernel built with
-> auto-online memory enabled, memory will be onlined as part of calls
-> to add_memory(). After adding the memory the pseries dlpar code tries
-> to online it and fails since the memory is already online. The dlpar
-> code then tries to remove the memory which produces the oops message
-> below because the memory is not offline.
-> 
-> The second scenario occurs when removing memory that is already offline,
-> i.e. marking memory offline (via sysfs) and the trying to remove that
-> memory. This doesn't work because offlining the already offline memory
-> does not succeed and the dlpar code then fails the dlpar remove operation.
-> 
-> The fix for both scenarios is to check the device.offline status before
-> making the calls to device_online() or device_offline().
-> 
-> kernel BUG at mm/memory_hotplug.c:2189!
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> SMP NR_CPUS=2048
-> NUMA
-> pSeries
-> CPU: 0 PID: 5 Comm: kworker/u129:0 Not tainted 4.12.0-rc3 #272
-> Workqueue: pseries hotplug workque .pseries_hp_work_fn
-> task: c0000003f9c89200 task.stack: c0000003f9d10000
-> NIP: c0000000002ca428 LR: c0000000002ca3cc CTR: c000000000ba16a0
-> REGS: c0000003f9d13630 TRAP: 0700   Not tainted  (4.12.0-rc3)
-> MSR: 800000000282b032 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI>
->   CR: 22002024  XER: 0000000a
-> CFAR: c0000000002ca3d0 SOFTE: 1
-> GPR00: c0000000002ca3cc c0000003f9d138b0 c000000001bb0200 0000000000000001
-> GPR04: c0000003fb143c80 c0000003fef21630 0000000000000003 0000000000000002
-> GPR08: 0000000000000003 0000000000000003 0000000000000003 00000000000031b1
-> GPR12: 0000000028002042 c00000000fd80000 c000000000118ae0 c0000003fb170180
-> GPR16: 0000000000000000 0000000000000004 0000000000000010 c0000003ffff79c8
-> GPR20: c0000003ffff7b68 c0000003f728ff84 0000000000000002 0000000000000010
-> GPR24: 0000000000000002 c0000003f728ff80 0000000000000002 0000000000000001
-> GPR28: c0000003fb143c38 0000000000000002 0000000010000000 0000000020000000
-> NIP [c0000000002ca428] .remove_memory+0xb8/0xc0
-> LR [c0000000002ca3cc] .remove_memory+0x5c/0xc0
-> Call Trace:
-> [c0000003f9d138b0] [c0000000002ca3cc] .remove_memory+0x5c/0xc0 (unreliable)
-> [c0000003f9d13940] [c0000000000938a4] .dlpar_add_lmb+0x384/0x400
-> [c0000003f9d13a30] [c00000000009456c] .dlpar_memory+0x5dc/0xca0
-> [c0000003f9d13af0] [c00000000008ce84] .handle_dlpar_errorlog+0x74/0xe0
-> [c0000003f9d13b70] [c00000000008cf1c] .pseries_hp_work_fn+0x2c/0x90
-> [c0000003f9d13bf0] [c000000000110a5c] .process_one_work+0x17c/0x460
-> [c0000003f9d13c90] [c000000000110dc8] .worker_thread+0x88/0x500
-> [c0000003f9d13d70] [c000000000118c3c] .kthread+0x15c/0x1a0
-> [c0000003f9d13e30] [c00000000000ba18] .ret_from_kernel_thread+0x58/0xc0
-> Instruction dump:
-> 7fe3fb78 4bd7c845 60000000 7fa3eb78 4bfdd3c9 38210090 e8010010 eba1ffe8
-> ebc1fff0 ebe1fff8 7c0803a6 4bfdc2ac <0fe00000> 00000000 7c0802a6 fb01ffc0
-> 
-> Fixes: 943db62c316c ("powerpc/pseries: Revert 'Auto-online hotplugged memory'")
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+On Thu, Aug 10, 2017 at 02:53:48PM +0530, Bharata B Rao wrote:
+>diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>index f830562..24ecf53 100644
+>--- a/arch/powerpc/kernel/prom.c
+>+++ b/arch/powerpc/kernel/prom.c
+>@@ -524,6 +524,7 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+> 					size = 0x80000000ul - base;
+> 			}
+> 			memblock_add(base, size);
+>+			memblock_mark_hotplug(base, size);
+> 		} while (--rngs);
+> 	}
+> 	memblock_dump_all();
 
-tested the first scenario with 4.13.0-rc4 and qemu 2.10.0-rc2.
+Doing this has the effect of putting all the affected memory into 
+ZONE_MOVABLE. See find_zone_movable_pfns_for_nodes(). This means no 
+kernel allocations can occur there. Is that okay?
 
-Tested-by: Laurent Vivier <lvivier@redhat.com>
-Reviewed-by: Laurent Vivier <lvivier@redhat.com>
+>diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+>index 671a45d..180d25a 100644
+>--- a/arch/powerpc/mm/pgtable-radix.c
+>+++ b/arch/powerpc/mm/pgtable-radix.c
+>@@ -12,6 +12,7 @@
+> #include <linux/memblock.h>
+> #include <linux/of_fdt.h>
+> #include <linux/mm.h>
+>+#include <linux/memory.h>
+>
+> #include <asm/pgtable.h>
+> #include <asm/pgalloc.h>
+>@@ -255,15 +256,25 @@ static void __init radix_init_pgtable(void)
+> {
+> 	unsigned long rts_field;
+> 	struct memblock_region *reg;
+>+	phys_addr_t addr;
+>+	u64 lmb_size = memory_block_size_bytes();
+>
+> 	/* We don't support slb for radix */
+> 	mmu_slb_size = 0;
+> 	/*
+> 	 * Create the linear mapping, using standard page size for now
+> 	 */
+>-	for_each_memblock(memory, reg)
+>-		WARN_ON(create_physical_mapping(reg->base,
+>-						reg->base + reg->size));
+>+	for_each_memblock(memory, reg) {
+>+		if (memblock_is_hotpluggable(reg)) {
+>+			for (addr = reg->base; addr < (reg->base + reg->size);
+>+				addr += lmb_size)
+>+				WARN_ON(create_physical_mapping(addr,
+>+					addr + lmb_size));
+>+		} else {
+>+			WARN_ON(create_physical_mapping(reg->base,
+>+							reg->base + reg->size));
+>+		}
+>+	}
+>
+> 	/* Find out how many PID bits are supported */
+> 	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+>-- 
+>2.7.4
+>
+
+-- 
+Reza Arbab
