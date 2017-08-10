@@ -1,28 +1,20 @@
-Return-Path: <khalid.aziz@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <lvivier@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSrV108nFzDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 00:43:20 +1000 (AEST)
-Subject: Re: [PATCH v7 7/9] mm: Add address parameter to arch_validate_prot()
-To: Michael Ellerman <mpe@ellerman.id.au>, akpm@linux-foundation.org,
- benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
- dave.hansen@linux.intel.com
-Cc: bsingharora@gmail.com, dja@axtens.net, tglx@linutronix.de, mgorman@suse.de,
- aarcange@redhat.com, kirill.shutemov@linux.intel.com,
- heiko.carstens@de.ibm.com, ak@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, sparclinux@vger.kernel.org,
- Khalid Aziz <khalid@gonehiking.org>
-References: <cover.1502219353.git.khalid.aziz@oracle.com>
- <43c120f0cbbebd1398997b9521013ced664e5053.1502219353.git.khalid.aziz@oracle.com>
- <87tw1flftz.fsf@concordia.ellerman.id.au>
-From: Khalid Aziz <khalid.aziz@oracle.com>
-Message-ID: <2e97b439-dd71-8997-4824-15f2b1f53787@oracle.com>
-Date: Thu, 10 Aug 2017 08:41:41 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xStpd1mjNzDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 02:27:53 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/pseries: Check memory device state before
+ onlining/offlining
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: danielhb@linux.vnet.ibm.com
+References: <20170802180322.8245.55722.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <e14fe546-9977-e299-cc11-11c5d9974ee1@redhat.com>
+Date: Thu, 10 Aug 2017 18:27:49 +0200
 MIME-Version: 1.0
-In-Reply-To: <87tw1flftz.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20170802180322.8245.55722.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,62 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2017 07:20 AM, Michael Ellerman wrote:
-> Khalid Aziz <khalid.aziz@oracle.com> writes:
+On 02/08/2017 20:03, Nathan Fontenot wrote:
+> When DLPAR adding or removing memory we need to check the device
+> offline status before trying to online/offline the memory. This is
+> needed because calls device_online() and device_offline() will return
+> non-zero for memory that is already online and offline respectively.
 > 
->> A protection flag may not be valid across entire address space and
->> hence arch_validate_prot() might need the address a protection bit is
->> being set on to ensure it is a valid protection flag. For example, sparc
->> processors support memory corruption detection (as part of ADI feature)
->> flag on memory addresses mapped on to physical RAM but not on PFN mapped
->> pages or addresses mapped on to devices. This patch adds address to the
->> parameters being passed to arch_validate_prot() so protection bits can
->> be validated in the relevant context.
->>
->> Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
->> Cc: Khalid Aziz <khalid@gonehiking.org>
->> ---
->> v7:
->> 	- new patch
->>
->>   arch/powerpc/include/asm/mman.h | 2 +-
->>   arch/powerpc/kernel/syscalls.c  | 2 +-
->>   include/linux/mman.h            | 2 +-
->>   mm/mprotect.c                   | 2 +-
->>   4 files changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
->> index 30922f699341..bc74074304a2 100644
->> --- a/arch/powerpc/include/asm/mman.h
->> +++ b/arch/powerpc/include/asm/mman.h
->> @@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
->>   		return false;
->>   	return true;
->>   }
->> -#define arch_validate_prot(prot) arch_validate_prot(prot)
->> +#define arch_validate_prot(prot, addr) arch_validate_prot(prot)
+> This update resolves two scenarios. First, for kernel built with
+> auto-online memory enabled, memory will be onlined as part of calls
+> to add_memory(). After adding the memory the pseries dlpar code tries
+> to online it and fails since the memory is already online. The dlpar
+> code then tries to remove the memory which produces the oops message
+> below because the memory is not offline.
 > 
-> This can be simpler, as just:
+> The second scenario occurs when removing memory that is already offline,
+> i.e. marking memory offline (via sysfs) and the trying to remove that
+> memory. This doesn't work because offlining the already offline memory
+> does not succeed and the dlpar code then fails the dlpar remove operation.
 > 
-> #define arch_validate_prot arch_validate_prot
+> The fix for both scenarios is to check the device.offline status before
+> making the calls to device_online() or device_offline().
 > 
+> kernel BUG at mm/memory_hotplug.c:2189!
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> SMP NR_CPUS=2048
+> NUMA
+> pSeries
+> CPU: 0 PID: 5 Comm: kworker/u129:0 Not tainted 4.12.0-rc3 #272
+> Workqueue: pseries hotplug workque .pseries_hp_work_fn
+> task: c0000003f9c89200 task.stack: c0000003f9d10000
+> NIP: c0000000002ca428 LR: c0000000002ca3cc CTR: c000000000ba16a0
+> REGS: c0000003f9d13630 TRAP: 0700   Not tainted  (4.12.0-rc3)
+> MSR: 800000000282b032 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI>
+>   CR: 22002024  XER: 0000000a
+> CFAR: c0000000002ca3d0 SOFTE: 1
+> GPR00: c0000000002ca3cc c0000003f9d138b0 c000000001bb0200 0000000000000001
+> GPR04: c0000003fb143c80 c0000003fef21630 0000000000000003 0000000000000002
+> GPR08: 0000000000000003 0000000000000003 0000000000000003 00000000000031b1
+> GPR12: 0000000028002042 c00000000fd80000 c000000000118ae0 c0000003fb170180
+> GPR16: 0000000000000000 0000000000000004 0000000000000010 c0000003ffff79c8
+> GPR20: c0000003ffff7b68 c0000003f728ff84 0000000000000002 0000000000000010
+> GPR24: 0000000000000002 c0000003f728ff80 0000000000000002 0000000000000001
+> GPR28: c0000003fb143c38 0000000000000002 0000000010000000 0000000020000000
+> NIP [c0000000002ca428] .remove_memory+0xb8/0xc0
+> LR [c0000000002ca3cc] .remove_memory+0x5c/0xc0
+> Call Trace:
+> [c0000003f9d138b0] [c0000000002ca3cc] .remove_memory+0x5c/0xc0 (unreliable)
+> [c0000003f9d13940] [c0000000000938a4] .dlpar_add_lmb+0x384/0x400
+> [c0000003f9d13a30] [c00000000009456c] .dlpar_memory+0x5dc/0xca0
+> [c0000003f9d13af0] [c00000000008ce84] .handle_dlpar_errorlog+0x74/0xe0
+> [c0000003f9d13b70] [c00000000008cf1c] .pseries_hp_work_fn+0x2c/0x90
+> [c0000003f9d13bf0] [c000000000110a5c] .process_one_work+0x17c/0x460
+> [c0000003f9d13c90] [c000000000110dc8] .worker_thread+0x88/0x500
+> [c0000003f9d13d70] [c000000000118c3c] .kthread+0x15c/0x1a0
+> [c0000003f9d13e30] [c00000000000ba18] .ret_from_kernel_thread+0x58/0xc0
+> Instruction dump:
+> 7fe3fb78 4bd7c845 60000000 7fa3eb78 4bfdd3c9 38210090 e8010010 eba1ffe8
+> ebc1fff0 ebe1fff8 7c0803a6 4bfdc2ac <0fe00000> 00000000 7c0802a6 fb01ffc0
+> 
+> Fixes: 943db62c316c ("powerpc/pseries: Revert 'Auto-online hotplugged memory'")
+> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-Hi Michael,
+tested the first scenario with 4.13.0-rc4 and qemu 2.10.0-rc2.
 
-Thanks for reviewing!
-
-My patch expands parameter list for arch_validate_prot() from one to two 
-parameters. Existing powerpc version of arch_validate_prot() is written 
-with one parameter. If I use the above #define, compilation fails with:
-
-mm/mprotect.c: In function ‘do_mprotect_pkey’:
-mm/mprotect.c:399: error: too many arguments to function 
-‘arch_validate_prot’
-
-Another way to solve it would be to add the new addr parameter to 
-powerpc version of arch_validate_prot() but I chose the less disruptive 
-solution of tackling it through #define and expanded the existing 
-#define to include the new parameter. Make sense?
-
-Thanks,
-Khalid
+Tested-by: Laurent Vivier <lvivier@redhat.com>
+Reviewed-by: Laurent Vivier <lvivier@redhat.com>
