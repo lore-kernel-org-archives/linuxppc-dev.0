@@ -1,68 +1,42 @@
-Return-Path: <shawnguo@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSVCg59XMzDqtT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 10:59:43 +1000 (AEST)
-Date: Thu, 10 Aug 2017 08:58:05 +0800
-From: Shawn Guo <shawnguo@kernel.org>
-To: Boris Brezillon <boris.brezillon@free-electrons.com>
-Cc: Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org,
- David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- Marek Vasut <marek.vasut@gmail.com>,
- Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>,
- Peter Pan <peterpandong@micron.com>,
- Jonathan Corbet <corbet@lwn.net>, Sekhar Nori <nsekhar@ti.com>,
- Kevin Hilman <khilman@kernel.org>,
- Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Gregory Clement <gregory.clement@free-electrons.com>,
- Hartley Sweeten <hsweeten@visionengravers.com>,
- Alexander Sverdlin <alexander.sverdlin@gmail.com>,
- Sascha Hauer <kernel@pengutronix.de>,
- Fabio Estevam <fabio.estevam@nxp.com>,
- Imre Kaloz <kaloz@openwrt.org>, Krzysztof Halasa <khalasa@piap.pl>,
- Eric Miao <eric.y.miao@gmail.com>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>,
- Alexander Clouter <alex@digriz.org.uk>, Daniel Mack <daniel@zonque.org>,
- Robert Jarzmik <robert.jarzmik@free.fr>, Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Simtec Linux Team <linux@simtec.co.uk>,
- Steven Miao <realmz6@gmail.com>, Mikael Starvik <starvik@axis.com>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, Wenyou Yang <wenyou.yang@atmel.com>,
- Josh Wu <rainyfeeling@outlook.com>, Kamal Dasu <kdasu.kdev@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Han Xu <han.xu@nxp.com>, Harvey Hunt <harveyhuntnexus@gmail.com>,
- Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>,
- Neil Armstrong <narmstrong@baylibre.com>,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
- Maxim Levitsky <maximlevitsky@gmail.com>,
- Marc Gonzalez <marc_gonzalez@sigmadesigns.com>,
- Stefan Agner <stefan@agner.ch>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linux-sh@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com,
- linux-mediatek@lists.infradead.org, linux-oxnas@lists.tuxfamily.org,
- linuxppc-dev@lists.ozlabs.org, devel@driverdev.osuosl.org
-Subject: Re: [PATCH] mtd: nand: Rename nand.h into rawnand.h
-Message-ID: <20170810005804.GB31819@dragon>
-References: <1501860550-16506-1-git-send-email-boris.brezillon@free-electrons.com>
- <1501860550-16506-2-git-send-email-boris.brezillon@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1501860550-16506-2-git-send-email-boris.brezillon@free-electrons.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSYbL6Ng5zDqrx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:58 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7A3UAtO013695
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 23:31:56 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c8dujdk0j-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 23:31:56 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Thu, 10 Aug 2017 13:31:53 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7A3Vo5g22741142
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:50 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7A3VnlW009354
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:50 +1000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, ego@linux.vnet.ibm.com,
+ svaidy@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH V11 2/3] powernv: Add support to set power-shifting-ratio
+Date: Thu, 10 Aug 2017 09:01:19 +0530
+In-Reply-To: <1502335880-30686-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1502335880-30686-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-Id: <1502335880-30686-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -72,16 +46,299 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 04, 2017 at 05:29:10PM +0200, Boris Brezillon wrote:
-> We are planning to share more code between different NAND based
-> devices (SPI NAND, OneNAND and raw NANDs), but before doing that
-> we need to move the existing include/linux/mtd/nand.h file into
-> include/linux/mtd/rawnand.h so we can later create a nand.h header
-> containing all common structure and function prototypes.
-> 
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> Signed-off-by: Peter Pan <peterpandong@micron.com>
-...
->  arch/arm/mach-imx/mach-qong.c                   | 2 +-
+This patch adds support to set power-shifting-ratio which hints the
+firmware how to distribute/throttle power between different entities
+in a system (e.g CPU v/s GPU). This ratio is used by OCC for power
+capping algorithm.
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ Documentation/ABI/testing/sysfs-firmware-opal-psr |  18 +++
+ arch/powerpc/include/asm/opal-api.h               |   2 +
+ arch/powerpc/include/asm/opal.h                   |   3 +
+ arch/powerpc/platforms/powernv/Makefile           |   2 +-
+ arch/powerpc/platforms/powernv/opal-psr.c         | 175 ++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S    |   2 +
+ arch/powerpc/platforms/powernv/opal.c             |   3 +
+ 7 files changed, 204 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-psr
+ create mode 100644 arch/powerpc/platforms/powernv/opal-psr.c
+
+diff --git a/Documentation/ABI/testing/sysfs-firmware-opal-psr b/Documentation/ABI/testing/sysfs-firmware-opal-psr
+new file mode 100644
+index 0000000..cc2ece7
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-firmware-opal-psr
+@@ -0,0 +1,18 @@
++What:		/sys/firmware/opal/psr
++Date:		August 2017
++Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	Power-Shift-Ratio directory for Powernv P9 servers
++
++		Power-Shift-Ratio allows to provide hints the firmware
++		to shift/throttle power between different entities in
++		the system. Each attribute in this directory indicates
++		a settable PSR.
++
++What:		/sys/firmware/opal/psr/cpu_to_gpu_X
++Date:		August 2017
++Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	PSR sysfs attributes for Powernv P9 servers
++
++		Power-Shift-Ratio between CPU and GPU for a given chip
++		with chip-id X. This file gives the ratio (0-100)
++		which is used by OCC for power-capping.
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index b87305b..0cb7d11 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -196,6 +196,8 @@
+ #define OPAL_IMC_COUNTERS_STOP			151
+ #define OPAL_GET_POWERCAP			152
+ #define OPAL_SET_POWERCAP			153
++#define OPAL_GET_POWER_SHIFT_RATIO		154
++#define OPAL_SET_POWER_SHIFT_RATIO		155
+ #define OPAL_PCI_SET_P2P			157
+ #define OPAL_LAST				157
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 6f09ab7..d87ffcb 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -277,6 +277,8 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
+ 
+ int opal_get_powercap(u32 handle, int token, u32 *pcap);
+ int opal_set_powercap(u32 handle, int token, u32 pcap);
++int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
++int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+@@ -356,6 +358,7 @@ static inline int opal_get_async_rc(struct opal_msg msg)
+ void opal_wake_poller(void);
+ 
+ void opal_powercap_init(void);
++void opal_psr_init(void);
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index f9ec36d..674ed1e 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
+ obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+ obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+-obj-y			+= opal-kmsg.o opal-powercap.o
++obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
+diff --git a/arch/powerpc/platforms/powernv/opal-psr.c b/arch/powerpc/platforms/powernv/opal-psr.c
+new file mode 100644
+index 0000000..7313b7f
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-psr.c
+@@ -0,0 +1,175 @@
++/*
++ * PowerNV OPAL Power-Shift-Ratio interface
++ *
++ * Copyright 2017 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define pr_fmt(fmt)     "opal-psr: " fmt
++
++#include <linux/of.h>
++#include <linux/kobject.h>
++#include <linux/slab.h>
++
++#include <asm/opal.h>
++
++DEFINE_MUTEX(psr_mutex);
++
++static struct kobject *psr_kobj;
++
++struct psr_attr {
++	u32 handle;
++	struct kobj_attribute attr;
++} *psr_attrs;
++
++static ssize_t psr_show(struct kobject *kobj, struct kobj_attribute *attr,
++			char *buf)
++{
++	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
++	struct opal_msg msg;
++	int psr, ret, token;
++
++	token = opal_async_get_token_interruptible();
++	if (token < 0) {
++		pr_devel("Failed to get token\n");
++		return token;
++	}
++
++	ret = mutex_lock_interruptible(&psr_mutex);
++	if (ret)
++		goto out_token;
++
++	ret = opal_get_power_shift_ratio(psr_attr->handle, token,
++					    (u32 *)__pa(&psr));
++	switch (ret) {
++	case OPAL_ASYNC_COMPLETION:
++		ret = opal_async_wait_response(token, &msg);
++		if (ret) {
++			pr_devel("Failed to wait for the async response\n");
++			ret = -EIO;
++			goto out;
++		}
++		ret = opal_error_code(opal_get_async_rc(msg));
++		if (!ret) {
++			ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
++			if (ret < 0)
++				ret = -EIO;
++		}
++		break;
++	case OPAL_SUCCESS:
++		ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
++		if (ret < 0)
++			ret = -EIO;
++		break;
++	default:
++		ret = opal_error_code(ret);
++	}
++
++out:
++	mutex_unlock(&psr_mutex);
++out_token:
++	opal_async_release_token(token);
++	return ret;
++}
++
++static ssize_t psr_store(struct kobject *kobj, struct kobj_attribute *attr,
++			 const char *buf, size_t count)
++{
++	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
++	struct opal_msg msg;
++	int psr, ret, token;
++
++	ret = kstrtoint(buf, 0, &psr);
++	if (ret)
++		return ret;
++
++	token = opal_async_get_token_interruptible();
++	if (token < 0) {
++		pr_devel("Failed to get token\n");
++		return token;
++	}
++
++	ret = mutex_lock_interruptible(&psr_mutex);
++	if (ret)
++		goto out_token;
++
++	ret = opal_set_power_shift_ratio(psr_attr->handle, token, psr);
++	switch (ret) {
++	case OPAL_ASYNC_COMPLETION:
++		ret = opal_async_wait_response(token, &msg);
++		if (ret) {
++			pr_devel("Failed to wait for the async response\n");
++			ret = -EIO;
++			goto out;
++		}
++		ret = opal_error_code(opal_get_async_rc(msg));
++		if (!ret)
++			ret = count;
++		break;
++	case OPAL_SUCCESS:
++		ret = count;
++		break;
++	default:
++		ret = opal_error_code(ret);
++	}
++
++out:
++	mutex_unlock(&psr_mutex);
++out_token:
++	opal_async_release_token(token);
++	return ret;
++}
++
++void __init opal_psr_init(void)
++{
++	struct device_node *psr, *node;
++	int i = 0;
++
++	psr = of_find_compatible_node(NULL, NULL,
++				      "ibm,opal-power-shift-ratio");
++	if (!psr) {
++		pr_devel("Power-shift-ratio node not found\n");
++		return;
++	}
++
++	psr_attrs = kcalloc(of_get_child_count(psr), sizeof(struct psr_attr),
++			    GFP_KERNEL);
++	if (!psr_attrs)
++		return;
++
++	psr_kobj = kobject_create_and_add("psr", opal_kobj);
++	if (!psr_kobj) {
++		pr_warn("Failed to create psr kobject\n");
++		goto out;
++	}
++
++	for_each_child_of_node(psr, node) {
++		if (of_property_read_u32(node, "handle",
++					 &psr_attrs[i].handle))
++			goto out_kobj;
++
++		sysfs_attr_init(&psr_attrs[i].attr.attr);
++		if (of_property_read_string(node, "label",
++					    &psr_attrs[i].attr.attr.name))
++			goto out_kobj;
++		psr_attrs[i].attr.attr.mode = 0664;
++		psr_attrs[i].attr.show = psr_show;
++		psr_attrs[i].attr.store = psr_store;
++		if (sysfs_create_file(psr_kobj, &psr_attrs[i].attr.attr)) {
++			pr_devel("Failed to create psr sysfs file %s\n",
++				 psr_attrs[i].attr.attr.name);
++			goto out_kobj;
++		}
++		i++;
++	}
++
++	return;
++out_kobj:
++	kobject_put(psr_kobj);
++out:
++	kfree(psr_attrs);
++}
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 139286c..09cc6ec 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -316,3 +316,5 @@ OPAL_CALL(opal_imc_counters_stop,		OPAL_IMC_COUNTERS_STOP);
+ OPAL_CALL(opal_pci_set_p2p,			OPAL_PCI_SET_P2P);
+ OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
+ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
++OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
++OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 28323c7..f659edb 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -853,6 +853,9 @@ static int __init opal_init(void)
+ 	/* Initialise OPAL powercap interface */
+ 	opal_powercap_init();
+ 
++	/* Initialise OPAL Power-Shifting-Ratio interface */
++	opal_psr_init();
++
+ 	return 0;
+ }
+ machine_subsys_initcall(powernv, opal_init);
+-- 
+1.8.3.1
