@@ -1,50 +1,37 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
+Return-Path: <bauerman@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSxDV2k0PzDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 04:16:58 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xT05C3PKCzDr2p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 06:25:51 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7AIFnV5133762
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 14:16:55 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c8rg56ftc-1
+ v7AKOHGB071958
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:25:49 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c8uv87uhc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 14:16:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:25:49 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 10 Aug 2017 19:16:52 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH 05/16] mm: Protect VMA modifications using VMA sequence
- count
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1502202949-8138-6-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170809101241.ek4fqinqaq5qfkq4@node.shutemov.name>
- <f935091a-d8f9-1951-8397-f5c464a2b922@linux.vnet.ibm.com>
- <20170810005828.qmw3p7d676hjwkss@node.shutemov.name>
- <4e552377-af38-3580-73b6-1edf685cb90d@linux.vnet.ibm.com>
- <20170810134325.j4ijsxzc56e443of@node.shutemov.name>
-Date: Thu, 10 Aug 2017 20:16:44 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 10 Aug 2017 16:25:47 -0400
+References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
+ <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ hbabu@us.ibm.com, bauerman@linux.vnet.ibm.com, mhocko@kernel.org
+Subject: Re: [RFC v7 02/25] powerpc: track allocation status of all pkeys
+In-reply-to: <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
+Date: Thu, 10 Aug 2017 17:25:39 -0300
 MIME-Version: 1.0
-In-Reply-To: <20170810134325.j4ijsxzc56e443of@node.shutemov.name>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <14e3185c-36e9-c9b1-25f2-98a98de94356@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <8760dvkw58.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,83 +41,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/08/2017 15:43, Kirill A. Shutemov wrote:
-> On Thu, Aug 10, 2017 at 10:27:50AM +0200, Laurent Dufour wrote:
->> On 10/08/2017 02:58, Kirill A. Shutemov wrote:
->>> On Wed, Aug 09, 2017 at 12:43:33PM +0200, Laurent Dufour wrote:
->>>> On 09/08/2017 12:12, Kirill A. Shutemov wrote:
->>>>> On Tue, Aug 08, 2017 at 04:35:38PM +0200, Laurent Dufour wrote:
->>>>>> The VMA sequence count has been introduced to allow fast detection of
->>>>>> VMA modification when running a page fault handler without holding
->>>>>> the mmap_sem.
->>>>>>
->>>>>> This patch provides protection agains the VMA modification done in :
->>>>>> 	- madvise()
->>>>>> 	- mremap()
->>>>>> 	- mpol_rebind_policy()
->>>>>> 	- vma_replace_policy()
->>>>>> 	- change_prot_numa()
->>>>>> 	- mlock(), munlock()
->>>>>> 	- mprotect()
->>>>>> 	- mmap_region()
->>>>>> 	- collapse_huge_page()
->>>>>
->>>>> I don't thinks it's anywhere near complete list of places where we touch
->>>>> vm_flags. What is your plan for the rest?
->>>>
->>>> The goal is only to protect places where change to the VMA is impacting the
->>>> page fault handling. If you think I missed one, please advise.
->>>
->>> That's very fragile approach. We rely here too much on specific compiler behaviour.
->>>
->>> Any write access to vm_flags can, in theory, be translated to several
->>> write accesses. For instance with setting vm_flags to 0 in the middle,
->>> which would result in sigfault on page fault to the vma.
->>
->> Indeed, just setting vm_flags to 0 will not result in sigfault, the real
->> job is done when the pte are updated and the bits allowing access are
->> cleared. Access to the pte is controlled by the pte lock.
->> Page fault handler is triggered based on the pte bits, not the content of
->> vm_flags and the speculative page fault is checking for the vma again once
->> the pte lock is held. So there is no concurrency when dealing with the pte
->> bits.
-> 
-> Suppose we are getting page fault to readable VMA, pte is clear at the
-> time of page fault. In this case we need to consult vm_flags to check if
-> the vma is read-accessible.
-> 
-> If by the time of check vm_flags happend to be '0' we would get SIGSEGV as
-> the vma appears to be non-readable.
-> 
-> Where is my logic faulty?
 
-The speculative page fault handler will not deliver the signal, if the page
-fault can't be done in the speculative path for instance because the
-vm_flags are not matching the required one, the speculative page fault is
-aborted and the *classic* page fault handler is run which will do the job
-again grabbing the mmap_sem.
+Ram Pai <linuxram@us.ibm.com> writes:
+>  static inline void pkey_initialize(void)
+>  {
+> +	int os_reserved, i;
+> +
+>  	/* disable the pkey system till everything
+>  	 * is in place. A patch further down the
+>  	 * line will enable it.
+>  	 */
+>  	pkey_inited = false;
+> +
+> +	/* Lets assume 32 keys */
+> +	pkeys_total = 32;
+> +
+> +#ifdef CONFIG_PPC_4K_PAGES
+> +	/*
+> +	 * the OS can manage only 8 pkeys
+> +	 * due to its inability to represent
+> +	 * them in the linux 4K-PTE.
+> +	 */
+> +	os_reserved = pkeys_total-8;
+> +#else
+> +	os_reserved = 0;
+> +#endif
+> +	/*
+> +	 * Bits are in LE format.
+> +	 * NOTE: 1, 0 are reserved.
+> +	 * key 0 is the default key, which allows read/write/execute.
+> +	 * key 1 is recommended not to be used.
+> +	 * PowerISA(3.0) page 1015, programming note.
+> +	 */
+> +	initial_allocation_mask = ~0x0;
+> +	for (i = 2; i < (pkeys_total - os_reserved); i++)
+> +		initial_allocation_mask &= ~(0x1<<i);
+>  }
+>  #endif /*_ASM_PPC64_PKEYS_H */
 
->> Regarding the compiler behaviour, there are memory barriers and locking
->> which should prevent that.
-> 
-> Which locks barriers are you talking about?
+In v6, key 31 was also reserved, but it's not in this version. Is this
+intentional?
 
-When the VMA is modified and that the changes will impact the speculative
-page fault handler the sequence count is touch using write_seqcount_begin()
-and write_seqcount_end(). These 2 services contains calls to smp_wmb().
-On the speculative path side, the calls to *_read_seqcount() contains also
-memory barriers calls.
+Isn't it better for this function to be in pkeys.c? Ideally, functions
+should be in .c files not in headers unless they're very small or
+performance sensitive IMHO.
 
-> We need at least READ_ONCE/WRITE_ONCE to access vm_flags everywhere.
-
-I don't think READ_ONCE/WRITE_ONCE would help here, as they would not
-prevent reading transcient state as the vm_flags example you mentioned.
-
-That said, there are not so much VMA's fields used in the SPF's path and
-caching them into the vmf structure under the control of the VMA's sequence
-count would solve this.
-I'll try to move in that direction unless anyone has a better idea.
-
-
-Cheers,
-Laurent.
+-- 
+Thiago Jung Bauermann
+IBM Linux Technology Center
