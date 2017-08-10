@@ -1,28 +1,38 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSd6B2jj4zDqrP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:10:26 +1000 (AEST)
-Date: Thu, 10 Aug 2017 15:54:26 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 02/10] powerpc/xive: guest exploitation of the XIVE
- interrupt controller
-Message-ID: <20170810055426.GV13670@umbus.fritz.box>
-References: <1502182579-990-1-git-send-email-clg@kaod.org>
- <1502182579-990-3-git-send-email-clg@kaod.org>
- <20170809035306.GC13670@umbus.fritz.box>
- <f82c1111-3dd3-f378-0ff6-222bffc07a35@kaod.org>
- <20170810042849.GU13670@umbus.fritz.box>
- <1502340360.2563.53.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSdQM0lnDzDqrP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:24:26 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7A6Nino020223
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 02:24:24 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2c8hek20jn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 02:24:23 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 10 Aug 2017 02:24:23 -0400
+Date: Thu, 10 Aug 2017 11:54:18 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@ozlabs.org>, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 10/13] powerpc/64s: idle simplify KVM idle on POWER9
+Reply-To: ego@linux.vnet.ibm.com
+References: <20170805170241.22966-1-npiggin@gmail.com>
+ <20170805170241.22966-11-npiggin@gmail.com>
+ <20170808103643.GA9107@in.ibm.com>
+ <20170808224257.720e85d6@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="X6f5cqjOqKjuoPgI"
-In-Reply-To: <1502340360.2563.53.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170808224257.720e85d6@roar.ozlabs.ibm.com>
+Message-Id: <20170810062418.GA10611@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,52 +42,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Aug 08, 2017 at 10:42:57PM +1000, Nicholas Piggin wrote:
+> On Tue, 8 Aug 2017 16:06:43 +0530
+> Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> 
+> > Hi Nicholas,
+> > 
+> > On Sun, Aug 06, 2017 at 03:02:38AM +1000, Nicholas Piggin wrote:
+> > > POWER9 CPUs have independent MMU contexts per thread so KVM
+> > > does not have to bring sibling threads into real-mode when
+> > > switching MMU mode to guest. This can simplify POWER9 sleep/wake
+> > > paths and avoids hwsyncs.
+> > > @@ -2858,11 +2883,13 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+> > > 
+> > >  	/* Let secondaries go back to the offline loop */
+> > >  	for (i = 0; i < controlled_threads; ++i) {
+> > > -		kvmppc_release_hwthread(pcpu + i);
+> > >  		if (sip && sip->napped[i])
+> > >  			kvmppc_ipi_thread(pcpu + i);
+> > >  		cpumask_clear_cpu(pcpu + i, &vc->kvm->arch.cpu_in_guest);
+> > >  	}  
+> > 
+> > We are sending an IPI to the thread that has exited the guest and is
+> > currently napping. The IPI wakes it up so that it can executes
+> > offline loop. But we haven't released the hwthread yet, which means
+> > that hwthread_req for this thread is still set.
+> > 
+> > The thread wakes up from nap, executes the pnv_powersave_wakeup code
+> > where it can enter kvm_start_guest. Is this a legitimate race or am I
+> > missing something?
+> 
+> Oh I think it's just a silly mistake in my patch, good catch.
 
---X6f5cqjOqKjuoPgI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ah,np!
 
-On Thu, Aug 10, 2017 at 02:46:00PM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2017-08-10 at 14:28 +1000, David Gibson wrote:
-> >=20
-> > Also, will POWER9 always have doorbells?  In which case you could
-> > reduce it to 3 options.
->=20
-> The problem with doorbells on POWER9 guests is that they may have
-> to trap and be emulated by the hypervisor, since the guest threads
-> on P9 don't have to match the HW threads of the core.
->=20
-> Thus it's quite possible that using XIVE for IPIs is actually faster
-> than doorbells in that case.
+> Would moving this loop below the one below solve it? I wasn't
+> completely happy with uglifying these loops by making the
+> primary release different than secondary... maybe I will just
+> move the difference into kvmppc_release_hwthread and which is
+> less intrusive to callers.
 
-Ok, well unless there's a compelling reason to use doorbells you can
-instead make it 3 cases with POWER9 never using doorbells.
+I think moving it to kvmppc_release_hwthread is a good idea.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> 
+> Thanks,
+> Nick
+> 
 
---X6f5cqjOqKjuoPgI
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlmL9QwACgkQbDjKyiDZ
-s5LaORAAzqfoo64K3ZYcMtqQ8f13n9CpgqxsCSSc/nxMzhnMB2ynehZzLJtFbypu
-CIoKUJPJGzES+6lOrv4zj9oiQEwBwBWrI/tEYDx/5UVVeo1AcDvpt3U2z8PfTjB6
-ldBXAiQ5MpLX79nsZaFsjK/z8+sNeV+LDGeV7lu8InD1GaDkjnq8Eg/QKbx4KVl7
-+eNlQSrWjnYd6Lie4bUJ0bPbSRvIPSRs1f/n/NvmiZ1qgr0DxigKV1UXFgpikDgV
-zudUYGvWtxey7fO2P8cxjnhF+m3C5xW/woaY5kR8PjjLogzGtfz7URXt/vsFhiuJ
-UvXBMlDVRAOl7oJPWupNBD0s90BCdcdbVaqpXSQqv6s8elNISiHD2hCqwp2SgD0Q
-x32qeOALMGceqbBbEEWu+W0QFO0G1n11+ixi9g4Y0hlMwM8jMLnCfU179w6pFBFo
-heNr8gGxvnB/kpEY+l7XI/tlMqfCAByJ05gS51SshiuhQHKlIZxtKwG6HLDq9dw2
-bhQDzaJHM3QKubwZ1trayh95S7ITtQrvDb0d19vhSa8LS7GL+fZPiOBaZJ89ewYJ
-dZOF6Vsa60DnoTjfto4H9uShzk+j5meQQMfkTr0ZqGazowehLl5Y3fhRh4+1gd7k
-jzYpGXiJJix/ZBIuP6qvucYSJNFktXSznZG4s9UQ1xhqPCHrWfc=
-=DLs6
------END PGP SIGNATURE-----
-
---X6f5cqjOqKjuoPgI--
+--
+Thanks and Regards
+gautham.
