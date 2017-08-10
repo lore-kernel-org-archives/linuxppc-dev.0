@@ -1,37 +1,35 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
+Return-Path: <clombard@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xT05C3PKCzDr2p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 06:25:51 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xT0Dp1b6PzDr0G
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 06:32:26 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7AKOHGB071958
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:25:49 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c8uv87uhc-1
+ v7AKSrB4009023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:32:24 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c8vv8cvur-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:25:49 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 16:32:23 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 10 Aug 2017 16:25:47 -0400
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, bauerman@linux.vnet.ibm.com, mhocko@kernel.org
-Subject: Re: [RFC v7 02/25] powerpc: track allocation status of all pkeys
-In-reply-to: <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
-Date: Thu, 10 Aug 2017 17:25:39 -0300
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Thu, 10 Aug 2017 21:32:21 +0100
+Subject: Re: [PATCH] powerpc/64s: Add support for ASB_Notify on POWER9
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ fbarrat@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+References: <1501858572-29641-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <87tw1koz0q.fsf@concordia.ellerman.id.au>
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Date: Thu, 10 Aug 2017 22:32:12 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <8760dvkw58.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87tw1koz0q.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <07a8bb54-89ff-f489-7554-90605ee8d0cf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,51 +39,290 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Le 07/08/2017 à 05:08, Michael Ellerman a écrit :
+> Hi Christophe,
+>
+> I'm not across any of the details of this so hopefully most of these
+> comments aren't too stupid :)
+>
+>
+> Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+>
+>> The POWER9 core supports a new feature: ASB_Notify which requires the
+>> support of the Special Purpose Register: TIDR.
+> TIDR is defined in ISA 3.0B, which would be worth mentioning.
+>
+> Can you spell out what an ASB_Notifiy is.
 
-Ram Pai <linuxram@us.ibm.com> writes:
->  static inline void pkey_initialize(void)
->  {
-> +	int os_reserved, i;
-> +
->  	/* disable the pkey system till everything
->  	 * is in place. A patch further down the
->  	 * line will enable it.
->  	 */
->  	pkey_inited = false;
-> +
-> +	/* Lets assume 32 keys */
-> +	pkeys_total = 32;
-> +
-> +#ifdef CONFIG_PPC_4K_PAGES
-> +	/*
-> +	 * the OS can manage only 8 pkeys
-> +	 * due to its inability to represent
-> +	 * them in the linux 4K-PTE.
-> +	 */
-> +	os_reserved = pkeys_total-8;
-> +#else
-> +	os_reserved = 0;
-> +#endif
-> +	/*
-> +	 * Bits are in LE format.
-> +	 * NOTE: 1, 0 are reserved.
-> +	 * key 0 is the default key, which allows read/write/execute.
-> +	 * key 1 is recommended not to be used.
-> +	 * PowerISA(3.0) page 1015, programming note.
-> +	 */
-> +	initial_allocation_mask = ~0x0;
-> +	for (i = 2; i < (pkeys_total - os_reserved); i++)
-> +		initial_allocation_mask &= ~(0x1<<i);
->  }
->  #endif /*_ASM_PPC64_PKEYS_H */
+In addition to waking a thread up from the wait state via an
+interrupt, the thread can also be removed from the wait state
+via a ASB_notify command.
+We see the acronyme ASB present in several documents, but
+I never saw the definition of ASB.
 
-In v6, key 31 was also reserved, but it's not in this version. Is this
-intentional?
+>> The ASB_Notify command, generated by the AFU, will attempt to
+> And please tell us what an AFU is, this patch and the code it touches
+> are not obviously CAPI related, so the reader may not know what an AFU
+> is, or the broader context.
 
-Isn't it better for this function to be in pkeys.c? Ideally, functions
-should be in .c files not in headers unless they're very small or
-performance sensitive IMHO.
+You are right, this patch is not obviously CAPI related.
+The Coherent Accelerator Process Interface (CAPI) is a general
+term for the infrastructure of attaching a coherent
+accelerator (CAPI card) to a POWER system.
+The AFU (Accelerator Function Unit), located on the CAPI card,
+executes computation-heavy functions helping the
+application running on the host processor. There is a direct
+communication between the application and the accelerator.
+The purpose of an AFU is to provide applications with a higher
+computational unit to improve the performance of the
+application and off-load the host processor.
 
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+
+>> wake-up the host thread identified by the particular LPID:PID:TID.
+> Host implies it doesn't work for threads in guests, but then LPID
+> implies it does.
+>
+> You say "PID" a few times here, but I think you always mean PIDR? It
+> would be worth spelling that out, otherwise people will assume you're
+> talking about the Linux "pid" (which is actually the thread group id
+> (TGID)), which is not the same as PIDR.
+
+You are completely right.  The use of the term 'PIDR' is much
+more accurate.
+
+>> The special register TIDR has to be updated to with the same value
+>> present in the process element.
+> What's a process element? :)
+
+An other CAPI term :-)
+When an application (running on the host) requests use of an AFU,
+a process element is added to the process-element linked list
+that describes the application’s process state. The process element
+also contains a work element descriptor (WED) provided by the
+application. The WED contains the full description of the job to be
+performed by the AFU.
+
+>> If the length of the register TIDR is 64bits, the CAPI Translation
+> Is it 64-bits? The architecture says it is.
+
+yes. The length is 64-bits.
+
+>> Service Layer core (XSL9) for Power9 systems limits the size (16bits) of
+>> the Thread ID when it generates the ASB_Notify message adding
+>> PID:LPID:TID information from the context.
+> When you say "Thread ID" here I think you're referring to the "TID" in
+> the "PID:LPID:TID" tuple, and you're saying it is limited to 16-bits, by
+> the P9 CAPI hardware.
+
+correct.
+
+>> The content of the internal kernel Thread ID (32bits) can not therefore
+> "as returned by sys_gettid()" would help to disambiguate here.
+>
+>> be used to fulfill the register TIDR.
+> .. if you're intention is to use TIDR with CAPI.
+>
+>
+> I'm assuming here that by "kernel Thread ID" you mean the kernel "pid"
+> which is returned to userspace as the "TID" by gettid().
+
+correct.
+
+>
+> That value is global in the system, so it's overkill for this usage, as
+> all you need is a value unique to all threads that share a PIDR
+> (== mm_struct).
+>
+> So it seems like we could also solve this by simply having a counter in
+> the mm_struct (actually mm_context_t), and handing that out when
+> userspace tries to read TIDR.
+>
+> Or we could do the same and have some other API for reading it, ie. not
+> using mfspr() but an actual CAPI API. Or does userspace even need the
+> raw value?
+
+Your remarks are very interesting. I need more time to look
+into that.
+> Is there a usecase where multiple threads would assign themselves the
+> same TIDR so that all (some? one?) of them is woken up by the
+> ASB_notify? Or is that an error?
+
+Normally no. Only one thread can have a non zero TIDR value.
+
+>> This patch allows to avoid this limitation by adding a new interface
+> This doesn't avoid the 16-bit CAPI limitation AFAICS. What it does is
+> let (force) userspace manage the values of TIDR, and therefore it can
+> control them such that they fit in 16-bits.
+
+right. The control will be done by libcxl. Libcxl is the focal point
+to manage the values of TIDR.
+
+>> for the user. The instructions mfspr/mtspr SPRN_TIDR are emulated,
+>> save/restore SPRs (context switch) are updated and a new feature
+>> (CPU_FTR_TIDR) is added to POWER9 system.
+> I'm not clear if we need a CPU feature.
+>
+> TIDR is defined in ISA 3.0B, so anything that implements ISA 3.0B must
+> implemented TIDR.
+>
+> It's not entirely clear if the kernel's CPU_FTR_ARCH_300 means 3.0 or
+> 3.0B, but given 3.0B is essentially "what got implemented in P9" it
+> should probably be the latter.
+>
+> In which case CPU_FTR_TIDR == CPU_FTR_ARCH_300.
+
+okay. good point.
+
+> I see you don't define it on P9 DD1, but that could be handled as a DD1
+> workaround, rather than a separate feature bit for TIDR on non-DD1.
+>
+>> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+>> index d02ad93..706f668 100644
+>> --- a/arch/powerpc/include/asm/cputable.h
+>> +++ b/arch/powerpc/include/asm/cputable.h
+>> @@ -215,6 +215,7 @@ enum {
+>>   #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
+>>   #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
+>>   #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
+>> +#define CPU_FTR_TIDR			LONG_ASM_CONST(0x8000000000000000)
+>>   
+>>   #ifndef __ASSEMBLY__
+>>   
+>> @@ -474,7 +475,8 @@ enum {
+>>   	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+>>   	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+>>   	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
+>> -	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
+>> +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | \
+>> +	    CPU_FTR_TIDR)
+>>   #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
+>>   			     (~CPU_FTR_SAO))
+>>   #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+>> diff --git a/arch/powerpc/include/asm/emulated_ops.h b/arch/powerpc/include/asm/emulated_ops.h
+>> index f00e10e..e83ad42 100644
+>> --- a/arch/powerpc/include/asm/emulated_ops.h
+>> +++ b/arch/powerpc/include/asm/emulated_ops.h
+>> @@ -54,6 +54,8 @@ extern struct ppc_emulated {
+>>   #ifdef CONFIG_PPC64
+>>   	struct ppc_emulated_entry mfdscr;
+>>   	struct ppc_emulated_entry mtdscr;
+>> +	struct ppc_emulated_entry mftidr;
+>> +	struct ppc_emulated_entry mttidr;
+>>   	struct ppc_emulated_entry lq_stq;
+>>   #endif
+>>   } ppc_emulated;
+>> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+>> index fa9ebae..3ebc446 100644
+>> --- a/arch/powerpc/include/asm/ppc-opcode.h
+>> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+>> @@ -241,6 +241,10 @@
+>>   #define PPC_INST_MFSPR_DSCR_USER_MASK	0xfc1ffffe
+>>   #define PPC_INST_MTSPR_DSCR_USER	0x7c0303a6
+>>   #define PPC_INST_MTSPR_DSCR_USER_MASK	0xfc1ffffe
+>> +#define PPC_INST_MFSPR_TIDR		0x7d2452a6
+> Are you sure that's right?
+
+I am pretty sure. But I will check that.
+
+> The arch says TIDR is SPR 144 == 0x90.
+>
+> Binutils tells me that ^ is:
+>
+> mfspr   r9,324
+>
+> Which is 0x144 ?
+>
+>> +#define PPC_INST_MFSPR_TIDR_MASK	0xfd2ffffe
+>> +#define PPC_INST_MTSPR_TIDR		0x7d2453a6
+>> +#define PPC_INST_MTSPR_TIDR_MASK	0xfd2ffffe
+>>   #define PPC_INST_MFVSRD			0x7c000066
+>>   #define PPC_INST_MTVSRD			0x7c000166
+>>   #define PPC_INST_SLBFEE			0x7c0007a7
+>> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+>> index fab7ff8..58cc212 100644
+>> --- a/arch/powerpc/include/asm/processor.h
+>> +++ b/arch/powerpc/include/asm/processor.h
+>> @@ -329,6 +329,7 @@ struct thread_struct {
+>>   	 */
+>>   	int		dscr_inherit;
+>>   	unsigned long	ppr;	/* used to save/restore SMT priority */
+>> +	unsigned long	tidr;
+>>   #endif
+>>   #ifdef CONFIG_PPC_BOOK3S_64
+>>   	unsigned long	tar;
+>> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+>> index 9f3e2c9..f06ea10 100644
+>> --- a/arch/powerpc/kernel/process.c
+>> +++ b/arch/powerpc/kernel/process.c
+>> @@ -1084,6 +1084,9 @@ static inline void save_sprs(struct thread_struct *t)
+>>   	if (cpu_has_feature(CPU_FTR_DSCR))
+>>   		t->dscr = mfspr(SPRN_DSCR);
+>>   
+>> +	if (cpu_has_feature(CPU_FTR_TIDR))
+>> +		t->tidr = mfspr(SPRN_TIDR);
+> You shouldn't ever need to save it here.
+>
+> It's only ever written by the emulated mtspr, so the kernel can save the
+> new value when that happens, meaning we don't have to save it on every
+> context switch of every process.
+>
+> In fact you already do that, so you can just drop this hunk.
+
+okay.
+
+>> @@ -1120,6 +1123,11 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+>>   			mtspr(SPRN_DSCR, dscr);
+>>   	}
+>>   
+>> +	if (cpu_has_feature(CPU_FTR_TIDR)) {
+>> +		if (old_thread->tidr != new_thread->tidr)
+>> +			mtspr(SPRN_TIDR, new_thread->tidr);
+>> +	}
+> We could also optimise this for the common case of threads that don't
+> use TIDR at all.
+>
+> Can we declare TIDR = 0 invalid? If so that could become:
+>
+> 		if (new_thread->tidr && (old_thread->tidr != new_thread->tidr))
+> 			mtspr(SPRN_TIDR, new_thread->tidr);
+
+This optimization sounds good.
+
+>
+> Or if TIDR = 0 needs to be allowed, we could add flag to the thread struct
+> saying whether TIDR has been read or written.
+>
+>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+>> index bfcfd9e..b829de7 100644
+>> --- a/arch/powerpc/kernel/traps.c
+>> +++ b/arch/powerpc/kernel/traps.c
+>> @@ -1141,6 +1141,25 @@ static int emulate_instruction(struct pt_regs *regs)
+>>   		mtspr(SPRN_DSCR, current->thread.dscr);
+>>   		return 0;
+>>   	}
+>> +	/* Emulate the mfspr rD, TIDR. */
+>> +	if (((instword & PPC_INST_MFSPR_TIDR_MASK) ==
+>> +		PPC_INST_MFSPR_TIDR) &&
+>> +			cpu_has_feature(CPU_FTR_TIDR)) {
+>> +		PPC_WARN_EMULATED(mftidr, regs);
+>> +		rd = (instword >> 21) & 0x1f;
+>> +		regs->gpr[rd] = mfspr(SPRN_TIDR);
+>> +		return 0;
+>> +	}
+>> +	/* Emulate the mtspr TIDR, rD. */
+>> +	if (((instword & PPC_INST_MTSPR_TIDR_MASK) ==
+>> +		PPC_INST_MTSPR_TIDR) &&
+>> +			cpu_has_feature(CPU_FTR_TIDR)) {
+>> +		PPC_WARN_EMULATED(mttidr, regs);
+>> +		rd = (instword >> 21) & 0x1f;
+>> +		current->thread.tidr = regs->gpr[rd];
+>> +		mtspr(SPRN_TIDR, regs->gpr[rd]);
+>> +		return 0;
+>> +	}
+>>   #endif
+>
+>
+> cheers
+>
+
+Thanks a lot for this review.
