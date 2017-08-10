@@ -1,26 +1,28 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSqcJ17dxzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 00:03:43 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id t83so769267pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 07:03:43 -0700 (PDT)
-Date: Fri, 11 Aug 2017 00:03:31 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
- <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 11/13] powerpc/64s: idle POWER9 can execute stop without
- ptesync
-Message-ID: <20170811000331.23bd7557@roar.ozlabs.ibm.com>
-In-Reply-To: <87wp6blg1l.fsf@concordia.ellerman.id.au>
-References: <20170805170241.22966-1-npiggin@gmail.com>
- <20170805170241.22966-12-npiggin@gmail.com>
- <87wp6blg1l.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSrV108nFzDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 00:43:20 +1000 (AEST)
+Subject: Re: [PATCH v7 7/9] mm: Add address parameter to arch_validate_prot()
+To: Michael Ellerman <mpe@ellerman.id.au>, akpm@linux-foundation.org,
+ benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
+ dave.hansen@linux.intel.com
+Cc: bsingharora@gmail.com, dja@axtens.net, tglx@linutronix.de, mgorman@suse.de,
+ aarcange@redhat.com, kirill.shutemov@linux.intel.com,
+ heiko.carstens@de.ibm.com, ak@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ Khalid Aziz <khalid@gonehiking.org>
+References: <cover.1502219353.git.khalid.aziz@oracle.com>
+ <43c120f0cbbebd1398997b9521013ced664e5053.1502219353.git.khalid.aziz@oracle.com>
+ <87tw1flftz.fsf@concordia.ellerman.id.au>
+From: Khalid Aziz <khalid.aziz@oracle.com>
+Message-ID: <2e97b439-dd71-8997-4824-15f2b1f53787@oracle.com>
+Date: Thu, 10 Aug 2017 08:41:41 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <87tw1flftz.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +32,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 10 Aug 2017 23:15:50 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Nicholas Piggin <npiggin@gmail.com> writes:
+On 08/10/2017 07:20 AM, Michael Ellerman wrote:
+> Khalid Aziz <khalid.aziz@oracle.com> writes:
 > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/idle_book3s.S       |  7 ++++---
-> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 24 ++++++++++++------------  
+>> A protection flag may not be valid across entire address space and
+>> hence arch_validate_prot() might need the address a protection bit is
+>> being set on to ensure it is a valid protection flag. For example, sparc
+>> processors support memory corruption detection (as part of ADI feature)
+>> flag on memory addresses mapped on to physical RAM but not on PFN mapped
+>> pages or addresses mapped on to devices. This patch adds address to the
+>> parameters being passed to arch_validate_prot() so protection bits can
+>> be validated in the relevant context.
+>>
+>> Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
+>> Cc: Khalid Aziz <khalid@gonehiking.org>
+>> ---
+>> v7:
+>> 	- new patch
+>>
+>>   arch/powerpc/include/asm/mman.h | 2 +-
+>>   arch/powerpc/kernel/syscalls.c  | 2 +-
+>>   include/linux/mman.h            | 2 +-
+>>   mm/mprotect.c                   | 2 +-
+>>   4 files changed, 4 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+>> index 30922f699341..bc74074304a2 100644
+>> --- a/arch/powerpc/include/asm/mman.h
+>> +++ b/arch/powerpc/include/asm/mman.h
+>> @@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
+>>   		return false;
+>>   	return true;
+>>   }
+>> -#define arch_validate_prot(prot) arch_validate_prot(prot)
+>> +#define arch_validate_prot(prot, addr) arch_validate_prot(prot)
 > 
-> If you can split this into a KVM and non-KVM patch that would be
-> helpful.
+> This can be simpler, as just:
+> 
+> #define arch_validate_prot arch_validate_prot
+> 
 
-Yes I can do that.
+Hi Michael,
+
+Thanks for reviewing!
+
+My patch expands parameter list for arch_validate_prot() from one to two 
+parameters. Existing powerpc version of arch_validate_prot() is written 
+with one parameter. If I use the above #define, compilation fails with:
+
+mm/mprotect.c: In function ‘do_mprotect_pkey’:
+mm/mprotect.c:399: error: too many arguments to function 
+‘arch_validate_prot’
+
+Another way to solve it would be to add the new addr parameter to 
+powerpc version of arch_validate_prot() but I chose the less disruptive 
+solution of tackling it through #define and expanded the existing 
+#define to include the new parameter. Make sense?
+
+Thanks,
+Khalid
