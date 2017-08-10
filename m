@@ -3,40 +3,40 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSYbL6Ng5zDqrx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:58 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSYbQ6BHHzDqrx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:32:02 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7A3UAtO013695
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 23:31:56 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c8dujdk0j-1
+ v7A3TKGu125827
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 23:32:00 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c878w8bye-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 23:31:56 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 23:32:00 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Thu, 10 Aug 2017 13:31:53 +1000
+ Thu, 10 Aug 2017 13:31:57 +1000
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7A3Vo5g22741142
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:50 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7A3VsMd26542118
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:54 +1000
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7A3VnlW009354
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:50 +1000
+ v7A3Vrp7009397
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:54 +1000
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org, paulus@samba.org, ego@linux.vnet.ibm.com,
  svaidy@linux.vnet.ibm.com,
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V11 2/3] powernv: Add support to set power-shifting-ratio
-Date: Thu, 10 Aug 2017 09:01:19 +0530
+Subject: [PATCH V11 3/3] powernv: Add support to clear sensor groups data
+Date: Thu, 10 Aug 2017 09:01:20 +0530
 In-Reply-To: <1502335880-30686-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1502335880-30686-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1502335880-30686-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-Id: <1502335880-30686-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,103 +46,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support to set power-shifting-ratio which hints the
-firmware how to distribute/throttle power between different entities
-in a system (e.g CPU v/s GPU). This ratio is used by OCC for power
-capping algorithm.
+Adds support for clearing different sensor groups. OCC inband sensor
+groups like CSM, Profiler, Job Scheduler can be cleared using this
+driver. The min/max of all sensors belonging to these sensor groups
+will be cleared.
 
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
- Documentation/ABI/testing/sysfs-firmware-opal-psr |  18 +++
- arch/powerpc/include/asm/opal-api.h               |   2 +
- arch/powerpc/include/asm/opal.h                   |   3 +
- arch/powerpc/platforms/powernv/Makefile           |   2 +-
- arch/powerpc/platforms/powernv/opal-psr.c         | 175 ++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S    |   2 +
- arch/powerpc/platforms/powernv/opal.c             |   3 +
- 7 files changed, 204 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-psr
- create mode 100644 arch/powerpc/platforms/powernv/opal-psr.c
+ .../bindings/powerpc/opal/sensor-groups.txt        |  27 +++
+ arch/powerpc/include/asm/opal-api.h                |   1 +
+ arch/powerpc/include/asm/opal.h                    |   2 +
+ arch/powerpc/platforms/powernv/Makefile            |   2 +-
+ .../powerpc/platforms/powernv/opal-sensor-groups.c | 212 +++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
+ arch/powerpc/platforms/powernv/opal.c              |   3 +
+ 7 files changed, 247 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/opal/sensor-groups.txt
+ create mode 100644 arch/powerpc/platforms/powernv/opal-sensor-groups.c
 
-diff --git a/Documentation/ABI/testing/sysfs-firmware-opal-psr b/Documentation/ABI/testing/sysfs-firmware-opal-psr
+diff --git a/Documentation/devicetree/bindings/powerpc/opal/sensor-groups.txt b/Documentation/devicetree/bindings/powerpc/opal/sensor-groups.txt
 new file mode 100644
-index 0000000..cc2ece7
+index 0000000..6ad881c
 --- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-firmware-opal-psr
-@@ -0,0 +1,18 @@
-+What:		/sys/firmware/opal/psr
-+Date:		August 2017
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	Power-Shift-Ratio directory for Powernv P9 servers
++++ b/Documentation/devicetree/bindings/powerpc/opal/sensor-groups.txt
+@@ -0,0 +1,27 @@
++IBM OPAL Sensor Groups Binding
++-------------------------------
 +
-+		Power-Shift-Ratio allows to provide hints the firmware
-+		to shift/throttle power between different entities in
-+		the system. Each attribute in this directory indicates
-+		a settable PSR.
++Node: /ibm,opal/sensor-groups
 +
-+What:		/sys/firmware/opal/psr/cpu_to_gpu_X
-+Date:		August 2017
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	PSR sysfs attributes for Powernv P9 servers
++Description: Contains sensor groups available in the Powernv P9
++servers. Each child node indicates a sensor group.
 +
-+		Power-Shift-Ratio between CPU and GPU for a given chip
-+		with chip-id X. This file gives the ratio (0-100)
-+		which is used by OCC for power-capping.
++- compatible : Should be "ibm,opal-sensor-group"
++
++Each child node contains below properties:
++
++- type : String to indicate the type of sensor-group
++
++- sensor-group-id: Abstract unique identifier provided by firmware of
++		   type <u32> which is used for sensor-group
++		   operations like clearing the min/max history of all
++		   sensors belonging to the group.
++
++- ibm,chip-id : Chip ID
++
++- sensors : Phandle array of child nodes of /ibm,opal/sensor/
++	    belonging to this group
++
++- ops : Array of opal-call numbers indicating available operations on
++	sensor groups like clearing min/max, enabling/disabling sensor
++	group.
 diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index b87305b..0cb7d11 100644
+index 0cb7d11..450a60b 100644
 --- a/arch/powerpc/include/asm/opal-api.h
 +++ b/arch/powerpc/include/asm/opal-api.h
-@@ -196,6 +196,8 @@
- #define OPAL_IMC_COUNTERS_STOP			151
- #define OPAL_GET_POWERCAP			152
+@@ -198,6 +198,7 @@
  #define OPAL_SET_POWERCAP			153
-+#define OPAL_GET_POWER_SHIFT_RATIO		154
-+#define OPAL_SET_POWER_SHIFT_RATIO		155
+ #define OPAL_GET_POWER_SHIFT_RATIO		154
+ #define OPAL_SET_POWER_SHIFT_RATIO		155
++#define OPAL_SENSOR_GROUP_CLEAR			156
  #define OPAL_PCI_SET_P2P			157
  #define OPAL_LAST				157
  
 diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 6f09ab7..d87ffcb 100644
+index d87ffcb..97ff192 100644
 --- a/arch/powerpc/include/asm/opal.h
 +++ b/arch/powerpc/include/asm/opal.h
-@@ -277,6 +277,8 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
- 
- int opal_get_powercap(u32 handle, int token, u32 *pcap);
+@@ -279,6 +279,7 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
  int opal_set_powercap(u32 handle, int token, u32 pcap);
-+int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
-+int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
+ int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
+ int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
++int opal_sensor_group_clear(u32 group_hndl, int token);
  
  /* Internal functions */
  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-@@ -356,6 +358,7 @@ static inline int opal_get_async_rc(struct opal_msg msg)
- void opal_wake_poller(void);
+@@ -359,6 +360,7 @@ static inline int opal_get_async_rc(struct opal_msg msg)
  
  void opal_powercap_init(void);
-+void opal_psr_init(void);
+ void opal_psr_init(void);
++void opal_sensor_groups_init(void);
  
  #endif /* __ASSEMBLY__ */
  
 diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index f9ec36d..674ed1e 100644
+index 674ed1e..177b3d4 100644
 --- a/arch/powerpc/platforms/powernv/Makefile
 +++ b/arch/powerpc/platforms/powernv/Makefile
 @@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
  obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
--obj-y			+= opal-kmsg.o opal-powercap.o
-+obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o
+-obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o
++obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
  
  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
  obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
-diff --git a/arch/powerpc/platforms/powernv/opal-psr.c b/arch/powerpc/platforms/powernv/opal-psr.c
+diff --git a/arch/powerpc/platforms/powernv/opal-sensor-groups.c b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
 new file mode 100644
-index 0000000..7313b7f
+index 0000000..7e5a235
 --- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-psr.c
-@@ -0,0 +1,175 @@
++++ b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
+@@ -0,0 +1,212 @@
 +/*
-+ * PowerNV OPAL Power-Shift-Ratio interface
++ * PowerNV OPAL Sensor-groups interface
 + *
 + * Copyright 2017 IBM Corp.
 + *
@@ -152,7 +159,7 @@ index 0000000..7313b7f
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#define pr_fmt(fmt)     "opal-psr: " fmt
++#define pr_fmt(fmt)     "opal-sensor-groups: " fmt
 +
 +#include <linux/of.h>
 +#include <linux/kobject.h>
@@ -160,87 +167,47 @@ index 0000000..7313b7f
 +
 +#include <asm/opal.h>
 +
-+DEFINE_MUTEX(psr_mutex);
++DEFINE_MUTEX(sg_mutex);
 +
-+static struct kobject *psr_kobj;
++static struct kobject *sg_kobj;
 +
-+struct psr_attr {
++struct sg_attr {
 +	u32 handle;
 +	struct kobj_attribute attr;
-+} *psr_attrs;
++};
 +
-+static ssize_t psr_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			char *buf)
++static struct sensor_group {
++	char name[20];
++	struct attribute_group sg;
++	struct sg_attr *sgattrs;
++} *sgs;
++
++static ssize_t sg_store(struct kobject *kobj, struct kobj_attribute *attr,
++			const char *buf, size_t count)
 +{
-+	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
++	struct sg_attr *sattr = container_of(attr, struct sg_attr, attr);
 +	struct opal_msg msg;
-+	int psr, ret, token;
++	u32 data;
++	int ret, token;
 +
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		pr_devel("Failed to get token\n");
-+		return token;
-+	}
-+
-+	ret = mutex_lock_interruptible(&psr_mutex);
-+	if (ret)
-+		goto out_token;
-+
-+	ret = opal_get_power_shift_ratio(psr_attr->handle, token,
-+					    (u32 *)__pa(&psr));
-+	switch (ret) {
-+	case OPAL_ASYNC_COMPLETION:
-+		ret = opal_async_wait_response(token, &msg);
-+		if (ret) {
-+			pr_devel("Failed to wait for the async response\n");
-+			ret = -EIO;
-+			goto out;
-+		}
-+		ret = opal_error_code(opal_get_async_rc(msg));
-+		if (!ret) {
-+			ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
-+			if (ret < 0)
-+				ret = -EIO;
-+		}
-+		break;
-+	case OPAL_SUCCESS:
-+		ret = sprintf(buf, "%u\n", be32_to_cpu(psr));
-+		if (ret < 0)
-+			ret = -EIO;
-+		break;
-+	default:
-+		ret = opal_error_code(ret);
-+	}
-+
-+out:
-+	mutex_unlock(&psr_mutex);
-+out_token:
-+	opal_async_release_token(token);
-+	return ret;
-+}
-+
-+static ssize_t psr_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			 const char *buf, size_t count)
-+{
-+	struct psr_attr *psr_attr = container_of(attr, struct psr_attr, attr);
-+	struct opal_msg msg;
-+	int psr, ret, token;
-+
-+	ret = kstrtoint(buf, 0, &psr);
++	ret = kstrtoint(buf, 0, &data);
 +	if (ret)
 +		return ret;
 +
++	if (data != 1)
++		return -EINVAL;
++
 +	token = opal_async_get_token_interruptible();
 +	if (token < 0) {
 +		pr_devel("Failed to get token\n");
 +		return token;
 +	}
 +
-+	ret = mutex_lock_interruptible(&psr_mutex);
++	ret = mutex_lock_interruptible(&sg_mutex);
 +	if (ret)
 +		goto out_token;
 +
-+	ret = opal_set_power_shift_ratio(psr_attr->handle, token, psr);
++	ret = opal_sensor_group_clear(sattr->handle, token);
 +	switch (ret) {
 +	case OPAL_ASYNC_COMPLETION:
 +		ret = opal_async_wait_response(token, &msg);
@@ -261,81 +228,157 @@ index 0000000..7313b7f
 +	}
 +
 +out:
-+	mutex_unlock(&psr_mutex);
++	mutex_unlock(&sg_mutex);
 +out_token:
 +	opal_async_release_token(token);
 +	return ret;
 +}
 +
-+void __init opal_psr_init(void)
++static struct sg_ops_info {
++	int opal_no;
++	const char *attr_name;
++	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
++			const char *buf, size_t count);
++} ops_info[] = {
++	{ OPAL_SENSOR_GROUP_CLEAR, "clear", sg_store },
++};
++
++static void add_attr(int handle, struct sg_attr *attr, int index)
 +{
-+	struct device_node *psr, *node;
++	attr->handle = handle;
++	sysfs_attr_init(&attr->attr.attr);
++	attr->attr.attr.name = ops_info[index].attr_name;
++	attr->attr.attr.mode = 0220;
++	attr->attr.store = ops_info[index].store;
++}
++
++static int add_attr_group(const __be32 *ops, int len, struct sensor_group *sg,
++			   u32 handle)
++{
++	int i, j;
++	int count = 0;
++
++	for (i = 0; i < len; i++)
++		for (j = 0; j < ARRAY_SIZE(ops_info); j++)
++			if (be32_to_cpu(ops[i]) == ops_info[j].opal_no) {
++				add_attr(handle, &sg->sgattrs[count], j);
++				sg->sg.attrs[count] =
++					&sg->sgattrs[count].attr.attr;
++				count++;
++			}
++
++	return sysfs_create_group(sg_kobj, &sg->sg);
++}
++
++static int get_nr_attrs(const __be32 *ops, int len)
++{
++	int i, j;
++	int nr_attrs = 0;
++
++	for (i = 0; i < len; i++)
++		for (j = 0; j < ARRAY_SIZE(ops_info); j++)
++			if (be32_to_cpu(ops[i]) == ops_info[j].opal_no)
++				nr_attrs++;
++
++	return nr_attrs;
++}
++
++void __init opal_sensor_groups_init(void)
++{
++	struct device_node *sg, *node;
 +	int i = 0;
 +
-+	psr = of_find_compatible_node(NULL, NULL,
-+				      "ibm,opal-power-shift-ratio");
-+	if (!psr) {
-+		pr_devel("Power-shift-ratio node not found\n");
++	sg = of_find_compatible_node(NULL, NULL, "ibm,opal-sensor-group");
++	if (!sg) {
++		pr_devel("Sensor groups node not found\n");
 +		return;
 +	}
 +
-+	psr_attrs = kcalloc(of_get_child_count(psr), sizeof(struct psr_attr),
-+			    GFP_KERNEL);
-+	if (!psr_attrs)
++	sgs = kcalloc(of_get_child_count(sg), sizeof(*sgs), GFP_KERNEL);
++	if (!sgs)
 +		return;
 +
-+	psr_kobj = kobject_create_and_add("psr", opal_kobj);
-+	if (!psr_kobj) {
-+		pr_warn("Failed to create psr kobject\n");
-+		goto out;
++	sg_kobj = kobject_create_and_add("sensor_groups", opal_kobj);
++	if (!sg_kobj) {
++		pr_warn("Failed to create sensor group kobject\n");
++		goto out_sgs;
 +	}
 +
-+	for_each_child_of_node(psr, node) {
-+		if (of_property_read_u32(node, "handle",
-+					 &psr_attrs[i].handle))
-+			goto out_kobj;
++	for_each_child_of_node(sg, node) {
++		const __be32 *ops;
++		u32 sgid, len, nr_attrs, chipid;
 +
-+		sysfs_attr_init(&psr_attrs[i].attr.attr);
-+		if (of_property_read_string(node, "label",
-+					    &psr_attrs[i].attr.attr.name))
-+			goto out_kobj;
-+		psr_attrs[i].attr.attr.mode = 0664;
-+		psr_attrs[i].attr.show = psr_show;
-+		psr_attrs[i].attr.store = psr_store;
-+		if (sysfs_create_file(psr_kobj, &psr_attrs[i].attr.attr)) {
-+			pr_devel("Failed to create psr sysfs file %s\n",
-+				 psr_attrs[i].attr.attr.name);
-+			goto out_kobj;
++		ops = of_get_property(node, "ops", &len);
++		if (!ops)
++			continue;
++
++		nr_attrs = get_nr_attrs(ops, len);
++		if (!nr_attrs)
++			continue;
++
++		sgs[i].sgattrs = kcalloc(nr_attrs, sizeof(struct sg_attr),
++					 GFP_KERNEL);
++		if (!sgs[i].sgattrs)
++			goto out_sgs_sgattrs;
++
++		sgs[i].sg.attrs = kcalloc(nr_attrs + 1,
++					  sizeof(struct attribute *),
++					  GFP_KERNEL);
++
++		if (!sgs[i].sg.attrs) {
++			kfree(sgs[i].sgattrs);
++			goto out_sgs_sgattrs;
++		}
++
++		if (of_property_read_u32(node, "sensor-group-id", &sgid)) {
++			pr_warn("sensor-group-id property not found\n");
++			goto out_sgs_sgattrs;
++		}
++
++		if (!of_property_read_u32(node, "ibm,chip-id", &chipid))
++			sprintf(sgs[i].name, "%s%d", node->name, chipid);
++		else
++			sprintf(sgs[i].name, "%s", node->name);
++
++		sgs[i].sg.name = sgs[i].name;
++		if (add_attr_group(ops, len, &sgs[i], sgid)) {
++			pr_warn("Failed to create sensor attribute group %s\n",
++				sgs[i].sg.name);
++			goto out_sgs_sgattrs;
 +		}
 +		i++;
 +	}
 +
 +	return;
-+out_kobj:
-+	kobject_put(psr_kobj);
-+out:
-+	kfree(psr_attrs);
++
++out_sgs_sgattrs:
++	while (--i >= 0) {
++		kfree(sgs[i].sgattrs);
++		kfree(sgs[i].sg.attrs);
++	}
++	kobject_put(sg_kobj);
++out_sgs:
++	kfree(sgs);
 +}
 diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 139286c..09cc6ec 100644
+index 09cc6ec..951fa93 100644
 --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
 +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -316,3 +316,5 @@ OPAL_CALL(opal_imc_counters_stop,		OPAL_IMC_COUNTERS_STOP);
- OPAL_CALL(opal_pci_set_p2p,			OPAL_PCI_SET_P2P);
- OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
+@@ -318,3 +318,4 @@ OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
  OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
-+OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
-+OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
++OPAL_CALL(opal_sensor_group_clear,		OPAL_SENSOR_GROUP_CLEAR);
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 28323c7..f659edb 100644
+index f659edb..3c122d0 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -853,6 +853,9 @@ static int __init opal_init(void)
- 	/* Initialise OPAL powercap interface */
- 	opal_powercap_init();
+@@ -856,6 +856,9 @@ static int __init opal_init(void)
+ 	/* Initialise OPAL Power-Shifting-Ratio interface */
+ 	opal_psr_init();
  
-+	/* Initialise OPAL Power-Shifting-Ratio interface */
-+	opal_psr_init();
++	/* Initialise OPAL sensor groups */
++	opal_sensor_groups_init();
 +
  	return 0;
  }
