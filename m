@@ -1,28 +1,36 @@
-Return-Path: <matthew.brown.dev@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSSTD0NTczDqrP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 09:41:19 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id q66so7142863qki.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 16:41:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSVBL440kzDqp7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 10:58:33 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id x64so1265574wmg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 17:58:32 -0700 (PDT)
+Date: Thu, 10 Aug 2017 03:58:28 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com,
+ bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH 05/16] mm: Protect VMA modifications using VMA sequence
+ count
+Message-ID: <20170810005828.qmw3p7d676hjwkss@node.shutemov.name>
+References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1502202949-8138-6-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170809101241.ek4fqinqaq5qfkq4@node.shutemov.name>
+ <f935091a-d8f9-1951-8397-f5c464a2b922@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87h8xgna73.fsf@concordia.ellerman.id.au>
-References: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
- <87h8xgna73.fsf@concordia.ellerman.id.au>
-From: Matt Brown <matthew.brown.dev@gmail.com>
-Date: Thu, 10 Aug 2017 09:41:16 +1000
-Message-ID: <CAPoR37bE=WfpfKYdYz-L3y7XNjeTqYj7BQm=MoEVe8V08360ZA@mail.gmail.com>
-Subject: Re: [v6 1/2] raid6/altivec: Add vpermxor implementation for raid6 Q
- syndrome
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>,
- gayatri.kammela@intel.com, shli@fb.com, fenghua.yu@intel.com,
- megha.dey@linux.intel.com, schwidefsky@de.ibm.com,
- linux-kernel@vger.kernel.org, anup.patel@broadcom.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f935091a-d8f9-1951-8397-f5c464a2b922@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,69 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 9, 2017 at 11:26 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Matt Brown <matthew.brown.dev@gmail.com> writes:
->
->> This patch uses the vpermxor instruction to optimise the raid6 Q syndrome.
->> This instruction was made available with POWER8, ISA version 2.07.
->> It allows for both vperm and vxor instructions to be done in a single
->> instruction. This has been tested for correctness on a ppc64le vm with a
->> basic RAID6 setup containing 5 drives.
->>
->> The performance benchmarks are from the raid6test in the /lib/raid6/test
->> directory. These results are from an IBM Firestone machine with ppc64le
->> architecture. The benchmark results show a 35% speed increase over the best
->> existing algorithm for powerpc (altivec). The raid6test has also been run
->> on a big-endian ppc64 vm to ensure it also works for big-endian
->> architectures.
->>
->> Performance benchmarks:
->>               raid6: altivecx4 gen() 18773 MB/s
->>               raid6: altivecx8 gen() 19438 MB/s
->>
->>               raid6: vpermxor4 gen() 25112 MB/s
->>               raid6: vpermxor8 gen() 26279 MB/s
->>
->> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
->> Reviewed-by: Daniel Axtens <dja@axtens.net>
->> ---
->> v6:
->>       - added vpermxor files to .gitignore
->>       - fixup whitespace
->>       - added vpermxor objs to test/Makefile
->> v5:
->>       - moved altivec.uc fix into other patch in series
->> ---
->>  include/linux/raid/pq.h |   4 ++
->>  lib/raid6/.gitignore    |   1 +
->>  lib/raid6/Makefile      |  27 ++++++++++++-
->>  lib/raid6/algos.c       |   4 ++
->>  lib/raid6/test/Makefile |  17 +++++++-
->>  lib/raid6/vpermxor.uc   | 104 ++++++++++++++++++++++++++++++++++++++++++++++++
->>  6 files changed, 154 insertions(+), 3 deletions(-)
->>  create mode 100644 lib/raid6/vpermxor.uc
->
-> This version at least is not Cc'ed to any of the folks that
-> get_maintainers.pl identifies for these files:
->
-> $ ./scripts/get_maintainer.pl -f lib/raid6
-> shli@fb.com
-> gayatri.kammela@intel.com
-> fenghua.yu@intel.com
-> megha.dey@linux.intel.com
-> schwidefsky@de.ibm.com
-> anup.patel@broadcom.com
-> linux-kernel@vger.kernel.org
->
->
-> This seems like mostly a list of random folks who've touched this code,
-> but maybe some of them would have comments?
->
+On Wed, Aug 09, 2017 at 12:43:33PM +0200, Laurent Dufour wrote:
+> On 09/08/2017 12:12, Kirill A. Shutemov wrote:
+> > On Tue, Aug 08, 2017 at 04:35:38PM +0200, Laurent Dufour wrote:
+> >> The VMA sequence count has been introduced to allow fast detection of
+> >> VMA modification when running a page fault handler without holding
+> >> the mmap_sem.
+> >>
+> >> This patch provides protection agains the VMA modification done in :
+> >> 	- madvise()
+> >> 	- mremap()
+> >> 	- mpol_rebind_policy()
+> >> 	- vma_replace_policy()
+> >> 	- change_prot_numa()
+> >> 	- mlock(), munlock()
+> >> 	- mprotect()
+> >> 	- mmap_region()
+> >> 	- collapse_huge_page()
+> > 
+> > I don't thinks it's anywhere near complete list of places where we touch
+> > vm_flags. What is your plan for the rest?
+> 
+> The goal is only to protect places where change to the VMA is impacting the
+> page fault handling. If you think I missed one, please advise.
 
-Ah my bad. I've CC'ed them into this email chain.
-Apologies for not including you guys in the original email.
-Here is a link to the patchworks patch:
-http://patchwork.ozlabs.org/patch/797576/
+That's very fragile approach. We rely here too much on specific compiler behaviour.
 
-Thanks,
-Matt Brown
+Any write access to vm_flags can, in theory, be translated to several
+write accesses. For instance with setting vm_flags to 0 in the middle,
+which would result in sigfault on page fault to the vma.
+
+Nothing (apart from common sense) prevents compiler from generating this
+kind of pattern.
+
+-- 
+ Kirill A. Shutemov
