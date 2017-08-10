@@ -1,36 +1,26 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSVBL440kzDqp7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 10:58:33 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id x64so1265574wmg.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 17:58:32 -0700 (PDT)
-Date: Thu, 10 Aug 2017 03:58:28 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH 05/16] mm: Protect VMA modifications using VMA sequence
- count
-Message-ID: <20170810005828.qmw3p7d676hjwkss@node.shutemov.name>
-References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1502202949-8138-6-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170809101241.ek4fqinqaq5qfkq4@node.shutemov.name>
- <f935091a-d8f9-1951-8397-f5c464a2b922@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSVXk4CYCzDqp7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 11:14:30 +1000 (AEST)
+Date: Thu, 10 Aug 2017 10:54:09 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 08/10] powerpc/xive: take into account
+ '/ibm,plat-res-int-priorities'
+Message-ID: <20170810005409.GT13670@umbus.fritz.box>
+References: <1502182579-990-1-git-send-email-clg@kaod.org>
+ <1502182579-990-9-git-send-email-clg@kaod.org>
+ <20170809040227.GE13670@umbus.fritz.box>
+ <0aaa22ae-6bb7-719c-f772-4f24b8eb9dc9@kaod.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f935091a-d8f9-1951-8397-f5c464a2b922@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="7Ha3rcGc4ZVRbLT1"
+In-Reply-To: <0aaa22ae-6bb7-719c-f772-4f24b8eb9dc9@kaod.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,38 +30,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 09, 2017 at 12:43:33PM +0200, Laurent Dufour wrote:
-> On 09/08/2017 12:12, Kirill A. Shutemov wrote:
-> > On Tue, Aug 08, 2017 at 04:35:38PM +0200, Laurent Dufour wrote:
-> >> The VMA sequence count has been introduced to allow fast detection of
-> >> VMA modification when running a page fault handler without holding
-> >> the mmap_sem.
+
+--7Ha3rcGc4ZVRbLT1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Aug 09, 2017 at 09:14:49AM +0200, C=E9dric Le Goater wrote:
+> On 08/09/2017 06:02 AM, David Gibson wrote:
+> > On Tue, Aug 08, 2017 at 10:56:18AM +0200, C=E9dric Le Goater wrote:
+> >> '/ibm,plat-res-int-priorities' contains a list of priorities that the
+> >> hypervisor has reserved for its own use. Scan these ranges to choose
+> >> the lowest unused priority for the xive spapr backend.
 > >>
-> >> This patch provides protection agains the VMA modification done in :
-> >> 	- madvise()
-> >> 	- mremap()
-> >> 	- mpol_rebind_policy()
-> >> 	- vma_replace_policy()
-> >> 	- change_prot_numa()
-> >> 	- mlock(), munlock()
-> >> 	- mprotect()
-> >> 	- mmap_region()
-> >> 	- collapse_huge_page()
-> > 
-> > I don't thinks it's anywhere near complete list of places where we touch
-> > vm_flags. What is your plan for the rest?
-> 
-> The goal is only to protect places where change to the VMA is impacting the
-> page fault handling. If you think I missed one, please advise.
+> >> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
+> >> ---
+> >>  arch/powerpc/sysdev/xive/spapr.c | 62 +++++++++++++++++++++++++++++++=
+++++++++-
+> >>  1 file changed, 61 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xi=
+ve/spapr.c
+> >> index 7fc40047c23d..220331986bd8 100644
+> >> --- a/arch/powerpc/sysdev/xive/spapr.c
+> >> +++ b/arch/powerpc/sysdev/xive/spapr.c
+> >> @@ -532,13 +532,70 @@ static const struct xive_ops xive_spapr_ops =3D {
+> >>  	.name			=3D "spapr",
+> >>  };
+> >> =20
+> >> +/*
+> >> + * get max priority from "/ibm,plat-res-int-priorities"
+> >> + */
+> >> +static bool xive_get_max_prio(u8 *max_prio)
+> >> +{
+> >> +	struct device_node *rootdn;
+> >> +	const __be32 *reg;
+> >> +	u32 len;
+> >> +	int prio, found;
+> >> +
+> >> +	rootdn =3D of_find_node_by_path("/");
+> >> +	if (!rootdn) {
+> >> +		pr_err("not root node found !\n");
+> >> +		return false;
+> >> +	}
+> >> +
+> >> +	reg =3D of_get_property(rootdn, "ibm,plat-res-int-priorities", &len);
+> >> +	if (!reg) {
+> >> +		pr_err("Failed to read 'ibm,plat-res-int-priorities' property\n");
+> >> +		return false;
+> >> +	}
+> >> +
+> >> +	if (len % (2 * sizeof(u32)) !=3D 0) {
+> >> +		pr_err("invalid 'ibm,plat-res-int-priorities' property\n");
+> >> +		return false;
+> >> +	}
+> >> +
+> >> +	/* HW supports priorities in the range [0-7] and 0xFF is a
+> >> +	 * wildcard priority used to mask. We scan the ranges reserved
+> >> +	 * by the hypervisor to find the lowest priority we can use.
+> >> +	 */
+> >> +	found =3D 0xFF;
+> >> +	for (prio =3D 0; prio < 8; prio++) {
+> >> +		int reserved =3D 0;
+> >> +		int i;
+> >> +
+> >> +		for (i =3D 0; i < len / (2 * sizeof(u32)); i++) {
+> >> +			int base  =3D be32_to_cpu(reg[2 * i]);
+> >> +			int range =3D be32_to_cpu(reg[2 * i + 1]);
+> >> +
+> >> +			if (prio >=3D base && prio < base + range)
+> >> +				reserved++;
+> >> +		}
+> >> +
+> >> +		if (!reserved)
+> >> +			found =3D prio;
+> >=20
+> > So you continue the loop here, rather than using break.  Which means
+> > found will be the highest valued priority that's not reserved.  Is
+> > that what you intended?  The commit message says you find the lowest
+> > unused, but do lower numbers mean higher priorities or the other way ar=
+ound?
+>=20
+> yes. I should probably add a statement on how the priorities are=20
+> ordered : the most privileged is the lowest value.
 
-That's very fragile approach. We rely here too much on specific compiler behaviour.
+Ok.  My inclination would be to reverse the order of the loop, and
+break; on the first (=3D=3Dlowest priority) unused entry.  But you could
+fairly argue that's premature optimization.
 
-Any write access to vm_flags can, in theory, be translated to several
-write accesses. For instance with setting vm_flags to 0 in the middle,
-which would result in sigfault on page fault to the vma.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Nothing (apart from common sense) prevents compiler from generating this
-kind of pattern.
+--7Ha3rcGc4ZVRbLT1
+Content-Type: application/pgp-signature; name="signature.asc"
 
--- 
- Kirill A. Shutemov
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlmLrrEACgkQbDjKyiDZ
+s5ITug//eRq5V4JvQHnBhc3hNbj+mjkJUPNiNj9xJbPLW7NCiPQWKjrSBrk3Aaqx
+08rr0gc0FxJ4YCv0xNok0KBfc1VrNkTiGRaimj8Rcqtm4z4qQSNlpNijPUvQR0Z/
+xCtHSRw1yq6GAnWazsP6SNK4j+UFEh6oNhoRDi5JyeMFnooaGz5TIKmh54fp6lCJ
+pGS75QyHHcF7xJa5izdvx/yeZiscdbuxUqgSScjUVJ5W6iuSVKyrOsigd7ukJAum
+8zMyT6kMVh9r+MycFNtnl64KyCUZYZzeLF4sL/CNUVqpy6D2Q+GR/4hqPe8jy6PF
+MPGpYg0TWn6bOPMfB1pia1NW5GfSGs6cRzXQrmYYHUN1W65LwPf5yMO9b5GJOfum
+dK/aRYgo5SdAnJQbjb4NS4domT7E1nr904qazDuQx2a/xptZSP90PCWlsCt+l33M
+9PqbRR+kXzIT3ZNLohQkNouym8uv2PwtA+iBAuYMWJ9iJ/xoVs1NMimT3ztADDd9
+FmmetcqeA2kBKutCqAkIC9o6yFn8KD9t5dMZf9jg9sDCrpWYZdRp3W32crZaQrxi
+tyOLyL4kf0FWokdoLHEQNhbzR7e9OZNTyQNonWmHvwkan0QoZn5d6Zspsu+qQvSD
+s0GxtmNYkKGw7vGm1A1yVsU+SsxmUrqMe+6yPVJCldBR1rriLQY=
+=OtHX
+-----END PGP SIGNATURE-----
+
+--7Ha3rcGc4ZVRbLT1--
