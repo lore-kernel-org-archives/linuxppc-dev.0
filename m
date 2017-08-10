@@ -1,42 +1,26 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSYcf5VykzDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:33:06 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7A3TQS5145319
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Aug 2017 23:33:04 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c8f8j96j3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Aug 2017 23:33:04 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Thu, 10 Aug 2017 13:33:01 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7A3VjTp25362624
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:45 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7A3ViAY009288
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 13:31:45 +1000
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: stewart@linux.vnet.ibm.com, cyrilbur@gmail.com, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, ego@linux.vnet.ibm.com,
- svaidy@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH V11 1/3] powernv: powercap: Add support for powercap framework
-Date: Thu, 10 Aug 2017 09:01:18 +0530
-In-Reply-To: <1502335880-30686-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1502335880-30686-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1502335880-30686-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSZs32zWlzDqrP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 14:28:55 +1000 (AEST)
+Date: Thu, 10 Aug 2017 14:28:49 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 02/10] powerpc/xive: guest exploitation of the XIVE
+ interrupt controller
+Message-ID: <20170810042849.GU13670@umbus.fritz.box>
+References: <1502182579-990-1-git-send-email-clg@kaod.org>
+ <1502182579-990-3-git-send-email-clg@kaod.org>
+ <20170809035306.GC13670@umbus.fritz.box>
+ <f82c1111-3dd3-f378-0ff6-222bffc07a35@kaod.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="rW45g2D1DgwV0HVw"
+In-Reply-To: <f82c1111-3dd3-f378-0ff6-222bffc07a35@kaod.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,397 +30,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds a generic powercap framework to change the system powercap
-inband through OPAL-OCC command/response interface.
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
- .../ABI/testing/sysfs-firmware-opal-powercap       |  31 +++
- arch/powerpc/include/asm/opal-api.h                |   3 +
- arch/powerpc/include/asm/opal.h                    |   5 +
- arch/powerpc/platforms/powernv/Makefile            |   2 +-
- arch/powerpc/platforms/powernv/opal-powercap.c     | 244 +++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S     |   2 +
- arch/powerpc/platforms/powernv/opal.c              |   4 +
- 7 files changed, 290 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-powercap
- create mode 100644 arch/powerpc/platforms/powernv/opal-powercap.c
+--rW45g2D1DgwV0HVw
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/ABI/testing/sysfs-firmware-opal-powercap b/Documentation/ABI/testing/sysfs-firmware-opal-powercap
-new file mode 100644
-index 0000000..c9b66ec
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-firmware-opal-powercap
-@@ -0,0 +1,31 @@
-+What:		/sys/firmware/opal/powercap
-+Date:		August 2017
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	Powercap directory for Powernv (P8, P9) servers
-+
-+		Each folder in this directory contains a
-+		power-cappable component.
-+
-+What:		/sys/firmware/opal/powercap/system-powercap
-+		/sys/firmware/opal/powercap/system-powercap/powercap-min
-+		/sys/firmware/opal/powercap/system-powercap/powercap-max
-+		/sys/firmware/opal/powercap/system-powercap/powercap-current
-+Date:		August 2017
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	System powercap directory and attributes applicable for
-+		Powernv (P8, P9) servers
-+
-+		This directory provides powercap information. It
-+		contains below sysfs attributes:
-+
-+		- powercap-min : This file provides the minimum
-+		  possible powercap in Watt units
-+
-+		- powercap-max : This file provides the maximum
-+		  possible powercap in Watt units
-+
-+		- powercap-current : This file provides the current
-+		  powercap set on the system. Writing to this file
-+		  creates a request for setting a new-powercap. The
-+		  powercap requested must be between powercap-min
-+		  and powercap-max.
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index ced1ef2..b87305b 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -42,6 +42,7 @@
- #define OPAL_I2C_STOP_ERR	-24
- #define OPAL_XIVE_PROVISIONING	-31
- #define OPAL_XIVE_FREE_ACTIVE	-32
-+#define OPAL_TIMEOUT		-33
- 
- /* API Tokens (in r0) */
- #define OPAL_INVALID_CALL		       -1
-@@ -193,6 +194,8 @@
- #define OPAL_IMC_COUNTERS_INIT			149
- #define OPAL_IMC_COUNTERS_START			150
- #define OPAL_IMC_COUNTERS_STOP			151
-+#define OPAL_GET_POWERCAP			152
-+#define OPAL_SET_POWERCAP			153
- #define OPAL_PCI_SET_P2P			157
- #define OPAL_LAST				157
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 5a715e6..6f09ab7 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -275,6 +275,9 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
- int64_t opal_imc_counters_start(uint32_t type, uint64_t cpu_pir);
- int64_t opal_imc_counters_stop(uint32_t type, uint64_t cpu_pir);
- 
-+int opal_get_powercap(u32 handle, int token, u32 *pcap);
-+int opal_set_powercap(u32 handle, int token, u32 pcap);
-+
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
- 				   int depth, void *data);
-@@ -352,6 +355,8 @@ static inline int opal_get_async_rc(struct opal_msg msg)
- 
- void opal_wake_poller(void);
- 
-+void opal_powercap_init(void);
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_OPAL_H */
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index a0d4353..f9ec36d 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -2,7 +2,7 @@ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o idle.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
- obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
--obj-y			+= opal-kmsg.o
-+obj-y			+= opal-kmsg.o opal-powercap.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
-diff --git a/arch/powerpc/platforms/powernv/opal-powercap.c b/arch/powerpc/platforms/powernv/opal-powercap.c
-new file mode 100644
-index 0000000..badb29b
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-powercap.c
-@@ -0,0 +1,244 @@
-+/*
-+ * PowerNV OPAL Powercap interface
-+ *
-+ * Copyright 2017 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#define pr_fmt(fmt)     "opal-powercap: " fmt
-+
-+#include <linux/of.h>
-+#include <linux/kobject.h>
-+#include <linux/slab.h>
-+
-+#include <asm/opal.h>
-+
-+DEFINE_MUTEX(powercap_mutex);
-+
-+static struct kobject *powercap_kobj;
-+
-+struct powercap_attr {
-+	u32 handle;
-+	struct kobj_attribute attr;
-+};
-+
-+static struct pcap {
-+	struct attribute_group pg;
-+	struct powercap_attr *pattrs;
-+} *pcaps;
-+
-+static ssize_t powercap_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			     char *buf)
-+{
-+	struct powercap_attr *pcap_attr = container_of(attr,
-+						struct powercap_attr, attr);
-+	struct opal_msg msg;
-+	u32 pcap;
-+	int ret, token;
-+
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		pr_devel("Failed to get token\n");
-+		return token;
-+	}
-+
-+	ret = mutex_lock_interruptible(&powercap_mutex);
-+	if (ret)
-+		goto out_token;
-+
-+	ret = opal_get_powercap(pcap_attr->handle, token, (u32 *)__pa(&pcap));
-+	switch (ret) {
-+	case OPAL_ASYNC_COMPLETION:
-+		ret = opal_async_wait_response(token, &msg);
-+		if (ret) {
-+			pr_devel("Failed to wait for the async response\n");
-+			ret = -EIO;
-+			goto out;
-+		}
-+		ret = opal_error_code(opal_get_async_rc(msg));
-+		if (!ret) {
-+			ret = sprintf(buf, "%u\n", be32_to_cpu(pcap));
-+			if (ret < 0)
-+				ret = -EIO;
-+		}
-+		break;
-+	case OPAL_SUCCESS:
-+		ret = sprintf(buf, "%u\n", be32_to_cpu(pcap));
-+		if (ret < 0)
-+			ret = -EIO;
-+		break;
-+	default:
-+		ret = opal_error_code(ret);
-+	}
-+
-+out:
-+	mutex_unlock(&powercap_mutex);
-+out_token:
-+	opal_async_release_token(token);
-+	return ret;
-+}
-+
-+static ssize_t powercap_store(struct kobject *kobj,
-+			      struct kobj_attribute *attr, const char *buf,
-+			      size_t count)
-+{
-+	struct powercap_attr *pcap_attr = container_of(attr,
-+						struct powercap_attr, attr);
-+	struct opal_msg msg;
-+	u32 pcap;
-+	int ret, token;
-+
-+	ret = kstrtoint(buf, 0, &pcap);
-+	if (ret)
-+		return ret;
-+
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		pr_devel("Failed to get token\n");
-+		return token;
-+	}
-+
-+	ret = mutex_lock_interruptible(&powercap_mutex);
-+	if (ret)
-+		goto out_token;
-+
-+	ret = opal_set_powercap(pcap_attr->handle, token, pcap);
-+	switch (ret) {
-+	case OPAL_ASYNC_COMPLETION:
-+		ret = opal_async_wait_response(token, &msg);
-+		if (ret) {
-+			pr_devel("Failed to wait for the async response\n");
-+			ret = -EIO;
-+			goto out;
-+		}
-+		ret = opal_error_code(opal_get_async_rc(msg));
-+		if (!ret)
-+			ret = count;
-+		break;
-+	case OPAL_SUCCESS:
-+		ret = count;
-+		break;
-+	default:
-+		ret = opal_error_code(ret);
-+	}
-+
-+out:
-+	mutex_unlock(&powercap_mutex);
-+out_token:
-+	opal_async_release_token(token);
-+	return ret;
-+}
-+
-+static void powercap_add_attr(int handle, const char *name,
-+			      struct powercap_attr *attr)
-+{
-+	attr->handle = handle;
-+	sysfs_attr_init(&attr->attr.attr);
-+	attr->attr.attr.name = name;
-+	attr->attr.attr.mode = 0444;
-+	attr->attr.show = powercap_show;
-+}
-+
-+void __init opal_powercap_init(void)
-+{
-+	struct device_node *powercap, *node;
-+	int i = 0;
-+
-+	powercap = of_find_compatible_node(NULL, NULL, "ibm,opal-powercap");
-+	if (!powercap) {
-+		pr_devel("Powercap node not found\n");
-+		return;
-+	}
-+
-+	pcaps = kcalloc(of_get_child_count(powercap), sizeof(*pcaps),
-+			GFP_KERNEL);
-+	if (!pcaps)
-+		return;
-+
-+	powercap_kobj = kobject_create_and_add("powercap", opal_kobj);
-+	if (!powercap_kobj) {
-+		pr_warn("Failed to create powercap kobject\n");
-+		goto out_pcaps;
-+	}
-+
-+	i = 0;
-+	for_each_child_of_node(powercap, node) {
-+		u32 cur, min, max;
-+		int j = 0;
-+		bool has_cur = false, has_min = false, has_max = false;
-+
-+		if (!of_property_read_u32(node, "powercap-min", &min)) {
-+			j++;
-+			has_min = true;
-+		}
-+
-+		if (!of_property_read_u32(node, "powercap-max", &max)) {
-+			j++;
-+			has_max = true;
-+		}
-+
-+		if (!of_property_read_u32(node, "powercap-current", &cur)) {
-+			j++;
-+			has_cur = true;
-+		}
-+
-+		pcaps[i].pattrs = kcalloc(j, sizeof(struct powercap_attr),
-+					  GFP_KERNEL);
-+		if (!pcaps[i].pattrs)
-+			goto out_pcaps_pattrs;
-+
-+		pcaps[i].pg.attrs = kcalloc(j + 1, sizeof(struct attribute *),
-+					    GFP_KERNEL);
-+		if (!pcaps[i].pg.attrs) {
-+			kfree(pcaps[i].pattrs);
-+			goto out_pcaps_pattrs;
-+		}
-+
-+		j = 0;
-+		pcaps[i].pg.name = node->name;
-+		if (has_min) {
-+			powercap_add_attr(min, "powercap-min",
-+					  &pcaps[i].pattrs[j]);
-+			pcaps[i].pg.attrs[j] = &pcaps[i].pattrs[j].attr.attr;
-+			j++;
-+		}
-+
-+		if (has_max) {
-+			powercap_add_attr(max, "powercap-max",
-+					  &pcaps[i].pattrs[j]);
-+			pcaps[i].pg.attrs[j] = &pcaps[i].pattrs[j].attr.attr;
-+			j++;
-+		}
-+
-+		if (has_cur) {
-+			powercap_add_attr(cur, "powercap-current",
-+					  &pcaps[i].pattrs[j]);
-+			pcaps[i].pattrs[j].attr.attr.mode |= 0220;
-+			pcaps[i].pattrs[j].attr.store = powercap_store;
-+			pcaps[i].pg.attrs[j] = &pcaps[i].pattrs[j].attr.attr;
-+			j++;
-+		}
-+
-+		if (sysfs_create_group(powercap_kobj, &pcaps[i].pg)) {
-+			pr_warn("Failed to create powercap attribute group %s\n",
-+				pcaps[i].pg.name);
-+			goto out_pcaps_pattrs;
-+		}
-+		i++;
-+	}
-+
-+	return;
-+
-+out_pcaps_pattrs:
-+	while (--i >= 0) {
-+		kfree(pcaps[i].pattrs);
-+		kfree(pcaps[i].pg.attrs);
-+	}
-+	kobject_put(powercap_kobj);
-+out_pcaps:
-+	kfree(pcaps);
-+}
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 3369a6f..139286c 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -314,3 +314,5 @@ OPAL_CALL(opal_imc_counters_init,		OPAL_IMC_COUNTERS_INIT);
- OPAL_CALL(opal_imc_counters_start,		OPAL_IMC_COUNTERS_START);
- OPAL_CALL(opal_imc_counters_stop,		OPAL_IMC_COUNTERS_STOP);
- OPAL_CALL(opal_pci_set_p2p,			OPAL_PCI_SET_P2P);
-+OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
-+OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 946158e..28323c7 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -850,6 +850,9 @@ static int __init opal_init(void)
- 	/* Initialise OPAL kmsg dumper for flushing console on panic */
- 	opal_kmsg_init();
- 
-+	/* Initialise OPAL powercap interface */
-+	opal_powercap_init();
-+
- 	return 0;
- }
- machine_subsys_initcall(powernv, opal_init);
-@@ -966,6 +969,7 @@ int opal_error_code(int rc)
- 	case OPAL_UNSUPPORTED:		return -EIO;
- 	case OPAL_HARDWARE:		return -EIO;
- 	case OPAL_INTERNAL_ERROR:	return -EIO;
-+	case OPAL_TIMEOUT:		return -ETIMEDOUT;
- 	default:
- 		pr_err("%s: unexpected OPAL error %d\n", __func__, rc);
- 		return -EIO;
--- 
-1.8.3.1
+On Wed, Aug 09, 2017 at 10:48:48AM +0200, C=E9dric Le Goater wrote:
+> On 08/09/2017 05:53 AM, David Gibson wrote:
+> > On Tue, Aug 08, 2017 at 10:56:12AM +0200, C=E9dric Le Goater wrote:
+> >> This is the framework for using XIVE in a PowerVM guest. The support
+> >> is very similar to the native one in a much simpler form.
+> >>
+> >> Instead of OPAL calls, a set of Hypervisors call are used to configure
+> >> the interrupt sources and the event/notification queues of the guest:
+> >>
+> >>  - H_INT_GET_SOURCE_INFO
+> >>
+> >>    used to obtain the address of the MMIO page of the Event State
+> >>    Buffer (PQ bits) entry associated with the source.
+> >>
+> >>  - H_INT_SET_SOURCE_CONFIG
+> >>
+> >>    assigns a source to a "target".
+> >>
+> >>  - H_INT_GET_SOURCE_CONFIG
+> >>
+> >>    determines to which "target" and "priority" is assigned to a source
+> >>
+> >>  - H_INT_GET_QUEUE_INFO
+> >>
+> >>    returns the address of the notification management page associated
+> >>    with the specified "target" and "priority".
+> >>
+> >>  - H_INT_SET_QUEUE_CONFIG
+> >>
+> >>    sets or resets the event queue for a given "target" and "priority".
+> >>    It is also used to set the notification config associated with the
+> >>    queue, only unconditional notification for the moment.  Reset is
+> >>    performed with a queue size of 0 and queueing is disabled in that
+> >>    case.
+> >>
+> >>  - H_INT_GET_QUEUE_CONFIG
+> >>
+> >>    returns the queue settings for a given "target" and "priority".
+> >>
+> >>  - H_INT_RESET
+> >>
+> >>    resets all of the partition's interrupt exploitation structures to
+> >>    their initial state, losing all configuration set via the hcalls
+> >>    H_INT_SET_SOURCE_CONFIG and H_INT_SET_QUEUE_CONFIG.
+> >>
+> >>  - H_INT_SYNC
+> >>
+> >>    issue a synchronisation on a source to make sure sure all
+> >>    notifications have reached their queue.
+> >>
+> >> As for XICS, the XIVE interface for the guest is described in the
+> >> device tree under the interrupt controller node. A couple of new
+> >> properties are specific to XIVE :
+> >>
+> >>  - "reg"
+> >>
+> >>    contains the base address and size of the thread interrupt
+> >>    managnement areas (TIMA) for the user level for the OS level. Only
+> >>    the OS level is taken into account.
+> >>
+> >>  - "ibm,xive-eq-sizes"
+> >>
+> >>    the size of the event queues.
+> >>
+> >>  - "ibm,xive-lisn-ranges"
+> >>
+> >>    the interrupt numbers ranges assigned to the guest. These are
+> >>    allocated using a simple bitmap.
+> >>
+> >> Tested with a QEMU XIVE model for pseries and with the Power
+> >> hypervisor
+> >>
+> >> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
+> >=20
+> > I don't know XIVE well enough to review in detail, but I've made some
+> > comments based on general knowledge.
+>=20
+> Thanks for taking a look.
+
+np
+
+[snip]
+> >> +/* Cause IPI as setup by the interrupt controller (xics or xive) */
+> >> +static void (*ic_cause_ipi)(int cpu);
+> >> +
+> >>  static void smp_pseries_cause_ipi(int cpu)
+> >>  {
+> >> -	/* POWER9 should not use this handler */
+> >>  	if (doorbell_try_core_ipi(cpu))
+> >>  		return;
+> >> =20
+> >> -	icp_ops->cause_ipi(cpu);
+> >> +	ic_cause_ipi(cpu);
+> >=20
+> > Wouldn't it make more sense to change smp_ops->cause_ipi, rather than
+> > having a double indirection through smp_ops, then the ic_cause_ipi
+> > global?
+>=20
+> we need to retain the original setting of smp_ops->cause_ipi=20
+> somewhere as it can be set from xive_smp_probe() to :=20
+>=20
+> 	icp_ops->cause_ipi=20
+>=20
+> or from xics_smp_probe() to :
+>=20
+> 	xive_cause_ipi()
+>=20
+> I am not sure we can do any better ?=20
+
+I don't see why not.  You basically have two bits of options xics vs
+xive, and doorbell vs no doorbells.  At worst that gives you 4
+different versions of ->cause_ipi, and you can work out the right one
+in smp_probe().  If the number of combinations got too much larger you
+might indeed need some more indirection.  But with 4 there's a little
+code duplication, but small enough that I think it's preferable to an
+extra global and an extra indirection.
+
+Also, will POWER9 always have doorbells?  In which case you could
+reduce it to 3 options.
+
+[snip]
+> >> +static void xive_spapr_update_pending(struct xive_cpu *xc)
+> >> +{
+> >> +	u8 nsr, cppr;
+> >> +	u16 ack;
+> >> +
+> >> +	/* Perform the acknowledge hypervisor to register cycle */
+> >> +	ack =3D be16_to_cpu(__raw_readw(xive_tima + TM_SPC_ACK_OS_REG));
+> >=20
+> > Why do you need the raw_readw() + be16_to_cpu + mb, rather than one of
+> > the higher level IO helpers?
+>=20
+> This is one of the many ways to do MMIOs on the TIMA. This memory=20
+> region defines a set of offsets and sizes for which loads and=20
+> stores have different effects.=20
+>=20
+> See the arch/powerpc/include/asm/xive-regs.h file and=20
+> arch/powerpc/kvm/book3s_xive_template.c for some more usage.
+
+Sure, much like any IO region.  My point is, why do you want this kind
+of complex combo, rather than say an in_be16() or readw_be().
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--rW45g2D1DgwV0HVw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlmL4P8ACgkQbDjKyiDZ
+s5Jurg//aHuSvyOlIEk46Gr11B6QqOSLGm9+hA1aZQrB+LO9oMQmzlRtklrVBRqL
+O2fQaQOQwOBIKBo4bF1PHUXM0nLu6kDks1qGa5f6O0msk1xOJSGzqBw208dF6Uhc
+UaXW7+FSMnT+3vINUVc4sDd99PsoF+BKZWz/HI5AwSNz7oMydP08YB+od9PnS+9e
+IUeAR3KMYoP8UPe1mwEk6wQktPSt071Eif3VEwWgyOS9oVV8AZWv4ZTRFGh7vOkM
+oAqYM4XNJ8OstK7y/z4aAfXojFA4vdQPmBNf1kaBxtNiJ5Uka624znnwArNcN9ik
+7UHWvsuV90tWMWIAQzJQJPD1u0Lyws7cW250UU8Q+NpBcSQU4AeFYrkty9SiNuD1
+cvuDvxRG3Tk9X250HLCzq+9I7uBXqVnVquNH3F4nk9gKx+gRrK8+FQt7CXa6RWnv
+iMQCqCI+kFP5bgHtlc1ZlqkwWJCdQSI+AZQ3aeXO47MMEi8822asnmFJOGJ0xcSs
+9n4N3slJbJ1SdDmUraAnCKs+rGfQAtutjua+iE5L6qbfcc5H+e9ygWCHxXZ4VfaQ
+Kj18VBqFJSXvFnJW14mEP9i4inUWHyHYeKLwKP1MW4/AaO0H37I8UHvrrHIeCKrX
+DMPyAHVKctlkL055K1c/h+xBW0xkab6IWGmtOOWN+aZBFwejafc=
+=ePGb
+-----END PGP SIGNATURE-----
+
+--rW45g2D1DgwV0HVw--
