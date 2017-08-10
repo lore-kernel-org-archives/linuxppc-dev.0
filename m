@@ -1,42 +1,50 @@
-Return-Path: <srs0=wkuz=7m=linux.vnet.ibm.com=arbab@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSvJg51yjzDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 02:50:27 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xSvJg4H4dz8vp3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 02:50:27 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xSvJg0X1Hz9s7M
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2017 02:50:26 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7AGnTIE102071
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2017 12:50:23 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2c8u3bgt85-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xSxDV2k0PzDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 04:16:58 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7AIFnV5133762
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 14:16:55 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c8rg56ftc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2017 12:50:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 14:16:54 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Thu, 10 Aug 2017 12:50:22 -0400
-Date: Thu, 10 Aug 2017 11:50:19 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, nfont@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [FIX PATCH v0] powerpc: Fix memory unplug failure on radix guest
-References: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 10 Aug 2017 19:16:52 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH 05/16] mm: Protect VMA modifications using VMA sequence
+ count
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1502202949-8138-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1502202949-8138-6-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170809101241.ek4fqinqaq5qfkq4@node.shutemov.name>
+ <f935091a-d8f9-1951-8397-f5c464a2b922@linux.vnet.ibm.com>
+ <20170810005828.qmw3p7d676hjwkss@node.shutemov.name>
+ <4e552377-af38-3580-73b6-1edf685cb90d@linux.vnet.ibm.com>
+ <20170810134325.j4ijsxzc56e443of@node.shutemov.name>
+Date: Thu, 10 Aug 2017 20:16:44 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
-Message-Id: <20170810165019.unrvv6id2daqazju@arbab-laptop.localdomain>
+In-Reply-To: <20170810134325.j4ijsxzc56e443of@node.shutemov.name>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <14e3185c-36e9-c9b1-25f2-98a98de94356@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,68 +54,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 10, 2017 at 02:53:48PM +0530, Bharata B Rao wrote:
->diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->index f830562..24ecf53 100644
->--- a/arch/powerpc/kernel/prom.c
->+++ b/arch/powerpc/kernel/prom.c
->@@ -524,6 +524,7 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
-> 					size = 0x80000000ul - base;
-> 			}
-> 			memblock_add(base, size);
->+			memblock_mark_hotplug(base, size);
-> 		} while (--rngs);
-> 	}
-> 	memblock_dump_all();
+On 10/08/2017 15:43, Kirill A. Shutemov wrote:
+> On Thu, Aug 10, 2017 at 10:27:50AM +0200, Laurent Dufour wrote:
+>> On 10/08/2017 02:58, Kirill A. Shutemov wrote:
+>>> On Wed, Aug 09, 2017 at 12:43:33PM +0200, Laurent Dufour wrote:
+>>>> On 09/08/2017 12:12, Kirill A. Shutemov wrote:
+>>>>> On Tue, Aug 08, 2017 at 04:35:38PM +0200, Laurent Dufour wrote:
+>>>>>> The VMA sequence count has been introduced to allow fast detection of
+>>>>>> VMA modification when running a page fault handler without holding
+>>>>>> the mmap_sem.
+>>>>>>
+>>>>>> This patch provides protection agains the VMA modification done in :
+>>>>>> 	- madvise()
+>>>>>> 	- mremap()
+>>>>>> 	- mpol_rebind_policy()
+>>>>>> 	- vma_replace_policy()
+>>>>>> 	- change_prot_numa()
+>>>>>> 	- mlock(), munlock()
+>>>>>> 	- mprotect()
+>>>>>> 	- mmap_region()
+>>>>>> 	- collapse_huge_page()
+>>>>>
+>>>>> I don't thinks it's anywhere near complete list of places where we touch
+>>>>> vm_flags. What is your plan for the rest?
+>>>>
+>>>> The goal is only to protect places where change to the VMA is impacting the
+>>>> page fault handling. If you think I missed one, please advise.
+>>>
+>>> That's very fragile approach. We rely here too much on specific compiler behaviour.
+>>>
+>>> Any write access to vm_flags can, in theory, be translated to several
+>>> write accesses. For instance with setting vm_flags to 0 in the middle,
+>>> which would result in sigfault on page fault to the vma.
+>>
+>> Indeed, just setting vm_flags to 0 will not result in sigfault, the real
+>> job is done when the pte are updated and the bits allowing access are
+>> cleared. Access to the pte is controlled by the pte lock.
+>> Page fault handler is triggered based on the pte bits, not the content of
+>> vm_flags and the speculative page fault is checking for the vma again once
+>> the pte lock is held. So there is no concurrency when dealing with the pte
+>> bits.
+> 
+> Suppose we are getting page fault to readable VMA, pte is clear at the
+> time of page fault. In this case we need to consult vm_flags to check if
+> the vma is read-accessible.
+> 
+> If by the time of check vm_flags happend to be '0' we would get SIGSEGV as
+> the vma appears to be non-readable.
+> 
+> Where is my logic faulty?
 
-Doing this has the effect of putting all the affected memory into 
-ZONE_MOVABLE. See find_zone_movable_pfns_for_nodes(). This means no 
-kernel allocations can occur there. Is that okay?
+The speculative page fault handler will not deliver the signal, if the page
+fault can't be done in the speculative path for instance because the
+vm_flags are not matching the required one, the speculative page fault is
+aborted and the *classic* page fault handler is run which will do the job
+again grabbing the mmap_sem.
 
->diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
->index 671a45d..180d25a 100644
->--- a/arch/powerpc/mm/pgtable-radix.c
->+++ b/arch/powerpc/mm/pgtable-radix.c
->@@ -12,6 +12,7 @@
-> #include <linux/memblock.h>
-> #include <linux/of_fdt.h>
-> #include <linux/mm.h>
->+#include <linux/memory.h>
->
-> #include <asm/pgtable.h>
-> #include <asm/pgalloc.h>
->@@ -255,15 +256,25 @@ static void __init radix_init_pgtable(void)
-> {
-> 	unsigned long rts_field;
-> 	struct memblock_region *reg;
->+	phys_addr_t addr;
->+	u64 lmb_size = memory_block_size_bytes();
->
-> 	/* We don't support slb for radix */
-> 	mmu_slb_size = 0;
-> 	/*
-> 	 * Create the linear mapping, using standard page size for now
-> 	 */
->-	for_each_memblock(memory, reg)
->-		WARN_ON(create_physical_mapping(reg->base,
->-						reg->base + reg->size));
->+	for_each_memblock(memory, reg) {
->+		if (memblock_is_hotpluggable(reg)) {
->+			for (addr = reg->base; addr < (reg->base + reg->size);
->+				addr += lmb_size)
->+				WARN_ON(create_physical_mapping(addr,
->+					addr + lmb_size));
->+		} else {
->+			WARN_ON(create_physical_mapping(reg->base,
->+							reg->base + reg->size));
->+		}
->+	}
->
-> 	/* Find out how many PID bits are supported */
-> 	if (cpu_has_feature(CPU_FTR_HVMODE)) {
->-- 
->2.7.4
->
+>> Regarding the compiler behaviour, there are memory barriers and locking
+>> which should prevent that.
+> 
+> Which locks barriers are you talking about?
 
--- 
-Reza Arbab
+When the VMA is modified and that the changes will impact the speculative
+page fault handler the sequence count is touch using write_seqcount_begin()
+and write_seqcount_end(). These 2 services contains calls to smp_wmb().
+On the speculative path side, the calls to *_read_seqcount() contains also
+memory barriers calls.
+
+> We need at least READ_ONCE/WRITE_ONCE to access vm_flags everywhere.
+
+I don't think READ_ONCE/WRITE_ONCE would help here, as they would not
+prevent reading transcient state as the vm_flags example you mentioned.
+
+That said, there are not so much VMA's fields used in the SPF's path and
+caching them into the vmf structure under the control of the VMA's sequence
+count would solve this.
+I'll try to move in that direction unless anyone has a better idea.
+
+
+Cheers,
+Laurent.
