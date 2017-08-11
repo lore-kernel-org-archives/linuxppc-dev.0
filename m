@@ -1,19 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTPSV2myCzDrM5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 22:28:58 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ego@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.13-6 tag
-Date: Fri, 11 Aug 2017 22:28:56 +1000
-Message-ID: <871soicmpj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTPjB6QS3zDrG3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 22:39:58 +1000 (AEST)
+Date: Fri, 11 Aug 2017 14:39:53 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org
+Subject: Re: [v6 07/15] mm: defining memblock_virt_alloc_try_nid_raw
+Message-ID: <20170811123953.GI30811@dhcp22.suse.cz>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-8-git-send-email-pasha.tatashin@oracle.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1502138329-123460-8-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,84 +30,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On Mon 07-08-17 16:38:41, Pavel Tatashin wrote:
+> A new variant of memblock_virt_alloc_* allocations:
+> memblock_virt_alloc_try_nid_raw()
+>     - Does not zero the allocated memory
+>     - Does not panic if request cannot be satisfied
 
-Hi Linus,
+OK, this looks good but I would not introduce memblock_virt_alloc_raw
+here because we do not have any users. Please move that to "mm: optimize
+early system hash allocations" which actually uses the API. It would be
+easier to review it that way.
 
-Please pull some more powerpc fixes for 4.13:
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Reviewed-by: Bob Picco <bob.picco@oracle.com>
 
-The following changes since commit 3db40c312c2c1eb2187c5731102fa8ff380e6e40:
+other than that
+Acked-by: Michal Hocko <mhocko@suse.com>
 
-  powerpc/64: Fix __check_irq_replay missing decrementer interrupt (2017-08-04 12:55:49 +1000)
+> ---
+>  include/linux/bootmem.h | 27 +++++++++++++++++++++++++
+>  mm/memblock.c           | 53 ++++++++++++++++++++++++++++++++++++++++++-------
+>  2 files changed, 73 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+> index e223d91b6439..ea30b3987282 100644
+> --- a/include/linux/bootmem.h
+> +++ b/include/linux/bootmem.h
+> @@ -160,6 +160,9 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
+>  #define BOOTMEM_ALLOC_ANYWHERE		(~(phys_addr_t)0)
+>  
+>  /* FIXME: Move to memblock.h at a point where we remove nobootmem.c */
+> +void *memblock_virt_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
+> +				      phys_addr_t min_addr,
+> +				      phys_addr_t max_addr, int nid);
+>  void *memblock_virt_alloc_try_nid_nopanic(phys_addr_t size,
+>  		phys_addr_t align, phys_addr_t min_addr,
+>  		phys_addr_t max_addr, int nid);
+> @@ -176,6 +179,14 @@ static inline void * __init memblock_virt_alloc(
+>  					    NUMA_NO_NODE);
+>  }
+>  
+> +static inline void * __init memblock_virt_alloc_raw(
+> +					phys_addr_t size,  phys_addr_t align)
+> +{
+> +	return memblock_virt_alloc_try_nid_raw(size, align, BOOTMEM_LOW_LIMIT,
+> +					    BOOTMEM_ALLOC_ACCESSIBLE,
+> +					    NUMA_NO_NODE);
+> +}
+> +
+>  static inline void * __init memblock_virt_alloc_nopanic(
+>  					phys_addr_t size, phys_addr_t align)
+>  {
+> @@ -257,6 +268,14 @@ static inline void * __init memblock_virt_alloc(
+>  	return __alloc_bootmem(size, align, BOOTMEM_LOW_LIMIT);
+>  }
+>  
+> +static inline void * __init memblock_virt_alloc_raw(
+> +					phys_addr_t size,  phys_addr_t align)
+> +{
+> +	if (!align)
+> +		align = SMP_CACHE_BYTES;
+> +	return __alloc_bootmem_nopanic(size, align, BOOTMEM_LOW_LIMIT);
+> +}
+> +
+>  static inline void * __init memblock_virt_alloc_nopanic(
+>  					phys_addr_t size, phys_addr_t align)
+>  {
+> @@ -309,6 +328,14 @@ static inline void * __init memblock_virt_alloc_try_nid(phys_addr_t size,
+>  					  min_addr);
+>  }
+>  
+> +static inline void * __init memblock_virt_alloc_try_nid_raw(
+> +			phys_addr_t size, phys_addr_t align,
+> +			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
+> +{
+> +	return ___alloc_bootmem_node_nopanic(NODE_DATA(nid), size, align,
+> +				min_addr, max_addr);
+> +}
+> +
+>  static inline void * __init memblock_virt_alloc_try_nid_nopanic(
+>  			phys_addr_t size, phys_addr_t align,
+>  			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
+> diff --git a/mm/memblock.c b/mm/memblock.c
+> index 08f449acfdd1..3fbf3bcb52d9 100644
+> --- a/mm/memblock.c
+> +++ b/mm/memblock.c
+> @@ -1327,7 +1327,6 @@ static void * __init memblock_virt_alloc_internal(
+>  	return NULL;
+>  done:
+>  	ptr = phys_to_virt(alloc);
+> -	memset(ptr, 0, size);
+>  
+>  	/*
+>  	 * The min_count is set to 0 so that bootmem allocated blocks
+> @@ -1340,6 +1339,38 @@ static void * __init memblock_virt_alloc_internal(
+>  	return ptr;
+>  }
+>  
+> +/**
+> + * memblock_virt_alloc_try_nid_raw - allocate boot memory block without zeroing
+> + * memory and without panicking
+> + * @size: size of memory block to be allocated in bytes
+> + * @align: alignment of the region and block's size
+> + * @min_addr: the lower bound of the memory region from where the allocation
+> + *	  is preferred (phys address)
+> + * @max_addr: the upper bound of the memory region from where the allocation
+> + *	      is preferred (phys address), or %BOOTMEM_ALLOC_ACCESSIBLE to
+> + *	      allocate only from memory limited by memblock.current_limit value
+> + * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
+> + *
+> + * Public function, provides additional debug information (including caller
+> + * info), if enabled. Does not zero allocated memory, does not panic if request
+> + * cannot be satisfied.
+> + *
+> + * RETURNS:
+> + * Virtual address of allocated memory block on success, NULL on failure.
+> + */
+> +void * __init memblock_virt_alloc_try_nid_raw(
+> +			phys_addr_t size, phys_addr_t align,
+> +			phys_addr_t min_addr, phys_addr_t max_addr,
+> +			int nid)
+> +{
+> +	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
+> +		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
+> +		     (u64)max_addr, (void *)_RET_IP_);
+> +
+> +	return memblock_virt_alloc_internal(size, align,
+> +					    min_addr, max_addr, nid);
+> +}
+> +
+>  /**
+>   * memblock_virt_alloc_try_nid_nopanic - allocate boot memory block
+>   * @size: size of memory block to be allocated in bytes
+> @@ -1351,8 +1382,8 @@ static void * __init memblock_virt_alloc_internal(
+>   *	      allocate only from memory limited by memblock.current_limit value
+>   * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
+>   *
+> - * Public version of _memblock_virt_alloc_try_nid_nopanic() which provides
+> - * additional debug information (including caller info), if enabled.
+> + * Public function, provides additional debug information (including caller
+> + * info), if enabled. This function zeroes the allocated memory.
+>   *
+>   * RETURNS:
+>   * Virtual address of allocated memory block on success, NULL on failure.
+> @@ -1362,11 +1393,17 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
+>  				phys_addr_t min_addr, phys_addr_t max_addr,
+>  				int nid)
+>  {
+> +	void *ptr;
+> +
+>  	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
+>  		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
+>  		     (u64)max_addr, (void *)_RET_IP_);
+> -	return memblock_virt_alloc_internal(size, align, min_addr,
+> -					     max_addr, nid);
+> +
+> +	ptr = memblock_virt_alloc_internal(size, align,
+> +					   min_addr, max_addr, nid);
+> +	if (ptr)
+> +		memset(ptr, 0, size);
+> +	return ptr;
+>  }
+>  
+>  /**
+> @@ -1380,7 +1417,7 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
+>   *	      allocate only from memory limited by memblock.current_limit value
+>   * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
+>   *
+> - * Public panicking version of _memblock_virt_alloc_try_nid_nopanic()
+> + * Public panicking version of memblock_virt_alloc_try_nid_nopanic()
+>   * which provides debug information (including caller info), if enabled,
+>   * and panics if the request can not be satisfied.
+>   *
+> @@ -1399,8 +1436,10 @@ void * __init memblock_virt_alloc_try_nid(
+>  		     (u64)max_addr, (void *)_RET_IP_);
+>  	ptr = memblock_virt_alloc_internal(size, align,
+>  					   min_addr, max_addr, nid);
+> -	if (ptr)
+> +	if (ptr) {
+> +		memset(ptr, 0, size);
+>  		return ptr;
+> +	}
+>  
+>  	panic("%s: Failed to allocate %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx\n",
+>  	      __func__, (u64)size, (u64)align, nid, (u64)min_addr,
+> -- 
+> 2.14.0
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.13-6
-
-for you to fetch changes up to 96ea91e7b6ee2c406598d859e7348b4829404eea:
-
-  powerpc/watchdog: add locking around init/exit functions (2017-08-09 23:45:33 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.13 #6
-
-All fixes for code that went in this cycle.
-
- - A revert of an optimisation to the syscall exit path, which could lead to an
-   oops on either older machines or machines with > 1T of memory.
- - Disable some deep idle states if the firmware configuration for them fails.
- - Re-enable HARD/SOFT lockup detectors in defconfigs after a Kconfig change.
- - Six fairly small patches fixing bugs in our new watchdog code.
-
-Thanks to:
-  Gautham R. Shenoy, Nicholas Piggin.
-
-----------------------------------------------------------------
-Gautham R. Shenoy (1):
-      powerpc/powernv/idle: Disable LOSE_FULL_CONTEXT states when stop-api fails
-
-Michael Ellerman (2):
-      Revert "powerpc/64: Avoid restore_math call if possible in syscall exit"
-      powerpc/configs: Re-enable HARD/SOFT lockup detectors
-
-Nicholas Piggin (6):
-      powerpc: NMI IPI improve lock primitive
-      powerpc/watchdog: Improve watchdog lock primitive
-      powerpc/watchdog: Moderate touch_nmi_watchdog overhead
-      powerpc/watchdog: Fix final-check recovered case
-      powerpc/watchdog: Fix marking of stuck CPUs
-      powerpc/watchdog: add locking around init/exit functions
-
- arch/powerpc/configs/powernv_defconfig |  3 +-
- arch/powerpc/configs/ppc64_defconfig   |  3 +-
- arch/powerpc/configs/pseries_defconfig |  3 +-
- arch/powerpc/kernel/entry_64.S         | 60 ++++++++++------------------------
- arch/powerpc/kernel/process.c          |  4 ---
- arch/powerpc/kernel/smp.c              |  6 ++--
- arch/powerpc/kernel/watchdog.c         | 49 +++++++++++++++++++--------
- arch/powerpc/platforms/powernv/idle.c  | 41 +++++++++++++++++++++--
- drivers/cpuidle/cpuidle-powernv.c      | 10 ++++++
- 9 files changed, 111 insertions(+), 68 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZjaMJAAoJEFHr6jzI4aWA6fsP/0BiLK3GXHrKkmlJpsSeD0+4
-RuLptTfMzNpRt8laemXfapnNV4iLbvOBb3Fj9KV3bOIo76tPEUV8qicYMFsuV+wq
-Oh1yWGv5iPEZ/0yJOofoLCZe7YhKUpFXfSa4XDfqU1A7uU8X0KeFeAUrGK6rEhFN
-RdapRMEpUBwDnKpD8598bQLEFRQpF0DBQ5zmuaeGTccwzMJDvYv6s3rIK5twC70U
-6da370KE1aDmhGjmmmsi6DUoF0VM2fpN/OrWKVBb6MwING+7zdGPM1MWs6cw8wwR
-9TIjidujhmz1AlrkA0PFrWez0wLpjA452UX/m4Z4SFEgUpjG67m4g3EMoM0fm/OM
-9x5o23LlrpS4NLFLJMaFmMyVINWFtqiiN+cN9EQXd1jr13rjj3FiDgR7BP+tTRCg
-cejm2hvC37WJJYIlDTSYA2uubrSFsOtrYb6ap4KF7uwu/n9flX1+0gY94yBOw6hr
-w2nLJeAe+whF5jIScyP/7g+mlYrBgn/vUSGcGHjACMkACU9O9CAEb5eluy51Hyf4
-YPhEFtic6mL694z/aGBvWHNe/8YC+H8H2by/haffCx7DcjdaVAAVuFdxX9Lz9I9h
-o4TcxPJp68bRDQeavNg+8pJOpUYLSfPLBvcnjL8Q6kwDemMspkchYJhzqvp6f7Vj
-DZoyYEU5/1JjxNrszN/M
-=23T9
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+Michal Hocko
+SUSE Labs
