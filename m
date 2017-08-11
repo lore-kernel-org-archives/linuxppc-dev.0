@@ -1,21 +1,29 @@
-Return-Path: <florinel.iordache@nxp.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0087.outbound.protection.outlook.com [104.47.42.87])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xSqGh2yr2zDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Aug 2017 23:48:28 +1000 (AEST)
-From: Florinel Iordache <florinel.iordache@nxp.com>
-To: <netdev@vger.kernel.org>
-CC: <madalin.bucur@nxp.com>, <davem@davemloft.net>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Florinel
- Iordache <florinel.iordache@nxp.com>
-Subject: [PATCH net-next] fsl/fman: implement several errata workarounds
-Date: Thu, 10 Aug 2017 16:47:04 +0300
-Message-ID: <1502372824-30180-1-git-send-email-florinel.iordache@nxp.com>
-Reply-To: <florinel.iordache@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTB4G6RdgzDr1g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 13:55:42 +1000 (AEST)
+Date: Fri, 11 Aug 2017 13:55:38 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 02/10] powerpc/xive: guest exploitation of the XIVE
+ interrupt controller
+Message-ID: <20170811035538.GX13670@umbus.fritz.box>
+References: <1502182579-990-1-git-send-email-clg@kaod.org>
+ <1502182579-990-3-git-send-email-clg@kaod.org>
+ <20170809035306.GC13670@umbus.fritz.box>
+ <f82c1111-3dd3-f378-0ff6-222bffc07a35@kaod.org>
+ <20170810042849.GU13670@umbus.fritz.box>
+ <e1759aa5-68d0-54ef-87fd-32908ff9ffbc@kaod.org>
+ <1502364964.2563.64.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="ixLxI13kJ3fj8Y4v"
+In-Reply-To: <1502364964.2563.64.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,235 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implemented workarounds for the following dTSEC Erratum:
-A002, A004, A0012, A0014, A004839 on several operations
-that involve MAC CFG register changes: adjust link,
-rx pause frames, modify MAC address.
 
-Signed-off-by: Florinel Iordache <florinel.iordache@nxp.com>
----
- drivers/net/ethernet/freescale/fman/fman_dtsec.c | 118 ++++++++++++++++++-----
- 1 file changed, 93 insertions(+), 25 deletions(-)
+--ixLxI13kJ3fj8Y4v
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/net/ethernet/freescale/fman/fman_dtsec.c b/drivers/net/ethernet/freescale/fman/fman_dtsec.c
-index 98bba10..ea43b49 100644
---- a/drivers/net/ethernet/freescale/fman/fman_dtsec.c
-+++ b/drivers/net/ethernet/freescale/fman/fman_dtsec.c
-@@ -123,7 +123,7 @@
- #define DTSEC_ECNTRL_R100M		0x00000008
- #define DTSEC_ECNTRL_QSGMIIM		0x00000001
- 
--#define DTSEC_TCTRL_GTS			0x00000020
-+#define TCTRL_GTS			0x00000020
- 
- #define RCTRL_PAL_MASK			0x001f0000
- #define RCTRL_PAL_SHIFT			16
-@@ -863,6 +863,52 @@ int dtsec_cfg_pad_and_crc(struct fman_mac *dtsec, bool new_val)
- 	return 0;
- }
- 
-+static void graceful_start(struct fman_mac *dtsec, enum comm_mode mode)
-+{
-+	struct dtsec_regs __iomem *regs = dtsec->regs;
-+
-+	if (mode & COMM_MODE_TX)
-+		iowrite32be(ioread32be(&regs->tctrl) &
-+				~TCTRL_GTS, &regs->tctrl);
-+	if (mode & COMM_MODE_RX)
-+		iowrite32be(ioread32be(&regs->rctrl) &
-+				~RCTRL_GRS, &regs->rctrl);
-+}
-+
-+static void graceful_stop(struct fman_mac *dtsec, enum comm_mode mode)
-+{
-+	struct dtsec_regs __iomem *regs = dtsec->regs;
-+	u32 tmp;
-+
-+	/* Graceful stop - Assert the graceful Rx stop bit */
-+	if (mode & COMM_MODE_RX) {
-+		tmp = ioread32be(&regs->rctrl) | RCTRL_GRS;
-+		iowrite32be(tmp, &regs->rctrl);
-+
-+		if (dtsec->fm_rev_info.major == 2) {
-+			/* Workaround for dTSEC Errata A002 */
-+			usleep_range(100, 200);
-+		} else {
-+			/* Workaround for dTSEC Errata A004839 */
-+			usleep_range(10, 50);
-+		}
-+	}
-+
-+	/* Graceful stop - Assert the graceful Tx stop bit */
-+	if (mode & COMM_MODE_TX) {
-+		if (dtsec->fm_rev_info.major == 2) {
-+			/* dTSEC Errata A004: Do not use TCTRL[GTS]=1 */
-+			pr_debug("GTS not supported due to DTSEC_A004 Errata.\n");
-+		} else {
-+			tmp = ioread32be(&regs->tctrl) | TCTRL_GTS;
-+			iowrite32be(tmp, &regs->tctrl);
-+
-+			/* Workaround for dTSEC Errata A0012, A0014 */
-+			usleep_range(10, 50);
-+		}
-+	}
-+}
-+
- int dtsec_enable(struct fman_mac *dtsec, enum comm_mode mode)
- {
- 	struct dtsec_regs __iomem *regs = dtsec->regs;
-@@ -880,13 +926,8 @@ int dtsec_enable(struct fman_mac *dtsec, enum comm_mode mode)
- 
- 	iowrite32be(tmp, &regs->maccfg1);
- 
--	/* Graceful start - clear the graceful receive stop bit */
--	if (mode & COMM_MODE_TX)
--		iowrite32be(ioread32be(&regs->tctrl) & ~DTSEC_TCTRL_GTS,
--			    &regs->tctrl);
--	if (mode & COMM_MODE_RX)
--		iowrite32be(ioread32be(&regs->rctrl) & ~RCTRL_GRS,
--			    &regs->rctrl);
-+	/* Graceful start - clear the graceful Rx/Tx stop bit */
-+	graceful_start(dtsec, mode);
- 
- 	return 0;
- }
-@@ -899,23 +940,8 @@ int dtsec_disable(struct fman_mac *dtsec, enum comm_mode mode)
- 	if (!is_init_done(dtsec->dtsec_drv_param))
- 		return -EINVAL;
- 
--	/* Gracefull stop - Assert the graceful transmit stop bit */
--	if (mode & COMM_MODE_RX) {
--		tmp = ioread32be(&regs->rctrl) | RCTRL_GRS;
--		iowrite32be(tmp, &regs->rctrl);
--
--		if (dtsec->fm_rev_info.major == 2)
--			usleep_range(100, 200);
--		else
--			udelay(10);
--	}
--
--	if (mode & COMM_MODE_TX) {
--		if (dtsec->fm_rev_info.major == 2)
--			pr_debug("GTS not supported due to DTSEC_A004 errata.\n");
--		else
--			pr_debug("GTS not supported due to DTSEC_A0014 errata.\n");
--	}
-+	/* Graceful stop - Assert the graceful Rx/Tx stop bit */
-+	graceful_stop(dtsec, mode);
- 
- 	tmp = ioread32be(&regs->maccfg1);
- 	if (mode & COMM_MODE_RX)
-@@ -933,11 +959,19 @@ int dtsec_set_tx_pause_frames(struct fman_mac *dtsec,
- 			      u16 pause_time, u16 __maybe_unused thresh_time)
- {
- 	struct dtsec_regs __iomem *regs = dtsec->regs;
-+	enum comm_mode mode = COMM_MODE_NONE;
- 	u32 ptv = 0;
- 
- 	if (!is_init_done(dtsec->dtsec_drv_param))
- 		return -EINVAL;
- 
-+	if ((ioread32be(&regs->rctrl) & RCTRL_GRS) == 0)
-+		mode |= COMM_MODE_RX;
-+	if ((ioread32be(&regs->tctrl) & TCTRL_GTS) == 0)
-+		mode |= COMM_MODE_TX;
-+
-+	graceful_stop(dtsec, mode);
-+
- 	if (pause_time) {
- 		/* FM_BAD_TX_TS_IN_B_2_B_ERRATA_DTSEC_A003 Errata workaround */
- 		if (dtsec->fm_rev_info.major == 2 && pause_time <= 320) {
-@@ -958,17 +992,27 @@ int dtsec_set_tx_pause_frames(struct fman_mac *dtsec,
- 		iowrite32be(ioread32be(&regs->maccfg1) & ~MACCFG1_TX_FLOW,
- 			    &regs->maccfg1);
- 
-+	graceful_start(dtsec, mode);
-+
- 	return 0;
- }
- 
- int dtsec_accept_rx_pause_frames(struct fman_mac *dtsec, bool en)
- {
- 	struct dtsec_regs __iomem *regs = dtsec->regs;
-+	enum comm_mode mode = COMM_MODE_NONE;
- 	u32 tmp;
- 
- 	if (!is_init_done(dtsec->dtsec_drv_param))
- 		return -EINVAL;
- 
-+	if ((ioread32be(&regs->rctrl) & RCTRL_GRS) == 0)
-+		mode |= COMM_MODE_RX;
-+	if ((ioread32be(&regs->tctrl) & TCTRL_GTS) == 0)
-+		mode |= COMM_MODE_TX;
-+
-+	graceful_stop(dtsec, mode);
-+
- 	tmp = ioread32be(&regs->maccfg1);
- 	if (en)
- 		tmp |= MACCFG1_RX_FLOW;
-@@ -976,20 +1020,34 @@ int dtsec_accept_rx_pause_frames(struct fman_mac *dtsec, bool en)
- 		tmp &= ~MACCFG1_RX_FLOW;
- 	iowrite32be(tmp, &regs->maccfg1);
- 
-+	graceful_start(dtsec, mode);
-+
- 	return 0;
- }
- 
- int dtsec_modify_mac_address(struct fman_mac *dtsec, enet_addr_t *enet_addr)
- {
-+	struct dtsec_regs __iomem *regs = dtsec->regs;
-+	enum comm_mode mode = COMM_MODE_NONE;
-+
- 	if (!is_init_done(dtsec->dtsec_drv_param))
- 		return -EINVAL;
- 
-+	if ((ioread32be(&regs->rctrl) & RCTRL_GRS) == 0)
-+		mode |= COMM_MODE_RX;
-+	if ((ioread32be(&regs->tctrl) & TCTRL_GTS) == 0)
-+		mode |= COMM_MODE_TX;
-+
-+	graceful_stop(dtsec, mode);
-+
- 	/* Initialize MAC Station Address registers (1 & 2)
- 	 * Station address have to be swapped (big endian to little endian
- 	 */
- 	dtsec->addr = ENET_ADDR_TO_UINT64(*enet_addr);
- 	set_mac_address(dtsec->regs, (u8 *)(*enet_addr));
- 
-+	graceful_start(dtsec, mode);
-+
- 	return 0;
- }
- 
-@@ -1162,11 +1220,19 @@ int dtsec_set_promiscuous(struct fman_mac *dtsec, bool new_val)
- int dtsec_adjust_link(struct fman_mac *dtsec, u16 speed)
- {
- 	struct dtsec_regs __iomem *regs = dtsec->regs;
-+	enum comm_mode mode = COMM_MODE_NONE;
- 	u32 tmp;
- 
- 	if (!is_init_done(dtsec->dtsec_drv_param))
- 		return -EINVAL;
- 
-+	if ((ioread32be(&regs->rctrl) & RCTRL_GRS) == 0)
-+		mode |= COMM_MODE_RX;
-+	if ((ioread32be(&regs->tctrl) & TCTRL_GTS) == 0)
-+		mode |= COMM_MODE_TX;
-+
-+	graceful_stop(dtsec, mode);
-+
- 	tmp = ioread32be(&regs->maccfg2);
- 
- 	/* Full Duplex */
-@@ -1186,6 +1252,8 @@ int dtsec_adjust_link(struct fman_mac *dtsec, u16 speed)
- 		tmp &= ~DTSEC_ECNTRL_R100M;
- 	iowrite32be(tmp, &regs->ecntrl);
- 
-+	graceful_start(dtsec, mode);
-+
- 	return 0;
- }
- 
--- 
-1.9.1
+On Thu, Aug 10, 2017 at 09:36:04PM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2017-08-10 at 09:19 +0200, C=E9dric Le Goater wrote:
+> > > > > > +  /* Perform the acknowledge hypervisor to register cycle */
+> > > > > > +  ack =3D be16_to_cpu(__raw_readw(xive_tima + TM_SPC_ACK_OS_RE=
+G));
+> > > > >=20
+> > > > > Why do you need the raw_readw() + be16_to_cpu + mb, rather than o=
+ne of
+> > > > > the higher level IO helpers?
+> > > >=20
+> > > > This is one of the many ways to do MMIOs on the TIMA. This memory=
+=20
+> > > > region defines a set of offsets and sizes for which loads and=20
+> > > > stores have different effects.=20
+> > > >=20
+> > > > See the arch/powerpc/include/asm/xive-regs.h file and=20
+> > > > arch/powerpc/kvm/book3s_xive_template.c for some more usage.
+> > >=20
+> > > Sure, much like any IO region.  My point is, why do you want this kind
+> > > of complex combo, rather than say an in_be16() or readw_be().
+> > >=20
+> >=20
+> > The code is inherited from the native backend.=20
+> >=20
+> > I think this is because we know what we are doing and we skip=20
+> > the synchronization routines of the higher level IO helpers.=20
+> > That might not be necessary for sPAPR. Ben ?=20
+>=20
+> It's a performance optimisation, we know we don't need the
+> sync,twi,isync crap of the higher level accessor here.
+
+Ok.  A comment mentioning this would be good - unless you're very
+familiar with the code and hardware it's not going to be obvious if
+the nonstandard IO accessors are for legitimate performance reasons,
+or just cargo-culting.
+
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--ixLxI13kJ3fj8Y4v
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlmNKrcACgkQbDjKyiDZ
+s5LFMhAA1e5lSqNe3JrvN9ggc1LuHzA6yqyL0IMZSLQaLYA8YR8kw+WRsawQSdQn
+UJz4GWgCgYbNS+BHfgsCMYnTmcqF5GMmQiZ6elh+PJrrHYQ9S70zWc6TXDAJWyBy
+aBlWWfNsPuV+T/ikbYquAfvSxKuaABo/b7KO1vbMeldhNebri8S+gDQ8ljU0lsKx
+ZCAp3GQogDuXD22gor+kmo9Ej50dONAh3jzBeQ66jI3fU71YX7N5IpslT9l+iT33
+308d32Q1Q18x4JxsVDZEKqoSXt1twY+LATnKOP/yKPyzTBJ9FqHs3e6sWAXtqogU
+qYafAlzzxDxDtg8z+gNKns0B6j3gRKvkCOOiUGy/CCfHbabCCEKgCVBgf3fVhoE3
+edQq+tHDRq9qJAYtei2vUGwqZzM//hvULL/d6a8datwOHpj7BTQZPVVoog7lKpN7
+K6Dn/Q2bYAzjhRvEhNiAPd0mhUAn4flZpiVba/+LlDATLqSfxQ8nK+a/QCdPJ0bJ
+9HzwnU+sIuSK+rOwiNlCs8TxxFX7dlJoasuPIr/WDyAxdISkzTs1ofPtqrZYyHnM
+lBoFTgxvVQFArK8t8We/Dw8fPexVW5Q0C+pJurtYfBZvpwn4w0Mqech81UHJTTyo
+z6IZ2x4bjTFPW4A5ljBrdiM/NAMt2DArWRETakhICuWFTQYA+yY=
+=ELFC
+-----END PGP SIGNATURE-----
+
+--ixLxI13kJ3fj8Y4v--
