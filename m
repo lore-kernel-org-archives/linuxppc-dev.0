@@ -1,10 +1,10 @@
 Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTTjv4n1QzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 01:40:51 +1000 (AEST)
-Subject: Re: [v6 02/15] x86/mm: setting fields in deferred pages
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTTwx6KNkzDr2v
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 01:50:25 +1000 (AEST)
+Subject: Re: [v6 04/15] mm: discard memblock data later
 To: Michal Hocko <mhocko@kernel.org>
 Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -12,15 +12,15 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org
+ catalin.marinas@arm.com, sam@ravnborg.org, Mel Gorman <mgorman@suse.de>
 References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-3-git-send-email-pasha.tatashin@oracle.com>
- <20170811090214.GD30811@dhcp22.suse.cz>
+ <1502138329-123460-5-git-send-email-pasha.tatashin@oracle.com>
+ <20170811093249.GE30811@dhcp22.suse.cz>
 From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <b0422e38-a6da-081a-71c5-82a36dd2a5bb@oracle.com>
-Date: Fri, 11 Aug 2017 11:39:41 -0400
+Message-ID: <6366171f-1a30-2faa-d776-01983fcb5a00@oracle.com>
+Date: Fri, 11 Aug 2017 11:49:15 -0400
 MIME-Version: 1.0
-In-Reply-To: <20170811090214.GD30811@dhcp22.suse.cz>
+In-Reply-To: <20170811093249.GE30811@dhcp22.suse.cz>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,37 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> AFAIU register_page_bootmem_info_node is only about struct pages backing
-> pgdat, usemap and memmap. Those should be in reserved memblocks and we
-> do not initialize those at later times, they are not relevant to the
-> deferred initialization as your changelog suggests so the ordering with
-> get_page_bootmem shouldn't matter. Or am I missing something here?
+> I guess this goes all the way down to
+> Fixes: 7e18adb4f80b ("mm: meminit: initialise remaining struct pages in parallel with kswapd")
 
-The pages for pgdata, usemap, and memmap are part of reserved, and thus 
-getting initialized when free_all_bootmem() is called.
+I will add this to the patch.
 
-So, we have something like this in mem_init()
+>> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+>> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+>> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+>> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+> 
+> Considering that some HW might behave strangely and this would be rather
+> hard to debug I would be tempted to mark this for stable. It should also
+> be merged separately from the rest of the series.
+> 
+> I have just one nit below
+> Acked-by: Michal Hocko <mhocko@suse.com>
 
-register_page_bootmem_info
-  register_page_bootmem_info_node
-   get_page_bootmem
-    .. setting fields here ..
-    such as: page->freelist = (void *)type;
+I will address your comment, and send out a new patch. Should I send it 
+out separately from the series or should I keep it inside?
 
-free_all_bootmem()
-  free_low_memory_core_early()
-   for_each_reserved_mem_region()
-    reserve_bootmem_region()
-     init_reserved_page() <- Only if this is deferred reserved page
-      __init_single_pfn()
-       __init_single_page()
-           memset(0) <-- Loose the set fields here!
+Also, before I send out a new patch, I will need to root cause and 
+resolve problem found by kernel test robot <fengguang.wu@intel.com>, and 
+bisected down to this patch.
 
-memblock does not know about deferred pages, and can be requested to 
-allocate physical pages anywhere. So, the reserved pages in memblock can 
-be both in non-deferred and deferred part of the memory.
+[  156.659400] BUG: Bad page state in process swapper  pfn:03147
+[  156.660051] page:ffff88001ed8a1c0 count:0 mapcount:-127 mapping: 
+     (null) index:0x1
+[  156.660917] flags: 0x0()
+[  156.661198] raw: 0000000000000000 0000000000000000 0000000000000001 
+00000000ffffff80
+[  156.662006] raw: ffff88001f4a8120 ffff88001ed85ce0 0000000000000000 
+0000000000000000
+[  156.662811] page dumped because: nonzero mapcount
+[  156.663307] CPU: 0 PID: 1 Comm: swapper Not tainted 
+4.13.0-rc3-00220-g1aad694 #1
+[  156.664077] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), 
+BIOS 1.9.3-20161025_171302-gandalf 04/01/2014
+[  156.665129] Call Trace:
+[  156.665422]  dump_stack+0x1e/0x20
+[  156.665802]  bad_page+0x122/0x148
 
-Without deferred pages enabled, by the time register_page_bootmem_info() 
-is called every page went through __init_single_page(), but with 
-deferred pages enabled, there is scenario where fields can be set before 
-pages go through __init_single_page(). This patch fixes it.
+I was not able to reproduce this problem, even-though I used their qemu 
+script and config. But I am getting the following panic both base and fix:
+
+[  115.763259] VFS: Cannot open root device "ram0" or 
+unknown-block(0,0): error -6
+[  115.764511] Please append a correct "root=" boot option; here are the 
+available partitions:
+[  115.765816] Kernel panic - not syncing: VFS: Unable to mount root fs 
+on unknown-block(0,0)
+[  115.767124] CPU: 0 PID: 1 Comm: swapper Not tainted 
+4.13.0-rc4_pt_memset6-00033-g7e65200b1473 #7
+[  115.768506] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), 
+BIOS rel-1.10.2-0-g5f4c7b1-prebuilt.qemu-project.org 04/01/2014
+[  115.770368] Call Trace:
+[  115.770771]  dump_stack+0x1e/0x20
+[  115.771310]  panic+0xf8/0x2bc
+[  115.771792]  mount_block_root+0x3bb/0x441
+[  115.772437]  ? do_early_param+0xc5/0xc5
+[  115.773051]  ? do_early_param+0xc5/0xc5
+[  115.773683]  mount_root+0x7c/0x7f
+[  115.774243]  prepare_namespace+0x194/0x1d1
+[  115.774898]  kernel_init_freeable+0x1c8/0x1df
+[  115.775575]  ? rest_init+0x13f/0x13f
+[  115.776153]  kernel_init+0x14/0x142
+[  115.776711]  ? rest_init+0x13f/0x13f
+[  115.777285]  ret_from_fork+0x2a/0x40
+[  115.777864] Kernel Offset: disabled
+
+Their config has CONFIG_BLK_DEV_RAM disabled, but qemu script has:
+root=/dev/ram0, so I enabled dev_ram, but still getting a panic when 
+root is mounted both in base and fix.
+
+Pasha
