@@ -1,37 +1,34 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTfFk5smVzDr2S
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 08:05:30 +1000 (AEST)
-Date: Fri, 11 Aug 2017 17:05:27 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Gabriele Paoloni <gabriele.paoloni@huawei.com>
-Cc: Laszlo Ersek <lersek@redhat.com>, Daniel Axtens <dja@axtens.net>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Hans de Goede <hdegoede@redhat.com>, linux-pci <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- David Airlie <airlied@linux.ie>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Will Deacon <will.deacon@arm.com>,
- "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Zou Rongrong <zourongrong@gmail.com>,
- "daniel.vetter@intel.com" <daniel.vetter@intel.com>
-Subject: Re: [PATCH 0/4] Allow non-legacy cards to be vgaarb default
-Message-ID: <20170811220527.GJ17039@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170719012839.20124-1-dja@axtens.net>
- <CAKv+Gu-SgeLXVEj_VtZHchaNmOwWO+GmfTg5CYcnOF43AJZGnA@mail.gmail.com>
- <87pocusm2x.fsf@linkitivity.dja.id.au>
- <CAKv+Gu-O7cyJSgDrqSNi6F_n9eBnFEgz==aqowMqhy+81YK=CQ@mail.gmail.com>
- <87r2x6vj7t.fsf@linkitivity.dja.id.au>
- <a61222c6-e548-1e3b-f6f7-63952b90ac13@redhat.com>
- <EE11001F9E5DDD47B7634E2F8A612F2E40B76A1A@FRAEML521-MBX.china.huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTfV70tVxzDr2S
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 08:16:14 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7BMDcxo003694
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 18:16:12 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c9drv38tw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 18:16:12 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Fri, 11 Aug 2017 18:16:11 -0400
+Subject: Re: [bug report] powerpc/mm/radix: Avoid flushing the PWC on every
+ flush_tlb_range
+To: Dan Carpenter <dan.carpenter@oracle.com>, benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20170811201544.jybwkrtd2oebtlld@mwanda>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Fri, 11 Aug 2017 15:16:08 -0700
 MIME-Version: 1.0
+In-Reply-To: <20170811201544.jybwkrtd2oebtlld@mwanda>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <EE11001F9E5DDD47B7634E2F8A612F2E40B76A1A@FRAEML521-MBX.china.huawei.com>
+Message-Id: <e7eca4cb-23c1-f8c7-4c03-276b8f55b820@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,48 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2017 at 03:56:20PM +0000, Gabriele Paoloni wrote:
-> > Having practically zero background in gfx development (either kernel or
-> > Xorg), I think the problem is that vga_default_device() /
-> > vga_set_default_device(), which -- apparently -- "boot_vga" is based
-> > upon, come from "drivers/gpu/vga/vgaarb.c". Namely, the concept of
-> > "primary / boot display device" is tied to the VGA arbiter, plus only a
-> > PCI device can currently be marked as primary/boot display device.
-> > 
-> > Can these concepts be split from each other? (I can fully imagine that
-> > this would result in a userspace visible interface change (or
-> > addition),
-> > so that e.g. "/sys/devices/**/boot_gpu" would have to be consulted by
-> > display servers.)
-> > 
-> > (Sorry if I'm totally wrong.)
-> > 
-> > ... Hm, reading the thread starter at
-> > <https://www.mail-archive.com/linuxppc-
-> > dev@lists.ozlabs.org/msg120851.html>,
-> > and the references within... It looks like this work is motivated by
-> > hardware that is supposed to be PCI, but actually breaks the specs. Is
-> > that correct? If so, then I don't think I can suggest anything useful.
+On 08/11/2017 01:15 PM, Dan Carpenter wrote:
+> Hello Benjamin Herrenschmidt,
 > 
-> My understanding is that the current PCIe HW is specs compliant but the
-> vgaarb, in order to make a VGA device the default one, requires all the
-> bridges on top of such device to have the "VGA Enable" bit set (optional
-> bit in the PCI Express™ to PCI/PCI-X Bridge Spec). I.e. all the bridges
-> on top have to support legacy VGA devices; and this is not mandatory
-> from the specs...right?
+> This is a semi-automatic email about new static checker warnings.
+> 
+> The patch 424de9c6e3f8: "powerpc/mm/radix: Avoid flushing the PWC on 
+> every flush_tlb_range" from Jul 19, 2017, leads to the following 
+> Smatch complaint:
+> 
+> arch/powerpc/mm/tlb-radix.c:368 radix__flush_tlb_collapsed_pmd()
+> 	 error: we previously assumed 'mm' could be null (see line 362)
+> 
+> arch/powerpc/mm/tlb-radix.c
+>    361	
+>    362		pid = mm ? mm->context.id : 0;
+>                       ^^
+> Check for NULL.
+> 
+>    363		if (unlikely(pid == MMU_NO_CONTEXT))
+>    364			goto no_context;
+>    365	
+>    366		/* 4k page size, just blow the world */
+>    367		if (PAGE_SIZE == 0x1000) {
+>    368			radix__flush_all_mm(mm);
+>                                             ^^
+> Unchecked dereference.
 
-Per the PCIe-to-PCI Bridge spec r1.0, sec 5.1.2.13, the VGA Enable bit
-is optional, as you say.  The PCI-to-PCI Bridge spec r1.2, sec
-3.2.5.18, doesn't say VGA Enable is optional, *but* sec 4.5 says
-bridges need not support VGA.  I naively assume one would discover
-that by finding VGA Enable to be RO zero.
+Appears to be a false positive. MMU_NO_CONTEXT I believe is defined as "0". So, maybe it
+would be clearer that we take the goto branch if this line read:
 
-Of course, in any case, I also assume that (a) there exist VGA cards
-that require legacy VGA resources, e.g., memory 0xa0000-0xbffff, and
-(b) such cards will not work behind bridges without VGA support.
+362		pid = mm ? mm->context.id : MMU_NO_CONTEXT;
 
-I have no idea what if anything the VGA arbiter should do about
-bridges like this or VGA devices behind them, but it does sound like
-the arbiter might need to become smarter.
+-Tyrel
 
-Bjorn
+> 
+>    369			return;
+>    370		}
+> 
+> regards,
+> dan carpenter
+> 
