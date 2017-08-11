@@ -1,19 +1,27 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTXL91KVzzDr2M
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 03:38:57 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id j68so4009871pfc.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 10:38:57 -0700 (PDT)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, benh@kernel.crashing.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] drivers/macintosh: make wf_control_ops and wf_pid_param const
-Date: Fri, 11 Aug 2017 23:08:45 +0530
-Message-Id: <1502473125-4849-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTZ9y6PFgzDr51
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 05:01:58 +1000 (AEST)
+Subject: Re: [v6 04/15] mm: discard memblock data later
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, Mel Gorman <mgorman@suse.de>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-5-git-send-email-pasha.tatashin@oracle.com>
+ <20170811093249.GE30811@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <42a04441-47ad-2fa0-ca3c-784c717213f7@oracle.com>
+Date: Fri, 11 Aug 2017 15:00:47 -0400
+MIME-Version: 1.0
+In-Reply-To: <20170811093249.GE30811@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,67 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make wf_control_ops const as they are only stored in the ops field of a
-wf_control structure, which is const.
-Make wf_pid_param const as they are only used during a copy operation.
-Done using Coccinelle.
+Hi Michal,
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
-Cross compiled windfarm_smu_controls.o and windfarm_rm31.o for powerpc.
+This suggestion won't work, because there are arches without memblock 
+support: tile, sh...
 
- drivers/macintosh/windfarm_cpufreq_clamp.c | 2 +-
- drivers/macintosh/windfarm_rm31.c          | 4 ++--
- drivers/macintosh/windfarm_smu_controls.c  | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+So, I would still need to have:
 
-diff --git a/drivers/macintosh/windfarm_cpufreq_clamp.c b/drivers/macintosh/windfarm_cpufreq_clamp.c
-index 72d1fdf..2626990 100644
---- a/drivers/macintosh/windfarm_cpufreq_clamp.c
-+++ b/drivers/macintosh/windfarm_cpufreq_clamp.c
-@@ -63,7 +63,7 @@ static s32 clamp_max(struct wf_control *ct)
- 	return 1;
- }
- 
--static struct wf_control_ops clamp_ops = {
-+static const struct wf_control_ops clamp_ops = {
- 	.set_value	= clamp_set,
- 	.get_value	= clamp_get,
- 	.get_min	= clamp_min,
-diff --git a/drivers/macintosh/windfarm_rm31.c b/drivers/macintosh/windfarm_rm31.c
-index bdfcb8a..a0cd9c7 100644
---- a/drivers/macintosh/windfarm_rm31.c
-+++ b/drivers/macintosh/windfarm_rm31.c
-@@ -338,7 +338,7 @@ static int cpu_setup_pid(int cpu)
- }
- 
- /* Backside/U3 fan */
--static struct wf_pid_param backside_param = {
-+static const struct wf_pid_param backside_param = {
- 	.interval	= 1,
- 	.history_len	= 2,
- 	.gd		= 0x00500000,
-@@ -351,7 +351,7 @@ static int cpu_setup_pid(int cpu)
- };
- 
- /* DIMMs temperature (clamp the backside fan) */
--static struct wf_pid_param dimms_param = {
-+static const struct wf_pid_param dimms_param = {
- 	.interval	= 1,
- 	.history_len	= 20,
- 	.gd		= 0,
-diff --git a/drivers/macintosh/windfarm_smu_controls.c b/drivers/macintosh/windfarm_smu_controls.c
-index c155a54..d174c74 100644
---- a/drivers/macintosh/windfarm_smu_controls.c
-+++ b/drivers/macintosh/windfarm_smu_controls.c
-@@ -145,7 +145,7 @@ static s32 smu_fan_max(struct wf_control *ct)
- 	return fct->max;
- }
- 
--static struct wf_control_ops smu_fan_ops = {
-+static const struct wf_control_ops smu_fan_ops = {
- 	.set_value	= smu_fan_set,
- 	.get_value	= smu_fan_get,
- 	.get_min	= smu_fan_min,
--- 
-1.9.1
+#ifdef CONFIG_MEMBLOCK in page_alloc, or define memblock_discard() stubs 
+in nobootmem headfile. In either case it would become messier than what 
+it is right now.
+
+Pasha
+
+> I have just one nit below
+> Acked-by: Michal Hocko <mhocko@suse.com>
+> 
+> [...]
+>> diff --git a/mm/memblock.c b/mm/memblock.c
+>> index 2cb25fe4452c..bf14aea6ab70 100644
+>> --- a/mm/memblock.c
+>> +++ b/mm/memblock.c
+>> @@ -285,31 +285,27 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type, u
+>>   }
+>>   
+>>   #ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
+> 
+> pull this ifdef inside memblock_discard and you do not have an another
+> one in page_alloc_init_late
+> 
+> [...]
+>> +/**
+>> + * Discard memory and reserved arrays if they were allocated
+>> + */
+>> +void __init memblock_discard(void)
+>>   {
+> 
+> here
+> 
+>> -	if (memblock.memory.regions == memblock_memory_init_regions)
+>> -		return 0;
+>> +	phys_addr_t addr, size;
+>>   
+>> -	*addr = __pa(memblock.memory.regions);
+>> +	if (memblock.reserved.regions != memblock_reserved_init_regions) {
+>> +		addr = __pa(memblock.reserved.regions);
+>> +		size = PAGE_ALIGN(sizeof(struct memblock_region) *
+>> +				  memblock.reserved.max);
+>> +		__memblock_free_late(addr, size);
+>> +	}
+>>   
+>> -	return PAGE_ALIGN(sizeof(struct memblock_region) *
+>> -			  memblock.memory.max);
+>> +	if (memblock.memory.regions == memblock_memory_init_regions) {
+>> +		addr = __pa(memblock.memory.regions);
+>> +		size = PAGE_ALIGN(sizeof(struct memblock_region) *
+>> +				  memblock.memory.max);
+>> +		__memblock_free_late(addr, size);
+>> +	}
+>>   }
+>> -
+>>   #endif
