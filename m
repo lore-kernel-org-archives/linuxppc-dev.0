@@ -1,19 +1,16 @@
 Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTbh80SyDzDr46
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 06:09:43 +1000 (AEST)
-Date: Fri, 11 Aug 2017 23:05:41 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTbqq3fmhzDr38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 06:16:23 +1000 (AEST)
+Date: Fri, 11 Aug 2017 23:15:44 +0300
 From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] powerpc/perf: double unlock bug in imc_common_cpuhp_mem_free()
-Message-ID: <20170811200541.qlxcpp3og33sdki3@mwanda>
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] powerpc/mm/radix: Avoid flushing the PWC on every
+ flush_tlb_range
+Message-ID: <20170811201544.jybwkrtd2oebtlld@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,25 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a typo so we call unlock instead of lock.
+Hello Benjamin Herrenschmidt,
 
-Fixes: 885dcd709ba9 ("powerpc/perf: Add nest IMC PMU support")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
-I also don't understand how the &nest_imc_refc[node_id].lock works.  Why
-can't we use ref->lock everywhere?  They seem equivalent, and my static
-checker complains if we call the same lock different names.
+This is a semi-automatic email about new static checker warnings.
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 46cd912af060..52017f6eafd9 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -1124,7 +1124,7 @@ static void cleanup_all_thread_imc_memory(void)
- static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
- {
- 	if (pmu_ptr->domain == IMC_DOMAIN_NEST) {
--		mutex_unlock(&nest_init_lock);
-+		mutex_lock(&nest_init_lock);
- 		if (nest_pmus == 1) {
- 			cpuhp_remove_state(CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE);
- 			kfree(nest_imc_refc);
+The patch 424de9c6e3f8: "powerpc/mm/radix: Avoid flushing the PWC on 
+every flush_tlb_range" from Jul 19, 2017, leads to the following 
+Smatch complaint:
+
+arch/powerpc/mm/tlb-radix.c:368 radix__flush_tlb_collapsed_pmd()
+	 error: we previously assumed 'mm' could be null (see line 362)
+
+arch/powerpc/mm/tlb-radix.c
+   361	
+   362		pid = mm ? mm->context.id : 0;
+                      ^^
+Check for NULL.
+
+   363		if (unlikely(pid == MMU_NO_CONTEXT))
+   364			goto no_context;
+   365	
+   366		/* 4k page size, just blow the world */
+   367		if (PAGE_SIZE == 0x1000) {
+   368			radix__flush_all_mm(mm);
+                                            ^^
+Unchecked dereference.
+
+   369			return;
+   370		}
+
+regards,
+dan carpenter
