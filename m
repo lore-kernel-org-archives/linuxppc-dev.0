@@ -2,9 +2,9 @@ Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTJt46699zDr38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 19:02:20 +1000 (AEST)
-Date: Fri, 11 Aug 2017 11:02:15 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTKYK58BVzDr2k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 19:32:53 +1000 (AEST)
+Date: Fri, 11 Aug 2017 11:32:49 +0200
 From: Michal Hocko <mhocko@kernel.org>
 To: Pavel Tatashin <pasha.tatashin@oracle.com>
 Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
@@ -13,14 +13,14 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org
-Subject: Re: [v6 02/15] x86/mm: setting fields in deferred pages
-Message-ID: <20170811090214.GD30811@dhcp22.suse.cz>
+ catalin.marinas@arm.com, sam@ravnborg.org, Mel Gorman <mgorman@suse.de>
+Subject: Re: [v6 04/15] mm: discard memblock data later
+Message-ID: <20170811093249.GE30811@dhcp22.suse.cz>
 References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-3-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-5-git-send-email-pasha.tatashin@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1502138329-123460-3-git-send-email-pasha.tatashin@oracle.com>
+In-Reply-To: <1502138329-123460-5-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,88 +30,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[CC Mel - the full series is here
-http://lkml.kernel.org/r/1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com]
+[CC Mel]
 
-On Mon 07-08-17 16:38:36, Pavel Tatashin wrote:
-> Without deferred struct page feature (CONFIG_DEFERRED_STRUCT_PAGE_INIT),
-> flags and other fields in "struct page"es are never changed prior to first
-> initializing struct pages by going through __init_single_page().
+On Mon 07-08-17 16:38:38, Pavel Tatashin wrote:
+> There is existing use after free bug when deferred struct pages are
+> enabled:
 > 
-> With deferred struct page feature enabled there is a case where we set some
-> fields prior to initializing:
+> The memblock_add() allocates memory for the memory array if more than
+> 128 entries are needed.  See comment in e820__memblock_setup():
 > 
->         mem_init() {
->                 register_page_bootmem_info();
->                 free_all_bootmem();
->                 ...
->         }
+>   * The bootstrap memblock region count maximum is 128 entries
+>   * (INIT_MEMBLOCK_REGIONS), but EFI might pass us more E820 entries
+>   * than that - so allow memblock resizing.
 > 
-> When register_page_bootmem_info() is called only non-deferred struct pages
-> are initialized. But, this function goes through some reserved pages which
-> might be part of the deferred, and thus are not yet initialized.
+> This memblock memory is freed here:
+>         free_low_memory_core_early()
 > 
->   mem_init
->    register_page_bootmem_info
->     register_page_bootmem_info_node
->      get_page_bootmem
->       .. setting fields here ..
->       such as: page->freelist = (void *)type;
+> We access the freed memblock.memory later in boot when deferred pages are
+> initialized in this path:
 > 
-> We end-up with similar issue as in the previous patch, where currently we
-> do not observe problem as memory is zeroed. But, if flag asserts are
-> changed we can start hitting issues.
-> 
-> Also, because in this patch series we will stop zeroing struct page memory
-> during allocation, we must make sure that struct pages are properly
-> initialized prior to using them.
-> 
-> The deferred-reserved pages are initialized in free_all_bootmem().
-> Therefore, the fix is to switch the above calls.
+>         deferred_init_memmap()
+>                 for_each_mem_pfn_range()
+>                   __next_mem_pfn_range()
+>                     type = &memblock.memory;
 
-I have to confess that this part of the early struct page initialization
-is not my strongest point and I have to always re-read the code from the
-scratch but I really do not undestand what you are trying to achieve
-here.
+Yes you seem to be right.
+>
+> One possible explanation for why this use-after-free hasn't been hit
+> before is that the limit of INIT_MEMBLOCK_REGIONS has never been exceeded
+> at least on systems where deferred struct pages were enabled.
 
-AFAIU register_page_bootmem_info_node is only about struct pages backing
-pgdat, usemap and memmap. Those should be in reserved memblocks and we
-do not initialize those at later times, they are not relevant to the
-deferred initialization as your changelog suggests so the ordering with
-get_page_bootmem shouldn't matter. Or am I missing something here?
+Yeah this sounds like the case.
  
+> Another reason why we want this problem fixed in this patch series is,
+> in the next patch, we will need to access memblock.reserved from
+> deferred_init_memmap().
+> 
+
+I guess this goes all the way down to 
+Fixes: 7e18adb4f80b ("mm: meminit: initialise remaining struct pages in parallel with kswapd")
 > Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 > Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 > Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 > Reviewed-by: Bob Picco <bob.picco@oracle.com>
-> ---
->  arch/x86/mm/init_64.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index 136422d7d539..1e863baec847 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -1165,12 +1165,17 @@ void __init mem_init(void)
+
+Considering that some HW might behave strangely and this would be rather
+hard to debug I would be tempted to mark this for stable. It should also
+be merged separately from the rest of the series.
+
+I have just one nit below
+Acked-by: Michal Hocko <mhocko@suse.com>
+
+[...]
+> diff --git a/mm/memblock.c b/mm/memblock.c
+> index 2cb25fe4452c..bf14aea6ab70 100644
+> --- a/mm/memblock.c
+> +++ b/mm/memblock.c
+> @@ -285,31 +285,27 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type, u
+>  }
 >  
->  	/* clear_bss() already clear the empty_zero_page */
+>  #ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
+
+pull this ifdef inside memblock_discard and you do not have an another
+one in page_alloc_init_late
+
+[...]
+> +/**
+> + * Discard memory and reserved arrays if they were allocated
+> + */
+> +void __init memblock_discard(void)
+>  {
+
+here
+
+> -	if (memblock.memory.regions == memblock_memory_init_regions)
+> -		return 0;
+> +	phys_addr_t addr, size;
 >  
-> -	register_page_bootmem_info();
+> -	*addr = __pa(memblock.memory.regions);
+> +	if (memblock.reserved.regions != memblock_reserved_init_regions) {
+> +		addr = __pa(memblock.reserved.regions);
+> +		size = PAGE_ALIGN(sizeof(struct memblock_region) *
+> +				  memblock.reserved.max);
+> +		__memblock_free_late(addr, size);
+> +	}
+>  
+> -	return PAGE_ALIGN(sizeof(struct memblock_region) *
+> -			  memblock.memory.max);
+> +	if (memblock.memory.regions == memblock_memory_init_regions) {
+> +		addr = __pa(memblock.memory.regions);
+> +		size = PAGE_ALIGN(sizeof(struct memblock_region) *
+> +				  memblock.memory.max);
+> +		__memblock_free_late(addr, size);
+> +	}
+>  }
 > -
->  	/* this will put all memory onto the freelists */
->  	free_all_bootmem();
->  	after_bootmem = 1;
+>  #endif
+[...]
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index fc32aa81f359..63d16c185736 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1584,6 +1584,10 @@ void __init page_alloc_init_late(void)
+>  	/* Reinit limits that are based on free pages after the kernel is up */
+>  	files_maxfiles_init();
+>  #endif
+> +#ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
+> +	/* Discard memblock private memory */
+> +	memblock_discard();
+> +#endif
 >  
-> +	/* Must be done after boot memory is put on freelist, because here we
-> +	 * might set fields in deferred struct pages that have not yet been
-> +	 * initialized, and free_all_bootmem() initializes all the reserved
-> +	 * deferred pages for us.
-> +	 */
-> +	register_page_bootmem_info();
-> +
->  	/* Register memory areas for /proc/kcore */
->  	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR,
->  			 PAGE_SIZE, KCORE_OTHER);
+>  	for_each_populated_zone(zone)
+>  		set_zone_contiguous(zone);
 > -- 
 > 2.14.0
 
