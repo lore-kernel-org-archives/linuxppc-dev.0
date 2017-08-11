@@ -1,19 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTW1t6Rr6zDr39
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 02:39:46 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id u185so3515343pgb.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 09:39:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTW1x42QSzDr2y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 02:39:49 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id y129so3500409pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 09:39:49 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 07/14] powerpc/64: remove redundant instruction in
- interrupt replay
-Date: Sat, 12 Aug 2017 02:39:05 +1000
-Message-Id: <20170811163912.28783-8-npiggin@gmail.com>
+Subject: [PATCH v2 08/14] powerpc/64s: irq replay remove spurious irq reason
+Date: Sat, 12 Aug 2017 02:39:06 +1000
+Message-Id: <20170811163912.28783-9-npiggin@gmail.com>
 In-Reply-To: <20170811163912.28783-1-npiggin@gmail.com>
 References: <20170811163912.28783-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,22 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+HVI interrupts have always used 0x500, so remove the dead branch.
+
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/entry_64.S | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/kernel/exceptions-64s.S | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index ec67f67dafab..3f2666d24a7e 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -995,7 +995,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	bne	1f
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;
- 	bl	doorbell_exception
--	b	ret_from_except
- #endif /* CONFIG_PPC_DOORBELL */
- 1:	b	ret_from_except /* What else to do here ? */
-  
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 29253cecf713..566cf126c13b 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1680,8 +1680,6 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_300)
+ BEGIN_FTR_SECTION
+ 	cmpwi	r3,0xa00
+ 	beq	h_doorbell_common_msgclr
+-	cmpwi	r3,0xea0
+-	beq	h_virt_irq_common
+ 	cmpwi	r3,0xe60
+ 	beq	hmi_exception_common
+ FTR_SECTION_ELSE
 -- 
 2.13.3
