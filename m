@@ -1,26 +1,25 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0110.hostedemail.com
- [216.40.44.110])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 6.mo4.mail-out.ovh.net (6.mo4.mail-out.ovh.net [188.165.36.253])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTST34B8rzDr5n
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:44:38 +1000 (AEST)
-Message-ID: <1502462671.3099.13.camel@perches.com>
-Subject: Re: [PATCH] ASoC: Freescale: Delete an error message for a failed
- memory allocation in three functions
-From: Joe Perches <joe@perches.com>
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, Fabio Estevam
- <fabio.estevam@nxp.com>, Jaroslav Kysela <perex@perex.cz>, Liam Girdwood
- <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Nicolin Chen
- <nicoleotsuka@gmail.com>, Takashi Iwai <tiwai@suse.com>, Timur Tabi
- <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Date: Fri, 11 Aug 2017 07:44:31 -0700
-In-Reply-To: <671f4a88-bee9-85b4-ea9b-68abcdb40443@users.sourceforge.net>
-References: <671f4a88-bee9-85b4-ea9b-68abcdb40443@users.sourceforge.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTSr31YLfzDr39
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 01:01:06 +1000 (AEST)
+Received: from player772.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 2DCFA8C98B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:29 +0200 (CEST)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Subject: [PATCH v2 4/8] powerpc/xive: introduce xive_esb_write()
+Date: Fri, 11 Aug 2017 16:23:37 +0200
+Message-Id: <20170811142341.22715-5-clg@kaod.org>
+In-Reply-To: <20170811142341.22715-1-clg@kaod.org>
+References: <20170811142341.22715-1-clg@kaod.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-08-11 at 15:32 +0200, SF Markus Elfring wrote:
-> From 885ccd6c63291dcd4854a0cbaab5188cdc3db805 Mon Sep 17 00:00:00 2001
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Fri, 11 Aug 2017 15:10:43 +0200
-> Subject: [PATCH] ASoC: Freescale: Delete an error message for a failed memory allocation in three functions
-> 
-> Omit an extra message for a memory allocation failure in these functions.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/sysdev/xive/common.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-This doesn't have anything to do with refactoring strings.
-
-Just note that allocations without GFP_NOWARN do a dump_stack()
-
-> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-[]
-> @@ -282,7 +282,5 @@ static int fsl_asrc_dma_startup(struct snd_pcm_substream *substream)
-> -	if (!pair) {
-> -		dev_err(dev, "failed to allocate pair\n");
-> +	if (!pair)
->  		return -ENOMEM;
-> -	}
-
-Use normal diff output that shows 3 lines of context
-above and below the patched lines.
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 8a58662ed793..ac5f18a66742 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -203,6 +203,15 @@ static u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
+ 	return (u8)val;
+ }
+ 
++static void xive_esb_write(struct xive_irq_data *xd, u32 offset, u64 data)
++{
++	/* Handle HW errata */
++	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
++		offset |= offset << 4;
++
++	out_be64(xd->eoi_mmio + offset, data);
++}
++
+ #ifdef CONFIG_XMON
+ static void xive_dump_eq(const char *name, struct xive_q *q)
+ {
+@@ -297,7 +306,7 @@ void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
+ {
+ 	/* If the XIVE supports the new "store EOI facility, use it */
+ 	if (xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
+-		out_be64(xd->eoi_mmio + XIVE_ESB_STORE_EOI, 0);
++		xive_esb_write(xd, XIVE_ESB_STORE_EOI, 0);
+ 	else if (hw_irq && xd->flags & XIVE_IRQ_FLAG_EOI_FW) {
+ 		/*
+ 		 * The FW told us to call it. This happens for some
+-- 
+2.13.4
