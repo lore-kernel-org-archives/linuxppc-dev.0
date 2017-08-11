@@ -1,23 +1,21 @@
 Return-Path: <clg@kaod.org>
-Received: from 3.mo4.mail-out.ovh.net (3.mo4.mail-out.ovh.net [46.105.57.129])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTSPB4nTbzDr0Y
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:41:18 +1000 (AEST)
+Received: from 6.mo4.mail-out.ovh.net (6.mo4.mail-out.ovh.net [188.165.36.253])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTSPD2QLLzDr0Y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:41:20 +1000 (AEST)
 Received: from player772.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 7D3C18C993
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:41 +0200 (CEST)
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id A2E3F8C935
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:05 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v2 6/8] powerpc/xive: introduce H_INT_ESB hcall
-Date: Fri, 11 Aug 2017 16:23:39 +0200
-Message-Id: <20170811142341.22715-7-clg@kaod.org>
-In-Reply-To: <20170811142341.22715-1-clg@kaod.org>
-References: <20170811142341.22715-1-clg@kaod.org>
+Subject: [PATCH v2 0/8] guest exploitation of the XIVE interrupt controller
+Date: Fri, 11 Aug 2017 16:23:33 +0200
+Message-Id: <20170811142341.22715-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,144 +27,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The H_INT_ESB hcall() is used to issue a load or store to the ESB page
-instead of using the MMIO pages. This can be used as a workaround on
-some HW issues. The OS knows that this hcall should be used on an
-interrupt source when the ESB hcall flag is set to 1 in the hcall
-H_INT_GET_SOURCE_INFO.
+Hello,
 
-To maintain the frontier between the xive frontend and backend, we
-introduce a new xive operation 'esb_rw' to be used in the routines
-doing memory accesses on the ESBs.
+On a POWER9 sPAPR machine, the Client Architecture Support (CAS)
+negotiation process determines whether the guest operates with an
+interrupt controller using the legacy model, as found on POWER8, or in
+XIVE exploitation mode, the newer POWER9 interrupt model. This
+patchset is a first proposal to add XIVE support in the sPAPR machine.
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/include/asm/xive.h          |  1 +
- arch/powerpc/sysdev/xive/common.c        | 10 ++++++--
- arch/powerpc/sysdev/xive/spapr.c         | 44 +++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/xive/xive-internal.h |  1 +
- 4 files changed, 53 insertions(+), 3 deletions(-)
+Tested with a QEMU XIVE model for sPAPR machine and with the Power
+hypervisor.
 
-diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-index 64ec9bbcf03e..371fbebf1ec9 100644
---- a/arch/powerpc/include/asm/xive.h
-+++ b/arch/powerpc/include/asm/xive.h
-@@ -56,6 +56,7 @@ struct xive_irq_data {
- #define XIVE_IRQ_FLAG_SHIFT_BUG	0x04
- #define XIVE_IRQ_FLAG_MASK_FW	0x08
- #define XIVE_IRQ_FLAG_EOI_FW	0x10
-+#define XIVE_IRQ_FLAG_H_INT_ESB	0x20
- 
- #define XIVE_INVALID_CHIP_ID	-1
- 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index ac5f18a66742..8fd58773c241 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -198,7 +198,10 @@ static u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
- 	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
- 		offset |= offset << 4;
- 
--	val = in_be64(xd->eoi_mmio + offset);
-+	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
-+		val = xive_ops->esb_rw(xd->hw_irq, offset, 0, 0);
-+	else
-+		val = in_be64(xd->eoi_mmio + offset);
- 
- 	return (u8)val;
- }
-@@ -209,7 +212,10 @@ static void xive_esb_write(struct xive_irq_data *xd, u32 offset, u64 data)
- 	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
- 		offset |= offset << 4;
- 
--	out_be64(xd->eoi_mmio + offset, data);
-+	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
-+		xive_ops->esb_rw(xd->hw_irq, offset, data, 1);
-+	else
-+		out_be64(xd->eoi_mmio + offset, data);
- }
- 
- #ifdef CONFIG_XMON
-diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-index 7efcee928569..ecaa9a1cb63b 100644
---- a/arch/powerpc/sysdev/xive/spapr.c
-+++ b/arch/powerpc/sysdev/xive/spapr.c
-@@ -224,7 +224,46 @@ static long plpar_int_sync(unsigned long flags)
- 	return 0;
- }
- 
--#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60)) /* TODO */
-+#define XIVE_ESB_FLAG_STORE (1ull << (63 - 63))
-+
-+static long plpar_int_esb(unsigned long flags,
-+			  unsigned long lisn,
-+			  unsigned long offset,
-+			  unsigned long in_data,
-+			  unsigned long *out_data)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
-+
-+	pr_devel("H_INT_ESB flags=%lx lisn=%lx offset=%lx in=%lx\n",
-+		flags,  lisn, offset, in_data);
-+
-+	rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset, in_data);
-+	if (rc) {
-+		pr_err("H_INT_ESB lisn=%ld offset=%ld returned %ld\n",
-+		       lisn, offset, rc);
-+		return  rc;
-+	}
-+
-+	*out_data = retbuf[0];
-+
-+	return 0;
-+}
-+
-+static u64 xive_spapr_esb_rw(u32 lisn, u32 offset, u64 data, bool write)
-+{
-+	unsigned long read_data;
-+	long rc;
-+
-+	rc = plpar_int_esb(write ? XIVE_ESB_FLAG_STORE : 0,
-+			   lisn, offset, data, &read_data);
-+	if (rc)
-+		return -1;
-+
-+	return write ? 0 : read_data;
-+}
-+
-+#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60))
- #define XIVE_SRC_LSI           (1ull << (63 - 61))
- #define XIVE_SRC_TRIGGER       (1ull << (63 - 62))
- #define XIVE_SRC_STORE_EOI     (1ull << (63 - 63))
-@@ -244,6 +283,8 @@ static int xive_spapr_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
- 	if (rc)
- 		return  -EINVAL;
- 
-+	if (flags & XIVE_SRC_H_INT_ESB)
-+		data->flags  |= XIVE_IRQ_FLAG_H_INT_ESB;
- 	if (flags & XIVE_SRC_STORE_EOI)
- 		data->flags  |= XIVE_IRQ_FLAG_STORE_EOI;
- 	if (flags & XIVE_SRC_LSI)
-@@ -486,6 +527,7 @@ static const struct xive_ops xive_spapr_ops = {
- 	.setup_cpu		= xive_spapr_setup_cpu,
- 	.teardown_cpu		= xive_spapr_teardown_cpu,
- 	.sync_source		= xive_spapr_sync_source,
-+	.esb_rw			= xive_spapr_esb_rw,
- #ifdef CONFIG_SMP
- 	.get_ipi		= xive_spapr_get_ipi,
- 	.put_ipi		= xive_spapr_put_ipi,
-diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
-index dd1e2022cce4..f34abed0c05f 100644
---- a/arch/powerpc/sysdev/xive/xive-internal.h
-+++ b/arch/powerpc/sysdev/xive/xive-internal.h
-@@ -47,6 +47,7 @@ struct xive_ops {
- 	void	(*update_pending)(struct xive_cpu *xc);
- 	void	(*eoi)(u32 hw_irq);
- 	void	(*sync_source)(u32 hw_irq);
-+	u64	(*esb_rw)(u32 hw_irq, u32 offset, u64 data, bool write);
- #ifdef CONFIG_SMP
- 	int	(*get_ipi)(unsigned int cpu, struct xive_cpu *xc);
- 	void	(*put_ipi)(unsigned int cpu, struct xive_cpu *xc);
+Code is here:
+
+  https://github.com/legoater/linux/commits/xive
+  https://github.com/legoater/qemu/commits/xive       
+
+Thanks,
+
+C.
+
+Changes since v1 :
+
+ - introduced a common subroutine xive_queue_page_alloc()
+ - introduced a xive_teardown_cpu() routine
+ - removed P9 doorbell support when xive is enabled.
+ - fixed xive_esb_read() naming
+ - fixed XIVE mode parsing in CAS (just got the final specs)
+
+Changes since RFC :
+
+ - renamed backend to 'spapr'
+ - fixed hotplug support
+ - fixed kexec support
+ - fixed src_chip value (XIVE_INVALID_CHIP_ID)
+ - added doorbell support
+ - added some debug logs
+ - added  H_INT_ESB hcall
+ - took into account '/ibm,plat-res-int-priorities'
+ - fixed WARNING in xive_find_target_in_mask()
+
+Cédric Le Goater (8):
+  powerpc/xive: introduce a common routine xive_queue_page_alloc()
+  powerpc/xive: guest exploitation of the XIVE interrupt controller
+  powerpc/xive: rename xive_poke_esb() in xive_esb_read()
+  powerpc/xive: introduce xive_esb_write()
+  powerpc/xive: add the HW IRQ number under xive_irq_data
+  powerpc/xive: introduce H_INT_ESB hcall
+  powerpc/xive: add XIVE Exploitation Mode to CAS
+  powerpc/xive: improve debugging macros
+
+ arch/powerpc/include/asm/hvcall.h            |  13 +-
+ arch/powerpc/include/asm/prom.h              |   5 +-
+ arch/powerpc/include/asm/xive.h              |   5 +
+ arch/powerpc/kernel/prom_init.c              |  34 +-
+ arch/powerpc/platforms/pseries/Kconfig       |   1 +
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |  11 +-
+ arch/powerpc/platforms/pseries/kexec.c       |   6 +-
+ arch/powerpc/platforms/pseries/setup.c       |   8 +-
+ arch/powerpc/platforms/pseries/smp.c         |  27 +-
+ arch/powerpc/sysdev/xive/Kconfig             |   5 +
+ arch/powerpc/sysdev/xive/Makefile            |   1 +
+ arch/powerpc/sysdev/xive/common.c            |  76 ++-
+ arch/powerpc/sysdev/xive/native.c            |  18 +-
+ arch/powerpc/sysdev/xive/spapr.c             | 661 +++++++++++++++++++++++++++
+ arch/powerpc/sysdev/xive/xive-internal.h     |   7 +
+ 15 files changed, 843 insertions(+), 35 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/xive/spapr.c
+
 -- 
 2.13.4
