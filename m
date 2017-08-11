@@ -2,20 +2,20 @@ Return-Path: <clg@kaod.org>
 Received: from 3.mo4.mail-out.ovh.net (3.mo4.mail-out.ovh.net [46.105.57.129])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTS1k3yDSzDr47
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:24:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTS1y3yGKzDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:24:38 +1000 (AEST)
 Received: from player772.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 0A62F8C9BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:23 +0200 (CEST)
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 5A4128C9B6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:35 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v2 3/8] powerpc/xive: rename xive_poke_esb() in xive_esb_read()
-Date: Fri, 11 Aug 2017 16:23:36 +0200
-Message-Id: <20170811142341.22715-4-clg@kaod.org>
+Subject: [PATCH v2 5/8] powerpc/xive: add the HW IRQ number under xive_irq_data
+Date: Fri, 11 Aug 2017 16:23:38 +0200
+Message-Id: <20170811142341.22715-6-clg@kaod.org>
 In-Reply-To: <20170811142341.22715-1-clg@kaod.org>
 References: <20170811142341.22715-1-clg@kaod.org>
 MIME-Version: 1.0
@@ -29,97 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-xive_poke_esb() is performing a load/read so it is better named as
-xive_esb_read() as we will need to introduce a xive_esb_write()
-routine. Also use the XIVE_ESB_LOAD_EOI offset when EOI'ing LSI
-interrupts.
+It will be required later by the H_INT_ESB hcall.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
+ arch/powerpc/include/asm/xive.h   | 1 +
+ arch/powerpc/sysdev/xive/native.c | 2 ++
+ arch/powerpc/sysdev/xive/spapr.c  | 2 ++
+ 3 files changed, 5 insertions(+)
 
- Changes since v1:
-
- - fixed naming.
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+index 473f133a8555..64ec9bbcf03e 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -45,6 +45,7 @@ struct xive_irq_data {
+ 	void __iomem *trig_mmio;
+ 	u32 esb_shift;
+ 	int src_chip;
++	u32 hw_irq;
  
- arch/powerpc/sysdev/xive/common.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 8774af7a4105..8a58662ed793 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -190,7 +190,7 @@ static u32 xive_scan_interrupts(struct xive_cpu *xc, bool just_peek)
-  * This is used to perform the magic loads from an ESB
-  * described in xive.h
-  */
--static u8 xive_poke_esb(struct xive_irq_data *xd, u32 offset)
-+static u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
- {
- 	u64 val;
+ 	/* Setup/used by frontend */
+ 	int target;
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+index ef92a83090e1..f8bcff15b0f9 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -82,6 +82,8 @@ int xive_native_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
+ 		return -ENOMEM;
+ 	}
  
-@@ -227,7 +227,7 @@ void xmon_xive_do_dump(int cpu)
- 	xive_dump_eq("IRQ", &xc->queue[xive_irq_priority]);
- #ifdef CONFIG_SMP
- 	{
--		u64 val = xive_poke_esb(&xc->ipi_data, XIVE_ESB_GET);
-+		u64 val = xive_esb_read(&xc->ipi_data, XIVE_ESB_GET);
- 		xmon_printf("  IPI state: %x:%c%c\n", xc->hw_ipi,
- 			val & XIVE_ESB_VAL_P ? 'P' : 'p',
- 			val & XIVE_ESB_VAL_P ? 'Q' : 'q');
-@@ -326,9 +326,9 @@ void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
- 		 * properly.
- 		 */
- 		if (xd->flags & XIVE_IRQ_FLAG_LSI)
--			in_be64(xd->eoi_mmio);
-+			xive_esb_read(xd, XIVE_ESB_LOAD_EOI);
- 		else {
--			eoi_val = xive_poke_esb(xd, XIVE_ESB_SET_PQ_00);
-+			eoi_val = xive_esb_read(xd, XIVE_ESB_SET_PQ_00);
- 			DBG_VERBOSE("eoi_val=%x\n", offset, eoi_val);
++	data->hw_irq = hw_irq;
++
+ 	if (!data->trig_page)
+ 		return 0;
+ 	if (data->trig_page == data->eoi_page) {
+diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+index 89e5a57693db..7efcee928569 100644
+--- a/arch/powerpc/sysdev/xive/spapr.c
++++ b/arch/powerpc/sysdev/xive/spapr.c
+@@ -264,6 +264,8 @@ static int xive_spapr_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
+ 		return -ENOMEM;
+ 	}
  
- 			/* Re-trigger if needed */
-@@ -383,12 +383,12 @@ static void xive_do_source_set_mask(struct xive_irq_data *xd,
- 	 * ESB accordingly on unmask.
- 	 */
- 	if (mask) {
--		val = xive_poke_esb(xd, XIVE_ESB_SET_PQ_01);
-+		val = xive_esb_read(xd, XIVE_ESB_SET_PQ_01);
- 		xd->saved_p = !!(val & XIVE_ESB_VAL_P);
- 	} else if (xd->saved_p)
--		xive_poke_esb(xd, XIVE_ESB_SET_PQ_10);
-+		xive_esb_read(xd, XIVE_ESB_SET_PQ_10);
- 	else
--		xive_poke_esb(xd, XIVE_ESB_SET_PQ_00);
-+		xive_esb_read(xd, XIVE_ESB_SET_PQ_00);
- }
- 
- /*
-@@ -768,7 +768,7 @@ static int xive_irq_retrigger(struct irq_data *d)
- 	 * To perform a retrigger, we first set the PQ bits to
- 	 * 11, then perform an EOI.
- 	 */
--	xive_poke_esb(xd, XIVE_ESB_SET_PQ_11);
-+	xive_esb_read(xd, XIVE_ESB_SET_PQ_11);
- 
- 	/*
- 	 * Note: We pass "0" to the hw_irq argument in order to
-@@ -803,7 +803,7 @@ static int xive_irq_set_vcpu_affinity(struct irq_data *d, void *state)
- 		irqd_set_forwarded_to_vcpu(d);
- 
- 		/* Set it to PQ=10 state to prevent further sends */
--		pq = xive_poke_esb(xd, XIVE_ESB_SET_PQ_10);
-+		pq = xive_esb_read(xd, XIVE_ESB_SET_PQ_10);
- 
- 		/* No target ? nothing to do */
- 		if (xd->target == XIVE_INVALID_TARGET) {
-@@ -832,7 +832,7 @@ static int xive_irq_set_vcpu_affinity(struct irq_data *d, void *state)
- 		 * for sure the queue slot is no longer in use.
- 		 */
- 		if (pq & 2) {
--			pq = xive_poke_esb(xd, XIVE_ESB_SET_PQ_11);
-+			pq = xive_esb_read(xd, XIVE_ESB_SET_PQ_11);
- 			xd->saved_p = true;
- 
- 			/*
++	data->hw_irq = hw_irq;
++
+ 	/* Full function page supports trigger */
+ 	if (flags & XIVE_SRC_TRIGGER) {
+ 		data->trig_mmio = data->eoi_mmio;
 -- 
 2.13.4
