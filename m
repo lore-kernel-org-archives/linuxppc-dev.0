@@ -1,27 +1,34 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTV4K4jDczDr2j
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 01:56:49 +1000 (AEST)
-Subject: Re: [v6 05/15] mm: don't accessed uninitialized struct pages
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-6-git-send-email-pasha.tatashin@oracle.com>
- <20170811093746.GF30811@dhcp22.suse.cz>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <8444cb2b-b134-e9fc-a458-1ba7b22a8df1@oracle.com>
-Date: Fri, 11 Aug 2017 11:55:39 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTV4h5MSTzDr5F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 01:57:08 +1000 (AEST)
+Date: Fri, 11 Aug 2017 10:56:58 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Jason Cooper <jason@lakedaemon.net>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH] PCI: Convert to using %pOF instead of full_name
+Message-ID: <20170811155658.GA17039@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170718214339.7774-41-robh@kernel.org>
+ <20170802223928.GQ20308@bhelgaas-glaptop.roam.corp.google.com>
+ <CAL_JsqLznQdnWw+A2T8V8CTktYaPDF_800jGHAVa=G-Yhxyn+Q@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20170811093746.GF30811@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAL_JsqLznQdnWw+A2T8V8CTktYaPDF_800jGHAVa=G-Yhxyn+Q@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2017 05:37 AM, Michal Hocko wrote:
-> On Mon 07-08-17 16:38:39, Pavel Tatashin wrote:
->> In deferred_init_memmap() where all deferred struct pages are initialized
->> we have a check like this:
->>
->>      if (page->flags) {
->>              VM_BUG_ON(page_zone(page) != zone);
->>              goto free_range;
->>      }
->>
->> This way we are checking if the current deferred page has already been
->> initialized. It works, because memory for struct pages has been zeroed, and
->> the only way flags are not zero if it went through __init_single_page()
->> before.  But, once we change the current behavior and won't zero the memory
->> in memblock allocator, we cannot trust anything inside "struct page"es
->> until they are initialized. This patch fixes this.
->>
->> This patch defines a new accessor memblock_get_reserved_pfn_range()
->> which returns successive ranges of reserved PFNs.  deferred_init_memmap()
->> calls it to determine if a PFN and its struct page has already been
->> initialized.
+[+cc Tyrel]
+
+On Wed, Aug 09, 2017 at 05:04:43PM -0500, Rob Herring wrote:
+> On Wed, Aug 2, 2017 at 5:39 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > On Tue, Jul 18, 2017 at 04:43:21PM -0500, Rob Herring wrote:
+> >> Now that we have a custom printf format specifier, convert users of
+> >> full_name to use %pOF instead. This is preparation to remove storing
+> >> of the full path string for each node.
+> >>
+> >> Signed-off-by: Rob Herring <robh@kernel.org>
+> >> Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> >> Cc: Jason Cooper <jason@lakedaemon.net>
+> >> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> >> Cc: Thierry Reding <thierry.reding@gmail.com>
+> >> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> >> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >> Cc: Paul Mackerras <paulus@samba.org>
+> >> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> >> Cc: linux-pci@vger.kernel.org
+> >> Cc: linux-arm-kernel@lists.infradead.org
+> >> Cc: linux-tegra@vger.kernel.org
+> >> Cc: linuxppc-dev@lists.ozlabs.org
+> >
+> > Applied to pci/misc for v4.14, thanks!
 > 
-> Why don't we simply check the pfn against pgdat->first_deferred_pfn?
+> This hasn't shown up in -next.
 
-Because we are initializing deferred pages, and all of them have pfn 
-greater than pgdat->first_deferred_pfn. However, some of deferred pages 
-were already initialized if they were reserved, in this path:
+Thanks, it should be in next-20170811.
 
-mem_init()
-  free_all_bootmem()
-   free_low_memory_core_early()
-    for_each_reserved_mem_region()
-     reserve_bootmem_region()
-      init_reserved_page() <- if this is deferred reserved page
-       __init_single_pfn()
-        __init_single_page()
-
-So, currently, we are using the value of page->flags to figure out if 
-this page has been initialized while being part of deferred page, but 
-this is not going to work for this project, as we do not zero the memory 
-that is backing the struct pages, and size the value of page->flags can 
-be anything.
+I updated it to add Tyrel's reviewed-by, but that's not in -next yet.
