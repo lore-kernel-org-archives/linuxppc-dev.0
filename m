@@ -1,42 +1,19 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhumirks@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTXFj3S4fzDr1s
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 03:35:05 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7BHXW0h144738
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 13:35:02 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2c9drut0ur-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 13:35:02 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 11 Aug 2017 11:35:01 -0600
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: x86@kernel.org, linux-mm@kvack.org, Ram Pai <linuxram@us.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Haren Myneni <hbabu@us.ibm.com>,
- Michal Hocko <mhocko@kernel.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [RFC v7 26/25] mm/mprotect, powerpc/mm/pkeys,
- x86/mm/pkeys: Add sysfs interface
-Date: Fri, 11 Aug 2017 14:34:43 -0300
-In-Reply-To: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
-Message-Id: <20170811173443.6227-1-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTXL91KVzzDr2M
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 03:38:57 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id j68so4009871pfc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 10:38:57 -0700 (PDT)
+From: Bhumika Goyal <bhumirks@gmail.com>
+To: julia.lawall@lip6.fr, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
+Subject: [PATCH] drivers/macintosh: make wf_control_ops and wf_pid_param const
+Date: Fri, 11 Aug 2017 23:08:45 +0530
+Message-Id: <1502473125-4849-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,231 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Expose useful information for programs using memory protection keys.
-Provide implementation for powerpc and x86.
+Make wf_control_ops const as they are only stored in the ops field of a
+wf_control structure, which is const.
+Make wf_pid_param const as they are only used during a copy operation.
+Done using Coccinelle.
 
-On a powerpc system with pkeys support, here is what is shown:
-
-$ head /sys/kernel/mm/protection_keys/*
-==> /sys/kernel/mm/protection_keys/disable_execute_supported <==
-true
-
-==> /sys/kernel/mm/protection_keys/total_keys <==
-32
-
-==> /sys/kernel/mm/protection_keys/usable_keys <==
-30
-
-And on an x86 without pkeys support:
-
-$ head /sys/kernel/mm/protection_keys/*
-==> /sys/kernel/mm/protection_keys/disable_execute_supported <==
-false
-
-==> /sys/kernel/mm/protection_keys/total_keys <==
-1
-
-==> /sys/kernel/mm/protection_keys/usable_keys <==
-0
-
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 ---
+Cross compiled windfarm_smu_controls.o and windfarm_rm31.o for powerpc.
 
-Ram asked me to add a sysfs interface for the memory protection keys
-feature. Here it is.
+ drivers/macintosh/windfarm_cpufreq_clamp.c | 2 +-
+ drivers/macintosh/windfarm_rm31.c          | 4 ++--
+ drivers/macintosh/windfarm_smu_controls.c  | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-If you have suggestions on what should be exposed, please let me know.
-
- arch/powerpc/include/asm/pkeys.h   |  2 ++
- arch/powerpc/mm/pkeys.c            | 12 ++++++++
- arch/x86/include/asm/mmu_context.h | 34 +++++++++++-----------
- arch/x86/include/asm/pkeys.h       |  1 +
- arch/x86/mm/pkeys.c                |  5 ++++
- mm/mprotect.c                      | 58 ++++++++++++++++++++++++++++++++++++++
- 6 files changed, 96 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index e61ed6c332db..bbc5a34cc6d6 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -215,6 +215,8 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 	return __arch_set_user_pkey_access(tsk, pkey, init_val);
+diff --git a/drivers/macintosh/windfarm_cpufreq_clamp.c b/drivers/macintosh/windfarm_cpufreq_clamp.c
+index 72d1fdf..2626990 100644
+--- a/drivers/macintosh/windfarm_cpufreq_clamp.c
++++ b/drivers/macintosh/windfarm_cpufreq_clamp.c
+@@ -63,7 +63,7 @@ static s32 clamp_max(struct wf_control *ct)
+ 	return 1;
  }
  
-+unsigned int arch_usable_pkeys(void);
-+
- static inline bool arch_pkeys_enabled(void)
- {
- 	return pkey_inited;
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 1424c79f45f6..54efbb133049 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -272,3 +272,15 @@ bool arch_vma_access_permitted(struct vm_area_struct *vma,
- 
- 	return pkey_access_permitted(pkey, write, execute);
- }
-+
-+unsigned int arch_usable_pkeys(void)
-+{
-+	unsigned int reserved;
-+
-+	if (!pkey_inited)
-+		return 0;
-+
-+	reserved = hweight32(initial_allocation_mask);
-+
-+	return (pkeys_total > reserved) ? pkeys_total - reserved : 0;
-+}
-diff --git a/arch/x86/include/asm/mmu_context.h b/arch/x86/include/asm/mmu_context.h
-index 68b329d77b3a..d2eabedd583a 100644
---- a/arch/x86/include/asm/mmu_context.h
-+++ b/arch/x86/include/asm/mmu_context.h
-@@ -105,13 +105,30 @@ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- #endif
+-static struct wf_control_ops clamp_ops = {
++static const struct wf_control_ops clamp_ops = {
+ 	.set_value	= clamp_set,
+ 	.get_value	= clamp_get,
+ 	.get_min	= clamp_min,
+diff --git a/drivers/macintosh/windfarm_rm31.c b/drivers/macintosh/windfarm_rm31.c
+index bdfcb8a..a0cd9c7 100644
+--- a/drivers/macintosh/windfarm_rm31.c
++++ b/drivers/macintosh/windfarm_rm31.c
+@@ -338,7 +338,7 @@ static int cpu_setup_pid(int cpu)
  }
  
-+#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-+#define PKEY_INITIAL_ALLOCATION_MAP	1
-+
-+static inline int vma_pkey(struct vm_area_struct *vma)
-+{
-+	unsigned long vma_pkey_mask = VM_PKEY_BIT0 | VM_PKEY_BIT1 |
-+				      VM_PKEY_BIT2 | VM_PKEY_BIT3;
-+
-+	return (vma->vm_flags & vma_pkey_mask) >> VM_PKEY_SHIFT;
-+}
-+#else
-+static inline int vma_pkey(struct vm_area_struct *vma)
-+{
-+	return 0;
-+}
-+#endif
-+
- static inline int init_new_context(struct task_struct *tsk,
- 				   struct mm_struct *mm)
- {
- 	#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
- 	if (cpu_feature_enabled(X86_FEATURE_OSPKE)) {
- 		/* pkey 0 is the default and always allocated */
--		mm->context.pkey_allocation_map = 0x1;
-+		mm->context.pkey_allocation_map = PKEY_INITIAL_ALLOCATION_MAP;
- 		/* -1 means unallocated or invalid */
- 		mm->context.execute_only_pkey = -1;
- 	}
-@@ -205,21 +222,6 @@ static inline void arch_unmap(struct mm_struct *mm, struct vm_area_struct *vma,
- 		mpx_notify_unmap(mm, vma, start, end);
+ /* Backside/U3 fan */
+-static struct wf_pid_param backside_param = {
++static const struct wf_pid_param backside_param = {
+ 	.interval	= 1,
+ 	.history_len	= 2,
+ 	.gd		= 0x00500000,
+@@ -351,7 +351,7 @@ static int cpu_setup_pid(int cpu)
+ };
+ 
+ /* DIMMs temperature (clamp the backside fan) */
+-static struct wf_pid_param dimms_param = {
++static const struct wf_pid_param dimms_param = {
+ 	.interval	= 1,
+ 	.history_len	= 20,
+ 	.gd		= 0,
+diff --git a/drivers/macintosh/windfarm_smu_controls.c b/drivers/macintosh/windfarm_smu_controls.c
+index c155a54..d174c74 100644
+--- a/drivers/macintosh/windfarm_smu_controls.c
++++ b/drivers/macintosh/windfarm_smu_controls.c
+@@ -145,7 +145,7 @@ static s32 smu_fan_max(struct wf_control *ct)
+ 	return fct->max;
  }
  
--#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
--static inline int vma_pkey(struct vm_area_struct *vma)
--{
--	unsigned long vma_pkey_mask = VM_PKEY_BIT0 | VM_PKEY_BIT1 |
--				      VM_PKEY_BIT2 | VM_PKEY_BIT3;
--
--	return (vma->vm_flags & vma_pkey_mask) >> VM_PKEY_SHIFT;
--}
--#else
--static inline int vma_pkey(struct vm_area_struct *vma)
--{
--	return 0;
--}
--#endif
--
- static inline bool __pkru_allows_pkey(u16 pkey, bool write)
- {
- 	u32 pkru = read_pkru();
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index fa8279972ddf..e1b25aa60530 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -105,5 +105,6 @@ extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 		unsigned long init_val);
- extern void copy_init_pkru_to_fpregs(void);
-+extern unsigned int arch_usable_pkeys(void);
- 
- #endif /*_ASM_X86_PKEYS_H */
-diff --git a/arch/x86/mm/pkeys.c b/arch/x86/mm/pkeys.c
-index 2dab69a706ec..a3acca15ff83 100644
---- a/arch/x86/mm/pkeys.c
-+++ b/arch/x86/mm/pkeys.c
-@@ -123,6 +123,11 @@ int __arch_override_mprotect_pkey(struct vm_area_struct *vma, int prot, int pkey
- 	return vma_pkey(vma);
- }
- 
-+unsigned int arch_usable_pkeys(void)
-+{
-+	return arch_max_pkey() - hweight32(PKEY_INITIAL_ALLOCATION_MAP);
-+}
-+
- #define PKRU_AD_KEY(pkey)	(PKRU_AD_BIT << ((pkey) * PKRU_BITS_PER_PKEY))
- 
- /*
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 8edd0d576254..855744b9f7d6 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -554,4 +554,62 @@ SYSCALL_DEFINE1(pkey_free, int, pkey)
- 	return ret;
- }
- 
-+#ifdef CONFIG_SYSFS
-+
-+#define PKEYS_ATTR_RO(_name)						\
-+	static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
-+
-+static ssize_t total_keys_show(struct kobject *kobj,
-+			       struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%u\n", arch_max_pkey());
-+}
-+PKEYS_ATTR_RO(total_keys);
-+
-+static ssize_t usable_keys_show(struct kobject *kobj,
-+				struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%u\n", arch_usable_pkeys());
-+}
-+PKEYS_ATTR_RO(usable_keys);
-+
-+static ssize_t disable_execute_supported_show(struct kobject *kobj,
-+					      struct kobj_attribute *attr,
-+					      char *buf)
-+{
-+#ifdef PKEY_DISABLE_EXECUTE
-+	if (arch_pkeys_enabled()) {
-+		strcpy(buf, "true\n");
-+		return sizeof("true\n") - 1;
-+	}
-+#endif
-+
-+	strcpy(buf, "false\n");
-+	return sizeof("false\n") - 1;
-+}
-+PKEYS_ATTR_RO(disable_execute_supported);
-+
-+static struct attribute *pkeys_attrs[] = {
-+	&total_keys_attr.attr,
-+	&usable_keys_attr.attr,
-+	&disable_execute_supported_attr.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group pkeys_attr_group = {
-+	.attrs = pkeys_attrs,
-+	.name = "protection_keys",
-+};
-+
-+static int __init pkeys_sysfs_init(void)
-+{
-+	int err;
-+
-+	err = sysfs_create_group(mm_kobj, &pkeys_attr_group);
-+
-+	return err;
-+}
-+late_initcall(pkeys_sysfs_init);
-+#endif /* CONFIG_SYSFS */
-+
- #endif /* CONFIG_ARCH_HAS_PKEYS */
+-static struct wf_control_ops smu_fan_ops = {
++static const struct wf_control_ops smu_fan_ops = {
+ 	.set_value	= smu_fan_set,
+ 	.get_value	= smu_fan_get,
+ 	.get_min	= smu_fan_min,
+-- 
+1.9.1
