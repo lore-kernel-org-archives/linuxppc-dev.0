@@ -1,26 +1,26 @@
-Return-Path: <clg@kaod.org>
-Received: from 16.mo4.mail-out.ovh.net (16.mo4.mail-out.ovh.net
- [188.165.55.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0110.hostedemail.com
+ [216.40.44.110])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTSPF1rk0zDr0Y
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:41:21 +1000 (AEST)
-Received: from player772.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id CF1BD8C9C9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:53 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v2 8/8] powerpc/xive: improve debugging macros
-Date: Fri, 11 Aug 2017 16:23:41 +0200
-Message-Id: <20170811142341.22715-9-clg@kaod.org>
-In-Reply-To: <20170811142341.22715-1-clg@kaod.org>
-References: <20170811142341.22715-1-clg@kaod.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTST34B8rzDr5n
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:44:38 +1000 (AEST)
+Message-ID: <1502462671.3099.13.camel@perches.com>
+Subject: Re: [PATCH] ASoC: Freescale: Delete an error message for a failed
+ memory allocation in three functions
+From: Joe Perches <joe@perches.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, Fabio Estevam
+ <fabio.estevam@nxp.com>, Jaroslav Kysela <perex@perex.cz>, Liam Girdwood
+ <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Nicolin Chen
+ <nicoleotsuka@gmail.com>, Takashi Iwai <tiwai@suse.com>, Timur Tabi
+ <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Date: Fri, 11 Aug 2017 07:44:31 -0700
+In-Reply-To: <671f4a88-bee9-85b4-ea9b-68abcdb40443@users.sourceforge.net>
+References: <671f4a88-bee9-85b4-ea9b-68abcdb40443@users.sourceforge.net>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Having the CPU identifier in the debug logs is helpful when tracking
-issues. Also add some more logging and fix a compile issue in
-xive_do_source_eoi().
+On Fri, 2017-08-11 at 15:32 +0200, SF Markus Elfring wrote:
+> From 885ccd6c63291dcd4854a0cbaab5188cdc3db805 Mon Sep 17 00:00:00 2001
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Fri, 11 Aug 2017 15:10:43 +0200
+> Subject: [PATCH] ASoC: Freescale: Delete an error message for a failed memory allocation in three functions
+> 
+> Omit an extra message for a memory allocation failure in these functions.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/common.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+This doesn't have anything to do with refactoring strings.
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 8fd58773c241..1c087ed7427f 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -40,7 +40,8 @@
- #undef DEBUG_ALL
- 
- #ifdef DEBUG_ALL
--#define DBG_VERBOSE(fmt...)	pr_devel(fmt)
-+#define DBG_VERBOSE(fmt, ...)	pr_devel("cpu %d - " fmt, \
-+					 smp_processor_id(), ## __VA_ARGS__)
- #else
- #define DBG_VERBOSE(fmt...)	do { } while(0)
- #endif
-@@ -344,7 +345,7 @@ void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
- 			xive_esb_read(xd, XIVE_ESB_LOAD_EOI);
- 		else {
- 			eoi_val = xive_esb_read(xd, XIVE_ESB_SET_PQ_00);
--			DBG_VERBOSE("eoi_val=%x\n", offset, eoi_val);
-+			DBG_VERBOSE("eoi_val=%x\n", eoi_val);
- 
- 			/* Re-trigger if needed */
- 			if ((eoi_val & XIVE_ESB_VAL_Q) && xd->trig_mmio)
-@@ -1004,6 +1005,9 @@ static void xive_ipi_eoi(struct irq_data *d)
- {
- 	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
- 
-+	DBG_VERBOSE("IPI eoi: irq=%d [0x%lx] (HW IRQ 0x%x) pending=%02x\n",
-+		    d->irq, irqd_to_hwirq(d), xc->hw_ipi, xc->pending_prio);
-+
- 	/* Handle possible race with unplug and drop stale IPIs */
- 	if (!xc)
- 		return;
--- 
-2.13.4
+Just note that allocations without GFP_NOWARN do a dump_stack()
+
+> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+[]
+> @@ -282,7 +282,5 @@ static int fsl_asrc_dma_startup(struct snd_pcm_substream *substream)
+> -	if (!pair) {
+> -		dev_err(dev, "failed to allocate pair\n");
+> +	if (!pair)
+>  		return -ENOMEM;
+> -	}
+
+Use normal diff output that shows 3 lines of context
+above and below the patched lines.
