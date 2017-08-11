@@ -1,34 +1,27 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTV4h5MSTzDr5F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 01:57:08 +1000 (AEST)
-Date: Fri, 11 Aug 2017 10:56:58 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Jason Cooper <jason@lakedaemon.net>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PCI: Convert to using %pOF instead of full_name
-Message-ID: <20170811155658.GA17039@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170718214339.7774-41-robh@kernel.org>
- <20170802223928.GQ20308@bhelgaas-glaptop.roam.corp.google.com>
- <CAL_JsqLznQdnWw+A2T8V8CTktYaPDF_800jGHAVa=G-Yhxyn+Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTV7q4XcHzDr3S
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 01:59:51 +1000 (AEST)
+Subject: Re: [v6 07/15] mm: defining memblock_virt_alloc_try_nid_raw
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-8-git-send-email-pasha.tatashin@oracle.com>
+ <20170811123953.GI30811@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <545b7230-2c09-d2f9-f26a-05ef395c36d4@oracle.com>
+Date: Fri, 11 Aug 2017 11:58:46 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_JsqLznQdnWw+A2T8V8CTktYaPDF_800jGHAVa=G-Yhxyn+Q@mail.gmail.com>
+In-Reply-To: <20170811123953.GI30811@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,33 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[+cc Tyrel]
-
-On Wed, Aug 09, 2017 at 05:04:43PM -0500, Rob Herring wrote:
-> On Wed, Aug 2, 2017 at 5:39 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Tue, Jul 18, 2017 at 04:43:21PM -0500, Rob Herring wrote:
-> >> Now that we have a custom printf format specifier, convert users of
-> >> full_name to use %pOF instead. This is preparation to remove storing
-> >> of the full path string for each node.
-> >>
-> >> Signed-off-by: Rob Herring <robh@kernel.org>
-> >> Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> >> Cc: Jason Cooper <jason@lakedaemon.net>
-> >> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> >> Cc: Thierry Reding <thierry.reding@gmail.com>
-> >> Cc: Jonathan Hunter <jonathanh@nvidia.com>
-> >> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >> Cc: Paul Mackerras <paulus@samba.org>
-> >> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >> Cc: linux-pci@vger.kernel.org
-> >> Cc: linux-arm-kernel@lists.infradead.org
-> >> Cc: linux-tegra@vger.kernel.org
-> >> Cc: linuxppc-dev@lists.ozlabs.org
-> >
-> > Applied to pci/misc for v4.14, thanks!
+On 08/11/2017 08:39 AM, Michal Hocko wrote:
+> On Mon 07-08-17 16:38:41, Pavel Tatashin wrote:
+>> A new variant of memblock_virt_alloc_* allocations:
+>> memblock_virt_alloc_try_nid_raw()
+>>      - Does not zero the allocated memory
+>>      - Does not panic if request cannot be satisfied
 > 
-> This hasn't shown up in -next.
+> OK, this looks good but I would not introduce memblock_virt_alloc_raw
+> here because we do not have any users. Please move that to "mm: optimize
+> early system hash allocations" which actually uses the API. It would be
+> easier to review it that way.
+> 
+>> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+>> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+>> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+>> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+> 
+> other than that
+> Acked-by: Michal Hocko <mhocko@suse.com>
 
-Thanks, it should be in next-20170811.
-
-I updated it to add Tyrel's reviewed-by, but that's not in -next yet.
+Sure, I could do this, but as I understood from earlier Dave Miller's 
+comments, we should do one logical change at a time. Hence, introduce 
+API in one patch use it in another. So, this is how I tried to organize 
+this patch set. Is this assumption incorrect?
