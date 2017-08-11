@@ -1,24 +1,44 @@
-Return-Path: <santosh@fossix.org>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=mrla=7n=linux.vnet.ibm.com=aneesh.kumar@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTJ1f70k7zDqp7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 18:23:50 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id y192so2624122pgd.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 01:23:50 -0700 (PDT)
-From: Santosh Sivaraj <santosh@fossix.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/vdso64: Add support for
- CLOCK_{REALTIME/MONOTONIC}_COARSE
-Date: Fri, 11 Aug 2017 13:53:36 +0530
-Message-Id: <20170811082336.9560-1-santosh@fossix.org>
-In-Reply-To: <20170721090944.16889-1-santosh@fossix.org>
-References: <20170721090944.16889-1-santosh@fossix.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTJL76fVbzDr2v
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 18:38:07 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xTJL74kbvz8sww
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 18:38:07 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xTJL70R6Lz9s81
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2017 18:38:06 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7B8brlc144675
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2017 04:38:04 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2c95k797uj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2017 04:38:04 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 11 Aug 2017 18:38:01 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, nfont@linux.vnet.ibm.com
+Subject: Re: [FIX PATCH v0] powerpc: Fix memory unplug failure on radix guest
+In-Reply-To: <20170810165019.unrvv6id2daqazju@arbab-laptop.localdomain>
+References: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
+ <20170810165019.unrvv6id2daqazju@arbab-laptop.localdomain>
+Date: Fri, 11 Aug 2017 14:07:51 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87y3qqxzxc.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,145 +48,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current vDSO64 implementation does not have support for coarse clocks
-(CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
-to system call, increasing the response time, vDSO implementation reduces
-the cycle time. Below is a benchmark of the difference in execution time
-with and without vDSO support.
+Reza Arbab <arbab@linux.vnet.ibm.com> writes:
 
-(Non-coarse clocks are also included just for completion)
+> On Thu, Aug 10, 2017 at 02:53:48PM +0530, Bharata B Rao wrote:
+>>diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>>index f830562..24ecf53 100644
+>>--- a/arch/powerpc/kernel/prom.c
+>>+++ b/arch/powerpc/kernel/prom.c
+>>@@ -524,6 +524,7 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+>> 					size = 0x80000000ul - base;
+>> 			}
+>> 			memblock_add(base, size);
+>>+			memblock_mark_hotplug(base, size);
+>> 		} while (--rngs);
+>> 	}
+>> 	memblock_dump_all();
+>
+> Doing this has the effect of putting all the affected memory into 
+> ZONE_MOVABLE. See find_zone_movable_pfns_for_nodes(). This means no 
+> kernel allocations can occur there. Is that okay?
+>
 
-Without vDSO support:
---------------------
-clock-gettime-realtime: syscall: 172 nsec/call
-clock-gettime-realtime:    libc: 26 nsec/call
-clock-gettime-realtime:    vdso: 21 nsec/call
-clock-gettime-monotonic: syscall: 170 nsec/call
-clock-gettime-monotonic:    libc: 30 nsec/call
-clock-gettime-monotonic:    vdso: 24 nsec/call
-clock-gettime-realtime-coarse: syscall: 153 nsec/call
-clock-gettime-realtime-coarse:    libc: 15 nsec/call
-clock-gettime-realtime-coarse:    vdso: 9 nsec/call
-clock-gettime-monotonic-coarse: syscall: 167 nsec/call
-clock-gettime-monotonic-coarse:    libc: 15 nsec/call
-clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
+So the thinking here is any memory identified via ibm,dynamic-memory can
+be hot removed later. Hence the need to add them lmb size, because our
+hotplug framework remove them in lmb size. If we want to support
+hotunplug, then we will have to make sure kernel allocation doesn't
+happen in that region right ?
 
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
----
- arch/powerpc/kernel/asm-offsets.c         |  2 +
- arch/powerpc/kernel/vdso64/gettimeofday.S | 73 ++++++++++++++++++++++++++++---
- 2 files changed, 68 insertions(+), 7 deletions(-)
+With the above i would consider not marking it hotplug was a bug before
+?
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 6e95c2c..c6acaa5 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -396,6 +396,8 @@ int main(void)
- 	/* Other bits used by the vdso */
- 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
- 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
-+	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
-+	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
- 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
- 	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
- 
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index 3820213..5229d1e 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -60,19 +60,26 @@ V_FUNCTION_END(__kernel_gettimeofday)
-  */
- V_FUNCTION_BEGIN(__kernel_clock_gettime)
-   .cfi_startproc
-+	mr	r11,r4			/* r11 saves tp */
-+	mflr	r12			/* r12 saves lr */
-+	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
-+	ori	r7,r7,NSEC_PER_SEC@l
-+
- 	/* Check for supported clock IDs */
- 	cmpwi	cr0,r3,CLOCK_REALTIME
- 	cmpwi	cr1,r3,CLOCK_MONOTONIC
- 	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
--	bne	cr0,99f
-+	beq	cr0,50f
- 
--	mflr	r12			/* r12 saves lr */
-+	cmpwi	cr0,r3,CLOCK_REALTIME_COARSE
-+	cmpwi	cr1,r3,CLOCK_MONOTONIC_COARSE
-+	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
-+	beq	cr0,65f
-+
-+	b	99f		/* Fallback to syscall */
-   .cfi_register lr,r12
--	mr	r11,r4			/* r11 saves tp */
--	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
--	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
--	ori	r7,r7,NSEC_PER_SEC@l
--50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
-+50:	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-+	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
- 	bne	cr1,80f			/* if not monotonic, all done */
- 
- 	/*
-@@ -110,6 +117,58 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 1:	bge	cr1,80f
- 	addi	r4,r4,-1
- 	add	r5,r5,r7
-+	b	80f
-+
-+	/*
-+	 * For coarse clocks we get data directly from the vdso data page, so
-+	 * we don't need to call __do_get_tspec, but we still need to do the
-+	 * counter trick.
-+	 */
-+65:	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-+70:	ld	r8,CFG_TB_UPDATE_COUNT(r3)
-+	andi.	r0,r8,1			/* pending update ? loop */
-+	bne-	70b
-+	xor	r0,r8,r8		/* create dependency */
-+	add	r3,r3,r0
-+
-+	/*
-+	 * CLOCK_REALTIME_COARSE, below values are needed for MONOTONIC_COARSE
-+	 * too
-+	 */
-+	ld	r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
-+	ld	r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
-+	bne	cr1,78f
-+
-+	/* CLOCK_MONOTONIC_COARSE */
-+	lwa	r6,WTOM_CLOCK_SEC(r3)
-+	lwa	r9,WTOM_CLOCK_NSEC(r3)
-+
-+	/* check if counter has updated */
-+78:	or	r0,r6,r9
-+	xor	r0,r0,r0
-+	add	r3,r3,r0
-+	ld	r0,CFG_TB_UPDATE_COUNT(r3)
-+	cmpld	cr0,r0,r8		/* check if updated */
-+	bne-	70b
-+
-+	/* Counter has not updated, so continue calculating proper values for
-+	 * sec and nsec if monotonic coarse, or just return with the proper
-+	 * values for realtime.
-+	 */
-+	bne	cr1,80f
-+
-+	/* Add wall->monotonic offset and check for overflow or underflow.
-+	 */
-+	add	r4,r4,r6
-+	add	r5,r5,r9
-+	cmpd	cr0,r5,r7
-+	cmpdi	cr1,r5,0
-+	blt	79f
-+	subf	r5,r7,r5
-+	addi	r4,r4,1
-+79:	bge	cr1,80f
-+	addi	r4,r4,-1
-+	add	r5,r5,r7
- 
- 80:	std	r4,TSPC64_TV_SEC(r11)
- 	std	r5,TSPC64_TV_NSEC(r11)
--- 
-2.9.4
+-aneesh
