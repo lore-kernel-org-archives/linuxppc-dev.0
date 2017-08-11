@@ -1,22 +1,21 @@
 Return-Path: <clg@kaod.org>
-Received: from 1.mo4.mail-out.ovh.net (1.mo4.mail-out.ovh.net [178.33.248.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTS9X3179zDr2M
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:31:12 +1000 (AEST)
+Received: from 3.mo4.mail-out.ovh.net (3.mo4.mail-out.ovh.net [46.105.57.129])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTSPB4nTbzDr0Y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 00:41:18 +1000 (AEST)
 Received: from player772.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id A77BF8C9A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:10 +0200 (CEST)
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 7D3C18C993
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:24:41 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v2 1/8] powerpc/xive: introduce a common routine
- xive_queue_page_alloc()
-Date: Fri, 11 Aug 2017 16:23:34 +0200
-Message-Id: <20170811142341.22715-2-clg@kaod.org>
+Subject: [PATCH v2 6/8] powerpc/xive: introduce H_INT_ESB hcall
+Date: Fri, 11 Aug 2017 16:23:39 +0200
+Message-Id: <20170811142341.22715-7-clg@kaod.org>
 In-Reply-To: <20170811142341.22715-1-clg@kaod.org>
 References: <20170811142341.22715-1-clg@kaod.org>
 MIME-Version: 1.0
@@ -30,95 +29,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This routine will be used in the spapr backend. Also introduce a short
-xive_alloc_order() helper.
+The H_INT_ESB hcall() is used to issue a load or store to the ESB page
+instead of using the MMIO pages. This can be used as a workaround on
+some HW issues. The OS knows that this hcall should be used on an
+interrupt source when the ESB hcall flag is set to 1 in the hcall
+H_INT_GET_SOURCE_INFO.
+
+To maintain the frontier between the xive frontend and backend, we
+introduce a new xive operation 'esb_rw' to be used in the routines
+doing memory accesses on the ESBs.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c        | 16 ++++++++++++++++
- arch/powerpc/sysdev/xive/native.c        | 16 +++++-----------
- arch/powerpc/sysdev/xive/xive-internal.h |  6 ++++++
- 3 files changed, 27 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/xive.h          |  1 +
+ arch/powerpc/sysdev/xive/common.c        | 10 ++++++--
+ arch/powerpc/sysdev/xive/spapr.c         | 44 +++++++++++++++++++++++++++++++-
+ arch/powerpc/sysdev/xive/xive-internal.h |  1 +
+ 4 files changed, 53 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+index 64ec9bbcf03e..371fbebf1ec9 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -56,6 +56,7 @@ struct xive_irq_data {
+ #define XIVE_IRQ_FLAG_SHIFT_BUG	0x04
+ #define XIVE_IRQ_FLAG_MASK_FW	0x08
+ #define XIVE_IRQ_FLAG_EOI_FW	0x10
++#define XIVE_IRQ_FLAG_H_INT_ESB	0x20
+ 
+ #define XIVE_INVALID_CHIP_ID	-1
+ 
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 6e0c9dee724f..26999ceae20e 100644
+index ac5f18a66742..8fd58773c241 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1424,6 +1424,22 @@ bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
- 	return true;
+@@ -198,7 +198,10 @@ static u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
+ 	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+ 		offset |= offset << 4;
+ 
+-	val = in_be64(xd->eoi_mmio + offset);
++	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
++		val = xive_ops->esb_rw(xd->hw_irq, offset, 0, 0);
++	else
++		val = in_be64(xd->eoi_mmio + offset);
+ 
+ 	return (u8)val;
+ }
+@@ -209,7 +212,10 @@ static void xive_esb_write(struct xive_irq_data *xd, u32 offset, u64 data)
+ 	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+ 		offset |= offset << 4;
+ 
+-	out_be64(xd->eoi_mmio + offset, data);
++	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
++		xive_ops->esb_rw(xd->hw_irq, offset, data, 1);
++	else
++		out_be64(xd->eoi_mmio + offset, data);
  }
  
-+__be32 *xive_queue_page_alloc(unsigned int cpu, u32 queue_shift)
+ #ifdef CONFIG_XMON
+diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+index 7efcee928569..ecaa9a1cb63b 100644
+--- a/arch/powerpc/sysdev/xive/spapr.c
++++ b/arch/powerpc/sysdev/xive/spapr.c
+@@ -224,7 +224,46 @@ static long plpar_int_sync(unsigned long flags)
+ 	return 0;
+ }
+ 
+-#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60)) /* TODO */
++#define XIVE_ESB_FLAG_STORE (1ull << (63 - 63))
++
++static long plpar_int_esb(unsigned long flags,
++			  unsigned long lisn,
++			  unsigned long offset,
++			  unsigned long in_data,
++			  unsigned long *out_data)
 +{
-+	unsigned int alloc_order;
-+	struct page *pages;
-+	__be32 *qpage;
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	long rc;
 +
-+	alloc_order = xive_alloc_order(queue_shift);
-+	pages = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, alloc_order);
-+	if (!pages)
-+		return ERR_PTR(-ENOMEM);
-+	qpage = (__be32 *)page_address(pages);
-+	memset(qpage, 0, 1 << queue_shift);
++	pr_devel("H_INT_ESB flags=%lx lisn=%lx offset=%lx in=%lx\n",
++		flags,  lisn, offset, in_data);
 +
-+	return qpage;
++	rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset, in_data);
++	if (rc) {
++		pr_err("H_INT_ESB lisn=%ld offset=%ld returned %ld\n",
++		       lisn, offset, rc);
++		return  rc;
++	}
++
++	*out_data = retbuf[0];
++
++	return 0;
 +}
 +
- static int __init xive_off(char *arg)
- {
- 	xive_cmdline_disabled = true;
-diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-index 0f95476b01f6..ef92a83090e1 100644
---- a/arch/powerpc/sysdev/xive/native.c
-+++ b/arch/powerpc/sysdev/xive/native.c
-@@ -202,17 +202,12 @@ EXPORT_SYMBOL_GPL(xive_native_disable_queue);
- static int xive_native_setup_queue(unsigned int cpu, struct xive_cpu *xc, u8 prio)
- {
- 	struct xive_q *q = &xc->queue[prio];
--	unsigned int alloc_order;
--	struct page *pages;
- 	__be32 *qpage;
- 
--	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
--		(xive_queue_shift - PAGE_SHIFT) : 0;
--	pages = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, alloc_order);
--	if (!pages)
--		return -ENOMEM;
--	qpage = (__be32 *)page_address(pages);
--	memset(qpage, 0, 1 << xive_queue_shift);
-+	qpage = xive_queue_page_alloc(cpu, xive_queue_shift);
-+	if (IS_ERR(qpage))
-+		return PTR_ERR(qpage);
++static u64 xive_spapr_esb_rw(u32 lisn, u32 offset, u64 data, bool write)
++{
++	unsigned long read_data;
++	long rc;
 +
- 	return xive_native_configure_queue(get_hard_smp_processor_id(cpu),
- 					   q, prio, qpage, xive_queue_shift, false);
- }
-@@ -227,8 +222,7 @@ static void xive_native_cleanup_queue(unsigned int cpu, struct xive_cpu *xc, u8
- 	 * from an IPI and iounmap isn't safe
- 	 */
- 	__xive_native_disable_queue(get_hard_smp_processor_id(cpu), q, prio);
--	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
--		(xive_queue_shift - PAGE_SHIFT) : 0;
-+	alloc_order = xive_alloc_order(xive_queue_shift);
- 	free_pages((unsigned long)q->qpage, alloc_order);
- 	q->qpage = NULL;
- }
++	rc = plpar_int_esb(write ? XIVE_ESB_FLAG_STORE : 0,
++			   lisn, offset, data, &read_data);
++	if (rc)
++		return -1;
++
++	return write ? 0 : read_data;
++}
++
++#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60))
+ #define XIVE_SRC_LSI           (1ull << (63 - 61))
+ #define XIVE_SRC_TRIGGER       (1ull << (63 - 62))
+ #define XIVE_SRC_STORE_EOI     (1ull << (63 - 63))
+@@ -244,6 +283,8 @@ static int xive_spapr_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
+ 	if (rc)
+ 		return  -EINVAL;
+ 
++	if (flags & XIVE_SRC_H_INT_ESB)
++		data->flags  |= XIVE_IRQ_FLAG_H_INT_ESB;
+ 	if (flags & XIVE_SRC_STORE_EOI)
+ 		data->flags  |= XIVE_IRQ_FLAG_STORE_EOI;
+ 	if (flags & XIVE_SRC_LSI)
+@@ -486,6 +527,7 @@ static const struct xive_ops xive_spapr_ops = {
+ 	.setup_cpu		= xive_spapr_setup_cpu,
+ 	.teardown_cpu		= xive_spapr_teardown_cpu,
+ 	.sync_source		= xive_spapr_sync_source,
++	.esb_rw			= xive_spapr_esb_rw,
+ #ifdef CONFIG_SMP
+ 	.get_ipi		= xive_spapr_get_ipi,
+ 	.put_ipi		= xive_spapr_put_ipi,
 diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
-index d07ef2d29caf..dd1e2022cce4 100644
+index dd1e2022cce4..f34abed0c05f 100644
 --- a/arch/powerpc/sysdev/xive/xive-internal.h
 +++ b/arch/powerpc/sysdev/xive/xive-internal.h
-@@ -56,6 +56,12 @@ struct xive_ops {
- 
- bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
- 		    u8 max_prio);
-+__be32 *xive_queue_page_alloc(unsigned int cpu, u32 queue_shift);
-+
-+static inline u32 xive_alloc_order(u32 queue_shift)
-+{
-+	return (queue_shift > PAGE_SHIFT) ? (queue_shift - PAGE_SHIFT) : 0;
-+}
- 
- extern bool xive_cmdline_disabled;
- 
+@@ -47,6 +47,7 @@ struct xive_ops {
+ 	void	(*update_pending)(struct xive_cpu *xc);
+ 	void	(*eoi)(u32 hw_irq);
+ 	void	(*sync_source)(u32 hw_irq);
++	u64	(*esb_rw)(u32 hw_irq, u32 offset, u64 data, bool write);
+ #ifdef CONFIG_SMP
+ 	int	(*get_ipi)(unsigned int cpu, struct xive_cpu *xc);
+ 	void	(*put_ipi)(unsigned int cpu, struct xive_cpu *xc);
 -- 
 2.13.4
