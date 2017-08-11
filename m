@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTPG85t1rzDr42
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTPG872mvzDr46
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 22:20:00 +1000 (AEST)
-In-Reply-To: <878tixj3wg.fsf@linux-m68k.org>
-To: Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1502174365-8293-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc: fix invalid use of register expressions
-Message-Id: <3xTPG75gK3z9t3w@ozlabs.org>
-Date: Fri, 11 Aug 2017 22:19:57 +1000 (AEST)
+Subject: Re: [1/9] powerpc/47x: Guard 47x cputable entries with CONFIG_PPC_47x
+Message-Id: <3xTPG85P1Qz9t3x@ozlabs.org>
+Date: Fri, 11 Aug 2017 22:20:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,16 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-08-05 at 17:55:11 UTC, Andreas Schwab wrote:
-> binutils >= 2.26 now warns about misuse of register expressions in
-> assembler operands that are actually literals, for example:
+On Tue, 2017-08-08 at 06:39:17 UTC, Michael Ellerman wrote:
+> Currently we build the 47x cputable entries even when CONFIG_PPC_47x is
+> disabled. That means a kernel built without CONFIG_PPC_47x will claim to
+> support a 47x CPU and start booting, only to break somewhere later
+> because it doesn't have 47x support compiled in.
 > 
-> arch/powerpc/kernel/entry_64.S:535: Warning: invalid register expression
+> So guard the 47x cputable entries with CONFIG_PPC_47x. Note that this is
+> inside the #ifdef CONFIG_44x section, because 47x depends on 44x.
 > 
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/8a583c0a8d316d8ea52ea78491174a
+https://git.kernel.org/powerpc/c/13fef7f9da13ab6cc22d456315e887
 
 cheers
