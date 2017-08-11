@@ -1,26 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTFbJ0yNJzDr2M
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 16:34:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, bauerman@linux.vnet.ibm.com,
- mhocko@kernel.org
-Subject: Re: [RFC v7 09/25] powerpc: store and restore the pkey state across
- context switches
-In-Reply-To: <874ltfkv64.fsf@linux.vnet.ibm.com>
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-10-git-send-email-linuxram@us.ibm.com>
- <874ltfkv64.fsf@linux.vnet.ibm.com>
-Date: Fri, 11 Aug 2017 16:34:19 +1000
-Message-ID: <87fucyd34k.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTHSR3388zDr42
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 17:58:31 +1000 (AEST)
+Date: Fri, 11 Aug 2017 09:58:26 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org
+Subject: Re: [v6 00/15] complete deferred page initialization
+Message-ID: <20170811075826.GB30811@dhcp22.suse.cz>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +29,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+[I am sorry I didn't get to your previous versions]
 
-> Ram Pai <linuxram@us.ibm.com> writes:
->> --- a/arch/powerpc/kernel/process.c
->> +++ b/arch/powerpc/kernel/process.c
->> @@ -42,6 +42,7 @@
->>  #include <linux/hw_breakpoint.h>
->>  #include <linux/uaccess.h>
->>  #include <linux/elf-randomize.h>
->> +#include <linux/pkeys.h>
->>
->>  #include <asm/pgtable.h>
->>  #include <asm/io.h>
->> @@ -1096,6 +1097,13 @@ static inline void save_sprs(struct thread_struct *t)
->>  		t->tar = mfspr(SPRN_TAR);
->>  	}
->>  #endif
->> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
->> +	if (arch_pkeys_enabled()) {
->> +		t->amr = mfspr(SPRN_AMR);
->> +		t->iamr = mfspr(SPRN_IAMR);
->> +		t->uamor = mfspr(SPRN_UAMOR);
->> +	}
->> +#endif
->>  }
->
-> Is it worth having a flag in thread_struct saying whether it has every
-> called pkey_alloc and only do the mfsprs if it did?
+On Mon 07-08-17 16:38:34, Pavel Tatashin wrote:
+[...]
+> SMP machines can benefit from the DEFERRED_STRUCT_PAGE_INIT config option,
+> which defers initializing struct pages until all cpus have been started so
+> it can be done in parallel.
+> 
+> However, this feature is sub-optimal, because the deferred page
+> initialization code expects that the struct pages have already been zeroed,
+> and the zeroing is done early in boot with a single thread only.  Also, we
+> access that memory and set flags before struct pages are initialized. All
+> of this is fixed in this patchset.
+> 
+> In this work we do the following:
+> - Never read access struct page until it was initialized
 
-Yes, in fact there's a programming note in the UAMOR section of the arch
-that says exactly that.
+How is this enforced? What about pfn walkers? E.g. page_ext
+initialization code (page owner in particular)
 
-On the write side you have to be a bit more careful. You have to make
-sure you set the UAMOR to 0 when you're switching from a process that
-has used keys to one that isn't.
+> - Never set any fields in struct pages before they are initialized
+> - Zero struct page at the beginning of struct page initialization
 
-cheers
+Please give us a more highlevel description of how your reimplementation
+works and how is the patchset organized. I will go through those patches
+but it is always good to give an overview in the cover letter to make
+the review easier.
+
+> Performance improvements on x86 machine with 8 nodes:
+> Intel(R) Xeon(R) CPU E7-8895 v3 @ 2.60GHz
+> 
+> Single threaded struct page init: 7.6s/T improvement
+> Deferred struct page init: 10.2s/T improvement
+
+What are before and after numbers and how have you measured them.
+> 
+> Pavel Tatashin (15):
+>   x86/mm: reserve only exiting low pages
+>   x86/mm: setting fields in deferred pages
+>   sparc64/mm: setting fields in deferred pages
+>   mm: discard memblock data later
+>   mm: don't accessed uninitialized struct pages
+>   sparc64: simplify vmemmap_populate
+>   mm: defining memblock_virt_alloc_try_nid_raw
+>   mm: zero struct pages during initialization
+>   sparc64: optimized struct page zeroing
+>   x86/kasan: explicitly zero kasan shadow memory
+>   arm64/kasan: explicitly zero kasan shadow memory
+>   mm: explicitly zero pagetable memory
+>   mm: stop zeroing memory during allocation in vmemmap
+>   mm: optimize early system hash allocations
+>   mm: debug for raw alloctor
+> 
+>  arch/arm64/mm/kasan_init.c          |  42 ++++++++++
+>  arch/sparc/include/asm/pgtable_64.h |  30 +++++++
+>  arch/sparc/mm/init_64.c             |  31 +++-----
+>  arch/x86/kernel/setup.c             |   5 +-
+>  arch/x86/mm/init_64.c               |   9 ++-
+>  arch/x86/mm/kasan_init_64.c         |  67 ++++++++++++++++
+>  include/linux/bootmem.h             |  27 +++++++
+>  include/linux/memblock.h            |   9 ++-
+>  include/linux/mm.h                  |   9 +++
+>  mm/memblock.c                       | 152 ++++++++++++++++++++++++++++--------
+>  mm/nobootmem.c                      |  16 ----
+>  mm/page_alloc.c                     |  31 +++++---
+>  mm/sparse-vmemmap.c                 |  10 ++-
+>  mm/sparse.c                         |   6 +-
+>  14 files changed, 356 insertions(+), 88 deletions(-)
+> 
+> -- 
+> 2.14.0
+
+-- 
+Michal Hocko
+SUSE Labs
