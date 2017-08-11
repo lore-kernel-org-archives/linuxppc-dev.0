@@ -1,32 +1,25 @@
-Return-Path: <mgorman@techsingularity.net>
-Received: from outbound-smtp04.blacknight.com (outbound-smtp04.blacknight.com
- [81.17.249.35])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTL721CK5zDr1s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 19:58:38 +1000 (AEST)
-Received: from mail.blacknight.com (pemlinmail05.blacknight.ie [81.17.254.26])
- by outbound-smtp04.blacknight.com (Postfix) with ESMTPS id DF832992A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 09:50:09 +0000 (UTC)
-Date: Fri, 11 Aug 2017 10:50:09 +0100
-From: Mel Gorman <mgorman@techsingularity.net>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Pavel Tatashin <pasha.tatashin@oracle.com>,
- linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, Mel Gorman <mgorman@suse.de>
-Subject: Re: [v6 04/15] mm: discard memblock data later
-Message-ID: <20170811095009.hz2vnatcwztffraw@techsingularity.net>
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-5-git-send-email-pasha.tatashin@oracle.com>
- <20170811093249.GE30811@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTLlC46fwzDr38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 20:26:31 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, bauerman@linux.vnet.ibm.com,
+ mhocko@kernel.org
+Subject: Re: [RFC v7 24/25] powerpc: Deliver SEGV signal on pkey violation
+In-Reply-To: <87378zkuil.fsf@linux.vnet.ibm.com>
+References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
+ <1501459946-11619-25-git-send-email-linuxram@us.ibm.com>
+ <87378zkuil.fsf@linux.vnet.ibm.com>
+Date: Fri, 11 Aug 2017 20:26:30 +1000
+Message-ID: <87a836csdl.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20170811093249.GE30811@dhcp22.suse.cz>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,22 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 11, 2017 at 11:32:49AM +0200, Michal Hocko wrote:
-> > Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> > Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-> > Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-> > Reviewed-by: Bob Picco <bob.picco@oracle.com>
-> 
-> Considering that some HW might behave strangely and this would be rather
-> hard to debug I would be tempted to mark this for stable. It should also
-> be merged separately from the rest of the series.
-> 
-> I have just one nit below
-> Acked-by: Michal Hocko <mhocko@suse.com>
-> 
+Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
 
-Agreed.
+> Ram Pai <linuxram@us.ibm.com> writes:
+>
+>> The value of the AMR register at the time of exception
+>> is made available in gp_regs[PT_AMR] of the siginfo.
+>>
+>> The value of the pkey, whose protection got violated,
+>> is made available in si_pkey field of the siginfo structure.
+>
+> Should the IAMR also be made available?
+>
+> Also, should the AMR and IAMR be accesible to userspace (e.g., to GDB)
+> via ptrace and the core file?
 
--- 
-Mel Gorman
-SUSE Labs
+Yes if they're part of the thread's context they should be accessible
+via ptrace and in core files.
+
+>> --- a/arch/powerpc/kernel/signal_32.c
+>> +++ b/arch/powerpc/kernel/signal_32.c
+>> @@ -500,6 +500,11 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+>>  				   (unsigned long) &frame->tramp[2]);
+>>  	}
+>>
+>> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+>> +	if (__put_user(get_paca()->paca_amr, &frame->mc_gregs[PT_AMR]))
+>> +		return 1;
+>> +#endif /*  CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+>> +
+>>  	return 0;
+>>  }
+>
+> frame->mc_gregs[PT_AMR] has 32 bits, but paca_amr has 64 bits. Does this
+> work as intended?
+
+I don't understand why we are putting it in there at all?
+
+Is there some special handling of the actual register on signals? I
+haven't seen it. In which case the process can get the value of AMR by
+reading the register. ??
+
+cheers
