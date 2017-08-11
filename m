@@ -1,26 +1,18 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTHfR4QRczDr5C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 18:07:11 +1000 (AEST)
-Date: Fri, 11 Aug 2017 10:07:07 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org
-Subject: Re: [v6 01/15] x86/mm: reserve only exiting low pages
-Message-ID: <20170811080706.GC30811@dhcp22.suse.cz>
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-2-git-send-email-pasha.tatashin@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1502138329-123460-2-git-send-email-pasha.tatashin@oracle.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xTHxQ0KnjzDr2v
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 18:20:09 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm@vger.kernel.org,
+ Yongji Xie <elohimes@gmail.com>, Eric Auger <eric.auger@redhat.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, shan.gavin@gmail.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH kernel] PCI: Disable IOV before pcibios_sriov_disable()
+Date: Fri, 11 Aug 2017 18:19:33 +1000
+Message-Id: <20170811081933.17474-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,75 +22,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 07-08-17 16:38:35, Pavel Tatashin wrote:
-> Struct pages are initialized by going through __init_single_page(). Since
-> the existing physical memory in memblock is represented in memblock.memory
-> list, struct page for every page from this list goes through
-> __init_single_page().
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-By a page _from_ this list you mean struct pages backing the physical
-memory of the memblock lists?
+The PowerNV platform is the only user of pcibios_sriov_disable().
+The IOV BAR could be shifted by pci_iov_update_resource(). The
+warning message in the function is printed if the IOV capability
+is in enabled (PCI_SRIOV_CTRL_VFE && PCI_SRIOV_CTRL_MSE) state.
+
+This is the backtrace of what is happening:
+   pci_disable_sriov
+   sriov_disable
+   pnv_pci_sriov_disable
+   pnv_pci_vf_resource_shift
+   pci_update_resource
+   pci_iov_update_resource
+
+This fixes the issue by disabling IOV capability before calling
+pcibios_sriov_disable(). With it, the disabling path matches
+the enabling path: pcibios_sriov_enable() is called before the
+IOV capability is enabled.
+
+Cc: shan.gavin@gmail.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Reported-by: Carol L Soto <clsoto@us.ibm.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Tested-by: Carol L Soto <clsoto@us.ibm.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+
+This is repost. Since Gavin left the team, I am trying to push it out.
+The previos converstion is here: https://patchwork.ozlabs.org/patch/732653/
+
+Two questions were raised then. I'll try to comment on this below.
+
+>1) "res" is already in the resource tree, so we shouldn't be changing
+>   its start address, because that may make the tree inconsistent,
+>   e.g., the resource may no longer be completely contained in its
+>   parent, it may conflict with a sibling, etc.
+
+We should not, yes. But...
+
+At the boot time IOV BAR gets as much MMIO space as it can possibly use.
+(Embarassingly I cannot trace where this is coming from, 8GB is selected
+via pci_assign_unassigned_root_bus_resources() path somehow).
+For example, it is 256*32MB=8GB where 256 is maximum PEs number and 32MB
+is a PF/VF BAR size. Whatever shifting we do afterwards, the boudaries of
+that 8GB area do not change and we test it in pnv_pci_vf_resource_shift():
+
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/platforms/powernv/pci-ioda.c#n987
+
+> 2) If we update "res->start", shouldn't we update "res->end"
+>   correspondingly?
+
+We have to update the PF's IOV BAR address as we allocate PEs dynamically
+and we do not know in advance where our VF numbers start in that
+8GB window. So we change IOV BASR start. Changing the end may make it
+look more like there is a free area to use but in reality it won't be
+usable as well as the area we "release" by shifting the start address.
+
+We could probably move that M64 MMIO window by the same delta in
+opposite direction so the IOV BAR start address would remain the same
+but its VF#0 would be mapped to let's say PF#5. I am just afraid there
+is an alignment requirement for these M64 window start address; and this
+would be even more tricky to manage.
+
+We could also create reserved areas for the amount of space "release" by
+moving the start address, not sure how though.
+
+So how do we proceed with this particular patch now? Thanks.
+---
+ drivers/pci/iov.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index 120485d6f352..ac41c8be9200 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -331,7 +331,6 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	while (i--)
+ 		pci_iov_remove_virtfn(dev, i, 0);
  
-> The second memblock list: memblock.reserved, manages the allocated memory.
-> The memory that won't be available to kernel allocator. So, every page from
-> this list goes through reserve_bootmem_region(), where certain struct page
-> fields are set, the assumption being that the struct pages have been
-> initialized beforehand.
-> 
-> In trim_low_memory_range() we unconditionally reserve memoryfrom PFN 0, but
-> memblock.memory might start at a later PFN. For example, in QEMU,
-> e820__memblock_setup() can use PFN 1 as the first PFN in memblock.memory,
-> so PFN 0 is not on memblock.memory (and hence isn't initialized via
-> __init_single_page) but is on memblock.reserved (and hence we set fields in
-> the uninitialized struct page).
-> 
-> Currently, the struct page memory is always zeroed during allocation,
-> which prevents this problem from being detected. But, if some asserts
-> provided by CONFIG_DEBUG_VM_PGFLAGS are tighten, this problem may become
-> visible in existing kernels.
-> 
-> In this patchset we will stop zeroing struct page memory during allocation.
-> Therefore, this bug must be fixed in order to avoid random assert failures
-> caused by CONFIG_DEBUG_VM_PGFLAGS triggers.
-> 
-> The fix is to reserve memory from the first existing PFN.
-
-Hmm, I assume this is a result of some assert triggering, right? Which
-one? Why don't we need the same treatment for other than x86 arch?
-
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-> Reviewed-by: Bob Picco <bob.picco@oracle.com>
-
-I guess that the review happened inhouse. I do not want to question its
-value but it is rather strange to not hear the specific review comments
-which might be useful in general and moreover even not include those
-people on the CC list so they are aware of the follow up discussion.
-
-> ---
->  arch/x86/kernel/setup.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 3486d0498800..489cdc141bcb 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -790,7 +790,10 @@ early_param("reservelow", parse_reservelow);
->  
->  static void __init trim_low_memory_range(void)
->  {
-> -	memblock_reserve(0, ALIGN(reserve_low, PAGE_SIZE));
-> +	unsigned long min_pfn = find_min_pfn_with_active_regions();
-> +	phys_addr_t base = min_pfn << PAGE_SHIFT;
-> +
-> +	memblock_reserve(base, ALIGN(reserve_low, PAGE_SIZE));
->  }
->  	
->  /*
-> -- 
-> 2.14.0
-
+-	pcibios_sriov_disable(dev);
+ err_pcibios:
+ 	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+ 	pci_cfg_access_lock(dev);
+@@ -339,6 +338,8 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	ssleep(1);
+ 	pci_cfg_access_unlock(dev);
+ 
++	pcibios_sriov_disable(dev);
++
+ 	if (iov->link != dev->devfn)
+ 		sysfs_remove_link(&dev->dev.kobj, "dep_link");
+ 
+@@ -357,14 +358,14 @@ static void sriov_disable(struct pci_dev *dev)
+ 	for (i = 0; i < iov->num_VFs; i++)
+ 		pci_iov_remove_virtfn(dev, i, 0);
+ 
+-	pcibios_sriov_disable(dev);
+-
+ 	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+ 	pci_cfg_access_lock(dev);
+ 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+ 	ssleep(1);
+ 	pci_cfg_access_unlock(dev);
+ 
++	pcibios_sriov_disable(dev);
++
+ 	if (iov->link != dev->devfn)
+ 		sysfs_remove_link(&dev->dev.kobj, "dep_link");
+ 
 -- 
-Michal Hocko
-SUSE Labs
+2.11.0
