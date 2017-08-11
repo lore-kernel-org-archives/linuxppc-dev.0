@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTW273bJmzDr38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 02:39:59 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id c65so3908950pfl.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 09:39:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTW2B4qY9zDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 02:40:02 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id p13so3885860pfd.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Aug 2017 09:40:02 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org,
  Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH v2 11/14] powerpc/64s: idle POWER9 can execute stop without a
- sync sequence
-Date: Sat, 12 Aug 2017 02:39:09 +1000
-Message-Id: <20170811163912.28783-12-npiggin@gmail.com>
+Subject: [PATCH v2 12/14] KVM: PPC: Book3S HV: POWER9 can execute stop without
+ a sync sequence
+Date: Sat, 12 Aug 2017 02:39:10 +1000
+Message-Id: <20170811163912.28783-13-npiggin@gmail.com>
 In-Reply-To: <20170811163912.28783-1-npiggin@gmail.com>
 References: <20170811163912.28783-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,113 +29,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/cpuidle.h | 16 ----------------
- arch/powerpc/kernel/idle_book3s.S  | 26 ++++++++++++++++++++------
- 2 files changed, 20 insertions(+), 22 deletions(-)
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-index 52586f9956bb..6853a3741338 100644
---- a/arch/powerpc/include/asm/cpuidle.h
-+++ b/arch/powerpc/include/asm/cpuidle.h
-@@ -90,20 +90,4 @@ static inline void report_invalid_psscr_val(u64 psscr_val, int err)
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 3e024fd71fe8..edb47738a686 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -2527,7 +2527,17 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
  
- #endif
- 
--/* Idle state entry routines */
--#ifdef	CONFIG_PPC_P7_NAP
--#define IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
--	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
--	std	r0,0(r1);					\
--	ptesync;						\
--	ld	r0,0(r1);					\
--236:	cmpd	cr0,r0,r0;					\
--	bne	236b;						\
--	IDLE_INST;						\
--
--#define	IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)			\
--	IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
--	b	.
--#endif /* CONFIG_PPC_P7_NAP */
--
- #endif
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 9a9a28f0758d..3b701b1a5e87 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -151,6 +151,19 @@ pnv_powersave_common:
- 	mtmsrd	r7,0
- 	bctr
- 
-+/*
-+ * This is the sequence required to execute idle instructions, as
-+ * specified in ISA v2.07. MSR[IR] and MSR[DR] must be 0.
-+ */
-+#define ARCH207_IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)		\
-+	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
-+	std	r0,0(r1);					\
-+	ptesync;						\
-+	ld	r0,0(r1);					\
-+236:	cmpd	cr0,r0,r0;					\
-+	bne	236b;						\
-+	IDLE_INST;
-+
- 	.globl pnv_enter_arch207_idle_mode
- pnv_enter_arch207_idle_mode:
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-@@ -176,7 +189,7 @@ pnv_enter_arch207_idle_mode:
- 	stb	r3,PACA_THREAD_IDLE_STATE(r13)
- 	cmpwi	cr3,r3,PNV_THREAD_SLEEP
- 	bge	cr3,2f
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
-+	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
- 	/* No return */
- 2:
- 	/* Sleep or winkle */
-@@ -215,7 +228,7 @@ pnv_fastsleep_workaround_at_entry:
- 
- common_enter: /* common code for all the threads entering sleep or winkle */
- 	bgt	cr3,enter_winkle
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
-+	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
- 
- fastsleep_workaround_at_entry:
- 	oris	r15,r15,PNV_CORE_IDLE_LOCK_BIT@h
-@@ -237,7 +250,7 @@ fastsleep_workaround_at_entry:
- enter_winkle:
- 	bl	save_sprs_to_stack
- 
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
-+	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
- 
- /*
-  * r3 - PSSCR value corresponding to the requested stop state.
-@@ -249,7 +262,7 @@ power_enter_stop:
- 	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
- 	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
- 	bne	 .Lhandle_esl_ec_set
--	IDLE_STATE_ENTER_SEQ(PPC_STOP)
-+	PPC_STOP
- 	li	r3,0  /* Since we didn't lose state, return 0 */
- 
+ kvm_nap_sequence:		/* desired LPCR value in r5 */
+-BEGIN_FTR_SECTION
++BEGIN_FTR_SECTION	/* nap sequence */
++	mtspr	SPRN_LPCR,r5
++	isync
++	li	r0, 0
++	std	r0, HSTATE_SCRATCH0(r13)
++	ptesync
++	ld	r0, HSTATE_SCRATCH0(r13)
++1:	cmpd	r0, r0
++	bne	1b
++	nap
++FTR_SECTION_ELSE	/* stop sequence */
  	/*
-@@ -282,7 +295,8 @@ power_enter_stop:
- 	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
- 	cmpd	r3,r4
- 	bge	.Lhandle_deep_stop
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_STOP)
-+	PPC_STOP	/* Does not return (system reset interrupt) */
+ 	 * PSSCR bits:	exit criterion = 1 (wakeup based on LPCR at sreset)
+ 	 *		enable state loss = 1 (allow SMT mode switch)
+@@ -2539,18 +2549,8 @@ BEGIN_FTR_SECTION
+ 	li	r4, LPCR_PECE_HVEE@higher
+ 	sldi	r4, r4, 32
+ 	or	r5, r5, r4
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	mtspr	SPRN_LPCR,r5
+-	isync
+-	li	r0, 0
+-	std	r0, HSTATE_SCRATCH0(r13)
+-	ptesync
+-	ld	r0, HSTATE_SCRATCH0(r13)
+-1:	cmpd	r0, r0
+-	bne	1b
+-BEGIN_FTR_SECTION
+-	nap
+-FTR_SECTION_ELSE
 +
- .Lhandle_deep_stop:
- /*
-  * Entering deep idle state.
-@@ -304,7 +318,7 @@ lwarx_loop_stop:
- 
- 	bl	save_sprs_to_stack
- 
--	IDLE_STATE_ENTER_SEQ_NORET(PPC_STOP)
-+	PPC_STOP	/* Does not return (system reset interrupt) */
- 
- /*
-  * Entered with MSR[EE]=0 and no soft-masked interrupts pending.
+ 	PPC_STOP
+ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+ 	b	.
 -- 
 2.13.3
