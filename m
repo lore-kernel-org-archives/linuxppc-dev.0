@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xTg2n1JhJzDr4K
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 08:41:04 +1000 (AEST)
-Message-ID: <1502491248.4493.10.camel@kernel.crashing.org>
-Subject: Re: [PATCH 3/6] powerpc/mm: Ensure cpumask update is ordered
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com, Michael
- Ellerman <mpe@ellerman.id.au>
-Date: Sat, 12 Aug 2017 08:40:48 +1000
-In-Reply-To: <20170811210656.5a19dda1@roar.ozlabs.ibm.com>
-References: <20170724042803.25848-1-benh@kernel.crashing.org>
- <20170724042803.25848-3-benh@kernel.crashing.org>
- <20170724212007.7f472332@roar.ozlabs.ibm.com>
- <20170811210656.5a19dda1@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xTqgC24h5zDr4T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 15:09:42 +1000 (AEST)
+Date: Sat, 12 Aug 2017 08:09:05 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [bug report] powerpc/mm/radix: Avoid flushing the PWC on every
+ flush_tlb_range
+Message-ID: <20170812050905.rz5ax4cdq3xm5pf6@mwanda>
+References: <20170811201544.jybwkrtd2oebtlld@mwanda>
+ <e7eca4cb-23c1-f8c7-4c03-276b8f55b820@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e7eca4cb-23c1-f8c7-4c03-276b8f55b820@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-08-11 at 21:06 +1000, Nicholas Piggin wrote:
-> Other than that your series seems good to me if you repost it you
-> can add
+On Fri, Aug 11, 2017 at 03:16:08PM -0700, Tyrel Datwyler wrote:
+> On 08/11/2017 01:15 PM, Dan Carpenter wrote:
+> > Hello Benjamin Herrenschmidt,
+> > 
+> > This is a semi-automatic email about new static checker warnings.
+> > 
+> > The patch 424de9c6e3f8: "powerpc/mm/radix: Avoid flushing the PWC on 
+> > every flush_tlb_range" from Jul 19, 2017, leads to the following 
+> > Smatch complaint:
+> > 
+> > arch/powerpc/mm/tlb-radix.c:368 radix__flush_tlb_collapsed_pmd()
+> > 	 error: we previously assumed 'mm' could be null (see line 362)
+> > 
+> > arch/powerpc/mm/tlb-radix.c
+> >    361	
+> >    362		pid = mm ? mm->context.id : 0;
+> >                       ^^
+> > Check for NULL.
+> > 
+> >    363		if (unlikely(pid == MMU_NO_CONTEXT))
+> >    364			goto no_context;
+> >    365	
+> >    366		/* 4k page size, just blow the world */
+> >    367		if (PAGE_SIZE == 0x1000) {
+> >    368			radix__flush_all_mm(mm);
+> >                                             ^^
+> > Unchecked dereference.
 > 
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> Appears to be a false positive. MMU_NO_CONTEXT I believe is defined as "0". So, maybe it
+> would be clearer that we take the goto branch if this line read:
 > 
-> This one out of the series is the bugfix so it should go to stable
-> as well, right?
+> 362		pid = mm ? mm->context.id : MMU_NO_CONTEXT;
+> 
 
-Yup.
+Ah...  This is because I'm compiling code for other arches in a "best
+effort" way.  It doesn't pull in the right headers so it doesn't know
+the value of MMU_NO_CONTEXT.  Otherwise it would read the code correctly
+and not complain.
 
-Ben.
+Sorry for that.
+
+regards,
+dan carpenter
