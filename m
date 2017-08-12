@@ -1,27 +1,21 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xVCVQ0nVwzDr44
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Aug 2017 06:03:26 +1000 (AEST)
-Date: Sat, 12 Aug 2017 22:03:19 +0200 (CEST)
-From: Jiri Kosina <jikos@kernel.org>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Miroslav Benes <mbenes@suse.cz>, jeyu@kernel.org, pmladek@suse.com,
- lpechacek@suse.cz, live-patching@vger.kernel.org,
- linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 2/3] livepatch: send a fake signal to all blocking tasks
-In-Reply-To: <20170811213046.bpbnhbbhqxn4jnmj@treble>
-Message-ID: <alpine.LSU.2.20.1708122200220.30597@cbobk.fhfr.pm>
-References: <20170810104815.14727-1-mbenes@suse.cz>
- <20170810104815.14727-3-mbenes@suse.cz>
- <20170811213046.bpbnhbbhqxn4jnmj@treble>
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xVD5w69tFzDr44
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Aug 2017 06:30:44 +1000 (AEST)
+Date: Sat, 12 Aug 2017 22:22:06 +0200
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+To: =?utf-8?B?THVrw6HFoQ==?= Doktor <ldoktor@redhat.com>
+Cc: a.zummo@towertech.it, john.stultz@linaro.org, tglx@linutronix.de,
+ sboyd@codeaurora.org, shuah@kernel.org, linux-rtc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] rtc: rtctest: Improve support detection
+Message-ID: <20170812202206.6phv7fesej42jhxr@piout.net>
+References: <20170811091455.11041-1-ldoktor@redhat.com>
+ <20170811091455.11041-2-ldoktor@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170811091455.11041-2-ldoktor@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 11 Aug 2017, Josh Poimboeuf wrote:
+Hi,
 
-> > +	read_lock(&tasklist_lock);
-> > +	for_each_process_thread(g, task) {
-> > +		if (!klp_patch_pending(task))
-> > +			continue;
-> > +
-> > +		/*
-> > +		 * There is a small race here. We could see TIF_PATCH_PENDING
-> > +		 * set and decide to wake up a kthread or send a fake signal.
-> > +		 * Meanwhile the task could migrate itself and the action
-> > +		 * would be meaningless. It is not serious though.
-> > +		 */
-> > +		if (task->flags & PF_KTHREAD) {
-> > +			/*
-> > +			 * Wake up a kthread which still has not been migrated.
-> > +			 */
-> > +			wake_up_process(task);
-> > +		} else {
-> > +			/*
-> > +			 * Send fake signal to all non-kthread tasks which are
-> > +			 * still not migrated.
-> > +			 */
-> > +			spin_lock_irq(&task->sighand->siglock);
-> > +			signal_wake_up(task, 0);
-> > +			spin_unlock_irq(&task->sighand->siglock);
-> > +		}
-> > +	}
-> > +	read_unlock(&tasklist_lock);
+On 11/08/2017 at 11:14:55 +0200, Lukáš Doktor wrote:
+> The rtc-generic and opal-rtc are failing to run this test as they do not
+> support all the features. Let's treat the error returns and skip to the
+> following test.
 > 
-> I can't remember if we talked about this before, is it possible to also
-> signal/wake the idle tasks?
+> Theoretically the test_DATE should be also adjusted, but as it's enabled
+> on demand I think it makes sense to fail in such case.
+> 
+> Signed-off-by: Lukáš Doktor <ldoktor@redhat.com>
+> ---
+>  tools/testing/selftests/timers/rtctest.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/timers/rtctest.c b/tools/testing/selftests/timers/rtctest.c
+> index f61170f..6344842 100644
+> --- a/tools/testing/selftests/timers/rtctest.c
+> +++ b/tools/testing/selftests/timers/rtctest.c
+> @@ -125,7 +125,7 @@ int main(int argc, char **argv)
+>  	/* Turn on update interrupts (one per second) */
+>  	retval = ioctl(fd, RTC_UIE_ON, 0);
+>  	if (retval == -1) {
+> -		if (errno == EINVAL) {
+> +		if (errno == EINVAL || errno == EINVAL) {
 
-Scheduler won't select idle task in case there is *anything* else runnable 
-in any other sched class anyway. And if that is the case, there is no need 
-for explicit wakeup, as idle task would get scheduled anyway implicitly.
+Well, this needs to be fixed.
 
-So idle task is a little bit more difficult than that, unfortunately.
+>  			fprintf(stderr,
+>  				"\n...Update IRQs not supported.\n");
+>  			goto test_READ;
+> @@ -221,6 +221,11 @@ int main(int argc, char **argv)
+>  	/* Read the current alarm settings */
+>  	retval = ioctl(fd, RTC_ALM_READ, &rtc_tm);
+>  	if (retval == -1) {
+> +		if (errno == EINVAL) {
+> +			fprintf(stderr,
+> +					"\n...EINVAL reading current alarm setting.\n");
+> +			goto test_PIE;
+> +		}
+>  		perror("RTC_ALM_READ ioctl");
+>  		exit(errno);
+>  	}
+> @@ -231,7 +236,7 @@ int main(int argc, char **argv)
+>  	/* Enable alarm interrupts */
+>  	retval = ioctl(fd, RTC_AIE_ON, 0);
+>  	if (retval == -1) {
+> -		if (errno == EINVAL) {
+> +		if (errno == EINVAL || errno ==EIO) {
+>  			fprintf(stderr,
+>  				"\n...Alarm IRQs not supported.\n");
+>  			goto test_PIE;
+> -- 
+> 2.9.4
+> 
 
 -- 
-Jiri Kosina
-SUSE Labs
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
