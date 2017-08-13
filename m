@@ -1,21 +1,22 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xVD5w69tFzDr44
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Aug 2017 06:30:44 +1000 (AEST)
-Date: Sat, 12 Aug 2017 22:22:06 +0200
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-To: =?utf-8?B?THVrw6HFoQ==?= Doktor <ldoktor@redhat.com>
-Cc: a.zummo@towertech.it, john.stultz@linaro.org, tglx@linutronix.de,
- sboyd@codeaurora.org, shuah@kernel.org, linux-rtc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] rtc: rtctest: Improve support detection
-Message-ID: <20170812202206.6phv7fesej42jhxr@piout.net>
-References: <20170811091455.11041-1-ldoktor@redhat.com>
- <20170811091455.11041-2-ldoktor@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170811091455.11041-2-ldoktor@redhat.com>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xVLr70sMhzDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Aug 2017 11:34:15 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id p13so6784947pfd.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 18:34:15 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	kvm-ppc@vger.kernel.org
+Subject: [PATCH v2 1/9] KVM: PPC: Book3S HV: Fix H_REGISTER_VPA VPA size
+ validation
+Date: Sun, 13 Aug 2017 11:33:38 +1000
+Message-Id: <20170813013346.14002-1-npiggin@gmail.com>
+In-Reply-To: <20170812113416.15978-1-npiggin@gmail.com>
+References: <20170812113416.15978-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+KVM currently validates the size of the VPA registered by the client
+against sizeof(struct lppaca), however we align (and therefore size)
+that struct to 1kB to avoid crossing a 4kB boundary in the client.
 
-On 11/08/2017 at 11:14:55 +0200, Lukáš Doktor wrote:
-> The rtc-generic and opal-rtc are failing to run this test as they do not
-> support all the features. Let's treat the error returns and skip to the
-> following test.
-> 
-> Theoretically the test_DATE should be also adjusted, but as it's enabled
-> on demand I think it makes sense to fail in such case.
-> 
-> Signed-off-by: Lukáš Doktor <ldoktor@redhat.com>
-> ---
->  tools/testing/selftests/timers/rtctest.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/timers/rtctest.c b/tools/testing/selftests/timers/rtctest.c
-> index f61170f..6344842 100644
-> --- a/tools/testing/selftests/timers/rtctest.c
-> +++ b/tools/testing/selftests/timers/rtctest.c
-> @@ -125,7 +125,7 @@ int main(int argc, char **argv)
->  	/* Turn on update interrupts (one per second) */
->  	retval = ioctl(fd, RTC_UIE_ON, 0);
->  	if (retval == -1) {
-> -		if (errno == EINVAL) {
-> +		if (errno == EINVAL || errno == EINVAL) {
+PAPR calls for sizes >= 640 bytes to be accepted. Hard code this with
+a comment.
 
-Well, this needs to be fixed.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kvm/book3s_hv.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
->  			fprintf(stderr,
->  				"\n...Update IRQs not supported.\n");
->  			goto test_READ;
-> @@ -221,6 +221,11 @@ int main(int argc, char **argv)
->  	/* Read the current alarm settings */
->  	retval = ioctl(fd, RTC_ALM_READ, &rtc_tm);
->  	if (retval == -1) {
-> +		if (errno == EINVAL) {
-> +			fprintf(stderr,
-> +					"\n...EINVAL reading current alarm setting.\n");
-> +			goto test_PIE;
-> +		}
->  		perror("RTC_ALM_READ ioctl");
->  		exit(errno);
->  	}
-> @@ -231,7 +236,7 @@ int main(int argc, char **argv)
->  	/* Enable alarm interrupts */
->  	retval = ioctl(fd, RTC_AIE_ON, 0);
->  	if (retval == -1) {
-> -		if (errno == EINVAL) {
-> +		if (errno == EINVAL || errno ==EIO) {
->  			fprintf(stderr,
->  				"\n...Alarm IRQs not supported.\n");
->  			goto test_PIE;
-> -- 
-> 2.9.4
-> 
-
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 359c79cdf0cc..1182cfd79857 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -485,7 +485,13 @@ static unsigned long do_h_register_vpa(struct kvm_vcpu *vcpu,
+ 
+ 	switch (subfunc) {
+ 	case H_VPA_REG_VPA:		/* register VPA */
+-		if (len < sizeof(struct lppaca))
++		/*
++		 * The size of our lppaca is 1kB because of the way we align
++		 * it for the guest to avoid crossing a 4kB boundary. We only
++		 * use 640 bytes of the structure though, so we should accept
++		 * clients that set a size of 640.
++		 */
++		if (len < 640)
+ 			break;
+ 		vpap = &tvcpu->arch.vpa;
+ 		err = 0;
 -- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.13.3
