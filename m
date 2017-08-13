@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xVLr70sMhzDr2n
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Aug 2017 11:34:15 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id p13so6784947pfd.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 18:34:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xVLrB19ZpzDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Aug 2017 11:34:18 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id p13so6785026pfd.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Aug 2017 18:34:18 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 1/9] KVM: PPC: Book3S HV: Fix H_REGISTER_VPA VPA size
- validation
-Date: Sun, 13 Aug 2017 11:33:38 +1000
-Message-Id: <20170813013346.14002-1-npiggin@gmail.com>
+Subject: [PATCH v2 2/9] powerpc/powernv: powernv platform is not constrained
+ by RMA
+Date: Sun, 13 Aug 2017 11:33:39 +1000
+Message-Id: <20170813013346.14002-2-npiggin@gmail.com>
 In-Reply-To: <20170812113416.15978-1-npiggin@gmail.com>
 References: <20170812113416.15978-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,36 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KVM currently validates the size of the VPA registered by the client
-against sizeof(struct lppaca), however we align (and therefore size)
-that struct to 1kB to avoid crossing a 4kB boundary in the client.
-
-PAPR calls for sizes >= 640 bytes to be accepted. Hard code this with
-a comment.
+Remove incorrect comment about real mode address restrictions on
+powernv (bare metal), and unnecessary clamping to ppc64_rma_size.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/opal.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 359c79cdf0cc..1182cfd79857 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -485,7 +485,13 @@ static unsigned long do_h_register_vpa(struct kvm_vcpu *vcpu,
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index cad6b57ce494..caf60583293a 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -162,12 +162,9 @@ int __init early_init_dt_scan_recoverable_ranges(unsigned long node,
+ 			sizeof(struct mcheck_recoverable_range);
  
- 	switch (subfunc) {
- 	case H_VPA_REG_VPA:		/* register VPA */
--		if (len < sizeof(struct lppaca))
-+		/*
-+		 * The size of our lppaca is 1kB because of the way we align
-+		 * it for the guest to avoid crossing a 4kB boundary. We only
-+		 * use 640 bytes of the structure though, so we should accept
-+		 * clients that set a size of 640.
-+		 */
-+		if (len < 640)
- 			break;
- 		vpap = &tvcpu->arch.vpa;
- 		err = 0;
+ 	/*
+-	 * Allocate a buffer to hold the MC recoverable ranges. We would be
+-	 * accessing them in real mode, hence it needs to be within
+-	 * RMO region.
++	 * Allocate a buffer to hold the MC recoverable ranges.
+ 	 */
+-	mc_recoverable_range =__va(memblock_alloc_base(size, __alignof__(u64),
+-							ppc64_rma_size));
++	mc_recoverable_range =__va(memblock_alloc(size, __alignof__(u64)));
+ 	memset(mc_recoverable_range, 0, size);
+ 
+ 	for (i = 0; i < mc_recoverable_range_len; i++) {
 -- 
 2.13.3
