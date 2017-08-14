@@ -1,45 +1,37 @@
-Return-Path: <srs0=kucv=7q=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robh+dt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWRPP1dvVzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 06:03:21 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xWRPP0ns8z8t64
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 06:03:21 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWRWP4jyRzDqZB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 06:08:33 +1000 (AEST)
+Received: from mail-qk0-f179.google.com (mail-qk0-f179.google.com
+ [209.85.220.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xWRPN3lpgz9sPm
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2017 06:03:20 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7EJxJH6055572
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 16:03:17 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cbc86k0ft-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 16:03:17 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 14 Aug 2017 14:03:16 -0600
-Date: Mon, 14 Aug 2017 13:03:09 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 14/17] powerpc: Add support for setting SPRN_TIDR
-References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1502233622-9330-15-git-send-email-sukadev@linux.vnet.ibm.com>
- <87pobyqtzu.fsf@concordia.ellerman.id.au>
+ by mail.kernel.org (Postfix) with ESMTPSA id 677ED23966
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 20:08:31 +0000 (UTC)
+Received: by mail-qk0-f179.google.com with SMTP id x191so56263140qka.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 13:08:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87pobyqtzu.fsf@concordia.ellerman.id.au>
-Message-Id: <20170814200309.GD24096@us.ibm.com>
+In-Reply-To: <82633e62b64e28dc18bc466319065b92faf2414f.1502468875.git.robin.murphy@arm.com>
+References: <0819179085df6c41c70e83a2c5c138b95c0386b3.1502468875.git.robin.murphy@arm.com>
+ <82633e62b64e28dc18bc466319065b92faf2414f.1502468875.git.robin.murphy@arm.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Mon, 14 Aug 2017 15:08:08 -0500
+Message-ID: <CAL_JsqKW7nhkCDu4eEDCgdC87b0MLH1UFO8LvaH22BcJMBsY7w@mail.gmail.com>
+Subject: Re: [PATCH 2/2] of: Restrict DMA configuration
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Frank Rowand <frowand.list@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Christoph Hellwig <hch@lst.de>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Stefan Wahren <stefan.wahren@i2se.com>,
+ =?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>,
+ Hans Verkuil <hverkuil@xs4all.nl>, Johan Hovold <johan@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,74 +41,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [mpe@ellerman.id.au] wrote:
-> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
-> 
-> > We need the SPRN_TIDR to bet set for use with fast thread-wakeup
-> > (core-to-core wakeup).  Each thread in a process needs to have a
-> > unique id within the process but as explained below, for now, we
-> > assign globally unique thread ids to all threads in the system.
-> 
-> Each thread in a process already has a unique id, ie. its pid (in the
-> init PID namespace), accessible in the kernel as task_pid_nr(task).
-> 
-> So if that's all we need, we don't need a new allocator, and we don't
-> need to store it in the thread_struct.
-> 
-> Also 99.99% of processes aren't going to care about the TIDR, so we
-> should avoid setting it in the common case. ie. it should start out zero
-> and only be initialised in the FTW code, or a helper that it calls.
++linuxppc-dev
 
-Good point. So, should we just set when the RX_WIN_OPEN ioctl is called
-rather than at the time of clone()?
+On Fri, Aug 11, 2017 at 11:29 AM, Robin Murphy <robin.murphy@arm.com> wrote:
+> Moving DMA configuration to happen later at driver probe time had the
+> unnoticed side-effect that we now perform DMA configuration for *every*
+> device represented in DT, rather than only those explicitly created by
+> the of_platform and PCI code.
+>
+> As Christoph points out, this is not really the best thing to do. Whilst
+> there may well be other DMA-capable buses that can benefit from having
+> their children automatically configured after the bridge has probed,
+> there are also plenty of others like USB, MDIO, etc. that definitely do
+> not support DMA and should not be indiscriminately processed.
+>
+> The good news is that DT already gives us the ammunition to do the right
+> thing - anything lacking a "dma-ranges" property should be considered
+> not to have a mapping of DMA address space from its children to its
+> parent, thus anything for which of_dma_get_range() does not succeed does
+> not need DMA configuration.
+>
+> The bad news is that strictly enforcing that would likely break just
+> about every FDT platform out there, since most authors have either not
+> considered the property at all or have mistakenly assumed that omitting
+> "dma-ranges" is equivalent to including the empty property. Thus we have
+> little choice but to special-case platform, AMBA and PCI devices so they
+> continue to receive configuration unconditionally as before. At least
+> anything new will have to get it right in future...
 
-_switch_to() (restore_sprs() could check for non-zero and save/restore
-the value.
+By "anything new", you mean new buses, not new platforms, right?
+What's a platform bus device today could be a different kernel bus
+type tomorrow with no DT change. So this isn't really enforceable.
 
-As Ben pointed out, we are going to be have limit the number of TIDs (to
-be within the size limits), so we won't be able to use task_pid_nr()? But
-if we assign the TIDs in the RX_WIN_OPEN ioctl, then only the FTW processes
-will need the TIDR value.
+I don't completely agree that omitting dma-ranges is wrong and that
+new DTs have to have dma-ranges simply because there is much precedent
+of DTs with dma-ranges omitted (just go look at PPC). If a bus has no
+bus to cpu address translation nor size restrictions, then no
+dma-ranges should be allowed. Of course, DT standards can and do
+evolve and we could decide to be stricter here, but that hasn't
+happened. If it does, then we need to make that clear in the spec and
+enforce it.
 
-Can we then assign new, globally-unique TID values for now and have the ioctl
-fail with -EAGAIN if all TIDs are in use? We can extend to per-process TID
-values, later?
+Rob
 
-> 
-> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> > index 9f3e2c9..6123859 100644
-> > --- a/arch/powerpc/kernel/process.c
-> > +++ b/arch/powerpc/kernel/process.c
-> > @@ -1213,6 +1213,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
-> >  		hard_irq_disable();
-> >  	}
-> >  
-> > +#ifdef CONFIG_PPC_VAS
-> > +	mtspr(SPRN_TIDR, new->thread.tidr);
-> > +#endif
-> 
-> That should be in restore_sprs().
 
-ok.
-> 
-> It should also check that the TIDR is initialised, and only switch it
-> when necessary.
-> 
-> > +	/*
-> > +	 * We can't take a PMU exception inside _switch() since there is a
-> > +	 * window where the kernel stack SLB and the kernel stack are out
-> > +	 * of sync. Hard disable here.
-> > +	 */
-> > +	hard_irq_disable();
-> 
-> We removed that in June in:
-> 
->  e4c0fc5f72bc ("powerpc/64s: Leave interrupts hard enabled in context switch for radix")
-> 
-> You've obviously picked it up somewhere along the line during a rebase,
-> please be more careful!
-
-Yeah, That was stupid. I picked it up on a recent rebase. Will be careful.
-
-> 
-> cheers
+>
+> Fixes: 09515ef5ddad ("of/acpi: Configure dma operations at probe time for platform/amba/pci bus devices")
+> Reported-by: Christoph Hellwig <hch@lst.de>
+> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+> ---
+>  drivers/of/device.c | 48 ++++++++++++++++++++++++++++++++----------------
+>  1 file changed, 32 insertions(+), 16 deletions(-)
+>
+> diff --git a/drivers/of/device.c b/drivers/of/device.c
+> index e0a28ea341fe..04c4c952dc57 100644
+> --- a/drivers/of/device.c
+> +++ b/drivers/of/device.c
+> @@ -9,6 +9,9 @@
+>  #include <linux/module.h>
+>  #include <linux/mod_devicetable.h>
+>  #include <linux/slab.h>
+> +#include <linux/pci.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/amba/bus.h>
+>
+>  #include <asm/errno.h>
+>  #include "of_private.h"
+> @@ -84,31 +87,28 @@ int of_device_add(struct platform_device *ofdev)
+>   */
+>  int of_dma_configure(struct device *dev, struct device_node *np)
+>  {
+> -       u64 dma_addr, paddr, size;
+> +       u64 dma_addr, paddr, size = 0;
+>         int ret;
+>         bool coherent;
+>         unsigned long offset;
+>         const struct iommu_ops *iommu;
+>         u64 mask;
+>
+> -       /*
+> -        * Set default coherent_dma_mask to 32 bit.  Drivers are expected to
+> -        * setup the correct supported mask.
+> -        */
+> -       if (!dev->coherent_dma_mask)
+> -               dev->coherent_dma_mask = DMA_BIT_MASK(32);
+> -
+> -       /*
+> -        * Set it to coherent_dma_mask by default if the architecture
+> -        * code has not set it.
+> -        */
+> -       if (!dev->dma_mask)
+> -               dev->dma_mask = &dev->coherent_dma_mask;
+> -
+>         ret = of_dma_get_range(np, &dma_addr, &paddr, &size);
+>         if (ret < 0) {
+> +               /*
+> +                * For legacy reasons, we have to assume some devices need
+> +                * DMA configuration regardless of whether "dma-ranges" is
+> +                * correctly specified or not.
+> +                */
+> +               if (!dev_is_pci(dev) &&
+> +#ifdef CONFIG_ARM_AMBA
+> +                   dev->bus != &amba_bustype &&
+> +#endif
+> +                   dev->bus != &platform_bus_type)
+> +                       return ret == -ENODEV ? 0 : ret;
+> +
+>                 dma_addr = offset = 0;
+> -               size = max(dev->coherent_dma_mask, dev->coherent_dma_mask + 1);
+>         } else {
+>                 offset = PFN_DOWN(paddr - dma_addr);
+>
+> @@ -129,6 +129,22 @@ int of_dma_configure(struct device *dev, struct device_node *np)
+>                 dev_dbg(dev, "dma_pfn_offset(%#08lx)\n", offset);
+>         }
+>
+> +       /*
+> +        * Set default coherent_dma_mask to 32 bit.  Drivers are expected to
+> +        * setup the correct supported mask.
+> +        */
+> +       if (!dev->coherent_dma_mask)
+> +               dev->coherent_dma_mask = DMA_BIT_MASK(32);
+> +       /*
+> +        * Set it to coherent_dma_mask by default if the architecture
+> +        * code has not set it.
+> +        */
+> +       if (!dev->dma_mask)
+> +               dev->dma_mask = &dev->coherent_dma_mask;
+> +
+> +       if (!size)
+> +               size = max(dev->coherent_dma_mask, dev->coherent_dma_mask + 1);
+> +
+>         dev->dma_pfn_offset = offset;
+>
+>         /*
+> --
+> 2.13.4.dirty
+>
