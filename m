@@ -1,47 +1,30 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWGFf1VxyzDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 23:11:01 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7EDAIYg087117
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 09:10:59 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cbbuja1c9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 09:10:59 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Mon, 14 Aug 2017 23:10:56 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7EDArn335324024
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 23:10:53 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7EDAqfR017472
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 23:10:53 +1000
-Subject: Re: [PATCH v2 3/9] powerpc/powernv: Remove real mode access limit
- for early allocations
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Suraj Jitindar Singh <surajjs@ozlabs.au.ibm.com>, kvm-ppc@vger.kernel.org,
- aneesh.kumar@linux.vnet.ibm.com
-Date: Mon, 14 Aug 2017 23:10:50 +1000
-In-Reply-To: <87h8xaqpp8.fsf@concordia.ellerman.id.au>
-References: <20170812113416.15978-1-npiggin@gmail.com>
- <20170813013346.14002-3-npiggin@gmail.com>
- <87h8xaqpp8.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1502716250.4493.25.camel@au1.ibm.com>
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xWGHY3tFXzDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 23:12:41 +1000 (AEST)
+Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
+ Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Jike Song
+ <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Joerg Roedel <joro@8bytes.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Woodhouse <dwmw2@infradead.org>, Kirti Wankhede
+ <kwankhede@nvidia.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
+ Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org
+References: <20170807072548.3023-1-aik@ozlabs.ru>
+ <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <ca2a4550-fb26-28db-0eea-a5940dfa612f@arm.com>
+Date: Mon, 14 Aug 2017 14:12:33 +0100
+MIME-Version: 1.0
+In-Reply-To: <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,60 +34,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-08-14 at 22:49 +1000, Michael Ellerman wrote:
-> Nicholas Piggin <npiggin@gmail.com> writes:
+On 14/08/17 10:45, Alexey Kardashevskiy wrote:
+> Folks,
 > 
-> > This removes the RMA limit on powernv platform, which constrains
-> > early allocations such as PACAs and stacks. There are still other
-> > restrictions that must be followed, such as bolted SLB limits, but
-> > real mode addressing has no constraints.
+> Is there anything to change besides those compiler errors and David's
+> comment in 5/5? Or the while patchset is too bad? Thanks.
 
-For radix, should we consider making the PACAs chip/node local ?
+While I now understand it's not the low-level thing I first thought it
+was, so my reasoning has changed, personally I don't like this approach
+any more than the previous one - it still smells of abusing external
+APIs to pass information from one part of VFIO to another (and it has
+the same conceptual problem of attributing something to interrupt
+sources that is actually a property of the interrupt target).
 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/mm/hash_utils_64.c | 24 +++++++++++++++---------
-> >  arch/powerpc/mm/pgtable-radix.c | 33 +++++++++++++++++----------------
+Taking a step back, though, why does vfio-pci perform this check in the
+first place? If a malicious guest already has control of a device, any
+kind of interrupt spoofing it could do by fiddling with the MSI-X
+message address/data it could simply do with a DMA write anyway, so the
+security argument doesn't stand up in general (sure, not all PCIe
+devices may be capable of arbitrary DMA, but that seems like more of a
+tenuous security-by-obscurity angle to me). Besides, with Type1 IOMMU
+the fact that we've let a device be assigned at all means that this is
+already a non-issue (because either the hardware provides isolation or
+the user has explicitly accepted the consequences of an unsafe
+configuration) - from patch #4 that's apparently the same for SPAPR TCE,
+in which case it seems this flag doesn't even need to be propagated and
+could simply be assumed always.
+
+On the other hand, if the check is not so much to mitigate malicious
+guests attacking the system as to prevent dumb guests breaking
+themselves (e.g. if some or all of the MSI-X capability is actually
+emulated), then allowing things to sometimes go wrong on the grounds of
+an irrelevant hardware feature doesn't seem correct :/
+
+Robin.
+
+> On 07/08/17 17:25, Alexey Kardashevskiy wrote:
+>> This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
+>> http://www.spinics.net/lists/kvm/msg152232.html
+>>
+>> This time it is using "caps" in IOMMU groups. The main question is if PCI
+>> bus flags or IOMMU domains are still better (and which one).
 > 
-> I missed that we'd duplicated this logic for radix vs hash [yes I know I
-> merged the commit that did it :)]
+>>
+>>
+>>
+>> Here is some background:
+>>
+>> Current vfio-pci implementation disallows to mmap the page
+>> containing MSI-X table in case that users can write directly
+>> to MSI-X table and generate an incorrect MSIs.
+>>
+>> However, this will cause some performance issue when there
+>> are some critical device registers in the same page as the
+>> MSI-X table. We have to handle the mmio access to these
+>> registers in QEMU emulation rather than in guest.
+>>
+>> To solve this issue, this series allows to expose MSI-X table
+>> to userspace when hardware enables the capability of interrupt
+>> remapping which can ensure that a given PCI device can only
+>> shoot the MSIs assigned for it. And we introduce a new bus_flags
+>> PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
+>> for different archs.
+>>
+>>
+>> This is based on sha1
+>> 26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
+>>
+>> Please comment. Thanks.
+>>
+>> Changelog:
+>>
+>> v5:
+>> * redid the whole thing via so-called IOMMU group capabilities
+>>
+>> v4:
+>> * rebased on recent upstream
+>> * got all 6 patches from v2 (v3 was missing some)
+>>
+>>
+>>
+>>
+>> Alexey Kardashevskiy (5):
+>>   iommu: Add capabilities to a group
+>>   iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
+>>     remapping
+>>   iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
+>>     enabled
+>>   powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
+>>   vfio-pci: Allow to expose MSI-X table to userspace when safe
+>>
+>>  include/linux/iommu.h            | 20 ++++++++++++++++++++
+>>  include/linux/vfio.h             |  1 +
+>>  arch/powerpc/kernel/iommu.c      |  1 +
+>>  drivers/iommu/amd_iommu.c        |  3 +++
+>>  drivers/iommu/intel-iommu.c      |  3 +++
+>>  drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
+>>  drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
+>>  drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
+>>  drivers/vfio/vfio.c              | 15 +++++++++++++++
+>>  9 files changed, 99 insertions(+), 4 deletions(-)
+>>
 > 
-> > diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-> > index 671a45d86c18..61ca17d81737 100644
-> > --- a/arch/powerpc/mm/pgtable-radix.c
-> > +++ b/arch/powerpc/mm/pgtable-radix.c
-> > @@ -598,22 +598,23 @@ void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
-> >  	 * physical on those processors
-> >  	 */
-> >  	BUG_ON(first_memblock_base != 0);
-> > -	/*
-> > -	 * We limit the allocation that depend on ppc64_rma_size
-> > -	 * to first_memblock_size. We also clamp it to 1GB to
-> > -	 * avoid some funky things such as RTAS bugs.
 > 
-> That comment about RTAS is 7 years old, and I'm pretty sure it was a
-> historical note when it was written.
-> 
-> I'm inclined to drop it and if we discover new bugs with RTAS on Power9
-> then we can always put it back.
-> 
-> > -	 *
-> > -	 * On radix config we really don't have a limitation
-> > -	 * on real mode access. But keeping it as above works
-> > -	 * well enough.
-> 
-> Ergh.
-> 
-> > -	 */
-> > -	ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
-> > -	/*
-> > -	 * Finally limit subsequent allocations. We really don't want
-> > -	 * to limit the memblock allocations to rma_size. FIXME!! should
-> > -	 * we even limit at all ?
-> > -	 */
-> 
-> So I think we should just delete this function entirely.
-> 
-> Any objections?
-> 
-> cheers
