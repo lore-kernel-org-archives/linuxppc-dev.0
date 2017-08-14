@@ -1,20 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWD3L2DxkzDr4C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:31:58 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Breno Leitao <leitao@debian.org>
-Subject: Re: [PATCH v3 1/2] powerpc/xmon: Dump ftrace buffers for the current
- CPU only
-In-Reply-To: <1501704846-22625-1-git-send-email-leitao@debian.org>
-References: <1501704846-22625-1-git-send-email-leitao@debian.org>
-Date: Mon, 14 Aug 2017 21:31:56 +1000
-Message-ID: <87mv72qtar.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWD6g0dWLzDqFw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:34:50 +1000 (AEST)
+Date: Mon, 14 Aug 2017 13:34:45 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, Mel Gorman <mgorman@suse.de>
+Subject: Re: [v6 04/15] mm: discard memblock data later
+Message-ID: <20170814113445.GE19063@dhcp22.suse.cz>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-5-git-send-email-pasha.tatashin@oracle.com>
+ <20170811093249.GE30811@dhcp22.suse.cz>
+ <42a04441-47ad-2fa0-ca3c-784c717213f7@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <42a04441-47ad-2fa0-ca3c-784c717213f7@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Breno Leitao <leitao@debian.org> writes:
+On Fri 11-08-17 15:00:47, Pasha Tatashin wrote:
+> Hi Michal,
+> 
+> This suggestion won't work, because there are arches without memblock
+> support: tile, sh...
+> 
+> So, I would still need to have:
+> 
+> #ifdef CONFIG_MEMBLOCK in page_alloc, or define memblock_discard() stubs in
+> nobootmem headfile. 
 
-> Current xmon 'dt' command dumps the tracing buffer for all the CPUs,
-> which makes it very hard to read due to the fact that most of
-> powerpc machines currently have many CPUs.
-
-> Other than that, the CPU
-> lines are interleaved in the ftrace log.
-
-That's because they're ordered by time. And the CPU number is included
-in each line.
-
-> This new option just dumps the ftrace buffer for the current CPU.
-
-This is still a good idea though :)
-
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 08e367e3e8c3..e0522f60f0ee 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -234,6 +234,7 @@ Commands:\n\
->    "\
->    dr	dump stream of raw bytes\n\
->    dt	dump the tracing buffers (uses printk)\n\
-> +  dtc	dump the tracing buffers for current CPU (uses printk)\n\
-
-Hopefully people won't be disappointed that this doesn't invoke dtc
-(Device Tree Compiler) in xmon :P
-
-cheers
+This is the standard way to do this. And it is usually preferred to
+proliferate ifdefs in the code.
+-- 
+Michal Hocko
+SUSE Labs
