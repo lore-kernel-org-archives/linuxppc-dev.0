@@ -1,34 +1,29 @@
-Return-Path: <acme@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=0p3s=7q=nefkom.net=whitebox@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWNVq4swQzDqwJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 03:52:51 +1000 (AEST)
-Date: Mon, 14 Aug 2017 14:52:30 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Kim Phillips <kim.phillips@arm.com>, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>,
- Andi Kleen <ak@linux.intel.com>, Anton Blanchard <anton@au1.ibm.com>,
- David Ahern <dsahern@gmail.com>,
- Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
- Jiri Olsa <jolsa@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Matt Fleming <matt.fleming@intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Petlan <mpetlan@redhat.com>,
- Milian Wolff <milian.wolff@kdab.com>, Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Paul Clarke <pc@us.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Thomas-Mich Richter <tmricht@linux.vnet.ibm.com>,
- Wang Nan <wangnan0@huawei.com>, Yao Jin <yao.jin@linux.intel.com>,
- Zvonko Kosic <zvonko.kosic@de.ibm.com>, acme@kernel.org
-Subject: Re: [GIT PULL 00/19] perf/core improvements and fixes
-Message-ID: <20170814175230.GC2327@redhat.com>
-References: <20170814162741.6101-1-acme@kernel.org>
- <20170814173948.pio6tbbkmqwrksmn@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWPcl6w8qzDr2m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 04:43:03 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xWPck0THyz8t59
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 04:43:02 +1000 (AEST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xWPch00jkz9t36
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2017 04:42:48 +1000 (AEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: fix invalid use of register expressions
+References: <878tixj3wg.fsf@linux-m68k.org>
+ <87poc6mh0j.fsf@concordia.ellerman.id.au>
+Date: Mon, 14 Aug 2017 20:42:43 +0200
+In-Reply-To: <87poc6mh0j.fsf@concordia.ellerman.id.au> (Michael Ellerman's
+ message of "Tue, 08 Aug 2017 21:32:44 +1000")
+Message-ID: <87h8xat2ho.fsf@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170814173948.pio6tbbkmqwrksmn@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,26 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Mon, Aug 14, 2017 at 07:39:48PM +0200, Ingo Molnar escreveu:
-> * Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
-> > Infrastructure:
+This fixes another invalid use of register expressions.
 
-> > - Add support for shell based tests in 'perf test', add a few that
-> >   run 'perf probe', 'perf trace', using kprobes, uprobes to check
-> >   the output of those tools and the effects on the system, checking,
-> >   for instance, DWARF backtraces from uprobes (Arnaldo Carvalho de Melo)
-<SNIP>
-> >  create mode 100644 tools/perf/tests/shell/lib/probe_vfs_getname.sh
-> >  create mode 100755 tools/perf/tests/shell/probe_vfs_getname.sh
-> >  create mode 100755 tools/perf/tests/shell/record+script_probe_vfs_getname.sh
-> >  create mode 100755 tools/perf/tests/shell/trace+probe_libc_inet_pton.sh
-> >  create mode 100755 tools/perf/tests/shell/trace+probe_vfs_getname.sh
-> 
-> Pulled, thanks a lot Arnaldo!
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ arch/powerpc/kernel/l2cr_6xx.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks! I'm working with Kim Phillips to fix some issues he noticed
-while testing on his ARM systems where 'perf probe' is not available, my
-perf/core branch has several fixes to handle this that will be in my
-next pull request.
+diff --git a/arch/powerpc/kernel/l2cr_6xx.S b/arch/powerpc/kernel/l2cr_6xx.S
+index 97ec8557f9..6408f09dbb 100644
+--- a/arch/powerpc/kernel/l2cr_6xx.S
++++ b/arch/powerpc/kernel/l2cr_6xx.S
+@@ -181,7 +181,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPEC7450)
+ 	mtctr	r4
+ 	li	r4,0
+ 1:
+-	lwzx	r0,r0,r4
++	lwzx	r0,0,r4
+ 	addi	r4,r4,32		/* Go to start of next cache line */
+ 	bdnz	1b
+ 	isync
+@@ -328,7 +328,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_L3CR)
+ 	mtctr	r4
+ 	li	r4,0
+ 1:
+-	lwzx	r0,r0,r4
++	lwzx	r0,0,r4
+ 	dcbf	0,r4
+ 	addi	r4,r4,32		/* Go to start of next cache line */
+ 	bdnz	1b
+-- 
+2.14.1
 
-- Arnaldo
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
