@@ -1,22 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
+ [IPv6:2607:f8b0:4001:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xW6bf5CwKzDr9Q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 17:26:06 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 02/17] powerpc/vas: Move GET_FIELD/SET_FIELD to vas.h
-In-Reply-To: <1502233622-9330-3-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1502233622-9330-3-git-send-email-sukadev@linux.vnet.ibm.com>
-Date: Mon, 14 Aug 2017 17:26:04 +1000
-Message-ID: <87zib2r4oj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xW9hK2t29zDr39
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 19:45:19 +1000 (AEST)
+Received: by mail-io0-x241.google.com with SMTP id m88so7206980iod.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 02:45:18 -0700 (PDT)
+Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
+To: linuxppc-dev@lists.ozlabs.org
+Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
+ Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Jike Song
+ <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
+ Arvind Yadav <arvind.yadav.cs@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Woodhouse <dwmw2@infradead.org>, Kirti Wankhede
+ <kwankhede@nvidia.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
+ Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org
+References: <20170807072548.3023-1-aik@ozlabs.ru>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
+Date: Mon, 14 Aug 2017 19:45:05 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170807072548.3023-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +39,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+Folks,
 
-> Move the GET_FIELD and SET_FIELD macros to vas.h as VAS and other
-> users of VAS, including NX-842 can use those macros.
->
-> There is a lot of related code between the VAS/NX kernel drivers
-> and skiboot. For consistency switch the order of parameters in
-> SET_FIELD to match the order in skiboot.
->
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Reviewed-by: Dan Streetman <ddstreet@ieee.org>
+Is there anything to change besides those compiler errors and David's
+comment in 5/5? Or the while patchset is too bad? Thanks.
 
-> diff --git a/arch/powerpc/include/uapi/asm/vas.h b/arch/powerpc/include/uapi/asm/vas.h
-> index ddfe046..21249f5 100644
-> --- a/arch/powerpc/include/uapi/asm/vas.h
-> +++ b/arch/powerpc/include/uapi/asm/vas.h
-> @@ -22,4 +22,12 @@
->  #define VAS_THRESH_FIFO_GT_QTR_FULL	2
->  #define VAS_THRESH_FIFO_GT_EIGHTH_FULL	3
->  
-> +/*
-> + * Get/Set bit fields
-> + */
-> +#define GET_FIELD(m, v)		(((v) & (m)) >> MASK_LSH(m))
-> +#define MASK_LSH(m)		(__builtin_ffsl(m) - 1)
-> +#define SET_FIELD(m, v, val)	\
-> +		(((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
 
-This has no business being in a uapi header for VAS.
 
-Put it in asm/vas.h if you must.
+On 07/08/17 17:25, Alexey Kardashevskiy wrote:
+> This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
+> http://www.spinics.net/lists/kvm/msg152232.html
+> 
+> This time it is using "caps" in IOMMU groups. The main question is if PCI
+> bus flags or IOMMU domains are still better (and which one).
 
-Personally I really dislike these sort of macros because they completely
-obscure what the final value should end up being, and it's the final
-value you'll see when you're debugging it.
+> 
+> 
+> 
+> Here is some background:
+> 
+> Current vfio-pci implementation disallows to mmap the page
+> containing MSI-X table in case that users can write directly
+> to MSI-X table and generate an incorrect MSIs.
+> 
+> However, this will cause some performance issue when there
+> are some critical device registers in the same page as the
+> MSI-X table. We have to handle the mmio access to these
+> registers in QEMU emulation rather than in guest.
+> 
+> To solve this issue, this series allows to expose MSI-X table
+> to userspace when hardware enables the capability of interrupt
+> remapping which can ensure that a given PCI device can only
+> shoot the MSIs assigned for it. And we introduce a new bus_flags
+> PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
+> for different archs.
+> 
+> 
+> This is based on sha1
+> 26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
+> 
+> Please comment. Thanks.
+> 
+> Changelog:
+> 
+> v5:
+> * redid the whole thing via so-called IOMMU group capabilities
+> 
+> v4:
+> * rebased on recent upstream
+> * got all 6 patches from v2 (v3 was missing some)
+> 
+> 
+> 
+> 
+> Alexey Kardashevskiy (5):
+>   iommu: Add capabilities to a group
+>   iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
+>     remapping
+>   iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
+>     enabled
+>   powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
+>   vfio-pci: Allow to expose MSI-X table to userspace when safe
+> 
+>  include/linux/iommu.h            | 20 ++++++++++++++++++++
+>  include/linux/vfio.h             |  1 +
+>  arch/powerpc/kernel/iommu.c      |  1 +
+>  drivers/iommu/amd_iommu.c        |  3 +++
+>  drivers/iommu/intel-iommu.c      |  3 +++
+>  drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
+>  drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
+>  drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
+>  drivers/vfio/vfio.c              | 15 +++++++++++++++
+>  9 files changed, 99 insertions(+), 4 deletions(-)
+> 
 
-> +	ccw = SET_FIELD(CCW_CT, ccw, nx842_ct);
-> +	ccw = SET_FIELD(CCW_CI_842, ccw, 0); /* use 0 for hw auto-selection */
-> +	ccw = SET_FIELD(CCW_FC_842, ccw, fc);
 
-eg. that could also be written:
-
-       ccw = (nx842_ct << 16) | (fc & 7);
-
-cheers
+-- 
+Alexey
