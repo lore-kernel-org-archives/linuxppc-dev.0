@@ -1,17 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xW6L71kpTzDr2k
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 17:14:23 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: fix two CONFIG_8xx left behind
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170814071419.6994F678A3@po15668-vm-win7.idsi0.si.c-s.fr>
-Date: Mon, 14 Aug 2017 09:14:19 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xW6Yz0tfPzDr4d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 17:24:39 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id y192so9301120pgd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 00:24:39 -0700 (PDT)
+Message-ID: <1502695471.2143.2.camel@gmail.com>
+Subject: Re: [PATCH] powerpc/mm: Invalidate partition table cache on host
+ proc tbl base update
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com
+Date: Mon, 14 Aug 2017 17:24:31 +1000
+In-Reply-To: <871solnidm.fsf@concordia.ellerman.id.au>
+References: <20170803041551.7934-1-sjitindarsingh@gmail.com>
+ <871solnidm.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,43 +28,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 968159c0031ac ("powerpc/8xx: Getting rid of remaining
-use of CONFIG_8xx") removed all but 2 references to 8xx in
-Kconfigs.
+On Wed, 2017-08-09 at 20:30 +1000, Michael Ellerman wrote:
+> Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+> 
+> > The host process table base is stored in the partition table by
+> > calling
+> > the function native_register_process_table(). Currently this just
+> > sets
+> > the entry in memory and is missing a proceeding cache invalidation
+> > instruction. Any update to the partition table should be followed
+> > by a
+> > cache invalidation instruction specifying invalidation of the
+> > caching of
+> > any partition table entries (RIC = 2, PRS = 0).
+> > 
+> > We already have a function to update the partition table with the
+> > required cache invalidation instructions -
+> > mmu_partition_table_set_entry().
+> > Update the native_register_process_table() function to call
+> > mmu_partition_table_set_entry(), this ensures all appropriate
+> > invalidation will be performed.
+> > 
+> > Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> > ---
+> >  arch/powerpc/mm/pgtable-radix.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/mm/pgtable-radix.c
+> > b/arch/powerpc/mm/pgtable-radix.c
+> > index 671a45d..1d5178f 100644
+> > --- a/arch/powerpc/mm/pgtable-radix.c
+> > +++ b/arch/powerpc/mm/pgtable-radix.c
+> > @@ -33,7 +33,8 @@ static int native_register_process_table(unsigned
+> > long base, unsigned long pg_sz
+> >  {
+> >  	unsigned long patb1 = base | table_size | PATB_GR;
+> >  
+> > -	partition_tb->patb1 = cpu_to_be64(patb1);
+> > +	mmu_partition_table_set_entry(0, be64_to_cpu(partition_tb-
+> > >patb0),
+> > +				      patb1);
+> 
+> This is really a bit gross.
+> 
+> Can we agree on whether partition_tb is an array or not?
 
-This patch removes the two remaining ones.
+Well it is an array, it's just we only ever want the first element in
+this function. That being said we might as well access it as an array
+to make that clear.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/Kconfig               | 2 +-
- arch/powerpc/platforms/8xx/Kconfig | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> How about ...
+> 
+> cheers
+> 
+> diff --git a/arch/powerpc/mm/pgtable-radix.c
+> b/arch/powerpc/mm/pgtable-radix.c
+> index c1185c8ecb22..5d8be076f8e5 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -28,9 +28,13 @@
+>  static int native_register_process_table(unsigned long base,
+> unsigned long pg_sz,
+>                                          unsigned long table_size)
+>  {
+> -       unsigned long patb1 = base | table_size | PATB_GR;
+> +       unsigned long patb0, patb1;
+> +
+> +       patb0 = be64_to_cpu(partition_tb[0].patb0);
+> +       patb1 = base | table_size | PATB_GR;
+> +
+> +       mmu_partition_table_set_entry(0, patb0, patb1);
+>  
+> -       partition_tb->patb1 = cpu_to_be64(patb1);
+>         return 0;
+>  }
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c8334a5b0eb7..2a290561e851 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -1176,7 +1176,7 @@ config CONSISTENT_SIZE
- 
- config PIN_TLB
- 	bool "Pinned Kernel TLBs (860 ONLY)"
--	depends on ADVANCED_OPTIONS && 8xx
-+	depends on ADVANCED_OPTIONS && PPC_8xx
- 
- config PIN_TLB_IMMR
- 	bool "Pinned TLB for IMMR"
-diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index d3f664f5166b..536b0c5d5ce3 100644
---- a/arch/powerpc/platforms/8xx/Kconfig
-+++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -91,7 +91,7 @@ endmenu
- #
- 
- menu "MPC8xx CPM Options"
--	depends on 8xx
-+	depends on PPC_8xx
- 
- # This doesn't really belong here, but it is convenient to ask
- # 8xx specific questions.
--- 
-2.13.3
+Looks good :)
