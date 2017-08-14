@@ -1,48 +1,34 @@
-Return-Path: <srs0=kucv=7q=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWQJv4QbGzDqXp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 05:14:23 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xWQJt0QwVz8tV0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 05:14:22 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xWQJq0Tm4z9t3p
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2017 05:14:18 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7EJ9VGg062870
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 15:14:16 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cbevh09r1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 15:14:15 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 14 Aug 2017 15:14:15 -0400
-Date: Mon, 14 Aug 2017 12:14:09 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 01/17] powerpc/vas: Define macros, register fields and
- structures
-References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1502233622-9330-2-git-send-email-sukadev@linux.vnet.ibm.com>
- <877ey6sp03.fsf@concordia.ellerman.id.au>
- <20170814160522.4f9b517a@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWQMm2RkhzDqs7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 05:16:52 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id l64so12066534pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 12:16:52 -0700 (PDT)
+Date: Mon, 14 Aug 2017 12:16:50 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Bhumika Goyal <bhumirks@gmail.com>
+Cc: julia.lawall@lip6.fr, brian.austin@cirrus.com,
+ Paul.Handrigan@cirrus.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, bardliao@realtek.com,
+ chiou@realtek.com, timur@tabi.org, Xiubo.Lee@gmail.com,
+ fabio.estevam@nxp.com, yang.jie@linux.intel.com,
+ peter.ujfalusi@ti.com, jarkko.nikula@bitmer.com, daniel@zonque.org,
+ haojian.zhuang@gmail.com, robert.jarzmik@free.fr,
+ plai@codeaurora.org, bgoswami@codeaurora.org, krzk@kernel.org,
+ sbkim73@samsung.com, s.nawrocki@samsung.com,
+ alsa-devel@alsa-project.org, patches@opensource.cirrus.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 03/11] ASoC: fsl: make snd_soc_platform_driver const
+Message-ID: <20170814191649.GA23972@Asurada-Nvidia>
+References: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
+ <1502710730-18912-4-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170814160522.4f9b517a@roar.ozlabs.ibm.com>
-Message-Id: <20170814191409.GA24096@us.ibm.com>
+In-Reply-To: <1502710730-18912-4-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,36 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin [npiggin@gmail.com] wrote:
-> On Mon, 14 Aug 2017 15:21:48 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Mon, Aug 14, 2017 at 05:08:42PM +0530, Bhumika Goyal wrote:
+> Make these const as they are only passed as the 2nd argument to the function
+> snd_soc_register_platform, which is of type const.
+> Done using Coccinelle.
 > 
-> > Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+
+Thanks
+
+> ---
+>  sound/soc/fsl/imx-pcm-fiq.c | 2 +-
+>  sound/soc/fsl/mpc5200_dma.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> > >  arch/powerpc/include/asm/vas.h       |  35 ++++
-> > >  arch/powerpc/include/uapi/asm/vas.h  |  25 +++  
-> > 
-> > I thought we weren't exposing VAS to userspace yet?
-> > 
-> > If we are then we need to get things straight WRT copy/paste abort.
+> diff --git a/sound/soc/fsl/imx-pcm-fiq.c b/sound/soc/fsl/imx-pcm-fiq.c
+> index 92410f7..3fcc7b5 100644
+> --- a/sound/soc/fsl/imx-pcm-fiq.c
+> +++ b/sound/soc/fsl/imx-pcm-fiq.c
+> @@ -341,7 +341,7 @@ static void imx_pcm_fiq_free(struct snd_pcm *pcm)
+>  	imx_pcm_free(pcm);
+>  }
+>  
+> -static struct snd_soc_platform_driver imx_soc_platform_fiq = {
+> +static const struct snd_soc_platform_driver imx_soc_platform_fiq = {
+>  	.ops		= &imx_pcm_ops,
+>  	.pcm_new	= imx_pcm_fiq_new,
+>  	.pcm_free	= imx_pcm_fiq_free,
+> diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
+> index 1f7e70b..cdd848c 100644
+> --- a/sound/soc/fsl/mpc5200_dma.c
+> +++ b/sound/soc/fsl/mpc5200_dma.c
+> @@ -356,7 +356,7 @@ static void psc_dma_free(struct snd_pcm *pcm)
+>  	}
+>  }
+>  
+> -static struct snd_soc_platform_driver mpc5200_audio_dma_platform = {
+> +static const struct snd_soc_platform_driver mpc5200_audio_dma_platform = {
+>  	.ops		= &psc_dma_ops,
+>  	.pcm_new	= &psc_dma_new,
+>  	.pcm_free	= &psc_dma_free,
+> -- 
+> 1.9.1
 > 
-
-> No we should not be. This might be just a leftover hunk that should
-> be moved to a future series.
-
-Yes, I should have posted patches 14..17 separately as an RFC that goes
-on top of the VAS kernel patches 1..13.
-
-> 
-> At the moment (as far as I understand) it should be limited to
-> preempt-disabled, process context, kernel users which avoids any
-> concern for switch_to.
-> 
-
-In the FTW case, there is no data transfer from user space to the hardware.
-i.e the copy/paste submit a NULL CRB and hardware will be configured (see
-->fifo_disable setting in winctx) to ignore any data they specify in the CRB.
-
-Would we be able to allow copy/paste from user space in that case?
-
-Sukadev
