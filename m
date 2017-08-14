@@ -1,48 +1,24 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xW24c1ZWDzDqh5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 14:02:23 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7E3wnEj098470
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 00:02:19 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ca0q6dju6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 00:02:18 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 14 Aug 2017 14:02:16 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7E40oU435061818
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 14:00:58 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7E40Qhb032038
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 14:00:26 +1000
-Subject: Re: [PATCH] powerpc/perf: double unlock bug in
- imc_common_cpuhp_mem_free()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Dan Carpenter <dan.carpenter@oracle.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-References: <20170811200541.qlxcpp3og33sdki3@mwanda>
- <87bmnisu5a.fsf@concordia.ellerman.id.au>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Mon, 14 Aug 2017 09:30:00 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xW3rH3FZQzDqZB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 15:21:51 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ npiggin@gmail.com <npiggin@gmail.com>
+Subject: Re: [PATCH v6 01/17] powerpc/vas: Define macros,
+ register fields and structures
+In-Reply-To: <1502233622-9330-2-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1502233622-9330-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Date: Mon, 14 Aug 2017 15:21:48 +1000
+Message-ID: <877ey6sp03.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87bmnisu5a.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <e2f2122b-87b8-6b01-607b-d00da4fc6b09@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,41 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
 
-
-On Monday 14 August 2017 09:00 AM, Michael Ellerman wrote:
-> Dan Carpenter <dan.carpenter@oracle.com> writes:
+> Define macros for the VAS hardware registers and bit-fields as well
+> as couple of data structures needed by the VAS driver.
 >
->> There is a typo so we call unlock instead of lock.
->>
->> Fixes: 885dcd709ba9 ("powerpc/perf: Add nest IMC PMU support")
->> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->> ---
->> I also don't understand how the &nest_imc_refc[node_id].lock works.  Why
->> can't we use ref->lock everywhere?  They seem equivalent, and my static
->> checker complains if we call the same lock different names.
-> That looks like a bug to me, ie. we should always use ref.
-
-ok. will send a fix.
-
-Thanks
-Maddy
-
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+> Changelog[v6]
+> 	- Add some fields for FTW windows
 >
-> Maddy?
+> Changelog[v4]
+> 	- [Michael Neuling] Move VAS code to arch/powerpc; Reorg vas.h and
+> 	  vas-internal.h to kernel and uapi versions; rather than creating
+> 	  separate properties for window context/address entries in device
+> 	  tree, combine them into "reg" properties; drop ->hwirq and irq_port
+> 	  fields from vas_window as they are only needed with user space
+> 	  windows.
+> 	- Drop the error check for CONFIG_PPC_4K_PAGES. Instead in a
+> 	  follow-on patch add a "depends on CONFIG_PPC_64K_PAGES".
 >
-> cheers
+> Changelog[v3]
+> 	- Rename winctx->pid to winctx->pidr to reflect that its a value
+> 	  from the PID register (SPRN_PID), not the linux process id.
+> 	- Make it easier to split header into kernel/user parts
+> 	- To keep user interface simple, use macros rather than enum for
+> 	  the threshold-control modes.
+> 	- Add a pid field to struct vas_window - needed for user space
+> 	  send windows.
 >
->> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
->> index 46cd912af060..52017f6eafd9 100644
->> --- a/arch/powerpc/perf/imc-pmu.c
->> +++ b/arch/powerpc/perf/imc-pmu.c
->> @@ -1124,7 +1124,7 @@ static void cleanup_all_thread_imc_memory(void)
->>   static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
->>   {
->>   	if (pmu_ptr->domain == IMC_DOMAIN_NEST) {
->> -		mutex_unlock(&nest_init_lock);
->> +		mutex_lock(&nest_init_lock);
->>   		if (nest_pmus == 1) {
->>   			cpuhp_remove_state(CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE);
->>   			kfree(nest_imc_refc);
+> Changelog[v2]
+> 	- Add an overview of VAS in vas-internal.h
+> 	- Get window context parameters from device tree and drop
+> 	  unnecessary macros.
+> ---
+>  arch/powerpc/include/asm/vas.h       |  35 ++++
+>  arch/powerpc/include/uapi/asm/vas.h  |  25 +++
+
+I thought we weren't exposing VAS to userspace yet?
+
+If we are then we need to get things straight WRT copy/paste abort.
+
+cheers
