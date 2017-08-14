@@ -1,30 +1,28 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWDDk14SWzDqZf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:40:06 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id u185so10275799pgb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 04:40:06 -0700 (PDT)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, brian.austin@cirrus.com, Paul.Handrigan@cirrus.com,
- lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- bardliao@realtek.com, chiou@realtek.com, timur@tabi.org,
- nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, fabio.estevam@nxp.com,
- yang.jie@linux.intel.com, peter.ujfalusi@ti.com, jarkko.nikula@bitmer.com,
- daniel@zonque.org, haojian.zhuang@gmail.com, robert.jarzmik@free.fr,
- plai@codeaurora.org, bgoswami@codeaurora.org, krzk@kernel.org,
- sbkim73@samsung.com, s.nawrocki@samsung.com, alsa-devel@alsa-project.org,
- patches@opensource.cirrus.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH 04/11] ASoC: nuc900: make snd_soc_platform_driver const
-Date: Mon, 14 Aug 2017 17:08:43 +0530
-Message-Id: <1502710730-18912-5-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
-References: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWDDw1Fw4zDqkx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:40:16 +1000 (AEST)
+Date: Mon, 14 Aug 2017 13:40:11 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org
+Subject: Re: [v6 01/15] x86/mm: reserve only exiting low pages
+Message-ID: <20170814114011.GG19063@dhcp22.suse.cz>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-2-git-send-email-pasha.tatashin@oracle.com>
+ <20170811080706.GC30811@dhcp22.suse.cz>
+ <47ebf53b-ea8b-1822-a63a-3682ed2f4753@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47ebf53b-ea8b-1822-a63a-3682ed2f4753@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,27 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make this const as it is only passed as the 2nd argument to the
-function devm_snd_soc_register_platform, which is of type const.
-Done using Coccinelle
+On Fri 11-08-17 11:24:55, Pasha Tatashin wrote:
+[...]
+> >>In this patchset we will stop zeroing struct page memory during allocation.
+> >>Therefore, this bug must be fixed in order to avoid random assert failures
+> >>caused by CONFIG_DEBUG_VM_PGFLAGS triggers.
+> >>
+> >>The fix is to reserve memory from the first existing PFN.
+> >
+> >Hmm, I assume this is a result of some assert triggering, right? Which
+> >one? Why don't we need the same treatment for other than x86 arch?
+> 
+> Correct, the pgflags asserts were triggered when we were setting reserved
+> flags to struct page for PFN 0 in which was never initialized through
+> __init_single_page(). The reason they were triggered is because we set all
+> uninitialized memory to ones in one of the debug patches.
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- sound/soc/nuc900/nuc900-pcm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/sound/soc/nuc900/nuc900-pcm.c b/sound/soc/nuc900/nuc900-pcm.c
-index 2cca055..cd0486c 100644
---- a/sound/soc/nuc900/nuc900-pcm.c
-+++ b/sound/soc/nuc900/nuc900-pcm.c
-@@ -299,7 +299,7 @@ static int nuc900_dma_new(struct snd_soc_pcm_runtime *rtd)
- 	return 0;
- }
- 
--static struct snd_soc_platform_driver nuc900_soc_platform = {
-+static const struct snd_soc_platform_driver nuc900_soc_platform = {
- 	.ops		= &nuc900_dma_ops,
- 	.pcm_new	= nuc900_dma_new,
- };
+And why don't we need the same treatment for other architectures?
 -- 
-1.9.1
+Michal Hocko
+SUSE Labs
