@@ -1,21 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWFn26XwDzDqn3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 22:49:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWG146JZgzDqn6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 23:00:08 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- aneesh.kumar@linux.vnet.ibm.com <aneesh.kumar@linux.vnet.ibm.com>,
- Suraj Jitindar Singh  <surajjs@ozlabs.au.ibm.com>
-Subject: Re: [PATCH v2 3/9] powerpc/powernv: Remove real mode access limit for
- early allocations
-In-Reply-To: <20170813013346.14002-3-npiggin@gmail.com>
-References: <20170812113416.15978-1-npiggin@gmail.com>
- <20170813013346.14002-3-npiggin@gmail.com>
-Date: Mon, 14 Aug 2017 22:49:39 +1000
-Message-ID: <87h8xaqpp8.fsf@concordia.ellerman.id.au>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <leitao@debian.org>
+Subject: Re: [PATCH v3 1/2] powerpc/xmon: Dump ftrace buffers for the current
+ CPU only
+In-Reply-To: <1501704846-22625-1-git-send-email-leitao@debian.org>
+References: <1501704846-22625-1-git-send-email-leitao@debian.org>
+Date: Mon, 14 Aug 2017 23:00:07 +1000
+Message-ID: <87efseqp7s.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,57 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Breno Leitao <leitao@debian.org> writes:
+> @@ -2231,6 +2232,19 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
+>  	printf("\n");
+>  }
+>  
+> +static void dump_tracing(void)
+> +{
+> +	int c;
+> +
+> +	c = inchar();
+> +	if (c == 'c')
+> +		ftrace_dump(DUMP_ORIG);
+> +	else
+> +		ftrace_dump(DUMP_ALL);
+> +
+> +	tracing_on();
+> +}
 
-> This removes the RMA limit on powernv platform, which constrains
-> early allocations such as PACAs and stacks. There are still other
-> restrictions that must be followed, such as bolted SLB limits, but
-> real mode addressing has no constraints.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/mm/hash_utils_64.c | 24 +++++++++++++++---------
->  arch/powerpc/mm/pgtable-radix.c | 33 +++++++++++++++++----------------
+Thinking about this some more, two things that would make this *really*
+useful.
 
-I missed that we'd duplicated this logic for radix vs hash [yes I know I
-merged the commit that did it :)]
+Firstly, it would be great if we could dump the buffer for *another*
+CPU. Currently ftrace_dump() doesn't support that, and maybe it can't
+because of the ring buffer design (?), but it would be really great if
+you could dump another CPU's buffer.
 
-> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-> index 671a45d86c18..61ca17d81737 100644
-> --- a/arch/powerpc/mm/pgtable-radix.c
-> +++ b/arch/powerpc/mm/pgtable-radix.c
-> @@ -598,22 +598,23 @@ void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
->  	 * physical on those processors
->  	 */
->  	BUG_ON(first_memblock_base != 0);
-> -	/*
-> -	 * We limit the allocation that depend on ppc64_rma_size
-> -	 * to first_memblock_size. We also clamp it to 1GB to
-> -	 * avoid some funky things such as RTAS bugs.
+That would be great eg. when a CPU is stuck and doesn't come into xmon,
+you could use the trace buffer to work out where it is. You can do it
+now, by dumping the whole trace buffer, but it's quite tricky to spot
+that one CPU amongst all the others.
 
-That comment about RTAS is 7 years old, and I'm pretty sure it was a
-historical note when it was written.
 
-I'm inclined to drop it and if we discover new bugs with RTAS on Power9
-then we can always put it back.
+The second thing that would be good is if dumping the trace buffer from
+xmon didn't consume the trace. Currently if you do 'dt' to dump the
+trace buffer, and then realise actually you should have just dumped it
+for one CPU then you're out of luck.
 
-> -	 *
-> -	 * On radix config we really don't have a limitation
-> -	 * on real mode access. But keeping it as above works
-> -	 * well enough.
-
-Ergh.
-
-> -	 */
-> -	ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
-> -	/*
-> -	 * Finally limit subsequent allocations. We really don't want
-> -	 * to limit the memblock allocations to rma_size. FIXME!! should
-> -	 * we even limit at all ?
-> -	 */
-
-So I think we should just delete this function entirely.
-
-Any objections?
+So it'd be nice if we could dump but leave the trace intact. That would
+also be good from an "xmon doesn't perturb the system" (too much) point
+of view, ie. if you drop to xmon and dump the trace then currently the
+trace is no longer available.
 
 cheers
