@@ -1,46 +1,45 @@
 Return-Path: <srs0=kucv=7q=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWQc538DVzDqZ8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 05:27:33 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xWQc51y1yz8vNK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 05:27:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWRPP1dvVzDql5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 06:03:21 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xWRPP0ns8z8t64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 06:03:21 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xWQc45Sbgz9t39
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2017 05:27:32 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7EJNn3j023977
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 15:27:30 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cbe3j3c47-1
+ by ozlabs.org (Postfix) with ESMTPS id 3xWRPN3lpgz9sPm
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2017 06:03:20 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7EJxJH6055572
+ for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 16:03:17 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cbc86k0ft-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 15:27:29 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2017 16:03:17 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 14 Aug 2017 15:27:29 -0400
-Date: Mon, 14 Aug 2017 12:27:15 -0700
+ Mon, 14 Aug 2017 14:03:16 -0600
+Date: Mon, 14 Aug 2017 13:03:09 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>,
- stewart@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, apopple@au1.ibm.com, oohall@gmail.com
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH v6 14/17] powerpc: Add support for setting SPRN_TIDR
 References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
  <1502233622-9330-15-git-send-email-sukadev@linux.vnet.ibm.com>
- <1502694131.9844.7.camel@neuling.org>
- <1502717435.4493.29.camel@au1.ibm.com>
+ <87pobyqtzu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1502717435.4493.29.camel@au1.ibm.com>
-Message-Id: <20170814192715.GC24096@us.ibm.com>
+In-Reply-To: <87pobyqtzu.fsf@concordia.ellerman.id.au>
+Message-Id: <20170814200309.GD24096@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,48 +49,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt [benh@au1.ibm.com] wrote:
-> On Mon, 2017-08-14 at 17:02 +1000, Michael Neuling wrote:
-> > > +/*
-> > > + * We need to assign an unique thread id to each thread in a process. This
-> > > + * thread id is intended to be used with the Fast Thread-wakeup (aka Core-
-> > > + * to-core wakeup) mechanism being implemented on top of Virtual Accelerator
-> > > + * Switchboard (VAS).
-> > > + *
-> > > + * To get a unique thread-id per process we could simply use task_pid_nr()
-> > > + * but the problem is that task_pid_nr() is not yet available for the thread
-> > > + * when copy_thread() is called. Fixing that would require changing more
-> > > + * intrusive arch-neutral code in code path in copy_process()?.
-> > > + *
-> > > + * Further, to assign unique thread ids within each process, we need an
-> > > + * atomic field (or an IDR) in task_struct, which again intrudes into the
-> > > + * arch-neutral code.
-> > 
-> > Really?
-> > 
-> > > + * So try to assign globally unique thraed ids for now.
-> > 
-> > Yuck!
+Michael Ellerman [mpe@ellerman.id.au] wrote:
+> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> 
+> > We need the SPRN_TIDR to bet set for use with fast thread-wakeup
+> > (core-to-core wakeup).  Each thread in a process needs to have a
+> > unique id within the process but as explained below, for now, we
+> > assign globally unique thread ids to all threads in the system.
+> 
+> Each thread in a process already has a unique id, ie. its pid (in the
+> init PID namespace), accessible in the kernel as task_pid_nr(task).
+> 
+> So if that's all we need, we don't need a new allocator, and we don't
+> need to store it in the thread_struct.
+> 
+> Also 99.99% of processes aren't going to care about the TIDR, so we
+> should avoid setting it in the common case. ie. it should start out zero
+> and only be initialised in the FTW code, or a helper that it calls.
 
-I know :-) copy_process() has:
+Good point. So, should we just set when the RX_WIN_OPEN ioctl is called
+rather than at the time of clone()?
 
-        retval = copy_thread_tls(clone_flags, stack_start, stack_size, p, tls);
-        if (retval)
-                goto bad_fork_cleanup_io;
+_switch_to() (restore_sprs() could check for non-zero and save/restore
+the value.
 
-        if (pid != &init_struct_pid) {
-                pid = alloc_pid(p->nsproxy->pid_ns_for_children);
-                if (IS_ERR(pid)) {
+As Ben pointed out, we are going to be have limit the number of TIDs (to
+be within the size limits), so we won't be able to use task_pid_nr()? But
+if we assign the TIDs in the RX_WIN_OPEN ioctl, then only the FTW processes
+will need the TIDR value.
 
-
-so copy_thread() is called before a pid_nr is assigned to the task.
-
-But see also response to Michael Ellerman.
+Can we then assign new, globally-unique TID values for now and have the ioctl
+fail with -EAGAIN if all TIDs are in use? We can extend to per-process TID
+values, later?
 
 > 
-> Also CAPI has size limits for the TIDR afaik
+> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> > index 9f3e2c9..6123859 100644
+> > --- a/arch/powerpc/kernel/process.c
+> > +++ b/arch/powerpc/kernel/process.c
+> > @@ -1213,6 +1213,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
+> >  		hard_irq_disable();
+> >  	}
+> >  
+> > +#ifdef CONFIG_PPC_VAS
+> > +	mtspr(SPRN_TIDR, new->thread.tidr);
+> > +#endif
+> 
+> That should be in restore_sprs().
 
-Ok.
+ok.
+> 
+> It should also check that the TIDR is initialised, and only switch it
+> when necessary.
+> 
+> > +	/*
+> > +	 * We can't take a PMU exception inside _switch() since there is a
+> > +	 * window where the kernel stack SLB and the kernel stack are out
+> > +	 * of sync. Hard disable here.
+> > +	 */
+> > +	hard_irq_disable();
+> 
+> We removed that in June in:
+> 
+>  e4c0fc5f72bc ("powerpc/64s: Leave interrupts hard enabled in context switch for radix")
+> 
+> You've obviously picked it up somewhere along the line during a rebase,
+> please be more careful!
+
+Yeah, That was stupid. I picked it up on a recent rebase. Will be careful.
 
 > 
-> Ben.
+> cheers
