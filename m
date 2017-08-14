@@ -1,12 +1,12 @@
 Return-Path: <bhumirks@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWDCw5NBXzDqZy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:39:24 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id 123so10254789pga.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 04:39:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWDDC0phMzDqpD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:39:39 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id y192so10270347pgd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 04:39:39 -0700 (PDT)
 From: Bhumika Goyal <bhumirks@gmail.com>
 To: julia.lawall@lip6.fr, brian.austin@cirrus.com, Paul.Handrigan@cirrus.com,
  lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
@@ -20,9 +20,9 @@ To: julia.lawall@lip6.fr, brian.austin@cirrus.com, Paul.Handrigan@cirrus.com,
  linuxppc-dev@lists.ozlabs.org, linux-omap@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org
 Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH 01/11] ASoC: codecs: make snd_soc_platform_driver const
-Date: Mon, 14 Aug 2017 17:08:40 +0530
-Message-Id: <1502710730-18912-2-git-send-email-bhumirks@gmail.com>
+Subject: [PATCH 02/11] ASoC: Intel: make snd_soc_platform_driver const
+Date: Mon, 14 Aug 2017 17:08:41 +0530
+Message-Id: <1502710730-18912-3-git-send-email-bhumirks@gmail.com>
 In-Reply-To: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
 References: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,70 +34,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make these const as they are either passed as the 2nd argument to the
-function devm_snd_soc_register_platform or snd_soc_register_platform,
-and the arguments are of type const.
+Make these const as they are only passed as the 2nd argument to the
+function snd_soc_register_platform, which is of type const.
 Done using Coccinelle.
 
 Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 ---
- sound/soc/codecs/cs47l24.c    | 2 +-
- sound/soc/codecs/rt5514-spi.c | 2 +-
- sound/soc/codecs/wm5102.c     | 2 +-
- sound/soc/codecs/wm5110.c     | 2 +-
+ sound/soc/intel/atom/sst-mfld-platform-pcm.c | 2 +-
+ sound/soc/intel/baytrail/sst-baytrail-pcm.c  | 2 +-
+ sound/soc/intel/haswell/sst-haswell-pcm.c    | 2 +-
+ sound/soc/intel/skylake/skl-pcm.c            | 2 +-
  4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/codecs/cs47l24.c b/sound/soc/codecs/cs47l24.c
-index d323caa..505dbc9 100644
---- a/sound/soc/codecs/cs47l24.c
-+++ b/sound/soc/codecs/cs47l24.c
-@@ -1213,7 +1213,7 @@ static struct regmap *cs47l24_get_regmap(struct device *dev)
- 	.copy = wm_adsp_compr_copy,
- };
+diff --git a/sound/soc/intel/atom/sst-mfld-platform-pcm.c b/sound/soc/intel/atom/sst-mfld-platform-pcm.c
+index 49c7b88..b272df5 100644
+--- a/sound/soc/intel/atom/sst-mfld-platform-pcm.c
++++ b/sound/soc/intel/atom/sst-mfld-platform-pcm.c
+@@ -705,7 +705,7 @@ static int sst_soc_probe(struct snd_soc_platform *platform)
+ 	return sst_dsp_init_v2_dpcm(platform);
+ }
  
--static struct snd_soc_platform_driver cs47l24_compr_platform = {
-+static const struct snd_soc_platform_driver cs47l24_compr_platform = {
- 	.compr_ops = &cs47l24_compr_ops,
- };
- 
-diff --git a/sound/soc/codecs/rt5514-spi.c b/sound/soc/codecs/rt5514-spi.c
-index 640193d..ed6e537 100644
---- a/sound/soc/codecs/rt5514-spi.c
-+++ b/sound/soc/codecs/rt5514-spi.c
-@@ -272,7 +272,7 @@ static int rt5514_spi_pcm_probe(struct snd_soc_platform *platform)
+-static struct snd_soc_platform_driver sst_soc_platform_drv  = {
++static const struct snd_soc_platform_driver sst_soc_platform_drv  = {
+ 	.probe		= sst_soc_probe,
+ 	.ops		= &sst_platform_ops,
+ 	.compr_ops	= &sst_platform_compr_ops,
+diff --git a/sound/soc/intel/baytrail/sst-baytrail-pcm.c b/sound/soc/intel/baytrail/sst-baytrail-pcm.c
+index 4765ad4..84cb568 100644
+--- a/sound/soc/intel/baytrail/sst-baytrail-pcm.c
++++ b/sound/soc/intel/baytrail/sst-baytrail-pcm.c
+@@ -395,7 +395,7 @@ static int sst_byt_pcm_remove(struct snd_soc_platform *platform)
  	return 0;
  }
  
--static struct snd_soc_platform_driver rt5514_spi_platform = {
-+static const struct snd_soc_platform_driver rt5514_spi_platform = {
- 	.probe = rt5514_spi_pcm_probe,
- 	.ops = &rt5514_spi_pcm_ops,
- };
-diff --git a/sound/soc/codecs/wm5102.c b/sound/soc/codecs/wm5102.c
-index 1fe358e..f500692 100644
---- a/sound/soc/codecs/wm5102.c
-+++ b/sound/soc/codecs/wm5102.c
-@@ -2027,7 +2027,7 @@ static struct regmap *wm5102_get_regmap(struct device *dev)
- 	.copy = wm_adsp_compr_copy,
- };
+-static struct snd_soc_platform_driver byt_soc_platform = {
++static const struct snd_soc_platform_driver byt_soc_platform = {
+ 	.probe		= sst_byt_pcm_probe,
+ 	.remove		= sst_byt_pcm_remove,
+ 	.ops		= &sst_byt_pcm_ops,
+diff --git a/sound/soc/intel/haswell/sst-haswell-pcm.c b/sound/soc/intel/haswell/sst-haswell-pcm.c
+index 9e4094e..c044400 100644
+--- a/sound/soc/intel/haswell/sst-haswell-pcm.c
++++ b/sound/soc/intel/haswell/sst-haswell-pcm.c
+@@ -1135,7 +1135,7 @@ static int hsw_pcm_remove(struct snd_soc_platform *platform)
+ 	return 0;
+ }
  
--static struct snd_soc_platform_driver wm5102_compr_platform = {
-+static const struct snd_soc_platform_driver wm5102_compr_platform = {
- 	.compr_ops = &wm5102_compr_ops,
- };
+-static struct snd_soc_platform_driver hsw_soc_platform = {
++static const struct snd_soc_platform_driver hsw_soc_platform = {
+ 	.probe		= hsw_pcm_probe,
+ 	.remove		= hsw_pcm_remove,
+ 	.ops		= &hsw_pcm_ops,
+diff --git a/sound/soc/intel/skylake/skl-pcm.c b/sound/soc/intel/skylake/skl-pcm.c
+index debdaac..e98d825 100644
+--- a/sound/soc/intel/skylake/skl-pcm.c
++++ b/sound/soc/intel/skylake/skl-pcm.c
+@@ -1310,7 +1310,7 @@ static int skl_platform_soc_probe(struct snd_soc_platform *platform)
  
-diff --git a/sound/soc/codecs/wm5110.c b/sound/soc/codecs/wm5110.c
-index 1bc9421..d6fae139 100644
---- a/sound/soc/codecs/wm5110.c
-+++ b/sound/soc/codecs/wm5110.c
-@@ -2382,7 +2382,7 @@ static struct regmap *wm5110_get_regmap(struct device *dev)
- 	.copy = wm_adsp_compr_copy,
- };
- 
--static struct snd_soc_platform_driver wm5110_compr_platform = {
-+static const struct snd_soc_platform_driver wm5110_compr_platform = {
- 	.compr_ops = &wm5110_compr_ops,
- };
- 
+ 	return 0;
+ }
+-static struct snd_soc_platform_driver skl_platform_drv  = {
++static const struct snd_soc_platform_driver skl_platform_drv  = {
+ 	.probe		= skl_platform_soc_probe,
+ 	.ops		= &skl_platform_ops,
+ 	.pcm_new	= skl_pcm_new,
 -- 
 1.9.1
