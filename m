@@ -1,38 +1,28 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWDHh09fZzDr0Y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:42:39 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7EBeYiB143729
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 07:42:36 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cb4kfs3k7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 07:42:35 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 14 Aug 2017 21:42:33 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7EBgWx837748804
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:42:32 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7EBgVp1029637
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:42:31 +1000
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- hemant@linux.vnet.ibm.com
-Subject: [PATCH] Fix for supporting nest events on muti socket system
-Date: Mon, 14 Aug 2017 17:12:23 +0530
-Message-Id: <1502710943-22738-1-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWDJg507KzDqln
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Aug 2017 21:43:31 +1000 (AEST)
+Date: Mon, 14 Aug 2017 13:43:26 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org
+Subject: Re: [v6 02/15] x86/mm: setting fields in deferred pages
+Message-ID: <20170814114326.GH19063@dhcp22.suse.cz>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-3-git-send-email-pasha.tatashin@oracle.com>
+ <20170811090214.GD30811@dhcp22.suse.cz>
+ <b0422e38-a6da-081a-71c5-82a36dd2a5bb@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b0422e38-a6da-081a-71c5-82a36dd2a5bb@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,67 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In a multi node system with discontinuous node id, nest event values
-are not showing up properly.That is,
+On Fri 11-08-17 11:39:41, Pasha Tatashin wrote:
+> >AFAIU register_page_bootmem_info_node is only about struct pages backing
+> >pgdat, usemap and memmap. Those should be in reserved memblocks and we
+> >do not initialize those at later times, they are not relevant to the
+> >deferred initialization as your changelog suggests so the ordering with
+> >get_page_bootmem shouldn't matter. Or am I missing something here?
+> 
+> The pages for pgdata, usemap, and memmap are part of reserved, and thus
+> getting initialized when free_all_bootmem() is called.
+> 
+> So, we have something like this in mem_init()
+> 
+> register_page_bootmem_info
+>  register_page_bootmem_info_node
+>   get_page_bootmem
+>    .. setting fields here ..
+>    such as: page->freelist = (void *)type;
+> 
+> free_all_bootmem()
+>  free_low_memory_core_early()
+>   for_each_reserved_mem_region()
+>    reserve_bootmem_region()
+>     init_reserved_page() <- Only if this is deferred reserved page
+>      __init_single_pfn()
+>       __init_single_page()
+>           memset(0) <-- Loose the set fields here!
 
-snip from lscpu output:
-
-..
-NUMA node0 CPU(s): 0-15
-NUMA node8 CPU(s): 16-31
-..
-
-Nest event values on such systems are broken:
-
-$./perf stat -e 'nest_powerbus0_imc/PM_PB_CYC/' -C 0-14 -I 1000 sleep 1000
-#           time             counts unit events
-     1.000294577    30,17,24,42,880 nest_powerbus0_imc/PM_PB_CYC/
-     2.000528938    29,92,08,53,760 nest_powerbus0_imc/PM_PB_CYC/
-     3.000713925    29,92,08,00,000 nest_powerbus0_imc/PM_PB_CYC/
-     4.000901944    29,95,08,63,360 nest_powerbus0_imc/PM_PB_CYC/
-     5.001089119    29,92,07,92,320 nest_powerbus0_imc/PM_PB_CYC/
-     6.001276106    29,92,08,11,520 nest_powerbus0_imc/PM_PB_CYC/
-
-$./perf stat -e 'nest_powerbus0_imc/PM_PB_CYC/' -C 16-28 -I 1000 sleep 1000
-#           time             counts unit events
-     1.000049902    <not supported> nest_powerbus0_imc/PM_PB_CYC/
-     2.000147269    <not supported> nest_powerbus0_imc/PM_PB_CYC/
-     3.000219730    <not supported> nest_powerbus0_imc/PM_PB_CYC/
-     4.000288098    <not supported> nest_powerbus0_imc/PM_PB_CYC/
-     5.000358716    <not supported> nest_powerbus0_imc/PM_PB_CYC/
-     6.000435615    <not supported> nest_powerbus0_imc/PM_PB_CYC/
-     7.000508481    <not supported> nest_powerbus0_imc/PM_PB_CYC/
-
-This is because, when fetching for the reference count, node id is used
-as the array index which is not how this is done when initializing the
-structure. Patch to fix the same by using the right index to get the
-nest_imc_refc.
-
-$./perf stat -e 'nest_powerbus0_imc/PM_PB_CYC/' -C 16-28 -I 1000 sleep 1000
-#           time             counts unit events
-     1.000241961    26,12,35,28,704 nest_powerbus0_imc/PM_PB_CYC/
-     2.000451678    25,95,72,48,512 nest_powerbus0_imc/PM_PB_CYC/
-     3.000634963    25,93,13,96,608 nest_powerbus0_imc/PM_PB_CYC/
-     4.000821186    25,95,74,38,208 nest_powerbus0_imc/PM_PB_CYC/
-     5.001005221    25,93,13,30,048 nest_powerbus0_imc/PM_PB_CYC/ 
-
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
----
- arch/powerpc/perf/imc-pmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 46cd912..bbcce29 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -1064,7 +1064,7 @@ static int init_nest_pmu_ref(void)
- 	 */
- 	for_each_possible_cpu(cpu) {
- 		nid = cpu_to_node(cpu);
--		for_each_online_node(i) {
-+		for (i = 0; i < num_possible_nodes(); i++) {
- 			if (nest_imc_refc[i].id == nid) {
- 				per_cpu(local_nest_imc_refc, cpu) = &nest_imc_refc[i];
- 				break;
+OK, I have missed that part. Please make it explicit in the changelog.
+It is quite easy to get lost in the deep call chains.
 -- 
-2.7.4
+Michal Hocko
+SUSE Labs
