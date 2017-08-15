@@ -1,34 +1,22 @@
-Return-Path: <ckeepax@opensource.cirrus.com>
-Received: from mx0b-001ae601.pphosted.com (mx0a-001ae601.pphosted.com
- [67.231.149.25])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ldoktor@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWlnq3tyNzDrJV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 18:22:06 +1000 (AEST)
-Date: Tue, 15 Aug 2017 09:11:43 +0100
-From: Charles Keepax <ckeepax@opensource.cirrus.com>
-To: Bhumika Goyal <bhumirks@gmail.com>
-CC: <julia.lawall@lip6.fr>, <brian.austin@cirrus.com>,
- <Paul.Handrigan@cirrus.com>, <lgirdwood@gmail.com>,
- <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.com>,
- <bardliao@realtek.com>, <chiou@realtek.com>, <timur@tabi.org>,
- <nicoleotsuka@gmail.com>, <Xiubo.Lee@gmail.com>,
- <fabio.estevam@nxp.com>, <yang.jie@linux.intel.com>,
- <peter.ujfalusi@ti.com>, <jarkko.nikula@bitmer.com>,
- <daniel@zonque.org>, <haojian.zhuang@gmail.com>,
- <robert.jarzmik@free.fr>, <plai@codeaurora.org>,
- <bgoswami@codeaurora.org>, <krzk@kernel.org>, <sbkim73@samsung.com>,
- <s.nawrocki@samsung.com>, <alsa-devel@alsa-project.org>,
- <patches@opensource.cirrus.com>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-omap@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 01/11] ASoC: codecs: make snd_soc_platform_driver const
-Message-ID: <20170815081143.cpkronjaqjo5ike5@localhost.localdomain>
-References: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
- <1502710730-18912-2-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWmKZ4h6zzDqlD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 18:46:10 +1000 (AEST)
+From: =?UTF-8?q?Luk=C3=A1=C5=A1=20Doktor?= <ldoktor@redhat.com>
+To: ldoktor@redhat.com, a.zummo@towertech.it, linuxppc-dev@lists.ozlabs.org,
+ sboyd@codeaurora.org, linux-kernel@vger.kernel.org,
+ alexandre.belloni@free-electrons.com, linux-kselftest@vger.kernel.org,
+ john.stultz@linaro.org, tglx@linutronix.de, shuah@kernel.org,
+ linux-rtc@vger.kernel.org
+Subject: [PATCH v2 1/1] rtc: rtctest: Improve support detection
+Date: Tue, 15 Aug 2017 10:46:00 +0200
+Message-Id: <20170815084600.6285-2-ldoktor@redhat.com>
+In-Reply-To: <20170815084600.6285-1-ldoktor@redhat.com>
+References: <20170815084600.6285-1-ldoktor@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1502710730-18912-2-git-send-email-bhumirks@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,18 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 14, 2017 at 05:08:40PM +0530, Bhumika Goyal wrote:
-> Make these const as they are either passed as the 2nd argument to the
-> function devm_snd_soc_register_platform or snd_soc_register_platform,
-> and the arguments are of type const.
-> Done using Coccinelle.
-> 
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
-> ---
+The rtc-generic and opal-rtc are failing to run this test as they do not
+support all the features. Let's treat the error returns and skip to the
+following test.
 
-For the Wolfson bits:
+Theoretically the test_DATE should be also adjusted, but as it's enabled
+on demand I think it makes sense to fail in such case.
 
-Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+Signed-off-by: Lukáš Doktor <ldoktor@redhat.com>
+---
+ tools/testing/selftests/timers/rtctest.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Thanks,
-Charles
+diff --git a/tools/testing/selftests/timers/rtctest.c b/tools/testing/selftests/timers/rtctest.c
+index f61170f..411eff6 100644
+--- a/tools/testing/selftests/timers/rtctest.c
++++ b/tools/testing/selftests/timers/rtctest.c
+@@ -221,6 +221,11 @@ int main(int argc, char **argv)
+ 	/* Read the current alarm settings */
+ 	retval = ioctl(fd, RTC_ALM_READ, &rtc_tm);
+ 	if (retval == -1) {
++		if (errno == EINVAL) {
++			fprintf(stderr,
++					"\n...EINVAL reading current alarm setting.\n");
++			goto test_PIE;
++		}
+ 		perror("RTC_ALM_READ ioctl");
+ 		exit(errno);
+ 	}
+@@ -231,7 +236,7 @@ int main(int argc, char **argv)
+ 	/* Enable alarm interrupts */
+ 	retval = ioctl(fd, RTC_AIE_ON, 0);
+ 	if (retval == -1) {
+-		if (errno == EINVAL) {
++		if (errno == EINVAL || errno == EIO) {
+ 			fprintf(stderr,
+ 				"\n...Alarm IRQs not supported.\n");
+ 			goto test_PIE;
+-- 
+2.9.4
