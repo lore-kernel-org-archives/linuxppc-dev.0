@@ -1,29 +1,22 @@
-Return-Path: <khalid.aziz@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWw1Y24TrzDqSb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 00:32:49 +1000 (AEST)
-Subject: Re: [PATCH v7 7/9] mm: Add address parameter to arch_validate_prot()
-To: Michael Ellerman <mpe@ellerman.id.au>, akpm@linux-foundation.org,
- benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
- dave.hansen@linux.intel.com
-Cc: bsingharora@gmail.com, dja@axtens.net, tglx@linutronix.de, mgorman@suse.de,
- aarcange@redhat.com, kirill.shutemov@linux.intel.com,
- heiko.carstens@de.ibm.com, ak@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, sparclinux@vger.kernel.org,
- Khalid Aziz <khalid@gonehiking.org>
-References: <cover.1502219353.git.khalid.aziz@oracle.com>
- <43c120f0cbbebd1398997b9521013ced664e5053.1502219353.git.khalid.aziz@oracle.com>
- <87tw1flftz.fsf@concordia.ellerman.id.au>
- <2e97b439-dd71-8997-4824-15f2b1f53787@oracle.com>
- <877ey5v2y7.fsf@concordia.ellerman.id.au>
-From: Khalid Aziz <khalid.aziz@oracle.com>
-Message-ID: <4b17a1f2-c6a9-ab4e-5df6-0f9aa47214cb@oracle.com>
-Date: Tue, 15 Aug 2017 08:32:11 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWwHR4psyzDqYv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 00:44:50 +1000 (AEST)
+Subject: Re: [PATCH 05/11] serial: uuc_uart: constify uart_ops structures
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: bhumirks@gmail.com, kernel-janitors@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jslaby@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1502605310-4314-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1502605310-4314-6-git-send-email-Julia.Lawall@lip6.fr>
+From: Timur Tabi <timur@tabi.org>
+Message-ID: <b5eaeaab-6c8b-b4d1-5667-a879cdda4019@tabi.org>
+Date: Tue, 15 Aug 2017 09:44:39 -0500
 MIME-Version: 1.0
-In-Reply-To: <877ey5v2y7.fsf@concordia.ellerman.id.au>
+In-Reply-To: <1502605310-4314-6-git-send-email-Julia.Lawall@lip6.fr>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,76 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/14/2017 11:02 PM, Michael Ellerman wrote:
-> Khalid Aziz <khalid.aziz@oracle.com> writes:
+On 8/13/17 1:21 AM, Julia Lawall wrote:
+> These uart_ops structures are only stored in the ops field of a
+> uart_port structure and this fields is const, so the uart_ops
+> structures can also be const.
 > 
->> On 08/10/2017 07:20 AM, Michael Ellerman wrote:
->>> Khalid Aziz <khalid.aziz@oracle.com> writes:
->>>
->>>> A protection flag may not be valid across entire address space and
->>>> hence arch_validate_prot() might need the address a protection bit is
->>>> being set on to ensure it is a valid protection flag. For example, sparc
->>>> processors support memory corruption detection (as part of ADI feature)
->>>> flag on memory addresses mapped on to physical RAM but not on PFN mapped
->>>> pages or addresses mapped on to devices. This patch adds address to the
->>>> parameters being passed to arch_validate_prot() so protection bits can
->>>> be validated in the relevant context.
->>>>
->>>> Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
->>>> Cc: Khalid Aziz <khalid@gonehiking.org>
->>>> ---
->>>> v7:
->>>> 	- new patch
->>>>
->>>>    arch/powerpc/include/asm/mman.h | 2 +-
->>>>    arch/powerpc/kernel/syscalls.c  | 2 +-
->>>>    include/linux/mman.h            | 2 +-
->>>>    mm/mprotect.c                   | 2 +-
->>>>    4 files changed, 4 insertions(+), 4 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
->>>> index 30922f699341..bc74074304a2 100644
->>>> --- a/arch/powerpc/include/asm/mman.h
->>>> +++ b/arch/powerpc/include/asm/mman.h
->>>> @@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
->>>>    		return false;
->>>>    	return true;
->>>>    }
->>>> -#define arch_validate_prot(prot) arch_validate_prot(prot)
->>>> +#define arch_validate_prot(prot, addr) arch_validate_prot(prot)
->>>
->>> This can be simpler, as just:
->>>
->>> #define arch_validate_prot arch_validate_prot
->>>
->>
->> Hi Michael,
->>
->> Thanks for reviewing!
->>
->> My patch expands parameter list for arch_validate_prot() from one to two
->> parameters. Existing powerpc version of arch_validate_prot() is written
->> with one parameter. If I use the above #define, compilation fails with:
->>
->> mm/mprotect.c: In function ‘do_mprotect_pkey’:
->> mm/mprotect.c:399: error: too many arguments to function
->> ‘arch_validate_prot’
->>
->> Another way to solve it would be to add the new addr parameter to
->> powerpc version of arch_validate_prot() but I chose the less disruptive
->> solution of tackling it through #define and expanded the existing
->> #define to include the new parameter. Make sense?
+> Done with the help of Coccinelle.
 > 
-> Yes, it makes sense. But it's a bit gross.
-> 
-> At first glance it looks like our arch_validate_prot() has an incorrect
-> signature.
-> 
-> I'd prefer you just updated it to have the correct signature, I think
-> you'll have to change one more line in do_mmap2(). So it's not very
-> intrusive.
+> Signed-off-by: Julia Lawall<Julia.Lawall@lip6.fr>
 
-Thanks, Michael. I can do that.
-
---
-Khalid
+Acked-by: Timur Tabi <timur@tabi.org>
