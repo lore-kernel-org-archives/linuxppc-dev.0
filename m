@@ -1,30 +1,20 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWnRn3vTHzDqm7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 19:36:37 +1000 (AEST)
-Date: Tue, 15 Aug 2017 11:36:32 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Pasha Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org
-Subject: Re: [v6 15/15] mm: debug for raw alloctor
-Message-ID: <20170815093631.GD29067@dhcp22.suse.cz>
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-16-git-send-email-pasha.tatashin@oracle.com>
- <20170811130831.GN30811@dhcp22.suse.cz>
- <87d84cad-f03a-88f0-7828-6d3bf7ac473c@oracle.com>
- <20170814115000.GJ19063@dhcp22.suse.cz>
- <b4eb28ad-2d58-fb23-2139-427df46c2773@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWp3w6jwMzDr9D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 20:04:28 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/xmon: Exclude all of xmon/ from ftrace
+In-Reply-To: <87wp6emj5w.fsf@concordia.ellerman.id.au>
+References: <20170802182538.26526-1-naveen.n.rao@linux.vnet.ibm.com>
+ <87wp6emj5w.fsf@concordia.ellerman.id.au>
+Date: Tue, 15 Aug 2017 20:04:27 +1000
+Message-ID: <87y3qltadw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b4eb28ad-2d58-fb23-2139-427df46c2773@oracle.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,25 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 14-08-17 10:01:52, Pasha Tatashin wrote:
-> >>However, now thinking about it, I will change it to CONFIG_MEMBLOCK_DEBUG,
-> >>and let users decide what other debugging configs need to be enabled, as
-> >>this is also OK.
-> >
-> >Actually the more I think about it the more I am convinced that a kernel
-> >boot parameter would be better because it doesn't need the kernel to be
-> >recompiled and it is a single branch in not so hot path.
-> 
-> The main reason I do not like kernel parameter is that automated test suits
-> for every platform would need to be updated to include this new parameter in
-> order to test it.
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-How does this differ from the enabling a config option and building a
-separate kernel?
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>
+>> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+>> index 0b2f771593eb..5f95af64cb8f 100644
+>> --- a/arch/powerpc/xmon/Makefile
+>> +++ b/arch/powerpc/xmon/Makefile
+>> @@ -7,6 +7,19 @@ UBSAN_SANITIZE := n
+>>  
+>>  ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
+>>  
+>> +ifdef CONFIG_FUNCTION_TRACER
+>> +CFLAGS_REMOVE_xmon.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
+>> +CFLAGS_REMOVE_nonstdio.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+>> +ifdef CONFIG_XMON_DISASSEMBLY
+>> +CFLAGS_REMOVE_ppc-dis.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
+>> +CFLAGS_REMOVE_ppc-opc.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
+>> +ifdef CONFIG_SPU_BASE
+>> +CFLAGS_REMOVE_spu-dis.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
+>> +CFLAGS_REMOVE_spu-opc.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
+>> +endif
+>> +endif
+>> +endif
+>
+> Urk.
+>
+> We want to disable it for everything in the directory, so can you do
+> something like:
+>
+>   ORIG_CFLAGS := $(KBUILD_CFLAGS)
+>   KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
 
-My primary point of the kernel option was to have something available to
-debug without recompiling the kernel which is more tedious than simply
-adding one option to the kernel command line.
--- 
-Michal Hocko
-SUSE Labs
+Yes:
+
+  # Disable ftrace for the entire directory
+  ORIG_CFLAGS := $(KBUILD_CFLAGS)
+  KBUILD_CFLAGS = $(subst -mno-sched-epilog,,$(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS)))
+
+Seems to work.
+
+cheers
