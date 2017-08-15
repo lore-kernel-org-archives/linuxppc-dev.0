@@ -1,20 +1,26 @@
-Return-Path: <ldoktor@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWmKW6dbVzDqgp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 18:46:05 +1000 (AEST)
-From: =?UTF-8?q?Luk=C3=A1=C5=A1=20Doktor?= <ldoktor@redhat.com>
-To: ldoktor@redhat.com, a.zummo@towertech.it, linuxppc-dev@lists.ozlabs.org,
- sboyd@codeaurora.org, linux-kernel@vger.kernel.org,
- alexandre.belloni@free-electrons.com, linux-kselftest@vger.kernel.org,
- john.stultz@linaro.org, tglx@linutronix.de, shuah@kernel.org,
- linux-rtc@vger.kernel.org
-Subject: [PATCH v2 0/1] rtc: rtctest: Support opal-rtc and rtc-generic
-Date: Tue, 15 Aug 2017 10:45:59 +0200
-Message-Id: <20170815084600.6285-1-ldoktor@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWnMw1hj6zDr4C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 19:33:15 +1000 (AEST)
+Date: Tue, 15 Aug 2017 11:33:07 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, Mel Gorman <mgorman@suse.de>
+Subject: Re: [v6 05/15] mm: don't accessed uninitialized struct pages
+Message-ID: <20170815093306.GC29067@dhcp22.suse.cz>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-6-git-send-email-pasha.tatashin@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1502138329-123460-6-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On ppc64le machines the opal-rtc, resp rtc-generic in guest is used. They only
-support minimal set of functionality and fail this test in not-yet treated
-way. This extends the checks and skips to the next test when feature is not
-supported.
+[CC Mel - the original patch was
+http://lkml.kernel.org/r/1502138329-123460-6-git-send-email-pasha.tatashin@oracle.com]
 
-Changes in v2:
-- Removed the double EINVAL check
-- Added missing space before "EIO" check.
+On Mon 07-08-17 16:38:39, Pavel Tatashin wrote:
+> In deferred_init_memmap() where all deferred struct pages are initialized
+> we have a check like this:
+> 
+>     if (page->flags) {
+>             VM_BUG_ON(page_zone(page) != zone);
+>             goto free_range;
+>     }
+> 
+> This way we are checking if the current deferred page has already been
+> initialized. It works, because memory for struct pages has been zeroed, and
+> the only way flags are not zero if it went through __init_single_page()
+> before.  But, once we change the current behavior and won't zero the memory
+> in memblock allocator, we cannot trust anything inside "struct page"es
+> until they are initialized. This patch fixes this.
+> 
+> This patch defines a new accessor memblock_get_reserved_pfn_range()
+> which returns successive ranges of reserved PFNs.  deferred_init_memmap()
+> calls it to determine if a PFN and its struct page has already been
+> initialized.
 
-Lukáš Doktor (1):
-  rtc: rtctest: Improve support detection
+Maybe I am missing something but how can we see reserved ranges here
+when for_each_mem_pfn_range iterates over memblock.memory?
 
- tools/testing/selftests/timers/rtctest.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
+The loop is rather complex but I am wondering whether the page->flags
+check is needed at all. We shouldn't have duplicated memblocks covering
+the same pfn ranges so we cannot initialize the same range multiple
+times, right? Reserved ranges are excluded altogether so how exactly can
+we see an initialized struct page? In other words, why this simply
+doesn't work?
+---
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 90e331e4c077..987a340a5bed 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1524,11 +1524,6 @@ static int __init deferred_init_memmap(void *data)
+ 				cond_resched();
+ 			}
+ 
+-			if (page->flags) {
+-				VM_BUG_ON(page_zone(page) != zone);
+-				goto free_range;
+-			}
+-
+ 			__init_single_page(page, pfn, zid, nid);
+ 			if (!free_base_page) {
+ 				free_base_page = page;
 -- 
-2.9.4
+Michal Hocko
+SUSE Labs
