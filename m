@@ -1,39 +1,30 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWvl203H7zDqXs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 00:20:13 +1000 (AEST)
-Received: from mail-qt0-f177.google.com (mail-qt0-f177.google.com
- [209.85.216.177])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A4BB622CB7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 14:20:11 +0000 (UTC)
-Received: by mail-qt0-f177.google.com with SMTP id v29so5037827qtv.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 07:20:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWw1Y24TrzDqSb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 00:32:49 +1000 (AEST)
+Subject: Re: [PATCH v7 7/9] mm: Add address parameter to arch_validate_prot()
+To: Michael Ellerman <mpe@ellerman.id.au>, akpm@linux-foundation.org,
+ benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
+ dave.hansen@linux.intel.com
+Cc: bsingharora@gmail.com, dja@axtens.net, tglx@linutronix.de, mgorman@suse.de,
+ aarcange@redhat.com, kirill.shutemov@linux.intel.com,
+ heiko.carstens@de.ibm.com, ak@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ Khalid Aziz <khalid@gonehiking.org>
+References: <cover.1502219353.git.khalid.aziz@oracle.com>
+ <43c120f0cbbebd1398997b9521013ced664e5053.1502219353.git.khalid.aziz@oracle.com>
+ <87tw1flftz.fsf@concordia.ellerman.id.au>
+ <2e97b439-dd71-8997-4824-15f2b1f53787@oracle.com>
+ <877ey5v2y7.fsf@concordia.ellerman.id.au>
+From: Khalid Aziz <khalid.aziz@oracle.com>
+Message-ID: <4b17a1f2-c6a9-ab4e-5df6-0f9aa47214cb@oracle.com>
+Date: Tue, 15 Aug 2017 08:32:11 -0600
 MIME-Version: 1.0
-In-Reply-To: <6819c6ae-e898-3293-d8b0-7a80108d7628@arm.com>
-References: <0819179085df6c41c70e83a2c5c138b95c0386b3.1502468875.git.robin.murphy@arm.com>
- <82633e62b64e28dc18bc466319065b92faf2414f.1502468875.git.robin.murphy@arm.com>
- <CAL_JsqKW7nhkCDu4eEDCgdC87b0MLH1UFO8LvaH22BcJMBsY7w@mail.gmail.com>
- <6819c6ae-e898-3293-d8b0-7a80108d7628@arm.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 15 Aug 2017 09:19:50 -0500
-Message-ID: <CAL_Jsq+pDHbrpLDYUVu22tk4OtR9Di4vxZUozwWJDu2ebYSBdg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] of: Restrict DMA configuration
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Frank Rowand <frowand.list@gmail.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Stefan Wahren <stefan.wahren@i2se.com>,
- =?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>,
- Hans Verkuil <hverkuil@xs4all.nl>, Johan Hovold <johan@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <877ey5v2y7.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,71 +34,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 15, 2017 at 5:18 AM, Robin Murphy <robin.murphy@arm.com> wrote:
-> On 14/08/17 21:08, Rob Herring wrote:
->> +linuxppc-dev
+On 08/14/2017 11:02 PM, Michael Ellerman wrote:
+> Khalid Aziz <khalid.aziz@oracle.com> writes:
+> 
+>> On 08/10/2017 07:20 AM, Michael Ellerman wrote:
+>>> Khalid Aziz <khalid.aziz@oracle.com> writes:
+>>>
+>>>> A protection flag may not be valid across entire address space and
+>>>> hence arch_validate_prot() might need the address a protection bit is
+>>>> being set on to ensure it is a valid protection flag. For example, sparc
+>>>> processors support memory corruption detection (as part of ADI feature)
+>>>> flag on memory addresses mapped on to physical RAM but not on PFN mapped
+>>>> pages or addresses mapped on to devices. This patch adds address to the
+>>>> parameters being passed to arch_validate_prot() so protection bits can
+>>>> be validated in the relevant context.
+>>>>
+>>>> Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
+>>>> Cc: Khalid Aziz <khalid@gonehiking.org>
+>>>> ---
+>>>> v7:
+>>>> 	- new patch
+>>>>
+>>>>    arch/powerpc/include/asm/mman.h | 2 +-
+>>>>    arch/powerpc/kernel/syscalls.c  | 2 +-
+>>>>    include/linux/mman.h            | 2 +-
+>>>>    mm/mprotect.c                   | 2 +-
+>>>>    4 files changed, 4 insertions(+), 4 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+>>>> index 30922f699341..bc74074304a2 100644
+>>>> --- a/arch/powerpc/include/asm/mman.h
+>>>> +++ b/arch/powerpc/include/asm/mman.h
+>>>> @@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
+>>>>    		return false;
+>>>>    	return true;
+>>>>    }
+>>>> -#define arch_validate_prot(prot) arch_validate_prot(prot)
+>>>> +#define arch_validate_prot(prot, addr) arch_validate_prot(prot)
+>>>
+>>> This can be simpler, as just:
+>>>
+>>> #define arch_validate_prot arch_validate_prot
+>>>
 >>
->> On Fri, Aug 11, 2017 at 11:29 AM, Robin Murphy <robin.murphy@arm.com> wrote:
->>> Moving DMA configuration to happen later at driver probe time had the
->>> unnoticed side-effect that we now perform DMA configuration for *every*
->>> device represented in DT, rather than only those explicitly created by
->>> the of_platform and PCI code.
->>>
->>> As Christoph points out, this is not really the best thing to do. Whilst
->>> there may well be other DMA-capable buses that can benefit from having
->>> their children automatically configured after the bridge has probed,
->>> there are also plenty of others like USB, MDIO, etc. that definitely do
->>> not support DMA and should not be indiscriminately processed.
->>>
->>> The good news is that DT already gives us the ammunition to do the right
->>> thing - anything lacking a "dma-ranges" property should be considered
->>> not to have a mapping of DMA address space from its children to its
->>> parent, thus anything for which of_dma_get_range() does not succeed does
->>> not need DMA configuration.
->>>
->>> The bad news is that strictly enforcing that would likely break just
->>> about every FDT platform out there, since most authors have either not
->>> considered the property at all or have mistakenly assumed that omitting
->>> "dma-ranges" is equivalent to including the empty property. Thus we have
->>> little choice but to special-case platform, AMBA and PCI devices so they
->>> continue to receive configuration unconditionally as before. At least
->>> anything new will have to get it right in future...
+>> Hi Michael,
 >>
->> By "anything new", you mean new buses, not new platforms, right?
->> What's a platform bus device today could be a different kernel bus
->> type tomorrow with no DT change. So this isn't really enforceable.
->
-> Indeed, it would be virtually impossible to do anything on a
-> per-platform basis, but I think per-bus is a workable compromise - if
-> someone changes their hypothetical bus driver in a way that would affect
-> deployed DTs that can't be updated, at worst they can still add their
-> new bus type to the special case list at the same time.
->
->> I don't completely agree that omitting dma-ranges is wrong and that
->> new DTs have to have dma-ranges simply because there is much precedent
->> of DTs with dma-ranges omitted (just go look at PPC). If a bus has no
->> bus to cpu address translation nor size restrictions, then no
->> dma-ranges should be allowed.
->
-> Sure, I agree that that genie is never going back in the bottle, but
-> people seem to manage to get empty "ranges" right to differentiate
-> between memory-mapped vs. non-memory-mapped buses, so it would be nice
-> to encourage getting the other direction right as well.
+>> Thanks for reviewing!
+>>
+>> My patch expands parameter list for arch_validate_prot() from one to two
+>> parameters. Existing powerpc version of arch_validate_prot() is written
+>> with one parameter. If I use the above #define, compilation fails with:
+>>
+>> mm/mprotect.c: In function ‘do_mprotect_pkey’:
+>> mm/mprotect.c:399: error: too many arguments to function
+>> ‘arch_validate_prot’
+>>
+>> Another way to solve it would be to add the new addr parameter to
+>> powerpc version of arch_validate_prot() but I chose the less disruptive
+>> solution of tackling it through #define and expanded the existing
+>> #define to include the new parameter. Make sense?
+> 
+> Yes, it makes sense. But it's a bit gross.
+> 
+> At first glance it looks like our arch_validate_prot() has an incorrect
+> signature.
+> 
+> I'd prefer you just updated it to have the correct signature, I think
+> you'll have to change one more line in do_mmap2(). So it's not very
+> intrusive.
 
-Well, they get ranges right because they don't get an address
-otherwise. The problem on dma-ranges is the bus we describe is the
-slave side, not the master side. So a given bus may have a mixture of
-DMA capable devices and non-DMA capable devices. If we're still
-setting DMA masks on all the devices, what have we gained? Maybe we
-could get stricter on PCI buses at least.
+Thanks, Michael. I can do that.
 
-> For the immediate issue at hand, I guess the alternative plan of attack
-> would be to stick a flag in struct bus_type for the bus drivers
-> themselves to opt into generic DMA configuration. That at least keeps
-> everything within the kernel (and come to think of it probably works
-> neatly for modular bus types as well).
-
-I'm fine with the change as is, it's really just the commit text I'm
-commenting on.
-
-Rob
+--
+Khalid
