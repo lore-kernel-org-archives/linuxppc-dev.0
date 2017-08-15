@@ -1,36 +1,48 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.184])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWwNN2dhxzDqV5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 00:49:08 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>, Jike Song
- <jike.song@intel.com>, Robin Murphy <robin.murphy@arm.com>
-CC: Vlad Tsyrklevich <vlad@tsyrklevich.net>, Neo Jia <cjia@nvidia.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>, Eric Auger
- <eric.auger@redhat.com>, Alexey Kardashevskiy <aik@ozlabs.ru>, "David
- Woodhouse" <dwmw2@infradead.org>, Joerg Roedel <joro@8bytes.org>, "Kyle
- Mahlkuch" <Kyle.Mahlkuch@ibm.com>, Kirti Wankhede <kwankhede@nvidia.com>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, Yongji
- Xie <elohimes@gmail.com>, Alex Williamson <alex.williamson@redhat.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, "Bjorn Helgaas" <bhelgaas@google.com>, Arvind Yadav
- <arvind.yadav.cs@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, David Gibson <david@gibson.dropbear.id.au>
-Subject: RE: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
-Date: Tue, 15 Aug 2017 14:48:52 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0055E4A@AcuExch.aculab.com>
-References: <20170807072548.3023-1-aik@ozlabs.ru>
- <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
- <ca2a4550-fb26-28db-0eea-a5940dfa612f@arm.com> <59924B85.5040405@intel.com>
- <1502760820.4493.40.camel@kernel.crashing.org>
-In-Reply-To: <1502760820.4493.40.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWxh72bGyzDr1S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 01:47:51 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7FFjoZs008616
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 11:47:48 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cc2jeuy15-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 11:47:48 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Tue, 15 Aug 2017 11:47:47 -0400
+Date: Tue, 15 Aug 2017 08:47:43 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: dzickus@redhat.com, sfr@canb.auug.org.au, linuxarm@huawei.com,
+ Nicholas Piggin <npiggin@gmail.com>, abdhalee@linux.vnet.ibm.com,
+ sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, tglx@linutronix.de
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170728084411.00001ddb@huawei.com>
+ <20170728142403.0000122b@huawei.com>
+ <20170728165529.GF3730@linux.vnet.ibm.com>
+ <20170728182053.000072aa@huawei.com>
+ <20170728190349.GM3730@linux.vnet.ibm.com>
+ <20170731120847.00003d5c@huawei.com>
+ <20170731150411.GA3730@linux.vnet.ibm.com>
+ <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170802172555.0000468a@huawei.com>
+Message-Id: <20170815154743.GK7017@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,22 +52,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdA0KPiBTZW50OiAxNSBBdWd1c3QgMjAxNyAwMjoz
-NA0KPiBPbiBUdWUsIDIwMTctMDgtMTUgYXQgMDk6MTYgKzA4MDAsIEppa2UgU29uZyB3cm90ZToN
-Cj4gPiA+IFRha2luZyBhIHN0ZXAgYmFjaywgdGhvdWdoLCB3aHkgZG9lcyB2ZmlvLXBjaSBwZXJm
-b3JtIHRoaXMgY2hlY2sgaW4gdGhlDQo+ID4gPiBmaXJzdCBwbGFjZT8gSWYgYSBtYWxpY2lvdXMg
-Z3Vlc3QgYWxyZWFkeSBoYXMgY29udHJvbCBvZiBhIGRldmljZSwgYW55DQo+ID4gPiBraW5kIG9m
-IGludGVycnVwdCBzcG9vZmluZyBpdCBjb3VsZCBkbyBieSBmaWRkbGluZyB3aXRoIHRoZSBNU0kt
-WA0KPiA+ID4gbWVzc2FnZSBhZGRyZXNzL2RhdGEgaXQgY291bGQgc2ltcGx5IGRvIHdpdGggYSBE
-TUEgd3JpdGUgYW55d2F5LCBzbyB0aGUNCj4gPiA+IHNlY3VyaXR5IGFyZ3VtZW50IGRvZXNuJ3Qg
-c3RhbmQgdXAgaW4gZ2VuZXJhbCAoc3VyZSwgbm90IGFsbCBQQ0llDQo+ID4gPiBkZXZpY2VzIG1h
-eSBiZSBjYXBhYmxlIG9mIGFyYml0cmFyeSBETUEsIGJ1dCB0aGF0IHNlZW1zIGxpa2UgbW9yZSBv
-ZiBhDQo+ID4gPiB0ZW51b3VzIHNlY3VyaXR5LWJ5LW9ic2N1cml0eSBhbmdsZSB0byBtZSkuDQo+
-IA0KPiBJIHRyaWVkIHRvIG1ha2UgdGhhdCBwb2ludCBmb3IgeWVhcnMsIHRoYW5rcyBmb3IgcmUt
-aXRlcmF0aW5nIGl0IDotKQ0KDQpJbmRlZWQsIHdlIGhhdmUgYW4gRlBHQSBiYXNlZCBQQ0llIGNh
-cmQgd2hlcmUgdGhlIE1TSS1YIHRhYmxlIGlzIGp1c3QgYQ0KcGllY2Ugb2YgUENJZSBhY2Nlc3Np
-YmxlIG1lbW9yeS4NClRoZSBkZXZpY2UgZHJpdmVyIGhhcyB0byByZWFkIHRoZSBNU0ktWCB0YWJs
-ZSBhbmQgd3JpdGUgdGhlIGFkZHJlc3MrZGF0YQ0KdmFsdWVzIHRvIG90aGVyIHJlZ2lzdGVycyB3
-aGljaCBhcmUgdGhlbiB1c2VkIHRvIHJhaXNlIHRoZSBpbnRlcnJ1cHQuDQooT2ssIEkndmUgd3Jp
-dHRlbiBhIGJldHRlciBpbnRlcnJ1cHQgZ2VuZXJhdG9yIHNvIHdlIGRvbid0IGRvIHRoYXQNCmFu
-eSBtb3JlLikNCg0KCURhdmlkDQoNCg==
+On Wed, Aug 02, 2017 at 05:25:55PM +0100, Jonathan Cameron wrote:
+> On Tue, 1 Aug 2017 11:46:46 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Mon, Jul 31, 2017 at 04:27:57PM +0100, Jonathan Cameron wrote:
+> > > On Mon, 31 Jul 2017 08:04:11 -0700
+> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > >   
+> > > > On Mon, Jul 31, 2017 at 12:08:47PM +0100, Jonathan Cameron wrote:  
+> > > > > On Fri, 28 Jul 2017 12:03:50 -0700
+> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > >     
+> > > > > > On Fri, Jul 28, 2017 at 06:27:05PM +0100, Jonathan Cameron wrote:    
+> > > > > > > On Fri, 28 Jul 2017 09:55:29 -0700
+> > > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > >       
+> > > > > > > > On Fri, Jul 28, 2017 at 02:24:03PM +0100, Jonathan Cameron wrote:      
+> > > > > > > > > On Fri, 28 Jul 2017 08:44:11 +0100
+> > > > > > > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:        
+> > > > > > > > 
+> > > > > > > > [ . . . ]
+> > > > > > > >       
+> > > > > > > > > Ok.  Some info.  I disabled a few driver (usb and SAS) in the interest of having
+> > > > > > > > > fewer timer events.  Issue became much easier to trigger (on some runs before
+> > > > > > > > > I could get tracing up and running)
+> > > > > > > > >e
+> > > > > > > > > So logs are large enough that pastebin doesn't like them - please shoet if        
+> > > > > > > > >>e another timer period is of interest.        
+> > > > > > > > > 
+> > > > > > > > > https://pastebin.com/iUZDfQGM for the timer trace.
+> > > > > > > > > https://pastebin.com/3w1F7amH for dmesg.  
+> > > > > > > > > 
+> > > > > > > > > The relevant timeout on the RCU stall detector was 8 seconds.  Event is
+> > > > > > > > > detected around 835.
+> > > > > > > > > 
+> > > > > > > > > It's a lot of logs, so I haven't identified a smoking gun yet but there
+> > > > > > > > > may well be one in there.        
+> > > > > > > > 
+> > > > > > > > The dmesg says:
+> > > > > > > > 
+> > > > > > > > rcu_preempt kthread starved for 2508 jiffies! g112 c111 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
+> > > > > > > > 
+> > > > > > > > So I look for "rcu_preempt" timer events and find these:
+> > > > > > > > 
+> > > > > > > > rcu_preempt-9     [019] ....   827.579114: timer_init: timer=ffff8017d5fc7da0
+> > > > > > > > rcu_preempt-9     [019] d..1   827.579115: timer_start: timer=ffff8017d5fc7da0 function=process_timeout 
+> > > > > > > > 
+> > > > > > > > Next look for "ffff8017d5fc7da0" and I don't find anything else.      
+> > > > > > > It does show up off the bottom of what would fit in pastebin...
+> > > > > > > 
+> > > > > > >      rcu_preempt-9     [001] d..1   837.681077: timer_cancel: timer=ffff8017d5fc7da0
+> > > > > > >      rcu_preempt-9     [001] ....   837.681086: timer_init: timer=ffff8017d5fc7da0
+> > > > > > >      rcu_preempt-9     [001] d..1   837.681087: timer_start: timer=ffff8017d5fc7da0 function=process_timeout expires=4295101298 [timeout=1] cpu=1 idx=0 flags=      
+> > > > > > 
+> > > > > > Odd.  I would expect an expiration...  And ten seconds is way longer
+> > > > > > than the requested one jiffy!
+> > > > > >     
+> > > > > > > > The timeout was one jiffy, and more than a second later, no expiration.
+> > > > > > > > Is it possible that this event was lost?  I am not seeing any sign of
+> > > > > > > > this is the trace.
+> > > > > > > > 
+> > > > > > > > I don't see any sign of CPU hotplug (and I test with lots of that in
+> > > > > > > > any case).
+> > > > > > > > 
+> > > > > > > > The last time we saw something like this it was a timer HW/driver problem,
+> > > > > > > > but it is a bit hard to imagine such a problem affecting both ARM64
+> > > > > > > > and SPARC.  ;-)      
+> > > > > > > Could be different issues, both of which were hidden by that lockup detector.
+> > > > > > > 
+> > > > > > > There is an errata work around for the timers on this particular board.
+> > > > > > > I'm only vaguely aware of it, so may be unconnected.
+> > > > > > > 
+> > > > > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clocksource/arm_arch_timer.c?h=v4.13-rc2&id=bb42ca47401010fc02901b5e8f79e40a26f208cb
+> > > > > > > 
+> > > > > > > Seems unlikely though! + we've not yet seen it on the other chips that
+> > > > > > > errata effects (not that that means much).      
+> > > > > > 
+> > > > > > If you can reproduce quickly, might be worth trying anyway...
+> > > > > > 
+> > > > > > 							Thanx, Paul    
+> > > > > Errata fix is running already and was for all those tests.    
+> > > > 
+> > > > I was afraid of that...  ;-)  
+> > > It's a pretty rare errata it seems.  Not actually managed to catch
+> > > one yet.   
+> > > >   
+> > > > > I'll have a dig into the timers today and see where I get to.    
+> > > > 
+> > > > Look forward to seeing what you find!  
+> > > Nothing obvious turning up other than we don't seem to have issue
+> > > when we aren't running hrtimers.
+> > > 
+> > > On a plus side I just got a report that it is effecting our d03
+> > > boards which is good on the basis I couldn't tell what the difference
+> > > could be wrt to this issue!
+> > > 
+> > > It indeed looks like we are consistently missing a timer before
+> > > the rcu splat occurs.  
+> > 
+> > And for my part, my tests with CONFIG_HZ_PERIODIC=y and
+> > CONFIG_RCU_FAST_NO_HZ=n showed roughly the same failure rate
+> > as other runs.
+> > 
+> > Missing a timer can most certainly give RCU severe heartburn!  ;-)
+> > Do you have what you need to track down the missing timer?  
+> 
+> Not managed to make much progress yet.  Turning on any additional tracing
+> in that area seems to make the issue stop happening or at least
+> occur very infrequently. Which certainly makes it 'fun' to find.
+> 
+> As a long shot I applied a locking fix from another reported issue that
+> was causing rcu stalls and it seemed good for much longer, but
+> eventually still occurred.
+> 
+> (from the thread rcu_sched stall while waiting in csd_lock_wait())
+
+On the perhaps unlikely off-chance that it helps locate something,
+here is a patch that adds a trace_printk() to check how long a CPU
+believes that it can sleep when going idle.  The thought is to check
+to see if a CPU with a timer set to expire in one jiffy thinks that
+can sleep for (say) 30 seconds.
+
+Didn't find anything for my problem, but I believe that yours is
+different, so...
+
+							Thanx, Paul
+
+------------------------------------------------------------------------
+
+commit 33103e7b1f89ef432dfe3337d2a6932cdf5c1312
+Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Date:   Mon Aug 14 08:54:39 2017 -0700
+
+    EXP: Trace tick return from tick_nohz_stop_sched_tick
+    
+    Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index c7a899c5ce64..7358a5073dfb 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -817,6 +817,7 @@ static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
+ 	 * (not only the tick).
+ 	 */
+ 	ts->sleep_length = ktime_sub(dev->next_event, now);
++	trace_printk("tick_nohz_stop_sched_tick: %lld\n", (tick - ktime_get()) / 1000);
+ 	return tick;
+ }
+ 
