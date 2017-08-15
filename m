@@ -1,21 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWqrN2bZBzDr9D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 21:24:36 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 1/9] KVM: PPC: Book3S HV: Fix H_REGISTER_VPA VPA size
- validation
-In-Reply-To: <20170813013346.14002-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWrt76L9tzDrCV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 22:11:11 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id u185so1260134pgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 05:11:11 -0700 (PDT)
+Date: Tue, 15 Aug 2017 22:10:54 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Suraj Jitindar Singh <surajjs@ozlabs.au.ibm.com>, kvm-ppc@vger.kernel.org,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v2 3/9] powerpc/powernv: Remove real mode access limit
+ for early allocations
+Message-ID: <20170815221054.39ba5c9e@roar.ozlabs.ibm.com>
+In-Reply-To: <1502716387.4493.27.camel@au1.ibm.com>
 References: <20170812113416.15978-1-npiggin@gmail.com>
- <20170813013346.14002-1-npiggin@gmail.com>
-Date: Tue, 15 Aug 2017 21:24:35 +1000
-Message-ID: <87shgtt6oc.fsf@concordia.ellerman.id.au>
+ <20170813013346.14002-3-npiggin@gmail.com>
+ <87h8xaqpp8.fsf@concordia.ellerman.id.au>
+ <1502716387.4493.27.camel@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On Mon, 14 Aug 2017 23:13:07 +1000
+Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
 
-> KVM currently validates the size of the VPA registered by the client
-> against sizeof(struct lppaca), however we align (and therefore size)
-> that struct to 1kB to avoid crossing a 4kB boundary in the client.
->
-> PAPR calls for sizes >= 640 bytes to be accepted. Hard code this with
-> a comment.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
+> On Mon, 2017-08-14 at 22:49 +1000, Michael Ellerman wrote:
+> > > -     /*
+> > > -      * We limit the allocation that depend on ppc64_rma_size
+> > > -      * to first_memblock_size. We also clamp it to 1GB to
+> > > -      * avoid some funky things such as RTAS bugs.  
+> > 
+> > That comment about RTAS is 7 years old, and I'm pretty sure it was a
+> > historical note when it was written.
+> > 
+> > I'm inclined to drop it and if we discover new bugs with RTAS on Power9
+> > then we can always put it back.  
+> 
+> Arent' we using a 32-bit RTAS ? (Afaik there's a 64-bit one, we just
+> never used it ..). In this case we need to at least clamp to 2G (no
+> trust RTAS doing unsigned properly).
 
-This one should go via Paul.
+Is there any allocation not covered by RTAS_INSTANTIATE_MAX?
 
-Hopefully he can just pick it up.
-
-cheers
-
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 359c79cdf0cc..1182cfd79857 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -485,7 +485,13 @@ static unsigned long do_h_register_vpa(struct kvm_vcpu *vcpu,
->  
->  	switch (subfunc) {
->  	case H_VPA_REG_VPA:		/* register VPA */
-> -		if (len < sizeof(struct lppaca))
-> +		/*
-> +		 * The size of our lppaca is 1kB because of the way we align
-> +		 * it for the guest to avoid crossing a 4kB boundary. We only
-> +		 * use 640 bytes of the structure though, so we should accept
-> +		 * clients that set a size of 640.
-> +		 */
-> +		if (len < 640)
->  			break;
->  		vpap = &tvcpu->arch.vpa;
->  		err = 0;
-> -- 
-> 2.13.3
+Thanks,
+Nick
