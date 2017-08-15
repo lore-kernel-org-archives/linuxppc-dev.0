@@ -1,28 +1,33 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWgM80HvKzDr9D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 15:02:12 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Khalid Aziz <khalid.aziz@oracle.com>, akpm@linux-foundation.org,
- benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
- dave.hansen@linux.intel.com
-Cc: bsingharora@gmail.com, dja@axtens.net, tglx@linutronix.de, mgorman@suse.de,
- aarcange@redhat.com, kirill.shutemov@linux.intel.com,
- heiko.carstens@de.ibm.com, ak@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- Khalid Aziz <khalid@gonehiking.org>
-Subject: Re: [PATCH v7 7/9] mm: Add address parameter to arch_validate_prot()
-In-Reply-To: <2e97b439-dd71-8997-4824-15f2b1f53787@oracle.com>
-References: <cover.1502219353.git.khalid.aziz@oracle.com>
- <43c120f0cbbebd1398997b9521013ced664e5053.1502219353.git.khalid.aziz@oracle.com>
- <87tw1flftz.fsf@concordia.ellerman.id.au>
- <2e97b439-dd71-8997-4824-15f2b1f53787@oracle.com>
-Date: Tue, 15 Aug 2017 15:02:08 +1000
-Message-ID: <877ey5v2y7.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWhB41K8SzDqfg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 15:39:23 +1000 (AEST)
+Message-ID: <1502775480.4493.45.camel@kernel.crashing.org>
+Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jike Song <jike.song@intel.com>
+Cc: Robin Murphy <robin.murphy@arm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>, Eric Auger
+ <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>, Alex
+ Williamson <alex.williamson@redhat.com>, Bjorn Helgaas
+ <bhelgaas@google.com>, Joerg Roedel <joro@8bytes.org>, Arvind Yadav
+ <arvind.yadav.cs@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kirti
+ Wankhede <kwankhede@nvidia.com>, Mauricio Faria de Oliveira
+ <mauricfo@linux.vnet.ibm.com>, Neo Jia <cjia@nvidia.com>, Paul Mackerras
+ <paulus@samba.org>, Vlad Tsyrklevich <vlad@tsyrklevich.net>,
+ iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Tue, 15 Aug 2017 15:38:00 +1000
+In-Reply-To: <599252B9.8030407@intel.com>
+References: <20170807072548.3023-1-aik@ozlabs.ru>
+ <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
+ <ca2a4550-fb26-28db-0eea-a5940dfa612f@arm.com> <59924B85.5040405@intel.com>
+ <1502760820.4493.40.camel@kernel.crashing.org> <599252B9.8030407@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,75 +37,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Khalid Aziz <khalid.aziz@oracle.com> writes:
+On Tue, 2017-08-15 at 09:47 +0800, Jike Song wrote:
+> On 08/15/2017 09:33 AM, Benjamin Herrenschmidt wrote:
+> > On Tue, 2017-08-15 at 09:16 +0800, Jike Song wrote:
+> > > > Taking a step back, though, why does vfio-pci perform this check in the
+> > > > first place? If a malicious guest already has control of a device, any
+> > > > kind of interrupt spoofing it could do by fiddling with the MSI-X
+> > > > message address/data it could simply do with a DMA write anyway, so the
+> > > > security argument doesn't stand up in general (sure, not all PCIe
+> > > > devices may be capable of arbitrary DMA, but that seems like more of a
+> > > > tenuous security-by-obscurity angle to me).
+> > 
+> > I tried to make that point for years, thanks for re-iterating it :-)
+> > 
+> > > Hi Robin,
+> > > 
+> > > DMA writes will be translated (thereby censored) by DMA Remapping hardware,
+> > > while MSI/MSI-X will not. Is this different for non-x86?
+> > 
+> > There is no way your DMA remapping HW can differenciate. The only
+> > difference between a DMA write and an MSI is ... the address. So if I
+> > can make my device DMA to the MSI address range, I've defeated your
+> > security.
+> 
+> I don't think with IRQ remapping enabled, you can make your device DMA to
+> MSI address, without being treated as an IRQ and remapped. If so, the IRQ
+> remapping hardware is simply broken :)
 
-> On 08/10/2017 07:20 AM, Michael Ellerman wrote:
->> Khalid Aziz <khalid.aziz@oracle.com> writes:
->>=20
->>> A protection flag may not be valid across entire address space and
->>> hence arch_validate_prot() might need the address a protection bit is
->>> being set on to ensure it is a valid protection flag. For example, sparc
->>> processors support memory corruption detection (as part of ADI feature)
->>> flag on memory addresses mapped on to physical RAM but not on PFN mapped
->>> pages or addresses mapped on to devices. This patch adds address to the
->>> parameters being passed to arch_validate_prot() so protection bits can
->>> be validated in the relevant context.
->>>
->>> Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
->>> Cc: Khalid Aziz <khalid@gonehiking.org>
->>> ---
->>> v7:
->>> 	- new patch
->>>
->>>   arch/powerpc/include/asm/mman.h | 2 +-
->>>   arch/powerpc/kernel/syscalls.c  | 2 +-
->>>   include/linux/mman.h            | 2 +-
->>>   mm/mprotect.c                   | 2 +-
->>>   4 files changed, 4 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm=
-/mman.h
->>> index 30922f699341..bc74074304a2 100644
->>> --- a/arch/powerpc/include/asm/mman.h
->>> +++ b/arch/powerpc/include/asm/mman.h
->>> @@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long p=
-rot)
->>>   		return false;
->>>   	return true;
->>>   }
->>> -#define arch_validate_prot(prot) arch_validate_prot(prot)
->>> +#define arch_validate_prot(prot, addr) arch_validate_prot(prot)
->>=20
->> This can be simpler, as just:
->>=20
->> #define arch_validate_prot arch_validate_prot
->>=20
->
-> Hi Michael,
->
-> Thanks for reviewing!
->
-> My patch expands parameter list for arch_validate_prot() from one to two=
-=20
-> parameters. Existing powerpc version of arch_validate_prot() is written=20
-> with one parameter. If I use the above #define, compilation fails with:
->
-> mm/mprotect.c: In function =E2=80=98do_mprotect_pkey=E2=80=99:
-> mm/mprotect.c:399: error: too many arguments to function=20
-> =E2=80=98arch_validate_prot=E2=80=99
->
-> Another way to solve it would be to add the new addr parameter to=20
-> powerpc version of arch_validate_prot() but I chose the less disruptive=20
-> solution of tackling it through #define and expanded the existing=20
-> #define to include the new parameter. Make sense?
+You are mixing things here.
 
-Yes, it makes sense. But it's a bit gross.
+Robin's point is that there is no security provided by the obfuscating
+of the MSI-X table by qemu because whatever qemu does to "filter" the
+MSI-X targer addresses can be worked around by making the device DMA
+wherever you want.
 
-At first glance it looks like our arch_validate_prot() has an incorrect
-signature.
+None of what you say invalidates that basic fact.
 
-I'd prefer you just updated it to have the correct signature, I think
-you'll have to change one more line in do_mmap2(). So it's not very
-intrusive.
+Now, as far as your remapping HW goes, either it filters interrupts or
+it doesn't. If it does then yes, it can't be spoofed, and thus you
+don't need the filtering of the table in qemu.
 
-cheers
+If it doesn't, then the guest can spoof any interrupt using DMAs and
+whatever qemu does to filter the table is not going to fix it.
+
+Thus the point remains that the only value in qemu filtering the table
+is to enable already insecure use cases to work, without actually
+making them any more secure.
+
+Ben.
