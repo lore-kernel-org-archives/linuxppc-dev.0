@@ -1,30 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xWt1Z7206zDrDC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 23:02:42 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id y129so1396524pgy.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 06:02:42 -0700 (PDT)
-Date: Tue, 15 Aug 2017 23:02:26 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Suraj Jitindar Singh <surajjs@ozlabs.au.ibm.com>, kvm-ppc@vger.kernel.org,
- aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v2 3/9] powerpc/powernv: Remove real mode access limit
- for early allocations
-Message-ID: <20170815230226.4fa6fc05@roar.ozlabs.ibm.com>
-In-Reply-To: <1502801302.4493.50.camel@au1.ibm.com>
-References: <20170812113416.15978-1-npiggin@gmail.com>
- <20170813013346.14002-3-npiggin@gmail.com>
- <87h8xaqpp8.fsf@concordia.ellerman.id.au>
- <1502716387.4493.27.camel@au1.ibm.com>
- <20170815221054.39ba5c9e@roar.ozlabs.ibm.com>
- <1502801302.4493.50.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xWtPs5lkGzDqY1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Aug 2017 23:20:17 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 1/3] mm/hugetlb: Allow arch to override and call the
+ weak function
+In-Reply-To: <20170728050127.28338-1-aneesh.kumar@linux.vnet.ibm.com>
+References: <20170728050127.28338-1-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 15 Aug 2017 23:20:16 +1000
+Message-ID: <87lgmlt1bj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,52 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 15 Aug 2017 22:48:22 +1000
-Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> On Tue, 2017-08-15 at 22:10 +1000, Nicholas Piggin wrote:
-> > On Mon, 14 Aug 2017 23:13:07 +1000
-> > Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
-> >   
-> > > On Mon, 2017-08-14 at 22:49 +1000, Michael Ellerman wrote:  
-> > > > > -     /*
-> > > > > -      * We limit the allocation that depend on ppc64_rma_size
-> > > > > -      * to first_memblock_size. We also clamp it to 1GB to
-> > > > > -      * avoid some funky things such as RTAS bugs.    
-> > > > 
-> > > > That comment about RTAS is 7 years old, and I'm pretty sure it was a
-> > > > historical note when it was written.
-> > > > 
-> > > > I'm inclined to drop it and if we discover new bugs with RTAS on Power9
-> > > > then we can always put it back.    
-> > > 
-> > > Arent' we using a 32-bit RTAS ? (Afaik there's a 64-bit one, we just
-> > > never used it ..). In this case we need to at least clamp to 2G (no
-> > > trust RTAS doing unsigned properly).  
-> > 
-> > Is there any allocation not covered by RTAS_INSTANTIATE_MAX?  
-> 
-> Not sure, we have to audit.
+> When running in guest mode ppc64 supports a different mechanism for hugetlb
+> allocation/reservation. The LPAR management application called HMC can
+> be used to reserve a set of hugepages and we pass the details of
+> reserved pages via device tree to the guest. (more details in
+> htab_dt_scan_hugepage_blocks()) . We do the memblock_reserve of the range
+> and later in the boot sequence, we add the reserved range to huge_boot_pages.
+>
+> But to enable 16G hugetlb on baremetal config (when we are not running as guest)
+> we want to do memblock reservation during boot. Generic code already does this
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  include/linux/hugetlb.h | 1 +
+>  mm/hugetlb.c            | 4 +++-
+>  2 files changed, 4 insertions(+), 1 deletion(-)
 
-Okay.
+I'm planning to take this and the rest of the series in the powerpc
+tree. Unless someone on linux-mm yells at me :)
 
-> Talking about all this with mpe today, I
-> think we just need to make sure that anything that has a restriction
-> uses a specific identifier for *that* restriction rather than just
-> blindly "rma". For example, seg0_limit for segment 0 in HPT. In the
-> case of PACAs, we would create a specific limit that is
-> min(seg0_limit,rma) for pseries and -1 for powernv. etc..
-> 
-> The RMA limit can then become either strictly a pseries thing, or be
-> initialized to -1 on powernv (or max mem).
+cheers
 
-Right, I'm trying to get there with the patch. Well really it breaks
-into two different things -- RMA for real mode (which is unlimited for
-powernv), and non faulting (of any kind, SLB or TLB on booke) for
-virtual mode.
-
-RTAS is still squished in there with RMA, but we do have that RTAS
-limit so we should try to move it out to there.
-
-Thanks,
-Nick
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index 0ed8e41aaf11..8bbbd37ab105 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -358,6 +358,7 @@ int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
+>  			pgoff_t idx);
+>  
+>  /* arch callback */
+> +int __init __alloc_bootmem_huge_page(struct hstate *h);
+>  int __init alloc_bootmem_huge_page(struct hstate *h);
+>  
+>  void __init hugetlb_bad_size(void);
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index bc48ee783dd9..b97e6494d74d 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -2083,7 +2083,9 @@ struct page *alloc_huge_page_noerr(struct vm_area_struct *vma,
+>  	return page;
+>  }
+>  
+> -int __weak alloc_bootmem_huge_page(struct hstate *h)
+> +int alloc_bootmem_huge_page(struct hstate *h)
+> +	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
+> +int __alloc_bootmem_huge_page(struct hstate *h)
+>  {
+>  	struct huge_bootmem_page *m;
+>  	int nr_nodes, node;
+> -- 
+> 2.13.3
