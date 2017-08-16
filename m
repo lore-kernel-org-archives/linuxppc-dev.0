@@ -1,33 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jonathan.cameron@huawei.com>
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xX9Qk2Rp5zDqfx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 10:37:02 +1000 (AEST)
-Message-ID: <1502843749.4493.67.camel@kernel.crashing.org>
-Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>, Robin Murphy
- <robin.murphy@arm.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>, Eric Auger
- <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>, Jike Song
- <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Joerg Roedel
- <joro@8bytes.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>, David
- Woodhouse <dwmw2@infradead.org>, Kirti Wankhede <kwankhede@nvidia.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Neo Jia
- <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>, Vlad Tsyrklevich
- <vlad@tsyrklevich.net>,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Wed, 16 Aug 2017 10:35:49 +1000
-In-Reply-To: <20170815103717.3b64e10c@w520.home>
-References: <20170807072548.3023-1-aik@ozlabs.ru>
- <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
- <ca2a4550-fb26-28db-0eea-a5940dfa612f@arm.com>
- <20170815103717.3b64e10c@w520.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXBV94kbPzDqwJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 11:25:05 +1000 (AEST)
+Date: Wed, 16 Aug 2017 02:24:34 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
+ Nicholas Piggin <npiggin@gmail.com>, <abdhalee@linux.vnet.ibm.com>,
+ <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
+ <linux-arm-kernel@lists.infradead.org>, <tglx@linutronix.de>
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170816022434.00006d11@huawei.com>
+In-Reply-To: <20170815154743.GK7017@linux.vnet.ibm.com>
+References: <20170728084411.00001ddb@huawei.com>
+ <20170728142403.0000122b@huawei.com>
+ <20170728165529.GF3730@linux.vnet.ibm.com>
+ <20170728182053.000072aa@huawei.com>
+ <20170728190349.GM3730@linux.vnet.ibm.com>
+ <20170731120847.00003d5c@huawei.com>
+ <20170731150411.GA3730@linux.vnet.ibm.com>
+ <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,65 +38,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-08-15 at 10:37 -0600, Alex Williamson wrote:
-> Of course I don't think either of those are worth imposing a
-> performance penalty where we don't otherwise need one.  However, if we
-> look at a VM scenario where the guest is following the PCI standard for
-> programming MSI-X interrupts (ie. not POWER), we need some mechanism to
-> intercept those MMIO writes to the vector table and configure the host
-> interrupt domain of the device rather than allowing the guest direct
-> access.  This is simply part of virtualizing the device to the guest.
-> So even if the kernel allows mmap'ing the vector table, the hypervisor
-> needs to trap it, so the mmap isn't required or used anyway.  It's only
-> when you define a non-PCI standard for your guest to program
-> interrupts, as POWER has done, and can therefore trust that the
-> hypervisor does not need to trap on the vector table that having that
-> mmap'able vector table becomes fully useful.  AIUI, ARM supports 64k
-> pages too... does ARM have any strategy that would actually make it
-> possible to make use of an mmap covering the vector table?  Thanks,
+On Tue, 15 Aug 2017 08:47:43 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-WTF ???? Alex, can you stop once and for all with all that "POWER is
-not standard" bullshit please ? It's completely wrong.
+> On Wed, Aug 02, 2017 at 05:25:55PM +0100, Jonathan Cameron wrote:
+> > On Tue, 1 Aug 2017 11:46:46 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >   
+> > > On Mon, Jul 31, 2017 at 04:27:57PM +0100, Jonathan Cameron wrote:  
+> > > > On Mon, 31 Jul 2017 08:04:11 -0700
+> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > >     
+> > > > > On Mon, Jul 31, 2017 at 12:08:47PM +0100, Jonathan Cameron wrote:    
+> > > > > > On Fri, 28 Jul 2017 12:03:50 -0700
+> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > >       
+> > > > > > > On Fri, Jul 28, 2017 at 06:27:05PM +0100, Jonathan Cameron wrote:      
+> > > > > > > > On Fri, 28 Jul 2017 09:55:29 -0700
+> > > > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > >         
+> > > > > > > > > On Fri, Jul 28, 2017 at 02:24:03PM +0100, Jonathan Cameron wrote:        
+> > > > > > > > > > On Fri, 28 Jul 2017 08:44:11 +0100
+> > > > > > > > > > Jonathan Cameron <Jonathan.Cameron@huawei.com> wrote:          
+> > > > > > > > > 
+> > > > > > > > > [ . . . ]
+> > > > > > > > >         
+> > > > > > > > > > Ok.  Some info.  I disabled a few driver (usb and SAS) in the interest of having
+> > > > > > > > > > fewer timer events.  Issue became much easier to trigger (on some runs before
+> > > > > > > > > > I could get tracing up and running)
+> > > > > > > > > >e
+> > > > > > > > > > So logs are large enough that pastebin doesn't like them - please shoet if          
+> > > > > > > > > >>e another timer period is of interest.          
+> > > > > > > > > > 
+> > > > > > > > > > https://pastebin.com/iUZDfQGM for the timer trace.
+> > > > > > > > > > https://pastebin.com/3w1F7amH for dmesg.  
+> > > > > > > > > > 
+> > > > > > > > > > The relevant timeout on the RCU stall detector was 8 seconds.  Event is
+> > > > > > > > > > detected around 835.
+> > > > > > > > > > 
+> > > > > > > > > > It's a lot of logs, so I haven't identified a smoking gun yet but there
+> > > > > > > > > > may well be one in there.          
+> > > > > > > > > 
+> > > > > > > > > The dmesg says:
+> > > > > > > > > 
+> > > > > > > > > rcu_preempt kthread starved for 2508 jiffies! g112 c111 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
+> > > > > > > > > 
+> > > > > > > > > So I look for "rcu_preempt" timer events and find these:
+> > > > > > > > > 
+> > > > > > > > > rcu_preempt-9     [019] ....   827.579114: timer_init: timer=ffff8017d5fc7da0
+> > > > > > > > > rcu_preempt-9     [019] d..1   827.579115: timer_start: timer=ffff8017d5fc7da0 function=process_timeout 
+> > > > > > > > > 
+> > > > > > > > > Next look for "ffff8017d5fc7da0" and I don't find anything else.        
+> > > > > > > > It does show up off the bottom of what would fit in pastebin...
+> > > > > > > > 
+> > > > > > > >      rcu_preempt-9     [001] d..1   837.681077: timer_cancel: timer=ffff8017d5fc7da0
+> > > > > > > >      rcu_preempt-9     [001] ....   837.681086: timer_init: timer=ffff8017d5fc7da0
+> > > > > > > >      rcu_preempt-9     [001] d..1   837.681087: timer_start: timer=ffff8017d5fc7da0 function=process_timeout expires=4295101298 [timeout=1] cpu=1 idx=0 flags=        
+> > > > > > > 
+> > > > > > > Odd.  I would expect an expiration...  And ten seconds is way longer
+> > > > > > > than the requested one jiffy!
+> > > > > > >       
+> > > > > > > > > The timeout was one jiffy, and more than a second later, no expiration.
+> > > > > > > > > Is it possible that this event was lost?  I am not seeing any sign of
+> > > > > > > > > this is the trace.
+> > > > > > > > > 
+> > > > > > > > > I don't see any sign of CPU hotplug (and I test with lots of that in
+> > > > > > > > > any case).
+> > > > > > > > > 
+> > > > > > > > > The last time we saw something like this it was a timer HW/driver problem,
+> > > > > > > > > but it is a bit hard to imagine such a problem affecting both ARM64
+> > > > > > > > > and SPARC.  ;-)        
+> > > > > > > > Could be different issues, both of which were hidden by that lockup detector.
+> > > > > > > > 
+> > > > > > > > There is an errata work around for the timers on this particular board.
+> > > > > > > > I'm only vaguely aware of it, so may be unconnected.
+> > > > > > > > 
+> > > > > > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clocksource/arm_arch_timer.c?h=v4.13-rc2&id=bb42ca47401010fc02901b5e8f79e40a26f208cb
+> > > > > > > > 
+> > > > > > > > Seems unlikely though! + we've not yet seen it on the other chips that
+> > > > > > > > errata effects (not that that means much).        
+> > > > > > > 
+> > > > > > > If you can reproduce quickly, might be worth trying anyway...
+> > > > > > > 
+> > > > > > > 							Thanx, Paul      
+> > > > > > Errata fix is running already and was for all those tests.      
+> > > > > 
+> > > > > I was afraid of that...  ;-)    
+> > > > It's a pretty rare errata it seems.  Not actually managed to catch
+> > > > one yet.     
+> > > > >     
+> > > > > > I'll have a dig into the timers today and see where I get to.      
+> > > > > 
+> > > > > Look forward to seeing what you find!    
+> > > > Nothing obvious turning up other than we don't seem to have issue
+> > > > when we aren't running hrtimers.
+> > > > 
+> > > > On a plus side I just got a report that it is effecting our d03
+> > > > boards which is good on the basis I couldn't tell what the difference
+> > > > could be wrt to this issue!
+> > > > 
+> > > > It indeed looks like we are consistently missing a timer before
+> > > > the rcu splat occurs.    
+> > > 
+> > > And for my part, my tests with CONFIG_HZ_PERIODIC=y and
+> > > CONFIG_RCU_FAST_NO_HZ=n showed roughly the same failure rate
+> > > as other runs.
+> > > 
+> > > Missing a timer can most certainly give RCU severe heartburn!  ;-)
+> > > Do you have what you need to track down the missing timer?    
+> > 
+> > Not managed to make much progress yet.  Turning on any additional tracing
+> > in that area seems to make the issue stop happening or at least
+> > occur very infrequently. Which certainly makes it 'fun' to find.
+> > 
+> > As a long shot I applied a locking fix from another reported issue that
+> > was causing rcu stalls and it seemed good for much longer, but
+> > eventually still occurred.
+> > 
+> > (from the thread rcu_sched stall while waiting in csd_lock_wait())  
+> 
+> On the perhaps unlikely off-chance that it helps locate something,
+> here is a patch that adds a trace_printk() to check how long a CPU
+> believes that it can sleep when going idle.  The thought is to check
+> to see if a CPU with a timer set to expire in one jiffy thinks that
+> can sleep for (say) 30 seconds.
+> 
+> Didn't find anything for my problem, but I believe that yours is
+> different, so...
+> 
+> 							Thanx, Paul
 
-This has nothing to do with PCIe standard !
+Hi Paul,
 
-The PCIe standard says strictly *nothing* whatsoever about how an OS
-obtains the magic address/values to put in the device and how the PCIe
-host bridge may do appropriate fitering.
+Thanks for the suggestion.  I hadn't thought to look at the
+expected time being wrong.
 
-There is nothing on POWER that prevents the guest from writing the MSI-
-X address/data by hand. The problem isn't who writes the values or even
-how. The problem breaks down into these two things that are NOT covered
-by any aspect of the PCIe standard:
+I have noted that adding other tracepoints (and turning them on)
+in that function cause the problem to 'disappear' though so it
+would seem very timing sensitive.  Fingers crossed this doesn't
+have the same effect!
 
-  1- The OS needs to obtain address/data values for an MSI that will
-"work" for the device.
+Our progress on this has been a bit limited partly as I have been
+traveling and haven't sorted out remote hardware access.
+May be the start of next week before I can try this out.
 
-  2- The HW+HV needs to prevent collateral damage caused by a device
-issuing stores to incorrect address or with incorrect data. Now *this*
-is necessary for *ANY* kind of DMA whether it's an MSI or something
-else anyway.
+Agreed, the problems look to be different.
 
-Now, the filtering done by qemu is NOT a reasonable way to handle 2)
-and whatever excluse about "making it harder" doesn't fly a meter when
-it comes to security. Making it "harder to break accidentally" I also
-don't buy, people don't just randomly put things in their MSI-X tables
-"accidentally", that stuff works or doesn't.
+Interesting question is whether the other known cases fall
+into one or the other category?
 
-That leaves us with 1). Now this is purely a platform specific matters,
-not a spec matter. Once the HW has a way to enforce you can only
-generate "allowed" MSIs it becomes a matter of having some FW mechanism
-that can be used to informed the OS what address/values to use for a
-given interrupts.
+Thanks for the help and good luck with your variant!
 
-This is provided on POWER by a combination of device-tree and RTAS. It
-could be that x86/ARM64 doesn't provide good enough mechanisms via ACPI
-but this is no way a problem of standard compliance, just inferior
-firmware interfaces.
-
-So again, for the 234789246th time in years, can we get that 1-bit-of-
-information sorted one way or another so we can fix our massive
-performance issue instead of adding yet another dozen layers of paint
-on that shed ?
-
-Ben.
+Jonathan
+> 
+> ------------------------------------------------------------------------
+> 
+> commit 33103e7b1f89ef432dfe3337d2a6932cdf5c1312
+> Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Date:   Mon Aug 14 08:54:39 2017 -0700
+> 
+>     EXP: Trace tick return from tick_nohz_stop_sched_tick
+>     
+>     Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index c7a899c5ce64..7358a5073dfb 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -817,6 +817,7 @@ static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
+>  	 * (not only the tick).
+>  	 */
+>  	ts->sleep_length = ktime_sub(dev->next_event, now);
+> +	trace_printk("tick_nohz_stop_sched_tick: %lld\n", (tick - ktime_get()) / 1000);
+>  	return tick;
+>  }
+>  
+> 
