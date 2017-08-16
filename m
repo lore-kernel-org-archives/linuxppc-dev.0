@@ -1,43 +1,27 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXWYT5LnqzDrHN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 00:14:05 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7GEAWKP085332
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 10:14:03 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ccmqx3rhx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 10:14:02 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 17 Aug 2017 00:14:00 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7GEDoEJ34799812
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 00:13:58 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7GEDPD9010947
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 00:13:26 +1000
-Date: Wed, 16 Aug 2017 19:43:04 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/xmon: Exclude all of xmon/ from ftrace
-References: <20170802182538.26526-1-naveen.n.rao@linux.vnet.ibm.com>
- <87wp6emj5w.fsf@concordia.ellerman.id.au>
- <87y3qltadw.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXX4y2WvpzDrKZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 00:37:54 +1000 (AEST)
+Date: Wed, 16 Aug 2017 16:37:48 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: jpoimboe@redhat.com, jeyu@kernel.org, jikos@kernel.org,
+ lpechacek@suse.cz, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v2 2/3] livepatch: send a fake signal to all blocking tasks
+Message-ID: <20170816143748.GC601@pathway.suse.cz>
+References: <20170810104815.14727-1-mbenes@suse.cz>
+ <20170810104815.14727-3-mbenes@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87y3qltadw.fsf@concordia.ellerman.id.au>
-Message-Id: <20170816141304.yqs6evlo3fk2hvss@naverao1-tp.localdomain>
+In-Reply-To: <20170810104815.14727-3-mbenes@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,53 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-Sorry -- was off since last week.
+On Thu 2017-08-10 12:48:14, Miroslav Benes wrote:
+> Live patching consistency model is of LEAVE_PATCHED_SET and
+> SWITCH_THREAD. This means that all tasks in the system have to be marked
+> one by one as safe to call a new patched function. Safe means when a
+> task is not (sleeping) in a set of patched functions. That is, no
+> patched function is on the task's stack. Another clearly safe place is
+> the boundary between kernel and userspace. The patching waits for all
+> tasks to get outside of the patched set or to cross the boundary. The
+> transition is completed afterwards.
+> 
+> diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+> index 79022b7eca2c..a359340c924d 100644
+> --- a/kernel/livepatch/core.c
+> +++ b/kernel/livepatch/core.c
+> @@ -452,7 +452,7 @@ EXPORT_SYMBOL_GPL(klp_enable_patch);
+>  static ssize_t force_show(struct kobject *kobj,
+>  			  struct kobj_attribute *attr, char *buf)
+>  {
+> -	return sprintf(buf, "No operation is currently permitted.\n");
+> +	return sprintf(buf, "signal\n");
 
-On 2017/08/15 08:04PM, Michael Ellerman wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> >
-> >> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-> >> index 0b2f771593eb..5f95af64cb8f 100644
-> >> --- a/arch/powerpc/xmon/Makefile
-> >> +++ b/arch/powerpc/xmon/Makefile
-> >> @@ -7,6 +7,19 @@ UBSAN_SANITIZE := n
-> >>  
-> >>  ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
-> >>  
-> >> +ifdef CONFIG_FUNCTION_TRACER
-> >> +CFLAGS_REMOVE_xmon.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> >> +CFLAGS_REMOVE_nonstdio.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> >> +ifdef CONFIG_XMON_DISASSEMBLY
-> >> +CFLAGS_REMOVE_ppc-dis.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> >> +CFLAGS_REMOVE_ppc-opc.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> >> +ifdef CONFIG_SPU_BASE
-> >> +CFLAGS_REMOVE_spu-dis.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> >> +CFLAGS_REMOVE_spu-opc.o	= -mno-sched-epilog $(CC_FLAGS_FTRACE)
-> >> +endif
-> >> +endif
-> >> +endif
-> >
-> > Urk.
-> >
-> > We want to disable it for everything in the directory, so can you do
-> > something like:
-> >
-> >   ORIG_CFLAGS := $(KBUILD_CFLAGS)
-> >   KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
-> 
-> Yes:
-> 
->   # Disable ftrace for the entire directory
->   ORIG_CFLAGS := $(KBUILD_CFLAGS)
->   KBUILD_CFLAGS = $(subst -mno-sched-epilog,,$(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS)))
-> 
-> Seems to work.
+This makes invalid the "NOTE:" above this function ;-)
 
-Nice -- I had looked for a generic CFLAGS_REMOVE variant, but didn't 
-find that. This is much nicer.
-
-Thanks,
-Naveen
+Best Regards,
+Petr
