@@ -2,15 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXTFN15pQzDrJy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXTFN4d1SzDrJy
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 22:30:00 +1000 (AEST)
-In-Reply-To: <87h8xat2ho.fsf@linux-m68k.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
+In-Reply-To: <20170815034636.29898-1-bsingharora@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: powerpc: fix invalid use of register expressions
-Message-Id: <3xXTFM3pn0z9t4Z@ozlabs.org>
-Date: Wed, 16 Aug 2017 22:29:58 +1000 (AEST)
+Subject: Re: powerpc/mm/nohash: add definition of PGALLOC_GFP
+Message-Id: <3xXTFN2wnDz9t5V@ozlabs.org>
+Date: Wed, 16 Aug 2017 22:30:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,13 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-08-14 at 18:42:43 UTC, Andreas Schwab wrote:
-> This fixes another invalid use of register expressions.
+On Tue, 2017-08-15 at 03:46:36 UTC, Balbir Singh wrote:
+> fixes
+> (de3b876 powerpc/mm/book(e)(3s)/64: Add page table accounting)
 > 
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> I missed adding PGALLOC_GFP for nohash/64
+> 
+> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6c80d3164ece26e55dc2dbfceba948
+https://git.kernel.org/powerpc/c/5b6c133e0801007117cf4a466cb56d
 
 cheers
