@@ -1,37 +1,42 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXffb3SNdzDqYN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 05:33:59 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id e124so4467507oig.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 12:33:59 -0700 (PDT)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <CAL_JsqLYz9ACd-YAtU0gEHkY8A++cCeBTW9jvUyc5OheEq4scQ@mail.gmail.com>
-References: <20170718214339.7774-49-robh@kernel.org>
- <CAL_JsqLYz9ACd-YAtU0gEHkY8A++cCeBTW9jvUyc5OheEq4scQ@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 16 Aug 2017 21:33:56 +0200
-Message-ID: <CAK8P3a3eEV8KWb-cCovRH0LQQ+88yJ7R9se1sjd06K_TyPzKjQ@mail.gmail.com>
-Subject: Re: [PATCH] soc: Convert to using %pOF instead of full_name
-To: Rob Herring <robh@kernel.org>
-Cc: "arm@kernel.org" <arm@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXgT32drCzDrJh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 06:10:47 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7GK8vac032055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 16:10:45 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ccnyfrp2c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 16:10:44 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Wed, 16 Aug 2017 16:10:43 -0400
+Subject: Re: WARNING: CPU: 15 PID: 0 at block/blk-mq.c:1111
+ __blk_mq_run_hw_queue+0x1d8/0x1f0
+To: Bart Van Assche <Bart.VanAssche@wdc.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>
+Cc: "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Scott Wood <oss@buserror.net>,
- Qiang Zhao <qiang.zhao@nxp.com>, Matthias Brugger <matthias.bgg@gmail.com>,
- Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>,
- Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
- Javier Martinez Canillas <javier@osg.samsung.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>,
- "open list:MEDIA DRIVERS FOR RENESAS - FCP"
- <linux-renesas-soc@vger.kernel.org>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+ "brking@us.ibm.com" <brking@us.ibm.com>,
+ "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "axboe@kernel.dk" <axboe@kernel.dk>
+References: <1502906852.3305.33.camel@abdul.in.ibm.com>
+ <1502907345.2421.8.camel@wdc.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Wed, 16 Aug 2017 15:10:39 -0500
+MIME-Version: 1.0
+In-Reply-To: <1502907345.2421.8.camel@wdc.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <4fe35be3-c631-e4ed-a135-110e536823bc@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,26 +46,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 10, 2017 at 12:09 AM, Rob Herring <robh@kernel.org> wrote:
-> On Tue, Jul 18, 2017 at 4:43 PM, Rob Herring <robh@kernel.org> wrote:
->> Now that we have a custom printf format specifier, convert users of
->> full_name to use %pOF instead. This is preparation to remove storing
->> of the full path string for each node.
+On 08/16/2017 01:15 PM, Bart Van Assche wrote:
+> On Wed, 2017-08-16 at 23:37 +0530, Abdul Haleem wrote:
+>> Linux-next booted with the below warnings on powerpc
 >>
->> Signed-off-by: Rob Herring <robh@kernel.org>
->> Cc: Scott Wood <oss@buserror.net>
->> Cc: Qiang Zhao <qiang.zhao@nxp.com>
->> Cc: Matthias Brugger <matthias.bgg@gmail.com>
->> Cc: Simon Horman <horms@verge.net.au>
->> Cc: Magnus Damm <magnus.damm@gmail.com>
->> Cc: Kukjin Kim <kgene@kernel.org>
->> Cc: Krzysztof Kozlowski <krzk@kernel.org>
->> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+>> [ ... ]
+>>
+>> boot warnings:
+>> --------------
+>> kvm: exiting hardware virtualization
+>> ------------[ cut here ]------------
+>> WARNING: CPU: 15 PID: 0 at block/blk-mq.c:1111 __blk_mq_run_hw_queue
+>> +0x1d8/0x1f0
+>> Modules linked in: iptable_mangle ipt_MASQUERADE nf_nat_masquerade_ipv4
+>> Call Trace:
+>> [c000000ffff37990] [c00000000088f7b0] __blk_mq_delay_run_hw_queue
+>> +0x1f0/0x210
+>> [c000000ffff379d0] [c00000000088fcb8] blk_mq_start_hw_queue+0x58/0x80
+>> [c000000ffff379f0] [c00000000088fd40] blk_mq_start_hw_queues+0x60/0xb0
+>> [c000000ffff37a30] [c000000000ae2b54] scsi_kick_queue+0x34/0xa0
+>> [c000000ffff37a50] [c000000000ae2f70] scsi_run_queue+0x3b0/0x660
+>> [c000000ffff37ac0] [c000000000ae7ed4] scsi_run_host_queues+0x64/0xc0
+>> [c000000ffff37b00] [c000000000ae7f64] scsi_unblock_requests+0x34/0x60
+>> [c000000ffff37b20] [c000000000b14998] ipr_ioa_bringdown_done+0xf8/0x3a0
+>> [c000000ffff37bc0] [c000000000b12528] ipr_reset_ioa_job+0xd8/0x170
+>> [c000000ffff37c00] [c000000000b18790] ipr_reset_timer_done+0x110/0x160
+>> [c000000ffff37c50] [c00000000024db50] call_timer_fn+0xa0/0x3a0
+>> [c000000ffff37ce0] [c00000000024e058] expire_timers+0x1b8/0x350
+>> [c000000ffff37d50] [c00000000024e2f0] run_timer_softirq+0x100/0x3e0
+>> [c000000ffff37df0] [c000000000162edc] __do_softirq+0x20c/0x620
+>> [c000000ffff37ee0] [c000000000163a80] irq_exit+0x230/0x290
+>> [c000000ffff37f10] [c00000000001d770] __do_irq+0x170/0x410
+>> [c000000ffff37f90] [c00000000003ea20] call_do_irq+0x14/0x24
+>> [c0000007f84e3a70] [c00000000001dae0] do_IRQ+0xd0/0x190
+>> [c0000007f84e3ac0] [c000000000008c58] hardware_interrupt_common
+>> +0x158/0x160
+> 
+> Hello Brian,
+> 
+> In the MAINTAINERS file I found the following:
+> 
+> IBM Power Linux RAID adapter
+> M:      Brian King <brking@us.ibm.com>
+> S:      Supported
+> F:      drivers/scsi/ipr.*
+> 
+> Is that information up-to-date? Do you agree that the above message indicates
+> a bug in the ipr driver?
 
-> Arnd, Olof,
->
-> Can you please apply this one.
+Yes. Can you try with this patch that is in 4.13/scsi-fixes:
 
-Applied to next/drivers with the various Acks, thanks!
+https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git/commit/?h=4.13/scsi-fixes&id=b0e17a9b0df29590c45dfb296f541270a5941f41
 
-      Arnd
+Thanks,
+
+Brian
+
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
