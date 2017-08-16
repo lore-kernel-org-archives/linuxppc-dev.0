@@ -1,39 +1,38 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXYHW0gkFzDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 01:32:07 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id t83so1649461pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 08:32:07 -0700 (PDT)
-Date: Thu, 17 Aug 2017 01:31:47 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron
- <Jonathan.Cameron@huawei.com>, dzickus@redhat.com, sfr@canb.auug.org.au,
- linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com, tglx@linutronix.de,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki"
- <rafael.j.wysocki@intel.com>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170817013147.586e0eff@roar.ozlabs.ibm.com>
-In-Reply-To: <20170816125617.GY7017@linux.vnet.ibm.com>
-References: <20170728165529.GF3730@linux.vnet.ibm.com>
- <20170728182053.000072aa@huawei.com>
- <20170728190349.GM3730@linux.vnet.ibm.com>
- <20170731120847.00003d5c@huawei.com>
- <20170731150411.GA3730@linux.vnet.ibm.com>
- <20170731162757.000058ba@huawei.com>
- <20170801184646.GE3730@linux.vnet.ibm.com>
- <20170802172555.0000468a@huawei.com>
- <20170815154743.GK7017@linux.vnet.ibm.com>
- <87wp63smwn.fsf@concordia.ellerman.id.au>
- <20170816125617.GY7017@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXZPB580TzDr4H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 02:22:06 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7GGJsBL056070
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 12:22:04 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ccmqxb7ef-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 12:22:03 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 17 Aug 2017 02:22:00 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7GGLvLg22610160
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 02:21:57 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7GGLv27032403
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 02:21:57 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/perf: Fix usage of nest_imc_refc
+Date: Wed, 16 Aug 2017 21:51:34 +0530
+Message-Id: <1502900494-10010-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,86 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 16 Aug 2017 05:56:17 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+nest_imc_refc is a reference count struct,
+used to track number of active perf sessions
+using the nest units.
 
-> On Wed, Aug 16, 2017 at 10:43:52PM +1000, Michael Ellerman wrote:
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> > ...  
-> > >
-> > > commit 33103e7b1f89ef432dfe3337d2a6932cdf5c1312
-> > > Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > Date:   Mon Aug 14 08:54:39 2017 -0700
-> > >
-> > >     EXP: Trace tick return from tick_nohz_stop_sched_tick
-> > >     
-> > >     Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > >
-> > > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > > index c7a899c5ce64..7358a5073dfb 100644
-> > > --- a/kernel/time/tick-sched.c
-> > > +++ b/kernel/time/tick-sched.c
-> > > @@ -817,6 +817,7 @@ static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
-> > >  	 * (not only the tick).
-> > >  	 */
-> > >  	ts->sleep_length = ktime_sub(dev->next_event, now);
-> > > +	trace_printk("tick_nohz_stop_sched_tick: %lld\n", (tick - ktime_get()) / 1000);
-> > >  	return tick;
-> > >  }  
-> > 
-> > Should I be seeing negative values? A small sample:  
-> 
-> Maybe due to hypervisor preemption delays, but I confess that I am
-> surprised to see them this large.  1,602,250,019 microseconds is something
-> like a half hour, which could result in stall warnings all by itself.
-> 
-> >           <idle>-0     [015] d...  1602.039695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250019
-> >           <idle>-0     [009] d...  1602.039701: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250025
-> >           <idle>-0     [007] d...  1602.039702: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250025
-> >           <idle>-0     [048] d...  1602.039703: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: 9973
-> >           <idle>-0     [006] d...  1602.039704: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250027
-> >           <idle>-0     [001] d...  1602.039730: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250053
-> >           <idle>-0     [008] d...  1602.039732: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250055
-> >           <idle>-0     [006] d...  1602.049695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602260018
-> >           <idle>-0     [009] d...  1602.049695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602260018
-> >           <idle>-0     [001] d...  1602.049695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602260018
-> > 
-> > 
-> > I have a full trace, I'll send it to you off-list.  
-> 
-> I will take a look!
+It is preferred to access nest_imc_refc using
+per-cpu pointer 'local_nest_imc_refc'. Since,
+nest_imc_refc is not initialized using node_id
+as array index. Patch to fix the same.
 
-I found this, I can't see that it would cause our symptoms, but it's
-worth someone who knows the code taking a look at it.
-
---
-cpuidle: fix broadcast control when broadcast can not be entered
-
-When failing to enter broadcast timer mode for an idle state that
-requires it, a new state is selected that does not require broadcast,
-but the broadcast variable remains set. This causes
-tick_broadcast_exit to be called despite not having entered broadcast
-mode.
-
-This causes the WARN_ON_ONCE(!irqs_disabled()) to trigger in some
-cases, but otherwise does not appear to cause problems.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Fixes: 885dcd709ba91 ('powerpc/perf: Add nest IMC PMU support')
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/perf/imc-pmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 60bb64f4329d..4453e27f855e 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -208,6 +208,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 			return -EBUSY;
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index a8f95f96d54b..9ccac86f3463 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -404,7 +404,7 @@ static void nest_imc_counters_release(struct perf_event *event)
+ 		rc = opal_imc_counters_stop(OPAL_IMC_COUNTERS_NEST,
+ 					    get_hard_smp_processor_id(event->cpu));
+ 		if (rc) {
+-			mutex_unlock(&nest_imc_refc[node_id].lock);
++			mutex_unlock(&ref->lock);
+ 			pr_err("nest-imc: Unable to stop the counters for core %d\n", node_id);
+ 			return;
  		}
- 		target_state = &drv->states[index];
-+		broadcast = false;
- 	}
- 
- 	/* Take note of the planned idle state. */
+@@ -487,7 +487,7 @@ static int nest_imc_event_init(struct perf_event *event)
+ 		rc = opal_imc_counters_start(OPAL_IMC_COUNTERS_NEST,
+ 					     get_hard_smp_processor_id(event->cpu));
+ 		if (rc) {
+-			mutex_unlock(&nest_imc_refc[node_id].lock);
++			mutex_unlock(&ref->lock);
+ 			pr_err("nest-imc: Unable to start the counters for node %d\n",
+ 									node_id);
+ 			return rc;
 -- 
-2.13.3
+2.7.4
