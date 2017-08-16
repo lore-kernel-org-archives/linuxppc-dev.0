@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXTFC44v2zDrJp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 22:29:51 +1000 (AEST)
-In-Reply-To: <1501704846-22625-2-git-send-email-leitao@debian.org>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXTFD5H0mzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 22:29:52 +1000 (AEST)
+In-Reply-To: <1502175992-13626-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Breno Leitao <leitao@debian.org>
-Subject: Re: [v3,2/2] powerpc/xmon: Disable tracing when entering xmon
-Message-Id: <3xXTFC2HSHz9t42@ozlabs.org>
-Date: Wed, 16 Aug 2017 22:29:51 +1000 (AEST)
+Subject: Re: powerpc/iommu: Avoid undefined right shift in iommu_range_alloc()
+Message-Id: <3xXTFD2yt6z9t4Z@ozlabs.org>
+Date: Wed, 16 Aug 2017 22:29:52 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-02 at 20:14:06 UTC, Breno Leitao wrote:
-> If tracing is enabled and you get into xmon, the tracing buffer
-> continues to be updated, causing possible loss of data and unnecessary
-> tracing information coming from xmon functions.
+On Tue, 2017-08-08 at 07:06:32 UTC, Michael Ellerman wrote:
+> In iommu_range_alloc() we generate a mask by right shifting ~0,
+> however if the specified alignment is 0 then we right shift by 64,
+> which is undefined. UBSAN tells us so:
 > 
-> This patch simple disables tracing when entering xmon, and re-enables it
-> if the kernel is resumed (with 'x').
+>   UBSAN: Undefined behaviour in ../arch/powerpc/kernel/iommu.c:193:35
+>   shift exponent 64 is too large for 64-bit type 'long unsigned int'
 > 
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> We can avoid it by instead generating the mask with:
+> 
+>   align_mask = (1ull << align_order) - 1;
+> 
+> That will also generate an undefined shift if align_order is 64 or
+> greater, but that shouldn't be a problem for a while.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/ed49f7fd6438dcc8c93fa7d1d7d815
+https://git.kernel.org/powerpc/c/63b85621d9aa6bdc410f01b22f7821
 
 cheers
