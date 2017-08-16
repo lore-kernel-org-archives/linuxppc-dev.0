@@ -2,21 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXRY52zFMzDrHy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 21:13:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXSlf213xzDrJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 22:07:42 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dou Liyang <douly.fnst@cn.fujitsu.com>, linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 05/11] powerpc/topology: Remove the unused parent_node()
- macro
-In-Reply-To: <af21ddf9-10cc-d8ed-8962-9b6d4eb5230b@cn.fujitsu.com>
-References: <1501076076-1974-1-git-send-email-douly.fnst@cn.fujitsu.com>
- <1501076076-1974-6-git-send-email-douly.fnst@cn.fujitsu.com>
- <87fudifwlj.fsf@concordia.ellerman.id.au>
- <af21ddf9-10cc-d8ed-8962-9b6d4eb5230b@cn.fujitsu.com>
-Date: Wed, 16 Aug 2017 21:13:26 +1000
-Message-ID: <87378ru5nt.fsf@concordia.ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 01/17] powerpc/vas: Define macros,
+ register fields and structures
+In-Reply-To: <20170814191409.GA24096@us.ibm.com>
+References: <1502233622-9330-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1502233622-9330-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ <877ey6sp03.fsf@concordia.ellerman.id.au>
+ <20170814160522.4f9b517a@roar.ozlabs.ibm.com>
+ <20170814191409.GA24096@us.ibm.com>
+Date: Wed, 16 Aug 2017 22:07:38 +1000
+Message-ID: <87ziazsol1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,35 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dou Liyang <douly.fnst@cn.fujitsu.com> writes:
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
 
-> Hi Michael,
+> Nicholas Piggin [npiggin@gmail.com] wrote:
+>> On Mon, 14 Aug 2017 15:21:48 +1000
+>> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> 
+>> > Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+>> 
+>> > >  arch/powerpc/include/asm/vas.h       |  35 ++++
+>> > >  arch/powerpc/include/uapi/asm/vas.h  |  25 +++  
+>> > 
+>> > I thought we weren't exposing VAS to userspace yet?
+>> > 
+>> > If we are then we need to get things straight WRT copy/paste abort.
+...
 >
-> At 07/27/2017 10:21 AM, Michael Ellerman wrote:
->> Dou Liyang <douly.fnst@cn.fujitsu.com> writes:
->>
->>> Commit a7be6e5a7f8d ("mm: drop useless local parameters of
->>> __register_one_node()") removes the last user of parent_node().
->>>
->>> The parent_node() macro in POWERPC platform is unnecessary.
->>>
->>> Remove it for cleanup.
->>>
->>> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
->>> Signed-off-by: Dou Liyang <douly.fnst@cn.fujitsu.com>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: Michael Ellerman <mpe@ellerman.id.au>
->>> Cc: linuxppc-dev@lists.ozlabs.org
->>> ---
->>>  arch/powerpc/include/asm/topology.h | 2 --
->>>  1 file changed, 2 deletions(-)
->>
->> Thanks for doing this series.
->
-> It's my pleasure. :)
+> In the FTW case, there is no data transfer from user space to the hardware.
+> i.e the copy/paste submit a NULL CRB and hardware will be configured (see
+> ->fifo_disable setting in winctx) to ignore any data they specify in the CRB.
 
-Seems other arch maintainers are merging these patches individually, so
-I grabbed this one and put it in the powerpc tree.
+I thought the copy did copy a cacheline, but then the paste to the VAS
+window just ignores the contents, and doesn't allow userspace to get the
+content in any way?
+
+Which means we have two thirds of a covert channel, ie. something can be
+copied into the copy buffer by one process, and then a second process
+can paste it, but because it can only paste to foreign memory, and the
+only foreign memory it can get is a VAS FTW window, it can't actually
+see the content of the copy buffer.
+
+> Would we be able to allow copy/paste from user space in that case?
+
+Yeah I think so, but it is all a bit fragile.
 
 cheers
