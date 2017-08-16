@@ -1,22 +1,24 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXNht3s8jzDqZ8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 19:05:02 +1000 (AEST)
-Received: by mail-it0-x244.google.com with SMTP id 76so2063212ith.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 02:05:02 -0700 (PDT)
-Message-ID: <1502874293.9868.4.camel@gmail.com>
-Subject: Re: [PATCH] powerpc: Use reg.h values for program check reason codes
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 16 Aug 2017 19:04:53 +1000
-In-Reply-To: <52bb17c2-e555-562d-1340-f4e9be11ffe2@c-s.fr>
-References: <20170816065024.24459-1-cyrilbur@gmail.com>
- <52bb17c2-e555-562d-1340-f4e9be11ffe2@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXRY52zFMzDrHy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 21:13:29 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dou Liyang <douly.fnst@cn.fujitsu.com>, linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 05/11] powerpc/topology: Remove the unused parent_node()
+ macro
+In-Reply-To: <af21ddf9-10cc-d8ed-8962-9b6d4eb5230b@cn.fujitsu.com>
+References: <1501076076-1974-1-git-send-email-douly.fnst@cn.fujitsu.com>
+ <1501076076-1974-6-git-send-email-douly.fnst@cn.fujitsu.com>
+ <87fudifwlj.fsf@concordia.ellerman.id.au>
+ <af21ddf9-10cc-d8ed-8962-9b6d4eb5230b@cn.fujitsu.com>
+Date: Wed, 16 Aug 2017 21:13:26 +1000
+Message-ID: <87378ru5nt.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,66 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-16 at 10:52 +0200, Christophe LEROY wrote:
-> Hi,
-> 
-> Le 16/08/2017 à 08:50, Cyril Bur a écrit :
-> > Small amount of #define duplication, makes sense for these to be in
-> > reg.h.
-> > 
-> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> 
-> Looks similar to the following applies commit, doesn't it ?
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=merge&id=d30a5a5262ca64d58aa07fb2ecd7f992df83b4bc
-> 
+Dou Liyang <douly.fnst@cn.fujitsu.com> writes:
 
-Oops, I think I'm based off Linus' tree. Sorry for the noise.
+> Hi Michael,
+>
+> At 07/27/2017 10:21 AM, Michael Ellerman wrote:
+>> Dou Liyang <douly.fnst@cn.fujitsu.com> writes:
+>>
+>>> Commit a7be6e5a7f8d ("mm: drop useless local parameters of
+>>> __register_one_node()") removes the last user of parent_node().
+>>>
+>>> The parent_node() macro in POWERPC platform is unnecessary.
+>>>
+>>> Remove it for cleanup.
+>>>
+>>> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> Signed-off-by: Dou Liyang <douly.fnst@cn.fujitsu.com>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Paul Mackerras <paulus@samba.org>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>> ---
+>>>  arch/powerpc/include/asm/topology.h | 2 --
+>>>  1 file changed, 2 deletions(-)
+>>
+>> Thanks for doing this series.
+>
+> It's my pleasure. :)
 
+Seems other arch maintainers are merging these patches individually, so
+I grabbed this one and put it in the powerpc tree.
 
-Cyril
-
-*starts writing patch to rename to PROGTMBAD*... because clearly haha
-;)
-
-> Christophe
-> 
-> > ---
-> >   arch/powerpc/include/asm/reg.h |  1 +
-> >   arch/powerpc/kernel/traps.c    | 10 +++++-----
-> >   2 files changed, 6 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> > index a3b6575c7842..c22b1ae5ad03 100644
-> > --- a/arch/powerpc/include/asm/reg.h
-> > +++ b/arch/powerpc/include/asm/reg.h
-> > @@ -675,6 +675,7 @@
-> >   					  * may not be recoverable */
-> >   #define	  SRR1_WS_DEEPER	0x00020000 /* Some resources not maintained */
-> >   #define	  SRR1_WS_DEEP		0x00010000 /* All resources maintained */
-> > +#define   SRR1_PROGTMBAD	0x00200000 /* TM Bad Thing */
-> >   #define   SRR1_PROGFPE		0x00100000 /* Floating Point Enabled */
-> >   #define   SRR1_PROGILL		0x00080000 /* Illegal instruction */
-> >   #define   SRR1_PROGPRIV		0x00040000 /* Privileged instruction */
-> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> > index 1f7ec178db05..0a5ddaea8bf1 100644
-> > --- a/arch/powerpc/kernel/traps.c
-> > +++ b/arch/powerpc/kernel/traps.c
-> > @@ -416,11 +416,11 @@ static inline int check_io_access(struct pt_regs *regs)
-> >      exception is in the MSR. */
-> >   #define get_reason(regs)	((regs)->msr)
-> >   #define get_mc_reason(regs)	((regs)->msr)
-> > -#define REASON_TM		0x200000
-> > -#define REASON_FP		0x100000
-> > -#define REASON_ILLEGAL		0x80000
-> > -#define REASON_PRIVILEGED	0x40000
-> > -#define REASON_TRAP		0x20000
-> > +#define REASON_TM		SRR1_PROGTMBAD
-> > +#define REASON_FP		SRR1_PROGFPE
-> > +#define REASON_ILLEGAL		SRR1_PROGILL
-> > +#define REASON_PRIVILEGED	SRR1_PROGPRIV
-> > +#define REASON_TRAP		SRR1_PROGTRAP
-> >   
-> >   #define single_stepping(regs)	((regs)->msr & MSR_SE)
-> >   #define clear_single_step(regs)	((regs)->msr &= ~MSR_SE)
-> > 
+cheers
