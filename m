@@ -1,120 +1,49 @@
-Return-Path: <chris@chris-wilson.co.uk>
-Received: from fireflyinternet.com (mail.fireflyinternet.com [109.228.58.192])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXPnx1213zDqlw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 19:54:27 +1000 (AEST)
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXTqs1CyLzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 22:56:24 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7GCrqCI071601
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 08:56:22 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cckrcuq5m-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Aug 2017 08:56:22 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 16 Aug 2017 08:56:21 -0400
+Date: Wed, 16 Aug 2017 05:56:17 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com,
+ Nicholas Piggin <npiggin@gmail.com>, abdhalee@linux.vnet.ibm.com,
+ tglx@linutronix.de, sparclinux@vger.kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170728165529.GF3730@linux.vnet.ibm.com>
+ <20170728182053.000072aa@huawei.com>
+ <20170728190349.GM3730@linux.vnet.ibm.com>
+ <20170731120847.00003d5c@huawei.com>
+ <20170731150411.GA3730@linux.vnet.ibm.com>
+ <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+ <87wp63smwn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-To: =?utf-8?q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- "Chris Mi" <chrism@mellanox.com>, netdev@vger.kernel.org
-From: Chris Wilson <chris@chris-wilson.co.uk>
-In-Reply-To: <144b87a3-bbe4-a194-ed83-e54840d7c7c2@amd.com>
-Cc: aditr@vmware.com, stern@rowland.harvard.edu, agk@redhat.com,
- alexander.shishkin@linux.intel.com, alexandre.bounine@idt.com,
- alexander.deucher@amd.com, oakad@yahoo.com, ast@kernel.org, elder@kernel.org,
- adobriyan@gmail.com, alex.williamson@redhat.com, AlexBin.Xie@amd.com,
- viro@zeniv.linux.org.uk, amd-gfx@lists.freedesktop.org, amitkarwar@gmail.com,
- andresx7@gmail.com, andrew.donnellan@au1.ibm.com, afd@ti.com,
- akpm@linux-foundation.org, anil.gurumurthy@qlogic.com,
- anna.schumaker@netapp.com, acme@kernel.org, arnd@arndb.de,
- dedekind1@gmail.com, ashutosh.dixit@intel.com, ath10k@lists.infradead.org,
- Bart.VanAssche@sandisk.com, bhaktipriya96@gmail.com,
- bjorn.andersson@linaro.org, boris.brezillon@free-electrons.com,
- computersforpeace@gmail.com, bryan.thompson@unisys.com,
- cgroups@vger.kernel.org, 3chas3@gmail.com, ccaulfie@redhat.com,
- david1.zhou@amd.com, cluster-devel@redhat.com, colin.king@canonical.com,
- xiyou.wangcong@gmail.com, cyrille.pitchen@wedev4u.fr, daniel@iogearbox.net,
- daniel.vetter@intel.com, dasaratharaman.chandramouli@intel.com,
- airlied@redhat.com, dsa@cumulusnetworks.com, airlied@linux.ie,
- david.binder@unisys.com, dhowells@redhat.com, david.kershner@unisys.com,
- dtwlin@gmail.com, dave@stgolabs.net, davem@davemloft.net,
- teigland@redhat.com, dwindsor@gmail.com, dwmw2@infradead.org,
- dennis.dalessandro@intel.com, devel@driverdev.osuosl.org,
- devesh.sharma@broadcom.com, devicetree@vger.kernel.org,
- dick.kennedy@broadcom.com, dm-devel@redhat.com, don.hiatt@intel.com,
- dgilbert@interlog.com, dledford@redhat.com, drbd-dev@lists.linbit.com,
- dri-devel@lists.freedesktop.org, elena.reshetova@intel.com,
- edumazet@google.com, eparis@parisplace.org, ericvh@gmail.com,
- ebiederm@xmission.com, evan.quan@amd.com, felipe.balbi@linux.intel.com,
- Felix.Kuehling@amd.com, f.fainelli@gmail.com, fw@strlen.de,
- frowand.list@gmail.com, fbarrat@linux.vnet.ibm.com,
- fujita.tomonori@lab.ntt.co.jp, gbhat@marvell.com, geliangtang@gmail.com,
- kraxel@redhat.com, gregkh@linuxfoundation.org, greybus-dev@lists.linaro.org,
- linux@roeck-us.net, gustavo.padovan@collabora.co.uk,
- hal.rosenstock@gmail.com, hannes@stressinduktion.org, hare@suse.de,
- ishkamiel@gmail.com, hans.westgaard.ry@oracle.com, ray.huang@amd.com,
- mingo@redhat.com, inki.dae@samsung.com, intel-gfx@lists.freedesktop.org,
- intel-gvt-dev@lists.freedesktop.org, iommu@lists.linux-foundation.org,
- ira.weiny@intel.com, jinpu.wang@profitbricks.com, jhs@mojatatu.com,
- jejb@linux.vnet.ibm.com, james.smart@broadcom.com,
- jani.nikula@linux.intel.com, jack@suse.cz, jarkko.sakkinen@linux.intel.com,
- jarno@ovn.org, Jason@zx2c4.com, jgunthorpe@obsidianresearch.com,
- jasowang@redhat.com, javier@osg.samsung.com, bfields@fieldses.org,
- jlayton@poochiereds.net, axboe@kernel.dk, jens.wiklander@linaro.org,
- jiangyilism@gmail.com, jiri@mellanox.com, jiri@resnulli.us,
- jlbec@evilplan.org, joro@8bytes.org, johan@kernel.org,
- johannes@sipsolutions.net, hannes@cmpxchg.org, john@johnmccutchan.com,
- jonathanh@nvidia.com, jon.maloy@ericsson.com,
- joonas.lahtinen@linux.intel.com, jy0922.shim@samsung.com, jbacik@fb.com,
- Jerry.Zhang@amd.com, jsarha@ti.com, Kai.Makisara@kolumbus.fi,
- kvalo@qca.qualcomm.com, keescook@chromium.org, krzk@kernel.org,
- kgene@kernel.org, kvm@vger.kernel.org, kyungmin.park@samsung.com,
- jiangshanlai@gmail.com, lars.ellenberg@linbit.com, lucho@ionkov.net,
- lee.jones@linaro.org, leo.liu@amd.com, leon@kernel.org,
- linux1394-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org,
- linux-atm-general@lists.sourceforge.net, linux-block@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-ppp@vger.kernel.org, linux-raid@vger.kernel.org,
- linux-rdma@vger.kernel.org, linux-remoteproc@vger.kernel.org,
- linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-sctp@vger.kernel.org, linux-tegra@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- logang@deltatee.com, majd@mellanox.com, manfred@colorfullife.com,
- tpmdd@selhorst.net, marcos.souza.org@gmail.com, marek.vasut@gmail.com,
- mario.kleiner.de@gmail.com, markb@mellanox.com, mfasheh@versity.com,
- elfring@users.sourceforge.net, martin.petersen@oracle.com,
- matan@mellanox.com, mawilcox@microsoft.com, mporter@kernel.crashing.org,
- mchehab@kernel.org, maximlevitsky@gmail.com, mst@redhat.com,
- mhocko@kernel.org, michel.daenzer@amd.com, mike.marciniszyn@intel.com,
- rppt@linux.vnet.ibm.com, snitzer@redhat.com, mszeredi@redhat.com,
- minchan@kernel.org, tom.leiming@gmail.com, monis@mellanox.com,
- Monk.Liu@amd.com, nbd-general@lists.sourceforge.net, neilb@suse.com,
- nhorman@tuxdriver.com, nab@linux-iscsi.org, nicolai.haehnle@amd.com,
- nicolas.dichtel@6wind.com, niranjana.vishwanathapura@intel.com,
- nishants@marvell.com, ngupta@vflare.org, ocfs2-devel@oss.oracle.com,
- ohad@wizery.com, oneukum@suse.com, osandov@fb.com, ogerlitz@mellanox.com,
- pali.rohar@gmail.com, pantelis.antoniou@konsulko.com, paulus@samba.org,
- paul@paul-moore.com, peterhuewe@gmx.de, peterz@infradead.org,
- pmladek@suse.com, philipp.reisner@linbit.com, pshelar@ovn.org,
- rjw@rjwysocki.net, richard@nod.at, rlove@rlove.org, robh+dt@kernel.org,
- giometti@enneenne.com, rogerq@ti.com, roman.kapl@sysgo.com,
- rminnich@sandia.gov, rmk+kernel@armlinux.org.uk, sainath.grandhi@intel.com,
- sameer.wadgaonkar@unisys.com, sean.hefty@intel.com, seanpaul@chromium.org,
- bigeasy@linutronix.de, sre@kernel.org, nsekhar@ti.com,
- selvin.xavier@broadcom.com, sergey.senozhatsky.work@gmail.com,
- sw0312.kim@samsung.com, p.shailesh@samsung.com, shli@kernel.org,
- shaun.tancheff@seagate.com, syeh@vmware.com, sparmaintainer@unisys.com,
- stefanr@s5r6.in-berlin.de, sboyd@codeaurora.org, stephen@networkplumber.org,
- swise@chelsio.com, sudarsana.kalluru@qlogic.com, sudeep.dutt@intel.com,
- sumit.semwal@linaro.org, target-devel@vger.kernel.org, tj@kernel.org,
- thierry.reding@gmail.com, thellstrom@vmware.com, timothy.sell@unisys.com,
- tipc-discussion@lists.sourceforge.net, tomas.winkler@intel.com,
- tomi.valkeinen@ti.com, tpmdd-devel@lists.sourceforge.net,
- trond.myklebust@primarydata.com, v9fs-developer@lists.sourceforge.net,
- varun@chelsio.com, virtualization@lists.linux-foundation.org,
- vdavydov.dev@gmail.com, vyasevich@gmail.com,
- linux-graphics-maintainer@vmware.com, longman@redhat.com, weiyj.lk@gmail.com,
- wsa@the-dreams.de, huxm@marvell.com, ying.xue@windriver.com,
- yishaih@mellanox.com, yuval.shaia@oracle.com, lizefan@huawei.com,
- zhenyuw@linux.intel.com, zhi.a.wang@intel.com
-References: <1502849538-14284-1-git-send-email-chrism@mellanox.com>
- <144b87a3-bbe4-a194-ed83-e54840d7c7c2@amd.com>
-Message-ID: <150287519355.15499.3124883464555211520@mail.alporthouse.com>
-Subject: Re: [patch net-next 0/3] net/sched: Improve getting objects by indexes
-Date: Wed, 16 Aug 2017 10:19:53 +0100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87wp63smwn.fsf@concordia.ellerman.id.au>
+Message-Id: <20170816125617.GY7017@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -124,61 +53,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Christian K=C3=B6nig (2017-08-16 08:49:07)
-> Am 16.08.2017 um 04:12 schrieb Chris Mi:
-> > Using current TC code, it is very slow to insert a lot of rules.
+On Wed, Aug 16, 2017 at 10:43:52PM +1000, Michael Ellerman wrote:
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+> ...
 > >
-> > In order to improve the rules update rate in TC,
-> > we introduced the following two changes:
-> >          1) changed cls_flower to use IDR to manage the filters.
-> >          2) changed all act_xxx modules to use IDR instead of
-> >             a small hash table
+> > commit 33103e7b1f89ef432dfe3337d2a6932cdf5c1312
+> > Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > Date:   Mon Aug 14 08:54:39 2017 -0700
 > >
-> > But IDR has a limitation that it uses int. TC handle uses u32.
-> > To make sure there is no regression, we also changed IDR to use
-> > unsigned long. All clients of IDR are changed to use new IDR API.
-> =
+> >     EXP: Trace tick return from tick_nohz_stop_sched_tick
+> >     
+> >     Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> >
+> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> > index c7a899c5ce64..7358a5073dfb 100644
+> > --- a/kernel/time/tick-sched.c
+> > +++ b/kernel/time/tick-sched.c
+> > @@ -817,6 +817,7 @@ static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
+> >  	 * (not only the tick).
+> >  	 */
+> >  	ts->sleep_length = ktime_sub(dev->next_event, now);
+> > +	trace_printk("tick_nohz_stop_sched_tick: %lld\n", (tick - ktime_get()) / 1000);
+> >  	return tick;
+> >  }
+> 
+> Should I be seeing negative values? A small sample:
 
-> WOW, wait a second. The idr change is touching a lot of drivers and to =
+Maybe due to hypervisor preemption delays, but I confess that I am
+surprised to see them this large.  1,602,250,019 microseconds is something
+like a half hour, which could result in stall warnings all by itself.
 
-> be honest doesn't looks correct at all.
-> =
+>           <idle>-0     [015] d...  1602.039695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250019
+>           <idle>-0     [009] d...  1602.039701: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250025
+>           <idle>-0     [007] d...  1602.039702: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250025
+>           <idle>-0     [048] d...  1602.039703: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: 9973
+>           <idle>-0     [006] d...  1602.039704: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250027
+>           <idle>-0     [001] d...  1602.039730: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250053
+>           <idle>-0     [008] d...  1602.039732: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602250055
+>           <idle>-0     [006] d...  1602.049695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602260018
+>           <idle>-0     [009] d...  1602.049695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602260018
+>           <idle>-0     [001] d...  1602.049695: __tick_nohz_idle_enter: tick_nohz_stop_sched_tick: -1602260018
+> 
+> 
+> I have a full trace, I'll send it to you off-list.
 
-> Just look at the first chunk of your modification:
-> > @@ -998,8 +999,9 @@ int bsg_register_queue(struct request_queue *q, str=
-uct device *parent,
-> >   =
+I will take a look!
 
-> >       mutex_lock(&bsg_mutex);
-> >   =
-
-> > -     ret =3D idr_alloc(&bsg_minor_idr, bcd, 0, BSG_MAX_DEVS, GFP_KERNE=
-L);
-> > -     if (ret < 0) {
-> > +     ret =3D idr_alloc(&bsg_minor_idr, bcd, &idr_index, 0, BSG_MAX_DEV=
-S,
-> > +                     GFP_KERNEL);
-> > +     if (ret) {
-> >               if (ret =3D=3D -ENOSPC) {
-> >                       printk(KERN_ERR "bsg: too many bsg devices\n");
-> >                       ret =3D -EINVAL;
-> The condition "if (ret)" will now always be true after the first =
-
-> allocation and so we always run into the error handling after that.
-
-ret is now purely the error code, so it doesn't look that suspicious.
-
-> I've never read the bsg code before, but that's certainly not correct. =
-
-> And that incorrect pattern repeats over and over again in this code.
-> =
-
-> Apart from that why the heck do you want to allocate more than 1<<31 =
-
-> handles?
-
-And more to the point, arbitrarily changing the maximum to ULONG_MAX
-where the ABI only supports U32_MAX is dangerous. Unless you do the
-analysis otherwise, you have to replace all the end=3D0 with end=3DINT_MAX
-to maintain existing behaviour.
--Chris
+							Thanx, Paul
