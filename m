@@ -1,16 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY5x767bxzDqN4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 23:03:07 +1000 (AEST)
-In-Reply-To: <20170816060118.24803-1-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY6BC48h7zDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 23:14:27 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id y192so9855629pgd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 06:14:27 -0700 (PDT)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: herbert@gondor.apana.org.au, davem@davemloft.net, benh@kernel.crashing.org,
+ leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/5] powerpc: Test MSR_FP and MSR_VEC when enabling/flushing VSX
-Message-Id: <3xY5x75Jyhz9t4R@ozlabs.org>
-Date: Thu, 17 Aug 2017 23:03:07 +1000 (AEST)
+Subject: [PATCH] crypto: nx: constify vio_device_id
+Date: Thu, 17 Aug 2017 18:44:10 +0530
+Message-Id: <35e1702104da09dee65dd407bde06b8cb31f6483.1502974810.git.arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,22 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-16 at 06:01:14 UTC, Benjamin Herrenschmidt wrote:
-> VSX uses a combination of the old vector registers, the old FP registers
-> and new "second halves" of the FP registers.
-> 
-> Thus when we need to see the VSX state in the thread struct
-> (flush_vsx_to_thread) or when we'll use the VSX in the kernel
-> (enable_kernel_vsx) we need to ensure they are all flushed into
-> the thread struct if either of them is individually enabled.
-> 
-> Unfortunately we only tested if the whole VSX was enabled, not
-> if they were individually enabled.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+vio_device_id are not supposed to change at runtime. All functions
+working with vio_device_id provided by <asm/vio.h> work with
+const vio_device_id. So mark the non-const structs as const.
 
-Applied to powerpc fixes, thanks.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/crypto/nx/nx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-https://git.kernel.org/powerpc/c/5a69aec945d27e78abac9fd032533d
-
-cheers
+diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
+index 036057a..3a5e31b 100644
+--- a/drivers/crypto/nx/nx.c
++++ b/drivers/crypto/nx/nx.c
+@@ -833,7 +833,7 @@ static void __exit nx_fini(void)
+ 	vio_unregister_driver(&nx_driver.viodriver);
+ }
+ 
+-static struct vio_device_id nx_crypto_driver_ids[] = {
++static const struct vio_device_id nx_crypto_driver_ids[] = {
+ 	{ "ibm,sym-encryption-v1", "ibm,sym-encryption" },
+ 	{ "", "" }
+ };
+-- 
+2.7.4
