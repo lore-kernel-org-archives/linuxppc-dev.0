@@ -3,19 +3,21 @@ Received: from shards.monkeyblade.net (shards.monkeyblade.net
  [184.105.139.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYCbM17M6zDrL2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 03:18:06 +1000 (AEST)
-Date: Thu, 17 Aug 2017 10:18:04 -0700 (PDT)
-Message-Id: <20170817.101804.2016942034542452971.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYCbR1WzjzDrL2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 03:18:11 +1000 (AEST)
+Date: Thu, 17 Aug 2017 10:18:09 -0700 (PDT)
+Message-Id: <20170817.101809.118916278042596088.davem@davemloft.net>
 To: arvind.yadav.cs@gmail.com
 Cc: tlfalcon@linux.vnet.ibm.com, benh@kernel.crashing.org,
  jallen@linux.vnet.ibm.com, mpe@ellerman.id.au,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org
-Subject: Re: [PATCH] net: ibm: ibmveth: constify vio_device_id
+Subject: Re: [PATCH] net: ibm: ibmvnic: constify vio_device_id
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <b8393cdf646fae5ccbb64aab482c133fd54a7339.1502975929.git.arvind.yadav.cs@gmail.com>
+In-Reply-To: <74d0d08fe98bf52e122d027efdcd7f9811309325.1502975929.git.arvind.yadav.cs@gmail.com>
 References: <b8393cdf646fae5ccbb64aab482c133fd54a7339.1502975929.git.arvind.yadav.cs@gmail.com>
+ <b8393cdf646fae5ccbb64aab482c133fd54a7339.1502975929.git.arvind.yadav.cs@gmail.com>
+ <74d0d08fe98bf52e122d027efdcd7f9811309325.1502975929.git.arvind.yadav.cs@gmail.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,7 +30,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 17 Aug 2017 18:52:53 +0530
+Date: Thu, 17 Aug 2017 18:52:54 +0530
 
 > vio_device_id are not supposed to change at runtime. All functions
 > working with vio_device_id provided by <asm/vio.h> work with
