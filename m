@@ -1,39 +1,37 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYHsf1PTXzDrK0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 06:30:45 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYJ5H39c2zDrJ0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 06:40:51 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7HKTK64015404
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 16:30:43 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cdbx3nqxd-1
+ v7HKeguH023787
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 16:40:49 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cddrjx2mx-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 16:30:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 16:40:48 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 17 Aug 2017 14:30:42 -0600
+ Thu, 17 Aug 2017 14:40:48 -0600
 References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-26-git-send-email-linuxram@us.ibm.com>
- <871sojkta1.fsf@linux.vnet.ibm.com>
- <20170817174014.GG5505@ram.oc3035372033.ibm.com>
+ <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
+ <8760dvkw58.fsf@linux.vnet.ibm.com>
+ <20170817154831.GB5505@ram.oc3035372033.ibm.com>
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org
-Subject: Re: [RFC v7 25/25] powerpc: Enable pkey subsystem
-In-reply-to: <20170817174014.GG5505@ram.oc3035372033.ibm.com>
-Date: Thu, 17 Aug 2017 17:30:27 -0300
+Cc: mhocko@kernel.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com
+Subject: Re: [RFC v7 02/25] powerpc: track allocation status of all pkeys
+In-reply-to: <20170817154831.GB5505@ram.oc3035372033.ibm.com>
+Date: Thu, 17 Aug 2017 17:40:37 -0300
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87efsaym1o.fsf@linux.vnet.ibm.com>
+Message-Id: <87d17uylkq.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,122 +44,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Ram Pai <linuxram@us.ibm.com> writes:
 
-> On Thu, Aug 10, 2017 at 06:27:34PM -0300, Thiago Jung Bauermann wrote:
+> On Thu, Aug 10, 2017 at 05:25:39PM -0300, Thiago Jung Bauermann wrote:
 >> 
 >> Ram Pai <linuxram@us.ibm.com> writes:
->> > --- a/arch/powerpc/include/asm/cputable.h
->> > +++ b/arch/powerpc/include/asm/cputable.h
->> > @@ -214,6 +214,7 @@ enum {
->> >  #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
->> >  #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
->> >  #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
->> > +#define CPU_FTR_PKEY			LONG_ASM_CONST(0x2000000000000000)
->> >  #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
->> >
->> >  #ifndef __ASSEMBLY__
->> > @@ -452,7 +453,7 @@ enum {
->> >  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
->> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
->> >  	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
->> > -	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX)
->> > +	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX | CPU_FTR_PKEY)
->> 
->> P7 supports protection keys for data access (AMR) but not for
->> instruction access (IAMR), right? There's nothing in the code making
->> this distinction, so either CPU_FTR_PKEY shouldn't be enabled in P7 or
->> separate feature bits for AMR and IAMR should be used and checked before
->> trying to access the IAMR.
->
-> did'nt David say P7 supports both? P6, i think, only support data.
-> my pkey tests have passed on p7.
-
-He said that P7 was the first processor to support 32 keys, but if you
-look at the Virtual Page Class Key Protection section in ISA 2.06,
-there's no IAMR.
-
-There was a bug in the code where init_iamr was calling write_amr
-instead of write_iamr, perhaps that's why it worked when you tested on P7?
-
->> 
->> >  #define CPU_FTRS_POWER8 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->> >  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
->> >  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
->> > @@ -462,7 +463,7 @@ enum {
->> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
->> >  	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
->> >  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
->> > -	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP)
->> > +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_PKEY)
->> >  #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
->> >  #define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
->> >  #define CPU_FTRS_POWER9 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->> > @@ -474,7 +475,8 @@ enum {
->> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
->> >  	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
->> >  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
->> > -	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
->> > +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | \
->> > +	    CPU_FTR_PKEY)
->> >  #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
->> >  			     (~CPU_FTR_SAO))
->> >  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->> > diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
->> > index a1cfcca..acd59d8 100644
->> > --- a/arch/powerpc/include/asm/mmu_context.h
->> > +++ b/arch/powerpc/include/asm/mmu_context.h
->> > @@ -188,6 +188,7 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
->> >
->> >  #define pkey_initialize()
->> >  #define pkey_mm_init(mm)
->> > +#define pkey_mmu_values(total_data, total_execute)
->> >
->> >  static inline int vma_pkey(struct vm_area_struct *vma)
+>> >  static inline void pkey_initialize(void)
 >> >  {
->> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
->> > index ba7bff6..e61ed6c 100644
->> > --- a/arch/powerpc/include/asm/pkeys.h
->> > +++ b/arch/powerpc/include/asm/pkeys.h
->> > @@ -1,6 +1,8 @@
->> >  #ifndef _ASM_PPC64_PKEYS_H
->> >  #define _ASM_PPC64_PKEYS_H
->> >
->> > +#include <asm/firmware.h>
+>> > +	int os_reserved, i;
 >> > +
->> >  extern bool pkey_inited;
->> >  extern int pkeys_total; /* total pkeys as per device tree */
->> >  extern u32 initial_allocation_mask;/* bits set for reserved keys */
->> > @@ -227,6 +229,24 @@ static inline void pkey_mm_init(struct mm_struct *mm)
->> >  	mm->context.execute_only_pkey = -1;
->> >  }
->> >
->> > +static inline void pkey_mmu_values(int total_data, int total_execute)
->> > +{
+>> >  	/* disable the pkey system till everything
+>> >  	 * is in place. A patch further down the
+>> >  	 * line will enable it.
+>> >  	 */
+>> >  	pkey_inited = false;
+>> > +
+>> > +	/* Lets assume 32 keys */
+>> > +	pkeys_total = 32;
+>> > +
+>> > +#ifdef CONFIG_PPC_4K_PAGES
 >> > +	/*
->> > +	 * since any pkey can be used for data or execute, we
->> > +	 * will  just  treat all keys as equal and track them
->> > +	 * as one entity.
+>> > +	 * the OS can manage only 8 pkeys
+>> > +	 * due to its inability to represent
+>> > +	 * them in the linux 4K-PTE.
 >> > +	 */
->> > +	pkeys_total = total_data + total_execute;
->> > +}
+>> > +	os_reserved = pkeys_total-8;
+>> > +#else
+>> > +	os_reserved = 0;
+>> > +#endif
+>> > +	/*
+>> > +	 * Bits are in LE format.
+>> > +	 * NOTE: 1, 0 are reserved.
+>> > +	 * key 0 is the default key, which allows read/write/execute.
+>> > +	 * key 1 is recommended not to be used.
+>> > +	 * PowerISA(3.0) page 1015, programming note.
+>> > +	 */
+>> > +	initial_allocation_mask = ~0x0;
+>> > +	for (i = 2; i < (pkeys_total - os_reserved); i++)
+>> > +		initial_allocation_mask &= ~(0x1<<i);
+>> >  }
+>> >  #endif /*_ASM_PPC64_PKEYS_H */
 >> 
->> Right now this works because the firmware reports 0 execute keys in the
->> device tree, but if (when?) it is fixed to report 32 execute keys as
->> well as 32 data keys (which are the same keys), any place using
->> pkeys_total expecting it to mean the number of keys that are available
->> will be broken. This includes pkey_initialize and mm_pkey_is_allocated.
+>> In v6, key 31 was also reserved, but it's not in this version. Is this
+>> intentional?
 >
-> Good point. we should just ignore total_execute. It should
-> be the same value as total_data on the latest platforms.
-> On older platforms it will continue to be zero.
+> On powernv platform, there is no hypervisor and hence the hypervisor
+> will not reserve key 31 for its own use. Wherease on PAPR guest
+> the hypervisor takes away key 31.  
+>
+> Its not possible to determine at compile time which keys are used
+> or not. Hence the above code.  pkeys_total is 32 in this patch,
+> but will be set to whatever value the device tree tells us. That will
+> be done in a subsequent patch.
 
-Indeed. There should just be a special case to disable execute
-protection for P7.
-
->> Perhaps pkeys_total should use total_data as the number of keys
->> supported in the system, and total_execute just as a flag to say whether
->> there's a IAMR? Or, since P8 and later have IAMR and P7 is unlikely to
->> have the firmware fixed, maybe the kernel should just ignore
->> total_execute altogether?
+You're right. At the time I made that comment I didn't realize that the
+hypervisor would subtract its reserved key from the device property.
 
 -- 
 Thiago Jung Bauermann
