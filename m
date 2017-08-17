@@ -1,21 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY5hc4Q2jzDrJl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 22:52:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY5l83320zDqlF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 22:54:28 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Corentin Labbe <clabbe.montjoie@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, anju@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Corentin Labbe <clabbe.montjoie@gmail.com>
-Subject: Re: [PATCH] powerpc: powernv: Fix build error on const discarding
-In-Reply-To: <20170816123444.5202-1-clabbe.montjoie@gmail.com>
-References: <20170816123444.5202-1-clabbe.montjoie@gmail.com>
-Date: Thu, 17 Aug 2017 22:52:11 +1000
-Message-ID: <87fucqbblw.fsf@concordia.ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/xmon: Exclude all of xmon/ from ftrace
+In-Reply-To: <20170816141304.yqs6evlo3fk2hvss@naverao1-tp.localdomain>
+References: <20170802182538.26526-1-naveen.n.rao@linux.vnet.ibm.com>
+ <87wp6emj5w.fsf@concordia.ellerman.id.au>
+ <87y3qltadw.fsf@concordia.ellerman.id.au>
+ <20170816141304.yqs6evlo3fk2hvss@naverao1-tp.localdomain>
+Date: Thu, 17 Aug 2017 22:54:27 +1000
+Message-ID: <87d17ubbi4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Corentin Labbe <clabbe.montjoie@gmail.com> writes:
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-> When building a random powerpc kernel I hit this build error:
->   CC      arch/powerpc/platforms/powernv/opal-imc.o
-> arch/powerpc/platforms/powernv/opal-imc.c: In function =C2=AB=C2=A0disabl=
-e_nest_pmu_counters=C2=A0=C2=BB:
-> arch/powerpc/platforms/powernv/opal-imc.c:130:13: error=C2=A0: assignment=
- discards =C2=AB=C2=A0const=C2=A0=C2=BB qualifier from pointer target type =
-[-Werror=3Ddiscarded-qualifiers]
->    l_cpumask =3D cpumask_of_node(nid);
->              ^
-> This patch simply add const to l_cpumask to fix this issue.
+> Hi Michael,
+> Sorry -- was off since last week.
 
-Thanks. I'm not sure why we haven't seen that.
-
-Do you mind attaching your .config ?
+No worries.
 
 cheers
