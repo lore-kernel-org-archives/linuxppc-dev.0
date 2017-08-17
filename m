@@ -1,30 +1,28 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <Bart.VanAssche@wdc.com>
+Received: from esa5.hgst.iphmx.com (esa5.hgst.iphmx.com [216.71.153.144])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY9BD3DNqzDrDQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 01:29:40 +1000 (AEST)
-Subject: Re: [v6 05/15] mm: don't accessed uninitialized struct pages
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org
-References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
- <1502138329-123460-6-git-send-email-pasha.tatashin@oracle.com>
- <20170811093746.GF30811@dhcp22.suse.cz>
- <8444cb2b-b134-e9fc-a458-1ba7b22a8df1@oracle.com>
- <20170814114755.GI19063@dhcp22.suse.cz>
- <e339a33c-d16b-91bd-5df0-18f5ec03d52b@oracle.com>
-Message-ID: <139b7d83-12a3-d584-0461-d01a79df5d2b@oracle.com>
-Date: Thu, 17 Aug 2017 11:28:23 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY9FS00NczDrDQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 01:32:27 +1000 (AEST)
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>,
+ "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>
+CC: "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>, "linux-block@vger.kernel.org"
+ <linux-block@vger.kernel.org>, "brking@us.ibm.com" <brking@us.ibm.com>,
+ "axboe@kernel.dk" <axboe@kernel.dk>
+Subject: Re: WARNING: CPU: 15 PID: 0 at block/blk-mq.c:1111
+ __blk_mq_run_hw_queue+0x1d8/0x1f0
+Date: Thu, 17 Aug 2017 15:32:22 +0000
+Message-ID: <1502983941.2615.5.camel@wdc.com>
+References: <1502906852.3305.33.camel@abdul.in.ibm.com>
+ <1502907345.2421.8.camel@wdc.com>
+ <4fe35be3-c631-e4ed-a135-110e536823bc@linux.vnet.ibm.com>
+In-Reply-To: <4fe35be3-c631-e4ed-a135-110e536823bc@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <e339a33c-d16b-91bd-5df0-18f5ec03d52b@oracle.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,58 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
-
-I've been looking through this code again, and I think your suggestion 
-will work. I did not realize this iterator already exist:
-
-for_each_free_mem_range() basically iterates through (memory && !reserved)
-
-This is exactly what we need here. So, I will update this patch to use 
-this iterator, which will simplify it.
-
-Pasha
-
-On 08/14/2017 09:51 AM, Pasha Tatashin wrote:
->>> mem_init()
->>>   free_all_bootmem()
->>>    free_low_memory_core_early()
->>>     for_each_reserved_mem_region()
->>>      reserve_bootmem_region()
->>>       init_reserved_page() <- if this is deferred reserved page
->>>        __init_single_pfn()
->>>         __init_single_page()
->>>
->>> So, currently, we are using the value of page->flags to figure out if 
->>> this
->>> page has been initialized while being part of deferred page, but this 
->>> is not
->>> going to work for this project, as we do not zero the memory that is 
->>> backing
->>> the struct pages, and size the value of page->flags can be anything.
->>
->> True, this is the initialization part I've missed in one of the previous
->> patches already. Would it be possible to only iterate over !reserved
->> memory blocks instead? Now that we discard all the metadata later it
->> should be quite easy to do for_each_memblock_type, no?
-> 
-> Hi Michal,
-> 
-> Clever suggestion to add a new iterator to go through unreserved 
-> existing memory, I do not think there is this iterator available, so it 
-> would need to be implemented, using similar approach to what I have done 
-> with a call back.
-> 
-> However, there is a different reason, why I took this current approach.
-> 
-> Daniel Jordan is working on a ktask support:
-> https://lkml.org/lkml/2017/7/14/666
-> 
-> He and I discussed on how to multi-thread struct pages initialization 
-> within memory nodes using ktasks. Having this callback interface makes 
-> that multi-threading quiet easy, improving the boot performance further, 
-> with his prototype we saw x4-6 improvements (using 4-8 threads per 
-> node). Reducing the total time it takes to initialize all struct pages 
-> on machines with terabytes of memory to less than one second.
-> 
-> Pasha
+T24gV2VkLCAyMDE3LTA4LTE2IGF0IDE1OjEwIC0wNTAwLCBCcmlhbiBLaW5nIHdyb3RlOg0KPiBP
+biAwOC8xNi8yMDE3IDAxOjE1IFBNLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gT24gV2Vk
+LCAyMDE3LTA4LTE2IGF0IDIzOjM3ICswNTMwLCBBYmR1bCBIYWxlZW0gd3JvdGU6DQo+ID4gPiBM
+aW51eC1uZXh0IGJvb3RlZCB3aXRoIHRoZSBiZWxvdyB3YXJuaW5ncyBvbiBwb3dlcnBjDQo+ID4g
+PiANCj4gPiA+IFsgLi4uIF0NCj4gPiA+IA0KPiA+ID4gYm9vdCB3YXJuaW5nczoNCj4gPiA+IC0t
+LS0tLS0tLS0tLS0tDQo+ID4gPiBrdm06IGV4aXRpbmcgaGFyZHdhcmUgdmlydHVhbGl6YXRpb24N
+Cj4gPiA+IC0tLS0tLS0tLS0tLVsgY3V0IGhlcmUgXS0tLS0tLS0tLS0tLQ0KPiA+ID4gV0FSTklO
+RzogQ1BVOiAxNSBQSUQ6IDAgYXQgYmxvY2svYmxrLW1xLmM6MTExMSBfX2Jsa19tcV9ydW5faHdf
+cXVldWUNCj4gPiA+ICsweDFkOC8weDFmMA0KPiA+ID4gTW9kdWxlcyBsaW5rZWQgaW46IGlwdGFi
+bGVfbWFuZ2xlIGlwdF9NQVNRVUVSQURFIG5mX25hdF9tYXNxdWVyYWRlX2lwdjQNCj4gPiA+IENh
+bGwgVHJhY2U6DQo+ID4gPiBbYzAwMDAwMGZmZmYzNzk5MF0gW2MwMDAwMDAwMDA4OGY3YjBdIF9f
+YmxrX21xX2RlbGF5X3J1bl9od19xdWV1ZQ0KPiA+ID4gKzB4MWYwLzB4MjEwDQo+ID4gPiBbYzAw
+MDAwMGZmZmYzNzlkMF0gW2MwMDAwMDAwMDA4OGZjYjhdIGJsa19tcV9zdGFydF9od19xdWV1ZSsw
+eDU4LzB4ODANCj4gPiA+IFtjMDAwMDAwZmZmZjM3OWYwXSBbYzAwMDAwMDAwMDg4ZmQ0MF0gYmxr
+X21xX3N0YXJ0X2h3X3F1ZXVlcysweDYwLzB4YjANCj4gPiA+IFtjMDAwMDAwZmZmZjM3YTMwXSBb
+YzAwMDAwMDAwMGFlMmI1NF0gc2NzaV9raWNrX3F1ZXVlKzB4MzQvMHhhMA0KPiA+ID4gW2MwMDAw
+MDBmZmZmMzdhNTBdIFtjMDAwMDAwMDAwYWUyZjcwXSBzY3NpX3J1bl9xdWV1ZSsweDNiMC8weDY2
+MA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdhYzBdIFtjMDAwMDAwMDAwYWU3ZWQ0XSBzY3NpX3J1bl9o
+b3N0X3F1ZXVlcysweDY0LzB4YzANCj4gPiA+IFtjMDAwMDAwZmZmZjM3YjAwXSBbYzAwMDAwMDAw
+MGFlN2Y2NF0gc2NzaV91bmJsb2NrX3JlcXVlc3RzKzB4MzQvMHg2MA0KPiA+ID4gW2MwMDAwMDBm
+ZmZmMzdiMjBdIFtjMDAwMDAwMDAwYjE0OTk4XSBpcHJfaW9hX2JyaW5nZG93bl9kb25lKzB4Zjgv
+MHgzYTANCj4gPiA+IFtjMDAwMDAwZmZmZjM3YmMwXSBbYzAwMDAwMDAwMGIxMjUyOF0gaXByX3Jl
+c2V0X2lvYV9qb2IrMHhkOC8weDE3MA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdjMDBdIFtjMDAwMDAw
+MDAwYjE4NzkwXSBpcHJfcmVzZXRfdGltZXJfZG9uZSsweDExMC8weDE2MA0KPiA+ID4gW2MwMDAw
+MDBmZmZmMzdjNTBdIFtjMDAwMDAwMDAwMjRkYjUwXSBjYWxsX3RpbWVyX2ZuKzB4YTAvMHgzYTAN
+Cj4gPiA+IFtjMDAwMDAwZmZmZjM3Y2UwXSBbYzAwMDAwMDAwMDI0ZTA1OF0gZXhwaXJlX3RpbWVy
+cysweDFiOC8weDM1MA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdkNTBdIFtjMDAwMDAwMDAwMjRlMmYw
+XSBydW5fdGltZXJfc29mdGlycSsweDEwMC8weDNlMA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdkZjBd
+IFtjMDAwMDAwMDAwMTYyZWRjXSBfX2RvX3NvZnRpcnErMHgyMGMvMHg2MjANCj4gPiA+IFtjMDAw
+MDAwZmZmZjM3ZWUwXSBbYzAwMDAwMDAwMDE2M2E4MF0gaXJxX2V4aXQrMHgyMzAvMHgyOTANCj4g
+PiA+IFtjMDAwMDAwZmZmZjM3ZjEwXSBbYzAwMDAwMDAwMDAxZDc3MF0gX19kb19pcnErMHgxNzAv
+MHg0MTANCj4gPiA+IFtjMDAwMDAwZmZmZjM3ZjkwXSBbYzAwMDAwMDAwMDAzZWEyMF0gY2FsbF9k
+b19pcnErMHgxNC8weDI0DQo+ID4gPiBbYzAwMDAwMDdmODRlM2E3MF0gW2MwMDAwMDAwMDAwMWRh
+ZTBdIGRvX0lSUSsweGQwLzB4MTkwDQo+ID4gPiBbYzAwMDAwMDdmODRlM2FjMF0gW2MwMDAwMDAw
+MDAwMDhjNThdIGhhcmR3YXJlX2ludGVycnVwdF9jb21tb24NCj4gPiA+ICsweDE1OC8weDE2MA0K
+PiA+IA0KPiA+IEhlbGxvIEJyaWFuLA0KPiA+IA0KPiA+IEluIHRoZSBNQUlOVEFJTkVSUyBmaWxl
+IEkgZm91bmQgdGhlIGZvbGxvd2luZzoNCj4gPiANCj4gPiBJQk0gUG93ZXIgTGludXggUkFJRCBh
+ZGFwdGVyDQo+ID4gTTogICAgICBCcmlhbiBLaW5nIDxicmtpbmdAdXMuaWJtLmNvbT4NCj4gPiBT
+OiAgICAgIFN1cHBvcnRlZA0KPiA+IEY6ICAgICAgZHJpdmVycy9zY3NpL2lwci4qDQo+ID4gDQo+
+ID4gSXMgdGhhdCBpbmZvcm1hdGlvbiB1cC10by1kYXRlPyBEbyB5b3UgYWdyZWUgdGhhdCB0aGUg
+YWJvdmUgbWVzc2FnZSBpbmRpY2F0ZXMNCj4gPiBhIGJ1ZyBpbiB0aGUgaXByIGRyaXZlcj8NCj4g
+DQo+IFllcy4gQ2FuIHlvdSB0cnkgd2l0aCB0aGlzIHBhdGNoIHRoYXQgaXMgaW4gNC4xMy9zY3Np
+LWZpeGVzOg0KPiANCj4gaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5l
+bC9naXQvbWtwL3Njc2kuZ2l0L2NvbW1pdC8/aD00LjEzL3Njc2ktZml4ZXMmaWQ9YjBlMTdhOWIw
+ZGYyOTU5MGM0NWRmYjI5NmY1NDEyNzBhNTk0MWY0MQ0KDQpIZWxsbyBCcmlhbiwNCg0KU29ycnkg
+YnV0IEkgZG9uJ3QgaGF2ZSBhY2Nlc3MgdG8gYSBzZXR1cCBvbiB3aGljaCBJIGNhbiB0ZXN0IHRo
+ZSBpcHIgZHJpdmVyIC4uLg0KDQpCYXJ0Lg==
