@@ -1,12 +1,12 @@
 Return-Path: <Thomas.Lendacky@amd.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0049.outbound.protection.outlook.com [104.47.42.49])
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0058.outbound.protection.outlook.com [104.47.33.58])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYFSx1ty4zDrJl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 04:42:40 +1000 (AEST)
-Subject: Re: [RFC Part1 PATCH v3 08/17] x86/efi: Access EFI data as encrypted
- when SEV is active
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYFls0TVDzDqYw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 04:55:35 +1000 (AEST)
+Subject: Re: [RFC Part1 PATCH v3 09/17] resource: Consolidate resource walking
+ code
 To: Borislav Petkov <bp@suse.de>, Brijesh Singh <brijesh.singh@amd.com>
 Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
@@ -29,13 +29,13 @@ Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
  Christoph Lameter <cl@linux.com>
 References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-9-brijesh.singh@amd.com>
- <20170728103152.GE1889@nazgul.tnic>
+ <20170724190757.11278-10-brijesh.singh@amd.com>
+ <20170728152342.GB11564@nazgul.tnic>
 From: Tom Lendacky <thomas.lendacky@amd.com>
-Message-ID: <9b56cea1-3338-8d75-e7ff-ecfa06046630@amd.com>
-Date: Thu, 17 Aug 2017 13:42:04 -0500
+Message-ID: <a31c9643-87a5-ae4a-25a5-9dae235f158d@amd.com>
+Date: Thu, 17 Aug 2017 13:55:18 -0500
 MIME-Version: 1.0
-In-Reply-To: <20170728103152.GE1889@nazgul.tnic>
+In-Reply-To: <20170728152342.GB11564@nazgul.tnic>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,92 +46,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/28/2017 5:31 AM, Borislav Petkov wrote:
-> On Mon, Jul 24, 2017 at 02:07:48PM -0500, Brijesh Singh wrote:
+On 7/28/2017 10:23 AM, Borislav Petkov wrote:
+> On Mon, Jul 24, 2017 at 02:07:49PM -0500, Brijesh Singh wrote:
 >> From: Tom Lendacky <thomas.lendacky@amd.com>
 >>
->> EFI data is encrypted when the kernel is run under SEV. Update the
->> page table references to be sure the EFI memory areas are accessed
->> encrypted.
+>> The walk_iomem_res_desc(), walk_system_ram_res() and walk_system_ram_range()
+>> functions each have much of the same code.  Create a new function that
+>> consolidates the common code from these functions in one place to reduce
+>> the amount of duplicated code.
 >>
 >> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 >> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
 >> ---
->>   arch/x86/platform/efi/efi_64.c | 15 ++++++++++++++-
->>   1 file changed, 14 insertions(+), 1 deletion(-)
+>>   kernel/resource.c | 53 ++++++++++++++++++++++++++---------------------------
+>>   1 file changed, 26 insertions(+), 27 deletions(-)
 >>
->> diff --git a/arch/x86/platform/efi/efi_64.c b/arch/x86/platform/efi/efi_64.c
->> index 12e8388..1ecb3f6 100644
->> --- a/arch/x86/platform/efi/efi_64.c
->> +++ b/arch/x86/platform/efi/efi_64.c
->> @@ -32,6 +32,7 @@
->>   #include <linux/reboot.h>
->>   #include <linux/slab.h>
->>   #include <linux/ucs2_string.h>
->> +#include <linux/mem_encrypt.h>
->>   
->>   #include <asm/setup.h>
->>   #include <asm/page.h>
->> @@ -369,7 +370,10 @@ int __init efi_setup_page_tables(unsigned long pa_memmap, unsigned num_pages)
->>   	 * as trim_bios_range() will reserve the first page and isolate it away
->>   	 * from memory allocators anyway.
->>   	 */
->> -	if (kernel_map_pages_in_pgd(pgd, 0x0, 0x0, 1, _PAGE_RW)) {
->> +	pf = _PAGE_RW;
->> +	if (sev_active())
->> +		pf |= _PAGE_ENC;
+>> diff --git a/kernel/resource.c b/kernel/resource.c
+>> index 9b5f044..7b20b3e 100644
+>> --- a/kernel/resource.c
+>> +++ b/kernel/resource.c
+>> @@ -397,9 +397,30 @@ static int find_next_iomem_res(struct resource *res, unsigned long desc,
+>>   		res->start = p->start;
+>>   	if (res->end > p->end)
+>>   		res->end = p->end;
+>> +	res->desc = p->desc;
+>>   	return 0;
 > 
-> \n here
-> 
->> +	if (kernel_map_pages_in_pgd(pgd, 0x0, 0x0, 1, pf)) {
->>   		pr_err("Failed to create 1:1 mapping for the first page!\n");
->>   		return 1;
->>   	}
->> @@ -412,6 +416,9 @@ static void __init __map_region(efi_memory_desc_t *md, u64 va)
->>   	if (!(md->attribute & EFI_MEMORY_WB))
->>   		flags |= _PAGE_PCD;
->>   
->> +	if (sev_active())
->> +		flags |= _PAGE_ENC;
->> +
->>   	pfn = md->phys_addr >> PAGE_SHIFT;
->>   	if (kernel_map_pages_in_pgd(pgd, pfn, va, md->num_pages, flags))
->>   		pr_warn("Error mapping PA 0x%llx -> VA 0x%llx!\n",
->> @@ -511,6 +518,9 @@ static int __init efi_update_mappings(efi_memory_desc_t *md, unsigned long pf)
->>   	pgd_t *pgd = efi_pgd;
->>   	int err1, err2;
->>   
->> +	if (sev_active())
->> +		pf |= _PAGE_ENC;
-> 
-> Move this assignment to the caller efi_update_mem_attr() where pf is being
-> set...
+> I must be going blind: where are we using that res->desc?
 
-Will do.
+I think that was left-over from the initial consolidation work I was
+doing.  I'll remove it.
 
 > 
->> +
->>   	/* Update the 1:1 mapping */
->>   	pfn = md->phys_addr >> PAGE_SHIFT;
->>   	err1 = kernel_map_pages_in_pgd(pgd, pfn, md->phys_addr, md->num_pages, pf);
->> @@ -589,6 +599,9 @@ void __init efi_runtime_update_mappings(void)
->>   			(md->type != EFI_RUNTIME_SERVICES_CODE))
->>   			pf |= _PAGE_RW;
->>   
->> +		if (sev_active())
->> +			pf |= _PAGE_ENC;
+>> +static int __walk_iomem_res_desc(struct resource *res, unsigned long desc,
+>> +				 bool first_level_children_only,
 > 
-> ... just like here.
+> Btw, that variable name is insanely long.
 
-Yup.
+I know, but I'm maintaining consistency with the name that was already
+present vs. changing it.
+
+> 
+> The rest looks ok to me, thanks for the cleanup!
 
 Thanks,
 Tom
 
-> 
->> +
->>   		efi_update_mappings(md, pf);
-> 
-> In general, I'm not totally excited about that sprinkling of if
-> (sev_active())... :-\
 > 
