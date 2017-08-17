@@ -1,35 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXttb4qNTzDqkc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 14:45:11 +1000 (AEST)
-Message-ID: <1502945005.4493.112.camel@kernel.crashing.org>
-Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: Robin Murphy <robin.murphy@arm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>, Eric Auger
- <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>, Jike Song
- <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Joerg Roedel
- <joro@8bytes.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>, David
- Woodhouse <dwmw2@infradead.org>, Kirti Wankhede <kwankhede@nvidia.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Neo Jia
- <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>, Vlad Tsyrklevich
- <vlad@tsyrklevich.net>,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Thu, 17 Aug 2017 14:43:25 +1000
-In-Reply-To: <20170816105602.57fd1dcc@w520.home>
-References: <20170807072548.3023-1-aik@ozlabs.ru>
- <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
- <ca2a4550-fb26-28db-0eea-a5940dfa612f@arm.com>
- <20170815103717.3b64e10c@w520.home>
- <1502843749.4493.67.camel@kernel.crashing.org>
- <20170816105602.57fd1dcc@w520.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xXvC42KshzDrJG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 14:59:28 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ding Tianhong <dingtianhong@huawei.com>, leedom@chelsio.com,
+ ashok.raj@intel.com, bhelgaas@google.com, helgaas@kernel.org,
+ werner@chelsio.com, ganeshgr@chelsio.com, asit.k.mallick@intel.com,
+ patrick.j.cramer@intel.com, Suravee.Suthikulpanit@amd.com, Bob.Shaw@amd.com,
+ l.stach@pengutronix.de, amira@mellanox.com, gabriele.paoloni@huawei.com,
+ David.Laight@aculab.com, jeffrey.t.kirsher@intel.com, catalin.marinas@arm.com,
+ will.deacon@arm.com, mark.rutland@arm.com, robin.murphy@arm.com,
+ davem@davemloft.net, alexander.duyck@gmail.com, eric.dumazet@gmail.com,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linuxarm@huawei.com,
+ linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
+Cc: Ding Tianhong <dingtianhong@huawei.com>
+Subject: Re: [PATCH net RESEND] PCI: fix oops when try to find Root Port for a
+ PCI device
+In-Reply-To: <1502810688-12420-1-git-send-email-dingtianhong@huawei.com>
+References: <1502810688-12420-1-git-send-email-dingtianhong@huawei.com>
+Date: Thu, 17 Aug 2017 14:59:27 +1000
+Message-ID: <87inhmssb4.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,127 +34,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-16 at 10:56 -0600, Alex Williamson wrote:
-> 
-> > WTF ???? Alex, can you stop once and for all with all that "POWER is
-> > not standard" bullshit please ? It's completely wrong.
-> 
-> As you've stated, the MSI-X vector table on POWER is currently updated
-> via a hypercall.  POWER is overall PCI compliant (I assume), but the
-> guest does not directly modify the vector table in MMIO space of the
-> device.  This is important...
+Ding Tianhong <dingtianhong@huawei.com> writes:
 
-Well no. On qemu the guest doesn't always (but it can save/restore it),
-but on PowerVM this is done by the FW running inside the partition
-itself. And that firmware just does normal stores to the device table.
+> Eric report a oops when booting the system after applying
+> the commit a99b646afa8a ("PCI: Disable PCIe Relaxed..."):
 
-IE. The problem here isn't so much who does the actual stores to the
-device table but where they get the address and data values from, which
-isn't covered by the spec.
+I'm seeing a similar oops on powerpc:
 
-The added fact that qemu hijacks the stores not just to "remap" them
-but also do the whole reuqesting of the interrupt etc... in the host
-system is a qemu design choice which also hasn't any relation to the
-spec (and arguably isnt' a great choice for our systems).
+[    0.177242] pci_bus 0015:70: root bus resource [bus 70-ff]
+[    0.178012] Unable to handle kernel paging request for data at address 0x00000050
+[    0.178017] Faulting instruction address: 0xc0000000005f84b4
+[    0.178022] Oops: Kernel access of bad area, sig: 11 [#1]
+[    0.178024] SMP NR_CPUS=2048 
+[    0.178025] NUMA 
+[    0.178028] pSeries
+[    0.178031] Modules linked in:
+[    0.178036] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W       4.13.0-rc4-gcc-6.3.1-00167-ga99b646afa8a #407
+[    0.178040] task: c0000003f7400000 task.stack: c0000003f7480000
+[    0.178043] NIP: c0000000005f84b4 LR: c0000000005f5ccc CTR: 0000000000000000
+[    0.178046] REGS: c0000003f74836d0 TRAP: 0380   Tainted: G        W        (4.13.0-rc4-gcc-6.3.1-00167-ga99b646afa8a)
+[    0.178050] MSR: 8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>
+[    0.178057]   CR: 48000842  XER: 2000000f
+[    0.178061] CFAR: c0000000005f840c SOFTE: 1 
+[    0.178061] GPR00: c0000000005f5cb4 c0000003f7483950 c000000000fa0000 0000000000000000 
+[    0.178061] GPR04: 0000000000000001 0000000000000028 c0000003f7483820 f000000000ff6360 
+[    0.178061] GPR08: 00000003fe2f0000 0000000000000000 c0000003f5759000 0000000002001001 
+[    0.178061] GPR12: 0000000000000010 c00000000fd80000 c00000000000db08 0000000000000000 
+[    0.178061] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+[    0.178061] GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+[    0.178061] GPR24: 0000000000000000 c000000000c5f680 c0000003f756b678 c0000003f5759000 
+[    0.178061] GPR28: 0000000000000030 c0000003f756b098 c0000003f5759000 c0000003f756b000 
+[    0.178110] NIP [c0000000005f84b4] pci_find_pcie_root_port+0xb4/0xd0
+[    0.178114] LR [c0000000005f5ccc] pci_device_add+0x32c/0x470
+[    0.178117] Call Trace:
+[    0.178120] [c0000003f7483950] [c0000000005f5cb4] pci_device_add+0x314/0x470 (unreliable)
+[    0.178126] [c0000003f74839f0] [c00000000005b85c] of_create_pci_dev+0x35c/0x400
+[    0.178130] [c0000003f7483ab0] [c00000000005ba14] __of_scan_bus+0x114/0x1e0
+[    0.178135] [c0000003f7483b20] [c000000000059a9c] pcibios_scan_phb+0x23c/0x270
+[    0.178140] [c0000003f7483bc0] [c000000000d8057c] pcibios_init+0x84/0xdc
+[    0.178144] [c0000003f7483c40] [c00000000000d680] do_one_initcall+0x60/0x1c0
+[    0.178149] [c0000003f7483d00] [c000000000d74454] kernel_init_freeable+0x2c4/0x3a0
+[    0.178153] [c0000003f7483dc0] [c00000000000db24] kernel_init+0x24/0x150
+[    0.178158] [c0000003f7483e30] [c00000000000bc28] ret_from_kernel_thread+0x5c/0xb4
 
-For example, on PowerVM, the HV assigns a pile of MSIs to the guest to
-assign to its devices. The FW inside the guest does a default
-assignment but that can be changed.
+...
 
-Thus the interrupts are effectively "hooked up" at the HV level at the
-point where the PCI bridge is mapped into the guest.
 
-> > This has nothing to do with PCIe standard !
-> 
-> Yes, it actually does, because if the guest relies on the vector table
-> to be virtualized then it doesn't particularly matter whether the
-> vfio-pci kernel driver allows that portion of device MMIO space to be
-> directly accessed or mapped because QEMU needs for it to be trapped in
-> order to provide that virtualization.
+And the patch below fixes it. Thanks.
 
-And this has nothing to do with the PCIe standard... this has
-everything to do with a combination of qemu design choices and
-defficient FW interfaces on x86 platforms.
+cheers
 
-> I'm not knocking POWER, it's a smart thing for virtualization to have
-> defined this hypercall which negates the need for vector table
-> virtualization and allows efficient mapping of the device.  On other
-> platform, it's not necessarily practical given the broad base of legacy
-> guests supported where we'd never get agreement to implement this as
-> part of the platform spec... if there even was such a thing.  Maybe we
-> could provide the hypercall and dynamically enable direct vector table
-> mapping (disabling vector table virtualization) only if the hypercall
-> is used.
-
-No I think a better approach would be to provide the guest with a pile
-of MSIs to use with devices and have FW (such as ACPI) tell the guest
-about them.
-
-> > The PCIe standard says strictly *nothing* whatsoever about how an OS
-> > obtains the magic address/values to put in the device and how the PCIe
-> > host bridge may do appropriate fitering.
-> 
-> And now we've jumped the tracks...  The only way the platform specific
-> address/data values become important is if we allow direct access to
-> the vector table AND now we're formulating how the user/guest might
-> write to it directly.  Otherwise the virtualization of the vector
-> table, or paravirtualization via hypercall provides the translation
-> where the host and guest address/data pairs can operate in completely
-> different address spaces.
-
-They can regardless if things are done properly :-)
-
-> > There is nothing on POWER that prevents the guest from writing the MSI-
-> > X address/data by hand. The problem isn't who writes the values or even
-> > how. The problem breaks down into these two things that are NOT covered
-> > by any aspect of the PCIe standard:
-> 
-> You've moved on to a different problem, I think everyone aside from
-> POWER is still back at the problem where who writes the vector table
-> values is a forefront problem.
+> ====================== cut here =============================
+>
+> It looks like the pci_find_pcie_root_port() was trying to
+> find the Root Port for the PCI device which is the Root
+> Port already, it will return NULL and trigger the problem,
+> so check the highest_pcie_bridge to fix thie problem.
+>
+> Fixes: a99b646afa8a ("PCI: Disable PCIe Relaxed Ordering if unsupported")
+> Reported-by: Eric Dumazet <eric.dumazet@gmail.com>
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+> ---
+>  drivers/pci/pci.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index af0cc34..7e2022f 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -522,7 +522,8 @@ struct pci_dev *pci_find_pcie_root_port(struct pci_dev *dev)
+>  		bridge = pci_upstream_bridge(bridge);
+>  	}
 >  
-> >   1- The OS needs to obtain address/data values for an MSI that will
-> > "work" for the device.
-> > 
-> >   2- The HW+HV needs to prevent collateral damage caused by a device
-> > issuing stores to incorrect address or with incorrect data. Now *this*
-> > is necessary for *ANY* kind of DMA whether it's an MSI or something
-> > else anyway.
-> > 
-> > Now, the filtering done by qemu is NOT a reasonable way to handle 2)
-> > and whatever excluse about "making it harder" doesn't fly a meter when
-> > it comes to security. Making it "harder to break accidentally" I also
-> > don't buy, people don't just randomly put things in their MSI-X tables
-> > "accidentally", that stuff works or doesn't.
-> 
-> As I said before, I'm not willing to preserve the weak attributes that
-> blocking direct vector table access provides over pursuing a more
-> performant interface, but I also don't think their value is absolute
-> zero either.
-> 
-> > That leaves us with 1). Now this is purely a platform specific matters,
-> > not a spec matter. Once the HW has a way to enforce you can only
-> > generate "allowed" MSIs it becomes a matter of having some FW mechanism
-> > that can be used to informed the OS what address/values to use for a
-> > given interrupts.
-> > 
-> > This is provided on POWER by a combination of device-tree and RTAS. It
-> > could be that x86/ARM64 doesn't provide good enough mechanisms via ACPI
-> > but this is no way a problem of standard compliance, just inferior
-> > firmware interfaces.
-> 
-> Firmware pissing match...  Processors running with 8k or less page size
-> fall within the recommendations of the PCI spec for register alignment
-> of MMIO regions of the device and this whole problem becomes less of an
-> issue.
-> 
-> > So again, for the 234789246th time in years, can we get that 1-bit-of-
-> > information sorted one way or another so we can fix our massive
-> > performance issue instead of adding yet another dozen layers of paint
-> > on that shed ?
-> 
-> TBH, I'm not even sure which bikeshed we're looking at with this latest
-> distraction of interfaces through which the user/guest could discover
-> viable address/data values to write the vector table directly.  Thanks,
-> 
-> Alex
+> -	if (pci_pcie_type(highest_pcie_bridge) != PCI_EXP_TYPE_ROOT_PORT)
+> +	if (highest_pcie_bridge &&
+> +	    pci_pcie_type(highest_pcie_bridge) != PCI_EXP_TYPE_ROOT_PORT)
+>  		return NULL;
+>  
+>  	return highest_pcie_bridge;
+> -- 
+> 1.8.3.1
