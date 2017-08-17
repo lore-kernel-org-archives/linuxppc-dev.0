@@ -3,8 +3,8 @@ Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYDN54NdszDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 03:53:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYDNj1tlXzDr67
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 03:53:57 +1000 (AEST)
 From: Mark Brown <broonie@kernel.org>
 To: Bhumika Goyal <bhumirks@gmail.com>
 Cc: Mark Brown <broonie@kernel.org>, julia.lawall@lip6.fr, timur@tabi.org,
@@ -13,10 +13,10 @@ Cc: Mark Brown <broonie@kernel.org>, julia.lawall@lip6.fr, timur@tabi.org,
  plai@codeaurora.org, bgoswami@codeaurora.org, alsa-devel@alsa-project.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl: make snd_pcm_hardware const" to the asoc tree
-In-Reply-To: <1502964972-22722-2-git-send-email-bhumirks@gmail.com>
-Message-Id: <E1diOMc-0000BR-5U@debutante>
-Date: Thu, 17 Aug 2017 18:13:46 +0100
+Subject: Applied "ASoC: kirkwood: make snd_pcm_hardware const" to the asoc tree
+In-Reply-To: <1502964972-22722-5-git-send-email-bhumirks@gmail.com>
+Message-Id: <E1diOMZ-0000AB-6c@debutante>
+Date: Thu, 17 Aug 2017 18:13:43 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,7 +28,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: fsl: make snd_pcm_hardware const
+   ASoC: kirkwood: make snd_pcm_hardware const
 
 has been applied to the asoc tree at
 
@@ -53,47 +53,34 @@ to this mail.
 Thanks,
 Mark
 
->From f77bb3b778e85d3477a9e3e0236545663f16793e Mon Sep 17 00:00:00 2001
+>From 636d7e289c0a59dd3febfe6a2e7e5bd56eaa91b8 Mon Sep 17 00:00:00 2001
 From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Thu, 17 Aug 2017 15:46:07 +0530
-Subject: [PATCH] ASoC: fsl: make snd_pcm_hardware const
+Date: Thu, 17 Aug 2017 15:46:10 +0530
+Subject: [PATCH] ASoC: kirkwood: make snd_pcm_hardware const
 
-Make these const as they are only passed as the 2nd argument to the
-function snd_soc_set_runtime_hwparams, which is const.
+Make this const as it is either passed as the 2nd argument
+to the function snd_soc_set_runtime_hwparams, which is const or used in
+a copy operation.
 Done using Coccinelle.
 
 Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_asrc_dma.c | 2 +-
- sound/soc/fsl/imx-pcm-fiq.c  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ sound/soc/kirkwood/kirkwood-dma.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index 2baf19608bd0..e1b97e59275a 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -20,7 +20,7 @@
- 
- #define FSL_ASRC_DMABUF_SIZE	(256 * 1024)
- 
--static struct snd_pcm_hardware snd_imx_hardware = {
-+static const struct snd_pcm_hardware snd_imx_hardware = {
- 	.info = SNDRV_PCM_INFO_INTERLEAVED |
- 		SNDRV_PCM_INFO_BLOCK_TRANSFER |
- 		SNDRV_PCM_INFO_MMAP |
-diff --git a/sound/soc/fsl/imx-pcm-fiq.c b/sound/soc/fsl/imx-pcm-fiq.c
-index aef1f7819c40..4e5fefee111e 100644
---- a/sound/soc/fsl/imx-pcm-fiq.c
-+++ b/sound/soc/fsl/imx-pcm-fiq.c
-@@ -154,7 +154,7 @@ static snd_pcm_uframes_t snd_imx_pcm_pointer(struct snd_pcm_substream *substream
- 	return bytes_to_frames(substream->runtime, iprtd->offset);
+diff --git a/sound/soc/kirkwood/kirkwood-dma.c b/sound/soc/kirkwood/kirkwood-dma.c
+index dafd22e874e9..cf23af159acf 100644
+--- a/sound/soc/kirkwood/kirkwood-dma.c
++++ b/sound/soc/kirkwood/kirkwood-dma.c
+@@ -27,7 +27,7 @@ static struct kirkwood_dma_data *kirkwood_priv(struct snd_pcm_substream *subs)
+ 	return snd_soc_dai_get_drvdata(soc_runtime->cpu_dai);
  }
  
--static struct snd_pcm_hardware snd_imx_hardware = {
-+static const struct snd_pcm_hardware snd_imx_hardware = {
+-static struct snd_pcm_hardware kirkwood_dma_snd_hw = {
++static const struct snd_pcm_hardware kirkwood_dma_snd_hw = {
  	.info = SNDRV_PCM_INFO_INTERLEAVED |
- 		SNDRV_PCM_INFO_BLOCK_TRANSFER |
  		SNDRV_PCM_INFO_MMAP |
+ 		SNDRV_PCM_INFO_MMAP_VALID |
 -- 
 2.13.3
