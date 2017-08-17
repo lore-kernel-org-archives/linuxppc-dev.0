@@ -1,39 +1,28 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <Bart.VanAssche@wdc.com>
+Received: from esa2.hgst.iphmx.com (esa2.hgst.iphmx.com [68.232.143.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY9cG3fPvzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 01:48:46 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7HFjPcE029410
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 11:48:44 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cd9x1gcmr-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 11:48:43 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 17 Aug 2017 11:48:42 -0400
-Date: Thu, 17 Aug 2017 08:48:31 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org
-Subject: Re: [RFC v7 02/25] powerpc: track allocation status of all pkeys
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
- <8760dvkw58.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY9rz6xq9zDrFw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 01:59:47 +1000 (AEST)
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>,
+ "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "hch@lst.de" <hch@lst.de>, "linux-scsi@vger.kernel.org"
+ <linux-scsi@vger.kernel.org>, "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>, "hare@suse.com"
+ <hare@suse.com>, "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+Subject: Re: [BUG][bisected 270065e] linux-next fails to boot on powerpc
+Date: Thu, 17 Aug 2017 15:52:45 +0000
+Message-ID: <1502985161.2615.8.camel@wdc.com>
+References: <1502902815.3305.22.camel@abdul.in.ibm.com>
+ <1502904072.2421.3.camel@wdc.com>
+ <2f686064-3e32-df8d-134f-962b5181da9d@linux.vnet.ibm.com>
+In-Reply-To: <2f686064-3e32-df8d-134f-962b5181da9d@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8760dvkw58.fsf@linux.vnet.ibm.com>
-Message-Id: <20170817154831.GB5505@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,56 +32,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 10, 2017 at 05:25:39PM -0300, Thiago Jung Bauermann wrote:
-> 
-> Ram Pai <linuxram@us.ibm.com> writes:
-> >  static inline void pkey_initialize(void)
-> >  {
-> > +	int os_reserved, i;
-> > +
-> >  	/* disable the pkey system till everything
-> >  	 * is in place. A patch further down the
-> >  	 * line will enable it.
-> >  	 */
-> >  	pkey_inited = false;
-> > +
-> > +	/* Lets assume 32 keys */
-> > +	pkeys_total = 32;
-> > +
-> > +#ifdef CONFIG_PPC_4K_PAGES
-> > +	/*
-> > +	 * the OS can manage only 8 pkeys
-> > +	 * due to its inability to represent
-> > +	 * them in the linux 4K-PTE.
-> > +	 */
-> > +	os_reserved = pkeys_total-8;
-> > +#else
-> > +	os_reserved = 0;
-> > +#endif
-> > +	/*
-> > +	 * Bits are in LE format.
-> > +	 * NOTE: 1, 0 are reserved.
-> > +	 * key 0 is the default key, which allows read/write/execute.
-> > +	 * key 1 is recommended not to be used.
-> > +	 * PowerISA(3.0) page 1015, programming note.
-> > +	 */
-> > +	initial_allocation_mask = ~0x0;
-> > +	for (i = 2; i < (pkeys_total - os_reserved); i++)
-> > +		initial_allocation_mask &= ~(0x1<<i);
-> >  }
-> >  #endif /*_ASM_PPC64_PKEYS_H */
-> 
-> In v6, key 31 was also reserved, but it's not in this version. Is this
-> intentional?
-
-On powernv platform, there is no hypervisor and hence the hypervisor
-will not reserve key 31 for its own use. Wherease on PAPR guest
-the hypervisor takes away key 31.  
-
-Its not possible to determine at compile time which keys are used
-or not. Hence the above code.  pkeys_total is 32 in this patch,
-but will be set to whatever value the device tree tells us. That will
-be done in a subsequent patch.
-
-
-RP
+T24gV2VkLCAyMDE3LTA4LTE2IGF0IDE4OjE4IC0wNTAwLCBCcmlhbiBLaW5nIHdyb3RlOg0KPiBP
+biAwOC8xNi8yMDE3IDEyOjIxIFBNLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gT24gV2Vk
+LCAyMDE3LTA4LTE2IGF0IDIyOjMwICswNTMwLCBBYmR1bCBIYWxlZW0gd3JvdGU6DQo+ID4gPiBB
+cyBvZiBuZXh0LTIwMTcwODA5LCBsaW51eC1uZXh0IG9uIHBvd2VycGMgYm9vdCBodW5nIHdpdGgg
+YmVsb3cgdHJhY2UNCj4gPiA+IG1lc3NhZ2UuDQo+ID4gPiANCj4gPiA+IFsgLi4uIF0NCj4gPiA+
+IA0KPiA+ID4gQSBiaXNlY3Rpb24gcmVzdWx0ZWQgaW4gZmlyc3QgYmFkIGNvbW1pdCAoMjcwMDY1
+ZTkyIC0gc2NzaTogc2NzaS1tcToNCj4gPiA+IEFsd2F5cyB1bnByZXBhcmUgLi4uKSBpbiB0aGUg
+bWVyZ2UgYnJhbmNoICdzY3NpL2Zvci1uZXh0Jw0KPiA+ID4gDQo+ID4gPiBTeXN0ZW0gYm9vdGVk
+IGZpbmUgd2hlbiB0aGUgYmVsb3cgY29tbWl0IGlzIHJldmVydGVkOiANCj4gPiA+IA0KPiA+ID4g
+Y29tbWl0IDI3MDA2NWU5MmMzMTc4NDVkNjkwOTVlYzhlM2QxODYxNmI1YjM5ZDUNCj4gPiA+IEF1
+dGhvcjogQmFydCBWYW4gQXNzY2hlIDxiYXJ0LnZhbmFzc2NoZUB3ZGMuY29tPg0KPiA+ID4gRGF0
+ZTogICBUaHUgQXVnIDMgMTQ6NDA6MTQgMjAxNyAtMDcwMA0KPiA+ID4gDQo+ID4gPiAgICAgc2Nz
+aTogc2NzaS1tcTogQWx3YXlzIHVucHJlcGFyZSBiZWZvcmUgcmVxdWV1aW5nIGEgcmVxdWVzdA0K
+PiA+IA0KPiA+IEhlbGxvIEJyaWFuIGFuZCBNaWNoYWVsLA0KPiA+IA0KPiA+IERvIHlvdSBhZ3Jl
+ZSB0aGF0IHRoaXMgcHJvYmFibHkgaW5kaWNhdGVzIGEgYnVnIGluIHRoZSBQb3dlclBDIGJsb2Nr
+IGRyaXZlcg0KPiA+IHRoYXQgaXMgdXNlZCB0byBhY2Nlc3MgdGhlIGJvb3QgZGlzaz8gQW55d2F5
+LCBzaW5jZSBhIHNvbHV0aW9uIGlzIG5vdCB5ZXQNCj4gPiBhdmFpbGFibGUsIEkgd2lsbCBzdWJt
+aXQgYSByZXZlcnQgZm9yIHRoaXMgcGF0Y2guDQo+IA0KPiBJJ3ZlIGJlZW4gbG9va2luZyBhdCB0
+aGlzIGEgYml0LCBhbmQgY2FuIHJlY3JlYXRlIHRoZSBpc3N1ZSwgYnV0IGhhdmVuJ3QNCj4gZ290
+IHRvIHJvb3QgY2F1c2Ugb2YgdGhlIGlzc3VlIGFzIG9mIHlldC4gSWYgSSBkbyBhIHN5c3JxLXcg
+d2hpbGUgdGhlIHN5c3RlbSBpcyBodW5nDQo+IGR1cmluZyBib290IEkgc2VlIHRoaXM6DQo+IA0K
+PiBbICAgMjUuNTYxNTIzXSBXb3JrcXVldWU6IGV2ZW50c191bmJvdW5kIGFzeW5jX3J1bl9lbnRy
+eV9mbg0KPiBbICAgMjUuNTYxNTI3XSBDYWxsIFRyYWNlOg0KPiBbICAgMjUuNTYxNTI5XSBbYzAw
+MDAwMDE2OTc4NzNmMF0gW2MwMDAwMDAxNjk3MDE2MDBdIDB4YzAwMDAwMDE2OTcwMTYwMCAodW5y
+ZWxpYWJsZSkNCj4gWyAgIDI1LjU2MTUzNF0gW2MwMDAwMDAxNjk3ODc1YzBdIFtjMDAwMDAwMDAw
+MDFhYjc4XSBfX3N3aXRjaF90bysweDJlOC8weDQzMA0KPiBbICAgMjUuNTYxNTM5XSBbYzAwMDAw
+MDE2OTc4NzYyMF0gW2MwMDAwMDAwMDA5MWNjYjBdIF9fc2NoZWR1bGUrMHgzMTAvMHhhMDANCj4g
+WyAgIDI1LjU2MTU0M10gW2MwMDAwMDAxNjk3ODc2ZjBdIFtjMDAwMDAwMDAwOTFkM2UwXSBzY2hl
+ZHVsZSsweDQwLzB4YjANCj4gWyAgIDI1LjU2MTU0OF0gW2MwMDAwMDAxNjk3ODc3MjBdIFtjMDAw
+MDAwMDAwOTIxZTQwXSBzY2hlZHVsZV90aW1lb3V0KzB4MjAwLzB4NDMwDQo+IFsgICAyNS41NjE1
+NTNdIFtjMDAwMDAwMTY5Nzg3ODEwXSBbYzAwMDAwMDAwMDkxZGIxMF0gaW9fc2NoZWR1bGVfdGlt
+ZW91dCsweDMwLzB4NzANCj4gWyAgIDI1LjU2MTU1OF0gW2MwMDAwMDAxNjk3ODc4NDBdIFtjMDAw
+MDAwMDAwOTFlOTc4XSB3YWl0X2Zvcl9jb21tb25faW8uY29uc3Rwcm9wLjMrMHgxNzgvMHgyODAN
+Cj4gWyAgIDI1LjU2MTU2M10gW2MwMDAwMDAxNjk3ODc4YzBdIFtjMDAwMDAwMDAwNDdmN2VjXSBi
+bGtfZXhlY3V0ZV9ycSsweDdjLzB4ZDANCj4gWyAgIDI1LjU2MTU2N10gW2MwMDAwMDAxNjk3ODc5
+MTBdIFtjMDAwMDAwMDAwNjE0Y2QwXSBzY3NpX2V4ZWN1dGUrMHgxMDAvMHgyMzANCj4gWyAgIDI1
+LjU2MTU3Ml0gW2MwMDAwMDAxNjk3ODc5OTBdIFtjMDAwMDAwMDAwNjBkMjljXSBzY3NpX3JlcG9y
+dF9vcGNvZGUrMHhiYy8weDE3MA0KPiBbICAgMjUuNTYxNTc3XSBbYzAwMDAwMDE2OTc4N2E1MF0g
+W2QwMDAwMDAwMDRmZTY0MDRdIHNkX3JldmFsaWRhdGVfZGlzaysweGUwNC8weDE2MjAgW3NkX21v
+ZF0NCj4gWyAgIDI1LjU2MTU4M10gW2MwMDAwMDAxNjk3ODdiODBdIFtkMDAwMDAwMDA0ZmU2ZDg0
+XSBzZF9wcm9iZV9hc3luYysweGI0LzB4MjMwIFtzZF9tb2RdDQo+IFsgICAyNS41NjE1ODhdIFtj
+MDAwMDAwMTY5Nzg3YzAwXSBbYzAwMDAwMDAwMDEwZmM0NF0gYXN5bmNfcnVuX2VudHJ5X2ZuKzB4
+NzQvMHgyMTANCj4gWyAgIDI1LjU2MTU5M10gW2MwMDAwMDAxNjk3ODdjOTBdIFtjMDAwMDAwMDAw
+MTAyZjQ4XSBwcm9jZXNzX29uZV93b3JrKzB4MTk4LzB4NDgwDQo+IFsgICAyNS41NjE1OThdIFtj
+MDAwMDAwMTY5Nzg3ZDMwXSBbYzAwMDAwMDAwMDEwMzJiOF0gd29ya2VyX3RocmVhZCsweDg4LzB4
+NTEwDQo+IFsgICAyNS41NjE2MDNdIFtjMDAwMDAwMTY5Nzg3ZGMwXSBbYzAwMDAwMDAwMDEwYjAz
+MF0ga3RocmVhZCsweDE2MC8weDFhMA0KPiBbICAgMjUuNTYxNjA4XSBbYzAwMDAwMDE2OTc4N2Uz
+MF0gW2MwMDAwMDAwMDAwMGIzYTRdIHJldF9mcm9tX2tlcm5lbF90aHJlYWQrMHg1Yy8weGI4DQo+
+IA0KPiBJIHdhcyBub3RpY2luZyB0aGF0IHdlIGFyZSBjb21tb25seSBpbiBzY3NpX3JlcG9ydF9v
+cGNvZGUuIFNpbmNlIGlwciBSQUlEIGFycmF5cyBkb24ndCBzdXBwb3J0DQo+IHRoZSBNQUlOVEVO
+QU5DRV9JTiAvIE1JX1JFUE9SVF9TVVBQT1JURURfT1BFUkFUSU9OX0NPREVTLCBJIHRyaWVkIHNl
+dHRpbmcgc2Rldi0+bm9fcmVwb3J0X29wY29kZXMgPSAxDQo+IGluIGlwcidzIHNsYXZlIGNvbmZp
+Z3VyZS4gVGhpcyBzZWVtcyB0byBlbGltaW5hdGUgdGhlIGJvb3QgaGFuZyBmb3IgbWUsIGJ1dCBp
+cyBvbmx5IHdvcmtpbmcgYXJvdW5kDQo+IHRoZSBpc3N1ZS4gU2luY2UgdGhpcyBjb21tYW5kIGlz
+IG5vdCBzdXBwb3J0ZWQgYnkgaXByLCBpdCBzaG91bGQgcmV0dXJuIHdpdGggYW4gaWxsZWdhbCBy
+ZXF1ZXN0Lg0KPiBXaGVuIEknbSBodW5nIGF0IHRoaXMgcG9pbnQsIHRoZXJlIGlzIG5vdGhpbmcg
+b3V0c3RhbmRpbmcgdG8gdGhlIGFkYXB0ZXIgLyBkcml2ZXIuIEknbGwgY29udGludWUNCj4gZGVi
+dWdnaW5nLi4uDQoNCigrbGludXgtc2NzaSkNCg0KSGVsbG8gQnJpYW4sDQoNCklzIGtlcm5lbCBk
+ZWJ1Z2dpbmcgZW5hYmxlZCBvbiB5b3VyIHRlc3Qgc3lzdGVtPyBJcyBsb2NrZGVwIGVuYWJsZWQ/
+DQpBbnl3YXksIHN0YWNrIHRyYWNlcyBsaWtlIHRoZSBhYm92ZSB1c3VhbGx5IG1lYW4gdGhhdCBh
+IHJlcXVlc3QgZ290IHN0dWNrIGluDQphIGJsb2NrIG9yIHNjc2kgZHJpdmVyIChpcHIgaW4gdGhp
+cyBjYXNlKS4gSW5mb3JtYXRpb24gYWJvdXQgcGVuZGluZyByZXF1ZXN0cywNCmluY2x1ZGluZyB0
+aGUgU0NTSSBDREIsIGlzIGF2YWlsYWJsZSB1bmRlciAvc3lzL2tlcm5lbC9kZWJ1Zy9ibG9jayAo
+c2VlIGFsc28NCmNvbW1pdCAwZWViZDAwNWRkMDcgKCJzY3NpOiBJbXBsZW1lbnQgYmxrX21xX29w
+cy5zaG93X3JxKCkiKSkuDQoNCkJhcnQu
