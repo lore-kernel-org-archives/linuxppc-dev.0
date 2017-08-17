@@ -1,43 +1,44 @@
-Return-Path: <Thomas.Lendacky@amd.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0062.outbound.protection.outlook.com [104.47.34.62])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYFxF6MWlzDrLP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 05:03:45 +1000 (AEST)
-Subject: Re: [RFC Part1 PATCH v3 09/17] resource: Consolidate resource walking
- code
-From: Tom Lendacky <thomas.lendacky@amd.com>
-To: Borislav Petkov <bp@suse.de>, Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H . Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- Tony Luck <tony.luck@intel.com>, Piotr Luc <piotr.luc@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-10-brijesh.singh@amd.com>
- <20170728152342.GB11564@nazgul.tnic>
- <a31c9643-87a5-ae4a-25a5-9dae235f158d@amd.com>
-Message-ID: <029b17ab-00c4-c845-d39f-1b3337e296b1@amd.com>
-Date: Thu, 17 Aug 2017 14:03:30 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYGGF3QrYzDrK3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 05:18:29 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7HJFAFW097318
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 15:18:26 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cddrjt9p5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 15:18:26 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Thu, 17 Aug 2017 15:18:25 -0400
+Subject: Re: WARNING: CPU: 15 PID: 0 at block/blk-mq.c:1111
+ __blk_mq_run_hw_queue+0x1d8/0x1f0
+To: Bart Van Assche <Bart.VanAssche@wdc.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>
+Cc: "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+ "brking@us.ibm.com" <brking@us.ibm.com>,
+ "axboe@kernel.dk" <axboe@kernel.dk>
+References: <1502906852.3305.33.camel@abdul.in.ibm.com>
+ <1502907345.2421.8.camel@wdc.com>
+ <4fe35be3-c631-e4ed-a135-110e536823bc@linux.vnet.ibm.com>
+ <1502983941.2615.5.camel@wdc.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Thu, 17 Aug 2017 14:18:18 -0500
 MIME-Version: 1.0
-In-Reply-To: <a31c9643-87a5-ae4a-25a5-9dae235f158d@amd.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <1502983941.2615.5.camel@wdc.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <072f9589-7489-ac6a-2899-0f12aed3e2fe@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,63 +48,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8/17/2017 1:55 PM, Tom Lendacky wrote:
-> On 7/28/2017 10:23 AM, Borislav Petkov wrote:
->> On Mon, Jul 24, 2017 at 02:07:49PM -0500, Brijesh Singh wrote:
->>> From: Tom Lendacky <thomas.lendacky@amd.com>
+On 08/17/2017 10:32 AM, Bart Van Assche wrote:
+> On Wed, 2017-08-16 at 15:10 -0500, Brian King wrote:
+>> On 08/16/2017 01:15 PM, Bart Van Assche wrote:
+>>> On Wed, 2017-08-16 at 23:37 +0530, Abdul Haleem wrote:
+>>>> Linux-next booted with the below warnings on powerpc
+>>>>
+>>>> [ ... ]
+>>>>
+>>>> boot warnings:
+>>>> --------------
+>>>> kvm: exiting hardware virtualization
+>>>> ------------[ cut here ]------------
+>>>> WARNING: CPU: 15 PID: 0 at block/blk-mq.c:1111 __blk_mq_run_hw_queue
+>>>> +0x1d8/0x1f0
+>>>> Modules linked in: iptable_mangle ipt_MASQUERADE nf_nat_masquerade_ipv4
+>>>> Call Trace:
+>>>> [c000000ffff37990] [c00000000088f7b0] __blk_mq_delay_run_hw_queue
+>>>> +0x1f0/0x210
+>>>> [c000000ffff379d0] [c00000000088fcb8] blk_mq_start_hw_queue+0x58/0x80
+>>>> [c000000ffff379f0] [c00000000088fd40] blk_mq_start_hw_queues+0x60/0xb0
+>>>> [c000000ffff37a30] [c000000000ae2b54] scsi_kick_queue+0x34/0xa0
+>>>> [c000000ffff37a50] [c000000000ae2f70] scsi_run_queue+0x3b0/0x660
+>>>> [c000000ffff37ac0] [c000000000ae7ed4] scsi_run_host_queues+0x64/0xc0
+>>>> [c000000ffff37b00] [c000000000ae7f64] scsi_unblock_requests+0x34/0x60
+>>>> [c000000ffff37b20] [c000000000b14998] ipr_ioa_bringdown_done+0xf8/0x3a0
+>>>> [c000000ffff37bc0] [c000000000b12528] ipr_reset_ioa_job+0xd8/0x170
+>>>> [c000000ffff37c00] [c000000000b18790] ipr_reset_timer_done+0x110/0x160
+>>>> [c000000ffff37c50] [c00000000024db50] call_timer_fn+0xa0/0x3a0
+>>>> [c000000ffff37ce0] [c00000000024e058] expire_timers+0x1b8/0x350
+>>>> [c000000ffff37d50] [c00000000024e2f0] run_timer_softirq+0x100/0x3e0
+>>>> [c000000ffff37df0] [c000000000162edc] __do_softirq+0x20c/0x620
+>>>> [c000000ffff37ee0] [c000000000163a80] irq_exit+0x230/0x290
+>>>> [c000000ffff37f10] [c00000000001d770] __do_irq+0x170/0x410
+>>>> [c000000ffff37f90] [c00000000003ea20] call_do_irq+0x14/0x24
+>>>> [c0000007f84e3a70] [c00000000001dae0] do_IRQ+0xd0/0x190
+>>>> [c0000007f84e3ac0] [c000000000008c58] hardware_interrupt_common
+>>>> +0x158/0x160
 >>>
->>> The walk_iomem_res_desc(), walk_system_ram_res() and 
->>> walk_system_ram_range()
->>> functions each have much of the same code.  Create a new function that
->>> consolidates the common code from these functions in one place to reduce
->>> the amount of duplicated code.
+>>> Hello Brian,
 >>>
->>> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
->>> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
->>> ---
->>>   kernel/resource.c | 53 
->>> ++++++++++++++++++++++++++---------------------------
->>>   1 file changed, 26 insertions(+), 27 deletions(-)
+>>> In the MAINTAINERS file I found the following:
 >>>
->>> diff --git a/kernel/resource.c b/kernel/resource.c
->>> index 9b5f044..7b20b3e 100644
->>> --- a/kernel/resource.c
->>> +++ b/kernel/resource.c
->>> @@ -397,9 +397,30 @@ static int find_next_iomem_res(struct resource 
->>> *res, unsigned long desc,
->>>           res->start = p->start;
->>>       if (res->end > p->end)
->>>           res->end = p->end;
->>> +    res->desc = p->desc;
->>>       return 0;
+>>> IBM Power Linux RAID adapter
+>>> M:      Brian King <brking@us.ibm.com>
+>>> S:      Supported
+>>> F:      drivers/scsi/ipr.*
+>>>
+>>> Is that information up-to-date? Do you agree that the above message indicates
+>>> a bug in the ipr driver?
 >>
->> I must be going blind: where are we using that res->desc?
+>> Yes. Can you try with this patch that is in 4.13/scsi-fixes:
+>>
+>> https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git/commit/?h=4.13/scsi-fixes&id=b0e17a9b0df29590c45dfb296f541270a5941f41
 > 
-> I think that was left-over from the initial consolidation work I was
-> doing.  I'll remove it.
+> Hello Brian,
+> 
+> Sorry but I don't have access to a setup on which I can test the ipr driver ...
 
-I spoke too soon...  I use it in a later patch as part of a callback.
-But instead of putting it here, I'll add it to the patch that actually
-needs it.
+Understood. That request was intended for Abdul, who reported the issue.
+I should have just cc'ed you...
 
 Thanks,
-Tom
 
-> 
->>
->>> +static int __walk_iomem_res_desc(struct resource *res, unsigned long 
->>> desc,
->>> +                 bool first_level_children_only,
->>
->> Btw, that variable name is insanely long.
-> 
-> I know, but I'm maintaining consistency with the name that was already
-> present vs. changing it.
-> 
->>
->> The rest looks ok to me, thanks for the cleanup!
-> 
-> Thanks,
-> Tom
-> 
->>
+Brian
+
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
