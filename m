@@ -1,37 +1,39 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYJ5H39c2zDrJ0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 06:40:51 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7HKeguH023787
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 16:40:49 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cddrjx2mx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 16:40:48 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 17 Aug 2017 14:40:48 -0600
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
- <8760dvkw58.fsf@linux.vnet.ibm.com>
- <20170817154831.GB5505@ram.oc3035372033.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: mhocko@kernel.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v7 02/25] powerpc: track allocation status of all pkeys
-In-reply-to: <20170817154831.GB5505@ram.oc3035372033.ibm.com>
-Date: Thu, 17 Aug 2017 17:40:37 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYK7S64VXzDrJl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 07:27:48 +1000 (AEST)
+Date: Thu, 17 Aug 2017 23:27:40 +0200
+From: msuchanek <msuchanek@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet
+ <corbet@lwn.net>, Jessica Yu <jeyu@kernel.org>, Rusty Russell
+ <rusty@rustcorp.com.au>, Jason Baron <jbaron@akamai.com>, Hari Bathini
+ <hbathini@linux.vnet.ibm.com>, Mahesh J Salgaonkar
+ <mahesh@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>, Andrew Morton
+ <akpm@linux-foundation.org>, Michal Suchanek <msuchanek@suse.de>, Thiago
+ Jung Bauermann <bauerman@linux.vnet.ibm.com>, Balbir Singh
+ <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Michael
+ Neuling <mikey@neuling.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Christophe Leroy
+ <christophe.leroy@c-s.fr>, Scott Wood <oss@buserror.net>, "Oliver
+ O'Halloran" <oohall@gmail.com>, David Howells <dhowells@redhat.com>,
+ "Sylvain 'ythier' Hitier" <sylvain.hitier@gmail.com>, Ingo Molnar
+ <mingo@kernel.org>, Kees Cook <keescook@chromium.org>, Thomas Gleixner
+ <tglx@linutronix.de>
+Cc: Baoquan He <bhe@redhat.com>, linux-doc@vger.kernel.org, Lokesh Vutla
+ <lokeshvutla@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>,
+ linux-kernel@vger.kernel.org, "Steven Rostedt, " <rostedt@goodmis.org>,
+ Tejun Heo <tj@kernel.org>, Ilya Matveychikov <matvejchikov@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v7 3/4] lib/cmdline.c Remove quotes symmetrically.
+Message-ID: <20170817232740.30f7f630@naga>
+In-Reply-To: <0e0a8ad11e2c9c7db02baa1bbb5a30f429586854.1503000577.git.msuchanek@suse.de>
+References: <78655b3689f6cd0c76b787b8ef2c824ef75a99a5.1503000577.git.msuchanek@suse.de>
+ <0e0a8ad11e2c9c7db02baa1bbb5a30f429586854.1503000577.git.msuchanek@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87d17uylkq.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,63 +43,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 17 Aug 2017 22:14:30 +0200
+Michal Suchanek <msuchanek@suse.de> wrote:
 
-Ram Pai <linuxram@us.ibm.com> writes:
+> Remove quotes from argument value only if there is qoute on both
+> sides.
+> 
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> ---
+>  arch/powerpc/kernel/fadump.c | 6 ++----
+>  lib/cmdline.c                | 7 ++-----
+>  2 files changed, 4 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/fadump.c
+> b/arch/powerpc/kernel/fadump.c index a1614d9b8a21..d7da4ce9f7ae 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -489,10 +489,8 @@ static void __init fadump_update_params(struct
+> param_info *param_info, *tgt++ = ' ';
+>  
+>  	/* next_arg removes one leading and one trailing '"' */
+> -	if (*tgt == '"')
+> -		shortening += 1;
+> -	if (*(tgt + vallen + shortening) == '"')
+> -		shortening += 1;
+> +	if ((*tgt == '"') && (*(tgt + vallen + shortening) == '"'))
+s/shortening/1/                                ^
 
-> On Thu, Aug 10, 2017 at 05:25:39PM -0300, Thiago Jung Bauermann wrote:
->> 
->> Ram Pai <linuxram@us.ibm.com> writes:
->> >  static inline void pkey_initialize(void)
->> >  {
->> > +	int os_reserved, i;
->> > +
->> >  	/* disable the pkey system till everything
->> >  	 * is in place. A patch further down the
->> >  	 * line will enable it.
->> >  	 */
->> >  	pkey_inited = false;
->> > +
->> > +	/* Lets assume 32 keys */
->> > +	pkeys_total = 32;
->> > +
->> > +#ifdef CONFIG_PPC_4K_PAGES
->> > +	/*
->> > +	 * the OS can manage only 8 pkeys
->> > +	 * due to its inability to represent
->> > +	 * them in the linux 4K-PTE.
->> > +	 */
->> > +	os_reserved = pkeys_total-8;
->> > +#else
->> > +	os_reserved = 0;
->> > +#endif
->> > +	/*
->> > +	 * Bits are in LE format.
->> > +	 * NOTE: 1, 0 are reserved.
->> > +	 * key 0 is the default key, which allows read/write/execute.
->> > +	 * key 1 is recommended not to be used.
->> > +	 * PowerISA(3.0) page 1015, programming note.
->> > +	 */
->> > +	initial_allocation_mask = ~0x0;
->> > +	for (i = 2; i < (pkeys_total - os_reserved); i++)
->> > +		initial_allocation_mask &= ~(0x1<<i);
->> >  }
->> >  #endif /*_ASM_PPC64_PKEYS_H */
->> 
->> In v6, key 31 was also reserved, but it's not in this version. Is this
->> intentional?
->
-> On powernv platform, there is no hypervisor and hence the hypervisor
-> will not reserve key 31 for its own use. Wherease on PAPR guest
-> the hypervisor takes away key 31.  
->
-> Its not possible to determine at compile time which keys are used
-> or not. Hence the above code.  pkeys_total is 32 in this patch,
-> but will be set to whatever value the device tree tells us. That will
-> be done in a subsequent patch.
-
-You're right. At the time I made that comment I didn't realize that the
-hypervisor would subtract its reserved key from the device property.
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+in case somebody would want this patch and not the following one that
+removes the code.
