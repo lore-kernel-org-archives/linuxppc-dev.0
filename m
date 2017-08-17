@@ -1,35 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY7611Q1NzDqYf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 23:55:53 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: paulmck@linux.vnet.ibm.com
-Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
- sfr@canb.auug.org.au, linuxarm@huawei.com, Nicholas Piggin <npiggin@gmail.com>,
- abdhalee@linux.vnet.ibm.com, tglx@linutronix.de, sparclinux@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
- john.stultz@linaro.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-In-Reply-To: <20170816162731.GA22978@linux.vnet.ibm.com>
-References: <20170728182053.000072aa@huawei.com>
- <20170728190349.GM3730@linux.vnet.ibm.com>
- <20170731120847.00003d5c@huawei.com>
- <20170731150411.GA3730@linux.vnet.ibm.com>
- <20170731162757.000058ba@huawei.com>
- <20170801184646.GE3730@linux.vnet.ibm.com>
- <20170802172555.0000468a@huawei.com>
- <20170815154743.GK7017@linux.vnet.ibm.com>
- <87wp63smwn.fsf@concordia.ellerman.id.au>
- <20170816125617.GY7017@linux.vnet.ibm.com>
- <20170816162731.GA22978@linux.vnet.ibm.com>
-Date: Thu, 17 Aug 2017 23:55:51 +1000
-Message-ID: <877ey2b8ns.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY7KN6C9czDr1y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 00:05:44 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7HE3m4O127068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 10:05:42 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cd9x1aax8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 10:05:42 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 18 Aug 2017 00:05:40 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7HE5UVj38076628
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 00:05:38 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7HE56cc008481
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 00:05:06 +1000
+Received: from [9.79.203.91] ([9.79.203.91])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ v7HE55qa008019
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 00:05:06 +1000
+Subject: Re: [PATCH] powerpc: powernv: Fix build error on const discarding
+To: linuxppc-dev@lists.ozlabs.org
+References: <20170816123444.5202-1-clabbe.montjoie@gmail.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Thu, 17 Aug 2017 19:34:49 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170816123444.5202-1-clabbe.montjoie@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <e3c580e1-6081-d89e-8324-0e98c2440151@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,97 +48,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 
-> On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
->> On Wed, Aug 16, 2017 at 10:43:52PM +1000, Michael Ellerman wrote:
->> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
->> > ...
->> > >
->> > > commit 33103e7b1f89ef432dfe3337d2a6932cdf5c1312
->> > > Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->> > > Date:   Mon Aug 14 08:54:39 2017 -0700
->> > >
->> > >     EXP: Trace tick return from tick_nohz_stop_sched_tick
->> > >     
->> > >     Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->> > >
->> > > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
->> > > index c7a899c5ce64..7358a5073dfb 100644
->> > > --- a/kernel/time/tick-sched.c
->> > > +++ b/kernel/time/tick-sched.c
->> > > @@ -817,6 +817,7 @@ static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
->> > >  	 * (not only the tick).
->> > >  	 */
->> > >  	ts->sleep_length = ktime_sub(dev->next_event, now);
->> > > +	trace_printk("tick_nohz_stop_sched_tick: %lld\n", (tick - ktime_get()) / 1000);
->> > >  	return tick;
->> > >  }
->> > 
->> > Should I be seeing negative values? A small sample:
->> 
->> Maybe due to hypervisor preemption delays, but I confess that I am
->> surprised to see them this large.  1,602,250,019 microseconds is something
->> like a half hour, which could result in stall warnings all by itself.
 
-Hmm. This is a bare metal machine. So no hypervisor.
+On Wednesday 16 August 2017 06:04 PM, Corentin Labbe wrote:
+> When building a random powerpc kernel I hit this build error:
+>    CC      arch/powerpc/platforms/powernv/opal-imc.o
+> arch/powerpc/platforms/powernv/opal-imc.c: In function « disable_nest_pmu_counters »:
+> arch/powerpc/platforms/powernv/opal-imc.c:130:13: error : assignment discards « const » qualifier from pointer target type [-Werror=discarded-qualifiers]
+>     l_cpumask = cpumask_of_node(nid);
+>               ^
+> This patch simply add const to l_cpumask to fix this issue.
 
->> I will take a look!
+Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Corentin Labbe <clabbe.montjoie@gmail.com>
+> ---
+>   arch/powerpc/platforms/powernv/opal-imc.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> And from your ps output, PID 9 is rcu_sched, which is the RCU grace-period
-> kthread that stalled.  This kthread was starved, based on this from your
-> dmesg:
+> diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+> index b903bf5e6006..21f6531fae20 100644
+> --- a/arch/powerpc/platforms/powernv/opal-imc.c
+> +++ b/arch/powerpc/platforms/powernv/opal-imc.c
+> @@ -123,7 +123,7 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index, int domain)
+>   static void disable_nest_pmu_counters(void)
+>   {
+>   	int nid, cpu;
+> -	struct cpumask *l_cpumask;
+> +	const struct cpumask *l_cpumask;
 >
-> [ 1602.067008] rcu_sched kthread starved for 2603 jiffies! g7275 c7274 f0x0 RCU_GP_WAIT_FQS(3) ->state=0x1
->
-> The RCU_GP_WAIT_FQS says that this kthread is periodically scanning for
-> idle-CPU and offline-CPU quiescent states, which means that its waits
-> will be accompanied by short timeouts.  The "starved for 2603 jiffies"
-> says that it has not run for one good long time.  The ->state is its
-> task_struct ->state field.
->
-> The immediately preceding dmesg line is as follows:
->
-> [ 1602.063851]  (detected by 53, t=2603 jiffies, g=7275, c=7274, q=608)
->
-> In other words, the rcu_sched grace-period kthread has been starved
-> for the entire duration of the current grace period, as shown by the
-> t=2603.
->
-> Lets turn now to the trace output, looking for the last bit of the
-> rcu_sched task's activity:
->
->        rcu_sched-9     [054] d...  1576.030096: timer_start: timer=c0000007fae1bc20 function=process_timeout expires=4295094922 [timeout=1] cpu=54 idx=0 flags=
->     ksoftirqd/53-276   [053] ..s.  1576.030097: rcu_invoke_callback: rcu_sched rhp=c000000fcf8c4eb0 func=__d_free
->        rcu_sched-9     [054] d...  1576.030097: rcu_utilization: Start context switch
->     ksoftirqd/53-276   [053] ..s.  1576.030098: rcu_invoke_callback: rcu_sched rhp=c000000fcff74ee0 func=proc_i_callback
->        rcu_sched-9     [054] d...  1576.030098: rcu_grace_period: rcu_sched 7275 cpuqs
->        rcu_sched-9     [054] d...  1576.030099: rcu_utilization: End context switch
->
-> So this task set up a timer ("timer_start:") for one jiffy ("[timeout=1]",
-> but what is with "expires=4295094922"?)
-
-That's a good one.
-
-I have HZ=100, and therefore:
-
-INITIAL_JIFFIES = (1 << 32) - (300 * 100) = 4294937296
-
-So the expires value of 4295094922 is:
-
-4295094922 - 4294937296 = 157626
-
-Jiffies since boot.
-
-Or 1576,260,000,000 ns == 1576.26 s.
-
-> Of course, the timer will have expired in the context of some other task,
-> but a search for "c0000007fae1bc20" (see the "timer=" in the first trace
-> line above) shows nothing (to be painfully accurate, the search wraps back
-> to earlier uses of this timer by rcu_sched).  So the timer never did fire.
-
-Or it just wasn't in the trace ?
-
-I'll try and get it to trace a bit longer and see if that is helpful.
-
-cheers
+>   	get_online_cpus();
+>   	for_each_online_node(nid) {
