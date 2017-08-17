@@ -1,39 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.189])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY37W4nQnzDqlp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 20:56:55 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Alex Williamson' <alex.williamson@redhat.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-CC: Jike Song <jike.song@intel.com>, Neo Jia <cjia@nvidia.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>, Eric Auger
- <eric.auger@redhat.com>, Alexey Kardashevskiy <aik@ozlabs.ru>, Robin Murphy
- <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>, Kyle Mahlkuch
- <Kyle.Mahlkuch@ibm.com>, Vlad Tsyrklevich <vlad@tsyrklevich.net>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, Yongji
- Xie <elohimes@gmail.com>, Kirti Wankhede <kwankhede@nvidia.com>, Mauricio
- Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>, Arvind Yadav
- <arvind.yadav.cs@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, David Woodhouse <dwmw2@infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, David Gibson
- <david@gibson.dropbear.id.au>
-Subject: RE: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
-Date: Thu, 17 Aug 2017 10:56:35 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0059144@AcuExch.aculab.com>
-References: <20170807072548.3023-1-aik@ozlabs.ru>
- <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
- <ca2a4550-fb26-28db-0eea-a5940dfa612f@arm.com>
- <20170815103717.3b64e10c@w520.home>
- <1502843749.4493.67.camel@kernel.crashing.org>
- <20170816105602.57fd1dcc@w520.home>
-In-Reply-To: <20170816105602.57fd1dcc@w520.home>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY3tb0NpxzDrF3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 21:30:46 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id y129so9441287pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 04:30:46 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Cc: benh@kernel.crashing.org, z.liuxinliang@hisilicon.com,
+ zourongrong@gmail.com, catalin.marinas@arm.com, will.deacon@arm.com,
+ gabriele.paoloni@huawei.com, bhelgaas@google.com, airlied@linux.ie,
+ daniel.vetter@intel.com, alex.williamson@redhat.com,
+ dri-devel@lists.freedesktop.org, lukas@wunner.de,
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH v2 0/1] Split VGA default nomination out from VGA arbiter
+Date: Thu, 17 Aug 2017 21:30:27 +1000
+Message-Id: <20170817113028.16853-1-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,26 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alex Williamson
-> Sent: 16 August 2017 17:56
-...
-> Firmware pissing match...  Processors running with 8k or less page size
-> fall within the recommendations of the PCI spec for register alignment
-> of MMIO regions of the device and this whole problem becomes less of an
-> issue.
+This is approach 3, version 2, of my patch series to sort out Xorg
+autoconfiguration for the Hibmc card beind a Hisilicon bridge on
+arm64.
 
-Actually if qemu is causing the MSI-X table accesses to fault, why doesn't
-it just lie to the guest about the physical address of the MSI-X table?
-Then mmio access to anything in the same physical page will just work.
+Approach 1 was a simple quirk for the card+bridge to mark it as
+default. This higlighted the fact that the default card was picked by
+the arbiter, which assumed legacy resources. The lack of legacy
+resources leads to quirks in ppc and concerns in arm land, so a more
+generic approach was desired.
+Link: https://www.spinics.net/lists/linux-pci/msg62865.html
 
-It has already been pointed out that you can't actually police the
-interrupts that are raised without host hardware support.
+Approach 2 allowed platforms to opt in to a class enable hook that
+added a card as default if there was no default. This:
 
-Actually, putting other vectors in the MSI-X table is boring, most
-drivers will ignore unexpected interrupts.
-Much more interesting are physical memory addresses and accessible IO
-addresses.
-Of course, a lot of boards have PCI master capability and can probably
-be persuaded to do writes to specific location anyway.
+ - was possibly racy as ACPI PCI init and vgaarb are both subsys
+   initcalls.
 
-	David
+ - didn't check to see if a card had a driver.
+
+ - meant that platforms for which the vga arbiter didn't make sense
+   still needed it.
+
+Links: https://www.spinics.net/lists/linux-pci/msg63092.html
+       https://www.spinics.net/lists/linux-pci/msg63083.html
+
+This is approach 3. It pulls the default handling out of the arbiter,
+into its own file and behind its own Kconfig option. It adds the extra
+detection as a late initcall and an enable hook that only operates
+after the initcall, so it's not racy. It checks for drivers. It means
+people can turn off the vga arbiter. It works sensibly for modules
+too.
+
+v1: https://www.spinics.net/lists/linux-pci/msg63581.html
+
+Changes in v2:
+
+Drop all the powerpc patches.
+
+Including just the new handler doesn't change behaviour on powerpc.
+
+This is because - as Bjorn pointed out on v1 - I had not fully
+understood how fixup_vga worked. fixup_vga is quite aggressive: if
+there is no default, and it finds a VGA card, it will mark that card
+as default. Later on, if it finds a card with decoding enabled, it
+will update the default.
+
+This means that if there is any vga card in the system at all, a
+default will be marked. This all happens at the FIXUP_CLASS_FINAL
+stage, so if there is a vga card, a default will be marked before the
+late_initcall that kicks off this new discovery process. This will
+completely prevent my code from firing.
+
+Once this is merged I will discuss with the ppc folks if they want to
+move to this approach or if ppc should continue to be very optimistic
+about the cards it marks as default.
+
+Regards,
+Daniel
+
+
+Daniel Axtens (1):
+  Split VGA default device handler out of VGA arbiter
+
+ arch/ia64/pci/fixup.c            |   2 +-
+ arch/powerpc/kernel/pci-common.c |   2 +-
+ arch/x86/pci/fixup.c             |   2 +-
+ arch/x86/video/fbdev.c           |   2 +-
+ drivers/gpu/vga/Kconfig          |  12 +++
+ drivers/gpu/vga/Makefile         |   1 +
+ drivers/gpu/vga/vga_default.c    | 159 +++++++++++++++++++++++++++++++++++++++
+ drivers/gpu/vga/vga_switcheroo.c |   2 +-
+ drivers/gpu/vga/vgaarb.c         |  41 +---------
+ drivers/pci/pci-sysfs.c          |   2 +-
+ include/linux/vga_default.h      |  44 +++++++++++
+ include/linux/vgaarb.h           |  14 ----
+ 12 files changed, 225 insertions(+), 58 deletions(-)
+ create mode 100644 drivers/gpu/vga/vga_default.c
+ create mode 100644 include/linux/vga_default.h
+
+-- 
+2.11.0
