@@ -1,28 +1,27 @@
-Return-Path: <Bart.VanAssche@wdc.com>
-Received: from esa5.hgst.iphmx.com (esa5.hgst.iphmx.com [216.71.153.144])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY9FS00NczDrDQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 01:32:27 +1000 (AEST)
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>,
- "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>
-CC: "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>, "linux-block@vger.kernel.org"
- <linux-block@vger.kernel.org>, "brking@us.ibm.com" <brking@us.ibm.com>,
- "axboe@kernel.dk" <axboe@kernel.dk>
-Subject: Re: WARNING: CPU: 15 PID: 0 at block/blk-mq.c:1111
- __blk_mq_run_hw_queue+0x1d8/0x1f0
-Date: Thu, 17 Aug 2017 15:32:22 +0000
-Message-ID: <1502983941.2615.5.camel@wdc.com>
-References: <1502906852.3305.33.camel@abdul.in.ibm.com>
- <1502907345.2421.8.camel@wdc.com>
- <4fe35be3-c631-e4ed-a135-110e536823bc@linux.vnet.ibm.com>
-In-Reply-To: <4fe35be3-c631-e4ed-a135-110e536823bc@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY9N63V54zDqZs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 01:38:14 +1000 (AEST)
+Subject: Re: [v6 01/15] x86/mm: reserve only exiting low pages
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, "H. Peter Anvin" <hpa@zytor.com>
+References: <1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com>
+ <1502138329-123460-2-git-send-email-pasha.tatashin@oracle.com>
+ <20170814135525.GN19063@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <5c39369d-c8a4-ceab-1845-6b36eabe7fca@oracle.com>
+Date: Thu, 17 Aug 2017 11:37:11 -0400
 MIME-Version: 1.0
+In-Reply-To: <20170814135525.GN19063@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +31,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gV2VkLCAyMDE3LTA4LTE2IGF0IDE1OjEwIC0wNTAwLCBCcmlhbiBLaW5nIHdyb3RlOg0KPiBP
-biAwOC8xNi8yMDE3IDAxOjE1IFBNLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gT24gV2Vk
-LCAyMDE3LTA4LTE2IGF0IDIzOjM3ICswNTMwLCBBYmR1bCBIYWxlZW0gd3JvdGU6DQo+ID4gPiBM
-aW51eC1uZXh0IGJvb3RlZCB3aXRoIHRoZSBiZWxvdyB3YXJuaW5ncyBvbiBwb3dlcnBjDQo+ID4g
-PiANCj4gPiA+IFsgLi4uIF0NCj4gPiA+IA0KPiA+ID4gYm9vdCB3YXJuaW5nczoNCj4gPiA+IC0t
-LS0tLS0tLS0tLS0tDQo+ID4gPiBrdm06IGV4aXRpbmcgaGFyZHdhcmUgdmlydHVhbGl6YXRpb24N
-Cj4gPiA+IC0tLS0tLS0tLS0tLVsgY3V0IGhlcmUgXS0tLS0tLS0tLS0tLQ0KPiA+ID4gV0FSTklO
-RzogQ1BVOiAxNSBQSUQ6IDAgYXQgYmxvY2svYmxrLW1xLmM6MTExMSBfX2Jsa19tcV9ydW5faHdf
-cXVldWUNCj4gPiA+ICsweDFkOC8weDFmMA0KPiA+ID4gTW9kdWxlcyBsaW5rZWQgaW46IGlwdGFi
-bGVfbWFuZ2xlIGlwdF9NQVNRVUVSQURFIG5mX25hdF9tYXNxdWVyYWRlX2lwdjQNCj4gPiA+IENh
-bGwgVHJhY2U6DQo+ID4gPiBbYzAwMDAwMGZmZmYzNzk5MF0gW2MwMDAwMDAwMDA4OGY3YjBdIF9f
-YmxrX21xX2RlbGF5X3J1bl9od19xdWV1ZQ0KPiA+ID4gKzB4MWYwLzB4MjEwDQo+ID4gPiBbYzAw
-MDAwMGZmZmYzNzlkMF0gW2MwMDAwMDAwMDA4OGZjYjhdIGJsa19tcV9zdGFydF9od19xdWV1ZSsw
-eDU4LzB4ODANCj4gPiA+IFtjMDAwMDAwZmZmZjM3OWYwXSBbYzAwMDAwMDAwMDg4ZmQ0MF0gYmxr
-X21xX3N0YXJ0X2h3X3F1ZXVlcysweDYwLzB4YjANCj4gPiA+IFtjMDAwMDAwZmZmZjM3YTMwXSBb
-YzAwMDAwMDAwMGFlMmI1NF0gc2NzaV9raWNrX3F1ZXVlKzB4MzQvMHhhMA0KPiA+ID4gW2MwMDAw
-MDBmZmZmMzdhNTBdIFtjMDAwMDAwMDAwYWUyZjcwXSBzY3NpX3J1bl9xdWV1ZSsweDNiMC8weDY2
-MA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdhYzBdIFtjMDAwMDAwMDAwYWU3ZWQ0XSBzY3NpX3J1bl9o
-b3N0X3F1ZXVlcysweDY0LzB4YzANCj4gPiA+IFtjMDAwMDAwZmZmZjM3YjAwXSBbYzAwMDAwMDAw
-MGFlN2Y2NF0gc2NzaV91bmJsb2NrX3JlcXVlc3RzKzB4MzQvMHg2MA0KPiA+ID4gW2MwMDAwMDBm
-ZmZmMzdiMjBdIFtjMDAwMDAwMDAwYjE0OTk4XSBpcHJfaW9hX2JyaW5nZG93bl9kb25lKzB4Zjgv
-MHgzYTANCj4gPiA+IFtjMDAwMDAwZmZmZjM3YmMwXSBbYzAwMDAwMDAwMGIxMjUyOF0gaXByX3Jl
-c2V0X2lvYV9qb2IrMHhkOC8weDE3MA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdjMDBdIFtjMDAwMDAw
-MDAwYjE4NzkwXSBpcHJfcmVzZXRfdGltZXJfZG9uZSsweDExMC8weDE2MA0KPiA+ID4gW2MwMDAw
-MDBmZmZmMzdjNTBdIFtjMDAwMDAwMDAwMjRkYjUwXSBjYWxsX3RpbWVyX2ZuKzB4YTAvMHgzYTAN
-Cj4gPiA+IFtjMDAwMDAwZmZmZjM3Y2UwXSBbYzAwMDAwMDAwMDI0ZTA1OF0gZXhwaXJlX3RpbWVy
-cysweDFiOC8weDM1MA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdkNTBdIFtjMDAwMDAwMDAwMjRlMmYw
-XSBydW5fdGltZXJfc29mdGlycSsweDEwMC8weDNlMA0KPiA+ID4gW2MwMDAwMDBmZmZmMzdkZjBd
-IFtjMDAwMDAwMDAwMTYyZWRjXSBfX2RvX3NvZnRpcnErMHgyMGMvMHg2MjANCj4gPiA+IFtjMDAw
-MDAwZmZmZjM3ZWUwXSBbYzAwMDAwMDAwMDE2M2E4MF0gaXJxX2V4aXQrMHgyMzAvMHgyOTANCj4g
-PiA+IFtjMDAwMDAwZmZmZjM3ZjEwXSBbYzAwMDAwMDAwMDAxZDc3MF0gX19kb19pcnErMHgxNzAv
-MHg0MTANCj4gPiA+IFtjMDAwMDAwZmZmZjM3ZjkwXSBbYzAwMDAwMDAwMDAzZWEyMF0gY2FsbF9k
-b19pcnErMHgxNC8weDI0DQo+ID4gPiBbYzAwMDAwMDdmODRlM2E3MF0gW2MwMDAwMDAwMDAwMWRh
-ZTBdIGRvX0lSUSsweGQwLzB4MTkwDQo+ID4gPiBbYzAwMDAwMDdmODRlM2FjMF0gW2MwMDAwMDAw
-MDAwMDhjNThdIGhhcmR3YXJlX2ludGVycnVwdF9jb21tb24NCj4gPiA+ICsweDE1OC8weDE2MA0K
-PiA+IA0KPiA+IEhlbGxvIEJyaWFuLA0KPiA+IA0KPiA+IEluIHRoZSBNQUlOVEFJTkVSUyBmaWxl
-IEkgZm91bmQgdGhlIGZvbGxvd2luZzoNCj4gPiANCj4gPiBJQk0gUG93ZXIgTGludXggUkFJRCBh
-ZGFwdGVyDQo+ID4gTTogICAgICBCcmlhbiBLaW5nIDxicmtpbmdAdXMuaWJtLmNvbT4NCj4gPiBT
-OiAgICAgIFN1cHBvcnRlZA0KPiA+IEY6ICAgICAgZHJpdmVycy9zY3NpL2lwci4qDQo+ID4gDQo+
-ID4gSXMgdGhhdCBpbmZvcm1hdGlvbiB1cC10by1kYXRlPyBEbyB5b3UgYWdyZWUgdGhhdCB0aGUg
-YWJvdmUgbWVzc2FnZSBpbmRpY2F0ZXMNCj4gPiBhIGJ1ZyBpbiB0aGUgaXByIGRyaXZlcj8NCj4g
-DQo+IFllcy4gQ2FuIHlvdSB0cnkgd2l0aCB0aGlzIHBhdGNoIHRoYXQgaXMgaW4gNC4xMy9zY3Np
-LWZpeGVzOg0KPiANCj4gaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5l
-bC9naXQvbWtwL3Njc2kuZ2l0L2NvbW1pdC8/aD00LjEzL3Njc2ktZml4ZXMmaWQ9YjBlMTdhOWIw
-ZGYyOTU5MGM0NWRmYjI5NmY1NDEyNzBhNTk0MWY0MQ0KDQpIZWxsbyBCcmlhbiwNCg0KU29ycnkg
-YnV0IEkgZG9uJ3QgaGF2ZSBhY2Nlc3MgdG8gYSBzZXR1cCBvbiB3aGljaCBJIGNhbiB0ZXN0IHRo
-ZSBpcHIgZHJpdmVyIC4uLg0KDQpCYXJ0Lg==
+Hi Michal,
+
+While working on a bug that was reported to me by "kernel test robot".
+
+  unable to handle kernel NULL pointer dereference at           (null)
+
+The issue was that page_to_pfn() on that configuration was looking for a 
+section inside flags fields in "struct page". So, reserved but 
+unavailable memory should have its "struct page" zeroed.
+
+Therefore, I am going to remove this patch from my series, but instead 
+have a new patch that iterates through:
+
+reserved && !memory memblocks, and zeroes struct pages for them. Since 
+for that memory struct pages will never go through __init_single_page(), 
+yet some fields might still be accessed.
+
+Pasha
+
+On 08/14/2017 09:55 AM, Michal Hocko wrote:
+> Let's CC Hpa on this one. I am still not sure it is correct. The full
+> series is here
+> http://lkml.kernel.org/r/1502138329-123460-1-git-send-email-pasha.tatashin@oracle.com
+> 
+> On Mon 07-08-17 16:38:35, Pavel Tatashin wrote:
+>> Struct pages are initialized by going through __init_single_page(). Since
+>> the existing physical memory in memblock is represented in memblock.memory
+>> list, struct page for every page from this list goes through
+>> __init_single_page().
+>>
+>> The second memblock list: memblock.reserved, manages the allocated memory.
+>> The memory that won't be available to kernel allocator. So, every page from
+>> this list goes through reserve_bootmem_region(), where certain struct page
+>> fields are set, the assumption being that the struct pages have been
+>> initialized beforehand.
+>>
+>> In trim_low_memory_range() we unconditionally reserve memoryfrom PFN 0, but
+>> memblock.memory might start at a later PFN. For example, in QEMU,
+>> e820__memblock_setup() can use PFN 1 as the first PFN in memblock.memory,
+>> so PFN 0 is not on memblock.memory (and hence isn't initialized via
+>> __init_single_page) but is on memblock.reserved (and hence we set fields in
+>> the uninitialized struct page).
+>>
+>> Currently, the struct page memory is always zeroed during allocation,
+>> which prevents this problem from being detected. But, if some asserts
+>> provided by CONFIG_DEBUG_VM_PGFLAGS are tighten, this problem may become
+>> visible in existing kernels.
+>>
+>> In this patchset we will stop zeroing struct page memory during allocation.
+>> Therefore, this bug must be fixed in order to avoid random assert failures
+>> caused by CONFIG_DEBUG_VM_PGFLAGS triggers.
+>>
+>> The fix is to reserve memory from the first existing PFN.
+>>
+>> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+>> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+>> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+>> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+>> ---
+>>   arch/x86/kernel/setup.c | 5 ++++-
+>>   1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+>> index 3486d0498800..489cdc141bcb 100644
+>> --- a/arch/x86/kernel/setup.c
+>> +++ b/arch/x86/kernel/setup.c
+>> @@ -790,7 +790,10 @@ early_param("reservelow", parse_reservelow);
+>>   
+>>   static void __init trim_low_memory_range(void)
+>>   {
+>> -	memblock_reserve(0, ALIGN(reserve_low, PAGE_SIZE));
+>> +	unsigned long min_pfn = find_min_pfn_with_active_regions();
+>> +	phys_addr_t base = min_pfn << PAGE_SHIFT;
+>> +
+>> +	memblock_reserve(base, ALIGN(reserve_low, PAGE_SIZE));
+>>   }
+>>   	
+>>   /*
+>> -- 
+>> 2.14.0
+> 
