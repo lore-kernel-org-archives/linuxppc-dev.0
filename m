@@ -1,24 +1,20 @@
 Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY6dT60KfzDqfw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 23:34:37 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 83so9935522pgb.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 06:34:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY6sq4YQZzDqYV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 23:45:19 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id 123so9950288pga.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 06:45:19 -0700 (PDT)
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: gregkh@linuxfoundation.org,
-	jslaby@suse.com
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] tty: hvcs: constify vio_device_id
-Date: Thu, 17 Aug 2017 19:04:23 +0530
-Message-Id: <f0d9e3a3da5aea4a5f133a67390ea7883c353e0f.1502976494.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <2ca130c97cf001e9f7936cd88091817698ae355a.1502976494.git.arvind.yadav.cs@gmail.com>
-References: <2ca130c97cf001e9f7936cd88091817698ae355a.1502976494.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <2ca130c97cf001e9f7936cd88091817698ae355a.1502976494.git.arvind.yadav.cs@gmail.com>
-References: <2ca130c97cf001e9f7936cd88091817698ae355a.1502976494.git.arvind.yadav.cs@gmail.com>
+To: tyreld@linux.vnet.ibm.com, paulus@samba.org, jejb@linux.vnet.ibm.com,
+ martin.petersen@oracle.com, mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] scsi: ibmvfc: constify vio_device_id
+Date: Thu, 17 Aug 2017 19:15:05 +0530
+Message-Id: <1502977507-2954-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,20 +30,20 @@ const vio_device_id. So mark the non-const structs as const.
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/tty/hvc/hvcs.c | 2 +-
+ drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 79cc5be..7320190 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -675,7 +675,7 @@ static int khvcsd(void *unused)
- 	return 0;
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index cc4e05b..87d83b1 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -4929,7 +4929,7 @@ static unsigned long ibmvfc_get_desired_dma(struct vio_dev *vdev)
+ 	return pool_dma + ((512 * 1024) * driver_template.cmd_per_lun);
  }
  
--static struct vio_device_id hvcs_driver_table[] = {
-+static const struct vio_device_id hvcs_driver_table[] = {
- 	{"serial-server", "hvterm2"},
+-static struct vio_device_id ibmvfc_device_table[] = {
++static const struct vio_device_id ibmvfc_device_table[] = {
+ 	{"fcp", "IBM,vfc-client"},
  	{ "", "" }
  };
 -- 
