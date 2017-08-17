@@ -1,51 +1,22 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bhumirks@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xXzmf0xTVzDrDC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 18:25:21 +1000 (AEST)
-Date: Thu, 17 Aug 2017 10:12:08 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Brijesh Singh <brijesh.singh@amd.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
- David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 02/17] x86/CPU/AMD: Add the Secure Encrypted
- Virtualization CPU feature
-Message-ID: <20170817081208.lmoh2dh3loupay54@pd.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-3-brijesh.singh@amd.com>
- <20170725102657.GD21822@nazgul.tnic>
- <7236d267-ebcb-8b45-b8d3-5955903e395f@amd.com>
- <20170725143615.GA26029@nazgul.tnic>
- <47ccc32e-e113-48e0-d2e0-2f23b37cc452@amd.com>
- <20170725151301.GC26029@nazgul.tnic>
- <d6fdba78-034b-d9e2-15ae-00547821a855@amd.com>
- <20170725153329.GE26029@nazgul.tnic>
- <b2aedd44-ebbc-b196-31d0-0b423f4fa632@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <b2aedd44-ebbc-b196-31d0-0b423f4fa632@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xY0vg5489zDrKZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 19:16:31 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id y129so8924495pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 02:16:31 -0700 (PDT)
+From: Bhumika Goyal <bhumirks@gmail.com>
+To: julia.lawall@lip6.fr, linux@armlinux.org.uk, perex@perex.cz,
+ tiwai@suse.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
+Subject: [PATCH 00/12] ALSA: make snd_pcm_hardware const
+Date: Thu, 17 Aug 2017 14:45:48 +0530
+Message-Id: <1502961360-22063-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,18 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 09, 2017 at 01:17:54PM -0500, Tom Lendacky wrote:
-> Ok, finally got around to running a 32-bit kernel and it reports
-> x86_phys_bits as 48.
+Make these const.
 
-So it doesn't really matter on 32-bit. I guess you could add a comment
-saying why we don't care.
+Bhumika Goyal (12):
+  ALSA: arm: make snd_pcm_hardware const
+  ALSA: atmel: make snd_pcm_hardware const
+  ALSA: drivers: make snd_pcm_hardware const
+  ALSA: isa: make snd_pcm_hardware const
+  ALSA: mips: make snd_pcm_hardware const
+  ALSA: pci: make snd_pcm_hardware const
+  ALSA: pcmcia: make snd_pcm_hardware const
+  ALSA: ppc: make snd_pcm_hardware const
+  ALSA: sh: make snd_pcm_hardware const
+  ALSA: sparc: make snd_pcm_hardware const
+  ALSA: usb: make snd_pcm_hardware const
+  ALSA: parisc: make snd_pcm_hardware const
 
-Thanks.
+ sound/arm/aaci.c                       | 2 +-
+ sound/atmel/ac97c.c                    | 2 +-
+ sound/drivers/aloop.c                  | 2 +-
+ sound/drivers/dummy.c                  | 2 +-
+ sound/drivers/ml403-ac97cr.c           | 4 ++--
+ sound/drivers/pcsp/pcsp_lib.c          | 2 +-
+ sound/drivers/vx/vx_pcm.c              | 4 ++--
+ sound/isa/ad1816a/ad1816a_lib.c        | 4 ++--
+ sound/isa/es1688/es1688_lib.c          | 4 ++--
+ sound/isa/es18xx.c                     | 4 ++--
+ sound/isa/gus/gus_pcm.c                | 4 ++--
+ sound/isa/msnd/msnd.c                  | 4 ++--
+ sound/isa/sb/emu8000_pcm.c             | 2 +-
+ sound/isa/sb/sb16_main.c               | 4 ++--
+ sound/isa/sb/sb8_main.c                | 4 ++--
+ sound/isa/wss/wss_lib.c                | 4 ++--
+ sound/mips/hal2.c                      | 2 +-
+ sound/mips/sgio2audio.c                | 2 +-
+ sound/parisc/harmony.c                 | 4 ++--
+ sound/pci/au88x0/au88x0_pcm.c          | 8 ++++----
+ sound/pcmcia/pdaudiocf/pdaudiocf_pcm.c | 2 +-
+ sound/ppc/pmac.c                       | 4 ++--
+ sound/sh/aica.c                        | 2 +-
+ sound/sh/sh_dac_audio.c                | 2 +-
+ sound/sparc/amd7930.c                  | 2 +-
+ sound/sparc/cs4231.c                   | 4 ++--
+ sound/sparc/dbri.c                     | 2 +-
+ sound/usb/pcm.c                        | 2 +-
+ 28 files changed, 44 insertions(+), 44 deletions(-)
 
 -- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+1.9.1
