@@ -3,22 +3,22 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xY9tc4wDlzDrKw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 02:01:12 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYBnV54DCzDrJL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 02:41:50 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7HFwsiR108856
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 12:01:10 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cdd2nvgq1-1
+ v7HGctub145350
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 12:41:47 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cdac6hxgm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 12:01:09 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 12:41:46 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 17 Aug 2017 12:01:09 -0400
-Date: Thu, 17 Aug 2017 09:00:57 -0700
+ Thu, 17 Aug 2017 12:41:46 -0400
+Date: Thu, 17 Aug 2017 09:41:40 -0700
 From: Ram Pai <linuxram@us.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
@@ -26,16 +26,17 @@ Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
  paulus@samba.org, khandual@linux.vnet.ibm.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  hbabu@us.ibm.com, mhocko@kernel.org
-Subject: Re: [RFC v7 02/25] powerpc: track allocation status of all pkeys
+Subject: Re: [RFC v7 09/25] powerpc: store and restore the pkey state across
+ context switches
 Reply-To: Ram Pai <linuxram@us.ibm.com>
 References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-3-git-send-email-linuxram@us.ibm.com>
- <8760dvkw58.fsf@linux.vnet.ibm.com>
- <87inhud5od.fsf@concordia.ellerman.id.au>
+ <1501459946-11619-10-git-send-email-linuxram@us.ibm.com>
+ <874ltfkv64.fsf@linux.vnet.ibm.com>
+ <87fucyd34k.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87inhud5od.fsf@concordia.ellerman.id.au>
-Message-Id: <20170817160057.GD5505@ram.oc3035372033.ibm.com>
+In-Reply-To: <87fucyd34k.fsf@concordia.ellerman.id.au>
+Message-Id: <20170817164140.GE5505@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,62 +46,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 11, 2017 at 03:39:14PM +1000, Michael Ellerman wrote:
+On Fri, Aug 11, 2017 at 04:34:19PM +1000, Michael Ellerman wrote:
 > Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
 > 
 > > Ram Pai <linuxram@us.ibm.com> writes:
-> >>  static inline void pkey_initialize(void)
-> >>  {
-> >> +	int os_reserved, i;
-> >> +
-> >>  	/* disable the pkey system till everything
-> >>  	 * is in place. A patch further down the
-> >>  	 * line will enable it.
-> >>  	 */
-> >>  	pkey_inited = false;
-> >> +
-> >> +	/* Lets assume 32 keys */
-> >> +	pkeys_total = 32;
-> >> +
-> >> +#ifdef CONFIG_PPC_4K_PAGES
-> >> +	/*
-> >> +	 * the OS can manage only 8 pkeys
-> >> +	 * due to its inability to represent
-> >> +	 * them in the linux 4K-PTE.
-> >> +	 */
-> >> +	os_reserved = pkeys_total-8;
-> >> +#else
-> >> +	os_reserved = 0;
+> >> --- a/arch/powerpc/kernel/process.c
+> >> +++ b/arch/powerpc/kernel/process.c
+> >> @@ -42,6 +42,7 @@
+> >>  #include <linux/hw_breakpoint.h>
+> >>  #include <linux/uaccess.h>
+> >>  #include <linux/elf-randomize.h>
+> >> +#include <linux/pkeys.h>
+> >>
+> >>  #include <asm/pgtable.h>
+> >>  #include <asm/io.h>
+> >> @@ -1096,6 +1097,13 @@ static inline void save_sprs(struct thread_struct *t)
+> >>  		t->tar = mfspr(SPRN_TAR);
+> >>  	}
+> >>  #endif
+> >> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> >> +	if (arch_pkeys_enabled()) {
+> >> +		t->amr = mfspr(SPRN_AMR);
+> >> +		t->iamr = mfspr(SPRN_IAMR);
+> >> +		t->uamor = mfspr(SPRN_UAMOR);
+> >> +	}
 > >> +#endif
-> >> +	/*
-> >> +	 * Bits are in LE format.
-> >> +	 * NOTE: 1, 0 are reserved.
-> >> +	 * key 0 is the default key, which allows read/write/execute.
-> >> +	 * key 1 is recommended not to be used.
-> >> +	 * PowerISA(3.0) page 1015, programming note.
-> >> +	 */
-> >> +	initial_allocation_mask = ~0x0;
-> >> +	for (i = 2; i < (pkeys_total - os_reserved); i++)
-> >> +		initial_allocation_mask &= ~(0x1<<i);
 > >>  }
-> >>  #endif /*_ASM_PPC64_PKEYS_H */
 > >
-> > In v6, key 31 was also reserved, but it's not in this version. Is this
-> > intentional?
-> 
-> That whole thing could be replaced with two constants.
-> 
-> Except it can't, because we can't just hard code the number of keys. It
-> needs to come either from the device tree or be based on the CPU we're
-> running on.
-> 
-> > Isn't it better for this function to be in pkeys.c? Ideally, functions
-> > should be in .c files not in headers unless they're very small or
-> > performance sensitive IMHO.
-> 
-> Yes. No reason for that to be in a header AFAICS.
+> > Is it worth having a flag in thread_struct saying whether it has every
+> > called pkey_alloc and only do the mfsprs if it did?
 
-Yes can be moved into the pkeys.c file.  It was a simple function
-to begin with....but not so any more.
+Yes. This will further optimize the code; a great thing!
+
+> 
+> Yes, in fact there's a programming note in the UAMOR section of the arch
+> that says exactly that.
+> 
+> On the write side you have to be a bit more careful. You have to make
+> sure you set the UAMOR to 0 when you're switching from a process that
+> has used keys to one that isn't.
+
+Currently we save and restore AMR/IAMR/UAMOR if the OS has enabled pkeys.
+This means the UAMOR will get restored to 0 if the application has not
+used any keys.
+
+But if we do optimize the code further; as suggested by Thiago, we will
+have to be careful with initializing UAMOR while switching back task
+that has not used the keys yet.
 
 RP
+
+> 
+> cheers
+
+-- 
+Ram Pai
