@@ -1,40 +1,27 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYL0T0rwrzDrMg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 08:06:48 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7HM4xcG068194
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 18:06:47 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cddrk1hrg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 18:06:46 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 17 Aug 2017 23:06:43 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: [PATCH v2 20/20] powerpc/mm: Add speculative page fault
-Date: Fri, 18 Aug 2017 00:05:19 +0200
-In-Reply-To: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1503007519-26777-21-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYLKq6ZWgzDrWD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 08:21:51 +1000 (AEST)
+Date: Fri, 18 Aug 2017 00:21:45 +0200
+From: msuchanek <msuchanek@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Ashley Lai
+ <ashleydlai@gmail.com>, Peter Huewe <peterhuewe@gmx.de>, Marcel Selhorst
+ <tpmdd@selhorst.net>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ linuxppc-dev@lists.ozlabs.org, tpmdd-devel@lists.sourceforge.net,
+ linux-kernel@vger.kernel.org
+Cc: tpmdd@selhorst.ne
+Subject: Re: [RFT PATCH] tpm: ibmvtpm: simplify crq initialization and
+ document crq format
+Message-ID: <20170818002145.62fb72eb@naga>
+In-Reply-To: <20170224193516.9342-1-msuchanek@suse.de>
+References: <20170729072433.13194-1-sz.lin@moxa.com>
+ <20170224193516.9342-1-msuchanek@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,90 +31,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enable the speculative page fault on the PowerPC
-architecture.
+ping?
 
-This will try a speculative page fault without holding the mmap_sem,
-if it returns with WM_FAULT_RETRY, the mmap_sem is acquired and the
-traditional page fault processing is done.
+On Fri, 24 Feb 2017 20:35:16 +0100
+Michal Suchanek <msuchanek@suse.de> wrote:
 
-Support is only provide for BOOK3S_64 currently because:
-- require CONFIG_PPC_STD_MMU because checks done in
-  set_access_flags_filter()
-- require BOOK3S because we can't support for book3e_hugetlb_preload()
-  called by update_mmu_cache()
-
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h |  5 +++++
- arch/powerpc/mm/fault.c                      | 30 +++++++++++++++++++++++++++-
- 2 files changed, 34 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 818a58fc3f4f..897f8b9f67e6 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -313,6 +313,11 @@ extern unsigned long pci_io_base;
- /* Advertise support for _PAGE_SPECIAL */
- #define __HAVE_ARCH_PTE_SPECIAL
- 
-+/* Advertise that we call the Speculative Page Fault handler */
-+#if defined(CONFIG_PPC_BOOK3S_64)
-+#define __HAVE_ARCH_CALL_SPF
-+#endif
-+
- #ifndef __ASSEMBLY__
- 
- /*
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 4c422632047b..7b3cc4c30eab 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -291,9 +291,36 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 	if (is_write && is_user)
- 		store_update_sp = store_updates_sp(regs);
- 
--	if (is_user)
-+	if (is_user) {
- 		flags |= FAULT_FLAG_USER;
- 
-+#if defined(__HAVE_ARCH_CALL_SPF)
-+		/* let's try a speculative page fault without grabbing the
-+		 * mmap_sem.
-+		 */
-+
-+		/*
-+		 * flags is set later based on the VMA's flags, for the common
-+		 * speculative service, we need some flags to be set.
-+		 */
-+		if (is_write)
-+			flags |= FAULT_FLAG_WRITE;
-+
-+		fault = handle_speculative_fault(mm, address, flags);
-+		if (!(fault & VM_FAULT_RETRY || fault & VM_FAULT_ERROR)) {
-+			perf_sw_event(PERF_COUNT_SW_SPF_DONE, 1,
-+				      regs, address);
-+			goto done;
-+		}
-+
-+		/*
-+		 * Resetting flags since the following code assumes
-+		 * FAULT_FLAG_WRITE is not set.
-+		 */
-+		flags &= ~FAULT_FLAG_WRITE;
-+#endif /* defined(__HAVE_ARCH_CALL_SPF) */
-+	}
-+
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-@@ -479,6 +506,7 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
- 			rc = 0;
- 	}
- 
-+done:
- 	/*
- 	 * Major/minor page fault accounting.
- 	 */
--- 
-2.7.4
+> The crq is passed in registers and is the same on BE and LE hosts.
+> However, current implementation allocates a structure on-stack to
+> represent the crq, initializes the members swapping them to BE, and
+> loads the structure swapping it from BE. This is pointless and causes
+> GCC warnings about ununitialized members. Get rid of the structure and
+> the warnings.
+> 
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> Reviewed-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+> ---
+> v2
+> 
+> fix typos and spelling in comments
+> ---
+>  drivers/char/tpm/tpm_ibmvtpm.c | 96
+> ++++++++++++++++++++++++++---------------- 1 file changed, 60
+> insertions(+), 36 deletions(-)
+> 
+> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c
+> b/drivers/char/tpm/tpm_ibmvtpm.c index 1b9d61ffe991..89027339d55f
+> 100644 --- a/drivers/char/tpm/tpm_ibmvtpm.c
+> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
+> @@ -39,19 +39,63 @@ static struct vio_device_id
+> tpm_ibmvtpm_device_table[] = { MODULE_DEVICE_TABLE(vio,
+> tpm_ibmvtpm_device_table); 
+>  /**
+> + *
+> + * ibmvtpm_send_crq_word - Send a CRQ request
+> + * @vdev:	vio device struct
+> + * @w1:		pre-constructed first word of tpm crq (second
+> word is reserved)
+> + *
+> + * Return:
+> + *	0 - Success
+> + *	Non-zero - Failure
+> + */
+> +static int ibmvtpm_send_crq_word(struct vio_dev *vdev, u64 w1)
+> +{
+> +	return plpar_hcall_norets(H_SEND_CRQ, vdev->unit_address,
+> w1, 0); +}
+> +
+> +/**
+> + *
+>   * ibmvtpm_send_crq - Send a CRQ request
+>   *
+>   * @vdev:	vio device struct
+> - * @w1:		first word
+> - * @w2:		second word
+> + * @valid:	Valid field
+> + * @msg:	Type field
+> + * @len:	Length field
+> + * @data:	Data field
+> + *
+> + * The ibmvtpm crq is defined as follows:
+> + *
+> + * Byte  |   0   |   1   |   2   |   3   |   4   |   5   |   6   |
+> 7
+> + *
+> -----------------------------------------------------------------------
+> + * Word0 | Valid | Type  |     Length    |              Data
+> + *
+> -----------------------------------------------------------------------
+> + * Word1 |                Reserved
+> + *
+> -----------------------------------------------------------------------
+> + *
+> + * Which matches the following structure (on bigendian host):
+> + *
+> + * struct ibmvtpm_crq {
+> + *         u8 valid;
+> + *         u8 msg;
+> + *         __be16 len;
+> + *         __be32 data;
+> + *         __be64 reserved;
+> + * } __attribute__((packed, aligned(8)));
+> + *
+> + * However, the value is passed in a register so just compute the
+> numeric value
+> + * to load into the register avoiding byteswap altogether. Endian
+> only affects
+> + * memory loads and stores - registers are internally represented
+> the same. *
+>   * Return:
+> - *	0 -Sucess
+> + *	0 (H_SUCCESS) - Success
+>   *	Non-zero - Failure
+>   */
+> -static int ibmvtpm_send_crq(struct vio_dev *vdev, u64 w1, u64 w2)
+> +static int ibmvtpm_send_crq(struct vio_dev *vdev,
+> +		u8 valid, u8 msg, u16 len, u32 data)
+>  {
+> -	return plpar_hcall_norets(H_SEND_CRQ, vdev->unit_address,
+> w1, w2);
+> +	u64 w1 = ((u64)valid << 56) | ((u64)msg << 48) | ((u64)len
+> << 32) |
+> +		(u64)data;
+> +	return ibmvtpm_send_crq_word(vdev, w1);
+>  }
+>  
+>  /**
+> @@ -109,8 +153,6 @@ static int tpm_ibmvtpm_recv(struct tpm_chip
+> *chip, u8 *buf, size_t count) static int tpm_ibmvtpm_send(struct
+> tpm_chip *chip, u8 *buf, size_t count) {
+>  	struct ibmvtpm_dev *ibmvtpm = dev_get_drvdata(&chip->dev);
+> -	struct ibmvtpm_crq crq;
+> -	__be64 *word = (__be64 *)&crq;
+>  	int rc, sig;
+>  
+>  	if (!ibmvtpm->rtce_buf) {
+> @@ -137,10 +179,6 @@ static int tpm_ibmvtpm_send(struct tpm_chip
+> *chip, u8 *buf, size_t count) spin_lock(&ibmvtpm->rtce_lock);
+>  	ibmvtpm->res_len = 0;
+>  	memcpy((void *)ibmvtpm->rtce_buf, (void *)buf, count);
+> -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> -	crq.msg = (u8)VTPM_TPM_COMMAND;
+> -	crq.len = cpu_to_be16(count);
+> -	crq.data = cpu_to_be32(ibmvtpm->rtce_dma_handle);
+>  
+>  	/*
+>  	 * set the processing flag before the Hcall, since we may
+> get the @@ -148,8 +186,9 @@ static int tpm_ibmvtpm_send(struct
+> tpm_chip *chip, u8 *buf, size_t count) */
+>  	ibmvtpm->tpm_processing_cmd = true;
+>  
+> -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
+> -			      be64_to_cpu(word[1]));
+> +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> +			IBMVTPM_VALID_CMD, VTPM_TPM_COMMAND,
+> +			count, ibmvtpm->rtce_dma_handle);
+>  	if (rc != H_SUCCESS) {
+>  		dev_err(ibmvtpm->dev, "tpm_ibmvtpm_send failed
+> rc=%d\n", rc); rc = 0;
+> @@ -182,15 +221,10 @@ static u8 tpm_ibmvtpm_status(struct tpm_chip
+> *chip) */
+>  static int ibmvtpm_crq_get_rtce_size(struct ibmvtpm_dev *ibmvtpm)
+>  {
+> -	struct ibmvtpm_crq crq;
+> -	u64 *buf = (u64 *) &crq;
+>  	int rc;
+>  
+> -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> -	crq.msg = (u8)VTPM_GET_RTCE_BUFFER_SIZE;
+> -
+> -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+> -			      cpu_to_be64(buf[1]));
+> +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> +			IBMVTPM_VALID_CMD,
+> VTPM_GET_RTCE_BUFFER_SIZE, 0, 0); if (rc != H_SUCCESS)
+>  		dev_err(ibmvtpm->dev,
+>  			"ibmvtpm_crq_get_rtce_size failed rc=%d\n",
+> rc); @@ -210,15 +244,10 @@ static int
+> ibmvtpm_crq_get_rtce_size(struct ibmvtpm_dev *ibmvtpm) */
+>  static int ibmvtpm_crq_get_version(struct ibmvtpm_dev *ibmvtpm)
+>  {
+> -	struct ibmvtpm_crq crq;
+> -	u64 *buf = (u64 *) &crq;
+>  	int rc;
+>  
+> -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> -	crq.msg = (u8)VTPM_GET_VERSION;
+> -
+> -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+> -			      cpu_to_be64(buf[1]));
+> +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> +			IBMVTPM_VALID_CMD, VTPM_GET_VERSION, 0, 0);
+>  	if (rc != H_SUCCESS)
+>  		dev_err(ibmvtpm->dev,
+>  			"ibmvtpm_crq_get_version failed rc=%d\n",
+> rc); @@ -238,7 +267,7 @@ static int
+> ibmvtpm_crq_send_init_complete(struct ibmvtpm_dev *ibmvtpm) {
+>  	int rc;
+>  
+> -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, INIT_CRQ_COMP_CMD, 0);
+> +	rc = ibmvtpm_send_crq_word(ibmvtpm->vdev, INIT_CRQ_COMP_CMD);
+>  	if (rc != H_SUCCESS)
+>  		dev_err(ibmvtpm->dev,
+>  			"ibmvtpm_crq_send_init_complete failed
+> rc=%d\n", rc); @@ -258,7 +287,7 @@ static int
+> ibmvtpm_crq_send_init(struct ibmvtpm_dev *ibmvtpm) {
+>  	int rc;
+>  
+> -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, INIT_CRQ_CMD, 0);
+> +	rc = ibmvtpm_send_crq_word(ibmvtpm->vdev, INIT_CRQ_CMD);
+>  	if (rc != H_SUCCESS)
+>  		dev_err(ibmvtpm->dev,
+>  			"ibmvtpm_crq_send_init failed rc=%d\n", rc);
+> @@ -336,15 +365,10 @@ static int tpm_ibmvtpm_suspend(struct device
+> *dev) {
+>  	struct tpm_chip *chip = dev_get_drvdata(dev);
+>  	struct ibmvtpm_dev *ibmvtpm = dev_get_drvdata(&chip->dev);
+> -	struct ibmvtpm_crq crq;
+> -	u64 *buf = (u64 *) &crq;
+>  	int rc = 0;
+>  
+> -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> -	crq.msg = (u8)VTPM_PREPARE_TO_SUSPEND;
+> -
+> -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+> -			      cpu_to_be64(buf[1]));
+> +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> +			IBMVTPM_VALID_CMD, VTPM_PREPARE_TO_SUSPEND,
+> 0, 0); if (rc != H_SUCCESS)
+>  		dev_err(ibmvtpm->dev,
+>  			"tpm_ibmvtpm_suspend failed rc=%d\n", rc);
