@@ -1,44 +1,42 @@
-Return-Path: <linuxram@us.ibm.com>
+Return-Path: <bauerman@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYyw06t6NzDqfw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 08:50:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYzYb0fy4zDqvc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 09:19:14 +1000 (AEST)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7IMn2Qf129790
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 18:50:06 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ce0spumbv-1
+ v7INIcRP046599
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 19:19:12 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ce0spvh63-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 18:50:06 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 19:19:12 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 18 Aug 2017 16:50:05 -0600
-Date: Fri, 18 Aug 2017 15:49:57 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
- paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org
-Subject: Re: [RFC v7 24/25] powerpc: Deliver SEGV signal on pkey violation
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Fri, 18 Aug 2017 17:19:11 -0600
 References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-25-git-send-email-linuxram@us.ibm.com>
- <87378zkuil.fsf@linux.vnet.ibm.com>
- <87a836csdl.fsf@concordia.ellerman.id.au>
- <20170817171408.GF5505@ram.oc3035372033.ibm.com>
- <878tihqy5c.fsf@concordia.ellerman.id.au>
- <20170818170410.GC5545@ram.oc3035372033.ibm.com>
+ <20170811173443.6227-1-bauerman@linux.vnet.ibm.com>
+ <20170818002512.GE5427@ram.oc3035372033.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [RFC v7 26/25] mm/mprotect, powerpc/mm/pkeys,
+ x86/mm/pkeys: Add sysfs interface
+In-reply-to: <20170818002512.GE5427@ram.oc3035372033.ibm.com>
+Date: Fri, 18 Aug 2017 20:19:01 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170818170410.GC5545@ram.oc3035372033.ibm.com>
-Message-Id: <20170818224957.GA5565@ram.oc3035372033.ibm.com>
+Content-Type: text/plain
+Message-Id: <87fucoo462.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,51 +46,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 18, 2017 at 10:04:10AM -0700, Ram Pai wrote:
-> On Fri, Aug 18, 2017 at 02:48:31PM +1000, Michael Ellerman wrote:
-> > Ram Pai <linuxram@us.ibm.com> writes:
-> > > On Fri, Aug 11, 2017 at 08:26:30PM +1000, Michael Ellerman wrote:
-> > >> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
-> > >> 
-> > >> > Ram Pai <linuxram@us.ibm.com> writes:
-> > >> >
-> > >> >> The value of the AMR register at the time of exception
-> > >> >> is made available in gp_regs[PT_AMR] of the siginfo.
-> > ...
-> > >> 
-> > >> I don't understand why we are putting it in there at all?
-> > >> 
-> > >> Is there some special handling of the actual register on signals? I
-> > >> haven't seen it. In which case the process can get the value of AMR by
-> > >> reading the register. ??
-> > >
-> > > The value of AMR register at the time of the key-exception may not be
-> > > the same when the signal handler is invoked. 
-> > 
-> > Why not?
-> 
-> Assume two threads of a task.
-> 
-> T1:  mprotect_key(foo, PAGE_SIZE, pkey=4);
-> T1:  set AMR to disable access for pkey 4;
-> T1:  key fault
->     T2: set AMR to enable access to pkey 4;
-> T1:  fault handler called.
-> 	This fault handler will see the new AMR and not the
-> 	one at the time of the fault.
 
-Ok. Ben debunked my above reason. So at this point I dont have a solid
-reason to defend my statement --
-"The value of AMR register at the time of the key-exception may not be
-the same when the signal handler is invoked."
+Ram Pai <linuxram@us.ibm.com> writes:
 
-Coming back to the your main question, "why we need to provide the
-contents of AMR register to the signal handler?" --   the only reason
-i can see is, probably tools like gdb and ptrace may find it useful.
+> On Fri, Aug 11, 2017 at 02:34:43PM -0300, Thiago Jung Bauermann wrote:
+>> Expose useful information for programs using memory protection keys.
+>> Provide implementation for powerpc and x86.
+>> 
+>> On a powerpc system with pkeys support, here is what is shown:
+>> 
+>> $ head /sys/kernel/mm/protection_keys/*
+>> ==> /sys/kernel/mm/protection_keys/disable_execute_supported <==
+>> true
+>
+> We should not just call out disable_execute_supported.
+> disable_access_supported and disable_write_supported should also 
+> be called out.
 
-And since it was suggested that content of IAMR is also useful to the
-application, the value of which cannot be accessed from userspace,
-it may make sense to provide both the contents.
+Ok, will do in the next version.
 
-Please suggest.
-RP
+>> ==> /sys/kernel/mm/protection_keys/total_keys <==
+>> 32
+>> 
+>
+>> ==> /sys/kernel/mm/protection_keys/usable_keys <==
+>> 30
+>
+> This is little nebulous.  It depends on how we define
+> usable as.  Is it the number of keys that are available
+> to the app?  If that is the case that value is dynamic.
+> Sometime the OS steals one key for execute-only key.
+> And anything that is dynamic can be inherently racy.
+> So I think we should define 'usable' as guaranteed number
+> of keys available to the app
+
+Yes, that is how I defined it: the difference between the number of keys
+provided by the platform and the keys reserved by the OS. I do need to
+spell it out somewhere inside Documentation/ though.
+
+> and display a value that is one less than what is available.
+>
+> in the above example the value should be 29.
+
+Good point, I didn't account for the execute-only key. I will make that
+change in the next version.
+
+-- 
+Thiago Jung Bauermann
+IBM Linux Technology Center
