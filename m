@@ -1,21 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYgtR5XZJzDrJ4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 21:32:47 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, SZ Lin
- <sz.lin@moxa.com>
-Cc: Linuxppc-dev <linuxppc-dev-bounces+msuchanek=suse.de@lists.ozlabs.org>,
- linux-kernel@vger.kernel.org, jarkko.sakkinen@linux.intel.com,
- jgunthorpe@obsidianresearch.com, tpmdd-devel@lists.sourceforge.net,
- paulus@samba.org, ashleydlai@gmail.com, peterhuewe@gmx.de,
- linuxppc-dev@lists.ozlabs.org, tpmdd@selhorst.ne
-Subject: Re: [PATCH 5/5] Use __func__ instead of function name
-In-Reply-To: <0e2d9ac4f5ee02e9df98610ed07eaec9@suse.de>
-References: <20170729072433.13194-1-sz.lin@moxa.com>
- <20170729072433.13194-6-sz.lin@moxa.com>
- <0e2d9ac4f5ee02e9df98610ed07eaec9@suse.de>
-Date: Fri, 18 Aug 2017 21:25:39 +1000
-Message-ID: <87378pqfrg.fsf@concordia.ellerman.id.au>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: tpmdd@selhorst.net, linux-kernel@vger.kernel.org,
+ jarkko.sakkinen@linux.intel.com, tpmdd-devel@lists.sourceforge.net,
+ ashleydlai@gmail.com, peterhuewe@gmx.de, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] tpm: vtpm: constify vio_device_id
+In-Reply-To: <20170817191642.GF24735@obsidianresearch.com>
+References: <a9ebcd668f5a7293c3805d0b6b21245f15c80212.1502989694.git.arvind.yadav.cs@gmail.com>
+ <20170817191642.GF24735@obsidianresearch.com>
+Date: Fri, 18 Aug 2017 21:32:46 +1000
+Message-ID: <87ziaxp0v5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+Jason Gunthorpe <jgunthorpe@obsidianresearch.com> writes:
 
-> On 2017-07-29 09:24, SZ Lin wrote:
->> Fix following checkpatch.pl warning:
->> WARNING: Prefer using '"%s...", __func__' to using
->> the function's name, in a string
->>=20
->> Signed-off-by: SZ Lin <sz.lin@moxa.com>
->> ---
->>  drivers/char/tpm/tpm_ibmvtpm.c | 12 ++++++------
->>  1 file changed, 6 insertions(+), 6 deletions(-)
->>=20
->> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c=20
->> b/drivers/char/tpm/tpm_ibmvtpm.c
->> index e75a674b44ac..2d33acc43e25 100644
->> --- a/drivers/char/tpm/tpm_ibmvtpm.c
->> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
->> @@ -151,7 +151,7 @@ static int tpm_ibmvtpm_send(struct tpm_chip *chip,
->> u8 *buf, size_t count)
->>  	rc =3D ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
->>  			      be64_to_cpu(word[1]));
->>  	if (rc !=3D H_SUCCESS) {
->> -		dev_err(ibmvtpm->dev, "tpm_ibmvtpm_send failed rc=3D%d\n", rc);
->> +		dev_err(ibmvtpm->dev, "%s failed rc=3D%d\n", __func__, rc);
+> On Thu, Aug 17, 2017 at 11:04:21PM +0530, Arvind Yadav wrote:
+>> vio_device_id are not supposed to change at runtime. All functions
+>> working with vio_device_id provided by <asm/vio.h> work with
+>> const vio_device_id. So mark the non-const structs as const.
+>> 
+>> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 >
-> Can function name contain a %?
+> Reviewed-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 
-Let's hope not.
+Thanks Jason.
 
-$ git grep "%s.*__func__" | wc -l
-16937
+>>  drivers/char/tpm/tpm_ibmvtpm.c | 2 +-
+
+Who merges changes for this driver? I assume it's Jarkko?
 
 cheers
