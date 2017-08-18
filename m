@@ -1,15 +1,35 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjcq3VRRzDrJ8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:51:07 +1000 (AEST)
-In-Reply-To: <620568b89e995ed57f03da41857fb37584766a69.1502931841.git.sam.bobroff@au1.ibm.com>
-To: Sam bobroff <sam.bobroff@au1.ibm.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/1] selftests/powerpc: Improve tm-resched-dscr
-Message-Id: <3xYjcp27Hlz9t3s@ozlabs.org>
-Date: Fri, 18 Aug 2017 22:51:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjkp4wJczDrTD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:56:18 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7ICsfDb060067
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 08:56:16 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cdvjveddm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 08:56:15 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Fri, 18 Aug 2017 08:56:13 -0400
+Subject: Re: [PATCH 2/2] kvm/xive: Add missing barriers and document them
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org
+Cc: paulus@samba.org, linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Brian King <brking@linux.vnet.ibm.com>
+References: <1503022258.4493.133.camel@kernel.crashing.org>
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Date: Fri, 18 Aug 2017 09:56:08 -0300
+MIME-Version: 1.0
+In-Reply-To: <1503022258.4493.133.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <621d4044-5326-a294-8aa8-ea68affbd7b1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,25 +39,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-08-17 at 01:06:47 UTC, Sam bobroff wrote:
-> The tm-resched-dscr self test can, in some situations, run for
-> several minutes before being successfully interrupted by the context
-> switch it needs in order to perform the test. This often seems to
-> occur when the test is being run in a virtual machine.
+On 08/17/2017 11:10 PM, Benjamin Herrenschmidt wrote:
+> This adds missing memory barriers to order updates/tests of
+> the virtual CPPR and MFRR, thus fixing a lost IPI problem.
 > 
-> Improve the test by running it under eat_cpu() to guarantee
-> contention for the CPU and increase the chance of a context switch.
+> While at it also document all barriers in this file
 > 
-> In practice this seems to reduce the test time, in some cases, from
-> more than two minutes to under a second.
+> This fixes a bug causing guest IPIs to occasionally get lost.
 > 
-> Also remove the "progress dots" so that if the test does run for a
-> long time, it doesn't produce large amounts of unnecessary output.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Applied to powerpc next, thanks.
+Thanks Ben. Shouldn't this be marked to stable (v4.12+)?
+Also, if a Fixes tag is required:
 
-https://git.kernel.org/powerpc/c/99597ceda00b57396a176e08bd5e5c
+Fixes: 5af50993850a ("KVM: PPC: Book3S HV: Native usage of the XIVE
+interrupt controller").
 
-cheers
+Feel free to add my:
+Tested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+
+Cheers,
+
+
+Guilherme
+
+> ---
+>  arch/powerpc/kvm/book3s_xive_template.c | 57 +++++++++++++++++++++++++++++++--
+>  1 file changed, 55 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
+> index 150be86b1018..d1ed2c41b5d2 100644
+> --- a/arch/powerpc/kvm/book3s_xive_template.c
+> +++ b/arch/powerpc/kvm/book3s_xive_template.c
+> @@ -17,6 +17,12 @@ static void GLUE(X_PFX,ack_pending)(struct kvmppc_xive_vcpu *xc)
+>  	u16 ack;
+> 
+>  	/*
+> +	 * Ensure any previous store to CPPR is ordered vs.
+> +	 * the subsequent loads from PIPR or ACK.
+> +	 */
+> +	eieio();
+> +
+> +	/*
+>  	 * DD1 bug workaround: If PIPR is less favored than CPPR
+>  	 * ignore the interrupt or we might incorrectly lose an IPB
+>  	 * bit.
+> @@ -244,6 +250,11 @@ static u32 GLUE(X_PFX,scan_interrupts)(struct kvmppc_xive_vcpu *xc,
+>  	/*
+>  	 * If we found an interrupt, adjust what the guest CPPR should
+>  	 * be as if we had just fetched that interrupt from HW.
+> +	 *
+> +	 * Note: This can only make xc->cppr smaller as the previous
+> +	 * loop will only exit with hirq != 0 if prio is lower than
+> +	 * the current xc->cppr. Thus we don't need to re-check xc->mfrr
+> +	 * for pending IPIs.
+>  	 */
+>  	if (hirq)
+>  		xc->cppr = prio;
+> @@ -390,6 +401,12 @@ X_STATIC int GLUE(X_PFX,h_cppr)(struct kvm_vcpu *vcpu, unsigned long cppr)
+>  	xc->cppr = cppr;
+> 
+>  	/*
+> +	 * Order the above update of xc->cppr with the subsequent
+> +	 * read of xc->mfrr inside push_pending_to_hw()
+> +	 */
+> +	smp_mb();
+> +
+> +	/*
+>  	 * We are masking less, we need to look for pending things
+>  	 * to deliver and set VP pending bits accordingly to trigger
+>  	 * a new interrupt otherwise we might miss MFRR changes for
+> @@ -429,21 +446,37 @@ X_STATIC int GLUE(X_PFX,h_eoi)(struct kvm_vcpu *vcpu, unsigned long xirr)
+>  	 * used to signal MFRR changes is EOId when fetched from
+>  	 * the queue.
+>  	 */
+> -	if (irq == XICS_IPI || irq == 0)
+> +	if (irq == XICS_IPI || irq == 0) {
+> +		/*
+> +		 * This barrier orders the setting of xc->cppr vs.
+> +		 * subsquent test of xc->mfrr done inside
+> +		 * scan_interrupts and push_pending_to_hw
+> +		 */
+> +		smp_mb();
+>  		goto bail;
+> +	}
+> 
+>  	/* Find interrupt source */
+>  	sb = kvmppc_xive_find_source(xive, irq, &src);
+>  	if (!sb) {
+>  		pr_devel(" source not found !\n");
+>  		rc = H_PARAMETER;
+> +		/* Same as above */
+> +		smp_mb();
+>  		goto bail;
+>  	}
+>  	state = &sb->irq_state[src];
+>  	kvmppc_xive_select_irq(state, &hw_num, &xd);
+> 
+>  	state->in_eoi = true;
+> -	mb();
+> +
+> +	/*
+> +	 * This barrier orders both setting of in_eoi above vs,
+> +	 * subsequent test of guest_priority, and the setting
+> +	 * of xc->cppr vs. subsquent test of xc->mfrr done inside
+> +	 * scan_interrupts and push_pending_to_hw
+> +	 */
+> +	smp_mb();
+> 
+>  again:
+>  	if (state->guest_priority == MASKED) {
+> @@ -470,6 +503,14 @@ X_STATIC int GLUE(X_PFX,h_eoi)(struct kvm_vcpu *vcpu, unsigned long xirr)
+> 
+>  	}
+> 
+> +	/*
+> +	 * This barrier orders the above guest_priority check
+> +	 * and spin_lock/unlock with clearing in_eoi below.
+> +	 *
+> +	 * It also has to be a full mb() as it must ensure
+> +	 * the MMIOs done in source_eoi() are completed before
+> +	 * state->in_eoi is visible.
+> +	 */
+>  	mb();
+>  	state->in_eoi = false;
+>  bail:
+> @@ -504,6 +545,18 @@ X_STATIC int GLUE(X_PFX,h_ipi)(struct kvm_vcpu *vcpu, unsigned long server,
+>  	/* Locklessly write over MFRR */
+>  	xc->mfrr = mfrr;
+> 
+> +	/*
+> +	 * The load of xc->cppr below and the subsequent MMIO store
+> +	 * to the IPI must happen after the above mfrr update is
+> +	 * globally visible so that:
+> +	 *
+> +	 * - Synchronize with another CPU doing an H_EOI or a H_CPPR
+> +	 *   updating xc->cppr then reading xc->mfrr.
+> +	 *
+> +	 * - The target of the IPI sees the xc->mfrr update
+> +	 */
+> +	mb();
+> +
+>  	/* Shoot the IPI if most favored than target cppr */
+>  	if (mfrr < xc->cppr)
+>  		__x_writeq(0, __x_trig_page(&xc->vp_ipi_data));
+> 
