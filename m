@@ -1,40 +1,44 @@
 Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYpN63NnhzDqp5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 02:25:26 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7IGNgKV094594
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 12:25:23 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cdwm67ww0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYpWt2C0gzDqsF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 02:32:10 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7IGThaw047774
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 12:32:08 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ce0spcuph-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 12:25:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 12:32:07 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 18 Aug 2017 10:25:22 -0600
-Date: Fri, 18 Aug 2017 09:25:09 -0700
+ Fri, 18 Aug 2017 12:32:06 -0400
+Date: Fri, 18 Aug 2017 09:32:00 -0700
 From: Ram Pai <linuxram@us.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, paulus@samba.org,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, bauerman@linux.vnet.ibm.com,
- mhocko@kernel.org
-Subject: Re: [PATCH 7/7] powerpc: use helper functions to get and set hash
- slots
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org
+Subject: Re: [RFC v7 25/25] powerpc: Enable pkey subsystem
 Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1501459876-11357-1-git-send-email-linuxram@us.ibm.com>
- <1501459876-11357-8-git-send-email-linuxram@us.ibm.com>
- <87tw15oyqw.fsf@concordia.ellerman.id.au>
+References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
+ <1501459946-11619-26-git-send-email-linuxram@us.ibm.com>
+ <871sojkta1.fsf@linux.vnet.ibm.com>
+ <20170817174014.GG5505@ram.oc3035372033.ibm.com>
+ <87efsaym1o.fsf@linux.vnet.ibm.com>
+ <20170817234839.GD5427@ram.oc3035372033.ibm.com>
+ <8760dlqxa3.fsf@concordia.ellerman.id.au>
+ <87inhkoq1i.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87tw15oyqw.fsf@concordia.ellerman.id.au>
-Message-Id: <20170818162509.GA5545@ram.oc3035372033.ibm.com>
+In-Reply-To: <87inhkoq1i.fsf@linux.vnet.ibm.com>
+Message-Id: <20170818163200.GB5545@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,46 +48,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 18, 2017 at 10:18:31PM +1000, Michael Ellerman wrote:
-> Ram Pai <linuxram@us.ibm.com> writes:
+On Fri, Aug 18, 2017 at 12:26:33PM -0300, Thiago Jung Bauermann wrote:
 > 
-> > replace redundant code in __hash_page_64K(), __hash_page_huge(),
-> > __hash_page_4K(), __hash_page_4K() and flush_hash_page()   with
-> > helper functions pte_get_hash_gslot() and   pte_set_hash_slot()
+> Michael Ellerman <mpe@ellerman.id.au> writes:
 > 
-> This seems out of order.
+> > Ram Pai <linuxram@us.ibm.com> writes:
+> >> On Thu, Aug 17, 2017 at 05:30:27PM -0300, Thiago Jung Bauermann wrote:
+> >>> Ram Pai <linuxram@us.ibm.com> writes:
+> >>> > On Thu, Aug 10, 2017 at 06:27:34PM -0300, Thiago Jung Bauermann wrote:
+> >>> >> Ram Pai <linuxram@us.ibm.com> writes:
+> >>> >> > @@ -227,6 +229,24 @@ static inline void pkey_mm_init(struct mm_struct *mm)
+> >>> >> >  	mm->context.execute_only_pkey = -1;
+> >>> >> >  }
+> >>> >> >
+> >>> >> > +static inline void pkey_mmu_values(int total_data, int total_execute)
+> >>> >> > +{
+> >>> >> > +	/*
+> >>> >> > +	 * since any pkey can be used for data or execute, we
+> >>> >> > +	 * will  just  treat all keys as equal and track them
+> >>> >> > +	 * as one entity.
+> >>> >> > +	 */
+> >>> >> > +	pkeys_total = total_data + total_execute;
+> >>> >> > +}
+> >>> >> 
+> >>> >> Right now this works because the firmware reports 0 execute keys in the
+> >>> >> device tree, but if (when?) it is fixed to report 32 execute keys as
+> >>> >> well as 32 data keys (which are the same keys), any place using
+> >>> >> pkeys_total expecting it to mean the number of keys that are available
+> >>> >> will be broken. This includes pkey_initialize and mm_pkey_is_allocated.
+> >>> >
+> >>> > Good point. we should just ignore total_execute. It should
+> >>> > be the same value as total_data on the latest platforms.
+> >>> > On older platforms it will continue to be zero.
+> >>> 
+> >>> Indeed. There should just be a special case to disable execute
+> >>> protection for P7.
+> >>
+> >> Ok. we should disable execute protection for P7 and earlier generations of CPU.
+> >
+> > You should do what the device tree says you can do.
+> >
+> > If it says there are no execute keys then you shouldn't touch the IAMR.
 > 
-> At lease some of these are patching or even entirely replacing code you
-> just added.
-> 
-> > diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-> > index 5964b6d..e6dcd50 100644
-> > --- a/arch/powerpc/mm/hugetlbpage-hash64.c
-> > +++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-> > @@ -112,18 +103,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
-> >  			return -1;
-> >  		}
-> >  
-> > -#ifdef CONFIG_PPC_64K_PAGES
-> > -		/*
-> > -		 * Insert slot number & secondary bit in PTE second half.
-> > -		 */
-> > -		hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-> > -		rpte.hidx &= ~(0xfUL);
-> > -		*hidxp = rpte.hidx  | (slot & 0xfUL);
-> > -		/*
-> > -		 * check __real_pte for details on matching smp_rmb()
-> > -		 */
-> > -		smp_wmb();
-> > -#endif /* CONFIG_PPC_64K_PAGES */
-> > +		new_pte |= pte_set_hash_slot(ptep, rpte, 0, slot);
-> >  	}
-> 
-> Here for example. That entire chunk was just added in patch in 2.
+> The downside of that approach is that the device tree in P8 LPARs
+> currently says there are no execute keys even though there are. We'd
+> have to require customers to upgrade their firmware to a fixed version
+> if they want to use execute keys.
 
-Had it that way in my earlier patch series. But others found it
-difficult to review its correctness. So had to have the code inline
-first, followed by the modularization later; in this patch series.
-Looks like you prefer it the earlier way. Will do in the next series.
+Correct. the device tree for this property currently does not correctly
+capture the number of execute keys.
+
+On skiboot based systems, there is not device tree property to refer to
+aswell. Thiago has a patch to fix it, but existing systems without the
+skiboot fix, will not expose that property.
+
+So unfortunately we will have to rely on multiple peices of information
+to enable the pkey system in the kernel.
+
 
 RP
+
+> 
+> -- 
+> Thiago Jung Bauermann
+> IBM Linux Technology Center
+
+-- 
+Ram Pai
