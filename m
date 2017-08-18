@@ -3,39 +3,43 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYNGH3FB7zDqMV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 09:48:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYP4R0MxTzDrK0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 10:25:26 +1000 (AEST)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7HNmfcQ131007
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 19:48:53 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cddrk5ajh-1
+ v7I0OqFg071448
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 20:25:24 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cddrk6t4t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 19:48:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Aug 2017 20:25:24 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 17 Aug 2017 19:48:52 -0400
-Date: Thu, 17 Aug 2017 16:48:39 -0700
+ Thu, 17 Aug 2017 18:25:23 -0600
+Date: Thu, 17 Aug 2017 17:25:12 -0700
 From: Ram Pai <linuxram@us.ibm.com>
 To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org
-Subject: Re: [RFC v7 25/25] powerpc: Enable pkey subsystem
+Cc: linuxppc-dev@lists.ozlabs.org, x86@kernel.org, linux-mm@kvack.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, Haren Myneni <hbabu@us.ibm.com>,
+ Michal Hocko <mhocko@kernel.org>
+Subject: Re: [RFC v7 26/25] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys: Add
+ sysfs interface
 Reply-To: Ram Pai <linuxram@us.ibm.com>
 References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-26-git-send-email-linuxram@us.ibm.com>
- <871sojkta1.fsf@linux.vnet.ibm.com>
- <20170817174014.GG5505@ram.oc3035372033.ibm.com>
- <87efsaym1o.fsf@linux.vnet.ibm.com>
+ <20170811173443.6227-1-bauerman@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87efsaym1o.fsf@linux.vnet.ibm.com>
-Message-Id: <20170817234839.GD5427@ram.oc3035372033.ibm.com>
+In-Reply-To: <20170811173443.6227-1-bauerman@linux.vnet.ibm.com>
+Message-Id: <20170818002512.GE5427@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,121 +49,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 17, 2017 at 05:30:27PM -0300, Thiago Jung Bauermann wrote:
+On Fri, Aug 11, 2017 at 02:34:43PM -0300, Thiago Jung Bauermann wrote:
+> Expose useful information for programs using memory protection keys.
+> Provide implementation for powerpc and x86.
 > 
-> Ram Pai <linuxram@us.ibm.com> writes:
+> On a powerpc system with pkeys support, here is what is shown:
 > 
-> > On Thu, Aug 10, 2017 at 06:27:34PM -0300, Thiago Jung Bauermann wrote:
-> >> 
-> >> Ram Pai <linuxram@us.ibm.com> writes:
-> >> > --- a/arch/powerpc/include/asm/cputable.h
-> >> > +++ b/arch/powerpc/include/asm/cputable.h
-> >> > @@ -214,6 +214,7 @@ enum {
-> >> >  #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
-> >> >  #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
-> >> >  #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
-> >> > +#define CPU_FTR_PKEY			LONG_ASM_CONST(0x2000000000000000)
-> >> >  #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
-> >> >
-> >> >  #ifndef __ASSEMBLY__
-> >> > @@ -452,7 +453,7 @@ enum {
-> >> >  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
-> >> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
-> >> >  	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
-> >> > -	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX)
-> >> > +	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX | CPU_FTR_PKEY)
-> >> 
-> >> P7 supports protection keys for data access (AMR) but not for
-> >> instruction access (IAMR), right? There's nothing in the code making
-> >> this distinction, so either CPU_FTR_PKEY shouldn't be enabled in P7 or
-> >> separate feature bits for AMR and IAMR should be used and checked before
-> >> trying to access the IAMR.
-> >
-> > did'nt David say P7 supports both? P6, i think, only support data.
-> > my pkey tests have passed on p7.
-> 
-> He said that P7 was the first processor to support 32 keys, but if you
-> look at the Virtual Page Class Key Protection section in ISA 2.06,
-> there's no IAMR.
-> 
-> There was a bug in the code where init_iamr was calling write_amr
-> instead of write_iamr, perhaps that's why it worked when you tested on P7?
-> 
-> >> 
-> >> >  #define CPU_FTRS_POWER8 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-> >> >  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
-> >> >  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> >> > @@ -462,7 +463,7 @@ enum {
-> >> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
-> >> >  	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
-> >> >  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
-> >> > -	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP)
-> >> > +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_PKEY)
-> >> >  #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
-> >> >  #define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
-> >> >  #define CPU_FTRS_POWER9 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-> >> > @@ -474,7 +475,8 @@ enum {
-> >> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
-> >> >  	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
-> >> >  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
-> >> > -	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
-> >> > +	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | \
-> >> > +	    CPU_FTR_PKEY)
-> >> >  #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
-> >> >  			     (~CPU_FTR_SAO))
-> >> >  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-> >> > diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> >> > index a1cfcca..acd59d8 100644
-> >> > --- a/arch/powerpc/include/asm/mmu_context.h
-> >> > +++ b/arch/powerpc/include/asm/mmu_context.h
-> >> > @@ -188,6 +188,7 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
-> >> >
-> >> >  #define pkey_initialize()
-> >> >  #define pkey_mm_init(mm)
-> >> > +#define pkey_mmu_values(total_data, total_execute)
-> >> >
-> >> >  static inline int vma_pkey(struct vm_area_struct *vma)
-> >> >  {
-> >> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> >> > index ba7bff6..e61ed6c 100644
-> >> > --- a/arch/powerpc/include/asm/pkeys.h
-> >> > +++ b/arch/powerpc/include/asm/pkeys.h
-> >> > @@ -1,6 +1,8 @@
-> >> >  #ifndef _ASM_PPC64_PKEYS_H
-> >> >  #define _ASM_PPC64_PKEYS_H
-> >> >
-> >> > +#include <asm/firmware.h>
-> >> > +
-> >> >  extern bool pkey_inited;
-> >> >  extern int pkeys_total; /* total pkeys as per device tree */
-> >> >  extern u32 initial_allocation_mask;/* bits set for reserved keys */
-> >> > @@ -227,6 +229,24 @@ static inline void pkey_mm_init(struct mm_struct *mm)
-> >> >  	mm->context.execute_only_pkey = -1;
-> >> >  }
-> >> >
-> >> > +static inline void pkey_mmu_values(int total_data, int total_execute)
-> >> > +{
-> >> > +	/*
-> >> > +	 * since any pkey can be used for data or execute, we
-> >> > +	 * will  just  treat all keys as equal and track them
-> >> > +	 * as one entity.
-> >> > +	 */
-> >> > +	pkeys_total = total_data + total_execute;
-> >> > +}
-> >> 
-> >> Right now this works because the firmware reports 0 execute keys in the
-> >> device tree, but if (when?) it is fixed to report 32 execute keys as
-> >> well as 32 data keys (which are the same keys), any place using
-> >> pkeys_total expecting it to mean the number of keys that are available
-> >> will be broken. This includes pkey_initialize and mm_pkey_is_allocated.
-> >
-> > Good point. we should just ignore total_execute. It should
-> > be the same value as total_data on the latest platforms.
-> > On older platforms it will continue to be zero.
-> 
-> Indeed. There should just be a special case to disable execute
-> protection for P7.
+> $ head /sys/kernel/mm/protection_keys/*
+> ==> /sys/kernel/mm/protection_keys/disable_execute_supported <==
+> true
 
-Ok. we should disable execute protection for P7 and earlier generations of CPU.
+We should not just call out disable_execute_supported.
+disable_access_supported and disable_write_supported should also 
+be called out.
 
-RP.
+> 
+> ==> /sys/kernel/mm/protection_keys/total_keys <==
+> 32
+> 
+
+> ==> /sys/kernel/mm/protection_keys/usable_keys <==
+> 30
+
+This is little nebulous.  It depends on how we define
+usable as.  Is it the number of keys that are available
+to the app?  If that is the case that value is dynamic.
+Sometime the OS steals one key for execute-only key.
+And anything that is dynamic can be inherently racy.
+So I think we should define 'usable' as guaranteed number
+of keys available to the app and display a value that is
+one less than what is available.
+
+in the above example the value should be 29.
+
+RP
