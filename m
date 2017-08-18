@@ -1,16 +1,16 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0083.outbound.protection.outlook.com [104.47.33.83])
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0082.outbound.protection.outlook.com [104.47.38.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYcQM3MSlzDrLq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 18:56:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYcQQ2T0lzDrMw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 18:56:46 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>, <davem@davemloft.net>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/6] dpaa_eth: enable Rx hashing control
-Date: Fri, 18 Aug 2017 11:56:25 +0300
-Message-ID: <1503046588-24349-4-git-send-email-madalin.bucur@nxp.com>
+Subject: [PATCH 6/6] dpaa_eth: check allocation result
+Date: Fri, 18 Aug 2017 11:56:28 +0300
+Message-ID: <1503046588-24349-7-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1503046588-24349-1-git-send-email-madalin.bucur@nxp.com>
 References: <1503046588-24349-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -25,143 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allow ethtool control of the Rx flow hashing. By default RSS is
-enabled, this allows to turn it off by bypassing the FMan Keygen
-block and sending all traffic on the default Rx frame queue.
-
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c | 113 +++++++++++++++++++++
- 1 file changed, 113 insertions(+)
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-index aad825088..965f652 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-@@ -399,6 +399,117 @@ static void dpaa_get_strings(struct net_device *net_dev, u32 stringset,
- 	memcpy(strings, dpaa_stats_global, size);
- }
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+index ef30038..ff7f153 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -2557,6 +2557,9 @@ static struct dpaa_bp *dpaa_bp_alloc(struct device *dev)
  
-+static int dpaa_get_hash_opts(struct net_device *dev,
-+			      struct ethtool_rxnfc *cmd)
-+{
-+	cmd->data = 0;
+ 	dpaa_bp->bpid = FSL_DPAA_BPID_INV;
+ 	dpaa_bp->percpu_count = devm_alloc_percpu(dev, *dpaa_bp->percpu_count);
++	if (!dpaa_bp->percpu_count)
++		return ERR_PTR(-ENOMEM);
 +
-+	switch (cmd->flow_type) {
-+	case TCP_V4_FLOW:
-+	case TCP_V6_FLOW:
-+	case UDP_V4_FLOW:
-+	case UDP_V6_FLOW:
-+		cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
-+		/* Fall through */
-+	case IPV4_FLOW:
-+	case IPV6_FLOW:
-+	case SCTP_V4_FLOW:
-+	case SCTP_V6_FLOW:
-+	case AH_ESP_V4_FLOW:
-+	case AH_ESP_V6_FLOW:
-+	case AH_V4_FLOW:
-+	case AH_V6_FLOW:
-+	case ESP_V4_FLOW:
-+	case ESP_V6_FLOW:
-+		cmd->data |= RXH_IP_SRC | RXH_IP_DST;
-+		break;
-+	default:
-+		cmd->data = 0;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int dpaa_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
-+			  u32 *unused)
-+{
-+	int ret = -EOPNOTSUPP;
-+
-+	switch (cmd->cmd) {
-+	case ETHTOOL_GRXFH:
-+		ret = dpaa_get_hash_opts(dev, cmd);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static void dpaa_set_hash(struct net_device *net_dev, bool enable)
-+{
-+	struct mac_device *mac_dev;
-+	struct fman_port *rxport;
-+	struct dpaa_priv *priv;
-+
-+	priv = netdev_priv(net_dev);
-+	mac_dev = priv->mac_dev;
-+	rxport = mac_dev->port[0];
-+
-+	fman_port_use_kg_hash(rxport, enable);
-+}
-+
-+static int dpaa_set_hash_opts(struct net_device *dev,
-+			      struct ethtool_rxnfc *nfc)
-+{
-+	int ret = -EINVAL;
-+
-+	/* we support hashing on IPv4/v6 src/dest IP and L4 src/dest port */
-+	if (nfc->data &
-+	    ~(RXH_IP_SRC | RXH_IP_DST | RXH_L4_B_0_1 | RXH_L4_B_2_3))
-+		return -EINVAL;
-+
-+	switch (nfc->flow_type) {
-+	case TCP_V4_FLOW:
-+	case TCP_V6_FLOW:
-+	case UDP_V4_FLOW:
-+	case UDP_V6_FLOW:
-+	case IPV4_FLOW:
-+	case IPV6_FLOW:
-+	case SCTP_V4_FLOW:
-+	case SCTP_V6_FLOW:
-+	case AH_ESP_V4_FLOW:
-+	case AH_ESP_V6_FLOW:
-+	case AH_V4_FLOW:
-+	case AH_V6_FLOW:
-+	case ESP_V4_FLOW:
-+	case ESP_V6_FLOW:
-+		dpaa_set_hash(dev, !!nfc->data);
-+		ret = 0;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static int dpaa_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
-+{
-+	int ret = -EOPNOTSUPP;
-+
-+	switch (cmd->cmd) {
-+	case ETHTOOL_SRXFH:
-+		ret = dpaa_set_hash_opts(dev, cmd);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
- const struct ethtool_ops dpaa_ethtool_ops = {
- 	.get_drvinfo = dpaa_get_drvinfo,
- 	.get_msglevel = dpaa_get_msglevel,
-@@ -412,4 +523,6 @@ const struct ethtool_ops dpaa_ethtool_ops = {
- 	.get_strings = dpaa_get_strings,
- 	.get_link_ksettings = dpaa_get_link_ksettings,
- 	.set_link_ksettings = dpaa_set_link_ksettings,
-+	.get_rxnfc = dpaa_get_rxnfc,
-+	.set_rxnfc = dpaa_set_rxnfc,
- };
+ 	dpaa_bp->config_count = FSL_DPAA_ETH_MAX_BUF_COUNT;
+ 
+ 	dpaa_bp->seed_cb = dpaa_bp_seed;
 -- 
 2.1.0
