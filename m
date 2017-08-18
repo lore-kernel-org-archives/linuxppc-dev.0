@@ -2,16 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjcd44zMzDr4X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:50:57 +1000 (AEST)
-In-Reply-To: <1501076076-1974-6-git-send-email-douly.fnst@cn.fujitsu.com>
-To: Dou Liyang <douly.fnst@cn.fujitsu.com>, <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjcf6vL4zDr4X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:50:58 +1000 (AEST)
+In-Reply-To: <20170728050127.28338-1-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Dou Liyang <douly.fnst@cn.fujitsu.com>
-Subject: Re: [05/11] powerpc/topology: Remove the unused parent_node() macro
-Message-Id: <3xYjcd3Y8Sz9t3p@ozlabs.org>
-Date: Fri, 18 Aug 2017 22:50:57 +1000 (AEST)
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [v4,
+ 1/3] mm/hugetlb: Allow arch to override and call the weak function
+Message-Id: <3xYjcf4rldz9t30@ozlabs.org>
+Date: Fri, 18 Aug 2017 22:50:58 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-07-26 at 13:34:30 UTC, Dou Liyang wrote:
-> Commit a7be6e5a7f8d ("mm: drop useless local parameters of
-> __register_one_node()") removes the last user of parent_node().
+On Fri, 2017-07-28 at 05:01:25 UTC, "Aneesh Kumar K.V" wrote:
+> When running in guest mode ppc64 supports a different mechanism for hugetlb
+> allocation/reservation. The LPAR management application called HMC can
+> be used to reserve a set of hugepages and we pass the details of
+> reserved pages via device tree to the guest. (more details in
+> htab_dt_scan_hugepage_blocks()) . We do the memblock_reserve of the range
+> and later in the boot sequence, we add the reserved range to huge_boot_pages.
 > 
-> The parent_node() macro in POWERPC platform is unnecessary.
+> But to enable 16G hugetlb on baremetal config (when we are not running as guest)
+> we want to do memblock reservation during boot. Generic code already does this
 > 
-> Remove it for cleanup.
-> 
-> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Dou Liyang <douly.fnst@cn.fujitsu.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7baebe54a64af44dc34d0bd51462f0
+https://git.kernel.org/powerpc/c/e24a1307ba1f99fc62a0bd61d5e87f
 
 cheers
