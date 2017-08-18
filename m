@@ -1,27 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYWKd1rB1zDrJQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 15:07:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ram Pai <linuxram@us.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org
-Subject: Re: [RFC v7 25/25] powerpc: Enable pkey subsystem
-In-Reply-To: <20170817234839.GD5427@ram.oc3035372033.ibm.com>
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-26-git-send-email-linuxram@us.ibm.com>
- <871sojkta1.fsf@linux.vnet.ibm.com>
- <20170817174014.GG5505@ram.oc3035372033.ibm.com>
- <87efsaym1o.fsf@linux.vnet.ibm.com>
- <20170817234839.GD5427@ram.oc3035372033.ibm.com>
-Date: Fri, 18 Aug 2017 15:07:16 +1000
-Message-ID: <8760dlqxa3.fsf@concordia.ellerman.id.au>
+Return-Path: <mroos@linux.ee>
+Received: from smtp1.it.da.ut.ee (mailhost6-1.ut.ee
+ [IPv6:2001:bb8:2002:500::46])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xYXNy5Yz8zDrJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 15:55:14 +1000 (AEST)
+Date: Fri, 18 Aug 2017 08:37:46 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+Sender: mroos@math.ut.ee
+To: Linux Kernel list <linux-kernel@vger.kernel.org>,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: 32-bit powerpc, aty128fb: vmap allocation for size 135168 failed
+Message-ID: <alpine.LRH.2.20.1708180825590.15982@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +21,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
-> On Thu, Aug 17, 2017 at 05:30:27PM -0300, Thiago Jung Bauermann wrote:
->> Ram Pai <linuxram@us.ibm.com> writes:
->> > On Thu, Aug 10, 2017 at 06:27:34PM -0300, Thiago Jung Bauermann wrote:
->> >> Ram Pai <linuxram@us.ibm.com> writes:
->> >> > @@ -227,6 +229,24 @@ static inline void pkey_mm_init(struct mm_struct *mm)
->> >> >  	mm->context.execute_only_pkey = -1;
->> >> >  }
->> >> >
->> >> > +static inline void pkey_mmu_values(int total_data, int total_execute)
->> >> > +{
->> >> > +	/*
->> >> > +	 * since any pkey can be used for data or execute, we
->> >> > +	 * will  just  treat all keys as equal and track them
->> >> > +	 * as one entity.
->> >> > +	 */
->> >> > +	pkeys_total = total_data + total_execute;
->> >> > +}
->> >> 
->> >> Right now this works because the firmware reports 0 execute keys in the
->> >> device tree, but if (when?) it is fixed to report 32 execute keys as
->> >> well as 32 data keys (which are the same keys), any place using
->> >> pkeys_total expecting it to mean the number of keys that are available
->> >> will be broken. This includes pkey_initialize and mm_pkey_is_allocated.
->> >
->> > Good point. we should just ignore total_execute. It should
->> > be the same value as total_data on the latest platforms.
->> > On older platforms it will continue to be zero.
->> 
->> Indeed. There should just be a special case to disable execute
->> protection for P7.
->
-> Ok. we should disable execute protection for P7 and earlier generations of CPU.
+I was trying 4.13.0-rc5-00075-gac9a40905a61 on my PowerMac G4 with 1G 
+RAM and after some time of sddm respawning and X trying to restart, 
+dmesg is full of messages about vmap allocation failures.
 
-You should do what the device tree says you can do.
+Maybe the aty128fb is leaking ROM allocations or something like that?
 
-If it says there are no execute keys then you shouldn't touch the IAMR.
+sddm has been crashing eearlier too but I have not investigated it yet, 
+but right after reboot the messages are about ATI ROM contents:
 
-If you don't want to handle the case where there are 0 execute keys but
-some data keys then you should do:
+Aug 17 23:53:57 pohl kernel: [ 2940.146546] aty128fb 0000:00:10.0: Invalid PCI ROM header signature: expecting 0xaa55, got 0x1111
+Aug 17 23:54:02 pohl kernel: [ 2944.804838] aty128fb 0000:00:10.0: Invalid PCI ROM header signature: expecting 0xaa55, got 0x1110
+Aug 17 23:54:06 pohl kernel: [ 2948.992457] sddm[14039]: unhandled signal 11 at 00000030 nip 00000030 lr 0f55f858 code 30001
 
-  total_keys = min(data_keys, exec_keys);
+Then it changes to groups like this:
+Aug 17 23:54:29 pohl kernel: [ 2971.514484] sddm[14093]: unhandled signal 11 at 00000090 nip 00000090 lr 0f55f858 code 30001
+Aug 17 23:54:30 pohl kernel: [ 2972.994486] aty128fb 0000:00:10.0: Invalid PCI ROM header signature: expecting 0xaa55, got 0x1111
+Aug 17 23:54:30 pohl kernel: [ 2973.040595] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+Aug 17 23:54:33 pohl kernel: [ 2976.245220] aty128fb 0000:00:10.0: Invalid PCI ROM header signature: expecting 0xaa55, got 0x1111
+Aug 17 23:54:33 pohl kernel: [ 2976.295452] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+
+And finally it becomes just vmalloc errors, no ATI ROM messages at all:
+
+[32075.316981] sddm[14563]: unhandled signal 11 at 00000050 nip 00000050 lr 0f55f858 code 30001
+[32076.766965] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32076.788476] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32079.124735] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32079.146326] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32081.305352] sddm[14590]: unhandled signal 11 at 00000050 nip 00000050 lr 0f55f858 code 30001
+[32082.768060] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32082.789530] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32085.125847] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32085.147228] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32087.311193] sddm[14617]: unhandled signal 11 at 00430068 nip 00430068 lr 0f55f858 code 30001
+[32088.767983] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32088.789536] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32091.108732] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32091.130348] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32093.285222] sddm[14644]: unhandled signal 11 at 00000050 nip 00000050 lr 0f55f858 code 30001
+[32094.767678] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32094.789329] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32097.128241] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32097.149745] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32099.293082] sddm[14671]: unhandled signal 11 at 00000030 nip 00000030 lr 0f55f858 code 30001
+[32100.768030] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32100.789505] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
+[32103.124223] vmap allocation for size 135168 failed: use vmalloc=<size> to increase size
+[32103.145881] vmap allocation for size 3149824 failed: use vmalloc=<size> to increase size
 
 
-cheers
+# cat /proc/meminfo 
+MemTotal:        1031440 kB
+MemFree:          135948 kB
+MemAvailable:     889288 kB
+Buffers:          215448 kB
+Cached:           573780 kB
+SwapCached:           44 kB
+Active:           430480 kB
+Inactive:         392416 kB
+Active(anon):      14984 kB
+Inactive(anon):    92276 kB
+Active(file):     415496 kB
+Inactive(file):   300140 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+HighTotal:        262144 kB
+HighFree:          22140 kB
+LowTotal:         769296 kB
+LowFree:          113808 kB
+SwapTotal:        848984 kB
+SwapFree:         848464 kB
+Dirty:               180 kB
+Writeback:             0 kB
+AnonPages:         33640 kB
+Mapped:            84392 kB
+Shmem:             73592 kB
+Slab:              66972 kB
+SReclaimable:      54952 kB
+SUnreclaim:        12020 kB
+KernelStack:         680 kB
+PageTables:         1344 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     1364704 kB
+Committed_AS:     351992 kB
+VmallocTotal:     211808 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+
+
+
+-- 
+Meelis Roos (mroos@linux.ee)
