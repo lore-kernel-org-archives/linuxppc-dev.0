@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjcc5YdHzDr4X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:50:56 +1000 (AEST)
-In-Reply-To: <d6a1a353de6a87bb5474ca9f1c1ff7ab2c4a1eb4.1490641759.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Matthew Wilcox <willy@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjcd44zMzDr4X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:50:57 +1000 (AEST)
+In-Reply-To: <1501076076-1974-6-git-send-email-douly.fnst@cn.fujitsu.com>
+To: Dou Liyang <douly.fnst@cn.fujitsu.com>, <linux-kernel@vger.kernel.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [1/2] powerpc: string: implement optimized memset variants
-Message-Id: <3xYjcc4yVMz9t3m@ozlabs.org>
-Date: Fri, 18 Aug 2017 22:50:56 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Dou Liyang <douly.fnst@cn.fujitsu.com>
+Subject: Re: [05/11] powerpc/topology: Remove the unused parent_node() macro
+Message-Id: <3xYjcd3Y8Sz9t3p@ozlabs.org>
+Date: Fri, 18 Aug 2017 22:50:57 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,13 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-03-27 at 19:37:40 UTC, "Naveen N. Rao" wrote:
-> Based on Matthew Wilcox's patches for other architectures.
+On Wed, 2017-07-26 at 13:34:30 UTC, Dou Liyang wrote:
+> Commit a7be6e5a7f8d ("mm: drop useless local parameters of
+> __register_one_node()") removes the last user of parent_node().
 > 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> The parent_node() macro in POWERPC platform is unnecessary.
+> 
+> Remove it for cleanup.
+> 
+> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Dou Liyang <douly.fnst@cn.fujitsu.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/694fc88ce271fd48f7939c032c1247
+https://git.kernel.org/powerpc/c/7baebe54a64af44dc34d0bd51462f0
 
 cheers
