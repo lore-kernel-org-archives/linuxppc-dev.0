@@ -2,16 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjcn2zY8zDr9H
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:51:05 +1000 (AEST)
-In-Reply-To: <1502900494-10010-1-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYjcq3VRRzDrJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:51:07 +1000 (AEST)
+In-Reply-To: <620568b89e995ed57f03da41857fb37584766a69.1502931841.git.sam.bobroff@au1.ibm.com>
+To: Sam bobroff <sam.bobroff@au1.ibm.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/perf: Fix usage of nest_imc_refc
-Message-Id: <3xYjcm6L2Nz9t3f@ozlabs.org>
-Date: Fri, 18 Aug 2017 22:51:04 +1000 (AEST)
+Subject: Re: [1/1] selftests/powerpc: Improve tm-resched-dscr
+Message-Id: <3xYjcp27Hlz9t3s@ozlabs.org>
+Date: Fri, 18 Aug 2017 22:51:05 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-16 at 16:21:34 UTC, Madhavan Srinivasan wrote:
-> nest_imc_refc is a reference count struct,
-> used to track number of active perf sessions
-> using the nest units.
+On Thu, 2017-08-17 at 01:06:47 UTC, Sam bobroff wrote:
+> The tm-resched-dscr self test can, in some situations, run for
+> several minutes before being successfully interrupted by the context
+> switch it needs in order to perform the test. This often seems to
+> occur when the test is being run in a virtual machine.
 > 
-> It is preferred to access nest_imc_refc using
-> per-cpu pointer 'local_nest_imc_refc'. Since,
-> nest_imc_refc is not initialized using node_id
-> as array index. Patch to fix the same.
+> Improve the test by running it under eat_cpu() to guarantee
+> contention for the CPU and increase the chance of a context switch.
 > 
-> Fixes: 885dcd709ba91 ('powerpc/perf: Add nest IMC PMU support')
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> In practice this seems to reduce the test time, in some cases, from
+> more than two minutes to under a second.
+> 
+> Also remove the "progress dots" so that if the test does run for a
+> long time, it doesn't produce large amounts of unnecessary output.
+> 
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/711bd207a233141308d0aea0d2e286
+https://git.kernel.org/powerpc/c/99597ceda00b57396a176e08bd5e5c
 
 cheers
