@@ -1,32 +1,45 @@
-Return-Path: <Bart.VanAssche@wdc.com>
-Received: from esa1.hgst.iphmx.com (esa1.hgst.iphmx.com [68.232.141.245])
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYy5x56BMzDqrS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 08:13:41 +1000 (AEST)
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>,
- "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "hch@lst.de" <hch@lst.de>, "linux-scsi@vger.kernel.org"
- <linux-scsi@vger.kernel.org>, "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>, "hare@suse.com"
- <hare@suse.com>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-Subject: Re: [BUG][bisected 270065e] linux-next fails to boot on powerpc
-Date: Fri, 18 Aug 2017 22:13:36 +0000
-Message-ID: <1503094414.2622.21.camel@wdc.com>
-References: <1502902815.3305.22.camel@abdul.in.ibm.com>
- <1502904072.2421.3.camel@wdc.com>
- <2f686064-3e32-df8d-134f-962b5181da9d@linux.vnet.ibm.com>
- <1502985161.2615.8.camel@wdc.com>
- <71fb9c1b-9f3f-acdc-8bb5-aa1240aea763@linux.vnet.ibm.com>
- <1503092473.2622.17.camel@wdc.com>
- <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
-In-Reply-To: <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYycz5vm2zDqb6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 08:37:07 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7IMYCTE132970
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 18:37:05 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ce0x0tj6b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 18:37:04 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 18 Aug 2017 16:37:04 -0600
+Date: Fri, 18 Aug 2017 15:36:55 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org
+Subject: Re: [RFC v7 24/25] powerpc: Deliver SEGV signal on pkey violation
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
+ <1501459946-11619-25-git-send-email-linuxram@us.ibm.com>
+ <87378zkuil.fsf@linux.vnet.ibm.com>
+ <87a836csdl.fsf@concordia.ellerman.id.au>
+ <20170817171408.GF5505@ram.oc3035372033.ibm.com>
+ <878tihqy5c.fsf@concordia.ellerman.id.au>
+ <20170818170410.GC5545@ram.oc3035372033.ibm.com>
+ <1503093260.5164.11.camel@kernel.crashing.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1503093260.5164.11.camel@kernel.crashing.org>
+Message-Id: <20170818223655.GE5545@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,21 +49,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gRnJpLCAyMDE3LTA4LTE4IGF0IDE2OjU3IC0wNTAwLCBCcmlhbiBLaW5nIHdyb3RlOg0KPiBU
-byBhZGQgdG8gbXkgYW5hbHlzaXMgYWJvdmUsICM5IHNob3VsZCBub3QgYmUgdGhlcmUuLi4gSXQg
-bG9va3MgbGlrZQ0KPiBqaWZmaWVzX2F0X2FsbG9jIHdvdWxkIGFsc28gYmUgZ2V0dGluZyByZWlu
-aXRpYWxpemVkIGluIHRoaXMgY2FzZSwgcmVzdWx0aW5nIGluDQo+IGEgcGVycGV0dWFsIHJldHJ5
-LCB3aGljaCBpcyB3aGF0IEkgd2FzIHNlZWluZy4NCg0KSGVsbG8gQnJpYW4sDQoNClNvbWUgdGlt
-ZSBhZ28gSSBub3RpY2VkIHRoYXQgamlmZmllc19hdF9hbGxvYyBpcyBpbmRlZWQgc2V0IHdoaWxl
-IGEgY29tbWFuZA0KaXMgYmVpbmcgcHJlcGFyZWQgaW5zdGVhZCBvZiBhdCBjb21tYW5kIGFsbG9j
-YXRpb24gdGltZS4gSSB0aGluayB0aGF0DQpiZWhhdmlvciB3YXMgaW50cm9kdWNlZCBpbiAyMDA1
-IHRocm91Z2ggY29tbWl0IGIyMWE0MTM4NTExOCAoIltTQ1NJXSBhZGQNCmdsb2JhbCB0aW1lb3V0
-IHRvIHRoZSBzY3NpIG1pZC1sYXllciIpLiBBdCB0aGF0IHRpbWUgU0NTSSBjb21tYW5kcyB3ZXJl
-DQphbGxvY2F0ZWQgYXQgcHJlcCB0aW1lIGFuZCBmcmVlZCBhdCB1bnByZXAgdGltZS4gUmVjZW50
-bHkgdGhhdCBoYXMgYmVlbg0KY2hhbmdlZCBzdWNoIHRoYXQgYSBTQ1NJIGNvbW1hbmQgKHN0cnVj
-dCBzY3NpX2NtbmQpIGhhcyB0aGUgc2FtZSBsaWZldGltZSBhcw0Kc3RydWN0IHJlcXVlc3QuIElu
-IG90aGVyIHdvcmRzLCBpdCB3YXMgbm90IHBvc3NpYmxlIGluIDIwMDUgYnV0IGl0IGlzDQpwb3Nz
-aWJsZSB0b2RheSB0byBzZXQgamlmZmllc19hdF9hbGxvYyBhdCBjb21tYW5kIGFsbG9jYXRpb24g
-dGltZSBpbnN0ZWFkIG9mDQp3aGVuIGEgY29tbWFuZCBpcyBiZWluZyBwcmVwYXJlZC4gRG8geW91
-IHdhbnQgbWUgdG8gc3VibWl0IGEgcGF0Y2ggdGhhdA0KaW1wbGVtZW50cyB0aGlzIGNoYW5nZT8N
-Cg0KQmFydC4NCg0K
+On Sat, Aug 19, 2017 at 07:54:20AM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2017-08-18 at 10:04 -0700, Ram Pai wrote:
+> > Assume two threads of a task.
+> > 
+> > T1:  mprotect_key(foo, PAGE_SIZE, pkey=4);
+> > T1:  set AMR to disable access for pkey 4;
+> > T1:  key fault
+> >     T2: set AMR to enable access to pkey 4;
+> > T1:  fault handler called.
+> >         This fault handler will see the new AMR and not the
+> >         one at the time of the fault.
+> 
+> You aren't context switching AMR with the threads ? Ugh... something is
+> very wrong then.
+
+I do store and restore AMR accross context switch. So nevermind; the
+above problem cannot happen.
+
+RP
