@@ -1,21 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYhvD0CsQzDrLY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:18:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xYj5N3YC2zDqrS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 22:27:20 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- linuxram@us.ibm.com, bauerman@linux.vnet.ibm.com, mhocko@kernel.org
-Subject: Re: [PATCH 7/7] powerpc: use helper functions to get and set hash
- slots
-In-Reply-To: <1501459876-11357-8-git-send-email-linuxram@us.ibm.com>
-References: <1501459876-11357-1-git-send-email-linuxram@us.ibm.com>
- <1501459876-11357-8-git-send-email-linuxram@us.ibm.com>
-Date: Fri, 18 Aug 2017 22:18:31 +1000
-Message-ID: <87tw15oyqw.fsf@concordia.ellerman.id.au>
+To: Meelis Roos <mroos@linux.ee>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: 32-bit powerpc, aty128fb: vmap allocation for size 135168 failed
+In-Reply-To: <alpine.LRH.2.20.1708180825590.15982@math.ut.ee>
+References: <alpine.LRH.2.20.1708180825590.15982@math.ut.ee>
+Date: Fri, 18 Aug 2017 22:27:19 +1000
+Message-ID: <87mv6xjc2g.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,40 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
+Meelis Roos <mroos@linux.ee> writes:
 
-> replace redundant code in __hash_page_64K(), __hash_page_huge(),
-> __hash_page_4K(), __hash_page_4K() and flush_hash_page()   with
-> helper functions pte_get_hash_gslot() and   pte_set_hash_slot()
+> I was trying 4.13.0-rc5-00075-gac9a40905a61 on my PowerMac G4 with 1G 
+> RAM and after some time of sddm respawning and X trying to restart, 
+> dmesg is full of messages about vmap allocation failures.
 
-This seems out of order.
-
-At lease some of these are patching or even entirely replacing code you
-just added.
-
-> diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-> index 5964b6d..e6dcd50 100644
-> --- a/arch/powerpc/mm/hugetlbpage-hash64.c
-> +++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-> @@ -112,18 +103,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
->  			return -1;
->  		}
->  
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -		/*
-> -		 * Insert slot number & secondary bit in PTE second half.
-> -		 */
-> -		hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-> -		rpte.hidx &= ~(0xfUL);
-> -		*hidxp = rpte.hidx  | (slot & 0xfUL);
-> -		/*
-> -		 * check __real_pte for details on matching smp_rmb()
-> -		 */
-> -		smp_wmb();
-> -#endif /* CONFIG_PPC_64K_PAGES */
-> +		new_pte |= pte_set_hash_slot(ptep, rpte, 0, slot);
->  	}
-
-Here for example. That entire chunk was just added in patch in 2.
+Did it just start happening? ie. did rc4 work?
 
 cheers
