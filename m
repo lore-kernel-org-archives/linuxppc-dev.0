@@ -1,27 +1,20 @@
-Return-Path: <austindh.kim@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <bhumirks@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xZC4N1zSxzDqlD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 17:58:12 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id j83so728431pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 00:58:12 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170729072433.13194-6-sz.lin@moxa.com>
-References: <20170729072433.13194-1-sz.lin@moxa.com>
- <20170729072433.13194-6-sz.lin@moxa.com>
-From: =?UTF-8?B?6rmA64+Z7ZiE?= <austindh.kim@gmail.com>
-Date: Sat, 19 Aug 2017 16:58:09 +0900
-Message-ID: <CADLLry4Cdbdy3+gOpHrDhqbHhUdhWgGgWLeN-1MnuurbhS=ZfA@mail.gmail.com>
-Subject: Re: [PATCH 5/5] Use __func__ instead of function name
-To: SZ Lin <sz.lin@moxa.com>
-Cc: ashleydlai@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, peterhuewe@gmx.de, tpmdd@selhorst.ne,
- jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com,
- tpmdd-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xZJx655SSzDqgy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 22:22:18 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id j68so2909127pfc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 05:22:18 -0700 (PDT)
+From: Bhumika Goyal <bhumirks@gmail.com>
+To: julia.lawall@lip6.fr, linux-kernel@vger.kernel.org, qiang.zhao@nxp.com,
+ leoyang.li@nxp.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
+Subject: [PATCH] qe/ic: make irq_chip const
+Date: Sat, 19 Aug 2017 17:52:01 +0530
+Message-Id: <1503145321-13202-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,107 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I guess below code would be better idea to gather more debug information.
-diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index 643bba7..0aae785 100644
---- a/drivers/char/tpm/tpm_ibmvtpm.c
-+++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -141,6 +141,11 @@ static int tpm_ibmvtpm_send(struct tpm_chip
-*chip, u8 *buf, size_t count)
-                return -EIO;
-        }
+Make this const as it is only used in a copy operation.
+Done using Coccinelle.
 
-+       if (!buf) {
-+               dev_err(ibmvtpm->dev, "%s buf null at %d \n",__func__,
-rc, __LINE__);
-+               return 0;
-+       }
-+
-        spin_lock(&ibmvtpm->rtce_lock);
-        memcpy((void *)ibmvtpm->rtce_buf, (void *)buf, count);
-        crq.valid = (u8)IBMVTPM_VALID_CMD;
-@@ -150,8 +155,9 @@ static int tpm_ibmvtpm_send(struct tpm_chip *chip,
-u8 *buf, size_t count)
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+ drivers/soc/fsl/qe/qe_ic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-        rc = ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
-                              be64_to_cpu(word[1]));
-+
-        if (rc != H_SUCCESS) {
--               dev_err(ibmvtpm->dev, "tpm_ibmvtpm_send failed rc=%d\n", rc);
-+               dev_err(ibmvtpm->dev, "%s failed rc=%d at %d
-\n",__func__, rc, __LINE__);
-                rc = 0;
-        } else
-                rc = count;
-
-2017-07-29 16:24 GMT+09:00 SZ Lin <sz.lin@moxa.com>:
-> Fix following checkpatch.pl warning:
-> WARNING: Prefer using '"%s...", __func__' to using
-> the function's name, in a string
->
-> Signed-off-by: SZ Lin <sz.lin@moxa.com>
-> ---
->  drivers/char/tpm/tpm_ibmvtpm.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-> index e75a674b44ac..2d33acc43e25 100644
-> --- a/drivers/char/tpm/tpm_ibmvtpm.c
-> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
-> @@ -151,7 +151,7 @@ static int tpm_ibmvtpm_send(struct tpm_chip *chip, u8 *buf, size_t count)
->         rc = ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
->                               be64_to_cpu(word[1]));
->         if (rc != H_SUCCESS) {
-> -               dev_err(ibmvtpm->dev, "tpm_ibmvtpm_send failed rc=%d\n", rc);
-> +               dev_err(ibmvtpm->dev, "%s failed rc=%d\n", __func__, rc);
->                 rc = 0;
->                 ibmvtpm->tpm_processing_cmd = false;
->         } else
-> @@ -193,7 +193,7 @@ static int ibmvtpm_crq_get_rtce_size(struct ibmvtpm_dev *ibmvtpm)
->                               cpu_to_be64(buf[1]));
->         if (rc != H_SUCCESS)
->                 dev_err(ibmvtpm->dev,
-> -                       "ibmvtpm_crq_get_rtce_size failed rc=%d\n", rc);
-> +                       "%s failed rc=%d\n", __func__, rc);
->
->         return rc;
->  }
-> @@ -221,7 +221,7 @@ static int ibmvtpm_crq_get_version(struct ibmvtpm_dev *ibmvtpm)
->                               cpu_to_be64(buf[1]));
->         if (rc != H_SUCCESS)
->                 dev_err(ibmvtpm->dev,
-> -                       "ibmvtpm_crq_get_version failed rc=%d\n", rc);
-> +                       "%s failed rc=%d\n", __func__, rc);
->
->         return rc;
->  }
-> @@ -241,7 +241,7 @@ static int ibmvtpm_crq_send_init_complete(struct ibmvtpm_dev *ibmvtpm)
->         rc = ibmvtpm_send_crq(ibmvtpm->vdev, INIT_CRQ_COMP_CMD, 0);
->         if (rc != H_SUCCESS)
->                 dev_err(ibmvtpm->dev,
-> -                       "ibmvtpm_crq_send_init_complete failed rc=%d\n", rc);
-> +                       "%s rc=%d\n", __func__, rc);
->
->         return rc;
->  }
-> @@ -261,7 +261,7 @@ static int ibmvtpm_crq_send_init(struct ibmvtpm_dev *ibmvtpm)
->         rc = ibmvtpm_send_crq(ibmvtpm->vdev, INIT_CRQ_CMD, 0);
->         if (rc != H_SUCCESS)
->                 dev_err(ibmvtpm->dev,
-> -                       "ibmvtpm_crq_send_init failed rc=%d\n", rc);
-> +                       "%s failed rc=%d\n", __func__, rc);
->
->         return rc;
->  }
-> @@ -351,7 +351,7 @@ static int tpm_ibmvtpm_suspend(struct device *dev)
->                               cpu_to_be64(buf[1]));
->         if (rc != H_SUCCESS)
->                 dev_err(ibmvtpm->dev,
-> -                       "tpm_ibmvtpm_suspend failed rc=%d\n", rc);
-> +                       "%s failed rc=%d\n", __func__, rc);
->
->         return rc;
->  }
-> --
-> 2.13.3
->
+diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
+index ec2ca86..00f48d5 100644
+--- a/drivers/soc/fsl/qe/qe_ic.c
++++ b/drivers/soc/fsl/qe/qe_ic.c
+@@ -238,7 +238,7 @@ static void qe_ic_mask_irq(struct irq_data *d)
+ 	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
+ }
+ 
+-static struct irq_chip qe_ic_irq_chip = {
++static const struct irq_chip qe_ic_irq_chip = {
+ 	.name = "QEIC",
+ 	.irq_unmask = qe_ic_unmask_irq,
+ 	.irq_mask = qe_ic_mask_irq,
+-- 
+1.9.1
