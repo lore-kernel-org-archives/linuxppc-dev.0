@@ -1,42 +1,21 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xYzYb0fy4zDqvc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 09:19:14 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7INIcRP046599
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 19:19:12 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ce0spvh63-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Aug 2017 19:19:12 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 18 Aug 2017 17:19:11 -0600
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <20170811173443.6227-1-bauerman@linux.vnet.ibm.com>
- <20170818002512.GE5427@ram.oc3035372033.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [RFC v7 26/25] mm/mprotect, powerpc/mm/pkeys,
- x86/mm/pkeys: Add sysfs interface
-In-reply-to: <20170818002512.GE5427@ram.oc3035372033.ibm.com>
-Date: Fri, 18 Aug 2017 20:19:01 -0300
+Return-Path: <mroos@linux.ee>
+Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee
+ [IPv6:2001:bb8:2002:500:20f:1fff:fe04:1bbb])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xZ80k0D6zzDqYf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 15:39:47 +1000 (AEST)
+Date: Sat, 19 Aug 2017 08:39:40 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+Sender: mroos@math.ut.ee
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: 32-bit powerpc, aty128fb: vmap allocation for size 135168 failed
+In-Reply-To: <87mv6xjc2g.fsf@concordia.ellerman.id.au>
+Message-ID: <alpine.LRH.2.20.1708190007310.26479@math.ut.ee>
+References: <alpine.LRH.2.20.1708180825590.15982@math.ut.ee>
+ <87mv6xjc2g.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87fucoo462.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,51 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> Meelis Roos <mroos@linux.ee> writes:
+> 
+> > I was trying 4.13.0-rc5-00075-gac9a40905a61 on my PowerMac G4 with 1G 
+> > RAM and after some time of sddm respawning and X trying to restart, 
+> > dmesg is full of messages about vmap allocation failures.
+> 
+> Did it just start happening? ie. did rc4 work?
 
-Ram Pai <linuxram@us.ibm.com> writes:
+It goes back to at least 4.0 - that's the oldest kernel I had laying 
+around precompiled. The messages about ROM signature changed somewehere 
+between 4.0 and 4.7 (4.7 is already like 4.13) but after some time, the 
+same vmalloc errors appear.
 
-> On Fri, Aug 11, 2017 at 02:34:43PM -0300, Thiago Jung Bauermann wrote:
->> Expose useful information for programs using memory protection keys.
->> Provide implementation for powerpc and x86.
->> 
->> On a powerpc system with pkeys support, here is what is shown:
->> 
->> $ head /sys/kernel/mm/protection_keys/*
->> ==> /sys/kernel/mm/protection_keys/disable_execute_supported <==
->> true
->
-> We should not just call out disable_execute_supported.
-> disable_access_supported and disable_write_supported should also 
-> be called out.
+Maybe the userspace has changed with more respawning that brings the 
+problem out.
 
-Ok, will do in the next version.
-
->> ==> /sys/kernel/mm/protection_keys/total_keys <==
->> 32
->> 
->
->> ==> /sys/kernel/mm/protection_keys/usable_keys <==
->> 30
->
-> This is little nebulous.  It depends on how we define
-> usable as.  Is it the number of keys that are available
-> to the app?  If that is the case that value is dynamic.
-> Sometime the OS steals one key for execute-only key.
-> And anything that is dynamic can be inherently racy.
-> So I think we should define 'usable' as guaranteed number
-> of keys available to the app
-
-Yes, that is how I defined it: the difference between the number of keys
-provided by the platform and the keys reserved by the OS. I do need to
-spell it out somewhere inside Documentation/ though.
-
-> and display a value that is one less than what is available.
->
-> in the above example the value should be 29.
-
-Good point, I didn't account for the execute-only key. I will make that
-change in the next version.
+I tried to read the code but I do not understand it yet. The warning 
+seems to come from generic pci_map_rom() checking ROM size, and 
+returning rom pointer to aty128fb (it returns resource size too but that 
+is ignored). aty128fb starts to look at the x86 PCI ROM signature again 
+but does not tell that the signature is missing. How come?
 
 -- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Meelis Roos (mroos@linux.ee)
