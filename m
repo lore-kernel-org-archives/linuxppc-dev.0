@@ -1,21 +1,29 @@
-Return-Path: <mroos@linux.ee>
-Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee
- [IPv6:2001:bb8:2002:500:20f:1fff:fe04:1bbb])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xZ80k0D6zzDqYf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 15:39:47 +1000 (AEST)
-Date: Sat, 19 Aug 2017 08:39:40 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-Sender: mroos@math.ut.ee
-To: Michael Ellerman <mpe@ellerman.id.au>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: 32-bit powerpc, aty128fb: vmap allocation for size 135168 failed
-In-Reply-To: <87mv6xjc2g.fsf@concordia.ellerman.id.au>
-Message-ID: <alpine.LRH.2.20.1708190007310.26479@math.ut.ee>
-References: <alpine.LRH.2.20.1708180825590.15982@math.ut.ee>
- <87mv6xjc2g.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xZCt01mDKzDqZC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 18:34:15 +1000 (AEST)
+Message-ID: <1503131026.12059.5.camel@kernel.crashing.org>
+Subject: Re: [RFC v7 24/25] powerpc: Deliver SEGV signal on pkey violation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ram Pai <linuxram@us.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org
+Date: Sat, 19 Aug 2017 18:23:46 +1000
+In-Reply-To: <20170818224957.GA5565@ram.oc3035372033.ibm.com>
+References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
+ <1501459946-11619-25-git-send-email-linuxram@us.ibm.com>
+ <87378zkuil.fsf@linux.vnet.ibm.com>
+ <87a836csdl.fsf@concordia.ellerman.id.au>
+ <20170817171408.GF5505@ram.oc3035372033.ibm.com>
+ <878tihqy5c.fsf@concordia.ellerman.id.au>
+ <20170818170410.GC5545@ram.oc3035372033.ibm.com>
+ <20170818224957.GA5565@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Meelis Roos <mroos@linux.ee> writes:
+On Fri, 2017-08-18 at 15:49 -0700, Ram Pai wrote:
+> Coming back to the your main question, "why we need to provide the
+> contents of AMR register to the signal handler?" --   the only reason
+> i can see is, probably tools like gdb and ptrace may find it useful.
 > 
-> > I was trying 4.13.0-rc5-00075-gac9a40905a61 on my PowerMac G4 with 1G 
-> > RAM and after some time of sddm respawning and X trying to restart, 
-> > dmesg is full of messages about vmap allocation failures.
-> 
-> Did it just start happening? ie. did rc4 work?
+> And since it was suggested that content of IAMR is also useful to the
+> application, the value of which cannot be accessed from userspace,
+> it may make sense to provide both the contents.
 
-It goes back to at least 4.0 - that's the oldest kernel I had laying 
-around precompiled. The messages about ROM signature changed somewehere 
-between 4.0 and 4.7 (4.7 is already like 4.13) but after some time, the 
-same vmalloc errors appear.
+I'd rather you added ptrace calls to obtain & set it. I don't think we
+need to touch the signal frame, it's too much of an ABI compatibility
+burden.
 
-Maybe the userspace has changed with more respawning that brings the 
-problem out.
-
-I tried to read the code but I do not understand it yet. The warning 
-seems to come from generic pci_map_rom() checking ROM size, and 
-returning rom pointer to aty128fb (it returns resource size too but that 
-is ignored). aty128fb starts to look at the x86 PCI ROM signature again 
-but does not tell that the signature is missing. How come?
-
--- 
-Meelis Roos (mroos@linux.ee)
+Cheers,
+Ben.
