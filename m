@@ -1,25 +1,28 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jarkko.sakkinen@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xZPVS4JwpzDr2Q
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 01:48:00 +1000 (AEST)
-Date: Sat, 19 Aug 2017 10:47:53 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, gabriele.paoloni@huawei.com,
- airlied@linux.ie, benh@kernel.crashing.org, will.deacon@arm.com,
- dri-devel@lists.freedesktop.org, z.liuxinliang@hisilicon.com,
- bhelgaas@google.com, alex.williamson@redhat.com, lukas@wunner.de,
- catalin.marinas@arm.com, zourongrong@gmail.com, daniel.vetter@intel.com
-Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
-Message-ID: <20170819154753.GQ28977@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170817113028.16853-1-dja@axtens.net>
- <20170817113028.16853-2-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xZRWb4Hb3zDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 03:19:07 +1000 (AEST)
+Date: Sat, 19 Aug 2017 20:18:59 +0300
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+To: msuchanek <msuchanek@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Ashley Lai <ashleydlai@gmail.com>, Peter Huewe <peterhuewe@gmx.de>,
+ Marcel Selhorst <tpmdd@selhorst.net>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ linuxppc-dev@lists.ozlabs.org, tpmdd-devel@lists.sourceforge.net,
+ linux-kernel@vger.kernel.org, tpmdd@selhorst.ne
+Subject: Re: [RFT PATCH] tpm: ibmvtpm: simplify crq initialization and
+ document crq format
+Message-ID: <20170819171859.pjt5i3ylenravhdu@linux.intel.com>
+References: <20170729072433.13194-1-sz.lin@moxa.com>
+ <20170224193516.9342-1-msuchanek@suse.de>
+ <20170818002145.62fb72eb@naga>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170817113028.16853-2-dja@axtens.net>
+In-Reply-To: <20170818002145.62fb72eb@naga>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +32,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 17, 2017 at 09:30:28PM +1000, Daniel Axtens wrote:
-> A system without PCI legacy resources (e.g. ARM64)
+Ugh. I'll apply this. My apologies.
 
-Can you be a little more specific about what you mean by "a system
-without PCI legacy resources"?  I'm not sure what the connection with
-ARM64 as an architecture is.
+/Jarkko
 
-My understanding is that "legacy resources" are addresses that are
-hard-wired into a device and not discoverable or configurable via a
-BAR [1].  For example,
-
-  VGA devices (see [2])
-    mem 0xa0000-0xbffff    (frame buffer)
-    io  0x3b0-0x3bb        (plus ISA aliases)
-    io  0x3c0-0x3df        (plus ISA aliases)
-
-  IDE devices in compatibility mode (see [3])
-    io  0x170-0x177        (secondary command)
-    io  0x1f0-0x1f7        (primary command)
-    io  0x376              (secondary control)
-    io  0x3f6              (primary control)
-
-The meaning of these resources in the PCI/PCIe domain is defined by
-the PCI specs, not the platform arch specs.
-
-So if ARM64 doesn't have these PCI legacy resources, does that mean an
-ARM64 host bridge cannot generate these legacy addresses on PCI?  That
-is, there's no host bridge window that maps to those PCI addresses?
-That seems like a curious restriction on host bridges, but I guess it
-would be possible.
-
-I think you're fixing an issue related to the HiSilicon [19e5:1610]
-PCI-to-PCI bridge, which doesn't support VGA Enable (I first thought
-the bridge was broken, but per [4], I think it is legal).  With VGA
-Enable not being supported, a downstream VGA device will not work if
-it depends on the legacy VGA resources.  But this is merely related to
-one PCI-to-PCI bridge in the system; it's not a question of the system
-as a whole or the CPU architecture.
-
-Maybe I'm reading too much into the "ARM64 has no PCI legacy
-resources" idea and the point here is simply that the VGA arbiter
-previously would not mark a VGA device as default if it found that the
-legacy resources are not routed to it, e.g., because an upstream
-bridge doesn't support VGA ENABLE?
-
-That's "safe" because if the arbiter selects a default VGA device that
-does not receive accesses to the legacy VGA resources, that device may
-not work.  For example, it looks like vga16fb.c would not work because
-it depends on VGA_FB_PHYS at 0xA0000.  A native driver certainly
-*could* work, but that depends on whether the specific device and
-driver require the legacy resources.
-
-IIUC, part of what this patch does is relax this so we can set a
-default "VGA device" that doesn't receive accesses to legacy VGA
-resources.  If so, it's probably worth mentioning somehow that some
-VGA things, e.g., vga16fb.c, may not work with this default device.
-
-[1] PCI spec r3.0, sec G
-[2] PCI-to-PCI bridge spec r1.2, sec 3.2.5.18, sec 12.1.1
-[3] PCI IDE Controller spec, r1.0, sec 2.1
-[4] PCI-to-PCI bridge spec r1.2, sec 4.5
-
-> may find that no
-> default/boot VGA device has been marked, because the VGA arbiter
-> checks for legacy resource decoding before marking a card as default.
+On Fri, Aug 18, 2017 at 12:21:45AM +0200, msuchanek wrote:
+> ping?
 > 
-> Split the small bit of code that does default VGA handling out from
-> the arbiter. Add a Kconfig option to allow the kernel to be built
-> with just the default handling, or the arbiter and default handling.
+> On Fri, 24 Feb 2017 20:35:16 +0100
+> Michal Suchanek <msuchanek@suse.de> wrote:
 > 
-> Add handling for devices that should be marked as default but aren't
-> handled by the vga arbiter by adding a late initcall and a class
-> enable hook. If there is no default from vgaarb then the first card
-> that is enabled, has a driver bound, and can decode memory or I/O
-> will be marked as default.
-
-> + * vga_default_device - return the default VGA device
-> + *
-> + * This can be defined by the platform. The default implementation
-> + * is rather dumb and will probably only work properly on single
-> + * vga card setups and/or x86 platforms.
-
-In what sense can this be defined by the platform?  I guess this
-comment isn't new and was just moved, but I don't see any arch hook or
-obvious way to do a platform-specific definition.
+> > The crq is passed in registers and is the same on BE and LE hosts.
+> > However, current implementation allocates a structure on-stack to
+> > represent the crq, initializes the members swapping them to BE, and
+> > loads the structure swapping it from BE. This is pointless and causes
+> > GCC warnings about ununitialized members. Get rid of the structure and
+> > the warnings.
+> > 
+> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> > Reviewed-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+> > ---
+> > v2
+> > 
+> > fix typos and spelling in comments
+> > ---
+> >  drivers/char/tpm/tpm_ibmvtpm.c | 96
+> > ++++++++++++++++++++++++++---------------- 1 file changed, 60
+> > insertions(+), 36 deletions(-)
+> > 
+> > diff --git a/drivers/char/tpm/tpm_ibmvtpm.c
+> > b/drivers/char/tpm/tpm_ibmvtpm.c index 1b9d61ffe991..89027339d55f
+> > 100644 --- a/drivers/char/tpm/tpm_ibmvtpm.c
+> > +++ b/drivers/char/tpm/tpm_ibmvtpm.c
+> > @@ -39,19 +39,63 @@ static struct vio_device_id
+> > tpm_ibmvtpm_device_table[] = { MODULE_DEVICE_TABLE(vio,
+> > tpm_ibmvtpm_device_table); 
+> >  /**
+> > + *
+> > + * ibmvtpm_send_crq_word - Send a CRQ request
+> > + * @vdev:	vio device struct
+> > + * @w1:		pre-constructed first word of tpm crq (second
+> > word is reserved)
+> > + *
+> > + * Return:
+> > + *	0 - Success
+> > + *	Non-zero - Failure
+> > + */
+> > +static int ibmvtpm_send_crq_word(struct vio_dev *vdev, u64 w1)
+> > +{
+> > +	return plpar_hcall_norets(H_SEND_CRQ, vdev->unit_address,
+> > w1, 0); +}
+> > +
+> > +/**
+> > + *
+> >   * ibmvtpm_send_crq - Send a CRQ request
+> >   *
+> >   * @vdev:	vio device struct
+> > - * @w1:		first word
+> > - * @w2:		second word
+> > + * @valid:	Valid field
+> > + * @msg:	Type field
+> > + * @len:	Length field
+> > + * @data:	Data field
+> > + *
+> > + * The ibmvtpm crq is defined as follows:
+> > + *
+> > + * Byte  |   0   |   1   |   2   |   3   |   4   |   5   |   6   |
+> > 7
+> > + *
+> > -----------------------------------------------------------------------
+> > + * Word0 | Valid | Type  |     Length    |              Data
+> > + *
+> > -----------------------------------------------------------------------
+> > + * Word1 |                Reserved
+> > + *
+> > -----------------------------------------------------------------------
+> > + *
+> > + * Which matches the following structure (on bigendian host):
+> > + *
+> > + * struct ibmvtpm_crq {
+> > + *         u8 valid;
+> > + *         u8 msg;
+> > + *         __be16 len;
+> > + *         __be32 data;
+> > + *         __be64 reserved;
+> > + * } __attribute__((packed, aligned(8)));
+> > + *
+> > + * However, the value is passed in a register so just compute the
+> > numeric value
+> > + * to load into the register avoiding byteswap altogether. Endian
+> > only affects
+> > + * memory loads and stores - registers are internally represented
+> > the same. *
+> >   * Return:
+> > - *	0 -Sucess
+> > + *	0 (H_SUCCESS) - Success
+> >   *	Non-zero - Failure
+> >   */
+> > -static int ibmvtpm_send_crq(struct vio_dev *vdev, u64 w1, u64 w2)
+> > +static int ibmvtpm_send_crq(struct vio_dev *vdev,
+> > +		u8 valid, u8 msg, u16 len, u32 data)
+> >  {
+> > -	return plpar_hcall_norets(H_SEND_CRQ, vdev->unit_address,
+> > w1, w2);
+> > +	u64 w1 = ((u64)valid << 56) | ((u64)msg << 48) | ((u64)len
+> > << 32) |
+> > +		(u64)data;
+> > +	return ibmvtpm_send_crq_word(vdev, w1);
+> >  }
+> >  
+> >  /**
+> > @@ -109,8 +153,6 @@ static int tpm_ibmvtpm_recv(struct tpm_chip
+> > *chip, u8 *buf, size_t count) static int tpm_ibmvtpm_send(struct
+> > tpm_chip *chip, u8 *buf, size_t count) {
+> >  	struct ibmvtpm_dev *ibmvtpm = dev_get_drvdata(&chip->dev);
+> > -	struct ibmvtpm_crq crq;
+> > -	__be64 *word = (__be64 *)&crq;
+> >  	int rc, sig;
+> >  
+> >  	if (!ibmvtpm->rtce_buf) {
+> > @@ -137,10 +179,6 @@ static int tpm_ibmvtpm_send(struct tpm_chip
+> > *chip, u8 *buf, size_t count) spin_lock(&ibmvtpm->rtce_lock);
+> >  	ibmvtpm->res_len = 0;
+> >  	memcpy((void *)ibmvtpm->rtce_buf, (void *)buf, count);
+> > -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> > -	crq.msg = (u8)VTPM_TPM_COMMAND;
+> > -	crq.len = cpu_to_be16(count);
+> > -	crq.data = cpu_to_be32(ibmvtpm->rtce_dma_handle);
+> >  
+> >  	/*
+> >  	 * set the processing flag before the Hcall, since we may
+> > get the @@ -148,8 +186,9 @@ static int tpm_ibmvtpm_send(struct
+> > tpm_chip *chip, u8 *buf, size_t count) */
+> >  	ibmvtpm->tpm_processing_cmd = true;
+> >  
+> > -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
+> > -			      be64_to_cpu(word[1]));
+> > +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> > +			IBMVTPM_VALID_CMD, VTPM_TPM_COMMAND,
+> > +			count, ibmvtpm->rtce_dma_handle);
+> >  	if (rc != H_SUCCESS) {
+> >  		dev_err(ibmvtpm->dev, "tpm_ibmvtpm_send failed
+> > rc=%d\n", rc); rc = 0;
+> > @@ -182,15 +221,10 @@ static u8 tpm_ibmvtpm_status(struct tpm_chip
+> > *chip) */
+> >  static int ibmvtpm_crq_get_rtce_size(struct ibmvtpm_dev *ibmvtpm)
+> >  {
+> > -	struct ibmvtpm_crq crq;
+> > -	u64 *buf = (u64 *) &crq;
+> >  	int rc;
+> >  
+> > -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> > -	crq.msg = (u8)VTPM_GET_RTCE_BUFFER_SIZE;
+> > -
+> > -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+> > -			      cpu_to_be64(buf[1]));
+> > +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> > +			IBMVTPM_VALID_CMD,
+> > VTPM_GET_RTCE_BUFFER_SIZE, 0, 0); if (rc != H_SUCCESS)
+> >  		dev_err(ibmvtpm->dev,
+> >  			"ibmvtpm_crq_get_rtce_size failed rc=%d\n",
+> > rc); @@ -210,15 +244,10 @@ static int
+> > ibmvtpm_crq_get_rtce_size(struct ibmvtpm_dev *ibmvtpm) */
+> >  static int ibmvtpm_crq_get_version(struct ibmvtpm_dev *ibmvtpm)
+> >  {
+> > -	struct ibmvtpm_crq crq;
+> > -	u64 *buf = (u64 *) &crq;
+> >  	int rc;
+> >  
+> > -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> > -	crq.msg = (u8)VTPM_GET_VERSION;
+> > -
+> > -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+> > -			      cpu_to_be64(buf[1]));
+> > +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> > +			IBMVTPM_VALID_CMD, VTPM_GET_VERSION, 0, 0);
+> >  	if (rc != H_SUCCESS)
+> >  		dev_err(ibmvtpm->dev,
+> >  			"ibmvtpm_crq_get_version failed rc=%d\n",
+> > rc); @@ -238,7 +267,7 @@ static int
+> > ibmvtpm_crq_send_init_complete(struct ibmvtpm_dev *ibmvtpm) {
+> >  	int rc;
+> >  
+> > -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, INIT_CRQ_COMP_CMD, 0);
+> > +	rc = ibmvtpm_send_crq_word(ibmvtpm->vdev, INIT_CRQ_COMP_CMD);
+> >  	if (rc != H_SUCCESS)
+> >  		dev_err(ibmvtpm->dev,
+> >  			"ibmvtpm_crq_send_init_complete failed
+> > rc=%d\n", rc); @@ -258,7 +287,7 @@ static int
+> > ibmvtpm_crq_send_init(struct ibmvtpm_dev *ibmvtpm) {
+> >  	int rc;
+> >  
+> > -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, INIT_CRQ_CMD, 0);
+> > +	rc = ibmvtpm_send_crq_word(ibmvtpm->vdev, INIT_CRQ_CMD);
+> >  	if (rc != H_SUCCESS)
+> >  		dev_err(ibmvtpm->dev,
+> >  			"ibmvtpm_crq_send_init failed rc=%d\n", rc);
+> > @@ -336,15 +365,10 @@ static int tpm_ibmvtpm_suspend(struct device
+> > *dev) {
+> >  	struct tpm_chip *chip = dev_get_drvdata(dev);
+> >  	struct ibmvtpm_dev *ibmvtpm = dev_get_drvdata(&chip->dev);
+> > -	struct ibmvtpm_crq crq;
+> > -	u64 *buf = (u64 *) &crq;
+> >  	int rc = 0;
+> >  
+> > -	crq.valid = (u8)IBMVTPM_VALID_CMD;
+> > -	crq.msg = (u8)VTPM_PREPARE_TO_SUSPEND;
+> > -
+> > -	rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+> > -			      cpu_to_be64(buf[1]));
+> > +	rc = ibmvtpm_send_crq(ibmvtpm->vdev,
+> > +			IBMVTPM_VALID_CMD, VTPM_PREPARE_TO_SUSPEND,
+> > 0, 0); if (rc != H_SUCCESS)
+> >  		dev_err(ibmvtpm->dev,
+> >  			"tpm_ibmvtpm_suspend failed rc=%d\n", rc);
+> 
