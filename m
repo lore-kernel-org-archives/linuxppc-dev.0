@@ -1,22 +1,40 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xb43354ywzDqbd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 03:45:03 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 83so20400911pgb.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 10:45:03 -0700 (PDT)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, b.zolnierkie@samsung.com,
- nicolas.ferre@microchip.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] video: fbdev: annotate fb_fix_screeninfo with const and
- __initconst
-Date: Sun, 20 Aug 2017 23:14:51 +0530
-Message-Id: <1503251091-23485-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xb4MD3BD6zDqYR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 03:59:04 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7KHx1T6129813
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 13:59:01 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cejvkd4bf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 13:59:01 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 21 Aug 2017 03:58:52 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7KHwpBZ38010924
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 03:58:51 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7KHwf25009319
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 03:58:42 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, mpe@ellerman.id.au
+Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
+ linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH v10 00/14] powerpc: "paca->soft_enabled" based local atomic
+ operation implementation
+Date: Sun, 20 Aug 2017 23:28:17 +0530
+Message-Id: <1503251911-30637-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,140 +44,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make these const as they are only used during a copy operation.
-Some structures are used as a copy operation inside __init functions, so
-make them const and replace __initdata with __initconst to avoid section
-conflict error.
+Local atomic operations are fast and highly reentrant per CPU counters.
+Used for percpu variable updates. Local atomic operations only guarantee
+variable modification atomicity wrt the CPU which owns the data and
+these needs to be executed in a preemption safe way.
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- drivers/video/fbdev/68328fb.c     | 2 +-
- drivers/video/fbdev/atmel_lcdfb.c | 2 +-
- drivers/video/fbdev/dnfb.c        | 2 +-
- drivers/video/fbdev/grvga.c       | 2 +-
- drivers/video/fbdev/pmag-aa-fb.c  | 2 +-
- drivers/video/fbdev/pmag-ba-fb.c  | 2 +-
- drivers/video/fbdev/pmagb-b-fb.c  | 2 +-
- drivers/video/fbdev/ps3fb.c       | 2 +-
- drivers/video/fbdev/skeletonfb.c  | 2 +-
- 9 files changed, 9 insertions(+), 9 deletions(-)
+Here is the design of the patchset. Since local_* operations
+are only need to be atomic to interrupts (IIUC), we have two options.
+Either replay the "op" if interrupted or replay the interrupt after
+the "op". Initial patchset posted was based on implementing local_* operation
+based on CR5 which replay's the "op". Patchset had issues in case of
+rewinding the address pointor from an array. This make the slow path
+really slow. Since CR5 based implementation proposed using __ex_table to find
+the rewind address, this rasied concerns about size of __ex_table and vmlinux.
 
-diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
-index c0c6b88..d48e960 100644
---- a/drivers/video/fbdev/68328fb.c
-+++ b/drivers/video/fbdev/68328fb.c
-@@ -72,7 +72,7 @@
-       	.vmode =	FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo mc68x328fb_fix __initdata = {
-+static const struct fb_fix_screeninfo mc68x328fb_fix __initconst = {
- 	.id =		"68328fb",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.xpanstep =	1,
-diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-index 669ecc7..e06358d 100644
---- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -320,7 +320,7 @@ static inline void atmel_lcdfb_power_control(struct atmel_lcdfb_info *sinfo, int
- 	}
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
+
+But this patchset uses Benjamin Herrenschmidt suggestion of using
+arch_local_irq_disable() to soft_disable interrupts (including PMIs).
+After finishing the "op", arch_local_irq_restore() called and correspondingly
+interrupts are replayed if any occured.
+
+Current paca->soft_enabled logic is reserved and MASKABLE_EXCEPTION_* macros
+are extended to support this feature.
+
+patch re-write the current local_* functions to use arch_local_irq_disbale.
+Base flow for each function is
+
+ {
+        powerpc_local_irq_pmu_save(flags)
+        load
+        ..
+        store
+        powerpc_local_irq_pmu_restore(flags)
  }
- 
--static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
-+static const struct fb_fix_screeninfo atmel_lcdfb_fix __initconst = {
- 	.type		= FB_TYPE_PACKED_PIXELS,
- 	.visual		= FB_VISUAL_TRUECOLOR,
- 	.xpanstep	= 0,
-diff --git a/drivers/video/fbdev/dnfb.c b/drivers/video/fbdev/dnfb.c
-index 3526899..7b1492d 100644
---- a/drivers/video/fbdev/dnfb.c
-+++ b/drivers/video/fbdev/dnfb.c
-@@ -126,7 +126,7 @@ struct fb_var_screeninfo dnfb_var = {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo dnfb_fix = {
-+static const struct fb_fix_screeninfo dnfb_fix = {
- 	.id		= "Apollo Mono",
- 	.smem_start	= (FRAME_BUFFER_START + IO_BASE),
- 	.smem_len	= FRAME_BUFFER_LEN,
-diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
-index b471f92..8fc8f46 100644
---- a/drivers/video/fbdev/grvga.c
-+++ b/drivers/video/fbdev/grvga.c
-@@ -70,7 +70,7 @@ struct grvga_par {
-     }
-  };
- 
--static struct fb_fix_screeninfo grvga_fix = {
-+static const struct fb_fix_screeninfo grvga_fix = {
- 	.id =		"AG SVGACTRL",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =       FB_VISUAL_PSEUDOCOLOR,
-diff --git a/drivers/video/fbdev/pmag-aa-fb.c b/drivers/video/fbdev/pmag-aa-fb.c
-index 39922f0..b07ef49 100644
---- a/drivers/video/fbdev/pmag-aa-fb.c
-+++ b/drivers/video/fbdev/pmag-aa-fb.c
-@@ -90,7 +90,7 @@ struct aafb_par {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo aafb_fix = {
-+static const struct fb_fix_screeninfo aafb_fix = {
- 	.id		= "PMAG-AA",
- 	.smem_len	= (2048 * 1024),
- 	.type		= FB_TYPE_PACKED_PIXELS,
-diff --git a/drivers/video/fbdev/pmag-ba-fb.c b/drivers/video/fbdev/pmag-ba-fb.c
-index 1fd02f4..8d1a878 100644
---- a/drivers/video/fbdev/pmag-ba-fb.c
-+++ b/drivers/video/fbdev/pmag-ba-fb.c
-@@ -67,7 +67,7 @@ struct pmagbafb_par {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo pmagbafb_fix = {
-+static const struct fb_fix_screeninfo pmagbafb_fix = {
- 	.id		= "PMAG-BA",
- 	.smem_len	= (1024 * 1024),
- 	.type		= FB_TYPE_PACKED_PIXELS,
-diff --git a/drivers/video/fbdev/pmagb-b-fb.c b/drivers/video/fbdev/pmagb-b-fb.c
-index 46e96c4..5ad9b63 100644
---- a/drivers/video/fbdev/pmagb-b-fb.c
-+++ b/drivers/video/fbdev/pmagb-b-fb.c
-@@ -57,7 +57,7 @@ struct pmagbbfb_par {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo pmagbbfb_fix = {
-+static const struct fb_fix_screeninfo pmagbbfb_fix = {
- 	.id		= "PMAGB-BA",
- 	.smem_len	= (2048 * 1024),
- 	.type		= FB_TYPE_PACKED_PIXELS,
-diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
-index b269abd..5ed2db3 100644
---- a/drivers/video/fbdev/ps3fb.c
-+++ b/drivers/video/fbdev/ps3fb.c
-@@ -952,7 +952,7 @@ static irqreturn_t ps3fb_vsync_interrupt(int irq, void *ptr)
- 	.fb_compat_ioctl = ps3fb_ioctl
- };
- 
--static struct fb_fix_screeninfo ps3fb_fix = {
-+static const struct fb_fix_screeninfo ps3fb_fix = {
- 	.id =		DEVICE_NAME,
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_TRUECOLOR,
-diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
-index 09a1d8c..7f4e908 100644
---- a/drivers/video/fbdev/skeletonfb.c
-+++ b/drivers/video/fbdev/skeletonfb.c
-@@ -84,7 +84,7 @@
-  * if we don't use modedb. If we do use modedb see xxxfb_init how to use it
-  * to get a fb_var_screeninfo. Otherwise define a default var as well. 
-  */
--static struct fb_fix_screeninfo xxxfb_fix = {
-+static const struct fb_fix_screeninfo xxxfb_fix = {
- 	.id =		"FB's name", 
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_PSEUDOCOLOR,
+
+Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
+instruction pair is used for local_* operations, which are heavy
+on cycle count and they dont support a local variant. So to
+see whether the new implementation helps, used a modified
+version of Rusty's benchmark code on local_t.
+
+https://lkml.org/lkml/2008/12/16/450
+
+Modifications to Rusty's benchmark code:
+ - Executed only local_t test
+
+Here are the values with the patch.
+
+Time in ns per iteration
+
+Local_t         Without Patch           With Patch
+
+_inc                    38              10
+_add                    38              10
+_read                   4               4
+_add_return             38              10
+
+First six are the clean up patches which lays the foundation
+to make things easier. Seventh and eighth patch in the patchset reverse the
+current soft_enabled logic and commit message details the reason and
+need for this change. Ninth and Tenth patch refactor's the __EXPECTION_PROLOG_1
+code to support addition of a new parameter to MASKABLE_* macros. New parameter
+will give the possible mask for the interrupt. Rest of the patches are
+to add support for maskable PMI and implementation of local_t using powerpc_local_irq_pmu_*().
+
+Changelog v9:
+ - Added couple of more cleanup patches
+ - Fixed comments and commit message logs
+
+Changelog v8:
+ - Rearranged series.
+ - Updated the comments
+ - Fixed a hang in embedded version (thanks to mpe)
+ - Added couple of more cleanup patches to the series
+ - Updated commit messages.
+
+Changelog v7:
+1)Missed first patch in the series
+
+Changelog v6:
+1)Moved the renaming of soft_enabled to soft_disable_mask patch earlier in the series.
+2)Added code to hardwire "softe" value in pt_regs for userspace to be always 1
+3)rebased to latest upstream.
+
+Changelog v5:
+1)Fixed the check in hard_irq_disable() macro for soft_disabled_mask
+
+Changelog v4:
+1)split the __SOFT_ENABLED logic check from patch 7 and merged to soft_enabled
+logic reversing patch.
+2)Made changes to commit messages
+3)Added a new IRQ_DISBALE_MASK_ALL to include supported disabled mask bits. 
+
+Changelog v3:
+1)Made suggest to commit messages
+2)Added a new patch (patch 12) to rename the soft_enabled to soft_disabled_mask
+
+Changelog v2:
+Rebased to latest upstream
+
+Changelog v1:
+1)squashed patches 1/2 together and 8/9/10 together for readability
+2)Created a separate patch for the kconfig changes
+3)Moved the new mask value commit to patch 11.
+4)Renamed local_irq_pmu_*() to powerpc_irq_pmu_*() to avoid
+  namespaces matches with generic kernel local_irq*() functions
+5)Renamed __EXCEPTION_PROLOG_1 macro to MASKABLE_EXCEPTION_PROLOG_1 macro
+6)Made changes to commit messages
+7)Add more comments to codes
+
+Changelog RFC v5:
+1)Implemented new set of soft_enabled manipulation functions
+2)rewritten arch_local_irq_* functions to use the new soft_enabled_*()
+3)Add WARN_ON to identify invalid soft_enabled transitions
+4)Added powerpc_local_irq_pmu_save() and powerpc_local_irq_pmu_restore() to
+  support masking of irqs (with PMI).
+5)Added local_irq_pmu_*()s macros with trace_hardirqs_on|off() to match
+  include/linux/irqflags.h
+
+Changelog RFC v4:
+1)Fix build breaks in in ppc64e_defconfig compilation
+2)Merged PMI replay code with the exception vector changes patch
+3)Renamed the new API to set PMI mask bit as suggested
+4)Modified the current arch_local_save and new API function call to
+  "OR" and store the value to ->soft_enabled instead of just store.
+5)Updated the check in the arch_local_irq_restore() to alway check for
+  greather than or zero to _LINUX mask bit.
+6)Updated the commit messages.
+
+Changelog RFC v3:
+1)Squashed PMI masked interrupt patch and replay patch together
+2)Have created a new patch which includes a new Kconfig and set_irq_set_mask()
+3)Fixed the compilation issue with IRQ_DISABLE_MASK_* macros in book3e_*
+
+Changelog RFC v2:
+1)Renamed IRQ_DISABLE_LEVEL_* to IRQ_DISABLE_MASK_* and made logic changes
+  to treat soft_enabled as a mask and not a flag or level.
+2)Added a new Kconfig variable to support a WARN_ON
+3)Refactored patchset for eaiser review.
+4)Made changes to commit messages.
+5)Made changes for BOOK3E version
+
+Changelog RFC v1:
+
+1)Commit messages are improved.
+2)Renamed the arch_local_irq_disable_var to soft_irq_set_level as suggested
+3)Renamed the LAZY_INTERRUPT* macro to IRQ_DISABLE_LEVEL_* as suggested
+4)Extended the MASKABLE_EXCEPTION* macros to support additional parameter.
+5)Each MASKABLE_EXCEPTION_* macro will carry a "mask_level"
+6)Logic to decide on jump to maskable_handler in SOFTEN_TEST is now based on
+  "mask_level"
+7)__EXCEPTION_PROLOG_1 is factored out to support "mask_level" parameter.
+  This reduced the code changes needed for supporting "mask_level" parameters.
+
+Madhavan Srinivasan (14):
+  powerpc: Add #defs for paca->soft_enabled flags
+  powerpc: move set_soft_enabled() and rename
+  powerpc: Use soft_enabled_set api to update paca->soft_enabled
+  powerpc: implement arch_local_* using the soft_enabled_* wrappers.
+  powerpc/irq: Cleanup hard_irq_disable() macro
+  powerpc/irq: Fix arch_local_irq_disable() in book3s
+  powerpc: Change from enable flag to disable bitmask
+  powerpc: Rename soft_enabled to soft_disable_mask
+  powerpc: Avoid using EXCEPTION_PROLOG_1 macro in MASKABLE_*
+  powerpc: Add support to take additional parameter in MASKABLE_* macro
+  powerpc: Add support to mask perf interrupts and replay them
+  powerpc:Add new kconfig IRQ_DEBUG_SUPPORT
+  powerpc: Add new set of soft_disable_mask_ functions
+  powerpc: rewrite local_t using soft_irq
+
+ arch/powerpc/Kconfig                     |   4 +
+ arch/powerpc/include/asm/exception-64s.h |  99 +++++++++------
+ arch/powerpc/include/asm/head-64.h       |  40 +++----
+ arch/powerpc/include/asm/hw_irq.h        | 117 ++++++++++++++++--
+ arch/powerpc/include/asm/irqflags.h      |   8 +-
+ arch/powerpc/include/asm/kvm_ppc.h       |   2 +-
+ arch/powerpc/include/asm/local.h         | 200 +++++++++++++------------------
+ arch/powerpc/include/asm/paca.h          |   2 +-
+ arch/powerpc/kernel/asm-offsets.c        |   2 +-
+ arch/powerpc/kernel/entry_64.S           |  32 ++---
+ arch/powerpc/kernel/exceptions-64e.S     |  10 +-
+ arch/powerpc/kernel/exceptions-64s.S     |  38 +++---
+ arch/powerpc/kernel/head_64.S            |   5 +-
+ arch/powerpc/kernel/idle_book3e.S        |   3 +-
+ arch/powerpc/kernel/idle_power4.S        |   3 +-
+ arch/powerpc/kernel/irq.c                |  47 ++++++--
+ arch/powerpc/kernel/process.c            |   3 +-
+ arch/powerpc/kernel/ptrace.c             |  10 ++
+ arch/powerpc/kernel/setup_64.c           |   5 +-
+ arch/powerpc/kernel/signal_32.c          |   8 ++
+ arch/powerpc/kernel/signal_64.c          |   3 +
+ arch/powerpc/kernel/time.c               |   6 +-
+ arch/powerpc/mm/hugetlbpage.c            |   2 +-
+ arch/powerpc/perf/core-book3s.c          |   2 +-
+ arch/powerpc/xmon/xmon.c                 |   4 +-
+ 25 files changed, 405 insertions(+), 250 deletions(-)
+
 -- 
-1.9.1
+2.7.4
