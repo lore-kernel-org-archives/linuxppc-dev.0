@@ -1,39 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.jaillet@wanadoo.fr>
+Received: from smtp.smtpout.orange.fr (smtp11.smtpout.orange.fr
+ [80.12.242.133])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xZxlJ5mt6zDqb5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 23:01:00 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id r62so1937713pfj.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 06:01:00 -0700 (PDT)
-Date: Sun, 20 Aug 2017 23:00:40 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron
- <Jonathan.Cameron@huawei.com>, dzickus@redhat.com, sfr@canb.auug.org.au,
- linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com, tglx@linutronix.de,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170820230040.706b62ac@roar.ozlabs.ibm.com>
-In-Reply-To: <20170820144553.2ab2727b@ppc64le>
-References: <20170728182053.000072aa@huawei.com>
- <20170728190349.GM3730@linux.vnet.ibm.com>
- <20170731120847.00003d5c@huawei.com>
- <20170731150411.GA3730@linux.vnet.ibm.com>
- <20170731162757.000058ba@huawei.com>
- <20170801184646.GE3730@linux.vnet.ibm.com>
- <20170802172555.0000468a@huawei.com>
- <20170815154743.GK7017@linux.vnet.ibm.com>
- <87wp63smwn.fsf@concordia.ellerman.id.au>
- <20170816125617.GY7017@linux.vnet.ibm.com>
- <20170816162731.GA22978@linux.vnet.ibm.com>
- <20170820144553.2ab2727b@ppc64le>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xb1ZG52SgzDqb5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 01:53:25 +1000 (AEST)
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: qiang.zhao@nxp.com,
+	leoyang.li@nxp.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH 1/2] soc/fsl/qe: Fix a potential NULL pointer dereference in
+ an error handling path
+Date: Sun, 20 Aug 2017 17:53:12 +0200
+Message-Id: <20170820155312.831-1-christophe.jaillet@wanadoo.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,137 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 20 Aug 2017 14:45:53 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+If 'of_find_device_by_node()' fails at line 153, a NULL pointer
+dereference (pdev) will occur in the error handling path.
 
-> On Wed, 16 Aug 2017 09:27:31 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
-> > 
-> > Thomas, John, am I misinterpreting the timer trace event messages?  
-> 
-> So I did some digging, and what you find is that rcu_sched seems to do a
-> simple scheudle_timeout(1) and just goes out to lunch for many seconds.
-> The process_timeout timer never fires (when it finally does wake after
-> one of these events, it usually removes the timer with del_timer_sync).
-> 
-> So this patch seems to fix it. Testing, comments welcome.
+Just remove the 'devm_iounmap()' call from the error handling path. The
+corresponding is managed, there is no need to release explicitly here.
 
-Okay this had a problem of trying to forward the timer from a timer
-callback function.
-
-This was my other approach which also fixes the RCU warnings, but it's
-a little more complex. I reworked it a bit so the mod_timer fast path
-hopefully doesn't have much more overhead (actually by reading jiffies
-only when needed, it probably saves a load).
-
-Thanks,
-Nick
-
---
-[PATCH] timers: Fix excessive granularity of new timers after a nohz idle
-
-When a timer base is idle, it is forwarded when a new timer is added to
-ensure that granularity does not become excessive. When not idle, the
-timer tick is expected to increment the base.
-
-However there is a window after a timer is restarted from nohz, when it
-is marked not-idle, and before the timer tick on this CPU, where a timer
-may be added on an ancient base that does not get forwarded (beacause
-the timer appears not-idle).
-
-This results in excessive granularity. So much so that a 1 jiffy timeout
-has blown out to 10s of seconds and triggered the RCU stall warning
-detector.
-
-Fix this by keeping track of whether the timer has been idle since it was
-last run or forwarded, and allow forwarding in the case that is true (even
-if it is not currently idle).
-
-Also add a comment noting a case where we could get an unexpectedly
-large granularity for a timer. I debugged this problem by adding
-warnings for such cases, but it seems we can't add them in general due
-to this corner case.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Fixes: 35ef1c20fdb2 ("fsl/qe: Add QE TDM lib")
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- kernel/time/timer.c | 32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
+This patch is only a guess that sounds logical to me.
 
-diff --git a/kernel/time/timer.c b/kernel/time/timer.c
-index 8f5d1bf18854..ee7b8b688b48 100644
---- a/kernel/time/timer.c
-+++ b/kernel/time/timer.c
-@@ -203,6 +203,7 @@ struct timer_base {
- 	bool			migration_enabled;
- 	bool			nohz_active;
- 	bool			is_idle;
-+	bool			was_idle;
- 	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
- 	struct hlist_head	vectors[WHEEL_SIZE];
- } ____cacheline_aligned;
-@@ -856,13 +857,19 @@ get_target_base(struct timer_base *base, unsigned tflags)
+I propose to remove this 'devm_iounmap' mainly because of its name (if it
+is managed, why should be manually handle it here ?)
+---
+ drivers/soc/fsl/qe/qe_tdm.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/soc/fsl/qe/qe_tdm.c b/drivers/soc/fsl/qe/qe_tdm.c
+index f744c214f680..6b9647fee512 100644
+--- a/drivers/soc/fsl/qe/qe_tdm.c
++++ b/drivers/soc/fsl/qe/qe_tdm.c
+@@ -174,7 +174,6 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
+ 	return ret;
  
- static inline void forward_timer_base(struct timer_base *base)
- {
--	unsigned long jnow = READ_ONCE(jiffies);
-+	unsigned long jnow;
- 
- 	/*
--	 * We only forward the base when it's idle and we have a delta between
--	 * base clock and jiffies.
-+	 * We only forward the base when we are idle or have just come out
-+	 * of idle (was_idle logic), and have a delta between base clock
-+	 * and jiffies. In the common case, run_timers will take care of it.
- 	 */
--	if (!base->is_idle || (long) (jnow - base->clk) < 2)
-+	if (likely(!base->was_idle))
-+		return;
-+
-+	jnow = READ_ONCE(jiffies);
-+	base->was_idle = base->is_idle;
-+	if ((long)(jnow - base->clk) < 2)
- 		return;
- 
- 	/*
-@@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
- 	 * same array bucket then just return:
- 	 */
- 	if (timer_pending(timer)) {
-+		/*
-+		 * The downside of this optimization is that it can result in
-+		 * larger granularity than you would get from adding a new
-+		 * timer with this expiry. Would a timer flag for networking
-+		 * be appropriate, then we can try to keep expiry of general
-+		 * timers within ~1/8th of their interval?
-+		 */
- 		if (timer->expires == expires)
- 			return 1;
- 
-@@ -1499,8 +1513,10 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
- 		/*
- 		 * If we expect to sleep more than a tick, mark the base idle:
- 		 */
--		if ((expires - basem) > TICK_NSEC)
-+		if ((expires - basem) > TICK_NSEC) {
-+			base->was_idle = true;
- 			base->is_idle = true;
-+		}
- 	}
- 	raw_spin_unlock(&base->lock);
- 
-@@ -1587,6 +1603,12 @@ static inline void __run_timers(struct timer_base *base)
- 	struct hlist_head heads[LVL_DEPTH];
- 	int levels;
- 
-+	/*
-+	 * was_idle must be cleared before running timers so that any timer
-+	 * functions that call mod_timer will not try to forward the base.
-+	 */
-+	base->was_idle = false;
-+
- 	if (!time_after_eq(jiffies, base->clk))
- 		return;
- 
+ err_miss_siram_property:
+-	devm_iounmap(&pdev->dev, utdm->si_regs);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(ucc_of_parse_tdm);
 -- 
-2.13.3
+2.11.0
