@@ -1,33 +1,39 @@
-Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xZwkk611mzDqfg
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 22:15:26 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id i12so4685696pgr.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 05:15:26 -0700 (PDT)
-Date: Sun, 20 Aug 2017 21:11:55 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-Message-ID: <20170820121155.GA624@tigerII.localdomain>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xZxlJ5mt6zDqb5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 23:01:00 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id r62so1937713pfj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 06:01:00 -0700 (PDT)
+Date: Sun, 20 Aug 2017 23:00:40 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron
+ <Jonathan.Cameron@huawei.com>, dzickus@redhat.com, sfr@canb.auug.org.au,
+ linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com, tglx@linutronix.de,
+ sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170820230040.706b62ac@roar.ozlabs.ibm.com>
+In-Reply-To: <20170820144553.2ab2727b@ppc64le>
+References: <20170728182053.000072aa@huawei.com>
+ <20170728190349.GM3730@linux.vnet.ibm.com>
+ <20170731120847.00003d5c@huawei.com>
+ <20170731150411.GA3730@linux.vnet.ibm.com>
+ <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+ <87wp63smwn.fsf@concordia.ellerman.id.au>
+ <20170816125617.GY7017@linux.vnet.ibm.com>
+ <20170816162731.GA22978@linux.vnet.ibm.com>
+ <20170820144553.2ab2727b@ppc64le>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,24 +43,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (08/18/17 00:05), Laurent Dufour wrote:
-[..]
-> +	/*
-> +	 * MPOL_INTERLEAVE implies additional check in mpol_misplaced() which
-> +	 * are not compatible with the speculative page fault processing.
-> +	 */
-> +	pol = __get_vma_policy(vma, address);
-> +	if (!pol)
-> +		pol = get_task_policy(current);
-> +	if (pol && pol->mode == MPOL_INTERLEAVE)
-> +		goto unlock;
+On Sun, 20 Aug 2017 14:45:53 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-include/linux/mempolicy.h defines
+> On Wed, 16 Aug 2017 09:27:31 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
+> > 
+> > Thomas, John, am I misinterpreting the timer trace event messages?  
+> 
+> So I did some digging, and what you find is that rcu_sched seems to do a
+> simple scheudle_timeout(1) and just goes out to lunch for many seconds.
+> The process_timeout timer never fires (when it finally does wake after
+> one of these events, it usually removes the timer with del_timer_sync).
+> 
+> So this patch seems to fix it. Testing, comments welcome.
 
-struct mempolicy *get_task_policy(struct task_struct *p);
-struct mempolicy *__get_vma_policy(struct vm_area_struct *vma,
-		unsigned long addr);
+Okay this had a problem of trying to forward the timer from a timer
+callback function.
 
-only for CONFIG_NUMA configs.
+This was my other approach which also fixes the RCU warnings, but it's
+a little more complex. I reworked it a bit so the mod_timer fast path
+hopefully doesn't have much more overhead (actually by reading jiffies
+only when needed, it probably saves a load).
 
-	-ss
+Thanks,
+Nick
+
+--
+[PATCH] timers: Fix excessive granularity of new timers after a nohz idle
+
+When a timer base is idle, it is forwarded when a new timer is added to
+ensure that granularity does not become excessive. When not idle, the
+timer tick is expected to increment the base.
+
+However there is a window after a timer is restarted from nohz, when it
+is marked not-idle, and before the timer tick on this CPU, where a timer
+may be added on an ancient base that does not get forwarded (beacause
+the timer appears not-idle).
+
+This results in excessive granularity. So much so that a 1 jiffy timeout
+has blown out to 10s of seconds and triggered the RCU stall warning
+detector.
+
+Fix this by keeping track of whether the timer has been idle since it was
+last run or forwarded, and allow forwarding in the case that is true (even
+if it is not currently idle).
+
+Also add a comment noting a case where we could get an unexpectedly
+large granularity for a timer. I debugged this problem by adding
+warnings for such cases, but it seems we can't add them in general due
+to this corner case.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ kernel/time/timer.c | 32 +++++++++++++++++++++++++++-----
+ 1 file changed, 27 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+index 8f5d1bf18854..ee7b8b688b48 100644
+--- a/kernel/time/timer.c
++++ b/kernel/time/timer.c
+@@ -203,6 +203,7 @@ struct timer_base {
+ 	bool			migration_enabled;
+ 	bool			nohz_active;
+ 	bool			is_idle;
++	bool			was_idle;
+ 	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
+ 	struct hlist_head	vectors[WHEEL_SIZE];
+ } ____cacheline_aligned;
+@@ -856,13 +857,19 @@ get_target_base(struct timer_base *base, unsigned tflags)
+ 
+ static inline void forward_timer_base(struct timer_base *base)
+ {
+-	unsigned long jnow = READ_ONCE(jiffies);
++	unsigned long jnow;
+ 
+ 	/*
+-	 * We only forward the base when it's idle and we have a delta between
+-	 * base clock and jiffies.
++	 * We only forward the base when we are idle or have just come out
++	 * of idle (was_idle logic), and have a delta between base clock
++	 * and jiffies. In the common case, run_timers will take care of it.
+ 	 */
+-	if (!base->is_idle || (long) (jnow - base->clk) < 2)
++	if (likely(!base->was_idle))
++		return;
++
++	jnow = READ_ONCE(jiffies);
++	base->was_idle = base->is_idle;
++	if ((long)(jnow - base->clk) < 2)
+ 		return;
+ 
+ 	/*
+@@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+ 	 * same array bucket then just return:
+ 	 */
+ 	if (timer_pending(timer)) {
++		/*
++		 * The downside of this optimization is that it can result in
++		 * larger granularity than you would get from adding a new
++		 * timer with this expiry. Would a timer flag for networking
++		 * be appropriate, then we can try to keep expiry of general
++		 * timers within ~1/8th of their interval?
++		 */
+ 		if (timer->expires == expires)
+ 			return 1;
+ 
+@@ -1499,8 +1513,10 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
+ 		/*
+ 		 * If we expect to sleep more than a tick, mark the base idle:
+ 		 */
+-		if ((expires - basem) > TICK_NSEC)
++		if ((expires - basem) > TICK_NSEC) {
++			base->was_idle = true;
+ 			base->is_idle = true;
++		}
+ 	}
+ 	raw_spin_unlock(&base->lock);
+ 
+@@ -1587,6 +1603,12 @@ static inline void __run_timers(struct timer_base *base)
+ 	struct hlist_head heads[LVL_DEPTH];
+ 	int levels;
+ 
++	/*
++	 * was_idle must be cleared before running timers so that any timer
++	 * functions that call mod_timer will not try to forward the base.
++	 */
++	base->was_idle = false;
++
+ 	if (!time_after_eq(jiffies, base->clk))
+ 		return;
+ 
+-- 
+2.13.3
