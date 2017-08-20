@@ -1,50 +1,26 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xb5955LnRzDqZs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 04:35:21 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7KIYDCM083777
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 14:35:19 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cfexesugm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 14:35:18 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Sun, 20 Aug 2017 14:35:17 -0400
-Date: Sun, 20 Aug 2017 11:35:14 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
- sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
- tglx@linutronix.de, sparclinux@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20170731150411.GA3730@linux.vnet.ibm.com>
- <20170731162757.000058ba@huawei.com>
- <20170801184646.GE3730@linux.vnet.ibm.com>
- <20170802172555.0000468a@huawei.com>
- <20170815154743.GK7017@linux.vnet.ibm.com>
- <87wp63smwn.fsf@concordia.ellerman.id.au>
- <20170816125617.GY7017@linux.vnet.ibm.com>
- <20170816162731.GA22978@linux.vnet.ibm.com>
- <20170820144553.2ab2727b@ppc64le>
- <20170820230040.706b62ac@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170820230040.706b62ac@roar.ozlabs.ibm.com>
-Message-Id: <20170820183514.GM11320@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xb61B3JJpzDqhM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 05:13:34 +1000 (AEST)
+Message-ID: <1503256100.12059.13.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <helgaas@kernel.org>, Daniel Axtens <dja@axtens.net>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, gabriele.paoloni@huawei.com,
+ airlied@linux.ie, will.deacon@arm.com, dri-devel@lists.freedesktop.org,
+ z.liuxinliang@hisilicon.com, bhelgaas@google.com,
+ alex.williamson@redhat.com, lukas@wunner.de, catalin.marinas@arm.com,
+ zourongrong@gmail.com, daniel.vetter@intel.com
+Date: Sun, 20 Aug 2017 12:08:20 -0700
+In-Reply-To: <20170819154753.GQ28977@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170817113028.16853-1-dja@axtens.net>
+ <20170817113028.16853-2-dja@axtens.net>
+ <20170819154753.GQ28977@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,143 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 20, 2017 at 11:00:40PM +1000, Nicholas Piggin wrote:
-> On Sun, 20 Aug 2017 14:45:53 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
-> 
-> > On Wed, 16 Aug 2017 09:27:31 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
-> > > 
-> > > Thomas, John, am I misinterpreting the timer trace event messages?  
-> > 
-> > So I did some digging, and what you find is that rcu_sched seems to do a
-> > simple scheudle_timeout(1) and just goes out to lunch for many seconds.
-> > The process_timeout timer never fires (when it finally does wake after
-> > one of these events, it usually removes the timer with del_timer_sync).
-> > 
-> > So this patch seems to fix it. Testing, comments welcome.
-> 
-> Okay this had a problem of trying to forward the timer from a timer
-> callback function.
-> 
-> This was my other approach which also fixes the RCU warnings, but it's
-> a little more complex. I reworked it a bit so the mod_timer fast path
-> hopefully doesn't have much more overhead (actually by reading jiffies
-> only when needed, it probably saves a load).
+On Sat, 2017-08-19 at 10:47 -0500, Bjorn Helgaas wrote:
+> So if ARM64 doesn't have these PCI legacy resources, does that mean an
+> ARM64 host bridge cannot generate these legacy addresses on PCI?  That
+> is, there's no host bridge window that maps to those PCI addresses?
+> That seems like a curious restriction on host bridges, but I guess it
+> would be possible.
 
-Giving this one a whirl!
+It's rather common. For example on POWER8:
 
-							Thanx, Paul
+ - There is no IO space at all
 
-> Thanks,
-> Nick
-> 
-> --
-> [PATCH] timers: Fix excessive granularity of new timers after a nohz idle
-> 
-> When a timer base is idle, it is forwarded when a new timer is added to
-> ensure that granularity does not become excessive. When not idle, the
-> timer tick is expected to increment the base.
-> 
-> However there is a window after a timer is restarted from nohz, when it
-> is marked not-idle, and before the timer tick on this CPU, where a timer
-> may be added on an ancient base that does not get forwarded (beacause
-> the timer appears not-idle).
-> 
-> This results in excessive granularity. So much so that a 1 jiffy timeout
-> has blown out to 10s of seconds and triggered the RCU stall warning
-> detector.
-> 
-> Fix this by keeping track of whether the timer has been idle since it was
-> last run or forwarded, and allow forwarding in the case that is true (even
-> if it is not currently idle).
-> 
-> Also add a comment noting a case where we could get an unexpectedly
-> large granularity for a timer. I debugged this problem by adding
-> warnings for such cases, but it seems we can't add them in general due
-> to this corner case.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  kernel/time/timer.c | 32 +++++++++++++++++++++++++++-----
->  1 file changed, 27 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/time/timer.c b/kernel/time/timer.c
-> index 8f5d1bf18854..ee7b8b688b48 100644
-> --- a/kernel/time/timer.c
-> +++ b/kernel/time/timer.c
-> @@ -203,6 +203,7 @@ struct timer_base {
->  	bool			migration_enabled;
->  	bool			nohz_active;
->  	bool			is_idle;
-> +	bool			was_idle;
->  	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
->  	struct hlist_head	vectors[WHEEL_SIZE];
->  } ____cacheline_aligned;
-> @@ -856,13 +857,19 @@ get_target_base(struct timer_base *base, unsigned tflags)
-> 
->  static inline void forward_timer_base(struct timer_base *base)
->  {
-> -	unsigned long jnow = READ_ONCE(jiffies);
-> +	unsigned long jnow;
-> 
->  	/*
-> -	 * We only forward the base when it's idle and we have a delta between
-> -	 * base clock and jiffies.
-> +	 * We only forward the base when we are idle or have just come out
-> +	 * of idle (was_idle logic), and have a delta between base clock
-> +	 * and jiffies. In the common case, run_timers will take care of it.
->  	 */
-> -	if (!base->is_idle || (long) (jnow - base->clk) < 2)
-> +	if (likely(!base->was_idle))
-> +		return;
-> +
-> +	jnow = READ_ONCE(jiffies);
-> +	base->was_idle = base->is_idle;
-> +	if ((long)(jnow - base->clk) < 2)
->  		return;
-> 
->  	/*
-> @@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
->  	 * same array bucket then just return:
->  	 */
->  	if (timer_pending(timer)) {
-> +		/*
-> +		 * The downside of this optimization is that it can result in
-> +		 * larger granularity than you would get from adding a new
-> +		 * timer with this expiry. Would a timer flag for networking
-> +		 * be appropriate, then we can try to keep expiry of general
-> +		 * timers within ~1/8th of their interval?
-> +		 */
->  		if (timer->expires == expires)
->  			return 1;
-> 
-> @@ -1499,8 +1513,10 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
->  		/*
->  		 * If we expect to sleep more than a tick, mark the base idle:
->  		 */
-> -		if ((expires - basem) > TICK_NSEC)
-> +		if ((expires - basem) > TICK_NSEC) {
-> +			base->was_idle = true;
->  			base->is_idle = true;
-> +		}
->  	}
->  	raw_spin_unlock(&base->lock);
-> 
-> @@ -1587,6 +1603,12 @@ static inline void __run_timers(struct timer_base *base)
->  	struct hlist_head heads[LVL_DEPTH];
->  	int levels;
-> 
-> +	/*
-> +	 * was_idle must be cleared before running timers so that any timer
-> +	 * functions that call mod_timer will not try to forward the base.
-> +	 */
-> +	base->was_idle = false;
-> +
->  	if (!time_after_eq(jiffies, base->clk))
->  		return;
-> 
-> -- 
-> 2.13.3
-> 
+ - We configure the 32-bit MMIO window to be around 3..4G (to avoid
+overlapping with DMA space below it).
+
+So we effectively have no path to the legacy areas, and that hasn't
+been a problem so far.
+
+Cheers,
+Ben.
+ 
