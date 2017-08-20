@@ -1,26 +1,50 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xb61B3JJpzDqhM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 05:13:34 +1000 (AEST)
-Message-ID: <1503256100.12059.13.camel@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <helgaas@kernel.org>, Daniel Axtens <dja@axtens.net>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, gabriele.paoloni@huawei.com,
- airlied@linux.ie, will.deacon@arm.com, dri-devel@lists.freedesktop.org,
- z.liuxinliang@hisilicon.com, bhelgaas@google.com,
- alex.williamson@redhat.com, lukas@wunner.de, catalin.marinas@arm.com,
- zourongrong@gmail.com, daniel.vetter@intel.com
-Date: Sun, 20 Aug 2017 12:08:20 -0700
-In-Reply-To: <20170819154753.GQ28977@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170817113028.16853-1-dja@axtens.net>
- <20170817113028.16853-2-dja@axtens.net>
- <20170819154753.GQ28977@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xb8hr0BM4zDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 07:14:35 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7KLDq5b073227
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 17:14:33 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cehgawm63-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 17:14:33 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sun, 20 Aug 2017 17:14:31 -0400
+Date: Sun, 20 Aug 2017 14:14:29 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
+ tglx@linutronix.de, sparclinux@vger.kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+ <87wp63smwn.fsf@concordia.ellerman.id.au>
+ <20170816125617.GY7017@linux.vnet.ibm.com>
+ <20170816162731.GA22978@linux.vnet.ibm.com>
+ <20170820144553.2ab2727b@ppc64le>
+ <20170820230040.706b62ac@roar.ozlabs.ibm.com>
+ <20170820183514.GM11320@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170820183514.GM11320@linux.vnet.ibm.com>
+Message-Id: <20170820211429.GA27111@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +54,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-08-19 at 10:47 -0500, Bjorn Helgaas wrote:
-> So if ARM64 doesn't have these PCI legacy resources, does that mean an
-> ARM64 host bridge cannot generate these legacy addresses on PCI?  That
-> is, there's no host bridge window that maps to those PCI addresses?
-> That seems like a curious restriction on host bridges, but I guess it
-> would be possible.
+On Sun, Aug 20, 2017 at 11:35:14AM -0700, Paul E. McKenney wrote:
+> On Sun, Aug 20, 2017 at 11:00:40PM +1000, Nicholas Piggin wrote:
+> > On Sun, 20 Aug 2017 14:45:53 +1000
+> > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > 
+> > > On Wed, 16 Aug 2017 09:27:31 -0700
+> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
+> > > > 
+> > > > Thomas, John, am I misinterpreting the timer trace event messages?  
+> > > 
+> > > So I did some digging, and what you find is that rcu_sched seems to do a
+> > > simple scheudle_timeout(1) and just goes out to lunch for many seconds.
+> > > The process_timeout timer never fires (when it finally does wake after
+> > > one of these events, it usually removes the timer with del_timer_sync).
+> > > 
+> > > So this patch seems to fix it. Testing, comments welcome.
+> > 
+> > Okay this had a problem of trying to forward the timer from a timer
+> > callback function.
+> > 
+> > This was my other approach which also fixes the RCU warnings, but it's
+> > a little more complex. I reworked it a bit so the mod_timer fast path
+> > hopefully doesn't have much more overhead (actually by reading jiffies
+> > only when needed, it probably saves a load).
+> 
+> Giving this one a whirl!
 
-It's rather common. For example on POWER8:
+No joy here, but then again there are other reasons to believe that I
+am seeing a different bug than Dave and Jonathan are.
 
- - There is no IO space at all
+OK, not -entirely- without joy -- 10 of 14 runs were error-free, which
+is a good improvement over 0 of 84 for your earlier patch.  ;-)  But
+not statistically different from what I see without either patch.
 
- - We configure the 32-bit MMIO window to be around 3..4G (to avoid
-overlapping with DMA space below it).
+But no statistical difference compared to without patch, and I still
+see the "rcu_sched kthread starved" messages.  For whatever it is worth,
+by the way, I also see this: "hrtimer: interrupt took 5712368 ns".
+Hmmm...  I am also seeing that without any of your patches.  Might
+be hypervisor preemption, I guess.
 
-So we effectively have no path to the legacy areas, and that hasn't
-been a problem so far.
+							Thanx, Paul
 
-Cheers,
-Ben.
- 
+PS.  I will be off the grid for the next day or so.  Eclipse day here...
