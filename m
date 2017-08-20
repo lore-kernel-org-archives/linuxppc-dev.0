@@ -1,42 +1,50 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
+Return-Path: <paulmck@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xb4Nr6tXlzDqZy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 04:00:28 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xb5955LnRzDqZs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 04:35:21 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7KHx1Ev058575
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 14:00:26 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cf9ystt5b-1
+ v7KIYDCM083777
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 14:35:19 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cfexesugm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 14:00:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 14:35:18 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 04:00:23 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7KHx5Zr40697868
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 03:59:05 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7KHwuN5009491
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 03:58:56 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, mpe@ellerman.id.au
-Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
- linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v10 03/14] powerpc: Use soft_enabled_set api to update
- paca->soft_enabled
-Date: Sun, 20 Aug 2017 23:28:20 +0530
-In-Reply-To: <1503251911-30637-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1503251911-30637-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1503251911-30637-4-git-send-email-maddy@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sun, 20 Aug 2017 14:35:17 -0400
+Date: Sun, 20 Aug 2017 11:35:14 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
+ tglx@linutronix.de, sparclinux@vger.kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170731150411.GA3730@linux.vnet.ibm.com>
+ <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+ <87wp63smwn.fsf@concordia.ellerman.id.au>
+ <20170816125617.GY7017@linux.vnet.ibm.com>
+ <20170816162731.GA22978@linux.vnet.ibm.com>
+ <20170820144553.2ab2727b@ppc64le>
+ <20170820230040.706b62ac@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170820230040.706b62ac@roar.ozlabs.ibm.com>
+Message-Id: <20170820183514.GM11320@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,123 +54,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Force use of soft_enabled_set() wrapper to update paca-soft_enabled
-wherever possisble. Also add a new wrapper function, soft_enabled_set_return(),
-added to force the paca->soft_enabled updates.
+On Sun, Aug 20, 2017 at 11:00:40PM +1000, Nicholas Piggin wrote:
+> On Sun, 20 Aug 2017 14:45:53 +1000
+> Nicholas Piggin <npiggin@gmail.com> wrote:
+> 
+> > On Wed, 16 Aug 2017 09:27:31 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
+> > > 
+> > > Thomas, John, am I misinterpreting the timer trace event messages?  
+> > 
+> > So I did some digging, and what you find is that rcu_sched seems to do a
+> > simple scheudle_timeout(1) and just goes out to lunch for many seconds.
+> > The process_timeout timer never fires (when it finally does wake after
+> > one of these events, it usually removes the timer with del_timer_sync).
+> > 
+> > So this patch seems to fix it. Testing, comments welcome.
+> 
+> Okay this had a problem of trying to forward the timer from a timer
+> callback function.
+> 
+> This was my other approach which also fixes the RCU warnings, but it's
+> a little more complex. I reworked it a bit so the mod_timer fast path
+> hopefully doesn't have much more overhead (actually by reading jiffies
+> only when needed, it probably saves a load).
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hw_irq.h  | 14 ++++++++++++++
- arch/powerpc/include/asm/kvm_ppc.h |  2 +-
- arch/powerpc/kernel/irq.c          |  2 +-
- arch/powerpc/kernel/setup_64.c     |  4 ++--
- arch/powerpc/kernel/time.c         |  6 +++---
- 5 files changed, 21 insertions(+), 7 deletions(-)
+Giving this one a whirl!
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index a6bbda85a2a9..3efb0b2ec053 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -59,6 +59,20 @@ static inline notrace void soft_enabled_set(unsigned long enable)
- 	: "memory");
- }
- 
-+static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
-+{
-+	unsigned long flags, zero;
-+
-+	asm volatile(
-+		"mr %1,%3; lbz %0,%2(13); stb %1,%2(13)"
-+		: "=r" (flags), "=&r" (zero)
-+		: "i" (offsetof(struct paca_struct, soft_enabled)),\
-+		  "r" (enable)
-+		: "memory");
-+
-+	return flags;
-+}
-+
- static inline unsigned long arch_local_save_flags(void)
- {
- 	unsigned long flags;
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index d3608fe43245..76f82014cd80 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -869,7 +869,7 @@ static inline void kvmppc_fix_ee_before_entry(void)
- 
- 	/* Only need to enable IRQs by hard enabling them after this */
- 	local_paca->irq_happened = 0;
--	local_paca->soft_enabled = IRQ_ENABLED;
-+	soft_enabled_set(IRQ_ENABLED);
- #endif
- }
- 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 8f561ef3508c..86210c220cf7 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -350,7 +350,7 @@ bool prep_irq_for_idle(void)
- 	 * of entering the low power state.
- 	 */
- 	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
--	local_paca->soft_enabled = IRQ_ENABLED;
-+	soft_enabled_set(IRQ_ENABLED);
- 
- 	/* Tell the caller to enter the low power state */
- 	return true;
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 946e6131ff25..4e77972edfac 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -189,7 +189,7 @@ static void __init fixup_boot_paca(void)
- 	/* Allow percpu accesses to work until we setup percpu data */
- 	get_paca()->data_offset = 0;
- 	/* Mark interrupts disabled in PACA */
--	get_paca()->soft_enabled = IRQ_DISABLED;
-+	soft_enabled_set(IRQ_DISABLED);
- }
- 
- static void __init configure_exceptions(void)
-@@ -345,7 +345,7 @@ void __init early_setup(unsigned long dt_ptr)
- void early_setup_secondary(void)
- {
- 	/* Mark interrupts disabled in PACA */
--	get_paca()->soft_enabled = 0;
-+	soft_enabled_set(IRQ_DISABLED);
- 
- 	/* Initialize the hash table or TLB handling */
- 	early_init_mmu_secondary();
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index d0d730c61758..f495956a3664 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -244,7 +244,7 @@ static u64 scan_dispatch_log(u64 stop_tb)
- void accumulate_stolen_time(void)
- {
- 	u64 sst, ust;
--	u8 save_soft_enabled = local_paca->soft_enabled;
-+	unsigned long save_soft_enabled;
- 	struct cpu_accounting_data *acct = &local_paca->accounting;
- 
- 	/* We are called early in the exception entry, before
-@@ -253,7 +253,7 @@ void accumulate_stolen_time(void)
- 	 * needs to reflect that so various debug stuff doesn't
- 	 * complain
- 	 */
--	local_paca->soft_enabled = IRQ_DISABLED;
-+	save_soft_enabled = soft_enabled_set_return(IRQ_DISABLED);
- 
- 	sst = scan_dispatch_log(acct->starttime_user);
- 	ust = scan_dispatch_log(acct->starttime);
-@@ -261,7 +261,7 @@ void accumulate_stolen_time(void)
- 	acct->utime -= ust;
- 	acct->steal_time += ust + sst;
- 
--	local_paca->soft_enabled = save_soft_enabled;
-+	soft_enabled_set(save_soft_enabled);
- }
- 
- static inline u64 calculate_stolen_time(u64 stop_tb)
--- 
-2.7.4
+							Thanx, Paul
+
+> Thanks,
+> Nick
+> 
+> --
+> [PATCH] timers: Fix excessive granularity of new timers after a nohz idle
+> 
+> When a timer base is idle, it is forwarded when a new timer is added to
+> ensure that granularity does not become excessive. When not idle, the
+> timer tick is expected to increment the base.
+> 
+> However there is a window after a timer is restarted from nohz, when it
+> is marked not-idle, and before the timer tick on this CPU, where a timer
+> may be added on an ancient base that does not get forwarded (beacause
+> the timer appears not-idle).
+> 
+> This results in excessive granularity. So much so that a 1 jiffy timeout
+> has blown out to 10s of seconds and triggered the RCU stall warning
+> detector.
+> 
+> Fix this by keeping track of whether the timer has been idle since it was
+> last run or forwarded, and allow forwarding in the case that is true (even
+> if it is not currently idle).
+> 
+> Also add a comment noting a case where we could get an unexpectedly
+> large granularity for a timer. I debugged this problem by adding
+> warnings for such cases, but it seems we can't add them in general due
+> to this corner case.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  kernel/time/timer.c | 32 +++++++++++++++++++++++++++-----
+>  1 file changed, 27 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+> index 8f5d1bf18854..ee7b8b688b48 100644
+> --- a/kernel/time/timer.c
+> +++ b/kernel/time/timer.c
+> @@ -203,6 +203,7 @@ struct timer_base {
+>  	bool			migration_enabled;
+>  	bool			nohz_active;
+>  	bool			is_idle;
+> +	bool			was_idle;
+>  	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
+>  	struct hlist_head	vectors[WHEEL_SIZE];
+>  } ____cacheline_aligned;
+> @@ -856,13 +857,19 @@ get_target_base(struct timer_base *base, unsigned tflags)
+> 
+>  static inline void forward_timer_base(struct timer_base *base)
+>  {
+> -	unsigned long jnow = READ_ONCE(jiffies);
+> +	unsigned long jnow;
+> 
+>  	/*
+> -	 * We only forward the base when it's idle and we have a delta between
+> -	 * base clock and jiffies.
+> +	 * We only forward the base when we are idle or have just come out
+> +	 * of idle (was_idle logic), and have a delta between base clock
+> +	 * and jiffies. In the common case, run_timers will take care of it.
+>  	 */
+> -	if (!base->is_idle || (long) (jnow - base->clk) < 2)
+> +	if (likely(!base->was_idle))
+> +		return;
+> +
+> +	jnow = READ_ONCE(jiffies);
+> +	base->was_idle = base->is_idle;
+> +	if ((long)(jnow - base->clk) < 2)
+>  		return;
+> 
+>  	/*
+> @@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+>  	 * same array bucket then just return:
+>  	 */
+>  	if (timer_pending(timer)) {
+> +		/*
+> +		 * The downside of this optimization is that it can result in
+> +		 * larger granularity than you would get from adding a new
+> +		 * timer with this expiry. Would a timer flag for networking
+> +		 * be appropriate, then we can try to keep expiry of general
+> +		 * timers within ~1/8th of their interval?
+> +		 */
+>  		if (timer->expires == expires)
+>  			return 1;
+> 
+> @@ -1499,8 +1513,10 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
+>  		/*
+>  		 * If we expect to sleep more than a tick, mark the base idle:
+>  		 */
+> -		if ((expires - basem) > TICK_NSEC)
+> +		if ((expires - basem) > TICK_NSEC) {
+> +			base->was_idle = true;
+>  			base->is_idle = true;
+> +		}
+>  	}
+>  	raw_spin_unlock(&base->lock);
+> 
+> @@ -1587,6 +1603,12 @@ static inline void __run_timers(struct timer_base *base)
+>  	struct hlist_head heads[LVL_DEPTH];
+>  	int levels;
+> 
+> +	/*
+> +	 * was_idle must be cleared before running timers so that any timer
+> +	 * functions that call mod_timer will not try to forward the base.
+> +	 */
+> +	base->was_idle = false;
+> +
+>  	if (!time_after_eq(jiffies, base->clk))
+>  		return;
+> 
+> -- 
+> 2.13.3
+> 
