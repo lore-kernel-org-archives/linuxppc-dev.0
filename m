@@ -1,27 +1,38 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xZWVp2XqMzDqsF
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 06:18:41 +1000 (AEST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, dave.hansen@intel.com, hbabu@us.ibm.com, arnd@arndb.de,
- akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com, mhocko@kernel.org
-References: <1500177424-13695-1-git-send-email-linuxram@us.ibm.com>
- <1500177424-13695-36-git-send-email-linuxram@us.ibm.com>
-Date: Sat, 19 Aug 2017 14:09:58 -0500
-In-Reply-To: <1500177424-13695-36-git-send-email-linuxram@us.ibm.com> (Ram
- Pai's message of "Sat, 15 Jul 2017 20:56:37 -0700")
-Message-ID: <87d17rnzll.fsf@xmission.com>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xZkmN6G5fzDqZw
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 14:46:12 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id r62so1470286pfj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Aug 2017 21:46:12 -0700 (PDT)
+Date: Sun, 20 Aug 2017 14:45:53 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron
+ <Jonathan.Cameron@huawei.com>, dzickus@redhat.com, sfr@canb.auug.org.au,
+ linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com, tglx@linutronix.de,
+ sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170820144553.2ab2727b@ppc64le>
+In-Reply-To: <20170816162731.GA22978@linux.vnet.ibm.com>
+References: <20170728182053.000072aa@huawei.com>
+ <20170728190349.GM3730@linux.vnet.ibm.com>
+ <20170731120847.00003d5c@huawei.com>
+ <20170731150411.GA3730@linux.vnet.ibm.com>
+ <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+ <87wp63smwn.fsf@concordia.ellerman.id.au>
+ <20170816125617.GY7017@linux.vnet.ibm.com>
+ <20170816162731.GA22978@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [RFC v6 35/62] powerpc: Deliver SEGV signal on pkey violation
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +42,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
+On Wed, 16 Aug 2017 09:27:31 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
+> 
+> Thomas, John, am I misinterpreting the timer trace event messages?
 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index d4e545d..fe1e7c7 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -20,6 +20,7 @@
->  #include <linux/sched/debug.h>
->  #include <linux/kernel.h>
->  #include <linux/mm.h>
-> +#include <linux/pkeys.h>
->  #include <linux/stddef.h>
->  #include <linux/unistd.h>
->  #include <linux/ptrace.h>
-> @@ -247,6 +248,15 @@ void user_single_step_siginfo(struct task_struct *tsk,
->  	info->si_addr = (void __user *)regs->nip;
->  }
->  
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +static void fill_sig_info_pkey(int si_code, siginfo_t *info, unsigned long addr)
-> +{
-> +	if (si_code != SEGV_PKUERR)
-> +		return;
+So I did some digging, and what you find is that rcu_sched seems to do a
+simple scheudle_timeout(1) and just goes out to lunch for many seconds.
+The process_timeout timer never fires (when it finally does wake after
+one of these events, it usually removes the timer with del_timer_sync).
 
-Given that SEGV_PKUERR is a signal specific si_code this test is
-insufficient to detect an pkey error.  You also need to check
-that signr == SIGSEGV
+So this patch seems to fix it. Testing, comments welcome.
 
-> +	info->si_pkey = get_paca()->paca_pkey;
-> +}
-> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> +
->  void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
->  {
->  	siginfo_t info;
-> @@ -274,6 +284,11 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
->  	info.si_signo = signr;
->  	info.si_code = code;
->  	info.si_addr = (void __user *) addr;
-> +
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +	fill_sig_info_pkey(code, &info, addr);
-> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> +
->  	force_sig_info(signr, &info, current);
->  }
+Thanks,
+Nick
 
-Eric
+[PATCH] timers: Fix excessive granularity of new timers after a nohz idle
+
+When a timer base is idle, it is forwarded when a new timer is added to
+ensure that granularity does not become excessive. When not idle, the
+timer tick is expected to increment the base.
+
+However there is a window after a timer is restarted from nohz, when it
+is marked not-idle, and before the timer tick on this CPU, where a timer
+may be added on an ancient base that does not get forwarded (beacause
+the timer appears not-idle).
+
+This results in excessive granularity. So much so that a 1 jiffy timeout
+has blown out to 10s of seconds and triggered the RCU stall warning
+detector.
+
+Fix this by always forwarding the base when adding a new timer if it is
+more than 1 jiffy behind. Another approach I looked at first was to note
+if the base was idle but not yet run or forwarded, however this just
+seemed to add more branches and complexity when it seems we can just
+cover it with this test.
+
+Also add a comment noting a case where we could get an unexpectedly
+large granularity for a timer. I debugged this problem by adding
+warnings for such cases, but it seems we can't add them in general due
+to this corner case.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ kernel/time/timer.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+index 8f5d1bf18854..8f69b3105b8f 100644
+--- a/kernel/time/timer.c
++++ b/kernel/time/timer.c
+@@ -859,10 +859,10 @@ static inline void forward_timer_base(struct timer_base *base)
+ 	unsigned long jnow = READ_ONCE(jiffies);
+ 
+ 	/*
+-	 * We only forward the base when it's idle and we have a delta between
+-	 * base clock and jiffies.
++	 * We only forward the base when we have a delta between base clock
++	 * and jiffies. In the common case, run_timers will take care of it.
+ 	 */
+-	if (!base->is_idle || (long) (jnow - base->clk) < 2)
++	if ((long) (jnow - base->clk) < 2)
+ 		return;
+ 
+ 	/*
+@@ -938,6 +938,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+ 	 * same array bucket then just return:
+ 	 */
+ 	if (timer_pending(timer)) {
++		/*
++		 * The downside of this optimization is that it can result in
++		 * larger granularity than you would get from adding a new
++		 * timer with this expiry. Would a timer flag for networking
++		 * be appropriate, then we can try to keep expiry of general
++		 * timers within ~1/8th of their interval?
++		 */
+ 		if (timer->expires == expires)
+ 			return 1;
+ 
+-- 
+2.13.3
