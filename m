@@ -1,22 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbhGc6GRGzDqms
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 03:57:10 +1000 (AEST)
-Date: Mon, 21 Aug 2017 10:57:06 -0700 (PDT)
-Message-Id: <20170821.105706.646457120423300952.davem@davemloft.net>
-To: madalin.bucur@nxp.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] dpaa_eth: add NETIF_F_RXHASH
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1503046588-24349-5-git-send-email-madalin.bucur@nxp.com>
-References: <1503046588-24349-1-git-send-email-madalin.bucur@nxp.com>
- <1503046588-24349-5-git-send-email-madalin.bucur@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbhVm4Cx8zDqVg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 04:07:44 +1000 (AEST)
+Message-ID: <1503334155.2195.17.camel@kernel.crashing.org>
+Subject: Re: [v3,3/3] powerpc/mm/cxl: Add the fault handling cpu to mm cpumask
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <patch-notifications@ellerman.id.au>, "Aneesh Kumar
+ K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 21 Aug 2017 09:49:15 -0700
+In-Reply-To: <3xbZXv0yxCz9t0F@ozlabs.org>
+References: <3xbZXv0yxCz9t0F@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@nxp.com>
-Date: Fri, 18 Aug 2017 11:56:26 +0300
+On Mon, 2017-08-21 at 23:39 +1000, Michael Ellerman wrote:
+> On Thu, 2017-07-27 at 06:24:55 UTC, "Aneesh Kumar K.V" wrote:
+> > We use mm cpumask for serializing against lockless page table walk. Anybody
+> > who is doing a lockless page table walk is expected to disable irq and only
+> > cpus in mm cpumask is expected do the lockless walk. This ensure that
+> > a THP split can send IPI to only cpus in the mm cpumask, to make sure there
+> > are no parallel lockless page table walk.
+> > 
+> > Add the CAPI fault handling cpu to the mm cpumask so that we can do the lockless
+> > page table walk while inserting hash page table entries.
+> > 
+> > Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> Applied to powerpc next, thanks.
+> 
+> https://git.kernel.org/powerpc/c/0f4bc0932e51817105fdee77a46680
 
-> +	if (net_dev->features & NETIF_F_RXHASH && priv->keygen_in_use &&
-> +	    !fman_port_get_hash_result_offset(priv->mac_dev->port[RX],
-> +					      &hash_offset))
-> +		skb_set_hash(skb, be32_to_cpu(*(u32 *)(vaddr + hash_offset)),
-> +			     // if L4 exists, it was used in the hash generation
-> +			     be32_to_cpu(fd->status) & FM_FD_STAT_L4CV ?
-> +				PKT_HASH_TYPE_L4 : PKT_HASH_TYPE_L3);
+Do you need barriers between the cpumask set and the walking ?
 
-We do not use "//" c++ style comments in the kernel.
-
-And putting a comment right in the middle of a set of arguments being
-passed to a function makes the code harder to read, so please do not
-do this.
+Cheers,
+Ben.
