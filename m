@@ -1,22 +1,22 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
- [209.85.218.68])
+Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
+ [209.85.218.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbcjp5lz2zDrCc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:17:02 +1000 (AEST)
-Received: by mail-oi0-f68.google.com with SMTP id j144so3841895oib.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 08:17:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbcjq6rYGzDrJQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:17:03 +1000 (AEST)
+Received: by mail-oi0-f67.google.com with SMTP id k77so2259793oib.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 08:17:03 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>
-Subject: [PATCH v2 4/5] powerpc: pseries: only store the device node basename
- in full_name
-Date: Mon, 21 Aug 2017 10:16:50 -0500
-Message-Id: <20170821151651.25096-5-robh@kernel.org>
+Subject: [PATCH v2 5/5] of/fdt: only store the device node basename in
+ full_name
+Date: Mon, 21 Aug 2017 10:16:51 -0500
+Message-Id: <20170821151651.25096-6-robh@kernel.org>
 In-Reply-To: <20170821151651.25096-1-robh@kernel.org>
 References: <20170821151651.25096-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,111 +28,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With dependencies on full_name containing the entire device node path
-removed, stop storing the full_name in nodes created by
-dlpar_configure_connector() and pSeries_reconfig_add_node().
+With dependencies on a statically allocated full path name converted to
+use %pOF format specifier, we can store just the basename of node, and
+the unflattening of the FDT can be simplified.
+
+This commit will affect the remaining users of full_name. After
+analyzing these users, the remaining cases should only change some print
+messages. The main users of full_name are providing a name for struct
+resource. The resource names shouldn't be important other than providing
+/proc/iomem names.
+
+We no longer distinguish between pre and post 0x10 dtb formats as either
+a full path or basename will work. However, less than 0x10 formats have
+been broken since the conversion to use libfdt (and no one has cared).
+The conversion of the unflattening code to be non-recursive also broke
+pre 0x10 formats as the populate_node function would return 0 in that
+case.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
 ---
 v2:
-- Rework dlpar_parse_cc_node() to a single allocation and strcpy instead
-  of kasprintf
-  
- arch/powerpc/platforms/pseries/dlpar.c    | 30 +++++++-----------------------
- arch/powerpc/platforms/pseries/reconfig.c |  2 +-
- 2 files changed, 8 insertions(+), 24 deletions(-)
+- rebase to linux-next
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 783f36364690..31a0615aeea1 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -75,28 +75,17 @@ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
- 	return prop;
+ drivers/of/fdt.c | 69 +++++++++-----------------------------------------------
+ 1 file changed, 11 insertions(+), 58 deletions(-)
+
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index ce30c9a588a4..27c535af0be8 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -266,74 +266,32 @@ static void populate_properties(const void *blob,
+ 		*pprev = NULL;
  }
  
--static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
--					       const char *path)
-+static struct device_node *(dlpar_parse_cc_node)(struct cc_workarea *ccwa)
+-static unsigned int populate_node(const void *blob,
+-				  int offset,
+-				  void **mem,
+-				  struct device_node *dad,
+-				  unsigned int fpsize,
+-				  struct device_node **pnp,
+-				  bool dryrun)
++static bool populate_node(const void *blob,
++			  int offset,
++			  void **mem,
++			  struct device_node *dad,
++			  struct device_node **pnp,
++			  bool dryrun)
  {
- 	struct device_node *dn;
--	char *name;
--
--	/* If parent node path is "/" advance path to NULL terminator to
--	 * prevent double leading slashs in full_name.
+ 	struct device_node *np;
+ 	const char *pathp;
+ 	unsigned int l, allocl;
+-	int new_format = 0;
+ 
+ 	pathp = fdt_get_name(blob, offset, &l);
+ 	if (!pathp) {
+ 		*pnp = NULL;
+-		return 0;
++		return false;
+ 	}
+ 
+ 	allocl = ++l;
+ 
+-	/* version 0x10 has a more compact unit name here instead of the full
+-	 * path. we accumulate the full path size using "fpsize", we'll rebuild
+-	 * it later. We detect this because the first character of the name is
+-	 * not '/'.
 -	 */
--	if (!path[1])
--		path++;
-+	const char *name = (const char *)ccwa + be32_to_cpu(ccwa->name_offset);
- 
--	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
-+	dn = kzalloc(sizeof(*dn) + strlen(name) + 1, GFP_KERNEL);
- 	if (!dn)
- 		return NULL;
- 
--	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
--	dn->full_name = kasprintf(GFP_KERNEL, "%s/%s", path, name);
--	if (!dn->full_name) {
--		kfree(dn);
--		return NULL;
+-	if ((*pathp) != '/') {
+-		new_format = 1;
+-		if (fpsize == 0) {
+-			/* root node: special case. fpsize accounts for path
+-			 * plus terminating zero. root node only has '/', so
+-			 * fpsize should be 2, but we want to avoid the first
+-			 * level nodes to have two '/' so we use fpsize 1 here
+-			 */
+-			fpsize = 1;
+-			allocl = 2;
+-			l = 1;
+-			pathp = "";
+-		} else {
+-			/* account for '/' and path size minus terminal 0
+-			 * already in 'l'
+-			 */
+-			fpsize += l;
+-			allocl = fpsize;
+-		}
 -	}
-+	dn->full_name = (char *)(dn + 1);
-+	strcpy((char *)dn->full_name, name);
- 
- 	of_node_set_flag(dn, OF_DYNAMIC);
- 	of_node_init(dn);
-@@ -148,7 +137,6 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
- 	struct property *last_property = NULL;
- 	struct cc_workarea *ccwa;
- 	char *data_buf;
--	const char *parent_path = parent->full_name;
- 	int cc_token;
- 	int rc = -1;
- 
-@@ -182,7 +170,7 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
- 			break;
- 
- 		case NEXT_SIBLING:
--			dn = dlpar_parse_cc_node(ccwa, parent_path);
-+			dn = dlpar_parse_cc_node(ccwa);
- 			if (!dn)
- 				goto cc_error;
- 
-@@ -192,10 +180,7 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
- 			break;
- 
- 		case NEXT_CHILD:
--			if (first_dn)
--				parent_path = last_dn->full_name;
 -
--			dn = dlpar_parse_cc_node(ccwa, parent_path);
-+			dn = dlpar_parse_cc_node(ccwa);
- 			if (!dn)
- 				goto cc_error;
+ 	np = unflatten_dt_alloc(mem, sizeof(struct device_node) + allocl,
+ 				__alignof__(struct device_node));
+ 	if (!dryrun) {
+ 		char *fn;
+ 		of_node_init(np);
+ 		np->full_name = fn = ((char *)np) + sizeof(*np);
+-		if (new_format) {
+-			/* rebuild full path for new format */
+-			if (dad && dad->parent) {
+-				strcpy(fn, dad->full_name);
+-#ifdef DEBUG
+-				if ((strlen(fn) + l + 1) != allocl) {
+-					pr_debug("%s: p: %d, l: %d, a: %d\n",
+-						pathp, (int)strlen(fn),
+-						l, allocl);
+-				}
+-#endif
+-				fn += strlen(fn);
+-			}
+-			*(fn++) = '/';
+-		}
++
+ 		memcpy(fn, pathp, l);
  
-@@ -226,7 +211,6 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
+ 		if (dad != NULL) {
+@@ -355,7 +313,7 @@ static unsigned int populate_node(const void *blob,
+ 	}
  
- 		case PREV_PARENT:
- 			last_dn = last_dn->parent;
--			parent_path = last_dn->parent->full_name;
- 			break;
+ 	*pnp = np;
+-	return fpsize;
++	return true;
+ }
  
- 		case CALL_AGAIN:
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 296c188fd5ca..f24d8159c9e1 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -33,7 +33,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
- 	if (!np)
- 		goto out_err;
+ static void reverse_nodes(struct device_node *parent)
+@@ -399,7 +357,6 @@ static int unflatten_dt_nodes(const void *blob,
+ 	struct device_node *root;
+ 	int offset = 0, depth = 0, initial_depth = 0;
+ #define FDT_MAX_DEPTH	64
+-	unsigned int fpsizes[FDT_MAX_DEPTH];
+ 	struct device_node *nps[FDT_MAX_DEPTH];
+ 	void *base = mem;
+ 	bool dryrun = !base;
+@@ -418,7 +375,6 @@ static int unflatten_dt_nodes(const void *blob,
+ 		depth = initial_depth = 1;
  
--	np->full_name = kstrdup(path, GFP_KERNEL);
-+	np->full_name = kstrdup(kbasename(path), GFP_KERNEL);
- 	if (!np->full_name)
- 		goto out_err;
+ 	root = dad;
+-	fpsizes[depth] = dad ? strlen(of_node_full_name(dad)) : 0;
+ 	nps[depth] = dad;
  
+ 	for (offset = 0;
+@@ -427,11 +383,8 @@ static int unflatten_dt_nodes(const void *blob,
+ 		if (WARN_ON_ONCE(depth >= FDT_MAX_DEPTH))
+ 			continue;
+ 
+-		fpsizes[depth+1] = populate_node(blob, offset, &mem,
+-						 nps[depth],
+-						 fpsizes[depth],
+-						 &nps[depth+1], dryrun);
+-		if (!fpsizes[depth+1])
++		if (!populate_node(blob, offset, &mem, nps[depth],
++				   &nps[depth+1], dryrun))
+ 			return mem - base;
+ 
+ 		if (!dryrun && nodepp && !*nodepp)
 -- 
 2.11.0
