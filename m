@@ -1,29 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
+Return-Path: <npiggin@gmail.com>
 Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
  [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbKjL24fRzDqZ8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 14:00:37 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id t3so1471742pgt.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 21:00:37 -0700 (PDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] PCI: Disable IOV before pcibios_sriov_disable()
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>,
- kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
- Eric Auger <eric.auger@redhat.com>, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, shan.gavin@gmail.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <20170811081933.17474-1-aik@ozlabs.ru>
- <2163ef83-3633-a8cf-3416-0e37a6c500db@ozlabs.ru>
- <20170818152740.GL28977@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <fd0d4fb6-b111-4432-399f-5c9057f0dee6@ozlabs.ru>
-Date: Mon, 21 Aug 2017 14:00:28 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbNVV6BpCzDqlR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 16:06:26 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id n4so7392867pgn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 23:06:26 -0700 (PDT)
+Date: Mon, 21 Aug 2017 16:06:05 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron
+ <Jonathan.Cameron@huawei.com>, dzickus@redhat.com, sfr@canb.auug.org.au,
+ linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com, tglx@linutronix.de,
+ sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Message-ID: <20170821160605.5b1cc019@roar.ozlabs.ibm.com>
+In-Reply-To: <20170821105258.191d04b1@roar.ozlabs.ibm.com>
+References: <20170731162757.000058ba@huawei.com>
+ <20170801184646.GE3730@linux.vnet.ibm.com>
+ <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+ <87wp63smwn.fsf@concordia.ellerman.id.au>
+ <20170816125617.GY7017@linux.vnet.ibm.com>
+ <20170816162731.GA22978@linux.vnet.ibm.com>
+ <20170820144553.2ab2727b@ppc64le>
+ <20170820230040.706b62ac@roar.ozlabs.ibm.com>
+ <20170820183514.GM11320@linux.vnet.ibm.com>
+ <20170820211429.GA27111@linux.vnet.ibm.com>
+ <20170821105258.191d04b1@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20170818152740.GL28977@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,183 +43,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/08/17 01:27, Bjorn Helgaas wrote:
-> On Fri, Aug 18, 2017 at 08:05:42AM +1000, Alexey Kardashevskiy wrote:
->> On 11/08/17 18:19, Alexey Kardashevskiy wrote:
->>> From: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>
->>> The PowerNV platform is the only user of pcibios_sriov_disable().
->>> The IOV BAR could be shifted by pci_iov_update_resource(). The
->>> warning message in the function is printed if the IOV capability
->>> is in enabled (PCI_SRIOV_CTRL_VFE && PCI_SRIOV_CTRL_MSE) state.
->>>
->>> This is the backtrace of what is happening:
->>>    pci_disable_sriov
->>>    sriov_disable
->>>    pnv_pci_sriov_disable
->>>    pnv_pci_vf_resource_shift
->>>    pci_update_resource
->>>    pci_iov_update_resource
->>>
->>> This fixes the issue by disabling IOV capability before calling
->>> pcibios_sriov_disable(). With it, the disabling path matches
->>> the enabling path: pcibios_sriov_enable() is called before the
->>> IOV capability is enabled.
->>>
->>> Cc: shan.gavin@gmail.com
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Reported-by: Carol L Soto <clsoto@us.ibm.com>
->>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>> Tested-by: Carol L Soto <clsoto@us.ibm.com>
->>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>> ---
->>>
->>> This is repost. Since Gavin left the team, I am trying to push it out.
->>> The previos converstion is here: https://patchwork.ozlabs.org/patch/732653/
->>>
->>> Two questions were raised then. I'll try to comment on this below.
->>
->> Bjorn, ping? Thanks.
+On Mon, 21 Aug 2017 10:52:58 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
+
+> On Sun, 20 Aug 2017 14:14:29 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> Thanks for the reminder.  This is in patchwork, so it's on my to-do
-> list.
+> > On Sun, Aug 20, 2017 at 11:35:14AM -0700, Paul E. McKenney wrote:  
+> > > On Sun, Aug 20, 2017 at 11:00:40PM +1000, Nicholas Piggin wrote:    
+> > > > On Sun, 20 Aug 2017 14:45:53 +1000
+> > > > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > > >     
+> > > > > On Wed, 16 Aug 2017 09:27:31 -0700
+> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:    
+> > > > > > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
+> > > > > > 
+> > > > > > Thomas, John, am I misinterpreting the timer trace event messages?      
+> > > > > 
+> > > > > So I did some digging, and what you find is that rcu_sched seems to do a
+> > > > > simple scheudle_timeout(1) and just goes out to lunch for many seconds.
+> > > > > The process_timeout timer never fires (when it finally does wake after
+> > > > > one of these events, it usually removes the timer with del_timer_sync).
+> > > > > 
+> > > > > So this patch seems to fix it. Testing, comments welcome.    
+> > > > 
+> > > > Okay this had a problem of trying to forward the timer from a timer
+> > > > callback function.
+> > > > 
+> > > > This was my other approach which also fixes the RCU warnings, but it's
+> > > > a little more complex. I reworked it a bit so the mod_timer fast path
+> > > > hopefully doesn't have much more overhead (actually by reading jiffies
+> > > > only when needed, it probably saves a load).    
+> > > 
+> > > Giving this one a whirl!    
+> > 
+> > No joy here, but then again there are other reasons to believe that I
+> > am seeing a different bug than Dave and Jonathan are.
+> > 
+> > OK, not -entirely- without joy -- 10 of 14 runs were error-free, which
+> > is a good improvement over 0 of 84 for your earlier patch.  ;-)  But
+> > not statistically different from what I see without either patch.
+> > 
+> > But no statistical difference compared to without patch, and I still
+> > see the "rcu_sched kthread starved" messages.  For whatever it is worth,
+> > by the way, I also see this: "hrtimer: interrupt took 5712368 ns".
+> > Hmmm...  I am also seeing that without any of your patches.  Might
+> > be hypervisor preemption, I guess.  
 > 
-> My last response in the thread above was:
-> 
->   I'm not going to merge this without a comment in
->   pnv_pci_vf_resource_shift() that addresses the two questions I
->   raised in my very first response.  I don't think the existing
->   comment about "After doing so, there would be a 'hole'" is
->   sufficient.  If it were sufficient, I wouldn't have raised the
->   questions in the first place.
-> 
-> The problem here is that I'm looking for a comment *in the code*, and
-> you and Gavin are giving responses and clarifications in email.
+> Okay it makes the warnings go away for me, but I'm just booting then
+> leaving the system idle. You're doing some CPU hotplug activity?
 
-I understand.
+Okay found a bug in the patch (it was not forwarding properly before
+adding the first timer after an idle) and a few other concerns.
 
-> What we need to do is transfer this email information into something
-> useful when reading the code, i.e., a comment in the code.
+There's still a problem of a timer function doing a mod timer from
+within expire_timers. It can't forward the base, which might currently
+be quite a way behind. I *think* after we close these gaps and get
+timely wakeups for timers on there, it should not get too far behind
+for standard timers.
 
-I agree. Here are few problems though.
+Deferrable is a different story. Firstly it has no idle tracking so we
+never forward it. Even if we wanted to, we can't do it reliably because
+it could contain timers way behind the base. They are "deferrable", so
+you get what you pay for, but this still means there's a window where
+you can add a deferrable timer and get a far later expiry than you
+asked for despite the CPU never going idle after you added it.
 
-1. I am not sure if there is nothing to fix (like adding dummy regions to
-prevent these "holes" to be used for something else)
+All these problems would seem to go away if mod_timer just queued up
+the timer to a single list on the base then pushed them into the
+wheel during your wheel processing softirq... Although maybe you end
+up with excessive passes over big queue of timers. Anyway that
+wouldn't be suitable for 4.13 even if it could work.
 
-2. I do not really know how exactly to update the comment in the code to
-make it clearer for the future readers, and before doing this, I'd like to
-understand about 1).
+I'll send out an updated minimal fix after some more testing...
 
-
-An example of the comment which would make sense to me:
-
-@@ -1002,9 +1016,13 @@ static int pnv_pci_vf_resource_shift(struct pci_dev
-*dev, int offset)
-        }
-
-        /*
--        * After doing so, there would be a "hole" in the /proc/iomem when
--        * offset is a positive value. It looks like the device return some
--        * mmio back to the system, which actually no one could use it.
-+        * Since M64 BAR shares segments among all possible 256 PEs,
-+        * we have to shift the beginning of PF IOV BAR to make it start from
-+        * the segment which belongs to the PE number assigned to the first VF.
-+        * This creates a "hole" in the /proc/iomem which could be used for
-+        * allocating other resources, however this is not expected to happen
-+        * on IODA as the only possibility would be a PCI hotplug and IODA
-+        * hardware only allows it on a slot with dedicated PHB.
-         */
-
-
-Does this make sense? Thanks.
-
-
-
-> 
->>>> 1) "res" is already in the resource tree, so we shouldn't be changing
->>>>   its start address, because that may make the tree inconsistent,
->>>>   e.g., the resource may no longer be completely contained in its
->>>>   parent, it may conflict with a sibling, etc.
->>>
->>> We should not, yes. But...
->>>
->>> At the boot time IOV BAR gets as much MMIO space as it can possibly use.
->>> (Embarassingly I cannot trace where this is coming from, 8GB is selected
->>> via pci_assign_unassigned_root_bus_resources() path somehow).
->>> For example, it is 256*32MB=8GB where 256 is maximum PEs number and 32MB
->>> is a PF/VF BAR size. Whatever shifting we do afterwards, the boudaries of
->>> that 8GB area do not change and we test it in pnv_pci_vf_resource_shift():
->>>
->>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/platforms/powernv/pci-ioda.c#n987
->>>
->>>> 2) If we update "res->start", shouldn't we update "res->end"
->>>>   correspondingly?
->>>
->>> We have to update the PF's IOV BAR address as we allocate PEs dynamically
->>> and we do not know in advance where our VF numbers start in that
->>> 8GB window. So we change IOV BASR start. Changing the end may make it
->>> look more like there is a free area to use but in reality it won't be
->>> usable as well as the area we "release" by shifting the start address.
->>>
->>> We could probably move that M64 MMIO window by the same delta in
->>> opposite direction so the IOV BAR start address would remain the same
->>> but its VF#0 would be mapped to let's say PF#5. I am just afraid there
->>> is an alignment requirement for these M64 window start address; and this
->>> would be even more tricky to manage.
->>>
->>> We could also create reserved areas for the amount of space "release" by
->>> moving the start address, not sure how though.
->>>
->>> So how do we proceed with this particular patch now? Thanks.
->>> ---
->>>  drivers/pci/iov.c | 7 ++++---
->>>  1 file changed, 4 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
->>> index 120485d6f352..ac41c8be9200 100644
->>> --- a/drivers/pci/iov.c
->>> +++ b/drivers/pci/iov.c
->>> @@ -331,7 +331,6 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
->>>  	while (i--)
->>>  		pci_iov_remove_virtfn(dev, i, 0);
->>>  
->>> -	pcibios_sriov_disable(dev);
->>>  err_pcibios:
->>>  	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
->>>  	pci_cfg_access_lock(dev);
->>> @@ -339,6 +338,8 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
->>>  	ssleep(1);
->>>  	pci_cfg_access_unlock(dev);
->>>  
->>> +	pcibios_sriov_disable(dev);
->>> +
->>>  	if (iov->link != dev->devfn)
->>>  		sysfs_remove_link(&dev->dev.kobj, "dep_link");
->>>  
->>> @@ -357,14 +358,14 @@ static void sriov_disable(struct pci_dev *dev)
->>>  	for (i = 0; i < iov->num_VFs; i++)
->>>  		pci_iov_remove_virtfn(dev, i, 0);
->>>  
->>> -	pcibios_sriov_disable(dev);
->>> -
->>>  	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
->>>  	pci_cfg_access_lock(dev);
->>>  	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
->>>  	ssleep(1);
->>>  	pci_cfg_access_unlock(dev);
->>>  
->>> +	pcibios_sriov_disable(dev);
->>> +
->>>  	if (iov->link != dev->devfn)
->>>  		sysfs_remove_link(&dev->dev.kobj, "dep_link");
->>>  
->>>
->>
->>
->> -- 
->> Alexey
-
-
--- 
-Alexey
+Thanks,
+Nick
