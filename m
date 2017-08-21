@@ -1,39 +1,50 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbNVV6BpCzDqlR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 16:06:26 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id n4so7392867pgn.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 23:06:26 -0700 (PDT)
-Date: Mon, 21 Aug 2017 16:06:05 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron
- <Jonathan.Cameron@huawei.com>, dzickus@redhat.com, sfr@canb.auug.org.au,
- linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com, tglx@linutronix.de,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170821160605.5b1cc019@roar.ozlabs.ibm.com>
-In-Reply-To: <20170821105258.191d04b1@roar.ozlabs.ibm.com>
-References: <20170731162757.000058ba@huawei.com>
- <20170801184646.GE3730@linux.vnet.ibm.com>
- <20170802172555.0000468a@huawei.com>
- <20170815154743.GK7017@linux.vnet.ibm.com>
- <87wp63smwn.fsf@concordia.ellerman.id.au>
- <20170816125617.GY7017@linux.vnet.ibm.com>
- <20170816162731.GA22978@linux.vnet.ibm.com>
- <20170820144553.2ab2727b@ppc64le>
- <20170820230040.706b62ac@roar.ozlabs.ibm.com>
- <20170820183514.GM11320@linux.vnet.ibm.com>
- <20170820211429.GA27111@linux.vnet.ibm.com>
- <20170821105258.191d04b1@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbNzt1BNtzDrJF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 16:28:25 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7L6JCUK124826
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 02:28:23 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cfdt53dja-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 02:28:23 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 21 Aug 2017 16:28:20 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7L6SHTb34341078
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 16:28:17 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7L6S7hx018128
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 16:28:08 +1000
+Subject: Re: [PATCH v2 00/20] Speculative page faults
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Mon, 21 Aug 2017 11:58:03 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <87c5a62a-e3b9-8337-66b6-2daae976ff79@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,79 +54,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 21 Aug 2017 10:52:58 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> On Sun, 20 Aug 2017 14:14:29 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On 08/18/2017 03:34 AM, Laurent Dufour wrote:
+> This is a port on kernel 4.13 of the work done by Peter Zijlstra to
+> handle page fault without holding the mm semaphore [1].
 > 
-> > On Sun, Aug 20, 2017 at 11:35:14AM -0700, Paul E. McKenney wrote:  
-> > > On Sun, Aug 20, 2017 at 11:00:40PM +1000, Nicholas Piggin wrote:    
-> > > > On Sun, 20 Aug 2017 14:45:53 +1000
-> > > > Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > >     
-> > > > > On Wed, 16 Aug 2017 09:27:31 -0700
-> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:    
-> > > > > > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
-> > > > > > 
-> > > > > > Thomas, John, am I misinterpreting the timer trace event messages?      
-> > > > > 
-> > > > > So I did some digging, and what you find is that rcu_sched seems to do a
-> > > > > simple scheudle_timeout(1) and just goes out to lunch for many seconds.
-> > > > > The process_timeout timer never fires (when it finally does wake after
-> > > > > one of these events, it usually removes the timer with del_timer_sync).
-> > > > > 
-> > > > > So this patch seems to fix it. Testing, comments welcome.    
-> > > > 
-> > > > Okay this had a problem of trying to forward the timer from a timer
-> > > > callback function.
-> > > > 
-> > > > This was my other approach which also fixes the RCU warnings, but it's
-> > > > a little more complex. I reworked it a bit so the mod_timer fast path
-> > > > hopefully doesn't have much more overhead (actually by reading jiffies
-> > > > only when needed, it probably saves a load).    
-> > > 
-> > > Giving this one a whirl!    
-> > 
-> > No joy here, but then again there are other reasons to believe that I
-> > am seeing a different bug than Dave and Jonathan are.
-> > 
-> > OK, not -entirely- without joy -- 10 of 14 runs were error-free, which
-> > is a good improvement over 0 of 84 for your earlier patch.  ;-)  But
-> > not statistically different from what I see without either patch.
-> > 
-> > But no statistical difference compared to without patch, and I still
-> > see the "rcu_sched kthread starved" messages.  For whatever it is worth,
-> > by the way, I also see this: "hrtimer: interrupt took 5712368 ns".
-> > Hmmm...  I am also seeing that without any of your patches.  Might
-> > be hypervisor preemption, I guess.  
+> The idea is to try to handle user space page faults without holding the
+> mmap_sem. This should allow better concurrency for massively threaded
+> process since the page fault handler will not wait for other threads memory
+> layout change to be done, assuming that this change is done in another part
+> of the process's memory space. This type page fault is named speculative
+> page fault. If the speculative page fault fails because of a concurrency is
+> detected or because underlying PMD or PTE tables are not yet allocating, it
+> is failing its processing and a classic page fault is then tried.
 > 
-> Okay it makes the warnings go away for me, but I'm just booting then
-> leaving the system idle. You're doing some CPU hotplug activity?
+> The speculative page fault (SPF) has to look for the VMA matching the fault
+> address without holding the mmap_sem, so the VMA list is now managed using
+> SRCU allowing lockless walking. The only impact would be the deferred file
+> derefencing in the case of a file mapping, since the file pointer is
+> released once the SRCU cleaning is done.  This patch relies on the change
+> done recently by Paul McKenney in SRCU which now runs a callback per CPU
+> instead of per SRCU structure [1].
+> 
+> The VMA's attributes checked during the speculative page fault processing
+> have to be protected against parallel changes. This is done by using a per
+> VMA sequence lock. This sequence lock allows the speculative page fault
+> handler to fast check for parallel changes in progress and to abort the
+> speculative page fault in that case.
+> 
+> Once the VMA is found, the speculative page fault handler would check for
+> the VMA's attributes to verify that the page fault has to be handled
+> correctly or not. Thus the VMA is protected through a sequence lock which
+> allows fast detection of concurrent VMA changes. If such a change is
+> detected, the speculative page fault is aborted and a *classic* page fault
+> is tried.  VMA sequence locks are added when VMA attributes which are
+> checked during the page fault are modified.
+> 
+> When the PTE is fetched, the VMA is checked to see if it has been changed,
+> so once the page table is locked, the VMA is valid, so any other changes
+> leading to touching this PTE will need to lock the page table, so no
+> parallel change is possible at this time.
+> 
+> Compared to the Peter's initial work, this series introduces a spin_trylock
+> when dealing with speculative page fault. This is required to avoid dead
+> lock when handling a page fault while a TLB invalidate is requested by an
+> other CPU holding the PTE. Another change due to a lock dependency issue
+> with mapping->i_mmap_rwsem.
+> 
+> In addition some VMA field values which are used once the PTE is unlocked
+> at the end the page fault path are saved into the vm_fault structure to
+> used the values matching the VMA at the time the PTE was locked.
+> 
+> This series builds on top of v4.13-rc5 and is functional on x86 and
+> PowerPC.
+> 
+> Tests have been made using a large commercial in-memory database on a
+> PowerPC system with 752 CPU using RFC v5. The results are very encouraging
+> since the loading of the 2TB database was faster by 14% with the
+> speculative page fault.
+> 
 
-Okay found a bug in the patch (it was not forwarding properly before
-adding the first timer after an idle) and a few other concerns.
+You specifically mention loading as most of the page faults will
+happen at that time and then the working set will settle down with
+very less page faults there after ? That means unless there is
+another wave of page faults we wont notice performance improvement
+during the runtime.
 
-There's still a problem of a timer function doing a mod timer from
-within expire_timers. It can't forward the base, which might currently
-be quite a way behind. I *think* after we close these gaps and get
-timely wakeups for timers on there, it should not get too far behind
-for standard timers.
+> Using ebizzy test [3], which spreads a lot of threads, the result are good
+> when running on both a large or a small system. When using kernbench, the
 
-Deferrable is a different story. Firstly it has no idle tracking so we
-never forward it. Even if we wanted to, we can't do it reliably because
-it could contain timers way behind the base. They are "deferrable", so
-you get what you pay for, but this still means there's a window where
-you can add a deferrable timer and get a far later expiry than you
-asked for despite the CPU never going idle after you added it.
+The performance improvements are greater as there is a lot of creation
+and destruction of anon mappings which generates constant flow of page
+faults to be handled.
 
-All these problems would seem to go away if mod_timer just queued up
-the timer to a single list on the base then pushed them into the
-wheel during your wheel processing softirq... Although maybe you end
-up with excessive passes over big queue of timers. Anyway that
-wouldn't be suitable for 4.13 even if it could work.
+> result are quite similar which expected as not so much multi threaded
+> processes are involved. But there is no performance degradation neither
+> which is good.
 
-I'll send out an updated minimal fix after some more testing...
+If we compile with 'make -j N' there would be a lot of threads but I
+guess the problem is SPF does not support handling file mapping IIUC
+which limits the performance improvement for some workloads.
 
-Thanks,
-Nick
+> 
+> ------------------
+> Benchmarks results
+> 
+> Note these test have been made on top of 4.13-rc3 with the following patch
+> from Paul McKenney applied: 
+>  "srcu: Provide ordering for CPU not involved in grace period" [5]
+
+Is this patch an improvement for SRCU which we are using for walking VMAs.
+
+> 
+> Ebizzy:
+> -------
+> The test is counting the number of records per second it can manage, the
+> higher is the best. I run it like this 'ebizzy -mTRp'. To get consistent
+> result I repeated the test 100 times and measure the average result, mean
+> deviation, max and min.
+> 
+> - 16 CPUs x86 VM
+> Records/s	4.13-rc5	4.13-rc5-spf
+> Average		11350.29	21760.36
+> Mean deviation	396.56		881.40
+> Max		13773		26194
+> Min		10567		19223
+> 
+> - 80 CPUs Power 8 node:
+> Records/s	4.13-rc5	4.13-rc5-spf
+> Average		33904.67	58847.91
+> Mean deviation	789.40		1753.19
+> Max		36703		68958
+> Min		31759		55125
+> 
+
+Can you also mention % improvement or degradation in a new column.
+
+> The number of record per second is far better with the speculative page
+> fault.
+> The mean deviation is higher with the speculative page fault, may be
+> because sometime the fault are not handled in a speculative way leading to
+> more variation.
+
+we need to analyze that. Why speculative page faults failed on those
+occasions for exact same workload.
+
+> 
+> 
+> Kernbench:
+> ----------
+> This test is building a 4.12 kernel using platform default config. The
+> build has been run 5 times each time.
+> 
+> - 16 CPUs x86 VM
+> Average Half load -j 8 Run (std deviation)
+>  		 4.13.0-rc5		4.13.0-rc5-spf
+> Elapsed Time     166.574 (0.340779)	145.754 (0.776325)		
+> User Time        1080.77 (2.05871)	999.272 (4.12142)		
+> System Time      204.594 (1.02449)	116.362 (1.22974)		
+> Percent CPU 	 771.2 (1.30384)	765 (0.707107)
+> Context Switches 46590.6 (935.591)	66316.4 (744.64)
+> Sleeps           84421.2 (596.612)	85186 (523.041)		
+
+
+> 
+> Average Optimal load -j 16 Run (std deviation)
+>  		 4.13.0-rc5		4.13.0-rc5-spf
+> Elapsed Time     85.422 (0.42293)	74.81 (0.419345)
+> User Time        1031.79 (51.6557)	954.912 (46.8439)
+> System Time      186.528 (19.0575)	107.514 (9.36902)
+> Percent CPU 	 1059.2 (303.607)	1056.8 (307.624)
+> Context Switches 67240.3 (21788.9)	89360.6 (24299.9)
+> Sleeps           89607.8 (5511.22)	90372.5 (5490.16)
+> 
+> The elapsed time is a bit shorter in the case of the SPF release, but the
+> impact less important since there are less multithreaded processes involved
+> here. 
+> 
+> - 80 CPUs Power 8 node:
+> Average Half load -j 40 Run (std deviation)
+>  		 4.13.0-rc5		4.13.0-rc5-spf
+> Elapsed Time     117.176 (0.824093)	116.792 (0.695392)
+> User Time        4412.34 (24.29)	4396.02 (24.4819)
+> System Time      131.106 (1.28343)	133.452 (0.708851)
+> Percent CPU      3876.8 (18.1439)	3877.6 (21.9955)
+> Context Switches 72470.2 (466.181)	72971 (673.624)
+> Sleeps           161294 (2284.85)	161946 (2217.9)
+> 
+> Average Optimal load -j 80 Run (std deviation)
+>  		 4.13.0-rc5		4.13.0-rc5-spf
+> Elapsed Time     111.176 (1.11123)	111.242 (0.801542)
+> User Time        5930.03 (1600.07)	5929.89 (1617)
+> System Time      166.258 (37.0662)	169.337 (37.8419)
+> Percent CPU      5378.5 (1584.16)	5385.6 (1590.24)
+> Context Switches 117389 (47350.1)	130132 (60256.3)
+> Sleeps           163354 (4153.9)	163219 (2251.27)
+> 
+
+Can you also mention % improvement or degradation in a new column.
+
+> Here the elapsed time is a bit shorter using the spf release, but we
+> remain in the error margin. It has to be noted that this system is not
+> correctly balanced on the NUMA point of view as all the available memory is
+> attached to one core.
+
+Why different NUMA configuration would have changed the outcome ?
+
+> 
+> ------------------------
+> Changes since v1:
+>  - Remove PERF_COUNT_SW_SPF_FAILED perf event.
+>  - Add tracing events to details speculative page fault failures.
+>  - Cache VMA fields values which are used once the PTE is unlocked at the
+>  end of the page fault events.
+
+Why is this required ?
