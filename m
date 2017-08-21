@@ -3,22 +3,23 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbnz52tD7zDr2S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:14:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbp2K6fzqzDqF3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:16:57 +1000 (AEST)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7LM8iJD084151
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:14:06 -0400
+ v7LMF0L4098609
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:16:55 -0400
 Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cg3pmc29t-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cg3pmc5v4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:14:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:16:55 -0400
 Received: from localhost
  by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 16:14:04 -0600
-Subject: [PATCH 2/2] scsi: Preserve retry counter through scsi_prep_fn
+ Mon, 21 Aug 2017 16:16:54 -0600
+Subject: Re: [PATCH 1/2] scsi: Move scsi_cmd->jiffies_at_alloc initialization
+ to allocation time
 From: Brian King <brking@linux.vnet.ibm.com>
 To: Bart Van Assche <Bart.VanAssche@wdc.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -39,11 +40,12 @@ References: <1502902815.3305.22.camel@abdul.in.ibm.com>
  <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
  <1503094414.2622.21.camel@wdc.com>
  <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
-Date: Mon, 21 Aug 2017 17:14:00 -0500
+ <21928108-3a20-577e-99c8-6da05637c158@linux.vnet.ibm.com>
+Date: Mon, 21 Aug 2017 17:16:49 -0500
 MIME-Version: 1.0
-In-Reply-To: <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
+In-Reply-To: <21928108-3a20-577e-99c8-6da05637c158@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <e24506f3-e333-16b9-a8c9-5d25f3c19ccf@linux.vnet.ibm.com>
+Message-Id: <ac7be26f-845d-6397-cd27-847873807a1b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,30 +55,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Save / restore the retry counter in scsi_cmd in scsi_init_command.
-This allows us to go back through scsi_init_command for retries
-and not forget we are doing a retry.
+Scratch this one... Version 2 on the way with the corresponding changes
+in scsi_init_request...
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+-Brian
 
-Index: linux-2.6.git/drivers/scsi/scsi_lib.c
-===================================================================
---- linux-2.6.git.orig/drivers/scsi/scsi_lib.c
-+++ linux-2.6.git/drivers/scsi/scsi_lib.c
-@@ -1155,6 +1155,7 @@ void scsi_init_command(struct scsi_devic
- 	void *prot = cmd->prot_sdb;
- 	unsigned int unchecked_isa_dma = cmd->flags & SCMD_UNCHECKED_ISA_DMA;
- 	unsigned long jiffies_at_alloc = cmd->jiffies_at_alloc;
-+	int retries = cmd->retries;
- 
- 	/* zero out the cmd, except for the embedded scsi_request */
- 	memset((char *)cmd + sizeof(cmd->req), 0,
-@@ -1166,6 +1167,7 @@ void scsi_init_command(struct scsi_devic
- 	cmd->flags = unchecked_isa_dma;
- 	INIT_DELAYED_WORK(&cmd->abort_work, scmd_eh_abort_handler);
- 	cmd->jiffies_at_alloc = jiffies_at_alloc;
-+	cmd->retries = retries;
- 
- 	scsi_add_cmd_to_list(cmd);
- }
+
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
