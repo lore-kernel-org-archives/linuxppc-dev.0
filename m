@@ -1,35 +1,48 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbnLL3YSCzDrLT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 07:45:46 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7LLjex4023660
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 17:45:44 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cg70shpvf-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbnwC4tfPzDqms
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:11:39 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7LM8eV7091209
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:11:37 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cg7ct1tsq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 17:45:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:11:36 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 15:44:50 -0600
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- 9e5050e1-e0cc-0e0e-7b31-5dcb38b307f4@linux.vnet.ibm.com
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V9 2/2] powerpc/nodes: Ensure enough nodes avail for operations
-Date: Mon, 21 Aug 2017 16:44:47 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Mon, 21 Aug 2017 16:11:36 -0600
+Subject: [PATCH 0/2] Allow scsi_prep_fn to occur for retried commands
+To: Bart Van Assche <Bart.VanAssche@wdc.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "hch@lst.de" <hch@lst.de>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
+ "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+ "hare@suse.com" <hare@suse.com>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+References: <1502902815.3305.22.camel@abdul.in.ibm.com>
+ <1502904072.2421.3.camel@wdc.com>
+ <2f686064-3e32-df8d-134f-962b5181da9d@linux.vnet.ibm.com>
+ <1502985161.2615.8.camel@wdc.com>
+ <71fb9c1b-9f3f-acdc-8bb5-aa1240aea763@linux.vnet.ibm.com>
+ <1503092473.2622.17.camel@wdc.com>
+ <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
+ <1503094414.2622.21.camel@wdc.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Mon, 21 Aug 2017 17:11:30 -0500
 MIME-Version: 1.0
+In-Reply-To: <1503094414.2622.21.camel@wdc.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <83b05ed2-8d18-3d5c-2003-b022d0d55eb2@linux.vnet.ibm.com>
+Message-Id: <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,100 +52,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To: linuxppc-dev@lists.ozlabs.org
+The following two patches address the hang issue being observed
+with Bart's patch on powerpc. The first patch moves the initialization
+of jiffies_at_alloc from scsi_init_command to scsi_init_rq, and ensures
+we don't zero jiffies_at_alloc in scsi_init_command. The second patch
+saves / restores the retry counter in scsi_init_command which lets us
+go through scsi_init_command for retries and not forget why we were
+there. 
 
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+These patches have only been boot tested on my Power machine with ipr
+to ensure they fix the issue I was seeing.
 
-To: linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Cc: John Allen <jallen@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: [PATCH V9 2/2] powerpc/nodes: Ensure enough nodes avail for operations
+-Brian
 
-powerpc/nodes: On systems like PowerPC which allow 'hot-add' of CPU
-or memory resources, it may occur that the new resources are to be
-inserted into nodes that were not used for these resources at bootup.
-In the kernel, any node that is used must be defined and initialized
-at boot.
-
-This patch extracts the value of the lowest domain level (number of
-allocable resources) from the "rtas" device tree property
-"ibm,max-associativity-domains" to use as the maximum number of nodes
-to setup as possibly available in the system.  This new setting will
-override the instruction,
-
-    nodes_and(node_possible_map, node_possible_map, node_online_map);
-
-presently seen in the function arch/powerpc/mm/numa.c:initmem_init().
-
-If the property is not present at boot, no operation will be performed
-to define or enable additional nodes.
-
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 3fd4536..3ae6510 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -893,6 +893,48 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
- 	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
- }
- 
-+static void __init node_associativity_setup(void)
-+{
-+	struct device_node *rtas;
-+	printk(KERN_INFO "%s:%d\n", __FUNCTION__, __LINE__);
-+
-+	rtas = of_find_node_by_path("/rtas");
-+	if (rtas) {
-+		const __be32 *prop;
-+		u32 len, entries, levelval, i;
-+	printk(KERN_INFO "%s:%d\n", __FUNCTION__, __LINE__);
-+
-+		prop = of_get_property(rtas, "ibm,max-associativity-domains", &len);
-+		if (!prop || len < sizeof(unsigned int)) {
-+	printk(KERN_INFO "%s:%d\n", __FUNCTION__, __LINE__);
-+			goto endit;
-+		}
-+
-+		entries = of_read_number(prop++, 1);
-+
-+		if (len < (entries * sizeof(unsigned int))) {
-+	printk(KERN_INFO "%s:%d\n", __FUNCTION__, __LINE__);
-+			goto endit;
-+		}
-+
-+		for (i = 0; i < entries; i++)
-+			levelval = of_read_number(prop++, 1);
-+
-+		printk(KERN_INFO "Numa nodes avail: %d (%d) \n", (int) levelval, (int) entries);
-+
-+		for (i = 0; i < levelval; i++) {
-+			if (!node_possible(i)) {
-+				setup_node_data(i, 0, 0);
-+				node_set(i, node_possible_map);
-+			}
-+		}
-+	}
-+
-+endit:
-+	if (rtas)
-+		of_node_put(rtas);
-+}
-+
- void __init initmem_init(void)
- {
- 	int nid, cpu;
-@@ -912,6 +954,8 @@ void __init initmem_init(void)
- 	 */
- 	nodes_and(node_possible_map, node_possible_map, node_online_map);
- 
-+	node_associativity_setup();
-+
- 	for_each_online_node(nid) {
- 		unsigned long start_pfn, end_pfn;
- 
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
