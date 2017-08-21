@@ -2,16 +2,18 @@ Return-Path: <lvivier@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbZnK2RQZzDqZ7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 23:49:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbZnL5VYMzDqZ7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 23:49:58 +1000 (AEST)
 From: Laurent Vivier <lvivier@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>, linux-block@vger.kernel.org,
  Jens Axboe <axboe@kernel.dk>, Lai Jiangshan <jiangshanlai@gmail.com>,
  Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/workqueue: update list of possible CPUs
-Date: Mon, 21 Aug 2017 15:49:50 +0200
-Message-Id: <20170821134951.18848-1-lvivier@redhat.com>
+Subject: [PATCH 2/2] blk-mq: don't use WORK_CPU_UNBOUND
+Date: Mon, 21 Aug 2017 15:49:51 +0200
+Message-Id: <20170821134951.18848-2-lvivier@redhat.com>
+In-Reply-To: <20170821134951.18848-1-lvivier@redhat.com>
+References: <20170821134951.18848-1-lvivier@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,83 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In wq_numa_init() a list of NUMA nodes with their list of possible CPUs
-is built.
+cpumask is the list of CPUs present when the queue is built.
+If a new CPU is hotplugged, this list is not updated,
+and when the scheduler asks for a CPU id, blk_mq_hctx_next_cpu()
+can return WORK_CPU_UNBOUND.
+And in this case _blk_mq_run_hw_queue() can be executed by the new CPU
+(that is not present in cpumask) and raises the following warning:
 
-Unfortunately, on powerpc, the Firmware is only able to provide the
-node of a CPU if the CPU is present. So, in our case (possible CPU)
-CPU ids are known, but as the CPU is not present, the node id is
-unknown and all the unplugged CPUs are attached to node 0.
+    WARN_ON(!cpumask_test_cpu(raw_smp_processor_id(), hctx->cpumask) &&
+            cpu_online(hctx->next_cpu));
 
-When we hotplugged CPU, there can be an inconsistency between
-the node id known by the workqueue, and the real node id of
-the CPU.
-
-This patch adds a hotplug handler to add the hotplugged CPU to
-update the node entry in wq_numa_possible_cpumask array.
+To fix this problem, this patch modifies blk_mq_hctx_next_cpu()
+to only return a CPU id present in cpumask.
 
 Signed-off-by: Laurent Vivier <lvivier@redhat.com>
 ---
- arch/powerpc/kernel/smp.c |  1 +
- include/linux/workqueue.h |  1 +
- kernel/workqueue.c        | 21 +++++++++++++++++++++
- 3 files changed, 23 insertions(+)
+ block/blk-mq.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 8d3320562c70..abc533146514 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -964,6 +964,7 @@ void start_secondary(void *unused)
- 
- 	set_numa_node(numa_cpu_lookup_table[cpu]);
- 	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
-+	wq_numa_add_possible_cpu(cpu);
- 
- 	smp_wmb();
- 	notify_cpu_starting(cpu);
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index db6dc9dc0482..4ef030dae22c 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -644,6 +644,7 @@ int workqueue_online_cpu(unsigned int cpu);
- int workqueue_offline_cpu(unsigned int cpu);
- #endif
- 
-+void wq_numa_add_possible_cpu(unsigned int cpu);
- int __init workqueue_init_early(void);
- int __init workqueue_init(void);
- 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index ca937b0c3a96..d1a99e25d5da 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -5486,6 +5486,27 @@ static inline void wq_watchdog_init(void) { }
- 
- #endif	/* CONFIG_WQ_WATCHDOG */
- 
-+void wq_numa_add_possible_cpu(unsigned int cpu)
-+{
-+	int node;
-+
-+	if (num_possible_nodes() <= 1)
-+		return;
-+
-+	if (wq_disable_numa)
-+		return;
-+
-+	if (!wq_numa_enabled)
-+		return;
-+
-+	node = cpu_to_node(cpu);
-+	if (node == NUMA_NO_NODE)
-+		return;
-+
-+	cpumask_set_cpu(cpu, wq_numa_possible_cpumask[node]);
-+}
-+EXPORT_SYMBOL_GPL(wq_numa_add_possible_cpu);
-+
- static void __init wq_numa_init(void)
+diff --git a/block/blk-mq.c b/block/blk-mq.c
+index 4603b115e234..bdac1e654814 100644
+--- a/block/blk-mq.c
++++ b/block/blk-mq.c
+@@ -1126,9 +1126,6 @@ static void __blk_mq_run_hw_queue(struct blk_mq_hw_ctx *hctx)
+  */
+ static int blk_mq_hctx_next_cpu(struct blk_mq_hw_ctx *hctx)
  {
- 	cpumask_var_t *tbl;
+-	if (hctx->queue->nr_hw_queues == 1)
+-		return WORK_CPU_UNBOUND;
+-
+ 	if (--hctx->next_cpu_batch <= 0) {
+ 		int next_cpu;
+ 
 -- 
 2.13.5
