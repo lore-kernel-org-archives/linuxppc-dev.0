@@ -1,35 +1,28 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbJ5l09VMzDqjm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 12:48:10 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id t3so1237249pgt.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 19:48:10 -0700 (PDT)
-Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbKjL24fRzDqZ8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 14:00:37 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id t3so1471742pgt.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Aug 2017 21:00:37 -0700 (PDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+Subject: Re: [PATCH kernel] PCI: Disable IOV before pcibios_sriov_disable()
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>,
  kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
- Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>, Jike Song
- <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
- Arvind Yadav <arvind.yadav.cs@gmail.com>,
+ Eric Auger <eric.auger@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, shan.gavin@gmail.com,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Woodhouse <dwmw2@infradead.org>, Kirti Wankhede
- <kwankhede@nvidia.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
- Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org
-References: <20170807072548.3023-1-aik@ozlabs.ru>
- <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
-Message-ID: <3be3fca3-7f66-0f13-b93a-d3db40a8a934@ozlabs.ru>
-Date: Mon, 21 Aug 2017 12:47:57 +1000
+ Paul Mackerras <paulus@samba.org>
+References: <20170811081933.17474-1-aik@ozlabs.ru>
+ <2163ef83-3633-a8cf-3416-0e37a6c500db@ozlabs.ru>
+ <20170818152740.GL28977@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <fd0d4fb6-b111-4432-399f-5c9057f0dee6@ozlabs.ru>
+Date: Mon, 21 Aug 2017 14:00:28 +1000
 MIME-Version: 1.0
-In-Reply-To: <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
+In-Reply-To: <20170818152740.GL28977@bhelgaas-glaptop.roam.corp.google.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,89 +33,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Folks,
+On 19/08/17 01:27, Bjorn Helgaas wrote:
+> On Fri, Aug 18, 2017 at 08:05:42AM +1000, Alexey Kardashevskiy wrote:
+>> On 11/08/17 18:19, Alexey Kardashevskiy wrote:
+>>> From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>
+>>> The PowerNV platform is the only user of pcibios_sriov_disable().
+>>> The IOV BAR could be shifted by pci_iov_update_resource(). The
+>>> warning message in the function is printed if the IOV capability
+>>> is in enabled (PCI_SRIOV_CTRL_VFE && PCI_SRIOV_CTRL_MSE) state.
+>>>
+>>> This is the backtrace of what is happening:
+>>>    pci_disable_sriov
+>>>    sriov_disable
+>>>    pnv_pci_sriov_disable
+>>>    pnv_pci_vf_resource_shift
+>>>    pci_update_resource
+>>>    pci_iov_update_resource
+>>>
+>>> This fixes the issue by disabling IOV capability before calling
+>>> pcibios_sriov_disable(). With it, the disabling path matches
+>>> the enabling path: pcibios_sriov_enable() is called before the
+>>> IOV capability is enabled.
+>>>
+>>> Cc: shan.gavin@gmail.com
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Paul Mackerras <paulus@samba.org>
+>>> Reported-by: Carol L Soto <clsoto@us.ibm.com>
+>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>> Tested-by: Carol L Soto <clsoto@us.ibm.com>
+>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>> ---
+>>>
+>>> This is repost. Since Gavin left the team, I am trying to push it out.
+>>> The previos converstion is here: https://patchwork.ozlabs.org/patch/732653/
+>>>
+>>> Two questions were raised then. I'll try to comment on this below.
+>>
+>> Bjorn, ping? Thanks.
+> 
+> Thanks for the reminder.  This is in patchwork, so it's on my to-do
+> list.
+> 
+> My last response in the thread above was:
+> 
+>   I'm not going to merge this without a comment in
+>   pnv_pci_vf_resource_shift() that addresses the two questions I
+>   raised in my very first response.  I don't think the existing
+>   comment about "After doing so, there would be a 'hole'" is
+>   sufficient.  If it were sufficient, I wouldn't have raised the
+>   questions in the first place.
+> 
+> The problem here is that I'm looking for a comment *in the code*, and
+> you and Gavin are giving responses and clarifications in email.
 
-Ok, people did talk, exchanged ideas, lovely :) What happens now? Do I
-repost this or go back to PCI bus flags or something else? Thanks.
+I understand.
+
+> What we need to do is transfer this email information into something
+> useful when reading the code, i.e., a comment in the code.
+
+I agree. Here are few problems though.
+
+1. I am not sure if there is nothing to fix (like adding dummy regions to
+prevent these "holes" to be used for something else)
+
+2. I do not really know how exactly to update the comment in the code to
+make it clearer for the future readers, and before doing this, I'd like to
+understand about 1).
+
+
+An example of the comment which would make sense to me:
+
+@@ -1002,9 +1016,13 @@ static int pnv_pci_vf_resource_shift(struct pci_dev
+*dev, int offset)
+        }
+
+        /*
+-        * After doing so, there would be a "hole" in the /proc/iomem when
+-        * offset is a positive value. It looks like the device return some
+-        * mmio back to the system, which actually no one could use it.
++        * Since M64 BAR shares segments among all possible 256 PEs,
++        * we have to shift the beginning of PF IOV BAR to make it start from
++        * the segment which belongs to the PE number assigned to the first VF.
++        * This creates a "hole" in the /proc/iomem which could be used for
++        * allocating other resources, however this is not expected to happen
++        * on IODA as the only possibility would be a PCI hotplug and IODA
++        * hardware only allows it on a slot with dedicated PHB.
+         */
+
+
+Does this make sense? Thanks.
 
 
 
-On 14/08/17 19:45, Alexey Kardashevskiy wrote:
-> Folks,
 > 
-> Is there anything to change besides those compiler errors and David's
-> comment in 5/5? Or the while patchset is too bad? Thanks.
-> 
-> 
-> 
-> On 07/08/17 17:25, Alexey Kardashevskiy wrote:
->> This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
->> http://www.spinics.net/lists/kvm/msg152232.html
+>>>> 1) "res" is already in the resource tree, so we shouldn't be changing
+>>>>   its start address, because that may make the tree inconsistent,
+>>>>   e.g., the resource may no longer be completely contained in its
+>>>>   parent, it may conflict with a sibling, etc.
+>>>
+>>> We should not, yes. But...
+>>>
+>>> At the boot time IOV BAR gets as much MMIO space as it can possibly use.
+>>> (Embarassingly I cannot trace where this is coming from, 8GB is selected
+>>> via pci_assign_unassigned_root_bus_resources() path somehow).
+>>> For example, it is 256*32MB=8GB where 256 is maximum PEs number and 32MB
+>>> is a PF/VF BAR size. Whatever shifting we do afterwards, the boudaries of
+>>> that 8GB area do not change and we test it in pnv_pci_vf_resource_shift():
+>>>
+>>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/platforms/powernv/pci-ioda.c#n987
+>>>
+>>>> 2) If we update "res->start", shouldn't we update "res->end"
+>>>>   correspondingly?
+>>>
+>>> We have to update the PF's IOV BAR address as we allocate PEs dynamically
+>>> and we do not know in advance where our VF numbers start in that
+>>> 8GB window. So we change IOV BASR start. Changing the end may make it
+>>> look more like there is a free area to use but in reality it won't be
+>>> usable as well as the area we "release" by shifting the start address.
+>>>
+>>> We could probably move that M64 MMIO window by the same delta in
+>>> opposite direction so the IOV BAR start address would remain the same
+>>> but its VF#0 would be mapped to let's say PF#5. I am just afraid there
+>>> is an alignment requirement for these M64 window start address; and this
+>>> would be even more tricky to manage.
+>>>
+>>> We could also create reserved areas for the amount of space "release" by
+>>> moving the start address, not sure how though.
+>>>
+>>> So how do we proceed with this particular patch now? Thanks.
+>>> ---
+>>>  drivers/pci/iov.c | 7 ++++---
+>>>  1 file changed, 4 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>>> index 120485d6f352..ac41c8be9200 100644
+>>> --- a/drivers/pci/iov.c
+>>> +++ b/drivers/pci/iov.c
+>>> @@ -331,7 +331,6 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+>>>  	while (i--)
+>>>  		pci_iov_remove_virtfn(dev, i, 0);
+>>>  
+>>> -	pcibios_sriov_disable(dev);
+>>>  err_pcibios:
+>>>  	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+>>>  	pci_cfg_access_lock(dev);
+>>> @@ -339,6 +338,8 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+>>>  	ssleep(1);
+>>>  	pci_cfg_access_unlock(dev);
+>>>  
+>>> +	pcibios_sriov_disable(dev);
+>>> +
+>>>  	if (iov->link != dev->devfn)
+>>>  		sysfs_remove_link(&dev->dev.kobj, "dep_link");
+>>>  
+>>> @@ -357,14 +358,14 @@ static void sriov_disable(struct pci_dev *dev)
+>>>  	for (i = 0; i < iov->num_VFs; i++)
+>>>  		pci_iov_remove_virtfn(dev, i, 0);
+>>>  
+>>> -	pcibios_sriov_disable(dev);
+>>> -
+>>>  	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+>>>  	pci_cfg_access_lock(dev);
+>>>  	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+>>>  	ssleep(1);
+>>>  	pci_cfg_access_unlock(dev);
+>>>  
+>>> +	pcibios_sriov_disable(dev);
+>>> +
+>>>  	if (iov->link != dev->devfn)
+>>>  		sysfs_remove_link(&dev->dev.kobj, "dep_link");
+>>>  
+>>>
 >>
->> This time it is using "caps" in IOMMU groups. The main question is if PCI
->> bus flags or IOMMU domains are still better (and which one).
-> 
 >>
->>
->>
->> Here is some background:
->>
->> Current vfio-pci implementation disallows to mmap the page
->> containing MSI-X table in case that users can write directly
->> to MSI-X table and generate an incorrect MSIs.
->>
->> However, this will cause some performance issue when there
->> are some critical device registers in the same page as the
->> MSI-X table. We have to handle the mmio access to these
->> registers in QEMU emulation rather than in guest.
->>
->> To solve this issue, this series allows to expose MSI-X table
->> to userspace when hardware enables the capability of interrupt
->> remapping which can ensure that a given PCI device can only
->> shoot the MSIs assigned for it. And we introduce a new bus_flags
->> PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
->> for different archs.
->>
->>
->> This is based on sha1
->> 26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
->>
->> Please comment. Thanks.
->>
->> Changelog:
->>
->> v5:
->> * redid the whole thing via so-called IOMMU group capabilities
->>
->> v4:
->> * rebased on recent upstream
->> * got all 6 patches from v2 (v3 was missing some)
->>
->>
->>
->>
->> Alexey Kardashevskiy (5):
->>   iommu: Add capabilities to a group
->>   iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
->>     remapping
->>   iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
->>     enabled
->>   powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
->>   vfio-pci: Allow to expose MSI-X table to userspace when safe
->>
->>  include/linux/iommu.h            | 20 ++++++++++++++++++++
->>  include/linux/vfio.h             |  1 +
->>  arch/powerpc/kernel/iommu.c      |  1 +
->>  drivers/iommu/amd_iommu.c        |  3 +++
->>  drivers/iommu/intel-iommu.c      |  3 +++
->>  drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
->>  drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
->>  drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
->>  drivers/vfio/vfio.c              | 15 +++++++++++++++
->>  9 files changed, 99 insertions(+), 4 deletions(-)
->>
-> 
-> 
+>> -- 
+>> Alexey
 
 
 -- 
