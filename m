@@ -1,38 +1,42 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bhe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbV643RN1zDrJm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 20:19:07 +1000 (AEST)
-Date: Mon, 21 Aug 2017 11:18:33 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, <dzickus@redhat.com>,
- <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
- <abdhalee@linux.vnet.ibm.com>, <tglx@linutronix.de>,
- <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>, David Miller <davem@davemloft.net>,
- <linux-arm-kernel@lists.infradead.org>, <john.stultz@linaro.org>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170821111833.00006753@huawei.com>
-In-Reply-To: <20170821160605.5b1cc019@roar.ozlabs.ibm.com>
-References: <20170731162757.000058ba@huawei.com>
- <20170801184646.GE3730@linux.vnet.ibm.com>
- <20170802172555.0000468a@huawei.com>
- <20170815154743.GK7017@linux.vnet.ibm.com>
- <87wp63smwn.fsf@concordia.ellerman.id.au>
- <20170816125617.GY7017@linux.vnet.ibm.com>
- <20170816162731.GA22978@linux.vnet.ibm.com>
- <20170820144553.2ab2727b@ppc64le>
- <20170820230040.706b62ac@roar.ozlabs.ibm.com>
- <20170820183514.GM11320@linux.vnet.ibm.com>
- <20170820211429.GA27111@linux.vnet.ibm.com>
- <20170821105258.191d04b1@roar.ozlabs.ibm.com>
- <20170821160605.5b1cc019@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbVHX2YZVzDrKf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 20:27:20 +1000 (AEST)
+Date: Mon, 21 Aug 2017 18:27:12 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Michal Suchanek <msuchanek@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Corbet <corbet@lwn.net>, Jessica Yu <jeyu@kernel.org>,
+ Rusty Russell <rusty@rustcorp.com.au>, Jason Baron <jbaron@akamai.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>, Andrew Morton <akpm@linux-foundation.org>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Michael Neuling <mikey@neuling.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Scott Wood <oss@buserror.net>, Oliver O'Halloran <oohall@gmail.com>,
+ David Howells <dhowells@redhat.com>,
+ Sylvain 'ythier' Hitier <sylvain.hitier@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, Kees Cook <keescook@chromium.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Steven Rostedt," <rostedt@goodmis.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Tejun Heo <tj@kernel.org>,
+ Lokesh Vutla <lokeshvutla@ti.com>,
+ Ilya Matveychikov <matvejchikov@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 3/4] lib/cmdline.c Remove quotes symmetrically.
+Message-ID: <20170821102712.GF20615@x1>
+References: <78655b3689f6cd0c76b787b8ef2c824ef75a99a5.1503000577.git.msuchanek@suse.de>
+ <0e0a8ad11e2c9c7db02baa1bbb5a30f429586854.1503000577.git.msuchanek@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0e0a8ad11e2c9c7db02baa1bbb5a30f429586854.1503000577.git.msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,104 +46,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 21 Aug 2017 16:06:05 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> On Mon, 21 Aug 2017 10:52:58 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
+On 08/17/17 at 10:14pm, Michal Suchanek wrote:
+> Remove quotes from argument value only if there is qoute on both sides.
 > 
-> > On Sun, 20 Aug 2017 14:14:29 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> >   
-> > > On Sun, Aug 20, 2017 at 11:35:14AM -0700, Paul E. McKenney wrote:    
-> > > > On Sun, Aug 20, 2017 at 11:00:40PM +1000, Nicholas Piggin wrote:      
-> > > > > On Sun, 20 Aug 2017 14:45:53 +1000
-> > > > > Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > > >       
-> > > > > > On Wed, 16 Aug 2017 09:27:31 -0700
-> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:      
-> > > > > > > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
-> > > > > > > 
-> > > > > > > Thomas, John, am I misinterpreting the timer trace event messages?        
-> > > > > > 
-> > > > > > So I did some digging, and what you find is that rcu_sched seems to do a
-> > > > > > simple scheudle_timeout(1) and just goes out to lunch for many seconds.
-> > > > > > The process_timeout timer never fires (when it finally does wake after
-> > > > > > one of these events, it usually removes the timer with del_timer_sync).
-> > > > > > 
-> > > > > > So this patch seems to fix it. Testing, comments welcome.      
-> > > > > 
-> > > > > Okay this had a problem of trying to forward the timer from a timer
-> > > > > callback function.
-> > > > > 
-> > > > > This was my other approach which also fixes the RCU warnings, but it's
-> > > > > a little more complex. I reworked it a bit so the mod_timer fast path
-> > > > > hopefully doesn't have much more overhead (actually by reading jiffies
-> > > > > only when needed, it probably saves a load).      
-> > > > 
-> > > > Giving this one a whirl!      
-> > > 
-> > > No joy here, but then again there are other reasons to believe that I
-> > > am seeing a different bug than Dave and Jonathan are.
-> > > 
-> > > OK, not -entirely- without joy -- 10 of 14 runs were error-free, which
-> > > is a good improvement over 0 of 84 for your earlier patch.  ;-)  But
-> > > not statistically different from what I see without either patch.
-> > > 
-> > > But no statistical difference compared to without patch, and I still
-> > > see the "rcu_sched kthread starved" messages.  For whatever it is worth,
-> > > by the way, I also see this: "hrtimer: interrupt took 5712368 ns".
-> > > Hmmm...  I am also seeing that without any of your patches.  Might
-> > > be hypervisor preemption, I guess.    
-> > 
-> > Okay it makes the warnings go away for me, but I'm just booting then
-> > leaving the system idle. You're doing some CPU hotplug activity?  
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+
+Sounds reasonable. Just for curiosity, do we have chance to pass in
+option with a single '"'?
+
+> ---
+>  arch/powerpc/kernel/fadump.c | 6 ++----
+>  lib/cmdline.c                | 7 ++-----
+>  2 files changed, 4 insertions(+), 9 deletions(-)
 > 
-> Okay found a bug in the patch (it was not forwarding properly before
-> adding the first timer after an idle) and a few other concerns.
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index a1614d9b8a21..d7da4ce9f7ae 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -489,10 +489,8 @@ static void __init fadump_update_params(struct param_info *param_info,
+>  	*tgt++ = ' ';
+>  
+>  	/* next_arg removes one leading and one trailing '"' */
+> -	if (*tgt == '"')
+> -		shortening += 1;
+> -	if (*(tgt + vallen + shortening) == '"')
+> -		shortening += 1;
+> +	if ((*tgt == '"') && (*(tgt + vallen + shortening) == '"'))
+> +		shortening += 2;
+>  
+>  	/* remove one leading and one trailing quote if both are present */
+>  	if ((val[0] == '"') && (val[vallen - 1] == '"')) {
+> diff --git a/lib/cmdline.c b/lib/cmdline.c
+> index 4c0888c4a68d..01e701b2afe8 100644
+> --- a/lib/cmdline.c
+> +++ b/lib/cmdline.c
+> @@ -227,14 +227,11 @@ char *next_arg(char *args, char **param, char **val)
+>  		*val = args + equals + 1;
+>  
+>  		/* Don't include quotes in value. */
+> -		if (**val == '"') {
+> +		if ((**val == '"') && (args[i-1] == '"')) {
+>  			(*val)++;
+> -			if (args[i-1] == '"')
+> -				args[i-1] = '\0';
+> +			args[i-1] = '\0';
+>  		}
+>  	}
+> -	if (quoted && args[i-1] == '"')
+> -		args[i-1] = '\0';
+>  
+>  	if (args[i]) {
+>  		args[i] = '\0';
+> -- 
+> 2.10.2
 > 
-> There's still a problem of a timer function doing a mod timer from
-> within expire_timers. It can't forward the base, which might currently
-> be quite a way behind. I *think* after we close these gaps and get
-> timely wakeups for timers on there, it should not get too far behind
-> for standard timers.
-> 
-> Deferrable is a different story. Firstly it has no idle tracking so we
-> never forward it. Even if we wanted to, we can't do it reliably because
-> it could contain timers way behind the base. They are "deferrable", so
-> you get what you pay for, but this still means there's a window where
-> you can add a deferrable timer and get a far later expiry than you
-> asked for despite the CPU never going idle after you added it.
-> 
-> All these problems would seem to go away if mod_timer just queued up
-> the timer to a single list on the base then pushed them into the
-> wheel during your wheel processing softirq... Although maybe you end
-> up with excessive passes over big queue of timers. Anyway that
-> wouldn't be suitable for 4.13 even if it could work.
-> 
-> I'll send out an updated minimal fix after some more testing...
-
-Hi All,
-
-I'm back in the office with hardware access on our D05 64 core ARM64
-boards.
-
-I think we still have by far the quickest test cases for this so
-feel free to ping me anything you want tested quickly (we were
-looking at an average of less than 10 minutes to trigger
-with machine idling).
-
-Nick, I'm currently running your previous version and we are over an
-hour so even without any instances of the issue so it looks like a
-considerable improvement.  I'll see if I can line a couple of boards
-up for an overnight run if you have your updated version out by then.
-
-Be great to finally put this one to bed.
-
-Thanks,
-
-Jonathan
-
-> 
-> Thanks,
-> Nick
