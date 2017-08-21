@@ -1,25 +1,24 @@
 Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbnyK305fzDqMM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:13:29 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7LMDKk2137416
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:13:27 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cg25baaw5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbnz52tD7zDr2S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:14:08 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7LM8iJD084151
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:14:06 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cg3pmc29t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:13:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:14:05 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 16:13:26 -0600
-Subject: [PATCH 1/2] scsi: Move scsi_cmd->jiffies_at_alloc initialization to
- allocation time
+ Mon, 21 Aug 2017 16:14:04 -0600
+Subject: [PATCH 2/2] scsi: Preserve retry counter through scsi_prep_fn
 From: Brian King <brking@linux.vnet.ibm.com>
 To: Bart Van Assche <Bart.VanAssche@wdc.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -40,11 +39,11 @@ References: <1502902815.3305.22.camel@abdul.in.ibm.com>
  <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
  <1503094414.2622.21.camel@wdc.com>
  <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
-Date: Mon, 21 Aug 2017 17:13:20 -0500
+Date: Mon, 21 Aug 2017 17:14:00 -0500
 MIME-Version: 1.0
 In-Reply-To: <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <21928108-3a20-577e-99c8-6da05637c158@linux.vnet.ibm.com>
+Message-Id: <e24506f3-e333-16b9-a8c9-5d25f3c19ccf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,13 +53,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the initialization of scsi_cmd->jiffies_at_alloc to allocation
-time rather than prep time. Also ensure that jiffies_at_alloc
-is preserved when we go through prep. This lets us send retries
-through prep again and not break the overall retry timer logic
-in scsi_softirq_done.
+Save / restore the retry counter in scsi_cmd in scsi_init_command.
+This allows us to go back through scsi_init_command for retries
+and not forget we are doing a retry.
 
-Suggested-by: Bart Van Assche <Bart.VanAssche@wdc.com>
 Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 ---
 
@@ -68,28 +64,19 @@ Index: linux-2.6.git/drivers/scsi/scsi_lib.c
 ===================================================================
 --- linux-2.6.git.orig/drivers/scsi/scsi_lib.c
 +++ linux-2.6.git/drivers/scsi/scsi_lib.c
-@@ -1154,6 +1154,7 @@ void scsi_init_command(struct scsi_devic
- 	void *buf = cmd->sense_buffer;
+@@ -1155,6 +1155,7 @@ void scsi_init_command(struct scsi_devic
  	void *prot = cmd->prot_sdb;
  	unsigned int unchecked_isa_dma = cmd->flags & SCMD_UNCHECKED_ISA_DMA;
-+	unsigned long jiffies_at_alloc = cmd->jiffies_at_alloc;
+ 	unsigned long jiffies_at_alloc = cmd->jiffies_at_alloc;
++	int retries = cmd->retries;
  
  	/* zero out the cmd, except for the embedded scsi_request */
  	memset((char *)cmd + sizeof(cmd->req), 0,
-@@ -1164,7 +1165,7 @@ void scsi_init_command(struct scsi_devic
- 	cmd->prot_sdb = prot;
+@@ -1166,6 +1167,7 @@ void scsi_init_command(struct scsi_devic
  	cmd->flags = unchecked_isa_dma;
  	INIT_DELAYED_WORK(&cmd->abort_work, scmd_eh_abort_handler);
--	cmd->jiffies_at_alloc = jiffies;
-+	cmd->jiffies_at_alloc = jiffies_at_alloc;
+ 	cmd->jiffies_at_alloc = jiffies_at_alloc;
++	cmd->retries = retries;
  
  	scsi_add_cmd_to_list(cmd);
  }
-@@ -2119,6 +2120,7 @@ static int scsi_init_rq(struct request_q
- 	if (!cmd->sense_buffer)
- 		goto fail;
- 	cmd->req.sense = cmd->sense_buffer;
-+	cmd->jiffies_at_alloc = jiffies;
- 
- 	if (scsi_host_get_prot(shost) >= SHOST_DIX_TYPE0_PROTECTION) {
- 		cmd->prot_sdb = kmem_cache_zalloc(scsi_sdb_cache, gfp);
