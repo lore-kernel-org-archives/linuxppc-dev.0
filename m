@@ -1,24 +1,26 @@
 Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbnwC4tfPzDqms
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:11:39 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7LM8eV7091209
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:11:37 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cg7ct1tsq-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbnyK305fzDqMM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:13:29 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7LMDKk2137416
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:13:27 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cg25baaw5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:11:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:13:27 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 16:11:36 -0600
-Subject: [PATCH 0/2] Allow scsi_prep_fn to occur for retried commands
+ Mon, 21 Aug 2017 16:13:26 -0600
+Subject: [PATCH 1/2] scsi: Move scsi_cmd->jiffies_at_alloc initialization to
+ allocation time
+From: Brian King <brking@linux.vnet.ibm.com>
 To: Bart Van Assche <Bart.VanAssche@wdc.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>
@@ -37,12 +39,12 @@ References: <1502902815.3305.22.camel@abdul.in.ibm.com>
  <1503092473.2622.17.camel@wdc.com>
  <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
  <1503094414.2622.21.camel@wdc.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Mon, 21 Aug 2017 17:11:30 -0500
+ <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
+Date: Mon, 21 Aug 2017 17:13:20 -0500
 MIME-Version: 1.0
-In-Reply-To: <1503094414.2622.21.camel@wdc.com>
+In-Reply-To: <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
+Message-Id: <21928108-3a20-577e-99c8-6da05637c158@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,20 +54,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following two patches address the hang issue being observed
-with Bart's patch on powerpc. The first patch moves the initialization
-of jiffies_at_alloc from scsi_init_command to scsi_init_rq, and ensures
-we don't zero jiffies_at_alloc in scsi_init_command. The second patch
-saves / restores the retry counter in scsi_init_command which lets us
-go through scsi_init_command for retries and not forget why we were
-there. 
+Move the initialization of scsi_cmd->jiffies_at_alloc to allocation
+time rather than prep time. Also ensure that jiffies_at_alloc
+is preserved when we go through prep. This lets us send retries
+through prep again and not break the overall retry timer logic
+in scsi_softirq_done.
 
-These patches have only been boot tested on my Power machine with ipr
-to ensure they fix the issue I was seeing.
+Suggested-by: Bart Van Assche <Bart.VanAssche@wdc.com>
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
--Brian
-
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+Index: linux-2.6.git/drivers/scsi/scsi_lib.c
+===================================================================
+--- linux-2.6.git.orig/drivers/scsi/scsi_lib.c
++++ linux-2.6.git/drivers/scsi/scsi_lib.c
+@@ -1154,6 +1154,7 @@ void scsi_init_command(struct scsi_devic
+ 	void *buf = cmd->sense_buffer;
+ 	void *prot = cmd->prot_sdb;
+ 	unsigned int unchecked_isa_dma = cmd->flags & SCMD_UNCHECKED_ISA_DMA;
++	unsigned long jiffies_at_alloc = cmd->jiffies_at_alloc;
+ 
+ 	/* zero out the cmd, except for the embedded scsi_request */
+ 	memset((char *)cmd + sizeof(cmd->req), 0,
+@@ -1164,7 +1165,7 @@ void scsi_init_command(struct scsi_devic
+ 	cmd->prot_sdb = prot;
+ 	cmd->flags = unchecked_isa_dma;
+ 	INIT_DELAYED_WORK(&cmd->abort_work, scmd_eh_abort_handler);
+-	cmd->jiffies_at_alloc = jiffies;
++	cmd->jiffies_at_alloc = jiffies_at_alloc;
+ 
+ 	scsi_add_cmd_to_list(cmd);
+ }
+@@ -2119,6 +2120,7 @@ static int scsi_init_rq(struct request_q
+ 	if (!cmd->sense_buffer)
+ 		goto fail;
+ 	cmd->req.sense = cmd->sense_buffer;
++	cmd->jiffies_at_alloc = jiffies;
+ 
+ 	if (scsi_host_get_prot(shost) >= SHOST_DIX_TYPE0_PROTECTION) {
+ 		cmd->prot_sdb = kmem_cache_zalloc(scsi_sdb_cache, gfp);
