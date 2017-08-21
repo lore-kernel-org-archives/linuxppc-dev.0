@@ -1,35 +1,21 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbgcL3QGQzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 03:27:29 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7LHO5pi009508
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 13:27:26 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cg157uh04-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 13:27:26 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 18:27:24 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbgnx1YLWzDqfx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 03:35:48 +1000 (AEST)
+Message-ID: <1503336930.2195.20.camel@kernel.crashing.org>
 Subject: Re: [PATCH 5/6] powerpc/mm: Optimize detection of thread local mm's
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
+Date: Mon, 21 Aug 2017 10:35:30 -0700
+In-Reply-To: <ad84e763-a30f-04f7-f1d0-ccd72c0d4dd4@linux.vnet.ibm.com>
 References: <20170724042803.25848-1-benh@kernel.crashing.org>
  <20170724042803.25848-5-benh@kernel.crashing.org>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 21 Aug 2017 19:27:20 +0200
-MIME-Version: 1.0
-In-Reply-To: <20170724042803.25848-5-benh@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <ad84e763-a30f-04f7-f1d0-ccd72c0d4dd4@linux.vnet.ibm.com>
+ <ad84e763-a30f-04f7-f1d0-ccd72c0d4dd4@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,117 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-Le 24/07/2017 à 06:28, Benjamin Herrenschmidt a écrit :
-> Instead of comparing the whole CPU mask every time, let's
-> keep a counter of how many bits are set in the mask. Thus
-> testing for a local mm only requires testing if that counter
-> is 1 and the current CPU bit is set in the mask.
-
-
-I'm trying to see if we could merge this patch with what I'm trying to 
-do to mark a context as requiring global TLBIs.
-In http://patchwork.ozlabs.org/patch/796775/
-I'm introducing a 'flags' per memory context, using one bit to say if 
-the context needs global TLBIs.
-The 2 could co-exist, just checking... Do you think about using the 
-actual active_cpus count down the road, or is it just a matter of 
-knowing if there are more than one active cpus?
-
-Thanks,
-
-   Fred
-
-
-
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->   arch/powerpc/include/asm/book3s/64/mmu.h |  3 +++
->   arch/powerpc/include/asm/mmu_context.h   |  9 +++++++++
->   arch/powerpc/include/asm/tlb.h           | 11 ++++++++++-
->   arch/powerpc/mm/mmu_context_book3s64.c   |  2 ++
->   4 files changed, 24 insertions(+), 1 deletion(-)
+On Mon, 2017-08-21 at 19:27 +0200, Frederic Barrat wrote:
+> Hi Ben,
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index 1a220cdff923..c3b00e8ff791 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -83,6 +83,9 @@ typedef struct {
->   	mm_context_id_t id;
->   	u16 user_psize;		/* page size index */
+> Le 24/07/2017 à 06:28, Benjamin Herrenschmidt a écrit :
+> > Instead of comparing the whole CPU mask every time, let's
+> > keep a counter of how many bits are set in the mask. Thus
+> > testing for a local mm only requires testing if that counter
+> > is 1 and the current CPU bit is set in the mask.
 > 
-> +	/* Number of bits in the mm_cpumask */
-> +	atomic_t active_cpus;
-> +
->   	/* NPU NMMU context */
->   	struct npu_context *npu_context;
 > 
-> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> index ff1aeb2cd19f..cf8f50cd4030 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -96,6 +96,14 @@ static inline void switch_mm_pgdir(struct task_struct *tsk,
->   				   struct mm_struct *mm) { }
->   #endif
-> 
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +static inline void inc_mm_active_cpus(struct mm_struct *mm)
-> +{
-> +	atomic_inc(&mm->context.active_cpus);
-> +}
-> +#else
-> +static inline void inc_mm_active_cpus(struct mm_struct *mm) { }
-> +#endif
-> 
->   /*
->    * switch_mm is the entry point called from the architecture independent
-> @@ -110,6 +118,7 @@ static inline void switch_mm_irqs_off(struct mm_struct *prev,
->   	/* Mark this context has been used on the new CPU */
->   	if (!cpumask_test_cpu(smp_processor_id(), mm_cpumask(next))) {
->   		cpumask_set_cpu(smp_processor_id(), mm_cpumask(next));
-> +		inc_mm_active_cpus(next);
->   		smp_mb();
->   		new_on_cpu = true;
->   	}
-> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-> index 609557569f65..a7eabff27a0f 100644
-> --- a/arch/powerpc/include/asm/tlb.h
-> +++ b/arch/powerpc/include/asm/tlb.h
-> @@ -69,13 +69,22 @@ static inline int mm_is_core_local(struct mm_struct *mm)
->   			      topology_sibling_cpumask(smp_processor_id()));
->   }
-> 
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +static inline int mm_is_thread_local(struct mm_struct *mm)
-> +{
-> +	if (atomic_read(&mm->context.active_cpus) > 1)
-> +		return false;
-> +	return cpumask_test_cpu(smp_processor_id(), mm_cpumask(mm));
-> +}
-> +#else /* CONFIG_PPC_BOOK3S_64 */
->   static inline int mm_is_thread_local(struct mm_struct *mm)
->   {
->   	return cpumask_equal(mm_cpumask(mm),
->   			      cpumask_of(smp_processor_id()));
->   }
-> +#endif /* !CONFIG_PPC_BOOK3S_64 */
-> 
-> -#else
-> +#else /* CONFIG_SMP */
->   static inline int mm_is_core_local(struct mm_struct *mm)
->   {
->   	return 1;
-> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-> index 8159f5219137..de17d3e714aa 100644
-> --- a/arch/powerpc/mm/mmu_context_book3s64.c
-> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
-> @@ -174,6 +174,8 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
->   #ifdef CONFIG_SPAPR_TCE_IOMMU
->   	mm_iommu_init(mm);
->   #endif
-> +	atomic_set(&mm->context.active_cpus, 0);
-> +
->   	return 0;
->   }
-> 
+> I'm trying to see if we could merge this patch with what I'm trying to 
+> do to mark a context as requiring global TLBIs.
+> In http://patchwork.ozlabs.org/patch/796775/
+> I'm introducing a 'flags' per memory context, using one bit to say if 
+> the context needs global TLBIs.
+> The 2 could co-exist, just checking... Do you think about using the 
+> actual active_cpus count down the road, or is it just a matter of 
+> knowing if there are more than one active cpus?
+
+Or you could just incrementer my counter. Just make sure you increment
+it at most once per CXL context and decrement when the context is gone.
+
+Cheers,
+Ben.
