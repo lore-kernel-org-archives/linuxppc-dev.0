@@ -1,20 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbhVm4Cx8zDqVg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 04:07:44 +1000 (AEST)
-Message-ID: <1503334155.2195.17.camel@kernel.crashing.org>
-Subject: Re: [v3,3/3] powerpc/mm/cxl: Add the fault handling cpu to mm cpumask
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <patch-notifications@ellerman.id.au>, "Aneesh Kumar
- K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 21 Aug 2017 09:49:15 -0700
-In-Reply-To: <3xbZXv0yxCz9t0F@ozlabs.org>
-References: <3xbZXv0yxCz9t0F@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xblVm2qxpzDqfg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 06:22:56 +1000 (AEST)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ v7LKMr9X028334
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 20:22:54 GMT
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: Bart Van Assche <Bart.VanAssche@wdc.com>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "abdhalee\@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>,
+ "sachinp\@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
+ "sfr\@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "hare\@suse.com" <hare@suse.com>,
+ "linux-scsi\@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-next\@vger.kernel.org" <linux-next@vger.kernel.org>,
+ "hch\@lst.de" <hch@lst.de>
+Subject: Re: [PATCH] ipr: Set no_report_opcodes for RAID arrays
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1502902815.3305.22.camel@abdul.in.ibm.com>
+ <1502904072.2421.3.camel@wdc.com>
+ <2f686064-3e32-df8d-134f-962b5181da9d@linux.vnet.ibm.com>
+ <1502985161.2615.8.camel@wdc.com>
+ <71fb9c1b-9f3f-acdc-8bb5-aa1240aea763@linux.vnet.ibm.com>
+ <c2272791-2010-600b-3982-835b8eb1a523@linux.vnet.ibm.com>
+Date: Mon, 21 Aug 2017 16:22:41 -0400
+In-Reply-To: <c2272791-2010-600b-3982-835b8eb1a523@linux.vnet.ibm.com> (Brian
+ King's message of "Fri, 18 Aug 2017 16:17:32 -0500")
+Message-ID: <yq1lgmcekmm.fsf@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +43,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-08-21 at 23:39 +1000, Michael Ellerman wrote:
-> On Thu, 2017-07-27 at 06:24:55 UTC, "Aneesh Kumar K.V" wrote:
-> > We use mm cpumask for serializing against lockless page table walk. Anybody
-> > who is doing a lockless page table walk is expected to disable irq and only
-> > cpus in mm cpumask is expected do the lockless walk. This ensure that
-> > a THP split can send IPI to only cpus in the mm cpumask, to make sure there
-> > are no parallel lockless page table walk.
-> > 
-> > Add the CAPI fault handling cpu to the mm cpumask so that we can do the lockless
-> > page table walk while inserting hash page table entries.
-> > 
-> > Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> Applied to powerpc next, thanks.
-> 
-> https://git.kernel.org/powerpc/c/0f4bc0932e51817105fdee77a46680
 
-Do you need barriers between the cpumask set and the walking ?
+Brian,
 
-Cheers,
-Ben.
+> Since ipr RAID arrays do not support the MAINTENANCE_IN /
+> MI_REPORT_SUPPORTED_OPERATION_CODES, set no_report_opcodes to prevent
+> it from being sent.
+
+Applied to 4.13/scsi-fixes. Thank you!
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
