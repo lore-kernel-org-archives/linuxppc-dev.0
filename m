@@ -1,28 +1,30 @@
-Return-Path: <jonathan.cameron@huawei.com>
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc2lK3zyszDqMV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 17:49:49 +1000 (AEST)
-Date: Tue, 22 Aug 2017 08:49:11 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: David Miller <davem@davemloft.net>
-CC: <npiggin@gmail.com>, <paulmck@linux.vnet.ibm.com>, <mpe@ellerman.id.au>,
- <dzickus@redhat.com>, <sfr@canb.auug.org.au>, <linuxarm@huawei.com>,
- <abdhalee@linux.vnet.ibm.com>, <tglx@linutronix.de>,
- <sparclinux@vger.kernel.org>, <akpm@linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>, <john.stultz@linaro.org>
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-Message-ID: <20170822084911.00000c23@huawei.com>
-In-Reply-To: <20170821.135504.1392954698746959868.davem@davemloft.net>
-References: <20170821160605.5b1cc019@roar.ozlabs.ibm.com>
- <20170821111833.00006753@huawei.com>
- <20170822001928.74f01322@roar.ozlabs.ibm.com>
- <20170821.135504.1392954698746959868.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3721xQVzDqjm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:06:54 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id r62so2856439pfj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:06:54 -0700 (PDT)
+Date: Tue, 22 Aug 2017 18:06:30 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: akpm@linux-foundation.org, John Stultz <john.stultz@linaro.org>, Stephen
+ Boyd <sboyd@codeaurora.org>, Jonathan.Cameron@huawei.com,
+ paulmck@linux.vnet.ibm.com, mpe@ellerman.id.au, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ torvalds@linux-foundation.org
+Subject: Re: [PATCH resend] timers: Fix excessive granularity of new timers
+ after a nohz idle
+Message-ID: <20170822180630.6e1d7db5@roar.ozlabs.ibm.com>
+In-Reply-To: <alpine.DEB.2.20.1708220842490.1869@nanos>
+References: <20170822015439.11263-1-npiggin@gmail.com>
+ <alpine.DEB.2.20.1708220842490.1869@nanos>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +34,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 21 Aug 2017 13:55:04 -0700
-David Miller <davem@davemloft.net> wrote:
+On Tue, 22 Aug 2017 09:45:46 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> From: Nicholas Piggin <npiggin@gmail.com>
-> Date: Tue, 22 Aug 2017 00:19:28 +1000
+> On Tue, 22 Aug 2017, Nicholas Piggin wrote:
+> > I would have preferred to get comments from the timer maintainers, but
+> > they've been busy or away for the past copule of weeks. Perhaps you
+> > would consider carrying it until then?  
 > 
-> > Thanks here's an updated version with a couple more bugs fixed. If
-> > you could try testing, that would be much appreciated.  
-> 
-> I'm not getting RCU stalls on sparc64 any longer with this patch.
-> 
-> I'm really happy you guys were able to figure out what was going
-> wrong. :-)
-> 
-> Feel free to add my Tested-by:
-> 
+> Yes, I was on vacation, but that patch never hit my LKML inbox ....
 
-Like wise - 16 hours of clean run with the latest
+Hmm okay. Well that's fine, we're just getting done testing it here.
 
-Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> 
+> > diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+> > index 8f5d1bf18854..dd7be9fe6839 100644
+> > --- a/kernel/time/timer.c
+> > +++ b/kernel/time/timer.c
+> > @@ -203,6 +203,7 @@ struct timer_base {
+> >  	bool			migration_enabled;
+> >  	bool			nohz_active;
+> >  	bool			is_idle;
+> > +	bool			was_idle; /* was it idle since last run/fwded */  
+> 
+> Please do not use tail comments. They are a horrible habit and disturb the
+> reading flow.
 
-Thanks for all the hard work everyone put into this one, great to
-cross it off the list!
+Sure.
 
-Jonathan
+> I'm not fond of that name either. Something like forward_clk
+> or a similar self explaining name would be appreciated.
+
+Well I actually had that initially (must_forward). But on the other
+hand that's less explanatory about the state of the timer base I thought.
+Anyway I could go either way and you're going to be looking at this code
+more than me in future :)
+
+> 
+> >  	/*
+> > @@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+> >  	 * same array bucket then just return:
+> >  	 */
+> >  	if (timer_pending(timer)) {
+> > +		/*
+> > +		 * The downside of this optimization is that it can result in
+> > +		 * larger granularity than you would get from adding a new
+> > +		 * timer with this expiry. Would a timer flag for networking
+> > +		 * be appropriate, then we can try to keep expiry of general
+> > +		 * timers within ~1/8th of their interval?  
+> 
+> This really depends on the timer usage type.
+> 
+> If you use it merily for TCP timeouts or similar things, then this does not
+> matter at all because then the timer is the safety net in case something
+> goes wrong. If you lose packets on the transport the larger granularity is
+> the least of your worries.
+> 
+> From earlier discussions with the networking folks these timeouts are the
+> reason for this optimization because you avoid the expensive
+> dequeue/requeue operation if the successful communication is fast.
+> 
+> If the timer has a short relative expiry and is used for sending packets or
+> similar purposes, then it usually sits in the first bucket and has no
+> granularity issues anyway. But from staring at trace data provided by
+> google and facebook these timer are not rearmed while pending, they fire,
+> do networking stuff and then get rearmed.
+> 
+> So I rather avoid that kind of misleading comment. The first sentence
+> surely can stay.
+
+Right. The question was actually there for you to answer, so thanks. I
+can certainly understand the use-case and importance of keeping it light.
+
+> Other than that, nice detective work!
+
+Thanks for taking a look (and thanks everyone who's been testing and
+hacking on it). Do you want me to re-send with the changes?
+
+Thanks,
+Nick
