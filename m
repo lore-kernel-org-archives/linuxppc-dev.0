@@ -2,18 +2,19 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcS1D2jw4zDqhL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcS1D4LFbzDqgQ
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 09:48:16 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 3xcS1C4hFrz9s9Y
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2017 09:48:15 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 3xcS1D2J1Wz9t0F
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2017 09:48:16 +1000 (AEST)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH RFC 1/7] powerpc: Extend instruction emulation infrastructure
-Date: Wed, 23 Aug 2017 09:47:57 +1000
-Message-Id: <1503445683-12011-2-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH RFC 2/7] powerpc: Change analyse_instr so it doesn't modify
+ *regs
+Date: Wed, 23 Aug 2017 09:47:58 +1000
+Message-Id: <1503445683-12011-3-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1503445683-12011-1-git-send-email-paulus@ozlabs.org>
 References: <1503445683-12011-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,1171 +26,1223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This extends the instruction emulation infrastructure in sstep.c to
-handle all the load and store instructions defined in the Power ISA
-v3.0, except for the atomic memory operations, ldmx (which was never
-implemented), lfdp/stfdp, and the vector element load/stores.
+The analyse_instr function currently doesn't just work out what an
+instruction does, it also executes those instructions whose effect
+is only to update CPU registers that are stored in struct pt_regs.
+This is undesirable because optprobes uses analyse_instr to work out
+if an instruction could be successfully emulated in future.
 
-The instructions added are:
+This changes analyse_instr so it doesn't modify *regs; instead it
+stores information in the instruction_op structure to indicate what
+registers (GPRs, CR, XER, LR) would be set and what value they would
+be set to.  A companion function called emulate_update_regs() can
+then use that information to update a pt_regs struct appropriately.
 
-Integer loads and stores: lbarx, lharx, lqarx, stbcx., sthcx., stqcx.,
-lq, stq.
-
-VSX loads and stores: lxsiwzx, lxsiwax, stxsiwx, lxvx, lxvl, lxvll,
-lxvdsx, lxvwsx, stxvx, stxvl, stxvll, lxsspx, lxsdx, stxsspx, stxsdx,
-lxvw4x, lxsibzx, lxvh8x, lxsihzx, lxvb16x, stxvw4x, stxsibx, stxvh8x,
-stxsihx, stxvb16x, lxsd, lxssp, lxv, stxsd, stxssp, stxv.
-
-These instructions are handled both in the analyse_instr phase and in
-the emulate_step phase.
-
-The code for lxvd2ux and stxvd2ux has been taken out, as those
-instructions were never implemented in any processor and have been
-taken out of the architecture, and their opcodes have been reused for
-other instructions in POWER9 (lxvb16x and stxvb16x).
-
-The emulation for the VSX loads and stores uses helper functions
-which don't access registers or memory directly, which can hopefully
-be reused by KVM later.
+As a minor cleanup, this replaces inline asm using the cntlzw and
+cntlzd instructions with calls to __builtin_clz() and __builtin_clzl().
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/sstep.h |  20 ++
- arch/powerpc/lib/Makefile        |   2 +-
- arch/powerpc/lib/ldstfp.S        |  68 ++--
- arch/powerpc/lib/quad.S          |  62 ++++
- arch/powerpc/lib/sstep.c         | 688 ++++++++++++++++++++++++++++++++++++---
- 5 files changed, 780 insertions(+), 60 deletions(-)
- create mode 100644 arch/powerpc/lib/quad.S
+ arch/powerpc/include/asm/sstep.h |  52 +++-
+ arch/powerpc/lib/sstep.c         | 552 +++++++++++++++++++++++----------------
+ 2 files changed, 371 insertions(+), 233 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
-index d3a42cc..863e1e4 100644
+index 863e1e4..5cdcbc4 100644
 --- a/arch/powerpc/include/asm/sstep.h
 +++ b/arch/powerpc/include/asm/sstep.h
-@@ -68,6 +68,11 @@ enum instruction_type {
- #define DCBT		0x300
- #define ICBI		0x400
+@@ -23,9 +23,6 @@ struct pt_regs;
+ #define IS_RFID(instr)		(((instr) & 0xfc0007fe) == 0x4c000024)
+ #define IS_RFI(instr)		(((instr) & 0xfc0007fe) == 0x4c000064)
  
-+/* VSX flags values */
-+#define VSX_FPCONV	1	/* do floating point SP/DP conversion */
-+#define VSX_SPLAT	2	/* store loaded value into all elements */
-+#define VSX_LDLEFT	4	/* load VSX register from left */
+-/* Emulate instructions that cause a transfer of control. */
+-extern int emulate_step(struct pt_regs *regs, unsigned int instr);
+-
+ enum instruction_type {
+ 	COMPUTE,		/* arith/logical/CR op, etc. */
+ 	LOAD,
+@@ -55,11 +52,29 @@ enum instruction_type {
+ 
+ #define INSTR_TYPE_MASK	0x1f
+ 
++/* Compute flags, ORed in with type */
++#define SETREG		0x20
++#define SETCC		0x40
++#define SETXER		0x80
 +
- /* Size field in type word */
- #define SIZE(n)		((n) << 8)
- #define GETSIZE(w)	((w) >> 8)
-@@ -83,7 +88,22 @@ struct instruction_op {
- 	int update_reg;
- 	/* For MFSPR */
++/* Branch flags, ORed in with type */
++#define SETLK		0x20
++#define BRTAKEN		0x40
++#define DECCTR		0x80
++
+ /* Load/store flags, ORed in with type */
+ #define SIGNEXT		0x20
+ #define UPDATE		0x40	/* matches bit in opcode 31 instructions */
+ #define BYTEREV		0x80
+ 
++/* Barrier type field, ORed in with type */
++#define BARRIER_MASK	0xe0
++#define BARRIER_SYNC	0x00
++#define BARRIER_ISYNC	0x20
++#define BARRIER_EIEIO	0x40
++#define BARRIER_LWSYNC	0x60
++#define BARRIER_PTESYNC	0x80
++
+ /* Cacheop values, ORed in with type */
+ #define CACHEOP_MASK	0x700
+ #define DCBST		0
+@@ -90,6 +105,8 @@ struct instruction_op {
  	int spr;
-+	u8 element_size;	/* for VSX/VMX loads/stores */
-+	u8 vsx_flags;
-+};
-+
-+union vsx_reg {
-+	u8	b[16];
-+	u16	h[8];
-+	u32	w[4];
-+	unsigned long d[2];
-+	float	fp[4];
-+	double	dp[2];
+ 	u8 element_size;	/* for VSX/VMX loads/stores */
+ 	u8 vsx_flags;
++	u32 ccval;
++	u32 xerval;
  };
  
- extern int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			 unsigned int instr);
-+extern void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
-+			     const void *mem);
-+extern void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
-+			      void *mem);
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 3c3146b..7921fed 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -31,7 +31,7 @@ obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+ union vsx_reg {
+@@ -101,8 +118,35 @@ union vsx_reg {
+ 	double	dp[2];
+ };
  
- obj-y			+= checksum_$(BITS).o checksum_wrappers.o
- 
--obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
-+obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o quad.o
- 
- obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
- 
-diff --git a/arch/powerpc/lib/ldstfp.S b/arch/powerpc/lib/ldstfp.S
-index a58777c..0a67374 100644
---- a/arch/powerpc/lib/ldstfp.S
-+++ b/arch/powerpc/lib/ldstfp.S
-@@ -178,10 +178,10 @@ _GLOBAL(do_stfd)
- 	EX_TABLE(2b,3b)
- 
- #ifdef CONFIG_ALTIVEC
--/* Get the contents of vrN into v0; N is in r3. */
-+/* Get the contents of vrN into v0; N is in r3. Doesn't touch r3 or r4. */
- _GLOBAL(get_vr)
- 	mflr	r0
--	rlwinm	r3,r3,3,0xf8
-+	rlwinm	r6,r3,3,0xf8
- 	bcl	20,31,1f
- 	blr			/* v0 is already in v0 */
- 	nop
-@@ -192,15 +192,15 @@ reg = 1
- reg = reg + 1
- 	.endr
- 1:	mflr	r5
--	add	r5,r3,r5
-+	add	r5,r6,r5
- 	mtctr	r5
- 	mtlr	r0
- 	bctr
- 
--/* Put the contents of v0 into vrN; N is in r3. */
-+/* Put the contents of v0 into vrN; N is in r3. Doesn't touch r3 or r4. */
- _GLOBAL(put_vr)
- 	mflr	r0
--	rlwinm	r3,r3,3,0xf8
-+	rlwinm	r6,r3,3,0xf8
- 	bcl	20,31,1f
- 	blr			/* v0 is already in v0 */
- 	nop
-@@ -211,7 +211,7 @@ reg = 1
- reg = reg + 1
- 	.endr
- 1:	mflr	r5
--	add	r5,r3,r5
-+	add	r5,r6,r5
- 	mtctr	r5
- 	mtlr	r0
- 	bctr
-@@ -313,7 +313,7 @@ reg = reg + 1
- 	bctr
- 
- /* Load VSX reg N from vector doubleword *p.  N is in r3, p in r4. */
--_GLOBAL(do_lxvd2x)
-+_GLOBAL(load_vsrn)
- 	PPC_STLU r1,-STKFRM(r1)
- 	mflr	r0
- 	PPC_STL	r0,STKFRM+PPC_LR_STKOFF(r1)
-@@ -325,41 +325,38 @@ _GLOBAL(do_lxvd2x)
- 	isync
- 	beq	cr7,1f
- 	STXVD2X(0,R1,R8)
--1:	li	r9,-EFAULT
--2:	LXVD2X(0,R0,R4)
--	li	r9,0
--3:	beq	cr7,4f
-+1:	LXVD2X(0,R0,R4)
-+#ifdef __LITTLE_ENDIAN__
-+	XXSWAPD(0,0)
-+#endif
-+	beq	cr7,4f
- 	bl	put_vsr
- 	LXVD2X(0,R1,R8)
- 4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
- 	mtlr	r0
- 	MTMSRD(r6)
- 	isync
--	mr	r3,r9
- 	addi	r1,r1,STKFRM
- 	blr
--	EX_TABLE(2b,3b)
- 
- /* Store VSX reg N to vector doubleword *p.  N is in r3, p in r4. */
--_GLOBAL(do_stxvd2x)
-+_GLOBAL(store_vsrn)
- 	PPC_STLU r1,-STKFRM(r1)
- 	mflr	r0
- 	PPC_STL	r0,STKFRM+PPC_LR_STKOFF(r1)
- 	mfmsr	r6
- 	oris	r7,r6,MSR_VSX@h
--	cmpwi	cr7,r3,0
- 	li	r8,STKFRM-16
- 	MTMSRD(r7)
- 	isync
--	beq	cr7,1f
- 	STXVD2X(0,R1,R8)
- 	bl	get_vsr
--1:	li	r9,-EFAULT
--2:	STXVD2X(0,R0,R4)
--	li	r9,0
--3:	beq	cr7,4f
-+#ifdef __LITTLE_ENDIAN__
-+	XXSWAPD(0,0)
-+#endif
-+	STXVD2X(0,R0,R4)
- 	LXVD2X(0,R1,R8)
--4:	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
-+	PPC_LL	r0,STKFRM+PPC_LR_STKOFF(r1)
- 	mtlr	r0
- 	MTMSRD(r6)
- 	isync
-@@ -368,6 +365,35 @@ _GLOBAL(do_stxvd2x)
- 	blr
- 	EX_TABLE(2b,3b)
- 
-+/* Convert single-precision to double, without disturbing FPRs. */
-+/* conv_sp_to_dp(float *sp, double *dp) */
-+_GLOBAL(conv_sp_to_dp)
-+	mfmsr	r6
-+	ori	r7, r6, MSR_FP
-+	MTMSRD(r7)
-+	isync
-+	stfd	fr0, -16(r1)
-+	lfs	fr0, 0(r3)
-+	stfd	fr0, 0(r4)
-+	lfd	fr0, -16(r1)
-+	MTMSRD(r6)
-+	isync
-+	blr
-+
-+/* Convert single-precision to double, without disturbing FPRs. */
-+/* conv_sp_to_dp(double *dp, float *sp) */
-+_GLOBAL(conv_dp_to_sp)
-+	mfmsr	r6
-+	ori	r7, r6, MSR_FP
-+	MTMSRD(r7)
-+	isync
-+	stfd	fr0, -16(r1)
-+	lfd	fr0, 0(r3)
-+	stfs	fr0, 0(r4)
-+	lfd	fr0, -16(r1)
-+	MTMSRD(r6)
-+	isync
-+	blr
- #endif /* CONFIG_VSX */
- 
- #endif	/* CONFIG_PPC_FPU */
-diff --git a/arch/powerpc/lib/quad.S b/arch/powerpc/lib/quad.S
-new file mode 100644
-index 0000000..2cc77dc
---- /dev/null
-+++ b/arch/powerpc/lib/quad.S
-@@ -0,0 +1,62 @@
+-extern int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
 +/*
-+ * Quadword loads and stores
-+ * for use in instruction emulation.
++ * Decode an instruction, and return information about it in *op
++ * without changing *regs.
 + *
-+ * Copyright 2017 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
++ * Return value is 1 if the instruction can be emulated just by
++ * updating *regs with the information in *op, -1 if we need the
++ * GPRs but *regs doesn't contain the full register set, or 0
++ * otherwise.
 + */
++extern int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 			 unsigned int instr);
 +
-+#include <asm/processor.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/ppc-opcode.h>
-+#include <asm/reg.h>
-+#include <asm/asm-offsets.h>
-+#include <linux/errno.h>
++/*
++ * Emulate an instruction that can be executed just by updating
++ * fields in *regs.
++ */
++void emulate_update_regs(struct pt_regs *reg, struct instruction_op *op);
 +
-+/* do_lq(unsigned long ea, unsigned long *regs) */
-+_GLOBAL(do_lq)
-+1:	lq	r6, 0(r3)
-+	std	r6, 0(r4)
-+	std	r7, 8(r4)
-+	li	r3, 0
-+	blr
-+2:	li	r3, -EFAULT
-+	blr
-+	EX_TABLE(1b, 2b)
++/*
++ * Emulate instructions that cause a transfer of control,
++ * arithmetic/logical instructions, loads and stores,
++ * cache operations and barriers.
++ *
++ * Returns 1 if the instruction was emulated successfully,
++ * 0 if it could not be emulated, or -1 for an instruction that
++ * should not be emulated (rfid, mtmsrd clearing MSR_RI, etc.).
++ */
++extern int emulate_step(struct pt_regs *regs, unsigned int instr);
 +
-+/* do_stq(unsigned long ea, unsigned long val0, unsigned long val1) */
-+_GLOBAL(do_stq)
-+1:	stq	r4, 0(r3)
-+	li	r3, 0
-+	blr
-+2:	li	r3, -EFAULT
-+	blr
-+	EX_TABLE(1b, 2b)
-+
-+/* do_lqarx(unsigned long ea, unsigned long *regs) */
-+_GLOBAL(do_lqarx)
-+1:	lqarx	r6, 0, r3
-+	std	r6, 0(r4)
-+	std	r7, 8(r4)
-+	li	r3, 0
-+	blr
-+2:	li	r3, -EFAULT
-+	blr
-+	EX_TABLE(1b, 2b)
-+
-+/* do_stqcx(unsigned long ea, unsigned long val0, unsigned long val1,
-+	    unsigned int *crp) */
-+
-+_GLOBAL(do_stqcx)
-+1:	stqcx.	r4, 0, r3
-+	mfcr	r5
-+	stw	r5, 0(r6)
-+	li	r3, 0
-+	blr
-+2:	li	r3, -EFAULT
-+	blr
-+	EX_TABLE(1b, 2b)
+ extern void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 			     const void *mem);
+ extern void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
 diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index ee33327..6f54812 100644
+index 6f54812..becb486 100644
 --- a/arch/powerpc/lib/sstep.c
 +++ b/arch/powerpc/lib/sstep.c
-@@ -42,8 +42,29 @@ extern int do_stfs(int rn, unsigned long ea);
- extern int do_stfd(int rn, unsigned long ea);
- extern int do_lvx(int rn, unsigned long ea);
- extern int do_stvx(int rn, unsigned long ea);
--extern int do_lxvd2x(int rn, unsigned long ea);
--extern int do_stxvd2x(int rn, unsigned long ea);
-+extern void load_vsrn(int vsr, const void *p);
-+extern void store_vsrn(int vsr, void *p);
-+extern void conv_sp_to_dp(const float *sp, double *dp);
-+extern void conv_dp_to_sp(const double *dp, float *sp);
-+#endif
-+
-+#ifdef __powerpc64__
-+/*
-+ * Functions in quad.S
-+ */
-+extern int do_lq(unsigned long ea, unsigned long *regs);
-+extern int do_stq(unsigned long ea, unsigned long val0, unsigned long val1);
-+extern int do_lqarx(unsigned long ea, unsigned long *regs);
-+extern int do_stqcx(unsigned long ea, unsigned long val0, unsigned long val1,
-+		    unsigned int *crp);
-+#endif
-+
-+#ifdef __LITTLE_ENDIAN__
-+#define IS_LE	1
-+#define IS_BE	0
-+#else
-+#define IS_LE	0
-+#define IS_BE	1
+@@ -83,15 +83,17 @@ static nokprobe_inline unsigned long truncate_if_32bit(unsigned long msr,
+ /*
+  * Determine whether a conditional branch instruction would branch.
+  */
+-static nokprobe_inline int branch_taken(unsigned int instr, struct pt_regs *regs)
++static nokprobe_inline int branch_taken(unsigned int instr,
++					const struct pt_regs *regs,
++					struct instruction_op *op)
+ {
+ 	unsigned int bo = (instr >> 21) & 0x1f;
+ 	unsigned int bi;
+ 
+ 	if ((bo & 4) == 0) {
+ 		/* decrement counter */
+-		--regs->ctr;
+-		if (((bo >> 1) & 1) ^ (regs->ctr == 0))
++		op->type |= DECCTR;
++		if (((bo >> 1) & 1) ^ (regs->ctr == 1))
+ 			return 0;
+ 	}
+ 	if ((bo & 0x10) == 0) {
+@@ -103,7 +105,8 @@ static nokprobe_inline int branch_taken(unsigned int instr, struct pt_regs *regs
+ 	return 1;
+ }
+ 
+-static nokprobe_inline long address_ok(struct pt_regs *regs, unsigned long ea, int nb)
++static nokprobe_inline long address_ok(const struct pt_regs *regs,
++				       unsigned long ea, int nb)
+ {
+ 	if (!user_mode(regs))
+ 		return 1;
+@@ -113,7 +116,8 @@ static nokprobe_inline long address_ok(struct pt_regs *regs, unsigned long ea, i
+ /*
+  * Calculate effective address for a D-form instruction
+  */
+-static nokprobe_inline unsigned long dform_ea(unsigned int instr, struct pt_regs *regs)
++static nokprobe_inline unsigned long dform_ea(unsigned int instr,
++					      const struct pt_regs *regs)
+ {
+ 	int ra;
+ 	unsigned long ea;
+@@ -130,7 +134,8 @@ static nokprobe_inline unsigned long dform_ea(unsigned int instr, struct pt_regs
+ /*
+  * Calculate effective address for a DS-form instruction
+  */
+-static nokprobe_inline unsigned long dsform_ea(unsigned int instr, struct pt_regs *regs)
++static nokprobe_inline unsigned long dsform_ea(unsigned int instr,
++					       const struct pt_regs *regs)
+ {
+ 	int ra;
+ 	unsigned long ea;
+@@ -146,7 +151,8 @@ static nokprobe_inline unsigned long dsform_ea(unsigned int instr, struct pt_reg
+ /*
+  * Calculate effective address for a DQ-form instruction
+  */
+-static nokprobe_inline unsigned long dqform_ea(unsigned int instr, struct pt_regs *regs)
++static nokprobe_inline unsigned long dqform_ea(unsigned int instr,
++					       const struct pt_regs *regs)
+ {
+ 	int ra;
+ 	unsigned long ea;
+@@ -164,7 +170,7 @@ static nokprobe_inline unsigned long dqform_ea(unsigned int instr, struct pt_reg
+  * Calculate effective address for an X-form instruction
+  */
+ static nokprobe_inline unsigned long xform_ea(unsigned int instr,
+-						struct pt_regs *regs)
++					      const struct pt_regs *regs)
+ {
+ 	int ra, rb;
+ 	unsigned long ea;
+@@ -717,24 +723,27 @@ NOKPROBE_SYMBOL(emulate_vsx_store);
+ 		: "=r" (err)				\
+ 		: "r" (addr), "i" (-EFAULT), "0" (err))
+ 
+-static nokprobe_inline void set_cr0(struct pt_regs *regs, int rd)
++static nokprobe_inline void set_cr0(const struct pt_regs *regs,
++				    struct instruction_op *op, int rd)
+ {
+ 	long val = regs->gpr[rd];
+ 
+-	regs->ccr = (regs->ccr & 0x0fffffff) | ((regs->xer >> 3) & 0x10000000);
++	op->type |= SETCC;
++	op->ccval = (regs->ccr & 0x0fffffff) | ((regs->xer >> 3) & 0x10000000);
+ #ifdef __powerpc64__
+ 	if (!(regs->msr & MSR_64BIT))
+ 		val = (int) val;
  #endif
+ 	if (val < 0)
+-		regs->ccr |= 0x80000000;
++		op->ccval |= 0x80000000;
+ 	else if (val > 0)
+-		regs->ccr |= 0x40000000;
++		op->ccval |= 0x40000000;
+ 	else
+-		regs->ccr |= 0x20000000;
++		op->ccval |= 0x20000000;
+ }
+ 
+-static nokprobe_inline void add_with_carry(struct pt_regs *regs, int rd,
++static nokprobe_inline void add_with_carry(const struct pt_regs *regs,
++				     struct instruction_op *op, int rd,
+ 				     unsigned long val1, unsigned long val2,
+ 				     unsigned long carry_in)
+ {
+@@ -742,24 +751,29 @@ static nokprobe_inline void add_with_carry(struct pt_regs *regs, int rd,
+ 
+ 	if (carry_in)
+ 		++val;
+-	regs->gpr[rd] = val;
++	op->type = COMPUTE + SETREG + SETXER;
++	op->reg = rd;
++	op->val = val;
+ #ifdef __powerpc64__
+ 	if (!(regs->msr & MSR_64BIT)) {
+ 		val = (unsigned int) val;
+ 		val1 = (unsigned int) val1;
+ 	}
+ #endif
++	op->xerval = regs->xer;
+ 	if (val < val1 || (carry_in && val == val1))
+-		regs->xer |= XER_CA;
++		op->xerval |= XER_CA;
+ 	else
+-		regs->xer &= ~XER_CA;
++		op->xerval &= ~XER_CA;
+ }
+ 
+-static nokprobe_inline void do_cmp_signed(struct pt_regs *regs, long v1, long v2,
+-				    int crfld)
++static nokprobe_inline void do_cmp_signed(const struct pt_regs *regs,
++					  struct instruction_op *op,
++					  long v1, long v2, int crfld)
+ {
+ 	unsigned int crval, shift;
+ 
++	op->type = COMPUTE + SETCC;
+ 	crval = (regs->xer >> 31) & 1;		/* get SO bit */
+ 	if (v1 < v2)
+ 		crval |= 8;
+@@ -768,14 +782,17 @@ static nokprobe_inline void do_cmp_signed(struct pt_regs *regs, long v1, long v2
+ 	else
+ 		crval |= 2;
+ 	shift = (7 - crfld) * 4;
+-	regs->ccr = (regs->ccr & ~(0xf << shift)) | (crval << shift);
++	op->ccval = (regs->ccr & ~(0xf << shift)) | (crval << shift);
+ }
+ 
+-static nokprobe_inline void do_cmp_unsigned(struct pt_regs *regs, unsigned long v1,
+-				      unsigned long v2, int crfld)
++static nokprobe_inline void do_cmp_unsigned(const struct pt_regs *regs,
++					    struct instruction_op *op,
++					    unsigned long v1,
++					    unsigned long v2, int crfld)
+ {
+ 	unsigned int crval, shift;
+ 
++	op->type = COMPUTE + SETCC;
+ 	crval = (regs->xer >> 31) & 1;		/* get SO bit */
+ 	if (v1 < v2)
+ 		crval |= 8;
+@@ -784,7 +801,7 @@ static nokprobe_inline void do_cmp_unsigned(struct pt_regs *regs, unsigned long
+ 	else
+ 		crval |= 2;
+ 	shift = (7 - crfld) * 4;
+-	regs->ccr = (regs->ccr & ~(0xf << shift)) | (crval << shift);
++	op->ccval = (regs->ccr & ~(0xf << shift)) | (crval << shift);
+ }
+ 
+ static nokprobe_inline int trap_compare(long v1, long v2)
+@@ -820,14 +837,18 @@ static nokprobe_inline int trap_compare(long v1, long v2)
+ #define ROTATE(x, n)	((n) ? (((x) << (n)) | ((x) >> (8 * sizeof(long) - (n)))) : (x))
  
  /*
-@@ -121,6 +142,22 @@ static nokprobe_inline unsigned long dsform_ea(unsigned int instr, struct pt_reg
- 
- 	return truncate_if_32bit(regs->msr, ea);
- }
-+
-+/*
-+ * Calculate effective address for a DQ-form instruction
-+ */
-+static nokprobe_inline unsigned long dqform_ea(unsigned int instr, struct pt_regs *regs)
-+{
-+	int ra;
-+	unsigned long ea;
-+
-+	ra = (instr >> 16) & 0x1f;
-+	ea = (signed short) (instr & ~0xf);	/* sign-extend */
-+	if (ra)
-+		ea += regs->gpr[ra];
-+
-+	return truncate_if_32bit(regs->msr, ea);
-+}
- #endif /* __powerpc64 */
- 
- /*
-@@ -450,43 +487,197 @@ static nokprobe_inline int do_vec_store(int rn, int (*func)(int, unsigned long),
- }
- #endif /* CONFIG_ALTIVEC */
- 
--#ifdef CONFIG_VSX
--static nokprobe_inline int do_vsx_load(int rn, int (*func)(int, unsigned long),
--				 unsigned long ea, struct pt_regs *regs)
-+#ifdef __powerpc64__
-+static nokprobe_inline int emulate_lq(struct pt_regs *regs, unsigned long ea,
-+				      int reg)
+- * Decode an instruction, and execute it if that can be done just by
+- * modifying *regs (i.e. integer arithmetic and logical instructions,
+- * branches, and barrier instructions).
+- * Returns 1 if the instruction has been executed, or 0 if not.
+- * Sets *op to indicate what the instruction does.
++ * Decode an instruction, and return information about it in *op
++ * without changing *regs.
++ * Integer arithmetic and logical instructions, branches, and barrier
++ * instructions can be emulated just using the information in *op.
++ *
++ * Return value is 1 if the instruction can be emulated just by
++ * updating *regs with the information in *op, -1 if we need the
++ * GPRs but *regs doesn't contain the full register set, or 0
++ * otherwise.
+  */
+-int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+-			    unsigned int instr)
++int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
++		  unsigned int instr)
  {
- 	int err;
--	unsigned long val[2];
+ 	unsigned int opcode, ra, rb, rd, spr, u;
+ 	unsigned long int imm;
+@@ -844,12 +865,11 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		imm = (signed short)(instr & 0xfffc);
+ 		if ((instr & 2) == 0)
+ 			imm += regs->nip;
+-		regs->nip += 4;
+-		regs->nip = truncate_if_32bit(regs->msr, regs->nip);
++		op->val = truncate_if_32bit(regs->msr, imm);
+ 		if (instr & 1)
+-			regs->link = regs->nip;
+-		if (branch_taken(instr, regs))
+-			regs->nip = truncate_if_32bit(regs->msr, imm);
++			op->type |= SETLK;
++		if (branch_taken(instr, regs, op))
++			op->type |= BRTAKEN;
+ 		return 1;
+ #ifdef CONFIG_PPC64
+ 	case 17:	/* sc */
+@@ -860,38 +880,37 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		return 0;
+ #endif
+ 	case 18:	/* b */
+-		op->type = BRANCH;
++		op->type = BRANCH | BRTAKEN;
+ 		imm = instr & 0x03fffffc;
+ 		if (imm & 0x02000000)
+ 			imm -= 0x04000000;
+ 		if ((instr & 2) == 0)
+ 			imm += regs->nip;
++		op->val = truncate_if_32bit(regs->msr, imm);
+ 		if (instr & 1)
+-			regs->link = truncate_if_32bit(regs->msr, regs->nip + 4);
+-		imm = truncate_if_32bit(regs->msr, imm);
+-		regs->nip = imm;
++			op->type |= SETLK;
+ 		return 1;
+ 	case 19:
+ 		switch ((instr >> 1) & 0x3ff) {
+ 		case 0:		/* mcrf */
++			op->type = COMPUTE + SETCC;
+ 			rd = 7 - ((instr >> 23) & 0x7);
+ 			ra = 7 - ((instr >> 18) & 0x7);
+ 			rd *= 4;
+ 			ra *= 4;
+ 			val = (regs->ccr >> ra) & 0xf;
+-			regs->ccr = (regs->ccr & ~(0xfUL << rd)) | (val << rd);
+-			goto instr_done;
++			op->ccval = (regs->ccr & ~(0xfUL << rd)) | (val << rd);
++			return 1;
  
- 	if (!address_ok(regs, ea, 16))
- 		return -EFAULT;
--	if ((ea & 3) == 0)
--		return (*func)(rn, ea);
--	err = read_mem_unaligned(&val[0], ea, 8, regs);
--	if (!err)
--		err = read_mem_unaligned(&val[1], ea + 8, 8, regs);
-+	/* if aligned, should be atomic */
-+	if ((ea & 0xf) == 0)
-+		return do_lq(ea, &regs->gpr[reg]);
-+
-+	err = read_mem(&regs->gpr[reg + IS_LE], ea, 8, regs);
- 	if (!err)
--		err = (*func)(rn, (unsigned long) &val[0]);
-+		err = read_mem(&regs->gpr[reg + IS_BE], ea + 8, 8, regs);
- 	return err;
- }
+ 		case 16:	/* bclr */
+ 		case 528:	/* bcctr */
+ 			op->type = BRANCH;
+ 			imm = (instr & 0x400)? regs->ctr: regs->link;
+-			regs->nip = truncate_if_32bit(regs->msr, regs->nip + 4);
+-			imm = truncate_if_32bit(regs->msr, imm);
++			op->val = truncate_if_32bit(regs->msr, imm);
+ 			if (instr & 1)
+-				regs->link = regs->nip;
+-			if (branch_taken(instr, regs))
+-				regs->nip = imm;
++				op->type |= SETLK;
++			if (branch_taken(instr, regs, op))
++				op->type |= BRTAKEN;
+ 			return 1;
  
--static nokprobe_inline int do_vsx_store(int rn, int (*func)(int, unsigned long),
--				 unsigned long ea, struct pt_regs *regs)
-+static nokprobe_inline int emulate_stq(struct pt_regs *regs, unsigned long ea,
-+				       int reg)
- {
- 	int err;
--	unsigned long val[2];
+ 		case 18:	/* rfid, scary */
+@@ -901,9 +920,8 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 			return 0;
  
- 	if (!address_ok(regs, ea, 16))
- 		return -EFAULT;
--	if ((ea & 3) == 0)
--		return (*func)(rn, ea);
--	err = (*func)(rn, (unsigned long) &val[0]);
--	if (err)
--		return err;
--	err = write_mem_unaligned(val[0], ea, 8, regs);
-+	/* if aligned, should be atomic */
-+	if ((ea & 0xf) == 0)
-+		return do_stq(ea, regs->gpr[reg], regs->gpr[reg + 1]);
-+
-+	err = write_mem(regs->gpr[reg + IS_LE], ea, 8, regs);
- 	if (!err)
--		err = write_mem_unaligned(val[1], ea + 8, 8, regs);
-+		err = write_mem(regs->gpr[reg + IS_BE], ea + 8, 8, regs);
- 	return err;
- }
-+#endif /* __powerpc64 */
-+
-+#ifdef CONFIG_VSX
-+void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
-+		      const void *mem)
-+{
-+	int size, read_size;
-+	int i, j;
-+	union vsx_reg buf;
-+	const unsigned int *wp;
-+	const unsigned short *hp;
-+	const unsigned char *bp;
-+
-+	size = GETSIZE(op->type);
-+	buf.d[0] = buf.d[1] = 0;
-+
-+	switch (op->element_size) {
-+	case 16:
-+		/* whole vector; lxv[x] or lxvl[l] */
-+		if (size == 0)
-+			break;
-+		memcpy(&buf, mem, size);
-+		if (IS_LE && (op->vsx_flags & VSX_LDLEFT)) {
-+			/* reverse 16 bytes */
-+			unsigned long tmp;
-+			tmp = byterev_8(buf.d[0]);
-+			buf.d[0] = byterev_8(buf.d[1]);
-+			buf.d[1] = tmp;
-+		}
-+		break;
-+	case 8:
-+		/* scalar loads, lxvd2x, lxvdsx */
-+		read_size = (size >= 8) ? 8 : size;
-+		i = IS_LE ? 8 : 8 - read_size;
-+		memcpy(&buf.b[i], mem, read_size);
-+		if (size < 8) {
-+			if (op->type & SIGNEXT) {
-+				/* size == 4 is the only case here */
-+				buf.d[IS_LE] = (signed int) buf.d[IS_LE];
-+			} else if (op->vsx_flags & VSX_FPCONV) {
-+				preempt_disable();
-+				conv_sp_to_dp(&buf.fp[1 + IS_LE],
-+					      &buf.dp[IS_LE]);
-+				preempt_enable();
-+			}
-+		} else {
-+			if (size == 16)
-+				buf.d[IS_BE] = *(unsigned long *)(mem + 8);
-+			else if (op->vsx_flags & VSX_SPLAT)
-+				buf.d[IS_BE] = buf.d[IS_LE];
-+		}
-+		break;
-+	case 4:
-+		/* lxvw4x, lxvwsx */
-+		wp = mem;
-+		for (j = 0; j < size / 4; ++j) {
-+			i = IS_LE ? 3 - j : j;
-+			buf.w[i] = *wp++;
-+		}
-+		if (op->vsx_flags & VSX_SPLAT) {
-+			u32 val = buf.w[IS_LE ? 3 : 0];
-+			for (; j < 4; ++j) {
-+				i = IS_LE ? 3 - j : j;
-+				buf.w[i] = val;
-+			}
-+		}
-+		break;
-+	case 2:
-+		/* lxvh8x */
-+		hp = mem;
-+		for (j = 0; j < size / 2; ++j) {
-+			i = IS_LE ? 7 - j : j;
-+			buf.h[i] = *hp++;
-+		}
-+		break;
-+	case 1:
-+		/* lxvb16x */
-+		bp = mem;
-+		for (j = 0; j < size; ++j) {
-+			i = IS_LE ? 15 - j : j;
-+			buf.b[i] = *bp++;
-+		}
-+		break;
-+	}
-+	*reg = buf;
-+}
-+EXPORT_SYMBOL_GPL(emulate_vsx_load);
-+NOKPROBE_SYMBOL(emulate_vsx_load);
-+
-+void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
-+		       void *mem)
-+{
-+	int size, write_size;
-+	int i, j;
-+	union vsx_reg buf;
-+	unsigned int *wp;
-+	unsigned short *hp;
-+	unsigned char *bp;
-+
-+	size = GETSIZE(op->type);
-+
-+	switch (op->element_size) {
-+	case 16:
-+		/* stxv, stxvx, stxvl, stxvll */
-+		if (size == 0)
-+			break;
-+		if (IS_LE && (op->vsx_flags & VSX_LDLEFT)) {
-+			/* reverse 16 bytes */
-+			buf.d[0] = byterev_8(reg->d[1]);
-+			buf.d[1] = byterev_8(reg->d[0]);
-+			reg = &buf;
-+		}
-+		memcpy(mem, reg, size);
-+		break;
-+	case 8:
-+		/* scalar stores, stxvd2x */
-+		write_size = (size >= 8) ? 8 : size;
-+		i = IS_LE ? 8 : 8 - write_size;
-+		if (size < 8 && op->vsx_flags & VSX_FPCONV) {
-+			buf.d[0] = buf.d[1] = 0;
-+			preempt_disable();
-+			conv_dp_to_sp(&reg->dp[IS_LE], &buf.fp[1 + IS_LE]);
-+			preempt_enable();
-+			reg = &buf;
-+		}
-+		memcpy(mem, &reg->b[i], write_size);
-+		if (size == 16)
-+			memcpy(mem + 8, &reg->d[IS_BE], 8);
-+		break;
-+	case 4:
-+		/* stxvw4x */
-+		wp = mem;
-+		for (j = 0; j < size / 4; ++j) {
-+			i = IS_LE ? 3 - j : j;
-+			*wp++ = reg->w[i];
-+		}
-+		break;
-+	case 2:
-+		/* stxvh8x */
-+		hp = mem;
-+		for (j = 0; j < size / 2; ++j) {
-+			i = IS_LE ? 7 - j : j;
-+			*hp++ = reg->h[i];
-+		}
-+		break;
-+	case 1:
-+		/* stvxb16x */
-+		bp = mem;
-+		for (j = 0; j < size; ++j) {
-+			i = IS_LE ? 15 - j : j;
-+			*bp++ = reg->b[i];
-+		}
-+		break;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(emulate_vsx_store);
-+NOKPROBE_SYMBOL(emulate_vsx_store);
- #endif /* CONFIG_VSX */
+ 		case 150:	/* isync */
+-			op->type = BARRIER;
+-			isync();
+-			goto instr_done;
++			op->type = BARRIER | BARRIER_ISYNC;
++			return 1;
  
- #define __put_user_asmx(x, addr, err, op, cr)		\
-@@ -1337,14 +1528,15 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		case 33:	/* crnor */
+ 		case 129:	/* crandc */
+@@ -913,45 +931,47 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		case 289:	/* creqv */
+ 		case 417:	/* crorc */
+ 		case 449:	/* cror */
++			op->type = COMPUTE + SETCC;
+ 			ra = (instr >> 16) & 0x1f;
+ 			rb = (instr >> 11) & 0x1f;
+ 			rd = (instr >> 21) & 0x1f;
+ 			ra = (regs->ccr >> (31 - ra)) & 1;
+ 			rb = (regs->ccr >> (31 - rb)) & 1;
+ 			val = (instr >> (6 + ra * 2 + rb)) & 1;
+-			regs->ccr = (regs->ccr & ~(1UL << (31 - rd))) |
++			op->ccval = (regs->ccr & ~(1UL << (31 - rd))) |
+ 				(val << (31 - rd));
+-			goto instr_done;
++			return 1;
++		default:
++			op->type = UNKNOWN;
++			return 0;
+ 		}
+ 		break;
+ 	case 31:
+ 		switch ((instr >> 1) & 0x3ff) {
+ 		case 598:	/* sync */
+-			op->type = BARRIER;
++			op->type = BARRIER + BARRIER_SYNC;
+ #ifdef __powerpc64__
+ 			switch ((instr >> 21) & 3) {
+ 			case 1:		/* lwsync */
+-				asm volatile("lwsync" : : : "memory");
+-				goto instr_done;
++				op->type = BARRIER + BARRIER_LWSYNC;
++				break;
+ 			case 2:		/* ptesync */
+-				asm volatile("ptesync" : : : "memory");
+-				goto instr_done;
++				op->type = BARRIER + BARRIER_PTESYNC;
++				break;
+ 			}
+ #endif
+-			mb();
+-			goto instr_done;
++			return 1;
+ 
+ 		case 854:	/* eieio */
+-			op->type = BARRIER;
+-			eieio();
+-			goto instr_done;
++			op->type = BARRIER + BARRIER_EIEIO;
++			return 1;
+ 		}
  		break;
  	}
  
--	/*
--	 * Loads and stores.
--	 */
-+/*
-+ * Loads and stores.
-+ */
- 	op->type = UNKNOWN;
- 	op->update_reg = ra;
- 	op->reg = rd;
- 	op->val = regs->gpr[rd];
- 	u = (instr >> 20) & UPDATE;
-+	op->vsx_flags = 0;
+ 	/* Following cases refer to regs->gpr[], so we need all regs */
+ 	if (!FULL_REGS(regs))
+-		return 0;
++		return -1;
  
- 	switch (opcode) {
+ 	rd = (instr >> 21) & 0x1f;
+ 	ra = (instr >> 16) & 0x1f;
+@@ -962,21 +982,21 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 	case 2:		/* tdi */
+ 		if (rd & trap_compare(regs->gpr[ra], (short) instr))
+ 			goto trap;
+-		goto instr_done;
++		return 1;
+ #endif
+ 	case 3:		/* twi */
+ 		if (rd & trap_compare((int)regs->gpr[ra], (short) instr))
+ 			goto trap;
+-		goto instr_done;
++		return 1;
+ 
+ 	case 7:		/* mulli */
+-		regs->gpr[rd] = regs->gpr[ra] * (short) instr;
+-		goto instr_done;
++		op->val = regs->gpr[ra] * (short) instr;
++		goto compute_done;
+ 
+ 	case 8:		/* subfic */
+ 		imm = (short) instr;
+-		add_with_carry(regs, rd, ~regs->gpr[ra], imm, 1);
+-		goto instr_done;
++		add_with_carry(regs, op, rd, ~regs->gpr[ra], imm, 1);
++		return 1;
+ 
+ 	case 10:	/* cmpli */
+ 		imm = (unsigned short) instr;
+@@ -985,8 +1005,8 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		if ((rd & 1) == 0)
+ 			val = (unsigned int) val;
+ #endif
+-		do_cmp_unsigned(regs, val, imm, rd >> 2);
+-		goto instr_done;
++		do_cmp_unsigned(regs, op, val, imm, rd >> 2);
++		return 1;
+ 
+ 	case 11:	/* cmpi */
+ 		imm = (short) instr;
+@@ -995,47 +1015,47 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		if ((rd & 1) == 0)
+ 			val = (int) val;
+ #endif
+-		do_cmp_signed(regs, val, imm, rd >> 2);
+-		goto instr_done;
++		do_cmp_signed(regs, op, val, imm, rd >> 2);
++		return 1;
+ 
+ 	case 12:	/* addic */
+ 		imm = (short) instr;
+-		add_with_carry(regs, rd, regs->gpr[ra], imm, 0);
+-		goto instr_done;
++		add_with_carry(regs, op, rd, regs->gpr[ra], imm, 0);
++		return 1;
+ 
+ 	case 13:	/* addic. */
+ 		imm = (short) instr;
+-		add_with_carry(regs, rd, regs->gpr[ra], imm, 0);
+-		set_cr0(regs, rd);
+-		goto instr_done;
++		add_with_carry(regs, op, rd, regs->gpr[ra], imm, 0);
++		set_cr0(regs, op, rd);
++		return 1;
+ 
+ 	case 14:	/* addi */
+ 		imm = (short) instr;
+ 		if (ra)
+ 			imm += regs->gpr[ra];
+-		regs->gpr[rd] = imm;
+-		goto instr_done;
++		op->val = imm;
++		goto compute_done;
+ 
+ 	case 15:	/* addis */
+ 		imm = ((short) instr) << 16;
+ 		if (ra)
+ 			imm += regs->gpr[ra];
+-		regs->gpr[rd] = imm;
+-		goto instr_done;
++		op->val = imm;
++		goto compute_done;
+ 
+ 	case 20:	/* rlwimi */
+ 		mb = (instr >> 6) & 0x1f;
+ 		me = (instr >> 1) & 0x1f;
+ 		val = DATA32(regs->gpr[rd]);
+ 		imm = MASK32(mb, me);
+-		regs->gpr[ra] = (regs->gpr[ra] & ~imm) | (ROTATE(val, rb) & imm);
++		op->val = (regs->gpr[ra] & ~imm) | (ROTATE(val, rb) & imm);
+ 		goto logical_done;
+ 
+ 	case 21:	/* rlwinm */
+ 		mb = (instr >> 6) & 0x1f;
+ 		me = (instr >> 1) & 0x1f;
+ 		val = DATA32(regs->gpr[rd]);
+-		regs->gpr[ra] = ROTATE(val, rb) & MASK32(mb, me);
++		op->val = ROTATE(val, rb) & MASK32(mb, me);
+ 		goto logical_done;
+ 
+ 	case 23:	/* rlwnm */
+@@ -1043,40 +1063,37 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		me = (instr >> 1) & 0x1f;
+ 		rb = regs->gpr[rb] & 0x1f;
+ 		val = DATA32(regs->gpr[rd]);
+-		regs->gpr[ra] = ROTATE(val, rb) & MASK32(mb, me);
++		op->val = ROTATE(val, rb) & MASK32(mb, me);
+ 		goto logical_done;
+ 
+ 	case 24:	/* ori */
+-		imm = (unsigned short) instr;
+-		regs->gpr[ra] = regs->gpr[rd] | imm;
+-		goto instr_done;
++		op->val = regs->gpr[rd] | (unsigned short) instr;
++		goto logical_done_nocc;
+ 
+ 	case 25:	/* oris */
+ 		imm = (unsigned short) instr;
+-		regs->gpr[ra] = regs->gpr[rd] | (imm << 16);
+-		goto instr_done;
++		op->val = regs->gpr[rd] | (imm << 16);
++		goto logical_done_nocc;
+ 
+ 	case 26:	/* xori */
+-		imm = (unsigned short) instr;
+-		regs->gpr[ra] = regs->gpr[rd] ^ imm;
+-		goto instr_done;
++		op->val = regs->gpr[rd] ^ (unsigned short) instr;
++		goto logical_done_nocc;
+ 
+ 	case 27:	/* xoris */
+ 		imm = (unsigned short) instr;
+-		regs->gpr[ra] = regs->gpr[rd] ^ (imm << 16);
+-		goto instr_done;
++		op->val = regs->gpr[rd] ^ (imm << 16);
++		goto logical_done_nocc;
+ 
+ 	case 28:	/* andi. */
+-		imm = (unsigned short) instr;
+-		regs->gpr[ra] = regs->gpr[rd] & imm;
+-		set_cr0(regs, ra);
+-		goto instr_done;
++		op->val = regs->gpr[rd] & (unsigned short) instr;
++		set_cr0(regs, op, ra);
++		goto logical_done_nocc;
+ 
+ 	case 29:	/* andis. */
+ 		imm = (unsigned short) instr;
+-		regs->gpr[ra] = regs->gpr[rd] & (imm << 16);
+-		set_cr0(regs, ra);
+-		goto instr_done;
++		op->val = regs->gpr[rd] & (imm << 16);
++		set_cr0(regs, op, ra);
++		goto logical_done_nocc;
+ 
+ #ifdef __powerpc64__
+ 	case 30:	/* rld* */
+@@ -1087,34 +1104,36 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 			val = ROTATE(val, sh);
+ 			switch ((instr >> 2) & 3) {
+ 			case 0:		/* rldicl */
+-				regs->gpr[ra] = val & MASK64_L(mb);
+-				goto logical_done;
++				val &= MASK64_L(mb);
++				break;
+ 			case 1:		/* rldicr */
+-				regs->gpr[ra] = val & MASK64_R(mb);
+-				goto logical_done;
++				val &= MASK64_R(mb);
++				break;
+ 			case 2:		/* rldic */
+-				regs->gpr[ra] = val & MASK64(mb, 63 - sh);
+-				goto logical_done;
++				val &= MASK64(mb, 63 - sh);
++				break;
+ 			case 3:		/* rldimi */
+ 				imm = MASK64(mb, 63 - sh);
+-				regs->gpr[ra] = (regs->gpr[ra] & ~imm) |
++				val = (regs->gpr[ra] & ~imm) |
+ 					(val & imm);
+-				goto logical_done;
+ 			}
++			op->val = val;
++			goto logical_done;
+ 		} else {
+ 			sh = regs->gpr[rb] & 0x3f;
+ 			val = ROTATE(val, sh);
+ 			switch ((instr >> 1) & 7) {
+ 			case 0:		/* rldcl */
+-				regs->gpr[ra] = val & MASK64_L(mb);
++				op->val = val & MASK64_L(mb);
+ 				goto logical_done;
+ 			case 1:		/* rldcr */
+-				regs->gpr[ra] = val & MASK64_R(mb);
++				op->val = val & MASK64_R(mb);
+ 				goto logical_done;
+ 			}
+ 		}
+ #endif
+-	break; /* illegal instruction */
++		op->type = UNKNOWN;	/* illegal instruction */
++		return 0;
+ 
  	case 31:
-@@ -1368,9 +1560,30 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			op->type = MKOP(STCX, 0, 8);
- 			break;
- 
--		case 21:	/* ldx */
--		case 53:	/* ldux */
--			op->type = MKOP(LOAD, u, 8);
-+		case 52:	/* lbarx */
-+			op->type = MKOP(LARX, 0, 1);
-+			break;
-+
-+		case 694:	/* stbcx. */
-+			op->type = MKOP(STCX, 0, 1);
-+			break;
-+
-+		case 116:	/* lharx */
-+			op->type = MKOP(LARX, 0, 2);
-+			break;
-+
-+		case 726:	/* sthcx. */
-+			op->type = MKOP(STCX, 0, 2);
-+			break;
-+
-+		case 276:	/* lqarx */
-+			if (!((rd & 1) || rd == ra || rd == rb))
-+				op->type = MKOP(LARX, 0, 16);
-+			break;
-+
-+		case 182:	/* stqcx. */
-+			if (!(rd & 1))
-+				op->type = MKOP(STCX, 0, 16);
- 			break;
+ 		switch ((instr >> 1) & 0x3ff) {
+@@ -1123,12 +1142,12 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 			    (rd & trap_compare((int)regs->gpr[ra],
+ 					       (int)regs->gpr[rb])))
+ 				goto trap;
+-			goto instr_done;
++			return 1;
+ #ifdef __powerpc64__
+ 		case 68:	/* td */
+ 			if (rd & trap_compare(regs->gpr[ra], regs->gpr[rb]))
+ 				goto trap;
+-			goto instr_done;
++			return 1;
+ #endif
+ 		case 83:	/* mfmsr */
+ 			if (regs->msr & MSR_PR)
+@@ -1157,74 +1176,50 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
  #endif
  
-@@ -1390,6 +1603,7 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			if (!(regs->msr & MSR_VEC))
- 				goto vecunavail;
- 			op->type = MKOP(LOAD_VMX, 0, 16);
-+			op->element_size = 16;
- 			break;
+ 		case 19:	/* mfcr */
++			imm = 0xffffffffUL;
+ 			if ((instr >> 20) & 1) {
+ 				imm = 0xf0000000UL;
+ 				for (sh = 0; sh < 8; ++sh) {
+-					if (instr & (0x80000 >> sh)) {
+-						regs->gpr[rd] = regs->ccr & imm;
++					if (instr & (0x80000 >> sh))
+ 						break;
+-					}
+ 					imm >>= 4;
+ 				}
+-
+-				goto instr_done;
+ 			}
+-
+-			regs->gpr[rd] = regs->ccr;
+-			regs->gpr[rd] &= 0xffffffffUL;
+-			goto instr_done;
++			op->val = regs->ccr & imm;
++			goto compute_done;
  
- 		case 231:	/* stvx */
-@@ -1401,6 +1615,11 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- #endif /* CONFIG_ALTIVEC */
+ 		case 144:	/* mtcrf */
++			op->type = COMPUTE + SETCC;
+ 			imm = 0xf0000000UL;
+ 			val = regs->gpr[rd];
++			op->val = regs->ccr;
+ 			for (sh = 0; sh < 8; ++sh) {
+ 				if (instr & (0x80000 >> sh))
+-					regs->ccr = (regs->ccr & ~imm) |
++					op->val = (op->val & ~imm) |
+ 						(val & imm);
+ 				imm >>= 4;
+ 			}
+-			goto instr_done;
++			return 1;
  
+ 		case 339:	/* mfspr */
+ 			spr = ((instr >> 16) & 0x1f) | ((instr >> 6) & 0x3e0);
+-			switch (spr) {
+-			case SPRN_XER:	/* mfxer */
+-				regs->gpr[rd] = regs->xer;
+-				regs->gpr[rd] &= 0xffffffffUL;
+-				goto instr_done;
+-			case SPRN_LR:	/* mflr */
+-				regs->gpr[rd] = regs->link;
+-				goto instr_done;
+-			case SPRN_CTR:	/* mfctr */
+-				regs->gpr[rd] = regs->ctr;
+-				goto instr_done;
+-			default:
+-				op->type = MFSPR;
+-				op->reg = rd;
+-				op->spr = spr;
+-				return 0;
+-			}
+-			break;
++			op->type = MFSPR;
++			op->reg = rd;
++			op->spr = spr;
++			if (spr == SPRN_XER || spr == SPRN_LR ||
++			    spr == SPRN_CTR)
++				return 1;
++			return 0;
+ 
+ 		case 467:	/* mtspr */
+ 			spr = ((instr >> 16) & 0x1f) | ((instr >> 6) & 0x3e0);
+-			switch (spr) {
+-			case SPRN_XER:	/* mtxer */
+-				regs->xer = (regs->gpr[rd] & 0xffffffffUL);
+-				goto instr_done;
+-			case SPRN_LR:	/* mtlr */
+-				regs->link = regs->gpr[rd];
+-				goto instr_done;
+-			case SPRN_CTR:	/* mtctr */
+-				regs->ctr = regs->gpr[rd];
+-				goto instr_done;
+-			default:
+-				op->type = MTSPR;
+-				op->val = regs->gpr[rd];
+-				op->spr = spr;
+-				return 0;
+-			}
+-			break;
++			op->type = MTSPR;
++			op->val = regs->gpr[rd];
++			op->spr = spr;
++			if (spr == SPRN_XER || spr == SPRN_LR ||
++			    spr == SPRN_CTR)
++				return 1;
++			return 0;
+ 
+ /*
+  * Compare instructions
+@@ -1239,8 +1234,8 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 				val2 = (int) val2;
+ 			}
+ #endif
+-			do_cmp_signed(regs, val, val2, rd >> 2);
+-			goto instr_done;
++			do_cmp_signed(regs, op, val, val2, rd >> 2);
++			return 1;
+ 
+ 		case 32:	/* cmpl */
+ 			val = regs->gpr[ra];
+@@ -1252,109 +1247,109 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 				val2 = (unsigned int) val2;
+ 			}
+ #endif
+-			do_cmp_unsigned(regs, val, val2, rd >> 2);
+-			goto instr_done;
++			do_cmp_unsigned(regs, op, val, val2, rd >> 2);
++			return 1;
+ 
+ /*
+  * Arithmetic instructions
+  */
+ 		case 8:	/* subfc */
+-			add_with_carry(regs, rd, ~regs->gpr[ra],
++			add_with_carry(regs, op, rd, ~regs->gpr[ra],
+ 				       regs->gpr[rb], 1);
+ 			goto arith_done;
  #ifdef __powerpc64__
-+		case 21:	/* ldx */
-+		case 53:	/* ldux */
-+			op->type = MKOP(LOAD, u, 8);
-+			break;
-+
- 		case 149:	/* stdx */
- 		case 181:	/* stdux */
- 			op->type = MKOP(STORE, u, 8);
-@@ -1529,20 +1748,267 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			break;
+ 		case 9:	/* mulhdu */
+-			asm("mulhdu %0,%1,%2" : "=r" (regs->gpr[rd]) :
++			asm("mulhdu %0,%1,%2" : "=r" (op->val) :
+ 			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]));
+ 			goto arith_done;
+ #endif
+ 		case 10:	/* addc */
+-			add_with_carry(regs, rd, regs->gpr[ra],
++			add_with_carry(regs, op, rd, regs->gpr[ra],
+ 				       regs->gpr[rb], 0);
+ 			goto arith_done;
  
- #ifdef CONFIG_VSX
-+		case 12:	/* lxsiwzx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 4);
-+			op->element_size = 8;
-+			break;
-+
-+		case 76:	/* lxsiwax */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, SIGNEXT, 4);
-+			op->element_size = 8;
-+			break;
-+
-+		case 140:	/* stxsiwx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(STORE_VSX, 0, 4);
-+			op->element_size = 8;
-+			break;
-+
-+		case 268:	/* lxvx */
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(LOAD_VSX, 0, 16);
-+			op->element_size = 16;
-+			break;
-+
-+		case 269:	/* lxvl */
-+		case 301: {	/* lxvll */
-+			int nb;
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->ea = ra ? regs->gpr[ra] : 0;
-+			nb = regs->gpr[rb] & 0xff;
-+			if (nb > 16)
-+				nb = 16;
-+			op->type = MKOP(LOAD_VSX, 0, nb);
-+			op->element_size = 16;
-+			op->vsx_flags = (instr & 0x20) ? VSX_LDLEFT : 0;
-+			break;
-+		}
-+		case 332:	/* lxvdsx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 8);
-+			op->element_size = 8;
-+			op->vsx_flags = VSX_SPLAT;
-+			break;
-+
-+		case 364:	/* lxvwsx */
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(LOAD_VSX, 0, 4);
-+			op->element_size = 4;
-+			op->vsx_flags = VSX_SPLAT;
-+			break;
-+
-+		case 396:	/* stxvx */
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(STORE_VSX, 0, 16);
-+			op->element_size = 16;
-+			break;
-+
-+		case 397:	/* stxvl */
-+		case 429: {	/* stxvll */
-+			int nb;
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->ea = ra ? regs->gpr[ra] : 0;
-+			nb = regs->gpr[rb] & 0xff;
-+			if (nb > 16)
-+				nb = 16;
-+			op->type = MKOP(STORE_VSX, 0, nb);
-+			op->element_size = 16;
-+			op->vsx_flags = (instr & 0x20) ? VSX_LDLEFT : 0;
-+			break;
-+		}
-+		case 524:	/* lxsspx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 4);
-+			op->element_size = 8;
-+			op->vsx_flags = VSX_FPCONV;
-+			break;
-+
-+		case 588:	/* lxsdx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 8);
-+			op->element_size = 8;
-+			break;
-+
-+		case 652:	/* stxsspx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(STORE_VSX, 0, 4);
-+			op->element_size = 8;
-+			op->vsx_flags = VSX_FPCONV;
-+			break;
-+
-+		case 716:	/* stxsdx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(STORE_VSX, 0, 8);
-+			op->element_size = 8;
-+			break;
-+
-+		case 780:	/* lxvw4x */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 16);
-+			op->element_size = 4;
-+			break;
-+
-+		case 781:	/* lxsibzx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 1);
-+			op->element_size = 8;
-+			break;
-+
-+		case 812:	/* lxvh8x */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 16);
-+			op->element_size = 2;
-+			break;
-+
-+		case 813:	/* lxsihzx */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 2);
-+			op->element_size = 8;
-+			break;
-+
- 		case 844:	/* lxvd2x */
--		case 876:	/* lxvd2ux */
- 			if (!(regs->msr & MSR_VSX))
- 				goto vsxunavail;
- 			op->reg = rd | ((instr & 1) << 5);
--			op->type = MKOP(LOAD_VSX, u, 16);
-+			op->type = MKOP(LOAD_VSX, 0, 16);
-+			op->element_size = 8;
-+			break;
-+
-+		case 876:	/* lxvb16x */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(LOAD_VSX, 0, 16);
-+			op->element_size = 1;
-+			break;
-+
-+		case 908:	/* stxvw4x */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd | ((instr & 1) << 5);
-+			op->type = MKOP(STORE_VSX, 0, 16);
-+			op->element_size = 4;
-+			break;
-+
-+		case 909:	/* stxsibx */
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(STORE_VSX, 0, 1);
-+			op->element_size = 8;
-+			break;
-+
-+		case 940:	/* stxvh8x */
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(STORE_VSX, 0, 16);
-+			op->element_size = 2;
-+			break;
-+
-+		case 941:	/* stxsihx */
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(STORE_VSX, 0, 2);
-+			op->element_size = 8;
- 			break;
+ 		case 11:	/* mulhwu */
+-			asm("mulhwu %0,%1,%2" : "=r" (regs->gpr[rd]) :
++			asm("mulhwu %0,%1,%2" : "=r" (op->val) :
+ 			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]));
+ 			goto arith_done;
  
- 		case 972:	/* stxvd2x */
--		case 1004:	/* stxvd2ux */
- 			if (!(regs->msr & MSR_VSX))
- 				goto vsxunavail;
- 			op->reg = rd | ((instr & 1) << 5);
--			op->type = MKOP(STORE_VSX, u, 16);
-+			op->type = MKOP(STORE_VSX, 0, 16);
-+			op->element_size = 8;
-+			break;
-+
-+		case 1004:	/* stxvb16x */
-+			if (!(instr & 1)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(STORE_VSX, 0, 16);
-+			op->element_size = 1;
- 			break;
+ 		case 40:	/* subf */
+-			regs->gpr[rd] = regs->gpr[rb] - regs->gpr[ra];
++			op->val = regs->gpr[rb] - regs->gpr[ra];
+ 			goto arith_done;
+ #ifdef __powerpc64__
+ 		case 73:	/* mulhd */
+-			asm("mulhd %0,%1,%2" : "=r" (regs->gpr[rd]) :
++			asm("mulhd %0,%1,%2" : "=r" (op->val) :
+ 			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]));
+ 			goto arith_done;
+ #endif
+ 		case 75:	/* mulhw */
+-			asm("mulhw %0,%1,%2" : "=r" (regs->gpr[rd]) :
++			asm("mulhw %0,%1,%2" : "=r" (op->val) :
+ 			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]));
+ 			goto arith_done;
  
- #endif /* CONFIG_VSX */
-@@ -1638,6 +2104,37 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		case 104:	/* neg */
+-			regs->gpr[rd] = -regs->gpr[ra];
++			op->val = -regs->gpr[ra];
+ 			goto arith_done;
+ 
+ 		case 136:	/* subfe */
+-			add_with_carry(regs, rd, ~regs->gpr[ra], regs->gpr[rb],
+-				       regs->xer & XER_CA);
++			add_with_carry(regs, op, rd, ~regs->gpr[ra],
++				       regs->gpr[rb], regs->xer & XER_CA);
+ 			goto arith_done;
+ 
+ 		case 138:	/* adde */
+-			add_with_carry(regs, rd, regs->gpr[ra], regs->gpr[rb],
+-				       regs->xer & XER_CA);
++			add_with_carry(regs, op, rd, regs->gpr[ra],
++				       regs->gpr[rb], regs->xer & XER_CA);
+ 			goto arith_done;
+ 
+ 		case 200:	/* subfze */
+-			add_with_carry(regs, rd, ~regs->gpr[ra], 0L,
++			add_with_carry(regs, op, rd, ~regs->gpr[ra], 0L,
+ 				       regs->xer & XER_CA);
+ 			goto arith_done;
+ 
+ 		case 202:	/* addze */
+-			add_with_carry(regs, rd, regs->gpr[ra], 0L,
++			add_with_carry(regs, op, rd, regs->gpr[ra], 0L,
+ 				       regs->xer & XER_CA);
+ 			goto arith_done;
+ 
+ 		case 232:	/* subfme */
+-			add_with_carry(regs, rd, ~regs->gpr[ra], -1L,
++			add_with_carry(regs, op, rd, ~regs->gpr[ra], -1L,
+ 				       regs->xer & XER_CA);
+ 			goto arith_done;
+ #ifdef __powerpc64__
+ 		case 233:	/* mulld */
+-			regs->gpr[rd] = regs->gpr[ra] * regs->gpr[rb];
++			op->val = regs->gpr[ra] * regs->gpr[rb];
+ 			goto arith_done;
+ #endif
+ 		case 234:	/* addme */
+-			add_with_carry(regs, rd, regs->gpr[ra], -1L,
++			add_with_carry(regs, op, rd, regs->gpr[ra], -1L,
+ 				       regs->xer & XER_CA);
+ 			goto arith_done;
+ 
+ 		case 235:	/* mullw */
+-			regs->gpr[rd] = (unsigned int) regs->gpr[ra] *
++			op->val = (unsigned int) regs->gpr[ra] *
+ 				(unsigned int) regs->gpr[rb];
+ 			goto arith_done;
+ 
+ 		case 266:	/* add */
+-			regs->gpr[rd] = regs->gpr[ra] + regs->gpr[rb];
++			op->val = regs->gpr[ra] + regs->gpr[rb];
+ 			goto arith_done;
+ #ifdef __powerpc64__
+ 		case 457:	/* divdu */
+-			regs->gpr[rd] = regs->gpr[ra] / regs->gpr[rb];
++			op->val = regs->gpr[ra] / regs->gpr[rb];
+ 			goto arith_done;
+ #endif
+ 		case 459:	/* divwu */
+-			regs->gpr[rd] = (unsigned int) regs->gpr[ra] /
++			op->val = (unsigned int) regs->gpr[ra] /
+ 				(unsigned int) regs->gpr[rb];
+ 			goto arith_done;
+ #ifdef __powerpc64__
+ 		case 489:	/* divd */
+-			regs->gpr[rd] = (long int) regs->gpr[ra] /
++			op->val = (long int) regs->gpr[ra] /
+ 				(long int) regs->gpr[rb];
+ 			goto arith_done;
+ #endif
+ 		case 491:	/* divw */
+-			regs->gpr[rd] = (int) regs->gpr[ra] /
++			op->val = (int) regs->gpr[ra] /
+ 				(int) regs->gpr[rb];
+ 			goto arith_done;
+ 
+@@ -1363,57 +1358,55 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+  * Logical instructions
+  */
+ 		case 26:	/* cntlzw */
+-			asm("cntlzw %0,%1" : "=r" (regs->gpr[ra]) :
+-			    "r" (regs->gpr[rd]));
++			op->val = __builtin_clz((unsigned int) regs->gpr[rd]);
+ 			goto logical_done;
+ #ifdef __powerpc64__
+ 		case 58:	/* cntlzd */
+-			asm("cntlzd %0,%1" : "=r" (regs->gpr[ra]) :
+-			    "r" (regs->gpr[rd]));
++			op->val = __builtin_clzl(regs->gpr[rd]);
+ 			goto logical_done;
+ #endif
+ 		case 28:	/* and */
+-			regs->gpr[ra] = regs->gpr[rd] & regs->gpr[rb];
++			op->val = regs->gpr[rd] & regs->gpr[rb];
+ 			goto logical_done;
+ 
+ 		case 60:	/* andc */
+-			regs->gpr[ra] = regs->gpr[rd] & ~regs->gpr[rb];
++			op->val = regs->gpr[rd] & ~regs->gpr[rb];
+ 			goto logical_done;
+ 
+ 		case 124:	/* nor */
+-			regs->gpr[ra] = ~(regs->gpr[rd] | regs->gpr[rb]);
++			op->val = ~(regs->gpr[rd] | regs->gpr[rb]);
+ 			goto logical_done;
+ 
+ 		case 284:	/* xor */
+-			regs->gpr[ra] = ~(regs->gpr[rd] ^ regs->gpr[rb]);
++			op->val = ~(regs->gpr[rd] ^ regs->gpr[rb]);
+ 			goto logical_done;
+ 
+ 		case 316:	/* xor */
+-			regs->gpr[ra] = regs->gpr[rd] ^ regs->gpr[rb];
++			op->val = regs->gpr[rd] ^ regs->gpr[rb];
+ 			goto logical_done;
+ 
+ 		case 412:	/* orc */
+-			regs->gpr[ra] = regs->gpr[rd] | ~regs->gpr[rb];
++			op->val = regs->gpr[rd] | ~regs->gpr[rb];
+ 			goto logical_done;
+ 
+ 		case 444:	/* or */
+-			regs->gpr[ra] = regs->gpr[rd] | regs->gpr[rb];
++			op->val = regs->gpr[rd] | regs->gpr[rb];
+ 			goto logical_done;
+ 
+ 		case 476:	/* nand */
+-			regs->gpr[ra] = ~(regs->gpr[rd] & regs->gpr[rb]);
++			op->val = ~(regs->gpr[rd] & regs->gpr[rb]);
+ 			goto logical_done;
+ 
+ 		case 922:	/* extsh */
+-			regs->gpr[ra] = (signed short) regs->gpr[rd];
++			op->val = (signed short) regs->gpr[rd];
+ 			goto logical_done;
+ 
+ 		case 954:	/* extsb */
+-			regs->gpr[ra] = (signed char) regs->gpr[rd];
++			op->val = (signed char) regs->gpr[rd];
+ 			goto logical_done;
+ #ifdef __powerpc64__
+ 		case 986:	/* extsw */
+-			regs->gpr[ra] = (signed int) regs->gpr[rd];
++			op->val = (signed int) regs->gpr[rd];
+ 			goto logical_done;
  #endif
  
- #ifdef __powerpc64__
-+	case 56:	/* lq */
-+		if (!((rd & 1) || (rd == ra)))
-+			op->type = MKOP(LOAD, 0, 16);
-+		op->ea = dqform_ea(instr, regs);
-+		break;
-+#endif
-+
-+#ifdef CONFIG_VSX
-+	case 57:	/* lxsd, lxssp */
-+		op->ea = dsform_ea(instr, regs);
-+		switch (instr & 3) {
-+		case 2:		/* lxsd */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd + 32;
-+			op->type = MKOP(LOAD_VSX, 0, 8);
-+			op->element_size = 8;
-+			break;
-+		case 3:		/* lxssp */
-+			if (!(regs->msr & MSR_VSX))
-+				goto vsxunavail;
-+			op->reg = rd + 32;
-+			op->type = MKOP(LOAD_VSX, 0, 4);
-+			op->element_size = 8;
-+			op->vsx_flags = VSX_FPCONV;
-+			break;
-+		}
-+		break;
-+#endif /* CONFIG_VSX */
-+
-+#ifdef __powerpc64__
- 	case 58:	/* ld[u], lwa */
- 		op->ea = dsform_ea(instr, regs);
- 		switch (instr & 3) {
-@@ -1652,7 +2149,64 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			break;
- 		}
- 		break;
-+#endif
-+
-+#ifdef CONFIG_VSX
-+	case 61:	/* lxv, stxsd, stxssp, stxv */
-+		switch (instr & 7) {
-+		case 1:		/* lxv */
-+			op->ea = dqform_ea(instr, regs);
-+			if (!(instr & 8)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(LOAD_VSX, 0, 16);
-+			op->element_size = 16;
-+			break;
-+
-+		case 2:		/* stxsd with LSB of DS field = 0 */
-+		case 6:		/* stxsd with LSB of DS field = 1 */
-+			op->ea = dsform_ea(instr, regs);
-+			if (!(regs->msr & MSR_VEC))
-+				goto vecunavail;
-+			op->reg = rd + 32;
-+			op->type = MKOP(STORE_VSX, 0, 8);
-+			op->element_size = 8;
-+			break;
-+
-+		case 3:		/* stxssp with LSB of DS field = 0 */
-+		case 7:		/* stxssp with LSB of DS field = 1 */
-+			op->ea = dsform_ea(instr, regs);
-+			if (!(regs->msr & MSR_VEC))
-+				goto vecunavail;
-+			op->reg = rd + 32;
-+			op->type = MKOP(STORE_VSX, 0, 4);
-+			op->element_size = 8;
-+			op->vsx_flags = VSX_FPCONV;
-+			break;
-+
-+		case 5:		/* stxv */
-+			op->ea = dqform_ea(instr, regs);
-+			if (!(instr & 8)) {
-+				if (!(regs->msr & MSR_VSX))
-+					goto vsxunavail;
-+			} else {
-+				if (!(regs->msr & MSR_VEC))
-+					goto vecunavail;
-+				op->reg = rd + 32;
-+			}
-+			op->type = MKOP(STORE_VSX, 0, 16);
-+			op->element_size = 16;
-+			break;
-+		}
-+		break;
-+#endif /* CONFIG_VSX */
+@@ -1423,75 +1416,83 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		case 24:	/* slw */
+ 			sh = regs->gpr[rb] & 0x3f;
+ 			if (sh < 32)
+-				regs->gpr[ra] = (regs->gpr[rd] << sh) & 0xffffffffUL;
++				op->val = (regs->gpr[rd] << sh) & 0xffffffffUL;
+ 			else
+-				regs->gpr[ra] = 0;
++				op->val = 0;
+ 			goto logical_done;
  
-+#ifdef __powerpc64__
- 	case 62:	/* std[u] */
- 		op->ea = dsform_ea(instr, regs);
- 		switch (instr & 3) {
-@@ -1662,6 +2216,10 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 		case 1:		/* stdu */
- 			op->type = MKOP(STORE, UPDATE, 8);
- 			break;
-+		case 2:		/* stq */
-+			if (!(rd & 1))
-+				op->type = MKOP(STORE, 0, 16);
-+			break;
- 		}
- 		break;
+ 		case 536:	/* srw */
+ 			sh = regs->gpr[rb] & 0x3f;
+ 			if (sh < 32)
+-				regs->gpr[ra] = (regs->gpr[rd] & 0xffffffffUL) >> sh;
++				op->val = (regs->gpr[rd] & 0xffffffffUL) >> sh;
+ 			else
+-				regs->gpr[ra] = 0;
++				op->val = 0;
+ 			goto logical_done;
+ 
+ 		case 792:	/* sraw */
++			op->type = COMPUTE + SETREG + SETXER;
+ 			sh = regs->gpr[rb] & 0x3f;
+ 			ival = (signed int) regs->gpr[rd];
+-			regs->gpr[ra] = ival >> (sh < 32 ? sh : 31);
++			op->val = ival >> (sh < 32 ? sh : 31);
++			op->xerval = regs->xer;
+ 			if (ival < 0 && (sh >= 32 || (ival & ((1ul << sh) - 1)) != 0))
+-				regs->xer |= XER_CA;
++				op->xerval |= XER_CA;
+ 			else
+-				regs->xer &= ~XER_CA;
++				op->xerval &= ~XER_CA;
+ 			goto logical_done;
+ 
+ 		case 824:	/* srawi */
++			op->type = COMPUTE + SETREG + SETXER;
+ 			sh = rb;
+ 			ival = (signed int) regs->gpr[rd];
+-			regs->gpr[ra] = ival >> sh;
++			op->val = ival >> sh;
++			op->xerval = regs->xer;
+ 			if (ival < 0 && (ival & ((1ul << sh) - 1)) != 0)
+-				regs->xer |= XER_CA;
++				op->xerval |= XER_CA;
+ 			else
+-				regs->xer &= ~XER_CA;
++				op->xerval &= ~XER_CA;
+ 			goto logical_done;
+ 
+ #ifdef __powerpc64__
+ 		case 27:	/* sld */
+ 			sh = regs->gpr[rb] & 0x7f;
+ 			if (sh < 64)
+-				regs->gpr[ra] = regs->gpr[rd] << sh;
++				op->val = regs->gpr[rd] << sh;
+ 			else
+-				regs->gpr[ra] = 0;
++				op->val = 0;
+ 			goto logical_done;
+ 
+ 		case 539:	/* srd */
+ 			sh = regs->gpr[rb] & 0x7f;
+ 			if (sh < 64)
+-				regs->gpr[ra] = regs->gpr[rd] >> sh;
++				op->val = regs->gpr[rd] >> sh;
+ 			else
+-				regs->gpr[ra] = 0;
++				op->val = 0;
+ 			goto logical_done;
+ 
+ 		case 794:	/* srad */
++			op->type = COMPUTE + SETREG + SETXER;
+ 			sh = regs->gpr[rb] & 0x7f;
+ 			ival = (signed long int) regs->gpr[rd];
+-			regs->gpr[ra] = ival >> (sh < 64 ? sh : 63);
++			op->val = ival >> (sh < 64 ? sh : 63);
++			op->xerval = regs->xer;
+ 			if (ival < 0 && (sh >= 64 || (ival & ((1ul << sh) - 1)) != 0))
+-				regs->xer |= XER_CA;
++				op->xerval |= XER_CA;
+ 			else
+-				regs->xer &= ~XER_CA;
++				op->xerval &= ~XER_CA;
+ 			goto logical_done;
+ 
+ 		case 826:	/* sradi with sh_5 = 0 */
+ 		case 827:	/* sradi with sh_5 = 1 */
++			op->type = COMPUTE + SETREG + SETXER;
+ 			sh = rb | ((instr & 2) << 4);
+ 			ival = (signed long int) regs->gpr[rd];
+-			regs->gpr[ra] = ival >> sh;
++			op->val = ival >> sh;
++			op->xerval = regs->xer;
+ 			if (ival < 0 && (ival & ((1ul << sh) - 1)) != 0)
+-				regs->xer |= XER_CA;
++				op->xerval |= XER_CA;
+ 			else
+-				regs->xer &= ~XER_CA;
++				op->xerval &= ~XER_CA;
+ 			goto logical_done;
  #endif /* __powerpc64__ */
-@@ -1825,6 +2383,14 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 			return 0;
- 		err = 0;
- 		switch (size) {
-+#ifdef __powerpc64__
-+		case 1:
-+			__get_user_asmx(val, op.ea, err, "lbarx");
-+			break;
-+		case 2:
-+			__get_user_asmx(val, op.ea, err, "lharx");
-+			break;
-+#endif
- 		case 4:
- 			__get_user_asmx(val, op.ea, err, "lwarx");
- 			break;
-@@ -1832,6 +2398,9 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 		case 8:
- 			__get_user_asmx(val, op.ea, err, "ldarx");
- 			break;
-+		case 16:
-+			err = do_lqarx(op.ea, &regs->gpr[op.reg]);
-+			goto ldst_done;
- #endif
- 		default:
- 			return 0;
-@@ -1847,6 +2416,14 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 			return 0;
- 		err = 0;
- 		switch (size) {
-+#ifdef __powerpc64__
-+		case 1:
-+			__put_user_asmx(op.val, op.ea, err, "stbcx.", cr);
-+			break;
-+		case 2:
-+			__put_user_asmx(op.val, op.ea, err, "stbcx.", cr);
-+			break;
-+#endif
- 		case 4:
- 			__put_user_asmx(op.val, op.ea, err, "stwcx.", cr);
- 			break;
-@@ -1854,6 +2431,10 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 		case 8:
- 			__put_user_asmx(op.val, op.ea, err, "stdcx.", cr);
- 			break;
-+		case 16:
-+			err = do_stqcx(op.ea, regs->gpr[op.reg],
-+				       regs->gpr[op.reg + 1], &cr);
-+			break;
- #endif
- 		default:
- 			return 0;
-@@ -1865,6 +2446,12 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 		goto ldst_done;
  
- 	case LOAD:
-+#ifdef __powerpc64__
-+		if (size == 16) {
-+			err = emulate_lq(regs, op.ea, op.reg);
-+			goto ldst_done;
-+		}
-+#endif
- 		err = read_mem(&regs->gpr[op.reg], op.ea, size, regs);
- 		if (!err) {
- 			if (op.type & SIGNEXT)
-@@ -1884,13 +2471,22 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- #endif
- #ifdef CONFIG_ALTIVEC
- 	case LOAD_VMX:
--		err = do_vec_load(op.reg, do_lvx, op.ea & ~0xfUL, regs);
-+		err = do_vec_load(op.reg, do_lvx, op.ea, regs);
- 		goto ldst_done;
- #endif
- #ifdef CONFIG_VSX
--	case LOAD_VSX:
--		err = do_vsx_load(op.reg, do_lxvd2x, op.ea, regs);
-+	case LOAD_VSX: {
-+		char mem[16];
-+		union vsx_reg buf;
-+
-+		if (!address_ok(regs, op.ea, size) ||
-+		    __copy_from_user(mem, (void __user *)op.ea, size))
-+			return 0;
-+
-+		emulate_vsx_load(&op, &buf, mem);
-+		load_vsrn(op.reg, &buf);
- 		goto ldst_done;
-+	}
- #endif
- 	case LOAD_MULTI:
- 		if (regs->msr & MSR_LE)
-@@ -1911,6 +2507,12 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 		goto instr_done;
+@@ -2229,15 +2230,18 @@ int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
  
- 	case STORE:
-+#ifdef __powerpc64__
-+		if (size == 16) {
-+			err = emulate_stq(regs, op.ea, op.reg);
-+			goto ldst_done;
+  logical_done:
+ 	if (instr & 1)
+-		set_cr0(regs, ra);
+-	goto instr_done;
++		set_cr0(regs, op, ra);
++ logical_done_nocc:
++	op->reg = ra;
++	op->type |= SETREG;
++	return 1;
+ 
+  arith_done:
+ 	if (instr & 1)
+-		set_cr0(regs, rd);
+-
+- instr_done:
+-	regs->nip = truncate_if_32bit(regs->msr, regs->nip + 4);
++		set_cr0(regs, op, rd);
++ compute_done:
++	op->reg = rd;
++	op->type |= SETREG;
+ 	return 1;
+ 
+  priv:
+@@ -2329,6 +2333,92 @@ static nokprobe_inline void do_byterev(unsigned long *valp, int size)
+ }
+ 
+ /*
++ * Emulate an instruction that can be executed just by updating
++ * fields in *regs.
++ */
++void emulate_update_regs(struct pt_regs *regs, struct instruction_op *op)
++{
++	unsigned long next_pc;
++
++	next_pc = truncate_if_32bit(regs->msr, regs->nip + 4);
++	switch (op->type & INSTR_TYPE_MASK) {
++	case COMPUTE:
++		if (op->type & SETREG)
++			regs->gpr[op->reg] = op->val;
++		if (op->type & SETCC)
++			regs->ccr = op->ccval;
++		if (op->type & SETXER)
++			regs->xer = op->xerval;
++		break;
++
++	case BRANCH:
++		if (op->type & SETLK)
++			regs->link = next_pc;
++		if (op->type & BRTAKEN)
++			next_pc = op->val;
++		if (op->type & DECCTR)
++			--regs->ctr;
++		break;
++
++	case BARRIER:
++		switch (op->type & BARRIER_MASK) {
++		case BARRIER_SYNC:
++			mb();
++			break;
++		case BARRIER_ISYNC:
++			isync();
++			break;
++		case BARRIER_EIEIO:
++			eieio();
++			break;
++		case BARRIER_LWSYNC:
++			asm volatile("lwsync" : : : "memory");
++			break;
++		case BARRIER_PTESYNC:
++			asm volatile("ptesync" : : : "memory");
++			break;
 +		}
-+#endif
- 		if ((op.type & UPDATE) && size == sizeof(long) &&
- 		    op.reg == 1 && op.update_reg == 1 &&
- 		    !(regs->msr & MSR_PR) &&
-@@ -1931,13 +2533,23 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- #endif
- #ifdef CONFIG_ALTIVEC
- 	case STORE_VMX:
--		err = do_vec_store(op.reg, do_stvx, op.ea & ~0xfUL, regs);
-+		err = do_vec_store(op.reg, do_stvx, op.ea, regs);
- 		goto ldst_done;
- #endif
- #ifdef CONFIG_VSX
--	case STORE_VSX:
--		err = do_vsx_store(op.reg, do_stxvd2x, op.ea, regs);
-+	case STORE_VSX: {
-+		char mem[16];
-+		union vsx_reg buf;
++		break;
 +
-+		if (!address_ok(regs, op.ea, size))
-+			return 0;
++	case MFSPR:
++		switch (op->spr) {
++		case SPRN_XER:
++			regs->gpr[op->reg] = regs->xer & 0xffffffffUL;
++			break;
++		case SPRN_LR:
++			regs->gpr[op->reg] = regs->link;
++			break;
++		case SPRN_CTR:
++			regs->gpr[op->reg] = regs->ctr;
++			break;
++		default:
++			WARN_ON_ONCE(1);
++		}
++		break;
 +
-+		store_vsrn(op.reg, &buf);
-+		emulate_vsx_store(&op, &buf, mem);
-+		if (__copy_to_user((void __user *)op.ea, mem, size))
-+			return 0;
- 		goto ldst_done;
++	case MTSPR:
++		switch (op->spr) {
++		case SPRN_XER:
++			regs->xer = op->val & 0xffffffffUL;
++			break;
++		case SPRN_LR:
++			regs->link = op->val;
++			break;
++		case SPRN_CTR:
++			regs->ctr = op->val;
++			break;
++		default:
++			WARN_ON_ONCE(1);
++		}
++		break;
++
++	default:
++		WARN_ON_ONCE(1);
 +	}
- #endif
- 	case STORE_MULTI:
- 		if (regs->msr & MSR_LE)
++	regs->nip = next_pc;
++}
++
++/*
+  * Emulate instructions that cause a transfer of control,
+  * loads and stores, and a few other instructions.
+  * Returns 1 if the step was emulated, 0 if not,
+@@ -2344,8 +2434,12 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	int i, rd, nb;
+ 
+ 	r = analyse_instr(&op, regs, instr);
+-	if (r != 0)
++	if (r < 0)
+ 		return r;
++	if (r > 0) {
++		emulate_update_regs(regs, &op);
++		return 0;
++	}
+ 
+ 	err = 0;
+ 	size = GETSIZE(op.type);
 -- 
 2.7.4
