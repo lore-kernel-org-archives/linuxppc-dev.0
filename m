@@ -1,28 +1,28 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcQ2q4MGpzDqYP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 08:19:31 +1000 (AEST)
-Date: Tue, 22 Aug 2017 17:19:28 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Axtens <dja@axtens.net>, catalin.marinas@arm.com,
- gabriele.paoloni@huawei.com, airlied@linux.ie,
- linux-pci@vger.kernel.org, will.deacon@arm.com,
- dri-devel@lists.freedesktop.org, z.liuxinliang@hisilicon.com,
- bhelgaas@google.com, alex.williamson@redhat.com, lukas@wunner.de,
- benh@kernel.crashing.org, zourongrong@gmail.com,
- daniel.vetter@intel.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
-Message-ID: <20170822221928.GL6948@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170817113028.16853-1-dja@axtens.net>
- <20170817113028.16853-2-dja@axtens.net>
- <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcQCh6vzgzDqm7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 08:27:12 +1000 (AEST)
+Date: Wed, 23 Aug 2017 08:27:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, ppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: linux-next: Tree for Aug 22
+Message-ID: <20170823082711.50fa0ef6@canb.auug.org.au>
+In-Reply-To: <20170823075705.75432321@canb.auug.org.au>
+References: <20170822183816.7925e0f8@canb.auug.org.au>
+ <20170823041117.780097f7@canb.auug.org.au>
+ <20170823041424.1dddeb2d@canb.auug.org.au>
+ <20170822185923.GE11320@linux.vnet.ibm.com>
+ <20170823051216.34f2c09f@canb.auug.org.au>
+ <20170822193231.GF11320@linux.vnet.ibm.com>
+ <20170822193620.GA7752@linux.vnet.ibm.com>
+ <20170823075705.75432321@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,48 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 21, 2017 at 11:53:01AM +0100, Lorenzo Pieralisi wrote:
-> On Thu, Aug 17, 2017 at 09:30:28PM +1000, Daniel Axtens wrote:
-> > A system without PCI legacy resources (e.g. ARM64) may find that no
-> > default/boot VGA device has been marked, because the VGA arbiter
-> > checks for legacy resource decoding before marking a card as default.
+Hi Paul,
+
+On Wed, 23 Aug 2017 07:57:05 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> On Tue, 22 Aug 2017 12:36:20 -0700 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >
+> > To complete the thought, if you aren't already using it, I suggest
+> > applying Nick's patch:
+> > 
+> > http://lkml.kernel.org/r/20170822084348.21436-1-npiggin@gmail.com  
 > 
-> I do not understand this paragraph, in particular:
+> OK, I applied that - with a little shoehorning due to commit
 > 
-> - "A system without PCI legacy resources (e.g. ARM64)". What does this
->   mean ? I take this as "ARM64 does not support IO space"; if a PCI host
->   bridge supports IO space, there is nothing from an architectural
->   point of view that prevents an MMIO based IO space implementation to
->   work on ARM64. It is PCI bridge specific, not arch specific.
+>   71acb768f5b3 ("timers: Fix excessive granularity of new timers after a nohz idle")
+> 
+> from your cru tree.
+            ^^^
+(I meant rcu, of course)
 
-This reference to ARM64 is the same thing I stumbled over.  Maybe it
-could be written along the lines of:
+I will apply the resulting patch to linux-next (as part of the rcu tree
+merge) today - unless you get around to updating your tree before then.
 
-  The VGA arbiter selects a default VGA device that is enabled and
-  reachable via the legacy VGA resources (mem 0xa0000-0xbffff, io
-  0x3b0-0x3bb, io 0x3c0-0x3df, etc).
-
-  If there is no such device, e.g., because there's no enabled VGA
-  device, the host bridge doesn't support access to those legacy
-  resources, or a PCI-PCI bridge doesn't have VGA Enable set, a
-  platform may select an arbitrary device by calling
-  vga_set_default_device().
-
-Then I think this patch changes the previous behavior by allowing the
-arbiter to select a device that is enabled and has a driver but may
-not be reachable via the legacy VGA resources.
-
-I don't know what all the consequences of that would be, but it does
-muddy the VGA arbiter waters a bit.  AIUI, the main reason for the
-arbiter is to allow multiple legacy VGA devices by manipulating bridge
-VGA Enable bits so only one receives the legacy resources at a time.
-
-These devices that do not need the legacy resources don't need that
-special treatment because they don't care about the bridge VGA Enable
-bits and several can coexist in the system with no need for VGA
-arbitration.
-
-I guess the powerpc fixup_vga() already selects a device that doesn't
-need the VGA resources, so we already have that situation.
-
-Bjorn
+-- 
+Cheers,
+Stephen Rothwell
