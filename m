@@ -1,51 +1,37 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
+Return-Path: <fbarrat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc46n34G9zDqXk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:51:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcB2D6z7czDqYQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 23:18:12 +1000 (AEST)
 Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7M8pg5H068796
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 04:51:43 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cgg3snm6m-1
+ v7MDFoDa086903
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 09:18:10 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cgg3t6sp4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 04:51:43 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 09:18:10 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Tue, 22 Aug 2017 18:51:40 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7M8pbVR34472034
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:51:37 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7M8pZWD029659
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:51:37 +1000
-Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
- else seeing this?
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: David Miller <davem@davemloft.net>, npiggin@gmail.com,
- paulmck@linux.vnet.ibm.com, mpe@ellerman.id.au, dzickus@redhat.com,
- sfr@canb.auug.org.au, linuxarm@huawei.com, tglx@linutronix.de,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- john.stultz@linaro.org
-Date: Tue, 22 Aug 2017 14:21:32 +0530
-In-Reply-To: <20170822084911.00000c23@huawei.com>
-References: <20170821160605.5b1cc019@roar.ozlabs.ibm.com>
- <20170821111833.00006753@huawei.com>
- <20170822001928.74f01322@roar.ozlabs.ibm.com>
- <20170821.135504.1392954698746959868.davem@davemloft.net>
- <20170822084911.00000c23@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1503391892.3629.28.camel@abdul.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 22 Aug 2017 14:18:08 +0100
+Subject: Re: [PATCH 5/6] powerpc/mm: Optimize detection of thread local mm's
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
+References: <20170724042803.25848-1-benh@kernel.crashing.org>
+ <20170724042803.25848-5-benh@kernel.crashing.org>
+ <ad84e763-a30f-04f7-f1d0-ccd72c0d4dd4@linux.vnet.ibm.com>
+ <1503336930.2195.20.camel@kernel.crashing.org>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 22 Aug 2017 15:18:04 +0200
+MIME-Version: 1.0
+In-Reply-To: <1503336930.2195.20.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <2c6b25af-6459-d1da-6f56-5d9cc4bdc26f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,43 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-08-22 at 08:49 +0100, Jonathan Cameron wrote:
-> On Mon, 21 Aug 2017 13:55:04 -0700
-> David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Nicholas Piggin <npiggin@gmail.com>
-> > Date: Tue, 22 Aug 2017 00:19:28 +1000
-> > 
-> > > Thanks here's an updated version with a couple more bugs fixed. If
-> > > you could try testing, that would be much appreciated.  
-> > 
-> > I'm not getting RCU stalls on sparc64 any longer with this patch.
-> > 
-> > I'm really happy you guys were able to figure out what was going
-> > wrong. :-)
-> > 
-> > Feel free to add my Tested-by:
-> > 
-> 
-> Like wise - 16 hours of clean run with the latest
-> 
-> Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> 
-> Thanks for all the hard work everyone put into this one, great to
-> cross it off the list!
-> 
-> Jonathan
-> 
 
-No more RCU stalls on PowerPC, system is clean when idle or with some
-test runs.
 
-Thank you all for your time and efforts in fixing this.
+Le 21/08/2017 à 19:35, Benjamin Herrenschmidt a écrit :
+> On Mon, 2017-08-21 at 19:27 +0200, Frederic Barrat wrote:
+>> Hi Ben,
+>>
+>> Le 24/07/2017 à 06:28, Benjamin Herrenschmidt a écrit :
+>>> Instead of comparing the whole CPU mask every time, let's
+>>> keep a counter of how many bits are set in the mask. Thus
+>>> testing for a local mm only requires testing if that counter
+>>> is 1 and the current CPU bit is set in the mask.
+>>
+>>
+>> I'm trying to see if we could merge this patch with what I'm trying to
+>> do to mark a context as requiring global TLBIs.
+>> In http://patchwork.ozlabs.org/patch/796775/
+>> I'm introducing a 'flags' per memory context, using one bit to say if
+>> the context needs global TLBIs.
+>> The 2 could co-exist, just checking... Do you think about using the
+>> actual active_cpus count down the road, or is it just a matter of
+>> knowing if there are more than one active cpus?
+> 
+> Or you could just incrementer my counter. Just make sure you increment
+> it at most once per CXL context and decrement when the context is gone.
 
-Reported-and-Tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Ah great, I didn't dare messing with your counter, it makes it easier. 
+Arguably what happens on those accelerators is pretty close to an active 
+cpu.
 
--- 
-Regard's
+Once it is merged, I'm going to have to backport your patch (and an 
+update to mine) to the p9-supporting distros. From a quick look, your 
+patch, i.e."[PATCH 5/6] powerpc/mm: Optimize detection of thread local 
+mm's" is completely independent from the rest of the series, right?
 
-Abdul Haleem
-IBM Linux Technology Centre
+   Fred
