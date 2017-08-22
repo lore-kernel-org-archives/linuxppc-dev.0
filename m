@@ -1,24 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbtXY4c1NzDqhL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 11:39:57 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id 83so26093752pgb.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:39:57 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: akpm@linux-foundation.org, John Stultz <john.stultz@linaro.org>,
- Thomas Gleixner <tglx@linutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Jonathan.Cameron@huawei.com,
- paulmck@linux.vnet.ibm.com, mpe@ellerman.id.au, dzickus@redhat.com,
- sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- torvalds@linux-foundation.org
-Subject: 
-Date: Tue, 22 Aug 2017 11:38:51 +1000
-Message-Id: <20170822013851.32583-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbtZZ2Hj3zDrCw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 11:41:42 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tejun Heo <tj@kernel.org>, Laurent Vivier <lvivier@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
+ Jens Axboe <axboe@kernel.dk>, Lai Jiangshan <jiangshanlai@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/workqueue: update list of possible CPUs
+In-Reply-To: <20170821144832.GE491396@devbig577.frc2.facebook.com>
+References: <20170821134951.18848-1-lvivier@redhat.com>
+ <20170821144832.GE491396@devbig577.frc2.facebook.com>
+Date: Tue, 22 Aug 2017 11:41:41 +1000
+Message-ID: <87r2w4bcq2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,194 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Date: Sun, 20 Aug 2017 13:16:16 +1000
-Subject: [PATCH] timers: Fix excessive granularity of new timers after a nohz
- idle
+Tejun Heo <tj@kernel.org> writes:
 
-When a timer base is idle, it is forwarded when a new timer is added
-to ensure that granularity does not become excessive. When not idle,
-the timer tick is expected to increment the base.
+> On Mon, Aug 21, 2017 at 03:49:50PM +0200, Laurent Vivier wrote:
+>> In wq_numa_init() a list of NUMA nodes with their list of possible CPUs
+>> is built.
+>> 
+>> Unfortunately, on powerpc, the Firmware is only able to provide the
+>> node of a CPU if the CPU is present. So, in our case (possible CPU)
+>> CPU ids are known, but as the CPU is not present, the node id is
+>> unknown and all the unplugged CPUs are attached to node 0.
+>
+> This is something powerpc needs to fix.
 
-However there are several problems:
+There is no way for us to fix it.
 
-- If an existing timer is modified, the base is forwarded only after
-  the index is calculated.
+At boot, for possible but not present CPUs, we have no way of knowing
+the CPU <-> node mapping, firmware simply doesn't tell us.
 
-- The base is not forwarded by add_timer_on.
+> Workqueue isn't the only one making this assumption. mm as a whole
+> assumes that CPU <-> node mapping is stable regardless of hotplug
+> events.
 
-- There is a window after a timer is restarted from a nohz ide, after
-  it is marked not-idle and before the timer tick on this CPU, where a
-  timer may be added but the ancient base does not get forwarded.
+At least in this case I don't think the mapping changes, it's just we
+don't know the mapping at boot.
 
-These result in excessive granularity (a 1 jiffy timeout can blow out
-to 100s of jiffies), which cause the rcu lockup detector to trigger,
-among other things.
+Currently we have to report possible but not present CPUs as belonging
+to node 0, because otherwise we trip this helpful piece of code:
 
-Fix this by keeping track of whether the timer base has been idle
-since it was last run or forwarded, and if so then forward it before
-adding a new timer.
+	for_each_possible_cpu(cpu) {
+		node = cpu_to_node(cpu);
+		if (WARN_ON(node == NUMA_NO_NODE)) {
+			pr_warn("workqueue: NUMA node mapping not available for cpu%d, disabling NUMA support\n", cpu);
+			/* happens iff arch is bonkers, let's just proceed */
+			return;
+		}
 
-There is still a problem where the mod_timer optimization where it's
-modified with the same expiry time can result in excessive granularity
-relative to the new shorter interval. That is not addressed by this
-patch because checking base->was_idle would increase overhead and it's
-a rather special case (you could reason that the caller should not
-expect change in absolute expiry time due to such an operation). So
-that is noted as a comment.
+But if we remove that, we could then accurately report NUMA_NO_NODE at
+boot, and then update the mapping when the CPU is hotplugged.
 
-As well as fixing the visible RCU softlockup failures, I tested an
-idle system (with no lockup watchdogs running) and traced all
-non-deferrable timer expiries for 1000s, and analysed wakeup latency
-relative to requested latency.  1.0 means we slept for as many jiffies
-as requested, 2.0 means we slept 2x the time (this suffers jiffies
-round-up skew at low absolute times):
-
-             max     avg      std
-upstream   506.0    1.20     4.68
-patched      2.0    1.08     0.15
-
-This was noticed due to the lockup detector Kconfig changes dropping it
-out of people's .configs. When the lockup detectors are enabled, no CPU
-can go idle for longer than 4 seconds, which limits the granularity
-errors. Sub-optimal timer behaviour is observable on a smaller scale:
-
-             max     avg      std
-upstream     9.0    1.05     0.19
-patched      2.0    1.04     0.11
-
-Tested-by: David Miller <davem@davemloft.net>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-
-Hi Andrew,
-
-I would have preferred to get comments from the timer maintainers, but
-they've been busy or away for the past copule of weeks. Perhaps you
-would consider carrying it until then?
-
-Thanks,
-Nick
-
- kernel/time/timer.c | 44 ++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 8 deletions(-)
-
-diff --git a/kernel/time/timer.c b/kernel/time/timer.c
-index 8f5d1bf18854..dd7be9fe6839 100644
---- a/kernel/time/timer.c
-+++ b/kernel/time/timer.c
-@@ -203,6 +203,7 @@ struct timer_base {
- 	bool			migration_enabled;
- 	bool			nohz_active;
- 	bool			is_idle;
-+	bool			was_idle; /* was it idle since last run/fwded */
- 	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
- 	struct hlist_head	vectors[WHEEL_SIZE];
- } ____cacheline_aligned;
-@@ -856,13 +857,19 @@ get_target_base(struct timer_base *base, unsigned tflags)
- 
- static inline void forward_timer_base(struct timer_base *base)
- {
--	unsigned long jnow = READ_ONCE(jiffies);
-+	unsigned long jnow;
- 
- 	/*
--	 * We only forward the base when it's idle and we have a delta between
--	 * base clock and jiffies.
-+	 * We only forward the base when we are idle or have just come out
-+	 * of idle (was_idle logic), and have a delta between base clock
-+	 * and jiffies. In the common case, run_timers will take care of it.
- 	 */
--	if (!base->is_idle || (long) (jnow - base->clk) < 2)
-+	if (likely(!base->was_idle))
-+		return;
-+
-+	jnow = READ_ONCE(jiffies);
-+	base->was_idle = base->is_idle;
-+	if ((long)(jnow - base->clk) < 2)
- 		return;
- 
- 	/*
-@@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
- 	 * same array bucket then just return:
- 	 */
- 	if (timer_pending(timer)) {
-+		/*
-+		 * The downside of this optimization is that it can result in
-+		 * larger granularity than you would get from adding a new
-+		 * timer with this expiry. Would a timer flag for networking
-+		 * be appropriate, then we can try to keep expiry of general
-+		 * timers within ~1/8th of their interval?
-+		 */
- 		if (timer->expires == expires)
- 			return 1;
- 
-@@ -948,6 +962,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
- 		 * dequeue/enqueue dance.
- 		 */
- 		base = lock_timer_base(timer, &flags);
-+		forward_timer_base(base);
- 
- 		clk = base->clk;
- 		idx = calc_wheel_index(expires, clk);
-@@ -964,6 +979,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
- 		}
- 	} else {
- 		base = lock_timer_base(timer, &flags);
-+		forward_timer_base(base);
- 	}
- 
- 	ret = detach_if_pending(timer, base, false);
-@@ -991,12 +1007,10 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
- 			raw_spin_lock(&base->lock);
- 			WRITE_ONCE(timer->flags,
- 				   (timer->flags & ~TIMER_BASEMASK) | base->cpu);
-+			forward_timer_base(base);
- 		}
- 	}
- 
--	/* Try to forward a stale timer base clock */
--	forward_timer_base(base);
--
- 	timer->expires = expires;
- 	/*
- 	 * If 'idx' was calculated above and the base time did not advance
-@@ -1112,6 +1126,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
- 		WRITE_ONCE(timer->flags,
- 			   (timer->flags & ~TIMER_BASEMASK) | cpu);
- 	}
-+	forward_timer_base(base);
- 
- 	debug_activate(timer, timer->expires);
- 	internal_add_timer(base, timer);
-@@ -1499,8 +1514,10 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
- 		/*
- 		 * If we expect to sleep more than a tick, mark the base idle:
- 		 */
--		if ((expires - basem) > TICK_NSEC)
-+		if ((expires - basem) > TICK_NSEC) {
-+			base->was_idle = true;
- 			base->is_idle = true;
-+		}
- 	}
- 	raw_spin_unlock(&base->lock);
- 
-@@ -1611,6 +1628,17 @@ static __latent_entropy void run_timer_softirq(struct softirq_action *h)
- {
- 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
- 
-+	/*
-+	 * was_idle must be cleared before running timers so that any timer
-+	 * functions that call mod_timer will not try to forward the base.
-+	 *
-+	 * The deferrable base does not do idle tracking at all, so we do
-+	 * not forward it. This can result in very large variations in
-+	 * granularity for deferrable timers, but they can be deferred for
-+	 * long periods due to idle.
-+	 */
-+	base->was_idle = false;
-+
- 	__run_timers(base);
- 	if (IS_ENABLED(CONFIG_NO_HZ_COMMON) && base->nohz_active)
- 		__run_timers(this_cpu_ptr(&timer_bases[BASE_DEF]));
--- 
-2.13.3
+cheers
