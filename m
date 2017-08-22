@@ -3,9 +3,9 @@ Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
  [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3CQ3StdzDr54
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3CQ5jZczDqlp
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:10:42 +1000 (AEST)
-Received: by mail-wr0-x242.google.com with SMTP id f8so16134549wrf.3
+Received: by mail-wr0-x242.google.com with SMTP id a47so753354wra.0
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:10:42 -0700 (PDT)
 From: Corentin Labbe <clabbe.montjoie@gmail.com>
 To: herbert@gondor.apana.org.au, davem@davemloft.net, tglx@linutronix.de,
@@ -17,9 +17,9 @@ To: herbert@gondor.apana.org.au, davem@davemloft.net, tglx@linutronix.de,
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, Corentin Labbe <clabbe.montjoie@gmail.com>
-Subject: [PATCH 05/11] crypto: atmel - Use GCM IV size constant
-Date: Tue, 22 Aug 2017 10:08:12 +0200
-Message-Id: <20170822080818.12486-6-clabbe.montjoie@gmail.com>
+Subject: [PATCH 04/11] crypto: nx - Use GCM IV size constant
+Date: Tue, 22 Aug 2017 10:08:11 +0200
+Message-Id: <20170822080818.12486-5-clabbe.montjoie@gmail.com>
 In-Reply-To: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
 References: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,38 +35,56 @@ This patch replace GCM IV size value by their constant name.
 
 Signed-off-by: Corentin Labbe <clabbe.montjoie@gmail.com>
 ---
- drivers/crypto/atmel-aes.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/crypto/nx/nx-aes-gcm.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/crypto/atmel-aes.c b/drivers/crypto/atmel-aes.c
-index 29e20c37f3a6..903fd43f23a5 100644
---- a/drivers/crypto/atmel-aes.c
-+++ b/drivers/crypto/atmel-aes.c
-@@ -36,6 +36,7 @@
- #include <crypto/scatterwalk.h>
- #include <crypto/algapi.h>
- #include <crypto/aes.h>
-+#include <crypto/gcm.h>
- #include <crypto/xts.h>
+diff --git a/drivers/crypto/nx/nx-aes-gcm.c b/drivers/crypto/nx/nx-aes-gcm.c
+index abd465f479c4..a810596b97c2 100644
+--- a/drivers/crypto/nx/nx-aes-gcm.c
++++ b/drivers/crypto/nx/nx-aes-gcm.c
+@@ -22,6 +22,7 @@
  #include <crypto/internal/aead.h>
- #include <linux/platform_data/crypto-atmel.h>
-@@ -1532,7 +1533,7 @@ static int atmel_aes_gcm_start(struct atmel_aes_dev *dd)
- 	if (err)
- 		return atmel_aes_complete(dd, err);
+ #include <crypto/aes.h>
+ #include <crypto/algapi.h>
++#include <crypto/gcm.h>
+ #include <crypto/scatterwalk.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+@@ -433,7 +434,7 @@ static int gcm_aes_nx_encrypt(struct aead_request *req)
+ 	struct nx_gcm_rctx *rctx = aead_request_ctx(req);
+ 	char *iv = rctx->iv;
  
--	if (likely(ivsize == 12)) {
-+	if (likely(ivsize == GCM_AES_IV_SIZE)) {
- 		memcpy(ctx->j0, iv, ivsize);
- 		ctx->j0[3] = cpu_to_be32(1);
- 		return atmel_aes_gcm_process(dd);
-@@ -1820,7 +1821,7 @@ static struct aead_alg aes_gcm_alg = {
- 	.decrypt	= atmel_aes_gcm_decrypt,
- 	.init		= atmel_aes_gcm_init,
- 	.exit		= atmel_aes_gcm_exit,
--	.ivsize		= 12,
-+	.ivsize		= GCM_AES_IV_SIZE,
- 	.maxauthsize	= AES_BLOCK_SIZE,
+-	memcpy(iv, req->iv, 12);
++	memcpy(iv, req->iv, GCM_AES_IV_SIZE);
  
- 	.base = {
+ 	return gcm_aes_nx_crypt(req, 1, req->assoclen);
+ }
+@@ -443,7 +444,7 @@ static int gcm_aes_nx_decrypt(struct aead_request *req)
+ 	struct nx_gcm_rctx *rctx = aead_request_ctx(req);
+ 	char *iv = rctx->iv;
+ 
+-	memcpy(iv, req->iv, 12);
++	memcpy(iv, req->iv, GCM_AES_IV_SIZE);
+ 
+ 	return gcm_aes_nx_crypt(req, 0, req->assoclen);
+ }
+@@ -498,7 +499,7 @@ struct aead_alg nx_gcm_aes_alg = {
+ 	},
+ 	.init        = nx_crypto_ctx_aes_gcm_init,
+ 	.exit        = nx_crypto_ctx_aead_exit,
+-	.ivsize      = 12,
++	.ivsize      = GCM_AES_IV_SIZE,
+ 	.maxauthsize = AES_BLOCK_SIZE,
+ 	.setkey      = gcm_aes_nx_set_key,
+ 	.encrypt     = gcm_aes_nx_encrypt,
+@@ -516,7 +517,7 @@ struct aead_alg nx_gcm4106_aes_alg = {
+ 	},
+ 	.init        = nx_crypto_ctx_aes_gcm_init,
+ 	.exit        = nx_crypto_ctx_aead_exit,
+-	.ivsize      = 8,
++	.ivsize      = GCM_RFC4106_IV_SIZE,
+ 	.maxauthsize = AES_BLOCK_SIZE,
+ 	.setkey      = gcm4106_aes_nx_set_key,
+ 	.setauthsize = gcm4106_aes_nx_setauthsize,
 -- 
 2.13.0
