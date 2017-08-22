@@ -1,20 +1,51 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3Kk1TD1zDr54
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:16:10 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id y129so26801469pgy.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:16:10 -0700 (PDT)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, pantelis.antoniou@gmail.com, vbordug@ru.mvista.com,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] net: ethernet: freescale: fs_enet: make mdiobb_ops const
-Date: Tue, 22 Aug 2017 13:45:59 +0530
-Message-Id: <1503389759-17545-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xc46n34G9zDqXk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:51:45 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7M8pg5H068796
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 04:51:43 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cgg3snm6m-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 04:51:43 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Tue, 22 Aug 2017 18:51:40 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7M8pbVR34472034
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:51:37 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7M8pZWD029659
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:51:37 +1000
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: David Miller <davem@davemloft.net>, npiggin@gmail.com,
+ paulmck@linux.vnet.ibm.com, mpe@ellerman.id.au, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com, tglx@linutronix.de,
+ sparclinux@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ john.stultz@linaro.org
+Date: Tue, 22 Aug 2017 14:21:32 +0530
+In-Reply-To: <20170822084911.00000c23@huawei.com>
+References: <20170821160605.5b1cc019@roar.ozlabs.ibm.com>
+ <20170821111833.00006753@huawei.com>
+ <20170822001928.74f01322@roar.ozlabs.ibm.com>
+ <20170821.135504.1392954698746959868.davem@davemloft.net>
+ <20170822084911.00000c23@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1503391892.3629.28.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +55,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make this const as it is only stored in a const field of a
-mdiobb_ctrl structure.
+On Tue, 2017-08-22 at 08:49 +0100, Jonathan Cameron wrote:
+> On Mon, 21 Aug 2017 13:55:04 -0700
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Nicholas Piggin <npiggin@gmail.com>
+> > Date: Tue, 22 Aug 2017 00:19:28 +1000
+> > 
+> > > Thanks here's an updated version with a couple more bugs fixed. If
+> > > you could try testing, that would be much appreciated.  
+> > 
+> > I'm not getting RCU stalls on sparc64 any longer with this patch.
+> > 
+> > I'm really happy you guys were able to figure out what was going
+> > wrong. :-)
+> > 
+> > Feel free to add my Tested-by:
+> > 
+> 
+> Like wise - 16 hours of clean run with the latest
+> 
+> Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> 
+> Thanks for all the hard work everyone put into this one, great to
+> cross it off the list!
+> 
+> Jonathan
+> 
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+No more RCU stalls on PowerPC, system is clean when idle or with some
+test runs.
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-index 1f015ed..c8e5d88 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-@@ -100,7 +100,7 @@ static inline void mdc(struct mdiobb_ctrl *ctrl, int what)
- 	in_be32(bitbang->dat);
- }
- 
--static struct mdiobb_ops bb_ops = {
-+static const struct mdiobb_ops bb_ops = {
- 	.owner = THIS_MODULE,
- 	.set_mdc = mdc,
- 	.set_mdio_dir = mdio_dir,
+Thank you all for your time and efforts in fixing this.
+
+Reported-and-Tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+
 -- 
-1.9.1
+Regard's
+
+Abdul Haleem
+IBM Linux Technology Centre
