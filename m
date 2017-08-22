@@ -1,27 +1,20 @@
-Return-Path: <clabbe.montjoie@gmail.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
+Return-Path: <bhumirks@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3CZ4GQ8zDqm7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:10:50 +1000 (AEST)
-Received: by mail-wr0-x241.google.com with SMTP id k10so8622816wre.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:10:50 -0700 (PDT)
-From: Corentin Labbe <clabbe.montjoie@gmail.com>
-To: herbert@gondor.apana.org.au, davem@davemloft.net, tglx@linutronix.de,
- mingo@redhat.com, hpa@zytor.com, x86@kernel.org, horia.geanta@nxp.com,
- dan.douglass@nxp.com, thomas.lendacky@amd.com, gary.hook@amd.com,
- harsh@chelsio.com, matthias.bgg@gmail.com, leosilva@linux.vnet.ibm.com,
- pfsmorigo@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Corentin Labbe <clabbe.montjoie@gmail.com>
-Subject: [PATCH 11/11] crypto: aesni - Use GCM IV size constant
-Date: Tue, 22 Aug 2017 10:08:18 +0200
-Message-Id: <20170822080818.12486-12-clabbe.montjoie@gmail.com>
-In-Reply-To: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
-References: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3Kk1TD1zDr54
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:16:10 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id y129so26801469pgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:16:10 -0700 (PDT)
+From: Bhumika Goyal <bhumirks@gmail.com>
+To: julia.lawall@lip6.fr, pantelis.antoniou@gmail.com, vbordug@ru.mvista.com,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
+Subject: [PATCH] net: ethernet: freescale: fs_enet: make mdiobb_ops const
+Date: Tue, 22 Aug 2017 13:45:59 +0530
+Message-Id: <1503389759-17545-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch replace GCM IV size value by their constant name.
+Make this const as it is only stored in a const field of a
+mdiobb_ctrl structure.
 
-Signed-off-by: Corentin Labbe <clabbe.montjoie@gmail.com>
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 ---
- arch/x86/crypto/aesni-intel_glue.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/crypto/aesni-intel_glue.c b/arch/x86/crypto/aesni-intel_glue.c
-index 5c15d6b57329..80664368bf14 100644
---- a/arch/x86/crypto/aesni-intel_glue.c
-+++ b/arch/x86/crypto/aesni-intel_glue.c
-@@ -28,6 +28,7 @@
- #include <crypto/cryptd.h>
- #include <crypto/ctr.h>
- #include <crypto/b128ops.h>
-+#include <crypto/gcm.h>
- #include <crypto/xts.h>
- #include <asm/cpu_device_id.h>
- #include <asm/fpu/api.h>
-@@ -1131,7 +1132,7 @@ static struct aead_alg aesni_aead_algs[] = { {
- 	.setauthsize		= common_rfc4106_set_authsize,
- 	.encrypt		= helper_rfc4106_encrypt,
- 	.decrypt		= helper_rfc4106_decrypt,
--	.ivsize			= 8,
-+	.ivsize			= GCM_RFC4106_IV_SIZE,
- 	.maxauthsize		= 16,
- 	.base = {
- 		.cra_name		= "__gcm-aes-aesni",
-@@ -1149,7 +1150,7 @@ static struct aead_alg aesni_aead_algs[] = { {
- 	.setauthsize		= rfc4106_set_authsize,
- 	.encrypt		= rfc4106_encrypt,
- 	.decrypt		= rfc4106_decrypt,
--	.ivsize			= 8,
-+	.ivsize			= GCM_RFC4106_IV_SIZE,
- 	.maxauthsize		= 16,
- 	.base = {
- 		.cra_name		= "rfc4106(gcm(aes))",
-@@ -1165,7 +1166,7 @@ static struct aead_alg aesni_aead_algs[] = { {
- 	.setauthsize		= generic_gcmaes_set_authsize,
- 	.encrypt		= generic_gcmaes_encrypt,
- 	.decrypt		= generic_gcmaes_decrypt,
--	.ivsize			= 12,
-+	.ivsize			= GCM_AES_IV_SIZE,
- 	.maxauthsize		= 16,
- 	.base = {
- 		.cra_name		= "gcm(aes)",
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
+index 1f015ed..c8e5d88 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
+@@ -100,7 +100,7 @@ static inline void mdc(struct mdiobb_ctrl *ctrl, int what)
+ 	in_be32(bitbang->dat);
+ }
+ 
+-static struct mdiobb_ops bb_ops = {
++static const struct mdiobb_ops bb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.set_mdc = mdc,
+ 	.set_mdio_dir = mdio_dir,
 -- 
-2.13.0
+1.9.1
