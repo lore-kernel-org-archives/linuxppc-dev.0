@@ -1,51 +1,50 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbpYL2Q8YzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 08:40:22 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7LMcmqm016685
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:40:20 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cg5jxyj5x-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbs9T3bR5zDqjB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 10:38:21 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7M0Y6nU184964
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 20:38:18 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cg7ct6x3j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:40:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 20:38:18 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 16:40:19 -0600
-Subject: [PATCHv2 1/2] scsi: Move scsi_cmd->jiffies_at_alloc initialization to
- allocation time
-From: Brian King <brking@linux.vnet.ibm.com>
-To: Bart Van Assche <Bart.VanAssche@wdc.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "hch@lst.de" <hch@lst.de>,
- "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
- "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- "hare@suse.com" <hare@suse.com>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-References: <1502902815.3305.22.camel@abdul.in.ibm.com>
- <1502904072.2421.3.camel@wdc.com>
- <2f686064-3e32-df8d-134f-962b5181da9d@linux.vnet.ibm.com>
- <1502985161.2615.8.camel@wdc.com>
- <71fb9c1b-9f3f-acdc-8bb5-aa1240aea763@linux.vnet.ibm.com>
- <1503092473.2622.17.camel@wdc.com>
- <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
- <1503094414.2622.21.camel@wdc.com>
- <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
- <21928108-3a20-577e-99c8-6da05637c158@linux.vnet.ibm.com>
-Date: Mon, 21 Aug 2017 17:40:14 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Mon, 21 Aug 2017 20:38:18 -0400
+Date: Mon, 21 Aug 2017 17:38:17 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
+ tglx@linutronix.de, sparclinux@vger.kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, john.stultz@linaro.org
+Subject: Re: RCU lockup issues when CONFIG_SOFTLOCKUP_DETECTOR=n - any one
+ else seeing this?
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20170802172555.0000468a@huawei.com>
+ <20170815154743.GK7017@linux.vnet.ibm.com>
+ <87wp63smwn.fsf@concordia.ellerman.id.au>
+ <20170816125617.GY7017@linux.vnet.ibm.com>
+ <20170816162731.GA22978@linux.vnet.ibm.com>
+ <20170820144553.2ab2727b@ppc64le>
+ <20170820230040.706b62ac@roar.ozlabs.ibm.com>
+ <20170820183514.GM11320@linux.vnet.ibm.com>
+ <20170820211429.GA27111@linux.vnet.ibm.com>
+ <20170821105258.191d04b1@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <21928108-3a20-577e-99c8-6da05637c158@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <e605bd0d-b193-0a7c-a7f3-63d7cc49e9b9@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170821105258.191d04b1@roar.ozlabs.ibm.com>
+Message-Id: <20170822003817.GU11320@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,66 +54,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This second version also sets up jiffies_at_alloc in scsi_init_request.
-This has been tested without the second patch in the series and
-I've confirmed I now see the following in the logs after booting:
+On Mon, Aug 21, 2017 at 10:52:58AM +1000, Nicholas Piggin wrote:
+> On Sun, 20 Aug 2017 14:14:29 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Sun, Aug 20, 2017 at 11:35:14AM -0700, Paul E. McKenney wrote:
+> > > On Sun, Aug 20, 2017 at 11:00:40PM +1000, Nicholas Piggin wrote:  
+> > > > On Sun, 20 Aug 2017 14:45:53 +1000
+> > > > Nicholas Piggin <npiggin@gmail.com> wrote:
+> > > >   
+> > > > > On Wed, 16 Aug 2017 09:27:31 -0700
+> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:  
+> > > > > > On Wed, Aug 16, 2017 at 05:56:17AM -0700, Paul E. McKenney wrote:
+> > > > > > 
+> > > > > > Thomas, John, am I misinterpreting the timer trace event messages?    
+> > > > > 
+> > > > > So I did some digging, and what you find is that rcu_sched seems to do a
+> > > > > simple scheudle_timeout(1) and just goes out to lunch for many seconds.
+> > > > > The process_timeout timer never fires (when it finally does wake after
+> > > > > one of these events, it usually removes the timer with del_timer_sync).
+> > > > > 
+> > > > > So this patch seems to fix it. Testing, comments welcome.  
+> > > > 
+> > > > Okay this had a problem of trying to forward the timer from a timer
+> > > > callback function.
+> > > > 
+> > > > This was my other approach which also fixes the RCU warnings, but it's
+> > > > a little more complex. I reworked it a bit so the mod_timer fast path
+> > > > hopefully doesn't have much more overhead (actually by reading jiffies
+> > > > only when needed, it probably saves a load).  
+> > > 
+> > > Giving this one a whirl!  
+> > 
+> > No joy here, but then again there are other reasons to believe that I
+> > am seeing a different bug than Dave and Jonathan are.
+> > 
+> > OK, not -entirely- without joy -- 10 of 14 runs were error-free, which
+> > is a good improvement over 0 of 84 for your earlier patch.  ;-)  But
+> > not statistically different from what I see without either patch.
+> > 
+> > But no statistical difference compared to without patch, and I still
+> > see the "rcu_sched kthread starved" messages.  For whatever it is worth,
+> > by the way, I also see this: "hrtimer: interrupt took 5712368 ns".
+> > Hmmm...  I am also seeing that without any of your patches.  Might
+> > be hypervisor preemption, I guess.
+> 
+> Okay it makes the warnings go away for me, but I'm just booting then
+> leaving the system idle. You're doing some CPU hotplug activity?
 
-[  121.718088] sd 1:2:0:0: timing out command, waited 120s
-[  121.798081] sd 1:2:1:0: timing out command, waited 120s
+Yes, along with rcutorture, so a very different workload.
 
-Without this patch I was never seeing these messages, indicating
-the retry timer code wasn't working. Also, after seeing these
-messages, I've confirmed there are no longer any hung tasks
-in the kernel with sysrq-w, while before, without this patch,
-I would see hung tasks for the scsi_report_opcodes calls which
-were getting retried forever.
-
-8<
-
-Move the initialization of scsi_cmd->jiffies_at_alloc to allocation
-time rather than prep time. Also ensure that jiffies_at_alloc
-is preserved when we go through prep. This lets us send retries
-through prep again and not break the overall retry timer logic
-in scsi_softirq_done.
-
-Suggested-by: Bart Van Assche <Bart.VanAssche@wdc.com>
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
-
-Index: linux-2.6.git/drivers/scsi/scsi_lib.c
-===================================================================
---- linux-2.6.git.orig/drivers/scsi/scsi_lib.c
-+++ linux-2.6.git/drivers/scsi/scsi_lib.c
-@@ -1154,6 +1154,7 @@ void scsi_init_command(struct scsi_devic
- 	void *buf = cmd->sense_buffer;
- 	void *prot = cmd->prot_sdb;
- 	unsigned int unchecked_isa_dma = cmd->flags & SCMD_UNCHECKED_ISA_DMA;
-+	unsigned long jiffies_at_alloc = cmd->jiffies_at_alloc;
- 
- 	/* zero out the cmd, except for the embedded scsi_request */
- 	memset((char *)cmd + sizeof(cmd->req), 0,
-@@ -1164,7 +1165,7 @@ void scsi_init_command(struct scsi_devic
- 	cmd->prot_sdb = prot;
- 	cmd->flags = unchecked_isa_dma;
- 	INIT_DELAYED_WORK(&cmd->abort_work, scmd_eh_abort_handler);
--	cmd->jiffies_at_alloc = jiffies;
-+	cmd->jiffies_at_alloc = jiffies_at_alloc;
- 
- 	scsi_add_cmd_to_list(cmd);
- }
-@@ -2016,6 +2017,7 @@ static int scsi_init_request(struct blk_
- 	if (!cmd->sense_buffer)
- 		return -ENOMEM;
- 	cmd->req.sense = cmd->sense_buffer;
-+	cmd->jiffies_at_alloc = jiffies;
- 
- 	if (scsi_host_get_prot(shost)) {
- 		sg = (void *)cmd + sizeof(struct scsi_cmnd) +
-@@ -2119,6 +2121,7 @@ static int scsi_init_rq(struct request_q
- 	if (!cmd->sense_buffer)
- 		goto fail;
- 	cmd->req.sense = cmd->sense_buffer;
-+	cmd->jiffies_at_alloc = jiffies;
- 
- 	if (scsi_host_get_prot(shost) >= SHOST_DIX_TYPE0_PROTECTION) {
- 		cmd->prot_sdb = kmem_cache_zalloc(scsi_sdb_cache, gfp);
+						Thanx, Paul
