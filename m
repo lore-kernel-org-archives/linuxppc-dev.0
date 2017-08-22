@@ -1,27 +1,23 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcGr41tR8zDqkb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 02:54:44 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id e2so4204226qta.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 09:54:44 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Tue, 22 Aug 2017 09:54:37 -0700
-From: Tejun Heo <tj@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org,
- linux-block@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
- Lai Jiangshan <jiangshanlai@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/workqueue: update list of possible CPUs
-Message-ID: <20170822165437.GG491396@devbig577.frc2.facebook.com>
-References: <20170821134951.18848-1-lvivier@redhat.com>
- <20170821144832.GE491396@devbig577.frc2.facebook.com>
- <87r2w4bcq2.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87r2w4bcq2.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcGs56SS5zDrK8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 02:55:37 +1000 (AEST)
+Message-ID: <1503420928.2195.41.camel@kernel.crashing.org>
+Subject: Re: [PATCH 5/6] powerpc/mm: Optimize detection of thread local mm's
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
+Date: Tue, 22 Aug 2017 09:55:28 -0700
+In-Reply-To: <2c6b25af-6459-d1da-6f56-5d9cc4bdc26f@linux.vnet.ibm.com>
+References: <20170724042803.25848-1-benh@kernel.crashing.org>
+ <20170724042803.25848-5-benh@kernel.crashing.org>
+ <ad84e763-a30f-04f7-f1d0-ccd72c0d4dd4@linux.vnet.ibm.com>
+ <1503336930.2195.20.camel@kernel.crashing.org>
+ <2c6b25af-6459-d1da-6f56-5d9cc4bdc26f@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Michael.
-
-On Tue, Aug 22, 2017 at 11:41:41AM +1000, Michael Ellerman wrote:
-> > This is something powerpc needs to fix.
+On Tue, 2017-08-22 at 15:18 +0200, Frederic Barrat wrote:
+> > Or you could just incrementer my counter. Just make sure you increment
+> > it at most once per CXL context and decrement when the context is gone.
 > 
-> There is no way for us to fix it.
-
-I don't think that's true.  The CPU id used in kernel doesn't have to
-match the physical one and arch code should be able to pre-map CPU IDs
-to nodes and use the matching one when hotplugging CPUs.  I'm not
-saying that's the best way to solve the problem tho.  It could be that
-the best way forward is making cpu <-> node mapping dynamic and
-properly synchronized.  However, please note that that does mean we
-mess up node affinity for things like per-cpu memory which are
-allocated before the cpu comes up, so there's some inherent benefits
-to keeping the mapping static even if that involves indirection.
-
-> > Workqueue isn't the only one making this assumption. mm as a whole
-> > assumes that CPU <-> node mapping is stable regardless of hotplug
-> > events.
+> Ah great, I didn't dare messing with your counter, it makes it easier. 
+> Arguably what happens on those accelerators is pretty close to an active 
+> cpu.
 > 
-> At least in this case I don't think the mapping changes, it's just we
-> don't know the mapping at boot.
-> 
-> Currently we have to report possible but not present CPUs as belonging
-> to node 0, because otherwise we trip this helpful piece of code:
-> 
-> 	for_each_possible_cpu(cpu) {
-> 		node = cpu_to_node(cpu);
-> 		if (WARN_ON(node == NUMA_NO_NODE)) {
-> 			pr_warn("workqueue: NUMA node mapping not available for cpu%d, disabling NUMA support\n", cpu);
-> 			/* happens iff arch is bonkers, let's just proceed */
-> 			return;
-> 		}
-> 
-> But if we remove that, we could then accurately report NUMA_NO_NODE at
-> boot, and then update the mapping when the CPU is hotplugged.
+> Once it is merged, I'm going to have to backport your patch (and an 
+> update to mine) to the p9-supporting distros. From a quick look, your 
+> patch, i.e."[PATCH 5/6] powerpc/mm: Optimize detection of thread local 
+> mm's" is completely independent from the rest of the series, right?
 
-If you think that making this dynamic is the right way to go, I have
-no objection but we should be doing this properly instead of patching
-up what seems to be crashing right now.  What synchronization and
-notification mechanisms do we need to make cpu <-> node mapping
-dynamic?  Do we need any synchronization in memory allocation paths?
-If not, why would it be safe?
+We also need the memory barrier fix but yes.
 
-Thanks.
-
--- 
-tejun
+Cheers,
+Ben.
