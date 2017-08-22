@@ -1,19 +1,17 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0081.outbound.protection.outlook.com [104.47.32.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nixiaoming@huawei.com>
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcHfL2bxJzDrHC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 03:31:22 +1000 (AEST)
-From: Madalin Bucur <madalin.bucur@nxp.com>
-To: <netdev@vger.kernel.org>, <davem@davemloft.net>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 6/6] dpaa_eth: check allocation result
-Date: Tue, 22 Aug 2017 20:31:06 +0300
-Message-ID: <1503423066-15420-7-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1503423066-15420-1-git-send-email-madalin.bucur@nxp.com>
-References: <1503423066-15420-1-git-send-email-madalin.bucur@nxp.com>
-Reply-To: <madalin.bucur@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcCpp4TSSzDqgx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 00:38:26 +1000 (AEST)
+From: nixiaoming <nixiaoming@huawei.com>
+To: <agraf@suse.com>, <pbonzini@redhat.com>, <rkrcmar@redhat.com>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>
+CC: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix memory leak on kvm_vm_ioctl_get_htab_fd
+Date: Tue, 22 Aug 2017 22:18:20 +0800
+Message-ID: <20170822141820.67839-1-nixiaoming@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,24 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
----
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c | 3 +++
- 1 file changed, 3 insertions(+)
+ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+but no free when anon_inode_getfd return fail
+so, add kfree(ctx) to fix memory leak
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index 73ca8d7..4225806 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -2561,6 +2561,9 @@ static struct dpaa_bp *dpaa_bp_alloc(struct device *dev)
- 
- 	dpaa_bp->bpid = FSL_DPAA_BPID_INV;
- 	dpaa_bp->percpu_count = devm_alloc_percpu(dev, *dpaa_bp->percpu_count);
-+	if (!dpaa_bp->percpu_count)
-+		return ERR_PTR(-ENOMEM);
-+
- 	dpaa_bp->config_count = FSL_DPAA_ETH_MAX_BUF_COUNT;
- 
- 	dpaa_bp->seed_cb = dpaa_bp_seed;
+Signed-off-by: nixiaoming <nixiaoming@huawei.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index b42812e..be3d08f 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -1940,6 +1940,7 @@ int kvm_vm_ioctl_get_htab_fd(struct kvm *kvm, struct kvm_get_htab_fd *ghf)
+ 	rwflag = (ghf->flags & KVM_GET_HTAB_WRITE) ? O_WRONLY : O_RDONLY;
+ 	ret = anon_inode_getfd("kvm-htab", &kvm_htab_fops, ctx, rwflag | O_CLOEXEC);
+ 	if (ret < 0) {
++		kfree(ctx);
+ 		kvm_put_kvm(kvm);
+ 		return ret;
+ 	}
 -- 
-2.1.0
+2.11.0.1
