@@ -1,24 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbzFY4k9dzDqjm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 15:12:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>
-Subject: Re: [PATCH v2 2/5] powerpc: pseries: vio: match parent nodes with
- of_find_node_by_path
-In-Reply-To: <20170821151651.25096-3-robh@kernel.org>
-References: <20170821151651.25096-1-robh@kernel.org>
- <20170821151651.25096-3-robh@kernel.org>
-Date: Tue, 22 Aug 2017 15:12:17 +1000
-Message-ID: <87fuckb2z2.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbzzH6118zDqXr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 15:44:59 +1000 (AEST)
+Message-ID: <1503380692.7369.0.camel@russell.cc>
+Subject: Re: qustion about eeh_add_virt_device
+From: Russell Currey <ruscur@russell.cc>
+To: Julia Lawall <julia.lawall@lip6.fr>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: hch@infradead.org
+Date: Tue, 22 Aug 2017 15:44:52 +1000
+In-Reply-To: <alpine.DEB.2.20.1708131648480.13565@hadrien>
+References: <alpine.DEB.2.20.1708131648480.13565@hadrien>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,70 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Herring <robh@kernel.org> writes:
+On Sun, 2017-08-13 at 16:54 +0200, Julia Lawall wrote:
+> Hello,
 
-> In preparation to remove the full path from device_node.full_name, use
-> of_find_node_by_path instead of open coding with strcmp.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
-> v2:
-> - rebased to linux-next and removed spurious change fro patch 1.
->
->  arch/powerpc/platforms/pseries/vio.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-> index aa5ca74316fa..5754572deb23 100644
-> --- a/arch/powerpc/platforms/pseries/vio.c
-> +++ b/arch/powerpc/platforms/pseries/vio.c
-> @@ -1357,9 +1357,9 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
->  	 */
->  	parent_node = of_get_parent(of_node);
->  	if (parent_node) {
-> -		if (!strcmp(parent_node->full_name, "/ibm,platform-facilities"))
-> +		if (parent_node == of_find_node_by_path("/ibm,platform-facilities"))
->  			family = PFO;
-> -		else if (!strcmp(parent_node->full_name, "/vdevice"))
-> +		else if (parent_node == of_find_node_by_path("/vdevice"))
->  			family = VDEVICE;
+Hello, sorry for the delayed response.
 
-This leaks references to the looked up nodes.
+> 
+> At the suggestion of Christoph Hellwig, I am working on inlining the
+> functions stored in the err_handler field of a pci_driver structure into
+> the pci_driver structure itself.  A number of functions in the file
+> arch/powerpc/kernel/eeh_driver.c have code like:
+> 
+>         if (!driver->err_handler ||
+>             !driver->err_handler->error_detected) {
+>                 eeh_pcid_put(dev);
+>                 return NULL;
+>         }
+> 
+> This I would just convert to:
+> 
+>         if (!driver->error_detected) {
+>                 eeh_pcid_put(dev);
+>                 return NULL;
+>         }
+> 
+> But I am not sure what is best to do about eeh_add_virt_device, which
+> contains:
+> 
+>                 if (driver->err_handler)
+> 		        return NULL;
+> 
+> Should I try to find a subfield of the err_handler that is guaranteed to
+> be there if anything is there?  Or could the test just be dropped, leaving
+> a direct return NULL?
 
-Both these nodes are defined in PAPR (our hypervisor spec), and both of
-them must have a device_type, either "ibm,platform-facilities" or
-"vdevice".
+I believe the test can be dropped.
 
-Looking at the commit that added the code I don't see any particular
-reason it used the comparison against full_name, rather than using the
-device_type.
+- Russell
 
-So I'm inclined to do this instead:
-
-diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-index 8a47f168476b..f26f906e6021 100644
---- a/arch/powerpc/platforms/pseries/vio.c
-+++ b/arch/powerpc/platforms/pseries/vio.c
-@@ -1357,9 +1357,9 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
- 	 */
- 	parent_node = of_get_parent(of_node);
- 	if (parent_node) {
--		if (!strcmp(parent_node->full_name, "/ibm,platform-facilities"))
-+		if (!strcmp(parent_node->type, "ibm,platform-facilities"))
- 			family = PFO;
--		else if (!strcmp(parent_node->full_name, "/vdevice"))
-+		else if (!strcmp(parent_node->type, "vdevice"))
- 			family = VDEVICE;
- 		else {
- 			pr_warn("%s: parent(%s) of %s not recognized.\n",
-
-
-I've checked both Qemu and kvmtool add the device_type, and I'm fairly
-confident that PowerVM does too. Anyway I'll test it on all the machines
-I can find.
-
-cheers
+> 
+> thanks,
+> julia
