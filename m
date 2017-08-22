@@ -1,45 +1,24 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xbsF91NLJzDrCv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 10:41:32 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7M0dHKM095910
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 20:41:30 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cg3pmhd0n-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 20:41:30 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 21 Aug 2017 20:41:29 -0400
-Date: Mon, 21 Aug 2017 17:41:26 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: Re: [PATCH v2 00/20] Speculative page faults
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <87c5a62a-e3b9-8337-66b6-2daae976ff79@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87c5a62a-e3b9-8337-66b6-2daae976ff79@linux.vnet.ibm.com>
-Message-Id: <20170822004126.GV11320@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xbtXY4c1NzDqhL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 11:39:57 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id 83so26093752pgb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Aug 2017 18:39:57 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: akpm@linux-foundation.org, John Stultz <john.stultz@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Jonathan.Cameron@huawei.com,
+ paulmck@linux.vnet.ibm.com, mpe@ellerman.id.au, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ torvalds@linux-foundation.org
+Subject: 
+Date: Tue, 22 Aug 2017 11:38:51 +1000
+Message-Id: <20170822013851.32583-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,202 +28,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 21, 2017 at 11:58:03AM +0530, Anshuman Khandual wrote:
-> On 08/18/2017 03:34 AM, Laurent Dufour wrote:
-> > This is a port on kernel 4.13 of the work done by Peter Zijlstra to
-> > handle page fault without holding the mm semaphore [1].
-> > 
-> > The idea is to try to handle user space page faults without holding the
-> > mmap_sem. This should allow better concurrency for massively threaded
-> > process since the page fault handler will not wait for other threads memory
-> > layout change to be done, assuming that this change is done in another part
-> > of the process's memory space. This type page fault is named speculative
-> > page fault. If the speculative page fault fails because of a concurrency is
-> > detected or because underlying PMD or PTE tables are not yet allocating, it
-> > is failing its processing and a classic page fault is then tried.
-> > 
-> > The speculative page fault (SPF) has to look for the VMA matching the fault
-> > address without holding the mmap_sem, so the VMA list is now managed using
-> > SRCU allowing lockless walking. The only impact would be the deferred file
-> > derefencing in the case of a file mapping, since the file pointer is
-> > released once the SRCU cleaning is done.  This patch relies on the change
-> > done recently by Paul McKenney in SRCU which now runs a callback per CPU
-> > instead of per SRCU structure [1].
-> > 
-> > The VMA's attributes checked during the speculative page fault processing
-> > have to be protected against parallel changes. This is done by using a per
-> > VMA sequence lock. This sequence lock allows the speculative page fault
-> > handler to fast check for parallel changes in progress and to abort the
-> > speculative page fault in that case.
-> > 
-> > Once the VMA is found, the speculative page fault handler would check for
-> > the VMA's attributes to verify that the page fault has to be handled
-> > correctly or not. Thus the VMA is protected through a sequence lock which
-> > allows fast detection of concurrent VMA changes. If such a change is
-> > detected, the speculative page fault is aborted and a *classic* page fault
-> > is tried.  VMA sequence locks are added when VMA attributes which are
-> > checked during the page fault are modified.
-> > 
-> > When the PTE is fetched, the VMA is checked to see if it has been changed,
-> > so once the page table is locked, the VMA is valid, so any other changes
-> > leading to touching this PTE will need to lock the page table, so no
-> > parallel change is possible at this time.
-> > 
-> > Compared to the Peter's initial work, this series introduces a spin_trylock
-> > when dealing with speculative page fault. This is required to avoid dead
-> > lock when handling a page fault while a TLB invalidate is requested by an
-> > other CPU holding the PTE. Another change due to a lock dependency issue
-> > with mapping->i_mmap_rwsem.
-> > 
-> > In addition some VMA field values which are used once the PTE is unlocked
-> > at the end the page fault path are saved into the vm_fault structure to
-> > used the values matching the VMA at the time the PTE was locked.
-> > 
-> > This series builds on top of v4.13-rc5 and is functional on x86 and
-> > PowerPC.
-> > 
-> > Tests have been made using a large commercial in-memory database on a
-> > PowerPC system with 752 CPU using RFC v5. The results are very encouraging
-> > since the loading of the 2TB database was faster by 14% with the
-> > speculative page fault.
-> > 
-> 
-> You specifically mention loading as most of the page faults will
-> happen at that time and then the working set will settle down with
-> very less page faults there after ? That means unless there is
-> another wave of page faults we wont notice performance improvement
-> during the runtime.
-> 
-> > Using ebizzy test [3], which spreads a lot of threads, the result are good
-> > when running on both a large or a small system. When using kernbench, the
-> 
-> The performance improvements are greater as there is a lot of creation
-> and destruction of anon mappings which generates constant flow of page
-> faults to be handled.
-> 
-> > result are quite similar which expected as not so much multi threaded
-> > processes are involved. But there is no performance degradation neither
-> > which is good.
-> 
-> If we compile with 'make -j N' there would be a lot of threads but I
-> guess the problem is SPF does not support handling file mapping IIUC
-> which limits the performance improvement for some workloads.
-> 
-> > 
-> > ------------------
-> > Benchmarks results
-> > 
-> > Note these test have been made on top of 4.13-rc3 with the following patch
-> > from Paul McKenney applied: 
-> >  "srcu: Provide ordering for CPU not involved in grace period" [5]
-> 
-> Is this patch an improvement for SRCU which we are using for walking VMAs.
+Date: Sun, 20 Aug 2017 13:16:16 +1000
+Subject: [PATCH] timers: Fix excessive granularity of new timers after a nohz
+ idle
 
-It is a tweak to an earlier patch that parallelizes SRCU callback
-handling.
+When a timer base is idle, it is forwarded when a new timer is added
+to ensure that granularity does not become excessive. When not idle,
+the timer tick is expected to increment the base.
 
-							Thanx, Paul
+However there are several problems:
 
-> > Ebizzy:
-> > -------
-> > The test is counting the number of records per second it can manage, the
-> > higher is the best. I run it like this 'ebizzy -mTRp'. To get consistent
-> > result I repeated the test 100 times and measure the average result, mean
-> > deviation, max and min.
-> > 
-> > - 16 CPUs x86 VM
-> > Records/s	4.13-rc5	4.13-rc5-spf
-> > Average		11350.29	21760.36
-> > Mean deviation	396.56		881.40
-> > Max		13773		26194
-> > Min		10567		19223
-> > 
-> > - 80 CPUs Power 8 node:
-> > Records/s	4.13-rc5	4.13-rc5-spf
-> > Average		33904.67	58847.91
-> > Mean deviation	789.40		1753.19
-> > Max		36703		68958
-> > Min		31759		55125
-> > 
-> 
-> Can you also mention % improvement or degradation in a new column.
-> 
-> > The number of record per second is far better with the speculative page
-> > fault.
-> > The mean deviation is higher with the speculative page fault, may be
-> > because sometime the fault are not handled in a speculative way leading to
-> > more variation.
-> 
-> we need to analyze that. Why speculative page faults failed on those
-> occasions for exact same workload.
-> 
-> > 
-> > 
-> > Kernbench:
-> > ----------
-> > This test is building a 4.12 kernel using platform default config. The
-> > build has been run 5 times each time.
-> > 
-> > - 16 CPUs x86 VM
-> > Average Half load -j 8 Run (std deviation)
-> >  		 4.13.0-rc5		4.13.0-rc5-spf
-> > Elapsed Time     166.574 (0.340779)	145.754 (0.776325)		
-> > User Time        1080.77 (2.05871)	999.272 (4.12142)		
-> > System Time      204.594 (1.02449)	116.362 (1.22974)		
-> > Percent CPU 	 771.2 (1.30384)	765 (0.707107)
-> > Context Switches 46590.6 (935.591)	66316.4 (744.64)
-> > Sleeps           84421.2 (596.612)	85186 (523.041)		
-> 
-> 
-> > 
-> > Average Optimal load -j 16 Run (std deviation)
-> >  		 4.13.0-rc5		4.13.0-rc5-spf
-> > Elapsed Time     85.422 (0.42293)	74.81 (0.419345)
-> > User Time        1031.79 (51.6557)	954.912 (46.8439)
-> > System Time      186.528 (19.0575)	107.514 (9.36902)
-> > Percent CPU 	 1059.2 (303.607)	1056.8 (307.624)
-> > Context Switches 67240.3 (21788.9)	89360.6 (24299.9)
-> > Sleeps           89607.8 (5511.22)	90372.5 (5490.16)
-> > 
-> > The elapsed time is a bit shorter in the case of the SPF release, but the
-> > impact less important since there are less multithreaded processes involved
-> > here. 
-> > 
-> > - 80 CPUs Power 8 node:
-> > Average Half load -j 40 Run (std deviation)
-> >  		 4.13.0-rc5		4.13.0-rc5-spf
-> > Elapsed Time     117.176 (0.824093)	116.792 (0.695392)
-> > User Time        4412.34 (24.29)	4396.02 (24.4819)
-> > System Time      131.106 (1.28343)	133.452 (0.708851)
-> > Percent CPU      3876.8 (18.1439)	3877.6 (21.9955)
-> > Context Switches 72470.2 (466.181)	72971 (673.624)
-> > Sleeps           161294 (2284.85)	161946 (2217.9)
-> > 
-> > Average Optimal load -j 80 Run (std deviation)
-> >  		 4.13.0-rc5		4.13.0-rc5-spf
-> > Elapsed Time     111.176 (1.11123)	111.242 (0.801542)
-> > User Time        5930.03 (1600.07)	5929.89 (1617)
-> > System Time      166.258 (37.0662)	169.337 (37.8419)
-> > Percent CPU      5378.5 (1584.16)	5385.6 (1590.24)
-> > Context Switches 117389 (47350.1)	130132 (60256.3)
-> > Sleeps           163354 (4153.9)	163219 (2251.27)
-> > 
-> 
-> Can you also mention % improvement or degradation in a new column.
-> 
-> > Here the elapsed time is a bit shorter using the spf release, but we
-> > remain in the error margin. It has to be noted that this system is not
-> > correctly balanced on the NUMA point of view as all the available memory is
-> > attached to one core.
-> 
-> Why different NUMA configuration would have changed the outcome ?
-> 
-> > 
-> > ------------------------
-> > Changes since v1:
-> >  - Remove PERF_COUNT_SW_SPF_FAILED perf event.
-> >  - Add tracing events to details speculative page fault failures.
-> >  - Cache VMA fields values which are used once the PTE is unlocked at the
-> >  end of the page fault events.
-> 
-> Why is this required ?
+- If an existing timer is modified, the base is forwarded only after
+  the index is calculated.
+
+- The base is not forwarded by add_timer_on.
+
+- There is a window after a timer is restarted from a nohz ide, after
+  it is marked not-idle and before the timer tick on this CPU, where a
+  timer may be added but the ancient base does not get forwarded.
+
+These result in excessive granularity (a 1 jiffy timeout can blow out
+to 100s of jiffies), which cause the rcu lockup detector to trigger,
+among other things.
+
+Fix this by keeping track of whether the timer base has been idle
+since it was last run or forwarded, and if so then forward it before
+adding a new timer.
+
+There is still a problem where the mod_timer optimization where it's
+modified with the same expiry time can result in excessive granularity
+relative to the new shorter interval. That is not addressed by this
+patch because checking base->was_idle would increase overhead and it's
+a rather special case (you could reason that the caller should not
+expect change in absolute expiry time due to such an operation). So
+that is noted as a comment.
+
+As well as fixing the visible RCU softlockup failures, I tested an
+idle system (with no lockup watchdogs running) and traced all
+non-deferrable timer expiries for 1000s, and analysed wakeup latency
+relative to requested latency.  1.0 means we slept for as many jiffies
+as requested, 2.0 means we slept 2x the time (this suffers jiffies
+round-up skew at low absolute times):
+
+             max     avg      std
+upstream   506.0    1.20     4.68
+patched      2.0    1.08     0.15
+
+This was noticed due to the lockup detector Kconfig changes dropping it
+out of people's .configs. When the lockup detectors are enabled, no CPU
+can go idle for longer than 4 seconds, which limits the granularity
+errors. Sub-optimal timer behaviour is observable on a smaller scale:
+
+             max     avg      std
+upstream     9.0    1.05     0.19
+patched      2.0    1.04     0.11
+
+Tested-by: David Miller <davem@davemloft.net>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+
+Hi Andrew,
+
+I would have preferred to get comments from the timer maintainers, but
+they've been busy or away for the past copule of weeks. Perhaps you
+would consider carrying it until then?
+
+Thanks,
+Nick
+
+ kernel/time/timer.c | 44 ++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 36 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+index 8f5d1bf18854..dd7be9fe6839 100644
+--- a/kernel/time/timer.c
++++ b/kernel/time/timer.c
+@@ -203,6 +203,7 @@ struct timer_base {
+ 	bool			migration_enabled;
+ 	bool			nohz_active;
+ 	bool			is_idle;
++	bool			was_idle; /* was it idle since last run/fwded */
+ 	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
+ 	struct hlist_head	vectors[WHEEL_SIZE];
+ } ____cacheline_aligned;
+@@ -856,13 +857,19 @@ get_target_base(struct timer_base *base, unsigned tflags)
+ 
+ static inline void forward_timer_base(struct timer_base *base)
+ {
+-	unsigned long jnow = READ_ONCE(jiffies);
++	unsigned long jnow;
+ 
+ 	/*
+-	 * We only forward the base when it's idle and we have a delta between
+-	 * base clock and jiffies.
++	 * We only forward the base when we are idle or have just come out
++	 * of idle (was_idle logic), and have a delta between base clock
++	 * and jiffies. In the common case, run_timers will take care of it.
+ 	 */
+-	if (!base->is_idle || (long) (jnow - base->clk) < 2)
++	if (likely(!base->was_idle))
++		return;
++
++	jnow = READ_ONCE(jiffies);
++	base->was_idle = base->is_idle;
++	if ((long)(jnow - base->clk) < 2)
+ 		return;
+ 
+ 	/*
+@@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+ 	 * same array bucket then just return:
+ 	 */
+ 	if (timer_pending(timer)) {
++		/*
++		 * The downside of this optimization is that it can result in
++		 * larger granularity than you would get from adding a new
++		 * timer with this expiry. Would a timer flag for networking
++		 * be appropriate, then we can try to keep expiry of general
++		 * timers within ~1/8th of their interval?
++		 */
+ 		if (timer->expires == expires)
+ 			return 1;
+ 
+@@ -948,6 +962,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+ 		 * dequeue/enqueue dance.
+ 		 */
+ 		base = lock_timer_base(timer, &flags);
++		forward_timer_base(base);
+ 
+ 		clk = base->clk;
+ 		idx = calc_wheel_index(expires, clk);
+@@ -964,6 +979,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+ 		}
+ 	} else {
+ 		base = lock_timer_base(timer, &flags);
++		forward_timer_base(base);
+ 	}
+ 
+ 	ret = detach_if_pending(timer, base, false);
+@@ -991,12 +1007,10 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+ 			raw_spin_lock(&base->lock);
+ 			WRITE_ONCE(timer->flags,
+ 				   (timer->flags & ~TIMER_BASEMASK) | base->cpu);
++			forward_timer_base(base);
+ 		}
+ 	}
+ 
+-	/* Try to forward a stale timer base clock */
+-	forward_timer_base(base);
+-
+ 	timer->expires = expires;
+ 	/*
+ 	 * If 'idx' was calculated above and the base time did not advance
+@@ -1112,6 +1126,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
+ 		WRITE_ONCE(timer->flags,
+ 			   (timer->flags & ~TIMER_BASEMASK) | cpu);
+ 	}
++	forward_timer_base(base);
+ 
+ 	debug_activate(timer, timer->expires);
+ 	internal_add_timer(base, timer);
+@@ -1499,8 +1514,10 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
+ 		/*
+ 		 * If we expect to sleep more than a tick, mark the base idle:
+ 		 */
+-		if ((expires - basem) > TICK_NSEC)
++		if ((expires - basem) > TICK_NSEC) {
++			base->was_idle = true;
+ 			base->is_idle = true;
++		}
+ 	}
+ 	raw_spin_unlock(&base->lock);
+ 
+@@ -1611,6 +1628,17 @@ static __latent_entropy void run_timer_softirq(struct softirq_action *h)
+ {
+ 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
+ 
++	/*
++	 * was_idle must be cleared before running timers so that any timer
++	 * functions that call mod_timer will not try to forward the base.
++	 *
++	 * The deferrable base does not do idle tracking at all, so we do
++	 * not forward it. This can result in very large variations in
++	 * granularity for deferrable timers, but they can be deferred for
++	 * long periods due to idle.
++	 */
++	base->was_idle = false;
++
+ 	__run_timers(base);
+ 	if (IS_ENABLED(CONFIG_NO_HZ_COMMON) && base->nohz_active)
+ 		__run_timers(this_cpu_ptr(&timer_bases[BASE_DEF]));
+-- 
+2.13.3
