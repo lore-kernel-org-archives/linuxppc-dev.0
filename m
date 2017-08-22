@@ -1,12 +1,12 @@
 Return-Path: <clabbe.montjoie@gmail.com>
-Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
- [IPv6:2a00:1450:400c:c0c::244])
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3CL4phpzDqkh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:10:38 +1000 (AEST)
-Received: by mail-wr0-x244.google.com with SMTP id k10so8622018wre.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:10:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3CJ0C5czDqkh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:10:36 +1000 (AEST)
+Received: by mail-wr0-x242.google.com with SMTP id p14so16006975wrg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:10:35 -0700 (PDT)
 From: Corentin Labbe <clabbe.montjoie@gmail.com>
 To: herbert@gondor.apana.org.au, davem@davemloft.net, tglx@linutronix.de,
  mingo@redhat.com, hpa@zytor.com, x86@kernel.org, horia.geanta@nxp.com,
@@ -17,11 +17,9 @@ To: herbert@gondor.apana.org.au, davem@davemloft.net, tglx@linutronix.de,
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, Corentin Labbe <clabbe.montjoie@gmail.com>
-Subject: [PATCH 02/11] crypto: caam - Use GCM IV size constant
-Date: Tue, 22 Aug 2017 10:08:09 +0200
-Message-Id: <20170822080818.12486-3-clabbe.montjoie@gmail.com>
-In-Reply-To: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
-References: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
+Subject: [PATCH 00/11] crypto: gcm - add GCM IV size constant
+Date: Tue, 22 Aug 2017 10:08:07 +0200
+Message-Id: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,74 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch replace GCM IV size value by their constant name.
+Many GCM users use directly GCM IV size instead of using some constant.
 
-Signed-off-by: Corentin Labbe <clabbe.montjoie@gmail.com>
----
- drivers/crypto/caam/caamalg.c | 10 +++++-----
- drivers/crypto/caam/compat.h  |  1 +
- 2 files changed, 6 insertions(+), 5 deletions(-)
+This patch add all IV size constant used by GCM and convert drivers for using them..
 
-diff --git a/drivers/crypto/caam/caamalg.c b/drivers/crypto/caam/caamalg.c
-index 54f3b375a453..baa8dd52472d 100644
---- a/drivers/crypto/caam/caamalg.c
-+++ b/drivers/crypto/caam/caamalg.c
-@@ -992,7 +992,7 @@ static void init_gcm_job(struct aead_request *req,
- 	struct caam_ctx *ctx = crypto_aead_ctx(aead);
- 	unsigned int ivsize = crypto_aead_ivsize(aead);
- 	u32 *desc = edesc->hw_desc;
--	bool generic_gcm = (ivsize == 12);
-+	bool generic_gcm = (ivsize == GCM_AES_IV_SIZE);
- 	unsigned int last;
- 
- 	init_aead_job(req, edesc, all_contig, encrypt);
-@@ -1004,7 +1004,7 @@ static void init_gcm_job(struct aead_request *req,
- 
- 	/* Read GCM IV */
- 	append_cmd(desc, CMD_FIFO_LOAD | FIFOLD_CLASS_CLASS1 | IMMEDIATE |
--			 FIFOLD_TYPE_IV | FIFOLD_TYPE_FLUSH1 | 12 | last);
-+			 FIFOLD_TYPE_IV | FIFOLD_TYPE_FLUSH1 | GCM_AES_IV_SIZE | last);
- 	/* Append Salt */
- 	if (!generic_gcm)
- 		append_data(desc, ctx->key + ctx->cdata.keylen, 4);
-@@ -1953,7 +1953,7 @@ static struct caam_aead_alg driver_aeads[] = {
- 			.setauthsize = rfc4106_setauthsize,
- 			.encrypt = ipsec_gcm_encrypt,
- 			.decrypt = ipsec_gcm_decrypt,
--			.ivsize = 8,
-+			.ivsize = GCM_RFC4106_IV_SIZE,
- 			.maxauthsize = AES_BLOCK_SIZE,
- 		},
- 		.caam = {
-@@ -1971,7 +1971,7 @@ static struct caam_aead_alg driver_aeads[] = {
- 			.setauthsize = rfc4543_setauthsize,
- 			.encrypt = ipsec_gcm_encrypt,
- 			.decrypt = ipsec_gcm_decrypt,
--			.ivsize = 8,
-+			.ivsize = GCM_RFC4543_IV_SIZE,
- 			.maxauthsize = AES_BLOCK_SIZE,
- 		},
- 		.caam = {
-@@ -1990,7 +1990,7 @@ static struct caam_aead_alg driver_aeads[] = {
- 			.setauthsize = gcm_setauthsize,
- 			.encrypt = gcm_encrypt,
- 			.decrypt = gcm_decrypt,
--			.ivsize = 12,
-+			.ivsize = GCM_AES_IV_SIZE,
- 			.maxauthsize = AES_BLOCK_SIZE,
- 		},
- 		.caam = {
-diff --git a/drivers/crypto/caam/compat.h b/drivers/crypto/caam/compat.h
-index 7149cd2492e0..5b8d930f3dd8 100644
---- a/drivers/crypto/caam/compat.h
-+++ b/drivers/crypto/caam/compat.h
-@@ -31,6 +31,7 @@
- #include <crypto/aes.h>
- #include <crypto/ctr.h>
- #include <crypto/des.h>
-+#include <crypto/gcm.h>
- #include <crypto/sha.h>
- #include <crypto/md5.h>
- #include <crypto/internal/aead.h>
+Corentin Labbe (11):
+  crypto: gcm - add GCM iv size constant
+  crypto: caam - Use GCM IV size constant
+  crypto: ccp - Use GCM IV size constant
+  crypto: nx - Use GCM IV size constant
+  crypto: atmel - Use GCM IV size constant
+  crypto: bcm - Use GCM IV size constant
+  crypto: mediatek - Use GCM IV size constant
+  crypto: chelsio - Use GCM IV size constant
+  crypto: omap - Use GCM IV size constant
+  crypto: gcm - Use GCM IV size constant
+  crypto: aesni - Use GCM IV size constant
+
+ arch/x86/crypto/aesni-intel_glue.c         |  7 ++++---
+ crypto/gcm.c                               | 23 ++++++++++++-----------
+ drivers/crypto/atmel-aes.c                 |  5 +++--
+ drivers/crypto/bcm/cipher.c                |  8 ++++----
+ drivers/crypto/bcm/cipher.h                |  3 +--
+ drivers/crypto/caam/caamalg.c              | 10 +++++-----
+ drivers/crypto/caam/compat.h               |  1 +
+ drivers/crypto/ccp/ccp-crypto-aes-galois.c |  9 ++++-----
+ drivers/crypto/chelsio/chcr_algo.c         |  9 +++++----
+ drivers/crypto/mediatek/mtk-aes.c          |  3 ++-
+ drivers/crypto/nx/nx-aes-gcm.c             |  9 +++++----
+ drivers/crypto/omap-aes-gcm.c              |  7 ++++---
+ drivers/crypto/omap-aes.c                  |  5 +++--
+ include/crypto/gcm.h                       |  8 ++++++++
+ 14 files changed, 61 insertions(+), 46 deletions(-)
+ create mode 100644 include/crypto/gcm.h
+
 -- 
 2.13.0
