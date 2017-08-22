@@ -1,30 +1,27 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <clabbe.montjoie@gmail.com>
+Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
+ [IPv6:2a00:1450:400c:c0c::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3721xQVzDqjm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:06:54 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id r62so2856439pfj.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:06:54 -0700 (PDT)
-Date: Tue, 22 Aug 2017 18:06:30 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: akpm@linux-foundation.org, John Stultz <john.stultz@linaro.org>, Stephen
- Boyd <sboyd@codeaurora.org>, Jonathan.Cameron@huawei.com,
- paulmck@linux.vnet.ibm.com, mpe@ellerman.id.au, dzickus@redhat.com,
- sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- torvalds@linux-foundation.org
-Subject: Re: [PATCH resend] timers: Fix excessive granularity of new timers
- after a nohz idle
-Message-ID: <20170822180630.6e1d7db5@roar.ozlabs.ibm.com>
-In-Reply-To: <alpine.DEB.2.20.1708220842490.1869@nanos>
-References: <20170822015439.11263-1-npiggin@gmail.com>
- <alpine.DEB.2.20.1708220842490.1869@nanos>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xc3CL4phpzDqkh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 18:10:38 +1000 (AEST)
+Received: by mail-wr0-x244.google.com with SMTP id k10so8622018wre.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 01:10:38 -0700 (PDT)
+From: Corentin Labbe <clabbe.montjoie@gmail.com>
+To: herbert@gondor.apana.org.au, davem@davemloft.net, tglx@linutronix.de,
+ mingo@redhat.com, hpa@zytor.com, x86@kernel.org, horia.geanta@nxp.com,
+ dan.douglass@nxp.com, thomas.lendacky@amd.com, gary.hook@amd.com,
+ harsh@chelsio.com, matthias.bgg@gmail.com, leosilva@linux.vnet.ibm.com,
+ pfsmorigo@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Corentin Labbe <clabbe.montjoie@gmail.com>
+Subject: [PATCH 02/11] crypto: caam - Use GCM IV size constant
+Date: Tue, 22 Aug 2017 10:08:09 +0200
+Message-Id: <20170822080818.12486-3-clabbe.montjoie@gmail.com>
+In-Reply-To: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
+References: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,82 +31,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 22 Aug 2017 09:45:46 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+This patch replace GCM IV size value by their constant name.
 
-> On Tue, 22 Aug 2017, Nicholas Piggin wrote:
-> > I would have preferred to get comments from the timer maintainers, but
-> > they've been busy or away for the past copule of weeks. Perhaps you
-> > would consider carrying it until then?  
-> 
-> Yes, I was on vacation, but that patch never hit my LKML inbox ....
+Signed-off-by: Corentin Labbe <clabbe.montjoie@gmail.com>
+---
+ drivers/crypto/caam/caamalg.c | 10 +++++-----
+ drivers/crypto/caam/compat.h  |  1 +
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-Hmm okay. Well that's fine, we're just getting done testing it here.
-
-> 
-> > diff --git a/kernel/time/timer.c b/kernel/time/timer.c
-> > index 8f5d1bf18854..dd7be9fe6839 100644
-> > --- a/kernel/time/timer.c
-> > +++ b/kernel/time/timer.c
-> > @@ -203,6 +203,7 @@ struct timer_base {
-> >  	bool			migration_enabled;
-> >  	bool			nohz_active;
-> >  	bool			is_idle;
-> > +	bool			was_idle; /* was it idle since last run/fwded */  
-> 
-> Please do not use tail comments. They are a horrible habit and disturb the
-> reading flow.
-
-Sure.
-
-> I'm not fond of that name either. Something like forward_clk
-> or a similar self explaining name would be appreciated.
-
-Well I actually had that initially (must_forward). But on the other
-hand that's less explanatory about the state of the timer base I thought.
-Anyway I could go either way and you're going to be looking at this code
-more than me in future :)
-
-> 
-> >  	/*
-> > @@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
-> >  	 * same array bucket then just return:
-> >  	 */
-> >  	if (timer_pending(timer)) {
-> > +		/*
-> > +		 * The downside of this optimization is that it can result in
-> > +		 * larger granularity than you would get from adding a new
-> > +		 * timer with this expiry. Would a timer flag for networking
-> > +		 * be appropriate, then we can try to keep expiry of general
-> > +		 * timers within ~1/8th of their interval?  
-> 
-> This really depends on the timer usage type.
-> 
-> If you use it merily for TCP timeouts or similar things, then this does not
-> matter at all because then the timer is the safety net in case something
-> goes wrong. If you lose packets on the transport the larger granularity is
-> the least of your worries.
-> 
-> From earlier discussions with the networking folks these timeouts are the
-> reason for this optimization because you avoid the expensive
-> dequeue/requeue operation if the successful communication is fast.
-> 
-> If the timer has a short relative expiry and is used for sending packets or
-> similar purposes, then it usually sits in the first bucket and has no
-> granularity issues anyway. But from staring at trace data provided by
-> google and facebook these timer are not rearmed while pending, they fire,
-> do networking stuff and then get rearmed.
-> 
-> So I rather avoid that kind of misleading comment. The first sentence
-> surely can stay.
-
-Right. The question was actually there for you to answer, so thanks. I
-can certainly understand the use-case and importance of keeping it light.
-
-> Other than that, nice detective work!
-
-Thanks for taking a look (and thanks everyone who's been testing and
-hacking on it). Do you want me to re-send with the changes?
-
-Thanks,
-Nick
+diff --git a/drivers/crypto/caam/caamalg.c b/drivers/crypto/caam/caamalg.c
+index 54f3b375a453..baa8dd52472d 100644
+--- a/drivers/crypto/caam/caamalg.c
++++ b/drivers/crypto/caam/caamalg.c
+@@ -992,7 +992,7 @@ static void init_gcm_job(struct aead_request *req,
+ 	struct caam_ctx *ctx = crypto_aead_ctx(aead);
+ 	unsigned int ivsize = crypto_aead_ivsize(aead);
+ 	u32 *desc = edesc->hw_desc;
+-	bool generic_gcm = (ivsize == 12);
++	bool generic_gcm = (ivsize == GCM_AES_IV_SIZE);
+ 	unsigned int last;
+ 
+ 	init_aead_job(req, edesc, all_contig, encrypt);
+@@ -1004,7 +1004,7 @@ static void init_gcm_job(struct aead_request *req,
+ 
+ 	/* Read GCM IV */
+ 	append_cmd(desc, CMD_FIFO_LOAD | FIFOLD_CLASS_CLASS1 | IMMEDIATE |
+-			 FIFOLD_TYPE_IV | FIFOLD_TYPE_FLUSH1 | 12 | last);
++			 FIFOLD_TYPE_IV | FIFOLD_TYPE_FLUSH1 | GCM_AES_IV_SIZE | last);
+ 	/* Append Salt */
+ 	if (!generic_gcm)
+ 		append_data(desc, ctx->key + ctx->cdata.keylen, 4);
+@@ -1953,7 +1953,7 @@ static struct caam_aead_alg driver_aeads[] = {
+ 			.setauthsize = rfc4106_setauthsize,
+ 			.encrypt = ipsec_gcm_encrypt,
+ 			.decrypt = ipsec_gcm_decrypt,
+-			.ivsize = 8,
++			.ivsize = GCM_RFC4106_IV_SIZE,
+ 			.maxauthsize = AES_BLOCK_SIZE,
+ 		},
+ 		.caam = {
+@@ -1971,7 +1971,7 @@ static struct caam_aead_alg driver_aeads[] = {
+ 			.setauthsize = rfc4543_setauthsize,
+ 			.encrypt = ipsec_gcm_encrypt,
+ 			.decrypt = ipsec_gcm_decrypt,
+-			.ivsize = 8,
++			.ivsize = GCM_RFC4543_IV_SIZE,
+ 			.maxauthsize = AES_BLOCK_SIZE,
+ 		},
+ 		.caam = {
+@@ -1990,7 +1990,7 @@ static struct caam_aead_alg driver_aeads[] = {
+ 			.setauthsize = gcm_setauthsize,
+ 			.encrypt = gcm_encrypt,
+ 			.decrypt = gcm_decrypt,
+-			.ivsize = 12,
++			.ivsize = GCM_AES_IV_SIZE,
+ 			.maxauthsize = AES_BLOCK_SIZE,
+ 		},
+ 		.caam = {
+diff --git a/drivers/crypto/caam/compat.h b/drivers/crypto/caam/compat.h
+index 7149cd2492e0..5b8d930f3dd8 100644
+--- a/drivers/crypto/caam/compat.h
++++ b/drivers/crypto/caam/compat.h
+@@ -31,6 +31,7 @@
+ #include <crypto/aes.h>
+ #include <crypto/ctr.h>
+ #include <crypto/des.h>
++#include <crypto/gcm.h>
+ #include <crypto/sha.h>
+ #include <crypto/md5.h>
+ #include <crypto/internal/aead.h>
+-- 
+2.13.0
