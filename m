@@ -1,23 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from NAM01-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam01on0071.outbound.protection.outlook.com [104.47.32.71])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcGs56SS5zDrK8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 02:55:37 +1000 (AEST)
-Message-ID: <1503420928.2195.41.camel@kernel.crashing.org>
-Subject: Re: [PATCH 5/6] powerpc/mm: Optimize detection of thread local mm's
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
-Date: Tue, 22 Aug 2017 09:55:28 -0700
-In-Reply-To: <2c6b25af-6459-d1da-6f56-5d9cc4bdc26f@linux.vnet.ibm.com>
-References: <20170724042803.25848-1-benh@kernel.crashing.org>
- <20170724042803.25848-5-benh@kernel.crashing.org>
- <ad84e763-a30f-04f7-f1d0-ccd72c0d4dd4@linux.vnet.ibm.com>
- <1503336930.2195.20.camel@kernel.crashing.org>
- <2c6b25af-6459-d1da-6f56-5d9cc4bdc26f@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcHfD1HzrzDrCd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 03:31:14 +1000 (AEST)
+From: Madalin Bucur <madalin.bucur@nxp.com>
+To: <netdev@vger.kernel.org>, <davem@davemloft.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 0/6] Add RSS to DPAA 1.x Ethernet driver
+Date: Tue, 22 Aug 2017 20:31:00 +0300
+Message-ID: <1503423066-15420-1-git-send-email-madalin.bucur@nxp.com>
+Reply-To: <madalin.bucur@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-08-22 at 15:18 +0200, Frederic Barrat wrote:
-> > Or you could just incrementer my counter. Just make sure you increment
-> > it at most once per CXL context and decrement when the context is gone.
-> 
-> Ah great, I didn't dare messing with your counter, it makes it easier. 
-> Arguably what happens on those accelerators is pretty close to an active 
-> cpu.
-> 
-> Once it is merged, I'm going to have to backport your patch (and an 
-> update to mine) to the p9-supporting distros. From a quick look, your 
-> patch, i.e."[PATCH 5/6] powerpc/mm: Optimize detection of thread local 
-> mm's" is completely independent from the rest of the series, right?
+This patch set introduces Receive Side Scaling for the DPAA Ethernet
+driver. Documentation is updated with details related to the new
+feature and limitations that apply.
+Added also a small fix.
 
-We also need the memory barrier fix but yes.
+Change from v1: removed a C++ style comment
 
-Cheers,
-Ben.
+Iordache Florinel-R70177 (1):
+  fsl/fman: enable FMan Keygen
+
+Madalin Bucur (5):
+  dpaa_eth: use multiple Rx frame queues
+  dpaa_eth: enable Rx hashing control
+  dpaa_eth: add NETIF_F_RXHASH
+  Documentation: networking: add RSS information
+  dpaa_eth: check allocation result
+
+ Documentation/networking/dpaa.txt                  |  68 +-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  76 +-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |   2 +
+ .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |   3 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c | 118 ++++
+ drivers/net/ethernet/freescale/fman/Makefile       |   2 +-
+ drivers/net/ethernet/freescale/fman/fman.c         |  26 +
+ drivers/net/ethernet/freescale/fman/fman.h         |   2 +
+ drivers/net/ethernet/freescale/fman/fman_keygen.c  | 783 +++++++++++++++++++++
+ drivers/net/ethernet/freescale/fman/fman_keygen.h  |  46 ++
+ drivers/net/ethernet/freescale/fman/fman_port.c    |  51 +-
+ drivers/net/ethernet/freescale/fman/fman_port.h    |   7 +
+ 12 files changed, 1171 insertions(+), 13 deletions(-)
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_keygen.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_keygen.h
+
+-- 
+2.1.0
