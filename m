@@ -1,37 +1,27 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xc1dL2mNkzDrCv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 16:59:34 +1000 (AEST)
-Date: Tue, 22 Aug 2017 08:51:33 +0200
-From: "hch@lst.de" <hch@lst.de>
-To: Brian King <brking@linux.vnet.ibm.com>
-Cc: Bart Van Assche <Bart.VanAssche@wdc.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "abdhalee@linux.vnet.ibm.com" <abdhalee@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "hch@lst.de" <hch@lst.de>,
- "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
- "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- "sachinp@linux.vnet.ibm.com" <sachinp@linux.vnet.ibm.com>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- "hare@suse.com" <hare@suse.com>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] scsi: Preserve retry counter through scsi_prep_fn
-Message-ID: <20170822065133.GB7054@lst.de>
-References: <1502902815.3305.22.camel@abdul.in.ibm.com>
- <1502904072.2421.3.camel@wdc.com>
- <2f686064-3e32-df8d-134f-962b5181da9d@linux.vnet.ibm.com>
- <1502985161.2615.8.camel@wdc.com>
- <71fb9c1b-9f3f-acdc-8bb5-aa1240aea763@linux.vnet.ibm.com>
- <1503092473.2622.17.camel@wdc.com>
- <0f7e2114-eba1-f149-ea80-d32d8b6d212a@linux.vnet.ibm.com>
- <1503094414.2622.21.camel@wdc.com>
- <f4ec8576-f4d7-4be3-0f38-c1a9d7ef4251@linux.vnet.ibm.com>
- <e24506f3-e333-16b9-a8c9-5d25f3c19ccf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xc2g76CWPzDqYf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Aug 2017 17:46:11 +1000 (AEST)
+Date: Tue, 22 Aug 2017 09:45:46 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Nicholas Piggin <npiggin@gmail.com>
+cc: akpm@linux-foundation.org, John Stultz <john.stultz@linaro.org>,
+ Stephen Boyd <sboyd@codeaurora.org>, Jonathan.Cameron@huawei.com,
+ paulmck@linux.vnet.ibm.com, mpe@ellerman.id.au, dzickus@redhat.com,
+ sfr@canb.auug.org.au, linuxarm@huawei.com, abdhalee@linux.vnet.ibm.com,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ torvalds@linux-foundation.org
+Subject: Re: [PATCH resend] timers: Fix excessive granularity of new timers
+ after a nohz idle
+In-Reply-To: <20170822015439.11263-1-npiggin@gmail.com>
+Message-ID: <alpine.DEB.2.20.1708220842490.1869@nanos>
+References: <20170822015439.11263-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e24506f3-e333-16b9-a8c9-5d25f3c19ccf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,9 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 21, 2017 at 05:14:00PM -0500, Brian King wrote:
-> Save / restore the retry counter in scsi_cmd in scsi_init_command.
-> This allows us to go back through scsi_init_command for retries
-> and not forget we are doing a retry.
+On Tue, 22 Aug 2017, Nicholas Piggin wrote:
+> I would have preferred to get comments from the timer maintainers, but
+> they've been busy or away for the past copule of weeks. Perhaps you
+> would consider carrying it until then?
 
-So where will we initialize it to zero now?
+Yes, I was on vacation, but that patch never hit my LKML inbox ....
+
+> diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+> index 8f5d1bf18854..dd7be9fe6839 100644
+> --- a/kernel/time/timer.c
+> +++ b/kernel/time/timer.c
+> @@ -203,6 +203,7 @@ struct timer_base {
+>  	bool			migration_enabled;
+>  	bool			nohz_active;
+>  	bool			is_idle;
+> +	bool			was_idle; /* was it idle since last run/fwded */
+
+Please do not use tail comments. They are a horrible habit and disturb the
+reading flow. I'm not fond of that name either. Something like forward_clk
+or a similar self explaining name would be appreciated.
+
+>  	/*
+> @@ -938,6 +945,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
+>  	 * same array bucket then just return:
+>  	 */
+>  	if (timer_pending(timer)) {
+> +		/*
+> +		 * The downside of this optimization is that it can result in
+> +		 * larger granularity than you would get from adding a new
+> +		 * timer with this expiry. Would a timer flag for networking
+> +		 * be appropriate, then we can try to keep expiry of general
+> +		 * timers within ~1/8th of their interval?
+
+This really depends on the timer usage type.
+
+If you use it merily for TCP timeouts or similar things, then this does not
+matter at all because then the timer is the safety net in case something
+goes wrong. If you lose packets on the transport the larger granularity is
+the least of your worries.
+
+>From earlier discussions with the networking folks these timeouts are the
+reason for this optimization because you avoid the expensive
+dequeue/requeue operation if the successful communication is fast.
+
+If the timer has a short relative expiry and is used for sending packets or
+similar purposes, then it usually sits in the first bucket and has no
+granularity issues anyway. But from staring at trace data provided by
+google and facebook these timer are not rearmed while pending, they fire,
+do networking stuff and then get rearmed.
+
+So I rather avoid that kind of misleading comment. The first sentence
+surely can stay.
+
+Other than that, nice detective work!
+
+Thanks,
+
+	tglx
