@@ -1,32 +1,20 @@
-Return-Path: <david@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xchcv6jx7zDrJ5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 19:16:31 +1000 (AEST)
-Subject: Re: [PATCH] fix memory leak on kvm_vm_ioctl_create_spapr_tce
-From: David Hildenbrand <david@redhat.com>
-To: Paul Mackerras <paulus@ozlabs.org>, Nixiaoming <nixiaoming@huawei.com>
-Cc: "agraf@suse.com" <agraf@suse.com>,
- "pbonzini@redhat.com" <pbonzini@redhat.com>,
- "rkrcmar@redhat.com" <rkrcmar@redhat.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20170822142823.69425-1-nixiaoming@huawei.com>
- <95fe182a-fd21-77a1-33df-0e609c2845fd@redhat.com>
- <8fd9a878-a8ce-5576-9a5c-1c221ff6ded7@redhat.com>
- <E490CD805F7529488761C40FD9D26EF1299B4667@DGGEMA505-MBX.china.huawei.com>
- <20170823060624.GA13958@fergus.ozlabs.ibm.com>
- <aa600c47-d6d5-161d-419d-51ac30d67ee4@redhat.com>
-Message-ID: <99351d36-2fc6-d5b5-1ce2-bdd9bcbd68f4@redhat.com>
-Date: Wed, 23 Aug 2017 11:16:24 +0200
-MIME-Version: 1.0
-In-Reply-To: <aa600c47-d6d5-161d-419d-51ac30d67ee4@redhat.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xchnR5VNTzDqV5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 19:23:55 +1000 (AEST)
+Message-ID: <1503480234.25055.20.camel@neuling.org>
+Subject: Re: [PATCH RFC 2/7] powerpc: Change analyse_instr so it doesn't
+ modify *regs
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
+Date: Wed, 23 Aug 2017 19:23:54 +1000
+In-Reply-To: <1503445683-12011-3-git-send-email-paulus@ozlabs.org>
+References: <1503445683-12011-1-git-send-email-paulus@ozlabs.org>
+ <1503445683-12011-3-git-send-email-paulus@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2017-08-23 at 09:47 +1000, Paul Mackerras wrote:
+> The analyse_instr function currently doesn't just work out what an
+> instruction does, it also executes those instructions whose effect
+> is only to update CPU registers that are stored in struct pt_regs.
+> This is undesirable because optprobes uses analyse_instr to work out
+> if an instruction could be successfully emulated in future.
+>=20
+> This changes analyse_instr so it doesn't modify *regs; instead it
+> stores information in the instruction_op structure to indicate what
+> registers (GPRs, CR, XER, LR) would be set and what value they would
+> be set to.=C2=A0=C2=A0A companion function called emulate_update_regs() c=
+an
+> then use that information to update a pt_regs struct appropriately.
+>=20
+> As a minor cleanup, this replaces inline asm using the cntlzw and
+> cntlzd instructions with calls to __builtin_clz() and __builtin_clzl().
 
->>> +               mutex_unlock(&kvm->lock);
->>> +               kvm_put_kvm(kvm);
->>> +               goto fail;
->>> +       }
->>> +       return ret;
-> 
-> of simply
-> 
-> if (!ret)
++1 ! This is super useful!
 
-if (ret >= 0)
-	return ret;
+As mentioned offline, this clashes with the recent changes to sstep.c in po=
+werpc
+next.  In fact, the new instructions added there need to have these changes
+applied.
 
-is of course what I meant :)
-
-> 	return 0;
-> 
-> mutex_lock(&kvm->lock);
-> list_del_rcu(&stt->list);
-> mutex_unlock(&kvm->lock);
-> kvm_put_kvm(kvm);
-
-
--- 
-
-Thanks,
-
-David
+Mikey
