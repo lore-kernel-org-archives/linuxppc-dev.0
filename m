@@ -1,19 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcr771F5zzDqhL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:54:42 +1000 (AEST)
-Message-Id: <ae2205dedfe437e4df2dd0cc7605d62189833221.1503277387.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1503277387.git.christophe.leroy@c-s.fr>
-References: <cover.1503277387.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 4/4] powerpc/32: remove a NOP from memset()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 23 Aug 2017 16:54:38 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcrCG0zfFzDqZw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:58:17 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7NEunmh064129
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 10:58:16 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2chb4mk213-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 10:58:15 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Wed, 23 Aug 2017 15:58:12 +0100
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH] cxl: Add support for POWER9 DD2
+Date: Wed, 23 Aug 2017 16:58:06 +0200
+Message-Id: <1503500286-1684-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,67 +33,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-memset() is patched after initialisation to activate the
-optimised part which uses cache instructions.
+The PSL initialization sequence has been updated to DD2.
+This patch adapts to the changes, retaining compatibility with DD1.
 
-Today we have a 'b 2f' to skip the optimised patch, which then gets
-replaced by a NOP, implying a useless cycle consumption.
-As we have a 'bne 2f' just before, we could use that instruction
-for the live patching, hence removing the need to have a
-dedicated 'b 2f' to be replaced by a NOP.
+Tests performed on some of the new hardware.
 
-This patch changes the 'bne 2f' by a 'b 2f'. During init, that
-'b 2f' is then replaced by 'bne 2f'
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/setup_32.c | 7 ++++++-
- arch/powerpc/lib/copy_32.S     | 7 +++++--
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/misc/cxl/cxl.h |  2 ++
+ drivers/misc/cxl/pci.c | 57 +++++++++++++++++++++++++++++++-------------------
+ 2 files changed, 38 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 2f88f6cf1a42..51ebc01fff52 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -98,6 +98,9 @@ extern unsigned int memset_nocache_branch; /* Insn to be replaced by NOP */
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index b1afecc..0167df8 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -100,6 +100,8 @@ static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
+ static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
+ /* PSL registers - CAIA 2 */
+ static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
++static const cxl_p1_reg_t CXL_XSL9_INV      = {0x0110};
++static const cxl_p1_reg_t CXL_XSL9_DEF      = {0x0140};
+ static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
+ static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
+ static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index d18b3d9..a981c65 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -475,37 +475,52 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
+ 	psl_fircntl |= 0x1ULL; /* ce_thresh */
+ 	cxl_p1_write(adapter, CXL_PSL9_FIR_CNTL, psl_fircntl);
  
- notrace void __init machine_init(u64 dt_ptr)
- {
-+	unsigned int *addr = &memset_nocache_branch;
-+	unsigned long insn;
+-	/* vccredits=0x1  pcklat=0x4 */
+-	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0000000000001810ULL);
+-
+-	/*
+-	 * For debugging with trace arrays.
+-	 * Configure RX trace 0 segmented mode.
+-	 * Configure CT trace 0 segmented mode.
+-	 * Configure LA0 trace 0 segmented mode.
+-	 * Configure LA1 trace 0 segmented mode.
++	/* Setup the PSL to transmit packets on the PCIe before the
++	 * CAPP is enabled
+ 	 */
+-	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000000ULL);
+-	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000003ULL);
+-	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000005ULL);
+-	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000006ULL);
++	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0001001000002A10ULL);
 +
- 	/* Configure static keys first, now that we're relocated. */
- 	setup_feature_keys();
++	/* For debugging with trace arrays */
++	/* Configure RX trace 0 segmented mode */
++	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000000ULL);
++	/* Configure RX trace 1 segmented mode */
++	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0xAA00000000000001ULL);
++	/* Configure CT trace 0 segmented mode */
++	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0xA2B8000000000003ULL);
++	/* Configure LA0 trace 0 segmented mode */
++	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x83FFC00000000005ULL);
++	/* Configure JM0 trace 0 segmented mode */
++	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000007ULL);
++	/* Configure DMA trace 0 segmented mode */
++	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000008ULL);
++	/* Configure DMA trace 1 segmented mode */
++	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000009ULL);
  
-@@ -105,7 +108,9 @@ notrace void __init machine_init(u64 dt_ptr)
- 	udbg_early_init();
- 
- 	patch_instruction((unsigned int *)&memcpy, PPC_INST_NOP);
--	patch_instruction(&memset_nocache_branch, PPC_INST_NOP);
+ 	/*
+ 	 * A response to an ASB_Notify request is returned by the
+ 	 * system as an MMIO write to the address defined in
+ 	 * the PSL_TNR_ADDR register
+ 	 */
+-	/* PSL_TNR_ADDR */
++	/* keep the Reset Value: 0x00020000E0000000 */
 +
-+	insn = create_cond_branch(addr, branch_target(addr), 0x820000);
-+	patch_instruction(addr, insn);	/* replace b by bne cr0 */
++	/* Enable XSL rty limit */
++	cxl_p1_write(adapter, CXL_XSL9_DEF, 0x51F8000000000005ULL);
  
- 	/* Do some early initialization based on the flat device tree */
- 	early_init_devtree(__va(dt_ptr));
-diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-index 05aaee20590f..da425bb6b369 100644
---- a/arch/powerpc/lib/copy_32.S
-+++ b/arch/powerpc/lib/copy_32.S
-@@ -103,9 +103,12 @@ _GLOBAL(memset)
- 	add	r5,r0,r5
- 	subf	r6,r0,r3
- 	cmplwi	0,r4,0
--	bne	2f	/* Use normal procedure if r4 is not zero */
-+	/*
-+	 * Skip optimised bloc until cache is enabled. Will be replaced
-+	 * by 'bne' during boot to use normal procedure if r4 is not zero
-+	 */
- _GLOBAL(memset_nocache_branch)
--	b	2f	/* Skip optimised bloc until cache is enabled */
-+	b	2f
+-	/* NORST */
+-	cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x8000000000000000ULL);
++	/* Change XSL_INV dummy readtheshold */
++	cxl_p1_write(adapter, CXL_XSL9_INV, 0x0000040007FFC200ULL);
  
- 	clrlwi	r7,r6,32-LG_CACHELINE_BYTES
- 	add	r8,r7,r5
+-	/* allocate the apc machines */
+-	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
++	if (phb_index == 3) {
++		/* disable machines 31-47 and 20-27 for DMA */
++		cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000FF3FFFF0000ULL);
++	}
++
++	/* Snoop machines */
++	cxl_p1_write(adapter, CXL_PSL9_APCDEDALLOC, 0x800F000200000000ULL);
+ 
+-	/* Disable vc dd1 fix */
+-	if (cxl_is_power9_dd1())
+-		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
++	if (cxl_is_power9_dd1()) {
++		/* Disabling deadlock counter CAR */
++		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0020000000000001ULL);
++	}
+ 
+ 	return 0;
+ }
 -- 
-2.13.3
+2.7.4
