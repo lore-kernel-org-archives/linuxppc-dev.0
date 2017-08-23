@@ -1,17 +1,17 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xck1B49bHzDrLW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 20:19:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xck1C6T33zDrL3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 20:19:11 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Alistair Popple <alistair@popple.id.au>, Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel 2/5] powerpc/eeh: Reduce to one the number of places
- where edev is allocated
-Date: Wed, 23 Aug 2017 20:18:58 +1000
-Message-Id: <20170823101901.33961-3-aik@ozlabs.ru>
+Subject: [PATCH kernel 3/5] powerpc/eeh: Remove unnecessary pointer to phb
+ from eeh_dev
+Date: Wed, 23 Aug 2017 20:18:59 +1000
+Message-Id: <20170823101901.33961-4-aik@ozlabs.ru>
 In-Reply-To: <20170823101901.33961-1-aik@ozlabs.ru>
 References: <20170823101901.33961-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,167 +23,229 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/kernel/eeh_dev.c:57 is the only legit place where edev
-is allocated; other 2 places allocate it on stack and in the heap for
-a very short period of time to use eeh_pe_get() as takes edev.
-
-This changes eeh_pe_get() to receive required parameters explicitly.
-
-This removes unnecessary temporary allocation of edev.
-
-This uses the "pe_no" name instead of the "pe_config_addr" name as
-it actually is a PE number and not a config space address as it seemed.
+The eeh_dev struct already holds a pointer to pci_dn which it does not
+exist without and pci_dn itself holds the very same pointer so just
+use it.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/eeh.h               |  3 ++-
- arch/powerpc/kernel/eeh_pe.c                 | 32 ++++++++++++++++++----------
- arch/powerpc/platforms/powernv/eeh-powernv.c | 15 ++-----------
- 3 files changed, 25 insertions(+), 25 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |  1 -
+ arch/powerpc/kernel/eeh.c                    |  7 +++----
+ arch/powerpc/kernel/eeh_dev.c                |  2 --
+ arch/powerpc/kernel/eeh_driver.c             |  2 +-
+ arch/powerpc/kernel/eeh_pe.c                 | 24 +++++++++++++-----------
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  5 ++---
+ 6 files changed, 19 insertions(+), 22 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 8e37b71674f4..26a6a43f8799 100644
+index 26a6a43f8799..777d37aa0a7f 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -262,7 +262,8 @@ typedef void *(*eeh_traverse_func)(void *data, void *flag);
- void eeh_set_pe_aux_size(int size);
- int eeh_phb_pe_create(struct pci_controller *phb);
- struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
--struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
-+struct eeh_pe *eeh_pe_get(struct pci_controller *phb,
-+			  int pe_no, int config_addr);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
- void eeh_pe_update_time_stamp(struct eeh_pe *pe);
+@@ -141,7 +141,6 @@ struct eeh_dev {
+ 	struct eeh_pe *pe;		/* Associated PE		*/
+ 	struct list_head list;		/* Form link list in the PE	*/
+ 	struct list_head rmv_list;	/* Record the removed edevs	*/
+-	struct pci_controller *phb;	/* Associated PHB		*/
+ 	struct pci_dn *pdn;		/* Associated PCI device node	*/
+ 	struct pci_dev *pdev;		/* Associated PCI device	*/
+ 	bool in_error;			/* Error flag for edev		*/
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 63992b2d8e15..c877014d11ce 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -169,10 +169,10 @@ static size_t eeh_dump_dev_log(struct eeh_dev *edev, char *buf, size_t len)
+ 	char buffer[128];
+ 
+ 	n += scnprintf(buf+n, len-n, "%04x:%02x:%02x.%01x\n",
+-		       edev->phb->global_number, pdn->busno,
++		       pdn->phb->global_number, pdn->busno,
+ 		       PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
+ 	pr_warn("EEH: of node=%04x:%02x:%02x.%01x\n",
+-		edev->phb->global_number, pdn->busno,
++		pdn->phb->global_number, pdn->busno,
+ 		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
+ 
+ 	eeh_ops->read_config(pdn, PCI_VENDOR_ID, 4, &cfg);
+@@ -1064,7 +1064,7 @@ core_initcall_sync(eeh_init);
+  */
+ void eeh_add_device_early(struct pci_dn *pdn)
+ {
+-	struct pci_controller *phb;
++	struct pci_controller *phb = pdn ? pdn->phb : NULL;
+ 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+ 
+ 	if (!edev)
+@@ -1074,7 +1074,6 @@ void eeh_add_device_early(struct pci_dn *pdn)
+ 		return;
+ 
+ 	/* USB Bus children of PCI devices will not have BUID's */
+-	phb = edev->phb;
+ 	if (NULL == phb ||
+ 	    (eeh_has_flag(EEH_PROBE_MODE_DEVTREE) && 0 == phb->buid))
+ 		return;
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index d6b2ca70d14d..bdf4a3698a35 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -50,7 +50,6 @@
+  */
+ struct eeh_dev *eeh_dev_init(struct pci_dn *pdn)
+ {
+-	struct pci_controller *phb = pdn->phb;
+ 	struct eeh_dev *edev;
+ 
+ 	/* Allocate EEH device */
+@@ -64,7 +63,6 @@ struct eeh_dev *eeh_dev_init(struct pci_dn *pdn)
+ 	/* Associate EEH device with OF node */
+ 	pdn->edev = edev;
+ 	edev->pdn = pdn;
+-	edev->phb = phb;
+ 	INIT_LIST_HEAD(&edev->list);
+ 	INIT_LIST_HEAD(&edev->rmv_list);
+ 
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index c405c79e50cd..8b840191df59 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -428,7 +428,7 @@ static void *eeh_add_virt_device(void *data, void *userdata)
+ 
+ 	if (!(edev->physfn)) {
+ 		pr_warn("%s: EEH dev %04x:%02x:%02x.%01x not for VF\n",
+-			__func__, edev->phb->global_number, pdn->busno,
++			__func__, pdn->phb->global_number, pdn->busno,
+ 			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
+ 		return NULL;
+ 	}
 diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index cc4b206f77e4..84d79f3da7d6 100644
+index 84d79f3da7d6..419c3f07afd5 100644
 --- a/arch/powerpc/kernel/eeh_pe.c
 +++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -230,10 +230,15 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
-  * Bus/Device/Function number. The extra data referred by flag
-  * indicates which type of address should be used.
-  */
-+struct eeh_pe_get_flag {
-+	int pe_no;
-+	int config_addr;
-+};
-+
- static void *__eeh_pe_get(void *data, void *flag)
+@@ -339,11 +339,12 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
+ int eeh_add_to_parent_pe(struct eeh_dev *edev)
  {
- 	struct eeh_pe *pe = (struct eeh_pe *)data;
--	struct eeh_dev *edev = (struct eeh_dev *)flag;
-+	struct eeh_pe_get_flag *tmp = (struct eeh_pe_get_flag *) flag;
+ 	struct eeh_pe *pe, *parent;
++	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
  
- 	/* Unexpected PHB PE */
- 	if (pe->type & EEH_PE_PHB)
-@@ -244,17 +249,17 @@ static void *__eeh_pe_get(void *data, void *flag)
- 	 * have non-zero PE address
- 	 */
- 	if (eeh_has_flag(EEH_VALID_PE_ZERO)) {
--		if (edev->pe_config_addr == pe->addr)
-+		if (tmp->pe_no == pe->addr)
- 			return pe;
- 	} else {
--		if (edev->pe_config_addr &&
--		    (edev->pe_config_addr == pe->addr))
-+		if (tmp->pe_no &&
-+		    (tmp->pe_no == pe->addr))
- 			return pe;
+ 	/* Check if the PE number is valid */
+ 	if (!eeh_has_flag(EEH_VALID_PE_ZERO) && !edev->pe_config_addr) {
+ 		pr_err("%s: Invalid PE#0 for edev 0x%x on PHB#%x\n",
+-		       __func__, edev->config_addr, edev->phb->global_number);
++		       __func__, edev->config_addr, pdn->phb->global_number);
+ 		return -EINVAL;
  	}
  
- 	/* Try BDF address */
--	if (edev->config_addr &&
--	   (edev->config_addr == pe->config_addr))
-+	if (tmp->config_addr &&
-+	   (tmp->config_addr == pe->config_addr))
- 		return pe;
- 
- 	return NULL;
-@@ -262,7 +267,9 @@ static void *__eeh_pe_get(void *data, void *flag)
- 
- /**
-  * eeh_pe_get - Search PE based on the given address
-- * @edev: EEH device
-+ * @phb: PCI controller
-+ * @pe_no: PE number
-+ * @config_addr: Config address
-  *
-  * Search the corresponding PE based on the specified address which
-  * is included in the eeh device. The function is used to check if
-@@ -271,12 +278,14 @@ static void *__eeh_pe_get(void *data, void *flag)
-  * which is composed of PCI bus/device/function number, or unified
-  * PE address.
-  */
--struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
-+struct eeh_pe *eeh_pe_get(struct pci_controller *phb,
-+		int pe_no, int config_addr)
- {
--	struct eeh_pe *root = eeh_phb_pe_get(edev->phb);
-+	struct eeh_pe *root = eeh_phb_pe_get(phb);
-+	struct eeh_pe_get_flag tmp = { pe_no, config_addr };
- 	struct eeh_pe *pe;
- 
--	pe = eeh_pe_traverse(root, __eeh_pe_get, edev);
-+	pe = eeh_pe_traverse(root, __eeh_pe_get, &tmp);
- 
- 	return pe;
- }
-@@ -344,7 +353,8 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+@@ -353,7 +354,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
  	 * PE should be composed of PCI bus and its subordinate
  	 * components.
  	 */
--	pe = eeh_pe_get(edev);
-+	pe = eeh_pe_get(edev->pdn->phb, edev->pe_config_addr,
-+			edev->config_addr);
+-	pe = eeh_pe_get(edev->pdn->phb, edev->pe_config_addr,
++	pe = eeh_pe_get(pdn->phb, edev->pe_config_addr,
+ 			edev->config_addr);
  	if (pe && !(pe->type & EEH_PE_INVALID)) {
  		/* Mark the PE as type of PCI bus */
- 		pe->type = EEH_PE_BUS;
+@@ -363,7 +364,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 		/* Put the edev to PE */
+ 		list_add_tail(&edev->list, &pe->edevs);
+ 		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Bus PE#%x\n",
+-			edev->phb->global_number,
++			 pdn->phb->global_number,
+ 			edev->config_addr >> 8,
+ 			PCI_SLOT(edev->config_addr & 0xFF),
+ 			PCI_FUNC(edev->config_addr & 0xFF),
+@@ -386,7 +387,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Device "
+ 			 "PE#%x, Parent PE#%x\n",
+-			edev->phb->global_number,
++			 pdn->phb->global_number,
+ 			edev->config_addr >> 8,
+                         PCI_SLOT(edev->config_addr & 0xFF),
+                         PCI_FUNC(edev->config_addr & 0xFF),
+@@ -396,9 +397,9 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 	/* Create a new EEH PE */
+ 	if (edev->physfn)
+-		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
++		pe = eeh_pe_alloc(pdn->phb, EEH_PE_VF);
+ 	else
+-		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
++		pe = eeh_pe_alloc(pdn->phb, EEH_PE_DEVICE);
+ 	if (!pe) {
+ 		pr_err("%s: out of memory!\n", __func__);
+ 		return -ENOMEM;
+@@ -414,10 +415,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	 */
+ 	parent = eeh_pe_get_parent(edev);
+ 	if (!parent) {
+-		parent = eeh_phb_pe_get(edev->phb);
++		parent = eeh_phb_pe_get(pdn->phb);
+ 		if (!parent) {
+ 			pr_err("%s: No PHB PE is found (PHB Domain=%d)\n",
+-				__func__, edev->phb->global_number);
++				__func__, pdn->phb->global_number);
+ 			edev->pe = NULL;
+ 			kfree(pe);
+ 			return -EEXIST;
+@@ -434,7 +435,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	edev->pe = pe;
+ 	pr_debug("EEH: Add %04x:%02x:%02x.%01x to "
+ 		 "Device PE#%x, Parent PE#%x\n",
+-		 edev->phb->global_number,
++		 pdn->phb->global_number,
+ 		 edev->config_addr >> 8,
+ 		 PCI_SLOT(edev->config_addr & 0xFF),
+ 		 PCI_FUNC(edev->config_addr & 0xFF),
+@@ -456,10 +457,11 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
+ {
+ 	struct eeh_pe *pe, *parent, *child;
+ 	int cnt;
++	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
+ 
+ 	if (!edev->pe) {
+ 		pr_debug("%s: No PE found for device %04x:%02x:%02x.%01x\n",
+-			 __func__,  edev->phb->global_number,
++			 __func__,  pdn->phb->global_number,
+ 			 edev->config_addr >> 8,
+ 			 PCI_SLOT(edev->config_addr & 0xFF),
+ 			 PCI_FUNC(edev->config_addr & 0xFF));
+@@ -722,7 +724,7 @@ static void eeh_bridge_check_link(struct eeh_dev *edev)
+ 		return;
+ 
+ 	pr_debug("%s: Check PCIe link for %04x:%02x:%02x.%01x ...\n",
+-		 __func__, edev->phb->global_number,
++		 __func__, pdn->phb->global_number,
+ 		 edev->config_addr >> 8,
+ 		 PCI_SLOT(edev->config_addr & 0xFF),
+ 		 PCI_FUNC(edev->config_addr & 0xFF));
 diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 3f48f6df1cf3..ac8c01cd251c 100644
+index ac8c01cd251c..552b0cd4e8ba 100644
 --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
 +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -113,7 +113,6 @@ static ssize_t pnv_eeh_ei_write(struct file *filp,
- 				size_t count, loff_t *ppos)
+@@ -926,7 +926,6 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+ static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
+ 				     int pos, u16 mask)
  {
- 	struct pci_controller *hose = filp->private_data;
--	struct eeh_dev *edev;
- 	struct eeh_pe *pe;
- 	int pe_no, type, func;
- 	unsigned long addr, mask;
-@@ -135,13 +134,7 @@ static ssize_t pnv_eeh_ei_write(struct file *filp,
- 		return -EINVAL;
+-	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+ 	int i, status = 0;
  
- 	/* Retrieve PE */
--	edev = kzalloc(sizeof(*edev), GFP_KERNEL);
--	if (!edev)
--		return -ENOMEM;
--	edev->phb = hose;
--	edev->pe_config_addr = pe_no;
--	pe = eeh_pe_get(edev);
--	kfree(edev);
-+	pe = eeh_pe_get(hose, pe_no, 0);
- 	if (!pe)
- 		return -ENODEV;
+ 	/* Wait for Transaction Pending bit to be cleared */
+@@ -940,7 +939,7 @@ static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
  
-@@ -1381,7 +1374,6 @@ static int pnv_eeh_get_pe(struct pci_controller *hose,
- 	struct pnv_phb *phb = hose->private_data;
- 	struct pnv_ioda_pe *pnv_pe;
- 	struct eeh_pe *dev_pe;
--	struct eeh_dev edev;
+ 	pr_warn("%s: Pending transaction while issuing %sFLR to %04x:%02x:%02x.%01x\n",
+ 		__func__, type,
+-		edev->phb->global_number, pdn->busno,
++		pdn->phb->global_number, pdn->busno,
+ 		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
+ }
  
- 	/*
- 	 * If PHB supports compound PE, to fetch
-@@ -1397,10 +1389,7 @@ static int pnv_eeh_get_pe(struct pci_controller *hose,
+@@ -1714,7 +1713,7 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+ 	if (edev->physfn) {
+ 		ret = pnv_eeh_restore_vf_config(pdn);
+ 	} else {
+-		phb = edev->phb->private_data;
++		phb = pdn->phb->private_data;
+ 		ret = opal_pci_reinit(phb->opal_id,
+ 				      OPAL_REINIT_PCI_DEV, edev->config_addr);
  	}
- 
- 	/* Find the PE according to PE# */
--	memset(&edev, 0, sizeof(struct eeh_dev));
--	edev.phb = hose;
--	edev.pe_config_addr = pe_no;
--	dev_pe = eeh_pe_get(&edev);
-+	dev_pe = eeh_pe_get(hose, pe_no, 0);
- 	if (!dev_pe)
- 		return -EEXIST;
- 
 -- 
 2.11.0
