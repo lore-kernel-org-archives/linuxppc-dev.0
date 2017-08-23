@@ -1,28 +1,23 @@
-Return-Path: <nixiaoming@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0085.outbound.protection.outlook.com [104.47.1.85])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcVfc1w27zDqln
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 11:47:19 +1000 (AEST)
-From: Nixiaoming <nixiaoming@huawei.com>
-To: David Hildenbrand <david@redhat.com>, "agraf@suse.com" <agraf@suse.com>,
- "pbonzini@redhat.com" <pbonzini@redhat.com>, "rkrcmar@redhat.com"
- <rkrcmar@redhat.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>, "mpe@ellerman.id.au"
- <mpe@ellerman.id.au>
-CC: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>, "kvm@vger.kernel.org"
- <kvm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: Re:Re: [PATCH] fix memory leak on kvm_vm_ioctl_create_spapr_tce
-Date: Wed, 23 Aug 2017 01:43:08 +0000
-Message-ID: <E490CD805F7529488761C40FD9D26EF1299B4667@DGGEMA505-MBX.china.huawei.com>
-References: <20170822142823.69425-1-nixiaoming@huawei.com>
- <95fe182a-fd21-77a1-33df-0e609c2845fd@redhat.com>
- <8fd9a878-a8ce-5576-9a5c-1c221ff6ded7@redhat.com>
-In-Reply-To: <8fd9a878-a8ce-5576-9a5c-1c221ff6ded7@redhat.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcZQR1n9XzDqlw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 14:37:02 +1000 (AEST)
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: David Miller <davem@davemloft.net>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2 1/6] fsl/fman: enable FMan Keygen
+Date: Wed, 23 Aug 2017 04:36:56 +0000
+Message-ID: <AM5PR0402MB2691CF2AC9555829EC89C59CEC850@AM5PR0402MB2691.eurprd04.prod.outlook.com>
+References: <1503423066-15420-1-git-send-email-madalin.bucur@nxp.com>
+ <1503423066-15420-2-git-send-email-madalin.bucur@nxp.com>
+ <20170822.143510.1048652578169181274.davem@davemloft.net>
+In-Reply-To: <20170822.143510.1048652578169181274.davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,52 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pk9uIDIyLjA4LjIwMTcgMTc6MTUsIERhdmlkIEhpbGRlbmJyYW5kIHdyb3RlOg0KPj4gT24gMjIu
-MDguMjAxNyAxNjoyOCwgbml4aWFvbWluZyB3cm90ZToNCj4+PiBtaXNzIGtmcmVlKHN0dCkgd2hl
-biBhbm9uX2lub2RlX2dldGZkIHJldHVybiBmYWlsIHNvIGFkZCBjaGVjayANCj4+PiBhbm9uX2lu
-b2RlX2dldGZkIHJldHVybiB2YWwsIGFuZCBrZnJlZSBzdHQNCj4+Pg0KPj4+IFNpZ25lZC1vZmYt
-Ynk6IG5peGlhb21pbmcgPG5peGlhb21pbmdAaHVhd2VpLmNvbT4NCj4+PiAtLS0NCj4+PiAgYXJj
-aC9wb3dlcnBjL2t2bS9ib29rM3NfNjRfdmlvLmMgfCA1ICsrKystDQo+Pj4gIDEgZmlsZSBjaGFu
-Z2VkLCA0IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4+Pg0KPj4+IGRpZmYgLS1naXQg
-YS9hcmNoL3Bvd2VycGMva3ZtL2Jvb2szc182NF92aW8uYyANCj4+PiBiL2FyY2gvcG93ZXJwYy9r
-dm0vYm9vazNzXzY0X3Zpby5jDQo+Pj4gaW5kZXggYTE2MGMxNC4uYTBiNDQ1OSAxMDA2NDQNCj4+
-PiAtLS0gYS9hcmNoL3Bvd2VycGMva3ZtL2Jvb2szc182NF92aW8uYw0KPj4+ICsrKyBiL2FyY2gv
-cG93ZXJwYy9rdm0vYm9vazNzXzY0X3Zpby5jDQo+Pj4gQEAgLTM0MSw4ICszNDEsMTEgQEAgbG9u
-ZyBrdm1fdm1faW9jdGxfY3JlYXRlX3NwYXByX3RjZShzdHJ1Y3Qga3ZtIA0KPj4+ICprdm0sDQo+
-Pj4gIA0KPj4+ICAJbXV0ZXhfdW5sb2NrKCZrdm0tPmxvY2spOw0KPj4+ICANCj4+PiAtCXJldHVy
-biBhbm9uX2lub2RlX2dldGZkKCJrdm0tc3BhcHItdGNlIiwgJmt2bV9zcGFwcl90Y2VfZm9wcywN
-Cj4+PiArCXJldCA9IGFub25faW5vZGVfZ2V0ZmQoImt2bS1zcGFwci10Y2UiLCAma3ZtX3NwYXBy
-X3RjZV9mb3BzLA0KPj4+ICAJCQkJc3R0LCBPX1JEV1IgfCBPX0NMT0VYRUMpOw0KPj4+ICsJaWYg
-KHJldCA8IDApDQo+Pj4gKwkJZ290byBmYWlsOw0KPj4+ICsJcmV0dXJuIHJldDsNCj4+PiAgDQo+
-Pj4gIGZhaWw6DQo+Pj4gIAlpZiAoc3R0KSB7DQo+Pj4NCj4+IA0KPj4gDQo+PiBzdHQgaGFzIGFs
-cmVhZHkgYmVlbiBhZGRlZCB0byBrdm0tPmFyY2guc3BhcHJfdGNlX3RhYmxlcywgc28gZnJlZWlu
-ZyANCj4+IGl0IGlzIGV2aWwgSU1ITy4gSSBkb24ndCBrbm93IHRoYXQgY29kZSwgc28gSSBkb24n
-dCBrbm93IGlmIHRoZXJlIGlzIA0KPj4gc29tZSBvdGhlciBwbGFjZSB0aGF0IHdpbGwgbWFrZSBz
-dXJlIHRoYXQgZXZlcnl0aGluZyBpbg0KPj4ga3ZtLT5hcmNoLnNwYXByX3RjZV90YWJsZXMgd2ls
-bCBwcm9wZXJseSBnZXQgZnJlZWQsIGV2ZW4gd2hlbiBubyANCj4+IGt2bS0+cmVsZWFzZQ0KPj4g
-ZnVuY3Rpb24gaGFzIGJlZW4gY2FsbGVkIChrdm1fc3BhcHJfdGNlX3JlbGVhc2UpLg0KPj4gDQo+
-DQo+SWYgaXQgaXMgcmVhbGx5IG5vdCBmcmVlZCwgdGhhbiBhbHNvIGt2bV9wdXRfa3ZtKHN0dC0+
-a3ZtKSBpcyBtaXNzaW5nLg0KPg0KPi0tIA0KPg0KPlRoYW5rcywNCj4NCj5EYXZpZA0KPg0KDQpp
-ZiAoIXN0dCkgcmV0dXJuIC1FTk9NRU07DQprdm1fZ2V0X2t2bShrdm0pOw0KaWYgYW5vbl9pbm9k
-ZV9nZXRmZCByZXR1cm4gLUVOT01FTQ0KVGhlIHVzZXIgY2FuIG5vdCBkZXRlcm1pbmUgd2hldGhl
-ciBrdm1fZ2V0X2t2bSBoYXMgYmVlbiBjYWxsZWQNCnNvIG5lZWQgYWRkIGt2bV9wZXRfa3ZtIHdo
-ZW4gYW5vbl9pbm9kZV9nZXRmZCBmYWlsDQoNCnN0dCBoYXMgYWxyZWFkeSBiZWVuIGFkZGVkIHRv
-IGt2bS0+YXJjaC5zcGFwcl90Y2VfdGFibGVzLA0KYnV0IGlmIGFub25faW5vZGVfZ2V0ZmQgZmFp
-bCwgc3R0IGlzIHVudXNlZCB2YWwsIA0Kc28gY2FsbCBsaXN0X2RlbF9yY3UsIGFuZCAgZnJlZSBh
-cyBxdWlja2x5IGFzIHBvc3NpYmxlDQoNCm5ldyBwYXRjaDoNCg0KLS0tDQogYXJjaC9wb3dlcnBj
-L2t2bS9ib29rM3NfNjRfdmlvLmMgfCAxMCArKysrKysrKystDQogMSBmaWxlIGNoYW5nZWQsIDkg
-aW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KDQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBj
-L2t2bS9ib29rM3NfNjRfdmlvLmMgYi9hcmNoL3Bvd2VycGMva3ZtL2Jvb2szc182NF92aW8uYw0K
-aW5kZXggYTE2MGMxNC4uZTIyMjhmMSAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9rdm0vYm9v
-azNzXzY0X3Zpby5jDQorKysgYi9hcmNoL3Bvd2VycGMva3ZtL2Jvb2szc182NF92aW8uYw0KQEAg
-LTM0MSw4ICszNDEsMTYgQEAgbG9uZyBrdm1fdm1faW9jdGxfY3JlYXRlX3NwYXByX3RjZShzdHJ1
-Y3Qga3ZtICprdm0sDQoNCiAgICAgICAgbXV0ZXhfdW5sb2NrKCZrdm0tPmxvY2spOw0KDQotICAg
-ICAgIHJldHVybiBhbm9uX2lub2RlX2dldGZkKCJrdm0tc3BhcHItdGNlIiwgJmt2bV9zcGFwcl90
-Y2VfZm9wcywNCisgICAgICAgcmV0ID0gYW5vbl9pbm9kZV9nZXRmZCgia3ZtLXNwYXByLXRjZSIs
-ICZrdm1fc3BhcHJfdGNlX2ZvcHMsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0
-dCwgT19SRFdSIHwgT19DTE9FWEVDKTsNCisgICAgICAgaWYgKHJldCA8IDApIHsNCisgICAgICAg
-ICAgICAgICBtdXRleF9sb2NrKCZrdm0tPmxvY2spOw0KKyAgICAgICAgICAgICAgIGxpc3RfZGVs
-X3JjdSgmc3R0LT5saXN0KTsNCisgICAgICAgICAgICAgICBtdXRleF91bmxvY2soJmt2bS0+bG9j
-ayk7DQorICAgICAgICAgICAgICAga3ZtX3B1dF9rdm0oa3ZtKTsNCisgICAgICAgICAgICAgICBn
-b3RvIGZhaWw7DQorICAgICAgIH0NCisgICAgICAgcmV0dXJuIHJldDsNCg0KIGZhaWw6DQogICAg
-ICAgIGlmIChzdHQpIHsNCi0tIA0KMi4xMS4wLjENCg0KDQoNCg==
+> -----Original Message-----
+> From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
+> On Behalf Of David Miller
+> Sent: Wednesday, August 23, 2017 12:35 AM
+> Subject: Re: [PATCH v2 1/6] fsl/fman: enable FMan Keygen
+>=20
+> From: Madalin Bucur <madalin.bucur@nxp.com>
+> Date: Tue, 22 Aug 2017 20:31:01 +0300
+>=20
+> >  /**
+> > + * fman_get_keygen
+> > + *
+> > + * @fman:	A Pointer to FMan device
+> > + *
+> > + * Get the handle to KeyGen module part of FM driver
+> > + *
+> > + * Return: Handle to KeyGen
+> > + */
+> > +struct fman_keygen *fman_get_keygen(struct fman *fman)
+> > +{
+> > +	return fman->keygen;
+> > +}
+> > +EXPORT_SYMBOL(fman_get_keygen);
+>=20
+> Please don't do this.
+>=20
+> Just directly derefence the pointer in the source code to
+> get the keygen.
+>=20
+> Thank you.
+
+Hi,
+
+The struct fman is only visible in the fman file, the fman port module uses=
+ struct
+fman as an opaque pointer, thus this export.
+
+Madalin
