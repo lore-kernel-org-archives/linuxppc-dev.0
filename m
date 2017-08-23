@@ -1,36 +1,26 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcpsG2rtqzDrLQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 23:57:38 +1000 (AEST)
-Date: Wed, 23 Aug 2017 08:57:34 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- David Airlie <airlied@linux.ie>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
- Zou Rongrong <zourongrong@gmail.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Lukas Wunner <lukas@wunner.de>, linux-pci <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, daniel.vetter@intel.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
-Message-ID: <20170823135734.GB8498@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170817113028.16853-1-dja@axtens.net>
- <20170817113028.16853-2-dja@axtens.net>
- <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
- <20170822221928.GL6948@bhelgaas-glaptop.roam.corp.google.com>
- <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcq333tdhzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:06:07 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: Arvind Yadav <arvind.yadav.cs@gmail.com>, tpmdd@selhorst.net,
+ linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
+ ashleydlai@gmail.com, peterhuewe@gmx.de, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] tpm: vtpm: constify vio_device_id
+In-Reply-To: <20170819172150.sta6erdmikpfkrgv@linux.intel.com>
+References: <a9ebcd668f5a7293c3805d0b6b21245f15c80212.1502989694.git.arvind.yadav.cs@gmail.com>
+ <20170817191642.GF24735@obsidianresearch.com>
+ <87ziaxp0v5.fsf@concordia.ellerman.id.au>
+ <20170818203156.GA11385@obsidianresearch.com>
+ <20170819172150.sta6erdmikpfkrgv@linux.intel.com>
+Date: Thu, 24 Aug 2017 00:06:04 +1000
+Message-ID: <8760dexttf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,61 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 23, 2017 at 02:48:42PM +0100, Ard Biesheuvel wrote:
-> On 22 August 2017 at 23:19, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Mon, Aug 21, 2017 at 11:53:01AM +0100, Lorenzo Pieralisi wrote:
-> >> On Thu, Aug 17, 2017 at 09:30:28PM +1000, Daniel Axtens wrote:
-> >> > A system without PCI legacy resources (e.g. ARM64) may find that no
-> >> > default/boot VGA device has been marked, because the VGA arbiter
-> >> > checks for legacy resource decoding before marking a card as default.
-> >>
-> >> I do not understand this paragraph, in particular:
-> >>
-> >> - "A system without PCI legacy resources (e.g. ARM64)". What does this
-> >>   mean ? I take this as "ARM64 does not support IO space"; if a PCI host
-> >>   bridge supports IO space, there is nothing from an architectural
-> >>   point of view that prevents an MMIO based IO space implementation to
-> >>   work on ARM64. It is PCI bridge specific, not arch specific.
-> >
-> > This reference to ARM64 is the same thing I stumbled over.  Maybe it
-> > could be written along the lines of:
-> >
-> >   The VGA arbiter selects a default VGA device that is enabled and
-> >   reachable via the legacy VGA resources (mem 0xa0000-0xbffff, io
-> >   0x3b0-0x3bb, io 0x3c0-0x3df, etc).
-> >
-> >   If there is no such device, e.g., because there's no enabled VGA
-> >   device, the host bridge doesn't support access to those legacy
-> >   resources, or a PCI-PCI bridge doesn't have VGA Enable set, a
-> >   platform may select an arbitrary device by calling
-> >   vga_set_default_device().
-> >
-> > Then I think this patch changes the previous behavior by allowing the
-> > arbiter to select a device that is enabled and has a driver but may
-> > not be reachable via the legacy VGA resources.
-> >
-> > I don't know what all the consequences of that would be, but it does
-> > muddy the VGA arbiter waters a bit.  AIUI, the main reason for the
-> > arbiter is to allow multiple legacy VGA devices by manipulating bridge
-> > VGA Enable bits so only one receives the legacy resources at a time.
-> >
-> > These devices that do not need the legacy resources don't need that
-> > special treatment because they don't care about the bridge VGA Enable
-> > bits and several can coexist in the system with no need for VGA
-> > arbitration.
-> >
-> > I guess the powerpc fixup_vga() already selects a device that doesn't
-> > need the VGA resources, so we already have that situation.
-> >
-> 
-> Perhaps it is unclear that the whole point of tinkering with the VGA
-> arbiter is that X may refuse to use a GFX card if it is not tagged as
-> the default VGA device by the arbiter. I have suggested before that
-> fixing X may be more appropriate in this case, given that ownership of
-> the legacy VGA resources may not correlate at all with being the
-> primary display device on non-x86 architectures.
+Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> writes:
 
-Yeah, maybe it's time to disconnect the "default display device" idea
-from the VGA arbiter.  I have no idea what (if any) dependencies X has
-on the legacy VGA resources.  I assume X works fine on power, where it
-sounds like those resources are rarely or never available.
+> On Fri, Aug 18, 2017 at 02:31:56PM -0600, Jason Gunthorpe wrote:
+>> On Fri, Aug 18, 2017 at 09:32:46PM +1000, Michael Ellerman wrote:
+>> 
+>> > >>  drivers/char/tpm/tpm_ibmvtpm.c | 2 +-
+>> > 
+>> > Who merges changes for this driver? I assume it's Jarkko?
+>> 
+>> Yes
+>> 
+>> Jason
+>
+> Applied.
+
+Thanks.
+
+cheers
