@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbn44JKTzDqYs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbn40wdjzDqkd
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 15:38:16 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/46] powerpc/configs: Update for CONFIG_FIXED_PHY being
- selected by CONFIG_OF_MDIO
-Date: Wed, 23 Aug 2017 15:37:27 +1000
-Message-Id: <1503466686-10932-8-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 06/46] powerpc/configs: Update for CONFIG_DEBUG_FS being
+ selected via CONFIG_RCU_TRACE
+Date: Wed, 23 Aug 2017 15:37:26 +1000
+Message-Id: <1503466686-10932-7-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 References: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,144 +21,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit a5e4bd991362 ("of_mdio: select fixed phy support
-unconditionally"), CONFIG_OF_MDIO began selecting CONFIG_FIXED_PHY.
+In commit 961518259b3b ("rcu: Enable RCU tracepoints by default to aid
+in debugging"), CONFIG_RCU_TRACE was made default y (if CONFIG_TREE_RCU=y,
+which it is for some of our configs).
 
-That means we no longer need to set it some of our defconfigs.
+That in turn causes CONFIG_TREE_RCU_TRACE to be enabled, which selects
+CONFIG_DEBUG_FS. The end result is that CONFIG_DEBUG_FS is forced on,
+meaning we don't have to enable it in some of our configs.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/52xx/tqm5200_defconfig     | 1 -
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig | 1 -
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig | 1 -
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig | 1 -
- arch/powerpc/configs/mgcoge_defconfig           | 1 -
- arch/powerpc/configs/mpc512x_defconfig          | 1 -
- arch/powerpc/configs/mpc5200_defconfig          | 1 -
- arch/powerpc/configs/mpc83xx_defconfig          | 1 -
- arch/powerpc/configs/mpc866_ads_defconfig       | 1 -
- arch/powerpc/configs/tqm8xx_defconfig           | 1 -
- 10 files changed, 10 deletions(-)
+ arch/powerpc/configs/44x/akebono_defconfig    | 1 -
+ arch/powerpc/configs/44x/currituck_defconfig  | 1 -
+ arch/powerpc/configs/44x/fsp2_defconfig       | 1 -
+ arch/powerpc/configs/44x/iss476-smp_defconfig | 1 -
+ arch/powerpc/configs/cell_defconfig           | 1 -
+ arch/powerpc/configs/g5_defconfig             | 1 -
+ arch/powerpc/configs/pasemi_defconfig         | 1 -
+ arch/powerpc/configs/pmac32_defconfig         | 1 -
+ arch/powerpc/configs/ps3_defconfig            | 1 -
+ 9 files changed, 9 deletions(-)
 
-diff --git a/arch/powerpc/configs/52xx/tqm5200_defconfig b/arch/powerpc/configs/52xx/tqm5200_defconfig
-index 47f458f40657..0777e6efd22d 100644
---- a/arch/powerpc/configs/52xx/tqm5200_defconfig
-+++ b/arch/powerpc/configs/52xx/tqm5200_defconfig
-@@ -48,7 +48,6 @@ CONFIG_PATA_PLATFORM=y
- CONFIG_NETDEVICES=y
- CONFIG_FEC_MPC52xx=y
- CONFIG_LXT_PHY=y
--CONFIG_FIXED_PHY=y
- CONFIG_SERIAL_MPC52xx=y
- CONFIG_SERIAL_MPC52xx_CONSOLE=y
- CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD=115200
-diff --git a/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig b/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-index b68d80e6af95..45e7146e2ea3 100644
---- a/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-+++ b/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-@@ -48,7 +48,6 @@ CONFIG_NETDEVICES=y
- CONFIG_GIANFAR=y
- CONFIG_E100=y
- CONFIG_CICADA_PHY=y
--CONFIG_FIXED_PHY=y
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
-diff --git a/arch/powerpc/configs/83xx/mpc834x_itx_defconfig b/arch/powerpc/configs/83xx/mpc834x_itx_defconfig
-index 294eeba5b01d..37f4d93b3f81 100644
---- a/arch/powerpc/configs/83xx/mpc834x_itx_defconfig
-+++ b/arch/powerpc/configs/83xx/mpc834x_itx_defconfig
-@@ -49,7 +49,6 @@ CONFIG_MD_RAID1=y
- CONFIG_NETDEVICES=y
- CONFIG_GIANFAR=y
- CONFIG_CICADA_PHY=y
--CONFIG_FIXED_PHY=y
- # CONFIG_INPUT is not set
- # CONFIG_SERIO is not set
- # CONFIG_VT is not set
-diff --git a/arch/powerpc/configs/83xx/mpc837x_rdb_defconfig b/arch/powerpc/configs/83xx/mpc837x_rdb_defconfig
-index 4faf753b5b9a..2ebc6c6bf888 100644
---- a/arch/powerpc/configs/83xx/mpc837x_rdb_defconfig
-+++ b/arch/powerpc/configs/83xx/mpc837x_rdb_defconfig
-@@ -42,7 +42,6 @@ CONFIG_MD_RAID456=y
- CONFIG_NETDEVICES=y
- CONFIG_GIANFAR=y
- CONFIG_MARVELL_PHY=y
--CONFIG_FIXED_PHY=y
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
-diff --git a/arch/powerpc/configs/mgcoge_defconfig b/arch/powerpc/configs/mgcoge_defconfig
-index 64628f794589..5d5f08e5b8d9 100644
---- a/arch/powerpc/configs/mgcoge_defconfig
-+++ b/arch/powerpc/configs/mgcoge_defconfig
-@@ -46,7 +46,6 @@ CONFIG_BLK_DEV_RAM=y
- CONFIG_NETDEVICES=y
- CONFIG_FS_ENET=y
- CONFIG_FS_ENET_MDIO_FCC=y
--CONFIG_FIXED_PHY=y
- # CONFIG_WLAN is not set
- # CONFIG_INPUT is not set
- # CONFIG_SERIO is not set
-diff --git a/arch/powerpc/configs/mpc512x_defconfig b/arch/powerpc/configs/mpc512x_defconfig
-index 731c5ab16d47..10be5773ad5d 100644
---- a/arch/powerpc/configs/mpc512x_defconfig
-+++ b/arch/powerpc/configs/mpc512x_defconfig
-@@ -76,7 +76,6 @@ CONFIG_REALTEK_PHY=y
- CONFIG_SMSC_PHY=y
- CONFIG_STE10XP=y
- CONFIG_VITESSE_PHY=y
--CONFIG_FIXED_PHY=y
- # CONFIG_WLAN is not set
- CONFIG_INPUT_EVDEV=y
- CONFIG_SERIAL_MPC52xx=y
-diff --git a/arch/powerpc/configs/mpc5200_defconfig b/arch/powerpc/configs/mpc5200_defconfig
-index e4543aa21f60..faa3d5789db8 100644
---- a/arch/powerpc/configs/mpc5200_defconfig
-+++ b/arch/powerpc/configs/mpc5200_defconfig
-@@ -50,7 +50,6 @@ CONFIG_NETDEVICES=y
- CONFIG_FEC_MPC52xx=y
- CONFIG_AMD_PHY=y
- CONFIG_LXT_PHY=y
--CONFIG_FIXED_PHY=y
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
- # CONFIG_SERIO is not set
-diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
-index 52d83b35de43..661e398950ee 100644
---- a/arch/powerpc/configs/mpc83xx_defconfig
-+++ b/arch/powerpc/configs/mpc83xx_defconfig
-@@ -63,7 +63,6 @@ CONFIG_DAVICOM_PHY=y
- CONFIG_ICPLUS_PHY=y
- CONFIG_MARVELL_PHY=y
- CONFIG_VITESSE_PHY=y
--CONFIG_FIXED_PHY=y
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
-diff --git a/arch/powerpc/configs/mpc866_ads_defconfig b/arch/powerpc/configs/mpc866_ads_defconfig
-index fc73cce353ec..f1f176c29fa3 100644
---- a/arch/powerpc/configs/mpc866_ads_defconfig
-+++ b/arch/powerpc/configs/mpc866_ads_defconfig
-@@ -29,7 +29,6 @@ CONFIG_SYN_COOKIES=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_NETDEVICES=y
- CONFIG_FS_ENET=y
--CONFIG_FIXED_PHY=y
- # CONFIG_VT is not set
- # CONFIG_LEGACY_PTYS is not set
- CONFIG_SERIAL_CPM=y
-diff --git a/arch/powerpc/configs/tqm8xx_defconfig b/arch/powerpc/configs/tqm8xx_defconfig
-index 0397b9f3c384..cd72193fac0a 100644
---- a/arch/powerpc/configs/tqm8xx_defconfig
-+++ b/arch/powerpc/configs/tqm8xx_defconfig
-@@ -45,7 +45,6 @@ CONFIG_MTD_PHYSMAP_OF=y
- CONFIG_NETDEVICES=y
- CONFIG_FS_ENET=y
- CONFIG_DAVICOM_PHY=y
--CONFIG_FIXED_PHY=y
- # CONFIG_WLAN is not set
- # CONFIG_INPUT is not set
- # CONFIG_SERIO is not set
+diff --git a/arch/powerpc/configs/44x/akebono_defconfig b/arch/powerpc/configs/44x/akebono_defconfig
+index 040876e26070..9fcd361607e2 100644
+--- a/arch/powerpc/configs/44x/akebono_defconfig
++++ b/arch/powerpc/configs/44x/akebono_defconfig
+@@ -123,7 +123,6 @@ CONFIG_NLS_DEFAULT="n"
+ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_DEBUG_INFO=y
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_XMON=y
+diff --git a/arch/powerpc/configs/44x/currituck_defconfig b/arch/powerpc/configs/44x/currituck_defconfig
+index 7edface641ee..5f1df5fe4453 100644
+--- a/arch/powerpc/configs/44x/currituck_defconfig
++++ b/arch/powerpc/configs/44x/currituck_defconfig
+@@ -81,7 +81,6 @@ CONFIG_NFS_V3_ACL=y
+ CONFIG_NFS_V4=y
+ CONFIG_NLS_DEFAULT="n"
+ CONFIG_DEBUG_INFO=y
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_XMON=y
+diff --git a/arch/powerpc/configs/44x/fsp2_defconfig b/arch/powerpc/configs/44x/fsp2_defconfig
+index e8e6a6999852..92edf76929c4 100644
+--- a/arch/powerpc/configs/44x/fsp2_defconfig
++++ b/arch/powerpc/configs/44x/fsp2_defconfig
+@@ -115,7 +115,6 @@ CONFIG_PRINTK_TIME=y
+ CONFIG_MESSAGE_LOGLEVEL_DEFAULT=3
+ CONFIG_DYNAMIC_DEBUG=y
+ CONFIG_DEBUG_INFO=y
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_CRYPTO_CBC=y
+diff --git a/arch/powerpc/configs/44x/iss476-smp_defconfig b/arch/powerpc/configs/44x/iss476-smp_defconfig
+index a6a2621e4a73..d24bfa6ecd62 100644
+--- a/arch/powerpc/configs/44x/iss476-smp_defconfig
++++ b/arch/powerpc/configs/44x/iss476-smp_defconfig
+@@ -63,7 +63,6 @@ CONFIG_TMPFS=y
+ CONFIG_CRAMFS=y
+ # CONFIG_NETWORK_FILESYSTEMS is not set
+ CONFIG_DEBUG_INFO=y
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_PPC_EARLY_DEBUG=y
+diff --git a/arch/powerpc/configs/cell_defconfig b/arch/powerpc/configs/cell_defconfig
+index e4229603eb85..65299b2846bb 100644
+--- a/arch/powerpc/configs/cell_defconfig
++++ b/arch/powerpc/configs/cell_defconfig
+@@ -205,7 +205,6 @@ CONFIG_NLS_ISO8859_13=m
+ CONFIG_NLS_ISO8859_14=m
+ CONFIG_NLS_ISO8859_15=m
+ # CONFIG_ENABLE_MUST_CHECK is not set
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_MUTEXES=y
+diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
+index 7d225ccd986f..75f97c20f171 100644
+--- a/arch/powerpc/configs/g5_defconfig
++++ b/arch/powerpc/configs/g5_defconfig
+@@ -252,7 +252,6 @@ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_ISO8859_15=y
+ CONFIG_NLS_UTF8=y
+ CONFIG_CRC_T10DIF=y
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_MUTEXES=y
+diff --git a/arch/powerpc/configs/pasemi_defconfig b/arch/powerpc/configs/pasemi_defconfig
+index e8fd46f5d923..699efb67078f 100644
+--- a/arch/powerpc/configs/pasemi_defconfig
++++ b/arch/powerpc/configs/pasemi_defconfig
+@@ -166,7 +166,6 @@ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_CRC_CCITT=y
+ CONFIG_PRINTK_TIME=y
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DETECT_HUNG_TASK=y
+diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
+index e1c88327be3b..d97b6f66af01 100644
+--- a/arch/powerpc/configs/pmac32_defconfig
++++ b/arch/powerpc/configs/pmac32_defconfig
+@@ -301,7 +301,6 @@ CONFIG_NLS_CODEPAGE_437=m
+ CONFIG_NLS_ISO8859_1=m
+ CONFIG_CRC_T10DIF=y
+ CONFIG_LIBCRC32C=m
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DETECT_HUNG_TASK=y
+diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
+index 378382683180..2efa025bf483 100644
+--- a/arch/powerpc/configs/ps3_defconfig
++++ b/arch/powerpc/configs/ps3_defconfig
+@@ -159,7 +159,6 @@ CONFIG_NLS_ISO8859_1=y
+ CONFIG_CRC_CCITT=m
+ CONFIG_CRC_T10DIF=y
+ CONFIG_DEBUG_INFO=y
+-CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_MEMORY_INIT=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
 -- 
 2.7.4
