@@ -1,38 +1,30 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robert.jarzmik@free.fr>
+Received: from smtp.smtpout.orange.fr (smtp03.smtpout.orange.fr
+ [80.12.242.125])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcxXx00jkzDqlw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 04:58:56 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7NIwqFg090290
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 14:58:54 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2chej235sx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 14:58:54 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Thu, 24 Aug 2017 04:58:49 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7NIwkvW39256318
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 04:58:46 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7NIwk3V017280
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 04:58:46 +1000
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
- Anton Blanchard <anton@samba.org>
-Subject: [PATCH] powerpc/powernv/idle: Round up latency and residency values
-Date: Thu, 24 Aug 2017 00:28:41 +0530
-Message-Id: <20170823185841.25286-1-svaidy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcyK310QTzDqm5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 05:33:42 +1000 (AEST)
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+To: Bhumika Goyal <bhumirks@gmail.com>
+Cc: julia.lawall@lip6.fr, brian.austin@cirrus.com, Paul.Handrigan@cirrus.com,
+ lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ bardliao@realtek.com, chiou@realtek.com, timur@tabi.org,
+ nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, fabio.estevam@nxp.com,
+ yang.jie@linux.intel.com, peter.ujfalusi@ti.com, jarkko.nikula@bitmer.com,
+ daniel@zonque.org, haojian.zhuang@gmail.com, plai@codeaurora.org,
+ bgoswami@codeaurora.org, krzk@kernel.org, sbkim73@samsung.com,
+ s.nawrocki@samsung.com, alsa-devel@alsa-project.org,
+ patches@opensource.cirrus.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 06/11] ASoC: pxa: make snd_soc_platform_driver const
+References: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
+ <1502710730-18912-7-git-send-email-bhumirks@gmail.com>
+Date: Wed, 23 Aug 2017 21:33:26 +0200
+Message-ID: <87wp5uoz95.fsf@belgarion.home>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,40 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PowerNV platforms, firmware provides exit latency and
-target residency for each of the idle states in nano
-seconds.  Cpuidle framework expects the values in micro
-seconds.  Round up to nearest micro seconds to avoid errors
-in cases where the values are defined as fractional micro
-seconds.
+Bhumika Goyal <bhumirks@gmail.com> writes:
 
-Default idle state of 'snooze' has exit latency of zero.  If
-other states have fractional micro second exit latency, they
-would get rounded down to zero micro second and make cpuidle
-framework choose deeper idle state when snooze loop is the
-right choice.
+> Make these const as they are only passed as the 2nd argument to the
+> function devm_snd_soc_register_platform, which is of type const.
+> Done using Coccinelle.
+>
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+> ---
+>  sound/soc/pxa/mmp-pcm.c    | 2 +-
+>  sound/soc/pxa/pxa2xx-pcm.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Reported-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+For sound/soc/pxa/pxa2xx-pcm.c :
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 42896a67aeae..5f3922392059 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -383,9 +383,9 @@ static int powernv_add_idle_states(void)
- 		 * Firmware passes residency and latency values in ns.
- 		 * cpuidle expects it in us.
- 		 */
--		exit_latency = latency_ns[i] / 1000;
-+		exit_latency = DIV_ROUND_UP(latency_ns[i], 1000);
- 		if (!rc)
--			target_residency = residency_ns[i] / 1000;
-+			target_residency = DIV_ROUND_UP(residency_ns[i], 1000);
- 		else
- 			target_residency = 0;
- 
--- 
-2.13.5
+Cheers.
+
+--
+Robert
