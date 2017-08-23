@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbn55Kz1zDqHc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 15:38:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbn60s5kzDqXc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 15:38:18 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 08/46] powerpc/configs: Update for
- CONFIG_NF_CT_PROTO_(SCTP|UDPLITE)=y
-Date: Wed, 23 Aug 2017 15:37:28 +1000
-Message-Id: <1503466686-10932-9-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 09/46] powerpc/configs: Drop no longer needed
+ CONFIG_CRYPTO_DEV_VMX_ENCRYPT
+Date: Wed, 23 Aug 2017 15:37:29 +1000
+Message-Id: <1503466686-10932-10-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 References: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,59 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit a85406afeb3e ("netfilter: conntrack: built-in support for
-SCTP"), NF_CT_PROTO_SCTP switched from tristate to bool and became
-default y. Similarly in commit 9b91c96c5d1f ("netfilter: conntrack:
-built-in support for UDPlite"), NF_CT_PROTO_UDPLITE switched from
-tristate to bool and became default y.
-
-We had a few configs which set them to =m, which is no longer valid.
-We don't need to change them to =y because both symbols are default y
-and are enabled automatically based on the other symbols in the
-affected defconfigs.
+Since commit ccf5c442a1b8 ("crypto: vmx - Convert to CPU feature based
+module autoloading") we no longer need to set
+CONFIG_CRYPTO_DEV_VMX_ENCRYPT in our defconfigs.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/linkstation_defconfig | 1 -
- arch/powerpc/configs/mvme5100_defconfig    | 1 -
- arch/powerpc/configs/ppc6xx_defconfig      | 1 -
+ arch/powerpc/configs/powernv_defconfig | 1 -
+ arch/powerpc/configs/ppc64_defconfig   | 1 -
+ arch/powerpc/configs/pseries_defconfig | 1 -
  3 files changed, 3 deletions(-)
 
-diff --git a/arch/powerpc/configs/linkstation_defconfig b/arch/powerpc/configs/linkstation_defconfig
-index 8f5cd4d0e80b..477794c41d50 100644
---- a/arch/powerpc/configs/linkstation_defconfig
-+++ b/arch/powerpc/configs/linkstation_defconfig
-@@ -26,7 +26,6 @@ CONFIG_IP_PNP_BOOTP=y
- # CONFIG_IPV6 is not set
- CONFIG_NETFILTER=y
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_PROTO_SCTP=m
- CONFIG_NF_CONNTRACK_AMANDA=m
- CONFIG_NF_CONNTRACK_FTP=m
- CONFIG_NF_CONNTRACK_H323=m
-diff --git a/arch/powerpc/configs/mvme5100_defconfig b/arch/powerpc/configs/mvme5100_defconfig
-index 960a30c1d0c8..63e38c7220f1 100644
---- a/arch/powerpc/configs/mvme5100_defconfig
-+++ b/arch/powerpc/configs/mvme5100_defconfig
-@@ -35,7 +35,6 @@ CONFIG_IP_PNP_BOOTP=y
- # CONFIG_IPV6 is not set
- CONFIG_NETFILTER=y
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_PROTO_SCTP=m
- CONFIG_NF_CONNTRACK_AMANDA=m
- CONFIG_NF_CONNTRACK_FTP=m
- CONFIG_NF_CONNTRACK_H323=m
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 5d8fa80d7add..bad3e04163d0 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -140,7 +140,6 @@ CONFIG_NETFILTER=y
- CONFIG_NF_CONNTRACK=m
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
--CONFIG_NF_CT_PROTO_UDPLITE=m
- CONFIG_NF_CONNTRACK_AMANDA=m
- CONFIG_NF_CONNTRACK_FTP=m
- CONFIG_NF_CONNTRACK_H323=m
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index 7aa095a0bec6..d4ee4abf461d 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -322,7 +322,6 @@ CONFIG_CRYPTO_TWOFISH=m
+ CONFIG_CRYPTO_LZO=m
+ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_VMX=y
+-CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=m
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index f00e08b2857d..7b1d17d85169 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -359,7 +359,6 @@ CONFIG_CRYPTO_LZO=m
+ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
+ CONFIG_CRYPTO_DEV_VMX=y
+-CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=m
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index e89bbd133aaf..47dcef819697 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -323,7 +323,6 @@ CONFIG_CRYPTO_LZO=m
+ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
+ CONFIG_CRYPTO_DEV_VMX=y
+-CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=m
 -- 
 2.7.4
