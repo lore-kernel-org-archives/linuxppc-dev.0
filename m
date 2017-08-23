@@ -1,14 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbnG3C5rzDqY3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 15:38:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbnH0Q46zDqTs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 15:38:27 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 27/46] powerpc/configs: Drop no longer needed CONFIG_SCSI
-Date: Wed, 23 Aug 2017 15:37:47 +1000
-Message-Id: <1503466686-10932-28-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 28/46] powerpc/configs: Drop unnecessary CONFIG_EDAC from
+ ppc64e
+Date: Wed, 23 Aug 2017 15:37:48 +1000
+Message-Id: <1503466686-10932-29-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 References: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,26 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 67f6d6655993 ("powerpc: convert amigaone_defconfig to use
-libata PATA drivers") we no longer need to set CONFIG_SCSI in our
-defconfigs.
+There are no EDAC drivers for ppc64e.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/amigaone_defconfig | 1 -
+ arch/powerpc/configs/ppc64e_defconfig | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/amigaone_defconfig b/arch/powerpc/configs/amigaone_defconfig
-index abd0a8dc9507..12f397d403c6 100644
---- a/arch/powerpc/configs/amigaone_defconfig
-+++ b/arch/powerpc/configs/amigaone_defconfig
-@@ -45,7 +45,6 @@ CONFIG_PARPORT_PC_FIFO=y
- CONFIG_BLK_DEV_FD=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
--CONFIG_SCSI=y
- CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_ST=y
- CONFIG_BLK_DEV_SR=y
+diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
+index 1f5e0b107083..d0fe0f8f77c2 100644
+--- a/arch/powerpc/configs/ppc64e_defconfig
++++ b/arch/powerpc/configs/ppc64e_defconfig
+@@ -170,7 +170,6 @@ CONFIG_INFINIBAND=m
+ CONFIG_INFINIBAND_MTHCA=m
+ CONFIG_INFINIBAND_IPOIB=m
+ CONFIG_INFINIBAND_ISER=m
+-CONFIG_EDAC=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=y
+ CONFIG_EXT2_FS=y
 -- 
 2.7.4
