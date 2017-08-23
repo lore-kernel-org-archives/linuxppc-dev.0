@@ -1,21 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xclsB2k8xzDrK0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 21:42:22 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@ozlabs.org>,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH RFC 0/7] powerpc: Beef up single-stepping/instruction
- emulation infrastructure
-In-Reply-To: <1503480443.25055.22.camel@neuling.org>
-References: <1503445683-12011-1-git-send-email-paulus@ozlabs.org>
- <1503480443.25055.22.camel@neuling.org>
-Date: Wed, 23 Aug 2017 21:42:21 +1000
-Message-ID: <87bmn6y0gy.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcmHh3lmczDqM0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 22:01:52 +1000 (AEST)
+In-Reply-To: <20170724042803.25848-3-benh@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
+Subject: Re: [3/6] powerpc/mm: Ensure cpumask update is ordered
+Message-Id: <3xcmHh2ZQZz9sCZ@ozlabs.org>
+Date: Wed, 23 Aug 2017 22:01:52 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+On Mon, 2017-07-24 at 04:28:00 UTC, Benjamin Herrenschmidt wrote:
+> There is no guarantee that the various isync's involved with
+> the context switch will order the update of the CPU mask with
+> the first TLB entry for the new context being loaded by the HW.
+> 
+> Be safe here and add a memory barrier to order any subsequent
+> load/store which may bring entries into the TLB.
+> 
+> The corresponding barrier on the other side already exists as
+> pte updates use pte_xchg() which uses __cmpxchg_u64 which has
+> a sync after the atomic operation.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-> Paulus,=20
->
->> This patch series extends the code in arch/powerpc/lib/sstep.c so that
->> it handles almost all load and store instructions -- all except the
->> atomic memory operations (lwat, stwat, etc.).=C2=A0=C2=A0It also makes s=
-ure that
->> we use the largest possible aligned accesses to access memory and that
->> we don't access the CPU FP/VMX/VSX registers when they don't contain
->> user data.
->
-> Do you have any test cases we can put in selftests for this?
+Applied to powerpc fixes, thanks.
 
-We have lots of plans for them, but no code yet.
+https://git.kernel.org/powerpc/c/1a92a80ad386a1a6e3b36d576d52a1
 
 cheers
