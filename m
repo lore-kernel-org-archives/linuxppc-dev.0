@@ -1,16 +1,36 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcpr60Gl6zDrJk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 23:56:38 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/5] powerpc/oops: Line up NIP & MSR with other rows
-Date: Wed, 23 Aug 2017 23:56:24 +1000
-Message-Id: <1503496584-21970-5-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1503496584-21970-1-git-send-email-mpe@ellerman.id.au>
-References: <1503496584-21970-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcpsG2rtqzDrLQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 23:57:38 +1000 (AEST)
+Date: Wed, 23 Aug 2017 08:57:34 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ David Airlie <airlied@linux.ie>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
+ Zou Rongrong <zourongrong@gmail.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Lukas Wunner <lukas@wunner.de>, linux-pci <linux-pci@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, daniel.vetter@intel.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
+Message-ID: <20170823135734.GB8498@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170817113028.16853-1-dja@axtens.net>
+ <20170817113028.16853-2-dja@axtens.net>
+ <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
+ <20170822221928.GL6948@bhelgaas-glaptop.roam.corp.google.com>
+ <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +40,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is purely cosmetic, but does look nicer IMHO:
+On Wed, Aug 23, 2017 at 02:48:42PM +0100, Ard Biesheuvel wrote:
+> On 22 August 2017 at 23:19, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > On Mon, Aug 21, 2017 at 11:53:01AM +0100, Lorenzo Pieralisi wrote:
+> >> On Thu, Aug 17, 2017 at 09:30:28PM +1000, Daniel Axtens wrote:
+> >> > A system without PCI legacy resources (e.g. ARM64) may find that no
+> >> > default/boot VGA device has been marked, because the VGA arbiter
+> >> > checks for legacy resource decoding before marking a card as default.
+> >>
+> >> I do not understand this paragraph, in particular:
+> >>
+> >> - "A system without PCI legacy resources (e.g. ARM64)". What does this
+> >>   mean ? I take this as "ARM64 does not support IO space"; if a PCI host
+> >>   bridge supports IO space, there is nothing from an architectural
+> >>   point of view that prevents an MMIO based IO space implementation to
+> >>   work on ARM64. It is PCI bridge specific, not arch specific.
+> >
+> > This reference to ARM64 is the same thing I stumbled over.  Maybe it
+> > could be written along the lines of:
+> >
+> >   The VGA arbiter selects a default VGA device that is enabled and
+> >   reachable via the legacy VGA resources (mem 0xa0000-0xbffff, io
+> >   0x3b0-0x3bb, io 0x3c0-0x3df, etc).
+> >
+> >   If there is no such device, e.g., because there's no enabled VGA
+> >   device, the host bridge doesn't support access to those legacy
+> >   resources, or a PCI-PCI bridge doesn't have VGA Enable set, a
+> >   platform may select an arbitrary device by calling
+> >   vga_set_default_device().
+> >
+> > Then I think this patch changes the previous behavior by allowing the
+> > arbiter to select a device that is enabled and has a driver but may
+> > not be reachable via the legacy VGA resources.
+> >
+> > I don't know what all the consequences of that would be, but it does
+> > muddy the VGA arbiter waters a bit.  AIUI, the main reason for the
+> > arbiter is to allow multiple legacy VGA devices by manipulating bridge
+> > VGA Enable bits so only one receives the legacy resources at a time.
+> >
+> > These devices that do not need the legacy resources don't need that
+> > special treatment because they don't care about the bridge VGA Enable
+> > bits and several can coexist in the system with no need for VGA
+> > arbitration.
+> >
+> > I guess the powerpc fixup_vga() already selects a device that doesn't
+> > need the VGA resources, so we already have that situation.
+> >
+> 
+> Perhaps it is unclear that the whole point of tinkering with the VGA
+> arbiter is that X may refuse to use a GFX card if it is not tagged as
+> the default VGA device by the arbiter. I have suggested before that
+> fixing X may be more appropriate in this case, given that ownership of
+> the legacy VGA resources may not correlate at all with being the
+> primary display device on non-x86 architectures.
 
-Before:
-
-  task: c000000001453400 task.stack: c000000001c6c000
-  NIP: c000000000a0fbfc LR: c000000000a0fbf4 CTR: c000000000ba6220
-  REGS: c0000001fffef820 TRAP: 0300   Not tainted  (4.13.0-rc6-gcc-6.3.1-00234-g423af27f7d81)
-  MSR: 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 88088242  XER: 00000000
-  CFAR: c0000000000b3488 DAR: 0000000000000000 DSISR: 42000000 SOFTE: 0
-
-After:
-  task: c000000001453400 task.stack: c000000001c6c000
-  NIP:  c000000000a0fbfc LR: c000000000a0fbf4 CTR: c000000000ba6220
-  REGS: c0000001fffef820 TRAP: 0300   Not tainted  (4.13.0-rc6-gcc-6.3.1-00234-g423af27f7d81-dirty)
-  MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 88088242  XER: 00000000
-  CFAR: c0000000000b34a4 DAR: 0000000000000000 DSISR: 42000000 SOFTE: 0
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/process.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 91f9819cb51b..234b1ee7864e 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1380,11 +1380,11 @@ void show_regs(struct pt_regs * regs)
- 
- 	show_regs_print_info(KERN_DEFAULT);
- 
--	printk("NIP: "REG" LR: "REG" CTR: "REG"\n",
-+	printk("NIP:  "REG" LR: "REG" CTR: "REG"\n",
- 	       regs->nip, regs->link, regs->ctr);
- 	printk("REGS: %p TRAP: %04lx   %s  (%s)\n",
- 	       regs, regs->trap, print_tainted(), init_utsname()->release);
--	printk("MSR: "REG" ", regs->msr);
-+	printk("MSR:  "REG" ", regs->msr);
- 	print_msr_bits(regs->msr);
- 	pr_cont("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
- 	trap = TRAP(regs);
--- 
-2.7.4
+Yeah, maybe it's time to disconnect the "default display device" idea
+from the VGA arbiter.  I have no idea what (if any) dependencies X has
+on the legacy VGA resources.  I assume X works fine on power, where it
+sounds like those resources are rarely or never available.
