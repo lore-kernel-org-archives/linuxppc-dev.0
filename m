@@ -1,29 +1,43 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bp@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcrCG0zfFzDqZw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:58:17 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7NEunmh064129
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 10:58:16 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2chb4mk213-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 10:58:15 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Wed, 23 Aug 2017 15:58:12 +0100
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH] cxl: Add support for POWER9 DD2
-Date: Wed, 23 Aug 2017 16:58:06 +0200
-Message-Id: <1503500286-1684-1-git-send-email-clombard@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcrxL4N9vzDqm5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 01:31:17 +1000 (AEST)
+Date: Wed, 23 Aug 2017 17:30:58 +0200
+From: Borislav Petkov <bp@suse.de>
+To: Brijesh Singh <brijesh.singh@amd.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
+ David Howells <dhowells@redhat.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 14/17] x86/boot: Add early boot support when
+ running with SEV active
+Message-ID: <20170823153058.yli5qogrmjl74wkl@pd.tnic>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-15-brijesh.singh@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170724190757.11278-15-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,107 +47,321 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL initialization sequence has been updated to DD2.
-This patch adapts to the changes, retaining compatibility with DD1.
+On Mon, Jul 24, 2017 at 02:07:54PM -0500, Brijesh Singh wrote:
+> From: Tom Lendacky <thomas.lendacky@amd.com>
+> 
+> Early in the boot process, add checks to determine if the kernel is
+> running with Secure Encrypted Virtualization (SEV) active.
+> 
+> Checking for SEV requires checking that the kernel is running under a
+> hypervisor (CPUID 0x00000001, bit 31), that the SEV feature is available
+> (CPUID 0x8000001f, bit 1) and then check a non-interceptable SEV MSR
+> (0xc0010131, bit 0).
+> 
+> This check is required so that during early compressed kernel booting the
+> pagetables (both the boot pagetables and KASLR pagetables (if enabled) are
+> updated to include the encryption mask so that when the kernel is
+> decompressed into encrypted memory.
 
-Tests performed on some of the new hardware.
+				    , it can boot properly.
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
----
- drivers/misc/cxl/cxl.h |  2 ++
- drivers/misc/cxl/pci.c | 57 +++++++++++++++++++++++++++++++-------------------
- 2 files changed, 38 insertions(+), 21 deletions(-)
+:)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index b1afecc..0167df8 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -100,6 +100,8 @@ static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
- static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
- /* PSL registers - CAIA 2 */
- static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
-+static const cxl_p1_reg_t CXL_XSL9_INV      = {0x0110};
-+static const cxl_p1_reg_t CXL_XSL9_DEF      = {0x0140};
- static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
- static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
- static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index d18b3d9..a981c65 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -475,37 +475,52 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
- 	psl_fircntl |= 0x1ULL; /* ce_thresh */
- 	cxl_p1_write(adapter, CXL_PSL9_FIR_CNTL, psl_fircntl);
- 
--	/* vccredits=0x1  pcklat=0x4 */
--	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0000000000001810ULL);
--
--	/*
--	 * For debugging with trace arrays.
--	 * Configure RX trace 0 segmented mode.
--	 * Configure CT trace 0 segmented mode.
--	 * Configure LA0 trace 0 segmented mode.
--	 * Configure LA1 trace 0 segmented mode.
-+	/* Setup the PSL to transmit packets on the PCIe before the
-+	 * CAPP is enabled
- 	 */
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000000ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000003ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000005ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000006ULL);
-+	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0001001000002A10ULL);
-+
-+	/* For debugging with trace arrays */
-+	/* Configure RX trace 0 segmented mode */
-+	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000000ULL);
-+	/* Configure RX trace 1 segmented mode */
-+	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0xAA00000000000001ULL);
-+	/* Configure CT trace 0 segmented mode */
-+	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0xA2B8000000000003ULL);
-+	/* Configure LA0 trace 0 segmented mode */
-+	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x83FFC00000000005ULL);
-+	/* Configure JM0 trace 0 segmented mode */
-+	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000007ULL);
-+	/* Configure DMA trace 0 segmented mode */
-+	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000008ULL);
-+	/* Configure DMA trace 1 segmented mode */
-+	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8200000000000009ULL);
- 
- 	/*
- 	 * A response to an ASB_Notify request is returned by the
- 	 * system as an MMIO write to the address defined in
- 	 * the PSL_TNR_ADDR register
- 	 */
--	/* PSL_TNR_ADDR */
-+	/* keep the Reset Value: 0x00020000E0000000 */
-+
-+	/* Enable XSL rty limit */
-+	cxl_p1_write(adapter, CXL_XSL9_DEF, 0x51F8000000000005ULL);
- 
--	/* NORST */
--	cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x8000000000000000ULL);
-+	/* Change XSL_INV dummy readtheshold */
-+	cxl_p1_write(adapter, CXL_XSL9_INV, 0x0000040007FFC200ULL);
- 
--	/* allocate the apc machines */
--	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
-+	if (phb_index == 3) {
-+		/* disable machines 31-47 and 20-27 for DMA */
-+		cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000FF3FFFF0000ULL);
-+	}
-+
-+	/* Snoop machines */
-+	cxl_p1_write(adapter, CXL_PSL9_APCDEDALLOC, 0x800F000200000000ULL);
- 
--	/* Disable vc dd1 fix */
--	if (cxl_is_power9_dd1())
--		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
-+	if (cxl_is_power9_dd1()) {
-+		/* Disabling deadlock counter CAR */
-+		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0020000000000001ULL);
-+	}
- 
- 	return 0;
- }
+> After the kernel is decompressed and continues booting the same logic is
+> used to check if SEV is active and set a flag indicating so.  This allows
+> us to distinguish between SME and SEV, each of which have unique
+> differences in how certain things are handled: e.g. DMA (always bounce
+> buffered with SEV) or EFI tables (always access decrypted with SME).
+> 
+> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> ---
+>  arch/x86/boot/compressed/Makefile      |   2 +
+>  arch/x86/boot/compressed/head_64.S     |  16 +++++
+>  arch/x86/boot/compressed/mem_encrypt.S | 103 +++++++++++++++++++++++++++++++++
+>  arch/x86/boot/compressed/misc.h        |   2 +
+>  arch/x86/boot/compressed/pagetable.c   |   8 ++-
+>  arch/x86/include/asm/mem_encrypt.h     |   3 +
+>  arch/x86/include/asm/msr-index.h       |   3 +
+>  arch/x86/include/uapi/asm/kvm_para.h   |   1 -
+>  arch/x86/mm/mem_encrypt.c              |  42 +++++++++++---
+>  9 files changed, 169 insertions(+), 11 deletions(-)
+>  create mode 100644 arch/x86/boot/compressed/mem_encrypt.S
+> 
+> diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+> index 2c860ad..d2fe901 100644
+> --- a/arch/x86/boot/compressed/Makefile
+> +++ b/arch/x86/boot/compressed/Makefile
+> @@ -72,6 +72,8 @@ vmlinux-objs-y := $(obj)/vmlinux.lds $(obj)/head_$(BITS).o $(obj)/misc.o \
+>  	$(obj)/string.o $(obj)/cmdline.o $(obj)/error.o \
+>  	$(obj)/piggy.o $(obj)/cpuflags.o
+>  
+> +vmlinux-objs-$(CONFIG_X86_64) += $(obj)/mem_encrypt.o
+
+There's a
+
+ifdef CONFIG_X86_64
+
+a couple of lines below. Just put it there.
+
+...
+
+> +++ b/arch/x86/boot/compressed/mem_encrypt.S
+> @@ -0,0 +1,103 @@
+> +/*
+> + * AMD Memory Encryption Support
+> + *
+> + * Copyright (C) 2017 Advanced Micro Devices, Inc.
+> + *
+> + * Author: Tom Lendacky <thomas.lendacky@amd.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/linkage.h>
+> +
+> +#include <asm/processor-flags.h>
+> +#include <asm/msr.h>
+> +#include <asm/asm-offsets.h>
+> +
+> +	.text
+> +	.code32
+> +ENTRY(get_sev_encryption_bit)
+> +	xor	%eax, %eax
+> +
+> +#ifdef CONFIG_AMD_MEM_ENCRYPT
+> +	push	%ebx
+> +	push	%ecx
+> +	push	%edx
+> +
+> +	/* Check if running under a hypervisor */
+> +	movl	$1, %eax
+> +	cpuid
+> +	bt	$31, %ecx		/* Check the hypervisor bit */
+> +	jnc	.Lno_sev
+> +
+> +	movl	$0x80000000, %eax	/* CPUID to check the highest leaf */
+> +	cpuid
+> +	cmpl	$0x8000001f, %eax	/* See if 0x8000001f is available */
+> +	jb	.Lno_sev
+> +
+> +	/*
+> +	 * Check for the SEV feature:
+> +	 *   CPUID Fn8000_001F[EAX] - Bit 1
+> +	 *   CPUID Fn8000_001F[EBX] - Bits 5:0
+> +	 *     Pagetable bit position used to indicate encryption
+> +	 */
+> +	movl	$0x8000001f, %eax
+> +	cpuid
+> +	bt	$1, %eax		/* Check if SEV is available */
+> +	jnc	.Lno_sev
+> +
+> +	movl	$MSR_F17H_SEV, %ecx	/* Read the SEV MSR */
+> +	rdmsr
+> +	bt	$MSR_F17H_SEV_ENABLED_BIT, %eax	/* Check if SEV is active */
+> +	jnc	.Lno_sev
+> +
+> +	/*
+> +	 * Get memory encryption information:
+> +	 */
+
+The side-comment is enough. This one above can go.
+
+> +	movl	%ebx, %eax
+> +	andl	$0x3f, %eax		/* Return the encryption bit location */
+> +	jmp	.Lsev_exit
+> +
+> +.Lno_sev:
+> +	xor	%eax, %eax
+> +
+> +.Lsev_exit:
+> +	pop	%edx
+> +	pop	%ecx
+> +	pop	%ebx
+> +
+> +#endif	/* CONFIG_AMD_MEM_ENCRYPT */
+> +
+> +	ret
+> +ENDPROC(get_sev_encryption_bit)
+> +
+> +	.code64
+> +ENTRY(get_sev_encryption_mask)
+> +	xor	%rax, %rax
+> +
+> +#ifdef CONFIG_AMD_MEM_ENCRYPT
+> +	push	%rbp
+> +	push	%rdx
+> +
+> +	movq	%rsp, %rbp		/* Save current stack pointer */
+> +
+> +	call	get_sev_encryption_bit	/* Get the encryption bit position */
+
+So we get to call get_sev_encryption_bit() here again and noodle through
+the CPUID discovery and MSR access. We should instead cache that info
+and return the encryption bit directly on a second call. (And initialize
+it to -1 to denote that get_sev_encryption_bit() hasn't run yet).
+
+...
+
+> diff --git a/arch/x86/include/asm/mem_encrypt.h b/arch/x86/include/asm/mem_encrypt.h
+> index 9274ec7..9cb6472 100644
+> --- a/arch/x86/include/asm/mem_encrypt.h
+> +++ b/arch/x86/include/asm/mem_encrypt.h
+> @@ -19,6 +19,9 @@
+>  
+>  #include <asm/bootparam.h>
+>  
+> +#define AMD_SME_FEATURE_BIT	BIT(0)
+> +#define AMD_SEV_FEATURE_BIT	BIT(1)
+
+s/_FEATURE//
+
+AMD_SME_BIT and AMD_SEV_BIT is good enough :)
+
+And frankly, if you're going to use them only below in sme_enable() - I
+need to check more thoroughly the remaining patches - but if you only
+are going to use them there, just define them inside the function so
+that they're close.
+
+> +
+>  #ifdef CONFIG_AMD_MEM_ENCRYPT
+>  
+>  extern unsigned long sme_me_mask;
+> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+> index e399d68..530020f 100644
+> --- a/arch/x86/include/asm/msr-index.h
+> +++ b/arch/x86/include/asm/msr-index.h
+> @@ -326,6 +326,9 @@
+>  
+>  /* Fam 17h MSRs */
+>  #define MSR_F17H_IRPERF			0xc00000e9
+> +#define MSR_F17H_SEV			0xc0010131
+
+If that MSR is going to be used later on - and I don't see why not - you
+probably should make it an arch one: MSR_AMD64_SEV. Even if it isn't yet
+officially. :-)
+
+> +#define MSR_F17H_SEV_ENABLED_BIT	0
+> +#define MSR_F17H_SEV_ENABLED		BIT_ULL(MSR_F17H_SEV_ENABLED_BIT)
+>  
+>  /* Fam 16h MSRs */
+>  #define MSR_F16H_L2I_PERF_CTL		0xc0010230
+> diff --git a/arch/x86/include/uapi/asm/kvm_para.h b/arch/x86/include/uapi/asm/kvm_para.h
+> index a965e5b..c202ba3 100644
+> --- a/arch/x86/include/uapi/asm/kvm_para.h
+> +++ b/arch/x86/include/uapi/asm/kvm_para.h
+> @@ -109,5 +109,4 @@ struct kvm_vcpu_pv_apf_data {
+>  #define KVM_PV_EOI_ENABLED KVM_PV_EOI_MASK
+>  #define KVM_PV_EOI_DISABLED 0x0
+>  
+> -
+>  #endif /* _UAPI_ASM_X86_KVM_PARA_H */
+> diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+> index 5e5d460..ed8780e 100644
+> --- a/arch/x86/mm/mem_encrypt.c
+> +++ b/arch/x86/mm/mem_encrypt.c
+> @@ -288,7 +288,9 @@ void __init mem_encrypt_init(void)
+>  	if (sev_active())
+>  		dma_ops = &sme_dma_ops;
+>  
+> -	pr_info("AMD Secure Memory Encryption (SME) active\n");
+> +	pr_info("AMD %s active\n",
+> +		sev_active() ? "Secure Encrypted Virtualization (SEV)"
+> +			     : "Secure Memory Encryption (SME)");
+>  }
+>  
+>  void swiotlb_set_mem_attributes(void *vaddr, unsigned long size)
+> @@ -616,12 +618,23 @@ void __init __nostackprotector sme_enable(struct boot_params *bp)
+>  {
+>  	const char *cmdline_ptr, *cmdline_arg, *cmdline_on, *cmdline_off;
+>  	unsigned int eax, ebx, ecx, edx;
+> +	unsigned long feature_mask;
+>  	bool active_by_default;
+>  	unsigned long me_mask;
+>  	char buffer[16];
+>  	u64 msr;
+>  
+> -	/* Check for the SME support leaf */
+> +	/*
+> +	 * Set the feature mask (SME or SEV) based on whether we are
+> +	 * running under a hypervisor.
+> +	 */
+> +	eax = 1;
+> +	ecx = 0;
+> +	native_cpuid(&eax, &ebx, &ecx, &edx);
+> +	feature_mask = (ecx & BIT(31)) ? AMD_SEV_FEATURE_BIT
+> +				       : AMD_SME_FEATURE_BIT;
+
+Set that feature mask before using it...
+
+> +
+> +	/* Check for the SME/SEV support leaf */
+
+... because if that check exits due to no SME leaf, you're uselessly
+doing all the above.
+
+>  	eax = 0x80000000;
+>  	ecx = 0;
+>  	native_cpuid(&eax, &ebx, &ecx, &edx);
+> @@ -629,24 +642,39 @@ void __init __nostackprotector sme_enable(struct boot_params *bp)
+>  		return;
+>  
+>  	/*
+> -	 * Check for the SME feature:
+> +	 * Check for the SME/SEV feature:
+>  	 *   CPUID Fn8000_001F[EAX] - Bit 0
+>  	 *     Secure Memory Encryption support
+> +	 *   CPUID Fn8000_001F[EAX] - Bit 1
+
+No need to repeat the CPUID leaf here - only Bit 1:
+
+         *   CPUID Fn8000_001F[EAX]
+	 * - Bit 0:  Secure Memory Encryption support
+         * - Bit 1:  Secure Encrypted Virtualization support
+
+
+> +	 *     Secure Encrypted Virtualization support
+>  	 *   CPUID Fn8000_001F[EBX] - Bits 5:0
+>  	 *     Pagetable bit position used to indicate encryption
+>  	 */
+>  	eax = 0x8000001f;
+>  	ecx = 0;
+>  	native_cpuid(&eax, &ebx, &ecx, &edx);
+> -	if (!(eax & 1))
+> +	if (!(eax & feature_mask))
+>  		return;
+>  
+>  	me_mask = 1UL << (ebx & 0x3f);
+>  
+> -	/* Check if SME is enabled */
+> -	msr = __rdmsr(MSR_K8_SYSCFG);
+> -	if (!(msr & MSR_K8_SYSCFG_MEM_ENCRYPT))
+> +	/* Check if memory encryption is enabled */
+> +	if (feature_mask == AMD_SME_FEATURE_BIT) {
+> +		/* For SME, check the SYSCFG MSR */
+> +		msr = __rdmsr(MSR_K8_SYSCFG);
+> +		if (!(msr & MSR_K8_SYSCFG_MEM_ENCRYPT))
+> +			return;
+> +	} else {
+> +		/* For SEV, check the SEV MSR */
+> +		msr = __rdmsr(MSR_F17H_SEV);
+> +		if (!(msr & MSR_F17H_SEV_ENABLED))
+> +			return;
+> +
+> +		/* SEV state cannot be controlled by a command line option */
+> +		sme_me_mask = me_mask;
+> +		sev_enabled = 1;
+>  		return;
+> +	}
+
+Nice. Two birds with one stone is always better. :)
+
+
 -- 
-2.7.4
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
