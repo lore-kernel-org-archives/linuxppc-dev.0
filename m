@@ -2,13 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbnK4ynKzDqT0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 15:38:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcbnL2V3qzDrJ3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 15:38:30 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 35/46] powerpc/configs/6xx: Turn CONFIG_DRM_RADEON back on
-Date: Wed, 23 Aug 2017 15:37:55 +1000
-Message-Id: <1503466686-10932-36-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 36/46] powerpc/configs/6xx: Drop no longer needed
+ CONFIG_TIMER_STATS
+Date: Wed, 23 Aug 2017 15:37:56 +1000
+Message-Id: <1503466686-10932-37-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 References: <1503466686-10932-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,33 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit d92d9c3a1448 ("drm: hide legacy drivers with CONFIG_DRM_LEGACY")
-CONFIG_DRM_RADEON was moved behind CONFIG_DRM_LEGACY meaning it
-stopped being enabled by ppc6xx_defconfig. Although no one has
-noticed, given this is basically a legacy platform, it seems anyone
-who is using it probably still wants this driver. So turn it back on
-for now.
+Since commit dfb4357da6dd ("time: Remove CONFIG_TIMER_STATS") we no
+longer need to set CONFIG_TIMER_STATS in our defconfigs.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/ppc6xx_defconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/configs/ppc6xx_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 60ccfa966ea9..4d845c49e77f 100644
+index 4d845c49e77f..ac3730fb28e0 100644
 --- a/arch/powerpc/configs/ppc6xx_defconfig
 +++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -744,9 +744,10 @@ CONFIG_MFD_SM501_GPIO=y
- CONFIG_AGP=y
- CONFIG_AGP_UNINORTH=y
- CONFIG_DRM=m
-+CONFIG_DRM_RADEON=m
-+CONFIG_DRM_LEGACY=y
- CONFIG_DRM_TDFX=m
- CONFIG_DRM_R128=m
--CONFIG_DRM_RADEON=m
- CONFIG_DRM_MGA=m
- CONFIG_DRM_SIS=m
- CONFIG_DRM_VIA=m
+@@ -1145,7 +1145,6 @@ CONFIG_DEBUG_VM=y
+ CONFIG_DEBUG_HIGHMEM=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+ CONFIG_DEBUG_SHIRQ=y
+-CONFIG_TIMER_STATS=y
+ CONFIG_DEBUG_RT_MUTEXES=y
+ CONFIG_DEBUG_SPINLOCK=y
+ CONFIG_DEBUG_MUTEXES=y
 -- 
 2.7.4
