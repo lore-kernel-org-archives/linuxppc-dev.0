@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcr740RMszDqZ1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:54:39 +1000 (AEST)
-Message-Id: <7c2934cbc0d787eda6f740327449d7e6e3becd9a.1503277387.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xcr771F5zzDqhL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:54:42 +1000 (AEST)
+Message-Id: <ae2205dedfe437e4df2dd0cc7605d62189833221.1503277387.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1503277387.git.christophe.leroy@c-s.fr>
 References: <cover.1503277387.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 3/4] powerpc/32: optimise memset()
+Subject: [PATCH 4/4] powerpc/32: remove a NOP from memset()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 23 Aug 2017 16:54:36 +0200 (CEST)
+Date: Wed, 23 Aug 2017 16:54:38 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,66 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no need to extend the set value to an int when the length
-is lower than 4 as in that case we only do byte stores.
-We can therefore immediately branch to the part handling it.
-By separating it from the normal case, we are able to eliminate
-a few actions on the destination pointer.
+memset() is patched after initialisation to activate the
+optimised part which uses cache instructions.
+
+Today we have a 'b 2f' to skip the optimised patch, which then gets
+replaced by a NOP, implying a useless cycle consumption.
+As we have a 'bne 2f' just before, we could use that instruction
+for the live patching, hence removing the need to have a
+dedicated 'b 2f' to be replaced by a NOP.
+
+This patch changes the 'bne 2f' by a 'b 2f'. During init, that
+'b 2f' is then replaced by 'bne 2f'
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/lib/copy_32.S | 21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/setup_32.c | 7 ++++++-
+ arch/powerpc/lib/copy_32.S     | 7 +++++--
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 2f88f6cf1a42..51ebc01fff52 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -98,6 +98,9 @@ extern unsigned int memset_nocache_branch; /* Insn to be replaced by NOP */
+ 
+ notrace void __init machine_init(u64 dt_ptr)
+ {
++	unsigned int *addr = &memset_nocache_branch;
++	unsigned long insn;
++
+ 	/* Configure static keys first, now that we're relocated. */
+ 	setup_feature_keys();
+ 
+@@ -105,7 +108,9 @@ notrace void __init machine_init(u64 dt_ptr)
+ 	udbg_early_init();
+ 
+ 	patch_instruction((unsigned int *)&memcpy, PPC_INST_NOP);
+-	patch_instruction(&memset_nocache_branch, PPC_INST_NOP);
++
++	insn = create_cond_branch(addr, branch_target(addr), 0x820000);
++	patch_instruction(addr, insn);	/* replace b by bne cr0 */
+ 
+ 	/* Do some early initialization based on the flat device tree */
+ 	early_init_devtree(__va(dt_ptr));
 diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-index a3ffeac69eca..05aaee20590f 100644
+index 05aaee20590f..da425bb6b369 100644
 --- a/arch/powerpc/lib/copy_32.S
 +++ b/arch/powerpc/lib/copy_32.S
-@@ -91,17 +91,17 @@ EXPORT_SYMBOL(memset16)
-  * replaced by a nop once cache is active. This is done in machine_init()
-  */
- _GLOBAL(memset)
-+	cmplwi	0,r5,4
-+	blt	7f
-+
- 	rlwimi	r4,r4,8,16,23
- 	rlwimi	r4,r4,16,0,15
- 
--	addi	r6,r3,-4
--	cmplwi	0,r5,4
--	blt	7f
--	stwu	r4,4(r6)
-+	stw	r4,0(r3)
- 	beqlr
--	andi.	r0,r6,3
-+	andi.	r0,r3,3
+@@ -103,9 +103,12 @@ _GLOBAL(memset)
  	add	r5,r0,r5
--	subf	r6,r0,r6
-+	subf	r6,r0,r3
+ 	subf	r6,r0,r3
  	cmplwi	0,r4,0
- 	bne	2f	/* Use normal procedure if r4 is not zero */
+-	bne	2f	/* Use normal procedure if r4 is not zero */
++	/*
++	 * Skip optimised bloc until cache is enabled. Will be replaced
++	 * by 'bne' during boot to use normal procedure if r4 is not zero
++	 */
  _GLOBAL(memset_nocache_branch)
-@@ -132,13 +132,20 @@ _GLOBAL(memset_nocache_branch)
- 1:	stwu	r4,4(r6)
- 	bdnz	1b
- 6:	andi.	r5,r5,3
--7:	cmpwi	0,r5,0
- 	beqlr
- 	mtctr	r5
- 	addi	r6,r6,3
- 8:	stbu	r4,1(r6)
- 	bdnz	8b
- 	blr
-+
-+7:	cmpwi	0,r5,0
-+	beqlr
-+	mtctr	r5
-+	addi	r6,r3,-1
-+9:	stbu	r4,1(r6)
-+	bdnz	9b
-+	blr
- EXPORT_SYMBOL(memset)
+-	b	2f	/* Skip optimised bloc until cache is enabled */
++	b	2f
  
- /*
+ 	clrlwi	r7,r6,32-LG_CACHELINE_BYTES
+ 	add	r8,r7,r5
 -- 
 2.13.3
