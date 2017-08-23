@@ -1,25 +1,24 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xclJm0WQnzDqm8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 21:17:44 +1000 (AEST)
-Subject: Re: [PATCH 1/2] powerpc/workqueue: update list of possible CPUs
-To: Michael Ellerman <mpe@ellerman.id.au>, Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
- Jens Axboe <axboe@kernel.dk>, Lai Jiangshan <jiangshanlai@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20170821134951.18848-1-lvivier@redhat.com>
- <20170821144832.GE491396@devbig577.frc2.facebook.com>
- <87r2w4bcq2.fsf@concordia.ellerman.id.au>
- <20170822165437.GG491396@devbig577.frc2.facebook.com>
- <87lgmay2eg.fsf@concordia.ellerman.id.au>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <08f458b8-d54f-a9f4-b434-a1267da668f4@redhat.com>
-Date: Wed, 23 Aug 2017 13:17:38 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xclNM3G22zDqmf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 21:20:51 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ 9e5050e1-e0cc-0e0e-7b31-5dcb38b307f4@linux.vnet.ibm.com
+Subject: Re: [PATCH V9 2/2] powerpc/nodes: Ensure enough nodes avail for
+ operations
+In-Reply-To: <83b05ed2-8d18-3d5c-2003-b022d0d55eb2@linux.vnet.ibm.com>
+References: <83b05ed2-8d18-3d5c-2003-b022d0d55eb2@linux.vnet.ibm.com>
+Date: Wed, 23 Aug 2017 21:20:50 +1000
+Message-ID: <87h8wyy1gt.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87lgmay2eg.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23/08/2017 13:00, Michael Ellerman wrote:
-> Hi Tejun,
-> 
-> Tejun Heo <tj@kernel.org> writes:
->> Hello, Michael.
->>
->> On Tue, Aug 22, 2017 at 11:41:41AM +1000, Michael Ellerman wrote:
->>>> This is something powerpc needs to fix.
->>>
->>> There is no way for us to fix it.
->>
->> I don't think that's true.  The CPU id used in kernel doesn't have to
->> match the physical one and arch code should be able to pre-map CPU IDs
->> to nodes and use the matching one when hotplugging CPUs.  I'm not
->> saying that's the best way to solve the problem tho.
-> 
-> We already virtualise the CPU numbers, but not the node IDs. And it's
-> the node IDs that are really the problem.
-> 
-> So yeah I guess we might be able to make that work, but I'd have to
-> think about it a bit more.
-> 
->> It could be that the best way forward is making cpu <-> node mapping
->> dynamic and properly synchronized.
-> 
-> We don't need it to be dynamic (at least for this bug).
-> 
-> Laurent is booting Qemu with a fixed CPU <-> Node mapping, it's just
-> that because some CPUs aren't present at boot we don't know what the
-> node mapping is. (Correct me if I'm wrong Laurent).
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
 
-You're correct.
+> To: linuxppc-dev@lists.ozlabs.org
+>
+> From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>
+> To: linux-kernel@vger.kernel.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> Cc: John Allen <jallen@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Subject: [PATCH V9 2/2] powerpc/nodes: Ensure enough nodes avail for operations
+>
+> powerpc/nodes: On systems like PowerPC which allow 'hot-add' of CPU
+> or memory resources, it may occur that the new resources are to be
+> inserted into nodes that were not used for these resources at bootup.
+> In the kernel, any node that is used must be defined and initialized
+> at boot.
+>
+> This patch extracts the value of the lowest domain level (number of
+> allocable resources) from the "rtas" device tree property
+> "ibm,max-associativity-domains" to use as the maximum number of nodes
+> to setup as possibly available in the system.  This new setting will
+> override the instruction,
 
-Qemu is started with:
+Thanks for implementing my suggestion of using "ibm,max-associativity-domains".
 
-    -numa node,cpus=0-1 -numa node,cpus=2-3 \
-    -smp 2,maxcpus=4,cores=4,threads=1,sockets=1
+However I don't think it's correct to use the lowest domain level.
 
-Which means we have 2 nodes with cpu ids 0 and 1 on node 0, and cpu ids
-2 and 3 on node 1, but at boot only 2 CPUs are present.
+It's not very clearly specified in PAPR, but I think you need to treat
+it like an associativity property and index into based on the
+associativity reference points.
 
-The problem I try to fix with this series is when we hotplug a third
-CPU, to node 1 with id 2.
+You should be able to use min_common_depth as the index.
 
-Thanks,
-Laurent
+cheers
