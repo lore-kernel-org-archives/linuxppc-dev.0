@@ -1,19 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xck1k6mXGzDrVn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 20:19:38 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Alistair Popple <alistair@popple.id.au>, Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel 1/5] powerpc/pci: Remove unused parameter from
- add_one_dev_pci_data()
-Date: Wed, 23 Aug 2017 20:18:57 +1000
-Message-Id: <20170823101901.33961-2-aik@ozlabs.ru>
-In-Reply-To: <20170823101901.33961-1-aik@ozlabs.ru>
-References: <20170823101901.33961-1-aik@ozlabs.ru>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xckx71QFwzDqh0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 21:00:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tejun Heo <tj@kernel.org>
+Cc: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-block@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
+ Lai Jiangshan <jiangshanlai@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/workqueue: update list of possible CPUs
+In-Reply-To: <20170822165437.GG491396@devbig577.frc2.facebook.com>
+References: <20170821134951.18848-1-lvivier@redhat.com>
+ <20170821144832.GE491396@devbig577.frc2.facebook.com>
+ <87r2w4bcq2.fsf@concordia.ellerman.id.au>
+ <20170822165437.GG491396@devbig577.frc2.facebook.com>
+Date: Wed, 23 Aug 2017 21:00:39 +1000
+Message-ID: <87lgmay2eg.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pdev is always NULL, remove it.
+Hi Tejun,
 
-To make checkpatch.pl happy, this also removes the "out of memory"
-message.
+Tejun Heo <tj@kernel.org> writes:
+> Hello, Michael.
+>
+> On Tue, Aug 22, 2017 at 11:41:41AM +1000, Michael Ellerman wrote:
+>> > This is something powerpc needs to fix.
+>> 
+>> There is no way for us to fix it.
+>
+> I don't think that's true.  The CPU id used in kernel doesn't have to
+> match the physical one and arch code should be able to pre-map CPU IDs
+> to nodes and use the matching one when hotplugging CPUs.  I'm not
+> saying that's the best way to solve the problem tho.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/kernel/pci_dn.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+We already virtualise the CPU numbers, but not the node IDs. And it's
+the node IDs that are really the problem.
 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 592693437070..0256372b72de 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -139,7 +139,6 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
- 
- #ifdef CONFIG_PCI_IOV
- static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
--					   struct pci_dev *pdev,
- 					   int vf_index,
- 					   int busno, int devfn)
- {
-@@ -150,10 +149,8 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 		return NULL;
- 
- 	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
--	if (!pdn) {
--		dev_warn(&pdev->dev, "%s: Out of memory!\n", __func__);
-+	if (!pdn)
- 		return NULL;
--	}
- 
- 	pdn->phb = parent->phb;
- 	pdn->parent = parent;
-@@ -167,13 +164,6 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 	INIT_LIST_HEAD(&pdn->list);
- 	list_add_tail(&pdn->list, &parent->child_list);
- 
--	/*
--	 * If we already have PCI device instance, lets
--	 * bind them.
--	 */
--	if (pdev)
--		pdev->dev.archdata.pci_data = pdn;
--
- 	return pdn;
- }
- #endif
-@@ -201,7 +191,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
- 	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
- 		struct eeh_dev *edev __maybe_unused;
- 
--		pdn = add_one_dev_pci_data(parent, NULL, i,
-+		pdn = add_one_dev_pci_data(parent, i,
- 					   pci_iov_virtfn_bus(pdev, i),
- 					   pci_iov_virtfn_devfn(pdev, i));
- 		if (!pdn) {
--- 
-2.11.0
+So yeah I guess we might be able to make that work, but I'd have to
+think about it a bit more.
+
+> It could be that the best way forward is making cpu <-> node mapping
+> dynamic and properly synchronized.
+
+We don't need it to be dynamic (at least for this bug).
+
+Laurent is booting Qemu with a fixed CPU <-> Node mapping, it's just
+that because some CPUs aren't present at boot we don't know what the
+node mapping is. (Correct me if I'm wrong Laurent).
+
+So all we need is:
+ - the workqueue code to cope with CPUs that are possible but not online
+   having NUMA_NO_NODE to begin with.
+ - a way to update the workqueue cpumask when the CPU comes online.
+
+
+Which seems reasonable to me?
+
+cheers
