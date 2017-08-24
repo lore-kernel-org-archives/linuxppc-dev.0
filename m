@@ -1,45 +1,31 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-qk0-x236.google.com (mail-qk0-x236.google.com
+ [IPv6:2607:f8b0:400d:c09::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdPjS6KVfzDqXw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:07:56 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7OD4etH061286
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 09:07:54 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2chvsm8qsd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 09:07:53 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Thu, 24 Aug 2017 23:07:51 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7OD7m0c38994008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:07:48 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7OD7e2W015173
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:07:40 +1000
-Date: Thu, 24 Aug 2017 18:37:42 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc/powernv/idle: Round up latency and residency
- values
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20170823185841.25286-1-svaidy@linux.vnet.ibm.com>
- <877extw98c.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdQgq1fD9zDqms
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:51:35 +1000 (AEST)
+Received: by mail-qk0-x236.google.com with SMTP id b129so3262335qkf.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 06:51:35 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Thu, 24 Aug 2017 06:51:23 -0700
+From: Tejun Heo <tj@kernel.org>
+To: Laurent Vivier <lvivier@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linux-block@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
+ Lai Jiangshan <jiangshanlai@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/workqueue: update list of possible CPUs
+Message-ID: <20170824135122.GM491396@devbig577.frc2.facebook.com>
+References: <20170821134951.18848-1-lvivier@redhat.com>
+ <20170821144832.GE491396@devbig577.frc2.facebook.com>
+ <87r2w4bcq2.fsf@concordia.ellerman.id.au>
+ <20170822165437.GG491396@devbig577.frc2.facebook.com>
+ <87lgmay2eg.fsf@concordia.ellerman.id.au>
+ <20170823132642.GH491396@devbig577.frc2.facebook.com>
+ <6ab4f6f1-b42f-a5fe-4974-0996baa86502@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <877extw98c.fsf@concordia.ellerman.id.au>
-Message-Id: <20170824130742.GA29369@drishya.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6ab4f6f1-b42f-a5fe-4974-0996baa86502@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,31 +35,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Michael Ellerman <mpe@ellerman.id.au> [2017-08-24 20:28:19]:
+Hello, Laurent.
 
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
+On Thu, Aug 24, 2017 at 02:10:31PM +0200, Laurent Vivier wrote:
+> > Yeah, it just needs to match up new cpus to the cpu ids assigned to
+> > the right node.
 > 
-> > On PowerNV platforms, firmware provides exit latency and
-> > target residency for each of the idle states in nano
-> > seconds.  Cpuidle framework expects the values in micro
-> > seconds.  Round up to nearest micro seconds to avoid errors
-> > in cases where the values are defined as fractional micro
-> > seconds.
-> >
-> > Default idle state of 'snooze' has exit latency of zero.  If
-> > other states have fractional micro second exit latency, they
-> > would get rounded down to zero micro second and make cpuidle
-> > framework choose deeper idle state when snooze loop is the
-> > right choice.
-> >
-> > Reported-by: Anton Blanchard <anton@samba.org>
-> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> We are not able to assign the cpu ids to the right node before the CPU
+> is present, because firmware doesn't provide CPU mapping <-> node id
+> before that.
+
+What I meant was to assign the matching CPU ID when the CPU becomes
+present - ie. have CPU IDs available for different nodes and allocate
+them to the new CPU according to its node mapping when it actually
+comes up.  Please note that I'm not saying this is the way to go, just
+that it is a solvable problem from the arch code.
+
+> > The node mapping for that cpu id changes *dynamically* while the
+> > system is running and that can race with node-affinity sensitive
+> > operations such as memory allocations.
 > 
-> This sounds like a fairly bad bug, does it need a Fixes / Cc stable tag?
+> Memory is mapped to the node through its own firmware entry, so I don't
+> think cpu id change can affect memory affinity, and before we know the
+> node id of the CPU, the CPU is not present and thus it can't use memory.
 
-Yes, we will need this on stable kernel that runs on POWER9.  On older
-platforms the latencies are larger and hence no impact :)
+The latter part isn't true.  For example, percpu memory gets alloacted
+for all possible CPUs according to their node affinity, so the memory
+node association change which happens when the CPU comes up for the
+first time can race against such allocations.  I don't know whether
+that's actually problematic but we don't have *any* synchronization
+around it.  If you think it's safe to have such races, please explain
+why that is.
 
-I will post to stable after this fix hits your -next tree.
+> > Please take a step back and think through the problem again.  You
+> > can't bandaid it this way.
+> 
+> Could you give some ideas, proposals?
+> As the firmware doesn't provide the information before the CPU is really
+> plugged, I really don't know how to manage this problem.
 
---Vaidy
+There are two possible approaches, I think.
+
+1. Make physical cpu -> logical cpu mapping indirect so that the
+   kernel's cpu ID assignment is always on the right numa node.  This
+   may mean that the kernel might have to keep more possible CPUs
+   around than necessary but it does have the benefit that all memory
+   allocations are affine to the right node.
+
+2. Make cpu <-> node mapping properly dynamic.  Identify what sort of
+   synchronization we'd need around the mapping changing dynamically.
+   Note that we might not need much but it'll most likely need some.
+   Build synchronization and notification infrastructure around it.
+
+Thanks.
+
+-- 
+tejun
