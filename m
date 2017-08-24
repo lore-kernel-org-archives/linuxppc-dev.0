@@ -1,30 +1,40 @@
-Return-Path: <robert.jarzmik@free.fr>
-Received: from smtp.smtpout.orange.fr (smtp03.smtpout.orange.fr
- [80.12.242.125])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <airlied@gmail.com>
+Received: from mail-ua0-x233.google.com (mail-ua0-x233.google.com
+ [IPv6:2607:f8b0:400c:c08::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xcyK310QTzDqm5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 05:33:42 +1000 (AEST)
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: julia.lawall@lip6.fr, brian.austin@cirrus.com, Paul.Handrigan@cirrus.com,
- lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- bardliao@realtek.com, chiou@realtek.com, timur@tabi.org,
- nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, fabio.estevam@nxp.com,
- yang.jie@linux.intel.com, peter.ujfalusi@ti.com, jarkko.nikula@bitmer.com,
- daniel@zonque.org, haojian.zhuang@gmail.com, plai@codeaurora.org,
- bgoswami@codeaurora.org, krzk@kernel.org, sbkim73@samsung.com,
- s.nawrocki@samsung.com, alsa-devel@alsa-project.org,
- patches@opensource.cirrus.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 06/11] ASoC: pxa: make snd_soc_platform_driver const
-References: <1502710730-18912-1-git-send-email-bhumirks@gmail.com>
- <1502710730-18912-7-git-send-email-bhumirks@gmail.com>
-Date: Wed, 23 Aug 2017 21:33:26 +0200
-Message-ID: <87wp5uoz95.fsf@belgarion.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xd5Vf0ZvtzDqLw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 10:57:30 +1000 (AEST)
+Received: by mail-ua0-x233.google.com with SMTP id w17so6113071uaw.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 17:57:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170823135734.GB8498@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170817113028.16853-1-dja@axtens.net>
+ <20170817113028.16853-2-dja@axtens.net>
+ <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
+ <20170822221928.GL6948@bhelgaas-glaptop.roam.corp.google.com>
+ <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
+ <20170823135734.GB8498@bhelgaas-glaptop.roam.corp.google.com>
+From: Dave Airlie <airlied@gmail.com>
+Date: Thu, 24 Aug 2017 10:57:26 +1000
+Message-ID: <CAPM=9tzhzGEY_-FhGNECQ8QkxPtXxhojwPeVQT43Rcgf6X0Lww@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Will Deacon <will.deacon@arm.com>, dri-devel <dri-devel@lists.freedesktop.org>,
+ linux-pci <linux-pci@vger.kernel.org>,
+ "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Zou Rongrong <zourongrong@gmail.com>, "Vetter,
+ Daniel" <daniel.vetter@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Daniel Axtens <dja@axtens.net>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,22 +44,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bhumika Goyal <bhumirks@gmail.com> writes:
+> Yeah, maybe it's time to disconnect the "default display device" idea
+> from the VGA arbiter.  I have no idea what (if any) dependencies X has
+> on the legacy VGA resources.  I assume X works fine on power, where it
+> sounds like those resources are rarely or never available.
 
-> Make these const as they are only passed as the 2nd argument to the
-> function devm_snd_soc_register_platform, which is of type const.
-> Done using Coccinelle.
->
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
-> ---
->  sound/soc/pxa/mmp-pcm.c    | 2 +-
->  sound/soc/pxa/pxa2xx-pcm.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+The question on non-x86 archs, is what is the correct device to default to.
 
-For sound/soc/pxa/pxa2xx-pcm.c :
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+On x86 we use the legacy VGA resources as a pointer, as this is the device
+the BIOS appeared on at boot so hopefully should be one you can see stuff on.
 
-Cheers.
+On non-x86 I've no idea how to decide if there are multiple devices, maybe the
+firmware needs to tag something for the kernel if there are. Otherwise
+you'd just
+be picking something in probe order.
 
---
-Robert
+I think the idea of these patches is to separate default display
+device from the arbiter.
+
+X uses the arbiter on x86 if required (it's horrible, and it's rare we
+have to nowadays),
+but for finding the default device it justs uses the sysfs boot_vga flag.
+
+Dave.
