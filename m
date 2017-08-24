@@ -1,25 +1,45 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdPPM4Dg9zDqYR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 22:53:59 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id w27so3794584pge.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 05:53:59 -0700 (PDT)
-Date: Thu, 24 Aug 2017 22:53:46 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v2 12/14] KVM: PPC: Book3S HV: POWER9 can execute stop
- without a sync sequence
-Message-ID: <20170824225346.2cd23f67@roar.ozlabs.ibm.com>
-In-Reply-To: <20170824102735.GI27401@fergus.ozlabs.ibm.com>
-References: <20170811163912.28783-1-npiggin@gmail.com>
- <20170811163912.28783-13-npiggin@gmail.com>
- <20170824102735.GI27401@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdPjS6KVfzDqXw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:07:56 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7OD4etH061286
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 09:07:54 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2chvsm8qsd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 09:07:53 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Thu, 24 Aug 2017 23:07:51 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7OD7m0c38994008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:07:48 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7OD7e2W015173
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:07:40 +1000
+Date: Thu, 24 Aug 2017 18:37:42 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc/powernv/idle: Round up latency and residency
+ values
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20170823185841.25286-1-svaidy@linux.vnet.ibm.com>
+ <877extw98c.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <877extw98c.fsf@concordia.ellerman.id.au>
+Message-Id: <20170824130742.GA29369@drishya.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,70 +49,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 24 Aug 2017 20:27:35 +1000
-Paul Mackerras <paulus@ozlabs.org> wrote:
+* Michael Ellerman <mpe@ellerman.id.au> [2017-08-24 20:28:19]:
 
-> On Sat, Aug 12, 2017 at 02:39:10AM +1000, Nicholas Piggin wrote:
-> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 24 ++++++++++++------------
-> >  1 file changed, 12 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> > index 3e024fd71fe8..edb47738a686 100644
-> > --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> > +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> > @@ -2527,7 +2527,17 @@ BEGIN_FTR_SECTION
-> >  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-> >  
-> >  kvm_nap_sequence:		/* desired LPCR value in r5 */
-> > -BEGIN_FTR_SECTION
-> > +BEGIN_FTR_SECTION	/* nap sequence */
-> > +	mtspr	SPRN_LPCR,r5
-> > +	isync
-> > +	li	r0, 0
-> > +	std	r0, HSTATE_SCRATCH0(r13)
-> > +	ptesync
-> > +	ld	r0, HSTATE_SCRATCH0(r13)
-> > +1:	cmpd	r0, r0
-> > +	bne	1b
-> > +	nap
-> > +FTR_SECTION_ELSE	/* stop sequence */
-> >  	/*
-> >  	 * PSSCR bits:	exit criterion = 1 (wakeup based on LPCR at sreset)
-> >  	 *		enable state loss = 1 (allow SMT mode switch)
-> > @@ -2539,18 +2549,8 @@ BEGIN_FTR_SECTION
-> >  	li	r4, LPCR_PECE_HVEE@higher
-> >  	sldi	r4, r4, 32
-> >  	or	r5, r5, r4
-> > -END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-> >  	mtspr	SPRN_LPCR,r5
-> > -	isync
-> > -	li	r0, 0
-> > -	std	r0, HSTATE_SCRATCH0(r13)
-> > -	ptesync
-> > -	ld	r0, HSTATE_SCRATCH0(r13)
-> > -1:	cmpd	r0, r0
-> > -	bne	1b
-> > -BEGIN_FTR_SECTION
-> > -	nap
-> > -FTR_SECTION_ELSE
-> > +
-> >  	PPC_STOP
-> >  ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
-> >  	b	.
-> > -- 
-> > 2.13.3  
+> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes:
 > 
-> Currently we never get to kvm_nap_sequence on POWER9 because we are
-> always running one vcpu per vcore, so I haven't worried about this
-> code too much.  In future we might need this for running HPT guests on
-> a radix host, though.
+> > On PowerNV platforms, firmware provides exit latency and
+> > target residency for each of the idle states in nano
+> > seconds.  Cpuidle framework expects the values in micro
+> > seconds.  Round up to nearest micro seconds to avoid errors
+> > in cases where the values are defined as fractional micro
+> > seconds.
+> >
+> > Default idle state of 'snooze' has exit latency of zero.  If
+> > other states have fractional micro second exit latency, they
+> > would get rounded down to zero micro second and make cpuidle
+> > framework choose deeper idle state when snooze loop is the
+> > right choice.
+> >
+> > Reported-by: Anton Blanchard <anton@samba.org>
+> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> 
+> This sounds like a fairly bad bug, does it need a Fixes / Cc stable tag?
 
-Just trying to keep in in synch with Linux, but the rest of the
-series does not depend on this one so it can be left out if you'd
-rather.
+Yes, we will need this on stable kernel that runs on POWER9.  On older
+platforms the latencies are larger and hence no impact :)
 
-Thanks,
-Nick
+I will post to stable after this fix hits your -next tree.
+
+--Vaidy
