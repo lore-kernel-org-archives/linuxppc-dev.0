@@ -1,44 +1,21 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xdKGm5MsCzDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 19:47:59 +1000 (AEST)
-Date: Thu, 24 Aug 2017 10:47:56 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: tglx@linutronix.de, mingo@redhat.com, dvhart@infradead.org,
- peterz@infradead.org, linux-kernel@vger.kernel.org,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
- Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2 1/1] futex: remove duplicated code and fix UB
-Message-ID: <20170824094756.GA6346@arm.com>
-References: <20170824073105.3901-1-jslaby@suse.cz>
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdKcm5vhkzDqms
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 20:03:36 +1000 (AEST)
+Date: Thu, 24 Aug 2017 19:34:35 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2 10/14] KVM: PPC: Book3S HV: POWER9 does not require
+ secondary thread management
+Message-ID: <20170824093435.GH27401@fergus.ozlabs.ibm.com>
+References: <20170811163912.28783-1-npiggin@gmail.com>
+ <20170811163912.28783-11-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170824073105.3901-1-jslaby@suse.cz>
+In-Reply-To: <20170811163912.28783-11-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,65 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jiri,
+On Sat, Aug 12, 2017 at 02:39:08AM +1000, Nicholas Piggin wrote:
+> POWER9 CPUs have independent MMU contexts per thread, so KVM does not
+> need to quiesce secondary threads, so the hwthread_req/hwthread_state
+> protocol does not have to be used. So patch it away on POWER9, and patch
+> away the branch from the Linux idle wakeup to kvm_start_guest that is
+> never used.
 
-On Thu, Aug 24, 2017 at 09:31:05AM +0200, Jiri Slaby wrote:
-> There is code duplicated over all architecture's headers for
-> futex_atomic_op_inuser. Namely op decoding, access_ok check for uaddr,
-> and comparison of the result.
-> 
-> Remove this duplication and leave up to the arches only the needed
-> assembly which is now in arch_futex_atomic_op_inuser.
-> 
-> This effectively distributes the Will Deacon's arm64 fix for undefined
-> behaviour reported by UBSAN to all architectures. The fix was done in
-> commit 5f16a046f8e1 (arm64: futex: Fix undefined behaviour with
-> FUTEX_OP_OPARG_SHIFT usage). Look there for an example dump.
-> 
-> And as suggested by Thomas, check for negative oparg too, because it was
-> also reported to cause undefined behaviour report.
-> 
-> Note that s390 removed access_ok check in d12a29703 ("s390/uaccess:
-> remove pointless access_ok() checks") as access_ok there returns true.
-> We introduce it back to the helper for the sake of simplicity (it gets
-> optimized away anyway).
+If/when we add support for running HPT guests on a radix host, we will
+have to run the host in single-threaded mode (since POWER9 doesn't
+support having some threads of a core using HPT and some using radix
+simultaneously).  We'll then need some sort of thing like
+kvmppc_grab_hwthread to coordinate with the threads so that guests can
+use the secondary threads.
 
-For arm64 and the core code:
+So I think most of this code should stay.  We will still need to have
+a way to make sure that the secondaries are in real mode and not in a
+guest, because all threads will need to be in real mode when switching
+the core between radix and HPT mode.  Maybe we can optimize it a bit
+at present given that we don't yet support running HPT guests on a
+radix host, but I don't want to make it harder to do that in future.
 
-Reviewed-by: Will Deacon <will.deacon@arm.com>
-
-Although one minor thing on the core part:
-
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index 0939255fc750..3d38eaf05492 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -1551,6 +1551,45 @@ futex_wake(u32 __user *uaddr, unsigned int flags, int nr_wake, u32 bitset)
->  	return ret;
->  }
->  
-> +static int futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
-> +{
-> +	unsigned int op =	  (encoded_op & 0x70000000) >> 28;
-> +	unsigned int cmp =	  (encoded_op & 0x0f000000) >> 24;
-> +	int oparg = sign_extend32((encoded_op & 0x00fff000) >> 12, 12);
-> +	int cmparg = sign_extend32(encoded_op & 0x00000fff, 12);
-> +	int oldval, ret;
-> +
-> +	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28)) {
-> +		if (oparg < 0 || oparg > 31)
-> +			return -EINVAL;
-> +		oparg = 1 << oparg;
-> +	}
-> +
-> +	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u32)))
-> +		return -EFAULT;
-> +
-> +	ret = arch_futex_atomic_op_inuser(op, oparg, &oldval, uaddr);
-> +	if (ret)
-> +		return ret;
-
-We could move the pagefault_{disable,enable} calls here, and then remove
-them from the futex_atomic_op_inuser callsites elsewhere in futex.c
-
-Will
+Paul.
