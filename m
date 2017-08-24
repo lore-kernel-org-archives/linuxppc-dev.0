@@ -1,27 +1,25 @@
-Return-Path: <clg@kaod.org>
-Received: from 7.mo179.mail-out.ovh.net (7.mo179.mail-out.ovh.net
- [46.105.61.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdGqM3Ws8zDqXc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 17:57:35 +1000 (AEST)
-Received: from player794.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo179.mail-out.ovh.net (Postfix) with ESMTP id 56E025AC54
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 09:37:49 +0200 (CEST)
-Subject: Re: [PATCH 10/10] powerpc/xive: fix the size of the cpumask used in
- xive_find_target_in_mask()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@samba.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdHpd0wjqzDqmf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 18:42:01 +1000 (AEST)
+Date: Thu, 24 Aug 2017 18:14:21 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Nixiaoming <nixiaoming@huawei.com>
+Cc: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ David Hildenbrand <david@redhat.com>,
  David Gibson <david@gibson.dropbear.id.au>
-References: <1502182969-3180-1-git-send-email-clg@kaod.org>
- <874lthnrse.fsf@concordia.ellerman.id.au>
- <87r2w1wm4g.fsf@concordia.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <114fe3a9-1466-9ba4-aa87-a5a9848b1678@kaod.org>
-Date: Thu, 24 Aug 2017 09:37:43 +0200
+Subject: Re: [PATCH] KVM: PPC: Book3S: Fix race and leak in
+ kvm_vm_ioctl_create_spapr_tce()
+Message-ID: <20170824081421.GD27401@fergus.ozlabs.ibm.com>
+References: <20170824034008.GB27401@fergus.ozlabs.ibm.com>
+ <E490CD805F7529488761C40FD9D26EF1299B4BB2@DGGEMA505-MBX.china.huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <87r2w1wm4g.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E490CD805F7529488761C40FD9D26EF1299B4BB2@DGGEMA505-MBX.china.huawei.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +29,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/24/2017 07:49 AM, Michael Ellerman wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+On Thu, Aug 24, 2017 at 06:43:22AM +0000, Nixiaoming wrote:
+> >From: Paul Mackerras [mailto:paulus@ozlabs.org]  Thursday, August 24, 2017 11:40 AM
+> >
+> >Nixiaoming pointed out that there is a memory leak in
+> >kvm_vm_ioctl_create_spapr_tce() if the call to anon_inode_getfd() fails; the memory allocated for the kvmppc_spapr_tce_table struct is not freed, and nor are the pages allocated for the iommu tables.  In addition, we have already incremented the process's count of locked memory pages, and this doesn't get restored on error.
+> >
+> >David Hildenbrand pointed out that there is a race in that the function checks early on that there is not already an entry in the
+> >stt->iommu_tables list with the same LIOBN, but an entry with the
+> >same LIOBN could get added between then and when the new entry is added to the list.
+> >
+> >This fixes all three problems.  To simplify things, we now call
+> >anon_inode_getfd() before placing the new entry in the list.  The check for an existing entry is done while holding the kvm->lock mutex, immediately before adding the new entry to the list.
+> >Finally, on failure we now call kvmppc_account_memlimit to decrement the process's count of locked memory pages.
+> >
+> >Reported-by: Nixiaoming <nixiaoming@huawei.com>
+> >Reported-by: David Hildenbrand <david@redhat.com>
+> >Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> >---
+> > arch/powerpc/kvm/book3s_64_vio.c | 55 ++++++++++++++++++++++++----------------
+> > 1 file changed, 33 insertions(+), 22 deletions(-)
+> >
+> >diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+> >index a160c14304eb..d463c1cd0d8d 100644
+> >--- a/arch/powerpc/kvm/book3s_64_vio.c
+> >+++ b/arch/powerpc/kvm/book3s_64_vio.c
+> >@@ -297,29 +297,22 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+> > 	unsigned long npages, size;
+> > 	int ret = -ENOMEM;
+> > 	int i;
+> >+	int fd = -1;
+> > 
+> > 	if (!args->size)
+> > 		return -EINVAL;
+> > 
+> >-	/* Check this LIOBN hasn't been previously allocated */
+> >-	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
+> >-		if (stt->liobn == args->liobn)
+> >-			return -EBUSY;
+> >-	}
+> >-
+> > 	size = _ALIGN_UP(args->size, PAGE_SIZE >> 3);
+> > 	npages = kvmppc_tce_pages(size);
+> > 	ret = kvmppc_account_memlimit(kvmppc_stt_pages(npages), true);
+> >-	if (ret) {
+> >-		stt = NULL;
+> >-		goto fail;
+> >-	}
+> >+	if (ret)
+> >+		return ret;
+> > 
+> > 	ret = -ENOMEM;
+> > 	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
+> > 		      GFP_KERNEL);
+> > 	if (!stt)
+> >-		goto fail;
+> >+		goto fail_acct;
+> > 
+> > 	stt->liobn = args->liobn;
+> > 	stt->page_shift = args->page_shift;
+> >@@ -334,24 +327,42 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+> > 			goto fail;
+> > 	}
+> > 
+> >-	kvm_get_kvm(kvm);
+> >+	ret = fd = anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
+> >+				    stt, O_RDWR | O_CLOEXEC);
+> >+	if (ret < 0)
+> >+		goto fail;
+> > 
+> > 	mutex_lock(&kvm->lock);
+> >-	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
+> >+
+> >+	/* Check this LIOBN hasn't been previously allocated */
+> >+	ret = 0;
+> >+	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
 > 
->> Cédric Le Goater <clg@kaod.org> writes:
->>> When called from xive_irq_startup(), the size of the cpumask can be
->>> larger than nr_cpu_ids. Most of time, its value is NR_CPUS (2048).
-> ...
->>
->> I guess this patch is a good fix, I'll expand the change log a bit.
-> 
-> Actually this got lost, because it was part of the larger series, and
-> then you sent a v2 of the series and so v1 was marked superseeded :/
-> 
-> Anyway I've pulled this out of the series and will merge it.
+> I think stt can not be used here
+> need a new value for list_for_each_entry
 
-I just saw your resend. Thanks for doing so,
+Yes.  Good point.  New version coming.
 
-C.
+Paul.
