@@ -1,45 +1,19 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdCYR3tWgzDqY3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 15:30:19 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7O5TDjh079811
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 01:30:17 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2chrcva4en-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 01:30:16 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 24 Aug 2017 15:30:13 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7O5U2So39518264
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 15:30:10 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7O5TcCL029126
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 15:29:38 +1000
-Subject: Re: [PATCH kernel 0/5] powerpc/eeh: Some cleanups
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Russell Currey <ruscur@russell.cc>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Alistair Popple <alistair@popple.id.au>,
- David Gibson <david@gibson.dropbear.id.au>
-References: <20170823101901.33961-1-aik@ozlabs.ru>
- <1503537218.14064.5.camel@russell.cc>
- <3fd12aab-9bbb-1f80-3750-f0e08a0a4d06@ozlabs.ru>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 24 Aug 2017 15:29:13 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdCzj5LsRzDql8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 15:49:37 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: clg@kaod.org,
+	ruscur@russell.cc
+Subject: [PATCH] powerpc/xive: Fix the size of the cpumask used in
+ xive_find_target_in_mask()
+Date: Thu, 24 Aug 2017 15:49:31 +1000
+Message-Id: <1503553771-4483-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <3fd12aab-9bbb-1f80-3750-f0e08a0a4d06@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <2cce5375-66c0-0c10-8538-7c60f508bca1@au1.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,27 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24/08/17 12:19, Alexey Kardashevskiy wrote:
-> On 24/08/17 11:13, Russell Currey wrote:
->> On Wed, 2017-08-23 at 20:18 +1000, Alexey Kardashevskiy wrote:
->>> Here are few patches to get rid of some cached pointers across EEH and
->>> powernv code as I was struggling to figure out about lifetime of
->>> structures and so on.
->>
->> Thanks for the patches.  For the whole series:
->>
->> Acked-by: Russell Currey <ruscur@russell.cc>
-> 
-> 
-> The patches are labelled as "Needs Review / ACK" in the patchworks, and
-> until you reply to each individual patch, the "A" part of the "A/R/T"
-> column will remain "- - -".
+From: Cédric Le Goater <clg@kaod.org>
 
-https://github.com/getpatchwork/patchwork/issues/113
+When called from xive_irq_startup(), the size of the cpumask can be
+larger than nr_cpu_ids. This can result in a WARN_ON such as:
 
-Too late for the just-released patchwork 2.0, but maybe 2.1 won't be 
-that far off. :)
+  WARNING: CPU: 10 PID: 1 at ../arch/powerpc/sysdev/xive/common.c:476 xive_find_target_in_mask+0x110/0x2f0
+  ...
+  NIP [c00000000008a310] xive_find_target_in_mask+0x110/0x2f0
+  LR [c00000000008a2e4] xive_find_target_in_mask+0xe4/0x2f0
+  Call Trace:
+    xive_find_target_in_mask+0x74/0x2f0 (unreliable)
+    xive_pick_irq_target.isra.1+0x200/0x230
+    xive_irq_startup+0x60/0x180
+    irq_startup+0x70/0xd0
+    __setup_irq+0x7bc/0x880
+    request_threaded_irq+0x14c/0x2c0
+    request_event_sources_irqs+0x100/0x180
+    __machine_initcall_pseries_init_ras_IRQ+0x104/0x134
+    do_one_initcall+0x68/0x1d0
+    kernel_init_freeable+0x290/0x374
+    kernel_init+0x24/0x170
+    ret_from_kernel_thread+0x5c/0x74
 
+This happens because we're being called with our affinity mask set to
+irq_default_affinity. That in turn was populated using
+cpumask_setall(), which sets NR_CPUs worth of bits, not nr_cpu_ids
+worth. Finally cpumask_weight() will return > nr_cpu_ids when passed a
+mask which has > nr_cpu_ids bits set.
+
+Fix it by limiting the value returned by cpumask_weight().
+
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+[mpe: Add change log details on actual cause]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/sysdev/xive/common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 0db4c45bc561..558df6542b1a 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -447,7 +447,7 @@ static int xive_find_target_in_mask(const struct cpumask *mask,
+ 	int cpu, first, num, i;
+ 
+ 	/* Pick up a starting point CPU in the mask based on  fuzz */
+-	num = cpumask_weight(mask);
++	num = min_t(int, cpumask_weight(mask), nr_cpu_ids);
+ 	first = fuzz % num;
+ 
+ 	/* Locate it */
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.7.4
