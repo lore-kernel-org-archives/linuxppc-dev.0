@@ -1,25 +1,19 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xd7K26BmPzDrJr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 12:19:18 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id w27so1687798pge.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Aug 2017 19:19:18 -0700 (PDT)
-Subject: Re: [PATCH kernel 0/5] powerpc/eeh: Some cleanups
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Cc: David Gibson <david@gibson.dropbear.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Alistair Popple <alistair@popple.id.au>
-References: <20170823101901.33961-1-aik@ozlabs.ru>
- <1503537218.14064.5.camel@russell.cc>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <3fd12aab-9bbb-1f80-3750-f0e08a0a4d06@ozlabs.ru>
-Date: Thu, 24 Aug 2017 12:19:10 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xd96N42jQzDrJr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 13:40:12 +1000 (AEST)
+Date: Thu, 24 Aug 2017 13:40:08 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: nixiaoming <nixiaoming@huawei.com>, David Hildenbrand <david@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH] KVM: PPC: Book3S: Fix race and leak in
+ kvm_vm_ioctl_create_spapr_tce()
+Message-ID: <20170824034008.GB27401@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1503537218.14064.5.camel@russell.cc>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +23,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24/08/17 11:13, Russell Currey wrote:
-> On Wed, 2017-08-23 at 20:18 +1000, Alexey Kardashevskiy wrote:
->> Here are few patches to get rid of some cached pointers across EEH and
->> powernv code as I was struggling to figure out about lifetime of
->> structures and so on.
-> 
-> Thanks for the patches.  For the whole series:
-> 
-> Acked-by: Russell Currey <ruscur@russell.cc>
+Nixiaoming pointed out that there is a memory leak in
+kvm_vm_ioctl_create_spapr_tce() if the call to anon_inode_getfd()
+fails; the memory allocated for the kvmppc_spapr_tce_table struct
+is not freed, and nor are the pages allocated for the iommu
+tables.  In addition, we have already incremented the process's
+count of locked memory pages, and this doesn't get restored on
+error.
 
+David Hildenbrand pointed out that there is a race in that the
+function checks early on that there is not already an entry in the
+stt->iommu_tables list with the same LIOBN, but an entry with the
+same LIOBN could get added between then and when the new entry is
+added to the list.
 
-The patches are labelled as "Needs Review / ACK" in the patchworks, and
-until you reply to each individual patch, the "A" part of the "A/R/T"
-column will remain "- - -".
+This fixes all three problems.  To simplify things, we now call
+anon_inode_getfd() before placing the new entry in the list.  The
+check for an existing entry is done while holding the kvm->lock
+mutex, immediately before adding the new entry to the list.
+Finally, on failure we now call kvmppc_account_memlimit to
+decrement the process's count of locked memory pages.
 
+Reported-by: Nixiaoming <nixiaoming@huawei.com>
+Reported-by: David Hildenbrand <david@redhat.com>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 55 ++++++++++++++++++++++++----------------
+ 1 file changed, 33 insertions(+), 22 deletions(-)
 
-> 
->>
->>
->> This is based on sha1
->> 98b9f8a45499 Linus Torvalds Merge tag 'ext4_for_linus_stable' of
->> git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4
->>
->> Please comment. Thanks.
->>
->>
->>
->> Alexey Kardashevskiy (5):
->>   powerpc/pci: Remove unused parameter from add_one_dev_pci_data()
->>   powerpc/eeh: Reduce to one the number of places where edev is
->>     allocated
->>   powerpc/eeh: Remove unnecessary pointer to phb from eeh_dev
->>   powerpc/eeh: Remove unnecessary config_addr from eeh_dev
->>   powerpc/eeh: Remove unnecessary node from pci_dn
->>
->>  arch/powerpc/include/asm/eeh.h               |  5 +-
->>  arch/powerpc/include/asm/pci-bridge.h        |  1 -
->>  arch/powerpc/kernel/eeh.c                    | 16 ++---
->>  arch/powerpc/kernel/eeh_dev.c                |  2 -
->>  arch/powerpc/kernel/eeh_driver.c             |  2 +-
->>  arch/powerpc/kernel/eeh_pe.c                 | 90 ++++++++++++++++-----------
->> -
->>  arch/powerpc/kernel/eeh_sysfs.c              |  3 -
->>  arch/powerpc/kernel/pci_dn.c                 | 22 +++----
->>  arch/powerpc/platforms/powernv/eeh-powernv.c | 29 +++------
->>  9 files changed, 78 insertions(+), 92 deletions(-)
->>
-> 
-
-
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index a160c14304eb..d463c1cd0d8d 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -297,29 +297,22 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 	unsigned long npages, size;
+ 	int ret = -ENOMEM;
+ 	int i;
++	int fd = -1;
+ 
+ 	if (!args->size)
+ 		return -EINVAL;
+ 
+-	/* Check this LIOBN hasn't been previously allocated */
+-	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
+-		if (stt->liobn == args->liobn)
+-			return -EBUSY;
+-	}
+-
+ 	size = _ALIGN_UP(args->size, PAGE_SIZE >> 3);
+ 	npages = kvmppc_tce_pages(size);
+ 	ret = kvmppc_account_memlimit(kvmppc_stt_pages(npages), true);
+-	if (ret) {
+-		stt = NULL;
+-		goto fail;
+-	}
++	if (ret)
++		return ret;
+ 
+ 	ret = -ENOMEM;
+ 	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
+ 		      GFP_KERNEL);
+ 	if (!stt)
+-		goto fail;
++		goto fail_acct;
+ 
+ 	stt->liobn = args->liobn;
+ 	stt->page_shift = args->page_shift;
+@@ -334,24 +327,42 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 			goto fail;
+ 	}
+ 
+-	kvm_get_kvm(kvm);
++	ret = fd = anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
++				    stt, O_RDWR | O_CLOEXEC);
++	if (ret < 0)
++		goto fail;
+ 
+ 	mutex_lock(&kvm->lock);
+-	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
++
++	/* Check this LIOBN hasn't been previously allocated */
++	ret = 0;
++	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
++		if (stt->liobn == args->liobn) {
++			ret = -EBUSY;
++			break;
++		}
++	}
++
++	if (!ret) {
++		list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
++		kvm_get_kvm(kvm);
++	}
+ 
+ 	mutex_unlock(&kvm->lock);
+ 
+-	return anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
+-				stt, O_RDWR | O_CLOEXEC);
++	if (!ret)
++		return fd;
+ 
+-fail:
+-	if (stt) {
+-		for (i = 0; i < npages; i++)
+-			if (stt->pages[i])
+-				__free_page(stt->pages[i]);
++	put_unused_fd(fd);
+ 
+-		kfree(stt);
+-	}
++ fail:
++	for (i = 0; i < npages; i++)
++		if (stt->pages[i])
++			__free_page(stt->pages[i]);
++
++	kfree(stt);
++ fail_acct:
++	kvmppc_account_memlimit(kvmppc_stt_pages(npages), false);
+ 	return ret;
+ }
+ 
 -- 
-Alexey
+2.11.0
