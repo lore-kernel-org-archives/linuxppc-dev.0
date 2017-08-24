@@ -1,23 +1,44 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xd9TB6THczDrJr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 13:56:30 +1000 (AEST)
-Date: Thu, 24 Aug 2017 13:49:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, nixiaoming <nixiaoming@huawei.com>,
- David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S: Fix race and leak in
- kvm_vm_ioctl_create_spapr_tce()
-Message-ID: <20170824034904.GD5379@umbus.fritz.box>
-References: <20170824034008.GB27401@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdB2g0B04zDqjm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 14:22:02 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7O4JIp1008521
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:22:00 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2chhg3n2fs-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:21:59 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 24 Aug 2017 14:21:57 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7O4LtWJ36175884
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 14:21:55 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7O4Lt6G017910
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 14:21:55 +1000
+Subject: Re: [PATCH kernel 1/5] powerpc/pci: Remove unused parameter from
+ add_one_dev_pci_data()
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Alistair Popple <alistair@popple.id.au>,
+ David Gibson <david@gibson.dropbear.id.au>
+References: <20170823101901.33961-1-aik@ozlabs.ru>
+ <20170823102823.7F12CC603E@b03ledav006.gho.boulder.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 24 Aug 2017 14:21:54 +1000
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="/EQiL+SffV/fXkvV"
-In-Reply-To: <20170824034008.GB27401@fergus.ozlabs.ibm.com>
+In-Reply-To: <20170823102823.7F12CC603E@b03ledav006.gho.boulder.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <320978b9-6d64-4809-7247-9d13aca6eaff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,163 +48,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 23/08/17 20:18, Alexey Kardashevskiy wrote:
+> pdev is always NULL, remove it.
+> 
+> To make checkpatch.pl happy, this also removes the "out of memory"
+> message.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
---/EQiL+SffV/fXkvV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Aug 24, 2017 at 01:40:08PM +1000, Paul Mackerras wrote:
-> Nixiaoming pointed out that there is a memory leak in
-> kvm_vm_ioctl_create_spapr_tce() if the call to anon_inode_getfd()
-> fails; the memory allocated for the kvmppc_spapr_tce_table struct
-> is not freed, and nor are the pages allocated for the iommu
-> tables.  In addition, we have already incremented the process's
-> count of locked memory pages, and this doesn't get restored on
-> error.
->=20
-> David Hildenbrand pointed out that there is a race in that the
-> function checks early on that there is not already an entry in the
-> stt->iommu_tables list with the same LIOBN, but an entry with the
-> same LIOBN could get added between then and when the new entry is
-> added to the list.
->=20
-> This fixes all three problems.  To simplify things, we now call
-> anon_inode_getfd() before placing the new entry in the list.  The
-> check for an existing entry is done while holding the kvm->lock
-> mutex, immediately before adding the new entry to the list.
-> Finally, on failure we now call kvmppc_account_memlimit to
-> decrement the process's count of locked memory pages.
->=20
-> Reported-by: Nixiaoming <nixiaoming@huawei.com>
-> Reported-by: David Hildenbrand <david@redhat.com>
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 > ---
->  arch/powerpc/kvm/book3s_64_vio.c | 55 ++++++++++++++++++++++++----------=
-------
->  1 file changed, 33 insertions(+), 22 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
-4_vio.c
-> index a160c14304eb..d463c1cd0d8d 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -297,29 +297,22 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  	unsigned long npages, size;
->  	int ret =3D -ENOMEM;
->  	int i;
-> +	int fd =3D -1;
-> =20
->  	if (!args->size)
->  		return -EINVAL;
-> =20
-> -	/* Check this LIOBN hasn't been previously allocated */
-> -	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-> -		if (stt->liobn =3D=3D args->liobn)
-> -			return -EBUSY;
+>   arch/powerpc/kernel/pci_dn.c | 14 ++------------
+>   1 file changed, 2 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+> index 592693437070..0256372b72de 100644
+> --- a/arch/powerpc/kernel/pci_dn.c
+> +++ b/arch/powerpc/kernel/pci_dn.c
+> @@ -139,7 +139,6 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+>   
+>   #ifdef CONFIG_PCI_IOV
+>   static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+> -					   struct pci_dev *pdev,
+>   					   int vf_index,
+>   					   int busno, int devfn)
+>   {
+> @@ -150,10 +149,8 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+>   		return NULL;
+>   
+>   	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
+> -	if (!pdn) {
+> -		dev_warn(&pdev->dev, "%s: Out of memory!\n", __func__);
+> +	if (!pdn)
+>   		return NULL;
 > -	}
+>   
+>   	pdn->phb = parent->phb;
+>   	pdn->parent = parent;
+> @@ -167,13 +164,6 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+>   	INIT_LIST_HEAD(&pdn->list);
+>   	list_add_tail(&pdn->list, &parent->child_list);
+>   
+> -	/*
+> -	 * If we already have PCI device instance, lets
+> -	 * bind them.
+> -	 */
+> -	if (pdev)
+> -		pdev->dev.archdata.pci_data = pdn;
 > -
->  	size =3D _ALIGN_UP(args->size, PAGE_SIZE >> 3);
->  	npages =3D kvmppc_tce_pages(size);
->  	ret =3D kvmppc_account_memlimit(kvmppc_stt_pages(npages), true);
-> -	if (ret) {
-> -		stt =3D NULL;
-> -		goto fail;
-> -	}
-> +	if (ret)
-> +		return ret;
-> =20
->  	ret =3D -ENOMEM;
->  	stt =3D kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
->  		      GFP_KERNEL);
->  	if (!stt)
-> -		goto fail;
-> +		goto fail_acct;
-> =20
->  	stt->liobn =3D args->liobn;
->  	stt->page_shift =3D args->page_shift;
-> @@ -334,24 +327,42 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  			goto fail;
->  	}
-> =20
-> -	kvm_get_kvm(kvm);
-> +	ret =3D fd =3D anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
-> +				    stt, O_RDWR | O_CLOEXEC);
-> +	if (ret < 0)
-> +		goto fail;
-> =20
->  	mutex_lock(&kvm->lock);
-> -	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
-> +
-> +	/* Check this LIOBN hasn't been previously allocated */
-> +	ret =3D 0;
-> +	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-> +		if (stt->liobn =3D=3D args->liobn) {
-> +			ret =3D -EBUSY;
-> +			break;
-> +		}
-> +	}
-> +
-> +	if (!ret) {
-> +		list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
-> +		kvm_get_kvm(kvm);
-> +	}
-> =20
->  	mutex_unlock(&kvm->lock);
-> =20
-> -	return anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
-> -				stt, O_RDWR | O_CLOEXEC);
-> +	if (!ret)
-> +		return fd;
-> =20
-> -fail:
-> -	if (stt) {
-> -		for (i =3D 0; i < npages; i++)
-> -			if (stt->pages[i])
-> -				__free_page(stt->pages[i]);
-> +	put_unused_fd(fd);
-> =20
-> -		kfree(stt);
-> -	}
-> + fail:
-> +	for (i =3D 0; i < npages; i++)
-> +		if (stt->pages[i])
-> +			__free_page(stt->pages[i]);
-> +
-> +	kfree(stt);
-> + fail_acct:
-> +	kvmppc_account_memlimit(kvmppc_stt_pages(npages), false);
->  	return ret;
->  }
-> =20
+>   	return pdn;
+>   }
+>   #endif
+> @@ -201,7 +191,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+>   	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
+>   		struct eeh_dev *edev __maybe_unused;
+>   
+> -		pdn = add_one_dev_pci_data(parent, NULL, i,
+> +		pdn = add_one_dev_pci_data(parent, i,
+>   					   pci_iov_virtfn_bus(pdev, i),
+>   					   pci_iov_virtfn_devfn(pdev, i));
+>   		if (!pdn) {
+> 
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---/EQiL+SffV/fXkvV
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlmeTK4ACgkQbDjKyiDZ
-s5J1sg/9FYXvD4lzjEBEeqqMFEH5QaTZubUFcY9yPFwHeGqe3VM0bwrFl7CxIWBk
-8oHKU+5pUin9ATjTq3Yfp1Ux4PeHOOcvl7yR+zTl7CedGFGLSlT4nLT7o59nz4EJ
-7xbSXMVWVY2feJPa8NyKr4gU2I3TjwzPJkg7QWDsdAYFUL7Ue8Qy1w5sAP+2g60k
-R/maYcGP+wMdmg2GSKbTLFZpwEW0z4YEI2pOEk1y9URxjr1JAtux+v9dc9ylUdcc
-GSLdpfGv+GQZa/h2GoOC9vdhds8GEiXzfxUGcjRb9C4XuQvTL1o1UKpiAmnpWZTi
-O+CVouR3g4m3rvL4+HAdesNK/sgn03K7+njaMUDp2ru6cauLK+hd3scF0tl9UB4G
-b5TgsPdfBDssc264GuCwg/RTK26pmVc8ZiYiLQAxGwyQcTQ3h/nlePfWU56cjEtp
-YaHsgrN5v6/ZdCS03hTpkPfaiOCTY8UGdiIYrySFf0PleV2f8p/Eqvm+hneygDMX
-hSpZ1r3ZQBw+L7/TbV0OqR3IaLMfNwzB0ZaPDUDJy/Dur2EX5jaL+s2srqT8cNi4
-z3gbbqjTCNE2hbDMIHoIrirHHkWJFZ0DLOsC5XtQQRRE6nN8PlghJESNHiHLYymb
-Q+uXaVS6dy7z84grBQquv58fY7PTfRRyAYmsvWCvKhNnIBf0sjo=
-=cRy/
------END PGP SIGNATURE-----
-
---/EQiL+SffV/fXkvV--
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
