@@ -1,42 +1,44 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-it0-x22b.google.com (mail-it0-x22b.google.com
- [IPv6:2607:f8b0:4001:c0b::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdK3Z4qb9zDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 19:38:17 +1000 (AEST)
-Received: by mail-it0-x22b.google.com with SMTP id j62so486488ith.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 02:38:17 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAPM=9tzhzGEY_-FhGNECQ8QkxPtXxhojwPeVQT43Rcgf6X0Lww@mail.gmail.com>
-References: <20170817113028.16853-1-dja@axtens.net>
- <20170817113028.16853-2-dja@axtens.net>
- <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
- <20170822221928.GL6948@bhelgaas-glaptop.roam.corp.google.com>
- <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
- <20170823135734.GB8498@bhelgaas-glaptop.roam.corp.google.com>
- <CAPM=9tzhzGEY_-FhGNECQ8QkxPtXxhojwPeVQT43Rcgf6X0Lww@mail.gmail.com>
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Thu, 24 Aug 2017 10:38:14 +0100
-Message-ID: <CAKv+Gu8mfPtQ+vWgzP4adtVB+DByS4snF+FQ7k-UDV+=bxHSsg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
-To: Dave Airlie <airlied@gmail.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Will Deacon <will.deacon@arm.com>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- linux-pci <linux-pci@vger.kernel.org>,
- "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Alex Williamson <alex.williamson@redhat.com>,
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xdKGm5MsCzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 19:47:59 +1000 (AEST)
+Date: Thu, 24 Aug 2017 10:47:56 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: tglx@linutronix.de, mingo@redhat.com, dvhart@infradead.org,
+ peterz@infradead.org, linux-kernel@vger.kernel.org,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
  Catalin Marinas <catalin.marinas@arm.com>,
- Zou Rongrong <zourongrong@gmail.com>, "Vetter,
- Daniel" <daniel.vetter@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Daniel Axtens <dja@axtens.net>
-Content-Type: text/plain; charset="UTF-8"
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ x86@kernel.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2 1/1] futex: remove duplicated code and fix UB
+Message-ID: <20170824094756.GA6346@arm.com>
+References: <20170824073105.3901-1-jslaby@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170824073105.3901-1-jslaby@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,30 +48,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24 August 2017 at 01:57, Dave Airlie <airlied@gmail.com> wrote:
->> Yeah, maybe it's time to disconnect the "default display device" idea
->> from the VGA arbiter.  I have no idea what (if any) dependencies X has
->> on the legacy VGA resources.  I assume X works fine on power, where it
->> sounds like those resources are rarely or never available.
->
-> The question on non-x86 archs, is what is the correct device to default to.
->
-> On x86 we use the legacy VGA resources as a pointer, as this is the device
-> the BIOS appeared on at boot so hopefully should be one you can see stuff on.
->
-> On non-x86 I've no idea how to decide if there are multiple devices, maybe the
-> firmware needs to tag something for the kernel if there are. Otherwise
-> you'd just
-> be picking something in probe order.
->
-> I think the idea of these patches is to separate default display
-> device from the arbiter.
->
-> X uses the arbiter on x86 if required (it's horrible, and it's rare we
-> have to nowadays),
-> but for finding the default device it justs uses the sysfs boot_vga flag.
->
+Hi Jiri,
 
-Part of the problem is that X refuses to start if there is only one
-display device to begin with in case it hasn't taken ownership of the
-VGA legacy resources.
+On Thu, Aug 24, 2017 at 09:31:05AM +0200, Jiri Slaby wrote:
+> There is code duplicated over all architecture's headers for
+> futex_atomic_op_inuser. Namely op decoding, access_ok check for uaddr,
+> and comparison of the result.
+> 
+> Remove this duplication and leave up to the arches only the needed
+> assembly which is now in arch_futex_atomic_op_inuser.
+> 
+> This effectively distributes the Will Deacon's arm64 fix for undefined
+> behaviour reported by UBSAN to all architectures. The fix was done in
+> commit 5f16a046f8e1 (arm64: futex: Fix undefined behaviour with
+> FUTEX_OP_OPARG_SHIFT usage). Look there for an example dump.
+> 
+> And as suggested by Thomas, check for negative oparg too, because it was
+> also reported to cause undefined behaviour report.
+> 
+> Note that s390 removed access_ok check in d12a29703 ("s390/uaccess:
+> remove pointless access_ok() checks") as access_ok there returns true.
+> We introduce it back to the helper for the sake of simplicity (it gets
+> optimized away anyway).
+
+For arm64 and the core code:
+
+Reviewed-by: Will Deacon <will.deacon@arm.com>
+
+Although one minor thing on the core part:
+
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index 0939255fc750..3d38eaf05492 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -1551,6 +1551,45 @@ futex_wake(u32 __user *uaddr, unsigned int flags, int nr_wake, u32 bitset)
+>  	return ret;
+>  }
+>  
+> +static int futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
+> +{
+> +	unsigned int op =	  (encoded_op & 0x70000000) >> 28;
+> +	unsigned int cmp =	  (encoded_op & 0x0f000000) >> 24;
+> +	int oparg = sign_extend32((encoded_op & 0x00fff000) >> 12, 12);
+> +	int cmparg = sign_extend32(encoded_op & 0x00000fff, 12);
+> +	int oldval, ret;
+> +
+> +	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28)) {
+> +		if (oparg < 0 || oparg > 31)
+> +			return -EINVAL;
+> +		oparg = 1 << oparg;
+> +	}
+> +
+> +	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u32)))
+> +		return -EFAULT;
+> +
+> +	ret = arch_futex_atomic_op_inuser(op, oparg, &oldval, uaddr);
+> +	if (ret)
+> +		return ret;
+
+We could move the pagefault_{disable,enable} calls here, and then remove
+them from the futex_atomic_op_inuser callsites elsewhere in futex.c
+
+Will
