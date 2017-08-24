@@ -1,17 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdJSs5zNZzDqn6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 19:11:41 +1000 (AEST)
-Date: Thu, 24 Aug 2017 19:11:38 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdJXW0BHrzDqY8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 19:14:51 +1000 (AEST)
+Date: Thu, 24 Aug 2017 19:14:47 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: nixiaoming <nixiaoming@huawei.com>, David Hildenbrand <david@redhat.com>,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH v2] KVM: PPC: Book3S: Fix race and leak in
+Subject: [PATCH really v2] KVM: PPC: Book3S: Fix race and leak in
  kvm_vm_ioctl_create_spapr_tce()
-Message-ID: <20170824091138.GE27401@fergus.ozlabs.ibm.com>
+Message-ID: <20170824091447.GG27401@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -48,16 +48,20 @@ Reported-by: Nixiaoming <nixiaoming@huawei.com>
 Reported-by: David Hildenbrand <david@redhat.com>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
-v2: Don't overwrite stt in loop over kvm->arch.spapr_tce_tables
+v2: Don't overwrite stt in loop over spapr_tce_tables
 
- arch/powerpc/kvm/book3s_64_vio.c | 55 ++++++++++++++++++++++++----------------
- 1 file changed, 33 insertions(+), 22 deletions(-)
+ arch/powerpc/kvm/book3s_64_vio.c | 56 ++++++++++++++++++++++++----------------
+ 1 file changed, 34 insertions(+), 22 deletions(-)
 
 diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index a160c14..d463c1c 100644
+index a160c14..53766e2 100644
 --- a/arch/powerpc/kvm/book3s_64_vio.c
 +++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -297,29 +297,22 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+@@ -294,32 +294,26 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				   struct kvm_create_spapr_tce_64 *args)
+ {
+ 	struct kvmppc_spapr_tce_table *stt = NULL;
++	struct kvmppc_spapr_tce_table *siter;
  	unsigned long npages, size;
  	int ret = -ENOMEM;
  	int i;
@@ -91,7 +95,7 @@ index a160c14..d463c1c 100644
  
  	stt->liobn = args->liobn;
  	stt->page_shift = args->page_shift;
-@@ -334,24 +327,42 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+@@ -334,24 +328,42 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
  			goto fail;
  	}
  
@@ -106,8 +110,8 @@ index a160c14..d463c1c 100644
 +
 +	/* Check this LIOBN hasn't been previously allocated */
 +	ret = 0;
-+	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-+		if (stt->liobn == args->liobn) {
++	list_for_each_entry(siter, &kvm->arch.spapr_tce_tables, list) {
++		if (siter->liobn == args->liobn) {
 +			ret = -EBUSY;
 +			break;
 +		}
