@@ -1,15 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdP2P1sTqzDqXc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 22:37:33 +1000 (AEST)
-In-Reply-To: <20170811163912.28783-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdP2Q0jQJzDqXv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 22:37:34 +1000 (AEST)
+In-Reply-To: <20170821151651.25096-2-robh@kernel.org>
+To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v2,01/14] powerpc/64s: masked interrupt avoid branch
-Message-Id: <3xdP2P0vx4z9sRW@ozlabs.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Scott Wood <oss@buserror.net>, David Laight <David.Laight@aculab.com>,
+ Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
+ Frank Rowand <frowand.list@gmail.com>
+Subject: Re: [v2,1/5] powerpc: Convert to using %pOF instead of full_name
+Message-Id: <3xdP2P6YKjz9sRq@ozlabs.org>
 Date: Thu, 24 Aug 2017 22:37:33 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,14 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-08-11 at 16:38:59 UTC, Nicholas Piggin wrote:
-> Interrupts which do not require EE to be cleared can all
-> be tested with a single bitwise test.
+On Mon, 2017-08-21 at 15:16:47 UTC, Rob Herring wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
-Patches 1-9 applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e0c827c09c0d04d77616a4506a71b3
+https://git.kernel.org/powerpc/c/b7c670d673d1186e9a6aafaad36aac
+
+
+I forgot to add in the change log I took the chance to reformat some of the
+affected printks, hopefully that doesn't muck you up when you're
+merging/rebasing on top of this.
 
 cheers
