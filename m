@@ -1,20 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdLGm3c0hzDrJx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 20:33:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdLfM2hSTzDrJx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 20:50:03 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: John Allen <jallen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: Don't attempt to acquire drc during
- memory hot add for assigned lmbs
-In-Reply-To: <fc2ad536-a772-f006-43c4-1ddf6e296ebb@linux.vnet.ibm.com>
-References: <fc2ad536-a772-f006-43c4-1ddf6e296ebb@linux.vnet.ibm.com>
-Date: Thu, 24 Aug 2017 20:33:02 +1000
-Message-ID: <874lsxw90h.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Cc: anton@samba.org,
+	paulus@samba.org
+Subject: [PATCH] powerpc: Fix DAR reporting when alignment handler faults
+Date: Thu, 24 Aug 2017 20:49:57 +1000
+Message-Id: <1503571797-16885-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +20,260 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-John Allen <jallen@linux.vnet.ibm.com> writes:
+Anton noticed that if we fault part way through emulating an unaligned
+instruction, we don't update the DAR to reflect that.
 
-> Check if an LMB is assigned before attempting to call dlpar_acquire_drc in
-> order to avoid any unnecessary rtas calls. This substantially reduces the
-> running time of memory hot add on lpars with large amounts of memory.
->
-> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
+The DAR value is eventually reported back to userspace as the address
+in the SEGV signal, and if userspace is using that value to demand
+fault then it can be confused by us not setting the value correctly.
 
-I'll add:
+This patch is ugly as hell, but is intended to be the minimal fix and
+back ports easily.
 
-  Fixes: c21f515c7436 ("powerpc/pseries: Make the acquire/release of the drc for memory a seperate step")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/align.c | 119 +++++++++++++++++++++++++++-----------------
+ 1 file changed, 74 insertions(+), 45 deletions(-)
 
-?
-
-How bad is the slow down, do we need to backport to stable/distros?
-
-cheers
+diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
+index ec7a8b099dd9..fd3c1fcc73eb 100644
+--- a/arch/powerpc/kernel/align.c
++++ b/arch/powerpc/kernel/align.c
+@@ -235,6 +235,28 @@ static int emulate_dcbz(struct pt_regs *regs, unsigned char __user *addr)
+ 
+ #define SWIZ_PTR(p)		((unsigned char __user *)((p) ^ swiz))
+ 
++#define __get_user_or_set_dar(_regs, _dest, _addr)		\
++	({							\
++		int rc = 0;					\
++		typeof(_addr) __addr = (_addr);			\
++		if (__get_user_inatomic(_dest, __addr)) {	\
++			_regs->dar = (unsigned long)__addr;	\
++			rc = -EFAULT;				\
++		}						\
++		rc;						\
++	})
++
++#define __put_user_or_set_dar(_regs, _src, _addr)		\
++	({							\
++		int rc = 0;					\
++		typeof(_addr) __addr = (_addr);			\
++		if (__put_user_inatomic(_src, __addr)) {	\
++			_regs->dar = (unsigned long)__addr;	\
++			rc = -EFAULT;				\
++		}						\
++		rc;						\
++	})
++
+ static int emulate_multiple(struct pt_regs *regs, unsigned char __user *addr,
+ 			    unsigned int reg, unsigned int nb,
+ 			    unsigned int flags, unsigned int instr,
+@@ -263,9 +285,10 @@ static int emulate_multiple(struct pt_regs *regs, unsigned char __user *addr,
+ 		} else {
+ 			unsigned long pc = regs->nip ^ (swiz & 4);
+ 
+-			if (__get_user_inatomic(instr,
+-						(unsigned int __user *)pc))
++			if (__get_user_or_set_dar(regs, instr,
++						  (unsigned int __user *)pc))
+ 				return -EFAULT;
++
+ 			if (swiz == 0 && (flags & SW))
+ 				instr = cpu_to_le32(instr);
+ 			nb = (instr >> 11) & 0x1f;
+@@ -309,31 +332,31 @@ static int emulate_multiple(struct pt_regs *regs, unsigned char __user *addr,
+ 			       ((nb0 + 3) / 4) * sizeof(unsigned long));
+ 
+ 		for (i = 0; i < nb; ++i, ++p)
+-			if (__get_user_inatomic(REG_BYTE(rptr, i ^ bswiz),
+-						SWIZ_PTR(p)))
++			if (__get_user_or_set_dar(regs, REG_BYTE(rptr, i ^ bswiz),
++						  SWIZ_PTR(p)))
+ 				return -EFAULT;
+ 		if (nb0 > 0) {
+ 			rptr = &regs->gpr[0];
+ 			addr += nb;
+ 			for (i = 0; i < nb0; ++i, ++p)
+-				if (__get_user_inatomic(REG_BYTE(rptr,
+-								 i ^ bswiz),
+-							SWIZ_PTR(p)))
++				if (__get_user_or_set_dar(regs,
++							  REG_BYTE(rptr, i ^ bswiz),
++							  SWIZ_PTR(p)))
+ 					return -EFAULT;
+ 		}
+ 
+ 	} else {
+ 		for (i = 0; i < nb; ++i, ++p)
+-			if (__put_user_inatomic(REG_BYTE(rptr, i ^ bswiz),
+-						SWIZ_PTR(p)))
++			if (__put_user_or_set_dar(regs, REG_BYTE(rptr, i ^ bswiz),
++						  SWIZ_PTR(p)))
+ 				return -EFAULT;
+ 		if (nb0 > 0) {
+ 			rptr = &regs->gpr[0];
+ 			addr += nb;
+ 			for (i = 0; i < nb0; ++i, ++p)
+-				if (__put_user_inatomic(REG_BYTE(rptr,
+-								 i ^ bswiz),
+-							SWIZ_PTR(p)))
++				if (__put_user_or_set_dar(regs,
++							  REG_BYTE(rptr, i ^ bswiz),
++							  SWIZ_PTR(p)))
+ 					return -EFAULT;
+ 		}
+ 	}
+@@ -345,29 +368,32 @@ static int emulate_multiple(struct pt_regs *regs, unsigned char __user *addr,
+  * Only POWER6 has these instructions, and it does true little-endian,
+  * so we don't need the address swizzling.
+  */
+-static int emulate_fp_pair(unsigned char __user *addr, unsigned int reg,
+-			   unsigned int flags)
++static int emulate_fp_pair(struct pt_regs *regs, unsigned char __user *addr,
++			   unsigned int reg, unsigned int flags)
+ {
+ 	char *ptr0 = (char *) &current->thread.TS_FPR(reg);
+ 	char *ptr1 = (char *) &current->thread.TS_FPR(reg+1);
+-	int i, ret, sw = 0;
++	int i, sw = 0;
+ 
+ 	if (reg & 1)
+ 		return 0;	/* invalid form: FRS/FRT must be even */
+ 	if (flags & SW)
+ 		sw = 7;
+-	ret = 0;
++
+ 	for (i = 0; i < 8; ++i) {
+ 		if (!(flags & ST)) {
+-			ret |= __get_user(ptr0[i^sw], addr + i);
+-			ret |= __get_user(ptr1[i^sw], addr + i + 8);
++			if (__get_user_or_set_dar(regs, ptr0[i^sw], addr + i))
++				return -EFAULT;
++			if (__get_user_or_set_dar(regs, ptr1[i^sw], addr + i + 8))
++				return -EFAULT;
+ 		} else {
+-			ret |= __put_user(ptr0[i^sw], addr + i);
+-			ret |= __put_user(ptr1[i^sw], addr + i + 8);
++			if (__put_user_or_set_dar(regs, ptr0[i^sw], addr + i))
++				return -EFAULT;
++			if (__put_user_or_set_dar(regs, ptr1[i^sw], addr + i + 8))
++				return -EFAULT;
+ 		}
+ 	}
+-	if (ret)
+-		return -EFAULT;
++
+ 	return 1;	/* exception handled and fixed up */
+ }
+ 
+@@ -377,24 +403,27 @@ static int emulate_lq_stq(struct pt_regs *regs, unsigned char __user *addr,
+ {
+ 	char *ptr0 = (char *)&regs->gpr[reg];
+ 	char *ptr1 = (char *)&regs->gpr[reg+1];
+-	int i, ret, sw = 0;
++	int i, sw = 0;
+ 
+ 	if (reg & 1)
+ 		return 0;	/* invalid form: GPR must be even */
+ 	if (flags & SW)
+ 		sw = 7;
+-	ret = 0;
++
+ 	for (i = 0; i < 8; ++i) {
+ 		if (!(flags & ST)) {
+-			ret |= __get_user(ptr0[i^sw], addr + i);
+-			ret |= __get_user(ptr1[i^sw], addr + i + 8);
++			if (__get_user_or_set_dar(regs, ptr0[i^sw], addr + i))
++				return -EFAULT;
++			if (__get_user_or_set_dar(regs, ptr1[i^sw], addr + i + 8))
++				return -EFAULT;
+ 		} else {
+-			ret |= __put_user(ptr0[i^sw], addr + i);
+-			ret |= __put_user(ptr1[i^sw], addr + i + 8);
++			if (__put_user_or_set_dar(regs, ptr0[i^sw], addr + i))
++				return -EFAULT;
++			if (__put_user_or_set_dar(regs, ptr1[i^sw], addr + i + 8))
++				return -EFAULT;
+ 		}
+ 	}
+-	if (ret)
+-		return -EFAULT;
++
+ 	return 1;	/* exception handled and fixed up */
+ }
+ #endif /* CONFIG_PPC64 */
+@@ -687,9 +716,14 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
+ 	for (j = 0; j < length; j += elsize) {
+ 		for (i = 0; i < elsize; ++i) {
+ 			if (flags & ST)
+-				ret |= __put_user(ptr[i^sw], addr + i);
++				ret = __put_user_or_set_dar(regs, ptr[i^sw],
++							    addr + i);
+ 			else
+-				ret |= __get_user(ptr[i^sw], addr + i);
++				ret = __get_user_or_set_dar(regs, ptr[i^sw],
++							    addr + i);
++
++			if (ret)
++				return ret;
+ 		}
+ 		ptr  += elsize;
+ #ifdef __LITTLE_ENDIAN__
+@@ -739,7 +773,7 @@ int fix_alignment(struct pt_regs *regs)
+ 	unsigned int dsisr;
+ 	unsigned char __user *addr;
+ 	unsigned long p, swiz;
+-	int ret, i;
++	int i;
+ 	union data {
+ 		u64 ll;
+ 		double dd;
+@@ -936,7 +970,7 @@ int fix_alignment(struct pt_regs *regs)
+ 		if (flags & F) {
+ 			/* Special case for 16-byte FP loads and stores */
+ 			PPC_WARN_ALIGNMENT(fp_pair, regs);
+-			return emulate_fp_pair(addr, reg, flags);
++			return emulate_fp_pair(regs, addr, reg, flags);
+ 		} else {
+ #ifdef CONFIG_PPC64
+ 			/* Special case for 16-byte loads and stores */
+@@ -966,15 +1000,12 @@ int fix_alignment(struct pt_regs *regs)
+ 		}
+ 
+ 		data.ll = 0;
+-		ret = 0;
+ 		p = (unsigned long)addr;
+ 
+ 		for (i = 0; i < nb; i++)
+-			ret |= __get_user_inatomic(data.v[start + i],
+-						   SWIZ_PTR(p++));
+-
+-		if (unlikely(ret))
+-			return -EFAULT;
++			if (__get_user_or_set_dar(regs, data.v[start + i],
++						  SWIZ_PTR(p++)))
++				return -EFAULT;
+ 
+ 	} else if (flags & F) {
+ 		data.ll = current->thread.TS_FPR(reg);
+@@ -1046,15 +1077,13 @@ int fix_alignment(struct pt_regs *regs)
+ 			break;
+ 		}
+ 
+-		ret = 0;
+ 		p = (unsigned long)addr;
+ 
+ 		for (i = 0; i < nb; i++)
+-			ret |= __put_user_inatomic(data.v[start + i],
+-						   SWIZ_PTR(p++));
++			if (__put_user_or_set_dar(regs, data.v[start + i],
++						  SWIZ_PTR(p++)))
++				return -EFAULT;
+ 
+-		if (unlikely(ret))
+-			return -EFAULT;
+ 	} else if (flags & F)
+ 		current->thread.TS_FPR(reg) = data.ll;
+ 	else
+-- 
+2.7.4
