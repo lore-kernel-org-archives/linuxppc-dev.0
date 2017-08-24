@@ -1,39 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdLzS5py2zDqm8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 21:04:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdN1J3kSPzDrJY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 21:51:32 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal Suchanek <msuchanek@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Jonathan Corbet <corbet@lwn.net>,
- Jessica Yu <jeyu@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
- Jason Baron <jbaron@akamai.com>, Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>, Andrew Morton <akpm@linux-foundation.org>,
- Michal Suchanek <msuchanek@suse.de>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Neuling <mikey@neuling.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>, Scott Wood <oss@buserror.net>,
- Oliver O'Halloran <oohall@gmail.com>, David Howells <dhowells@redhat.com>,
- Sylvain 'ythier' Hitier <sylvain.hitier@gmail.com>,
- Ingo Molnar <mingo@kernel.org>, Kees Cook <keescook@chromium.org>,
- Thomas Gleixner <tglx@linutronix.de>
-Cc: "Steven Rostedt\, " <rostedt@goodmis.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Tejun Heo <tj@kernel.org>,
- Lokesh Vutla <lokeshvutla@ti.com>, Baoquan He <bhe@redhat.com>,
- Ilya Matveychikov <matvejchikov@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v7 4/4] boot/param: add pointer to next argument to
- unknown parameter callback
-In-Reply-To: <6378df7aed5bb23863d7762d7dc2babdd5e32a45.1503000577.git.msuchanek@suse.de>
-References: <78655b3689f6cd0c76b787b8ef2c824ef75a99a5.1503000577.git.msuchanek@suse.de>
- <6378df7aed5bb23863d7762d7dc2babdd5e32a45.1503000577.git.msuchanek@suse.de>
-Date: Thu, 24 Aug 2017 21:04:51 +1000
-Message-ID: <87shghusz0.fsf@concordia.ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 03/12] powerpc/vas: Define vas_init() and vas_exit()
+In-Reply-To: <1503556688-15412-4-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1503556688-15412-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1503556688-15412-4-git-send-email-sukadev@linux.vnet.ibm.com>
+Date: Thu, 24 Aug 2017 21:51:31 +1000
+Message-ID: <87pobluqt8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,259 +26,351 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Suchanek <msuchanek@suse.de> writes:
+Hi Suka,
 
-> The fadump parameter processing re-does the logic of next_arg quote
-> stripping to determine where the argument ends. Pass pointer to the
-> next argument instead to make this more robust.
->
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> ---
->  arch/powerpc/kernel/fadump.c  | 13 +++++--------
->  arch/powerpc/mm/hugetlbpage.c |  4 ++--
->  include/linux/moduleparam.h   |  2 +-
->  init/main.c                   | 12 ++++++------
->  kernel/module.c               |  4 ++--
->  kernel/params.c               | 19 +++++++++++--------
->  lib/dynamic_debug.c           |  2 +-
->  7 files changed, 28 insertions(+), 28 deletions(-)
+Comments inline ...
 
-Can you split out a patch that adds the next argument and updates the
-callers. And then a patch for the fadump to use the new arg.
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> diff --git a/Documentation/devicetree/bindings/powerpc/ibm,vas.txt b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> new file mode 100644
+> index 0000000..0e3111d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> @@ -0,0 +1,24 @@
+> +* IBM Powerpc Virtual Accelerator Switchboard (VAS)
+> +
+> +VAS is a hardware mechanism that allows kernel subsystems and user processes
+> +to directly submit compression and other requests to Nest accelerators (NX)
+> +or other coprocessors functions.
+> +
+> +Required properties:
+> +- compatible : should be "ibm,vas" or "ibm,power9-vas"
+
+The driver doesn't look for the latter.
+
+> +- ibm,vas-id : A unique identifier for each instance of VAS in the system
+
+What is this?
+
+> +- reg : Should contain 4 pairs of 64-bit fields specifying the Hypervisor
+> +  window context start and length, OS/User window context start and length,
+> +  "Paste address" start and length, "Paste window id" start bit and number
+> +  of bits)
+> +- name : "vas"
+
+I don't think the name is normally included in the binding, and in fact
+there's no reason why the name is important, so I'd be inclined to drop that.
+
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 3c41902..abc235f 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -6425,6 +6425,14 @@ F:	drivers/crypto/nx/nx.*
+>  F:	drivers/crypto/nx/nx_csbcpb.h
+>  F:	drivers/crypto/nx/nx_debugfs.h
+>  
+> +IBM Power Virtual Accelerator Switchboard
+> +M:	Sukadev Bhattiprolu
+> +L:	linuxppc-dev@lists.ozlabs.org
+> +S:	Supported
+> +F:	arch/powerpc/platforms/powernv/vas*
+> +F:	arch/powerpc/include/asm/vas.h
+> +F:	arch/powerpc/include/uapi/asm/vas.h
+
+That's not in the right place, the file is sorted alphabetically.
+
+V comes after L.
+
+> diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+> index 6a6f4ef..f565454 100644
+> --- a/arch/powerpc/platforms/powernv/Kconfig
+> +++ b/arch/powerpc/platforms/powernv/Kconfig
+> @@ -30,3 +30,17 @@ config OPAL_PRD
+>  	help
+>  	  This enables the opal-prd driver, a facility to run processor
+>  	  recovery diagnostics on OpenPower machines
+> +
+> +config PPC_VAS
+> +	bool "IBM Virtual Accelerator Switchboard (VAS)"
+
+^ bool, so never a module.
+
+> +	depends on PPC_POWERNV && PPC_64K_PAGES
+> +	default n
+
+It should be default y.
+
+I know the usual advice is to make things 'default n', but this has
+fairly tight depends already, so y is OK IMO.
+
+> diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
+> new file mode 100644
+> index 0000000..556156b
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/vas.c
+> @@ -0,0 +1,183 @@
+> +/*
+> + * Copyright 2016 IBM Corp.
+
+2016-2017.
+
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+
+#define pr_fmt(fmt) "vas: " fmt
+
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/export.h>
+> +#include <linux/types.h>
+> +#include <linux/slab.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of.h>
+> +
+> +#include "vas.h"
+> +
+> +static bool init_done;
+> +LIST_HEAD(vas_instances);
+
+Can be static.
+
+> +
+> +static int init_vas_instance(struct platform_device *pdev)
+> +{
+> +	int rc, vasid;
+> +	struct vas_instance *vinst;
+> +	struct device_node *dn = pdev->dev.of_node;
+> +	struct resource *res;
+
+	struct device_node *dn = pdev->dev.of_node;
+	struct vas_instance *vinst;
+	struct resource *res;
+	int rc, vasid;
+
+Petty I know, but much prettier :)
+
+> +
+> +	rc = of_property_read_u32(dn, "ibm,vas-id", &vasid);
+> +	if (rc) {
+> +		pr_err("VAS: No ibm,vas-id property for %s?\n", pdev->name);
+
+With the pr_fmt() above you don't need VAS: on the front of all these.
+
+> +		return -ENODEV;
+> +	}
+> +
+> +	if (pdev->num_resources != 4) {
+> +		pr_err("VAS: Unexpected DT configuration for [%s, %d]\n",
+> +				pdev->name, vasid);
+> +		return -ENODEV;
+> +	}
+> +
+> +	vinst = kcalloc(1, sizeof(*vinst), GFP_KERNEL);
+
+kzalloc() would be more normal given there's only 1.
+
+> +	if (!vinst)
+> +		return -ENOMEM;
+> +
+> +	INIT_LIST_HEAD(&vinst->node);
+> +	ida_init(&vinst->ida);
+> +	mutex_init(&vinst->mutex);
+> +	vinst->vas_id = vasid;
+> +	vinst->pdev = pdev;
+> +
+> +	res = &pdev->resource[0];
+> +	vinst->hvwc_bar_start = res->start;
+> +	vinst->hvwc_bar_len = res->end - res->start + 1;
+> +
+> +	res = &pdev->resource[1];
+> +	vinst->uwc_bar_start = res->start;
+> +	vinst->uwc_bar_len = res->end - res->start + 1;
+
+You have vinst->pdev, why do you need to copy all those?
+
+I don't see the lens even used.
+
+> +	res = &pdev->resource[2];
+> +	vinst->paste_base_addr = res->start;
+> +
+> +	res = &pdev->resource[3];
+> +	vinst->paste_win_id_shift = 63 - res->end;
+
+????
+
+What if res->end is INT_MAX ?
+
+> +	pr_devel("VAS: Initialized instance [%s, %d], paste_base 0x%llx, "
+> +			"paste_win_id_shift 0x%llx\n", pdev->name, vasid,
+> +			vinst->paste_base_addr, vinst->paste_win_id_shift);
+> +
+> +	vinst->ready = true;
+
+I don't see ready used.
+
+It also shouldn't be necessary, it's not ready unless it's in the list,
+and if it's in the list then it's ready.
+
+If you're actually concerned about concurrent usage then you need a
+memory barrier here to order the stores to the vinst struct vs the
+addition to the list. And you need a matching barrier on the read side.
+
+> +	list_add(&vinst->node, &vas_instances);
+> +
+> +	dev_set_drvdata(&pdev->dev, vinst);
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Although this is read/used multiple times, it is written to only
+> + * during initialization.
+> + */
+> +struct vas_instance *find_vas_instance(int vasid)
+> +{
+> +	struct list_head *ent;
+> +	struct vas_instance *vinst;
+> +
+> +	list_for_each(ent, &vas_instances) {
+> +		vinst = list_entry(ent, struct vas_instance, node);
+> +		if (vinst->vas_id == vasid)
+> +			return vinst;
+> +	}
+
+There's no locking here, or any reference counting of the instances. see 
+
+> +	pr_devel("VAS: Instance %d not found\n", vasid);
+> +	return NULL;
+> +}
+> +
+> +bool vas_initialized(void)
+> +{
+> +	return init_done;
+> +}
+> +
+> +static int vas_probe(struct platform_device *pdev)
+> +{
+> +	if (!pdev || !pdev->dev.of_node)
+> +		return -ENODEV;
+
+Neither of those can happen, or if they did it would be a BUG.
+
+> +	return init_vas_instance(pdev);
+> +}
+> +
+> +static void free_inst(struct vas_instance *vinst)
+> +{
+> +	list_del(&vinst->node);
+> +	kfree(vinst);
+
+And here you just delete and the free the instance, even though you have
+handed out pointers to the instance above in find_vas_instance().
+
+So that needs work.
+
+Is there any hardware cleanup required before we delete the instance? Or
+do we just leave any windows there?
+
+Seems like to begin with you should probably just not support remove.
+
+> +static int vas_remove(struct platform_device *pdev)
+> +{
+> +	struct vas_instance *vinst;
+> +
+> +	vinst = dev_get_drvdata(&pdev->dev);
+> +
+> +	pr_devel("VAS: Removed instance [%s, %d]\n", pdev->name,
+> +				vinst->vas_id);
+> +	free_inst(vinst);
+> +
+> +	return 0;
+> +}
+> +static const struct of_device_id powernv_vas_match[] = {
+> +	{ .compatible = "ibm,vas",},
+> +	{},
+> +};
+> +
+> +static struct platform_driver vas_driver = {
+> +	.driver = {
+> +		.name = "vas",
+> +		.of_match_table = powernv_vas_match,
+> +	},
+> +	.probe = vas_probe,
+> +	.remove = vas_remove,
+> +};
+> +
+> +module_platform_driver(vas_driver);
+
+Can't be a module.
+
+> +
+> +int vas_init(void)
+> +{
+> +	int found = 0;
+> +	struct device_node *dn;
+> +
+> +	for_each_compatible_node(dn, NULL, "ibm,vas") {
+> +		of_platform_device_create(dn, NULL, NULL);
+> +		found++;
+> +	}
+> +
+> +	if (!found)
+> +		return -ENODEV;
+> +
+> +	pr_devel("VAS: Found %d instances\n", found);
+> +	init_done = true;
+
+What does init_done mean?
+
+The way it's currently written it just means there were some ibm,vas
+nodes in the device tree. But it doesn't say that we actually probed
+them correctly and created vas instances for them.
+
+So it doesn't really tell you much.
+
+Two of the callers of vas_initialized() immediately do a
+find_instance(), so they don't really need to call it at all, the lack
+of any instances will suffice.
+
+The other two callers are vas_copy_crb() and vas_paste_crb(). The only
+use of the former is in nx which doesn't check the return code.
+
+But both should never be called unless we allocated a window anyway.
+
+In short it seems unecessary.
+
+> +
+> +	return 0;
+> +}
+> +
+> +void vas_exit(void)
+> +{
+> +	struct list_head *ent;
+> +	struct vas_instance *vinst;
+> +
+> +	list_for_each(ent, &vas_instances) {
+> +		vinst = list_entry(ent, struct vas_instance, node);
+> +		of_platform_depopulate(&vinst->pdev->dev);
+> +	}
+> +
+> +	init_done = false;
+> +}
+> +
+> +module_init(vas_init);
+> +module_exit(vas_exit);
+> +MODULE_DESCRIPTION("Bare metal IBM Virtual Accelerator Switchboard");
+> +MODULE_AUTHOR("Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>");
+> +MODULE_LICENSE("GPL");
+
+Can't be a module.
+
+Just a device_initcall() should work for init, you shouldn't need
+vas_exit() or any of the other bits.
 
 cheers
-
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index d7da4ce9f7ae..6ef96711ee9a 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -474,13 +474,14 @@ struct param_info {
->  };
->  
->  static void __init fadump_update_params(struct param_info *param_info,
-> -					char *param, char *val)
-> +					char *param, char *val, char *next)
->  {
->  	ptrdiff_t param_offset = param - param_info->tmp_cmdline;
->  	size_t vallen = val ? strlen(val) : 0;
->  	char *tgt = param_info->cmdline + param_offset +
->  		FADUMP_EXTRA_ARGS_LEN - param_info->shortening;
-> -	int shortening = 0;
-> +	int shortening = ((next - 1) - (param))
-> +		- (FADUMP_EXTRA_ARGS_LEN + 1 + vallen);
->  
->  	if (!val)
->  		return;
-> @@ -488,10 +489,6 @@ static void __init fadump_update_params(struct param_info *param_info,
->  	/* remove '=' */
->  	*tgt++ = ' ';
->  
-> -	/* next_arg removes one leading and one trailing '"' */
-> -	if ((*tgt == '"') && (*(tgt + vallen + shortening) == '"'))
-> -		shortening += 2;
-> -
->  	/* remove one leading and one trailing quote if both are present */
->  	if ((val[0] == '"') && (val[vallen - 1] == '"')) {
->  		shortening += 2;
-> @@ -517,7 +514,7 @@ static void __init fadump_update_params(struct param_info *param_info,
->   * to enforce the parameters passed through it
->   */
->  static int __init fadump_rework_cmdline_params(char *param, char *val,
-> -					       const char *unused, void *arg)
-> +				char *next, const char *unused, void *arg)
->  {
->  	struct param_info *param_info = (struct param_info *)arg;
->  
-> @@ -525,7 +522,7 @@ static int __init fadump_rework_cmdline_params(char *param, char *val,
->  		     strlen(FADUMP_EXTRA_ARGS_PARAM) - 1))
->  		return 0;
->  
-> -	fadump_update_params(param_info, param, val);
-> +	fadump_update_params(param_info, param, val, next);
->  
->  	return 0;
->  }
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index e1bf5ca397fe..3a4cce552906 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -268,8 +268,8 @@ int alloc_bootmem_huge_page(struct hstate *hstate)
->  
->  unsigned long gpage_npages[MMU_PAGE_COUNT];
->  
-> -static int __init do_gpage_early_setup(char *param, char *val,
-> -				       const char *unused, void *arg)
-> +static int __init do_gpage_early_setup(char *param, char *val, char *unused1,
-> +				       const char *unused2, void *arg)
->  {
->  	static phys_addr_t size;
->  	unsigned long npages;
-> diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-> index 1ee7b30dafec..fec05a186c08 100644
-> --- a/include/linux/moduleparam.h
-> +++ b/include/linux/moduleparam.h
-> @@ -326,7 +326,7 @@ extern char *parse_args(const char *name,
->  		      s16 level_min,
->  		      s16 level_max,
->  		      void *arg,
-> -		      int (*unknown)(char *param, char *val,
-> +		      int (*unknown)(char *param, char *val, char *next,
->  				     const char *doing, void *arg));
->  
->  /* Called by module remove. */
-> diff --git a/init/main.c b/init/main.c
-> index 052481fbe363..920c3564b2f0 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -239,7 +239,7 @@ static int __init loglevel(char *str)
->  early_param("loglevel", loglevel);
->  
->  /* Change NUL term back to "=", to make "param" the whole string. */
-> -static int __init repair_env_string(char *param, char *val,
-> +static int __init repair_env_string(char *param, char *val, char *unused2,
->  				    const char *unused, void *arg)
->  {
->  	if (val) {
-> @@ -257,7 +257,7 @@ static int __init repair_env_string(char *param, char *val,
->  }
->  
->  /* Anything after -- gets handed straight to init. */
-> -static int __init set_init_arg(char *param, char *val,
-> +static int __init set_init_arg(char *param, char *val, char *unused2,
->  			       const char *unused, void *arg)
->  {
->  	unsigned int i;
-> @@ -265,7 +265,7 @@ static int __init set_init_arg(char *param, char *val,
->  	if (panic_later)
->  		return 0;
->  
-> -	repair_env_string(param, val, unused, NULL);
-> +	repair_env_string(param, val, unused2, unused, NULL);
->  
->  	for (i = 0; argv_init[i]; i++) {
->  		if (i == MAX_INIT_ARGS) {
-> @@ -282,10 +282,10 @@ static int __init set_init_arg(char *param, char *val,
->   * Unknown boot options get handed to init, unless they look like
->   * unused parameters (modprobe will find them in /proc/cmdline).
->   */
-> -static int __init unknown_bootoption(char *param, char *val,
-> +static int __init unknown_bootoption(char *param, char *val, char *unused2,
->  				     const char *unused, void *arg)
->  {
-> -	repair_env_string(param, val, unused, NULL);
-> +	repair_env_string(param, val, unused2, unused, NULL);
->  
->  	/* Handle obsolete-style parameters */
->  	if (obsolete_checksetup(param))
-> @@ -437,7 +437,7 @@ static noinline void __ref rest_init(void)
->  }
->  
->  /* Check for early params. */
-> -static int __init do_early_param(char *param, char *val,
-> +static int __init do_early_param(char *param, char *val, char *unused2,
->  				 const char *unused, void *arg)
->  {
->  	const struct obs_kernel_param *p;
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 40f983cbea81..5e241ba95a91 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -3609,8 +3609,8 @@ static int prepare_coming_module(struct module *mod)
->  	return 0;
->  }
->  
-> -static int unknown_module_param_cb(char *param, char *val, const char *modname,
-> -				   void *arg)
-> +static int unknown_module_param_cb(char *param, char *val, char *next,
-> +					const char *modname, void *arg)
->  {
->  	struct module *mod = arg;
->  	int ret;
-> diff --git a/kernel/params.c b/kernel/params.c
-> index 60b2d8101355..9f568fbf5287 100644
-> --- a/kernel/params.c
-> +++ b/kernel/params.c
-> @@ -119,13 +119,14 @@ static void param_check_unsafe(const struct kernel_param *kp)
->  
->  static int parse_one(char *param,
->  		     char *val,
-> +		     char *next,
->  		     const char *doing,
->  		     const struct kernel_param *params,
->  		     unsigned num_params,
->  		     s16 min_level,
->  		     s16 max_level,
->  		     void *arg,
-> -		     int (*handle_unknown)(char *param, char *val,
-> +		     int (*handle_unknown)(char *param, char *val, char *next,
->  				     const char *doing, void *arg))
->  {
->  	unsigned int i;
-> @@ -153,7 +154,7 @@ static int parse_one(char *param,
->  
->  	if (handle_unknown) {
->  		pr_debug("doing %s: %s='%s'\n", doing, param, val);
-> -		return handle_unknown(param, val, doing, arg);
-> +		return handle_unknown(param, val, next, doing, arg);
->  	}
->  
->  	pr_debug("Unknown argument '%s'\n", param);
-> @@ -168,10 +169,10 @@ char *parse_args(const char *doing,
->  		 s16 min_level,
->  		 s16 max_level,
->  		 void *arg,
-> -		 int (*unknown)(char *param, char *val,
-> +		 int (*unknown)(char *param, char *val, char *next,
->  				const char *doing, void *arg))
->  {
-> -	char *param, *val, *err = NULL;
-> +	char *param, *val, *next, *err = NULL;
->  
->  	/* Chew leading spaces */
->  	args = skip_spaces(args);
-> @@ -179,16 +180,18 @@ char *parse_args(const char *doing,
->  	if (*args)
->  		pr_debug("doing %s, parsing ARGS: '%s'\n", doing, args);
->  
-> -	while (*args) {
-> +	next = next_arg(args, &param, &val);
-> +	do {
->  		int ret;
->  		int irq_was_disabled;
->  
-> -		args = next_arg(args, &param, &val);
-> +		args = next;
-> +		next = next_arg(args, &param, &val);
->  		/* Stop at -- */
->  		if (!val && strcmp(param, "--") == 0)
->  			return err ?: args;
->  		irq_was_disabled = irqs_disabled();
-> -		ret = parse_one(param, val, doing, params, num,
-> +		ret = parse_one(param, val, next, doing, params, num,
->  				min_level, max_level, arg, unknown);
->  		if (irq_was_disabled && !irqs_disabled())
->  			pr_warn("%s: option '%s' enabled irq's!\n",
-> @@ -211,7 +214,7 @@ char *parse_args(const char *doing,
->  		}
->  
->  		err = ERR_PTR(ret);
-> -	}
-> +	} while (*next);
->  
->  	return err;
->  }
-> diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
-> index da796e2dc4f5..bdedc1ca5bf6 100644
-> --- a/lib/dynamic_debug.c
-> +++ b/lib/dynamic_debug.c
-> @@ -888,7 +888,7 @@ static int ddebug_dyndbg_param_cb(char *param, char *val,
->  }
->  
->  /* handle both dyndbg and $module.dyndbg params at boot */
-> -static int ddebug_dyndbg_boot_param_cb(char *param, char *val,
-> +static int ddebug_dyndbg_boot_param_cb(char *param, char *val, char *unused2,
->  				const char *unused, void *arg)
->  {
->  	vpr_info("%s=\"%s\"\n", param, val);
-> -- 
-> 2.10.2
