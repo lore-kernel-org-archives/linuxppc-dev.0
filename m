@@ -1,42 +1,22 @@
-Return-Path: <Thomas.Lendacky@amd.com>
+Return-Path: <roy.pledge@nxp.com>
 Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0079.outbound.protection.outlook.com [104.47.36.79])
+ (mail-sn1nam02on0062.outbound.protection.outlook.com [104.47.36.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdYQ86k5YzDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 04:55:11 +1000 (AEST)
-Subject: Re: [RFC Part1 PATCH v3 14/17] x86/boot: Add early boot support when
- running with SEV active
-To: Borislav Petkov <bp@suse.de>, Brijesh Singh <brijesh.singh@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H . Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- Tony Luck <tony.luck@intel.com>, Piotr Luc <piotr.luc@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-15-brijesh.singh@amd.com>
- <20170823153058.yli5qogrmjl74wkl@pd.tnic>
-From: Tom Lendacky <thomas.lendacky@amd.com>
-Message-ID: <42cf82fc-03be-c4c7-eaab-b2306a049d20@amd.com>
-Date: Thu, 24 Aug 2017 13:54:57 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdbhr4PG0zDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 06:38:03 +1000 (AEST)
+From: Roy Pledge <roy.pledge@nxp.com>
+To: <leoyang.li@nxp.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+CC: <oss@buserror.net>, <madalin.bucur@nxp.com>, <catalin.marinas@arm.com>,
+ <linux@armlinux.org.uk>, <arnd@arndb.de>, <mark.rutland@arm.com>, Roy Pledge
+ <roy.pledge@nxp.com>
+Subject: [v4 00/11] soc/fsl/qbman: Enable QBMan on ARM Platforms
+Date: Thu, 24 Aug 2017 16:37:44 -0400
+Message-ID: <1503607075-28970-1-git-send-email-roy.pledge@nxp.com>
+Reply-To: <roy.pledge@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <20170823153058.yli5qogrmjl74wkl@pd.tnic>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,344 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8/23/2017 10:30 AM, Borislav Petkov wrote:
-> On Mon, Jul 24, 2017 at 02:07:54PM -0500, Brijesh Singh wrote:
->> From: Tom Lendacky <thomas.lendacky@amd.com>
->>
->> Early in the boot process, add checks to determine if the kernel is
->> running with Secure Encrypted Virtualization (SEV) active.
->>
->> Checking for SEV requires checking that the kernel is running under a
->> hypervisor (CPUID 0x00000001, bit 31), that the SEV feature is available
->> (CPUID 0x8000001f, bit 1) and then check a non-interceptable SEV MSR
->> (0xc0010131, bit 0).
->>
->> This check is required so that during early compressed kernel booting the
->> pagetables (both the boot pagetables and KASLR pagetables (if enabled) are
->> updated to include the encryption mask so that when the kernel is
->> decompressed into encrypted memory.
-> 
-> 				    , it can boot properly.
-> 
-> :)
-> 
+This patch series enables DPAA1 QBMan devices for ARM and
+ARM64 architectures. This allows the LS1043A and LS1046A to use
+QBMan functionality which allows access to ethernet and cyptographic
+devices for example.
 
-Yup, kinda didn't complete that sentence.
+Changes since v3:
+- Use memremap() instead of ioremap() for non iomem QBMan portal regions
+- Ensured the __iomem attribute is respected when accessing iomem mapped regions
+- Removed calls to flush/invalidate/prefetch for ARM/ARM64 since mapping is done as write combine
 
->> After the kernel is decompressed and continues booting the same logic is
->> used to check if SEV is active and set a flag indicating so.  This allows
->> us to distinguish between SME and SEV, each of which have unique
->> differences in how certain things are handled: e.g. DMA (always bounce
->> buffered with SEV) or EFI tables (always access decrypted with SME).
->>
->> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
->> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
->> ---
->>   arch/x86/boot/compressed/Makefile      |   2 +
->>   arch/x86/boot/compressed/head_64.S     |  16 +++++
->>   arch/x86/boot/compressed/mem_encrypt.S | 103 +++++++++++++++++++++++++++++++++
->>   arch/x86/boot/compressed/misc.h        |   2 +
->>   arch/x86/boot/compressed/pagetable.c   |   8 ++-
->>   arch/x86/include/asm/mem_encrypt.h     |   3 +
->>   arch/x86/include/asm/msr-index.h       |   3 +
->>   arch/x86/include/uapi/asm/kvm_para.h   |   1 -
->>   arch/x86/mm/mem_encrypt.c              |  42 +++++++++++---
->>   9 files changed, 169 insertions(+), 11 deletions(-)
->>   create mode 100644 arch/x86/boot/compressed/mem_encrypt.S
->>
->> diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
->> index 2c860ad..d2fe901 100644
->> --- a/arch/x86/boot/compressed/Makefile
->> +++ b/arch/x86/boot/compressed/Makefile
->> @@ -72,6 +72,8 @@ vmlinux-objs-y := $(obj)/vmlinux.lds $(obj)/head_$(BITS).o $(obj)/misc.o \
->>   	$(obj)/string.o $(obj)/cmdline.o $(obj)/error.o \
->>   	$(obj)/piggy.o $(obj)/cpuflags.o
->>   
->> +vmlinux-objs-$(CONFIG_X86_64) += $(obj)/mem_encrypt.o
-> 
-> There's a
-> 
-> ifdef CONFIG_X86_64
-> 
-> a couple of lines below. Just put it there.
+Changes since v2:
+- Fixed some misspellings
+- Added 'no-map' constraint to device tree bindings
+- Described ordering contraint on regions in the device tree
+- Removed confusing comment regarding non-shareable mappings
+- Added warning if old reserved-memory technique is used on ARM
 
-Will do.
+Changes since v1:
+- Reworked private memory allocations to use shared-dma-pool on ARM platforms
 
-> 
-> ...
-> 
->> +++ b/arch/x86/boot/compressed/mem_encrypt.S
->> @@ -0,0 +1,103 @@
->> +/*
->> + * AMD Memory Encryption Support
->> + *
->> + * Copyright (C) 2017 Advanced Micro Devices, Inc.
->> + *
->> + * Author: Tom Lendacky <thomas.lendacky@amd.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/linkage.h>
->> +
->> +#include <asm/processor-flags.h>
->> +#include <asm/msr.h>
->> +#include <asm/asm-offsets.h>
->> +
->> +	.text
->> +	.code32
->> +ENTRY(get_sev_encryption_bit)
->> +	xor	%eax, %eax
->> +
->> +#ifdef CONFIG_AMD_MEM_ENCRYPT
->> +	push	%ebx
->> +	push	%ecx
->> +	push	%edx
->> +
->> +	/* Check if running under a hypervisor */
->> +	movl	$1, %eax
->> +	cpuid
->> +	bt	$31, %ecx		/* Check the hypervisor bit */
->> +	jnc	.Lno_sev
->> +
->> +	movl	$0x80000000, %eax	/* CPUID to check the highest leaf */
->> +	cpuid
->> +	cmpl	$0x8000001f, %eax	/* See if 0x8000001f is available */
->> +	jb	.Lno_sev
->> +
->> +	/*
->> +	 * Check for the SEV feature:
->> +	 *   CPUID Fn8000_001F[EAX] - Bit 1
->> +	 *   CPUID Fn8000_001F[EBX] - Bits 5:0
->> +	 *     Pagetable bit position used to indicate encryption
->> +	 */
->> +	movl	$0x8000001f, %eax
->> +	cpuid
->> +	bt	$1, %eax		/* Check if SEV is available */
->> +	jnc	.Lno_sev
->> +
->> +	movl	$MSR_F17H_SEV, %ecx	/* Read the SEV MSR */
->> +	rdmsr
->> +	bt	$MSR_F17H_SEV_ENABLED_BIT, %eax	/* Check if SEV is active */
->> +	jnc	.Lno_sev
->> +
->> +	/*
->> +	 * Get memory encryption information:
->> +	 */
-> 
-> The side-comment is enough. This one above can go.
 
-Done.
+Claudiu Manoil (2):
+  soc/fsl/qbman: Drop L1_CACHE_BYTES compile time check
+  soc/fsl/qbman: Add missing headers on ARM
 
-> 
->> +	movl	%ebx, %eax
->> +	andl	$0x3f, %eax		/* Return the encryption bit location */
->> +	jmp	.Lsev_exit
->> +
->> +.Lno_sev:
->> +	xor	%eax, %eax
->> +
->> +.Lsev_exit:
->> +	pop	%edx
->> +	pop	%ecx
->> +	pop	%ebx
->> +
->> +#endif	/* CONFIG_AMD_MEM_ENCRYPT */
->> +
->> +	ret
->> +ENDPROC(get_sev_encryption_bit)
->> +
->> +	.code64
->> +ENTRY(get_sev_encryption_mask)
->> +	xor	%rax, %rax
->> +
->> +#ifdef CONFIG_AMD_MEM_ENCRYPT
->> +	push	%rbp
->> +	push	%rdx
->> +
->> +	movq	%rsp, %rbp		/* Save current stack pointer */
->> +
->> +	call	get_sev_encryption_bit	/* Get the encryption bit position */
-> 
-> So we get to call get_sev_encryption_bit() here again and noodle through
-> the CPUID discovery and MSR access. We should instead cache that info
-> and return the encryption bit directly on a second call. (And initialize
-> it to -1 to denote that get_sev_encryption_bit() hasn't run yet).
+Madalin Bucur (4):
+  soc/fsl/qbman: Drop set/clear_bits usage
+  soc/fsl/qbman: add QMAN_REV32
+  soc/fsl/qbman: different register offsets on ARM
+  fsl/soc/qbman: Enable FSL_LAYERSCAPE config on ARM
 
-Ok, I'll look into that optimization.
+Roy Pledge (4):
+  soc/fsl/qbman: Use shared-dma-pool for BMan private memory allocations
+  soc/fsl/qbman: Use shared-dma-pool for QMan private memory allocations
+  dt-bindings: soc/fsl: Update reserved memory binding for QBMan
+  soc/fsl/qbman: Rework portal mapping calls for ARM/PPC
 
-> 
-> ...
-> 
->> diff --git a/arch/x86/include/asm/mem_encrypt.h b/arch/x86/include/asm/mem_encrypt.h
->> index 9274ec7..9cb6472 100644
->> --- a/arch/x86/include/asm/mem_encrypt.h
->> +++ b/arch/x86/include/asm/mem_encrypt.h
->> @@ -19,6 +19,9 @@
->>   
->>   #include <asm/bootparam.h>
->>   
->> +#define AMD_SME_FEATURE_BIT	BIT(0)
->> +#define AMD_SEV_FEATURE_BIT	BIT(1)
-> 
-> s/_FEATURE//
-> 
-> AMD_SME_BIT and AMD_SEV_BIT is good enough :)
-> 
-> And frankly, if you're going to use them only below in sme_enable() - I
-> need to check more thoroughly the remaining patches - but if you only
-> are going to use them there, just define them inside the function so
-> that they're close.
+Valentin Rothberg (1):
+  soc/fsl/qbman: Fix ARM32 typo
 
-Sounds good. I believe that is the only place they are/will be used
-so I'll make that change.
+ Documentation/devicetree/bindings/soc/fsl/bman.txt |  12 +-
+ Documentation/devicetree/bindings/soc/fsl/qman.txt |  26 ++--
+ drivers/soc/fsl/qbman/Kconfig                      |   2 +-
+ drivers/soc/fsl/qbman/bman.c                       |  30 ++++-
+ drivers/soc/fsl/qbman/bman_ccsr.c                  |  35 +++++-
+ drivers/soc/fsl/qbman/bman_portal.c                |  36 ++++--
+ drivers/soc/fsl/qbman/bman_priv.h                  |  11 +-
+ drivers/soc/fsl/qbman/dpaa_sys.h                   |  14 +--
+ drivers/soc/fsl/qbman/qman.c                       |  52 ++++++--
+ drivers/soc/fsl/qbman/qman_ccsr.c                  | 140 ++++++++++++++++-----
+ drivers/soc/fsl/qbman/qman_portal.c                |  36 ++++--
+ drivers/soc/fsl/qbman/qman_priv.h                  |  13 +-
+ drivers/soc/fsl/qbman/qman_test.h                  |   2 -
+ 13 files changed, 305 insertions(+), 104 deletions(-)
 
-> 
->> +
->>   #ifdef CONFIG_AMD_MEM_ENCRYPT
->>   
->>   extern unsigned long sme_me_mask;
->> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
->> index e399d68..530020f 100644
->> --- a/arch/x86/include/asm/msr-index.h
->> +++ b/arch/x86/include/asm/msr-index.h
->> @@ -326,6 +326,9 @@
->>   
->>   /* Fam 17h MSRs */
->>   #define MSR_F17H_IRPERF			0xc00000e9
->> +#define MSR_F17H_SEV			0xc0010131
-> 
-> If that MSR is going to be used later on - and I don't see why not - you
-> probably should make it an arch one: MSR_AMD64_SEV. Even if it isn't yet
-> officially. :-)
-> 
-
-Will do.
-
->> +#define MSR_F17H_SEV_ENABLED_BIT	0
->> +#define MSR_F17H_SEV_ENABLED		BIT_ULL(MSR_F17H_SEV_ENABLED_BIT)
->>   
->>   /* Fam 16h MSRs */
->>   #define MSR_F16H_L2I_PERF_CTL		0xc0010230
->> diff --git a/arch/x86/include/uapi/asm/kvm_para.h b/arch/x86/include/uapi/asm/kvm_para.h
->> index a965e5b..c202ba3 100644
->> --- a/arch/x86/include/uapi/asm/kvm_para.h
->> +++ b/arch/x86/include/uapi/asm/kvm_para.h
->> @@ -109,5 +109,4 @@ struct kvm_vcpu_pv_apf_data {
->>   #define KVM_PV_EOI_ENABLED KVM_PV_EOI_MASK
->>   #define KVM_PV_EOI_DISABLED 0x0
->>   
->> -
->>   #endif /* _UAPI_ASM_X86_KVM_PARA_H */
->> diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
->> index 5e5d460..ed8780e 100644
->> --- a/arch/x86/mm/mem_encrypt.c
->> +++ b/arch/x86/mm/mem_encrypt.c
->> @@ -288,7 +288,9 @@ void __init mem_encrypt_init(void)
->>   	if (sev_active())
->>   		dma_ops = &sme_dma_ops;
->>   
->> -	pr_info("AMD Secure Memory Encryption (SME) active\n");
->> +	pr_info("AMD %s active\n",
->> +		sev_active() ? "Secure Encrypted Virtualization (SEV)"
->> +			     : "Secure Memory Encryption (SME)");
->>   }
->>   
->>   void swiotlb_set_mem_attributes(void *vaddr, unsigned long size)
->> @@ -616,12 +618,23 @@ void __init __nostackprotector sme_enable(struct boot_params *bp)
->>   {
->>   	const char *cmdline_ptr, *cmdline_arg, *cmdline_on, *cmdline_off;
->>   	unsigned int eax, ebx, ecx, edx;
->> +	unsigned long feature_mask;
->>   	bool active_by_default;
->>   	unsigned long me_mask;
->>   	char buffer[16];
->>   	u64 msr;
->>   
->> -	/* Check for the SME support leaf */
->> +	/*
->> +	 * Set the feature mask (SME or SEV) based on whether we are
->> +	 * running under a hypervisor.
->> +	 */
->> +	eax = 1;
->> +	ecx = 0;
->> +	native_cpuid(&eax, &ebx, &ecx, &edx);
->> +	feature_mask = (ecx & BIT(31)) ? AMD_SEV_FEATURE_BIT
->> +				       : AMD_SME_FEATURE_BIT;
-> 
-> Set that feature mask before using it...
-> 
->> +
->> +	/* Check for the SME/SEV support leaf */
-> 
-> ... because if that check exits due to no SME leaf, you're uselessly
-> doing all the above.
-
-Ok, I'll move that down after the leaf check.
-
-> 
->>   	eax = 0x80000000;
->>   	ecx = 0;
->>   	native_cpuid(&eax, &ebx, &ecx, &edx);
->> @@ -629,24 +642,39 @@ void __init __nostackprotector sme_enable(struct boot_params *bp)
->>   		return;
->>   
->>   	/*
->> -	 * Check for the SME feature:
->> +	 * Check for the SME/SEV feature:
->>   	 *   CPUID Fn8000_001F[EAX] - Bit 0
->>   	 *     Secure Memory Encryption support
->> +	 *   CPUID Fn8000_001F[EAX] - Bit 1
-> 
-> No need to repeat the CPUID leaf here - only Bit 1:
-> 
->           *   CPUID Fn8000_001F[EAX]
-> 	 * - Bit 0:  Secure Memory Encryption support
->           * - Bit 1:  Secure Encrypted Virtualization support
-> 
-
-Ok, I'll clean that up.
-
-Thanks,
-Tom
-
-> 
->> +	 *     Secure Encrypted Virtualization support
->>   	 *   CPUID Fn8000_001F[EBX] - Bits 5:0
->>   	 *     Pagetable bit position used to indicate encryption
->>   	 */
->>   	eax = 0x8000001f;
->>   	ecx = 0;
->>   	native_cpuid(&eax, &ebx, &ecx, &edx);
->> -	if (!(eax & 1))
->> +	if (!(eax & feature_mask))
->>   		return;
->>   
->>   	me_mask = 1UL << (ebx & 0x3f);
->>   
->> -	/* Check if SME is enabled */
->> -	msr = __rdmsr(MSR_K8_SYSCFG);
->> -	if (!(msr & MSR_K8_SYSCFG_MEM_ENCRYPT))
->> +	/* Check if memory encryption is enabled */
->> +	if (feature_mask == AMD_SME_FEATURE_BIT) {
->> +		/* For SME, check the SYSCFG MSR */
->> +		msr = __rdmsr(MSR_K8_SYSCFG);
->> +		if (!(msr & MSR_K8_SYSCFG_MEM_ENCRYPT))
->> +			return;
->> +	} else {
->> +		/* For SEV, check the SEV MSR */
->> +		msr = __rdmsr(MSR_F17H_SEV);
->> +		if (!(msr & MSR_F17H_SEV_ENABLED))
->> +			return;
->> +
->> +		/* SEV state cannot be controlled by a command line option */
->> +		sme_me_mask = me_mask;
->> +		sev_enabled = 1;
->>   		return;
->> +	}
-> 
-> Nice. Two birds with one stone is always better. :)
-> 
-> 
+--
+2.7.4
