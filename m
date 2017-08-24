@@ -1,23 +1,23 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdPDC3928zDqXc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 22:46:03 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id m7so3773533pga.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 05:46:03 -0700 (PDT)
-Date: Thu, 24 Aug 2017 22:45:44 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdPPM4Dg9zDqYR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 22:53:59 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id w27so3794584pge.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 05:53:59 -0700 (PDT)
+Date: Thu, 24 Aug 2017 22:53:46 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v2 10/14] KVM: PPC: Book3S HV: POWER9 does not require
- secondary thread management
-Message-ID: <20170824224544.0d53c27c@roar.ozlabs.ibm.com>
-In-Reply-To: <20170824093435.GH27401@fergus.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 12/14] KVM: PPC: Book3S HV: POWER9 can execute stop
+ without a sync sequence
+Message-ID: <20170824225346.2cd23f67@roar.ozlabs.ibm.com>
+In-Reply-To: <20170824102735.GI27401@fergus.ozlabs.ibm.com>
 References: <20170811163912.28783-1-npiggin@gmail.com>
- <20170811163912.28783-11-npiggin@gmail.com>
- <20170824093435.GH27401@fergus.ozlabs.ibm.com>
+ <20170811163912.28783-13-npiggin@gmail.com>
+ <20170824102735.GI27401@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,36 +29,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 24 Aug 2017 19:34:35 +1000
+On Thu, 24 Aug 2017 20:27:35 +1000
 Paul Mackerras <paulus@ozlabs.org> wrote:
 
-> On Sat, Aug 12, 2017 at 02:39:08AM +1000, Nicholas Piggin wrote:
-> > POWER9 CPUs have independent MMU contexts per thread, so KVM does not
-> > need to quiesce secondary threads, so the hwthread_req/hwthread_state
-> > protocol does not have to be used. So patch it away on POWER9, and patch
-> > away the branch from the Linux idle wakeup to kvm_start_guest that is
-> > never used.  
+> On Sat, Aug 12, 2017 at 02:39:10AM +1000, Nicholas Piggin wrote:
+> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 24 ++++++++++++------------
+> >  1 file changed, 12 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > index 3e024fd71fe8..edb47738a686 100644
+> > --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > @@ -2527,7 +2527,17 @@ BEGIN_FTR_SECTION
+> >  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+> >  
+> >  kvm_nap_sequence:		/* desired LPCR value in r5 */
+> > -BEGIN_FTR_SECTION
+> > +BEGIN_FTR_SECTION	/* nap sequence */
+> > +	mtspr	SPRN_LPCR,r5
+> > +	isync
+> > +	li	r0, 0
+> > +	std	r0, HSTATE_SCRATCH0(r13)
+> > +	ptesync
+> > +	ld	r0, HSTATE_SCRATCH0(r13)
+> > +1:	cmpd	r0, r0
+> > +	bne	1b
+> > +	nap
+> > +FTR_SECTION_ELSE	/* stop sequence */
+> >  	/*
+> >  	 * PSSCR bits:	exit criterion = 1 (wakeup based on LPCR at sreset)
+> >  	 *		enable state loss = 1 (allow SMT mode switch)
+> > @@ -2539,18 +2549,8 @@ BEGIN_FTR_SECTION
+> >  	li	r4, LPCR_PECE_HVEE@higher
+> >  	sldi	r4, r4, 32
+> >  	or	r5, r5, r4
+> > -END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> >  	mtspr	SPRN_LPCR,r5
+> > -	isync
+> > -	li	r0, 0
+> > -	std	r0, HSTATE_SCRATCH0(r13)
+> > -	ptesync
+> > -	ld	r0, HSTATE_SCRATCH0(r13)
+> > -1:	cmpd	r0, r0
+> > -	bne	1b
+> > -BEGIN_FTR_SECTION
+> > -	nap
+> > -FTR_SECTION_ELSE
+> > +
+> >  	PPC_STOP
+> >  ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+> >  	b	.
+> > -- 
+> > 2.13.3  
 > 
-> If/when we add support for running HPT guests on a radix host, we will
-> have to run the host in single-threaded mode (since POWER9 doesn't
-> support having some threads of a core using HPT and some using radix
-> simultaneously).  We'll then need some sort of thing like
-> kvmppc_grab_hwthread to coordinate with the threads so that guests can
-> use the secondary threads.
->
-> So I think most of this code should stay.  We will still need to have
-> a way to make sure that the secondaries are in real mode and not in a
-> guest, because all threads will need to be in real mode when switching
-> the core between radix and HPT mode.  Maybe we can optimize it a bit
-> at present given that we don't yet support running HPT guests on a
-> radix host, but I don't want to make it harder to do that in future.
+> Currently we never get to kvm_nap_sequence on POWER9 because we are
+> always running one vcpu per vcore, so I haven't worried about this
+> code too much.  In future we might need this for running HPT guests on
+> a radix host, though.
 
-Okay, most of the code's still there, just noped out with ARCH_300.
-But yes this and then the subsequent patches do make it more
-difficult to restore the KVM real mode functionality.
-
-I'll see about restructuring them to keep that ability and make it
-selectable with a minimal branchs or alt patches.
+Just trying to keep in in synch with Linux, but the rest of the
+series does not depend on this one so it can be left out if you'd
+rather.
 
 Thanks,
 Nick
