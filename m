@@ -1,31 +1,39 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qk0-x236.google.com (mail-qk0-x236.google.com
- [IPv6:2607:f8b0:400d:c09::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdQgq1fD9zDqms
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:51:35 +1000 (AEST)
-Received: by mail-qk0-x236.google.com with SMTP id b129so3262335qkf.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 06:51:35 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Thu, 24 Aug 2017 06:51:23 -0700
-From: Tejun Heo <tj@kernel.org>
-To: Laurent Vivier <lvivier@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linux-block@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
- Lai Jiangshan <jiangshanlai@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/workqueue: update list of possible CPUs
-Message-ID: <20170824135122.GM491396@devbig577.frc2.facebook.com>
-References: <20170821134951.18848-1-lvivier@redhat.com>
- <20170821144832.GE491396@devbig577.frc2.facebook.com>
- <87r2w4bcq2.fsf@concordia.ellerman.id.au>
- <20170822165437.GG491396@devbig577.frc2.facebook.com>
- <87lgmay2eg.fsf@concordia.ellerman.id.au>
- <20170823132642.GH491396@devbig577.frc2.facebook.com>
- <6ab4f6f1-b42f-a5fe-4974-0996baa86502@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdQpY4HwhzDqms
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:57:25 +1000 (AEST)
+Date: Thu, 24 Aug 2017 08:57:21 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Will Deacon <will.deacon@arm.com>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ linux-pci <linux-pci@vger.kernel.org>,
+ "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Zou Rongrong <zourongrong@gmail.com>,
+ "Vetter, Daniel" <daniel.vetter@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
+Message-ID: <20170824135721.GB31858@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170817113028.16853-1-dja@axtens.net>
+ <20170817113028.16853-2-dja@axtens.net>
+ <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
+ <20170822221928.GL6948@bhelgaas-glaptop.roam.corp.google.com>
+ <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
+ <20170823135734.GB8498@bhelgaas-glaptop.roam.corp.google.com>
+ <CAPM=9tzhzGEY_-FhGNECQ8QkxPtXxhojwPeVQT43Rcgf6X0Lww@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6ab4f6f1-b42f-a5fe-4974-0996baa86502@redhat.com>
+In-Reply-To: <CAPM=9tzhzGEY_-FhGNECQ8QkxPtXxhojwPeVQT43Rcgf6X0Lww@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,59 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Laurent.
-
-On Thu, Aug 24, 2017 at 02:10:31PM +0200, Laurent Vivier wrote:
-> > Yeah, it just needs to match up new cpus to the cpu ids assigned to
-> > the right node.
+On Thu, Aug 24, 2017 at 10:57:26AM +1000, Dave Airlie wrote:
+> > Yeah, maybe it's time to disconnect the "default display device" idea
+> > from the VGA arbiter.  I have no idea what (if any) dependencies X has
+> > on the legacy VGA resources.  I assume X works fine on power, where it
+> > sounds like those resources are rarely or never available.
 > 
-> We are not able to assign the cpu ids to the right node before the CPU
-> is present, because firmware doesn't provide CPU mapping <-> node id
-> before that.
-
-What I meant was to assign the matching CPU ID when the CPU becomes
-present - ie. have CPU IDs available for different nodes and allocate
-them to the new CPU according to its node mapping when it actually
-comes up.  Please note that I'm not saying this is the way to go, just
-that it is a solvable problem from the arch code.
-
-> > The node mapping for that cpu id changes *dynamically* while the
-> > system is running and that can race with node-affinity sensitive
-> > operations such as memory allocations.
+> The question on non-x86 archs, is what is the correct device to default to.
 > 
-> Memory is mapped to the node through its own firmware entry, so I don't
-> think cpu id change can affect memory affinity, and before we know the
-> node id of the CPU, the CPU is not present and thus it can't use memory.
-
-The latter part isn't true.  For example, percpu memory gets alloacted
-for all possible CPUs according to their node affinity, so the memory
-node association change which happens when the CPU comes up for the
-first time can race against such allocations.  I don't know whether
-that's actually problematic but we don't have *any* synchronization
-around it.  If you think it's safe to have such races, please explain
-why that is.
-
-> > Please take a step back and think through the problem again.  You
-> > can't bandaid it this way.
+> On x86 we use the legacy VGA resources as a pointer, as this is the device
+> the BIOS appeared on at boot so hopefully should be one you can see stuff on.
 > 
-> Could you give some ideas, proposals?
-> As the firmware doesn't provide the information before the CPU is really
-> plugged, I really don't know how to manage this problem.
+> On non-x86 I've no idea how to decide if there are multiple devices, maybe the
+> firmware needs to tag something for the kernel if there are. Otherwise
+> you'd just
+> be picking something in probe order.
+> 
+> I think the idea of these patches is to separate default display
+> device from the arbiter.
+> 
+> X uses the arbiter on x86 if required (it's horrible, and it's rare we
+> have to nowadays),
+> but for finding the default device it justs uses the sysfs boot_vga flag.
 
-There are two possible approaches, I think.
+The sysfs boot_vga thing comes from PCI.  The name suggests that it's
+a VGA device and can use the legacy VGA resources.
 
-1. Make physical cpu -> logical cpu mapping indirect so that the
-   kernel's cpu ID assignment is always on the right numa node.  This
-   may mean that the kernel might have to keep more possible CPUs
-   around than necessary but it does have the benefit that all memory
-   allocations are affine to the right node.
+If we want to indicate a general default display device that need not
+be "VGA", it'd be really nice if we could pick a name that did not
+include "vga".
 
-2. Make cpu <-> node mapping properly dynamic.  Identify what sort of
-   synchronization we'd need around the mapping changing dynamically.
-   Note that we might not need much but it'll most likely need some.
-   Build synchronization and notification infrastructure around it.
+Even if we could only do it inside the kernel, I think it would reduce
+confusion if we could separate out the "VGA"-specific stuff like the
+arbiter and names like "vga_set_default_device()" so that systems with
+a non-legacy VGA default display device didn't have to use "VGA"
+interfaces that don't make sense for them.
 
-Thanks.
-
--- 
-tejun
+Bjorn
