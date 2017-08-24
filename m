@@ -1,39 +1,23 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdQpY4HwhzDqms
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:57:25 +1000 (AEST)
-Date: Thu, 24 Aug 2017 08:57:21 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Will Deacon <will.deacon@arm.com>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- linux-pci <linux-pci@vger.kernel.org>,
- "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Zou Rongrong <zourongrong@gmail.com>,
- "Vetter, Daniel" <daniel.vetter@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH v2 1/1] Split VGA default device handler out of VGA arbiter
-Message-ID: <20170824135721.GB31858@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170817113028.16853-1-dja@axtens.net>
- <20170817113028.16853-2-dja@axtens.net>
- <20170821105300.GB23287@e107981-lin.cambridge.arm.com>
- <20170822221928.GL6948@bhelgaas-glaptop.roam.corp.google.com>
- <CAKv+Gu-FCkV9Dv=yn_CNC9orj8Roiabb75jX34w3mMziWVZaeA@mail.gmail.com>
- <20170823135734.GB8498@bhelgaas-glaptop.roam.corp.google.com>
- <CAPM=9tzhzGEY_-FhGNECQ8QkxPtXxhojwPeVQT43Rcgf6X0Lww@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdQr60YsLzDrJ3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 23:58:46 +1000 (AEST)
+Subject: Re: [PATCH 4/4] powerpc/32: remove a NOP from memset()
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <cover.1503277387.git.christophe.leroy@c-s.fr>
+ <ae2205dedfe437e4df2dd0cc7605d62189833221.1503277387.git.christophe.leroy@c-s.fr>
+ <871so1w86g.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <4fcbdc51-b170-d4a2-5344-c55b2ec71cbb@c-s.fr>
+Date: Thu, 24 Aug 2017 15:58:41 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAPM=9tzhzGEY_-FhGNECQ8QkxPtXxhojwPeVQT43Rcgf6X0Lww@mail.gmail.com>
+In-Reply-To: <871so1w86g.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,40 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 24, 2017 at 10:57:26AM +1000, Dave Airlie wrote:
-> > Yeah, maybe it's time to disconnect the "default display device" idea
-> > from the VGA arbiter.  I have no idea what (if any) dependencies X has
-> > on the legacy VGA resources.  I assume X works fine on power, where it
-> > sounds like those resources are rarely or never available.
-> 
-> The question on non-x86 archs, is what is the correct device to default to.
-> 
-> On x86 we use the legacy VGA resources as a pointer, as this is the device
-> the BIOS appeared on at boot so hopefully should be one you can see stuff on.
-> 
-> On non-x86 I've no idea how to decide if there are multiple devices, maybe the
-> firmware needs to tag something for the kernel if there are. Otherwise
-> you'd just
-> be picking something in probe order.
-> 
-> I think the idea of these patches is to separate default display
-> device from the arbiter.
-> 
-> X uses the arbiter on x86 if required (it's horrible, and it's rare we
-> have to nowadays),
-> but for finding the default device it justs uses the sysfs boot_vga flag.
 
-The sysfs boot_vga thing comes from PCI.  The name suggests that it's
-a VGA device and can use the legacy VGA resources.
 
-If we want to indicate a general default display device that need not
-be "VGA", it'd be really nice if we could pick a name that did not
-include "vga".
+Le 24/08/2017 à 12:51, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> memset() is patched after initialisation to activate the
+>> optimised part which uses cache instructions.
+>>
+>> Today we have a 'b 2f' to skip the optimised patch, which then gets
+>> replaced by a NOP, implying a useless cycle consumption.
+>> As we have a 'bne 2f' just before, we could use that instruction
+>> for the live patching, hence removing the need to have a
+>> dedicated 'b 2f' to be replaced by a NOP.
+>>
+>> This patch changes the 'bne 2f' by a 'b 2f'. During init, that
+>> 'b 2f' is then replaced by 'bne 2f'
+> 
+> I'm not sure what the sequence is during boot for the 32-bit code, but
+> can you use an ALT_FTR section for this? Possibly that doesn't get done
+> at the right time though.
 
-Even if we could only do it inside the kernel, I think it would reduce
-confusion if we could separate out the "VGA"-specific stuff like the
-arbiter and names like "vga_set_default_device()" so that systems with
-a non-legacy VGA default display device didn't have to use "VGA"
-interfaces that don't make sense for them.
+Unfortunately, as we discussed in 2015 
+(https://lkml.org/lkml/2015/9/10/608), the ALT_FTR does things too 
+early, while the cache is not enabled yet.
 
-Bjorn
+Christophe
