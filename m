@@ -1,16 +1,16 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0060.outbound.protection.outlook.com [104.47.36.60])
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0046.outbound.protection.outlook.com [104.47.42.46])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdG9x59N6zDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 17:28:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdG9z65kZzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 17:28:39 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>, <davem@davemloft.net>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 1/7] fsl/fman: move struct fman to header file
-Date: Thu, 24 Aug 2017 10:28:22 +0300
-Message-ID: <1503559708-13405-2-git-send-email-madalin.bucur@nxp.com>
+Subject: [PATCH v3 3/7] dpaa_eth: use multiple Rx frame queues
+Date: Thu, 24 Aug 2017 10:28:24 +0300
+Message-ID: <1503559708-13405-4-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1503559708-13405-1-git-send-email-madalin.bucur@nxp.com>
 References: <1503559708-13405-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -25,180 +25,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add a block of 128 Rx frame queues per port. The FMan hardware will
+send traffic on one of these queues based on the FMan port Parse
+Classify Distribute setup. The hash computed by the FMan Keygen
+block will select the Rx FQ.
+
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- drivers/net/ethernet/freescale/fman/fman.c | 74 ------------------------------
- drivers/net/ethernet/freescale/fman/fman.h | 73 +++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+), 74 deletions(-)
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     | 50 +++++++++++++++++++---
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  1 +
+ .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  3 ++
+ 3 files changed, 47 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fman/fman.c b/drivers/net/ethernet/freescale/fman/fman.c
-index e714b8f..6ed383f 100644
---- a/drivers/net/ethernet/freescale/fman/fman.c
-+++ b/drivers/net/ethernet/freescale/fman/fman.c
-@@ -564,80 +564,6 @@ struct fman_cfg {
- 	u32 qmi_def_tnums_thresh;
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+index c7fa285..6d89e74 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -158,7 +158,7 @@ MODULE_PARM_DESC(tx_timeout, "The Tx timeout in ms");
+ #define DPAA_RX_PRIV_DATA_SIZE	(u16)(DPAA_TX_PRIV_DATA_SIZE + \
+ 					dpaa_rx_extra_headroom)
+ 
+-#define DPAA_ETH_RX_QUEUES	128
++#define DPAA_ETH_PCD_RXQ_NUM	128
+ 
+ #define DPAA_ENQUEUE_RETRIES	100000
+ 
+@@ -169,6 +169,7 @@ struct fm_port_fqs {
+ 	struct dpaa_fq *tx_errq;
+ 	struct dpaa_fq *rx_defq;
+ 	struct dpaa_fq *rx_errq;
++	struct dpaa_fq *rx_pcdq;
  };
  
--/* Structure that holds information received from device tree */
--struct fman_dts_params {
--	void __iomem *base_addr;		/* FMan virtual address */
--	struct resource *res;			/* FMan memory resource */
--	u8 id;					/* FMan ID */
--
--	int err_irq;				/* FMan Error IRQ */
--
--	u16 clk_freq;				/* FMan clock freq (In Mhz) */
--
--	u32 qman_channel_base;			/* QMan channels base */
--	u32 num_of_qman_channels;		/* Number of QMan channels */
--
--	struct resource muram_res;		/* MURAM resource */
--};
--
--/** fman_exceptions_cb
-- * fman		- Pointer to FMan
-- * exception	- The exception.
-- *
-- * Exceptions user callback routine, will be called upon an exception
-- * passing the exception identification.
-- *
-- * Return: irq status
-- */
--typedef irqreturn_t (fman_exceptions_cb)(struct fman *fman,
--					 enum fman_exceptions exception);
--
--/** fman_bus_error_cb
-- * fman		- Pointer to FMan
-- * port_id	- Port id
-- * addr		- Address that caused the error
-- * tnum		- Owner of error
-- * liodn	- Logical IO device number
-- *
-- * Bus error user callback routine, will be called upon bus error,
-- * passing parameters describing the errors and the owner.
-- *
-- * Return: IRQ status
-- */
--typedef irqreturn_t (fman_bus_error_cb)(struct fman *fman, u8 port_id,
--					u64 addr, u8 tnum, u16 liodn);
--
--struct fman {
--	struct device *dev;
--	void __iomem *base_addr;
--	struct fman_intr_src intr_mng[FMAN_EV_CNT];
--
--	struct fman_fpm_regs __iomem *fpm_regs;
--	struct fman_bmi_regs __iomem *bmi_regs;
--	struct fman_qmi_regs __iomem *qmi_regs;
--	struct fman_dma_regs __iomem *dma_regs;
--	struct fman_hwp_regs __iomem *hwp_regs;
--	fman_exceptions_cb *exception_cb;
--	fman_bus_error_cb *bus_error_cb;
--	/* Spinlock for FMan use */
--	spinlock_t spinlock;
--	struct fman_state_struct *state;
--
--	struct fman_cfg *cfg;
--	struct muram_info *muram;
--	/* cam section in muram */
--	unsigned long cam_offset;
--	size_t cam_size;
--	/* Fifo in MURAM */
--	unsigned long fifo_offset;
--	size_t fifo_size;
--
--	u32 liodn_base[64];
--	u32 liodn_offset[64];
--
--	struct fman_dts_params dts_params;
--};
--
- static irqreturn_t fman_exceptions(struct fman *fman,
- 				   enum fman_exceptions exception)
+ /* All the dpa bps in use at any moment */
+@@ -628,6 +629,7 @@ static inline void dpaa_assign_wq(struct dpaa_fq *fq, int idx)
+ 		fq->wq = 5;
+ 		break;
+ 	case FQ_TYPE_RX_DEFAULT:
++	case FQ_TYPE_RX_PCD:
+ 		fq->wq = 6;
+ 		break;
+ 	case FQ_TYPE_TX:
+@@ -688,6 +690,7 @@ static int dpaa_alloc_all_fqs(struct device *dev, struct list_head *list,
+ 			      struct fm_port_fqs *port_fqs)
  {
-diff --git a/drivers/net/ethernet/freescale/fman/fman.h b/drivers/net/ethernet/freescale/fman/fman.h
-index f53e147..6745065 100644
---- a/drivers/net/ethernet/freescale/fman/fman.h
-+++ b/drivers/net/ethernet/freescale/fman/fman.h
-@@ -274,6 +274,79 @@ struct fman_intr_src {
- 	void *src_handle;
- };
+ 	struct dpaa_fq *dpaa_fq;
++	u32 fq_base, fq_base_aligned, i;
  
-+/** fman_exceptions_cb
-+ * fman         - Pointer to FMan
-+ * exception    - The exception.
-+ *
-+ * Exceptions user callback routine, will be called upon an exception
-+ * passing the exception identification.
-+ *
-+ * Return: irq status
-+ */
-+typedef irqreturn_t (fman_exceptions_cb)(struct fman *fman,
-+					 enum fman_exceptions exception);
-+/** fman_bus_error_cb
-+ * fman         - Pointer to FMan
-+ * port_id      - Port id
-+ * addr         - Address that caused the error
-+ * tnum         - Owner of error
-+ * liodn        - Logical IO device number
-+ *
-+ * Bus error user callback routine, will be called upon bus error,
-+ * passing parameters describing the errors and the owner.
-+ *
-+ * Return: IRQ status
-+ */
-+typedef irqreturn_t (fman_bus_error_cb)(struct fman *fman, u8 port_id,
-+					u64 addr, u8 tnum, u16 liodn);
+ 	dpaa_fq = dpaa_fq_alloc(dev, 0, 1, list, FQ_TYPE_RX_ERROR);
+ 	if (!dpaa_fq)
+@@ -701,6 +704,26 @@ static int dpaa_alloc_all_fqs(struct device *dev, struct list_head *list,
+ 
+ 	port_fqs->rx_defq = &dpaa_fq[0];
+ 
++	/* the PCD FQIDs range needs to be aligned for correct operation */
++	if (qman_alloc_fqid_range(&fq_base, 2 * DPAA_ETH_PCD_RXQ_NUM))
++		goto fq_alloc_failed;
 +
-+/* Structure that holds information received from device tree */
-+struct fman_dts_params {
-+	void __iomem *base_addr;                /* FMan virtual address */
-+	struct resource *res;                   /* FMan memory resource */
-+	u8 id;                                  /* FMan ID */
++	fq_base_aligned = ALIGN(fq_base, DPAA_ETH_PCD_RXQ_NUM);
 +
-+	int err_irq;                            /* FMan Error IRQ */
++	for (i = fq_base; i < fq_base_aligned; i++)
++		qman_release_fqid(i);
 +
-+	u16 clk_freq;                           /* FMan clock freq (In Mhz) */
++	for (i = fq_base_aligned + DPAA_ETH_PCD_RXQ_NUM;
++	     i < (fq_base + 2 * DPAA_ETH_PCD_RXQ_NUM); i++)
++		qman_release_fqid(i);
 +
-+	u32 qman_channel_base;                  /* QMan channels base */
-+	u32 num_of_qman_channels;               /* Number of QMan channels */
++	dpaa_fq = dpaa_fq_alloc(dev, fq_base_aligned, DPAA_ETH_PCD_RXQ_NUM,
++				list, FQ_TYPE_RX_PCD);
++	if (!dpaa_fq)
++		goto fq_alloc_failed;
 +
-+	struct resource muram_res;              /* MURAM resource */
-+};
++	port_fqs->rx_pcdq = &dpaa_fq[0];
 +
-+struct fman {
-+	struct device *dev;
-+	void __iomem *base_addr;
-+	struct fman_intr_src intr_mng[FMAN_EV_CNT];
+ 	if (!dpaa_fq_alloc(dev, 0, DPAA_ETH_TXQ_NUM, list, FQ_TYPE_TX_CONF_MQ))
+ 		goto fq_alloc_failed;
+ 
+@@ -870,13 +893,14 @@ static void dpaa_fq_setup(struct dpaa_priv *priv,
+ 			  const struct dpaa_fq_cbs *fq_cbs,
+ 			  struct fman_port *tx_port)
+ {
+-	int egress_cnt = 0, conf_cnt = 0, num_portals = 0, cpu;
++	int egress_cnt = 0, conf_cnt = 0, num_portals = 0, portal_cnt = 0, cpu;
+ 	const cpumask_t *affine_cpus = qman_affine_cpus();
+-	u16 portals[NR_CPUS];
++	u16 channels[NR_CPUS];
+ 	struct dpaa_fq *fq;
+ 
+ 	for_each_cpu(cpu, affine_cpus)
+-		portals[num_portals++] = qman_affine_channel(cpu);
++		channels[num_portals++] = qman_affine_channel(cpu);
 +
-+	struct fman_fpm_regs __iomem *fpm_regs;
-+	struct fman_bmi_regs __iomem *bmi_regs;
-+	struct fman_qmi_regs __iomem *qmi_regs;
-+	struct fman_dma_regs __iomem *dma_regs;
-+	struct fman_hwp_regs __iomem *hwp_regs;
-+	fman_exceptions_cb *exception_cb;
-+	fman_bus_error_cb *bus_error_cb;
-+	/* Spinlock for FMan use */
-+	spinlock_t spinlock;
-+	struct fman_state_struct *state;
-+
-+	struct fman_cfg *cfg;
-+	struct muram_info *muram;
-+	/* cam section in muram */
-+	unsigned long cam_offset;
-+	size_t cam_size;
-+	/* Fifo in MURAM */
-+	unsigned long fifo_offset;
-+	size_t fifo_size;
-+
-+	u32 liodn_base[64];
-+	u32 liodn_offset[64];
-+
-+	struct fman_dts_params dts_params;
-+};
-+
- /* Structure for port-FM communication during fman_port_init. */
- struct fman_port_init_params {
- 	u8 port_id;			/* port Id */
+ 	if (num_portals == 0)
+ 		dev_err(priv->net_dev->dev.parent,
+ 			"No Qman software (affine) channels found");
+@@ -890,6 +914,12 @@ static void dpaa_fq_setup(struct dpaa_priv *priv,
+ 		case FQ_TYPE_RX_ERROR:
+ 			dpaa_setup_ingress(priv, fq, &fq_cbs->rx_errq);
+ 			break;
++		case FQ_TYPE_RX_PCD:
++			if (!num_portals)
++				continue;
++			dpaa_setup_ingress(priv, fq, &fq_cbs->rx_defq);
++			fq->channel = channels[portal_cnt++ % num_portals];
++			break;
+ 		case FQ_TYPE_TX:
+ 			dpaa_setup_egress(priv, fq, tx_port,
+ 					  &fq_cbs->egress_ern);
+@@ -1039,7 +1069,8 @@ static int dpaa_fq_init(struct dpaa_fq *dpaa_fq, bool td_enable)
+ 		/* Put all the ingress queues in our "ingress CGR". */
+ 		if (priv->use_ingress_cgr &&
+ 		    (dpaa_fq->fq_type == FQ_TYPE_RX_DEFAULT ||
+-		     dpaa_fq->fq_type == FQ_TYPE_RX_ERROR)) {
++		     dpaa_fq->fq_type == FQ_TYPE_RX_ERROR ||
++		     dpaa_fq->fq_type == FQ_TYPE_RX_PCD)) {
+ 			initfq.we_mask |= cpu_to_be16(QM_INITFQ_WE_CGID);
+ 			initfq.fqd.fq_ctrl |= cpu_to_be16(QM_FQCTRL_CGE);
+ 			initfq.fqd.cgid = (u8)priv->ingress_cgr.cgrid;
+@@ -1170,7 +1201,7 @@ static int dpaa_eth_init_tx_port(struct fman_port *port, struct dpaa_fq *errq,
+ 
+ static int dpaa_eth_init_rx_port(struct fman_port *port, struct dpaa_bp **bps,
+ 				 size_t count, struct dpaa_fq *errq,
+-				 struct dpaa_fq *defq,
++				 struct dpaa_fq *defq, struct dpaa_fq *pcdq,
+ 				 struct dpaa_buffer_layout *buf_layout)
+ {
+ 	struct fman_buffer_prefix_content buf_prefix_content;
+@@ -1190,6 +1221,10 @@ static int dpaa_eth_init_rx_port(struct fman_port *port, struct dpaa_bp **bps,
+ 	rx_p = &params.specific_params.rx_params;
+ 	rx_p->err_fqid = errq->fqid;
+ 	rx_p->dflt_fqid = defq->fqid;
++	if (pcdq) {
++		rx_p->pcd_base_fqid = pcdq->fqid;
++		rx_p->pcd_fqs_count = DPAA_ETH_PCD_RXQ_NUM;
++	}
+ 
+ 	count = min(ARRAY_SIZE(rx_p->ext_buf_pools.ext_buf_pool), count);
+ 	rx_p->ext_buf_pools.num_of_pools_used = (u8)count;
+@@ -1234,7 +1269,8 @@ static int dpaa_eth_init_ports(struct mac_device *mac_dev,
+ 		return err;
+ 
+ 	err = dpaa_eth_init_rx_port(rxport, bps, count, port_fqs->rx_errq,
+-				    port_fqs->rx_defq, &buf_layout[RX]);
++				    port_fqs->rx_defq, port_fqs->rx_pcdq,
++				    &buf_layout[RX]);
+ 
+ 	return err;
+ }
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+index 9941a78..496a12c 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+@@ -52,6 +52,7 @@
+ enum dpaa_fq_type {
+ 	FQ_TYPE_RX_DEFAULT = 1, /* Rx Default FQs */
+ 	FQ_TYPE_RX_ERROR,	/* Rx Error FQs */
++	FQ_TYPE_RX_PCD,		/* Rx Parse Classify Distribute FQs */
+ 	FQ_TYPE_TX,		/* "Real" Tx FQs */
+ 	FQ_TYPE_TX_CONFIRM,	/* Tx default Conf FQ (actually an Rx FQ) */
+ 	FQ_TYPE_TX_CONF_MQ,	/* Tx conf FQs (one for each Tx FQ) */
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
+index ec75d1c..0d9b185 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
+@@ -71,6 +71,9 @@ static ssize_t dpaa_eth_show_fqids(struct device *dev,
+ 		case FQ_TYPE_RX_ERROR:
+ 			str = "Rx error";
+ 			break;
++		case FQ_TYPE_RX_PCD:
++			str = "Rx PCD";
++			break;
+ 		case FQ_TYPE_TX_CONFIRM:
+ 			str = "Tx default confirmation";
+ 			break;
 -- 
 2.1.0
