@@ -1,44 +1,44 @@
 Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdBpt4dtLzDqTt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 14:56:54 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7O4uSOf108380
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:56:51 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2chmm3xuxh-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdCKc0W6vzDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 15:20:03 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7O5IlER049577
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 01:20:02 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2chgmsvm4h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 00:56:51 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 01:20:01 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 24 Aug 2017 14:56:48 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7O4tVG630081158
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 14:55:31 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7O4tMba020328
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 14:55:22 +1000
-Subject: Re: [PATCH kernel 4/5] powerpc/eeh: Remove unnecessary config_addr
- from eeh_dev
+ Thu, 24 Aug 2017 15:19:58 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7O5JuWV35389576
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 15:19:56 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7O5JuRL028870
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 15:19:56 +1000
+Subject: Re: [PATCH kernel 5/5] powerpc/eeh: Remove unnecessary node from
+ pci_dn
 To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 Cc: Alistair Popple <alistair@popple.id.au>,
  David Gibson <david@gibson.dropbear.id.au>
 References: <20170823101901.33961-1-aik@ozlabs.ru>
- <20170823102546.29A77AE034@b01ledav005.gho.pok.ibm.com>
+ <20170823102629.539BD2803A@b01ledav001.gho.pok.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 24 Aug 2017 14:55:30 +1000
+Date: Thu, 24 Aug 2017 15:19:55 +1000
 MIME-Version: 1.0
-In-Reply-To: <20170823102546.29A77AE034@b01ledav005.gho.pok.ibm.com>
+In-Reply-To: <20170823102629.539BD2803A@b01ledav001.gho.pok.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <d05774f5-b46e-ec7e-cd02-6071a5cd2508@au1.ibm.com>
+Message-Id: <038c06f7-120f-5a42-286d-541634716525@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,218 +49,103 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 23/08/17 20:19, Alexey Kardashevskiy wrote:
-> The eeh_dev struct hold a config space address of an associated node
-> and the very same address is also stored in the pci_dn struct which
-> is always present during the eeh_dev lifetime.
+> The pci_dn struct caches a OF device node pointer in order to access
+> the "ibm,loc-code" property when EEH is recovering.
 > 
-> This uses bus:devfn directly from pci_dn instead of cached and packed
-> config_addr.
+> However, when this happens in eeh_dev_check_failure(), we also have
+> a pci_dev pointer which should have a valid pointer to the device node
+> when pci_dn has one (both pointers are not NULL for physical functions
+> and are NULL for virtual functions).
 > 
-> Since config_addr is made from device's bus:dev.fn, there is no point
-> in keeping it in the debugfs either so remove that too.
+> This removes the node pointer from the pci_dn struct and used pdev
+> in eeh_dev_check_failure() instead.
+> 
+> This changes pci_remove_device_node_info() to look for a parent of
+> the node being removed, just like pci_add_device_node_info() does when it
+> references the parent node.
 > 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 > ---
->   arch/powerpc/include/asm/eeh.h               |  1 -
->   arch/powerpc/kernel/eeh_pe.c                 | 42 ++++++++++++++--------------
->   arch/powerpc/kernel/eeh_sysfs.c              |  3 --
->   arch/powerpc/platforms/powernv/eeh-powernv.c |  9 +++---
->   4 files changed, 26 insertions(+), 29 deletions(-)
+>   arch/powerpc/include/asm/pci-bridge.h | 1 -
+>   arch/powerpc/kernel/eeh.c             | 9 +++++----
+>   arch/powerpc/kernel/pci_dn.c          | 8 +++++---
+>   3 files changed, 10 insertions(+), 8 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-> index 777d37aa0a7f..9847ae3a12d1 100644
-> --- a/arch/powerpc/include/asm/eeh.h
-> +++ b/arch/powerpc/include/asm/eeh.h
-> @@ -131,7 +131,6 @@ static inline bool eeh_pe_passed(struct eeh_pe *pe)
->   struct eeh_dev {
->   	int mode;			/* EEH mode			*/
->   	int class_code;			/* Class code of the device	*/
-> -	int config_addr;		/* Config address		*/
->   	int pe_config_addr;		/* PE config address		*/
->   	u32 config_space[16];		/* Saved PCI config space	*/
->   	int pcix_cap;			/* Saved PCIx capability	*/
-> diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-> index 419c3f07afd5..2e8d1b2b5af4 100644
-> --- a/arch/powerpc/kernel/eeh_pe.c
-> +++ b/arch/powerpc/kernel/eeh_pe.c
-> @@ -340,11 +340,12 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->   {
->   	struct eeh_pe *pe, *parent;
->   	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
-> +	int config_addr = (pdn->busno << 8) | (pdn->devfn);
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index 56c67d3f0108..0b8aa1fe2d5f 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -195,7 +195,6 @@ struct pci_dn {
+>   	struct  pci_dn *parent;
+>   	struct  pci_controller *phb;	/* for pci devices */
+>   	struct	iommu_table_group *table_group;	/* for phb's or bridges */
+> -	struct	device_node *node;	/* back-pointer to the device_node */
 >   
->   	/* Check if the PE number is valid */
->   	if (!eeh_has_flag(EEH_VALID_PE_ZERO) && !edev->pe_config_addr) {
->   		pr_err("%s: Invalid PE#0 for edev 0x%x on PHB#%x\n",
-> -		       __func__, edev->config_addr, pdn->phb->global_number);
-> +		       __func__, config_addr, pdn->phb->global_number);
->   		return -EINVAL;
->   	}
+>   	int	pci_ext_config_space;	/* for pci devices */
 >   
-> @@ -354,8 +355,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->   	 * PE should be composed of PCI bus and its subordinate
->   	 * components.
->   	 */
-> -	pe = eeh_pe_get(pdn->phb, edev->pe_config_addr,
-> -			edev->config_addr);
-> +	pe = eeh_pe_get(pdn->phb, edev->pe_config_addr, config_addr);
->   	if (pe && !(pe->type & EEH_PE_INVALID)) {
->   		/* Mark the PE as type of PCI bus */
->   		pe->type = EEH_PE_BUS;
-> @@ -365,10 +365,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->   		list_add_tail(&edev->list, &pe->edevs);
->   		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Bus PE#%x\n",
->   			 pdn->phb->global_number,
-> -			edev->config_addr >> 8,
-> -			PCI_SLOT(edev->config_addr & 0xFF),
-> -			PCI_FUNC(edev->config_addr & 0xFF),
-> -			pe->addr);
-> +			 pdn->busno,
-> +			 PCI_SLOT(pdn->devfn),
-> +			 PCI_FUNC(pdn->devfn),
-> +			 pe->addr);
->   		return 0;
->   	} else if (pe && (pe->type & EEH_PE_INVALID)) {
->   		list_add_tail(&edev->list, &pe->edevs);
-> @@ -388,10 +388,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->   		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Device "
->   			 "PE#%x, Parent PE#%x\n",
->   			 pdn->phb->global_number,
-> -			edev->config_addr >> 8,
-> -                        PCI_SLOT(edev->config_addr & 0xFF),
-> -                        PCI_FUNC(edev->config_addr & 0xFF),
-> -			pe->addr, pe->parent->addr);
-> +			 pdn->busno,
-> +			 PCI_SLOT(pdn->devfn),
-> +			 PCI_FUNC(pdn->devfn),
-> +			 pe->addr, pe->parent->addr);
->   		return 0;
->   	}
->   
-> @@ -405,7 +405,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->   		return -ENOMEM;
->   	}
->   	pe->addr	= edev->pe_config_addr;
-> -	pe->config_addr	= edev->config_addr;
-> +	pe->config_addr	= config_addr;
->   
->   	/*
->   	 * Put the new EEH PE into hierarchy tree. If the parent
-> @@ -436,9 +436,9 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->   	pr_debug("EEH: Add %04x:%02x:%02x.%01x to "
->   		 "Device PE#%x, Parent PE#%x\n",
->   		 pdn->phb->global_number,
-> -		 edev->config_addr >> 8,
-> -		 PCI_SLOT(edev->config_addr & 0xFF),
-> -		 PCI_FUNC(edev->config_addr & 0xFF),
-> +		 pdn->busno,
-> +		 PCI_SLOT(pdn->devfn),
-> +		 PCI_FUNC(pdn->devfn),
->   		 pe->addr, pe->parent->addr);
->   
->   	return 0;
-> @@ -462,9 +462,9 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
->   	if (!edev->pe) {
->   		pr_debug("%s: No PE found for device %04x:%02x:%02x.%01x\n",
->   			 __func__,  pdn->phb->global_number,
-> -			 edev->config_addr >> 8,
-> -			 PCI_SLOT(edev->config_addr & 0xFF),
-> -			 PCI_FUNC(edev->config_addr & 0xFF));
-> +			 pdn->busno,
-> +			 PCI_SLOT(pdn->devfn),
-> +			 PCI_FUNC(pdn->devfn));
->   		return -EEXIST;
->   	}
->   
-> @@ -725,9 +725,9 @@ static void eeh_bridge_check_link(struct eeh_dev *edev)
->   
->   	pr_debug("%s: Check PCIe link for %04x:%02x:%02x.%01x ...\n",
->   		 __func__, pdn->phb->global_number,
-> -		 edev->config_addr >> 8,
-> -		 PCI_SLOT(edev->config_addr & 0xFF),
-> -		 PCI_FUNC(edev->config_addr & 0xFF));
-> +		 pdn->busno,
-> +		 PCI_SLOT(pdn->devfn),
-> +		 PCI_FUNC(pdn->devfn));
->   
->   	/* Check slot status */
->   	cap = edev->pcie_cap;
-> diff --git a/arch/powerpc/kernel/eeh_sysfs.c b/arch/powerpc/kernel/eeh_sysfs.c
-> index 1ceecdda810b..797549289798 100644
-> --- a/arch/powerpc/kernel/eeh_sysfs.c
-> +++ b/arch/powerpc/kernel/eeh_sysfs.c
-> @@ -51,7 +51,6 @@ static ssize_t eeh_show_##_name(struct device *dev,      \
->   static DEVICE_ATTR(_name, S_IRUGO, eeh_show_##_name, NULL);
->   
->   EEH_SHOW_ATTR(eeh_mode,            mode,            "0x%x");
-> -EEH_SHOW_ATTR(eeh_config_addr,     config_addr,     "0x%x");
->   EEH_SHOW_ATTR(eeh_pe_config_addr,  pe_config_addr,  "0x%x");
->   
->   static ssize_t eeh_pe_state_show(struct device *dev,
-> @@ -103,7 +102,6 @@ void eeh_sysfs_add_device(struct pci_dev *pdev)
->   		return;
->   
->   	rc += device_create_file(&pdev->dev, &dev_attr_eeh_mode);
-> -	rc += device_create_file(&pdev->dev, &dev_attr_eeh_config_addr);
->   	rc += device_create_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
->   	rc += device_create_file(&pdev->dev, &dev_attr_eeh_pe_state);
->   
-> @@ -128,7 +126,6 @@ void eeh_sysfs_remove_device(struct pci_dev *pdev)
->   	}
->   
->   	device_remove_file(&pdev->dev, &dev_attr_eeh_mode);
-> -	device_remove_file(&pdev->dev, &dev_attr_eeh_config_addr);
->   	device_remove_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
->   	device_remove_file(&pdev->dev, &dev_attr_eeh_pe_state);
->   
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 552b0cd4e8ba..8864065eba22 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -352,6 +352,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
->   	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->   	uint32_t pcie_flags;
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index c877014d11ce..2c926029adbe 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -435,7 +435,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
 >   	int ret;
-> +	int config_addr = (pdn->busno << 8) | (pdn->devfn);
->   
->   	/*
->   	 * When probing the root bridge, which doesn't have any
-> @@ -386,8 +387,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
->   		}
->   	}
->   
-> -	edev->config_addr    = (pdn->busno << 8) | (pdn->devfn);
-> -	edev->pe_config_addr = phb->ioda.pe_rmap[edev->config_addr];
-> +	edev->pe_config_addr = phb->ioda.pe_rmap[config_addr];
->   
->   	/* Create PE */
->   	ret = eeh_add_to_parent_pe(edev);
-> @@ -1699,6 +1699,7 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+>   	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+>   	unsigned long flags;
+> -	struct pci_dn *pdn;
+> +	struct device_node *dn;
+>   	struct pci_dev *dev;
+>   	struct eeh_pe *pe, *parent_pe, *phb_pe;
+>   	int rc = 0;
+> @@ -493,9 +493,10 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+>   	if (pe->state & EEH_PE_ISOLATED) {
+>   		pe->check_count++;
+>   		if (pe->check_count % EEH_MAX_FAILS == 0) {
+> -			pdn = eeh_dev_to_pdn(edev);
+> -			if (pdn->node)
+> -				location = of_get_property(pdn->node, "ibm,loc-code", NULL);
+> +			dn = pci_device_to_OF_node(dev);
+> +			if (dn)
+> +				location = of_get_property(dn, "ibm,loc-code",
+> +						NULL);
+>   			printk(KERN_ERR "EEH: %d reads ignored for recovering device at "
+>   				"location=%s driver=%s pci addr=%s\n",
+>   				pe->check_count,
+> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+> index 0256372b72de..0e395afbf0f4 100644
+> --- a/arch/powerpc/kernel/pci_dn.c
+> +++ b/arch/powerpc/kernel/pci_dn.c
+> @@ -293,7 +293,6 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
+>   	if (pdn == NULL)
+>   		return NULL;
+>   	dn->data = pdn;
+> -	pdn->node = dn;
+>   	pdn->phb = hose;
+>   #ifdef CONFIG_PPC_POWERNV
+>   	pdn->pe_number = IODA_INVALID_PE;
+> @@ -342,6 +341,7 @@ EXPORT_SYMBOL_GPL(pci_add_device_node_info);
+>   void pci_remove_device_node_info(struct device_node *dn)
+>   {
+>   	struct pci_dn *pdn = dn ? PCI_DN(dn) : NULL;
+> +	struct device_node *parent;
+>   #ifdef CONFIG_EEH
 >   	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->   	struct pnv_phb *phb;
->   	s64 ret;
-> +	int config_addr = (pdn->busno << 8) | (pdn->devfn);
 >   
->   	if (!edev)
->   		return -EEXIST;
-> @@ -1715,12 +1716,12 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
->   	} else {
->   		phb = pdn->phb->private_data;
->   		ret = opal_pci_reinit(phb->opal_id,
-> -				      OPAL_REINIT_PCI_DEV, edev->config_addr);
-> +				      OPAL_REINIT_PCI_DEV, config_addr);
->   	}
+> @@ -354,8 +354,10 @@ void pci_remove_device_node_info(struct device_node *dn)
 >   
->   	if (ret) {
->   		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
-> -			__func__, edev->config_addr, ret);
-> +			__func__, config_addr, ret);
->   		return -EIO;
->   	}
+>   	WARN_ON(!list_empty(&pdn->child_list));
+>   	list_del(&pdn->list);
+> -	if (pdn->parent)
+> -		of_node_put(pdn->parent->node);
+> +
+> +	parent = of_get_parent(dn);
+> +	if (parent)
+> +		of_node_put(parent);
 >   
+>   	dn->data = NULL;
+>   	kfree(pdn);
 > 
 
 -- 
