@@ -1,15 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdP2T2G8vzDrKG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 22:37:37 +1000 (AEST)
-In-Reply-To: <1503467233-12708-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/vio: Use device_type to detect family
-Message-Id: <3xdP2S5mQBz9s8J@ozlabs.org>
-Date: Thu, 24 Aug 2017 22:37:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdPDC3928zDqXc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 22:46:03 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id m7so3773533pga.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 05:46:03 -0700 (PDT)
+Date: Thu, 24 Aug 2017 22:45:44 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2 10/14] KVM: PPC: Book3S HV: POWER9 does not require
+ secondary thread management
+Message-ID: <20170824224544.0d53c27c@roar.ozlabs.ibm.com>
+In-Reply-To: <20170824093435.GH27401@fergus.ozlabs.ibm.com>
+References: <20170811163912.28783-1-npiggin@gmail.com>
+ <20170811163912.28783-11-npiggin@gmail.com>
+ <20170824093435.GH27401@fergus.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,25 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-23 at 05:47:13 UTC, Michael Ellerman wrote:
-> Currently in the vio.c code we use a comparision against the parent
-> device node's full path to decide if the device is a PFO or VIO family
-> device.
-> 
-> Both the ibm,platform-facilities and vdevice nodes are defined by PAPR,
-> and must have a matching device_type. So instead of using the path we
-> can instead compare the device_type.
-> 
-> I've checked Qemu and kvmtool both do this correctly, and all the
-> PowerVM systems I have access to do also. So it seems to be safe.
-> 
-> This removes the dependency on full_name, which is being removed
-> upstream.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Thu, 24 Aug 2017 19:34:35 +1000
+Paul Mackerras <paulus@ozlabs.org> wrote:
 
-Applied to powerpc next.
+> On Sat, Aug 12, 2017 at 02:39:08AM +1000, Nicholas Piggin wrote:
+> > POWER9 CPUs have independent MMU contexts per thread, so KVM does not
+> > need to quiesce secondary threads, so the hwthread_req/hwthread_state
+> > protocol does not have to be used. So patch it away on POWER9, and patch
+> > away the branch from the Linux idle wakeup to kvm_start_guest that is
+> > never used.  
+> 
+> If/when we add support for running HPT guests on a radix host, we will
+> have to run the host in single-threaded mode (since POWER9 doesn't
+> support having some threads of a core using HPT and some using radix
+> simultaneously).  We'll then need some sort of thing like
+> kvmppc_grab_hwthread to coordinate with the threads so that guests can
+> use the secondary threads.
+>
+> So I think most of this code should stay.  We will still need to have
+> a way to make sure that the secondaries are in real mode and not in a
+> guest, because all threads will need to be in real mode when switching
+> the core between radix and HPT mode.  Maybe we can optimize it a bit
+> at present given that we don't yet support running HPT guests on a
+> radix host, but I don't want to make it harder to do that in future.
 
-https://git.kernel.org/powerpc/c/bcf21e3a97a1247178338793df9ae3
+Okay, most of the code's still there, just noped out with ARCH_300.
+But yes this and then the subsequent patches do make it more
+difficult to restore the KVM real mode functionality.
 
-cheers
+I'll see about restructuring them to keep that ability and make it
+selectable with a minimal branchs or alt patches.
+
+Thanks,
+Nick
