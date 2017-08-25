@@ -1,24 +1,20 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0062.outbound.protection.outlook.com [104.47.0.62])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdqyH1Y3QzDrS2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 15:50:29 +1000 (AEST)
-From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: David Miller <davem@davemloft.net>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v3 0/7] Add RSS to DPAA 1.x Ethernet driver
-Date: Fri, 25 Aug 2017 05:50:22 +0000
-Message-ID: <AM5PR0402MB2691E45A664F38D0824658CCEC9B0@AM5PR0402MB2691.eurprd04.prod.outlook.com>
-References: <1503559708-13405-1-git-send-email-madalin.bucur@nxp.com>
- <20170824.094220.1750290899777462105.davem@davemloft.net>
- <20170824.114741.1529064786944246878.davem@davemloft.net>
-In-Reply-To: <20170824.114741.1529064786944246878.davem@davemloft.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdrDV3hLRzDqXy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 16:02:50 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 3xdrDV1wlrz9sR9
+ for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2017 16:02:50 +1000 (AEST)
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 0/10] powerpc: Beef up single-stepping/instruction
+ emulation infrastructure
+Date: Fri, 25 Aug 2017 15:41:52 +1000
+Message-Id: <1503639722-19121-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Miller [mailto:davem@davemloft.net]
-> Subject: Re: [PATCH v3 0/7] Add RSS to DPAA 1.x Ethernet driver
->=20
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 24 Aug 2017 09:42:20 -0700 (PDT)
->=20
-> > From: Madalin Bucur <madalin.bucur@nxp.com>
-> > Date: Thu, 24 Aug 2017 10:28:21 +0300
-> >
-> >> This patch set introduces Receive Side Scaling for the DPAA Ethernet
-> >> driver. Documentation is updated with details related to the new
-> >> feature and limitations that apply.
-> >> Added also a small fix.
-> >>
-> >> v2: removed a C++ style comment
-> >> v3: move struct fman to header file to avoid exporting a function
-> >
-> > Series applied, thanks.
->=20
-> Actually I'm reverting, this doesn't even compile.
+This patch series extends the code in arch/powerpc/lib/sstep.c so that
+it handles almost all load and store instructions -- all except the
+atomic memory operations (lwat, stwat, etc.).  It also makes sure that
+we use the largest possible aligned accesses to access memory and that
+we don't access the CPU FP/VMX/VSX registers when they don't contain
+user data.  With this, it should be possible to replace the body of
+the alignment interrupt handler with a call to emulate_step() or
+something quite similar.
 
-Hi,
+This version is based on the powerpc tree next branch as of a day or
+two ago, and includes code to emulate addpcis, a fix for the isel
+emulation, code to handle the multi-register loads and stores in
+little-endian mode, and a fix for the wrong behaviour in updating RA
+for load/store with update instructions in 32-bit mode.
 
-Sorry for this blunder, I've only tested on PPC, where it works.
-Will come back with a proper patch set.
+Paul.
 
-Madalin
+ arch/powerpc/include/asm/sstep.h |   77 +-
+ arch/powerpc/lib/Makefile        |    2 +-
+ arch/powerpc/lib/ldstfp.S        |  307 ++----
+ arch/powerpc/lib/quad.S          |   62 ++
+ arch/powerpc/lib/sstep.c         | 1929 ++++++++++++++++++++++++++++----------
+ 5 files changed, 1654 insertions(+), 723 deletions(-)
