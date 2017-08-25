@@ -1,47 +1,35 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xfCqG0RM0zDqYV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2017 06:45:45 +1000 (AEST)
-Date: Fri, 25 Aug 2017 22:43:41 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Will Deacon <will.deacon@arm.com>
-cc: Jiri Slaby <jslaby@suse.cz>, mingo@redhat.com, dvhart@infradead.org,
- peterz@infradead.org, linux-kernel@vger.kernel.org,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
- Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, openrisc@lists.librecores.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2 1/1] futex: remove duplicated code and fix UB
-In-Reply-To: <20170824094756.GA6346@arm.com>
-Message-ID: <alpine.DEB.2.20.1708252243020.2124@nanos>
-References: <20170824073105.3901-1-jslaby@suse.cz>
- <20170824094756.GA6346@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xfFsC6yqBzDqm5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2017 08:17:35 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7PMDk5F154402
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 18:17:31 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cjq360t74-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 18:17:31 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Fri, 25 Aug 2017 18:17:30 -0400
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH 0/3] cxlflash: Miscellaneous fixes
+Date: Fri, 25 Aug 2017 17:17:20 -0500
+Message-Id: <1503699440-61464-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,34 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 24 Aug 2017, Will Deacon wrote:
-> On Thu, Aug 24, 2017 at 09:31:05AM +0200, Jiri Slaby wrote:
-> > +static int futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
-> > +{
-> > +	unsigned int op =	  (encoded_op & 0x70000000) >> 28;
-> > +	unsigned int cmp =	  (encoded_op & 0x0f000000) >> 24;
-> > +	int oparg = sign_extend32((encoded_op & 0x00fff000) >> 12, 12);
-> > +	int cmparg = sign_extend32(encoded_op & 0x00000fff, 12);
-> > +	int oldval, ret;
-> > +
-> > +	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28)) {
-> > +		if (oparg < 0 || oparg > 31)
-> > +			return -EINVAL;
-> > +		oparg = 1 << oparg;
-> > +	}
-> > +
-> > +	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u32)))
-> > +		return -EFAULT;
-> > +
-> > +	ret = arch_futex_atomic_op_inuser(op, oparg, &oldval, uaddr);
-> > +	if (ret)
-> > +		return ret;
-> 
-> We could move the pagefault_{disable,enable} calls here, and then remove
-> them from the futex_atomic_op_inuser callsites elsewhere in futex.c
+This patch series contains miscellaneous fixes. The first two address
+issues that were identified by smatch and the last patch fixes a regression
+introduced by Commit 565180723294 ("scsi: cxlflash: SISlite updates to
+support 4 ports").
 
-Correct, but we can do that after getting this in.
+This series is intended for 4.14 and is bisectable.
 
-Thanks,
+Matthew R. Ochs (2):
+  cxlflash: Remove unnecessary existence check
+  cxlflash: Avoid double mutex unlock
 
-	tglx
+Uma Krishnan (1):
+  cxlflash: Fix vlun resize failure in the shrink path
+
+ drivers/scsi/cxlflash/main.c      |  3 +--
+ drivers/scsi/cxlflash/superpipe.c | 13 ++++++++++---
+ drivers/scsi/cxlflash/vlun.c      |  6 +-----
+ 3 files changed, 12 insertions(+), 10 deletions(-)
+
+-- 
+2.1.0
