@@ -1,32 +1,47 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xf42Z6r3BzDrVs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2017 00:55:00 +1000 (AEST)
-Date: Fri, 25 Aug 2017 16:54:57 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Rob Herring <robh+dt@kernel.org>
-Cc: Robin Murphy <robin.murphy@arm.com>, Frank Rowand <frowand.list@gmail.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Stefan Wahren <stefan.wahren@i2se.com>,
- Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>,
- Hans Verkuil <hverkuil@xs4all.nl>, Johan Hovold <johan@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 2/2] of: Restrict DMA configuration
-Message-ID: <20170825145457.GA17842@lst.de>
-References: <0819179085df6c41c70e83a2c5c138b95c0386b3.1502468875.git.robin.murphy@arm.com>
- <82633e62b64e28dc18bc466319065b92faf2414f.1502468875.git.robin.murphy@arm.com>
- <CAL_JsqKW7nhkCDu4eEDCgdC87b0MLH1UFO8LvaH22BcJMBsY7w@mail.gmail.com>
- <6819c6ae-e898-3293-d8b0-7a80108d7628@arm.com>
- <CAL_Jsq+pDHbrpLDYUVu22tk4OtR9Di4vxZUozwWJDu2ebYSBdg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xfCqG0RM0zDqYV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2017 06:45:45 +1000 (AEST)
+Date: Fri, 25 Aug 2017 22:43:41 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Will Deacon <will.deacon@arm.com>
+cc: Jiri Slaby <jslaby@suse.cz>, mingo@redhat.com, dvhart@infradead.org,
+ peterz@infradead.org, linux-kernel@vger.kernel.org,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2 1/1] futex: remove duplicated code and fix UB
+In-Reply-To: <20170824094756.GA6346@arm.com>
+Message-ID: <alpine.DEB.2.20.1708252243020.2124@nanos>
+References: <20170824073105.3901-1-jslaby@suse.cz>
+ <20170824094756.GA6346@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_Jsq+pDHbrpLDYUVu22tk4OtR9Di4vxZUozwWJDu2ebYSBdg@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,14 +51,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 15, 2017 at 09:19:50AM -0500, Rob Herring wrote:
-> > For the immediate issue at hand, I guess the alternative plan of attack
-> > would be to stick a flag in struct bus_type for the bus drivers
-> > themselves to opt into generic DMA configuration. That at least keeps
-> > everything within the kernel (and come to think of it probably works
-> > neatly for modular bus types as well).
+On Thu, 24 Aug 2017, Will Deacon wrote:
+> On Thu, Aug 24, 2017 at 09:31:05AM +0200, Jiri Slaby wrote:
+> > +static int futex_atomic_op_inuser(unsigned int encoded_op, u32 __user *uaddr)
+> > +{
+> > +	unsigned int op =	  (encoded_op & 0x70000000) >> 28;
+> > +	unsigned int cmp =	  (encoded_op & 0x0f000000) >> 24;
+> > +	int oparg = sign_extend32((encoded_op & 0x00fff000) >> 12, 12);
+> > +	int cmparg = sign_extend32(encoded_op & 0x00000fff, 12);
+> > +	int oldval, ret;
+> > +
+> > +	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28)) {
+> > +		if (oparg < 0 || oparg > 31)
+> > +			return -EINVAL;
+> > +		oparg = 1 << oparg;
+> > +	}
+> > +
+> > +	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u32)))
+> > +		return -EFAULT;
+> > +
+> > +	ret = arch_futex_atomic_op_inuser(op, oparg, &oldval, uaddr);
+> > +	if (ret)
+> > +		return ret;
 > 
-> I'm fine with the change as is, it's really just the commit text I'm
-> commenting on.
+> We could move the pagefault_{disable,enable} calls here, and then remove
+> them from the futex_atomic_op_inuser callsites elsewhere in futex.c
 
-Robin, can you resend this with an updated commit text?
+Correct, but we can do that after getting this in.
+
+Thanks,
+
+	tglx
