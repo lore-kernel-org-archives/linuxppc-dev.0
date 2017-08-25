@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xfFsx1MdYzDrSf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2017 08:18:12 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7PMDjrd004859
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 18:18:10 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cjqmxxpgv-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xfFt53TqrzDrTM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Aug 2017 08:18:21 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7PMDwm3073371
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 18:18:19 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cjp41megc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 18:18:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 18:18:19 -0400
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Fri, 25 Aug 2017 18:18:10 -0400
+ Fri, 25 Aug 2017 18:18:18 -0400
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 2/3] cxlflash: Avoid double mutex unlock
-Date: Fri, 25 Aug 2017 17:18:03 -0500
+Subject: [PATCH 3/3] cxlflash: Fix vlun resize failure in the shrink path
+Date: Fri, 25 Aug 2017 17:18:12 -0500
 In-Reply-To: <1503699440-61464-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1503699440-61464-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1503699483-61541-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1503699492-61577-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,66 +41,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+The ioctl DK_CAPI_VLUN_RESIZE can fail if the allocated vlun size is
+reduced from almost maximum capacity and then increased again.
 
-The AFU recovery routine uses an interruptible mutex to control the
-flow of in-flight recoveries. Upon receiving an interruptible signal
-the code branches to a common exit path which wrongly assumes the
-mutex is held. Add a local variable to track when the mutex should be
-unlocked.
+The shrink_lxt() routine is currently using the SISL_ASTATUS_MASK to mask
+the higher 48 bits of the lxt entry. This is unnecessary and incorrect as
+it uses a mask designed for the asynchronous interrupt status register.
+When the 4 port support was added to cxlflash, the SISL_ASTATUS_MASK was
+updated to reflect the status bits for all 4 ports. This change indirectly
+affected the shrink_lxt() code path.
 
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+To extract the base, simply shift the bits without masking.
+
+Fixes: 565180723294 ("scsi: cxlflash: SISlite updates to support 4 ports")
+
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/superpipe.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/scsi/cxlflash/vlun.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-index ad0f996..e9ee1d9 100644
---- a/drivers/scsi/cxlflash/superpipe.c
-+++ b/drivers/scsi/cxlflash/superpipe.c
-@@ -1650,6 +1650,7 @@ static int cxlflash_afu_recover(struct scsi_device *sdev,
- 	u64 ctxid = DECODE_CTXID(recover->context_id),
- 	    rctxid = recover->context_id;
- 	long reg;
-+	bool locked = true;
- 	int lretry = 20; /* up to 2 seconds */
- 	int new_adap_fd = -1;
- 	int rc = 0;
-@@ -1658,8 +1659,11 @@ static int cxlflash_afu_recover(struct scsi_device *sdev,
- 	up_read(&cfg->ioctl_rwsem);
- 	rc = mutex_lock_interruptible(mutex);
- 	down_read(&cfg->ioctl_rwsem);
--	if (rc)
-+	if (rc) {
-+		locked = false;
- 		goto out;
-+	}
-+
- 	rc = check_state(cfg);
- 	if (rc) {
- 		dev_err(dev, "%s: Failed state rc=%d\n", __func__, rc);
-@@ -1693,8 +1697,10 @@ static int cxlflash_afu_recover(struct scsi_device *sdev,
- 				mutex_unlock(mutex);
- 				msleep(100);
- 				rc = mutex_lock_interruptible(mutex);
--				if (rc)
-+				if (rc) {
-+					locked = false;
- 					goto out;
-+				}
- 				goto retry_recover;
- 			}
- 
-@@ -1738,7 +1744,8 @@ static int cxlflash_afu_recover(struct scsi_device *sdev,
- out:
- 	if (likely(ctxi))
- 		put_context(ctxi);
--	mutex_unlock(mutex);
-+	if (locked)
-+		mutex_unlock(mutex);
- 	atomic_dec_if_positive(&cfg->recovery_threads);
- 	return rc;
- }
+diff --git a/drivers/scsi/cxlflash/vlun.c b/drivers/scsi/cxlflash/vlun.c
+index bdfb930..703bf1e 100644
+--- a/drivers/scsi/cxlflash/vlun.c
++++ b/drivers/scsi/cxlflash/vlun.c
+@@ -694,11 +694,7 @@ static int shrink_lxt(struct afu *afu,
+ 	/* Free LBAs allocated to freed chunks */
+ 	mutex_lock(&blka->mutex);
+ 	for (i = delta - 1; i >= 0; i--) {
+-		/* Mask the higher 48 bits before shifting, even though
+-		 * it is a noop
+-		 */
+-		aun = (lxt_old[my_new_size + i].rlba_base & SISL_ASTATUS_MASK);
+-		aun = (aun >> MC_CHUNK_SHIFT);
++		aun = lxt_old[my_new_size + i].rlba_base >> MC_CHUNK_SHIFT;
+ 		if (needs_ws)
+ 			write_same16(sdev, aun, MC_CHUNK_SIZE);
+ 		ba_free(&blka->ba_lun, aun);
 -- 
 2.1.0
