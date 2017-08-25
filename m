@@ -1,23 +1,23 @@
-Return-Path: <nixiaoming@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdkTt0fhQzDrFM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 11:44:01 +1000 (AEST)
-From: Nixiaoming <nixiaoming@huawei.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-CC: David Hildenbrand <david@redhat.com>, David Gibson
- <david@gibson.dropbear.id.au>, "kvm-ppc@vger.kernel.org"
- <kvm-ppc@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH really v2] KVM: PPC: Book3S: Fix race and leak in
- kvm_vm_ioctl_create_spapr_tce()
-Date: Fri, 25 Aug 2017 01:43:39 +0000
-Message-ID: <E490CD805F7529488761C40FD9D26EF1299B5025@DGGEMA505-MBX.china.huawei.com>
-References: <20170824091447.GG27401@fergus.ozlabs.ibm.com>
-In-Reply-To: <20170824091447.GG27401@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdn2B10zYzDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 13:38:42 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 04/12] powerpc/vas: Define helpers to access MMIO
+ regions
+In-Reply-To: <1503556688-15412-5-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1503556688-15412-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1503556688-15412-5-git-send-email-sukadev@linux.vnet.ibm.com>
+Date: Fri, 25 Aug 2017 13:38:39 +1000
+Message-ID: <87efs0uxj4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +27,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24.08.2017 11:14, Paul Mackerras wrote:
-> Nixiaoming pointed out that there is a memory leak in
-> kvm_vm_ioctl_create_spapr_tce() if the call to anon_inode_getfd()=20
-> fails; the memory allocated for the kvmppc_spapr_tce_table struct is=20
-> not freed, and nor are the pages allocated for the iommu tables.  In=20
-> addition, we have already incremented the process's count of locked=20
-> memory pages, and this doesn't get restored on error.
->=20
-> David Hildenbrand pointed out that there is a race in that the=20
-> function checks early on that there is not already an entry in the
-> stt->iommu_tables list with the same LIOBN, but an entry with the
-> same LIOBN could get added between then and when the new entry is=20
-> added to the list.
->=20
-> This fixes all three problems.  To simplify things, we now call
-> anon_inode_getfd() before placing the new entry in the list.  The=20
-> check for an existing entry is done while holding the kvm->lock mutex,=20
-> immediately before adding the new entry to the list.
-> Finally, on failure we now call kvmppc_account_memlimit to decrement=20
-> the process's count of locked memory pages.
->=20
-> Reported-by: Nixiaoming <nixiaoming@huawei.com>
-> Reported-by: David Hildenbrand <david@redhat.com>
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> ---
-> v2: Don't overwrite stt in loop over spapr_tce_tables
->=20
+Hi Suka,
 
-Reviewed-by: nixiaoming  <nixiaoming@huawei.com>
+Comments inline.
+
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+> index 6156fbe..a3a705a 100644
+> --- a/arch/powerpc/platforms/powernv/vas-window.c
+> +++ b/arch/powerpc/platforms/powernv/vas-window.c
+> @@ -9,9 +9,182 @@
+>  
+>  #include <linux/types.h>
+>  #include <linux/mutex.h>
+> +#include <linux/slab.h>
+> +#include <linux/io.h>
+>  
+>  #include "vas.h"
+>  
+> +/*
+> + * Compute the paste address region for the window @window using the
+> + * ->paste_base_addr and ->paste_win_id_shift we got from device tree.
+> + */
+> +void compute_paste_address(struct vas_window *window, uint64_t *addr, int *len)
+> +{
+> +	uint64_t base, shift;
+
+Please use the kernel types, so u64 here.
+
+> +	int winid;
+> +
+> +	base = window->vinst->paste_base_addr;
+> +	shift = window->vinst->paste_win_id_shift;
+> +	winid = window->winid;
+> +
+> +	*addr  = base + (winid << shift);
+> +	if (len)
+> +		*len = PAGE_SIZE;
+
+Having multiple output parameters makes for a pretty awkward API. Is it
+really necesssary given len is a constant PAGE_SIZE anyway.
+
+If you didn't return len, then you could just make the function return
+the addr, and you wouldn't need any output parameters.
+
+One of the callers that passes len is unmap_paste_region(), but that
+is a bit odd. It would be more natural I think if once a window is
+mapped it knows its size. Or if the mapping will always just be one page
+then we can just know that.
+
+> +
+> +	pr_debug("Txwin #%d: Paste addr 0x%llx\n", winid, *addr);
+> +}
+> +
+> +static inline void get_hvwc_mmio_bar(struct vas_window *window,
+> +			uint64_t *start, int *len)
+> +{
+> +	uint64_t pbaddr;
+> +
+> +	pbaddr = window->vinst->hvwc_bar_start;
+> +	*start = pbaddr + window->winid * VAS_HVWC_SIZE;
+> +	*len = VAS_HVWC_SIZE;
+
+This is:
+
+#define VAS_HVWC_SIZE			512
+
+But then we map it, which will round up to a page anyway. So again I
+don't see the point of having the len returned form this helper.
+
+> +}
+> +
+> +static inline void get_uwc_mmio_bar(struct vas_window *window,
+> +			uint64_t *start, int *len)
+> +{
+> +	uint64_t pbaddr;
+> +
+> +	pbaddr = window->vinst->uwc_bar_start;
+> +	*start = pbaddr + window->winid * VAS_UWC_SIZE;
+> +	*len = VAS_UWC_SIZE;
+> +}
+> +
+> +/*
+> + * Map the paste bus address of the given send window into kernel address
+> + * space. Unlike MMIO regions (map_mmio_region() below), paste region must
+> + * be mapped cache-able and is only applicable to send windows.
+> + */
+> +void *map_paste_region(struct vas_window *txwin)
+> +{
+> +	int rc, len;
+> +	void *map;
+> +	char *name;
+> +	uint64_t start;
+> +
+> +	rc = -ENOMEM;
+
+You don't need that.
+
+> +	name = kasprintf(GFP_KERNEL, "window-v%d-w%d", txwin->vinst->vas_id,
+> +				txwin->winid);
+> +	if (!name)
+> +		return ERR_PTR(rc);
+
+That can goto free_name;
+
+> +
+> +	txwin->paste_addr_name = name;
+> +	compute_paste_address(txwin, &start, &len);
+> +
+> +	if (!request_mem_region(start, len, name)) {
+> +		pr_devel("%s(): request_mem_region(0x%llx, %d) failed\n",
+> +				__func__, start, len);
+> +		goto free_name;
+> +	}
+> +
+> +	map = ioremap_cache(start, len);
+> +	if (!map) {
+> +		pr_devel("%s(): ioremap_cache(0x%llx, %d) failed\n", __func__,
+> +				start, len);
+> +		goto free_name;
+> +	}
+> +
+> +	pr_devel("VAS: mapped paste addr 0x%llx to kaddr 0x%p\n", start, map);
+> +	return map;
+> +
+> +free_name:
+> +	kfree(name);
+
+Because kfree(NULL) is fine.
+
+> +	return ERR_PTR(rc);
+
+And that can just return ERR_PTR(-ENOMEM);
+
+> +}
+
+cheers
