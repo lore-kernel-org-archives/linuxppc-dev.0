@@ -1,22 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdxXt2ZkzzDqHx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 20:02:22 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v7 10/12] powerpc/vas: Define vas_win_close() interface
-In-Reply-To: <1503556688-15412-11-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1503556688-15412-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1503556688-15412-11-git-send-email-sukadev@linux.vnet.ibm.com>
-Date: Fri, 25 Aug 2017 20:02:20 +1000
-Message-ID: <87valct177.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdyFh2hZNzDrKj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 20:34:16 +1000 (AEST)
+Date: Fri, 25 Aug 2017 13:33:40 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] powerpc/44x: mask and shift to zero bug
+Message-ID: <20170825103340.op3uphrv3eyeutiz@mwanda>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,111 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Suka,
+My static checker complains that 0x00001800 >> 13 is zero.  Looking at
+the context, it seems like a copy and paste bug from the line below and
+probably 0x3 << 13 or 0x00006000 was intended.
 
-More comments :)
+Fixes: 2af59f7d5c3e ("[POWERPC] 4xx: Add 405GPr and 405EP support in boot wrapper")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+Not tested!
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
-
-> diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-> index 2dd4b63..24288dd 100644
-> --- a/arch/powerpc/platforms/powernv/vas-window.c
-> +++ b/arch/powerpc/platforms/powernv/vas-window.c
-> @@ -879,11 +887,92 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
->  }
->  EXPORT_SYMBOL_GPL(vas_rx_win_open);
->  
-> -/* stub for now */
-> +static void poll_window_busy_state(struct vas_window *window)
-> +{
-> +	int busy;
-> +	uint64_t val;
-> +
-> +retry:
-> +	/*
-> +	 * Poll Window Busy flag
-> +	 */
-> +	val = read_hvwc_reg(window, VREG(WIN_STATUS));
-> +	busy = GET_FIELD(VAS_WIN_BUSY, val);
-> +	if (busy) {
-> +		val = 0;
-> +		schedule_timeout(2000);
-
-What's 2000?
-
-That's in jiffies, so it's not a fixed amount of time.
-
-But on a typical config that will be 20 _seconds_ ?!
-
-But you haven't set the task state, so AFAIK it will just return
-instantly.
-
-And if there's a software/hardware bug and it never stops being busy,
-then we have a softlockup. The other option would be print a big fat
-warning and just not free the window. But maybe that doesn't work for
-other reasons.
-
-> +		goto retry;
-> +	}
-> +}
-> +
-> +static void poll_window_castout(struct vas_window *window)
-> +{
-> +	int cached;
-> +	uint64_t val;
-> +
-> +	/* Cast window context out of the cache */
-> +retry:
-> +	val = read_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL));
-> +	cached = GET_FIELD(VAS_WIN_CACHE_STATUS, val);
-> +	if (cached) {
-> +		val = 0ULL;
-> +		val = SET_FIELD(VAS_CASTOUT_REQ, val, 1);
-> +		val = SET_FIELD(VAS_PUSH_TO_MEM, val, 0);
-> +		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), val);
-
-Sigh, I still don't like that macro :)
-
-or:
-		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), 1ull << 63);
-
-> +
-> +		schedule_timeout(2000);
-> +		goto retry;
-> +	}
-> +}
-> +
-> +/*
-> + * Close a window.
-> + *
-> + * See Section 1.12.1 of VAS workbook v1.05 for details on closing window:
-> + *	- Disable new paste operations (unmap paste address)
-> + *	- Poll for the "Window Busy" bit to be cleared
-> + *	- Clear the Open/Enable bit for the Window.
-> + *	- Poll for return of window Credits (implies FIFO empty for Rx win?)
-> + *	- Unpin and cast window context out of cache
-> + *
-> + * Besides the hardware, kernel has some bookkeeping of course.
-> + */
->  int vas_win_close(struct vas_window *window)
->  {
-> -	return -1;
-> +	uint64_t val;
-> +
-> +	if (!window)
-> +		return 0;
-> +
-> +	if (!window->tx_win && atomic_read(&window->num_txwins) != 0) {
-> +		pr_devel("VAS: Attempting to close an active Rx window!\n");
-> +		WARN_ON_ONCE(1);
-> +		return -EAGAIN;
-
-EAGAIN means "if you do the same thing again it might work".
-
-I don't think that's right here. The window is not in a state where it
-can be freed, the caller needs to do something to fix that.
-
-EBUSY would probably be more appropriate.
-
-
-cheers
+diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+index 9d3bd4c45a24..f7da65169124 100644
+--- a/arch/powerpc/boot/4xx.c
++++ b/arch/powerpc/boot/4xx.c
+@@ -564,7 +564,7 @@ void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk)
+ 		fbdv = 16;
+ 	cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
+ 	opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
+-	ppdv = ((pllmr & 0x00001800) >> 13) + 1; /* PLB:PCI */
++	ppdv = ((pllmr & 0x00006000) >> 13) + 1; /* PLB:PCI */
+ 	epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
+ 	udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
+ 
