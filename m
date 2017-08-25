@@ -1,19 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdzHS4Fr8zDrVm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 21:20:52 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin  <npiggin@gmail.com>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.13-8 tag
-Date: Fri, 25 Aug 2017 21:20:50 +1000
-Message-ID: <87wp5rsxkd.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xf0qP0lhnzDrVh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 22:30:08 +1000 (AEST)
+Date: Fri, 25 Aug 2017 15:28:26 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] powerpc/mm/cxl: Add the fault handling cpu to mm cpumask
+Message-ID: <20170825122825.zrp4x65xv23poimp@mwanda>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+Hello Aneesh Kumar K.V,
 
-Hi Linus,
+This is a semi-automatic email about new static checker warnings.
 
-Please pull one more powerpc fix for 4.13:
+The patch 0f4bc0932e51: "powerpc/mm/cxl: Add the fault handling cpu
+to mm cpumask" from Jul 27, 2017, leads to the following Smatch
+complaint:
 
-The following changes since commit 5a69aec945d27e78abac9fd032533d3aaebf7c1e:
+    drivers/misc/cxl/fault.c:161 cxl_handle_mm_fault()
+    warn: variable dereferenced before check 'mm' (see line 146)
 
-  powerpc: Fix VSX enabling/flushing to also test MSR_FP and MSR_VEC (2017-08-16 19:35:54 +1000)
+drivers/misc/cxl/fault.c
+   145		 */
+   146		cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
+                                                               ^^
+The patch adds an unchecked dereference.
 
-are available in the git repository at:
+   147		if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
+   148			pr_devel("copro_handle_mm_fault failed: %#x\n", result);
+   149			return result;
+   150		}
+   151	
+   152		if (!radix_enabled()) {
+   153			/*
+   154			 * update_mmu_cache() will not have loaded the hash since current->trap
+   155			 * is not a 0x400 or 0x300, so just call hash_page_mm() here.
+   156			 */
+   157			access = _PAGE_PRESENT | _PAGE_READ;
+   158			if (dsisr & CXL_PSL_DSISR_An_S)
+   159				access |= _PAGE_WRITE;
+   160	
+   161			if (!mm && (REGION_ID(dar) != USER_REGION_ID))
+                             ^^
+But the existing code is careful to check "mm" for NULL.  The
+copro_handle_mm_fault() and hash_page_mm() both have checks built in.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.13-8
+   162				access |= _PAGE_PRIVILEGED;
+   163	
 
-for you to fetch changes up to 1a92a80ad386a1a6e3b36d576d52a1a456394b70:
-
-  powerpc/mm: Ensure cpumask update is ordered (2017-08-18 13:07:16 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.13 #8
-
-Just one fix, to add a barrier in the switch_mm() code to make sure the mm
-cpumask update is ordered vs the MMU starting to load translations. As far as we
-know no one's actually hit the bug, but that's just luck.
-
-Thanks to:
-  Benjamin Herrenschmidt, Nicholas Piggin.
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (1):
-      powerpc/mm: Ensure cpumask update is ordered
-
- arch/powerpc/include/asm/mmu_context.h      | 18 ++++++++++++++++++
- arch/powerpc/include/asm/pgtable-be-types.h |  1 +
- arch/powerpc/include/asm/pgtable-types.h    |  1 +
- 3 files changed, 20 insertions(+)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZoAgTAAoJEFHr6jzI4aWA3zgQAJOvAIZ3aHPoJ48VOhqyMwnY
-i8dW+91Wc9E6ECqCRJyCm9o5Ntx8DAVLL3tKU/Uay8lA3egFQ9YBxfUFakkAvdQf
-HNLWoiabvXQT4h6MAX2HGRuohnaLMPnuiqITK6FTMyJwLGrQFL3gOmewQGFSl/Xs
-/1TnOiwwCS2XN3CiE1pKZq6rzo7Fyds8oJIZdlzXQUwgV1QKEkFub9tAqdgeoMTL
-o8dP/HK4poj2HXqEshXV4ZOAik+7h9I+hnlJhxX0ZZcLOTaqPc9JKRaj8PV4Kt1K
-fx9q3Bud4xno7Wpm3MDpnN3vMceqZMWKX9t4wOjyjUpm7Vz7Xc244Tbu7K6AKUxF
-gc9IwqFWeHOk6mQZMRLtSnzuLuJc1nHWjuFUB6bARRHPYpOcyRBhyeY1Ka43Q8ho
-iDi+vKgS3Pb58MV4CsE3Tt1GjC2CVRoR8ejB9H39zBePXoogSEuPRhk3QZHe5c00
-mUUr+Q5BzyRwYFnHiGuPhrc9e3a4xI/6ExliqP6VmdIbp2mYizTYcu9iEla+m4Mn
-nO0i9c1B58oBePVGoOgkBQCeecXg8ti0bZ2Rw9yzaU8Ju5Gpvj6WU5ahM6szPcj2
-ECnjZiRCnpyMKvr06S0A57rrMsTJTZe08jY1STszvtcjQiPDTAJwZ/QOw2DBW4Pu
-/WlPcttSiB3jXyK3wYmu
-=ovp+
------END PGP SIGNATURE-----
---=-=-=--
+regards,
+dan carpenter
