@@ -1,22 +1,39 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdpBh20CvzDrK0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 14:31:08 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id r133so2196140pgr.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 21:31:08 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH v3 4/4] powerpc/64s: idle ESL=0 stop can avoid MSR and
- save/restore overhead
-Date: Fri, 25 Aug 2017 14:30:36 +1000
-Message-Id: <20170825043036.18236-5-npiggin@gmail.com>
-In-Reply-To: <20170825043036.18236-1-npiggin@gmail.com>
-References: <20170825043036.18236-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdpj518wVzDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 14:54:00 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7P4rgMO116042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 00:53:58 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cjbscn7dr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 00:53:57 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Fri, 25 Aug 2017 05:53:56 +0100
+Subject: Re: [PATCH 5/6] powerpc/mm: Optimize detection of thread local mm's
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
+References: <20170724042803.25848-1-benh@kernel.crashing.org>
+ <20170724042803.25848-5-benh@kernel.crashing.org>
+ <ad84e763-a30f-04f7-f1d0-ccd72c0d4dd4@linux.vnet.ibm.com>
+ <1503336930.2195.20.camel@kernel.crashing.org>
+ <e1833071-11e0-2cd1-0ec2-f8653a4e6b6c@linux.vnet.ibm.com>
+ <1503600479.3814.19.camel@kernel.crashing.org>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Fri, 25 Aug 2017 06:53:52 +0200
+MIME-Version: 1.0
+In-Reply-To: <1503600479.3814.19.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <54852db7-d0aa-2a3e-c8bd-c4977163c4ee@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,91 +43,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When stop is executed with EC=ESL=0, it appears to execute like a
-normal instruction (resuming from NIP when woken by interrupt).
-So all the save/restore handling can be avoided completely. In
-particular NV GPRs do not have to be saved, and MSR does not have
-to be switched back to kernel MSR.
 
-So move the test for "lite" sleep states out to power9_idle_stop.
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/idle_book3s.S | 35 ++++++++++++++++++++++++-----------
- 1 file changed, 24 insertions(+), 11 deletions(-)
+Le 24/08/2017 à 20:47, Benjamin Herrenschmidt a écrit :
+> On Thu, 2017-08-24 at 18:40 +0200, Frederic Barrat wrote:
+>>
+>> The decrementing part is giving me troubles, and I think it makes sense:
+>> if I decrement the counter when detaching the context from the capi
+>> card, then the next TLBIs for the memory context may be back to local.
+> 
+> Yes, you need to flush the CAPI TLB first.
+> 
+>> So when the process exits, the NPU wouldn't get the associated TLBIs,
+>> which spells trouble the next time the same memory context ID is reused.
+>> I believe this the cause of the problem I'm seeing. As soon as I keep
+>> the TLBIs global, even after I detach from the capi adapter, everything
+>> is fine.
+>>
+>> Does it sound right?
+>>
+>> So to keep the checks minimal in mm_is_thread_local(), to just checking
+>> the active_cpus count, I'm thinking of introducing a "copro enabled" bit
+>> on the context, so that we can increment active_cpus only once. And
+>> never decrement it.
+> 
+> You can decrement if you flush. Don't you have MMIOs to do directed
+> flushes ?
 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 32d65ee323a0..fa56120bd0bc 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -315,9 +315,6 @@ enter_winkle:
- 
- 	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
- 
--/*
-- * r3 - PSSCR value corresponding to the requested stop state.
-- */
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- power_enter_stop_kvm_rm:
- 	/*
-@@ -330,14 +327,11 @@ power_enter_stop_kvm_rm:
- 	li	r4,KVM_HWTHREAD_IN_IDLE
- 	/* DO THIS IN REAL MODE!  See comment above. */
- 	stb	r4,HSTATE_HWTHREAD_STATE(r13)
--#endif
--power_enter_stop:
- /*
-  * Check if we are executing the lite variant with ESL=EC=0
-  */
--	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
--	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
--	bne	 .Lhandle_esl_ec_set
-+	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
-+	bne	power_enter_stop_esl
- 	PPC_STOP
- 	li	r3,0  /* Since we didn't lose state, return 0 */
- 
-@@ -354,8 +348,13 @@ power_enter_stop:
- 	 */
- 	li	r12, 0
- 	b 	pnv_wakeup_noloss
-+#endif
- 
--.Lhandle_esl_ec_set:
-+/*
-+ * r3 - PSSCR value corresponding to the requested stop state.
-+ */
-+power_enter_stop_esl:
-+	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
- 	/*
- 	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
- 	 * state-loss idle. Saving and restoring MMCR0 over idle is a
-@@ -428,9 +427,23 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
-  * r3 contains desired PSSCR register value.
-  */
- _GLOBAL(power9_idle_stop)
--	std	r3, PACA_REQ_PSSCR(r13)
- 	mtspr 	SPRN_PSSCR,r3
--	LOAD_REG_ADDR(r4,power_enter_stop)
-+
-+	/*
-+	 * Check if we are executing the lite variant with ESL=EC=0
-+	 * This case resumes execution after the stop instruction without
-+	 * losing any state, so nothing has to be saved. The following
-+	 * instructions up to the blr must be skipped if we want to
-+	 * use power_enter_stop_kvm_rm.
-+	 */
-+	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
-+	bne	1f
-+	PPC_STOP
-+	li	r3,0  /* Since we didn't lose state, return 0 */
-+	blr
-+1:	/* state-loss idle */
-+	std	r3, PACA_REQ_PSSCR(r13)
-+	LOAD_REG_ADDR(r4,power_enter_stop_esl)
- 	b	pnv_powersave_common
- 	/* No return */
- 
--- 
-2.13.3
+That's for the nMMU. Last I heard, we don't have MMIOs to flush anything 
+on the nMMU.
+
+Side note: for the PSL, we do have MMIOs to flush, but they were 
+perceived as useful only for debug and we don't rely on them, precisely 
+because the nMMU would fall out of sync, so we have to rely on broadcast.
+
+   Fred
