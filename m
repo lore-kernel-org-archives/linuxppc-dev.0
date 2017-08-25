@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdpBT44Y0zDrK0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 14:30:57 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id 83so2185147pgb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 21:30:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdpBY1cgRzDrK0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 14:31:01 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id q16so2044086pgc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Aug 2017 21:31:01 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org,
  Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH v3 1/4] KVM: PPC: Book3S HV: POWER9 does not require secondary
- thread management
-Date: Fri, 25 Aug 2017 14:30:33 +1000
-Message-Id: <20170825043036.18236-2-npiggin@gmail.com>
+Subject: [PATCH v3 2/4] powerpc/64s: idle POWER9 can execute stop without a
+ sync sequence
+Date: Fri, 25 Aug 2017 14:30:34 +1000
+Message-Id: <20170825043036.18236-3-npiggin@gmail.com>
 In-Reply-To: <20170825043036.18236-1-npiggin@gmail.com>
 References: <20170825043036.18236-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,184 +26,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 CPUs have independent MMU contexts per thread, so KVM does not
-need to quiesce secondary threads, so the hwthread_req/hwthread_state
-protocol does not have to be used. So patch it away on POWER9, and patch
-away the branch from the Linux idle wakeup to kvm_start_guest that is
-never used.
-
-Add a warning and error out of kvmppc_grab_hwthread in case it is ever
-called on POWER9.
-
-This avoids a hwsync in the idle wakeup path on POWER9.
-
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/kvm_book3s_asm.h |  4 ++++
- arch/powerpc/kernel/idle_book3s.S         | 35 +++++++++++++++++++++----------
- arch/powerpc/kvm/book3s_hv.c              | 14 ++++++++++++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  8 +++++++
- 4 files changed, 49 insertions(+), 12 deletions(-)
+ arch/powerpc/include/asm/cpuidle.h | 16 ----------------
+ arch/powerpc/kernel/idle_book3s.S  | 26 ++++++++++++++++++++------
+ 2 files changed, 20 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-index 7cea76f11c26..83596f32f50b 100644
---- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-@@ -104,6 +104,10 @@ struct kvmppc_host_state {
- 	u8 napping;
+diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+index 8a174cba5567..eb43b5c3a7b5 100644
+--- a/arch/powerpc/include/asm/cpuidle.h
++++ b/arch/powerpc/include/asm/cpuidle.h
+@@ -101,20 +101,4 @@ static inline void report_invalid_psscr_val(u64 psscr_val, int err)
  
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	/*
-+	 * hwthread_req/hwthread_state pair is used to pull sibling threads
-+	 * out of guest on pre-ISAv3.0B CPUs where threads share MMU.
-+	 */
- 	u8 hwthread_req;
- 	u8 hwthread_state;
- 	u8 host_ipi;
+ #endif
+ 
+-/* Idle state entry routines */
+-#ifdef	CONFIG_PPC_P7_NAP
+-#define IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
+-	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
+-	std	r0,0(r1);					\
+-	ptesync;						\
+-	ld	r0,0(r1);					\
+-236:	cmpd	cr0,r0,r0;					\
+-	bne	236b;						\
+-	IDLE_INST;						\
+-
+-#define	IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)			\
+-	IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
+-	b	.
+-#endif /* CONFIG_PPC_P7_NAP */
+-
+ #endif
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index bfbf0976fc09..4924647d964d 100644
+index 4924647d964d..14e97f442167 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -296,13 +296,20 @@ enter_winkle:
+@@ -205,6 +205,19 @@ pnv_powersave_common:
+ 	mtmsrd	r7,0
+ 	bctr
+ 
++/*
++ * This is the sequence required to execute idle instructions, as
++ * specified in ISA v2.07. MSR[IR] and MSR[DR] must be 0.
++ */
++#define ARCH207_IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)		\
++	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
++	std	r0,0(r1);					\
++	ptesync;						\
++	ld	r0,0(r1);					\
++236:	cmpd	cr0,r0,r0;					\
++	bne	236b;						\
++	IDLE_INST;
++
+ 	.globl pnv_enter_arch207_idle_mode
+ pnv_enter_arch207_idle_mode:
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+@@ -230,7 +243,7 @@ pnv_enter_arch207_idle_mode:
+ 	stb	r3,PACA_THREAD_IDLE_STATE(r13)
+ 	cmpwi	cr3,r3,PNV_THREAD_SLEEP
+ 	bge	cr3,2f
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
++	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
+ 	/* No return */
+ 2:
+ 	/* Sleep or winkle */
+@@ -269,7 +282,7 @@ pnv_fastsleep_workaround_at_entry:
+ 
+ common_enter: /* common code for all the threads entering sleep or winkle */
+ 	bgt	cr3,enter_winkle
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
++	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
+ 
+ fastsleep_workaround_at_entry:
+ 	oris	r15,r15,PNV_CORE_IDLE_LOCK_BIT@h
+@@ -291,7 +304,7 @@ fastsleep_workaround_at_entry:
+ enter_winkle:
+ 	bl	save_sprs_to_stack
+ 
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
++	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
+ 
  /*
   * r3 - PSSCR value corresponding to the requested stop state.
-  */
--power_enter_stop:
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	/* Tell KVM we're entering idle */
-+power_enter_stop_kvm_rm:
-+	/*
-+	 * This is currently unused because POWER9 KVM does not have to
-+	 * gather secondary threads into sibling mode, but the code is
-+	 * here in case that function is required.
-+	 *
-+	 * Tell KVM we're entering idle.
-+	 */
- 	li	r4,KVM_HWTHREAD_IN_IDLE
- 	/* DO THIS IN REAL MODE!  See comment above. */
- 	stb	r4,HSTATE_HWTHREAD_STATE(r13)
- #endif
-+power_enter_stop:
- /*
-  * Check if we are executing the lite variant with ESL=EC=0
-  */
-@@ -465,6 +472,18 @@ pnv_powersave_wakeup_mce:
- 
- 	b	pnv_powersave_wakeup
- 
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+kvm_start_guest_check:
-+	li	r0,KVM_HWTHREAD_IN_KERNEL
-+	stb	r0,HSTATE_HWTHREAD_STATE(r13)
-+	/* Order setting hwthread_state vs. testing hwthread_req */
-+	sync
-+	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
-+	cmpwi	r0,0
-+	beqlr
-+	b	kvm_start_guest
-+#endif
-+
- /*
-  * Called from reset vector for powersave wakeups.
-  * cr3 - set to gt if waking up with partial/complete hypervisor state loss
-@@ -489,15 +508,9 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
- 	mr	r3,r12
- 
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	li	r0,KVM_HWTHREAD_IN_KERNEL
--	stb	r0,HSTATE_HWTHREAD_STATE(r13)
--	/* Order setting hwthread_state vs. testing hwthread_req */
--	sync
--	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
--	cmpwi	r0,0
--	beq	1f
--	b	kvm_start_guest
--1:
-+BEGIN_FTR_SECTION
-+	bl	kvm_start_guest_check
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- #endif
- 
- 	/* Return SRR1 from power7_nap() */
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 359c79cdf0cc..e34cd6fb947b 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2111,6 +2111,16 @@ static int kvmppc_grab_hwthread(int cpu)
- 	struct paca_struct *tpaca;
- 	long timeout = 10000;
- 
-+	/*
-+	 * ISA v3.0 idle routines do not set hwthread_state or test
-+	 * hwthread_req, so they can not grab idle threads.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		WARN_ON(1);
-+		pr_err("KVM: can not control sibling threads\n");
-+		return -EBUSY;
-+	}
-+
- 	tpaca = &paca[cpu];
- 
- 	/* Ensure the thread won't go into the kernel if it wakes */
-@@ -2145,10 +2155,12 @@ static void kvmppc_release_hwthread(int cpu)
- 	struct paca_struct *tpaca;
- 
- 	tpaca = &paca[cpu];
--	tpaca->kvm_hstate.hwthread_req = 0;
- 	tpaca->kvm_hstate.kvm_vcpu = NULL;
- 	tpaca->kvm_hstate.kvm_vcore = NULL;
- 	tpaca->kvm_hstate.kvm_split_mode = NULL;
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		tpaca->kvm_hstate.hwthread_req = 0;
-+
- }
- 
- static void radix_flush_cpu(struct kvm *kvm, int cpu, struct kvm_vcpu *vcpu)
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index c52184a8efdf..3e024fd71fe8 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -149,9 +149,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	subf	r4, r4, r3
- 	mtspr	SPRN_DEC, r4
- 
-+BEGIN_FTR_SECTION
- 	/* hwthread_req may have got set by cede or no vcpu, so clear it */
- 	li	r0, 0
- 	stb	r0, HSTATE_HWTHREAD_REQ(r13)
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+@@ -316,7 +329,7 @@ power_enter_stop:
+ 	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
+ 	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
+ 	bne	 .Lhandle_esl_ec_set
+-	IDLE_STATE_ENTER_SEQ(PPC_STOP)
++	PPC_STOP
+ 	li	r3,0  /* Since we didn't lose state, return 0 */
  
  	/*
- 	 * For external interrupts we need to call the Linux
-@@ -314,6 +316,7 @@ kvm_novcpu_exit:
-  * Relocation is off and most register values are lost.
-  * r13 points to the PACA.
-  * r3 contains the SRR1 wakeup value, SRR1 is trashed.
-+ * This is not used by ISAv3.0B processors.
-  */
- 	.globl	kvm_start_guest
- kvm_start_guest:
-@@ -432,6 +435,9 @@ kvm_secondary_got_guest:
-  * While waiting we also need to check if we get given a vcpu to run.
-  */
- kvm_no_guest:
-+BEGIN_FTR_SECTION
-+	twi	31,0,0
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	lbz	r3, HSTATE_HWTHREAD_REQ(r13)
- 	cmpwi	r3, 0
- 	bne	53f
-@@ -2509,8 +2515,10 @@ kvm_do_nap:
- 	clrrdi	r0, r0, 1
- 	mtspr	SPRN_CTRLT, r0
+@@ -349,7 +362,8 @@ power_enter_stop:
+ 	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
+ 	cmpd	r3,r4
+ 	bge	.Lhandle_deep_stop
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_STOP)
++	PPC_STOP	/* Does not return (system reset interrupt) */
++
+ .Lhandle_deep_stop:
+ /*
+  * Entering deep idle state.
+@@ -371,7 +385,7 @@ lwarx_loop_stop:
  
-+BEGIN_FTR_SECTION
- 	li	r0,1
- 	stb	r0,HSTATE_HWTHREAD_REQ(r13)
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	mfspr	r5,SPRN_LPCR
- 	ori	r5,r5,LPCR_PECE0 | LPCR_PECE1
- BEGIN_FTR_SECTION
+ 	bl	save_sprs_to_stack
+ 
+-	IDLE_STATE_ENTER_SEQ_NORET(PPC_STOP)
++	PPC_STOP	/* Does not return (system reset interrupt) */
+ 
+ /*
+  * Entered with MSR[EE]=0 and no soft-masked interrupts pending.
 -- 
 2.13.3
