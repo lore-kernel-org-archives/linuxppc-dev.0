@@ -1,22 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nixiaoming@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xdk5l3kkbzDrJx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 11:26:35 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Corentin Labbe <clabbe.montjoie@gmail.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, anju@linux.vnet.ibm.com,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: powernv: Fix build error on const discarding
-In-Reply-To: <20170818125816.GA15998@Red>
-References: <20170816123444.5202-1-clabbe.montjoie@gmail.com>
- <87fucqbblw.fsf@concordia.ellerman.id.au> <20170818125816.GA15998@Red>
-Date: Fri, 25 Aug 2017 11:26:32 +1000
-Message-ID: <87h8wwv3nb.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xdkTt0fhQzDrFM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Aug 2017 11:44:01 +1000 (AEST)
+From: Nixiaoming <nixiaoming@huawei.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+CC: David Hildenbrand <david@redhat.com>, David Gibson
+ <david@gibson.dropbear.id.au>, "kvm-ppc@vger.kernel.org"
+ <kvm-ppc@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH really v2] KVM: PPC: Book3S: Fix race and leak in
+ kvm_vm_ioctl_create_spapr_tce()
+Date: Fri, 25 Aug 2017 01:43:39 +0000
+Message-ID: <E490CD805F7529488761C40FD9D26EF1299B5025@DGGEMA505-MBX.china.huawei.com>
+References: <20170824091447.GG27401@fergus.ozlabs.ibm.com>
+In-Reply-To: <20170824091447.GG27401@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Corentin Labbe <clabbe.montjoie@gmail.com> writes:
+On 24.08.2017 11:14, Paul Mackerras wrote:
+> Nixiaoming pointed out that there is a memory leak in
+> kvm_vm_ioctl_create_spapr_tce() if the call to anon_inode_getfd()=20
+> fails; the memory allocated for the kvmppc_spapr_tce_table struct is=20
+> not freed, and nor are the pages allocated for the iommu tables.  In=20
+> addition, we have already incremented the process's count of locked=20
+> memory pages, and this doesn't get restored on error.
+>=20
+> David Hildenbrand pointed out that there is a race in that the=20
+> function checks early on that there is not already an entry in the
+> stt->iommu_tables list with the same LIOBN, but an entry with the
+> same LIOBN could get added between then and when the new entry is=20
+> added to the list.
+>=20
+> This fixes all three problems.  To simplify things, we now call
+> anon_inode_getfd() before placing the new entry in the list.  The=20
+> check for an existing entry is done while holding the kvm->lock mutex,=20
+> immediately before adding the new entry to the list.
+> Finally, on failure we now call kvmppc_account_memlimit to decrement=20
+> the process's count of locked memory pages.
+>=20
+> Reported-by: Nixiaoming <nixiaoming@huawei.com>
+> Reported-by: David Hildenbrand <david@redhat.com>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> ---
+> v2: Don't overwrite stt in loop over spapr_tce_tables
+>=20
 
-> On Thu, Aug 17, 2017 at 10:52:11PM +1000, Michael Ellerman wrote:
->> Corentin Labbe <clabbe.montjoie@gmail.com> writes:
->>=20
->> > When building a random powerpc kernel I hit this build error:
->> >   CC      arch/powerpc/platforms/powernv/opal-imc.o
->> > arch/powerpc/platforms/powernv/opal-imc.c: In function =C2=AB=C2=A0dis=
-able_nest_pmu_counters=C2=A0=C2=BB:
->> > arch/powerpc/platforms/powernv/opal-imc.c:130:13: error=C2=A0: assignm=
-ent discards =C2=AB=C2=A0const=C2=A0=C2=BB qualifier from pointer target ty=
-pe [-Werror=3Ddiscarded-qualifiers]
->> >    l_cpumask =3D cpumask_of_node(nid);
->> >              ^
->> > This patch simply add const to l_cpumask to fix this issue.
->>=20
->> Thanks. I'm not sure why we haven't seen that.
->>=20
->> Do you mind attaching your .config ?
->>=20
->> cheers
->
-> Yes
-
-Thanks.
-
-So the key is:
-
-> CONFIG_PPC_POWERNV=3Dy
-...
-> # CONFIG_NUMA is not set
-
-
-Which none of our configs have.
-
-I'll add a test build of that.
-
-Thanks.
-
-cheers
+Reviewed-by: nixiaoming  <nixiaoming@huawei.com>
