@@ -2,7 +2,7 @@ Return-Path: <BATV+0d43c28c1e7909f7e68d+5117+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgKdB11j1zDqg5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgKdB0yx7zDqZx
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:10:51 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
@@ -13,11 +13,9 @@ Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
  x86@kernel.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
  linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 03/12] frv: make dma_cache_sync a no-op
-Date: Sun, 27 Aug 2017 18:10:23 +0200
-Message-Id: <20170827161032.22772-4-hch@lst.de>
-In-Reply-To: <20170827161032.22772-1-hch@lst.de>
-References: <20170827161032.22772-1-hch@lst.de>
+Subject: refactor dma_cache_sync
+Date: Sun, 27 Aug 2017 18:10:20 +0200
+Message-Id: <20170827161032.22772-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-frv does not implement DMA_ATTR_NON_CONSISTENT allocations, so it doesn't
-make any sense to do any work in dma_cache_sync given that it must be a
-no-op when dma_alloc_attrs returns coherent memory.
+The dma_cache_sync routines is used to flush caches for memory returned
+by dma_alloc_attrs with the DMA_ATTR_NON_CONSISTENT flag (or previously
+from dma_alloc_noncoherent), but the requirements for it seems to be
+frequently misunderstood.  dma_cache_sync is documented to be a no-op for
+allocations that do not have the DMA_ATTR_NON_CONSISTENT flag set, and
+yet a lot of architectures implement it in some way despite not
+implementing DMA_ATTR_NON_CONSISTENT.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/frv/include/asm/dma-mapping.h | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/frv/include/asm/dma-mapping.h b/arch/frv/include/asm/dma-mapping.h
-index 354900917585..da0e5c9744c4 100644
---- a/arch/frv/include/asm/dma-mapping.h
-+++ b/arch/frv/include/asm/dma-mapping.h
-@@ -18,7 +18,6 @@ static inline
- void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 		    enum dma_data_direction direction)
- {
--	flush_write_buffers();
- }
- 
- #endif  /* _ASM_DMA_MAPPING_H */
--- 
-2.11.0
+This series removes a few abuses of dma_cache_sync for non-DMA API
+purposes, then changes all remaining architectures that do not implement
+DMA_ATTR_NON_CONSISTENT to implement dma_cache_sync as a no-op, and
+then adds the struct dma_map_ops indirection we use for all other
+DMA mapping operations to dma_cache_sync as well, thus removing all but
+two implementations of the function.
