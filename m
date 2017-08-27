@@ -2,8 +2,8 @@ Return-Path: <BATV+0d43c28c1e7909f7e68d+5117+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgKdK65yNzDqZr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:11:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgKdM24MczDqgM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:11:03 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
@@ -13,9 +13,9 @@ Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
  x86@kernel.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
  linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 07/12] mn10300: make dma_cache_sync a no-op
-Date: Sun, 27 Aug 2017 18:10:27 +0200
-Message-Id: <20170827161032.22772-8-hch@lst.de>
+Subject: [PATCH 08/12] powerpc: make dma_cache_sync a no-op
+Date: Sun, 27 Aug 2017 18:10:28 +0200
+Message-Id: <20170827161032.22772-9-hch@lst.de>
 In-Reply-To: <20170827161032.22772-1-hch@lst.de>
 References: <20170827161032.22772-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,36 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mn10300 does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
-doesn't make any sense to do any work in dma_cache_sync given that it must
-be a no-op when dma_alloc_attrs returns coherent memory.
+powerpc does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
+doesn't make any sense to do any work in dma_cache_sync given that it
+must be a no-op when dma_alloc_attrs returns coherent memory.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/mn10300/include/asm/dma-mapping.h | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/powerpc/include/asm/dma-mapping.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/mn10300/include/asm/dma-mapping.h b/arch/mn10300/include/asm/dma-mapping.h
-index 737ef574b3ea..dc24163b190f 100644
---- a/arch/mn10300/include/asm/dma-mapping.h
-+++ b/arch/mn10300/include/asm/dma-mapping.h
-@@ -11,9 +11,6 @@
- #ifndef _ASM_DMA_MAPPING_H
- #define _ASM_DMA_MAPPING_H
- 
--#include <asm/cache.h>
--#include <asm/io.h>
--
- extern const struct dma_map_ops mn10300_dma_ops;
- 
- static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
-@@ -25,7 +22,6 @@ static inline
- void dma_cache_sync(void *vaddr, size_t size,
- 		    enum dma_data_direction direction)
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index eaece3d3e225..320846442bfb 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -144,8 +144,6 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+ static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ 		enum dma_data_direction direction)
  {
--	mn10300_dcache_flush_inv();
+-	BUG_ON(direction == DMA_NONE);
+-	__dma_sync(vaddr, size, (int)direction);
  }
  
- #endif
+ #endif /* __KERNEL__ */
 -- 
 2.11.0
