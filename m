@@ -2,8 +2,8 @@ Return-Path: <BATV+0d43c28c1e7909f7e68d+5117+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgKdB133NzDqg9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:10:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgKdB11j1zDqg5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:10:51 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
@@ -12,11 +12,10 @@ Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
  Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
  x86@kernel.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
- linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>
-Subject: [PATCH 04/12] x86: make dma_cache_sync a no-op
-Date: Sun, 27 Aug 2017 18:10:24 +0200
-Message-Id: <20170827161032.22772-5-hch@lst.de>
+ linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 03/12] frv: make dma_cache_sync a no-op
+Date: Sun, 27 Aug 2017 18:10:23 +0200
+Message-Id: <20170827161032.22772-4-hch@lst.de>
 In-Reply-To: <20170827161032.22772-1-hch@lst.de>
 References: <20170827161032.22772-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,26 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-x86 does not implement DMA_ATTR_NON_CONSISTENT allocations, so it doesn't
+frv does not implement DMA_ATTR_NON_CONSISTENT allocations, so it doesn't
 make any sense to do any work in dma_cache_sync given that it must be a
 no-op when dma_alloc_attrs returns coherent memory.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/x86/include/asm/dma-mapping.h | 1 -
+ arch/frv/include/asm/dma-mapping.h | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 398c79889f5c..04877267ad18 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -70,7 +70,6 @@ static inline void
- dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 	enum dma_data_direction dir)
+diff --git a/arch/frv/include/asm/dma-mapping.h b/arch/frv/include/asm/dma-mapping.h
+index 354900917585..da0e5c9744c4 100644
+--- a/arch/frv/include/asm/dma-mapping.h
++++ b/arch/frv/include/asm/dma-mapping.h
+@@ -18,7 +18,6 @@ static inline
+ void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ 		    enum dma_data_direction direction)
  {
 -	flush_write_buffers();
  }
  
- static inline unsigned long dma_alloc_coherent_mask(struct device *dev,
+ #endif  /* _ASM_DMA_MAPPING_H */
 -- 
 2.11.0
