@@ -1,22 +1,33 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgR4M5z5QzDqgq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 06:16:19 +1000 (AEST)
-To: linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Jacek Anaszewski <jacek.anaszewski@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] leds-PowerNV: Delete an error message for a failed memory
- allocation in powernv_led_create()
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Message-ID: <019499e0-68d8-b89d-f5d6-6aefd9cbaf04@users.sourceforge.net>
-Date: Sun, 27 Aug 2017 22:10:08 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgS5q087dzDqZ1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 07:02:39 +1000 (AEST)
+Date: Sun, 27 Aug 2017 22:02:20 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: Nixiaoming <nixiaoming@huawei.com>, David Hildenbrand <david@redhat.com>,
+ "agraf@suse.com" <agraf@suse.com>,
+ "pbonzini@redhat.com" <pbonzini@redhat.com>,
+ "rkrcmar@redhat.com" <rkrcmar@redhat.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH] fix memory leak on kvm_vm_ioctl_create_spapr_tce
+Message-ID: <20170827210220.GG5426@ZenIV.linux.org.uk>
+References: <20170822142823.69425-1-nixiaoming@huawei.com>
+ <95fe182a-fd21-77a1-33df-0e609c2845fd@redhat.com>
+ <8fd9a878-a8ce-5576-9a5c-1c221ff6ded7@redhat.com>
+ <E490CD805F7529488761C40FD9D26EF1299B4667@DGGEMA505-MBX.china.huawei.com>
+ <20170823060624.GA13958@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170823060624.GA13958@fergus.ozlabs.ibm.com>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +37,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 27 Aug 2017 22:00:22 +0200
+On Wed, Aug 23, 2017 at 04:06:24PM +1000, Paul Mackerras wrote:
 
-Omit an extra message for a memory allocation failure in this function.
+> It seems to me that it would be better to do the anon_inode_getfd()
+> call before the kvm_get_kvm() call, and go to the fail label if it
+> fails.
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/leds/leds-powernv.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
-index b2a98c7b521b..b1adbd70ce2e 100644
---- a/drivers/leds/leds-powernv.c
-+++ b/drivers/leds/leds-powernv.c
-@@ -224,12 +224,8 @@ static int powernv_led_create(struct device *dev,
- 	powernv_led->cdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s:%s",
- 						powernv_led->loc_code,
- 						led_type_desc);
--	if (!powernv_led->cdev.name) {
--		dev_err(dev,
--			"%s: Memory allocation failed for classdev name\n",
--			__func__);
-+	if (!powernv_led->cdev.name)
- 		return -ENOMEM;
--	}
- 
- 	powernv_led->cdev.brightness_set_blocking = powernv_brightness_set;
- 	powernv_led->cdev.brightness_get = powernv_brightness_get;
--- 
-2.14.1
+And what happens if another thread does close() on the (guessed) fd?
