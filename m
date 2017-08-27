@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0074.outbound.protection.outlook.com [104.47.33.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xg2jt5KnzzDqZx
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Aug 2017 14:58:58 +1000 (AEST)
-Message-ID: <1503809791.3814.43.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/44x: mask and shift to zero bug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>, Matthias Fuchs
- <matthias.fuchs@esd-electronics.com>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-Date: Sun, 27 Aug 2017 14:56:31 +1000
-In-Reply-To: <20170825103340.op3uphrv3eyeutiz@mwanda>
-References: <20170825103340.op3uphrv3eyeutiz@mwanda>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgFhv3q4xzDqg5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Aug 2017 23:13:51 +1000 (AEST)
+From: Madalin Bucur <madalin.bucur@nxp.com>
+To: <netdev@vger.kernel.org>, <davem@davemloft.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v4 0/7] Add RSS to DPAA 1.x Ethernet driver
+Date: Sun, 27 Aug 2017 16:13:36 +0300
+Message-ID: <1503839623-3906-1-git-send-email-madalin.bucur@nxp.com>
+Reply-To: <madalin.bucur@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-08-25 at 13:33 +0300, Dan Carpenter wrote:
-> My static checker complains that 0x00001800 >> 13 is zero.  Looking at
-> the context, it seems like a copy and paste bug from the line below and
-> probably 0x3 << 13 or 0x00006000 was intended.
-> 
-> Fixes: 2af59f7d5c3e ("[POWERPC] 4xx: Add 405GPr and 405EP support in boot wrapper")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> Not tested!
-> 
-> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-> index 9d3bd4c45a24..f7da65169124 100644
-> --- a/arch/powerpc/boot/4xx.c
-> +++ b/arch/powerpc/boot/4xx.c
-> @@ -564,7 +564,7 @@ void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk)
->  		fbdv = 16;
->  	cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
->  	opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
-> -	ppdv = ((pllmr & 0x00001800) >> 13) + 1; /* PLB:PCI */
-> +	ppdv = ((pllmr & 0x00006000) >> 13) + 1; /* PLB:PCI */
->  	epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
->  	udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1; 
+This patch set introduces Receive Side Scaling for the DPAA Ethernet
+driver. Documentation is updated with details related to the new
+feature and limitations that apply.
+Added also a small fix.
 
-That rings a bell... Is this something we tried to fix before and had
-problems ? The thing is when I opened the 405GP and EP manual PDF,
-evince had memorized that this register was the last page I looked at
-:-) And I don't remember how many years ago that is.
+v2: removed a C++ style comment
+v3: move struct fman to header file to avoid exporting a function
+v4: addressed compilation issues introduced in v3
 
-According to the 405gp spec ppdv is IBM bits 17,18 so your patch is
-correct.
+Iordache Florinel-R70177 (1):
+  fsl/fman: enable FMan Keygen
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Madalin Bucur (6):
+  fsl/fman: move struct fman to header file
+  dpaa_eth: use multiple Rx frame queues
+  dpaa_eth: enable Rx hashing control
+  dpaa_eth: add NETIF_F_RXHASH
+  Documentation: networking: add RSS information
+  dpaa_eth: check allocation result
+
+ Documentation/networking/dpaa.txt                  |  68 +-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  76 +-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |   2 +
+ .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |   3 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c | 118 ++++
+ drivers/net/ethernet/freescale/fman/Makefile       |   2 +-
+ drivers/net/ethernet/freescale/fman/fman.c         |  88 +--
+ drivers/net/ethernet/freescale/fman/fman.h         |  77 ++
+ drivers/net/ethernet/freescale/fman/fman_keygen.c  | 783 +++++++++++++++++++++
+ drivers/net/ethernet/freescale/fman/fman_keygen.h  |  46 ++
+ drivers/net/ethernet/freescale/fman/fman_port.c    |  59 +-
+ drivers/net/ethernet/freescale/fman/fman_port.h    |   7 +
+ 12 files changed, 1235 insertions(+), 94 deletions(-)
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_keygen.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_keygen.h
+
+-- 
+2.1.0
