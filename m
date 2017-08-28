@@ -3,29 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgllK3z3rzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 18:47:41 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgllN4c9szDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 18:47:44 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7S8i7ID024738
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 04:47:38 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cm9ubeuqx-1
+ v7S8i6sL099846
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 04:47:41 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cmcct96mf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 04:47:38 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 04:47:40 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 28 Aug 2017 09:47:37 +0100
+ Mon, 28 Aug 2017 09:47:39 +0100
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
  andrew.donnellan@au1.ibm.com, clombard@linux.vnet.ibm.com,
  vaibhav@linux.vnet.ibm.com
 Cc: benh@kernel.crashing.org, alistair@popple.id.au
-Subject: [PATCH 1/2] cxl: Fix driver use count
-Date: Mon, 28 Aug 2017 10:47:30 +0200
-Message-Id: <20170828084731.14773-1-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] cxl: Enable global TLBIs for cxl contexts
+Date: Mon, 28 Aug 2017 10:47:31 +0200
+In-Reply-To: <20170828084731.14773-1-fbarrat@linux.vnet.ibm.com>
+References: <20170828084731.14773-1-fbarrat@linux.vnet.ibm.com>
+Message-Id: <20170828084731.14773-2-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,78 +37,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cxl keeps a driver use count, which is used with the hash memory model
-on p8 to know when to upgrade local TLBIs to global and to trigger
-callbacks to manage the MMU for PSL8.
+The PSL and nMMU need to see all TLB invalidations for the memory
+contexts used on the adapter. For the hash memory model, it is done by
+making all TLBIs global as soon as the cxl driver is in use. For
+radix, we need something similar, but we can refine and only convert
+to global the invalidations for contexts actually used by the device.
 
-If a process opens a context and closes without attaching or fails the
-attachment, the driver use count is never decremented. As a
-consequence, TLB invalidations remain global, even if there are no
-active cxl contexts.
-
-We should increment the driver use count when the process is attaching
-to the cxl adapter, and not on open. It's not needed before the
-adapter starts using the context and the use count is decremented on
-the detach path, so it makes more sense.
-
-It affects only the user api. The kernel api is already doing The
-Right Thing.
-
+So increment the 'active_cpus' count for the contexts attached to the
+cxl adapter. As soon as there's more than 1 active cpu, the TLBIs for
+the context become global. Active cpu count must be decremented when
+detaching to restore locality if possible and to avoid overflowing the
+counter.
+    
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org # v4.2+
-Fixes: 7bb5d91a4dda ("cxl: Rework context lifetimes")
----
- drivers/misc/cxl/api.c  | 4 ++++
- drivers/misc/cxl/file.c | 8 +++++++-
- 2 files changed, 11 insertions(+), 1 deletion(-)
-
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 309592589e30..6447c0df7ec4 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -77,6 +77,41 @@ extern void switch_cop(struct mm_struct *next);
+ extern int use_cop(unsigned long acop, struct mm_struct *mm);
+ extern void drop_cop(unsigned long acop, struct mm_struct *mm);
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
++static inline void inc_mm_active_cpus(struct mm_struct *mm)
++{
++	atomic_inc(&mm->context.active_cpus);
++}
++
++static inline void dec_mm_active_cpus(struct mm_struct *mm)
++{
++	atomic_dec(&mm->context.active_cpus);
++}
++
++static inline void mm_context_add_copro(struct mm_struct *mm)
++{
++	inc_mm_active_cpus(mm);
++}
++
++static inline void mm_context_remove_copro(struct mm_struct *mm)
++{
++	/*
++	 * Need to broadcast a global flush of the full mm before
++	 * decrementing active_cpus count, as the next TLBI may be
++	 * local and the nMMU and/or PSL need to be cleaned up.
++	 * Should be rare enough so that it's acceptable.
++	 */
++	flush_tlb_mm(mm);
++	dec_mm_active_cpus(mm);
++}
++#else
++static inline void inc_mm_active_cpus(struct mm_struct *mm) { }
++static inline void dec_mm_active_cpus(struct mm_struct *mm) { }
++static inline void mm_context_add_copro(struct mm_struct *mm) { }
++static inline void mm_context_remove_copro(struct mm_struct *mm) { }
++#endif
++
++
+ extern void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
+ 			       struct task_struct *tsk);
+ 
+diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
+index 0f613bc63c50..d60a62bf4fc7 100644
+--- a/arch/powerpc/mm/mmu_context.c
++++ b/arch/powerpc/mm/mmu_context.c
+@@ -34,15 +34,6 @@ static inline void switch_mm_pgdir(struct task_struct *tsk,
+ 				   struct mm_struct *mm) { }
+ #endif
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
+-static inline void inc_mm_active_cpus(struct mm_struct *mm)
+-{
+-	atomic_inc(&mm->context.active_cpus);
+-}
+-#else
+-static inline void inc_mm_active_cpus(struct mm_struct *mm) { }
+-#endif
+-
+ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
+ 			struct task_struct *tsk)
+ {
 diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 1a138c83f877..e0dfd1eadd70 100644
+index e0dfd1eadd70..33daf33e0e05 100644
 --- a/drivers/misc/cxl/api.c
 +++ b/drivers/misc/cxl/api.c
-@@ -336,6 +336,10 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+@@ -15,6 +15,7 @@
+ #include <linux/module.h>
+ #include <linux/mount.h>
+ #include <linux/sched/mm.h>
++#include <linux/mmu_context.h>
+ 
+ #include "cxl.h"
+ 
+@@ -332,8 +333,11 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+ 		cxl_context_mm_count_get(ctx);
+ 
+ 		/* decrement the use count */
+-		if (ctx->mm)
++		if (ctx->mm) {
  			mmput(ctx->mm);
++			/* make TLBIs for this context global */
++			mm_context_add_copro(ctx->mm);
++		}
  	}
  
-+	/*
-+	 * Increment driver use count. Enables global TLBIs for hash
-+	 * and callacks to handle the segment table
-+	 */
+ 	/*
+@@ -342,13 +346,25 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+ 	 */
  	cxl_ctx_get();
  
++	/*
++	 * Barrier is needed to make sure all TLBIs are global before
++	 * we attach and the context starts being used by the adapter.
++	 *
++	 * Needed after mm_context_add_copro() for radix and
++	 * cxl_ctx_get() for hash/p8
++	 */
++	smp_mb();
++
  	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
+ 		put_pid(ctx->pid);
+ 		ctx->pid = NULL;
+ 		cxl_adapter_context_put(ctx->afu->adapter);
+ 		cxl_ctx_put();
+-		if (task)
++		if (task) {
+ 			cxl_context_mm_count_put(ctx);
++			if (ctx->mm)
++				mm_context_remove_copro(ctx->mm);
++		}
+ 		goto out;
+ 	}
+ 
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 8c32040b9c09..12a41b2753f0 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -18,6 +18,7 @@
+ #include <linux/slab.h>
+ #include <linux/idr.h>
+ #include <linux/sched/mm.h>
++#include <linux/mmu_context.h>
+ #include <asm/cputable.h>
+ #include <asm/current.h>
+ #include <asm/copro.h>
+@@ -267,6 +268,8 @@ int __detach_context(struct cxl_context *ctx)
+ 
+ 	/* Decrease the mm count on the context */
+ 	cxl_context_mm_count_put(ctx);
++	if (ctx->mm)
++		mm_context_remove_copro(ctx->mm);
+ 	ctx->mm = NULL;
+ 
+ 	return 0;
 diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 0761271d68c5..b76a491a485d 100644
+index b76a491a485d..411e83cbbd82 100644
 --- a/drivers/misc/cxl/file.c
 +++ b/drivers/misc/cxl/file.c
-@@ -95,7 +95,6 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
+@@ -19,6 +19,7 @@
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/sched/mm.h>
++#include <linux/mmu_context.h>
+ #include <asm/cputable.h>
+ #include <asm/current.h>
+ #include <asm/copro.h>
+@@ -220,9 +221,12 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	/* ensure this mm_struct can't be freed */
+ 	cxl_context_mm_count_get(ctx);
  
- 	pr_devel("afu_open pe: %i\n", ctx->pe);
- 	file->private_data = ctx;
--	cxl_ctx_get();
- 
- 	/* indicate success */
- 	rc = 0;
-@@ -225,6 +224,12 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	if (ctx->mm)
+-	/* decrement the use count */
+-	if (ctx->mm)
++	if (ctx->mm) {
++		/* decrement the use count */
  		mmput(ctx->mm);
++		/* make TLBIs for this context global */
++		mm_context_add_copro(ctx->mm);
++	}
+ 
+ 	/*
+ 	 * Increment driver use count. Enables global TLBIs for hash
+@@ -230,6 +234,15 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	 */
+ 	cxl_ctx_get();
  
 +	/*
-+	 * Increment driver use count. Enables global TLBIs for hash
-+	 * and callacks to handle the segment table
++	 * Barrier is needed to make sure all TLBIs are global before
++	 * we attach and the context starts being used by the adapter.
++	 *
++	 * Needed after mm_context_add_copro() for radix and
++	 * cxl_ctx_get() for hash/p8
 +	 */
-+	cxl_ctx_get();
++	smp_mb();
 +
  	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
  
  	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
-@@ -233,6 +238,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 		cxl_adapter_context_put(ctx->afu->adapter);
- 		put_pid(ctx->pid);
+@@ -240,6 +253,8 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
  		ctx->pid = NULL;
-+		cxl_ctx_put();
+ 		cxl_ctx_put();
  		cxl_context_mm_count_put(ctx);
++		if (ctx->mm)
++			mm_context_remove_copro(ctx->mm);
  		goto out;
  	}
--- 
-2.11.0
+ 
