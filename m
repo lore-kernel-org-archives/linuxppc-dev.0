@@ -1,46 +1,19 @@
-Return-Path: <srs0=h+48=76=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgf9D3tSszDqD0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:36:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xgf9D3H47z8t8Q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:36:16 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xgf9D0D6nz9sPk
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 14:36:15 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7S4ZpAm088435
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 00:36:13 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cm2rpj09b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 00:36:13 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 28 Aug 2017 00:36:12 -0400
-Date: Sun, 27 Aug 2017 21:36:07 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v7 04/12] powerpc/vas: Define helpers to access MMIO
- regions
-References: <1503556688-15412-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1503556688-15412-5-git-send-email-sukadev@linux.vnet.ibm.com>
- <87efs0uxj4.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgfJR6x6MzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:42:31 +1000 (AEST)
+Date: Mon, 28 Aug 2017 14:42:29 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: nixiaoming <nixiaoming@huawei.com>, David Hildenbrand <david@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Al Viro <viro@ZenIV.linux.org.uk>
+Subject: [PATCH] KVM: PPC: Book3S HV: Protect updates to spapr_tce_tables list
+Message-ID: <20170828044228.GB12629@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87efs0uxj4.fsf@concordia.ellerman.id.au>
-Message-Id: <20170828043607.GB12907@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,66 +23,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [mpe@ellerman.id.au] wrote:
-> Hi Suka,
-> 
-> Comments inline.
-> 
-> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
-> > diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-> > index 6156fbe..a3a705a 100644
-> > --- a/arch/powerpc/platforms/powernv/vas-window.c
-> > +++ b/arch/powerpc/platforms/powernv/vas-window.c
-> > @@ -9,9 +9,182 @@
-> >  
-> >  #include <linux/types.h>
-> >  #include <linux/mutex.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/io.h>
-> >  
-> >  #include "vas.h"
-> >  
-> > +/*
-> > + * Compute the paste address region for the window @window using the
-> > + * ->paste_base_addr and ->paste_win_id_shift we got from device tree.
-> > + */
-> > +void compute_paste_address(struct vas_window *window, uint64_t *addr, int *len)
-> > +{
-> > +	uint64_t base, shift;
-> 
-> Please use the kernel types, so u64 here.
+Al Viro pointed out that while one thread of a process is executing
+in kvm_vm_ioctl_create_spapr_tce(), another thread could guess the
+file descriptor returned by anon_inode_getfd() and close() it before
+the first thread has added it to the kvm->arch.spapr_tce_tables list.
+That highlights a more general problem: there is no mutual exclusion
+between writers to the spapr_tce_tables list, leading to the
+possibility of the list becoming corrupted, which could cause a
+host kernel crash.
 
-Ok.
+To fix the mutual exclusion problem, we add a mutex_lock/unlock
+pair around the list_del_rce in kvm_spapr_tce_release().  Also,
+this moves the call to anon_inode_getfd() inside the region
+protected by the kvm->lock mutex, after we have done the check for
+a duplicate LIOBN.  This means that if another thread does guess the
+file descriptor and closes it, its call to kvm_spapr_tce_release()
+will not do any harm because it will have to wait until the first
+thread has released kvm->lock.
 
-> 
-> > +	int winid;
-> > +
-> > +	base = window->vinst->paste_base_addr;
-> > +	shift = window->vinst->paste_win_id_shift;
-> > +	winid = window->winid;
-> > +
-> > +	*addr  = base + (winid << shift);
-> > +	if (len)
-> > +		*len = PAGE_SIZE;
-> 
-> Having multiple output parameters makes for a pretty awkward API. Is it
-> really necesssary given len is a constant PAGE_SIZE anyway.
-> 
-> If you didn't return len, then you could just make the function return
-> the addr, and you wouldn't need any output parameters.
+The other things that the second thread could do with the guessed
+file descriptor are to mmap it or to pass it as a parameter to a
+KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE ioctl on a KVM device fd.  An mmap
+call won't cause any harm because kvm_spapr_tce_mmap() and
+kvm_spapr_tce_fault() don't access the spapr_tce_tables list or
+the kvmppc_spapr_tce_table.list field, and the fields that they do use
+have been properly initialized by the time of the anon_inode_getfd()
+call.
 
-I agree, I went back and forth on it. I was trying to avoid callers
-making assumptions on the size. But since there are just a couple
-of places, I guess we could have them assume PAGE_SIZE.
+The KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE ioctl calls
+kvm_spapr_tce_attach_iommu_group(), which scans the spapr_tce_tables
+list looking for the kvmppc_spapr_tce_table struct corresponding to
+the fd given as the parameter.  Either it will find the new entry
+or it won't; if it doesn't, it just returns an error, and if it
+does, it will function normally.  So, in each case there is no
+harmful effect.
 
-> 
-> One of the callers that passes len is unmap_paste_region(), but that
-> is a bit odd. It would be more natural I think if once a window is
-> mapped it knows its size. Or if the mapping will always just be one page
-> then we can just know that.
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
-Agree, since the len values are constant I was trying to avoid saving
-them in each of the 64K windows - so the compute during unmap. Will change
-to assume  PAGE_SIZE.
-
-Also agree with other comments here.
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 53766e2..8f2da8b 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -265,8 +265,11 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
+ {
+ 	struct kvmppc_spapr_tce_table *stt = filp->private_data;
+ 	struct kvmppc_spapr_tce_iommu_table *stit, *tmp;
++	struct kvm *kvm = stt->kvm;
+ 
++	mutex_lock(&kvm->lock);
+ 	list_del_rcu(&stt->list);
++	mutex_unlock(&kvm->lock);
+ 
+ 	list_for_each_entry_safe(stit, tmp, &stt->iommu_tables, next) {
+ 		WARN_ON(!kref_read(&stit->kref));
+@@ -298,7 +301,6 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 	unsigned long npages, size;
+ 	int ret = -ENOMEM;
+ 	int i;
+-	int fd = -1;
+ 
+ 	if (!args->size)
+ 		return -EINVAL;
+@@ -328,11 +330,6 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 			goto fail;
+ 	}
+ 
+-	ret = fd = anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
+-				    stt, O_RDWR | O_CLOEXEC);
+-	if (ret < 0)
+-		goto fail;
+-
+ 	mutex_lock(&kvm->lock);
+ 
+ 	/* Check this LIOBN hasn't been previously allocated */
+@@ -344,17 +341,19 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 		}
+ 	}
+ 
+-	if (!ret) {
++	if (!ret)
++		ret = anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
++				       stt, O_RDWR | O_CLOEXEC);
++
++	if (ret >= 0) {
+ 		list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
+ 		kvm_get_kvm(kvm);
+ 	}
+ 
+ 	mutex_unlock(&kvm->lock);
+ 
+-	if (!ret)
+-		return fd;
+-
+-	put_unused_fd(fd);
++	if (ret >= 0)
++		return ret;
+ 
+  fail:
+ 	for (i = 0; i < npages; i++)
+-- 
+2.7.4
