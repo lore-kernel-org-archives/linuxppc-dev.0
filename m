@@ -1,20 +1,35 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgh8P3KZxzDq7q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:05:41 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id t3so5597633pgt.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Aug 2017 23:05:41 -0700 (PDT)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: agust@denx.de, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/512x: clk: constify clk_div_table
-Date: Mon, 28 Aug 2017 11:35:15 +0530
-Message-Id: <90eacc5c9ff738176330dd53e128c945a88ead9f.1503900231.git.arvind.yadav.cs@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgh9Q0yRYzDqKl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:06:34 +1000 (AEST)
+Date: Mon, 28 Aug 2017 16:06:30 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Nixiaoming <nixiaoming@huawei.com>, David Hildenbrand <david@redhat.com>,
+ "agraf@suse.com" <agraf@suse.com>,
+ "pbonzini@redhat.com" <pbonzini@redhat.com>,
+ "rkrcmar@redhat.com" <rkrcmar@redhat.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH] fix memory leak on kvm_vm_ioctl_create_spapr_tce
+Message-ID: <20170828060630.GC12629@fergus.ozlabs.ibm.com>
+References: <20170822142823.69425-1-nixiaoming@huawei.com>
+ <95fe182a-fd21-77a1-33df-0e609c2845fd@redhat.com>
+ <8fd9a878-a8ce-5576-9a5c-1c221ff6ded7@redhat.com>
+ <E490CD805F7529488761C40FD9D26EF1299B4667@DGGEMA505-MBX.china.huawei.com>
+ <20170823060624.GA13958@fergus.ozlabs.ibm.com>
+ <20170827210220.GG5426@ZenIV.linux.org.uk>
+ <20170828043837.GA12629@fergus.ozlabs.ibm.com>
+ <20170828052808.GH5426@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170828052808.GH5426@ZenIV.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +39,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-clk_div_table are not supposed to change at runtime.
-mpc512x_clk_divtable function working with const
-clk_div_table. So mark the non-const structs as const.
+On Mon, Aug 28, 2017 at 06:28:08AM +0100, Al Viro wrote:
+> On Mon, Aug 28, 2017 at 02:38:37PM +1000, Paul Mackerras wrote:
+> > On Sun, Aug 27, 2017 at 10:02:20PM +0100, Al Viro wrote:
+> > > On Wed, Aug 23, 2017 at 04:06:24PM +1000, Paul Mackerras wrote:
+> > > 
+> > > > It seems to me that it would be better to do the anon_inode_getfd()
+> > > > call before the kvm_get_kvm() call, and go to the fail label if it
+> > > > fails.
+> > > 
+> > > And what happens if another thread does close() on the (guessed) fd?
+> > 
+> > Chaos ensues, but mostly because we don't have proper mutual exclusion
+> > on the modifications to the list.  I'll add a mutex_lock/unlock to
+> > kvm_spapr_tce_release() and move the anon_inode_getfd() call inside
+> > the mutex.
+> > 
+> > It looks like the other possible uses of the fd (mmap, and passing it
+> > as a parameter to the KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE ioctl on a KVM
+> > device fd) are safe.
+> 
+> Frankly, it's a lot saner to have "no failure points past anon_inode_getfd()"
+> policy...
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- arch/powerpc/platforms/512x/clock-commonclk.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Right.  In my latest patch, there are no failure points past
+anon_inode_getfd().
 
-diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index add5a53..b3097fe 100644
---- a/arch/powerpc/platforms/512x/clock-commonclk.c
-+++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -363,7 +363,7 @@ static int get_cpmf_mult_x2(void)
-  */
- 
- /* applies to the IPS_DIV, and PCI_DIV values */
--static struct clk_div_table divtab_2346[] = {
-+static const struct clk_div_table divtab_2346[] = {
- 	{ .val = 2, .div = 2, },
- 	{ .val = 3, .div = 3, },
- 	{ .val = 4, .div = 4, },
-@@ -372,7 +372,7 @@ static int get_cpmf_mult_x2(void)
- };
- 
- /* applies to the MBX_DIV, LPC_DIV, and NFC_DIV values */
--static struct clk_div_table divtab_1234[] = {
-+static const struct clk_div_table divtab_1234[] = {
- 	{ .val = 1, .div = 1, },
- 	{ .val = 2, .div = 2, },
- 	{ .val = 3, .div = 3, },
--- 
-1.9.1
+Paul.
