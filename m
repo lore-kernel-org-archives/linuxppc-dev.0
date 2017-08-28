@@ -2,44 +2,44 @@ Return-Path: <srs0=h+48=76=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgfY26JR1zDqTt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:53:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xgfY25F5zz8t8c
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:53:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgg1q420QzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 15:14:55 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xgg1q2v2Kz8t8c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 15:14:55 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xgfY16ywLz9s9Y
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 14:53:25 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7S4nKHN024072
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 00:53:24 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cmbmx9x3e-1
+ by ozlabs.org (Postfix) with ESMTPS id 3xgg1p5zrJz9sP3
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 15:14:54 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7S5DjtN095622
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 01:14:52 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cmb2qumaw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 00:53:23 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 01:14:51 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sun, 27 Aug 2017 22:53:22 -0600
-Date: Sun, 27 Aug 2017 21:53:17 -0700
+ Sun, 27 Aug 2017 23:14:51 -0600
+Date: Sun, 27 Aug 2017 22:14:46 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
  oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v7 08/12] powerpc/vas: Define vas_win_id()
+Subject: Re: [PATCH v7 10/12] powerpc/vas: Define vas_win_close() interface
 References: <1503556688-15412-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1503556688-15412-9-git-send-email-sukadev@linux.vnet.ibm.com>
- <87378gugx3.fsf@concordia.ellerman.id.au>
+ <1503556688-15412-11-git-send-email-sukadev@linux.vnet.ibm.com>
+ <87valct177.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87378gugx3.fsf@concordia.ellerman.id.au>
-Message-Id: <20170828045317.GE12907@us.ibm.com>
+In-Reply-To: <87valct177.fsf@concordia.ellerman.id.au>
+Message-Id: <20170828051446.GF12907@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,22 +50,130 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Michael Ellerman [mpe@ellerman.id.au] wrote:
+> Hi Suka,
+> 
+> More comments :)
+
+Thanks!
+
+> 
 > Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
 > 
-> > Define an interface to return a system-wide unique id for a given VAS
-> > window.
-> >
-> > The vas_win_id() will be used in a follow-on patch to generate an unique
-> > handle for a user space receive window. Applications can use this handle
-> > to pair send and receive windows for fast thread-wakeup.
-> >
-> > The hardware refers to this system-wide unique id as a Partition Send
-> > Window ID which is expected to be used during fault handling. Hence the
-> > "pswid" in the function names.
+> > diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+> > index 2dd4b63..24288dd 100644
+> > --- a/arch/powerpc/platforms/powernv/vas-window.c
+> > +++ b/arch/powerpc/platforms/powernv/vas-window.c
+> > @@ -879,11 +887,92 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+> >  }
+> >  EXPORT_SYMBOL_GPL(vas_rx_win_open);
+> >  
+> > -/* stub for now */
+> > +static void poll_window_busy_state(struct vas_window *window)
+> > +{
+> > +	int busy;
+> > +	uint64_t val;
+> > +
+> > +retry:
+> > +	/*
+> > +	 * Poll Window Busy flag
+> > +	 */
+> > +	val = read_hvwc_reg(window, VREG(WIN_STATUS));
+> > +	busy = GET_FIELD(VAS_WIN_BUSY, val);
+> > +	if (busy) {
+> > +		val = 0;
+> > +		schedule_timeout(2000);
 > 
-> Same comment as previous patch.
+> What's 2000?
+> 
+> That's in jiffies, so it's not a fixed amount of time.
+> 
+> But on a typical config that will be 20 _seconds_ ?!
 
-Ok will drop them for now.
+Ok. Should I change to that just HZ and
 
+> 
+> But you haven't set the task state, so AFAIK it will just return
+> instantly.
+
+call set_current_state(TASK_UNINTERRUPTIBLE) before the schedule_timeout()?
+
+> 
+> And if there's a software/hardware bug and it never stops being busy,
+> then we have a softlockup. The other option would be print a big fat
+> warning and just not free the window. But maybe that doesn't work for
+> other reasons.
+> 
+> > +		goto retry;
+> > +	}
+> > +}
+> > +
+> > +static void poll_window_castout(struct vas_window *window)
+> > +{
+> > +	int cached;
+> > +	uint64_t val;
+> > +
+> > +	/* Cast window context out of the cache */
+> > +retry:
+> > +	val = read_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL));
+> > +	cached = GET_FIELD(VAS_WIN_CACHE_STATUS, val);
+> > +	if (cached) {
+> > +		val = 0ULL;
+> > +		val = SET_FIELD(VAS_CASTOUT_REQ, val, 1);
+> > +		val = SET_FIELD(VAS_PUSH_TO_MEM, val, 0);
+> > +		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), val);
+> 
+> Sigh, I still don't like that macro :)
+
+:-) For one thing, I have used it a lot now and secondly isn't it easier
+to know that VAS_CASTOUT_REQ bit is set to 1 without worrying about its
+bit position? When debugging, yes we have to ensure VAS_CASTOUT_REQ is
+properly defined and we have to work out value in "val".
+
+> 
+> or:
+> 		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), 1ull << 63);
+> 
+> > +
+> > +		schedule_timeout(2000);
+> > +		goto retry;
+> > +	}
+> > +}
+> > +
+> > +/*
+> > + * Close a window.
+> > + *
+> > + * See Section 1.12.1 of VAS workbook v1.05 for details on closing window:
+> > + *	- Disable new paste operations (unmap paste address)
+> > + *	- Poll for the "Window Busy" bit to be cleared
+> > + *	- Clear the Open/Enable bit for the Window.
+> > + *	- Poll for return of window Credits (implies FIFO empty for Rx win?)
+> > + *	- Unpin and cast window context out of cache
+> > + *
+> > + * Besides the hardware, kernel has some bookkeeping of course.
+> > + */
+> >  int vas_win_close(struct vas_window *window)
+> >  {
+> > -	return -1;
+> > +	uint64_t val;
+> > +
+> > +	if (!window)
+> > +		return 0;
+> > +
+> > +	if (!window->tx_win && atomic_read(&window->num_txwins) != 0) {
+> > +		pr_devel("VAS: Attempting to close an active Rx window!\n");
+> > +		WARN_ON_ONCE(1);
+> > +		return -EAGAIN;
+> 
+> EAGAIN means "if you do the same thing again it might work".
+> 
+> I don't think that's right here. The window is not in a state where it
+> can be freed, the caller needs to do something to fix that.
+> 
+> EBUSY would probably be more appropriate.
+
+Ok. Should not happen now (or even with the fast thread-wake up code)
+since only the kernel should be closing the windows - so its really a
+bug.  Will change to EBUSY though.
+> 
 > 
 > cheers
