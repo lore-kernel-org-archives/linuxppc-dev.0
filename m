@@ -1,23 +1,42 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xghf240V1zDqF7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:27:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel 5/5] powerpc/eeh: Remove unnecessary node from
- pci_dn
-In-Reply-To: <20170823101901.33961-6-aik@ozlabs.ru>
-References: <20170823101901.33961-1-aik@ozlabs.ru>
- <20170823101901.33961-6-aik@ozlabs.ru>
-Date: Mon, 28 Aug 2017 16:27:54 +1000
-Message-ID: <878ti4rytx.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xghhq3cpHzDqYQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:30:19 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7S6TIkr118040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:30:17 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cm5wngc8j-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:30:17 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 28 Aug 2017 16:30:14 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7S6UCkM27590672
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:30:12 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7S6UBlf020191
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:30:12 +1000
+Subject: Re: [PATCH] powerpc/mm/cxl: Add barrier when setting mm cpumask
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+References: <20170828062530.5789-1-aneesh.kumar@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Mon, 28 Aug 2017 16:30:11 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170828062530.5789-1-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <90fc68c0-7098-2534-56bd-af76479507aa@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +46,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+On 28/08/17 16:25, Aneesh Kumar K.V wrote:
+> We need to add memory barrier so that the page table walk doesn't happen
+> before the cpumask is set and made visible to the other cpus. We need
+> to use a sync here instead of lwsync because lwsync is not sufficient for
+> store/load ordering.
+> 
+> We also need to add an if (mm) check so that we do the right thing when called
+> with a kernel context. For kernel context, we have mm = NULL. W.r.t kernel
+> address we can skip setting the mm cpumask.
+> 
+> Fixes: 0f4bc0932e ("powerpc/mm/cxl: Add the fault handling cpu to mm cpumask")
+> Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-> The pci_dn struct caches a OF device node pointer in order to access
-> the "ibm,loc-code" property when EEH is recovering.
->
-> However, when this happens in eeh_dev_check_failure(), we also have
-> a pci_dev pointer which should have a valid pointer to the device node
-> when pci_dn has one (both pointers are not NULL for physical functions
-> and are NULL for virtual functions).
->
-> This removes the node pointer from the pci_dn struct and used pdev
-> in eeh_dev_check_failure() instead.
->
-> This changes pci_remove_device_node_info() to look for a parent of
-> the node being removed, just like pci_add_device_node_info() does when it
-> references the parent node.
->
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
 > ---
->  arch/powerpc/include/asm/pci-bridge.h | 1 -
->  arch/powerpc/kernel/eeh.c             | 9 +++++----
->  arch/powerpc/kernel/pci_dn.c          | 8 +++++---
->  3 files changed, 10 insertions(+), 8 deletions(-)
+>   drivers/misc/cxl/fault.c | 14 ++++++++++++--
+>   1 file changed, 12 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+> index ab507e4ed69b..caed2a523bee 100644
+> --- a/drivers/misc/cxl/fault.c
+> +++ b/drivers/misc/cxl/fault.c
+> @@ -141,9 +141,19 @@ int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar)
+>   	/*
+>   	 * Add the fault handling cpu to task mm cpumask so that we
+>   	 * can do a safe lockless page table walk when inserting the
+> -	 * hash page table entry.
+> +	 * hash page table entry. This function get called with a
+> +	 * valid mm for all user space applications. Hence using
+> +	 * if (mm) check is sufficient here.
+>   	 */
+> -	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
+> +	if (mm) {
+> +		cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
+> +		/*
+> +		 * We need to make sure we walk the table only after
+> +		 * we update the cpumask. The other side of the barrier is
+> +		 * explained * in serialize_against_pte_lookup()
+> +		 */
+> +		smp_mb();
+> +	}
+>   	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
+>   		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
+>   		return result;
+> 
 
-  arch/powerpc/platforms/pseries/msi.c: In function =E2=80=98check_req=E2=
-=80=99:
-  arch/powerpc/platforms/pseries/msi.c:143:10: error: =E2=80=98struct pci_d=
-n=E2=80=99 has no member named =E2=80=98node=E2=80=99
-  dn =3D pdn->node;
-          ^~
-  arch/powerpc/platforms/pseries/msi.c: In function =E2=80=98find_pe_dn=E2=
-=80=99:
-  arch/powerpc/platforms/pseries/msi.c:214:16: error: =E2=80=98struct pci_d=
-n=E2=80=99 has no member named =E2=80=98node=E2=80=99
-  dn =3D pdn ? pdn->node : NULL;
-                ^~
-cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
