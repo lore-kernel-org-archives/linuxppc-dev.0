@@ -1,37 +1,19 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhumirks@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgzVZ14W2zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 03:37:25 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7SHShHE111207
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 13:37:23 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cmq0htntj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 13:37:23 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 28 Aug 2017 18:37:21 +0100
-Subject: Re: [PATCH 2/2] cxl: Enable global TLBIs for cxl contexts
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, andrew.donnellan@au1.ibm.com,
- clombard@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com
-Cc: alistair@popple.id.au
-References: <20170828084731.14773-1-fbarrat@linux.vnet.ibm.com>
- <20170828084731.14773-2-fbarrat@linux.vnet.ibm.com>
- <1503921783.4850.5.camel@kernel.crashing.org>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 28 Aug 2017 19:37:16 +0200
-MIME-Version: 1.0
-In-Reply-To: <1503921783.4850.5.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <03f1e0fc-77ca-c75b-319d-b76332ff4403@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xh0h32hRkzDqBf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 04:30:43 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id 63so937763pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 11:30:42 -0700 (PDT)
+From: Bhumika Goyal <bhumirks@gmail.com>
+To: julia.lawall@lip6.fr, gregkh@linuxfoundation.org, jslaby@suse.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
+Subject: [PATCH] tty: hvcs: make ktermios const
+Date: Tue, 29 Aug 2017 00:00:31 +0530
+Message-Id: <1503945031-28202-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,220 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Make this const as it is not modified anywhere.
 
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+ drivers/tty/hvc/hvcs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Le 28/08/2017 à 14:03, Benjamin Herrenschmidt a écrit :
-> On Mon, 2017-08-28 at 10:47 +0200, Frederic Barrat wrote:
->>
->>      
->> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
->> index 309592589e30..6447c0df7ec4 100644
->> --- a/arch/powerpc/include/asm/mmu_context.h
->> +++ b/arch/powerpc/include/asm/mmu_context.h
->> @@ -77,6 +77,41 @@ extern void switch_cop(struct mm_struct *next);
->>   extern int use_cop(unsigned long acop, struct mm_struct *mm);
->>   extern void drop_cop(unsigned long acop, struct mm_struct *mm);
->>   
->> +#ifdef CONFIG_PPC_BOOK3S_64
->> +static inline void inc_mm_active_cpus(struct mm_struct *mm)
->> +{
->> +	atomic_inc(&mm->context.active_cpus);
->> +}
->> +
->> +static inline void dec_mm_active_cpus(struct mm_struct *mm)
->> +{
->> +	atomic_dec(&mm->context.active_cpus);
->> +}
->> +
->> +static inline void mm_context_add_copro(struct mm_struct *mm)
->> +{
->> +	inc_mm_active_cpus(mm);
->> +}
->> +
->> +static inline void mm_context_remove_copro(struct mm_struct *mm)
->> +{
->> +	/*
->> +	 * Need to broadcast a global flush of the full mm before
->> +	 * decrementing active_cpus count, as the next TLBI may be
->> +	 * local and the nMMU and/or PSL need to be cleaned up.
->> +	 * Should be rare enough so that it's acceptable.
->> +	 */
->> +	flush_tlb_mm(mm);
->> +	dec_mm_active_cpus(mm);
->> +}
-> 
-> You probably need to kill the pwc too. With my recent optimizations
-> flush_tlb_mm won't do that anymore. You need a bigger hammer (I don't
-> have the code at hand right now to tell you what exactly :-) Basically
-> something that does a RIC_FLUSH_ALL.
-
-
-Good point, I had missed the change. It looks like I now need to call 
-radix__flush_all_mm(), which I would have to export outside of 
-tlb-radix.c first.
-
-Any problem with having a flush_all_mm() to complement a flush_tlb_mm()? 
-It's tainted with radix, and the 2 would be equivalent on hash, but it 
-would make things easy.
-
-   Fred
-
-
->> +#else
->> +static inline void inc_mm_active_cpus(struct mm_struct *mm) { }
->> +static inline void dec_mm_active_cpus(struct mm_struct *mm) { }
->> +static inline void mm_context_add_copro(struct mm_struct *mm) { }
->> +static inline void mm_context_remove_copro(struct mm_struct *mm) { }
->> +#endif
->> +
->> +
->>   extern void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
->>   			       struct task_struct *tsk);
->>   
->> diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
->> index 0f613bc63c50..d60a62bf4fc7 100644
->> --- a/arch/powerpc/mm/mmu_context.c
->> +++ b/arch/powerpc/mm/mmu_context.c
->> @@ -34,15 +34,6 @@ static inline void switch_mm_pgdir(struct task_struct *tsk,
->>   				   struct mm_struct *mm) { }
->>   #endif
->>   
->> -#ifdef CONFIG_PPC_BOOK3S_64
->> -static inline void inc_mm_active_cpus(struct mm_struct *mm)
->> -{
->> -	atomic_inc(&mm->context.active_cpus);
->> -}
->> -#else
->> -static inline void inc_mm_active_cpus(struct mm_struct *mm) { }
->> -#endif
->> -
->>   void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
->>   			struct task_struct *tsk)
->>   {
->> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
->> index e0dfd1eadd70..33daf33e0e05 100644
->> --- a/drivers/misc/cxl/api.c
->> +++ b/drivers/misc/cxl/api.c
->> @@ -15,6 +15,7 @@
->>   #include <linux/module.h>
->>   #include <linux/mount.h>
->>   #include <linux/sched/mm.h>
->> +#include <linux/mmu_context.h>
->>   
->>   #include "cxl.h"
->>   
->> @@ -332,8 +333,11 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
->>   		cxl_context_mm_count_get(ctx);
->>   
->>   		/* decrement the use count */
->> -		if (ctx->mm)
->> +		if (ctx->mm) {
->>   			mmput(ctx->mm);
->> +			/* make TLBIs for this context global */
->> +			mm_context_add_copro(ctx->mm);
->> +		}
->>   	}
->>   
->>   	/*
->> @@ -342,13 +346,25 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
->>   	 */
->>   	cxl_ctx_get();
->>   
->> +	/*
->> +	 * Barrier is needed to make sure all TLBIs are global before
->> +	 * we attach and the context starts being used by the adapter.
->> +	 *
->> +	 * Needed after mm_context_add_copro() for radix and
->> +	 * cxl_ctx_get() for hash/p8
->> +	 */
->> +	smp_mb();
->> +
->>   	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
->>   		put_pid(ctx->pid);
->>   		ctx->pid = NULL;
->>   		cxl_adapter_context_put(ctx->afu->adapter);
->>   		cxl_ctx_put();
->> -		if (task)
->> +		if (task) {
->>   			cxl_context_mm_count_put(ctx);
->> +			if (ctx->mm)
->> +				mm_context_remove_copro(ctx->mm);
->> +		}
->>   		goto out;
->>   	}
->>   
->> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
->> index 8c32040b9c09..12a41b2753f0 100644
->> --- a/drivers/misc/cxl/context.c
->> +++ b/drivers/misc/cxl/context.c
->> @@ -18,6 +18,7 @@
->>   #include <linux/slab.h>
->>   #include <linux/idr.h>
->>   #include <linux/sched/mm.h>
->> +#include <linux/mmu_context.h>
->>   #include <asm/cputable.h>
->>   #include <asm/current.h>
->>   #include <asm/copro.h>
->> @@ -267,6 +268,8 @@ int __detach_context(struct cxl_context *ctx)
->>   
->>   	/* Decrease the mm count on the context */
->>   	cxl_context_mm_count_put(ctx);
->> +	if (ctx->mm)
->> +		mm_context_remove_copro(ctx->mm);
->>   	ctx->mm = NULL;
->>   
->>   	return 0;
->> diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
->> index b76a491a485d..411e83cbbd82 100644
->> --- a/drivers/misc/cxl/file.c
->> +++ b/drivers/misc/cxl/file.c
->> @@ -19,6 +19,7 @@
->>   #include <linux/mm.h>
->>   #include <linux/slab.h>
->>   #include <linux/sched/mm.h>
->> +#include <linux/mmu_context.h>
->>   #include <asm/cputable.h>
->>   #include <asm/current.h>
->>   #include <asm/copro.h>
->> @@ -220,9 +221,12 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
->>   	/* ensure this mm_struct can't be freed */
->>   	cxl_context_mm_count_get(ctx);
->>   
->> -	/* decrement the use count */
->> -	if (ctx->mm)
->> +	if (ctx->mm) {
->> +		/* decrement the use count */
->>   		mmput(ctx->mm);
->> +		/* make TLBIs for this context global */
->> +		mm_context_add_copro(ctx->mm);
->> +	}
->>   
->>   	/*
->>   	 * Increment driver use count. Enables global TLBIs for hash
->> @@ -230,6 +234,15 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
->>   	 */
->>   	cxl_ctx_get();
->>   
->> +	/*
->> +	 * Barrier is needed to make sure all TLBIs are global before
->> +	 * we attach and the context starts being used by the adapter.
->> +	 *
->> +	 * Needed after mm_context_add_copro() for radix and
->> +	 * cxl_ctx_get() for hash/p8
->> +	 */
->> +	smp_mb();
->> +
->>   	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
->>   
->>   	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
->> @@ -240,6 +253,8 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
->>   		ctx->pid = NULL;
->>   		cxl_ctx_put();
->>   		cxl_context_mm_count_put(ctx);
->> +		if (ctx->mm)
->> +			mm_context_remove_copro(ctx->mm);
->>   		goto out;
->>   	}
->>   
-> 
+diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
+index 79cc5be..40adf86 100644
+--- a/drivers/tty/hvc/hvcs.c
++++ b/drivers/tty/hvc/hvcs.c
+@@ -189,7 +189,7 @@
+  * that will cause echoing or we'll go into recursive loop echoing chars back
+  * and forth with the console drivers.
+  */
+-static struct ktermios hvcs_tty_termios = {
++static const struct ktermios hvcs_tty_termios = {
+ 	.c_iflag = IGNBRK | IGNPAR,
+ 	.c_oflag = OPOST,
+ 	.c_cflag = B38400 | CS8 | CREAD | HUPCL,
+-- 
+1.9.1
