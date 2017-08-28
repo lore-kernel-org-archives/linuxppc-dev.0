@@ -1,22 +1,32 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgq6N2mbyzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 21:19:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgqN40fL0zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 21:31:16 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dan Carpenter <dan.carpenter@oracle.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthias Fuchs <matthias.fuchs@esd-electronics.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] powerpc/44x: mask and shift to zero bug
-In-Reply-To: <20170828075705.dxyoqyxgmd3ila3g@mwanda>
-References: <20170825103340.op3uphrv3eyeutiz@mwanda>
- <1503809791.3814.43.camel@kernel.crashing.org>
- <20170828075705.dxyoqyxgmd3ila3g@mwanda>
-Date: Mon, 28 Aug 2017 21:19:23 +1000
-Message-ID: <87lgm4ueh0.fsf@concordia.ellerman.id.au>
+To: Al Viro <viro@ZenIV.linux.org.uk>, Paul Mackerras <paulus@ozlabs.org>
+Cc: Nixiaoming <nixiaoming@huawei.com>, David Hildenbrand <david@redhat.com>,
+ "agraf\@suse.com" <agraf@suse.com>,
+ "pbonzini\@redhat.com" <pbonzini@redhat.com>,
+ "rkrcmar\@redhat.com" <rkrcmar@redhat.com>,
+ "benh\@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "kvm-ppc\@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm\@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH] fix memory leak on kvm_vm_ioctl_create_spapr_tce
+In-Reply-To: <20170828052808.GH5426@ZenIV.linux.org.uk>
+References: <20170822142823.69425-1-nixiaoming@huawei.com>
+ <95fe182a-fd21-77a1-33df-0e609c2845fd@redhat.com>
+ <8fd9a878-a8ce-5576-9a5c-1c221ff6ded7@redhat.com>
+ <E490CD805F7529488761C40FD9D26EF1299B4667@DGGEMA505-MBX.china.huawei.com>
+ <20170823060624.GA13958@fergus.ozlabs.ibm.com>
+ <20170827210220.GG5426@ZenIV.linux.org.uk>
+ <20170828043837.GA12629@fergus.ozlabs.ibm.com>
+ <20170828052808.GH5426@ZenIV.linux.org.uk>
+Date: Mon, 28 Aug 2017 21:31:15 +1000
+Message-ID: <87h8wsudx8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,54 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan Carpenter <dan.carpenter@oracle.com> writes:
+Al Viro <viro@ZenIV.linux.org.uk> writes:
 
-> On Sun, Aug 27, 2017 at 02:56:31PM +1000, Benjamin Herrenschmidt wrote:
->> On Fri, 2017-08-25 at 13:33 +0300, Dan Carpenter wrote:
->> > My static checker complains that 0x00001800 >> 13 is zero.  Looking at
->> > the context, it seems like a copy and paste bug from the line below and
->> > probably 0x3 << 13 or 0x00006000 was intended.
+> On Mon, Aug 28, 2017 at 02:38:37PM +1000, Paul Mackerras wrote:
+>> On Sun, Aug 27, 2017 at 10:02:20PM +0100, Al Viro wrote:
+>> > On Wed, Aug 23, 2017 at 04:06:24PM +1000, Paul Mackerras wrote:
 >> > 
->> > Fixes: 2af59f7d5c3e ("[POWERPC] 4xx: Add 405GPr and 405EP support in boot wrapper")
->> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->> > ---
->> > Not tested!
+>> > > It seems to me that it would be better to do the anon_inode_getfd()
+>> > > call before the kvm_get_kvm() call, and go to the fail label if it
+>> > > fails.
 >> > 
->> > diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
->> > index 9d3bd4c45a24..f7da65169124 100644
->> > --- a/arch/powerpc/boot/4xx.c
->> > +++ b/arch/powerpc/boot/4xx.c
->> > @@ -564,7 +564,7 @@ void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk)
->> >  		fbdv = 16;
->> >  	cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
->> >  	opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
->> > -	ppdv = ((pllmr & 0x00001800) >> 13) + 1; /* PLB:PCI */
->> > +	ppdv = ((pllmr & 0x00006000) >> 13) + 1; /* PLB:PCI */
->> >  	epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
->> >  	udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1; 
+>> > And what happens if another thread does close() on the (guessed) fd?
 >> 
->> That rings a bell... Is this something we tried to fix before and had
->> problems ? The thing is when I opened the 405GP and EP manual PDF,
->> evince had memorized that this register was the last page I looked at
->> :-) And I don't remember how many years ago that is.
+>> Chaos ensues, but mostly because we don't have proper mutual exclusion
+>> on the modifications to the list.  I'll add a mutex_lock/unlock to
+>> kvm_spapr_tce_release() and move the anon_inode_getfd() call inside
+>> the mutex.
 >> 
->> According to the 405gp spec ppdv is IBM bits 17,18 so your patch is
->> correct.
->> 
->> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> It looks like the other possible uses of the fd (mmap, and passing it
+>> as a parameter to the KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE ioctl on a KVM
+>> device fd) are safe.
 >
-> Hm...  I did a search through my mailbox and you're right we discussed
-> this before.
->
-> [bug report] [POWERPC] 4xx: Add 405GPr and 405EP support in boot wrapper
->
-> I sent this email during kernel summit and neither of us could send a
-> patch at the time and we both problem forgot.  I definitely forgot.
+> Frankly, it's a lot saner to have "no failure points past anon_inode_getfd()"
+> policy...
 
-If you send a patch with the report, like you did this time, then it
-will be remembered in patchwork. That doesn't mean we won't forget it,
-but it makes is *less likely* we'll forget it :)
-
-http://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=9327&state=%2A&archive=both
+Actually I thought that was a hard rule. But I don't see it documented
+or mentioned anywhere so I'm not sure now why I thought that.
 
 cheers
