@@ -1,36 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xghcR4zmnzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:26:31 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id t193so2671538pgc.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Aug 2017 23:26:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xghdZ3zTkzDqKd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:27:30 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel 4/5] powerpc/eeh: Remove unnecessary config_addr
+ from eeh_dev
+In-Reply-To: <20170823101901.33961-5-aik@ozlabs.ru>
+References: <20170823101901.33961-1-aik@ozlabs.ru>
+ <20170823101901.33961-5-aik@ozlabs.ru>
+Date: Mon, 28 Aug 2017 16:27:30 +1000
+Message-ID: <87bmn0ryul.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20170827161032.22772-13-hch@lst.de>
-References: <20170827161032.22772-1-hch@lst.de>
- <20170827161032.22772-13-hch@lst.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 28 Aug 2017 08:26:29 +0200
-Message-ID: <CAMuHMdVwHx2aATKqYS7xXTjnCigoZzVFFfcZOmvNj3KcFFJehg@mail.gmail.com>
-Subject: Re: [PATCH 12/12] dma-mapping: turn dma_cache_sync into a dma_map_ops
- method
-To: Christoph Hellwig <hch@lst.de>
-Cc: iommu@lists.linux-foundation.org,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Robin Murphy <robin.murphy@arm.com>,
- Michal Simek <monstr@monstr.eu>, David Howells <dhowells@redhat.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, "the arch/x86 maintainers" <x86@kernel.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,24 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-On Sun, Aug 27, 2017 at 6:10 PM, Christoph Hellwig <hch@lst.de> wrote:
-> After we removed all the dead wood it turns out only two architectures
-> actually implement dma_cache_sync as a no-op: mips and parisc.  Add
+> The eeh_dev struct hold a config space address of an associated node
+> and the very same address is also stored in the pci_dn struct which
+> is always present during the eeh_dev lifetime.
+>
+> This uses bus:devfn directly from pci_dn instead of cached and packed
+> config_addr.
+>
+> Since config_addr is made from device's bus:dev.fn, there is no point
+> in keeping it in the debugfs either so remove that too.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/include/asm/eeh.h               |  1 -
+>  arch/powerpc/kernel/eeh_pe.c                 | 42 ++++++++++++++--------=
+------
+>  arch/powerpc/kernel/eeh_sysfs.c              |  3 --
+>  arch/powerpc/platforms/powernv/eeh-powernv.c |  9 +++---
 
-s/no-op/real op/
-
-> a cache_sync method to struct dma_map_ops and implement it for the
-> mips defualt DMA ops, and the parisc pa11 ops.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+  arch/powerpc/platforms/pseries/eeh_pseries.c:257:7: error: =E2=80=98struc=
+t eeh_dev=E2=80=99 has no member named =E2=80=98config_addr=E2=80=99; did y=
+ou mean =E2=80=98pe_config_addr=E2=80=99?
+  edev->config_addr =3D (pdn->busno << 16) | (pdn->devfn << 8);
+      ^~
+  arch/powerpc/platforms/pseries/eeh_pseries.c:282:8: error: =E2=80=98struc=
+t eeh_dev=E2=80=99 has no member named =E2=80=98config_addr=E2=80=99; did y=
+ou mean =E2=80=98pe_config_addr=E2=80=99?
+   edev->config_addr =3D pdn_to_eeh_dev(pdn->parent)->config_addr;
+       ^~
+  arch/powerpc/platforms/pseries/eeh_pseries.c:282:51: error: =E2=80=98stru=
+ct eeh_dev=E2=80=99 has no member named =E2=80=98config_addr=E2=80=99; did =
+you mean =E2=80=98pe_config_addr=E2=80=99?
+   edev->config_addr =3D pdn_to_eeh_dev(pdn->parent)->config_addr;
+                                                   ^~
+cheers
