@@ -1,31 +1,36 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xghc73KJQzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:26:15 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7S6OSi9038158
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:26:13 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cm2rpnhpj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:26:13 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 28 Aug 2017 00:26:12 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: [PATCH] powerpc/mm/cxl: Add barrier when setting mm cpumask
-Date: Mon, 28 Aug 2017 11:55:30 +0530
-Message-Id: <20170828062530.5789-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xghcR4zmnzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:26:31 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id t193so2671538pgc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Aug 2017 23:26:31 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20170827161032.22772-13-hch@lst.de>
+References: <20170827161032.22772-1-hch@lst.de>
+ <20170827161032.22772-13-hch@lst.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 28 Aug 2017 08:26:29 +0200
+Message-ID: <CAMuHMdVwHx2aATKqYS7xXTjnCigoZzVFFfcZOmvNj3KcFFJehg@mail.gmail.com>
+Subject: Re: [PATCH 12/12] dma-mapping: turn dma_cache_sync into a dma_map_ops
+ method
+To: Christoph Hellwig <hch@lst.de>
+Cc: iommu@lists.linux-foundation.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Robin Murphy <robin.murphy@arm.com>,
+ Michal Simek <monstr@monstr.eu>, David Howells <dhowells@redhat.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, "the arch/x86 maintainers" <x86@kernel.org>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,49 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to add memory barrier so that the page table walk doesn't happen
-before the cpumask is set and made visible to the other cpus. We need
-to use a sync here instead of lwsync because lwsync is not sufficient for
-store/load ordering.
+Hi Christoph,
 
-We also need to add an if (mm) check so that we do the right thing when called
-with a kernel context. For kernel context, we have mm = NULL. W.r.t kernel
-address we can skip setting the mm cpumask.
+On Sun, Aug 27, 2017 at 6:10 PM, Christoph Hellwig <hch@lst.de> wrote:
+> After we removed all the dead wood it turns out only two architectures
+> actually implement dma_cache_sync as a no-op: mips and parisc.  Add
 
-Fixes: 0f4bc0932e ("powerpc/mm/cxl: Add the fault handling cpu to mm cpumask")
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- drivers/misc/cxl/fault.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+s/no-op/real op/
 
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index ab507e4ed69b..caed2a523bee 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -141,9 +141,19 @@ int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar)
- 	/*
- 	 * Add the fault handling cpu to task mm cpumask so that we
- 	 * can do a safe lockless page table walk when inserting the
--	 * hash page table entry.
-+	 * hash page table entry. This function get called with a
-+	 * valid mm for all user space applications. Hence using
-+	 * if (mm) check is sufficient here.
- 	 */
--	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
-+	if (mm) {
-+		cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
-+		/*
-+		 * We need to make sure we walk the table only after
-+		 * we update the cpumask. The other side of the barrier is
-+		 * explained * in serialize_against_pte_lookup()
-+		 */
-+		smp_mb();
-+	}
- 	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
- 		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
- 		return result;
--- 
-2.13.5
+> a cache_sync method to struct dma_map_ops and implement it for the
+> mips defualt DMA ops, and the parisc pa11 ops.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
