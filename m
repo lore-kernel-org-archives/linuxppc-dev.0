@@ -1,43 +1,24 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ktkhai@virtuozzo.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0129.outbound.protection.outlook.com [104.47.0.129])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgpVL0cPJzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 20:51:36 +1000 (AEST)
-Date: Mon, 28 Aug 2017 12:51:19 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>,
- Tom Lendacky <thomas.lendacky@amd.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
- David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 15/17] x86: Add support for changing memory
- encryption attribute in early boot
-Message-ID: <20170828105119.xs73tinknqcmrgvk@pd.tnic>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-16-brijesh.singh@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgpMB2m00zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 20:45:25 +1000 (AEST)
+Subject: Re: [linux-next][ppc] kernel hung when running trinity fuzzer
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Michal Hocko <mhocko@suse.com>,
+ linux-next <linux-next@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ sachinp <sachinp@linux.vnet.ibm.com>
+References: <1503916099.3740.8.camel@abdul.in.ibm.com>
+From: Kirill Tkhai <ktkhai@virtuozzo.com>
+Message-ID: <54ce6db5-68c1-e8f3-3804-63efb31956bf@virtuozzo.com>
+Date: Mon, 28 Aug 2017 13:45:21 +0300
 MIME-Version: 1.0
+In-Reply-To: <1503916099.3740.8.camel@abdul.in.ibm.com>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170724190757.11278-16-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,69 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 24, 2017 at 02:07:55PM -0500, Brijesh Singh wrote:
-> Some KVM-specific custom MSRs shares the guest physical address with
-
-s/shares/share/
-
-> hypervisor.
-
-"the hypervisor."
-
-> When SEV is active, the shared physical address must be mapped
-> with encryption attribute cleared so that both hypervsior and guest can
-> access the data.
+On 28.08.2017 13:28, Abdul Haleem wrote:
+> Hi,
 > 
-> Add APIs to change memory encryption attribute in early boot code.
+> offlate we are seeing hung task call traces when running trinity fuzzer
+> test. kernel go hung and requires machine reboot.
 > 
-> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
-> ---
->  arch/x86/include/asm/mem_encrypt.h |  17 ++++++
->  arch/x86/mm/mem_encrypt.c          | 117 +++++++++++++++++++++++++++++++++++++
->  2 files changed, 134 insertions(+)
+> Machine Type : Power 8
+> Kernel : 4.13.0-rc6-next-20170825
+> config: Tul-VM-config
+> 
+> 
+> call traces:
+> -------------
+> INFO: task systemd-timesyn:472 blocked for more than 120 seconds.
+>       Not tainted 4.13.0-rc6-next-20170825 #3
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
+> message.
+> systemd-timesyn D    0   472      1 0x00040000   
+> Call Trace:
+> [c000000775f2b750] [0000000b00000000] 0xb00000000 (unreliable)
+> [c000000775f2b920] [c00000000001c788] __switch_to+0x2a8/0x470
+> [c000000775f2b980] [c000000000c16974] __schedule+0x394/0xa40
+> [c000000775f2ba50] [c000000000c17068] schedule+0x48/0xc0
+> [c000000775f2ba80] [c000000000c1b2e8] rwsem_down_read_failed+0x128/0x1b0
+> [c000000775f2bae0] [c0000000001700c8] __percpu_down_read+0x108/0x110
+> [c000000775f2bb10] [c00000000038fda8] __sb_start_write+0x118/0x130
+> [c000000775f2bb50] [c0000000003c1768] mnt_want_write+0x38/0x80
+> [c000000775f2bb80] [c0000000003a3328] path_openat+0x9c8/0x14b0
+> [c000000775f2bc90] [c0000000003a579c] do_filp_open+0xfc/0x170
+> [c000000775f2bdc0] [c000000000388618] do_sys_open+0x1b8/0x2e0
+> [c000000775f2be30] [c00000000000b184] system_call+0x58/0x6c
+> INFO: task rs:main Q:Reg:624 blocked for more than 120 seconds.
+>       Not tainted 4.13.0-rc6-next-20170825 #3
 
-...
+I'm in CC here, but it doesn't seem my commit 83ced169d9a0 "locking/rwsem-xadd:
+Add killable versions of rwsem_down_read_failed()" is involved.
 
-> +static int __init early_set_memory_enc_dec(resource_size_t paddr,
-> +					   unsigned long size, bool enc)
-> +{
-> +	unsigned long vaddr, vaddr_end, vaddr_next;
-> +	unsigned long psize, pmask;
-> +	int split_page_size_mask;
-> +	pte_t *kpte;
-> +	int level;
-> +
-> +	vaddr = (unsigned long)__va(paddr);
-> +	vaddr_next = vaddr;
-> +	vaddr_end = vaddr + size;
-> +
-> +	/*
-> +	 * We are going to change the physical page attribute from C=1 to C=0
-> +	 * or vice versa. Flush the caches to ensure that data is written into
-> +	 * memory with correct C-bit before we change attribute.
-> +	 */
-> +	clflush_cache_range(__va(paddr), size);
-> +
-> +	for (; vaddr < vaddr_end; vaddr = vaddr_next) {
-> +		kpte = lookup_address(vaddr, &level);
-> +		if (!kpte || pte_none(*kpte))
-> +			return 1;
+It introduces the code, which is unused at the moment:
 
-Return before flushing TLBs? Perhaps you mean
+kirill$:~/linux-next$ git grep rwsem_down_read_failed_killable
+include/linux/rwsem.h:extern struct rw_semaphore *rwsem_down_read_failed_killable(struct rw_semaphore *sem);
+kernel/locking/rwsem-xadd.c:rwsem_down_read_failed_killable(struct rw_semaphore *sem)
+kernel/locking/rwsem-xadd.c:EXPORT_SYMBOL(rwsem_down_read_failed_killable);
 
-			ret = 1;
-			goto out;
-
-here and out does
-
-	__flush_tlb_all();
-	return ret;
-
-?
-
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+We still call rwsem_down_read_failed() with TASK_UNINTERRUPTIBLE argument, so "signal_pending_state()" branch
+is always dead.
