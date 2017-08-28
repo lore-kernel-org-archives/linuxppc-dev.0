@@ -1,35 +1,31 @@
-Return-Path: <ak@linux.intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xh6L85NZtzDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 08:45:36 +1000 (AEST)
-Date: Mon, 28 Aug 2017 15:35:11 -0700
-From: Andi Kleen <ak@linux.intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- "Kirill A. Shutemov" <kirill@shutemov.name>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, mpe@ellerman.id.au,
- paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-Message-ID: <20170828223511.GM28715@tassilo.jf.intel.com>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
- <20170828093727.5wldedputadanssh@hirez.programming.kicks-ass.net>
- <1503954877.4850.19.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1503954877.4850.19.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgxSC1F67zDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 02:05:14 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7SG4kQF144455
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 12:05:12 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cmjvy0cwq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 12:05:12 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Mon, 28 Aug 2017 12:05:11 -0400
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: martin.petersen@oracle.com, linuxppc-dev@lists.ozlabs.org,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ "Bryant G. Ly" <bgly@us.ibm.com>
+Subject: [PATCH] powerpc/kernel: Change retrieval of pci_dn
+Date: Mon, 28 Aug 2017 11:05:03 -0500
+Message-Id: <1503936303-18274-1-git-send-email-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,14 +35,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> That makes me extremely nervous... there could be all sort of
-> assumptions esp. in arch code about the fact that we never populate the
-> tree without the mm sem.
-> 
-> We'd have to audit archs closely. Things like the page walk cache
-> flushing on power etc...
+For a PCI device it's pci_dn can be retrieved from
+pdev->dev.archdata.firmware_data, PCI_DN(devnode), or parent's list.
+Thus, we should just use the generic function pci_get_pdn_by_devfn
+to get the pci_dn.
 
-Yes the whole thing is quite risky. Probably will need some
-kind of per architecture opt-in scheme?
+Signed-off-by: Bryant G. Ly <bgly@us.ibm.com>
+---
+ arch/powerpc/kernel/rtas_pci.c | 30 ++----------------------------
+ 1 file changed, 2 insertions(+), 28 deletions(-)
 
--Andi
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index 73f1934..c21e6c5 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -91,25 +91,13 @@ static int rtas_pci_read_config(struct pci_bus *bus,
+ 				unsigned int devfn,
+ 				int where, int size, u32 *val)
+ {
+-	struct device_node *busdn, *dn;
+ 	struct pci_dn *pdn;
+-	bool found = false;
+ 	int ret;
+ 
+ 	/* Search only direct children of the bus */
+ 	*val = 0xFFFFFFFF;
+-	busdn = pci_bus_to_OF_node(bus);
+-	for (dn = busdn->child; dn; dn = dn->sibling) {
+-		pdn = PCI_DN(dn);
+-		if (pdn && pdn->devfn == devfn
+-		    && of_device_is_available(dn)) {
+-			found = true;
+-			break;
+-		}
+-	}
+ 
+-	if (!found)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
++	pdn = pci_get_pdn_by_devfn(bus, devfn);
+ 
+ 	ret = rtas_read_config(pdn, where, size, val);
+ 	if (*val == EEH_IO_ERROR_VALUE(size) &&
+@@ -153,23 +141,9 @@ static int rtas_pci_write_config(struct pci_bus *bus,
+ 				 unsigned int devfn,
+ 				 int where, int size, u32 val)
+ {
+-	struct device_node *busdn, *dn;
+ 	struct pci_dn *pdn;
+-	bool found = false;
+-
+-	/* Search only direct children of the bus */
+-	busdn = pci_bus_to_OF_node(bus);
+-	for (dn = busdn->child; dn; dn = dn->sibling) {
+-		pdn = PCI_DN(dn);
+-		if (pdn && pdn->devfn == devfn
+-		    && of_device_is_available(dn)) {
+-			found = true;
+-			break;
+-		}
+-	}
+ 
+-	if (!found)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
++	pdn = pci_get_pdn_by_devfn(bus, devfn);
+ 
+ 	return rtas_write_config(pdn, where, size, val);
+ }
+-- 
+2.5.4 (Apple Git-61)
