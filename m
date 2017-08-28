@@ -1,32 +1,36 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgmsB1N3PzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 19:37:50 +1000 (AEST)
-Date: Mon, 28 Aug 2017 11:37:27 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
- akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-Message-ID: <20170828093727.5wldedputadanssh@hirez.programming.kicks-ass.net>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgmyF46P6zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 19:42:13 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7S9dZeK053242
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 05:42:10 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cm9ubhgxg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 05:42:09 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 28 Aug 2017 10:42:08 +0100
+Subject: Re: [PATCH] cxl: Set the valid bit in PE for dedicated mode
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>
+References: <20170828041522.32188-1-vaibhav@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Mon, 28 Aug 2017 11:42:03 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
+In-Reply-To: <20170828041522.32188-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <ac0d8af6-b06e-8120-b64a-ab0755b022b8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,102 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 27, 2017 at 03:18:23AM +0300, Kirill A. Shutemov wrote:
-> On Fri, Aug 18, 2017 at 12:05:13AM +0200, Laurent Dufour wrote:
-> > +	/*
-> > +	 * Can't call vm_ops service has we don't know what they would do
-> > +	 * with the VMA.
-> > +	 * This include huge page from hugetlbfs.
-> > +	 */
-> > +	if (vma->vm_ops)
-> > +		goto unlock;
+
+
+Le 28/08/2017 à 06:15, Vaibhav Jain a écrit :
+> Make sure to set the valid-bit in software-state field of the
+> populated PE. This was earlier missing for dedicated mode AFUs, hence
+> was causing a PSL freeze when the AFU was activated.
 > 
-> I think we need to have a way to white-list safe ->vm_ops.
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
 
-Either that, or simply teach all ->fault() callbacks about speculative
-faults. Shouldn't be too hard, just 'work'.
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-> > +
-> > +	if (unlikely(!vma->anon_vma))
-> > +		goto unlock;
+Thanks!
+
+
+
+>   drivers/misc/cxl/native.c | 4 ++++
+>   1 file changed, 4 insertions(+)
 > 
-> It deserves a comment.
-
-Yes, that was very much not intended. It wrecks most of the fun. This
-really _should_ work for file maps too.
-
-> > +	/*
-> > +	 * Do a speculative lookup of the PTE entry.
-> > +	 */
-> > +	local_irq_disable();
-> > +	pgd = pgd_offset(mm, address);
-> > +	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-> > +		goto out_walk;
-> > +
-> > +	p4d = p4d_alloc(mm, pgd, address);
-> > +	if (p4d_none(*p4d) || unlikely(p4d_bad(*p4d)))
-> > +		goto out_walk;
-> > +
-> > +	pud = pud_alloc(mm, p4d, address);
-> > +	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-> > +		goto out_walk;
-> > +
-> > +	pmd = pmd_offset(pud, address);
-> > +	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-> > +		goto out_walk;
-> > +
-> > +	/*
-> > +	 * The above does not allocate/instantiate page-tables because doing so
-> > +	 * would lead to the possibility of instantiating page-tables after
-> > +	 * free_pgtables() -- and consequently leaking them.
-> > +	 *
-> > +	 * The result is that we take at least one !speculative fault per PMD
-> > +	 * in order to instantiate it.
-> > +	 */
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 4a82c313cf71..0e748c682ee9 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -897,6 +897,10 @@ int cxl_attach_dedicated_process_psl9(struct cxl_context *ctx, u64 wed, u64 amr)
+>   	if (ctx->afu->adapter->native->sl_ops->update_dedicated_ivtes)
+>   		afu->adapter->native->sl_ops->update_dedicated_ivtes(ctx);
 > 
+> +	ctx->elem->software_state = cpu_to_be32(CXL_PE_SOFTWARE_STATE_V);
+> +	/* Make sure the changes to the PE are visible to the card */
+> +	smp_wmb();
+> +
+>   	result = cxl_ops->afu_reset(afu);
+>   	if (result)
+>   		return result;
 > 
-> Doing all this job and just give up because we cannot allocate page tables
-> looks very wasteful to me.
-> 
-> Have you considered to look how we can hand over from speculative to
-> non-speculative path without starting from scratch (when possible)?
-
-So we _can_ in fact allocate and install page-tables, but we have to be
-very careful about it. The interesting case is where we race with
-free_pgtables() and install a page that was just taken out.
-
-But since we already have the VMA I think we can do something like:
-
-	if (p*g_none()) {
-		p*d_t *new = p*d_alloc_one(mm, address);
-
-		spin_lock(&mm->page_table_lock);
-		if (!vma_changed_or_dead(vma,seq)) {
-			if (p*d_none())
-				p*d_populate(mm, p*d, new);
-			else
-				p*d_free(new);
-
-			new = NULL;
-		}
-		spin_unlock(&mm->page_table_lock);
-
-		if (new) {
-			p*d_free(new);
-			goto out_walk;
-		}
-	}
-
-I just never bothered with that, figured we ought to get the basics
-working before trying to be clever.
-
-> > +	/* Transparent huge pages are not supported. */
-> > +	if (unlikely(pmd_trans_huge(*pmd)))
-> > +		goto out_walk;
-> 
-> That's looks like a blocker to me.
-> 
-> Is there any problem with making it supported (besides plain coding)?
-
-Not that I can remember, but I never really looked at THP, I don't think
-we even had that when I did the first versions.
