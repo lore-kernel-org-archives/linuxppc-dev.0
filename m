@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <santosh@fossix.org>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xghwS211RzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:40:24 +1000 (AEST)
-Message-ID: <1503902395.4850.0.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm/cxl: Add barrier when setting mm cpumask
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Donnellan
- <andrew.donnellan@au1.ibm.com>
-Date: Mon, 28 Aug 2017 16:39:55 +1000
-In-Reply-To: <20170828062530.5789-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20170828062530.5789-1-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgkLq5shpzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 17:44:51 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id r133so5778748pgr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 00:44:51 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH resend] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+Date: Mon, 28 Aug 2017 13:14:40 +0530
+Message-Id: <20170828074440.18766-1-santosh@fossix.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +26,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-08-28 at 11:55 +0530, Aneesh Kumar K.V wrote:
-> We need to add memory barrier so that the page table walk doesn't happen
-> before the cpumask is set and made visible to the other cpus. We need
-> to use a sync here instead of lwsync because lwsync is not sufficient for
-> store/load ordering.
-> 
-> We also need to add an if (mm) check so that we do the right thing when called
-> with a kernel context. For kernel context, we have mm = NULL. W.r.t kernel
-> address we can skip setting the mm cpumask.
-> 
-> Fixes: 0f4bc0932e ("powerpc/mm/cxl: Add the fault handling cpu to mm cpumask")
-> Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  drivers/misc/cxl/fault.c | 14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index ab507e4ed69b..caed2a523bee 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -141,9 +141,19 @@ int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar)
->  	/*
->  	 * Add the fault handling cpu to task mm cpumask so that we
->  	 * can do a safe lockless page table walk when inserting the
-> -	 * hash page table entry.
-> +	 * hash page table entry. This function get called with a
-> +	 * valid mm for all user space applications. Hence using
-> +	 * if (mm) check is sufficient here.
->  	 */
-> -	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
-> +	if (mm) {
-> +		cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
+Current vDSO64 implementation does not have support for coarse clocks
+(CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
+to system call, increasing the response time, vDSO implementation reduces
+the cycle time. Below is a benchmark of the difference in execution time
+with and without vDSO support.
 
-First test if it's already set as this should be quite common and the
-cost of setting is a full atomic.
+(Non-coarse clocks are also included just for completion)
 
-> +		/*
-> +		 * We need to make sure we walk the table only after
-> +		 * we update the cpumask. The other side of the barrier is
-> +		 * explained * in serialize_against_pte_lookup()
-> +		 */
-> +		smp_mb();
-> +	}
->  	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
->  		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
->  		return result;
+Without vDSO support:
+--------------------
+clock-gettime-realtime: syscall: 172 nsec/call
+clock-gettime-realtime:    libc: 26 nsec/call
+clock-gettime-realtime:    vdso: 21 nsec/call
+clock-gettime-monotonic: syscall: 170 nsec/call
+clock-gettime-monotonic:    libc: 30 nsec/call
+clock-gettime-monotonic:    vdso: 24 nsec/call
+clock-gettime-realtime-coarse: syscall: 153 nsec/call
+clock-gettime-realtime-coarse:    libc: 15 nsec/call
+clock-gettime-realtime-coarse:    vdso: 9 nsec/call
+clock-gettime-monotonic-coarse: syscall: 167 nsec/call
+clock-gettime-monotonic-coarse:    libc: 15 nsec/call
+clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
+
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+---
+ arch/powerpc/kernel/asm-offsets.c         |  2 +
+ arch/powerpc/kernel/vdso64/gettimeofday.S | 70 ++++++++++++++++++++++++++++---
+ 2 files changed, 66 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 6e95c2c19a7e..c6acaa5edd16 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -396,6 +396,8 @@ int main(void)
+ 	/* Other bits used by the vdso */
+ 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+ 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
++	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
++	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
+ 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+ 	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
+ 
+diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+index 382021324883..bae197a81add 100644
+--- a/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -60,18 +60,25 @@ V_FUNCTION_END(__kernel_gettimeofday)
+  */
+ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+   .cfi_startproc
++	mr	r11,r4			/* r11 saves tp */
++	mflr	r12			/* r12 saves lr */
++	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
++	ori	r7,r7,NSEC_PER_SEC@l
++
+ 	/* Check for supported clock IDs */
+ 	cmpwi	cr0,r3,CLOCK_REALTIME
+ 	cmpwi	cr1,r3,CLOCK_MONOTONIC
+ 	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+-	bne	cr0,99f
++	beq	cr0,49f
+ 
+-	mflr	r12			/* r12 saves lr */
++	cmpwi	cr0,r3,CLOCK_REALTIME_COARSE
++	cmpwi	cr1,r3,CLOCK_MONOTONIC_COARSE
++	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
++	beq	cr0,65f
++
++	b	99f		/* Fallback to syscall */
+   .cfi_register lr,r12
+-	mr	r11,r4			/* r11 saves tp */
+-	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+-	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
+-	ori	r7,r7,NSEC_PER_SEC@l
++49:	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+ 50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
+ 	bne	cr1,80f			/* if not monotonic, all done */
+ 
+@@ -110,6 +117,57 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 1:	bge	cr1,80f
+ 	addi	r4,r4,-1
+ 	add	r5,r5,r7
++	b	80f
++
++	/*
++	 * For coarse clocks we get data directly from the vdso data page, so
++	 * we don't need to call __do_get_tspec, but we still need to do the
++	 * counter trick.
++	 */
++65:	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
++70:	ld	r8,CFG_TB_UPDATE_COUNT(r3)
++	andi.	r0,r8,1			/* pending update ? loop */
++	bne-	70b
++	xor	r0,r8,r8		/* create dependency */
++	add	r3,r3,r0
++
++	/*
++	 * CLOCK_REALTIME_COARSE, below values are needed for MONOTONIC_COARSE
++	 * too
++	 */
++	ld	r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
++	ld	r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
++	bne	cr1,78f
++
++	/* CLOCK_MONOTONIC_COARSE */
++	lwa	r6,WTOM_CLOCK_SEC(r3)
++	lwa	r9,WTOM_CLOCK_NSEC(r3)
++
++	/* check if counter has updated */
++78:	or	r0,r6,r9
++	xor	r0,r0,r0
++	add	r3,r3,r0
++	ld	r0,CFG_TB_UPDATE_COUNT(r3)
++	cmpld	cr0,r0,r8		/* check if updated */
++	bne-	70b
++
++	/* Counter has not updated, so continue calculating proper values for
++	 * sec and nsec if monotonic coarse, or just return with the proper
++	 * values for realtime.
++	 */
++	bne	cr1,80f
++
++	/* Add wall->monotonic offset and check for overflow or underflow */
++	add	r4,r4,r6
++	add	r5,r5,r9
++	cmpd	cr0,r5,r7
++	cmpdi	cr1,r5,0
++	blt	79f
++	subf	r5,r7,r5
++	addi	r4,r4,1
++79:	bge	cr1,80f
++	addi	r4,r4,-1
++	add	r5,r5,r7
+ 
+ 80:	std	r4,TSPC64_TV_SEC(r11)
+ 	std	r5,TSPC64_TV_NSEC(r11)
+-- 
+2.13.5
