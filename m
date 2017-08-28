@@ -1,23 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <brijesh.singh@amd.com>
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0047.outbound.protection.outlook.com [104.47.33.47])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgqhV6rY3zDq66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 21:45:30 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
- oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v7 12/12] powerpc/vas: Define copy/paste interfaces
-In-Reply-To: <20170828052039.GG12907@us.ibm.com>
-References: <1503556688-15412-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1503556688-15412-13-git-send-email-sukadev@linux.vnet.ibm.com>
- <87shgfuda6.fsf@concordia.ellerman.id.au> <20170828052039.GG12907@us.ibm.com>
-Date: Mon, 28 Aug 2017 21:45:29 +1000
-Message-ID: <87a82jvrty.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgqn929WyzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 21:49:32 +1000 (AEST)
+Cc: brijesh.singh@amd.com, linux-kernel@vger.kernel.org, x86@kernel.org,
+ linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Lu Baolu <baolu.lu@linux.intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
+ David Howells <dhowells@redhat.com>, Matt Fleming
+ <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>, Ard Biesheuvel
+ <ard.biesheuvel@linaro.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 15/17] x86: Add support for changing memory
+ encryption attribute in early boot
+To: Borislav Petkov <bp@suse.de>, Tom Lendacky <thomas.lendacky@amd.com>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-16-brijesh.singh@amd.com>
+ <20170828105119.xs73tinknqcmrgvk@pd.tnic>
+From: Brijesh Singh <brijesh.singh@amd.com>
+Message-ID: <4b3cec09-ab6a-0400-00fe-328b36564942@amd.com>
+Date: Mon, 28 Aug 2017 06:49:19 -0500
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170828105119.xs73tinknqcmrgvk@pd.tnic>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,94 +47,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+Hi Boris,
 
-> Michael Ellerman [mpe@ellerman.id.au] wrote:
->> Hi Suka,
->> 
->> A few more things ...
->> 
->> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
->> 
->> > diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
->> > new file mode 100644
->> > index 0000000..7783bb8
->> > --- /dev/null
->> > +++ b/arch/powerpc/platforms/powernv/copy-paste.h
->> > @@ -0,0 +1,74 @@
->> > +/*
->> > + * Copyright 2016 IBM Corp.
->> > + *
->> > + * This program is free software; you can redistribute it and/or
->> > + * modify it under the terms of the GNU General Public License
->> > + * as published by the Free Software Foundation; either version
->> > + * 2 of the License, or (at your option) any later version.
->> > + */
->> > +
->> > +/*
->> > + * Macros taken from tools/testing/selftests/powerpc/context_switch/cp_abort.c
->> > + */
->> 
->> These are both out of date, they're changed in v3.0B.
->> 
->> > +#define PASTE(RA, RB, L, RC) \
->> > +	.long (0x7c00070c | (RA) << (31-15) | (RB) << (31-20) \
->> > +			  | (L) << (31-10) | (RC) << (31-31))
->> 
->> You should define PPC_PASTE() in ppc-opcode.h
->> 
->> We already have PPC_INST_PASTE, so use that.
->> 
->> L and RC are gone.
+
+On 8/28/17 5:51 AM, Borislav Petkov wrote:
+
+[..]
+
+> +static int __init early_set_memory_enc_dec(resource_size_t paddr,
+>> +					   unsigned long size, bool enc)
+>> +{
+>> +	unsigned long vaddr, vaddr_end, vaddr_next;
+>> +	unsigned long psize, pmask;
+>> +	int split_page_size_mask;
+>> +	pte_t *kpte;
+>> +	int level;
+>> +
+>> +	vaddr = (unsigned long)__va(paddr);
+>> +	vaddr_next = vaddr;
+>> +	vaddr_end = vaddr + size;
+>> +
+>> +	/*
+>> +	 * We are going to change the physical page attribute from C=1 to C=0
+>> +	 * or vice versa. Flush the caches to ensure that data is written into
+>> +	 * memory with correct C-bit before we change attribute.
+>> +	 */
+>> +	clflush_cache_range(__va(paddr), size);
+>> +
+>> +	for (; vaddr < vaddr_end; vaddr = vaddr_next) {
+>> +		kpte = lookup_address(vaddr, &level);
+>> +		if (!kpte || pte_none(*kpte))
+>> +			return 1;
+> Return before flushing TLBs? Perhaps you mean
 >
-> Ok. I thought they would come back later, but of course we can update
-> these kernel-only calls then.
-
-Possible, but if they do we can update them then.
-
->> > +#define CR0_SHIFT	28
->> > +#define CR0_MASK	0xF
->> 
->> Not used.
+> 			ret = 1;
+> 			goto out;
 >
-> Will need them now to return value in cr0?
-
-Yes.
-
->> > +/*
->> > + * Copy/paste instructions:
->> > + *
->> > + *	copy RA,RB,L
->> > + *		Copy contents of address (RA) + effective_address(RB)
->> > + *		to internal copy-buffer.
->> > + *
->> > + *		L == 1 indicates this is the first copy.
->> > + *
->> > + *		L == 0 indicates its a continuation of a prior first copy.
->> > + *
->> > + *	paste RA,RB,L
->> > + *		Paste contents of internal copy-buffer to the address
->> > + *		(RA) + effective_address(RB)
->> > + *
->> > + *		L == 0 indicates its a continuation of a prior paste. i.e.
->> > + *		don't wait for the completion or update status.
->> > + *
->> > + *		L == 1 indicates this is the last paste in the group (i.e.
->> > + *		wait for the group to complete and update status in CR0).
->> > + *
->> > + *	For Power9, the L bit must be 'true' in both copy and paste.
->> > + */
->> > +
->> > +static inline int vas_copy(void *crb, int offset, int first)
->> > +{
->> > +	WARN_ON_ONCE(!first);
->> 
->> Please change the API to not require unused parameters.
->> 
->> Same for offset.
+> here and out does
 >
-> Ok, Haren's NX patches will need to drop those parameters as well.
+> 	__flush_tlb_all();
+> 	return ret;
 
-That's fine, I'm merging them all via my tree. I can fix that up.
+thanks, good catch. I will fix in next rev.
 
-cheers
+-Brijesh
