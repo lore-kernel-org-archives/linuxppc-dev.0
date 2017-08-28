@@ -1,23 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xghZt5xd0zDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:25:10 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel 3/5] powerpc/eeh: Remove unnecessary pointer to phb
- from eeh_dev
-In-Reply-To: <20170823101901.33961-4-aik@ozlabs.ru>
-References: <20170823101901.33961-1-aik@ozlabs.ru>
- <20170823101901.33961-4-aik@ozlabs.ru>
-Date: Mon, 28 Aug 2017 16:25:09 +1000
-Message-ID: <87efrwryyi.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xghc73KJQzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 16:26:15 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7S6OSi9038158
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:26:13 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cm2rpnhpj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 02:26:13 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 28 Aug 2017 00:26:12 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: [PATCH] powerpc/mm/cxl: Add barrier when setting mm cpumask
+Date: Mon, 28 Aug 2017 11:55:30 +0530
+Message-Id: <20170828062530.5789-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +35,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+We need to add memory barrier so that the page table walk doesn't happen
+before the cpumask is set and made visible to the other cpus. We need
+to use a sync here instead of lwsync because lwsync is not sufficient for
+store/load ordering.
 
-> The eeh_dev struct already holds a pointer to pci_dn which it does not
-> exist without and pci_dn itself holds the very same pointer so just
-> use it.
->
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/eeh.h               |  1 -
->  arch/powerpc/kernel/eeh.c                    |  7 +++----
->  arch/powerpc/kernel/eeh_dev.c                |  2 --
->  arch/powerpc/kernel/eeh_driver.c             |  2 +-
->  arch/powerpc/kernel/eeh_pe.c                 | 24 +++++++++++++---------=
---
->  arch/powerpc/platforms/powernv/eeh-powernv.c |  5 ++---
+We also need to add an if (mm) check so that we do the right thing when called
+with a kernel context. For kernel context, we have mm = NULL. W.r.t kernel
+address we can skip setting the mm cpumask.
 
-Doesn't build ?
+Fixes: 0f4bc0932e ("powerpc/mm/cxl: Add the fault handling cpu to mm cpumask")
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/fault.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-  arch/powerpc/platforms/pseries/eeh_pseries.c: In function =E2=80=98pserie=
-s_eeh_probe=E2=80=99:
-  arch/powerpc/platforms/pseries/eeh_pseries.c:250:15: error: =E2=80=98stru=
-ct eeh_dev=E2=80=99 has no member named =E2=80=98phb=E2=80=99
-  pe.phb =3D edev->phb;
-               ^~
-
-cheers
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index ab507e4ed69b..caed2a523bee 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -141,9 +141,19 @@ int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar)
+ 	/*
+ 	 * Add the fault handling cpu to task mm cpumask so that we
+ 	 * can do a safe lockless page table walk when inserting the
+-	 * hash page table entry.
++	 * hash page table entry. This function get called with a
++	 * valid mm for all user space applications. Hence using
++	 * if (mm) check is sufficient here.
+ 	 */
+-	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
++	if (mm) {
++		cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
++		/*
++		 * We need to make sure we walk the table only after
++		 * we update the cpumask. The other side of the barrier is
++		 * explained * in serialize_against_pte_lookup()
++		 */
++		smp_mb();
++	}
+ 	if ((result = copro_handle_mm_fault(mm, dar, dsisr, &flt))) {
+ 		pr_devel("copro_handle_mm_fault failed: %#x\n", result);
+ 		return result;
+-- 
+2.13.5
