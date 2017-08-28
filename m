@@ -1,43 +1,32 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgmp51zFvzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 19:35:09 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7S9T0Ev045633
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 05:35:07 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cmagbffe2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 05:35:06 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 28 Aug 2017 19:35:04 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7S9Z2dh41812136
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 19:35:02 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7S9YqIE011008
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 19:34:53 +1000
-Subject: Re: [PATCH 1/2] cxl: Fix driver use count
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, clombard@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com
-Cc: benh@kernel.crashing.org, alistair@popple.id.au
-References: <20170828084731.14773-1-fbarrat@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Mon, 28 Aug 2017 19:35:01 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgmsB1N3PzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 19:37:50 +1000 (AEST)
+Date: Mon, 28 Aug 2017 11:37:27 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
+ akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com,
+ bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
+Message-ID: <20170828093727.5wldedputadanssh@hirez.programming.kicks-ass.net>
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
 MIME-Version: 1.0
-In-Reply-To: <20170828084731.14773-1-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <80d9d142-6500-ffcf-3c89-94dde8f1c890@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,93 +36,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28/08/17 18:47, Frederic Barrat wrote:
-> cxl keeps a driver use count, which is used with the hash memory model
-> on p8 to know when to upgrade local TLBIs to global and to trigger
-> callbacks to manage the MMU for PSL8.
+On Sun, Aug 27, 2017 at 03:18:23AM +0300, Kirill A. Shutemov wrote:
+> On Fri, Aug 18, 2017 at 12:05:13AM +0200, Laurent Dufour wrote:
+> > +	/*
+> > +	 * Can't call vm_ops service has we don't know what they would do
+> > +	 * with the VMA.
+> > +	 * This include huge page from hugetlbfs.
+> > +	 */
+> > +	if (vma->vm_ops)
+> > +		goto unlock;
 > 
-> If a process opens a context and closes without attaching or fails the
-> attachment, the driver use count is never decremented. As a
-> consequence, TLB invalidations remain global, even if there are no
-> active cxl contexts.
+> I think we need to have a way to white-list safe ->vm_ops.
+
+Either that, or simply teach all ->fault() callbacks about speculative
+faults. Shouldn't be too hard, just 'work'.
+
+> > +
+> > +	if (unlikely(!vma->anon_vma))
+> > +		goto unlock;
 > 
-> We should increment the driver use count when the process is attaching
-> to the cxl adapter, and not on open. It's not needed before the
-> adapter starts using the context and the use count is decremented on
-> the detach path, so it makes more sense.
+> It deserves a comment.
+
+Yes, that was very much not intended. It wrecks most of the fun. This
+really _should_ work for file maps too.
+
+> > +	/*
+> > +	 * Do a speculative lookup of the PTE entry.
+> > +	 */
+> > +	local_irq_disable();
+> > +	pgd = pgd_offset(mm, address);
+> > +	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+> > +		goto out_walk;
+> > +
+> > +	p4d = p4d_alloc(mm, pgd, address);
+> > +	if (p4d_none(*p4d) || unlikely(p4d_bad(*p4d)))
+> > +		goto out_walk;
+> > +
+> > +	pud = pud_alloc(mm, p4d, address);
+> > +	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+> > +		goto out_walk;
+> > +
+> > +	pmd = pmd_offset(pud, address);
+> > +	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+> > +		goto out_walk;
+> > +
+> > +	/*
+> > +	 * The above does not allocate/instantiate page-tables because doing so
+> > +	 * would lead to the possibility of instantiating page-tables after
+> > +	 * free_pgtables() -- and consequently leaking them.
+> > +	 *
+> > +	 * The result is that we take at least one !speculative fault per PMD
+> > +	 * in order to instantiate it.
+> > +	 */
 > 
-> It affects only the user api. The kernel api is already doing The
-> Right Thing.
 > 
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Cc: stable@vger.kernel.org # v4.2+
-> Fixes: 7bb5d91a4dda ("cxl: Rework context lifetimes")
-
-A couple of comment typos.
-
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
-> ---
->   drivers/misc/cxl/api.c  | 4 ++++
->   drivers/misc/cxl/file.c | 8 +++++++-
->   2 files changed, 11 insertions(+), 1 deletion(-)
+> Doing all this job and just give up because we cannot allocate page tables
+> looks very wasteful to me.
 > 
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index 1a138c83f877..e0dfd1eadd70 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -336,6 +336,10 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
->   			mmput(ctx->mm);
->   	}
->   
-> +	/*
-> +	 * Increment driver use count. Enables global TLBIs for hash
-> +	 * and callacks to handle the segment table
+> Have you considered to look how we can hand over from speculative to
+> non-speculative path without starting from scratch (when possible)?
 
-callbacks
+So we _can_ in fact allocate and install page-tables, but we have to be
+very careful about it. The interesting case is where we race with
+free_pgtables() and install a page that was just taken out.
 
-> +	 */
->   	cxl_ctx_get();
->   
->   	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
-> diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-> index 0761271d68c5..b76a491a485d 100644
-> --- a/drivers/misc/cxl/file.c
-> +++ b/drivers/misc/cxl/file.c
-> @@ -95,7 +95,6 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
->   
->   	pr_devel("afu_open pe: %i\n", ctx->pe);
->   	file->private_data = ctx;
-> -	cxl_ctx_get();
->   
->   	/* indicate success */
->   	rc = 0;
-> @@ -225,6 +224,12 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
->   	if (ctx->mm)
->   		mmput(ctx->mm);
->   
-> +	/*
-> +	 * Increment driver use count. Enables global TLBIs for hash
-> +	 * and callacks to handle the segment table
+But since we already have the VMA I think we can do something like:
 
-callbacks
+	if (p*g_none()) {
+		p*d_t *new = p*d_alloc_one(mm, address);
 
-> +	 */
-> +	cxl_ctx_get();
-> +
->   	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
->   
->   	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
-> @@ -233,6 +238,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
->   		cxl_adapter_context_put(ctx->afu->adapter);
->   		put_pid(ctx->pid);
->   		ctx->pid = NULL;
-> +		cxl_ctx_put();
->   		cxl_context_mm_count_put(ctx);
->   		goto out;
->   	}
+		spin_lock(&mm->page_table_lock);
+		if (!vma_changed_or_dead(vma,seq)) {
+			if (p*d_none())
+				p*d_populate(mm, p*d, new);
+			else
+				p*d_free(new);
+
+			new = NULL;
+		}
+		spin_unlock(&mm->page_table_lock);
+
+		if (new) {
+			p*d_free(new);
+			goto out_walk;
+		}
+	}
+
+I just never bothered with that, figured we ought to get the basics
+working before trying to be clever.
+
+> > +	/* Transparent huge pages are not supported. */
+> > +	if (unlikely(pmd_trans_huge(*pmd)))
+> > +		goto out_walk;
 > 
+> That's looks like a blocker to me.
+> 
+> Is there any problem with making it supported (besides plain coding)?
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Not that I can remember, but I never really looked at THP, I don't think
+we even had that when I did the first versions.
