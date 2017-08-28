@@ -1,18 +1,46 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=h+48=76=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xgdz90w64zDqBf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:27:33 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id r133so5452916pgr.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Aug 2017 21:27:33 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/64: Fix watchdog configuration regressions
-Date: Mon, 28 Aug 2017 14:27:19 +1000
-Message-Id: <20170828042719.18197-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xgf9D3tSszDqD0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:36:16 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xgf9D3H47z8t8Q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 14:36:16 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xgf9D0D6nz9sPk
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 14:36:15 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7S4ZpAm088435
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 00:36:13 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cm2rpj09b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2017 00:36:13 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 28 Aug 2017 00:36:12 -0400
+Date: Sun, 27 Aug 2017 21:36:07 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 04/12] powerpc/vas: Define helpers to access MMIO
+ regions
+References: <1503556688-15412-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1503556688-15412-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ <87efs0uxj4.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87efs0uxj4.fsf@concordia.ellerman.id.au>
+Message-Id: <20170828043607.GB12907@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,100 +50,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a couple more bits of fallout from the new hard lockup watchdog
-patch.
+Michael Ellerman [mpe@ellerman.id.au] wrote:
+> Hi Suka,
+> 
+> Comments inline.
+> 
+> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> > diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+> > index 6156fbe..a3a705a 100644
+> > --- a/arch/powerpc/platforms/powernv/vas-window.c
+> > +++ b/arch/powerpc/platforms/powernv/vas-window.c
+> > @@ -9,9 +9,182 @@
+> >  
+> >  #include <linux/types.h>
+> >  #include <linux/mutex.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/io.h>
+> >  
+> >  #include "vas.h"
+> >  
+> > +/*
+> > + * Compute the paste address region for the window @window using the
+> > + * ->paste_base_addr and ->paste_win_id_shift we got from device tree.
+> > + */
+> > +void compute_paste_address(struct vas_window *window, uint64_t *addr, int *len)
+> > +{
+> > +	uint64_t base, shift;
+> 
+> Please use the kernel types, so u64 here.
 
-It restores the required hw_nmi_get_sample_period() function for the
-perf watchdog, and removes some function declarations on 64e that are only
-defined for 64s. This fixes the 64e build when the hardlockup detector is
-enabled.
+Ok.
 
-It restores the default behaviour of disabling the perf watchdog, and also
-fixes disabling the 64s watchdog when running as a guest.
+> 
+> > +	int winid;
+> > +
+> > +	base = window->vinst->paste_base_addr;
+> > +	shift = window->vinst->paste_win_id_shift;
+> > +	winid = window->winid;
+> > +
+> > +	*addr  = base + (winid << shift);
+> > +	if (len)
+> > +		*len = PAGE_SIZE;
+> 
+> Having multiple output parameters makes for a pretty awkward API. Is it
+> really necesssary given len is a constant PAGE_SIZE anyway.
+> 
+> If you didn't return len, then you could just make the function return
+> the addr, and you wouldn't need any output parameters.
 
-Fixes: 2104180a53 ("powerpc/64s: implement arch-specific hardlockup watchdog")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/nmi.h |  3 +--
- arch/powerpc/kernel/kvm.c      |  7 -------
- arch/powerpc/kernel/setup_64.c | 28 ++++++++++++++++++++++++++++
- 3 files changed, 29 insertions(+), 9 deletions(-)
+I agree, I went back and forth on it. I was trying to avoid callers
+making assumptions on the size. But since there are just a couple
+of places, I guess we could have them assume PAGE_SIZE.
 
-diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
-index 6f8e79cd35d8..3760150a0ff0 100644
---- a/arch/powerpc/include/asm/nmi.h
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -1,9 +1,8 @@
- #ifndef _ASM_NMI_H
- #define _ASM_NMI_H
- 
--#ifdef CONFIG_HARDLOCKUP_DETECTOR
-+#ifdef CONFIG_PPC_WATCHDOG
- extern void arch_touch_nmi_watchdog(void);
--
- extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
- 					   bool exclude_self);
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 1086ea37c832..9ad37f827a97 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -25,7 +25,6 @@
- #include <linux/kvm_para.h>
- #include <linux/slab.h>
- #include <linux/of.h>
--#include <linux/nmi.h> /* hardlockup_detector_disable() */
- 
- #include <asm/reg.h>
- #include <asm/sections.h>
-@@ -719,12 +718,6 @@ static __init void kvm_free_tmp(void)
- 
- static int __init kvm_guest_init(void)
- {
--	/*
--	 * The hardlockup detector is likely to get false positives in
--	 * KVM guests, so disable it by default.
--	 */
--	hardlockup_detector_disable();
--
- 	if (!kvm_para_available())
- 		goto free_tmp;
- 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index af23d4b576ec..da255a6762f2 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -751,3 +751,31 @@ unsigned long memory_block_size_bytes(void)
- struct ppc_pci_io ppc_pci_io;
- EXPORT_SYMBOL(ppc_pci_io);
- #endif
-+
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR_PERF
-+u64 hw_nmi_get_sample_period(int watchdog_thresh)
-+{
-+	return ppc_proc_freq * watchdog_thresh;
-+}
-+#endif
-+
-+/*
-+ * The perf based hardlockup detector breaks PMU event based branches, so
-+ * disable it by default. Book3S has a soft-nmi hardlockup detector based
-+ * on the decrementer interrupt, so it does not suffer from this problem.
-+ *
-+ * It is likely to get false positives in VM guests, so disable it there
-+ * by default too.
-+ */
-+static int __init disable_hardlockup_detector(void)
-+{
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR_PERF
-+	hardlockup_detector_disable();
-+#else
-+	if (firmware_has_feature(FW_FEATURE_LPAR))
-+		hardlockup_detector_disable();
-+#endif
-+
-+	return 0;
-+}
-+early_initcall(disable_hardlockup_detector);
--- 
-2.13.3
+> 
+> One of the callers that passes len is unmap_paste_region(), but that
+> is a bit odd. It would be more natural I think if once a window is
+> mapped it knows its size. Or if the mapping will always just be one page
+> then we can just know that.
+
+Agree, since the len values are constant I was trying to avoid saving
+them in each of the 64K windows - so the compute during unmap. Will change
+to assume  PAGE_SIZE.
+
+Also agree with other comments here.
