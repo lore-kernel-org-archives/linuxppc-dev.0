@@ -1,43 +1,39 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <srs0=4uxs=77=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhJW063D3zDqR9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:23:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xhJW04YdBz8vLq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:23:56 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhJRH02SdzDqR9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:20:42 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3xhJVz6hMBz9t3P
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2017 16:23:55 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7T6JQnT069995
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 02:20:40 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cmvjf6kbg-1
+ v7T6KD1d119832
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2017 02:23:53 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cn0dtak2j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 02:20:40 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2017 02:23:53 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Tue, 29 Aug 2017 16:20:37 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7T6KYgU39321722
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:20:34 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7T6KY79010944
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:20:34 +1000
-Date: Tue, 29 Aug 2017 16:20:31 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- "Bryant G. Ly" <bgly@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- martin.petersen@oracle.com
-Subject: Re: [PATCH] powerpc/kernel: Change retrieval of pci_dn
-References: <1503936303-18274-1-git-send-email-bryantly@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1503936303-18274-1-git-send-email-bryantly@linux.vnet.ibm.com>
-Message-Id: <20170829062031.hb3pwrnt5pohpr7l@tungsten.ozlabs.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 29 Aug 2017 02:23:52 -0400
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ stewart@linux.vnet.ibm.com, apopple@au1.ibm.com, hbabu@us.ibm.com,
+ oohall@gmail.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v8 00/10] Enable VAS
+Date: Mon, 28 Aug 2017 23:23:30 -0700
+Message-Id: <1503987820-31933-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,88 +43,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 28, 2017 at 11:05:03AM -0500, Bryant G. Ly wrote:
-> For a PCI device it's pci_dn can be retrieved from
-> pdev->dev.archdata.firmware_data, PCI_DN(devnode), or parent's list.
-> Thus, we should just use the generic function pci_get_pdn_by_devfn
-> to get the pci_dn.
-> 
-> Signed-off-by: Bryant G. Ly <bgly@us.ibm.com>
-Reviewed-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Power9 introduces a hardware subsystem referred to as the Virtual
+Accelerator Switchboard (VAS). VAS allows kernel subsystems and user
+space processes to directly access the Nest Accelerator (NX) engines
+which implement compression and encryption algorithms in the hardware.
 
-I don't know this area but I tested it using a patched kernel with the
-old and new code together. My test kernel booted fine (in QEMU+KVM) and
-I saw 26 reads and 4 writes, all of which got the same value with either
-code block.
+NX has been in Power processors since Power7+, but access to the NX
+engines was through the 'icswx' instruction which is only available
+to the kernel/hypervisor. Starting with Power9, access to the NX
+engines is provided to both kernel and user space processes through
+VAS.
 
-I also checked that the error result in the "not found" case is the same
-as well, which it is, because rtas_{read,write}_config() will return
-PCIBIOS_DEVICE_NOT_FOUND if given a NULL pdn.
+The switchboard (i.e VAS) multiplexes accesses between "receivers" and
+"senders", where the "receivers" are typically the NX engines and
+"senders" are the kernel subsystems and user processors that wish to
+access the receivers (NX engines).  Once a sender is "connected" to
+a receiver through the switchboard, the senders can submit compression/
+encryption requests to the hardware using the new (PowerISA 3.0)
+"copy" and "paste" instructions.
 
-So, looks good to me.
+In the initial OPAL and PowerNV kernel patchsets, the "senders" can
+only be kernel subsystems (eg NX-842 driver) and receivers can only
+be the NX-842 engine. Follow-on patch sets will allow senders/receivers
+to be user-space processes and receivers to be NX-GZIP engines.
 
-Cheers,
-Sam.
+Provides:
 
-> ---
->  arch/powerpc/kernel/rtas_pci.c | 30 ++----------------------------
->  1 file changed, 2 insertions(+), 28 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-> index 73f1934..c21e6c5 100644
-> --- a/arch/powerpc/kernel/rtas_pci.c
-> +++ b/arch/powerpc/kernel/rtas_pci.c
-> @@ -91,25 +91,13 @@ static int rtas_pci_read_config(struct pci_bus *bus,
->  				unsigned int devfn,
->  				int where, int size, u32 *val)
->  {
-> -	struct device_node *busdn, *dn;
->  	struct pci_dn *pdn;
-> -	bool found = false;
->  	int ret;
->  
->  	/* Search only direct children of the bus */
->  	*val = 0xFFFFFFFF;
-> -	busdn = pci_bus_to_OF_node(bus);
-> -	for (dn = busdn->child; dn; dn = dn->sibling) {
-> -		pdn = PCI_DN(dn);
-> -		if (pdn && pdn->devfn == devfn
-> -		    && of_device_is_available(dn)) {
-> -			found = true;
-> -			break;
-> -		}
-> -	}
->  
-> -	if (!found)
-> -		return PCIBIOS_DEVICE_NOT_FOUND;
-> +	pdn = pci_get_pdn_by_devfn(bus, devfn);
->  
->  	ret = rtas_read_config(pdn, where, size, val);
->  	if (*val == EEH_IO_ERROR_VALUE(size) &&
-> @@ -153,23 +141,9 @@ static int rtas_pci_write_config(struct pci_bus *bus,
->  				 unsigned int devfn,
->  				 int where, int size, u32 val)
->  {
-> -	struct device_node *busdn, *dn;
->  	struct pci_dn *pdn;
-> -	bool found = false;
-> -
-> -	/* Search only direct children of the bus */
-> -	busdn = pci_bus_to_OF_node(bus);
-> -	for (dn = busdn->child; dn; dn = dn->sibling) {
-> -		pdn = PCI_DN(dn);
-> -		if (pdn && pdn->devfn == devfn
-> -		    && of_device_is_available(dn)) {
-> -			found = true;
-> -			break;
-> -		}
-> -	}
->  
-> -	if (!found)
-> -		return PCIBIOS_DEVICE_NOT_FOUND;
-> +	pdn = pci_get_pdn_by_devfn(bus, devfn);
->  
->  	return rtas_write_config(pdn, where, size, val);
->  }
-> -- 
-> 2.5.4 (Apple Git-61)
+	This kernel patch set configures the VAS subsystems and provides
+	kernel interfaces to drivers like NX-842 to open receive and send
+	windows in VAS and to submit compression requests to the NX engine.
+
+Requires:
+
+	This patch set needs corresponding VAS/NX skiboot patches which
+	were merged into skiboot tree. i.e skiboot must include:
+	commit b503dcf ("vas: Set mmio enable bits in DD2")
+
+Tests:
+        In-kernel compression requests were tested on DD1 and DD2 POWER9
+	hardware using compression self-test module and the following
+	NX-842 patch set from Haren Myneni:
+
+        https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-July/160620.html
+
+	and by dropping the last parameters to both vas_copy_crb() and
+	vas_paste_crb() calls in drivers/crypto/nx/nx-842-powernv.c.
+	See also PATCH 10/10.
+
+Git Tree:
+
+        https://github.com/sukadev/linux/ 
+	Branch: vas-kern-v8
+
+Thanks to input from Ben Herrenschmidt, Michael Neuling, Michael Ellerman
+and Haren Myneni.
+
+Changelog[v8]:
+	- [Michael Ellerman] Use kernel int types (u64, u32 etc); make VAS
+	  a built-in rather than a module; drop unnecessary fields from
+	  struct vas_instance; Update ISA references; use 0 or 1 with
+	  SET_FIELD macros instead of bool; skip writing to SPARE registers;
+	  minor cleanup of debug/error messages; retry if ida_get_new()
+	  fails with EAGAIN; fix couple of leaks in ids in error handling;
+	  drop vas_initialized() check; drop vas_win_id() and vas_paste_addr()
+	  interfaces as they are not yet used; Set task_state() and fix
+	  parameter to schedule_timeout(); Reuse existing copy/paste macros
+	  drop unnecessary parameters and add cr0 to clobbers list
+
+Changelog[v7]:
+	- Drop support for user space send/receive FTW windows (will be
+	  posted separately) Simplifies the rx-win-open interface a bit.
+	- [Michael Ellerman] Move GET_FIELD/SET_FIELD macros from 
+	  uapi/asm/vas.h to asm/vas.h.
+
+Changelog[v6]
+	- Add support for user space send/receive FTW windows
+	- Add a new, NX-FTW driver which provides the FTW user interface
+
+Changelog[v5]
+	- [Ben Herrenschmidt] Make VAS a platform device in the device tree
+	  and use the core platform functions to parse the VAS properties.
+	  Map the VAS MMIO regions as non-cachable and paste regions as
+	  cachable. Use CONFIG_PPC_VAS rather than CONFIG_VAS; Don't assume
+	  VAS ids are sequential.
+	- Copy the FIFO address as is into LFIFO_BAR (don't shift it).
+
+Changelog[v4]
+	Comments from Michael Neuling:
+	- Move VAS code from drivers/misc/vas to arch/powerpc/platforms/powernv
+	  since VAS only provides interfaces to other drivers like NX-842.
+	- Drop vas-internal.h and use vas.h in separate dirs for VAS
+	  internal, kernel API and user API
+	- Rather than create 6 separate device tree properties windows
+	  and window context, combine them into 6 "reg" properties.
+	- Drop vas_window_reset() since windows are reset/cleared before
+	  being assigned to kernel/users.
+	- Use ilog2() and radix_enabled() helpers
+
+Changelog[v3]
+	- Rebase to v4.11-rc1
+	- Add interfaces to initialize send/receive window attributes to
+	  defaults that drivers can use (see arch/powerpc/include/asm/vas.h)
+	- Modify interface vas_paste() to return 0 or error code
+	- Fix a bug in setting Translation Control Mode (0b11 not 0x11)
+	- Enable send-window-credit checking 
+	- Reorg code  in vas_win_close()
+	- Minor reorgs and tweaks to register field settings to make it
+	  easier to add support for user space windows.
+	- Skip writing to read-only registers
+	- Start window indexing from 0 rather than 1
+
+Changelog[v2]
+	- Use vas-id, HVWC, UWC and paste address, entries from device tree
+	  rather than defining/computing them in kernel and reorg code.
+
+
+Sukadev Bhattiprolu (10):
+  powerpc/vas: Define macros, register fields and structures
+  Move GET_FIELD/SET_FIELD to vas.h
+  powerpc/vas: Define vas_init() and vas_exit()
+  powerpc/vas: Define helpers to access MMIO regions
+  powerpc/vas: Define helpers to init window context
+  powerpc/vas: Define helpers to alloc/free windows
+  powerpc/vas: Define vas_rx_win_open() interface
+  powerpc/vas: Define vas_win_close() interface
+  powerpc/vas: Define vas_tx_win_open()
+  powerpc/vas: Define copy/paste interfaces
+
+ .../devicetree/bindings/powerpc/ibm,vas.txt        |   23 +
+ MAINTAINERS                                        |    9 +
+ arch/powerpc/include/asm/ppc-opcode.h              |    2 +
+ arch/powerpc/include/asm/vas.h                     |  160 +++
+ arch/powerpc/platforms/powernv/Kconfig             |   14 +
+ arch/powerpc/platforms/powernv/Makefile            |    1 +
+ arch/powerpc/platforms/powernv/copy-paste.h        |   46 +
+ arch/powerpc/platforms/powernv/vas-window.c        | 1134 ++++++++++++++++++++
+ arch/powerpc/platforms/powernv/vas.c               |  151 +++
+ arch/powerpc/platforms/powernv/vas.h               |  467 ++++++++
+ drivers/crypto/nx/nx-842-powernv.c                 |    7 +-
+ drivers/crypto/nx/nx-842.h                         |    5 -
+ 12 files changed, 2011 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+ create mode 100644 arch/powerpc/include/asm/vas.h
+ create mode 100644 arch/powerpc/platforms/powernv/copy-paste.h
+ create mode 100644 arch/powerpc/platforms/powernv/vas-window.c
+ create mode 100644 arch/powerpc/platforms/powernv/vas.c
+ create mode 100644 arch/powerpc/platforms/powernv/vas.h
+
+-- 
+2.7.4
