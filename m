@@ -1,45 +1,25 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhXGd2kZmzDqkb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 01:14:01 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7TFDmtl024986
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 11:13:57 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cn6sc747m-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 11:13:56 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 29 Aug 2017 16:13:53 +0100
-Subject: Re: [PATCH v2 20/20] powerpc/mm: Add speculative page fault
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-21-git-send-email-ldufour@linux.vnet.ibm.com>
- <ebe69178-2e8b-a5b9-6268-08b82f476021@linux.vnet.ibm.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Tue, 29 Aug 2017 17:13:44 +0200
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xhgMX66jvzDqF9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:33:44 +1000 (AEST)
+Date: Tue, 29 Aug 2017 22:33:40 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Bhumika Goyal <bhumirks@gmail.com>
+Cc: julia.lawall@lip6.fr, ludovic.desroches@microchip.com, jochen@scram.de,
+ vadimp@mellanox.com, michaelsh@mellanox.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ andy.gross@linaro.org, david.brown@linaro.org, ldewangan@nvidia.com,
+ thierry.reding@gmail.com, jonathanh@nvidia.com,
+ linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-msm@vger.kernel.org,
+ linux-soc@vger.kernel.org, linux-tegra@vger.kernel.org
+Subject: Re: [PATCH] i2c: busses: make i2c_adapter_quirks const
+Message-ID: <20170829203340.cl2uiuqoaikwsvmv@ninjato>
+References: <1503317524-21276-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <ebe69178-2e8b-a5b9-6268-08b82f476021@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <e0c16102-f762-41f4-032c-3e90af5c31c3@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="6re5ubh3nkbyixxu"
+In-Reply-To: <1503317524-21276-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,115 +29,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21/08/2017 08:58, Anshuman Khandual wrote:
-> On 08/18/2017 03:35 AM, Laurent Dufour wrote:
->> This patch enable the speculative page fault on the PowerPC
->> architecture.
->>
->> This will try a speculative page fault without holding the mmap_sem,
->> if it returns with WM_FAULT_RETRY, the mmap_sem is acquired and the
-> 
-> s/WM_FAULT_RETRY/VM_FAULT_RETRY/
 
-Good catch ;)
+--6re5ubh3nkbyixxu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> traditional page fault processing is done.
->>
->> Support is only provide for BOOK3S_64 currently because:
->> - require CONFIG_PPC_STD_MMU because checks done in
->>   set_access_flags_filter()
-> 
-> What checks are done in set_access_flags_filter() ? We are just
-> adding the code block in do_page_fault().
+On Mon, Aug 21, 2017 at 05:42:04PM +0530, Bhumika Goyal wrote:
+> Make these const as they are only stored as a reference in the quirks
+> field of an i2c_adapter structure, which is const.
+>=20
+> Done using Coccinelle:
+> @match disable optional_qualifier@
+> identifier s;
+> @@
+> static struct i2c_adapter_quirks s =3D {...};
+>=20
+> @ref@
+> position p;
+> identifier match.s;
+> @@
+> s@p
+>=20
+> @good1@
+> identifier y;
+> position ref.p;
+> identifier match.s;
+> @@
+> struct i2c_adapter y =3D {...,.quirks=3D&s@p,...};
+>=20
+> @good2@
+> struct i2c_adapter y;
+> identifier match.s;
+> position ref.p;
+> @@
+> y.quirks =3D &s@p
+>=20
+> @bad depends on  !good1 && !good2@
+> position ref.p;
+> identifier match.s;
+> @@
+> s@p
+>=20
+> @depends on forall !bad disable optional_qualifier@
+> identifier match.s;
+> @@
+> static
+> + const
+> struct i2c_adapter_quirks s;
+>=20
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 
-set_access_flags_filter() is checking for vm_flags & VM_EXEC which may be
-changed in our back, leading to a spurious WARN displayed.
-This being said, I focused on the BOOK3S as this meaningful for large
-system, and I didn't get time to check for embedded systems.
-
-> 
->> - require BOOK3S because we can't support for book3e_hugetlb_preload()
->>   called by update_mmu_cache()
->>
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/book3s/64/pgtable.h |  5 +++++
->>  arch/powerpc/mm/fault.c                      | 30 +++++++++++++++++++++++++++-
->>  2 files changed, 34 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index 818a58fc3f4f..897f8b9f67e6 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -313,6 +313,11 @@ extern unsigned long pci_io_base;
->>  /* Advertise support for _PAGE_SPECIAL */
->>  #define __HAVE_ARCH_PTE_SPECIAL
->>  
->> +/* Advertise that we call the Speculative Page Fault handler */
->> +#if defined(CONFIG_PPC_BOOK3S_64)
->> +#define __HAVE_ARCH_CALL_SPF
->> +#endif
->> +
->>  #ifndef __ASSEMBLY__
->>  
->>  /*
->> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->> index 4c422632047b..7b3cc4c30eab 100644
->> --- a/arch/powerpc/mm/fault.c
->> +++ b/arch/powerpc/mm/fault.c
->> @@ -291,9 +291,36 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->>  	if (is_write && is_user)
->>  		store_update_sp = store_updates_sp(regs);
->>  
->> -	if (is_user)
->> +	if (is_user) {
->>  		flags |= FAULT_FLAG_USER;
->>  
->> +#if defined(__HAVE_ARCH_CALL_SPF)
->> +		/* let's try a speculative page fault without grabbing the
->> +		 * mmap_sem.
->> +		 */
->> +
->> +		/*
->> +		 * flags is set later based on the VMA's flags, for the common
->> +		 * speculative service, we need some flags to be set.
->> +		 */
->> +		if (is_write)
->> +			flags |= FAULT_FLAG_WRITE;
->> +
->> +		fault = handle_speculative_fault(mm, address, flags);
->> +		if (!(fault & VM_FAULT_RETRY || fault & VM_FAULT_ERROR)) {
->> +			perf_sw_event(PERF_COUNT_SW_SPF_DONE, 1,
->> +				      regs, address);
->> +			goto done;
-> 
-> Why we should retry with classical page fault on VM_FAULT_ERROR ?
-> We should always return VM_FAULT_RETRY in case there is a clear
-> collision some where which requires retry with classical method
-> and return VM_FAULT_ERROR in cases where we know that it cannot
-> be retried and fail for good. Should not handle_speculative_fault()
-> be changed to accommodate this ?
-
-There is no need to change handle_speculative_fault(), it should return
-VM_FAULT_RETRY when a retry is required. If VM_FAULT_ERROR is return, we
-should be able to jump to the block dealing with VM_FAULT_ERROR and calling
-vm_fault_error().
+Removed the cocci script from the commit message and applied to
+for-next, thanks!
 
 
-> 
->> +		}
->> +
->> +		/*
->> +		 * Resetting flags since the following code assumes
->> +		 * FAULT_FLAG_WRITE is not set.
->> +		 */
->> +		flags &= ~FAULT_FLAG_WRITE;
->> +#endif /* defined(__HAVE_ARCH_CALL_SPF) */
-> 
-> Setting and resetting of FAULT_FLAG_WRITE seems confusing. Why you
-> say that some flags need to be set for handle_speculative_fault()
-> function. Could you elaborate on this ?
+--6re5ubh3nkbyixxu
+Content-Type: application/pgp-signature; name="signature.asc"
 
-FAULT_FLAG_WRITE is required to handle write access. In the case we retry
-with the classical path, the flag is reset and will be set later if
-!is_exec and is_write.
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlmlz6QACgkQFA3kzBSg
+KbahRhAAq5+Jb7JhVOWnWvrQZNJRrT/XvVWTrPEjmqWleZqOWYwlf+xVMwHhPruF
+VOoJfL3nSNtkW5KwE0tv06SGlaztPvrLGA+lNO+AFcn9XsPes6nVuYC9G0uPw70L
+tULYk2zkFsyAqfSAMOq9YL7HcxjLVo7awd/uJ+G7FI+nxKEmzCP1kjYUsnh+8ITa
+BS7haPyonxgM5dCgJJc5MqKyGuKqPcgoYGrJ1ExPMKq3OGIkz684hQdpXMCpg8yd
+cMylVExAco61ZZYKmWGFA1l+4PSVXowqifyemZgkUOfjfsqQvB6A9QrojJhjdnXW
+LPpiNv4YsaCDV0tGJ27CUG9+PBDq464EuGKqQR5UeAqGtnkVUFOnJk96IoSrBqaE
+ksAtJSFmSVJ41kWyuq1nHxw8AIeyOBP46huD8zy59fi4wzv9RRJkazZvMQCswl/P
+dn/Sk4/WlgACE5veaGz8WfJQzq9/vNpmIG4Hyy5UyMhYPBMBot8teJxpVdxb3G9A
+yis7y82MYnjTwR5smULX3NHtkZSlojIe3M/ry4gaZt0YXDmk3TwFhb3UoZDkg4mM
+6qFPJBDPMzMOnhaDSedgDi8/m2DUa5Yaa3r+pSHu6mDXRzX2pQMKFHMW3nhN6HG0
+G9NXPY4RVmNrbszG4aNi4cVYld9PUWyq8yxy0lXOAZyk/KUrvFI=
+=E5i7
+-----END PGP SIGNATURE-----
+
+--6re5ubh3nkbyixxu--
