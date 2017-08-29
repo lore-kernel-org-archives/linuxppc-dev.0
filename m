@@ -1,43 +1,42 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xhMjs6ByRzDqYG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 18:48:33 +1000 (AEST)
-Date: Tue, 29 Aug 2017 10:48:31 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
- Rob Herring <robh@kernel.org>, Florian Larysch <fl@n621.de>,
- David Lechner <david@lechnology.com>, Rob Herring <robh+dt@kernel.org>,
- Andy Shevchenko <andy.shevchenko@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>,
- Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
- Dinh Nguyen <dinguyen@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Will Deacon <will.deacon@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
+Return-Path: <bp@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhPqF6LSDzDqZq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 20:23:20 +1000 (AEST)
+Date: Tue, 29 Aug 2017 12:22:58 +0200
+From: Borislav Petkov <bp@suse.de>
+To: Brijesh Singh <brijesh.singh@amd.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Joachim Eastwood <manabian@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Magnus Damm <magnus.damm@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <kernel@pengutronix.de>,
- Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Re: [RESEND PATCH v5 00/16] eeprom: at24: Add OF device ID table
-Message-ID: <20170829084831.hsdok3ksi7anxzuc@ninjato>
-References: <20170615185418.13980-1-javier@dowhile0.org>
- <20170731153009.xkjknygpmckv2pfp@ninjato>
- <CABxcv=mdbE0QGjoi3aLzxRqM3-MbkQ_Ai6fShcGVUGSNNqqrqw@mail.gmail.com>
- <20170828160121.gu4wf7jqu4ditksc@ninjato>
- <CABxcv=kSiqDN1=9fSfLkyW=uuXQZAoW4dhw=fco9RyOdDuPAdA@mail.gmail.com>
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 16/17] X86/KVM: Provide support to create
+ Guest and HV shared per-CPU variables
+Message-ID: <20170829102258.gxk227js4yw47qi3@pd.tnic>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-17-brijesh.singh@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="xckmxrsvdukgxtmb"
-In-Reply-To: <CABxcv=kSiqDN1=9fSfLkyW=uuXQZAoW4dhw=fco9RyOdDuPAdA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170724190757.11278-17-brijesh.singh@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,36 +46,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jul 24, 2017 at 02:07:56PM -0500, Brijesh Singh wrote:
+> Some KVM specific MSR's (steal-time, asyncpf, avic_eio) allocates per-CPU
 
---xckmxrsvdukgxtmb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+		   MSRs
 
+> variable at compile time and share its physical address with hypervisor.
 
-> I don't have a DT based system at hand now, but I'll test it again and
-> let you know probably tomorrow.
+That sentence needs changing - the MSRs don't allocate - for them gets
+allocated.
 
-I will try again today, too. Thanks!
+> It presents a challege when SEV is active in guest OS, when SEV is active,
+> the guest memory is encrypted with guest key hence hypervisor will not
+> able to modify the guest memory. When SEV is active, we need to clear the
+> encryption attribute (aka C-bit) of shared physical addresses so that both
+> guest and hypervisor can access the data.
 
+This whole paragraph needs rewriting.
 
---xckmxrsvdukgxtmb
-Content-Type: application/pgp-signature; name="signature.asc"
+> To solve this problem, I have tried these three options:
+> 
+> 1) Convert the static per-CPU to dynamic per-CPU allocation and when SEV
+> is detected clear the C-bit from the page table. But while doing so I
+> found that per-CPU dynamic allocator was not ready when kvm_guest_cpu_init
+> was called.
+> 
+> 2) Since the C-bit works on PAGE_SIZE hence add some extra padding to
+> 'struct kvm-steal-time' to make it PAGE_SIZE and then at runtime
 
------BEGIN PGP SIGNATURE-----
+"to make it PAGE_SIZE"?
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlmlKl8ACgkQFA3kzBSg
-KbbJ/hAAsf8FDB/Es9uR8b+Rzmdr2IqMb8/dvO+NUNr3eTW2T8Pxkgq3FjBqIIjb
-JlVz7HYC/ZlkO4w6iHh935/maJaxyOCHG8Jfxm2oAvM24Z2Z2uEEC1fQ4TmEzJeJ
-NhTzYD4mzMFlS44t2kuJ+N2F8b4uqddwDwLONVnyF7exbDtLD/v0iVyCGo1mHNRU
-G2vQ/+ASDnFCZt3h/XJ2xH3s5cQRthIy2W/uUVKouRQUMEIFpNa6iNqFaLnCVwZU
-/X3f3F6/P0eo10XZhUJ6FCjPogJE0DxFUAri+tJflv5XZCNM07GVFOR3Wm2nVp9c
-pzk52JpL4kQl/IcbChdhg2offvEgDg12/LA5PegJkXe6SxjfFQy0clwOJm6BFj/+
-bEikY4FJS9WtMAvLnUIRXKY2gwu42YVUy7c68Xw/db8RHtnDT0C3mKCT08HaA0gE
-RLqo4zvCiHpG2cJdWwjfFThdOKIUn6X2aYYU4wnOsgnJtYtV0uzVz2jgrXt1YKeE
-HRbhn3YdZRrMfxjueVg4VsF52I9XQJHw8uuO5V0PuWXLHrtI6dKt8dnskD2DGCWl
-CjGwiTmZlCfd7FQPcFpParv9nJANMSBiPty9DK/hImRcbVBDdsmDbLtTJSjoym9/
-ZIe9xpgYDBOesdhnGyYilx6aKajbm7rQ5soACyoPtevooPt43CE=
-=jOix
------END PGP SIGNATURE-----
+I know what it means but it reads strange and needs more restraint when
+rewriting it. :)
 
---xckmxrsvdukgxtmb--
+> clear the encryption attribute of the full PAGE. The downside of this -
+> we need to modify structure which may break the compatibility.
+> 
+> 3) Define a new per-CPU section (.data..percpu.hv_shared) which will be
+> used to hold the compile time shared per-CPU variables. When SEV is
+> detected we map this section without C-bit.
+> 
+> This patch implements #3.
+
+>From Documentation/process/submitting-patches.rst:
+
+ "Describe your changes in imperative mood, e.g. "make xyzzy do frotz"
+  instead of "[This patch] makes xyzzy do frotz" or "[I] changed xyzzy
+  to do frotz", as if you are giving orders to the codebase to change
+  its behaviour."
+
+Also, never say "This patch" in a commit message of a patch. It is
+tautologically useless.
+
+> It introduces a new DEFINE_PER_CPU_HV_SHAHRED
+
+There's no DEFINE_PER_CPU_HV_SHAHRED. Typo.
+
+> macro to create a compile time per-CPU variable. When SEV is detected we
+> clear the C-bit from the shared per-CPU variable.
+> 
+> Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+> ---
+>  arch/x86/kernel/kvm.c             | 46 ++++++++++++++++++++++++++++++++++++---
+>  include/asm-generic/vmlinux.lds.h |  3 +++
+>  include/linux/percpu-defs.h       | 12 ++++++++++
+>  3 files changed, 58 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
+> index 71c17a5..1f6fec8 100644
+> --- a/arch/x86/kernel/kvm.c
+> +++ b/arch/x86/kernel/kvm.c
+> @@ -75,8 +75,8 @@ static int parse_no_kvmclock_vsyscall(char *arg)
+>  
+>  early_param("no-kvmclock-vsyscall", parse_no_kvmclock_vsyscall);
+>  
+> -static DEFINE_PER_CPU(struct kvm_vcpu_pv_apf_data, apf_reason) __aligned(64);
+> -static DEFINE_PER_CPU(struct kvm_steal_time, steal_time) __aligned(64);
+> +static DEFINE_PER_CPU_HV_SHARED(struct kvm_vcpu_pv_apf_data, apf_reason) __aligned(64);
+> +static DEFINE_PER_CPU_HV_SHARED(struct kvm_steal_time, steal_time) __aligned(64);
+>  static int has_steal_clock = 0;
+>  
+>  /*
+> @@ -303,7 +303,7 @@ static void kvm_register_steal_time(void)
+>  		cpu, (unsigned long long) slow_virt_to_phys(st));
+>  }
+>  
+> -static DEFINE_PER_CPU(unsigned long, kvm_apic_eoi) = KVM_PV_EOI_DISABLED;
+> +static DEFINE_PER_CPU_HV_SHARED(unsigned long, kvm_apic_eoi) = KVM_PV_EOI_DISABLED;
+>  
+>  static notrace void kvm_guest_apic_eoi_write(u32 reg, u32 val)
+>  {
+> @@ -319,11 +319,51 @@ static notrace void kvm_guest_apic_eoi_write(u32 reg, u32 val)
+>  	apic->native_eoi_write(APIC_EOI, APIC_EOI_ACK);
+>  }
+>  
+> +/* NOTE: function is marked as __ref because it is used by __init functions */
+
+No need for that comment.
+
+What should you look into is why do you need to call the early versions:
+
+" * producing a warning (of course, no warning does not mean code is
+ * correct, so optimally document why the __ref is needed and why it's OK)."
+
+And we do have the normal set_memory_decrypted() etc helpers so why
+aren't we using those?
+
+If you need to use the early ones too, then you probably need to
+differentiate this in the callers by passing a "bool early", which calls
+the proper flavor.
+
+> +static int __ref kvm_map_hv_shared_decrypted(void)
+> +{
+> +	static int once, ret;
+> +	int cpu;
+> +
+> +	if (once)
+> +		return ret;
+
+So this function gets called per-CPU but you need to do this ugly "once"
+thing - i.e., global function called in a per-CPU context.
+
+Why can't you do that mapping only on the current CPU and then
+when that function is called on the next CPU, it will do the same thing
+on that next CPU?
+
+> +	/*
+> +	 * Iterate through all possible CPU's and clear the C-bit from
+> +	 * percpu variables.
+> +	 */
+> +	for_each_possible_cpu(cpu) {
+> +		struct kvm_vcpu_pv_apf_data *apf;
+> +		unsigned long pa;
+> +
+> +		apf = &per_cpu(apf_reason, cpu);
+> +		pa = slow_virt_to_phys(apf);
+> +		sme_early_decrypt(pa & PAGE_MASK, PAGE_SIZE);
+> +		ret = early_set_memory_decrypted(pa, PAGE_SIZE);
+> +		if (ret)
+> +			break;
+> +	}
+> +
+> +	once = 1;
+> +	return ret;
+> +}
+> +
+>  static void kvm_guest_cpu_init(void)
+>  {
+>  	if (!kvm_para_available())
+>  		return;
+>  
+> +	/*
+> +	 * When SEV is active, map the shared percpu as unencrypted so that
+
+			    ... map the share percpu area unecnrypted...
+
+> +	 * both guest and hypervsior can access the data.
+> +	 */
+> +	if (sev_active()) {
+> +		if (kvm_map_hv_shared_decrypted()) {
+> +			printk(KERN_ERR "Failed to map percpu as unencrypted\n");
+> +			return;
+> +		}
+> +	}
+> +
+>  	if (kvm_para_has_feature(KVM_FEATURE_ASYNC_PF) && kvmapf) {
+>  		u64 pa = slow_virt_to_phys(this_cpu_ptr(&apf_reason));
+>  
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index da0be9a..52854cf 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -783,6 +783,9 @@
+>  	. = ALIGN(cacheline);						\
+>  	*(.data..percpu)						\
+>  	*(.data..percpu..shared_aligned)				\
+> +	. = ALIGN(PAGE_SIZE);						\
+> +	*(.data..percpu..hv_shared)					\
+> +	. = ALIGN(PAGE_SIZE);						\
+>  	VMLINUX_SYMBOL(__per_cpu_end) = .;
+
+Yeah, no, you can't do that. That's adding this section unconditionally
+on *every* arch. You need to do some ifdeffery like it is done at the
+beginning of that file and have this only on the arch which supports SEV.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
