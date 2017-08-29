@@ -2,7 +2,7 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhBkg0BKqzDqKk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhBkg0Xk8zDqKl
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 12:03:38 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
@@ -13,9 +13,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v7 07/11] sparc64: optimized struct page zeroing
-Date: Mon, 28 Aug 2017 22:02:18 -0400
-Message-Id: <1503972142-289376-8-git-send-email-pasha.tatashin@oracle.com>
+Subject: [PATCH v7 10/11] arm64/kasan: explicitly zero kasan shadow memory
+Date: Mon, 28 Aug 2017 22:02:21 -0400
+Message-Id: <1503972142-289376-11-git-send-email-pasha.tatashin@oracle.com>
 In-Reply-To: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
 References: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,74 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add an optimized mm_zero_struct_page(), so struct page's are zeroed without
-calling memset(). We do eight to ten regular stores based on the size of
-struct page. Compiler optimizes out the conditions of switch() statement.
+To optimize the performance of struct page initialization,
+vmemmap_populate() will no longer zero memory.
 
-SPARC-M6 with 15T of memory, single thread performance:
-
-                               BASE            FIX  OPTIMIZED_FIX
-        bootmem_init   28.440467985s   2.305674818s   2.305161615s
-free_area_init_nodes  202.845901673s 225.343084508s 172.556506560s
-                      --------------------------------------------
-Total                 231.286369658s 227.648759326s 174.861668175s
-
-BASE:  current linux
-FIX:   This patch series without "optimized struct page zeroing"
-OPTIMIZED_FIX: This patch series including the current patch.
-
-bootmem_init() is where memory for struct pages is zeroed during
-allocation. Note, about two seconds in this function is a fixed time: it
-does not increase as memory is increased.
+We must explicitly zero the memory that is allocated by vmemmap_populate()
+for kasan, as this memory does not go through struct page initialization
+path.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- arch/sparc/include/asm/pgtable_64.h | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index 6fbd931f0570..cee5cc7ccc51 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -230,6 +230,36 @@ extern unsigned long _PAGE_ALL_SZ_BITS;
- extern struct page *mem_map_zero;
- #define ZERO_PAGE(vaddr)	(mem_map_zero)
+diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+index 81f03959a4ab..e78a9ecbb687 100644
+--- a/arch/arm64/mm/kasan_init.c
++++ b/arch/arm64/mm/kasan_init.c
+@@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
+ 		set_pgd(pgd_offset_k(start), __pgd(0));
+ }
  
-+/* This macro must be updated when the size of struct page grows above 80
-+ * or reduces below 64.
-+ * The idea that compiler optimizes out switch() statement, and only
-+ * leaves clrx instructions
++/*
++ * Memory that was allocated by vmemmap_populate is not zeroed, so we must
++ * zero it here explicitly.
 + */
-+#define	mm_zero_struct_page(pp) do {					\
-+	unsigned long *_pp = (void *)(pp);				\
-+									\
-+	 /* Check that struct page is either 64, 72, or 80 bytes */	\
-+	BUILD_BUG_ON(sizeof(struct page) & 7);				\
-+	BUILD_BUG_ON(sizeof(struct page) < 64);				\
-+	BUILD_BUG_ON(sizeof(struct page) > 80);				\
-+									\
-+	switch (sizeof(struct page)) {					\
-+	case 80:							\
-+		_pp[9] = 0;	/* fallthrough */			\
-+	case 72:							\
-+		_pp[8] = 0;	/* fallthrough */			\
-+	default:							\
-+		_pp[7] = 0;						\
-+		_pp[6] = 0;						\
-+		_pp[5] = 0;						\
-+		_pp[4] = 0;						\
-+		_pp[3] = 0;						\
-+		_pp[2] = 0;						\
-+		_pp[1] = 0;						\
-+		_pp[0] = 0;						\
-+	}								\
-+} while (0)
++static void
++zero_vmemmap_populated_memory(void)
++{
++	struct memblock_region *reg;
++	u64 start, end;
 +
- /* PFNs are real physical page numbers.  However, mem_map only begins to record
-  * per-page information starting at pfn_base.  This is to handle systems where
-  * the first physical page in the machine is at some huge physical address,
++	for_each_memblock(memory, reg) {
++		start = __phys_to_virt(reg->base);
++		end = __phys_to_virt(reg->base + reg->size);
++
++		if (start >= end)
++			break;
++
++		start = (u64)kasan_mem_to_shadow((void *)start);
++		end = (u64)kasan_mem_to_shadow((void *)end);
++
++		/* Round to the start end of the mapped pages */
++		start = round_down(start, SWAPPER_BLOCK_SIZE);
++		end = round_up(end, SWAPPER_BLOCK_SIZE);
++		memset((void *)start, 0, end - start);
++	}
++
++	start = (u64)kasan_mem_to_shadow(_text);
++	end = (u64)kasan_mem_to_shadow(_end);
++
++	/* Round to the start end of the mapped pages */
++	start = round_down(start, SWAPPER_BLOCK_SIZE);
++	end = round_up(end, SWAPPER_BLOCK_SIZE);
++	memset((void *)start, 0, end - start);
++}
++
+ void __init kasan_init(void)
+ {
+ 	u64 kimg_shadow_start, kimg_shadow_end;
+@@ -205,8 +240,15 @@ void __init kasan_init(void)
+ 			pfn_pte(sym_to_pfn(kasan_zero_page), PAGE_KERNEL_RO));
+ 
+ 	memset(kasan_zero_page, 0, PAGE_SIZE);
++
+ 	cpu_replace_ttbr1(lm_alias(swapper_pg_dir));
+ 
++	/*
++	 * vmemmap_populate does not zero the memory, so we need to zero it
++	 * explicitly
++	 */
++	zero_vmemmap_populated_memory();
++
+ 	/* At this point kasan is fully initialized. Enable error messages */
+ 	init_task.kasan_depth = 0;
+ 	pr_info("KernelAddressSanitizer initialized\n");
 -- 
 2.14.1
