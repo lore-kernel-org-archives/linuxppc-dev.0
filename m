@@ -1,29 +1,22 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhSlg30FPzDqZq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 22:35:26 +1000 (AEST)
-Received: from mail-qt0-f181.google.com (mail-qt0-f181.google.com
- [209.85.216.181])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
+ [209.85.218.68])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id CB4CF21AC4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 12:35:24 +0000 (UTC)
-Received: by mail-qt0-f181.google.com with SMTP id x36so13988090qtx.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 05:35:24 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170807232919.30247-2-robh@kernel.org>
-References: <20170807232919.30247-2-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhSpc5sgLzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 22:38:00 +1000 (AEST)
+Received: by mail-oi0-f68.google.com with SMTP id x184so2887438oia.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 05:38:00 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 29 Aug 2017 07:35:03 -0500
-Message-ID: <CAL_JsqKXYubBHVhcJ9ist8d6gFOCthdgc_pwnMGxNR7ajuXPrg@mail.gmail.com>
-Subject: Re: [PATCH v3] sound: aoa: Convert to using %pOF instead of full_name
-To: Takashi Iwai <tiwai@suse.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Jaroslav Kysela <perex@perex.cz>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux-ALSA <alsa-devel@alsa-project.org>
-Content-Type: text/plain; charset="UTF-8"
+To: Mark Brown <broonie@kernel.org>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] ASoC: fsl_dma: remove dma_object path member
+Date: Tue, 29 Aug 2017 07:37:55 -0500
+Message-Id: <20170829123755.9496-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 7, 2017 at 6:29 PM, Rob Herring <robh@kernel.org> wrote:
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Jaroslav Kysela <perex@perex.cz>
-> Cc: Takashi Iwai <tiwai@suse.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: alsa-devel@alsa-project.org
-> ---
-> v3: Split aoa to separate patch
+dma_object.path is unused, so rather than fix it to work with DT
+full_name changes, just remove it.
 
-Ping.
+Signed-off-by: Rob Herring <robh@kernel.org>
+Cc: Timur Tabi <timur@tabi.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+v3:
+- Update subject: s/sound/ASoC/
+v2:
+- Move printf specifier change to correct patch
 
->
->  sound/aoa/codecs/tas.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
-> index 733b6365dad6..15c05755d270 100644
-> --- a/sound/aoa/codecs/tas.c
-> +++ b/sound/aoa/codecs/tas.c
-> @@ -905,8 +905,8 @@ static int tas_i2c_probe(struct i2c_client *client,
->                 goto fail;
->         }
->         printk(KERN_DEBUG
-> -              "snd-aoa-codec-tas: tas found, addr 0x%02x on %s\n",
-> -              (unsigned int)client->addr, node->full_name);
-> +              "snd-aoa-codec-tas: tas found, addr 0x%02x on %pOF\n",
-> +              (unsigned int)client->addr, node);
->         return 0;
->   fail:
->         mutex_destroy(&tas->mtx);
-> --
-> 2.11.0
->
+ sound/soc/fsl/fsl_dma.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index c17359648915..0c11f434a374 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -63,7 +63,6 @@ struct dma_object {
+ 	struct ccsr_dma_channel __iomem *channel;
+ 	unsigned int irq;
+ 	bool assigned;
+-	char path[1];
+ };
+ 
+ /*
+@@ -903,13 +902,12 @@ static int fsl_soc_dma_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	dma = kzalloc(sizeof(*dma) + strlen(np->full_name), GFP_KERNEL);
++	dma = kzalloc(sizeof(*dma), GFP_KERNEL);
+ 	if (!dma) {
+ 		of_node_put(ssi_np);
+ 		return -ENOMEM;
+ 	}
+ 
+-	strcpy(dma->path, np->full_name);
+ 	dma->dai.ops = &fsl_dma_ops;
+ 	dma->dai.pcm_new = fsl_dma_new;
+ 	dma->dai.pcm_free = fsl_dma_free_dma_buffers;
+-- 
+2.11.0
