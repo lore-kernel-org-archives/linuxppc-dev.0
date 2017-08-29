@@ -1,23 +1,43 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhHVh3CxSzDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 15:38:36 +1000 (AEST)
-Date: Tue, 29 Aug 2017 14:55:48 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, nixiaoming <nixiaoming@huawei.com>,
- David Hildenbrand <david@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Protect updates to spapr_tce_tables
- list
-Message-ID: <20170829045548.GG2578@umbus.fritz.box>
-References: <20170828044228.GB12629@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhJRH02SdzDqR9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:20:42 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7T6JQnT069995
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 02:20:40 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cmvjf6kbg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 02:20:40 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Tue, 29 Aug 2017 16:20:37 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7T6KYgU39321722
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:20:34 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7T6KY79010944
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:20:34 +1000
+Date: Tue, 29 Aug 2017 16:20:31 +1000
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ "Bryant G. Ly" <bgly@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ martin.petersen@oracle.com
+Subject: Re: [PATCH] powerpc/kernel: Change retrieval of pci_dn
+References: <1503936303-18274-1-git-send-email-bryantly@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="E69HUUNAyIJqGpVn"
-In-Reply-To: <20170828044228.GB12629@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1503936303-18274-1-git-send-email-bryantly@linux.vnet.ibm.com>
+Message-Id: <20170829062031.hb3pwrnt5pohpr7l@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,147 +47,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Aug 28, 2017 at 11:05:03AM -0500, Bryant G. Ly wrote:
+> For a PCI device it's pci_dn can be retrieved from
+> pdev->dev.archdata.firmware_data, PCI_DN(devnode), or parent's list.
+> Thus, we should just use the generic function pci_get_pdn_by_devfn
+> to get the pci_dn.
+> 
+> Signed-off-by: Bryant G. Ly <bgly@us.ibm.com>
+Reviewed-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
---E69HUUNAyIJqGpVn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I don't know this area but I tested it using a patched kernel with the
+old and new code together. My test kernel booted fine (in QEMU+KVM) and
+I saw 26 reads and 4 writes, all of which got the same value with either
+code block.
 
-On Mon, Aug 28, 2017 at 02:42:29PM +1000, Paul Mackerras wrote:
-> Al Viro pointed out that while one thread of a process is executing
-> in kvm_vm_ioctl_create_spapr_tce(), another thread could guess the
-> file descriptor returned by anon_inode_getfd() and close() it before
-> the first thread has added it to the kvm->arch.spapr_tce_tables list.
-> That highlights a more general problem: there is no mutual exclusion
-> between writers to the spapr_tce_tables list, leading to the
-> possibility of the list becoming corrupted, which could cause a
-> host kernel crash.
->=20
-> To fix the mutual exclusion problem, we add a mutex_lock/unlock
-> pair around the list_del_rce in kvm_spapr_tce_release().  Also,
-> this moves the call to anon_inode_getfd() inside the region
-> protected by the kvm->lock mutex, after we have done the check for
-> a duplicate LIOBN.  This means that if another thread does guess the
-> file descriptor and closes it, its call to kvm_spapr_tce_release()
-> will not do any harm because it will have to wait until the first
-> thread has released kvm->lock.
->=20
-> The other things that the second thread could do with the guessed
-> file descriptor are to mmap it or to pass it as a parameter to a
-> KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE ioctl on a KVM device fd.  An mmap
-> call won't cause any harm because kvm_spapr_tce_mmap() and
-> kvm_spapr_tce_fault() don't access the spapr_tce_tables list or
-> the kvmppc_spapr_tce_table.list field, and the fields that they do use
-> have been properly initialized by the time of the anon_inode_getfd()
-> call.
->=20
-> The KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE ioctl calls
-> kvm_spapr_tce_attach_iommu_group(), which scans the spapr_tce_tables
-> list looking for the kvmppc_spapr_tce_table struct corresponding to
-> the fd given as the parameter.  Either it will find the new entry
-> or it won't; if it doesn't, it just returns an error, and if it
-> does, it will function normally.  So, in each case there is no
-> harmful effect.
->=20
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+I also checked that the error result in the "not found" case is the same
+as well, which it is, because rtas_{read,write}_config() will return
+PCIBIOS_DEVICE_NOT_FOUND if given a NULL pdn.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+So, looks good to me.
 
-Although, as you know, I've missed bugs in here several times
-previously, so I'm not sure how much the above is worth :/
+Cheers,
+Sam.
 
 > ---
->  arch/powerpc/kvm/book3s_64_vio.c | 21 ++++++++++-----------
->  1 file changed, 10 insertions(+), 11 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
-4_vio.c
-> index 53766e2..8f2da8b 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -265,8 +265,11 @@ static int kvm_spapr_tce_release(struct inode *inode=
-, struct file *filp)
+>  arch/powerpc/kernel/rtas_pci.c | 30 ++----------------------------
+>  1 file changed, 2 insertions(+), 28 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+> index 73f1934..c21e6c5 100644
+> --- a/arch/powerpc/kernel/rtas_pci.c
+> +++ b/arch/powerpc/kernel/rtas_pci.c
+> @@ -91,25 +91,13 @@ static int rtas_pci_read_config(struct pci_bus *bus,
+>  				unsigned int devfn,
+>  				int where, int size, u32 *val)
 >  {
->  	struct kvmppc_spapr_tce_table *stt =3D filp->private_data;
->  	struct kvmppc_spapr_tce_iommu_table *stit, *tmp;
-> +	struct kvm *kvm =3D stt->kvm;
-> =20
-> +	mutex_lock(&kvm->lock);
->  	list_del_rcu(&stt->list);
-> +	mutex_unlock(&kvm->lock);
-> =20
->  	list_for_each_entry_safe(stit, tmp, &stt->iommu_tables, next) {
->  		WARN_ON(!kref_read(&stit->kref));
-> @@ -298,7 +301,6 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  	unsigned long npages, size;
->  	int ret =3D -ENOMEM;
->  	int i;
-> -	int fd =3D -1;
-> =20
->  	if (!args->size)
->  		return -EINVAL;
-> @@ -328,11 +330,6 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  			goto fail;
->  	}
-> =20
-> -	ret =3D fd =3D anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
-> -				    stt, O_RDWR | O_CLOEXEC);
-> -	if (ret < 0)
-> -		goto fail;
+> -	struct device_node *busdn, *dn;
+>  	struct pci_dn *pdn;
+> -	bool found = false;
+>  	int ret;
+>  
+>  	/* Search only direct children of the bus */
+>  	*val = 0xFFFFFFFF;
+> -	busdn = pci_bus_to_OF_node(bus);
+> -	for (dn = busdn->child; dn; dn = dn->sibling) {
+> -		pdn = PCI_DN(dn);
+> -		if (pdn && pdn->devfn == devfn
+> -		    && of_device_is_available(dn)) {
+> -			found = true;
+> -			break;
+> -		}
+> -	}
+>  
+> -	if (!found)
+> -		return PCIBIOS_DEVICE_NOT_FOUND;
+> +	pdn = pci_get_pdn_by_devfn(bus, devfn);
+>  
+>  	ret = rtas_read_config(pdn, where, size, val);
+>  	if (*val == EEH_IO_ERROR_VALUE(size) &&
+> @@ -153,23 +141,9 @@ static int rtas_pci_write_config(struct pci_bus *bus,
+>  				 unsigned int devfn,
+>  				 int where, int size, u32 val)
+>  {
+> -	struct device_node *busdn, *dn;
+>  	struct pci_dn *pdn;
+> -	bool found = false;
 > -
->  	mutex_lock(&kvm->lock);
-> =20
->  	/* Check this LIOBN hasn't been previously allocated */
-> @@ -344,17 +341,19 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  		}
->  	}
-> =20
-> -	if (!ret) {
-> +	if (!ret)
-> +		ret =3D anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
-> +				       stt, O_RDWR | O_CLOEXEC);
-> +
-> +	if (ret >=3D 0) {
->  		list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
->  		kvm_get_kvm(kvm);
->  	}
-> =20
->  	mutex_unlock(&kvm->lock);
-> =20
-> -	if (!ret)
-> -		return fd;
-> -
-> -	put_unused_fd(fd);
-> +	if (ret >=3D 0)
-> +		return ret;
-> =20
->   fail:
->  	for (i =3D 0; i < npages; i++)
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---E69HUUNAyIJqGpVn
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlmk89QACgkQbDjKyiDZ
-s5IxlhAArR0WJldwFl29wQs/O/Dvpin7N3lCuN22FZxEpBUsNMa4VMfLoULxJPEt
-GToRT9ecNxMrsHbVagX5c4nsz2DJkNwd3+ZiB+xZF0fVnns0Mo9XGhYJu+bk3fuz
-BFYnJ9COOmufyvRLDlsve2UkSXUZj8y/LIX99L1Y5Q258PkMGscIuZD+hUJ15Bzd
-L0Ur25JqksZisjQMTV0fpK0PmpladtZXrChDeDrylBCgF6W/SP1DUWow9QDZYzS3
-L9eFKSZ2NTqRny7baGIIQY1RaJbJLHH8HBSy4fOWeeQJNyRolR1/T78+JzpxBSQ7
-IBgfvdy0YK59AgsH8HikW3oSwNT9N1nJDChjBh5oi/x+QnD0MDFE9UrYF1xT1Gay
-7mj00VTOihOlMbWU7UpQWgZHd3jB3sDOgkhwKU8J+dspGwJ1qHtzDgKsN16xy2cl
-rSdaMiFzNPS1jCCLGIABj3KUA4uTeK+qpRi/YosZYd4mJbJhKTIZidQsBOCzUvmJ
-FSxKVrkJLuvLxorcCfBvCNBCLZ+jJxjLjqYBgC3GYMLn1HNIR2ou6ijUhVFSvAZx
-Udi8zsjmasVPkjlqHNDnMQDyNxNHCjsDXXcjGEMTWizDX5Gp1n4aMdAGkGLTQSkh
-WmXvNwUvNi0N4AN0SE1sp04J9EpQcHG1mePqzb6zO/RRCOZkjUg=
-=dM4Y
------END PGP SIGNATURE-----
-
---E69HUUNAyIJqGpVn--
+> -	/* Search only direct children of the bus */
+> -	busdn = pci_bus_to_OF_node(bus);
+> -	for (dn = busdn->child; dn; dn = dn->sibling) {
+> -		pdn = PCI_DN(dn);
+> -		if (pdn && pdn->devfn == devfn
+> -		    && of_device_is_available(dn)) {
+> -			found = true;
+> -			break;
+> -		}
+> -	}
+>  
+> -	if (!found)
+> -		return PCIBIOS_DEVICE_NOT_FOUND;
+> +	pdn = pci_get_pdn_by_devfn(bus, devfn);
+>  
+>  	return rtas_write_config(pdn, where, size, val);
+>  }
+> -- 
+> 2.5.4 (Apple Git-61)
