@@ -1,31 +1,45 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhVct2GH2zDqZ0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 23:59:42 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id c18so3748076ioj.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 06:59:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhWlj0fflzDqk7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 00:50:40 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7TEnLJA006783
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 10:50:38 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cna460w7s-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 10:50:37 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 29 Aug 2017 15:50:34 +0100
+Subject: Re: [PATCH v2 19/20] x86/mm: Add speculative pagefault handling
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1503007519-26777-20-git-send-email-ldufour@linux.vnet.ibm.com>
+ <dbaaf637-9f22-eba0-63a5-7bd83f810e4f@linux.vnet.ibm.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 29 Aug 2017 16:50:26 +0200
 MIME-Version: 1.0
-Sender: ddstreet@gmail.com
-In-Reply-To: <1500699702.23205.8.camel@hbabu-laptop>
-References: <1500699702.23205.8.camel@hbabu-laptop>
-From: Dan Streetman <ddstreet@ieee.org>
-Date: Tue, 29 Aug 2017 09:58:59 -0400
-Message-ID: <CALZtONBGVQy2iwkb8WpVd-_QG7bLFTvUbnuub6CCXP55YpQiSQ@mail.gmail.com>
-Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
- engine
-To: Haren Myneni <haren@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- mikey@neuling.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, suka@us.ibm.com,
- Ram Pai <linuxram@us.ibm.com>,
- npiggin@gmail.com, Haren Myneni <hbabu@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <dbaaf637-9f22-eba0-63a5-7bd83f810e4f@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <37b9b036-e951-0a74-3e5c-31049cda7dd2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,524 +49,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 22, 2017 at 1:01 AM, Haren Myneni <haren@linux.vnet.ibm.com> wrote:
->
-> This patch adds P9 NX support for 842 compression engine. Virtual
-> Accelerator Switchboard (VAS) is used to access 842 engine on P9.
->
-> For each NX engine per chip, setup receive window using
-> vas_rx_win_open() which configures RxFIFo with FIFO address, lpid,
-> pid and tid values. This unique (lpid, pid, tid) combination will
-> be used to identify the target engine.
->
-> For crypto open request, open send window on the NX engine for
-> the corresponding chip / cpu where the open request is executed.
-> This send window will be closed upon crypto close request.
->
-> NX provides high and normal priority FIFOs. For compression /
-> decompression requests, we use only hight priority FIFOs in kernel.
->
-> Each NX request will be communicated to VAS using copy/paste
-> instructions with vas_copy_crb() / vas_paste_crb() functions.
->
-> Signed-off-by: Haren Myneni <haren@us.ibm.com>
-> ---
->  drivers/crypto/nx/Kconfig          |   1 +
->  drivers/crypto/nx/nx-842-powernv.c | 375 ++++++++++++++++++++++++++++++++++++-
->  drivers/crypto/nx/nx-842.c         |   2 +-
->  3 files changed, 371 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/crypto/nx/Kconfig b/drivers/crypto/nx/Kconfig
-> index ad7552a6998c..cd5dda9c48f4 100644
-> --- a/drivers/crypto/nx/Kconfig
-> +++ b/drivers/crypto/nx/Kconfig
-> @@ -38,6 +38,7 @@ config CRYPTO_DEV_NX_COMPRESS_PSERIES
->  config CRYPTO_DEV_NX_COMPRESS_POWERNV
->         tristate "Compression acceleration support on PowerNV platform"
->         depends on PPC_POWERNV
-> +       depends on PPC_VAS
->         default y
->         help
->           Support for PowerPC Nest (NX) compression acceleration. This
-> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-> index c0dd4c7e17d3..13089a0b9dfa 100644
-> --- a/drivers/crypto/nx/nx-842-powernv.c
-> +++ b/drivers/crypto/nx/nx-842-powernv.c
-> @@ -23,6 +23,7 @@
->  #include <asm/prom.h>
->  #include <asm/icswx.h>
->  #include <asm/vas.h>
-> +#include <asm/reg.h>
->
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
-> @@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
->
->  #define WORKMEM_ALIGN  (CRB_ALIGN)
->  #define CSB_WAIT_MAX   (5000) /* ms */
-> +#define VAS_RETRIES    (10)
-> +/* # of requests allowed per RxFIFO at a time. 0 for unlimited */
-> +#define MAX_CREDITS_PER_RXFIFO (1024)
->
->  struct nx842_workmem {
->         /* Below fields must be properly aligned */
-> @@ -42,16 +46,27 @@ struct nx842_workmem {
->
->         ktime_t start;
->
-> +       struct vas_window *txwin;       /* Used with VAS function */
->         char padding[WORKMEM_ALIGN]; /* unused, to allow alignment */
->  } __packed __aligned(WORKMEM_ALIGN);
->
->  struct nx842_coproc {
->         unsigned int chip_id;
->         unsigned int ct;
-> -       unsigned int ci;
-> +       unsigned int ci;        /* Coprocessor instance, used with icswx */
-> +       struct {
-> +               struct vas_window *rxwin;
-> +               int id;
-> +       } vas;
->         struct list_head list;
->  };
->
-> +/*
-> + * Send the request to NX engine on the chip for the corresponding CPU
-> + * where the process is executing. Use with VAS function.
-> + */
-> +static DEFINE_PER_CPU(struct nx842_coproc *, coproc_inst);
-> +
->  /* no cpu hotplug on powernv, so this list never changes after init */
->  static LIST_HEAD(nx842_coprocs);
->  static unsigned int nx842_ct;  /* used in icswx function */
-> @@ -513,6 +528,105 @@ static int nx842_exec_icswx(const unsigned char *in, unsigned int inlen,
->  }
->
->  /**
-> + * nx842_exec_vas - compress/decompress data using the 842 algorithm
-> + *
-> + * (De)compression provided by the NX842 coprocessor on IBM PowerNV systems.
-> + * This compresses or decompresses the provided input buffer into the provided
-> + * output buffer.
-> + *
-> + * Upon return from this function @outlen contains the length of the
-> + * output data.  If there is an error then @outlen will be 0 and an
-> + * error will be specified by the return code from this function.
-> + *
-> + * The @workmem buffer should only be used by one function call at a time.
-> + *
-> + * @in: input buffer pointer
-> + * @inlen: input buffer size
-> + * @out: output buffer pointer
-> + * @outlenp: output buffer size pointer
-> + * @workmem: working memory buffer pointer, size determined by
-> + *           nx842_powernv_driver.workmem_size
-> + * @fc: function code, see CCW Function Codes in nx-842.h
-> + *
-> + * Returns:
-> + *   0         Success, output of length @outlenp stored in the buffer
-> + *             at @out
-> + *   -ENODEV   Hardware unavailable
-> + *   -ENOSPC   Output buffer is to small
-> + *   -EMSGSIZE Input buffer too large
-> + *   -EINVAL   buffer constraints do not fix nx842_constraints
-> + *   -EPROTO   hardware error during operation
-> + *   -ETIMEDOUT        hardware did not complete operation in reasonable time
-> + *   -EINTR    operation was aborted
-> + */
-> +static int nx842_exec_vas(const unsigned char *in, unsigned int inlen,
-> +                                 unsigned char *out, unsigned int *outlenp,
-> +                                 void *workmem, int fc)
-> +{
-> +       struct coprocessor_request_block *crb;
-> +       struct coprocessor_status_block *csb;
-> +       struct nx842_workmem *wmem;
-> +       struct vas_window *txwin;
-> +       int ret, i = 0;
-> +       u32 ccw;
-> +       unsigned int outlen = *outlenp;
-> +
-> +       wmem = PTR_ALIGN(workmem, WORKMEM_ALIGN);
-> +
-> +       *outlenp = 0;
-> +
-> +       crb = &wmem->crb;
-> +       csb = &crb->csb;
-> +
-> +       ret = nx842_config_crb(in, inlen, out, outlen, wmem);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ccw = 0;
-> +       ccw = SET_FIELD(CCW_FC_842, ccw, fc);
-> +       crb->ccw = cpu_to_be32(ccw);
-> +
-> +       txwin = wmem->txwin;
-> +       /* shoudn't happen, we don't load without a coproc */
-> +       if (!txwin) {
-> +               pr_err_ratelimited("NX-842 coprocessor is not available");
-> +               return -ENODEV;
-> +       }
-> +
-> +       do {
-> +               wmem->start = ktime_get();
-> +               preempt_disable();
-> +               /*
-> +                * VAS copy CRB into L2 cache. Refer <asm/vas.h>.
-> +                * @crb, @offset and @first (must be true)
-> +                */
-> +               vas_copy_crb(crb, 0, 1);
-> +
-> +               /*
-> +                * VAS paste previously copied CRB to NX.
-> +                * @txwin, @offset, @last (must be true) and @re is
-> +                * expected/assumed to be true for NX windows.
-> +                */
-> +               ret = vas_paste_crb(txwin, 0, 1, 1);
-> +               preempt_enable();
-> +               /*
-> +                * Retry copy/paste function for VAS failures.
-> +                */
-> +       } while (ret && (i++ < VAS_RETRIES));
-> +
-> +       if (ret) {
-> +               pr_err_ratelimited("VAS copy/paste failed\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = wait_for_csb(wmem, csb);
-> +       if (!ret)
-> +               *outlenp = be32_to_cpu(csb->count);
-> +
-> +       return ret;
-> +}
-> +
-> +/**
->   * nx842_powernv_compress - Compress data using the 842 algorithm
->   *
->   * Compression provided by the NX842 coprocessor on IBM PowerNV systems.
-> @@ -576,6 +690,198 @@ static inline void nx842_add_coprocs_list(struct nx842_coproc *coproc,
->         list_add(&coproc->list, &nx842_coprocs);
->  }
->
-> +/*
-> + * Identify chip ID for each CPU and save coprocesor adddress for the
-> + * corresponding NX engine in percpu coproc_inst.
-> + * coproc_inst is used in crypto_init to open send window on the NX instance
-> + * for the corresponding CPU / chip where the open request is executed.
-> + */
-> +static void nx842_set_per_cpu_coproc(struct nx842_coproc *coproc)
-> +{
-> +       unsigned int i, chip_id;
-> +
-> +       for_each_possible_cpu(i) {
-> +               chip_id = cpu_to_chip_id(i);
-> +
-> +               if (coproc->chip_id == chip_id)
-> +                       per_cpu(coproc_inst, i) = coproc;
-> +       }
-> +}
-> +
-> +
-> +static struct vas_window *nx842_alloc_txwin(struct nx842_coproc *coproc)
-> +{
-> +       struct vas_window *txwin = NULL;
-> +       struct vas_tx_win_attr txattr;
-> +
-> +       /*
-> +        * Kernel requests will be high priority. So open send
-> +        * windows only for high priority RxFIFO entries.
-> +        */
-> +       vas_init_tx_win_attr(&txattr, coproc->ct);
-> +       txattr.lpid = 0;        /* lpid is 0 for kernel requests */
-> +       txattr.pid = mfspr(SPRN_PID);
-> +
-> +       /*
-> +        * Open a VAS send window which is used to send request to NX.
-> +        */
-> +       txwin = vas_tx_win_open(coproc->vas.id, coproc->ct, &txattr);
-> +       if (IS_ERR(txwin)) {
-> +               pr_err("ibm,nx-842: Can not open TX window: %ld\n",
-> +                               PTR_ERR(txwin));
-> +               return NULL;
-> +       }
-> +
-> +       return txwin;
-> +}
-> +
-> +static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
-> +                                       int vasid)
-> +{
-> +       struct vas_window *rxwin = NULL;
-> +       struct vas_rx_win_attr rxattr;
-> +       struct nx842_coproc *coproc;
-> +       u32 lpid, pid, tid, fifo_size;
-> +       u64 rx_fifo;
-> +       const char *priority;
-> +       int ret;
-> +
-> +       ret = of_property_read_u64(dn, "rx-fifo-address", (void *)&rx_fifo);
-> +       if (ret) {
-> +               pr_err("Missing rx-fifo-address property\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = of_property_read_u32(dn, "rx-fifo-size", &fifo_size);
-> +       if (ret) {
-> +               pr_err("Missing rx-fifo-size property\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = of_property_read_u32(dn, "lpid", &lpid);
-> +       if (ret) {
-> +               pr_err("Missing lpid property\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = of_property_read_u32(dn, "pid", &pid);
-> +       if (ret) {
-> +               pr_err("Missing pid property\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = of_property_read_u32(dn, "tid", &tid);
-> +       if (ret) {
-> +               pr_err("Missing tid property\n");
-> +               return ret;
-> +       }
-> +
-> +       ret = of_property_read_string(dn, "priority", &priority);
-> +       if (ret) {
-> +               pr_err("Missing priority property\n");
-> +               return ret;
-> +       }
-> +
-> +       coproc = kzalloc(sizeof(*coproc), GFP_KERNEL);
-> +       if (!coproc)
-> +               return -ENOMEM;
-> +
-> +       if (!strcmp(priority, "High"))
-> +               coproc->ct = VAS_COP_TYPE_842_HIPRI;
-> +       else if (!strcmp(priority, "Normal"))
-> +               coproc->ct = VAS_COP_TYPE_842;
-> +       else {
-> +               pr_err("Invalid RxFIFO priority value\n");
-> +               ret =  -EINVAL;
-> +               goto err_out;
-> +       }
-> +
-> +       vas_init_rx_win_attr(&rxattr, coproc->ct);
-> +       rxattr.rx_fifo = (void *)rx_fifo;
-> +       rxattr.rx_fifo_size = fifo_size;
-> +       rxattr.lnotify_lpid = lpid;
-> +       rxattr.lnotify_pid = pid;
-> +       rxattr.lnotify_tid = tid;
-> +       rxattr.wcreds_max = MAX_CREDITS_PER_RXFIFO;
-> +
-> +       /*
-> +        * Open a VAS receice window which is used to configure RxFIFO
-> +        * for NX.
-> +        */
-> +       rxwin = vas_rx_win_open(vasid, coproc->ct, &rxattr);
-> +       if (IS_ERR(rxwin)) {
-> +               ret = PTR_ERR(rxwin);
-> +               pr_err("setting RxFIFO with VAS failed: %d\n",
-> +                       ret);
-> +               goto err_out;
-> +       }
-> +
-> +       coproc->vas.rxwin = rxwin;
-> +       coproc->vas.id = vasid;
-> +       nx842_add_coprocs_list(coproc, chip_id);
-> +
-> +       /*
-> +        * Kernel requests use only high priority FIFOs. So save coproc
-> +        * info in percpu coproc_inst which will be used to open send
-> +        * windows for crypto open requests later.
-> +        */
-> +       if (coproc->ct == VAS_COP_TYPE_842_HIPRI)
-> +               nx842_set_per_cpu_coproc(coproc);
-> +
-> +       return 0;
-> +
-> +err_out:
-> +       kfree(coproc);
-> +       return ret;
-> +}
-> +
-> +
-> +static int __init nx842_powernv_probe_vas(struct device_node *pn)
-> +{
-> +       struct device_node *dn;
-> +       int chip_id, vasid, ret = 0;
-> +       int nx_fifo_found = 0;
-> +
-> +       chip_id = of_get_ibm_chip_id(pn);
-> +       if (chip_id < 0) {
-> +               pr_err("ibm,chip-id missing\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       dn = of_find_compatible_node(pn, NULL, "ibm,power9-vas-x");
-> +
-> +       if (!dn) {
-> +               pr_err("Missing VAS device node\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       if (of_property_read_u32(dn, "ibm,vas-id", &vasid)) {
-> +               pr_err("Missing ibm,vas-id device property\n");
-> +               of_node_put(dn);
-> +               return -EINVAL;
-> +       }
-> +
-> +       of_node_put(dn);
-> +
-> +       for_each_child_of_node(pn, dn) {
-> +               if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
-> +                       ret = vas_cfg_coproc_info(dn, chip_id, vasid);
-> +                       if (ret) {
-> +                               of_node_put(dn);
-> +                               return ret;
-> +                       }
-> +                       nx_fifo_found++;
-> +               }
-> +       }
-> +
-> +       if (!nx_fifo_found) {
-> +               pr_err("NX842 FIFO nodes are missing\n");
-> +               ret = -EINVAL;
-> +       }
-> +
-> +       return ret;
-> +}
-> +
->  static int __init nx842_powernv_probe(struct device_node *dn)
->  {
->         struct nx842_coproc *coproc;
-> @@ -622,6 +928,9 @@ static void nx842_delete_coprocs(void)
->         struct nx842_coproc *coproc, *n;
->
->         list_for_each_entry_safe(coproc, n, &nx842_coprocs, list) {
-> +               if (coproc->vas.rxwin)
-> +                       vas_win_close(coproc->vas.rxwin);
-> +
->                 list_del(&coproc->list);
->                 kfree(coproc);
->         }
-> @@ -643,6 +952,46 @@ static struct nx842_driver nx842_powernv_driver = {
->         .decompress =   nx842_powernv_decompress,
->  };
->
-> +static int nx842_powernv_crypto_init_vas(struct crypto_tfm *tfm)
-> +{
-> +       struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-> +       struct nx842_workmem *wmem;
-> +       struct nx842_coproc *coproc;
-> +       int ret;
-> +
-> +       ret = nx842_crypto_init(tfm, &nx842_powernv_driver);
-> +
-> +       if (ret)
-> +               return ret;
-> +
-> +       wmem = PTR_ALIGN((struct nx842_workmem *)ctx->wmem, WORKMEM_ALIGN);
-> +       coproc = per_cpu(coproc_inst, smp_processor_id());
+On 21/08/2017 09:29, Anshuman Khandual wrote:
+> On 08/18/2017 03:35 AM, Laurent Dufour wrote:
+>> From: Peter Zijlstra <peterz@infradead.org>
+>>
+>> Try a speculative fault before acquiring mmap_sem, if it returns with
+>> VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
+>> traditional fault.
+>>
+>> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+>>
+>> [Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
+>>  handle_speculative_fault()]
+>> [Retry with usual fault path in the case VM_ERROR is returned by
+>>  handle_speculative_fault(). This allows signal to be delivered]
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/x86/include/asm/pgtable_types.h |  7 +++++++
+>>  arch/x86/mm/fault.c                  | 19 +++++++++++++++++++
+>>  2 files changed, 26 insertions(+)
+>>
+>> diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+>> index bf9638e1ee42..4fd2693a037e 100644
+>> --- a/arch/x86/include/asm/pgtable_types.h
+>> +++ b/arch/x86/include/asm/pgtable_types.h
+>> @@ -234,6 +234,13 @@ enum page_cache_mode {
+>>  #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
+>>  #endif
+>>  
+>> +/*
+>> + * Advertise that we call the Speculative Page Fault handler.
+>> + */
+>> +#ifdef CONFIG_X86_64
+>> +#define __HAVE_ARCH_CALL_SPF
+>> +#endif
+>> +
+>>  #ifdef CONFIG_X86_32
+>>  # include <asm/pgtable_32_types.h>
+>>  #else
+>> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+>> index 2a1fa10c6a98..4c070b9a4362 100644
+>> --- a/arch/x86/mm/fault.c
+>> +++ b/arch/x86/mm/fault.c
+>> @@ -1365,6 +1365,24 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>>  	if (error_code & PF_INSTR)
+>>  		flags |= FAULT_FLAG_INSTRUCTION;
+>>  
+>> +#ifdef __HAVE_ARCH_CALL_SPF
+>> +	if (error_code & PF_USER) {
+>> +		fault = handle_speculative_fault(mm, address, flags);
+>> +
+>> +		/*
+>> +		 * We also check against VM_FAULT_ERROR because we have to
+>> +		 * raise a signal by calling later mm_fault_error() which
+>> +		 * requires the vma pointer to be set. So in that case,
+>> +		 * we fall through the normal path.
+> 
+> Cant mm_fault_error() be called inside handle_speculative_fault() ?
+> Falling through the normal page fault path again just to raise a
+> signal seems overkill. Looking into mm_fault_error(), it seems they
+> are different for x86 and powerpc.
+> 
+> X86:
+> 
+> mm_fault_error(struct pt_regs *regs, unsigned long error_code,
+>                unsigned long address, struct vm_area_struct *vma,
+>                unsigned int fault)
+> 
+> powerpc:
+> 
+> mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+> 
+> Even in case of X86, I guess we would have reference to the faulting
+> VMA (after the SRCU search) which can be used to call this function
+> directly.
 
-this is wrong.  the crypto transform init function is not guaranteed
-to be called by the same processor that later uses it.  Just because
-that happens to be how zswap operates doesn't guarantee other crypto
-users will do the same.
-
-> +
-> +       ret = -EINVAL;
-> +       if (coproc && coproc->vas.rxwin) {
-> +               wmem->txwin = nx842_alloc_txwin(coproc);
-
-this is wrong.  the workmem is scratch memory that's valid only for
-the duration of a single operation.
-
-do you actually need a txwin per crypto transform?  or do you need a
-txwin per coprocessor?  or txwin per processor?  either per-coproc or
-per-cpu should be created at driver init and held separately
-(globally) instead of a per-transform txwin.  I really don't see why
-you would need a txwin per transform, because the coproc should not
-care how many different transforms there are.
-
-
-> +               if (!IS_ERR(wmem->txwin))
-> +                       return 0;
-> +
-> +               ret = PTR_ERR(wmem->txwin);
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +void nx842_powernv_crypto_exit_vas(struct crypto_tfm *tfm)
-> +{
-> +       struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-> +       struct nx842_workmem *wmem;
-> +
-> +       wmem = PTR_ALIGN((struct nx842_workmem *)ctx->wmem, WORKMEM_ALIGN);
-> +
-> +       if (wmem && wmem->txwin)
-> +               vas_win_close(wmem->txwin);
-> +
-> +       nx842_crypto_exit(tfm);
-> +}
-> +
->  static int nx842_powernv_crypto_init(struct crypto_tfm *tfm)
->  {
->         return nx842_crypto_init(tfm, &nx842_powernv_driver);
-> @@ -676,13 +1025,27 @@ static __init int nx842_powernv_init(void)
->         BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
->         BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
->
-> -       for_each_compatible_node(dn, NULL, "ibm,power-nx")
-> -               nx842_powernv_probe(dn);
-> +       for_each_compatible_node(dn, NULL, "ibm,power9-nx") {
-> +               ret = nx842_powernv_probe_vas(dn);
-> +               if (ret) {
-> +                       nx842_delete_coprocs();
-> +                       return ret;
-> +               }
-> +       }
->
-> -       if (!nx842_ct)
-> -               return -ENODEV;
-> +       if (list_empty(&nx842_coprocs)) {
-> +               for_each_compatible_node(dn, NULL, "ibm,power-nx")
-> +                       nx842_powernv_probe(dn);
-> +
-> +               if (!nx842_ct)
-> +                       return -ENODEV;
->
-> -       nx842_powernv_exec = nx842_exec_icswx;
-> +               nx842_powernv_exec = nx842_exec_icswx;
-> +       } else {
-> +               nx842_powernv_exec = nx842_exec_vas;
-> +               nx842_powernv_alg.cra_init = nx842_powernv_crypto_init_vas;
-> +               nx842_powernv_alg.cra_exit = nx842_powernv_crypto_exit_vas;
-> +       }
->
->         ret = crypto_register_alg(&nx842_powernv_alg);
->         if (ret) {
-> diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
-> index d94e25df503b..da3cb8c35ec7 100644
-> --- a/drivers/crypto/nx/nx-842.c
-> +++ b/drivers/crypto/nx/nx-842.c
-> @@ -116,7 +116,7 @@ int nx842_crypto_init(struct crypto_tfm *tfm, struct nx842_driver *driver)
->
->         spin_lock_init(&ctx->lock);
->         ctx->driver = driver;
-> -       ctx->wmem = kmalloc(driver->workmem_size, GFP_KERNEL);
-> +       ctx->wmem = kzalloc(driver->workmem_size, GFP_KERNEL);
->         ctx->sbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
->         ctx->dbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
->         if (!ctx->wmem || !ctx->sbounce || !ctx->dbounce) {
-> --
-> 2.11.0
->
->
->
+Yes I think this is doable in the case of x86.
