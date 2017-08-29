@@ -1,36 +1,32 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhTl12qxrzDqgD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 23:19:57 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7TDIqcf143728
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 09:19:55 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cn6ynrusy-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 09:19:54 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Tue, 29 Aug 2017 07:19:54 -0600
-Subject: Re: [PATCH] powerpc/kernel: Change retrieval of pci_dn
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- "Bryant G. Ly" <bgly@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- martin.petersen@oracle.com
-References: <1503936303-18274-1-git-send-email-bryantly@linux.vnet.ibm.com>
- <20170829062031.hb3pwrnt5pohpr7l@tungsten.ozlabs.ibm.com>
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Tue, 29 Aug 2017 08:19:47 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhV1m2d6WzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 23:32:43 +1000 (AEST)
+Received: by mail-io0-x229.google.com with SMTP id 81so19265559ioj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 06:32:43 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170829062031.hb3pwrnt5pohpr7l@tungsten.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <0bbc434e-a9d2-8887-43fa-a343013cacb1@linux.vnet.ibm.com>
+Sender: ddstreet@gmail.com
+In-Reply-To: <878ti35l7z.fsf@concordia.ellerman.id.au>
+References: <1500699702.23205.8.camel@hbabu-laptop>
+ <878ti35l7z.fsf@concordia.ellerman.id.au>
+From: Dan Streetman <ddstreet@ieee.org>
+Date: Tue, 29 Aug 2017 09:32:01 -0400
+Message-ID: <CALZtONDnFLiGhTRNs89VWr3nrY0Bp9VPRqFXA0iEaa6U_+w4Ag@mail.gmail.com>
+Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
+ engine
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Haren Myneni <haren@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ mikey@neuling.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, suka@us.ibm.com,
+ Ram Pai <linuxram@us.ibm.com>,
+ npiggin@gmail.com, Haren Myneni <hbabu@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,29 +36,270 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8/29/17 1:20 AM, Sam Bobroff wrote:
-
-> On Mon, Aug 28, 2017 at 11:05:03AM -0500, Bryant G. Ly wrote:
->> For a PCI device it's pci_dn can be retrieved from
->> pdev->dev.archdata.firmware_data, PCI_DN(devnode), or parent's list.
->> Thus, we should just use the generic function pci_get_pdn_by_devfn
->> to get the pci_dn.
+On Mon, Aug 28, 2017 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Hi Haren,
+>
+> Some comments inline ...
+>
+> Haren Myneni <haren@linux.vnet.ibm.com> writes:
+>
+>> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+>> index c0dd4c7e17d3..13089a0b9dfa 100644
+>> --- a/drivers/crypto/nx/nx-842-powernv.c
+>> +++ b/drivers/crypto/nx/nx-842-powernv.c
+>> @@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
 >>
->> Signed-off-by: Bryant G. Ly <bgly@us.ibm.com>
-> Reviewed-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+>>  #define WORKMEM_ALIGN        (CRB_ALIGN)
+>>  #define CSB_WAIT_MAX (5000) /* ms */
+>> +#define VAS_RETRIES  (10)
 >
-> I don't know this area but I tested it using a patched kernel with the
-> old and new code together. My test kernel booted fine (in QEMU+KVM) and
-> I saw 26 reads and 4 writes, all of which got the same value with either
-> code block.
+> Where does that number come from?
 >
-> I also checked that the error result in the "not found" case is the same
-> as well, which it is, because rtas_{read,write}_config() will return
-> PCIBIOS_DEVICE_NOT_FOUND if given a NULL pdn.
+> Do we have any idea what the trade off is between retrying vs just
+> falling back to doing the request in software?
 >
-> So, looks good to me.
+>> +/* # of requests allowed per RxFIFO at a time. 0 for unlimited */
+>> +#define MAX_CREDITS_PER_RXFIFO       (1024)
+>>
+>>  struct nx842_workmem {
+>>       /* Below fields must be properly aligned */
+>> @@ -42,16 +46,27 @@ struct nx842_workmem {
+>>
+>>       ktime_t start;
+>>
+>> +     struct vas_window *txwin;       /* Used with VAS function */
 >
-> Cheers,
-> Sam.
+> I don't understand how it makes sense to put txwin and start between the
+> fields above, and the padding.
+
+workmem is a scratch buffer and shouldn't be used for something
+persistent like this.
+
 >
-Thanks for the review Sam!
+> If the workmem pointer you receive is not aligned, then PTR_ALIGN() will
+> advance it and mean you end up writing over start and txwin.
+>
+> That's probably not your bug, the code is already like that.
+
+no, it's a bug in this patch, because workmem is scratch whose
+contents are only valid for the duration of each operation (compress
+or decompress).
+
+>
+>>       char padding[WORKMEM_ALIGN]; /* unused, to allow alignment */
+>>  } __packed __aligned(WORKMEM_ALIGN);
+>
+>> @@ -576,6 +690,198 @@ static inline void nx842_add_coprocs_list(struct nx842_coproc *coproc,
+>>       list_add(&coproc->list, &nx842_coprocs);
+>>  }
+>>
+>> +/*
+>> + * Identify chip ID for each CPU and save coprocesor adddress for the
+>> + * corresponding NX engine in percpu coproc_inst.
+>> + * coproc_inst is used in crypto_init to open send window on the NX instance
+>> + * for the corresponding CPU / chip where the open request is executed.
+>> + */
+>> +static void nx842_set_per_cpu_coproc(struct nx842_coproc *coproc)
+>> +{
+>> +     unsigned int i, chip_id;
+>> +
+>> +     for_each_possible_cpu(i) {
+>> +             chip_id = cpu_to_chip_id(i);
+>> +
+>> +             if (coproc->chip_id == chip_id)
+>> +                     per_cpu(coproc_inst, i) = coproc;
+>> +     }
+>> +}
+>> +
+>> +
+>> +static struct vas_window *nx842_alloc_txwin(struct nx842_coproc *coproc)
+>> +{
+>> +     struct vas_window *txwin = NULL;
+>> +     struct vas_tx_win_attr txattr;
+>> +
+>> +     /*
+>> +      * Kernel requests will be high priority. So open send
+>> +      * windows only for high priority RxFIFO entries.
+>> +      */
+>> +     vas_init_tx_win_attr(&txattr, coproc->ct);
+>> +     txattr.lpid = 0;        /* lpid is 0 for kernel requests */
+>> +     txattr.pid = mfspr(SPRN_PID);
+>
+> Should we be using SPRN_PID here? That makes it appear as if it comes
+> from the current user process, which seems fishy.
+>
+>> +     /*
+>> +      * Open a VAS send window which is used to send request to NX.
+>> +      */
+>> +     txwin = vas_tx_win_open(coproc->vas.id, coproc->ct, &txattr);
+>> +     if (IS_ERR(txwin)) {
+>> +             pr_err("ibm,nx-842: Can not open TX window: %ld\n",
+>> +                             PTR_ERR(txwin));
+>> +             return NULL;
+>> +     }
+>> +
+>> +     return txwin;
+>> +}
+>> +
+>> +static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+>> +                                     int vasid)
+>> +{
+>> +     struct vas_window *rxwin = NULL;
+>> +     struct vas_rx_win_attr rxattr;
+>> +     struct nx842_coproc *coproc;
+>> +     u32 lpid, pid, tid, fifo_size;
+>> +     u64 rx_fifo;
+>> +     const char *priority;
+>> +     int ret;
+>> +
+>> +     ret = of_property_read_u64(dn, "rx-fifo-address", (void *)&rx_fifo);
+>                                                           ^^^^^^^^
+>                                                           Unnecessary cast.
+>
+>> +     if (ret) {
+>> +             pr_err("Missing rx-fifo-address property\n");
+>> +             return ret;
+>> +     }
+>> +
+>> +     ret = of_property_read_u32(dn, "rx-fifo-size", &fifo_size);
+>> +     if (ret) {
+>> +             pr_err("Missing rx-fifo-size property\n");
+>> +             return ret;
+>> +     }
+>> +
+>> +     ret = of_property_read_u32(dn, "lpid", &lpid);
+>> +     if (ret) {
+>> +             pr_err("Missing lpid property\n");
+>> +             return ret;
+>> +     }
+>> +
+>> +     ret = of_property_read_u32(dn, "pid", &pid);
+>> +     if (ret) {
+>> +             pr_err("Missing pid property\n");
+>> +             return ret;
+>> +     }
+>> +
+>> +     ret = of_property_read_u32(dn, "tid", &tid);
+>> +     if (ret) {
+>> +             pr_err("Missing tid property\n");
+>> +             return ret;
+>> +     }
+>> +
+>> +     ret = of_property_read_string(dn, "priority", &priority);
+>> +     if (ret) {
+>> +             pr_err("Missing priority property\n");
+>> +             return ret;
+>> +     }
+>> +
+>> +     coproc = kzalloc(sizeof(*coproc), GFP_KERNEL);
+>> +     if (!coproc)
+>> +             return -ENOMEM;
+>> +
+>> +     if (!strcmp(priority, "High"))
+>> +             coproc->ct = VAS_COP_TYPE_842_HIPRI;
+>> +     else if (!strcmp(priority, "Normal"))
+>> +             coproc->ct = VAS_COP_TYPE_842;
+>> +     else {
+>> +             pr_err("Invalid RxFIFO priority value\n");
+>> +             ret =  -EINVAL;
+>> +             goto err_out;
+>> +     }
+>> +
+>> +     vas_init_rx_win_attr(&rxattr, coproc->ct);
+>> +     rxattr.rx_fifo = (void *)rx_fifo;
+>> +     rxattr.rx_fifo_size = fifo_size;
+>> +     rxattr.lnotify_lpid = lpid;
+>> +     rxattr.lnotify_pid = pid;
+>> +     rxattr.lnotify_tid = tid;
+>> +     rxattr.wcreds_max = MAX_CREDITS_PER_RXFIFO;
+>> +
+>> +     /*
+>> +      * Open a VAS receice window which is used to configure RxFIFO
+>> +      * for NX.
+>> +      */
+>> +     rxwin = vas_rx_win_open(vasid, coproc->ct, &rxattr);
+>> +     if (IS_ERR(rxwin)) {
+>> +             ret = PTR_ERR(rxwin);
+>> +             pr_err("setting RxFIFO with VAS failed: %d\n",
+>> +                     ret);
+>> +             goto err_out;
+>> +     }
+>> +
+>> +     coproc->vas.rxwin = rxwin;
+>> +     coproc->vas.id = vasid;
+>> +     nx842_add_coprocs_list(coproc, chip_id);
+>> +
+>> +     /*
+>> +      * Kernel requests use only high priority FIFOs. So save coproc
+>> +      * info in percpu coproc_inst which will be used to open send
+>> +      * windows for crypto open requests later.
+>> +      */
+>> +     if (coproc->ct == VAS_COP_TYPE_842_HIPRI)
+>> +             nx842_set_per_cpu_coproc(coproc);
+>> +
+>> +     return 0;
+>> +
+>> +err_out:
+>> +     kfree(coproc);
+>> +     return ret;
+>> +}
+>> +
+>> +
+>> +static int __init nx842_powernv_probe_vas(struct device_node *pn)
+>> +{
+>> +     struct device_node *dn;
+>> +     int chip_id, vasid, ret = 0;
+>> +     int nx_fifo_found = 0;
+>> +
+>> +     chip_id = of_get_ibm_chip_id(pn);
+>> +     if (chip_id < 0) {
+>> +             pr_err("ibm,chip-id missing\n");
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     dn = of_find_compatible_node(pn, NULL, "ibm,power9-vas-x");
+>
+> That's the wrong compatible, that will find the raw node, not the one
+> that's intended for Linux use.
+>
+> It's also not really the NX drivers business to be looking for VAS
+> nodes. You should just look for the P9 NX nodes, and if VAS wasn't
+> configured for some reason then the VAS window open will fail and you
+> detect it then.
+>
+>> +     if (!dn) {
+>> +             pr_err("Missing VAS device node\n");
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     if (of_property_read_u32(dn, "ibm,vas-id", &vasid)) {
+>> +             pr_err("Missing ibm,vas-id device property\n");
+>> +             of_node_put(dn);
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     of_node_put(dn);
+>
+> So basically just drop all of that above.
+>
+>> diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
+>> index d94e25df503b..da3cb8c35ec7 100644
+>> --- a/drivers/crypto/nx/nx-842.c
+>> +++ b/drivers/crypto/nx/nx-842.c
+>> @@ -116,7 +116,7 @@ int nx842_crypto_init(struct crypto_tfm *tfm, struct nx842_driver *driver)
+>>
+>>       spin_lock_init(&ctx->lock);
+>>       ctx->driver = driver;
+>> -     ctx->wmem = kmalloc(driver->workmem_size, GFP_KERNEL);
+>> +     ctx->wmem = kzalloc(driver->workmem_size, GFP_KERNEL);
+
+don't put persistent fields in the workmem, and you don't need to zero it.
+
+>>       ctx->sbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
+>>       ctx->dbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
+>>       if (!ctx->wmem || !ctx->sbounce || !ctx->dbounce) {
+>
+> That looks OK but should be split into a separate patch because it
+> affects the Power8 code as well as the pseries code.
+>
+> cheers
