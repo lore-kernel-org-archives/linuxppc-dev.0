@@ -1,23 +1,37 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhBl82zFVzDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 12:04:03 +1000 (AEST)
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
- Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v7 05/11] mm: defining memblock_virt_alloc_try_nid_raw
-Date: Mon, 28 Aug 2017 22:02:16 -0400
-Message-Id: <1503972142-289376-6-git-send-email-pasha.tatashin@oracle.com>
-In-Reply-To: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
-References: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhCyV4tWKzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 12:58:58 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id t3so1712035pgt.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 19:58:58 -0700 (PDT)
+Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
+ Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Jike Song
+ <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
+ Arvind Yadav <arvind.yadav.cs@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Woodhouse <dwmw2@infradead.org>, Kirti Wankhede
+ <kwankhede@nvidia.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
+ Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org
+References: <20170807072548.3023-1-aik@ozlabs.ru>
+ <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
+ <3be3fca3-7f66-0f13-b93a-d3db40a8a934@ozlabs.ru>
+Message-ID: <79581f70-a4c9-dac9-a671-4de7f55bd86e@ozlabs.ru>
+Date: Tue, 29 Aug 2017 12:58:46 +1000
+MIME-Version: 1.0
+In-Reply-To: <3be3fca3-7f66-0f13-b93a-d3db40a8a934@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,236 +41,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* A new variant of memblock_virt_alloc_* allocations:
-memblock_virt_alloc_try_nid_raw()
-    - Does not zero the allocated memory
-    - Does not panic if request cannot be satisfied
+On 21/08/17 12:47, Alexey Kardashevskiy wrote:
+> Folks,
+> 
+> Ok, people did talk, exchanged ideas, lovely :) What happens now? Do I
+> repost this or go back to PCI bus flags or something else? Thanks.
 
-* optimize early system hash allocations
 
-Clients can call alloc_large_system_hash() with flag: HASH_ZERO to specify
-that memory that was allocated for system hash needs to be zeroed,
-otherwise the memory does not need to be zeroed, and client will initialize
-it.
+Anyone, any help? How do we proceed with this? Thanks.
 
-If memory does not need to be zero'd, call the new
-memblock_virt_alloc_raw() interface, and thus improve the boot performance.
 
-* debug for raw alloctor
 
-When CONFIG_DEBUG_VM is enabled, this patch sets all the memory that is
-returned by memblock_virt_alloc_try_nid_raw() to ones to ensure that no
-places excpect zeroed memory.
+> 
+> 
+> 
+> On 14/08/17 19:45, Alexey Kardashevskiy wrote:
+>> Folks,
+>>
+>> Is there anything to change besides those compiler errors and David's
+>> comment in 5/5? Or the while patchset is too bad? Thanks.
+>>
+>>
+>>
+>> On 07/08/17 17:25, Alexey Kardashevskiy wrote:
+>>> This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
+>>> http://www.spinics.net/lists/kvm/msg152232.html
+>>>
+>>> This time it is using "caps" in IOMMU groups. The main question is if PCI
+>>> bus flags or IOMMU domains are still better (and which one).
+>>
+>>>
+>>>
+>>>
+>>> Here is some background:
+>>>
+>>> Current vfio-pci implementation disallows to mmap the page
+>>> containing MSI-X table in case that users can write directly
+>>> to MSI-X table and generate an incorrect MSIs.
+>>>
+>>> However, this will cause some performance issue when there
+>>> are some critical device registers in the same page as the
+>>> MSI-X table. We have to handle the mmio access to these
+>>> registers in QEMU emulation rather than in guest.
+>>>
+>>> To solve this issue, this series allows to expose MSI-X table
+>>> to userspace when hardware enables the capability of interrupt
+>>> remapping which can ensure that a given PCI device can only
+>>> shoot the MSIs assigned for it. And we introduce a new bus_flags
+>>> PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
+>>> for different archs.
+>>>
+>>>
+>>> This is based on sha1
+>>> 26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
+>>>
+>>> Please comment. Thanks.
+>>>
+>>> Changelog:
+>>>
+>>> v5:
+>>> * redid the whole thing via so-called IOMMU group capabilities
+>>>
+>>> v4:
+>>> * rebased on recent upstream
+>>> * got all 6 patches from v2 (v3 was missing some)
+>>>
+>>>
+>>>
+>>>
+>>> Alexey Kardashevskiy (5):
+>>>   iommu: Add capabilities to a group
+>>>   iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
+>>>     remapping
+>>>   iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
+>>>     enabled
+>>>   powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
+>>>   vfio-pci: Allow to expose MSI-X table to userspace when safe
+>>>
+>>>  include/linux/iommu.h            | 20 ++++++++++++++++++++
+>>>  include/linux/vfio.h             |  1 +
+>>>  arch/powerpc/kernel/iommu.c      |  1 +
+>>>  drivers/iommu/amd_iommu.c        |  3 +++
+>>>  drivers/iommu/intel-iommu.c      |  3 +++
+>>>  drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
+>>>  drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
+>>>  drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
+>>>  drivers/vfio/vfio.c              | 15 +++++++++++++++
+>>>  9 files changed, 99 insertions(+), 4 deletions(-)
+>>>
+>>
+>>
+> 
+> 
 
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Reviewed-by: Bob Picco <bob.picco@oracle.com>
-Acked-by: Michal Hocko <mhocko@suse.com>
----
- include/linux/bootmem.h | 27 ++++++++++++++++++++++
- mm/memblock.c           | 60 +++++++++++++++++++++++++++++++++++++++++++------
- mm/page_alloc.c         | 15 ++++++-------
- 3 files changed, 87 insertions(+), 15 deletions(-)
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index e223d91b6439..ea30b3987282 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -160,6 +160,9 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
- #define BOOTMEM_ALLOC_ANYWHERE		(~(phys_addr_t)0)
- 
- /* FIXME: Move to memblock.h at a point where we remove nobootmem.c */
-+void *memblock_virt_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
-+				      phys_addr_t min_addr,
-+				      phys_addr_t max_addr, int nid);
- void *memblock_virt_alloc_try_nid_nopanic(phys_addr_t size,
- 		phys_addr_t align, phys_addr_t min_addr,
- 		phys_addr_t max_addr, int nid);
-@@ -176,6 +179,14 @@ static inline void * __init memblock_virt_alloc(
- 					    NUMA_NO_NODE);
- }
- 
-+static inline void * __init memblock_virt_alloc_raw(
-+					phys_addr_t size,  phys_addr_t align)
-+{
-+	return memblock_virt_alloc_try_nid_raw(size, align, BOOTMEM_LOW_LIMIT,
-+					    BOOTMEM_ALLOC_ACCESSIBLE,
-+					    NUMA_NO_NODE);
-+}
-+
- static inline void * __init memblock_virt_alloc_nopanic(
- 					phys_addr_t size, phys_addr_t align)
- {
-@@ -257,6 +268,14 @@ static inline void * __init memblock_virt_alloc(
- 	return __alloc_bootmem(size, align, BOOTMEM_LOW_LIMIT);
- }
- 
-+static inline void * __init memblock_virt_alloc_raw(
-+					phys_addr_t size,  phys_addr_t align)
-+{
-+	if (!align)
-+		align = SMP_CACHE_BYTES;
-+	return __alloc_bootmem_nopanic(size, align, BOOTMEM_LOW_LIMIT);
-+}
-+
- static inline void * __init memblock_virt_alloc_nopanic(
- 					phys_addr_t size, phys_addr_t align)
- {
-@@ -309,6 +328,14 @@ static inline void * __init memblock_virt_alloc_try_nid(phys_addr_t size,
- 					  min_addr);
- }
- 
-+static inline void * __init memblock_virt_alloc_try_nid_raw(
-+			phys_addr_t size, phys_addr_t align,
-+			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
-+{
-+	return ___alloc_bootmem_node_nopanic(NODE_DATA(nid), size, align,
-+				min_addr, max_addr);
-+}
-+
- static inline void * __init memblock_virt_alloc_try_nid_nopanic(
- 			phys_addr_t size, phys_addr_t align,
- 			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
-diff --git a/mm/memblock.c b/mm/memblock.c
-index 91205780e6b1..1f299fb1eb08 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -1327,7 +1327,6 @@ static void * __init memblock_virt_alloc_internal(
- 	return NULL;
- done:
- 	ptr = phys_to_virt(alloc);
--	memset(ptr, 0, size);
- 
- 	/*
- 	 * The min_count is set to 0 so that bootmem allocated blocks
-@@ -1340,6 +1339,45 @@ static void * __init memblock_virt_alloc_internal(
- 	return ptr;
- }
- 
-+/**
-+ * memblock_virt_alloc_try_nid_raw - allocate boot memory block without zeroing
-+ * memory and without panicking
-+ * @size: size of memory block to be allocated in bytes
-+ * @align: alignment of the region and block's size
-+ * @min_addr: the lower bound of the memory region from where the allocation
-+ *	  is preferred (phys address)
-+ * @max_addr: the upper bound of the memory region from where the allocation
-+ *	      is preferred (phys address), or %BOOTMEM_ALLOC_ACCESSIBLE to
-+ *	      allocate only from memory limited by memblock.current_limit value
-+ * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-+ *
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. Does not zero allocated memory, does not panic if request
-+ * cannot be satisfied.
-+ *
-+ * RETURNS:
-+ * Virtual address of allocated memory block on success, NULL on failure.
-+ */
-+void * __init memblock_virt_alloc_try_nid_raw(
-+			phys_addr_t size, phys_addr_t align,
-+			phys_addr_t min_addr, phys_addr_t max_addr,
-+			int nid)
-+{
-+	void *ptr;
-+
-+	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
-+		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
-+		     (u64)max_addr, (void *)_RET_IP_);
-+
-+	ptr = memblock_virt_alloc_internal(size, align,
-+					   min_addr, max_addr, nid);
-+#ifdef CONFIG_DEBUG_VM
-+	if (ptr && size > 0)
-+		memset(ptr, 0xff, size);
-+#endif
-+	return ptr;
-+}
-+
- /**
-  * memblock_virt_alloc_try_nid_nopanic - allocate boot memory block
-  * @size: size of memory block to be allocated in bytes
-@@ -1351,8 +1389,8 @@ static void * __init memblock_virt_alloc_internal(
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public version of _memblock_virt_alloc_try_nid_nopanic() which provides
-- * additional debug information (including caller info), if enabled.
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. This function zeroes the allocated memory.
-  *
-  * RETURNS:
-  * Virtual address of allocated memory block on success, NULL on failure.
-@@ -1362,11 +1400,17 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
- 				phys_addr_t min_addr, phys_addr_t max_addr,
- 				int nid)
- {
-+	void *ptr;
-+
- 	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
- 		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
- 		     (u64)max_addr, (void *)_RET_IP_);
--	return memblock_virt_alloc_internal(size, align, min_addr,
--					     max_addr, nid);
-+
-+	ptr = memblock_virt_alloc_internal(size, align,
-+					   min_addr, max_addr, nid);
-+	if (ptr)
-+		memset(ptr, 0, size);
-+	return ptr;
- }
- 
- /**
-@@ -1380,7 +1424,7 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public panicking version of _memblock_virt_alloc_try_nid_nopanic()
-+ * Public panicking version of memblock_virt_alloc_try_nid_nopanic()
-  * which provides debug information (including caller info), if enabled,
-  * and panics if the request can not be satisfied.
-  *
-@@ -1399,8 +1443,10 @@ void * __init memblock_virt_alloc_try_nid(
- 		     (u64)max_addr, (void *)_RET_IP_);
- 	ptr = memblock_virt_alloc_internal(size, align,
- 					   min_addr, max_addr, nid);
--	if (ptr)
-+	if (ptr) {
-+		memset(ptr, 0, size);
- 		return ptr;
-+	}
- 
- 	panic("%s: Failed to allocate %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx\n",
- 	      __func__, (u64)size, (u64)align, nid, (u64)min_addr,
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index c170ac569aec..8293815ca85d 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -7356,18 +7356,17 @@ void *__init alloc_large_system_hash(const char *tablename,
- 
- 	log2qty = ilog2(numentries);
- 
--	/*
--	 * memblock allocator returns zeroed memory already, so HASH_ZERO is
--	 * currently not used when HASH_EARLY is specified.
--	 */
- 	gfp_flags = (flags & HASH_ZERO) ? GFP_ATOMIC | __GFP_ZERO : GFP_ATOMIC;
- 	do {
- 		size = bucketsize << log2qty;
--		if (flags & HASH_EARLY)
--			table = memblock_virt_alloc_nopanic(size, 0);
--		else if (hashdist)
-+		if (flags & HASH_EARLY) {
-+			if (flags & HASH_ZERO)
-+				table = memblock_virt_alloc_nopanic(size, 0);
-+			else
-+				table = memblock_virt_alloc_raw(size, 0);
-+		} else if (hashdist) {
- 			table = __vmalloc(size, gfp_flags, PAGE_KERNEL);
--		else {
-+		} else {
- 			/*
- 			 * If bucketsize is not a power-of-two, we may free
- 			 * some pages at the end of hash table which
 -- 
-2.14.1
+Alexey
