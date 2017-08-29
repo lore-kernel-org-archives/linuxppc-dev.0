@@ -1,41 +1,36 @@
-Return-Path: <danielhb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhgbC0qwDzDqF9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:43:50 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7TKhm5K141158
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:43:48 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cna46gm16-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:43:47 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <danielhb@linux.vnet.ibm.com>;
- Tue, 29 Aug 2017 14:43:40 -0600
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7TKhdox4784390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 13:43:39 -0700
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0203CBE03A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 14:43:39 -0600 (MDT)
-Received: from [9.18.235.124] (unknown [9.18.235.124])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP id 85E66BE03E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 14:43:38 -0600 (MDT)
-To: linuxppc-dev@lists.ozlabs.org
-From: Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>
-Subject: Question: handling early hotplug interrupts
-Date: Tue, 29 Aug 2017 17:43:37 -0300
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <e5975dfb-6609-a3b1-7ea7-b9e8fe31b669@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhhQD0kWVzDqF9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 07:21:07 +1000 (AEST)
+Message-ID: <1504041570.2358.30.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, Laurent Dufour
+ <ldufour@linux.vnet.ibm.com>,
+ paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, mpe@ellerman.id.au,
+ paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com, Will Deacon
+ <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Date: Wed, 30 Aug 2017 07:19:30 +1000
+In-Reply-To: <20170829112731.vhgwrzwwlimdbjcn@hirez.programming.kicks-ass.net>
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
+ <20170828093727.5wldedputadanssh@hirez.programming.kicks-ass.net>
+ <1503954877.4850.19.camel@kernel.crashing.org>
+ <20170829083352.qrsxvk3lkiydi3o2@hirez.programming.kicks-ass.net>
+ <20170829112731.vhgwrzwwlimdbjcn@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,37 +40,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 2017-08-29 at 13:27 +0200, Peter Zijlstra wrote:
+> mpe helped me out and explained that is the PWC hint to TBLIE.
+> 
+> So, you set need_flush_all when you unhook pud/pmd/pte which you then
+> use to set PWC. So free_pgtables() will do the PWC when it unhooks
+> higher level pages.
+> 
+> But you're right that there's some issues, free_pgtables() itself
+> doesn't seem to use mm->page_table_lock,pmd->lock _AT_ALL_ to unhook the
+> pages.
+> 
+> If it were to do that, things should work fine since those locks would
+> then serialize against the speculative faults, we would never install a
+> page if the VMA would be under tear-down and it would thus not be
+> visible to your caches either.
 
-This is a scenario I've been facing when working in early device 
-hotplugs in QEMU. When a device is added, a IRQ pulse is fired to warn 
-the guest of the event, then the kernel fetches it by calling 
-'check_exception' and handles it. If the hotplug is done too early 
-(before SLOF, for example), the pulse is ignored and the hotplug event 
-is left unchecked in the events queue.
+That's one case. I don't remember of *all* the cases to be honest, but
+I do remember several times over the past few years thinking "ah we are
+fine because the mm sem taken for writing protects us from any
+concurrent tree structure change" :-)
 
-One solution would be to pulse the hotplug queue interrupt after CAS, 
-when we are sure that the hotplug queue is negotiated. However, this 
-panics the kernel with sig 11 kernel access of bad area, which suggests 
-that the kernel wasn't quite ready to handle it.
-
-In my experiments using upstream 4.13 I saw that there is a 'safe time' 
-to pulse the queue, sometime after CAS and before mounting the root fs, 
-but I wasn't able to pinpoint it. From QEMU perspective, the last hcall 
-done (an h_set_mode) is still too early to pulse it and the kernel 
-panics. Looking at the kernel source I saw that the IRQ handling is 
-initiated quite early in the init process.
-
-So my question (ok, actually 2 questions):
-
-- Is my analysis correct? Is there an unsafe time to fire a IRQ pulse 
-before CAS that can break the kernel or am I overlooking/doing something 
-wrong?
-- is there a reliable way to know when can the kernel safely handle the 
-hotplug interrupt?
-
-
-Thanks,
-
-
-Daniel
+Cheers,
+Ben.
