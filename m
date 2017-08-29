@@ -1,22 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhRDf3YyPzDqZ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 21:26:58 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org
-Cc: Brian King <brking@linux.vnet.ibm.com>,
- "dougmill\@us.ibm.com" <dougmill@us.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Turn on SCSI_AACRAID in powernv_defconfig
-In-Reply-To: <72f7e609-58b9-32dc-4090-fdbd97d0c924@linux.vnet.ibm.com>
-References: <1503899802-13248-1-git-send-email-mpe@ellerman.id.au>
- <72f7e609-58b9-32dc-4090-fdbd97d0c924@linux.vnet.ibm.com>
-Date: Tue, 29 Aug 2017 21:22:12 +1000
-Message-ID: <87h8wq1uvv.fsf@concordia.ellerman.id.au>
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhRFs6zm3zDqZ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 21:28:01 +1000 (AEST)
+Date: Tue, 29 Aug 2017 13:27:31 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net,
+ jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com,
+ bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
+Message-ID: <20170829112731.vhgwrzwwlimdbjcn@hirez.programming.kicks-ass.net>
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
+ <20170828093727.5wldedputadanssh@hirez.programming.kicks-ass.net>
+ <1503954877.4850.19.camel@kernel.crashing.org>
+ <20170829083352.qrsxvk3lkiydi3o2@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170829083352.qrsxvk3lkiydi3o2@hirez.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
+On Tue, Aug 29, 2017 at 10:33:52AM +0200, Peter Zijlstra wrote:
+> On Tue, Aug 29, 2017 at 07:14:37AM +1000, Benjamin Herrenschmidt wrote:
+> > We'd have to audit archs closely. Things like the page walk cache
+> > flushing on power etc...
+> 
+> If you point me where to look, I'll have a poke around. I'm not
+> quite sure what you mean with pagewalk cache flushing. Your hash thing
+> flushes everything inside the PTL IIRC and the radix code appears fairly
+> 'normal'.
 
-> On 08/28/2017 02:56 AM, Michael Ellerman wrote:
->> Some Power9 boxes will have this adapter installed, so add it to the
->> defconfig so we can boot on those machines without an initrd.
->
-> Michael, not sure if this affects Petitboot (I know it has its own
-> default config files), but in the past we had some issues with this
-> driver and it's nice to have the possibility to blacklist it.
+mpe helped me out and explained that is the PWC hint to TBLIE.
 
-Why we were black listing it?
+So, you set need_flush_all when you unhook pud/pmd/pte which you then
+use to set PWC. So free_pgtables() will do the PWC when it unhooks
+higher level pages.
 
-> What is the rationale for this change? I mean, how being able to boot
-> without initrd is interesting here? Sorry if it's silly question!
+But you're right that there's some issues, free_pgtables() itself
+doesn't seem to use mm->page_table_lock,pmd->lock _AT_ALL_ to unhook the
+pages.
 
-It is a silly question! :)
-
-When you boot as many kernels as me it's preferable to be able to build
-a kernel completely remote from the box, throw the kernel on a tftp
-server and have the machine boot from that kernel all the way to
-userspace.
-
-That requires not using an initrd, and therefore having all the drivers
-built-in that are needed to get to the boot disk.
-
-(Yeah it is "possible" to build an initrd remotely but it's a pain).
-
-And the one P9 box I have here uses that driver for its root disk, so I
-do really want it to be =y.
-
-cheers
+If it were to do that, things should work fine since those locks would
+then serialize against the speculative faults, we would never install a
+page if the VMA would be under tear-down and it would thus not be
+visible to your caches either.
