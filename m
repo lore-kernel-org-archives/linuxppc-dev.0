@@ -1,30 +1,47 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhTYs51pszDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 23:12:01 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7TDAM8e115160
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 09:11:59 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cn7ncwjk5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhTjX1FmwzDqZ6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 23:18:40 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7TDGl6g105214
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 09:18:38 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cn4211c9p-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 09:11:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 09:18:36 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Tue, 29 Aug 2017 07:11:58 -0600
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: sam.bobroff@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/kernel: Change retrieval of pci_dn
-Date: Tue, 29 Aug 2017 08:11:51 -0500
-Message-Id: <1504012311-37079-1-git-send-email-bryantly@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 29 Aug 2017 14:18:33 +0100
+Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, paulmck@linux.vnet.ibm.com,
+ akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
+ <507e79d5-59df-c5b5-106d-970c9353d9bc@linux.vnet.ibm.com>
+ <20170829120426.4ar56rbmiupbqmio@hirez.programming.kicks-ass.net>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 29 Aug 2017 15:18:25 +0200
+MIME-Version: 1.0
+In-Reply-To: <20170829120426.4ar56rbmiupbqmio@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <848fa2c6-dbda-9a1e-2efd-3ce9b083365e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,76 +51,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For a PCI device it's pci_dn can be retrieved from
-pdev->dev.archdata.firmware_data, PCI_DN(devnode), or parent's list.
-Thus, we should just use the existing function pci_get_pdn_by_devfn
-to get the pci_dn.
+On 29/08/2017 14:04, Peter Zijlstra wrote:
+> On Tue, Aug 29, 2017 at 09:59:30AM +0200, Laurent Dufour wrote:
+>> On 27/08/2017 02:18, Kirill A. Shutemov wrote:
+>>>> +
+>>>> +	if (unlikely(!vma->anon_vma))
+>>>> +		goto unlock;
+>>>
+>>> It deserves a comment.
+>>
+>> You're right I'll add it in the next version.
+>> For the record, the root cause is that __anon_vma_prepare() requires the
+>> mmap_sem to be held because vm_next and vm_prev must be safe.
+> 
+> But should that test not be:
+> 
+> 	if (unlikely(vma_is_anonymous(vma) && !vma->anon_vma))
+> 		goto unlock;
+> 
+> Because !anon vmas will never have ->anon_vma set and you don't want to
+> exclude those.
 
-Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Reviewed-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
- arch/powerpc/kernel/rtas_pci.c | 33 ++++-----------------------------
- 1 file changed, 4 insertions(+), 29 deletions(-)
-
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index 73f1934..c2b148b 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -91,26 +91,14 @@ static int rtas_pci_read_config(struct pci_bus *bus,
- 				unsigned int devfn,
- 				int where, int size, u32 *val)
- {
--	struct device_node *busdn, *dn;
- 	struct pci_dn *pdn;
--	bool found = false;
- 	int ret;
- 
--	/* Search only direct children of the bus */
- 	*val = 0xFFFFFFFF;
--	busdn = pci_bus_to_OF_node(bus);
--	for (dn = busdn->child; dn; dn = dn->sibling) {
--		pdn = PCI_DN(dn);
--		if (pdn && pdn->devfn == devfn
--		    && of_device_is_available(dn)) {
--			found = true;
--			break;
--		}
--	}
- 
--	if (!found)
--		return PCIBIOS_DEVICE_NOT_FOUND;
-+	pdn = pci_get_pdn_by_devfn(bus, devfn);
- 
-+	/* Validity of pdn is checked in here */
- 	ret = rtas_read_config(pdn, where, size, val);
- 	if (*val == EEH_IO_ERROR_VALUE(size) &&
- 	    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
-@@ -153,24 +141,11 @@ static int rtas_pci_write_config(struct pci_bus *bus,
- 				 unsigned int devfn,
- 				 int where, int size, u32 val)
- {
--	struct device_node *busdn, *dn;
- 	struct pci_dn *pdn;
--	bool found = false;
--
--	/* Search only direct children of the bus */
--	busdn = pci_bus_to_OF_node(bus);
--	for (dn = busdn->child; dn; dn = dn->sibling) {
--		pdn = PCI_DN(dn);
--		if (pdn && pdn->devfn == devfn
--		    && of_device_is_available(dn)) {
--			found = true;
--			break;
--		}
--	}
- 
--	if (!found)
--		return PCIBIOS_DEVICE_NOT_FOUND;
-+	pdn = pci_get_pdn_by_devfn(bus, devfn);
- 
-+	/* Validity of pdn is checked in here. */
- 	return rtas_write_config(pdn, where, size, val);
- }
- 
--- 
-2.5.4 (Apple Git-61)
+Yes in the case we later allow non anonymous vmas to be handled.
+Currently only anonymous vmas are supported so the check is good enough,
+isn't it ?
