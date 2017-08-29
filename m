@@ -1,35 +1,46 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <javier@dowhile0.org>
+Received: from mail-io0-x22f.google.com (mail-io0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c06::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhMPG6rdnzDqXy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 18:34:10 +1000 (AEST)
-Date: Tue, 29 Aug 2017 10:33:52 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net,
- jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-Message-ID: <20170829083352.qrsxvk3lkiydi3o2@hirez.programming.kicks-ass.net>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
- <20170828093727.5wldedputadanssh@hirez.programming.kicks-ass.net>
- <1503954877.4850.19.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhMcr4GQ9zDqYG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 18:44:12 +1000 (AEST)
+Received: by mail-io0-x22f.google.com with SMTP id 81so15070491ioj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 01:44:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1503954877.4850.19.camel@kernel.crashing.org>
+In-Reply-To: <20170828160121.gu4wf7jqu4ditksc@ninjato>
+References: <20170615185418.13980-1-javier@dowhile0.org>
+ <20170731153009.xkjknygpmckv2pfp@ninjato>
+ <CABxcv=mdbE0QGjoi3aLzxRqM3-MbkQ_Ai6fShcGVUGSNNqqrqw@mail.gmail.com>
+ <20170828160121.gu4wf7jqu4ditksc@ninjato>
+From: Javier Martinez Canillas <javier@dowhile0.org>
+Date: Tue, 29 Aug 2017 10:44:09 +0200
+Message-ID: <CABxcv=kSiqDN1=9fSfLkyW=uuXQZAoW4dhw=fco9RyOdDuPAdA@mail.gmail.com>
+Subject: Re: [RESEND PATCH v5 00/16] eeprom: at24: Add OF device ID table
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
+ Florian Larysch <fl@n621.de>, David Lechner <david@lechnology.com>,
+ Rob Herring <robh+dt@kernel.org>,
+ Andy Shevchenko <andy.shevchenko@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
+ Dinh Nguyen <dinguyen@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Will Deacon <will.deacon@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joachim Eastwood <manabian@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Magnus Damm <magnus.damm@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <kernel@pengutronix.de>,
+ Linux I2C <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,55 +50,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 29, 2017 at 07:14:37AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2017-08-28 at 11:37 +0200, Peter Zijlstra wrote:
-> > > Doing all this job and just give up because we cannot allocate page tables
-> > > looks very wasteful to me.
-> > > 
-> > > Have you considered to look how we can hand over from speculative to
-> > > non-speculative path without starting from scratch (when possible)?
-> > 
-> > So we _can_ in fact allocate and install page-tables, but we have to be
-> > very careful about it. The interesting case is where we race with
-> > free_pgtables() and install a page that was just taken out.
-> > 
-> > But since we already have the VMA I think we can do something like:
-> 
-> That makes me extremely nervous... there could be all sort of
-> assumptions esp. in arch code about the fact that we never populate the
-> tree without the mm sem.
+Hello Wolfram,
 
-That _would_ be somewhat dodgy, because that means it needs to rely on
-taking mmap_sem for _writing_ to undo things and arch/powerpc/ doesn't
-have many down_write.*mmap_sem:
+On Mon, Aug 28, 2017 at 6:01 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+>
+>> > But there is a dependency, no? If I apply the driver patch,
+>> > non-converted device trees will not find their eeproms anymore. So, I
+>>
+>> I don't think that's correct. If you apply this patch before the DTS
+>> changes, the driver will still match using the I2C device ID table
+>> like it has been doing it until today.
+>
+> My tests do not confirm this. If I add a node with a "renesas,24c01"
+> compatible to my board, it works before your patch, but not after. If I
+> change it to "atmel,24c01" it works even after your patch. I haven't
+> looked into it, though, maybe i2c_of_match_device_sysfs() is stepping on
+> our foots here?
+>
+> Did you test and did it work for you?
+>
 
-$ git grep "down_write.*mmap_sem" arch/powerpc/
-arch/powerpc/kernel/vdso.c:     if (down_write_killable(&mm->mmap_sem))
-arch/powerpc/kvm/book3s_64_vio.c:       down_write(&current->mm->mmap_sem);
-arch/powerpc/mm/mmu_context_iommu.c:    down_write(&mm->mmap_sem);
-arch/powerpc/mm/subpage-prot.c: down_write(&mm->mmap_sem);
-arch/powerpc/mm/subpage-prot.c: down_write(&mm->mmap_sem);
-arch/powerpc/mm/subpage-prot.c:         down_write(&mm->mmap_sem);
+I would swear that I tested both combinations (driver patch without DT
+changes and DTS changes without driver patch), but it was months ago
+when I first posted the patches so I may misremembering.
 
-Then again, I suppose it could be relying on the implicit down_write
-from things like munmap() and the like..
+I don't have a DT based system at hand now, but I'll test it again and
+let you know probably tomorrow.
 
-And things _ought_ to be ordered by the various PTLs
-(mm->page_table_lock and pmd->lock) which of course doesn't mean
-something accidentally snuck through.
-
-> We'd have to audit archs closely. Things like the page walk cache
-> flushing on power etc...
-
-If you point me where to look, I'll have a poke around. I'm not
-quite sure what you mean with pagewalk cache flushing. Your hash thing
-flushes everything inside the PTL IIRC and the radix code appears fairly
-'normal'.
-
-> I don't mind the "retry" .. .we've brought stuff in the L1 cache
-> already which I would expect to be the bulk of the overhead, and the
-> allocation case isn't that common. Do we have numbers to show how
-> destrimental this is today ?
-
-No numbers, afaik. And like I said, I didn't consider this an actual
-problem when I did these patches. But since Kirill asked ;-)
+Best regards,
+Javier
