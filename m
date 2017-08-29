@@ -1,25 +1,41 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xhgMX66jvzDqF9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:33:44 +1000 (AEST)
-Date: Tue, 29 Aug 2017 22:33:40 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: julia.lawall@lip6.fr, ludovic.desroches@microchip.com, jochen@scram.de,
- vadimp@mellanox.com, michaelsh@mellanox.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- andy.gross@linaro.org, david.brown@linaro.org, ldewangan@nvidia.com,
- thierry.reding@gmail.com, jonathanh@nvidia.com,
- linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-msm@vger.kernel.org,
- linux-soc@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: Re: [PATCH] i2c: busses: make i2c_adapter_quirks const
-Message-ID: <20170829203340.cl2uiuqoaikwsvmv@ninjato>
-References: <1503317524-21276-1-git-send-email-bhumirks@gmail.com>
+Return-Path: <danielhb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhgbC0qwDzDqF9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:43:50 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7TKhm5K141158
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:43:48 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cna46gm16-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 16:43:47 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <danielhb@linux.vnet.ibm.com>;
+ Tue, 29 Aug 2017 14:43:40 -0600
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7TKhdox4784390
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 13:43:39 -0700
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0203CBE03A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 14:43:39 -0600 (MDT)
+Received: from [9.18.235.124] (unknown [9.18.235.124])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP id 85E66BE03E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 14:43:38 -0600 (MDT)
+To: linuxppc-dev@lists.ozlabs.org
+From: Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>
+Subject: Question: handling early hotplug interrupts
+Date: Tue, 29 Aug 2017 17:43:37 -0300
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="6re5ubh3nkbyixxu"
-In-Reply-To: <1503317524-21276-1-git-send-email-bhumirks@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <e5975dfb-6609-a3b1-7ea7-b9e8fe31b669@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +45,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
---6re5ubh3nkbyixxu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is a scenario I've been facing when working in early device 
+hotplugs in QEMU. When a device is added, a IRQ pulse is fired to warn 
+the guest of the event, then the kernel fetches it by calling 
+'check_exception' and handles it. If the hotplug is done too early 
+(before SLOF, for example), the pulse is ignored and the hotplug event 
+is left unchecked in the events queue.
 
-On Mon, Aug 21, 2017 at 05:42:04PM +0530, Bhumika Goyal wrote:
-> Make these const as they are only stored as a reference in the quirks
-> field of an i2c_adapter structure, which is const.
->=20
-> Done using Coccinelle:
-> @match disable optional_qualifier@
-> identifier s;
-> @@
-> static struct i2c_adapter_quirks s =3D {...};
->=20
-> @ref@
-> position p;
-> identifier match.s;
-> @@
-> s@p
->=20
-> @good1@
-> identifier y;
-> position ref.p;
-> identifier match.s;
-> @@
-> struct i2c_adapter y =3D {...,.quirks=3D&s@p,...};
->=20
-> @good2@
-> struct i2c_adapter y;
-> identifier match.s;
-> position ref.p;
-> @@
-> y.quirks =3D &s@p
->=20
-> @bad depends on  !good1 && !good2@
-> position ref.p;
-> identifier match.s;
-> @@
-> s@p
->=20
-> @depends on forall !bad disable optional_qualifier@
-> identifier match.s;
-> @@
-> static
-> + const
-> struct i2c_adapter_quirks s;
->=20
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+One solution would be to pulse the hotplug queue interrupt after CAS, 
+when we are sure that the hotplug queue is negotiated. However, this 
+panics the kernel with sig 11 kernel access of bad area, which suggests 
+that the kernel wasn't quite ready to handle it.
 
-Removed the cocci script from the commit message and applied to
-for-next, thanks!
+In my experiments using upstream 4.13 I saw that there is a 'safe time' 
+to pulse the queue, sometime after CAS and before mounting the root fs, 
+but I wasn't able to pinpoint it. From QEMU perspective, the last hcall 
+done (an h_set_mode) is still too early to pulse it and the kernel 
+panics. Looking at the kernel source I saw that the IRQ handling is 
+initiated quite early in the init process.
+
+So my question (ok, actually 2 questions):
+
+- Is my analysis correct? Is there an unsafe time to fire a IRQ pulse 
+before CAS that can break the kernel or am I overlooking/doing something 
+wrong?
+- is there a reliable way to know when can the kernel safely handle the 
+hotplug interrupt?
 
 
---6re5ubh3nkbyixxu
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks,
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlmlz6QACgkQFA3kzBSg
-KbahRhAAq5+Jb7JhVOWnWvrQZNJRrT/XvVWTrPEjmqWleZqOWYwlf+xVMwHhPruF
-VOoJfL3nSNtkW5KwE0tv06SGlaztPvrLGA+lNO+AFcn9XsPes6nVuYC9G0uPw70L
-tULYk2zkFsyAqfSAMOq9YL7HcxjLVo7awd/uJ+G7FI+nxKEmzCP1kjYUsnh+8ITa
-BS7haPyonxgM5dCgJJc5MqKyGuKqPcgoYGrJ1ExPMKq3OGIkz684hQdpXMCpg8yd
-cMylVExAco61ZZYKmWGFA1l+4PSVXowqifyemZgkUOfjfsqQvB6A9QrojJhjdnXW
-LPpiNv4YsaCDV0tGJ27CUG9+PBDq464EuGKqQR5UeAqGtnkVUFOnJk96IoSrBqaE
-ksAtJSFmSVJ41kWyuq1nHxw8AIeyOBP46huD8zy59fi4wzv9RRJkazZvMQCswl/P
-dn/Sk4/WlgACE5veaGz8WfJQzq9/vNpmIG4Hyy5UyMhYPBMBot8teJxpVdxb3G9A
-yis7y82MYnjTwR5smULX3NHtkZSlojIe3M/ry4gaZt0YXDmk3TwFhb3UoZDkg4mM
-6qFPJBDPMzMOnhaDSedgDi8/m2DUa5Yaa3r+pSHu6mDXRzX2pQMKFHMW3nhN6HG0
-G9NXPY4RVmNrbszG4aNi4cVYld9PUWyq8yxy0lXOAZyk/KUrvFI=
-=E5i7
------END PGP SIGNATURE-----
-
---6re5ubh3nkbyixxu--
+Daniel
