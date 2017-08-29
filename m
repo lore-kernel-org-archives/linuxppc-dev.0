@@ -1,22 +1,29 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
- [209.85.218.68])
+Return-Path: <festevam@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhSpc5sgLzDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 22:38:00 +1000 (AEST)
-Received: by mail-oi0-f68.google.com with SMTP id x184so2887438oia.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 05:38:00 -0700 (PDT)
-From: Rob Herring <robh@kernel.org>
-To: Mark Brown <broonie@kernel.org>
-Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] ASoC: fsl_dma: remove dma_object path member
-Date: Tue, 29 Aug 2017 07:37:55 -0500
-Message-Id: <20170829123755.9496-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhT0y0rtbzDqfg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 22:46:58 +1000 (AEST)
+Received: by mail-oi0-x242.google.com with SMTP id r203so2879136oih.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 05:46:57 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20170829123755.9496-1-robh@kernel.org>
+References: <20170829123755.9496-1-robh@kernel.org>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Tue, 29 Aug 2017 09:46:55 -0300
+Message-ID: <CAOMZO5B7b61AR21M8MHdPg2dX6Pz3jfH6+CskOH70RrwTKQbJQ@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH v3] ASoC: fsl_dma: remove dma_object path
+ member
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Brown <broonie@kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +33,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-dma_object.path is unused, so rather than fix it to work with DT
-full_name changes, just remove it.
+On Tue, Aug 29, 2017 at 9:37 AM, Rob Herring <robh@kernel.org> wrote:
+> dma_object.path is unused, so rather than fix it to work with DT
+> full_name changes, just remove it.
+>
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: Timur Tabi <timur@tabi.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.com>
-Cc: alsa-devel@alsa-project.org
-Cc: linuxppc-dev@lists.ozlabs.org
----
-v3:
-- Update subject: s/sound/ASoC/
-v2:
-- Move printf specifier change to correct patch
-
- sound/soc/fsl/fsl_dma.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
-index c17359648915..0c11f434a374 100644
---- a/sound/soc/fsl/fsl_dma.c
-+++ b/sound/soc/fsl/fsl_dma.c
-@@ -63,7 +63,6 @@ struct dma_object {
- 	struct ccsr_dma_channel __iomem *channel;
- 	unsigned int irq;
- 	bool assigned;
--	char path[1];
- };
- 
- /*
-@@ -903,13 +902,12 @@ static int fsl_soc_dma_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	dma = kzalloc(sizeof(*dma) + strlen(np->full_name), GFP_KERNEL);
-+	dma = kzalloc(sizeof(*dma), GFP_KERNEL);
- 	if (!dma) {
- 		of_node_put(ssi_np);
- 		return -ENOMEM;
- 	}
- 
--	strcpy(dma->path, np->full_name);
- 	dma->dai.ops = &fsl_dma_ops;
- 	dma->dai.pcm_new = fsl_dma_new;
- 	dma->dai.pcm_free = fsl_dma_free_dma_buffers;
--- 
-2.11.0
+Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
