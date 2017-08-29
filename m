@@ -1,26 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhBCK1RMfzDqK7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 11:39:57 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id c28so1353879pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Aug 2017 18:39:57 -0700 (PDT)
-Date: Tue, 29 Aug 2017 11:39:37 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, "Gautham R.
- Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/4] powerpc/64s: idle ESL=0 stop can avoid MSR and
- save/restore overhead
-Message-ID: <20170829113937.11ccc94b@roar.ozlabs.ibm.com>
-In-Reply-To: <20170829002048.GG12629@fergus.ozlabs.ibm.com>
-References: <20170825043036.18236-1-npiggin@gmail.com>
- <20170825043036.18236-5-npiggin@gmail.com>
- <20170829002048.GG12629@fergus.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhBkg0BKqzDqKk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 12:03:38 +1000 (AEST)
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
+ Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: [PATCH v7 07/11] sparc64: optimized struct page zeroing
+Date: Mon, 28 Aug 2017 22:02:18 -0400
+Message-Id: <1503972142-289376-8-git-send-email-pasha.tatashin@oracle.com>
+In-Reply-To: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
+References: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,98 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 29 Aug 2017 10:20:48 +1000
-Paul Mackerras <paulus@ozlabs.org> wrote:
+Add an optimized mm_zero_struct_page(), so struct page's are zeroed without
+calling memset(). We do eight to ten regular stores based on the size of
+struct page. Compiler optimizes out the conditions of switch() statement.
 
-> On Fri, Aug 25, 2017 at 02:30:36PM +1000, Nicholas Piggin wrote:
-> > When stop is executed with EC=ESL=0, it appears to execute like a
-> > normal instruction (resuming from NIP when woken by interrupt).
-> > So all the save/restore handling can be avoided completely. In
-> > particular NV GPRs do not have to be saved, and MSR does not have
-> > to be switched back to kernel MSR.
-> > 
-> > So move the test for "lite" sleep states out to power9_idle_stop.
-> > 
-> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/idle_book3s.S | 35 ++++++++++++++++++++++++-----------
-> >  1 file changed, 24 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> > index 32d65ee323a0..fa56120bd0bc 100644
-> > --- a/arch/powerpc/kernel/idle_book3s.S
-> > +++ b/arch/powerpc/kernel/idle_book3s.S
-> > @@ -315,9 +315,6 @@ enter_winkle:
-> >  
-> >  	ARCH207_IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
-> >  
-> > -/*
-> > - * r3 - PSSCR value corresponding to the requested stop state.
-> > - */
-> >  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> >  power_enter_stop_kvm_rm:
-> >  	/*
-> > @@ -330,14 +327,11 @@ power_enter_stop_kvm_rm:
-> >  	li	r4,KVM_HWTHREAD_IN_IDLE
-> >  	/* DO THIS IN REAL MODE!  See comment above. */
-> >  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
-> > -#endif
-> > -power_enter_stop:
-> >  /*
-> >   * Check if we are executing the lite variant with ESL=EC=0
-> >   */
-> > -	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
-> > -	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
-> > -	bne	 .Lhandle_esl_ec_set
-> > +	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
-> > +	bne	power_enter_stop_esl
-> >  	PPC_STOP
-> >  	li	r3,0  /* Since we didn't lose state, return 0 */
-> >  
-> > @@ -354,8 +348,13 @@ power_enter_stop:
-> >  	 */
-> >  	li	r12, 0
-> >  	b 	pnv_wakeup_noloss
-> > +#endif
-> >  
-> > -.Lhandle_esl_ec_set:
-> > +/*
-> > + * r3 - PSSCR value corresponding to the requested stop state.
-> > + */
-> > +power_enter_stop_esl:
-> > +	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
-> >  	/*
-> >  	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
-> >  	 * state-loss idle. Saving and restoring MMCR0 over idle is a
-> > @@ -428,9 +427,23 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
-> >   * r3 contains desired PSSCR register value.
-> >   */
-> >  _GLOBAL(power9_idle_stop)
-> > -	std	r3, PACA_REQ_PSSCR(r13)
-> >  	mtspr 	SPRN_PSSCR,r3
-> > -	LOAD_REG_ADDR(r4,power_enter_stop)
-> > +
-> > +	/*
-> > +	 * Check if we are executing the lite variant with ESL=EC=0
-> > +	 * This case resumes execution after the stop instruction without
-> > +	 * losing any state, so nothing has to be saved. The following
-> > +	 * instructions up to the blr must be skipped if we want to
-> > +	 * use power_enter_stop_kvm_rm.
-> > +	 */
-> > +	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED  
-> 
-> I realize you're just moving existing code, but I think this would be
-> clearer (to me, anyway) as
-> 
-> 	andis.	r4, r3, (PSSCR_EC | PSSCR_ESL)@h
+SPARC-M6 with 15T of memory, single thread performance:
 
-Agreed, it's not a very helpful extra indirection. Perhaps we could
-do a cleanup patch to fix that (and your other points like the 206/207
-confusion).
+                               BASE            FIX  OPTIMIZED_FIX
+        bootmem_init   28.440467985s   2.305674818s   2.305161615s
+free_area_init_nodes  202.845901673s 225.343084508s 172.556506560s
+                      --------------------------------------------
+Total                 231.286369658s 227.648759326s 174.861668175s
 
-Thanks for the reviews.
+BASE:  current linux
+FIX:   This patch series without "optimized struct page zeroing"
+OPTIMIZED_FIX: This patch series including the current patch.
 
-> Apart from that very minor nit,
-> 
-> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+bootmem_init() is where memory for struct pages is zeroed during
+allocation. Note, about two seconds in this function is a fixed time: it
+does not increase as memory is increased.
+
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Reviewed-by: Bob Picco <bob.picco@oracle.com>
+---
+ arch/sparc/include/asm/pgtable_64.h | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
+index 6fbd931f0570..cee5cc7ccc51 100644
+--- a/arch/sparc/include/asm/pgtable_64.h
++++ b/arch/sparc/include/asm/pgtable_64.h
+@@ -230,6 +230,36 @@ extern unsigned long _PAGE_ALL_SZ_BITS;
+ extern struct page *mem_map_zero;
+ #define ZERO_PAGE(vaddr)	(mem_map_zero)
+ 
++/* This macro must be updated when the size of struct page grows above 80
++ * or reduces below 64.
++ * The idea that compiler optimizes out switch() statement, and only
++ * leaves clrx instructions
++ */
++#define	mm_zero_struct_page(pp) do {					\
++	unsigned long *_pp = (void *)(pp);				\
++									\
++	 /* Check that struct page is either 64, 72, or 80 bytes */	\
++	BUILD_BUG_ON(sizeof(struct page) & 7);				\
++	BUILD_BUG_ON(sizeof(struct page) < 64);				\
++	BUILD_BUG_ON(sizeof(struct page) > 80);				\
++									\
++	switch (sizeof(struct page)) {					\
++	case 80:							\
++		_pp[9] = 0;	/* fallthrough */			\
++	case 72:							\
++		_pp[8] = 0;	/* fallthrough */			\
++	default:							\
++		_pp[7] = 0;						\
++		_pp[6] = 0;						\
++		_pp[5] = 0;						\
++		_pp[4] = 0;						\
++		_pp[3] = 0;						\
++		_pp[2] = 0;						\
++		_pp[1] = 0;						\
++		_pp[0] = 0;						\
++	}								\
++} while (0)
++
+ /* PFNs are real physical page numbers.  However, mem_map only begins to record
+  * per-page information starting at pfn_base.  This is to handle systems where
+  * the first physical page in the machine is at some huge physical address,
+-- 
+2.14.1
