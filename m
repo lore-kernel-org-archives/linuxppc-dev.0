@@ -3,23 +3,22 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhWxT381lzDqkY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 00:59:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhXGd2kZmzDqkb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 01:14:01 +1000 (AEST)
 Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7TEx47o112507
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 10:59:06 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cn6sc6bpb-1
+ v7TFDmtl024986
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 11:13:57 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cn6sc747m-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 10:59:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 11:13:56 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 29 Aug 2017 15:58:32 +0100
-Subject: Re: [PATCH v2 19/20] x86/mm: Add speculative pagefault handling
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+ Tue, 29 Aug 2017 16:13:53 +0100
+Subject: Re: [PATCH v2 20/20] powerpc/mm: Add speculative page fault
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -33,14 +32,14 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
 References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-20-git-send-email-ldufour@linux.vnet.ibm.com>
- <dbaaf637-9f22-eba0-63a5-7bd83f810e4f@linux.vnet.ibm.com>
- <37b9b036-e951-0a74-3e5c-31049cda7dd2@linux.vnet.ibm.com>
-Date: Tue, 29 Aug 2017 16:58:23 +0200
+ <1503007519-26777-21-git-send-email-ldufour@linux.vnet.ibm.com>
+ <ebe69178-2e8b-a5b9-6268-08b82f476021@linux.vnet.ibm.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 29 Aug 2017 17:13:44 +0200
 MIME-Version: 1.0
-In-Reply-To: <37b9b036-e951-0a74-3e5c-31049cda7dd2@linux.vnet.ibm.com>
+In-Reply-To: <ebe69178-2e8b-a5b9-6268-08b82f476021@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
-Message-Id: <6233b5fc-92d8-1977-82f9-e266ac1f6dec@linux.vnet.ibm.com>
+Message-Id: <e0c16102-f762-41f4-032c-3e90af5c31c3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,84 +49,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/08/2017 16:50, Laurent Dufour wrote:
-> On 21/08/2017 09:29, Anshuman Khandual wrote:
->> On 08/18/2017 03:35 AM, Laurent Dufour wrote:
->>> From: Peter Zijlstra <peterz@infradead.org>
->>>
->>> Try a speculative fault before acquiring mmap_sem, if it returns with
->>> VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
->>> traditional fault.
->>>
->>> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
->>>
->>> [Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
->>>  handle_speculative_fault()]
->>> [Retry with usual fault path in the case VM_ERROR is returned by
->>>  handle_speculative_fault(). This allows signal to be delivered]
->>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->>> ---
->>>  arch/x86/include/asm/pgtable_types.h |  7 +++++++
->>>  arch/x86/mm/fault.c                  | 19 +++++++++++++++++++
->>>  2 files changed, 26 insertions(+)
->>>
->>> diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
->>> index bf9638e1ee42..4fd2693a037e 100644
->>> --- a/arch/x86/include/asm/pgtable_types.h
->>> +++ b/arch/x86/include/asm/pgtable_types.h
->>> @@ -234,6 +234,13 @@ enum page_cache_mode {
->>>  #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
->>>  #endif
->>>  
->>> +/*
->>> + * Advertise that we call the Speculative Page Fault handler.
->>> + */
->>> +#ifdef CONFIG_X86_64
->>> +#define __HAVE_ARCH_CALL_SPF
->>> +#endif
->>> +
->>>  #ifdef CONFIG_X86_32
->>>  # include <asm/pgtable_32_types.h>
->>>  #else
->>> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
->>> index 2a1fa10c6a98..4c070b9a4362 100644
->>> --- a/arch/x86/mm/fault.c
->>> +++ b/arch/x86/mm/fault.c
->>> @@ -1365,6 +1365,24 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
->>>  	if (error_code & PF_INSTR)
->>>  		flags |= FAULT_FLAG_INSTRUCTION;
->>>  
->>> +#ifdef __HAVE_ARCH_CALL_SPF
->>> +	if (error_code & PF_USER) {
->>> +		fault = handle_speculative_fault(mm, address, flags);
->>> +
->>> +		/*
->>> +		 * We also check against VM_FAULT_ERROR because we have to
->>> +		 * raise a signal by calling later mm_fault_error() which
->>> +		 * requires the vma pointer to be set. So in that case,
->>> +		 * we fall through the normal path.
+On 21/08/2017 08:58, Anshuman Khandual wrote:
+> On 08/18/2017 03:35 AM, Laurent Dufour wrote:
+>> This patch enable the speculative page fault on the PowerPC
+>> architecture.
 >>
->> Cant mm_fault_error() be called inside handle_speculative_fault() ?
->> Falling through the normal page fault path again just to raise a
->> signal seems overkill. Looking into mm_fault_error(), it seems they
->> are different for x86 and powerpc.
->>
->> X86:
->>
->> mm_fault_error(struct pt_regs *regs, unsigned long error_code,
->>                unsigned long address, struct vm_area_struct *vma,
->>                unsigned int fault)
->>
->> powerpc:
->>
->> mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
->>
->> Even in case of X86, I guess we would have reference to the faulting
->> VMA (after the SRCU search) which can be used to call this function
->> directly.
+>> This will try a speculative page fault without holding the mmap_sem,
+>> if it returns with WM_FAULT_RETRY, the mmap_sem is acquired and the
 > 
-> Yes I think this is doable in the case of x86.
+> s/WM_FAULT_RETRY/VM_FAULT_RETRY/
 
-Indeed this is not doable as the vma pointer is not returned by
-handle_speculative_fault() and this is not possible to return it because
-once srcu_read_unlock() is called, the pointer is no more safe.
+Good catch ;)
+
+>> traditional page fault processing is done.
+>>
+>> Support is only provide for BOOK3S_64 currently because:
+>> - require CONFIG_PPC_STD_MMU because checks done in
+>>   set_access_flags_filter()
+> 
+> What checks are done in set_access_flags_filter() ? We are just
+> adding the code block in do_page_fault().
+
+set_access_flags_filter() is checking for vm_flags & VM_EXEC which may be
+changed in our back, leading to a spurious WARN displayed.
+This being said, I focused on the BOOK3S as this meaningful for large
+system, and I didn't get time to check for embedded systems.
+
+> 
+>> - require BOOK3S because we can't support for book3e_hugetlb_preload()
+>>   called by update_mmu_cache()
+>>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/book3s/64/pgtable.h |  5 +++++
+>>  arch/powerpc/mm/fault.c                      | 30 +++++++++++++++++++++++++++-
+>>  2 files changed, 34 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> index 818a58fc3f4f..897f8b9f67e6 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> @@ -313,6 +313,11 @@ extern unsigned long pci_io_base;
+>>  /* Advertise support for _PAGE_SPECIAL */
+>>  #define __HAVE_ARCH_PTE_SPECIAL
+>>  
+>> +/* Advertise that we call the Speculative Page Fault handler */
+>> +#if defined(CONFIG_PPC_BOOK3S_64)
+>> +#define __HAVE_ARCH_CALL_SPF
+>> +#endif
+>> +
+>>  #ifndef __ASSEMBLY__
+>>  
+>>  /*
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index 4c422632047b..7b3cc4c30eab 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -291,9 +291,36 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+>>  	if (is_write && is_user)
+>>  		store_update_sp = store_updates_sp(regs);
+>>  
+>> -	if (is_user)
+>> +	if (is_user) {
+>>  		flags |= FAULT_FLAG_USER;
+>>  
+>> +#if defined(__HAVE_ARCH_CALL_SPF)
+>> +		/* let's try a speculative page fault without grabbing the
+>> +		 * mmap_sem.
+>> +		 */
+>> +
+>> +		/*
+>> +		 * flags is set later based on the VMA's flags, for the common
+>> +		 * speculative service, we need some flags to be set.
+>> +		 */
+>> +		if (is_write)
+>> +			flags |= FAULT_FLAG_WRITE;
+>> +
+>> +		fault = handle_speculative_fault(mm, address, flags);
+>> +		if (!(fault & VM_FAULT_RETRY || fault & VM_FAULT_ERROR)) {
+>> +			perf_sw_event(PERF_COUNT_SW_SPF_DONE, 1,
+>> +				      regs, address);
+>> +			goto done;
+> 
+> Why we should retry with classical page fault on VM_FAULT_ERROR ?
+> We should always return VM_FAULT_RETRY in case there is a clear
+> collision some where which requires retry with classical method
+> and return VM_FAULT_ERROR in cases where we know that it cannot
+> be retried and fail for good. Should not handle_speculative_fault()
+> be changed to accommodate this ?
+
+There is no need to change handle_speculative_fault(), it should return
+VM_FAULT_RETRY when a retry is required. If VM_FAULT_ERROR is return, we
+should be able to jump to the block dealing with VM_FAULT_ERROR and calling
+vm_fault_error().
+
+
+> 
+>> +		}
+>> +
+>> +		/*
+>> +		 * Resetting flags since the following code assumes
+>> +		 * FAULT_FLAG_WRITE is not set.
+>> +		 */
+>> +		flags &= ~FAULT_FLAG_WRITE;
+>> +#endif /* defined(__HAVE_ARCH_CALL_SPF) */
+> 
+> Setting and resetting of FAULT_FLAG_WRITE seems confusing. Why you
+> say that some flags need to be set for handle_speculative_fault()
+> function. Could you elaborate on this ?
+
+FAULT_FLAG_WRITE is required to handle write access. In the case we retry
+with the classical path, the flag is reset and will be set later if
+!is_exec and is_write.
