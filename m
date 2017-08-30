@@ -1,36 +1,43 @@
-Return-Path: <jglisse@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhnBc35v0zDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:56:24 +1000 (AEST)
-Date: Tue, 29 Aug 2017 20:56:15 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bernhard Held <berny156@gmx.de>, Adam Borowski <kilobyte@angband.pl>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-mm <linux-mm@kvack.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andrea Arcangeli <aarcange@redhat.com>, Joerg Roedel <jroedel@suse.de>,
- Dan Williams <dan.j.williams@intel.com>,
- Sudeep Dutt <sudeep.dutt@intel.com>,
- Ashutosh Dixit <ashutosh.dixit@intel.com>,
- Dimitri Sivanich <sivanich@sgi.com>, Jack Steiner <steiner@sgi.com>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- DRI <dri-devel@lists.freedesktop.org>, amd-gfx@lists.freedesktop.org,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>,
- xen-devel <xen-devel@lists.xenproject.org>, KVM list <kvm@vger.kernel.org>
-Subject: Re: [PATCH 00/13] mmu_notifier kill invalidate_page callback
-Message-ID: <20170830005615.GA2386@redhat.com>
-References: <20170829235447.10050-1-jglisse@redhat.com>
- <CA+55aFz6ArJ-ADXiYCu6xMUzdY=mKBtkzfJmLaBohC6Ub9t2SQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhnKZ20dLzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 11:02:26 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7U0wmGf105315
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 21:02:24 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cn9g047y9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 21:02:24 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Tue, 29 Aug 2017 19:02:23 -0600
+Date: Tue, 29 Aug 2017 18:02:09 -0700
+From: Haren Myneni <haren@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <CA+55aFz6ArJ-ADXiYCu6xMUzdY=mKBtkzfJmLaBohC6Ub9t2SQ@mail.gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Dan Streetman <ddstreet@ieee.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ mikey@neuling.org, suka@us.ibm.com, Ram Pai <linuxram@us.ibm.com>,
+ npiggin@gmail.com, Haren Myneni <hbabu@us.ibm.com>
+Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
+ engine
+References: <1500699702.23205.8.camel@hbabu-laptop>
+ <CALZtONBGVQy2iwkb8WpVd-_QG7bLFTvUbnuub6CCXP55YpQiSQ@mail.gmail.com>
+ <1504041817.2358.32.camel@kernel.crashing.org>
+ <59A5E2AE.5060400@linux.vnet.ibm.com>
+ <1504043837.2358.38.camel@kernel.crashing.org>
+In-Reply-To: <1504043837.2358.38.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <59A60E91.8020803@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +47,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 29, 2017 at 05:11:24PM -0700, Linus Torvalds wrote:
-> On Tue, Aug 29, 2017 at 4:54 PM, Jérôme Glisse <jglisse@redhat.com> wrote:
-> >
-> > Note this is barely tested. I intend to do more testing of next few days
-> > but i do not have access to all hardware that make use of the mmu_notifier
-> > API.
+On 08/29/2017 02:57 PM, Benjamin Herrenschmidt wrote:
+> On Tue, 2017-08-29 at 14:54 -0700, Haren Myneni wrote:
+>> Opening send window for each crypto transform (crypto_alloc,
+>> compression/decompression, ..., crypto_free) so that does not have to
+>> wait for the previous copy/paste complete. VAS will map send and
+>> receive windows, and can cache in send windows (up to 128). So I
+>> thought using the same send window (per chip) for more requests (say
+>> 1000) may be adding overhead.
+>>
+>> I will make changes if you prefer using 1 send window per chip.  
 > 
-> Thanks for doing this.
-> 
-> > First 2 patches convert existing call of mmu_notifier_invalidate_page()
-> > to mmu_notifier_invalidate_range() and bracket those call with call to
-> > mmu_notifier_invalidate_range_start()/end().
-> 
-> Ok, those two patches are a bit more complex than I was hoping for,
-> but not *too* bad.
-> 
-> And the final end result certainly looks nice:
-> 
-> >  16 files changed, 74 insertions(+), 214 deletions(-)
-> 
-> Yeah, removing all those invalidate_page() notifiers certainly makes
-> for a nice patch.
-> 
-> And I actually think you missed some more lines that can now be
-> removed: kvm_arch_mmu_notifier_invalidate_page() should no longer be
-> needed either, so you can remove all of those too (most of them are
-> empty inline functions, but x86 has one that actually does something.
-> 
-> So there's an added 30 or so dead lines that should be removed in the
-> kvm patch, I think.
+> Did you check the cost of opening/closing a window ?
 
-Yes i missed that. I will wait for people to test and for result of my
-own test before reposting if need be, otherwise i will post as separate
-patch.
+No, Not yet. opening / closing happens only during alloc/free, but not for each compression/decompression. Hence used separate send windows. 
 
+Thanks
+Haren  
+ 
 > 
-> But from a _very_ quick read-through this looks fine. But it obviously
-> needs testing.
+> Cheers,
+> Ben.
 > 
-> People - *especially* the people who saw issues under KVM - can you
-> try out Jérôme's patch-series? I aded some people to the cc, the full
-> series is on lkml. Jérôme - do you have a git branch for people to
-> test that they could easily pull and try out?
-
-https://cgit.freedesktop.org/~glisse/linux mmu-notifier branch
-git://people.freedesktop.org/~glisse/linux
-
-(Sorry if that tree is bit big it has a lot of dead thing i need
- to push a clean and slim one)
-
-Jérôme
