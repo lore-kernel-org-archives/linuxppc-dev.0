@@ -1,21 +1,36 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jglisse@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhmYt1sQSzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:28:02 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id a2so3275150pfj.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 17:28:02 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH 2/2] powerpc/xmon: revisit SPR support
-Date: Wed, 30 Aug 2017 10:27:45 +1000
-Message-Id: <20170830002745.29526-2-bsingharora@gmail.com>
-In-Reply-To: <20170830002745.29526-1-bsingharora@gmail.com>
-References: <20170830002745.29526-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhnBc35v0zDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:56:24 +1000 (AEST)
+Date: Tue, 29 Aug 2017 20:56:15 -0400
+From: Jerome Glisse <jglisse@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bernhard Held <berny156@gmx.de>, Adam Borowski <kilobyte@angband.pl>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-mm <linux-mm@kvack.org>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, Joerg Roedel <jroedel@suse.de>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Dimitri Sivanich <sivanich@sgi.com>, Jack Steiner <steiner@sgi.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ DRI <dri-devel@lists.freedesktop.org>, amd-gfx@lists.freedesktop.org,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>,
+ xen-devel <xen-devel@lists.xenproject.org>, KVM list <kvm@vger.kernel.org>
+Subject: Re: [PATCH 00/13] mmu_notifier kill invalidate_page callback
+Message-ID: <20170830005615.GA2386@redhat.com>
+References: <20170829235447.10050-1-jglisse@redhat.com>
+ <CA+55aFz6ArJ-ADXiYCu6xMUzdY=mKBtkzfJmLaBohC6Ub9t2SQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <CA+55aFz6ArJ-ADXiYCu6xMUzdY=mKBtkzfJmLaBohC6Ub9t2SQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,105 +40,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch readjusts the SPR's adds support for IAMR/AMR
-UAMOR/AMOR based on their supported ISA revisions.
+On Tue, Aug 29, 2017 at 05:11:24PM -0700, Linus Torvalds wrote:
+> On Tue, Aug 29, 2017 at 4:54 PM, Jérôme Glisse <jglisse@redhat.com> wrote:
+> >
+> > Note this is barely tested. I intend to do more testing of next few days
+> > but i do not have access to all hardware that make use of the mmu_notifier
+> > API.
+> 
+> Thanks for doing this.
+> 
+> > First 2 patches convert existing call of mmu_notifier_invalidate_page()
+> > to mmu_notifier_invalidate_range() and bracket those call with call to
+> > mmu_notifier_invalidate_range_start()/end().
+> 
+> Ok, those two patches are a bit more complex than I was hoping for,
+> but not *too* bad.
+> 
+> And the final end result certainly looks nice:
+> 
+> >  16 files changed, 74 insertions(+), 214 deletions(-)
+> 
+> Yeah, removing all those invalidate_page() notifiers certainly makes
+> for a nice patch.
+> 
+> And I actually think you missed some more lines that can now be
+> removed: kvm_arch_mmu_notifier_invalidate_page() should no longer be
+> needed either, so you can remove all of those too (most of them are
+> empty inline functions, but x86 has one that actually does something.
+> 
+> So there's an added 30 or so dead lines that should be removed in the
+> kvm patch, I think.
 
-There is also support for printing the PIDR/TIDR for
-ISA 300 and PSSCR and PTCR in ISA 300 hypervisor mode.
-SPRN_PSSCR_PR is the privileged mode access and is used
-when we are not in hypervisor mode.
+Yes i missed that. I will wait for people to test and for result of my
+own test before reposting if need be, otherwise i will post as separate
+patch.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/include/asm/reg.h |  1 +
- arch/powerpc/xmon/xmon.c       | 34 ++++++++++++++++++++++++++++++----
- 2 files changed, 31 insertions(+), 4 deletions(-)
+> 
+> But from a _very_ quick read-through this looks fine. But it obviously
+> needs testing.
+> 
+> People - *especially* the people who saw issues under KVM - can you
+> try out Jérôme's patch-series? I aded some people to the cc, the full
+> series is on lkml. Jérôme - do you have a git branch for people to
+> test that they could easily pull and try out?
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index c36823d..2c4366a 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -356,6 +356,7 @@
- #define SPRN_PMSR	0x355   /* Power Management Status Reg */
- #define SPRN_PMMAR	0x356	/* Power Management Memory Activity Register */
- #define SPRN_PSSCR	0x357	/* Processor Stop Status and Control Register (ISA 3.0) */
-+#define SPRN_PSSCR_PR	0x337	/* PSSCR ISA 3.0, privileged mode access */
- #define SPRN_PMCR	0x374	/* Power Management Control Register */
- 
- /* HFSCR and FSCR bit numbers are the same */
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 1b26d53..33351c6 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1743,18 +1743,20 @@ static void dump_206_sprs(void)
- 		mfspr(SPRN_SRR0), mfspr(SPRN_SRR1), mfspr(SPRN_DSISR));
- 	printf("dscr   = %.16lx  ppr   = %.16lx pir    = %.8x\n",
- 		mfspr(SPRN_DSCR), mfspr(SPRN_PPR), mfspr(SPRN_PIR));
-+	printf("amr    = %.16lx  uamor = %.16lx\n",
-+		mfspr(SPRN_AMR), mfspr(SPRN_UAMOR));
- 
- 	if (!(mfmsr() & MSR_HV))
- 		return;
- 
- 	printf("sdr1   = %.16lx  hdar  = %.16lx hdsisr = %.8x\n",
- 		mfspr(SPRN_SDR1), mfspr(SPRN_HDAR), mfspr(SPRN_HDSISR));
--	printf("hsrr0  = %.16lx hsrr1  = %.16lx hdec = %.16lx\n",
-+	printf("hsrr0  = %.16lx hsrr1  = %.16lx hdec   = %.16lx\n",
- 		mfspr(SPRN_HSRR0), mfspr(SPRN_HSRR1), mfspr(SPRN_HDEC));
--	printf("lpcr   = %.16lx  pcr   = %.16lx lpidr = %.8x\n",
-+	printf("lpcr   = %.16lx  pcr   = %.16lx lpidr  = %.8x\n",
- 		mfspr(SPRN_LPCR), mfspr(SPRN_PCR), mfspr(SPRN_LPID));
--	printf("hsprg0 = %.16lx hsprg1 = %.16lx\n",
--		mfspr(SPRN_HSPRG0), mfspr(SPRN_HSPRG1));
-+	printf("hsprg0 = %.16lx hsprg1 = %.16lx amor   = %.16lx\n",
-+		mfspr(SPRN_HSPRG0), mfspr(SPRN_HSPRG1), mfspr(SPRN_AMOR));
- 	printf("dabr   = %.16lx dabrx  = %.16lx\n",
- 		mfspr(SPRN_DABR), mfspr(SPRN_DABRX));
- #endif
-@@ -1793,6 +1795,7 @@ static void dump_207_sprs(void)
- 		mfspr(SPRN_SDAR), mfspr(SPRN_SIER), mfspr(SPRN_PMC6));
- 	printf("ebbhr  = %.16lx  ebbrr = %.16lx bescr  = %.16lx\n",
- 		mfspr(SPRN_EBBHR), mfspr(SPRN_EBBRR), mfspr(SPRN_BESCR));
-+	printf("iamr   = %.16lx\n", mfspr(SPRN_IAMR));
- 
- 	if (!(msr & MSR_HV))
- 		return;
-@@ -1804,6 +1807,28 @@ static void dump_207_sprs(void)
- #endif
- }
- 
-+static void dump_300_sprs(void)
-+{
-+#ifdef CONFIG_PPC64
-+	bool hv = mfmsr() & MSR_HV;
-+
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		return;
-+
-+	printf("pidr   = %.16lx  tidr  = %.16lx\n",
-+		mfspr(SPRN_PID), mfspr(SPRN_TIDR));
-+	printf("asdr   = %.16lx  psscr = %.16lx\n",
-+		mfspr(SPRN_ASDR), hv ? mfspr(SPRN_PSSCR)
-+					: mfspr(SPRN_PSSCR_PR));
-+
-+	if (!hv)
-+		return;
-+
-+	printf("ptcr   = %.16lx\n",
-+		mfspr(SPRN_PTCR));
-+#endif
-+}
-+
- static void dump_one_spr(int spr, bool show_unimplemented)
- {
- 	unsigned long val;
-@@ -1857,6 +1882,7 @@ static void super_regs(void)
- 
- 		dump_206_sprs();
- 		dump_207_sprs();
-+		dump_300_sprs();
- 
- 		return;
- 	}
--- 
-2.9.4
+https://cgit.freedesktop.org/~glisse/linux mmu-notifier branch
+git://people.freedesktop.org/~glisse/linux
+
+(Sorry if that tree is bit big it has a lot of dead thing i need
+ to push a clean and slim one)
+
+Jérôme
