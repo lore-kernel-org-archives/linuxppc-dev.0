@@ -2,18 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5fY24mSzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:18:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5fg6QQGzDqXl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:18:19 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  benh@kernel.crashing.org, andrew.donnellan@au1.ibm.com,
  clombard@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com
 Cc: alistair@popple.id.au
-Subject: Re: [PATCH v2 1/3] powerpc/mm: Export flush_all_mm()
-In-Reply-To: <20170830101550.16821-1-fbarrat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/3] cxl: Fix driver use count
+In-Reply-To: <20170830101550.16821-2-fbarrat@linux.vnet.ibm.com>
 References: <20170830101550.16821-1-fbarrat@linux.vnet.ibm.com>
-Date: Wed, 30 Aug 2017 23:17:50 +1000
-Message-ID: <87inh519fl.fsf@concordia.ellerman.id.au>
+ <20170830101550.16821-2-fbarrat@linux.vnet.ibm.com>
+Date: Wed, 30 Aug 2017 23:18:19 +1000
+Message-ID: <87h8wp19es.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,40 +28,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
 
-> With the optimizations introduced by commit a46cc7a90fd8
-> ("powerpc/mm/radix: Improve TLB/PWC flushes"), flush_tlb_mm() no
-> longer flushes the page walk cache with radix. This patch introduces
-> flush_all_mm(), which flushes everything, tlb and pwc, for a given mm.
+> cxl keeps a driver use count, which is used with the hash memory model
+> on p8 to know when to upgrade local TLBIs to global and to trigger
+> callbacks to manage the MMU for PSL8.
+>
+> If a process opens a context and closes without attaching or fails the
+> attachment, the driver use count is never decremented. As a
+> consequence, TLB invalidations remain global, even if there are no
+> active cxl contexts.
+>
+> We should increment the driver use count when the process is attaching
+> to the cxl adapter, and not on open. It's not needed before the
+> adapter starts using the context and the use count is decremented on
+> the detach path, so it makes more sense.
+>
+> It affects only the user api. The kernel api is already doing The
+> Right Thing.
 >
 > Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> ---
-> Changelog:
-> v2: this patch is new
->
->  arch/powerpc/include/asm/book3s/64/tlbflush-hash.h  |  8 ++++++++
->  arch/powerpc/include/asm/book3s/64/tlbflush-radix.h |  3 +++
->  arch/powerpc/include/asm/book3s/64/tlbflush.h       | 15 +++++++++++++++
->  arch/powerpc/mm/tlb-radix.c                         |  6 ++++--
->  4 files changed, 30 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> index 2f6373144e2c..c5d89d271a96 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> @@ -65,6 +65,14 @@ static inline void hash__flush_tlb_mm(struct mm_struct *mm)
->  {
->  }
->  
-> +static inline void hash__local_flush_all_mm(struct mm_struct *mm)
-> +{
-> +}
-> +
-> +static inline void hash__flush_all_mm(struct mm_struct *mm)
-> +{
-> +}
+> Cc: stable@vger.kernel.org # v4.2+
+> Fixes: 7bb5d91a4dda ("cxl: Rework context lifetimes")
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-It's not clear why it makes sense for these to be empty. Either for the
-general idea of the "flush_all_mm()" API, or for your intended use by
-CXL.
+I'll pick this up straight away, because it's a fix.
+
+So you can drop this from the series.
 
 cheers
