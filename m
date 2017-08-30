@@ -1,43 +1,48 @@
-Return-Path: <brijesh.singh@amd.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0050.outbound.protection.outlook.com [104.47.36.50])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <javier@dowhile0.org>
+Received: from mail-io0-x22a.google.com (mail-io0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c06::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj9gC0NwFzDqGh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 02:19:00 +1000 (AEST)
-Cc: brijesh.singh@amd.com, linux-kernel@vger.kernel.org, x86@kernel.org,
- linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
- Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>, David Howells <dhowells@redhat.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Laura Abbott <labbott@redhat.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
- Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC Part1 PATCH v3 16/17] X86/KVM: Provide support to create
- Guest and HV shared per-CPU variables
-To: Borislav Petkov <bp@suse.de>
-References: <20170724190757.11278-1-brijesh.singh@amd.com>
- <20170724190757.11278-17-brijesh.singh@amd.com>
- <20170829102258.gxk227js4yw47qi3@pd.tnic>
-From: Brijesh Singh <brijesh.singh@amd.com>
-Message-ID: <0810a732-9c77-a543-ffeb-7fd2d8f46266@amd.com>
-Date: Wed, 30 Aug 2017 11:18:42 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj9gG55QYzDqGh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 02:19:05 +1000 (AEST)
+Received: by mail-io0-x22a.google.com with SMTP id s101so6640678ioe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 09:19:05 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20170829102258.gxk227js4yw47qi3@pd.tnic>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20170829084831.hsdok3ksi7anxzuc@ninjato>
+References: <20170615185418.13980-1-javier@dowhile0.org>
+ <20170731153009.xkjknygpmckv2pfp@ninjato>
+ <CABxcv=mdbE0QGjoi3aLzxRqM3-MbkQ_Ai6fShcGVUGSNNqqrqw@mail.gmail.com>
+ <20170828160121.gu4wf7jqu4ditksc@ninjato>
+ <CABxcv=kSiqDN1=9fSfLkyW=uuXQZAoW4dhw=fco9RyOdDuPAdA@mail.gmail.com>
+ <20170829084831.hsdok3ksi7anxzuc@ninjato>
+From: Javier Martinez Canillas <javier@dowhile0.org>
+Date: Wed, 30 Aug 2017 18:19:02 +0200
+Message-ID: <CABxcv=nqbNsTs7D57VOt1-Tav_3i9U=XKn=BV=hPr1tG68eE2g@mail.gmail.com>
+Subject: Re: [RESEND PATCH v5 00/16] eeprom: at24: Add OF device ID table
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
+ Florian Larysch <fl@n621.de>, David Lechner <david@lechnology.com>,
+ Rob Herring <robh+dt@kernel.org>,
+ Andy Shevchenko <andy.shevchenko@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>,
+ Dinh Nguyen <dinguyen@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Will Deacon <will.deacon@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Sekhar Nori <nsekhar@ti.com>, Scott Wood <oss@buserror.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joachim Eastwood <manabian@gmail.com>, Mark Rutland <mark.rutland@arm.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Magnus Damm <magnus.damm@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <kernel@pengutronix.de>,
+ Linux I2C <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,115 +52,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Boris,
+Hello Wolfram,
 
-On 08/29/2017 05:22 AM, Borislav Petkov wrote:
+On Tue, Aug 29, 2017 at 10:48 AM, Wolfram Sang <wsa@the-dreams.de> wrote:
+>
+>> I don't have a DT based system at hand now, but I'll test it again and
+>> let you know probably tomorrow.
+>
+> I will try again today, too. Thanks!
+>
 
-[...]
+Ok, I had some time to do some tests again. I used an ARM Chromebook
+(Exynos Peach Pi) that has an I2C touchpad (Atmel maXTouch).
 
-> On Mon, Jul 24, 2017 at 02:07:56PM -0500, Brijesh Singh wrote:
->> Some KVM specific MSR's (steal-time, asyncpf, avic_eio) allocates per-CPU
-> 
-> 		   MSRs
-> 
->> variable at compile time and share its physical address with hypervisor.
-> 
-> That sentence needs changing - the MSRs don't allocate - for them gets
-> allocated.
-> 
->> It presents a challege when SEV is active in guest OS, when SEV is active,
->> the guest memory is encrypted with guest key hence hypervisor will not
->> able to modify the guest memory. When SEV is active, we need to clear the
->> encryption attribute (aka C-bit) of shared physical addresses so that both
->> guest and hypervisor can access the data.
-> 
-> This whole paragraph needs rewriting.
-> 
+Tested the following cases:
 
-I will improve the commit message in next rev.
+1) Driver without OF device ID table (only a I2C table with a
+"maxtouch" entry) and DTS defining a device node with a
+"atmel,maxtouch" compatible string. This is the case without any of
+the patches in this series.
 
-[...]
+$ modinfo drivers/input/touchscreen/atmel_mxt_ts.ko | grep maxtouch
+alias:          i2c:maxtouch
 
->> +/* NOTE: function is marked as __ref because it is used by __init functions */
-> 
-> No need for that comment.
-> 
-> What should you look into is why do you need to call the early versions:
-> 
-> " * producing a warning (of course, no warning does not mean code is
->   * correct, so optimally document why the __ref is needed and why it's OK)."
-> 
-> And we do have the normal set_memory_decrypted() etc helpers so why
-> aren't we using those?
-> 
+$ grep maxtouch /sys/devices/platform/soc/12e00000.i2c/i2c-8/8-004b/uevent
+OF_COMPATIBLE_0=atmel,maxtouch
+MODALIAS=i2c:maxtouch
 
-Since kvm_guest_init() is called early in the boot process hence we will not
-able to use set_memory_decrypted() function. IIRC, if we try calling
-set_memory_decrypted() early then we will hit a BUG_ON [1] -- mainly when it
-tries to flush the caches.
+2) Driver without OF device ID table (only a I2C table with a
+"maxtouch" entry) and DTS defining a device node with a
+"atmel,maxtouch", "generic,maxtouch" compatible string. This is the
+case when platform maintainers merge the DTS patches without the
+driver patch.
 
-[1] http://elixir.free-electrons.com/linux/latest/source/arch/x86/mm/pageattr.c#L167
+$ modinfo drivers/input/touchscreen/atmel_mxt_ts.ko | grep maxtouch
+alias:          i2c:maxtouch
 
+$ grep maxtouch /sys/devices/platform/soc/12e00000.i2c/i2c-8/8-004b/uevent
+OF_COMPATIBLE_0=atmel,maxtouch
+OF_COMPATIBLE_1=generic,maxtouch
+MODALIAS=i2c:maxtouch
 
+3) Driver with an OF device ID table (with a "generic,maxtouch" entry)
+and DTS defining a device node with a "atmel,maxtouch" compatible
+string. This is the case when the driver patch is merged without the
+DTS patches.
 
-> If you need to use the early ones too, then you probably need to
-> differentiate this in the callers by passing a "bool early", which calls
-> the proper flavor.
-> 
+$ modinfo drivers/input/touchscreen/atmel_mxt_ts.ko | grep maxtouch
+alias:          of:N*T*Cgeneric,maxtouchC*
+alias:          of:N*T*Cgeneric,maxtouch
+alias:          i2c:maxtouch
 
-Sure I can rearrange code to make it more readable and use "bool early"
-parameter to differentiate it.
+$ grep maxtouch /sys/devices/platform/soc/12e00000.i2c/i2c-8/8-004b/uevent
+OF_COMPATIBLE_0=atmel,maxtouch
+MODALIAS=i2c:maxtouch
 
+4) Driver with an OF device ID table (with a "generic,maxtouch" entry)
+and DTS defining a device node with a "atmel,maxtouch",
+"generic,maxtouch" compatible string. This is the case when both the
+DTS and driver patches are merged.
 
->> +static int __ref kvm_map_hv_shared_decrypted(void)
->> +{
->> +	static int once, ret;
->> +	int cpu;
->> +
->> +	if (once)
->> +		return ret;
-> 
-> So this function gets called per-CPU but you need to do this ugly "once"
-> thing - i.e., global function called in a per-CPU context.
-> 
-> Why can't you do that mapping only on the current CPU and then
-> when that function is called on the next CPU, it will do the same thing
-> on that next CPU?
-> 
+$ modinfo drivers/input/touchscreen/atmel_mxt_ts.ko | grep maxtouch
+alias:          of:N*T*Cgeneric,maxtouchC*
+alias:          of:N*T*Cgeneric,maxtouch
+alias:          i2c:maxtouch
 
+$ grep maxtouch /sys/devices/platform/soc/12e00000.i2c/i2c-8/8-004b/uevent
+OF_COMPATIBLE_0=atmel,maxtouch
+OF_COMPATIBLE_1=generic,maxtouch
+MODALIAS=i2c:maxtouch
 
-Yes, it can be done but I remember running into issues during the CPU hot plug.
-The patch uses early_set_memory_decrypted() -- which calls
-kernel_physical_mapping_init() to split the large pages into smaller. IIRC, the
-API did not work after the system is successfully booted. After the system is
-booted we must use the set_memory_decrypted().
+For all cases module autoload, driver probe and evtest worked for me.
 
-I was trying to avoid mixing early and no-early set_memory_decrypted() but if
-feedback is: use early_set_memory_decrypted() only if its required otherwise
-use set_memory_decrypted() then I can improve the logic in next rev. thanks
+You said that (3) doesn't work but I don't understand why is failing
+for you. Probably I'm missing something.
 
-
-[...]
-
->> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
->> index da0be9a..52854cf 100644
->> --- a/include/asm-generic/vmlinux.lds.h
->> +++ b/include/asm-generic/vmlinux.lds.h
->> @@ -783,6 +783,9 @@
->>   	. = ALIGN(cacheline);						\
->>   	*(.data..percpu)						\
->>   	*(.data..percpu..shared_aligned)				\
->> +	. = ALIGN(PAGE_SIZE);						\
->> +	*(.data..percpu..hv_shared)					\
->> +	. = ALIGN(PAGE_SIZE);						\
->>   	VMLINUX_SYMBOL(__per_cpu_end) = .;
-> 
-> Yeah, no, you can't do that. That's adding this section unconditionally
-> on *every* arch. You need to do some ifdeffery like it is done at the
-> beginning of that file and have this only on the arch which supports SEV.
-> 
-
-
-Will do . thanks
-
--Brijesh
+Best regards,
+Javier
