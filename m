@@ -1,22 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5fg6QQGzDqXl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:18:19 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, andrew.donnellan@au1.ibm.com,
- clombard@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com
-Cc: alistair@popple.id.au
-Subject: Re: [PATCH v2 2/3] cxl: Fix driver use count
-In-Reply-To: <20170830101550.16821-2-fbarrat@linux.vnet.ibm.com>
-References: <20170830101550.16821-1-fbarrat@linux.vnet.ibm.com>
- <20170830101550.16821-2-fbarrat@linux.vnet.ibm.com>
-Date: Wed, 30 Aug 2017 23:18:19 +1000
-Message-ID: <87h8wp19es.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5k86L9YzDqXp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:21:20 +1000 (AEST)
+Subject: Re: [PATCH v7 07/11] sparc64: optimized struct page zeroing
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, willy@infradead.org, mhocko@kernel.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
+ Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
+References: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
+ <1503972142-289376-8-git-send-email-pasha.tatashin@oracle.com>
+ <20170829.181208.171985548699678313.davem@davemloft.net>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <e07c05b1-c0be-bf7f-9a29-11dc41b79d10@oracle.com>
+Date: Wed, 30 Aug 2017 09:19:58 -0400
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170829.181208.171985548699678313.davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+Hi Dave,
 
-> cxl keeps a driver use count, which is used with the hash memory model
-> on p8 to know when to upgrade local TLBIs to global and to trigger
-> callbacks to manage the MMU for PSL8.
->
-> If a process opens a context and closes without attaching or fails the
-> attachment, the driver use count is never decremented. As a
-> consequence, TLB invalidations remain global, even if there are no
-> active cxl contexts.
->
-> We should increment the driver use count when the process is attaching
-> to the cxl adapter, and not on open. It's not needed before the
-> adapter starts using the context and the use count is decremented on
-> the detach path, so it makes more sense.
->
-> It affects only the user api. The kernel api is already doing The
-> Right Thing.
->
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Cc: stable@vger.kernel.org # v4.2+
-> Fixes: 7bb5d91a4dda ("cxl: Rework context lifetimes")
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Thank you for acking.
 
-I'll pick this up straight away, because it's a fix.
+The reason I am not doing initializing stores is because they require a 
+membar, even if only regular stores are following (I hoped to do a 
+membar before first load). This is something I was thinking was not 
+true, but after consulting with colleagues and checking processor 
+manual, I verified that it is the case.
 
-So you can drop this from the series.
+Pasha
 
-cheers
+> 
+> You should probably use initializing stores when you are doing 8
+> stores and we thus know the page struct is cache line aligned.
+> 
+> But other than that:
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
