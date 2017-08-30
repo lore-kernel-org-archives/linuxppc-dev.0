@@ -2,19 +2,18 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYJ4P8GzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 14:12:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYK18W3zDqGV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 14:12:53 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 3xhsYJ194Bz9sR9
+ by ozlabs.org (Postfix) with ESMTPSA id 3xhsYJ3mY8z9sP5
  for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2017 14:12:52 +1000 (AEST)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 12/17] powerpc: Emulate load/store floating double pair
- instructions
-Date: Wed, 30 Aug 2017 14:12:35 +1000
-Message-Id: <1504066360-30128-13-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v3 13/17] powerpc: Emulate the dcbz instruction
+Date: Wed, 30 Aug 2017 14:12:36 +1000
+Message-Id: <1504066360-30128-14-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 References: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,147 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds lfdp[x] and stfdp[x] to the set of instructions that
-analyse_instr() and emulate_step() understand.
+This adds code to analyse_instr() and emulate_step() to understand the
+dcbz (data cache block zero) instruction.  The emulate_dcbz() function
+is made public so it can be used by the alignment handler in future.
+(The apparently unnecessary cropping of the address to 32 bits is
+there because it will be needed in that situation.)
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/lib/sstep.c | 68 ++++++++++++++++++++++++++++++++++++------------
- 1 file changed, 52 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/sstep.h |  2 ++
+ arch/powerpc/lib/sstep.c         | 32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+index 474a992..793639a 100644
+--- a/arch/powerpc/include/asm/sstep.h
++++ b/arch/powerpc/include/asm/sstep.h
+@@ -84,6 +84,7 @@ enum instruction_type {
+ #define DCBTST		0x200
+ #define DCBT		0x300
+ #define ICBI		0x400
++#define DCBZ		0x500
+ 
+ /* VSX flags values */
+ #define VSX_FPCONV	1	/* do floating point SP/DP conversion */
+@@ -155,3 +156,4 @@ extern void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 			     const void *mem);
+ extern void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+ 			      void *mem);
++extern int emulate_dcbz(unsigned long ea, struct pt_regs *regs);
 diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 167d40d..817cdc9 100644
+index 817cdc9..fa20f3a 100644
 --- a/arch/powerpc/lib/sstep.c
 +++ b/arch/powerpc/lib/sstep.c
-@@ -415,9 +415,9 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs)
- 	int err;
- 	union {
- 		float f;
--		double d;
--		unsigned long l;
--		u8 b[sizeof(double)];
-+		double d[2];
-+		unsigned long l[2];
-+		u8 b[2 * sizeof(double)];
- 	} u;
- 
- 	if (!address_ok(regs, ea, nb))
-@@ -427,11 +427,19 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs)
- 		return err;
- 	preempt_disable();
- 	if (nb == 4)
--		conv_sp_to_dp(&u.f, &u.d);
-+		conv_sp_to_dp(&u.f, &u.d[0]);
- 	if (regs->msr & MSR_FP)
--		put_fpr(rn, &u.d);
-+		put_fpr(rn, &u.d[0]);
- 	else
--		current->thread.TS_FPR(rn) = u.l;
-+		current->thread.TS_FPR(rn) = u.l[0];
-+	if (nb == 16) {
-+		/* lfdp */
-+		rn |= 1;
-+		if (regs->msr & MSR_FP)
-+			put_fpr(rn, &u.d[1]);
-+		else
-+			current->thread.TS_FPR(rn) = u.l[1];
-+	}
- 	preempt_enable();
- 	return 0;
+@@ -780,6 +780,30 @@ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
  }
-@@ -441,20 +449,27 @@ static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs)
- {
- 	union {
- 		float f;
--		double d;
--		unsigned long l;
--		u8 b[sizeof(double)];
-+		double d[2];
-+		unsigned long l[2];
-+		u8 b[2 * sizeof(double)];
- 	} u;
+ #endif /* CONFIG_VSX */
  
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
- 	preempt_disable();
- 	if (regs->msr & MSR_FP)
--		get_fpr(rn, &u.d);
-+		get_fpr(rn, &u.d[0]);
- 	else
--		u.l = current->thread.TS_FPR(rn);
-+		u.l[0] = current->thread.TS_FPR(rn);
- 	if (nb == 4)
--		conv_dp_to_sp(&u.d, &u.f);
-+		conv_dp_to_sp(&u.d[0], &u.f);
-+	if (nb == 16) {
-+		rn |= 1;
-+		if (regs->msr & MSR_FP)
-+			get_fpr(rn, &u.d[1]);
-+		else
-+			u.l[1] = current->thread.TS_FPR(rn);
-+	}
- 	preempt_enable();
- 	return copy_mem_out(u.b, ea, nb);
- }
-@@ -1938,7 +1953,17 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 		case 759:	/* stfdux */
- 			op->type = MKOP(STORE_FP, u, 8);
- 			break;
--#endif
++int emulate_dcbz(unsigned long ea, struct pt_regs *regs)
++{
++	int err;
++	unsigned long i, size;
 +
 +#ifdef __powerpc64__
-+		case 791:	/* lfdpx */
-+			op->type = MKOP(LOAD_FP, 0, 16);
-+			break;
++	size = ppc64_caches.l1d.block_size;
++	if (!(regs->msr & MSR_64BIT))
++		ea &= 0xffffffffUL;
++#else
++	size = L1_CACHE_BYTES;
++#endif
++	ea &= ~(size - 1);
++	if (!address_ok(regs, ea, size))
++		return -EFAULT;
++	for (i = 0; i < size; i += sizeof(long)) {
++		err = __put_user(0, (unsigned long __user *) (ea + i));
++		if (err)
++			return err;
++	}
++	return 0;
++}
++NOKPROBE_SYMBOL(emulate_dcbz);
 +
-+		case 919:	/* stfdpx */
-+			op->type = MKOP(STORE_FP, 0, 16);
-+			break;
-+#endif /* __powerpc64 */
-+#endif /* CONFIG_PPC_FPU */
- 
- #ifdef __powerpc64__
- 		case 660:	/* stdbrx */
-@@ -1956,7 +1981,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 			op->val = byterev_4(regs->gpr[rd]);
+ #define __put_user_asmx(x, addr, err, op, cr)		\
+ 	__asm__ __volatile__(				\
+ 		"1:	" op " %2,0,%3\n"		\
+@@ -1748,6 +1772,11 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 			op->type = MKOP(CACHEOP, ICBI, 0);
+ 			op->ea = xform_ea(instr, regs);
+ 			return 0;
++
++		case 1014:	/* dcbz */
++			op->type = MKOP(CACHEOP, DCBZ, 0);
++			op->ea = xform_ea(instr, regs);
++			return 0;
+ 		}
+ 		break;
+ 	}
+@@ -2607,6 +2636,9 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		case ICBI:
+ 			__cacheop_user_asmx(ea, err, "icbi");
  			break;
- 
--		case 725:
-+		case 725:	/* stswi */
- 			if (rb == 0)
- 				rb = 32;	/* # bytes to store */
- 			op->type = MKOP(STORE_MULTI, 0, rb);
-@@ -2246,9 +2271,14 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- #endif
- 
- #ifdef CONFIG_VSX
--	case 57:	/* lxsd, lxssp */
-+	case 57:	/* lfdp, lxsd, lxssp */
- 		op->ea = dsform_ea(instr, regs);
- 		switch (instr & 3) {
-+		case 0:		/* lfdp */
-+			if (rd & 1)
-+				break;		/* reg must be even */
-+			op->type = MKOP(LOAD_FP, 0, 16);
++		case DCBZ:
++			err = emulate_dcbz(ea, regs);
 +			break;
- 		case 2:		/* lxsd */
- 			op->reg = rd + 32;
- 			op->type = MKOP(LOAD_VSX, 0, 8);
-@@ -2283,8 +2313,14 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- #endif
- 
- #ifdef CONFIG_VSX
--	case 61:	/* lxv, stxsd, stxssp, stxv */
-+	case 61:	/* stfdp, lxv, stxsd, stxssp, stxv */
- 		switch (instr & 7) {
-+		case 0:		/* stfdp with LSB of DS field = 0 */
-+		case 4:		/* stfdp with LSB of DS field = 1 */
-+			op->ea = dsform_ea(instr, regs);
-+			op->type = MKOP(STORE_FP, 0, 16);
-+			break;
-+
- 		case 1:		/* lxv */
- 			op->ea = dqform_ea(instr, regs);
- 			if (instr & 8)
+ 		}
+ 		if (err)
+ 			return 0;
 -- 
 2.7.4
