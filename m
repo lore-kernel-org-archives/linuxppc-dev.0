@@ -1,36 +1,21 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.186])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5w50pfLzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:29:56 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7UDSoJG083120
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 09:29:55 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cnv84arrv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 09:29:53 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 30 Aug 2017 14:29:51 +0100
-Subject: Re: [PATCH v3 0/3] powerpc/mm: Mark memory contexts requiring global
- TLBIs
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- linuxppc-dev@lists.ozlabs.org
-Cc: alistair@popple.id.au, clombard@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com
-References: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
-Date: Wed, 30 Aug 2017 15:29:46 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5yn2QjTzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:32:17 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Balbir Singh' <bsingharora@gmail.com>, "mpe@ellerman.id.au"
+ <mpe@ellerman.id.au>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 1/2] powerpc/xmon: hdec is now 64bits
+Date: Wed, 30 Aug 2017 13:32:07 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0069953@AcuExch.aculab.com>
+References: <20170830002745.29526-1-bsingharora@gmail.com>
+In-Reply-To: <20170830002745.29526-1-bsingharora@gmail.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <ae594759-8c07-81e1-5890-6be68ef068d8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm dropping this series, as there was a recent change done in the 
-memory context that I can reuse.
-The follow up of the story is:
-http://patchwork.ozlabs.org/patch/807570/
+From: Balbir Singh
+> Sent: 30 August 2017 01:28
+> ISA 300 defines hypervisor decrementer to be 64 bits in length.
+> This patch extends the print format for all archs to be 64 bits
+>=20
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  arch/powerpc/xmon/xmon.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 9e68f1d..1b26d53 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -1749,7 +1749,7 @@ static void dump_206_sprs(void)
+>=20
+>  	printf("sdr1   =3D %.16lx  hdar  =3D %.16lx hdsisr =3D %.8x\n",
+>  		mfspr(SPRN_SDR1), mfspr(SPRN_HDAR), mfspr(SPRN_HDSISR));
+> -	printf("hsrr0  =3D %.16lx hsrr1  =3D %.16lx hdec =3D %.8x\n",
+> +	printf("hsrr0  =3D %.16lx hsrr1  =3D %.16lx hdec =3D %.16lx\n",
+>  		mfspr(SPRN_HSRR0), mfspr(SPRN_HSRR1), mfspr(SPRN_HDEC));
+>  	printf("lpcr   =3D %.16lx  pcr   =3D %.16lx lpidr =3D %.8x\n",
+>  		mfspr(SPRN_LPCR), mfspr(SPRN_PCR), mfspr(SPRN_LPID));
 
-   Fred
+On the face of it the patch doesn't do what the commit message says.
+Not only that it is really silly to print a 32bit value with 8 extra
+leading zero digits.
 
+Something more subtle was also wrong:
+There were 3 mfspr() calls, 2 printed with %lx and one with %x.
+That ought to generate a warning from gcc.
 
-Le 02/08/2017 à 22:29, Frederic Barrat a écrit :
-> capi2 and opencapi require the TLB invalidations being sent for
-> addresses used on the cxl adapter or opencapi device to be global, as
-> there's a translation cache in the PSL (for capi2) or NPU (for
-> opencapi). The CAPP, on behalf of the PSL, and NPU snoop the power bus.
-> 
-> This is not new: for the hash memory model, as soon as the cxl driver
-> is active, all local TLBIs become global. We need a similar mechanism
-> for the radix memory model. This patch tries to improve things a bit
-> by flagging the contexts requiring global TLBIs, therefore limiting
-> the "upgrade" and not affecting contexts not used by the card.
-> 
-> A longer-term goal is to modify the current implementation for hash to
-> follow the same direction, i.e. identify contexts needing global
-> TLBIs, but that will be for later. It would be required to support
-> hash for opencapi.
-> 
-> Changelog:
-> v3:
->   - convert from RFC to PATCH
->   - mark contexts used by XSL (cxllib) as needed global invalidation
-> RFC v2:
->   - address comments received
->   - rename MM_CONTEXT_GLOBAL_TLBI -> MM_GLOBAL_TLBIE
->   - add memory barriers to make sure the device doesn't miss any TLBI
->   - also add barrier for the hash implemention to fix the same issue
-> 
-> Frederic Barrat (3):
->    powerpc/mm: Add marker for contexts requiring global TLB invalidations
->    cxl: Mark context requiring global TLBIs
->    cxl: Add memory barrier to guarantee TLBI scope
-> 
->   arch/powerpc/include/asm/book3s/64/mmu.h | 18 ++++++++++++++++++
->   arch/powerpc/include/asm/tlb.h           | 27 +++++++++++++++++++++++----
->   arch/powerpc/mm/mmu_context_book3s64.c   |  1 +
->   arch/powerpc/mm/tlb-radix.c              |  8 ++++----
->   arch/powerpc/mm/tlb_hash64.c             |  3 ++-
->   drivers/misc/cxl/api.c                   | 12 ++++++++++--
->   drivers/misc/cxl/cxllib.c                |  7 +++++++
->   drivers/misc/cxl/file.c                  | 12 ++++++++++--
->   include/misc/cxl-base.h                  | 22 +++++++++++++++++++---
->   9 files changed, 94 insertions(+), 16 deletions(-)
-> 
+	David
