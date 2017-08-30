@@ -1,31 +1,33 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj1cJ6k0szDqMc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 20:16:00 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7UADp3E124806
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:15:57 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cnqqyccvy-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj1cM2J4FzDqMc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 20:16:03 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7UAFQhJ083682
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:16:01 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cnmg7hsb7-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:15:57 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:16:00 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 30 Aug 2017 11:15:55 +0100
+ Wed, 30 Aug 2017 11:15:58 +0100
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
  benh@kernel.crashing.org, andrew.donnellan@au1.ibm.com,
  clombard@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com
 Cc: alistair@popple.id.au
-Subject: [PATCH v2 1/3] powerpc/mm: Export flush_all_mm()
-Date: Wed, 30 Aug 2017 12:15:48 +0200
-Message-Id: <20170830101550.16821-1-fbarrat@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/3] cxl: Fix driver use count
+Date: Wed, 30 Aug 2017 12:15:49 +0200
+In-Reply-To: <20170830101550.16821-1-fbarrat@linux.vnet.ibm.com>
+References: <20170830101550.16821-1-fbarrat@linux.vnet.ibm.com>
+Message-Id: <20170830101550.16821-2-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,139 +37,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the optimizations introduced by commit a46cc7a90fd8
-("powerpc/mm/radix: Improve TLB/PWC flushes"), flush_tlb_mm() no
-longer flushes the page walk cache with radix. This patch introduces
-flush_all_mm(), which flushes everything, tlb and pwc, for a given mm.
+cxl keeps a driver use count, which is used with the hash memory model
+on p8 to know when to upgrade local TLBIs to global and to trigger
+callbacks to manage the MMU for PSL8.
+
+If a process opens a context and closes without attaching or fails the
+attachment, the driver use count is never decremented. As a
+consequence, TLB invalidations remain global, even if there are no
+active cxl contexts.
+
+We should increment the driver use count when the process is attaching
+to the cxl adapter, and not on open. It's not needed before the
+adapter starts using the context and the use count is decremented on
+the detach path, so it makes more sense.
+
+It affects only the user api. The kernel api is already doing The
+Right Thing.
 
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: stable@vger.kernel.org # v4.2+
+Fixes: 7bb5d91a4dda ("cxl: Rework context lifetimes")
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 ---
 Changelog:
-v2: this patch is new
+v2: fix typo in comments (Thanks to Andrew)
 
- arch/powerpc/include/asm/book3s/64/tlbflush-hash.h  |  8 ++++++++
- arch/powerpc/include/asm/book3s/64/tlbflush-radix.h |  3 +++
- arch/powerpc/include/asm/book3s/64/tlbflush.h       | 15 +++++++++++++++
- arch/powerpc/mm/tlb-radix.c                         |  6 ++++--
- 4 files changed, 30 insertions(+), 2 deletions(-)
+ drivers/misc/cxl/api.c  | 4 ++++
+ drivers/misc/cxl/file.c | 8 +++++++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-index 2f6373144e2c..c5d89d271a96 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-@@ -65,6 +65,14 @@ static inline void hash__flush_tlb_mm(struct mm_struct *mm)
- {
- }
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 1a138c83f877..a0c44d16bf30 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -336,6 +336,10 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+ 			mmput(ctx->mm);
+ 	}
  
-+static inline void hash__local_flush_all_mm(struct mm_struct *mm)
-+{
-+}
++	/*
++	 * Increment driver use count. Enables global TLBIs for hash
++	 * and callbacks to handle the segment table
++	 */
+ 	cxl_ctx_get();
+ 
+ 	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 0761271d68c5..4bfad9f6dc9f 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -95,7 +95,6 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
+ 
+ 	pr_devel("afu_open pe: %i\n", ctx->pe);
+ 	file->private_data = ctx;
+-	cxl_ctx_get();
+ 
+ 	/* indicate success */
+ 	rc = 0;
+@@ -225,6 +224,12 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	if (ctx->mm)
+ 		mmput(ctx->mm);
+ 
++	/*
++	 * Increment driver use count. Enables global TLBIs for hash
++	 * and callbacks to handle the segment table
++	 */
++	cxl_ctx_get();
 +
-+static inline void hash__flush_all_mm(struct mm_struct *mm)
-+{
-+}
-+
- static inline void hash__local_flush_tlb_page(struct vm_area_struct *vma,
- 					  unsigned long vmaddr)
- {
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-index 9b433a624bf3..af06c6fe8a9f 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-@@ -21,17 +21,20 @@ extern void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long sta
- extern void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end);
+ 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
  
- extern void radix__local_flush_tlb_mm(struct mm_struct *mm);
-+extern void radix__local_flush_all_mm(struct mm_struct *mm);
- extern void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
- extern void radix__local_flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 					      int psize);
- extern void radix__tlb_flush(struct mmu_gather *tlb);
- #ifdef CONFIG_SMP
- extern void radix__flush_tlb_mm(struct mm_struct *mm);
-+extern void radix__flush_all_mm(struct mm_struct *mm);
- extern void radix__flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
- extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 					int psize);
- #else
- #define radix__flush_tlb_mm(mm)		radix__local_flush_tlb_mm(mm)
-+#define radix__flush_all_mm(mm)		radix__local_flush_all_mm(mm)
- #define radix__flush_tlb_page(vma,addr)	radix__local_flush_tlb_page(vma,addr)
- #define radix__flush_tlb_page_psize(mm,addr,p) radix__local_flush_tlb_page_psize(mm,addr,p)
- #endif
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-index 72b925f97bab..70760d018bcd 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-@@ -57,6 +57,13 @@ static inline void local_flush_tlb_page(struct vm_area_struct *vma,
- 	return hash__local_flush_tlb_page(vma, vmaddr);
- }
- 
-+static inline void local_flush_all_mm(struct mm_struct *mm)
-+{
-+	if (radix_enabled())
-+		return radix__local_flush_all_mm(mm);
-+	return hash__local_flush_all_mm(mm);
-+}
-+
- static inline void tlb_flush(struct mmu_gather *tlb)
- {
- 	if (radix_enabled())
-@@ -79,9 +86,17 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
- 		return radix__flush_tlb_page(vma, vmaddr);
- 	return hash__flush_tlb_page(vma, vmaddr);
- }
-+
-+static inline void flush_all_mm(struct mm_struct *mm)
-+{
-+	if (radix_enabled())
-+		return radix__flush_all_mm(mm);
-+	return hash__flush_all_mm(mm);
-+}
- #else
- #define flush_tlb_mm(mm)		local_flush_tlb_mm(mm)
- #define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
-+#define flush_all_mm(mm)		local_flush_all_mm(mm)
- #endif /* CONFIG_SMP */
- /*
-  * flush the page walk cache for the address
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index b3e849c4886e..5a1f46eff3a2 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -144,7 +144,7 @@ void radix__local_flush_tlb_mm(struct mm_struct *mm)
- EXPORT_SYMBOL(radix__local_flush_tlb_mm);
- 
- #ifndef CONFIG_SMP
--static void radix__local_flush_all_mm(struct mm_struct *mm)
-+void radix__local_flush_all_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
- 
-@@ -154,6 +154,7 @@ static void radix__local_flush_all_mm(struct mm_struct *mm)
- 		_tlbiel_pid(pid, RIC_FLUSH_ALL);
- 	preempt_enable();
- }
-+EXPORT_SYMBOL(radix__local_flush_all_mm);
- #endif /* CONFIG_SMP */
- 
- void radix__local_flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
-@@ -200,7 +201,7 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- }
- EXPORT_SYMBOL(radix__flush_tlb_mm);
- 
--static void radix__flush_all_mm(struct mm_struct *mm)
-+void radix__flush_all_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
- 
-@@ -216,6 +217,7 @@ static void radix__flush_all_mm(struct mm_struct *mm)
- no_context:
- 	preempt_enable();
- }
-+EXPORT_SYMBOL(radix__flush_all_mm);
- 
- void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
- {
+ 	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
+@@ -233,6 +238,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 		cxl_adapter_context_put(ctx->afu->adapter);
+ 		put_pid(ctx->pid);
+ 		ctx->pid = NULL;
++		cxl_ctx_put();
+ 		cxl_context_mm_count_put(ctx);
+ 		goto out;
+ 	}
 -- 
 2.11.0
