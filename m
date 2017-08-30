@@ -1,36 +1,35 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj6dC4GjbzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 00:02:07 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7UE1cUp053741
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:02:04 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cnu6n9wwu-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj7Mv3TPxzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 00:35:39 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7UEYuHU027707
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:35:35 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cnx0pxpxk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:01:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:35:34 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 30 Aug 2017 14:59:58 +0100
-Subject: Re: [PATCH v2 1/3] powerpc/mm: Export flush_all_mm()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, andrew.donnellan@au1.ibm.com,
- clombard@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com
-Cc: alistair@popple.id.au
-References: <20170830101550.16821-1-fbarrat@linux.vnet.ibm.com>
- <87inh519fl.fsf@concordia.ellerman.id.au>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Wed, 30 Aug 2017 15:59:53 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 30 Aug 2017 08:35:34 -0600
+Subject: Re: [PATCH] powerpc/pseries: Don't attempt to acquire drc during
+ memory hot add for assigned lmbs
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ John Allen <jallen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <fc2ad536-a772-f006-43c4-1ddf6e296ebb@linux.vnet.ibm.com>
+ <87bmmx3hr8.fsf@concordia.ellerman.id.au>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 30 Aug 2017 09:35:30 -0500
 MIME-Version: 1.0
-In-Reply-To: <87inh519fl.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <77b082b9-0e6e-ed38-3a4e-af7797990ef3@linux.vnet.ibm.com>
+In-Reply-To: <87bmmx3hr8.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <cad79893-3d1a-f2ea-892f-6481a22f261a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,55 +39,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 30/08/2017 à 15:17, Michael Ellerman a écrit :
-> Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+On 08/29/2017 09:35 PM, Michael Ellerman wrote:
+> John Allen <jallen@linux.vnet.ibm.com> writes:
 > 
->> With the optimizations introduced by commit a46cc7a90fd8
->> ("powerpc/mm/radix: Improve TLB/PWC flushes"), flush_tlb_mm() no
->> longer flushes the page walk cache with radix. This patch introduces
->> flush_all_mm(), which flushes everything, tlb and pwc, for a given mm.
+>> Check if an LMB is assigned before attempting to call dlpar_acquire_drc in
+>> order to avoid any unnecessary rtas calls. This substantially reduces the
+>> running time of memory hot add on lpars with large amounts of memory.
 >>
->> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+>> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
 >> ---
->> Changelog:
->> v2: this patch is new
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> index ca9b2f4..95cf2ff 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> @@ -817,6 +817,9 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
+>>  		return -EINVAL;
 >>
->>   arch/powerpc/include/asm/book3s/64/tlbflush-hash.h  |  8 ++++++++
->>   arch/powerpc/include/asm/book3s/64/tlbflush-radix.h |  3 +++
->>   arch/powerpc/include/asm/book3s/64/tlbflush.h       | 15 +++++++++++++++
->>   arch/powerpc/mm/tlb-radix.c                         |  6 ++++--
->>   4 files changed, 30 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
->> index 2f6373144e2c..c5d89d271a96 100644
->> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
->> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
->> @@ -65,6 +65,14 @@ static inline void hash__flush_tlb_mm(struct mm_struct *mm)
->>   {
->>   }
->>   
->> +static inline void hash__local_flush_all_mm(struct mm_struct *mm)
->> +{
->> +}
+>>  	for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
+>> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
+>> +			continue;
 >> +
->> +static inline void hash__flush_all_mm(struct mm_struct *mm)
->> +{
->> +}
+>>  		rc = dlpar_acquire_drc(lmbs[i].drc_index);
+>>  		if (rc)
+>>  			continue;
 > 
-> It's not clear why it makes sense for these to be empty. Either for the
-> general idea of the "flush_all_mm()" API, or for your intended use by
-> CXL.
+> This doesn't build for me, see below. What compiler are you using to
+> test this?> 
+>   arch/powerpc/platforms/pseries/hotplug-memory.c: In function 'dlpar_memory':
+>   arch/powerpc/platforms/pseries/hotplug-memory.c:1081:2: error: 'rc' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+>     return rc;
+>     ^
+>
 
-I was not too sure what to do for hash, but the idea is that the new 
-flush_all_mm() is really the equivalent of the old flush_tlb_mm() from 
-before Ben's optimizations for radix, and that was/still is an empty 
-operation on hash, so I kept it that way.
+I don't see this build failure either, looks like its time to update my
+compiler too.
+ 
+> It's a bit confusing because you didn't modify that function, but the
+> function you did modify has been inlined into there.
+> 
+> Possibly the compiler is wrong and we do always initialise rc, but it's
+> not clear at all.
+> 
+> And it raises a bigger question, how is this supposed to actually work?
+> 
+> If we go around the loop and find that something is already assigned:
+> 
+> 	for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
+> 		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
+> 			continue;
+>                 ...
+> 		lmbs_added++;
+>                 ...
+>         }
+> 
+> We don't increment lmbs_added, so at the end of the loop we will see
+> that lmbs_added is not equal to lmbs_to_add, and so we remove
+> everything:
 
-We don't support hash for capi2 yet. Adding it will definitely require 
-some work in that area, as the current approach (use count on the driver 
-and all TLBIs becoming global when the driver is in use) won't hold much 
-longer.
+There is a loop just before this code verifies there are enough
+LMBs available to satisfy the add request. This counts the number
+of LMBs that do not have the assigned flag set. This is where we
+update lmbs_available and if there are not enough lmbs available to
+satisfy the request, we bail.
 
-   Fred
+When the loop you referenced above exits we should have attempted to
+enough LMBs to satisfy the request.
+
+> 
+> 	if (lmbs_added != lmbs_to_add) {
+> 		pr_err("Memory hot-add failed, removing any added LMBs\n");
+> 
+> 		for (i = 0; i < num_lmbs; i++) {
+> 			if (!lmbs[i].reserved)
+> 				continue;
+> 
+> 			rc = dlpar_remove_lmb(&lmbs[i]);
+> 
+>
+
+if we get into this recovery path, we only try to remove any LMBs
+that were added in the loop above. The code marks any LMB that is
+added as 'reserved' so that we only try to remove LMBs marked
+as 'reserved' in the cleanup path.
+ 
+> So it seems like if we ever hit that continue you added, the whole
+> operation will fail anyway. So I'm confused.
+
+The added code was to skip over any LMBs that are already assigned to
+the partition. As the code is written now, we walk through the entire list
+of LMBs possible. For large systems this can be tens, or hundreds of thousands
+of LMBs.
+
+Without this check the code will try to acquire the drc for (this
+is done via rtas-set-indicator calls) which will fail for LMBs that are
+already assigned to the partition.
+
+As an example on a large system that has 100,000 LMBs where the first
+50,000 are assigned to the partition. When we get an add request to add
+X more LMBs we do see that there are 50,000 available to add. We then try
+to add X LMBs but start at the beginning of the LMB list when trying to
+add them. This results in 50,000 attempts to acquire the drc for LMbs
+that we already own. Instead we should just skip trying to acquire them.
+
+Hopefully that helps clarify things.
+
+-Nathan
+
+> 
+> cheers
+> 
