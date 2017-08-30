@@ -1,28 +1,36 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5k86L9YzDqXp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:21:20 +1000 (AEST)
-Subject: Re: [PATCH v7 07/11] sparc64: optimized struct page zeroing
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, willy@infradead.org, mhocko@kernel.org,
- ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
- Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-References: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
- <1503972142-289376-8-git-send-email-pasha.tatashin@oracle.com>
- <20170829.181208.171985548699678313.davem@davemloft.net>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <e07c05b1-c0be-bf7f-9a29-11dc41b79d10@oracle.com>
-Date: Wed, 30 Aug 2017 09:19:58 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5w50pfLzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:29:56 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7UDSoJG083120
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 09:29:55 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cnv84arrv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 09:29:53 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 30 Aug 2017 14:29:51 +0100
+Subject: Re: [PATCH v3 0/3] powerpc/mm: Mark memory contexts requiring global
+ TLBIs
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: alistair@popple.id.au, clombard@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com
+References: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
+Date: Wed, 30 Aug 2017 15:29:46 +0200
 MIME-Version: 1.0
-In-Reply-To: <20170829.181208.171985548699678313.davem@davemloft.net>
+In-Reply-To: <20170802202930.5616-1-fbarrat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <ae594759-8c07-81e1-5890-6be68ef068d8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +40,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Dave,
+I'm dropping this series, as there was a recent change done in the 
+memory context that I can reuse.
+The follow up of the story is:
+http://patchwork.ozlabs.org/patch/807570/
 
-Thank you for acking.
+   Fred
 
-The reason I am not doing initializing stores is because they require a 
-membar, even if only regular stores are following (I hoped to do a 
-membar before first load). This is something I was thinking was not 
-true, but after consulting with colleagues and checking processor 
-manual, I verified that it is the case.
 
-Pasha
-
+Le 02/08/2017 à 22:29, Frederic Barrat a écrit :
+> capi2 and opencapi require the TLB invalidations being sent for
+> addresses used on the cxl adapter or opencapi device to be global, as
+> there's a translation cache in the PSL (for capi2) or NPU (for
+> opencapi). The CAPP, on behalf of the PSL, and NPU snoop the power bus.
 > 
-> You should probably use initializing stores when you are doing 8
-> stores and we thus know the page struct is cache line aligned.
+> This is not new: for the hash memory model, as soon as the cxl driver
+> is active, all local TLBIs become global. We need a similar mechanism
+> for the radix memory model. This patch tries to improve things a bit
+> by flagging the contexts requiring global TLBIs, therefore limiting
+> the "upgrade" and not affecting contexts not used by the card.
 > 
-> But other than that:
+> A longer-term goal is to modify the current implementation for hash to
+> follow the same direction, i.e. identify contexts needing global
+> TLBIs, but that will be for later. It would be required to support
+> hash for opencapi.
 > 
-> Acked-by: David S. Miller <davem@davemloft.net>
+> Changelog:
+> v3:
+>   - convert from RFC to PATCH
+>   - mark contexts used by XSL (cxllib) as needed global invalidation
+> RFC v2:
+>   - address comments received
+>   - rename MM_CONTEXT_GLOBAL_TLBI -> MM_GLOBAL_TLBIE
+>   - add memory barriers to make sure the device doesn't miss any TLBI
+>   - also add barrier for the hash implemention to fix the same issue
+> 
+> Frederic Barrat (3):
+>    powerpc/mm: Add marker for contexts requiring global TLB invalidations
+>    cxl: Mark context requiring global TLBIs
+>    cxl: Add memory barrier to guarantee TLBI scope
+> 
+>   arch/powerpc/include/asm/book3s/64/mmu.h | 18 ++++++++++++++++++
+>   arch/powerpc/include/asm/tlb.h           | 27 +++++++++++++++++++++++----
+>   arch/powerpc/mm/mmu_context_book3s64.c   |  1 +
+>   arch/powerpc/mm/tlb-radix.c              |  8 ++++----
+>   arch/powerpc/mm/tlb_hash64.c             |  3 ++-
+>   drivers/misc/cxl/api.c                   | 12 ++++++++++--
+>   drivers/misc/cxl/cxllib.c                |  7 +++++++
+>   drivers/misc/cxl/file.c                  | 12 ++++++++++--
+>   include/misc/cxl-base.h                  | 22 +++++++++++++++++++---
+>   9 files changed, 94 insertions(+), 16 deletions(-)
+> 
