@@ -1,28 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhnXr1qmjzDqLv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 11:12:11 +1000 (AEST)
-Date: Tue, 29 Aug 2017 18:12:08 -0700 (PDT)
-Message-Id: <20170829.181208.171985548699678313.davem@davemloft.net>
-To: pasha.tatashin@oracle.com
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, willy@infradead.org, mhocko@kernel.org,
- ard.biesheuvel@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com,
- sam@ravnborg.org, mgorman@techsingularity.net, Steven.Sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v7 07/11] sparc64: optimized struct page zeroing
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1503972142-289376-8-git-send-email-pasha.tatashin@oracle.com>
-References: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
- <1503972142-289376-8-git-send-email-pasha.tatashin@oracle.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhqNX3zDszDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 12:35:08 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: John Allen <jallen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: Don't attempt to acquire drc during
+ memory hot add for assigned lmbs
+In-Reply-To: <fc2ad536-a772-f006-43c4-1ddf6e296ebb@linux.vnet.ibm.com>
+References: <fc2ad536-a772-f006-43c4-1ddf6e296ebb@linux.vnet.ibm.com>
+Date: Wed, 30 Aug 2017 12:35:07 +1000
+Message-ID: <87bmmx3hr8.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Mon, 28 Aug 2017 22:02:18 -0400
+John Allen <jallen@linux.vnet.ibm.com> writes:
 
-> Add an optimized mm_zero_struct_page(), so struct page's are zeroed without
-> calling memset(). We do eight to ten regular stores based on the size of
-> struct page. Compiler optimizes out the conditions of switch() statement.
-> 
-> SPARC-M6 with 15T of memory, single thread performance:
-> 
->                                BASE            FIX  OPTIMIZED_FIX
->         bootmem_init   28.440467985s   2.305674818s   2.305161615s
-> free_area_init_nodes  202.845901673s 225.343084508s 172.556506560s
->                       --------------------------------------------
-> Total                 231.286369658s 227.648759326s 174.861668175s
-> 
-> BASE:  current linux
-> FIX:   This patch series without "optimized struct page zeroing"
-> OPTIMIZED_FIX: This patch series including the current patch.
-> 
-> bootmem_init() is where memory for struct pages is zeroed during
-> allocation. Note, about two seconds in this function is a fixed time: it
-> does not increase as memory is increased.
-> 
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+> Check if an LMB is assigned before attempting to call dlpar_acquire_drc in
+> order to avoid any unnecessary rtas calls. This substantially reduces the
+> running time of memory hot add on lpars with large amounts of memory.
+>
+> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
+> ---
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index ca9b2f4..95cf2ff 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -817,6 +817,9 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
+>  		return -EINVAL;
+>
+>  	for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
+> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
+> +			continue;
+> +
+>  		rc = dlpar_acquire_drc(lmbs[i].drc_index);
+>  		if (rc)
+>  			continue;
 
-You should probably use initializing stores when you are doing 8
-stores and we thus know the page struct is cache line aligned.
+This doesn't build for me, see below. What compiler are you using to
+test this?
 
-But other than that:
+  arch/powerpc/platforms/pseries/hotplug-memory.c: In function 'dlpar_memory':
+  arch/powerpc/platforms/pseries/hotplug-memory.c:1081:2: error: 'rc' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+    return rc;
+    ^
 
-Acked-by: David S. Miller <davem@davemloft.net>
+It's a bit confusing because you didn't modify that function, but the
+function you did modify has been inlined into there.
+
+Possibly the compiler is wrong and we do always initialise rc, but it's
+not clear at all.
+
+And it raises a bigger question, how is this supposed to actually work?
+
+If we go around the loop and find that something is already assigned:
+
+	for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
+		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
+			continue;
+                ...
+		lmbs_added++;
+                ...
+        }
+
+We don't increment lmbs_added, so at the end of the loop we will see
+that lmbs_added is not equal to lmbs_to_add, and so we remove
+everything:
+
+	if (lmbs_added != lmbs_to_add) {
+		pr_err("Memory hot-add failed, removing any added LMBs\n");
+
+		for (i = 0; i < num_lmbs; i++) {
+			if (!lmbs[i].reserved)
+				continue;
+
+			rc = dlpar_remove_lmb(&lmbs[i]);
+
+
+So it seems like if we ever hit that continue you added, the whole
+operation will fail anyway. So I'm confused.
+
+cheers
