@@ -1,43 +1,28 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhnKZ20dLzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 11:02:26 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7U0wmGf105315
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 21:02:24 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cn9g047y9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 21:02:24 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Tue, 29 Aug 2017 19:02:23 -0600
-Date: Tue, 29 Aug 2017 18:02:09 -0700
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Dan Streetman <ddstreet@ieee.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- mikey@neuling.org, suka@us.ibm.com, Ram Pai <linuxram@us.ibm.com>,
- npiggin@gmail.com, Haren Myneni <hbabu@us.ibm.com>
-Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
- engine
-References: <1500699702.23205.8.camel@hbabu-laptop>
- <CALZtONBGVQy2iwkb8WpVd-_QG7bLFTvUbnuub6CCXP55YpQiSQ@mail.gmail.com>
- <1504041817.2358.32.camel@kernel.crashing.org>
- <59A5E2AE.5060400@linux.vnet.ibm.com>
- <1504043837.2358.38.camel@kernel.crashing.org>
-In-Reply-To: <1504043837.2358.38.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <59A60E91.8020803@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhnSz3zhZzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 11:08:49 +1000 (AEST)
+Date: Tue, 29 Aug 2017 18:08:44 -0700 (PDT)
+Message-Id: <20170829.180844.1866158985287686267.davem@davemloft.net>
+To: pasha.tatashin@oracle.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, willy@infradead.org, mhocko@kernel.org,
+ ard.biesheuvel@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com,
+ sam@ravnborg.org, mgorman@techsingularity.net, Steven.Sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v7 04/11] sparc64: simplify vmemmap_populate
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1503972142-289376-5-git-send-email-pasha.tatashin@oracle.com>
+References: <1503972142-289376-1-git-send-email-pasha.tatashin@oracle.com>
+ <1503972142-289376-5-git-send-email-pasha.tatashin@oracle.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,25 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/29/2017 02:57 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2017-08-29 at 14:54 -0700, Haren Myneni wrote:
->> Opening send window for each crypto transform (crypto_alloc,
->> compression/decompression, ..., crypto_free) so that does not have to
->> wait for the previous copy/paste complete. VAS will map send and
->> receive windows, and can cache in send windows (up to 128). So I
->> thought using the same send window (per chip) for more requests (say
->> 1000) may be adding overhead.
->>
->> I will make changes if you prefer using 1 send window per chip.  
-> 
-> Did you check the cost of opening/closing a window ?
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+Date: Mon, 28 Aug 2017 22:02:15 -0400
 
-No, Not yet. opening / closing happens only during alloc/free, but not for each compression/decompression. Hence used separate send windows. 
+> Remove duplicating code by using common functions
+> vmemmap_pud_populate and vmemmap_pgd_populate.
+> 
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Reviewed-by: Bob Picco <bob.picco@oracle.com>
 
-Thanks
-Haren  
- 
-> 
-> Cheers,
-> Ben.
-> 
+Acked-by: David S. Miller <davem@davemloft.net>
