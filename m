@@ -1,21 +1,46 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj3941zclzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 21:26:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3 4/4] powerpc/64s: idle ESL=0 stop can avoid MSR and
- save/restore overhead
-In-Reply-To: <20170825043036.18236-5-npiggin@gmail.com>
-References: <20170825043036.18236-1-npiggin@gmail.com>
- <20170825043036.18236-5-npiggin@gmail.com>
-Date: Wed, 30 Aug 2017 21:25:59 +1000
-Message-ID: <87pobd1em0.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj41r5WTVzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 22:04:47 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7UC44w7117856
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 08:04:44 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cnujhpy3f-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 08:04:44 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Wed, 30 Aug 2017 22:04:41 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7UC4e5m39583830
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 22:04:40 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7UC4V3n004409
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 22:04:32 +1000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: [PATCH] cxl: Set the valid bit in PE for dedicated mode
+In-Reply-To: <87r2vu27b3.fsf@concordia.ellerman.id.au>
+References: <20170828041522.32188-1-vaibhav@linux.vnet.ibm.com>
+ <87r2vu27b3.fsf@concordia.ellerman.id.au>
+Date: Wed, 30 Aug 2017 17:34:35 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87lgm1b6ss.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,73 +50,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi Mpe,
 
-> When stop is executed with EC=ESL=0, it appears to execute like a
-> normal instruction (resuming from NIP when woken by interrupt).
-> So all the save/restore handling can be avoided completely. In
-> particular NV GPRs do not have to be saved, and MSR does not have
-> to be switched back to kernel MSR.
+Thanks for reviewing the patch
+
+Michael Ellerman <mpe@ellerman.id.au> writes:
+
+>> +	ctx->elem->software_state = cpu_to_be32(CXL_PE_SOFTWARE_STATE_V);
+>> +	/* Make sure the changes to the PE are visible to the card */
 >
-> So move the test for "lite" sleep states out to power9_idle_stop.
+> A barrier orders something vs something else. So what's the something
+> else in this case? Is it the afu_reset() below, what does that actually do?
 >
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kernel/idle_book3s.S | 35 ++++++++++++++++++++++++-----------
->  1 file changed, 24 insertions(+), 11 deletions(-)
 
-This is blowing up for me on mambo:
+The issue is with call to afu_enable() after the call to afu_reset that
+would start the AFU. If this load gets reordered and PSL doesnt see the
+valid bit set for this structure then it will result in PSL entering a
+freeze-state.
 
-  usbcore: registered new interface driver usb-storage
-  Disabling lock debugging due to kernel taint
-  Severe Machine check interrupt [Not recovered]
-    NIP [c0000000002a0c04]: kmem_cache_free+0x64/0x2c0
-    Initiator: CPU
-    Error type: Real address [Load/Store (foreign)]
-  opal: Hardware platform error: Unrecoverable Machine Check exception
-  CPU: 0 PID: 0 Comm: swapper/0 Tainted: G   M            4.13.0-rc2-gcc-6.3.1-00257-g26268bb39bff #543
-  task: c0000000016b1200 task.stack: c00000000175c000
-  NIP:  c0000000002a0c04 LR: c0000000001128ec CTR: c000000000112800
-  REGS: c00000003fff7d80 TRAP: 0200   Tainted: G   M             (4.13.0-rc2-gcc-6.3.1-00257-g26268bb39bff)
-  MSR:  9000000000209003 <SF,HV,EE,ME,RI,LE>  CR: 28002828  XER: 20000000
-  CFAR: c0000000001128e8 DAR: c00a0000003c3ce0 DSISR: 00000008 SOFTE: 1 
-  GPR00: c0000000001128ec c00000000175f7b0 c000000001760500 c0000000f001a000 
-  GPR04: c0000000f0f37f00 0000000000000003 00000000000220c3 0000000000000000 
-  GPR08: 0000000000000000 00000000003c3cc0 c0000000017e7758 0000000000000000 
-  GPR12: c000000000112800 c00000000fff0000 c000000000112800 c0000000f0f37f90 
-  GPR16: c00000000175c000 c00000000175c000 0000000000000001 c0000000016d7900 
-  GPR20: c00000000179ba98 7fffffffffffffff c00000000175c000 0000000000000000 
-  GPR24: c00000000017a8c0 000000000000000a c0000000016d8a00 c00000000175f8d0 
-  GPR28: c0000000001128ec c0000000f0f37f00 c00a0000003c3cc0 c0000000f001a000 
-  NIP [c0000000002a0c04] kmem_cache_free+0x64/0x2c0
-  LR [c0000000001128ec] put_cred_rcu+0xec/0x140
-  Call Trace:
-  [c00000000175f7b0] [c00000000175f800] init_thread_union+0x3800/0x4000 (unreliable)
-  [c00000000175f840] [c0000000001128ec] put_cred_rcu+0xec/0x140
-  [c00000000175f8b0] [c00000000017a908] rcu_process_callbacks+0x438/0x6a0
-  [c00000000175f980] [c0000000000e5e28] __do_softirq+0x198/0x310
-  [c00000000175fa70] [c0000000000e6248] irq_exit+0xf8/0x140
-  [c00000000175fa90] [c000000000023710] timer_interrupt+0xa0/0xe0
-  [c00000000175fac0] [c000000000008fcc] decrementer_common+0x11c/0x120
-  --- interrupt: 901 at replay_interrupt_return+0x0/0x4
-      LR = arch_local_irq_restore.part.1+0x84/0xb0
-  [c00000000175fdb0] [c00000000175c000] init_thread_union+0x0/0x4000 (unreliable)
-  [c00000000175fdd0] [c00000000001cde0] arch_cpu_idle+0xe0/0x140
-  [c00000000175fe00] [c0000000007f4f44] default_idle_call+0x44/0x84
-  [c00000000175fe20] [c000000000142e54] do_idle+0x254/0x320
-  [c00000000175fe90] [c000000000143280] cpu_startup_entry+0x30/0x40
-  [c00000000175fec0] [c00000000000d2d8] rest_init+0x2f8/0x320
-  [c00000000175ff00] [c000000001000d74] start_kernel+0x510/0x52c
-  [c00000000175ff90] [c00000000000ab70] start_here_common+0x1c/0x4ac
-  Instruction dump:
-  60000000 e9230008 71280100 40820170 2fbf0000 419e013c 3d420008 394a7258 
-  7bbe8502 7bc93664 ebca0000 7fde4a14 <e93e0020> 712a0001 40820234 e93f0008 
-  [    1.217346467,0] OPAL: Reboot requested due to Platform error.
-  [    1.217351582,3] OPAL: failed to log an error
-  [    1.217358188,5] OPAL: Reboot request...
+Though on second thoughts afu_enable() is grabbing a spin-lock before
+doing an mmio to start the AFU that would be forcing a barrier
+anyways. But since that spans the function boundary hence to be safe
+have added a write barrier after populating the process element.
 
+Lastly function is not performance critical as it will be usually called
+in the life time of a process only once. So the impact smp_wmb() is
+having would be minimal.
 
-I'll just drop it for now.
-
-cheers
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
