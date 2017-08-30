@@ -1,35 +1,45 @@
-Return-Path: <efault@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhzdY6t4MzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 18:46:55 +1000 (AEST)
-Message-ID: <1504082414.6014.39.camel@gmx.de>
-Subject: Re: [PATCH 00/13] mmu_notifier kill invalidate_page callback
-From: Mike Galbraith <efault@gmx.de>
-To: Jerome Glisse <jglisse@redhat.com>, Linus Torvalds
- <torvalds@linux-foundation.org>
-Cc: Bernhard Held <berny156@gmx.de>, Adam Borowski <kilobyte@angband.pl>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-mm
- <linux-mm@kvack.org>, "Kirill A . Shutemov"
- <kirill.shutemov@linux.intel.com>, Andrew Morton
- <akpm@linux-foundation.org>,  Andrea Arcangeli <aarcange@redhat.com>, Joerg
- Roedel <jroedel@suse.de>, Dan Williams <dan.j.williams@intel.com>,  Sudeep
- Dutt <sudeep.dutt@intel.com>, Ashutosh Dixit <ashutosh.dixit@intel.com>,
- Dimitri Sivanich <sivanich@sgi.com>, Jack Steiner <steiner@sgi.com>, Paolo
- Bonzini <pbonzini@redhat.com>, Radim =?UTF-8?Q?Kr=C4=8Dm=C3=A1=C5=99?=
- <rkrcmar@redhat.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>, DRI
- <dri-devel@lists.freedesktop.org>, amd-gfx@lists.freedesktop.org,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "open list:AMD
- IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, xen-devel
- <xen-devel@lists.xenproject.org>,  KVM list <kvm@vger.kernel.org>
-Date: Wed, 30 Aug 2017 10:40:14 +0200
-In-Reply-To: <20170830005615.GA2386@redhat.com>
-References: <20170829235447.10050-1-jglisse@redhat.com>
- <CA+55aFz6ArJ-ADXiYCu6xMUzdY=mKBtkzfJmLaBohC6Ub9t2SQ@mail.gmail.com>
- <20170830005615.GA2386@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhzs7044vzDqMc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 18:56:58 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7U8topC001841
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 04:56:56 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cnmg7dybf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 04:56:56 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 30 Aug 2017 09:56:53 +0100
+Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 30 Aug 2017 10:56:45 +0200
+MIME-Version: 1.0
+In-Reply-To: <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8bd2865a-f390-9114-9852-7e32d4113016@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +49,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-08-29 at 20:56 -0400, Jerome Glisse wrote:
-> On Tue, Aug 29, 2017 at 05:11:24PM -0700, Linus Torvalds wrote:
->=20
-> > People - *especially* the people who saw issues under KVM - can you
-> > try out J=C3=A9r=C3=B4me's patch-series? I aded some people to the cc, =
-the full
-> > series is on lkml. J=C3=A9r=C3=B4me - do you have a git branch for peop=
-le to
-> > test that they could easily pull and try out?
->=20
-> https://cgit.freedesktop.org/~glisse/linux mmu-notifier branch
-> git://people.freedesktop.org/~glisse/linux
+On 27/08/2017 02:18, Kirill A. Shutemov wrote:
+> On Fri, Aug 18, 2017 at 12:05:13AM +0200, Laurent Dufour wrote:
+>> +/*
+>> + * vm_normal_page() adds some processing which should be done while
+>> + * hodling the mmap_sem.
+>> + */
+>> +int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+>> +			     unsigned int flags)
+>> +{
+>> +	struct vm_fault vmf = {
+>> +		.address = address,
+>> +	};
+>> +	pgd_t *pgd;
+>> +	p4d_t *p4d;
+>> +	pud_t *pud;
+>> +	pmd_t *pmd;
+>> +	int dead, seq, idx, ret = VM_FAULT_RETRY;
+>> +	struct vm_area_struct *vma;
+>> +	struct mempolicy *pol;
+>> +
+>> +	/* Clear flags that may lead to release the mmap_sem to retry */
+>> +	flags &= ~(FAULT_FLAG_ALLOW_RETRY|FAULT_FLAG_KILLABLE);
+>> +	flags |= FAULT_FLAG_SPECULATIVE;
+>> +
+>> +	idx = srcu_read_lock(&vma_srcu);
+>> +	vma = find_vma_srcu(mm, address);
+>> +	if (!vma)
+>> +		goto unlock;
+>> +
+>> +	/*
+>> +	 * Validate the VMA found by the lockless lookup.
+>> +	 */
+>> +	dead = RB_EMPTY_NODE(&vma->vm_rb);
+>> +	seq = raw_read_seqcount(&vma->vm_sequence); /* rmb <-> seqlock,vma_rb_erase() */
+>> +	if ((seq & 1) || dead)
+>> +		goto unlock;
+>> +
+>> +	/*
+>> +	 * Can't call vm_ops service has we don't know what they would do
+>> +	 * with the VMA.
+>> +	 * This include huge page from hugetlbfs.
+>> +	 */
+>> +	if (vma->vm_ops)
+>> +		goto unlock;
+> 
+> I think we need to have a way to white-list safe ->vm_ops.
+> 
+>> +
+>> +	if (unlikely(!vma->anon_vma))
+>> +		goto unlock;
+> 
+> It deserves a comment.
+> 
+>> +
+>> +	vmf.vma_flags = READ_ONCE(vma->vm_flags);
+>> +	vmf.vma_page_prot = READ_ONCE(vma->vm_page_prot);
+>> +
+>> +	/* Can't call userland page fault handler in the speculative path */
+>> +	if (unlikely(vmf.vma_flags & VM_UFFD_MISSING))
+>> +		goto unlock;
+>> +
+>> +	/*
+>> +	 * MPOL_INTERLEAVE implies additional check in mpol_misplaced() which
+>> +	 * are not compatible with the speculative page fault processing.
+>> +	 */
+>> +	pol = __get_vma_policy(vma, address);
+>> +	if (!pol)
+>> +		pol = get_task_policy(current);
+>> +	if (pol && pol->mode == MPOL_INTERLEAVE)
+>> +		goto unlock;
+>> +
+>> +	if (vmf.vma_flags & VM_GROWSDOWN || vmf.vma_flags & VM_GROWSUP)
+>> +		/*
+>> +		 * This could be detected by the check address against VMA's
+>> +		 * boundaries but we want to trace it as not supported instead
+>> +		 * of changed.
+>> +		 */
+>> +		goto unlock;
+>> +
+>> +	if (address < READ_ONCE(vma->vm_start)
+>> +	    || READ_ONCE(vma->vm_end) <= address)
+>> +		goto unlock;
+>> +
+>> +	/*
+>> +	 * The three following checks are copied from access_error from
+>> +	 * arch/x86/mm/fault.c
+>> +	 */
+>> +	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
+>> +				       flags & FAULT_FLAG_INSTRUCTION,
+>> +				       flags & FAULT_FLAG_REMOTE))
+>> +		goto unlock;
+>> +
+>> +	/* This is one is required to check that the VMA has write access set */
+>> +	if (flags & FAULT_FLAG_WRITE) {
+>> +		if (unlikely(!(vmf.vma_flags & VM_WRITE)))
+>> +			goto unlock;
+>> +	} else {
+>> +		if (unlikely(!(vmf.vma_flags & (VM_READ | VM_EXEC | VM_WRITE))))
+>> +			goto unlock;
+>> +	}
+>> +
+>> +	/*
+>> +	 * Do a speculative lookup of the PTE entry.
+>> +	 */
+>> +	local_irq_disable();
+>> +	pgd = pgd_offset(mm, address);
+>> +	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+>> +		goto out_walk;
+>> +
+>> +	p4d = p4d_alloc(mm, pgd, address);
+>> +	if (p4d_none(*p4d) || unlikely(p4d_bad(*p4d)))
+>> +		goto out_walk;
+>> +
+>> +	pud = pud_alloc(mm, p4d, address);
+>> +	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+>> +		goto out_walk;
+>> +
+>> +	pmd = pmd_offset(pud, address);
+>> +	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+>> +		goto out_walk;
+>> +
+>> +	/*
+>> +	 * The above does not allocate/instantiate page-tables because doing so
+>> +	 * would lead to the possibility of instantiating page-tables after
+>> +	 * free_pgtables() -- and consequently leaking them.
+>> +	 *
+>> +	 * The result is that we take at least one !speculative fault per PMD
+>> +	 * in order to instantiate it.
+>> +	 */
+> 
+> 
+> Doing all this job and just give up because we cannot allocate page tables
+> looks very wasteful to me.
+> 
+> Have you considered to look how we can hand over from speculative to
+> non-speculative path without starting from scratch (when possible)?
+> 
+>> +	/* Transparent huge pages are not supported. */
+>> +	if (unlikely(pmd_trans_huge(*pmd)))
+>> +		goto out_walk;
+> 
+> That's looks like a blocker to me.
+> 
+> Is there any problem with making it supported (besides plain coding)?
 
-Looks good here.
+This is not straight forward, as the THP are mainly handled in
+__handle_mm_fault() and it is not called during the speculative path.
+Having THP handled in the speculative path sounds doable but I'd have to
+double check all the callees deeper, and this will required either
+redesigning __handle_mm_fault() or doing the job in a dedicated way in
+handle_speculative_fault() .
+Furthermore, we should handle both PUD and PMD's level huge pages.
 
-I reproduced fairly quickly with RT host and 1 RT guest by just having
-the guest do a parallel kbuild over NFS (the guest had to be restored
-afterward, was corrupted). =C2=A0I'm currently flogging 2 guests as well as
-the host, whimper free. =C2=A0I'll let the lot broil for while longer, but
-at this point, smoke/flame appearance seems comfortingly unlikely.
+This being said, I can't see any blocking issue at this time except plain
+coding but I'd prefer to get it done in a next step, as an optimization,
+since huge page's faults are far less frequent per design.
 
-	-Mike
+Having _standard_ page's fault handled in a speculative way is already
+providing good performance improvement, we should consider having it
+upstreamed and then adding support for THP as well as other compatible
+vm_ops like hugetlb, isn't it ?
+
+Cheers,
+Laurent.
+
+>> +
+>> +	vmf.vma = vma;
+>> +	vmf.pmd = pmd;
+>> +	vmf.pgoff = linear_page_index(vma, address);
+>> +	vmf.gfp_mask = __get_fault_gfp_mask(vma);
+>> +	vmf.sequence = seq;
+>> +	vmf.flags = flags;
+>> +
+>> +	local_irq_enable();
+>> +
+>> +	/*
+>> +	 * We need to re-validate the VMA after checking the bounds, otherwise
+>> +	 * we might have a false positive on the bounds.
+>> +	 */
+>> +	if (read_seqcount_retry(&vma->vm_sequence, seq))
+>> +		goto unlock;
+>> +
+>> +	ret = handle_pte_fault(&vmf);
+>> +
+>> +unlock:
+>> +	srcu_read_unlock(&vma_srcu, idx);
+>> +	return ret;
+>> +
+>> +out_walk:
+>> +	local_irq_enable();
+>> +	goto unlock;
+>> +}
+>> +#endif /* __HAVE_ARCH_CALL_SPF */
+>> +
+>>  /*
+>>   * By the time we get here, we already hold the mm semaphore
+>>   *
+>> -- 
+>> 2.7.4
+>>
+> 
