@@ -1,50 +1,20 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj16r013bzDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 19:53:55 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7U9rS2b049373
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 05:53:53 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cnr3ahkkr-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 05:53:52 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 30 Aug 2017 10:53:50 +0100
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, paulmck@linux.vnet.ibm.com,
- akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
- <507e79d5-59df-c5b5-106d-970c9353d9bc@linux.vnet.ibm.com>
- <20170829120426.4ar56rbmiupbqmio@hirez.programming.kicks-ass.net>
- <848fa2c6-dbda-9a1e-2efd-3ce9b083365e@linux.vnet.ibm.com>
- <20170829134550.t7du5zdssvlzemtk@hirez.programming.kicks-ass.net>
- <ab0634c4-274d-208f-fc4b-43991986bacf@linux.vnet.ibm.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 30 Aug 2017 11:53:41 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj1Qf2HRzzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 20:07:38 +1000 (AEST)
+Date: Wed, 30 Aug 2017 19:45:17 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.com
+Subject: Re: [PATCH RFC] powerpc: Implements MMIO emulation for lvx/stvx
+ instructions
+Message-ID: <20170830094517.GA12592@fergus.ozlabs.ibm.com>
+References: <1504045082-16178-1-git-send-email-joserz@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <ab0634c4-274d-208f-fc4b-43991986bacf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <db7e5c3e-0bb6-a1f3-a025-379071c30183@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1504045082-16178-1-git-send-email-joserz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,118 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 30/08/2017 07:03, Anshuman Khandual wrote:
-> On 08/29/2017 07:15 PM, Peter Zijlstra wrote:
->> On Tue, Aug 29, 2017 at 03:18:25PM +0200, Laurent Dufour wrote:
->>> On 29/08/2017 14:04, Peter Zijlstra wrote:
->>>> On Tue, Aug 29, 2017 at 09:59:30AM +0200, Laurent Dufour wrote:
->>>>> On 27/08/2017 02:18, Kirill A. Shutemov wrote:
->>>>>>> +
->>>>>>> +	if (unlikely(!vma->anon_vma))
->>>>>>> +		goto unlock;
->>>>>>
->>>>>> It deserves a comment.
->>>>>
->>>>> You're right I'll add it in the next version.
->>>>> For the record, the root cause is that __anon_vma_prepare() requires the
->>>>> mmap_sem to be held because vm_next and vm_prev must be safe.
->>>>
->>>> But should that test not be:
->>>>
->>>> 	if (unlikely(vma_is_anonymous(vma) && !vma->anon_vma))
->>>> 		goto unlock;
->>>>
->>>> Because !anon vmas will never have ->anon_vma set and you don't want to
->>>> exclude those.
->>>
->>> Yes in the case we later allow non anonymous vmas to be handled.
->>> Currently only anonymous vmas are supported so the check is good enough,
->>> isn't it ?
->>
->> That wasn't at all clear from reading the code. This makes it clear
->> ->anon_vma is only ever looked at for anonymous.
->>
->> And like Kirill says, we _really_ should start allowing some (if not
->> all) vm_ops. Large file based mappings aren't particularly rare.
->>
->> I'm not sure we want to introduce a white-list or just bite the bullet
->> and audit all ->fault() implementations. But either works and isn't
->> terribly difficult, auditing all is more work though.
+On Tue, Aug 29, 2017 at 07:18:01PM -0300, Jose Ricardo Ziviani wrote:
+> Hello!
 > 
-> filemap_fault() is used as vma-vm_ops->fault() for most of the file
-> systems. Changing it can enable speculative fault support for all of
-> them. It will still exclude other driver based vma-vm_ops->fault()
-> implementation. AFAICS, __lock_page_or_retry() function can drop
-> mm->mmap_sem if the page could not be locked right away. As suggested
-> by Peterz, making it understand FAULT_FLAG_SPECULATIVE should be good
-> enough. The patch is lightly tested for file mappings on top of this
-> series.
-
-Hi Anshuman,
-
-This sounds pretty good, except for  the FAULT_FLAG_RETRY_NOWAIT's case I
-mentioned in another mail.
-
-The next step would be to find a way to discriminate between the vm_fault()
-functions. Any idea ?
-
-Thanks,
-Laurent.
-
+> This patch implements MMIO emulation for two instructions: lvx and stvx. I started to implement other instructions but I'd like to have this reviewed beforehand because this is my first patch here and I'll certainly have some rework/fixes :-).
 > 
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index a497024..08f3042 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1181,6 +1181,18 @@ int __lock_page_killable(struct page *__page)
->  int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
->                          unsigned int flags)
->  {
-> +       if (flags & FAULT_FLAG_SPECULATIVE) {
-> +               if (flags & FAULT_FLAG_KILLABLE) {
-> +                       int ret;
-> +
-> +                       ret = __lock_page_killable(page);
-> +                       if (ret)
-> +                               return 0;
-> +               } else
-> +                       __lock_page(page);
-> +               return 1;
-> +       }
-> +
->         if (flags & FAULT_FLAG_ALLOW_RETRY) {
->                 /*
->                  * CAUTION! In this case, mmap_sem is not released
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 549d235..02347f3 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -3836,8 +3836,6 @@ static int handle_pte_fault(struct vm_fault *vmf)
->         if (!vmf->pte) {
->                 if (vma_is_anonymous(vmf->vma))
->                         return do_anonymous_page(vmf);
-> -               else if (vmf->flags & FAULT_FLAG_SPECULATIVE)
-> -                       return VM_FAULT_RETRY;
->                 else
->                         return do_fault(vmf);
->         }
-> @@ -4012,17 +4010,7 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
->                 goto unlock;
->         }
-> 
-> -       /*
-> -        * Can't call vm_ops service has we don't know what they would do
-> -        * with the VMA.
-> -        * This include huge page from hugetlbfs.
-> -        */
-> -       if (vma->vm_ops) {
-> -               trace_spf_vma_notsup(_RET_IP_, vma, address);
-> -               goto unlock;
-> -       }
-> -
-> -       if (unlikely(!vma->anon_vma)) {
-> +       if (unlikely(vma_is_anonymous(vma) && !vma->anon_vma)) {
->                 trace_spf_vma_notsup(_RET_IP_, vma, address);
->                 goto unlock;
->         }
-> 
+> Note: stvx is only storing 8 bytes, for some reason the code "vcpu->arch.paddr_accessed += run->mmio.len;", which adds the 8-byte offset after the first write is not making any difference (interesting that it works for load operations). I'm still investigating it but any idea about it will be appreciated.
+
+The run structure is mmapped by userspace (i.e. QEMU) and can be
+written by userspace between the first and the second exits to
+userspace (you have to do two exits to userspace because you can only
+transfer 8 bytes on each exit).  It's possible that userspace might be
+clearing run->mmio.len.  In general it's better not to rely on
+anything in *run (except of course the mmio_data for a MMIO read) when
+we come in from userspace to the kernel.
+
+Paul.
