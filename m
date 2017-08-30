@@ -1,37 +1,19 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhwDw6JdhzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 16:13:52 +1000 (AEST)
-Date: Wed, 30 Aug 2017 08:13:39 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net,
- jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-Message-ID: <20170830061339.GH32112@worktop.programming.kicks-ass.net>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
- <20170828093727.5wldedputadanssh@hirez.programming.kicks-ass.net>
- <1503954877.4850.19.camel@kernel.crashing.org>
- <20170829083352.qrsxvk3lkiydi3o2@hirez.programming.kicks-ass.net>
- <20170829112731.vhgwrzwwlimdbjcn@hirez.programming.kicks-ass.net>
- <1504041570.2358.30.camel@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhwhX3nNszDqH0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 16:34:20 +1000 (AEST)
+Date: Wed, 30 Aug 2017 16:34:09 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 18/17] powerpc: Emulate load/store floating point as
+ integer word instructions
+Message-ID: <20170830063409.GE27329@fergus.ozlabs.ibm.com>
+References: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1504041570.2358.30.camel@kernel.crashing.org>
+In-Reply-To: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +23,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 30, 2017 at 07:19:30AM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2017-08-29 at 13:27 +0200, Peter Zijlstra wrote:
-> > mpe helped me out and explained that is the PWC hint to TBLIE.
-> > 
-> > So, you set need_flush_all when you unhook pud/pmd/pte which you then
-> > use to set PWC. So free_pgtables() will do the PWC when it unhooks
-> > higher level pages.
-> > 
-> > But you're right that there's some issues, free_pgtables() itself
-> > doesn't seem to use mm->page_table_lock,pmd->lock _AT_ALL_ to unhook the
-> > pages.
-> > 
-> > If it were to do that, things should work fine since those locks would
-> > then serialize against the speculative faults, we would never install a
-> > page if the VMA would be under tear-down and it would thus not be
-> > visible to your caches either.
-> 
-> That's one case. I don't remember of *all* the cases to be honest, but
-> I do remember several times over the past few years thinking "ah we are
-> fine because the mm sem taken for writing protects us from any
-> concurrent tree structure change" :-)
+This adds emulation for the lfiwax, lfiwzx and stfiwx instructions.
+This necessitated adding a new flag to indicate whether a floating
+point or an integer conversion was needed for LOAD_FP and STORE_FP,
+so this moves the size field in op->type up 4 bits.
 
-Well, installing always seems to use the locks (it needs to, because its
-always done with down_read()), that only leaves removal, and the only
-place I know that removes stuff is free_pgtables().
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/include/asm/sstep.h |  5 ++--
+ arch/powerpc/lib/sstep.c         | 60 ++++++++++++++++++++++++++++++----------
+ 2 files changed, 48 insertions(+), 17 deletions(-)
 
-But I think I found another fun place, copy_page_range(). While it
-(pointlessly) takes all the PTLs on the dst mm it walks the src page
-tables without any PTLs.
-
-This means that if we have a multi-threaded process doing fork() a
-thread of the src mm could instantiate page-tables that will not be
-copied over.
-
-Of course, this is highly dubious behaviour to begin with, and I don't
-think there's anything fundamentally wrong with missing those pages but
-we should document this stuff.
+diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+index 309d1c5..ab9d849 100644
+--- a/arch/powerpc/include/asm/sstep.h
++++ b/arch/powerpc/include/asm/sstep.h
+@@ -68,6 +68,7 @@ enum instruction_type {
+ #define SIGNEXT		0x20
+ #define UPDATE		0x40	/* matches bit in opcode 31 instructions */
+ #define BYTEREV		0x80
++#define FPCONV		0x100
+ 
+ /* Barrier type field, ORed in with type */
+ #define BARRIER_MASK	0xe0
+@@ -93,8 +94,8 @@ enum instruction_type {
+ #define VSX_CHECK_VEC	8	/* check MSR_VEC not MSR_VSX for reg >= 32 */
+ 
+ /* Size field in type word */
+-#define SIZE(n)		((n) << 8)
+-#define GETSIZE(w)	((w) >> 8)
++#define SIZE(n)		((n) << 12)
++#define GETSIZE(w)	((w) >> 12)
+ 
+ #define MKOP(t, f, s)	((t) | (f) | SIZE(s))
+ 
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 24031ca..2f6897c 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -457,19 +457,23 @@ NOKPROBE_SYMBOL(write_mem);
+  * These access either the real FP register or the image in the
+  * thread_struct, depending on regs->msr & MSR_FP.
+  */
+-static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs,
+-		      bool cross_endian)
++static int do_fp_load(struct instruction_op *op, unsigned long ea,
++		      struct pt_regs *regs, bool cross_endian)
+ {
+-	int err;
++	int err, rn, nb;
+ 	union {
++		int i;
++		unsigned int u;
+ 		float f;
+ 		double d[2];
+ 		unsigned long l[2];
+ 		u8 b[2 * sizeof(double)];
+ 	} u;
+ 
++	nb = GETSIZE(op->type);
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
++	rn = op->reg;
+ 	err = copy_mem_in(u.b, ea, nb, regs);
+ 	if (err)
+ 		return err;
+@@ -479,8 +483,14 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs,
+ 			do_byte_reverse(&u.b[8], 8);
+ 	}
+ 	preempt_disable();
+-	if (nb == 4)
+-		conv_sp_to_dp(&u.f, &u.d[0]);
++	if (nb == 4) {
++		if (op->type & FPCONV)
++			conv_sp_to_dp(&u.f, &u.d[0]);
++		else if (op->type & SIGNEXT)
++			u.l[0] = u.i;
++		else
++			u.l[0] = u.u;
++	}
+ 	if (regs->msr & MSR_FP)
+ 		put_fpr(rn, &u.d[0]);
+ 	else
+@@ -498,25 +508,33 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs,
+ }
+ NOKPROBE_SYMBOL(do_fp_load);
+ 
+-static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs,
+-		       bool cross_endian)
++static int do_fp_store(struct instruction_op *op, unsigned long ea,
++		       struct pt_regs *regs, bool cross_endian)
+ {
++	int rn, nb;
+ 	union {
++		unsigned int u;
+ 		float f;
+ 		double d[2];
+ 		unsigned long l[2];
+ 		u8 b[2 * sizeof(double)];
+ 	} u;
+ 
++	nb = GETSIZE(op->type);
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
++	rn = op->reg;
+ 	preempt_disable();
+ 	if (regs->msr & MSR_FP)
+ 		get_fpr(rn, &u.d[0]);
+ 	else
+ 		u.l[0] = current->thread.TS_FPR(rn);
+-	if (nb == 4)
+-		conv_dp_to_sp(&u.d[0], &u.f);
++	if (nb == 4) {
++		if (op->type & FPCONV)
++			conv_dp_to_sp(&u.d[0], &u.f);
++		else
++			u.u = u.l[0];
++	}
+ 	if (nb == 16) {
+ 		rn |= 1;
+ 		if (regs->msr & MSR_FP)
+@@ -2049,7 +2067,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ #ifdef CONFIG_PPC_FPU
+ 		case 535:	/* lfsx */
+ 		case 567:	/* lfsux */
+-			op->type = MKOP(LOAD_FP, u, 4);
++			op->type = MKOP(LOAD_FP, u | FPCONV, 4);
+ 			break;
+ 
+ 		case 599:	/* lfdx */
+@@ -2059,7 +2077,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 
+ 		case 663:	/* stfsx */
+ 		case 695:	/* stfsux */
+-			op->type = MKOP(STORE_FP, u, 4);
++			op->type = MKOP(STORE_FP, u | FPCONV, 4);
+ 			break;
+ 
+ 		case 727:	/* stfdx */
+@@ -2072,9 +2090,21 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 			op->type = MKOP(LOAD_FP, 0, 16);
+ 			break;
+ 
++		case 855:	/* lfiwax */
++			op->type = MKOP(LOAD_FP, SIGNEXT, 4);
++			break;
++
++		case 887:	/* lfiwzx */
++			op->type = MKOP(LOAD_FP, 0, 4);
++			break;
++
+ 		case 919:	/* stfdpx */
+ 			op->type = MKOP(STORE_FP, 0, 16);
+ 			break;
++
++		case 983:	/* stfiwx */
++			op->type = MKOP(STORE_FP, 0, 4);
++			break;
+ #endif /* __powerpc64 */
+ #endif /* CONFIG_PPC_FPU */
+ 
+@@ -2352,7 +2382,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ #ifdef CONFIG_PPC_FPU
+ 	case 48:	/* lfs */
+ 	case 49:	/* lfsu */
+-		op->type = MKOP(LOAD_FP, u, 4);
++		op->type = MKOP(LOAD_FP, u | FPCONV, 4);
+ 		op->ea = dform_ea(instr, regs);
+ 		break;
+ 
+@@ -2364,7 +2394,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 
+ 	case 52:	/* stfs */
+ 	case 53:	/* stfsu */
+-		op->type = MKOP(STORE_FP, u, 4);
++		op->type = MKOP(STORE_FP, u | FPCONV, 4);
+ 		op->ea = dform_ea(instr, regs);
+ 		break;
+ 
+@@ -2792,7 +2822,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
+ 		 */
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_FP))
+ 			return 0;
+-		err = do_fp_load(op->reg, ea, size, regs, cross_endian);
++		err = do_fp_load(op, ea, regs, cross_endian);
+ 		break;
+ #endif
+ #ifdef CONFIG_ALTIVEC
+@@ -2862,7 +2892,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
+ 	case STORE_FP:
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_FP))
+ 			return 0;
+-		err = do_fp_store(op->reg, ea, size, regs, cross_endian);
++		err = do_fp_store(op, ea, regs, cross_endian);
+ 		break;
+ #endif
+ #ifdef CONFIG_ALTIVEC
+-- 
+2.7.4
