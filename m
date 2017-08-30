@@ -1,19 +1,20 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYH3LTdzDqGV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYH50FxzDqGG
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 14:12:51 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 3xhsYH1dG8z9sP5
+ by ozlabs.org (Postfix) with ESMTPSA id 3xhsYH34FTz9sNc
  for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2017 14:12:51 +1000 (AEST)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 08/17] powerpc: Add emulation for the addpcis instruction
-Date: Wed, 30 Aug 2017 14:12:31 +1000
-Message-Id: <1504066360-30128-9-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v3 09/17] powerpc: Make load/store emulation use larger memory
+ accesses
+Date: Wed, 30 Aug 2017 14:12:32 +1000
+Message-Id: <1504066360-30128-10-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 References: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,49 +26,373 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The addpcis instruction puts the sum of the next instruction address
-plus a constant into a register.  Since the result depends on the
-address of the instruction, it will give an incorrect result if it
-is single-stepped out of line, which is what the *probes subsystem
-will currently do if a probe is placed on an addpcis instruction.
-This fixes the problem by adding emulation of it to analyse_instr().
+At the moment, emulation of loads and stores of up to 8 bytes to
+unaligned addresses on a little-endian system uses a sequence of
+single-byte loads or stores to memory.  This is rather inefficient,
+and the code is hard to follow because it has many ifdefs.
+In addition, the Power ISA has requirements on how unaligned accesses
+are performed, which are not met by doing all accesses as
+sequences of single-byte accesses.
+
+Emulation of VSX loads and stores uses __copy_{to,from}_user,
+which means the emulation code has no control on the size of
+accesses.
+
+To simplify this, we add new copy_mem_in() and copy_mem_out()
+functions for accessing memory.  These use a sequence of the largest
+possible aligned accesses, up to 8 bytes (or 4 on 32-bit systems),
+to copy memory between a local buffer and user memory.  We then
+rewrite {read,write}_mem_unaligned and the VSX load/store
+emulation using these new functions.
+
+These new functions also simplify the code in do_fp_load() and
+do_fp_store() for the unaligned cases.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/lib/sstep.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ arch/powerpc/lib/sstep.c | 235 +++++++++++++++++++++--------------------------
+ 1 file changed, 106 insertions(+), 129 deletions(-)
 
 diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 114e597..ed2bc4c 100644
+index ed2bc4c..6cc2911 100644
 --- a/arch/powerpc/lib/sstep.c
 +++ b/arch/powerpc/lib/sstep.c
-@@ -1021,9 +1021,6 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 			op->ccval = (regs->ccr & ~(1UL << (31 - rd))) |
- 				(val << (31 - rd));
- 			return 1;
--		default:
--			op->type = UNKNOWN;
--			return 0;
- 		}
- 		break;
- 	case 31:
-@@ -1123,6 +1120,17 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 		op->val = imm;
- 		goto compute_done;
+@@ -193,7 +193,6 @@ static nokprobe_inline unsigned long max_align(unsigned long x)
+ 	return x & -x;		/* isolates rightmost bit */
+ }
  
-+	case 19:
-+		if (((instr >> 1) & 0x1f) == 2) {
-+			/* addpcis */
-+			imm = (short) (instr & 0xffc1);	/* d0 + d2 fields */
-+			imm |= (instr >> 15) & 0x3e;	/* d1 field */
-+			op->val = regs->nip + (imm << 16) + 4;
-+			goto compute_done;
+-
+ static nokprobe_inline unsigned long byterev_2(unsigned long x)
+ {
+ 	return ((x >> 8) & 0xff) | ((x & 0xff) << 8);
+@@ -239,56 +238,69 @@ static nokprobe_inline int read_mem_aligned(unsigned long *dest,
+ 	return err;
+ }
+ 
+-static nokprobe_inline int read_mem_unaligned(unsigned long *dest,
+-				unsigned long ea, int nb, struct pt_regs *regs)
++/*
++ * Copy from userspace to a buffer, using the largest possible
++ * aligned accesses, up to sizeof(long).
++ */
++static int nokprobe_inline copy_mem_in(u8 *dest, unsigned long ea, int nb)
+ {
+-	int err;
+-	unsigned long x, b, c;
+-#ifdef __LITTLE_ENDIAN__
+-	int len = nb; /* save a copy of the length for byte reversal */
+-#endif
++	int err = 0;
++	int c;
+ 
+-	/* unaligned, do this in pieces */
+-	x = 0;
+ 	for (; nb > 0; nb -= c) {
+-#ifdef __LITTLE_ENDIAN__
+-		c = 1;
+-#endif
+-#ifdef __BIG_ENDIAN__
+ 		c = max_align(ea);
+-#endif
+ 		if (c > nb)
+ 			c = max_align(nb);
+-		err = read_mem_aligned(&b, ea, c);
++		switch (c) {
++		case 1:
++			err = __get_user(*dest, (unsigned char __user *) ea);
++			break;
++		case 2:
++			err = __get_user(*(u16 *)dest,
++					 (unsigned short __user *) ea);
++			break;
++		case 4:
++			err = __get_user(*(u32 *)dest,
++					 (unsigned int __user *) ea);
++			break;
++#ifdef __powerpc64__
++		case 8:
++			err = __get_user(*(unsigned long *)dest,
++					 (unsigned long __user *) ea);
++			break;
++#endif
 +		}
-+		op->type = UNKNOWN;
-+		return 0;
+ 		if (err)
+ 			return err;
+-		x = (x << (8 * c)) + b;
++		dest += c;
+ 		ea += c;
+ 	}
+-#ifdef __LITTLE_ENDIAN__
+-	switch (len) {
+-	case 2:
+-		*dest = byterev_2(x);
+-		break;
+-	case 4:
+-		*dest = byterev_4(x);
+-		break;
+-#ifdef __powerpc64__
+-	case 8:
+-		*dest = byterev_8(x);
+-		break;
+-#endif
+-	}
+-#endif
+-#ifdef __BIG_ENDIAN__
+-	*dest = x;
+-#endif
+ 	return 0;
+ }
+ 
++static nokprobe_inline int read_mem_unaligned(unsigned long *dest,
++					      unsigned long ea, int nb,
++					      struct pt_regs *regs)
++{
++	union {
++		unsigned long ul;
++		u8 b[sizeof(unsigned long)];
++	} u;
++	int i;
++	int err;
 +
- 	case 20:	/* rlwimi */
- 		mb = (instr >> 6) & 0x1f;
- 		me = (instr >> 1) & 0x1f;
++	u.ul = 0;
++	i = IS_BE ? sizeof(unsigned long) - nb : 0;
++	err = copy_mem_in(&u.b[i], ea, nb);
++	if (!err)
++		*dest = u.ul;
++	return err;
++}
++
+ /*
+  * Read memory at address ea for nb bytes, return 0 for success
+- * or -EFAULT if an error occurred.
++ * or -EFAULT if an error occurred.  N.B. nb must be 1, 2, 4 or 8.
++ * If nb < sizeof(long), the result is right-justified on BE systems.
+  */
+ static int read_mem(unsigned long *dest, unsigned long ea, int nb,
+ 			      struct pt_regs *regs)
+@@ -325,48 +337,64 @@ static nokprobe_inline int write_mem_aligned(unsigned long val,
+ 	return err;
+ }
+ 
+-static nokprobe_inline int write_mem_unaligned(unsigned long val,
+-				unsigned long ea, int nb, struct pt_regs *regs)
++/*
++ * Copy from a buffer to userspace, using the largest possible
++ * aligned accesses, up to sizeof(long).
++ */
++static int nokprobe_inline copy_mem_out(u8 *dest, unsigned long ea, int nb)
+ {
+-	int err;
+-	unsigned long c;
++	int err = 0;
++	int c;
+ 
+-#ifdef __LITTLE_ENDIAN__
+-	switch (nb) {
+-	case 2:
+-		val = byterev_2(val);
+-		break;
+-	case 4:
+-		val = byterev_4(val);
+-		break;
+-#ifdef __powerpc64__
+-	case 8:
+-		val = byterev_8(val);
+-		break;
+-#endif
+-	}
+-#endif
+-	/* unaligned or little-endian, do this in pieces */
+ 	for (; nb > 0; nb -= c) {
+-#ifdef __LITTLE_ENDIAN__
+-		c = 1;
+-#endif
+-#ifdef __BIG_ENDIAN__
+ 		c = max_align(ea);
+-#endif
+ 		if (c > nb)
+ 			c = max_align(nb);
+-		err = write_mem_aligned(val >> (nb - c) * 8, ea, c);
++		switch (c) {
++		case 1:
++			err = __put_user(*dest, (unsigned char __user *) ea);
++			break;
++		case 2:
++			err = __put_user(*(u16 *)dest,
++					 (unsigned short __user *) ea);
++			break;
++		case 4:
++			err = __put_user(*(u32 *)dest,
++					 (unsigned int __user *) ea);
++			break;
++#ifdef __powerpc64__
++		case 8:
++			err = __put_user(*(unsigned long *)dest,
++					 (unsigned long __user *) ea);
++			break;
++#endif
++		}
+ 		if (err)
+ 			return err;
++		dest += c;
+ 		ea += c;
+ 	}
+ 	return 0;
+ }
+ 
++static nokprobe_inline int write_mem_unaligned(unsigned long val,
++					       unsigned long ea, int nb,
++					       struct pt_regs *regs)
++{
++	union {
++		unsigned long ul;
++		u8 b[sizeof(unsigned long)];
++	} u;
++	int i;
++
++	u.ul = val;
++	i = IS_BE ? sizeof(unsigned long) - nb : 0;
++	return copy_mem_out(&u.b[i], ea, nb);
++}
++
+ /*
+  * Write memory at address ea for nb bytes, return 0 for success
+- * or -EFAULT if an error occurred.
++ * or -EFAULT if an error occurred.  N.B. nb must be 1, 2, 4 or 8.
+  */
+ static int write_mem(unsigned long val, unsigned long ea, int nb,
+ 			       struct pt_regs *regs)
+@@ -389,40 +417,17 @@ static int do_fp_load(int rn, int (*func)(int, unsigned long),
+ 				struct pt_regs *regs)
+ {
+ 	int err;
+-	union {
+-		double dbl;
+-		unsigned long ul[2];
+-		struct {
+-#ifdef __BIG_ENDIAN__
+-			unsigned _pad_;
+-			unsigned word;
+-#endif
+-#ifdef __LITTLE_ENDIAN__
+-			unsigned word;
+-			unsigned _pad_;
+-#endif
+-		} single;
+-	} data;
+-	unsigned long ptr;
++	u8 buf[sizeof(double)] __attribute__((aligned(sizeof(double))));
+ 
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
+-	if ((ea & 3) == 0)
+-		return (*func)(rn, ea);
+-	ptr = (unsigned long) &data.ul;
+-	if (sizeof(unsigned long) == 8 || nb == 4) {
+-		err = read_mem_unaligned(&data.ul[0], ea, nb, regs);
+-		if (nb == 4)
+-			ptr = (unsigned long)&(data.single.word);
+-	} else {
+-		/* reading a double on 32-bit */
+-		err = read_mem_unaligned(&data.ul[0], ea, 4, regs);
+-		if (!err)
+-			err = read_mem_unaligned(&data.ul[1], ea + 4, 4, regs);
++	if (ea & 3) {
++		err = copy_mem_in(buf, ea, nb);
++		if (err)
++			return err;
++		ea = (unsigned long) buf;
+ 	}
+-	if (err)
+-		return err;
+-	return (*func)(rn, ptr);
++	return (*func)(rn, ea);
+ }
+ NOKPROBE_SYMBOL(do_fp_load);
+ 
+@@ -431,43 +436,15 @@ static int do_fp_store(int rn, int (*func)(int, unsigned long),
+ 				 struct pt_regs *regs)
+ {
+ 	int err;
+-	union {
+-		double dbl;
+-		unsigned long ul[2];
+-		struct {
+-#ifdef __BIG_ENDIAN__
+-			unsigned _pad_;
+-			unsigned word;
+-#endif
+-#ifdef __LITTLE_ENDIAN__
+-			unsigned word;
+-			unsigned _pad_;
+-#endif
+-		} single;
+-	} data;
+-	unsigned long ptr;
++	u8 buf[sizeof(double)] __attribute__((aligned(sizeof(double))));
+ 
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
+ 	if ((ea & 3) == 0)
+ 		return (*func)(rn, ea);
+-	ptr = (unsigned long) &data.ul[0];
+-	if (sizeof(unsigned long) == 8 || nb == 4) {
+-		if (nb == 4)
+-			ptr = (unsigned long)&(data.single.word);
+-		err = (*func)(rn, ptr);
+-		if (err)
+-			return err;
+-		err = write_mem_unaligned(data.ul[0], ea, nb, regs);
+-	} else {
+-		/* writing a double on 32-bit */
+-		err = (*func)(rn, ptr);
+-		if (err)
+-			return err;
+-		err = write_mem_unaligned(data.ul[0], ea, 4, regs);
+-		if (!err)
+-			err = write_mem_unaligned(data.ul[1], ea + 4, 4, regs);
+-	}
++	err = (*func)(rn, (unsigned long) buf);
++	if (!err)
++		err = copy_mem_out(buf, ea, nb);
+ 	return err;
+ }
+ NOKPROBE_SYMBOL(do_fp_store);
+@@ -2564,7 +2541,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ #endif
+ #ifdef CONFIG_VSX
+ 	case LOAD_VSX: {
+-		char mem[16];
++		u8 mem[16];
+ 		union vsx_reg buf;
+ 		unsigned long msrbit = MSR_VSX;
+ 
+@@ -2577,7 +2554,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		if (!(regs->msr & msrbit))
+ 			return 0;
+ 		if (!address_ok(regs, ea, size) ||
+-		    __copy_from_user(mem, (void __user *)ea, size))
++		    copy_mem_in(mem, ea, size))
+ 			return 0;
+ 
+ 		emulate_vsx_load(&op, &buf, mem);
+@@ -2639,7 +2616,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ #endif
+ #ifdef CONFIG_VSX
+ 	case STORE_VSX: {
+-		char mem[16];
++		u8 mem[16];
+ 		union vsx_reg buf;
+ 		unsigned long msrbit = MSR_VSX;
+ 
+@@ -2656,7 +2633,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 
+ 		store_vsrn(op.reg, &buf);
+ 		emulate_vsx_store(&op, &buf, mem);
+-		if (__copy_to_user((void __user *)ea, mem, size))
++		if (copy_mem_out(mem, ea, size))
+ 			return 0;
+ 		goto ldst_done;
+ 	}
 -- 
 2.7.4
