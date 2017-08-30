@@ -2,18 +2,19 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYK18W3zDqGV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYK2by1zDqGG
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 14:12:53 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 3xhsYJ3mY8z9sP5
+ by ozlabs.org (Postfix) with ESMTPSA id 3xhsYJ5pkWz9sR9
  for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2017 14:12:52 +1000 (AEST)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 13/17] powerpc: Emulate the dcbz instruction
-Date: Wed, 30 Aug 2017 14:12:36 +1000
-Message-Id: <1504066360-30128-14-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v3 14/17] powerpc: Set regs->dar if memory access fails in
+ emulate_step()
+Date: Wed, 30 Aug 2017 14:12:37 +1000
+Message-Id: <1504066360-30128-15-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 References: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,91 +26,264 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds code to analyse_instr() and emulate_step() to understand the
-dcbz (data cache block zero) instruction.  The emulate_dcbz() function
-is made public so it can be used by the alignment handler in future.
-(The apparently unnecessary cropping of the address to 32 bits is
-there because it will be needed in that situation.)
+This adds code to the instruction emulation code to set regs->dar
+to the address of any memory access that fails.  This address is
+not necessarily the same as the effective address of the instruction,
+because if the memory access is unaligned, it might cross a page
+boundary and fault on the second page.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/sstep.h |  2 ++
- arch/powerpc/lib/sstep.c         | 32 ++++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
+ arch/powerpc/lib/sstep.c | 74 ++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 52 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
-index 474a992..793639a 100644
---- a/arch/powerpc/include/asm/sstep.h
-+++ b/arch/powerpc/include/asm/sstep.h
-@@ -84,6 +84,7 @@ enum instruction_type {
- #define DCBTST		0x200
- #define DCBT		0x300
- #define ICBI		0x400
-+#define DCBZ		0x500
- 
- /* VSX flags values */
- #define VSX_FPCONV	1	/* do floating point SP/DP conversion */
-@@ -155,3 +156,4 @@ extern void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
- 			     const void *mem);
- extern void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
- 			      void *mem);
-+extern int emulate_dcbz(unsigned long ea, struct pt_regs *regs);
 diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 817cdc9..fa20f3a 100644
+index fa20f3a..5c0f50b 100644
 --- a/arch/powerpc/lib/sstep.c
 +++ b/arch/powerpc/lib/sstep.c
-@@ -780,6 +780,30 @@ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
+@@ -103,11 +103,19 @@ static nokprobe_inline int branch_taken(unsigned int instr,
+ 	return 1;
+ }
+ 
+-static nokprobe_inline long address_ok(struct pt_regs *regs, unsigned long ea, int nb)
++static nokprobe_inline long address_ok(struct pt_regs *regs,
++				       unsigned long ea, int nb)
+ {
+ 	if (!user_mode(regs))
+ 		return 1;
+-	return __access_ok(ea, nb, USER_DS);
++	if (__access_ok(ea, nb, USER_DS))
++		return 1;
++	if (__access_ok(ea, 1, USER_DS))
++		/* Access overlaps the end of the user region */
++		regs->dar = USER_DS.seg;
++	else
++		regs->dar = ea;
++	return 0;
+ }
+ 
+ /*
+@@ -210,7 +218,8 @@ static nokprobe_inline unsigned long byterev_8(unsigned long x)
+ #endif
+ 
+ static nokprobe_inline int read_mem_aligned(unsigned long *dest,
+-					unsigned long ea, int nb)
++					    unsigned long ea, int nb,
++					    struct pt_regs *regs)
+ {
+ 	int err = 0;
+ 	unsigned long x = 0;
+@@ -233,6 +242,8 @@ static nokprobe_inline int read_mem_aligned(unsigned long *dest,
+ 	}
+ 	if (!err)
+ 		*dest = x;
++	else
++		regs->dar = ea;
+ 	return err;
+ }
+ 
+@@ -240,7 +251,8 @@ static nokprobe_inline int read_mem_aligned(unsigned long *dest,
+  * Copy from userspace to a buffer, using the largest possible
+  * aligned accesses, up to sizeof(long).
+  */
+-static int nokprobe_inline copy_mem_in(u8 *dest, unsigned long ea, int nb)
++static int nokprobe_inline copy_mem_in(u8 *dest, unsigned long ea, int nb,
++				       struct pt_regs *regs)
+ {
+ 	int err = 0;
+ 	int c;
+@@ -268,8 +280,10 @@ static int nokprobe_inline copy_mem_in(u8 *dest, unsigned long ea, int nb)
+ 			break;
+ #endif
+ 		}
+-		if (err)
++		if (err) {
++			regs->dar = ea;
+ 			return err;
++		}
+ 		dest += c;
+ 		ea += c;
+ 	}
+@@ -289,7 +303,7 @@ static nokprobe_inline int read_mem_unaligned(unsigned long *dest,
+ 
+ 	u.ul = 0;
+ 	i = IS_BE ? sizeof(unsigned long) - nb : 0;
+-	err = copy_mem_in(&u.b[i], ea, nb);
++	err = copy_mem_in(&u.b[i], ea, nb, regs);
+ 	if (!err)
+ 		*dest = u.ul;
+ 	return err;
+@@ -306,13 +320,14 @@ static int read_mem(unsigned long *dest, unsigned long ea, int nb,
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
+ 	if ((ea & (nb - 1)) == 0)
+-		return read_mem_aligned(dest, ea, nb);
++		return read_mem_aligned(dest, ea, nb, regs);
+ 	return read_mem_unaligned(dest, ea, nb, regs);
+ }
+ NOKPROBE_SYMBOL(read_mem);
+ 
+ static nokprobe_inline int write_mem_aligned(unsigned long val,
+-					unsigned long ea, int nb)
++					     unsigned long ea, int nb,
++					     struct pt_regs *regs)
+ {
+ 	int err = 0;
+ 
+@@ -332,6 +347,8 @@ static nokprobe_inline int write_mem_aligned(unsigned long val,
+ 		break;
+ #endif
+ 	}
++	if (err)
++		regs->dar = ea;
+ 	return err;
+ }
+ 
+@@ -339,7 +356,8 @@ static nokprobe_inline int write_mem_aligned(unsigned long val,
+  * Copy from a buffer to userspace, using the largest possible
+  * aligned accesses, up to sizeof(long).
+  */
+-static int nokprobe_inline copy_mem_out(u8 *dest, unsigned long ea, int nb)
++static int nokprobe_inline copy_mem_out(u8 *dest, unsigned long ea, int nb,
++					struct pt_regs *regs)
+ {
+ 	int err = 0;
+ 	int c;
+@@ -367,8 +385,10 @@ static int nokprobe_inline copy_mem_out(u8 *dest, unsigned long ea, int nb)
+ 			break;
+ #endif
+ 		}
+-		if (err)
++		if (err) {
++			regs->dar = ea;
+ 			return err;
++		}
+ 		dest += c;
+ 		ea += c;
+ 	}
+@@ -387,7 +407,7 @@ static nokprobe_inline int write_mem_unaligned(unsigned long val,
+ 
+ 	u.ul = val;
+ 	i = IS_BE ? sizeof(unsigned long) - nb : 0;
+-	return copy_mem_out(&u.b[i], ea, nb);
++	return copy_mem_out(&u.b[i], ea, nb, regs);
+ }
+ 
+ /*
+@@ -400,7 +420,7 @@ static int write_mem(unsigned long val, unsigned long ea, int nb,
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
+ 	if ((ea & (nb - 1)) == 0)
+-		return write_mem_aligned(val, ea, nb);
++		return write_mem_aligned(val, ea, nb, regs);
+ 	return write_mem_unaligned(val, ea, nb, regs);
+ }
+ NOKPROBE_SYMBOL(write_mem);
+@@ -422,7 +442,7 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs)
+ 
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
+-	err = copy_mem_in(u.b, ea, nb);
++	err = copy_mem_in(u.b, ea, nb, regs);
+ 	if (err)
+ 		return err;
+ 	preempt_disable();
+@@ -471,7 +491,7 @@ static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs)
+ 			u.l[1] = current->thread.TS_FPR(rn);
+ 	}
+ 	preempt_enable();
+-	return copy_mem_out(u.b, ea, nb);
++	return copy_mem_out(u.b, ea, nb, regs);
+ }
+ NOKPROBE_SYMBOL(do_fp_store);
+ #endif
+@@ -491,7 +511,7 @@ static nokprobe_inline int do_vec_load(int rn, unsigned long ea,
+ 		return -EFAULT;
+ 	/* align to multiple of size */
+ 	ea &= ~(size - 1);
+-	err = copy_mem_in(&u.b[ea & 0xf], ea, size);
++	err = copy_mem_in(&u.b[ea & 0xf], ea, size, regs);
+ 	if (err)
+ 		return err;
+ 
+@@ -523,7 +543,7 @@ static nokprobe_inline int do_vec_store(int rn, unsigned long ea,
+ 	else
+ 		u.v = current->thread.vr_state.vr[rn];
+ 	preempt_enable();
+-	return copy_mem_out(&u.b[ea & 0xf], ea, size);
++	return copy_mem_out(&u.b[ea & 0xf], ea, size, regs);
+ }
+ #endif /* CONFIG_ALTIVEC */
+ 
+@@ -725,7 +745,7 @@ static nokprobe_inline int do_vsx_load(struct instruction_op *op,
+ 	union vsx_reg buf;
+ 	int size = GETSIZE(op->type);
+ 
+-	if (!address_ok(regs, ea, size) || copy_mem_in(mem, ea, size))
++	if (!address_ok(regs, ea, size) || copy_mem_in(mem, ea, size, regs))
+ 		return -EFAULT;
+ 
+ 	emulate_vsx_load(op, &buf, mem);
+@@ -776,7 +796,7 @@ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
+ 	}
+ 	preempt_enable();
+ 	emulate_vsx_store(op, &buf, mem);
+-	return  copy_mem_out(mem, ea, size);
++	return  copy_mem_out(mem, ea, size, regs);
  }
  #endif /* CONFIG_VSX */
  
-+int emulate_dcbz(unsigned long ea, struct pt_regs *regs)
-+{
-+	int err;
-+	unsigned long i, size;
-+
-+#ifdef __powerpc64__
-+	size = ppc64_caches.l1d.block_size;
-+	if (!(regs->msr & MSR_64BIT))
-+		ea &= 0xffffffffUL;
-+#else
-+	size = L1_CACHE_BYTES;
-+#endif
-+	ea &= ~(size - 1);
-+	if (!address_ok(regs, ea, size))
-+		return -EFAULT;
-+	for (i = 0; i < size; i += sizeof(long)) {
-+		err = __put_user(0, (unsigned long __user *) (ea + i));
-+		if (err)
-+			return err;
-+	}
-+	return 0;
-+}
-+NOKPROBE_SYMBOL(emulate_dcbz);
-+
- #define __put_user_asmx(x, addr, err, op, cr)		\
- 	__asm__ __volatile__(				\
- 		"1:	" op " %2,0,%3\n"		\
-@@ -1748,6 +1772,11 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 			op->type = MKOP(CACHEOP, ICBI, 0);
- 			op->ea = xform_ea(instr, regs);
- 			return 0;
-+
-+		case 1014:	/* dcbz */
-+			op->type = MKOP(CACHEOP, DCBZ, 0);
-+			op->ea = xform_ea(instr, regs);
-+			return 0;
- 		}
- 		break;
+@@ -797,8 +817,10 @@ int emulate_dcbz(unsigned long ea, struct pt_regs *regs)
+ 		return -EFAULT;
+ 	for (i = 0; i < size; i += sizeof(long)) {
+ 		err = __put_user(0, (unsigned long __user *) (ea + i));
+-		if (err)
++		if (err) {
++			regs->dar = ea;
+ 			return err;
++		}
  	}
-@@ -2607,6 +2636,9 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 		case ICBI:
- 			__cacheop_user_asmx(ea, err, "icbi");
+ 	return 0;
+ }
+@@ -2640,8 +2662,10 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 			err = emulate_dcbz(ea, regs);
  			break;
-+		case DCBZ:
-+			err = emulate_dcbz(ea, regs);
-+			break;
  		}
- 		if (err)
+-		if (err)
++		if (err) {
++			regs->dar = ea;
  			return 0;
++		}
+ 		goto instr_done;
+ 
+ 	case LARX:
+@@ -2668,12 +2692,16 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 			break;
+ 		case 16:
+ 			err = do_lqarx(ea, &regs->gpr[op.reg]);
+-			goto ldst_done;
++			break;
+ #endif
+ 		default:
+ 			return 0;
+ 		}
+-		if (!err)
++		if (err) {
++			regs->dar = ea;
++			return 0;
++		}
++		if (size < 16)
+ 			regs->gpr[op.reg] = val;
+ 		goto ldst_done;
+ 
+@@ -2711,6 +2739,8 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 			regs->ccr = (regs->ccr & 0x0fffffff) |
+ 				(cr & 0xe0000000) |
+ 				((regs->xer >> 3) & 0x10000000);
++		else
++			regs->dar = ea;
+ 		goto ldst_done;
+ 
+ 	case LOAD:
 -- 
 2.7.4
