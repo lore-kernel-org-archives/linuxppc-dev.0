@@ -1,20 +1,20 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYK2by1zDqGG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhsYK5FZwzDqGG
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 14:12:53 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 3xhsYJ5pkWz9sR9
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2017 14:12:52 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 3xhsYK2dmzz9sP5
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2017 14:12:53 +1000 (AEST)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 14/17] powerpc: Set regs->dar if memory access fails in
- emulate_step()
-Date: Wed, 30 Aug 2017 14:12:37 +1000
-Message-Id: <1504066360-30128-15-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v3 15/17] powerpc: Handle opposite-endian processes in
+ emulation code
+Date: Wed, 30 Aug 2017 14:12:38 +1000
+Message-Id: <1504066360-30128-16-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 References: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,264 +26,525 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds code to the instruction emulation code to set regs->dar
-to the address of any memory access that fails.  This address is
-not necessarily the same as the effective address of the instruction,
-because if the memory access is unaligned, it might cross a page
-boundary and fault on the second page.
+This adds code to the load and store emulation code to byte-swap
+the data appropriately when the process being emulated is set to
+the opposite endianness to that of the kernel.
+
+This also enables the emulation for the multiple-register loads
+and stores (lmw, stmw, lswi, stswi, lswx, stswx) to work for
+little-endian.  In little-endian mode, the partial word at the
+end of a transfer for lsw*/stsw* (when the byte count is not a
+multiple of 4) is loaded/stored at the least-significant end of
+the register.  Additionally, this fixes a bug in the previous
+code in that it could call read_mem/write_mem with a byte count
+that was not 1, 2, 4 or 8.
+
+Note that this only works correctly on processors with "true"
+little-endian mode, such as IBM POWER processors from POWER6 on, not
+the so-called "PowerPC" little-endian mode that uses address swizzling
+as implemented on the old 32-bit 603, 604, 740/750, 74xx CPUs.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/lib/sstep.c | 74 ++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 52 insertions(+), 22 deletions(-)
+ arch/powerpc/include/asm/sstep.h |   7 +-
+ arch/powerpc/lib/sstep.c         | 184 +++++++++++++++++++++++++++------------
+ 2 files changed, 131 insertions(+), 60 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+index 793639a..958c2c5 100644
+--- a/arch/powerpc/include/asm/sstep.h
++++ b/arch/powerpc/include/asm/sstep.h
+@@ -153,7 +153,8 @@ void emulate_update_regs(struct pt_regs *reg, struct instruction_op *op);
+ extern int emulate_step(struct pt_regs *regs, unsigned int instr);
+ 
+ extern void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+-			     const void *mem);
+-extern void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+-			      void *mem);
++			     const void *mem, bool cross_endian);
++extern void emulate_vsx_store(struct instruction_op *op,
++			      const union vsx_reg *reg, void *mem,
++			      bool cross_endian);
+ extern int emulate_dcbz(unsigned long ea, struct pt_regs *regs);
 diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index fa20f3a..5c0f50b 100644
+index 5c0f50b..810b5f2 100644
 --- a/arch/powerpc/lib/sstep.c
 +++ b/arch/powerpc/lib/sstep.c
-@@ -103,11 +103,19 @@ static nokprobe_inline int branch_taken(unsigned int instr,
- 	return 1;
+@@ -217,6 +217,33 @@ static nokprobe_inline unsigned long byterev_8(unsigned long x)
  }
- 
--static nokprobe_inline long address_ok(struct pt_regs *regs, unsigned long ea, int nb)
-+static nokprobe_inline long address_ok(struct pt_regs *regs,
-+				       unsigned long ea, int nb)
- {
- 	if (!user_mode(regs))
- 		return 1;
--	return __access_ok(ea, nb, USER_DS);
-+	if (__access_ok(ea, nb, USER_DS))
-+		return 1;
-+	if (__access_ok(ea, 1, USER_DS))
-+		/* Access overlaps the end of the user region */
-+		regs->dar = USER_DS.seg;
-+	else
-+		regs->dar = ea;
-+	return 0;
- }
- 
- /*
-@@ -210,7 +218,8 @@ static nokprobe_inline unsigned long byterev_8(unsigned long x)
  #endif
  
++static nokprobe_inline void do_byte_reverse(void *ptr, int nb)
++{
++	switch (nb) {
++	case 2:
++		*(u16 *)ptr = byterev_2(*(u16 *)ptr);
++		break;
++	case 4:
++		*(u32 *)ptr = byterev_4(*(u32 *)ptr);
++		break;
++#ifdef __powerpc64__
++	case 8:
++		*(unsigned long *)ptr = byterev_8(*(unsigned long *)ptr);
++		break;
++	case 16: {
++		unsigned long *up = (unsigned long *)ptr;
++		unsigned long tmp;
++		tmp = byterev_8(up[0]);
++		up[0] = byterev_8(up[1]);
++		up[1] = tmp;
++		break;
++	}
++#endif
++	default:
++		WARN_ON_ONCE(1);
++	}
++}
++
  static nokprobe_inline int read_mem_aligned(unsigned long *dest,
--					unsigned long ea, int nb)
-+					    unsigned long ea, int nb,
-+					    struct pt_regs *regs)
- {
- 	int err = 0;
- 	unsigned long x = 0;
-@@ -233,6 +242,8 @@ static nokprobe_inline int read_mem_aligned(unsigned long *dest,
- 	}
- 	if (!err)
- 		*dest = x;
-+	else
-+		regs->dar = ea;
- 	return err;
- }
- 
-@@ -240,7 +251,8 @@ static nokprobe_inline int read_mem_aligned(unsigned long *dest,
-  * Copy from userspace to a buffer, using the largest possible
-  * aligned accesses, up to sizeof(long).
+ 					    unsigned long ea, int nb,
+ 					    struct pt_regs *regs)
+@@ -430,7 +457,8 @@ NOKPROBE_SYMBOL(write_mem);
+  * These access either the real FP register or the image in the
+  * thread_struct, depending on regs->msr & MSR_FP.
   */
--static int nokprobe_inline copy_mem_in(u8 *dest, unsigned long ea, int nb)
-+static int nokprobe_inline copy_mem_in(u8 *dest, unsigned long ea, int nb,
-+				       struct pt_regs *regs)
+-static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs)
++static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs,
++		      bool cross_endian)
  {
- 	int err = 0;
- 	int c;
-@@ -268,8 +280,10 @@ static int nokprobe_inline copy_mem_in(u8 *dest, unsigned long ea, int nb)
- 			break;
- #endif
- 		}
--		if (err)
-+		if (err) {
-+			regs->dar = ea;
- 			return err;
-+		}
- 		dest += c;
- 		ea += c;
- 	}
-@@ -289,7 +303,7 @@ static nokprobe_inline int read_mem_unaligned(unsigned long *dest,
- 
- 	u.ul = 0;
- 	i = IS_BE ? sizeof(unsigned long) - nb : 0;
--	err = copy_mem_in(&u.b[i], ea, nb);
-+	err = copy_mem_in(&u.b[i], ea, nb, regs);
- 	if (!err)
- 		*dest = u.ul;
- 	return err;
-@@ -306,13 +320,14 @@ static int read_mem(unsigned long *dest, unsigned long ea, int nb,
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
- 	if ((ea & (nb - 1)) == 0)
--		return read_mem_aligned(dest, ea, nb);
-+		return read_mem_aligned(dest, ea, nb, regs);
- 	return read_mem_unaligned(dest, ea, nb, regs);
- }
- NOKPROBE_SYMBOL(read_mem);
- 
- static nokprobe_inline int write_mem_aligned(unsigned long val,
--					unsigned long ea, int nb)
-+					     unsigned long ea, int nb,
-+					     struct pt_regs *regs)
- {
- 	int err = 0;
- 
-@@ -332,6 +347,8 @@ static nokprobe_inline int write_mem_aligned(unsigned long val,
- 		break;
- #endif
- 	}
-+	if (err)
-+		regs->dar = ea;
- 	return err;
- }
- 
-@@ -339,7 +356,8 @@ static nokprobe_inline int write_mem_aligned(unsigned long val,
-  * Copy from a buffer to userspace, using the largest possible
-  * aligned accesses, up to sizeof(long).
-  */
--static int nokprobe_inline copy_mem_out(u8 *dest, unsigned long ea, int nb)
-+static int nokprobe_inline copy_mem_out(u8 *dest, unsigned long ea, int nb,
-+					struct pt_regs *regs)
- {
- 	int err = 0;
- 	int c;
-@@ -367,8 +385,10 @@ static int nokprobe_inline copy_mem_out(u8 *dest, unsigned long ea, int nb)
- 			break;
- #endif
- 		}
--		if (err)
-+		if (err) {
-+			regs->dar = ea;
- 			return err;
-+		}
- 		dest += c;
- 		ea += c;
- 	}
-@@ -387,7 +407,7 @@ static nokprobe_inline int write_mem_unaligned(unsigned long val,
- 
- 	u.ul = val;
- 	i = IS_BE ? sizeof(unsigned long) - nb : 0;
--	return copy_mem_out(&u.b[i], ea, nb);
-+	return copy_mem_out(&u.b[i], ea, nb, regs);
- }
- 
- /*
-@@ -400,7 +420,7 @@ static int write_mem(unsigned long val, unsigned long ea, int nb,
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
- 	if ((ea & (nb - 1)) == 0)
--		return write_mem_aligned(val, ea, nb);
-+		return write_mem_aligned(val, ea, nb, regs);
- 	return write_mem_unaligned(val, ea, nb, regs);
- }
- NOKPROBE_SYMBOL(write_mem);
-@@ -422,7 +442,7 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs)
- 
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
--	err = copy_mem_in(u.b, ea, nb);
-+	err = copy_mem_in(u.b, ea, nb, regs);
+ 	int err;
+ 	union {
+@@ -445,6 +473,11 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs)
+ 	err = copy_mem_in(u.b, ea, nb, regs);
  	if (err)
  		return err;
++	if (unlikely(cross_endian)) {
++		do_byte_reverse(u.b, min(nb, 8));
++		if (nb == 16)
++			do_byte_reverse(&u.b[8], 8);
++	}
  	preempt_disable();
-@@ -471,7 +491,7 @@ static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs)
+ 	if (nb == 4)
+ 		conv_sp_to_dp(&u.f, &u.d[0]);
+@@ -465,7 +498,8 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs)
+ }
+ NOKPROBE_SYMBOL(do_fp_load);
+ 
+-static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs)
++static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs,
++		       bool cross_endian)
+ {
+ 	union {
+ 		float f;
+@@ -491,6 +525,11 @@ static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs)
  			u.l[1] = current->thread.TS_FPR(rn);
  	}
  	preempt_enable();
--	return copy_mem_out(u.b, ea, nb);
-+	return copy_mem_out(u.b, ea, nb, regs);
++	if (unlikely(cross_endian)) {
++		do_byte_reverse(u.b, min(nb, 8));
++		if (nb == 16)
++			do_byte_reverse(&u.b[8], 8);
++	}
+ 	return copy_mem_out(u.b, ea, nb, regs);
  }
  NOKPROBE_SYMBOL(do_fp_store);
- #endif
-@@ -491,7 +511,7 @@ static nokprobe_inline int do_vec_load(int rn, unsigned long ea,
- 		return -EFAULT;
- 	/* align to multiple of size */
- 	ea &= ~(size - 1);
--	err = copy_mem_in(&u.b[ea & 0xf], ea, size);
-+	err = copy_mem_in(&u.b[ea & 0xf], ea, size, regs);
+@@ -499,7 +538,8 @@ NOKPROBE_SYMBOL(do_fp_store);
+ #ifdef CONFIG_ALTIVEC
+ /* For Altivec/VMX, no need to worry about alignment */
+ static nokprobe_inline int do_vec_load(int rn, unsigned long ea,
+-				       int size, struct pt_regs *regs)
++				       int size, struct pt_regs *regs,
++				       bool cross_endian)
+ {
+ 	int err;
+ 	union {
+@@ -514,7 +554,8 @@ static nokprobe_inline int do_vec_load(int rn, unsigned long ea,
+ 	err = copy_mem_in(&u.b[ea & 0xf], ea, size, regs);
  	if (err)
  		return err;
+-
++	if (unlikely(cross_endian))
++		do_byte_reverse(&u.b[ea & 0xf], size);
+ 	preempt_disable();
+ 	if (regs->msr & MSR_VEC)
+ 		put_vr(rn, &u.v);
+@@ -525,7 +566,8 @@ static nokprobe_inline int do_vec_load(int rn, unsigned long ea,
+ }
  
-@@ -523,7 +543,7 @@ static nokprobe_inline int do_vec_store(int rn, unsigned long ea,
+ static nokprobe_inline int do_vec_store(int rn, unsigned long ea,
+-					int size, struct pt_regs *regs)
++					int size, struct pt_regs *regs,
++					bool cross_endian)
+ {
+ 	union {
+ 		__vector128 v;
+@@ -543,49 +585,60 @@ static nokprobe_inline int do_vec_store(int rn, unsigned long ea,
  	else
  		u.v = current->thread.vr_state.vr[rn];
  	preempt_enable();
--	return copy_mem_out(&u.b[ea & 0xf], ea, size);
-+	return copy_mem_out(&u.b[ea & 0xf], ea, size, regs);
++	if (unlikely(cross_endian))
++		do_byte_reverse(&u.b[ea & 0xf], size);
+ 	return copy_mem_out(&u.b[ea & 0xf], ea, size, regs);
  }
  #endif /* CONFIG_ALTIVEC */
  
-@@ -725,7 +745,7 @@ static nokprobe_inline int do_vsx_load(struct instruction_op *op,
- 	union vsx_reg buf;
- 	int size = GETSIZE(op->type);
+ #ifdef __powerpc64__
+ static nokprobe_inline int emulate_lq(struct pt_regs *regs, unsigned long ea,
+-				      int reg)
++				      int reg, bool cross_endian)
+ {
+ 	int err;
  
--	if (!address_ok(regs, ea, size) || copy_mem_in(mem, ea, size))
-+	if (!address_ok(regs, ea, size) || copy_mem_in(mem, ea, size, regs))
+ 	if (!address_ok(regs, ea, 16))
+ 		return -EFAULT;
+ 	/* if aligned, should be atomic */
+-	if ((ea & 0xf) == 0)
+-		return do_lq(ea, &regs->gpr[reg]);
+-
+-	err = read_mem(&regs->gpr[reg + IS_LE], ea, 8, regs);
+-	if (!err)
+-		err = read_mem(&regs->gpr[reg + IS_BE], ea + 8, 8, regs);
++	if ((ea & 0xf) == 0) {
++		err = do_lq(ea, &regs->gpr[reg]);
++	} else {
++		err = read_mem(&regs->gpr[reg + IS_LE], ea, 8, regs);
++		if (!err)
++			err = read_mem(&regs->gpr[reg + IS_BE], ea + 8, 8, regs);
++	}
++	if (!err && unlikely(cross_endian))
++		do_byte_reverse(&regs->gpr[reg], 16);
+ 	return err;
+ }
+ 
+ static nokprobe_inline int emulate_stq(struct pt_regs *regs, unsigned long ea,
+-				       int reg)
++				       int reg, bool cross_endian)
+ {
+ 	int err;
++	unsigned long vals[2];
+ 
+ 	if (!address_ok(regs, ea, 16))
+ 		return -EFAULT;
++	vals[0] = regs->gpr[reg];
++	vals[1] = regs->gpr[reg + 1];
++	if (unlikely(cross_endian))
++		do_byte_reverse(vals, 16);
++
+ 	/* if aligned, should be atomic */
+ 	if ((ea & 0xf) == 0)
+-		return do_stq(ea, regs->gpr[reg], regs->gpr[reg + 1]);
++		return do_stq(ea, vals[0], vals[1]);
+ 
+-	err = write_mem(regs->gpr[reg + IS_LE], ea, 8, regs);
++	err = write_mem(vals[IS_LE], ea, 8, regs);
+ 	if (!err)
+-		err = write_mem(regs->gpr[reg + IS_BE], ea + 8, 8, regs);
++		err = write_mem(vals[IS_BE], ea + 8, 8, regs);
+ 	return err;
+ }
+ #endif /* __powerpc64 */
+ 
+ #ifdef CONFIG_VSX
+ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+-		      const void *mem)
++		      const void *mem, bool rev)
+ {
+ 	int size, read_size;
+ 	int i, j;
+@@ -602,19 +655,18 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 		if (size == 0)
+ 			break;
+ 		memcpy(reg, mem, size);
+-		if (IS_LE && (op->vsx_flags & VSX_LDLEFT)) {
+-			/* reverse 16 bytes */
+-			unsigned long tmp;
+-			tmp = byterev_8(reg->d[0]);
+-			reg->d[0] = byterev_8(reg->d[1]);
+-			reg->d[1] = tmp;
+-		}
++		if (IS_LE && (op->vsx_flags & VSX_LDLEFT))
++			rev = !rev;
++		if (rev)
++			do_byte_reverse(reg, 16);
+ 		break;
+ 	case 8:
+ 		/* scalar loads, lxvd2x, lxvdsx */
+ 		read_size = (size >= 8) ? 8 : size;
+ 		i = IS_LE ? 8 : 8 - read_size;
+ 		memcpy(&reg->b[i], mem, read_size);
++		if (rev)
++			do_byte_reverse(&reg->b[i], 8);
+ 		if (size < 8) {
+ 			if (op->type & SIGNEXT) {
+ 				/* size == 4 is the only case here */
+@@ -626,9 +678,10 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 				preempt_enable();
+ 			}
+ 		} else {
+-			if (size == 16)
+-				reg->d[IS_BE] = *(unsigned long *)(mem + 8);
+-			else if (op->vsx_flags & VSX_SPLAT)
++			if (size == 16) {
++				unsigned long v = *(unsigned long *)(mem + 8);
++				reg->d[IS_BE] = !rev ? v : byterev_8(v);
++			} else if (op->vsx_flags & VSX_SPLAT)
+ 				reg->d[IS_BE] = reg->d[IS_LE];
+ 		}
+ 		break;
+@@ -637,7 +690,7 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 		wp = mem;
+ 		for (j = 0; j < size / 4; ++j) {
+ 			i = IS_LE ? 3 - j : j;
+-			reg->w[i] = *wp++;
++			reg->w[i] = !rev ? *wp++ : byterev_4(*wp++);
+ 		}
+ 		if (op->vsx_flags & VSX_SPLAT) {
+ 			u32 val = reg->w[IS_LE ? 3 : 0];
+@@ -652,7 +705,7 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 		hp = mem;
+ 		for (j = 0; j < size / 2; ++j) {
+ 			i = IS_LE ? 7 - j : j;
+-			reg->h[i] = *hp++;
++			reg->h[i] = !rev ? *hp++ : byterev_2(*hp++);
+ 		}
+ 		break;
+ 	case 1:
+@@ -669,7 +722,7 @@ EXPORT_SYMBOL_GPL(emulate_vsx_load);
+ NOKPROBE_SYMBOL(emulate_vsx_load);
+ 
+ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+-		       void *mem)
++		       void *mem, bool rev)
+ {
+ 	int size, write_size;
+ 	int i, j;
+@@ -685,7 +738,9 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+ 		/* stxv, stxvx, stxvl, stxvll */
+ 		if (size == 0)
+ 			break;
+-		if (IS_LE && (op->vsx_flags & VSX_LDLEFT)) {
++		if (IS_LE && (op->vsx_flags & VSX_LDLEFT))
++			rev = !rev;
++		if (rev) {
+ 			/* reverse 16 bytes */
+ 			buf.d[0] = byterev_8(reg->d[1]);
+ 			buf.d[1] = byterev_8(reg->d[0]);
+@@ -707,13 +762,18 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+ 		memcpy(mem, &reg->b[i], write_size);
+ 		if (size == 16)
+ 			memcpy(mem + 8, &reg->d[IS_BE], 8);
++		if (unlikely(rev)) {
++			do_byte_reverse(mem, write_size);
++			if (size == 16)
++				do_byte_reverse(mem + 8, 8);
++		}
+ 		break;
+ 	case 4:
+ 		/* stxvw4x */
+ 		wp = mem;
+ 		for (j = 0; j < size / 4; ++j) {
+ 			i = IS_LE ? 3 - j : j;
+-			*wp++ = reg->w[i];
++			*wp++ = !rev ? reg->w[i] : byterev_4(reg->w[i]);
+ 		}
+ 		break;
+ 	case 2:
+@@ -721,7 +781,7 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+ 		hp = mem;
+ 		for (j = 0; j < size / 2; ++j) {
+ 			i = IS_LE ? 7 - j : j;
+-			*hp++ = reg->h[i];
++			*hp++ = !rev ? reg->h[i] : byterev_2(reg->h[i]);
+ 		}
+ 		break;
+ 	case 1:
+@@ -738,7 +798,8 @@ EXPORT_SYMBOL_GPL(emulate_vsx_store);
+ NOKPROBE_SYMBOL(emulate_vsx_store);
+ 
+ static nokprobe_inline int do_vsx_load(struct instruction_op *op,
+-				       unsigned long ea, struct pt_regs *regs)
++				       unsigned long ea, struct pt_regs *regs,
++				       bool cross_endian)
+ {
+ 	int reg = op->reg;
+ 	u8 mem[16];
+@@ -748,7 +809,7 @@ static nokprobe_inline int do_vsx_load(struct instruction_op *op,
+ 	if (!address_ok(regs, ea, size) || copy_mem_in(mem, ea, size, regs))
  		return -EFAULT;
  
- 	emulate_vsx_load(op, &buf, mem);
-@@ -776,7 +796,7 @@ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
+-	emulate_vsx_load(op, &buf, mem);
++	emulate_vsx_load(op, &buf, mem, cross_endian);
+ 	preempt_disable();
+ 	if (reg < 32) {
+ 		/* FP regs + extensions */
+@@ -769,7 +830,8 @@ static nokprobe_inline int do_vsx_load(struct instruction_op *op,
+ }
+ 
+ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
+-					unsigned long ea, struct pt_regs *regs)
++					unsigned long ea, struct pt_regs *regs,
++					bool cross_endian)
+ {
+ 	int reg = op->reg;
+ 	u8 mem[16];
+@@ -795,7 +857,7 @@ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
+ 			buf.v = current->thread.vr_state.vr[reg - 32];
  	}
  	preempt_enable();
- 	emulate_vsx_store(op, &buf, mem);
--	return  copy_mem_out(mem, ea, size);
-+	return  copy_mem_out(mem, ea, size, regs);
+-	emulate_vsx_store(op, &buf, mem);
++	emulate_vsx_store(op, &buf, mem, cross_endian);
+ 	return  copy_mem_out(mem, ea, size, regs);
  }
  #endif /* CONFIG_VSX */
+@@ -2619,6 +2681,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	unsigned int cr;
+ 	int i, rd, nb;
+ 	unsigned long ea;
++	bool cross_endian;
  
-@@ -797,8 +817,10 @@ int emulate_dcbz(unsigned long ea, struct pt_regs *regs)
- 		return -EFAULT;
- 	for (i = 0; i < size; i += sizeof(long)) {
- 		err = __put_user(0, (unsigned long __user *) (ea + i));
--		if (err)
-+		if (err) {
-+			regs->dar = ea;
- 			return err;
-+		}
- 	}
- 	return 0;
- }
-@@ -2640,8 +2662,10 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 			err = emulate_dcbz(ea, regs);
- 			break;
- 		}
--		if (err)
-+		if (err) {
-+			regs->dar = ea;
- 			return 0;
-+		}
- 		goto instr_done;
+ 	r = analyse_instr(&op, regs, instr);
+ 	if (r < 0)
+@@ -2631,6 +2694,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	err = 0;
+ 	size = GETSIZE(op.type);
+ 	type = op.type & INSTR_TYPE_MASK;
++	cross_endian = (regs->msr & MSR_LE) != (MSR_KERNEL & MSR_LE);
  
- 	case LARX:
-@@ -2668,12 +2692,16 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 			break;
- 		case 16:
- 			err = do_lqarx(ea, &regs->gpr[op.reg]);
--			goto ldst_done;
-+			break;
- #endif
- 		default:
- 			return 0;
- 		}
--		if (!err)
-+		if (err) {
-+			regs->dar = ea;
-+			return 0;
-+		}
-+		if (size < 16)
- 			regs->gpr[op.reg] = val;
- 		goto ldst_done;
- 
-@@ -2711,6 +2739,8 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
- 			regs->ccr = (regs->ccr & 0x0fffffff) |
- 				(cr & 0xe0000000) |
- 				((regs->xer >> 3) & 0x10000000);
-+		else
-+			regs->dar = ea;
- 		goto ldst_done;
- 
+ 	ea = op.ea;
+ 	if (OP_IS_LOAD_STORE(type) || type == CACHEOP)
+@@ -2746,7 +2810,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
  	case LOAD:
+ #ifdef __powerpc64__
+ 		if (size == 16) {
+-			err = emulate_lq(regs, ea, op.reg);
++			err = emulate_lq(regs, ea, op.reg, cross_endian);
+ 			goto ldst_done;
+ 		}
+ #endif
+@@ -2754,7 +2818,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		if (!err) {
+ 			if (op.type & SIGNEXT)
+ 				do_signext(&regs->gpr[op.reg], size);
+-			if (op.type & BYTEREV)
++			if ((op.type & BYTEREV) == (cross_endian ? 0 : BYTEREV))
+ 				do_byterev(&regs->gpr[op.reg], size);
+ 		}
+ 		goto ldst_done;
+@@ -2769,14 +2833,14 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		 */
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_FP))
+ 			return 0;
+-		err = do_fp_load(op.reg, ea, size, regs);
++		err = do_fp_load(op.reg, ea, size, regs, cross_endian);
+ 		goto ldst_done;
+ #endif
+ #ifdef CONFIG_ALTIVEC
+ 	case LOAD_VMX:
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
+ 			return 0;
+-		err = do_vec_load(op.reg, ea, size, regs);
++		err = do_vec_load(op.reg, ea, size, regs, cross_endian);
+ 		goto ldst_done;
+ #endif
+ #ifdef CONFIG_VSX
+@@ -2791,23 +2855,26 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 			msrbit = MSR_VEC;
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & msrbit))
+ 			return 0;
+-		err = do_vsx_load(&op, ea, regs);
++		err = do_vsx_load(&op, ea, regs, cross_endian);
+ 		goto ldst_done;
+ 	}
+ #endif
+ 	case LOAD_MULTI:
+-		if (regs->msr & MSR_LE)
+-			return 0;
++		if (!address_ok(regs, ea, size))
++			return -EFAULT;
+ 		rd = op.reg;
+ 		for (i = 0; i < size; i += 4) {
++			unsigned int v32 = 0;
++
+ 			nb = size - i;
+ 			if (nb > 4)
+ 				nb = 4;
+-			err = read_mem(&regs->gpr[rd], ea, nb, regs);
++			err = copy_mem_in((u8 *) &v32, ea, nb, regs);
+ 			if (err)
+ 				return 0;
+-			if (nb < 4)	/* left-justify last bytes */
+-				regs->gpr[rd] <<= 32 - 8 * nb;
++			if (unlikely(cross_endian))
++				v32 = byterev_4(v32);
++			regs->gpr[rd] = v32;
+ 			ea += 4;
+ 			++rd;
+ 		}
+@@ -2816,7 +2883,7 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	case STORE:
+ #ifdef __powerpc64__
+ 		if (size == 16) {
+-			err = emulate_stq(regs, ea, op.reg);
++			err = emulate_stq(regs, ea, op.reg, cross_endian);
+ 			goto ldst_done;
+ 		}
+ #endif
+@@ -2827,6 +2894,8 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 			err = handle_stack_update(ea, regs);
+ 			goto ldst_done;
+ 		}
++		if (unlikely(cross_endian))
++			do_byterev(&op.val, size);
+ 		err = write_mem(op.val, ea, size, regs);
+ 		goto ldst_done;
+ 
+@@ -2834,14 +2903,14 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	case STORE_FP:
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_FP))
+ 			return 0;
+-		err = do_fp_store(op.reg, ea, size, regs);
++		err = do_fp_store(op.reg, ea, size, regs, cross_endian);
+ 		goto ldst_done;
+ #endif
+ #ifdef CONFIG_ALTIVEC
+ 	case STORE_VMX:
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
+ 			return 0;
+-		err = do_vec_store(op.reg, ea, size, regs);
++		err = do_vec_store(op.reg, ea, size, regs, cross_endian);
+ 		goto ldst_done;
+ #endif
+ #ifdef CONFIG_VSX
+@@ -2856,22 +2925,23 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
+ 			msrbit = MSR_VEC;
+ 		if (!(regs->msr & MSR_PR) && !(regs->msr & msrbit))
+ 			return 0;
+-		err = do_vsx_store(&op, ea, regs);
++		err = do_vsx_store(&op, ea, regs, cross_endian);
+ 		goto ldst_done;
+ 	}
+ #endif
+ 	case STORE_MULTI:
+-		if (regs->msr & MSR_LE)
+-			return 0;
++		if (!address_ok(regs, ea, size))
++			return -EFAULT;
+ 		rd = op.reg;
+ 		for (i = 0; i < size; i += 4) {
+-			val = regs->gpr[rd];
++			unsigned int v32 = regs->gpr[rd];
++
+ 			nb = size - i;
+ 			if (nb > 4)
+ 				nb = 4;
+-			else
+-				val >>= 32 - 8 * nb;
+-			err = write_mem(val, ea, nb, regs);
++			if (unlikely(cross_endian))
++				v32 = byterev_4(v32);
++			err = copy_mem_out((u8 *) &v32, ea, nb, regs);
+ 			if (err)
+ 				return 0;
+ 			ea += 4;
 -- 
 2.7.4
