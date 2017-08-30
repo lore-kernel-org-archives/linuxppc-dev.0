@@ -1,22 +1,22 @@
 Return-Path: <clg@kaod.org>
-Received: from 1.mo68.mail-out.ovh.net (1.mo68.mail-out.ovh.net
- [46.105.41.146])
+Received: from 4.mo68.mail-out.ovh.net (4.mo68.mail-out.ovh.net [46.105.59.63])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjGTx2pXmzDqXl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjGTx2NrYzDqRM
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 05:56:21 +1000 (AEST)
 Received: from player776.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id C91407B73E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 21:47:16 +0200 (CEST)
+ by mo68.mail-out.ovh.net (Postfix) with ESMTP id B87CE74ECA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 21:46:39 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  David Gibson <david@gibson.dropbear.id.au>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v3 7/8] powerpc/xive: add XIVE Exploitation Mode to CAS
-Date: Wed, 30 Aug 2017 21:46:16 +0200
-Message-Id: <20170830194617.26621-8-clg@kaod.org>
+Subject: [PATCH v3 1/8] powerpc/xive: introduce a common routine
+ xive_queue_page_alloc()
+Date: Wed, 30 Aug 2017 21:46:10 +0200
+Message-Id: <20170830194617.26621-2-clg@kaod.org>
 In-Reply-To: <20170830194617.26621-1-clg@kaod.org>
 References: <20170830194617.26621-1-clg@kaod.org>
 MIME-Version: 1.0
@@ -30,126 +30,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER9, the Client Architecture Support (CAS) negotiation process
-determines whether the guest operates in XIVE Legacy compatibility or
-in XIVE exploitation mode. Now that we have initial guest support for
-the XIVE interrupt controller, let's inform the hypervisor what we can
-do.
-
-The platform advertises the XIVE Exploitation Mode support using the
-property "ibm,arch-vec-5-platform-support-vec-5", byte 23 bits 0-1 :
-
- - 0b00 XIVE legacy mode Only
- - 0b01 XIVE exploitation mode Only
- - 0b10 XIVE legacy or exploitation mode
-
-The OS asks for XIVE Exploitation Mode support using the property
-"ibm,architecture-vec-5", byte 23 bits 0-1:
-
- - 0b00 XIVE legacy mode Only
- - 0b01 XIVE exploitation mode Only
+This routine will be used in the spapr backend. Also introduce a short
+xive_alloc_order() helper.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
+ arch/powerpc/sysdev/xive/common.c        | 16 ++++++++++++++++
+ arch/powerpc/sysdev/xive/native.c        | 16 +++++-----------
+ arch/powerpc/sysdev/xive/xive-internal.h |  6 ++++++
+ 3 files changed, 27 insertions(+), 11 deletions(-)
 
- Changes since v1:
-
- - fixed XIVE mode parsing 
- - integrated the prom.h definitions
- - introduced extra bits definition : OV5_XIVE_LEGACY and OV5_XIVE_EITHER
- 
- arch/powerpc/include/asm/prom.h |  5 ++++-
- arch/powerpc/kernel/prom_init.c | 34 +++++++++++++++++++++++++++++++++-
- 2 files changed, 37 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 35c00d7a0cf8..825bd5998701 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -159,7 +159,10 @@ struct of_drconf_cell {
- #define OV5_PFO_HW_842		0x1140	/* PFO Compression Accelerator */
- #define OV5_PFO_HW_ENCR		0x1120	/* PFO Encryption Accelerator */
- #define OV5_SUB_PROCESSORS	0x1501	/* 1,2,or 4 Sub-Processors supported */
--#define OV5_XIVE_EXPLOIT	0x1701	/* XIVE exploitation supported */
-+#define OV5_XIVE_SUPPORT	0x17C0	/* XIVE Exploitation Support Mask */
-+#define OV5_XIVE_LEGACY		0x1700	/* XIVE legacy mode Only */
-+#define OV5_XIVE_EXPLOIT	0x1740	/* XIVE exploitation mode Only */
-+#define OV5_XIVE_EITHER		0x1780	/* XIVE legacy or exploitation mode */
- /* MMU Base Architecture */
- #define OV5_MMU_SUPPORT		0x18C0	/* MMU Mode Support Mask */
- #define OV5_MMU_HASH		0x1800	/* Hash MMU Only */
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 613f79f03877..02190e90c7ae 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -177,6 +177,7 @@ struct platform_support {
- 	bool hash_mmu;
- 	bool radix_mmu;
- 	bool radix_gtse;
-+	bool xive;
- };
- 
- /* Platforms codes are now obsolete in the kernel. Now only used within this
-@@ -1041,6 +1042,27 @@ static void __init prom_parse_mmu_model(u8 val,
- 	}
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 6e0c9dee724f..26999ceae20e 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1424,6 +1424,22 @@ bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
+ 	return true;
  }
  
-+static void __init prom_parse_xive_model(u8 val,
-+					 struct platform_support *support)
++__be32 *xive_queue_page_alloc(unsigned int cpu, u32 queue_shift)
 +{
-+	switch (val) {
-+	case OV5_FEAT(OV5_XIVE_EITHER): /* Either Available */
-+		prom_debug("XIVE - either mode supported\n");
-+		support->xive = true;
-+		break;
-+	case OV5_FEAT(OV5_XIVE_EXPLOIT): /* Only Exploitation mode */
-+		prom_debug("XIVE - exploitation mode supported\n");
-+		support->xive = true;
-+		break;
-+	case OV5_FEAT(OV5_XIVE_LEGACY): /* Only Legacy mode */
-+		prom_debug("XIVE - legacy mode supported\n");
-+		break;
-+	default:
-+		prom_debug("Unknown xive support option: 0x%x\n", val);
-+		break;
-+	}
++	unsigned int alloc_order;
++	struct page *pages;
++	__be32 *qpage;
++
++	alloc_order = xive_alloc_order(queue_shift);
++	pages = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, alloc_order);
++	if (!pages)
++		return ERR_PTR(-ENOMEM);
++	qpage = (__be32 *)page_address(pages);
++	memset(qpage, 0, 1 << queue_shift);
++
++	return qpage;
 +}
 +
- static void __init prom_parse_platform_support(u8 index, u8 val,
- 					       struct platform_support *support)
+ static int __init xive_off(char *arg)
  {
-@@ -1054,6 +1076,10 @@ static void __init prom_parse_platform_support(u8 index, u8 val,
- 			support->radix_gtse = true;
- 		}
- 		break;
-+	case OV5_INDX(OV5_XIVE_SUPPORT): /* Interrupt mode */
-+		prom_parse_xive_model(val & OV5_FEAT(OV5_XIVE_SUPPORT),
-+				      support);
-+		break;
- 	}
- }
+ 	xive_cmdline_disabled = true;
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+index 0f95476b01f6..ef92a83090e1 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -202,17 +202,12 @@ EXPORT_SYMBOL_GPL(xive_native_disable_queue);
+ static int xive_native_setup_queue(unsigned int cpu, struct xive_cpu *xc, u8 prio)
+ {
+ 	struct xive_q *q = &xc->queue[prio];
+-	unsigned int alloc_order;
+-	struct page *pages;
+ 	__be32 *qpage;
  
-@@ -1062,7 +1088,8 @@ static void __init prom_check_platform_support(void)
- 	struct platform_support supported = {
- 		.hash_mmu = false,
- 		.radix_mmu = false,
--		.radix_gtse = false
-+		.radix_gtse = false,
-+		.xive = false
- 	};
- 	int prop_len = prom_getproplen(prom.chosen,
- 				       "ibm,arch-vec-5-platform-support");
-@@ -1095,6 +1122,11 @@ static void __init prom_check_platform_support(void)
- 		/* We're probably on a legacy hypervisor */
- 		prom_debug("Assuming legacy hash support\n");
- 	}
+-	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
+-		(xive_queue_shift - PAGE_SHIFT) : 0;
+-	pages = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, alloc_order);
+-	if (!pages)
+-		return -ENOMEM;
+-	qpage = (__be32 *)page_address(pages);
+-	memset(qpage, 0, 1 << xive_queue_shift);
++	qpage = xive_queue_page_alloc(cpu, xive_queue_shift);
++	if (IS_ERR(qpage))
++		return PTR_ERR(qpage);
 +
-+	if (supported.xive) {
-+		prom_debug("Asking for XIVE\n");
-+		ibm_architecture_vec.vec5.intarch = OV5_FEAT(OV5_XIVE_EXPLOIT);
-+	}
+ 	return xive_native_configure_queue(get_hard_smp_processor_id(cpu),
+ 					   q, prio, qpage, xive_queue_shift, false);
  }
+@@ -227,8 +222,7 @@ static void xive_native_cleanup_queue(unsigned int cpu, struct xive_cpu *xc, u8
+ 	 * from an IPI and iounmap isn't safe
+ 	 */
+ 	__xive_native_disable_queue(get_hard_smp_processor_id(cpu), q, prio);
+-	alloc_order = (xive_queue_shift > PAGE_SHIFT) ?
+-		(xive_queue_shift - PAGE_SHIFT) : 0;
++	alloc_order = xive_alloc_order(xive_queue_shift);
+ 	free_pages((unsigned long)q->qpage, alloc_order);
+ 	q->qpage = NULL;
+ }
+diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
+index d07ef2d29caf..dd1e2022cce4 100644
+--- a/arch/powerpc/sysdev/xive/xive-internal.h
++++ b/arch/powerpc/sysdev/xive/xive-internal.h
+@@ -56,6 +56,12 @@ struct xive_ops {
  
- static void __init prom_send_capabilities(void)
+ bool xive_core_init(const struct xive_ops *ops, void __iomem *area, u32 offset,
+ 		    u8 max_prio);
++__be32 *xive_queue_page_alloc(unsigned int cpu, u32 queue_shift);
++
++static inline u32 xive_alloc_order(u32 queue_shift)
++{
++	return (queue_shift > PAGE_SHIFT) ? (queue_shift - PAGE_SHIFT) : 0;
++}
+ 
+ extern bool xive_cmdline_disabled;
+ 
 -- 
 2.13.5
