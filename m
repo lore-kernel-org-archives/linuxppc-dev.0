@@ -1,21 +1,25 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <seth.forshee@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjBKD5CQhzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 02:48:32 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id r62so1890382pfj.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 09:48:32 -0700 (PDT)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: mpe@ellerman.id.au,
-	paulus@samba.org,
-	benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: 4xx: constify platform_suspend_ops
-Date: Wed, 30 Aug 2017 22:18:20 +0530
-Message-Id: <bfb43496252dc11b95ef7e744206c2a7ad17a734.1504111164.git.arvind.yadav.cs@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj5Mx1F3czDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 23:05:33 +1000 (AEST)
+Received: from mail-io0-f199.google.com ([209.85.223.199])
+ by youngberry.canonical.com with esmtps (TLS1.0:RSA_AES_128_CBC_SHA1:16)
+ (Exim 4.76) (envelope-from <seth.forshee@canonical.com>)
+ id 1dn2gT-0000Ib-Cp
+ for linuxppc-dev@lists.ozlabs.org; Wed, 30 Aug 2017 13:05:29 +0000
+Received: by mail-io0-f199.google.com with SMTP id m40so5978186ioi.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 06:05:29 -0700 (PDT)
+Date: Wed, 30 Aug 2017 08:05:25 -0500
+From: Seth Forshee <seth.forshee@canonical.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Build failures in powerpc ptrace selftests
+Message-ID: <20170830130525.xwj3oy2cx2qdwvqc@ubuntu-xps13>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-platform_suspend_ops are not supposed to change at runtime.
-Functions suspend_set_ops working with const platform_suspend_ops.
-So mark the non-const structs as const.
+With gcc 7 from Ubuntu 17.10 I'm getting the follwing error building the
+ptrace selftests for powerpc:
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- arch/powerpc/sysdev/ppc4xx_cpm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  ptrace-tm-vsx.c: In function ‘tm_vsx’:
+  ptrace-tm-vsx.c:42:2: error: PIC register clobbered by ‘r2’ in ‘asm’
+    asm __volatile__(
+    ^~~
+  make[1]: *** [ptrace-tm-vsx] Error 1
+  ptrace-tm-spd-vsx.c: In function ‘tm_spd_vsx’:
+  ptrace-tm-spd-vsx.c:55:2: error: PIC register clobbered by ‘r2’ in ‘asm’
+    asm __volatile__(
+    ^~~
+  make[1]: *** [ptrace-tm-spd-vsx] Error 1
+  ptrace-tm-spr.c: In function ‘tm_spr’:
+  ptrace-tm-spr.c:46:2: error: PIC register clobbered by ‘r2’ in ‘asm’
+    asm __volatile__(
+    ^~~
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_cpm.c b/arch/powerpc/sysdev/ppc4xx_cpm.c
-index ba95adf..6483675 100644
---- a/arch/powerpc/sysdev/ppc4xx_cpm.c
-+++ b/arch/powerpc/sysdev/ppc4xx_cpm.c
-@@ -240,7 +240,7 @@ static int cpm_suspend_enter(suspend_state_t state)
- 	return 0;
- }
- 
--static struct platform_suspend_ops cpm_suspend_ops = {
-+static const struct platform_suspend_ops cpm_suspend_ops = {
- 	.valid		= cpm_suspend_valid,
- 	.enter		= cpm_suspend_enter,
- };
--- 
-2.7.4
+Best I can tell gcc now considers any inline asm which clobbers r2 an
+error, and I get it even with -fno-pic. I'm not familiar with powerpc
+asm, but it's not obvious to me why r2 is in the clobber list for any of
+these.
+
+Thanks,
+Seth
