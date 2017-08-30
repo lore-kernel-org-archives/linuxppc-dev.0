@@ -1,46 +1,25 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xj41r5WTVzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 22:04:47 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7UC44w7117856
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 08:04:44 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cnujhpy3f-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 08:04:44 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 30 Aug 2017 22:04:41 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7UC4e5m39583830
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 22:04:40 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7UC4V3n004409
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 22:04:32 +1000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-Subject: Re: [PATCH] cxl: Set the valid bit in PE for dedicated mode
-In-Reply-To: <87r2vu27b3.fsf@concordia.ellerman.id.au>
-References: <20170828041522.32188-1-vaibhav@linux.vnet.ibm.com>
- <87r2vu27b3.fsf@concordia.ellerman.id.au>
-Date: Wed, 30 Aug 2017 17:34:35 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xj4952FbqzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 22:11:05 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id t3so4926247pgt.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 05:11:05 -0700 (PDT)
+Date: Wed, 30 Aug 2017 22:10:45 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v3 4/4] powerpc/64s: idle ESL=0 stop can avoid MSR and
+ save/restore overhead
+Message-ID: <20170830221045.6fd10787@roar.ozlabs.ibm.com>
+In-Reply-To: <87pobd1em0.fsf@concordia.ellerman.id.au>
+References: <20170825043036.18236-1-npiggin@gmail.com>
+ <20170825043036.18236-5-npiggin@gmail.com>
+ <87pobd1em0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87lgm1b6ss.fsf@vajain21.in.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,33 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mpe,
+On Wed, 30 Aug 2017 21:25:59 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Thanks for reviewing the patch
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > When stop is executed with EC=ESL=0, it appears to execute like a
+> > normal instruction (resuming from NIP when woken by interrupt).
+> > So all the save/restore handling can be avoided completely. In
+> > particular NV GPRs do not have to be saved, and MSR does not have
+> > to be switched back to kernel MSR.
+> >
+> > So move the test for "lite" sleep states out to power9_idle_stop.
+> >
+> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/kernel/idle_book3s.S | 35 ++++++++++++++++++++++++-----------
+> >  1 file changed, 24 insertions(+), 11 deletions(-)  
+> 
+> This is blowing up for me on mambo:
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Oh this is a known bug in mambo that does not match the hardware.
 
->> +	ctx->elem->software_state = cpu_to_be32(CXL_PE_SOFTWARE_STATE_V);
->> +	/* Make sure the changes to the PE are visible to the card */
->
-> A barrier orders something vs something else. So what's the something
-> else in this case? Is it the afu_reset() below, what does that actually do?
->
+You need >= Mambo.7.8.21, or this firmware patch to work around
+the issue for old mambos.
 
-The issue is with call to afu_enable() after the call to afu_reset that
-would start the AFU. If this load gets reordered and PSL doesnt see the
-valid bit set for this structure then it will result in PSL entering a
-freeze-state.
+mambo.git 58d3162f4d6204fc077ff4a6ba47e4d1e19d5120
 
-Though on second thoughts afu_enable() is grabbing a spin-lock before
-doing an mmio to start the AFU that would be forcing a barrier
-anyways. But since that spans the function boundary hence to be safe
-have added a write barrier after populating the process element.
+https://lists.ozlabs.org/pipermail/skiboot/2017-August/008768.html
 
-Lastly function is not performance critical as it will be usually called
-in the life time of a process only once. So the impact smp_wmb() is
-having would be minimal.
-
--- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+Thanks,
+Nick
