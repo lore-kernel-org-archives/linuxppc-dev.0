@@ -1,26 +1,19 @@
-Return-Path: <jglisse@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhlqx1F67zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 09:55:09 +1000 (AEST)
-From: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>
-To: linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org
-Cc: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Andrea Arcangeli <aarcange@redhat.com>
-Subject: [PATCH 03/13] powerpc/powernv: update to new mmu_notifier semantic
-Date: Tue, 29 Aug 2017 19:54:37 -0400
-Message-Id: <20170829235447.10050-4-jglisse@redhat.com>
-In-Reply-To: <20170829235447.10050-1-jglisse@redhat.com>
-References: <20170829235447.10050-1-jglisse@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhmYr3T7hzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 10:28:00 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id a2so3275098pfj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Aug 2017 17:28:00 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH 1/2] powerpc/xmon: hdec is now 64bits
+Date: Wed, 30 Aug 2017 10:27:44 +1000
+Message-Id: <20170830002745.29526-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Call to mmu_notifier_invalidate_page() are replaced by call to
-mmu_notifier_invalidate_range() and thus call are bracketed by
-call to mmu_notifier_invalidate_range_start()/end()
+ISA 300 defines hypervisor decrementer to be 64 bits in length.
+This patch extends the print format for all archs to be 64 bits
 
-Remove now useless invalidate_page callback.
-
-Signed-off-by: Jérôme Glisse <jglisse@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Alistair Popple <alistair@popple.id.au>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrea Arcangeli <aarcange@redhat.com>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c | 10 ----------
- 1 file changed, 10 deletions(-)
+ arch/powerpc/xmon/xmon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index b5d960d6db3d..4c7b8591f737 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -614,15 +614,6 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
- 	mmio_invalidate(npu_context, 1, address, true);
- }
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 9e68f1d..1b26d53 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1749,7 +1749,7 @@ static void dump_206_sprs(void)
  
--static void pnv_npu2_mn_invalidate_page(struct mmu_notifier *mn,
--					struct mm_struct *mm,
--					unsigned long address)
--{
--	struct npu_context *npu_context = mn_to_npu_context(mn);
--
--	mmio_invalidate(npu_context, 1, address, true);
--}
--
- static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
- 					struct mm_struct *mm,
- 					unsigned long start, unsigned long end)
-@@ -640,7 +631,6 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
- static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
- 	.release = pnv_npu2_mn_release,
- 	.change_pte = pnv_npu2_mn_change_pte,
--	.invalidate_page = pnv_npu2_mn_invalidate_page,
- 	.invalidate_range = pnv_npu2_mn_invalidate_range,
- };
- 
+ 	printf("sdr1   = %.16lx  hdar  = %.16lx hdsisr = %.8x\n",
+ 		mfspr(SPRN_SDR1), mfspr(SPRN_HDAR), mfspr(SPRN_HDSISR));
+-	printf("hsrr0  = %.16lx hsrr1  = %.16lx hdec = %.8x\n",
++	printf("hsrr0  = %.16lx hsrr1  = %.16lx hdec = %.16lx\n",
+ 		mfspr(SPRN_HSRR0), mfspr(SPRN_HSRR1), mfspr(SPRN_HDEC));
+ 	printf("lpcr   = %.16lx  pcr   = %.16lx lpidr = %.8x\n",
+ 		mfspr(SPRN_LPCR), mfspr(SPRN_PCR), mfspr(SPRN_LPID));
 -- 
-2.13.5
+2.9.4
