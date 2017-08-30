@@ -1,19 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xhwhX3nNszDqH0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 16:34:20 +1000 (AEST)
-Date: Wed, 30 Aug 2017 16:34:09 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 18/17] powerpc: Emulate load/store floating point as
- integer word instructions
-Message-ID: <20170830063409.GE27329@fergus.ozlabs.ibm.com>
-References: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xhxRr416WzDqH0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Aug 2017 17:08:24 +1000 (AEST)
+Message-ID: <1504076904.4670.20.camel@neuling.org>
+Subject: Re: [PATCH RFC] Interface to set SPRN_TIDR
+From: Michael Neuling <mikey@neuling.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, Christophe Lombard
+ <clombard@linux.vnet.ibm.com>
+Date: Wed, 30 Aug 2017 17:08:24 +1000
+In-Reply-To: <20170830023856.GC26152@us.ibm.com>
+References: <20170830023856.GC26152@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,201 +26,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds emulation for the lfiwax, lfiwzx and stfiwx instructions.
-This necessitated adding a new flag to indicate whether a floating
-point or an integer conversion was needed for LOAD_FP and STORE_FP,
-so this moves the size field in op->type up 4 bits.
+Suka,
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/include/asm/sstep.h |  5 ++--
- arch/powerpc/lib/sstep.c         | 60 ++++++++++++++++++++++++++++++----------
- 2 files changed, 48 insertions(+), 17 deletions(-)
+Please CC Christophe who as an alternative way of doing this. We ned to get
+agreement across all users of TIDR/AS_notify...
 
-diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
-index 309d1c5..ab9d849 100644
---- a/arch/powerpc/include/asm/sstep.h
-+++ b/arch/powerpc/include/asm/sstep.h
-@@ -68,6 +68,7 @@ enum instruction_type {
- #define SIGNEXT		0x20
- #define UPDATE		0x40	/* matches bit in opcode 31 instructions */
- #define BYTEREV		0x80
-+#define FPCONV		0x100
- 
- /* Barrier type field, ORed in with type */
- #define BARRIER_MASK	0xe0
-@@ -93,8 +94,8 @@ enum instruction_type {
- #define VSX_CHECK_VEC	8	/* check MSR_VEC not MSR_VSX for reg >= 32 */
- 
- /* Size field in type word */
--#define SIZE(n)		((n) << 8)
--#define GETSIZE(w)	((w) >> 8)
-+#define SIZE(n)		((n) << 12)
-+#define GETSIZE(w)	((w) >> 12)
- 
- #define MKOP(t, f, s)	((t) | (f) | SIZE(s))
- 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 24031ca..2f6897c 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -457,19 +457,23 @@ NOKPROBE_SYMBOL(write_mem);
-  * These access either the real FP register or the image in the
-  * thread_struct, depending on regs->msr & MSR_FP.
-  */
--static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs,
--		      bool cross_endian)
-+static int do_fp_load(struct instruction_op *op, unsigned long ea,
-+		      struct pt_regs *regs, bool cross_endian)
- {
--	int err;
-+	int err, rn, nb;
- 	union {
-+		int i;
-+		unsigned int u;
- 		float f;
- 		double d[2];
- 		unsigned long l[2];
- 		u8 b[2 * sizeof(double)];
- 	} u;
- 
-+	nb = GETSIZE(op->type);
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
-+	rn = op->reg;
- 	err = copy_mem_in(u.b, ea, nb, regs);
- 	if (err)
- 		return err;
-@@ -479,8 +483,14 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs,
- 			do_byte_reverse(&u.b[8], 8);
- 	}
- 	preempt_disable();
--	if (nb == 4)
--		conv_sp_to_dp(&u.f, &u.d[0]);
-+	if (nb == 4) {
-+		if (op->type & FPCONV)
-+			conv_sp_to_dp(&u.f, &u.d[0]);
-+		else if (op->type & SIGNEXT)
-+			u.l[0] = u.i;
-+		else
-+			u.l[0] = u.u;
-+	}
- 	if (regs->msr & MSR_FP)
- 		put_fpr(rn, &u.d[0]);
- 	else
-@@ -498,25 +508,33 @@ static int do_fp_load(int rn, unsigned long ea, int nb, struct pt_regs *regs,
- }
- NOKPROBE_SYMBOL(do_fp_load);
- 
--static int do_fp_store(int rn, unsigned long ea, int nb, struct pt_regs *regs,
--		       bool cross_endian)
-+static int do_fp_store(struct instruction_op *op, unsigned long ea,
-+		       struct pt_regs *regs, bool cross_endian)
- {
-+	int rn, nb;
- 	union {
-+		unsigned int u;
- 		float f;
- 		double d[2];
- 		unsigned long l[2];
- 		u8 b[2 * sizeof(double)];
- 	} u;
- 
-+	nb = GETSIZE(op->type);
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
-+	rn = op->reg;
- 	preempt_disable();
- 	if (regs->msr & MSR_FP)
- 		get_fpr(rn, &u.d[0]);
- 	else
- 		u.l[0] = current->thread.TS_FPR(rn);
--	if (nb == 4)
--		conv_dp_to_sp(&u.d[0], &u.f);
-+	if (nb == 4) {
-+		if (op->type & FPCONV)
-+			conv_dp_to_sp(&u.d[0], &u.f);
-+		else
-+			u.u = u.l[0];
-+	}
- 	if (nb == 16) {
- 		rn |= 1;
- 		if (regs->msr & MSR_FP)
-@@ -2049,7 +2067,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- #ifdef CONFIG_PPC_FPU
- 		case 535:	/* lfsx */
- 		case 567:	/* lfsux */
--			op->type = MKOP(LOAD_FP, u, 4);
-+			op->type = MKOP(LOAD_FP, u | FPCONV, 4);
- 			break;
- 
- 		case 599:	/* lfdx */
-@@ -2059,7 +2077,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 
- 		case 663:	/* stfsx */
- 		case 695:	/* stfsux */
--			op->type = MKOP(STORE_FP, u, 4);
-+			op->type = MKOP(STORE_FP, u | FPCONV, 4);
- 			break;
- 
- 		case 727:	/* stfdx */
-@@ -2072,9 +2090,21 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 			op->type = MKOP(LOAD_FP, 0, 16);
- 			break;
- 
-+		case 855:	/* lfiwax */
-+			op->type = MKOP(LOAD_FP, SIGNEXT, 4);
-+			break;
-+
-+		case 887:	/* lfiwzx */
-+			op->type = MKOP(LOAD_FP, 0, 4);
-+			break;
-+
- 		case 919:	/* stfdpx */
- 			op->type = MKOP(STORE_FP, 0, 16);
- 			break;
-+
-+		case 983:	/* stfiwx */
-+			op->type = MKOP(STORE_FP, 0, 4);
-+			break;
- #endif /* __powerpc64 */
- #endif /* CONFIG_PPC_FPU */
- 
-@@ -2352,7 +2382,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- #ifdef CONFIG_PPC_FPU
- 	case 48:	/* lfs */
- 	case 49:	/* lfsu */
--		op->type = MKOP(LOAD_FP, u, 4);
-+		op->type = MKOP(LOAD_FP, u | FPCONV, 4);
- 		op->ea = dform_ea(instr, regs);
- 		break;
- 
-@@ -2364,7 +2394,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 
- 	case 52:	/* stfs */
- 	case 53:	/* stfsu */
--		op->type = MKOP(STORE_FP, u, 4);
-+		op->type = MKOP(STORE_FP, u | FPCONV, 4);
- 		op->ea = dform_ea(instr, regs);
- 		break;
- 
-@@ -2792,7 +2822,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 		 */
- 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_FP))
- 			return 0;
--		err = do_fp_load(op->reg, ea, size, regs, cross_endian);
-+		err = do_fp_load(op, ea, regs, cross_endian);
- 		break;
- #endif
- #ifdef CONFIG_ALTIVEC
-@@ -2862,7 +2892,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	case STORE_FP:
- 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_FP))
- 			return 0;
--		err = do_fp_store(op->reg, ea, size, regs, cross_endian);
-+		err = do_fp_store(op, ea, regs, cross_endian);
- 		break;
- #endif
- #ifdef CONFIG_ALTIVEC
--- 
-2.7.4
+His patch is here:
+  https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-August/161582.html
+
+Mikey
+
+On Tue, 2017-08-29 at 19:38 -0700, Sukadev Bhattiprolu wrote:
+> We need the SPRN_TIDR to be set for use with fast thread-wakeup
+> (core-to-core wakeup) in VAS. Each user thread that has a receive
+> window setup and expects to be notified when a sender issues a paste
+> needs to have a unique SPRN_TIDR value.
+>=20
+> The SPRN_TIDR value only needs to unique within the process but for
+> now we use a globally unique thread id as described below.
+>=20
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+> Changelog[v2]
+> 	- Michael Ellerman: Use an interface to assign TIDR so it is
+> 	=C2=A0=C2=A0assigned to only threads that need it; move assignment to
+> 	=C2=A0=C2=A0restore_sprs(). Drop lint from rebase;
+>=20
+>=20
+> =C2=A0arch/powerpc/include/asm/processor.h |=C2=A0=C2=A04 ++
+> =C2=A0arch/powerpc/include/asm/switch_to.h |=C2=A0=C2=A03 ++
+> =C2=A0arch/powerpc/kernel/process.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0| 97
+> ++++++++++++++++++++++++++++++++++++
+> =C2=A03 files changed, 104 insertions(+)
+>=20
+> diff --git a/arch/powerpc/include/asm/processor.h
+> b/arch/powerpc/include/asm/processor.h
+> index fab7ff8..bf6ba63 100644
+> --- a/arch/powerpc/include/asm/processor.h
+> +++ b/arch/powerpc/include/asm/processor.h
+> @@ -232,6 +232,10 @@ struct debug_reg {
+> =C2=A0struct thread_struct {
+> =C2=A0	unsigned long	ksp;		/* Kernel stack pointer */
+>=20
+> +#ifdef CONFIG_PPC_VAS
+> +	unsigned long	tidr;
+> +#endif
+> +
+> =C2=A0#ifdef CONFIG_PPC64
+> =C2=A0	unsigned long	ksp_vsid;
+> =C2=A0#endif
+> diff --git a/arch/powerpc/include/asm/switch_to.h
+> b/arch/powerpc/include/asm/switch_to.h
+> index 17c8380..4962455 100644
+> --- a/arch/powerpc/include/asm/switch_to.h
+> +++ b/arch/powerpc/include/asm/switch_to.h
+> @@ -91,4 +91,7 @@ static inline void clear_task_ebb(struct task_struct *t=
+)
+> =C2=A0#endif
+> =C2=A0}
+>=20
+> +extern void set_thread_tidr(struct task_struct *t);
+> +extern void clear_thread_tidr(struct task_struct *t);
+> +
+> =C2=A0#endif /* _ASM_POWERPC_SWITCH_TO_H */
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.=
+c
+> index 1f0fd36..13abb22 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1132,6 +1132,10 @@ static inline void restore_sprs(struct thread_stru=
+ct
+> *old_thread,
+> =C2=A0			mtspr(SPRN_TAR, new_thread->tar);
+> =C2=A0	}
+> =C2=A0#endif
+> +#ifdef CONFIG_PPC_VAS
+> +	if (old_thread->tidr !=3D new_thread->tidr)
+> +		mtspr(SPRN_TIDR, new_thread->tidr);
+> +#endif
+> =C2=A0}
+>=20
+> =C2=A0#ifdef CONFIG_PPC_BOOK3S_64
+> @@ -1446,9 +1450,97 @@ void flush_thread(void)
+> =C2=A0#endif /* CONFIG_HAVE_HW_BREAKPOINT */
+> =C2=A0}
+>=20
+> +#ifdef CONFIG_PPC_VAS
+> +static DEFINE_SPINLOCK(vas_thread_id_lock);
+> +static DEFINE_IDA(vas_thread_ida);
+> +
+> +/*
+> + * We need to assign an unique thread id to each thread in a process. Th=
+is
+> + * thread id is intended to be used with the Fast Thread-wakeup (aka Cor=
+e-
+> + * to-core wakeup) mechanism being implemented on top of Virtual Acceler=
+ator
+> + * Switchboard (VAS).
+> + *
+> + * To get a unique thread-id per process we could simply use task_pid_nr=
+()
+> + * but the problem is that task_pid_nr() is not yet available for the th=
+read
+> + * when copy_thread() is called. Fixing that would require changing more
+> + * intrusive arch-neutral code in code path in copy_process()?.
+> + *
+> + * Further, to assign unique thread ids within each process, we need an
+> + * atomic field (or an IDR) in task_struct, which again intrudes into th=
+e
+> + * arch-neutral code.
+> + *
+> + * So try to assign globally unique thraed ids for now.
+> + *
+> + * NOTE: TIDR 0 indicates that the thread does not need a TIDR value.
+> + *=C2=A0	=C2=A0For now, only threads that expect to be notified by the V=
+AS
+> + *=C2=A0	=C2=A0hardware need a TIDR value and we assign values > 0 for t=
+hose.
+> + */
+> +#define MAX_THREAD_CONTEXT	((1 << 15) - 2)
+> +static int assign_thread_tidr(void)
+> +{
+> +	int index;
+> +	int err;
+> +
+> +again:
+> +	if (!ida_pre_get(&vas_thread_ida, GFP_KERNEL))
+> +		return -ENOMEM;
+> +
+> +	spin_lock(&vas_thread_id_lock);
+> +	err =3D ida_get_new_above(&vas_thread_ida, 1, &index);
+> +	spin_unlock(&vas_thread_id_lock);
+> +
+> +	if (err =3D=3D -EAGAIN)
+> +		goto again;
+> +	else if (err)
+> +		return err;
+> +
+> +	if (index > MAX_THREAD_CONTEXT) {
+> +		spin_lock(&vas_thread_id_lock);
+> +		ida_remove(&vas_thread_ida, index);
+> +		spin_unlock(&vas_thread_id_lock);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	return index;
+> +}
+> +
+> +static void free_thread_tidr(int id)
+> +{
+> +	spin_lock(&vas_thread_id_lock);
+> +	ida_remove(&vas_thread_ida, id);
+> +	spin_unlock(&vas_thread_id_lock);
+> +}
+> +
+> +void clear_thread_tidr(struct task_struct *t)
+> +{
+> +	if (t->thread.tidr) {
+> +		free_thread_tidr(t->thread.tidr);
+> +		t->thread.tidr =3D 0;
+> +		mtspr(SPRN_TIDR, 0);
+> +	}
+> +}
+> +
+> +/*
+> + * Assign an unique thread id for this thread and set it in the
+> + * thread structure. For now, we need this interface only for
+> + * the current task.
+> + */
+> +void set_thread_tidr(struct task_struct *t)
+> +{
+> +	WARN_ON(t !=3D current);
+> +	t->thread.tidr =3D assign_thread_tidr();
+> +	mtspr(SPRN_TIDR, t->thread.tidr);
+> +}
+> +
+> +#endif /* CONFIG_PPC_VAS */
+> +
+> +
+> =C2=A0void
+> =C2=A0release_thread(struct task_struct *t)
+> =C2=A0{
+> +#ifdef CONFIG_PPC_VAS
+> +	clear_thread_tidr(t);
+> +#endif
+> =C2=A0}
+>=20
+> =C2=A0/*
+> @@ -1474,6 +1566,8 @@ int arch_dup_task_struct(struct task_struct *dst, s=
+truct
+> task_struct *src)
+>=20
+> =C2=A0	clear_task_ebb(dst);
+>=20
+> +	dst->thread.tidr =3D 0;
+> +
+> =C2=A0	return 0;
+> =C2=A0}
+>=20
+> @@ -1584,6 +1678,9 @@ int copy_thread(unsigned long clone_flags, unsigned=
+ long
+> usp,
+> =C2=A0#endif
+>=20
+> =C2=A0	setup_ksp_vsid(p, sp);
+> +#ifdef CONFIG_PPC_VAS
+> +	p->thread.tidr =3D 0;
+> +#endif
+>=20
+> =C2=A0#ifdef CONFIG_PPC64=C2=A0
+> =C2=A0	if (cpu_has_feature(CPU_FTR_DSCR)) {
