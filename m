@@ -1,25 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjhhs4xjpzDrXQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 22:37:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- "dougmill\@us.ibm.com" <dougmill@us.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Turn on SCSI_AACRAID in powernv_defconfig
-In-Reply-To: <87y3q0hxtm.fsf@linux.vnet.ibm.com>
-References: <1503899802-13248-1-git-send-email-mpe@ellerman.id.au>
- <72f7e609-58b9-32dc-4090-fdbd97d0c924@linux.vnet.ibm.com>
- <87h8wq1uvv.fsf@concordia.ellerman.id.au>
- <58487ce7-aea1-39c1-b9c8-cd8435e493e0@linux.vnet.ibm.com>
- <87shg91fgc.fsf@concordia.ellerman.id.au> <87y3q0hxtm.fsf@linux.vnet.ibm.com>
-Date: Thu, 31 Aug 2017 22:37:13 +1000
-Message-ID: <877exjud52.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjjBY3pbpzDqGX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 22:59:33 +1000 (AEST)
+Date: Thu, 31 Aug 2017 14:59:30 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: hch@lst.de, robh+dt@kernel.org, frowand.list@gmail.com,
+ m.szyprowski@samsung.com, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] of: Restrict DMA configuration
+Message-ID: <20170831125930.GA2873@lst.de>
+References: <5fc6930c9645c934de2586179ca3f80a055689cb.1504175330.git.robin.murphy@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5fc6930c9645c934de2586179ca3f80a055689cb.1504175330.git.robin.murphy@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,16 +25,5 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stewart Smith <stewart@linux.vnet.ibm.com> writes:
-
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->> OK. So maybe when the petitboot kernel moves up to 4.14 they may want to
->> flip it back to being a module.
->
-> Yeah. We tend to keep all RAID adapters as modules because they almost
-> all uniquely try to undo all boot time optimization done by anybody,
-> anywhere, ever.
-
-Yes I know what you mean. I am thinking of one In ParticulaR.
-
-cheers
+Thanks Robin.  I'll wait for any additional comments until tomorrow
+and will apply it unless anyone objects.
