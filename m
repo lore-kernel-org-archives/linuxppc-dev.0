@@ -2,24 +2,20 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjSsj1FQJzDq5b
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjSsj53NZzDq5b
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 13:44:09 +1000 (AEST)
-Date: Thu, 31 Aug 2017 13:40:19 +1000
+Date: Thu, 31 Aug 2017 13:41:39 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Alexander Graf <agraf@suse.com>, Scott Wood <scottwood@freescale.com>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/2] KVM: PPC: e500: fix some NULL dereferences on error
-Message-ID: <20170831034019.GA22549@fergus.ozlabs.ibm.com>
-References: <20170713073829.dqjahnakxqvpne7x@mwanda>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2 1/9] KVM: PPC: Book3S HV: Fix H_REGISTER_VPA VPA size
+ validation
+Message-ID: <20170831034139.GC22549@fergus.ozlabs.ibm.com>
+References: <20170812113416.15978-1-npiggin@gmail.com>
+ <20170813013346.14002-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170713073829.dqjahnakxqvpne7x@mwanda>
+In-Reply-To: <20170813013346.14002-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 13, 2017 at 10:38:29AM +0300, Dan Carpenter wrote:
-> There are some error paths in kvmppc_core_vcpu_create_e500() where we
-> forget to set the error code.  It means that we return ERR_PTR(0) which
-> is NULL and it results in a NULL pointer dereference in the caller.
+On Sun, Aug 13, 2017 at 11:33:38AM +1000, Nicholas Piggin wrote:
+> KVM currently validates the size of the VPA registered by the client
+> against sizeof(struct lppaca), however we align (and therefore size)
+> that struct to 1kB to avoid crossing a 4kB boundary in the client.
 > 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> PAPR calls for sizes >= 640 bytes to be accepted. Hard code this with
+> a comment.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Thanks, both patches applied to my kvm-ppc-next branch.
+Thanks, patch applied to my kvm-ppc-next branch.
 
 Paul.
