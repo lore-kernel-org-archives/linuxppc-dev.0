@@ -1,21 +1,20 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjSsj53NZzDq5b
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjSsj4hvwzDq5k
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 13:44:09 +1000 (AEST)
-Date: Thu, 31 Aug 2017 13:41:39 +1000
+Date: Thu, 31 Aug 2017 13:42:10 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v2 1/9] KVM: PPC: Book3S HV: Fix H_REGISTER_VPA VPA size
- validation
-Message-ID: <20170831034139.GC22549@fergus.ozlabs.ibm.com>
-References: <20170812113416.15978-1-npiggin@gmail.com>
- <20170813013346.14002-1-npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, schwab@linux-m68k.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix invalid use of register
+ expression
+Message-ID: <20170831034210.GD22549@fergus.ozlabs.ibm.com>
+References: <1502771821-10316-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170813013346.14002-1-npiggin@gmail.com>
+In-Reply-To: <1502771821-10316-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 13, 2017 at 11:33:38AM +1000, Nicholas Piggin wrote:
-> KVM currently validates the size of the VPA registered by the client
-> against sizeof(struct lppaca), however we align (and therefore size)
-> that struct to 1kB to avoid crossing a 4kB boundary in the client.
+On Tue, Aug 15, 2017 at 02:37:01PM +1000, Michael Ellerman wrote:
+> From: Andreas Schwab <schwab@linux-m68k.org>
 > 
-> PAPR calls for sizes >= 640 bytes to be accepted. Hard code this with
-> a comment.
+> binutils >= 2.26 now warns about misuse of register expressions in
+> assembler operands that are actually literals. In this instance r0 is
+> being used where a literal 0 should be used.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> [mpe: Split into separate KVM patch, tweak change log]
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Thanks, patch applied to my kvm-ppc-next branch.
 
