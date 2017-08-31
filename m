@@ -1,40 +1,27 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjYwY3mNqzDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 17:31:57 +1000 (AEST)
-Date: Thu, 31 Aug 2017 09:31:22 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- "Kirill A. Shutemov" <kirill@shutemov.name>,
- paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net,
- jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-Message-ID: <20170831073121.ptxjsvibekxudzbx@hirez.programming.kicks-ass.net>
-References: <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
- <507e79d5-59df-c5b5-106d-970c9353d9bc@linux.vnet.ibm.com>
- <20170829120426.4ar56rbmiupbqmio@hirez.programming.kicks-ass.net>
- <848fa2c6-dbda-9a1e-2efd-3ce9b083365e@linux.vnet.ibm.com>
- <20170829134550.t7du5zdssvlzemtk@hirez.programming.kicks-ass.net>
- <ab0634c4-274d-208f-fc4b-43991986bacf@linux.vnet.ibm.com>
- <20170830055800.GG32112@worktop.programming.kicks-ass.net>
- <12d54f18-6dec-5067-db87-d1a176d5160f@linux.vnet.ibm.com>
- <0add5ad0-fd3d-efb7-f00c-7232dfc768af@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjYwy0Ps1zDqXk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 17:32:18 +1000 (AEST)
+Message-Id: <20170831073054.740462115@linutronix.de>
+Date: Thu, 31 Aug 2017 09:16:20 +0200
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@alien8.de>,
+ Sebastian Siewior <bigeasy@linutronix.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Don Zickus <dzickus@redhat.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Ulrich Obergfell <uobergfe@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: [patch 22/29] lockup_detector: Make watchdog_nmi_reconfigure() two
+ stage
+References: <20170831071558.995235362@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0add5ad0-fd3d-efb7-f00c-7232dfc768af@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,55 +31,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 31, 2017 at 12:25:16PM +0530, Anshuman Khandual wrote:
-> On 08/30/2017 03:02 PM, Laurent Dufour wrote:
-> > On 30/08/2017 07:58, Peter Zijlstra wrote:
-> >> On Wed, Aug 30, 2017 at 10:33:50AM +0530, Anshuman Khandual wrote:
-> >>> diff --git a/mm/filemap.c b/mm/filemap.c
-> >>> index a497024..08f3042 100644
-> >>> --- a/mm/filemap.c
-> >>> +++ b/mm/filemap.c
-> >>> @@ -1181,6 +1181,18 @@ int __lock_page_killable(struct page *__page)
-> >>>  int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
-> >>>                          unsigned int flags)
-> >>>  {
-> >>> +       if (flags & FAULT_FLAG_SPECULATIVE) {
-> >>> +               if (flags & FAULT_FLAG_KILLABLE) {
-> >>> +                       int ret;
-> >>> +
-> >>> +                       ret = __lock_page_killable(page);
-> >>> +                       if (ret)
-> >>> +                               return 0;
-> >>> +               } else
-> >>> +                       __lock_page(page);
-> >>> +               return 1;
-> >>> +       }
-> >>> +
-> >>>         if (flags & FAULT_FLAG_ALLOW_RETRY) {
-> >>>                 /*
-> >>>                  * CAUTION! In this case, mmap_sem is not released
-> >>
-> >> Yeah, that looks right.
-> > 
-> > Hum, I'm wondering if FAULT_FLAG_RETRY_NOWAIT should be forced in the
-> > speculative path in that case to match the semantics of
-> > __lock_page_or_retry().
-> 
-> Doing that would force us to have another retry through classic fault
-> path wasting all the work done till now through SPF. Hence it may be
-> better to just wait, get the lock here and complete the fault. Peterz,
-> would you agree ? Or we should do as suggested by Laurent. More over,
-> forcing FAULT_FLAG_RETRY_NOWAIT on FAULT_FLAG_SPECULTIVE at this point
-> would look like a hack.
+Both the perf reconfiguration and the powerpc watchdog_nmi_reconfigure()
+need to be done in two steps.
 
-Is there ever a situation where SPECULATIVE and NOWAIT are used
-together? That seems like something to avoid.
+     1) Stop all NMIs
+     2) Read the new parameters and start NMIs
 
-A git-grep seems to suggest gup() can set it, but gup() will not be
-doing speculative faults. s390 also sets it, but then again, they don't
-have speculative fault support yet and when they do they can avoid
-setting them together.
+Right now watchdog_nmi_reconfigure() is a combination of both. To allow a
+clean reconfiguration add a 'run' argument and split the functionality in
+powerpc.
 
-So maybe put in a WARN_ON_ONCE() on having both of them, it is not
-something that makes sense to me, but maybe someone sees a rationale for
-it?
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/watchdog.c |   17 +++++++++--------
+ include/linux/nmi.h            |    2 ++
+ kernel/watchdog.c              |   31 ++++++++++++++++++++++---------
+ 3 files changed, 33 insertions(+), 17 deletions(-)
+
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -352,17 +352,18 @@ static void watchdog_calc_timeouts(void)
+ 	wd_timer_period_ms = watchdog_thresh * 1000 * 2 / 5;
+ }
+ 
+-void watchdog_nmi_reconfigure(void)
++void watchdog_nmi_reconfigure(bool stop)
+ {
+ 	int cpu;
+ 
+-	watchdog_calc_timeouts();
+-
+-	for_each_cpu(cpu, &wd_cpus_enabled)
+-		stop_wd_on_cpu(cpu);
+-
+-	for_each_cpu_and(cpu, cpu_online_mask, &watchdog_cpumask)
+-		start_wd_on_cpu(cpu);
++	if (stop) {
++		for_each_cpu(cpu, &wd_cpus_enabled)
++			stop_wd_on_cpu(cpu);
++	} else {
++		watchdog_calc_timeouts();
++		for_each_cpu_and(cpu, cpu_online_mask, &watchdog_cpumask)
++			start_wd_on_cpu(cpu);
++	}
+ }
+ 
+ /*
+--- a/include/linux/nmi.h
++++ b/include/linux/nmi.h
+@@ -103,6 +103,8 @@ static inline void arch_touch_nmi_watchd
+ #endif
+ #endif
+ 
++void watchdog_nmi_reconfigure(bool run);
++
+ /**
+  * touch_nmi_watchdog - restart NMI watchdog timeout.
+  *
+--- a/kernel/watchdog.c
++++ b/kernel/watchdog.c
+@@ -105,17 +105,25 @@ static int __init hardlockup_all_cpu_bac
+ int __weak watchdog_nmi_enable(unsigned int cpu) { return 0; }
+ void __weak watchdog_nmi_disable(unsigned int cpu) { }
+ 
+-/*
+- * watchdog_nmi_reconfigure can be implemented to be notified after any
+- * watchdog configuration change. The arch hardlockup watchdog should
+- * respond to the following variables:
++/**
++ * watchdog_nmi_reconfigure - Optional function to reconfigure NMI watchdogs
++ * @stop:	If true stop the watchdogs on all enabled CPUs
++ *		If false start the watchdogs on all enabled CPUs
++ *
++ * The core call order is:
++ * watchdog_nmi_reconfigure(true);
++ * update_variables();
++ * watchdog_nmi_reconfigure(false);
++ *
++ * The second call which starts the watchdogs again guarantees that the
++ * following variables are stable across the call.
+  * - watchdog_enabled
+  * - watchdog_thresh
+  * - watchdog_cpumask
+- * - sysctl_hardlockup_all_cpu_backtrace
+- * - hardlockup_panic
++ *
++ * After the call the variables can be changed again.
+  */
+-void __weak watchdog_nmi_reconfigure(void) { }
++void __weak watchdog_nmi_reconfigure(bool stop) { }
+ 
+ #ifdef CONFIG_SOFTLOCKUP_DETECTOR
+ 
+@@ -509,10 +517,12 @@ static void softlockup_unpark_threads(vo
+ 
+ static void softlockup_reconfigure_threads(bool enabled)
+ {
++	watchdog_nmi_reconfigure(false);
+ 	softlockup_park_all_threads();
+ 	set_sample_period();
+ 	if (enabled)
+ 		softlockup_unpark_threads();
++	watchdog_nmi_reconfigure(true);
+ }
+ 
+ /*
+@@ -553,7 +563,11 @@ static inline void watchdog_unpark_threa
+ static inline int watchdog_enable_all_cpus(void) { return 0; }
+ static inline void watchdog_disable_all_cpus(void) { }
+ static inline void softlockup_init_threads(void) { }
+-static inline void softlockup_reconfigure_threads(bool enabled) { }
++static void softlockup_reconfigure_threads(bool enabled)
++{
++	watchdog_nmi_reconfigure(false);
++	watchdog_nmi_reconfigure(true);
++}
+ #endif /* !CONFIG_SOFTLOCKUP_DETECTOR */
+ 
+ static void __lockup_detector_cleanup(void)
+@@ -593,7 +607,6 @@ static void proc_watchdog_update(void)
+ 	/* Remove impossible cpus to keep sysctl output clean. */
+ 	cpumask_and(&watchdog_cpumask, &watchdog_cpumask, cpu_possible_mask);
+ 	softlockup_reconfigure_threads(watchdog_enabled && watchdog_thresh);
+-	watchdog_nmi_reconfigure();
+ }
+ 
+ /*
