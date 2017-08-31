@@ -1,31 +1,32 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <jglisse@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjtdc66C6zDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 06:05:08 +1000 (AEST)
-Received: from mail-qt0-f180.google.com (mail-qt0-f180.google.com
- [209.85.216.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A807621AC3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 20:05:06 +0000 (UTC)
-Received: by mail-qt0-f180.google.com with SMTP id x36so3177901qtx.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 13:05:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjwFT49WpzDqXj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 07:17:49 +1000 (AEST)
+From: jglisse@redhat.com
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, Joerg Roedel <jroedel@suse.de>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Dimitri Sivanich <sivanich@sgi.com>, Jack Steiner <steiner@sgi.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ amd-gfx@lists.freedesktop.org, linux-rdma@vger.kernel.org,
+ iommu@lists.linux-foundation.org, xen-devel@lists.xenproject.org,
+ kvm@vger.kernel.org
+Subject: [PATCH 00/13] mmu_notifier kill invalidate_page callback v2
+Date: Thu, 31 Aug 2017 17:17:25 -0400
+Message-Id: <20170831211738.17922-1-jglisse@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <5fc6930c9645c934de2586179ca3f80a055689cb.1504175330.git.robin.murphy@arm.com>
-References: <5fc6930c9645c934de2586179ca3f80a055689cb.1504175330.git.robin.murphy@arm.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 31 Aug 2017 15:04:45 -0500
-Message-ID: <CAL_JsqKC6w_RH6bu3=he28NJn74JO_XLxQPfRLg15k9eSWsiuQ@mail.gmail.com>
-Subject: Re: [PATCH v2] of: Restrict DMA configuration
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Christoph Hellwig <hch@lst.de>, Frank Rowand <frowand.list@gmail.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +36,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 31, 2017 at 5:32 AM, Robin Murphy <robin.murphy@arm.com> wrote:
-> Moving DMA configuration to happen later at driver probe time had the
-> unnoticed side-effect that we now perform DMA configuration for *every*
-> device represented in DT, rather than only those explicitly created by
-> the of_platform and PCI code.
->
-> As Christoph points out, this is not really the best thing to do. Whilst
-> there may well be other DMA-capable buses that can benefit from having
-> their children automatically configured after the bridge has probed,
-> there are also plenty of others like USB, MDIO, etc. that definitely do
-> not support DMA and should not be indiscriminately processed.
->
-> The good news is that in most cases the DT "dma-ranges" property serves
-> as an appropriate indicator - per a strict interpretation of the spec,
-> anything lacking a "dma-ranges" property should be considered not to
-> have a mapping of DMA address space from its children to its parent,
-> thus anything for which of_dma_get_range() does not succeed does not
-> need DMA configuration. Certain bus types have a general expectation of
-> DMA capability and carry a well-established precedent that an absent
-> "dma-ranges" implies the same as the empty property, so we automatically
-> opt those in to DMA configuration regardless, to avoid regressing most
-> existing platforms.
->
-> Fixes: 09515ef5ddad ("of/acpi: Configure dma operations at probe time for platform/amba/pci bus devices")
-> Reported-by: Christoph Hellwig <hch@lst.de>
-> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
-> ---
->
-> v2: Updated commit message to be more reasonable
->
->  drivers/of/device.c | 48 ++++++++++++++++++++++++++++++++----------------
->  1 file changed, 32 insertions(+), 16 deletions(-)
+From: Jérôme Glisse <jglisse@redhat.com>
 
-Acked-by: Rob Herring <robh@kernel.org>
+(Sorry for so many list cross-posting and big cc)
+
+Changes since v1:
+  - remove more dead code in kvm (no testing impact)
+  - more accurate end address computation (patch 2)
+    in page_mkclean_one and try_to_unmap_one
+  - added tested-by/reviewed-by gotten so far
+
+Tested as both host and guest kernel with KVM nothing is burning yet.
+
+Previous cover letter:
+
+
+Please help testing !
+
+The invalidate_page callback suffered from 2 pitfalls. First it used to
+happen after page table lock was release and thus a new page might have
+been setup for the virtual address before the call to invalidate_page().
+
+This is in a weird way fixed by c7ab0d2fdc840266b39db94538f74207ec2afbf6
+which moved the callback under the page table lock. Which also broke
+several existing user of the mmu_notifier API that assumed they could
+sleep inside this callback.
+
+The second pitfall was invalidate_page being the only callback not taking
+a range of address in respect to invalidation but was giving an address
+and a page. Lot of the callback implementer assumed this could never be
+THP and thus failed to invalidate the appropriate range for THP pages.
+
+By killing this callback we unify the mmu_notifier callback API to always
+take a virtual address range as input.
+
+There is now 2 clear API (I am not mentioning the youngess API which is
+seldomly used):
+  - invalidate_range_start()/end() callback (which allow you to sleep)
+  - invalidate_range() where you can not sleep but happen right after
+    page table update under page table lock
+
+
+Note that a lot of existing user feels broken in respect to range_start/
+range_end. Many user only have range_start() callback but there is nothing
+preventing them to undo what was invalidated in their range_start() callback
+after it returns but before any CPU page table update take place.
+
+The code pattern use in kvm or umem odp is an example on how to properly
+avoid such race. In a nutshell use some kind of sequence number and active
+range invalidation counter to block anything that might undo what the
+range_start() callback did.
+
+If you do not care about keeping fully in sync with CPU page table (ie
+you can live with CPU page table pointing to new different page for a
+given virtual address) then you can take a reference on the pages inside
+the range_start callback and drop it in range_end or when your driver
+is done with those pages.
+
+Last alternative is to use invalidate_range() if you can do invalidation
+without sleeping as invalidate_range() callback happens under the CPU
+page table spinlock right after the page table is updated.
+
+
+Note this is barely tested. I intend to do more testing of next few days
+but i do not have access to all hardware that make use of the mmu_notifier
+API.
+
+
+First 2 patches convert existing call of mmu_notifier_invalidate_page()
+to mmu_notifier_invalidate_range() and bracket those call with call to
+mmu_notifier_invalidate_range_start()/end().
+
+The next 10 patches remove existing invalidate_page() callback as it can
+no longer happen.
+
+Finaly the last page remove it completely so it can RIP.
+
+Jérôme Glisse (13):
+  dax: update to new mmu_notifier semantic
+  mm/rmap: update to new mmu_notifier semantic
+  powerpc/powernv: update to new mmu_notifier semantic
+  drm/amdgpu: update to new mmu_notifier semantic
+  IB/umem: update to new mmu_notifier semantic
+  IB/hfi1: update to new mmu_notifier semantic
+  iommu/amd: update to new mmu_notifier semantic
+  iommu/intel: update to new mmu_notifier semantic
+  misc/mic/scif: update to new mmu_notifier semantic
+  sgi-gru: update to new mmu_notifier semantic
+  xen/gntdev: update to new mmu_notifier semantic
+  KVM: update to new mmu_notifier semantic
+  mm/mmu_notifier: kill invalidate_page
+
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Joerg Roedel <jroedel@suse.de>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Sudeep Dutt <sudeep.dutt@intel.com>
+Cc: Ashutosh Dixit <ashutosh.dixit@intel.com>
+Cc: Dimitri Sivanich <sivanich@sgi.com>
+Cc: Jack Steiner <steiner@sgi.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Radim Krčmář <rkrcmar@redhat.com>
+
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: amd-gfx@lists.freedesktop.org
+Cc: linux-rdma@vger.kernel.org
+Cc: iommu@lists.linux-foundation.org
+Cc: xen-devel@lists.xenproject.org
+Cc: kvm@vger.kernel.org
+
+Jérôme Glisse (13):
+  dax: update to new mmu_notifier semantic
+  mm/rmap: update to new mmu_notifier semantic v2
+  powerpc/powernv: update to new mmu_notifier semantic
+  drm/amdgpu: update to new mmu_notifier semantic
+  IB/umem: update to new mmu_notifier semantic
+  IB/hfi1: update to new mmu_notifier semantic
+  iommu/amd: update to new mmu_notifier semantic
+  iommu/intel: update to new mmu_notifier semantic
+  misc/mic/scif: update to new mmu_notifier semantic
+  sgi-gru: update to new mmu_notifier semantic
+  xen/gntdev: update to new mmu_notifier semantic
+  KVM: update to new mmu_notifier semantic v2
+  mm/mmu_notifier: kill invalidate_page
+
+ arch/arm/include/asm/kvm_host.h          |  6 -----
+ arch/arm64/include/asm/kvm_host.h        |  6 -----
+ arch/mips/include/asm/kvm_host.h         |  5 ----
+ arch/powerpc/include/asm/kvm_host.h      |  5 ----
+ arch/powerpc/platforms/powernv/npu-dma.c | 10 --------
+ arch/x86/include/asm/kvm_host.h          |  2 --
+ arch/x86/kvm/x86.c                       | 11 ---------
+ drivers/gpu/drm/amd/amdgpu/amdgpu_mn.c   | 31 -----------------------
+ drivers/infiniband/core/umem_odp.c       | 19 ---------------
+ drivers/infiniband/hw/hfi1/mmu_rb.c      |  9 -------
+ drivers/iommu/amd_iommu_v2.c             |  8 ------
+ drivers/iommu/intel-svm.c                |  9 -------
+ drivers/misc/mic/scif/scif_dma.c         | 11 ---------
+ drivers/misc/sgi-gru/grutlbpurge.c       | 12 ---------
+ drivers/xen/gntdev.c                     |  8 ------
+ fs/dax.c                                 | 19 +++++++++------
+ include/linux/mm.h                       |  1 +
+ include/linux/mmu_notifier.h             | 25 -------------------
+ mm/memory.c                              | 26 ++++++++++++++++----
+ mm/mmu_notifier.c                        | 14 -----------
+ mm/rmap.c                                | 35 +++++++++++++++++++++++---
+ virt/kvm/kvm_main.c                      | 42 --------------------------------
+ 22 files changed, 65 insertions(+), 249 deletions(-)
+
+-- 
+2.13.5
