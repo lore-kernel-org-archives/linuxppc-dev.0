@@ -1,23 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjdxS21BvzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 20:33:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: John Allen <jallen@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: Don't attempt to acquire drc during
- memory hot add for assigned lmbs
-In-Reply-To: <c2e6a370-b648-4a25-8fe8-2dad41dce5c8@linux.vnet.ibm.com>
-References: <fc2ad536-a772-f006-43c4-1ddf6e296ebb@linux.vnet.ibm.com>
- <87bmmx3hr8.fsf@concordia.ellerman.id.au>
- <cad79893-3d1a-f2ea-892f-6481a22f261a@linux.vnet.ibm.com>
- <c2e6a370-b648-4a25-8fe8-2dad41dce5c8@linux.vnet.ibm.com>
-Date: Thu, 31 Aug 2017 20:32:58 +1000
-Message-ID: <87a82gt4bp.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xjdxX2BkYzDqVg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 20:33:03 +1000 (AEST)
+From: Robin Murphy <robin.murphy@arm.com>
+To: hch@lst.de,
+	robh+dt@kernel.org
+Cc: frowand.list@gmail.com, m.szyprowski@samsung.com,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] of: Restrict DMA configuration
+Date: Thu, 31 Aug 2017 11:32:54 +0100
+Message-Id: <5fc6930c9645c934de2586179ca3f80a055689cb.1504175330.git.robin.murphy@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +20,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-John Allen <jallen@linux.vnet.ibm.com> writes:
+Moving DMA configuration to happen later at driver probe time had the
+unnoticed side-effect that we now perform DMA configuration for *every*
+device represented in DT, rather than only those explicitly created by
+the of_platform and PCI code.
 
-> On 08/30/2017 09:35 AM, Nathan Fontenot wrote:
->> On 08/29/2017 09:35 PM, Michael Ellerman wrote:
->>> John Allen <jallen@linux.vnet.ibm.com> writes:
->>>
->>>> Check if an LMB is assigned before attempting to call dlpar_acquire_drc in
->>>> order to avoid any unnecessary rtas calls. This substantially reduces the
->>>> running time of memory hot add on lpars with large amounts of memory.
->>>>
->>>> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
->>>> ---
->>>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
->>>> index ca9b2f4..95cf2ff 100644
->>>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
->>>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
->>>> @@ -817,6 +817,9 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
->>>>  		return -EINVAL;
->>>>
->>>>  	for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
->>>> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
->>>> +			continue;
->>>> +
->>>>  		rc = dlpar_acquire_drc(lmbs[i].drc_index);
->>>>  		if (rc)
->>>>  			continue;
->>>
->>> This doesn't build for me, see below. What compiler are you using to
->>> test this?> 
->>>   arch/powerpc/platforms/pseries/hotplug-memory.c: In function 'dlpar_memory':
->>>   arch/powerpc/platforms/pseries/hotplug-memory.c:1081:2: error: 'rc' may be used uninitialized in this function [-Werror=maybe-uninitialized]
->>>     return rc;
->>>     ^
->>>
->> 
->> I don't see this build failure either, looks like its time to update my
->> compiler too.
->
-> This also builds for me. I'm using gcc version 4.8.5
+As Christoph points out, this is not really the best thing to do. Whilst
+there may well be other DMA-capable buses that can benefit from having
+their children automatically configured after the bridge has probed,
+there are also plenty of others like USB, MDIO, etc. that definitely do
+not support DMA and should not be indiscriminately processed.
 
-OK, that is fairly old.
+The good news is that in most cases the DT "dma-ranges" property serves
+as an appropriate indicator - per a strict interpretation of the spec,
+anything lacking a "dma-ranges" property should be considered not to
+have a mapping of DMA address space from its children to its parent,
+thus anything for which of_dma_get_range() does not succeed does not
+need DMA configuration. Certain bus types have a general expectation of
+DMA capability and carry a well-established precedent that an absent
+"dma-ranges" implies the same as the empty property, so we automatically
+opt those in to DMA configuration regardless, to avoid regressing most
+existing platforms.
 
-I generally use 6.x or 7.x, but I see the warning on 5.4.1 also.
+Fixes: 09515ef5ddad ("of/acpi: Configure dma operations at probe time for platform/amba/pci bus devices")
+Reported-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+---
 
-cheers
+v2: Updated commit message to be more reasonable
+
+ drivers/of/device.c | 48 ++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 32 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index e0a28ea341fe..04c4c952dc57 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -9,6 +9,9 @@
+ #include <linux/module.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/slab.h>
++#include <linux/pci.h>
++#include <linux/platform_device.h>
++#include <linux/amba/bus.h>
+ 
+ #include <asm/errno.h>
+ #include "of_private.h"
+@@ -84,31 +87,28 @@ int of_device_add(struct platform_device *ofdev)
+  */
+ int of_dma_configure(struct device *dev, struct device_node *np)
+ {
+-	u64 dma_addr, paddr, size;
++	u64 dma_addr, paddr, size = 0;
+ 	int ret;
+ 	bool coherent;
+ 	unsigned long offset;
+ 	const struct iommu_ops *iommu;
+ 	u64 mask;
+ 
+-	/*
+-	 * Set default coherent_dma_mask to 32 bit.  Drivers are expected to
+-	 * setup the correct supported mask.
+-	 */
+-	if (!dev->coherent_dma_mask)
+-		dev->coherent_dma_mask = DMA_BIT_MASK(32);
+-
+-	/*
+-	 * Set it to coherent_dma_mask by default if the architecture
+-	 * code has not set it.
+-	 */
+-	if (!dev->dma_mask)
+-		dev->dma_mask = &dev->coherent_dma_mask;
+-
+ 	ret = of_dma_get_range(np, &dma_addr, &paddr, &size);
+ 	if (ret < 0) {
++		/*
++		 * For legacy reasons, we have to assume some devices need
++		 * DMA configuration regardless of whether "dma-ranges" is
++		 * correctly specified or not.
++		 */
++		if (!dev_is_pci(dev) &&
++#ifdef CONFIG_ARM_AMBA
++		    dev->bus != &amba_bustype &&
++#endif
++		    dev->bus != &platform_bus_type)
++			return ret == -ENODEV ? 0 : ret;
++
+ 		dma_addr = offset = 0;
+-		size = max(dev->coherent_dma_mask, dev->coherent_dma_mask + 1);
+ 	} else {
+ 		offset = PFN_DOWN(paddr - dma_addr);
+ 
+@@ -129,6 +129,22 @@ int of_dma_configure(struct device *dev, struct device_node *np)
+ 		dev_dbg(dev, "dma_pfn_offset(%#08lx)\n", offset);
+ 	}
+ 
++	/*
++	 * Set default coherent_dma_mask to 32 bit.  Drivers are expected to
++	 * setup the correct supported mask.
++	 */
++	if (!dev->coherent_dma_mask)
++		dev->coherent_dma_mask = DMA_BIT_MASK(32);
++	/*
++	 * Set it to coherent_dma_mask by default if the architecture
++	 * code has not set it.
++	 */
++	if (!dev->dma_mask)
++		dev->dma_mask = &dev->coherent_dma_mask;
++
++	if (!size)
++		size = max(dev->coherent_dma_mask, dev->coherent_dma_mask + 1);
++
+ 	dev->dma_pfn_offset = offset;
+ 
+ 	/*
+-- 
+2.13.4.dirty
