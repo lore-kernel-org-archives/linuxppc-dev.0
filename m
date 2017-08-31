@@ -2,16 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjgLX5NwWzDqTm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 21:36:20 +1000 (AEST)
-In-Reply-To: <20170825043036.18236-4-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjgLY5RyrzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 21:36:21 +1000 (AEST)
+In-Reply-To: <20170825103340.op3uphrv3eyeutiz@mwanda>
+To: Dan Carpenter <dan.carpenter@oracle.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kvm-ppc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v3,
- 3/4] powerpc/64s: idle POWER9 can execute stop in virtual mode
-Message-Id: <3xjgLX3Dgkz9sQl@ozlabs.org>
-Date: Thu, 31 Aug 2017 21:36:19 +1000 (AEST)
+Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/44x: mask and shift to zero bug
+Message-Id: <3xjgLY3B4Qz9t2y@ozlabs.org>
+Date: Thu, 31 Aug 2017 21:36:21 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,17 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-08-25 at 04:30:35 UTC, Nicholas Piggin wrote:
-> The hardware can execute stop in any context, and KVM does not
-> require real mode because siblings do not share MMU state. This
-> saves a switch to real-mode when going idle.
+On Fri, 2017-08-25 at 10:33:40 UTC, Dan Carpenter wrote:
+> My static checker complains that 0x00001800 >> 13 is zero.  Looking at
+> the context, it seems like a copy and paste bug from the line below and
+> probably 0x3 << 13 or 0x00006000 was intended.
 > 
-> Acked-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+> Fixes: 2af59f7d5c3e ("[POWERPC] 4xx: Add 405GPr and 405EP support in boot wrapper")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/72b0d51d973beab5a06c97279b61a0
+https://git.kernel.org/powerpc/c/8d046759f6ad75824fdf7b9c9a3da0
 
 cheers
