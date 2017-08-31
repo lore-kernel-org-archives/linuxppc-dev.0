@@ -1,61 +1,34 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
+Return-Path: <haren@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjY6f50SrzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 16:55:38 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v7V6rfOB117443
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 02:55:33 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cpa77wgx2-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjYRr4QHszDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 17:10:32 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7V79bsJ103543
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 03:10:29 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cpa70nwcx-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 02:55:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 03:10:29 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 31 Aug 2017 16:55:30 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v7V6tS9339977172
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 16:55:28 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v7V6tIXQ007752
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 16:55:19 +1000
-Subject: Re: [PATCH v2 14/20] mm: Provide speculative fault infrastructure
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1503007519-26777-15-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170827001823.n5wgkfq36z6snvf2@node.shutemov.name>
- <507e79d5-59df-c5b5-106d-970c9353d9bc@linux.vnet.ibm.com>
- <20170829120426.4ar56rbmiupbqmio@hirez.programming.kicks-ass.net>
- <848fa2c6-dbda-9a1e-2efd-3ce9b083365e@linux.vnet.ibm.com>
- <20170829134550.t7du5zdssvlzemtk@hirez.programming.kicks-ass.net>
- <ab0634c4-274d-208f-fc4b-43991986bacf@linux.vnet.ibm.com>
- <20170830055800.GG32112@worktop.programming.kicks-ass.net>
- <12d54f18-6dec-5067-db87-d1a176d5160f@linux.vnet.ibm.com>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, paulmck@linux.vnet.ibm.com,
- akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Thu, 31 Aug 2017 12:25:16 +0530
-MIME-Version: 1.0
-In-Reply-To: <12d54f18-6dec-5067-db87-d1a176d5160f@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <0add5ad0-fd3d-efb7-f00c-7232dfc768af@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Thu, 31 Aug 2017 01:10:28 -0600
+Subject: [PATCH V4 0/7] Enable NX 842 compression engine on Power9
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, herbert@gondor.apana.org.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ mikey@neuling.org, ddstreet@ieee.org, linuxram@us.ibm.com,
+ npiggin@gmail.com, benh@kernel.crashing.org, suka@us.ibm.com,
+ hbabu@us.ibm.com
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 31 Aug 2017 00:10:13 -0700
+Mime-Version: 1.0
+Message-Id: <1504163413.4681.2.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,42 +38,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/30/2017 03:02 PM, Laurent Dufour wrote:
-> On 30/08/2017 07:58, Peter Zijlstra wrote:
->> On Wed, Aug 30, 2017 at 10:33:50AM +0530, Anshuman Khandual wrote:
->>> diff --git a/mm/filemap.c b/mm/filemap.c
->>> index a497024..08f3042 100644
->>> --- a/mm/filemap.c
->>> +++ b/mm/filemap.c
->>> @@ -1181,6 +1181,18 @@ int __lock_page_killable(struct page *__page)
->>>  int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
->>>                          unsigned int flags)
->>>  {
->>> +       if (flags & FAULT_FLAG_SPECULATIVE) {
->>> +               if (flags & FAULT_FLAG_KILLABLE) {
->>> +                       int ret;
->>> +
->>> +                       ret = __lock_page_killable(page);
->>> +                       if (ret)
->>> +                               return 0;
->>> +               } else
->>> +                       __lock_page(page);
->>> +               return 1;
->>> +       }
->>> +
->>>         if (flags & FAULT_FLAG_ALLOW_RETRY) {
->>>                 /*
->>>                  * CAUTION! In this case, mmap_sem is not released
->>
->> Yeah, that looks right.
-> 
-> Hum, I'm wondering if FAULT_FLAG_RETRY_NOWAIT should be forced in the
-> speculative path in that case to match the semantics of
-> __lock_page_or_retry().
 
-Doing that would force us to have another retry through classic fault
-path wasting all the work done till now through SPF. Hence it may be
-better to just wait, get the lock here and complete the fault. Peterz,
-would you agree ? Or we should do as suggested by Laurent. More over,
-forcing FAULT_FLAG_RETRY_NOWAIT on FAULT_FLAG_SPECULTIVE at this point
-would look like a hack.
+P9 introduces Virtual Accelerator Switchboard (VAS) to communicate
+with NX 842 engine. icswx function is used to access NX before.
+On powerNV systems, NX-842 driver invokes VAS functions for
+configuring RxFIFO (receive window) per each NX engine. VAS uses
+this FIFO to communicate the request to NX. The kernel opens send
+window which is used to transfer compression/decompression requests
+to VAS. It maps the send window to the corresponding RxFIFO.
+copy/paste instructions are used to pass the CRB to VAS.
+    
+This patch series adds P9 NX support for 842 compression engine.
+First 5 patches reorganize the current code so that VAS function
+can be added.
+- nx842_powernv_function points to VAS function if VAS feature is
+  available. Otherwise icswx function is used.
+- Move configure CRB code nx842_cfg_crb() 
+- In addition to freeing co-processor structs for initialization 
+  failures and exit, both send and receive windows have to closed
+  for VAS.
+- Move updating coprocessor info list to nx842_add_coprocs_list().
+- Initialize wormem allocation.
+
+The last 2 patches adds configuring and invoking VAS, and also
+checking P9 NX specific errors that are provided in co-processor
+status block (CSB) for failures.
+
+Patches have been tested on P9 DD1 system using VAS changes and
+on P8 HW to make sure no regression.
+
+This patchset depends on VAS kernel changes:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-August/162883.html
+
+Thanks to Sukadev Bhattiprolu for his review, input and testing with
+VAS changes. Also thanks to Michael Ellerman and Benjamin Herrenschmidt
+for their valuable guidance and comments.
+
+Changelog[V4]
+	- New VAS copy/paste API changes
+	- Proper device tree parsing for VAS ID as Michael Ellerman suggested. 
+
+Changelog[V3]
+        - preemption disable for copy/paste as Nichalos Piggin suggested.
+        - PTR_ALIGN for workmem buffer based on Ram Pai's comemnt.
+
+Changelog[v2]
+        - Open/close send windows in nx842_poernv_crypto_init/exit_vas().
+        - Changes for the new device-tree NX properties such as priority
+          and compatible properties.
+        - Incorporated review comments from Michael Ellerman.
+        - Other minor issues found during HW testing.
+
+Haren Myneni (7):
+  crypto/nx: Rename nx842_powernv_function as icswx function
+  crypto/nx: Create nx842_configure_crb function
+  crypto/nx: Create nx842_delete_coprocs function
+  crypto/nx: Add nx842_add_coprocs_list function
+  crypto/nx: Use kzalloc for workmem allocation
+  crypto/nx: Add P9 NX specific error codes for 842 engine
+  crypto/nx: Add P9 NX support for 842 compression engine.
+
+ arch/powerpc/include/asm/icswx.h   |   3 +
+ drivers/crypto/nx/Kconfig          |   1 +
+ drivers/crypto/nx/nx-842-powernv.c | 507 +++++++++++++++++++++++++++++++++----
+ drivers/crypto/nx/nx-842.c         |   2 +-
+ drivers/crypto/nx/nx-842.h         |   8 +
+ 5 files changed, 473 insertions(+), 48 deletions(-)
+
+-- 
+2.11.0
