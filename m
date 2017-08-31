@@ -1,28 +1,43 @@
-Return-Path: <seth.forshee@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjhVG0TtWzDrV9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 22:28:05 +1000 (AEST)
-Received: from mail-io0-f200.google.com ([209.85.223.200])
- by youngberry.canonical.com with esmtps (TLS1.0:RSA_AES_128_CBC_SHA1:16)
- (Exim 4.76) (envelope-from <seth.forshee@canonical.com>)
- id 1dnOZl-0006Ny-F4
- for linuxppc-dev@lists.ozlabs.org; Thu, 31 Aug 2017 12:28:01 +0000
-Received: by mail-io0-f200.google.com with SMTP id 2so21503111ion.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 05:28:01 -0700 (PDT)
-Date: Thu, 31 Aug 2017 07:27:59 -0500
-From: Seth Forshee <seth.forshee@canonical.com>
-To: Simon Guo <wei.guo.simon@gmail.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Build failures in powerpc ptrace selftests
-Message-ID: <20170831122759.6uspj5v727gyclbe@ubuntu-xps13>
-References: <20170830130525.xwj3oy2cx2qdwvqc@ubuntu-xps13>
- <20170830174147.GA7040@simonLocalRHEL7.x64>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjhdG1JG7zDqZq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 22:34:09 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v7VCY60U093576
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 08:34:07 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cpdd6s83w-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 08:34:07 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Thu, 31 Aug 2017 22:33:58 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v7VCXt3t34275472
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 22:33:55 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v7VCXjpX026058
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 22:33:46 +1000
+Date: Thu, 31 Aug 2017 05:33:53 -0700
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
+Subject: Re: [PATCH 4/4] powerpc/smp: Add Power9 scheduler topology
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <20170629071256.8159-1-oohall@gmail.com>
+ <20170629071256.8159-5-oohall@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170830174147.GA7040@simonLocalRHEL7.x64>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20170629071256.8159-5-oohall@gmail.com>
+Message-Id: <20170831123353.GA37619@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +47,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 31, 2017 at 01:41:47AM +0800, Simon Guo wrote:
-> Hi Seth,
-> On Wed, Aug 30, 2017 at 08:05:25AM -0500, Seth Forshee wrote:
-> > With gcc 7 from Ubuntu 17.10 I'm getting the follwing error building the
-> > ptrace selftests for powerpc:
-> > 
-> >   ptrace-tm-vsx.c: In function ‘tm_vsx’:
-> >   ptrace-tm-vsx.c:42:2: error: PIC register clobbered by ‘r2’ in ‘asm’
-> >     asm __volatile__(
-> >     ^~~
-> >   make[1]: *** [ptrace-tm-vsx] Error 1
-> >   ptrace-tm-spd-vsx.c: In function ‘tm_spd_vsx’:
-> >   ptrace-tm-spd-vsx.c:55:2: error: PIC register clobbered by ‘r2’ in ‘asm’
-> >     asm __volatile__(
-> >     ^~~
-> >   make[1]: *** [ptrace-tm-spd-vsx] Error 1
-> >   ptrace-tm-spr.c: In function ‘tm_spr’:
-> >   ptrace-tm-spr.c:46:2: error: PIC register clobbered by ‘r2’ in ‘asm’
-> >     asm __volatile__(
-> >     ^~~
-> > 
-> > Best I can tell gcc now considers any inline asm which clobbers r2 an
-> > error, and I get it even with -fno-pic. I'm not familiar with powerpc
-> > asm, but it's not obvious to me why r2 is in the clobber list for any of
-> > these.
-> Thanks for reporting this issue.
-> 
-> In PPC ABI, r2 is used as TOC pointer and it might be changed by inter-module 
-> function calls. I believe that is the reason why it was put into clobber list 
-> originally.
-> 
-> In our case, dual entry is used to save TOC pointer (r2) update for function
-> calls within one module. There is no r2 change and I think r2 can be moved out 
-> of clobber list.
-> 
-> I don't have a GCC-7 environment. If possible, could you help to try following 
-> patch?
+> +static struct sched_domain_topology_level power9_topology[] = {
+> +#ifdef CONFIG_SCHED_SMT
+> +	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+> +#endif
+> +	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
+> +	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
+> +	{ NULL, },
+> +};
+> +
 
-Your patch fixes the build errors for me. Thanks!
+Should we name this domain as MC instead of CACHE. Then it would be
+compatible with other archs like x86/arm/s390. MC stands for Multi-Core
+so it gels with what we have.
 
-Seth
+Also we could enable CONFIG_SCHED_MC and reuse cpu_core_flags() instead
+of adding powerpc_shared_cache_flags.
