@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjgLF0J7rzDqT0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjgLF6JG3zDqV5
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 21:36:05 +1000 (AEST)
-In-Reply-To: <1498573791-6781-1-git-send-email-hare@suse.de>
-To: Hannes Reinecke <hare@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20170628114907.kf3t65mrdbq7rsfm@mwanda>
+To: Dan Carpenter <dan.carpenter@oracle.com>, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Hannes Reinecke <hare@suse.com>, linuxppc-dev@lists.ozlabs.org,
- Hannes Reinecke <hare@suse.de>, Torsten Duwe <duwe@suse.com>
-Subject: Re: powerpc: conditionally compile platform-specific serial drivers
-Message-Id: <3xjgLD6XBkz9t2Q@ozlabs.org>
-Date: Thu, 31 Aug 2017 21:36:02 +1000 (AEST)
+Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: remapping too much memory
+Message-Id: <3xjgLF5Q9Lz9t2W@ozlabs.org>
+Date: Thu, 31 Aug 2017 21:36:05 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-06-27 at 14:29:51 UTC, Hannes Reinecke wrote:
-> mpsc.c and mpc52xx-psc.c are platform-specific serial drivers, and
-> should be compiled for the respective platforms only.
+On Wed, 2017-06-28 at 11:49:07 UTC, Dan Carpenter wrote:
+> There is a cut and paste error here so we use "sizeof(struct mpc83xx_pmc)"
+> to remap the memory for "clock_regs".  That sizeof() is 20 bytes and we
+> only need to remap 12 bytes.  It presumably doesn't affect run time too
+> much...
 > 
-> Signed-off-by: Hannes Reinecke <hare@suse.com>
-> Reviewed-by: Torsten Duwe <duwe@suse.de>
+> I changed them to both use "sizeof(*variable_name)" because that's the
+> prefered kernel style these days.
+> 
+> Fixes: d49747bdfb2d ("powerpc/mpc83xx: Power Management support")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/866bfc75f40e4f8a00d268f73f3a02
+https://git.kernel.org/powerpc/c/c65540453e150844367ffe98e45d51
 
 cheers
