@@ -1,31 +1,28 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjk691ZrtzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 23:40:49 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id n74so1364120ioe.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 06:40:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xjkhf4lhwzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 00:07:14 +1000 (AEST)
+Date: Thu, 31 Aug 2017 16:06:53 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christoph Hellwig <hch@lst.de>
+cc: iommu@lists.linux-foundation.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Robin Murphy <robin.murphy@arm.com>, Michal Simek <monstr@monstr.eu>,
+ David Howells <dhowells@redhat.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ x86@kernel.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
+ linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/12] x86: make dma_cache_sync a no-op
+In-Reply-To: <20170827161032.22772-5-hch@lst.de>
+Message-ID: <alpine.DEB.2.20.1708311606340.1874@nanos>
+References: <20170827161032.22772-1-hch@lst.de>
+ <20170827161032.22772-5-hch@lst.de>
 MIME-Version: 1.0
-Sender: ddstreet@gmail.com
-In-Reply-To: <59A7BE4E.1040806@linux.vnet.ibm.com>
-References: <1500699702.23205.8.camel@hbabu-laptop>
- <878ti35l7z.fsf@concordia.ellerman.id.au>
- <CALZtONDnFLiGhTRNs89VWr3nrY0Bp9VPRqFXA0iEaa6U_+w4Ag@mail.gmail.com>
- <59A7BE4E.1040806@linux.vnet.ibm.com>
-From: Dan Streetman <ddstreet@ieee.org>
-Date: Thu, 31 Aug 2017 09:40:06 -0400
-Message-ID: <CALZtONCmvVM1qu9RjP9iVn+C32rJ3fCHCJCbjkXJqNFfmVGgKg@mail.gmail.com>
-Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
- engine
-To: Haren Myneni <haren@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Herbert Xu <herbert@gondor.apana.org.au>, Ram Pai <linuxram@us.ibm.com>,
- npiggin@gmail.com,
- suka@us.ibm.com, Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,86 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 31, 2017 at 3:44 AM, Haren Myneni <haren@linux.vnet.ibm.com> wrote:
-> Thanks MIchael and Dan for your review comments.
->
->
-> On 08/29/2017 06:32 AM, Dan Streetman wrote:
->> On Mon, Aug 28, 2017 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> Hi Haren,
->>>
->>> Some comments inline ...
->>>
->>> Haren Myneni <haren@linux.vnet.ibm.com> writes:
->>>
->>>> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
->>>> index c0dd4c7e17d3..13089a0b9dfa 100644
->>>> --- a/drivers/crypto/nx/nx-842-powernv.c
->>>> +++ b/drivers/crypto/nx/nx-842-powernv.c
->>>> @@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
->>>>
->>>>  #define WORKMEM_ALIGN        (CRB_ALIGN)
->>>>  #define CSB_WAIT_MAX (5000) /* ms */
->>>> +#define VAS_RETRIES  (10)
->>>
->>> Where does that number come from?
->
-> Sometimes HW returns copy/paste failures.
+On Sun, 27 Aug 2017, Christoph Hellwig wrote:
 
-why?  what is causing the failure?
+> x86 does not implement DMA_ATTR_NON_CONSISTENT allocations, so it doesn't
+> make any sense to do any work in dma_cache_sync given that it must be a
+> no-op when dma_alloc_attrs returns coherent memory.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de
 
-> So we should retry the request again. With 10 retries, Test running
-> 12 hours was successful for repeated compression/decompression
-> requests with 1024 threads.
->
->>>
->>> Do we have any idea what the trade off is between retrying vs just
->>> falling back to doing the request in software?
->
-> Not checked the overhead with falling back to SW compression.
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 
-SW is very, very, very slow, due to 842 being an unaligned compression format.
-
->
->>>
->>>> +/* # of requests allowed per RxFIFO at a time. 0 for unlimited */
->>>> +#define MAX_CREDITS_PER_RXFIFO       (1024)
->>>>
->>>>  struct nx842_workmem {
->>>>       /* Below fields must be properly aligned */
->>>> @@ -42,16 +46,27 @@ struct nx842_workmem {
->>>>
->>>>       ktime_t start;
->>>>
->>>> +     struct vas_window *txwin;       /* Used with VAS function */
->>>
->>> I don't understand how it makes sense to put txwin and start between the
->>> fields above, and the padding.
->>
->> workmem is a scratch buffer and shouldn't be used for something
->> persistent like this.
->>
->>>
->>> If the workmem pointer you receive is not aligned, then PTR_ALIGN() will
->>> advance it and mean you end up writing over start and txwin.
->
-> We always access workmem with PTR_ALIGN even when assigning txwin (nx842_powernv_crypto_init/exit_vas).
-> So we should not overwrite start and txwin,
->
-> We can add txwin in nx842_crypto_ctx instead of workmem. But nx842_crypto_ctx is used for both powernv and pseries. Hence used workmem. But if nx842_crypto_ctx is preferred, I will send new patch soon.
->
->>>
->>> That's probably not your bug, the code is already like that.
->>
->> no, it's a bug in this patch, because workmem is scratch whose
->> contents are only valid for the duration of each operation (compress
->> or decompress).
->>
->>>
->>>>       char padding[WORKMEM_ALIGN]; /* unused, to allow alignment */
->>>>  } __packed __aligned(WORKMEM_ALIGN);
->>>
->
-> Thanks
-> Haren
->
+> ---
+>  arch/x86/include/asm/dma-mapping.h | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
+> index 398c79889f5c..04877267ad18 100644
+> --- a/arch/x86/include/asm/dma-mapping.h
+> +++ b/arch/x86/include/asm/dma-mapping.h
+> @@ -70,7 +70,6 @@ static inline void
+>  dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+>  	enum dma_data_direction dir)
+>  {
+> -	flush_write_buffers();
+>  }
+>  
+>  static inline unsigned long dma_alloc_coherent_mask(struct device *dev,
+> -- 
+> 2.11.0
+> 
+> 
