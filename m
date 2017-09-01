@@ -1,24 +1,34 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.14])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkN7s0ZwNzDqYl
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2017 01:14:32 +1000 (AEST)
-Subject: Re: axonram: Delete an error message for a failed memory allocation
- in axon_ram_probe()
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jan Kara
- <jack@suse.cz>, Jens Axboe <axboe@fb.com>,
- Dan Williams <dan.j.williams@intel.com>, Paul Mackerras <paulus@samba.org>,
- kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <3xkKq351vNz9t3P@ozlabs.org>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <15496bcd-1ad5-137c-5bb4-222b873a5992@users.sourceforge.net>
-Date: Fri, 1 Sep 2017 17:13:58 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkNt16wTJzDqk2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2017 01:47:37 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v81FhvhS031224
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Sep 2017 11:47:34 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cq9wvthp4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 11:47:34 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Fri, 1 Sep 2017 09:47:34 -0600
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ John Allen <jallen@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH V13 0/4] powerpc/vphn: Update CPU topology when VPHN enabled
+Date: Fri, 1 Sep 2017 10:47:31 -0500
 MIME-Version: 1.0
-In-Reply-To: <3xkKq351vNz9t3P@ozlabs.org>
 Content-Type: text/plain; charset=utf-8
+Message-Id: <fc21bb6f-9df8-ab7d-5987-6bdce5d39842@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Series applied to powerpc next, thanks.
+powerpc/numa: On Power systems with shared configurations of CPUs
+and memory, there are some issues with the association of additional
+CPUs and memory to nodes when hot-adding resources.  This patch
+addresses some of those problems.
 
-Thanks for another positive feedback.
+First, it corrects the currently broken capability to set the
+topology for shared CPUs in LPARs.  At boot time for shared CPU
+lpars, the topology for each CPU was being set to node zero.  Now
+when numa_update_cpu_topology() is called appropriately, the Virtual
+Processor Home Node (VPHN) capabilities information provided by the
+pHyp allows the appropriate node in the shared configuration to be
+selected for the CPU.
 
-But I wonder how you can refer to the “series” when the forth update step
-“Delete an unnecessary variable initialisation” contained a broken suggestion.
+Next, it updates the initialization checks to independently recognize
+PRRN or VPHN support.
 
+Next, during hotplug CPU operations, it resets the timer on topology
+update work function to a small value to better ensure that the CPU
+topology is detected and configured sooner.
 
-> https://git.kernel.org/powerpc/c/a1bddf3991573f3dff2762bfca5e11
+Also, fix an end-of-updates processing problem observed occasionally
+in numa_update_cpu_topology().
 
-This link seems to refer (only?) to the update step “Improve a size determination”.
-How is the status for the other two change possibilities of this software module?
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-Regards,
-Markus
+Michael Bringmann (4):
+  powerpc/vphn: Update CPU topology when VPHN enabled
+  powerpc/vphn: Improve recognition of PRRN/VPHN
+  powerpc/hotplug: Improve responsiveness of hotplug change
+  powerpc/vphn:
+---
+Changes in V13:
+  -- Split into multiple smaller patches
