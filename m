@@ -1,12 +1,12 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xk9pB3jrjzDqnm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 17:28:34 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id r133so1243028pgr.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 00:28:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xk9pK3yWvzDqkr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 17:28:41 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id r187so1171212pfr.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 00:28:41 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
@@ -17,9 +17,9 @@ Cc: benh@kernel.crashing.org, z.liuxinliang@hisilicon.com,
  dri-devel@lists.freedesktop.org, lukas@wunner.de,
  ard.biesheuvel@linaro.org, lorenzo.pieralisi@arm.com,
  Daniel Axtens <dja@axtens.net>
-Subject: [PATCH v3 2/3] drm: add fallback default device detection
-Date: Fri,  1 Sep 2017 17:27:43 +1000
-Message-Id: <20170901072744.2409-3-dja@axtens.net>
+Subject: [PATCH v3 3/3] drm: documentation for default display device
+Date: Fri,  1 Sep 2017 17:27:44 +1000
+Message-Id: <20170901072744.2409-4-dja@axtens.net>
 In-Reply-To: <20170901072744.2409-1-dja@axtens.net>
 References: <20170901072744.2409-1-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,157 +31,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The VGA arbiter selects a default VGA device that is enabled and
-reachable via the legacy VGA resources (mem 0xa0000-0xbffff, io
-0x3b0-0x3bb, io 0x3c0-0x3df, etc).
-
-(As a special case for x86 and IA64, this can be overridden by
-EFI.)
-
-If there is no such device, e.g., because there's no enabled VGA
-device, the host bridge doesn't support access to those legacy
-resources, or a PCI-PCI bridge doesn't have VGA Enable set, a
-platform may select an arbitrary device by calling
-pci_set_default_display(). powerpc does this, for example.
-
-If there is also no platform hook, there will be no default
-device nominated. This is not necessarily what we want.
-
-Add handling for devices that aren't handled by the vga arbiter or
-platform by adding a late initcall and a class enable hook. If there
-is no default from vgaarb or the platform then the first VGA card
-that is enabled, has a driver bound, and can decode memory or I/O
-will be marked as default.
-
-This means single-card setups on systems without access to legacy
-areas and without arch hooks will work. Multi-card setups on these
-systems will nominate an arbitrary device, rather than no devices.
+We have refactored and extended this - document it.
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
-
 ---
+ Documentation/gpu/default_display.rst | 93 +++++++++++++++++++++++++++++++++++
+ Documentation/gpu/index.rst           |  1 +
+ 2 files changed, 94 insertions(+)
+ create mode 100644 Documentation/gpu/default_display.rst
 
-v3:
-
-Split out from re-organisation for simplicity.
-Add better description and better documentaion.
-
-Thanks to (in no particular order), Daniel Vetter, Lorenzo Pieralisi,
-Ard Biesheuvel and Dave Airlie. Special thanks to Ben Herrenschmidt
-and Bjorn Helgass, whose prose I have borrowed.
-
-v1:
-
-Tested on:
- - x86_64 laptop
- - arm64 D05 board with hibmc card
- - qemu powerpc with tcg and bochs std-vga
-
-I know this adds another config option and that's a bit sad, but
-we can't include it unconditionally as it depends on PCI.
-Suggestions welcome.
----
- drivers/gpu/vga/default_display.c | 77 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 77 insertions(+)
-
-diff --git a/drivers/gpu/vga/default_display.c b/drivers/gpu/vga/default_display.c
-index 99e4723360da..b8e4a5af38e8 100644
---- a/drivers/gpu/vga/default_display.c
-+++ b/drivers/gpu/vga/default_display.c
-@@ -42,6 +42,10 @@
-  *
-  *  2) Anything specified by an arch hook,
-  *     e.g. arch/powerpc/kernel/pci-common.c::fixup_vga()
-+ *
-+ *  3) If neither of those, then we still want to pick something. For
-+ *     now, pick the first PCI VGA device with a driver bound and with
-+ *     memory or I/O control on.
-  */
- 
- #include <linux/module.h>
-@@ -53,6 +57,12 @@
- 
- static struct pci_dev *vga_default;
- 
-+/*
-+ * only go active after the late initcall so as not to interfere with
-+ * the arbiter
-+ */
-+static bool vga_default_active = false;
+diff --git a/Documentation/gpu/default_display.rst b/Documentation/gpu/default_display.rst
+new file mode 100644
+index 000000000000..3c190611564e
+--- /dev/null
++++ b/Documentation/gpu/default_display.rst
+@@ -0,0 +1,93 @@
++=======================
++Default Display Devices
++=======================
 +
- /**
-  * pci_default_display - return the default display device
-  *
-@@ -84,3 +94,70 @@ void pci_set_default_display(struct pci_dev *pdev)
- 	pci_dev_put(vga_default);
- 	vga_default = pci_dev_get(pdev);
- }
++Overview
++========
 +
-+static bool vga_default_try_device(struct pci_dev *pdev)
-+{
-+	u16 cmd;
++.. kernel-doc:: drivers/gpu/vga/default_display.c
++		:doc: overview
 +
-+	/* Only deal with VGA class devices */
-+	if ((pdev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
-+		return false;
 +
-+	/* Only deal with devices with drivers bound */
-+	if (!pdev->driver)
-+		return false;
++Why do we need this?
++====================
 +
-+	/* Require I/O or memory control */
-+	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-+	if (!(cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)))
-+		return false;
++The default device is used to set the ``boot_vga`` per-device sysfs
++file, which is used by user-space. Most notably, Xorg reads this file
++via libpciaccess in order to facilitate auto-configuration.
 +
-+	dev_info(&pdev->dev, "vga_default: setting as default device\n");
-+	pci_set_default_display(pdev);
-+	return true;
-+}
 +
-+static int __init vga_default_init(void)
-+{
-+	struct pci_dev *pdev;
++History
++=======
 +
-+	vga_default_active = true;
++When the VGA arbiter was introduced, it would pick a default device on
++boot. As the arbiter exists to arbitrate access to legacy resources,
++it would only pick a card that could be accessed through legacy areas.
++(See the :doc:`vgaarbiter` documentation for more.)
 +
-+	if (pci_default_display())
-+		return 0;
++The arbiter was later extended on x86 and IA64 to consider the EFI
++framebuffer.
 +
-+	pdev = NULL;
-+	while ((pdev =
-+		pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-+			       PCI_ANY_ID, pdev)) != NULL) {
-+		if (vga_default_try_device(pdev))
-+			return 0;
-+	}
++This is all well and good if you have legacy resources or
++EFI. However, some systems do not have either of those. For example,
++on POWER8: [0]_
 +
-+	return 0;
-+}
-+late_initcall(vga_default_init);
++ - There is no IO space at all
 +
-+/*
-+ * A driver could be loaded much later than late_initcall, for example
-+ * if it's in a module.
-+ *
-+ * We want to pick that up. However, we want to make sure this does
-+ * not interfere with the arbiter - it should only activate if the
-+ * arbiter has already had a chance to operate. To ensure this, we set
-+ * vga_default_active in the late_initcall: as the vga arbiter is a
-+ * subsys initcall, it is guaranteed to fire first.
-+ */
-+static void vga_default_enable_hook(struct pci_dev *pdev)
-+{
-+       if (!vga_default_active)
-+	       return;
++ - We configure the 32-bit MMIO window to be around 3..4G (to avoid
++   overlapping with DMA space below it).
 +
-+       if (pci_default_display())
-+               return;
++So effectively, there is no path to the legacy areas.
 +
-+       vga_default_try_device(pdev);
-+}
-+DECLARE_PCI_FIXUP_CLASS_ENABLE(PCI_ANY_ID, PCI_ANY_ID,
-+			       PCI_CLASS_DISPLAY_VGA, 8,
-+			       vga_default_enable_hook)
++This means the VGA arbiter will not pick a default device on these
++platforms. So, on powerpc, a class hook was added to mark a default
++device (``arch/powerpc/kernel/pci-common.c``), independent of the
++arbiter.
++
++When this issue arose on an arm64 system, it was decided that a generic
++approach would be better than more special cases. Therefore, the
++default device selection was factored out, and it now operates using
++the priority list described in the Overview.
++
++API
++===
++
++Public
++------
++
++.. kernel-doc:: drivers/gpu/vga/default_display.c
++		:export:
++
++Private
++-------
++
++.. kernel-doc:: drivers/gpu/vga/default_display.c
++		:internal:
++
++Future Work
++===========
++
++There is no support for non-PCI VGA devices being marked as default.
++The following comment, extracted from an earlier version of
++:c:func:`pci_default_display()` might help:
++
++  If your VGA default device is not PCI, you'll have to override this
++  and return NULL here. In this case, I assume it will not conflict
++  with any PCI card. If this is not true, I'll have to define two
++  archs hooks for enabling/disabling the VGA default device if that
++  is possible. 
++
++  This may be a problem with real _ISA_ VGA cards, in addition to a
++  PCI one. I don't know at this point how to deal with that card. Can
++  theirs IOs be disabled at all ? If not, then I suppose it's a matter
++  of having the proper arch hook telling us about it, so we basically
++  never allow anybody to succeed a ``vga_get()``...
++
++Currently there is also no way to support non-VGA-class PCI devices as
++default display devices.
++
++
++References
++==========
++	   
++.. [0] https://www.spinics.net/lists/linux-pci/msg64142.html
+diff --git a/Documentation/gpu/index.rst b/Documentation/gpu/index.rst
+index 35d673bf9b56..8083d84f2334 100644
+--- a/Documentation/gpu/index.rst
++++ b/Documentation/gpu/index.rst
+@@ -16,6 +16,7 @@ Linux GPU Driver Developer's Guide
+    tegra
+    tinydrm
+    vc4
++   default_display
+    vga-switcheroo
+    vgaarbiter
+    bridge/dw-hdmi
 -- 
 2.11.0
