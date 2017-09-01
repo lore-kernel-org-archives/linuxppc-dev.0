@@ -1,19 +1,29 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <turtle.in.the.kernel@gmail.com>
+Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
+ [IPv6:2607:f8b0:400d:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xjzfn1XqwzDqYs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 09:51:29 +1000 (AEST)
-Date: Fri, 1 Sep 2017 09:51:23 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 19/17] powerpc: Wrap register number correctly for string
- load/store instructions
-Message-ID: <20170831235123.GA5644@fergus.ozlabs.ibm.com>
-References: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xk0T84tpJzDqgB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 10:28:12 +1000 (AEST)
+Received: by mail-qk0-x241.google.com with SMTP id a77so910913qkb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 17:28:12 -0700 (PDT)
+Subject: Re: [PATCH 19/31] timer: Remove open-coded casts for .data and
+ .function
+To: Kees Cook <keescook@chromium.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Samuel Ortiz <samuel@sortiz.org>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+ netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1504222183-61202-1-git-send-email-keescook@chromium.org>
+ <1504222183-61202-20-git-send-email-keescook@chromium.org>
+From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Message-ID: <571a97d3-97ed-e86f-71c8-afdc5237d244@gmail.com>
+Date: Thu, 31 Aug 2017 17:28:07 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1504066360-30128-1-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1504222183-61202-20-git-send-email-keescook@chromium.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman reported that emulate_loadstore() was trying to
-access element 32 of regs->gpr[], which doesn't exist, when
-emulating a string store instruction.  This is because the string
-load and store instructions (lswi, lswx, stswi and stswx) are
-defined to wrap around from register 31 to register 0 if the number
-of bytes being loaded or stored is sufficiently large.  This wrapping
-was not implemented in the emulation code.  To fix it, we mask the
-register number after incrementing it.
+On 08/31/2017 04:29 PM, Kees Cook wrote:
+> This standardizes the callback and data prototypes in several places that
+> perform casting, in an effort to remove more open-coded .data and
+> .function uses in favor of setup_timer().
+> 
+> Cc: Samuel Ortiz <samuel@sortiz.org>
+> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+> Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+> Cc: netdev@vger.kernel.org
+> Cc: linux-scsi@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> ---
+>  drivers/net/irda/bfin_sir.c      |  5 +++--
+>  drivers/scsi/ibmvscsi/ibmvfc.c   | 14 ++++++--------
+>  drivers/scsi/ibmvscsi/ibmvscsi.c |  8 ++++----
+>  3 files changed, 13 insertions(+), 14 deletions(-)
+For ibmvfc & ibmvscsi portions:
 
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Fixes: c9f6f4ed95d4 ("powerpc: Implement emulation of string loads and stores")
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/lib/sstep.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 2f6897c..c406611 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -2865,7 +2865,8 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 				v32 = byterev_4(v32);
- 			regs->gpr[rd] = v32;
- 			ea += 4;
--			++rd;
-+			/* reg number wraps from 31 to 0 for lsw[ix] */
-+			rd = (rd + 1) & 0x1f;
- 		}
- 		break;
- 
-@@ -2934,7 +2935,8 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 			if (err)
- 				break;
- 			ea += 4;
--			++rd;
-+			/* reg number wraps from 31 to 0 for stsw[ix] */
-+			rd = (rd + 1) & 0x1f;
- 		}
- 		break;
- 
--- 
-2.7.4
+Acked-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
