@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKqC3Y0zzDqjB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKqC2K7wzDqhM
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:59 +1000 (AEST)
-In-Reply-To: <1504066360-30128-2-git-send-email-paulus@ozlabs.org>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1503571797-16885-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v3,
- 01/17] powerpc: Correct instruction code for xxlor instruction
-Message-Id: <3xkKqB58Ddz9t3p@ozlabs.org>
-Date: Fri,  1 Sep 2017 23:29:58 +1000 (AEST)
+Cc: paulus@samba.org, anton@samba.org
+Subject: Re: powerpc: Fix DAR reporting when alignment handler faults
+Message-Id: <3xkKqB2kL5z9t2x@ozlabs.org>
+Date: Fri,  1 Sep 2017 23:29:57 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-30 at 04:12:24 UTC, Paul Mackerras wrote:
-> The instruction code for xxlor that commit 0016a4cf5582 ("powerpc:
-> Emulate most Book I instructions in emulate_step()", 2010-06-15)
-> added is actually the code for xxlnor.  It is used in get_vsr()
-> and put_vsr() and the effect of the error is that if emulate_step
-> is used to emulate a VSX load or store from any register other
-> than vsr0, the bitwise complement of the correct value will be
-> loaded or stored.  This corrects the error.
+On Thu, 2017-08-24 at 10:49:57 UTC, Michael Ellerman wrote:
+> Anton noticed that if we fault part way through emulating an unaligned
+> instruction, we don't update the DAR to reflect that.
 > 
-> Fixes: 0016a4cf5582 ("powerpc: Emulate most Book I instructions in emulate_step()")
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> The DAR value is eventually reported back to userspace as the address
+> in the SEGV signal, and if userspace is using that value to demand
+> fault then it can be confused by us not setting the value correctly.
+> 
+> This patch is ugly as hell, but is intended to be the minimal fix and
+> back ports easily.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/93b2d3cf3733b4060d3623161551f5
+https://git.kernel.org/powerpc/c/f9effe925039cf54489b5c04e0d400
 
 cheers
