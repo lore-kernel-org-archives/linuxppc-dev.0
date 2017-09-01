@@ -1,34 +1,23 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-io0-x22d.google.com (mail-io0-x22d.google.com
- [IPv6:2607:f8b0:4001:c06::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkDJW0z0BzDqZ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 19:21:31 +1000 (AEST)
-Received: by mail-io0-x22d.google.com with SMTP id b2so13247167iof.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 02:21:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkDjW4B00zDqZ0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 19:39:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v3 4/4] powerpc/64s: idle ESL=0 stop can avoid MSR and
+ save/restore overhead
+In-Reply-To: <20170830221045.6fd10787@roar.ozlabs.ibm.com>
+References: <20170825043036.18236-1-npiggin@gmail.com>
+ <20170825043036.18236-5-npiggin@gmail.com>
+ <87pobd1em0.fsf@concordia.ellerman.id.au>
+ <20170830221045.6fd10787@roar.ozlabs.ibm.com>
+Date: Fri, 01 Sep 2017 19:39:41 +1000
+Message-ID: <87k21i69lu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170901072744.2409-1-dja@axtens.net>
-References: <20170901072744.2409-1-dja@axtens.net>
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Fri, 1 Sep 2017 10:21:28 +0100
-Message-ID: <CAKv+Gu84njSF5uOvNtknGdOd5auU7zw9scFeTq5v-=OhExgOqA@mail.gmail.com>
-Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
-To: Daniel Axtens <dja@axtens.net>
-Cc: linux-pci <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Liuxinliang (Matthew Liu)" <z.liuxinliang@hisilicon.com>,
- Zou Rongrong <zourongrong@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Bjorn Helgaas <helgaas@kernel.org>,
- David Airlie <airlied@linux.ie>, "Vetter, Daniel" <daniel.vetter@intel.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- Lukas Wunner <lukas@wunner.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,40 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 1 September 2017 at 08:27, Daniel Axtens <dja@axtens.net> wrote:
-> This patch set:
->
->  - splits the default display handling out from VGA arbiter, into its
->    own file and behind its own Kconfig option (and gives the functions
->    better names).
->
->  - adds extra detection of default devices. To be nominated, the vga
->    arbiter and platform hooks must not have nominated a default. A
->    card will then only be nominated if it has a driver attached and
->    has IO or memory decoding enabled.
->
->  - adds relevant documentation.
->
-> The practical impact of this is improved X autoconfiguration on some
-> arm64 systems.
->
-> Changes in v3:
->
->  - Add documentation - thanks Daniel Vetter for pointing it out.
->
->  - Clarify explanations. Thanks to everyone for continuing to bear
->    with my incomplete understanding of PCI and provide some clarity.
->
->  - Split refactoring and adding functionality.
->
-> Changes in v2: https://www.spinics.net/lists/linux-pci/msg64007.html
->
-> Drop all the powerpc patches. [explanation snipped]
->
-> v1: https://www.spinics.net/lists/linux-pci/msg63581.html
->
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-If we are all in agreement that fixing X is not an option, I think
-this is a reasonable approach
+> On Wed, 30 Aug 2017 21:25:59 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> 
+>> > When stop is executed with EC=ESL=0, it appears to execute like a
+>> > normal instruction (resuming from NIP when woken by interrupt).
+>> > So all the save/restore handling can be avoided completely. In
+>> > particular NV GPRs do not have to be saved, and MSR does not have
+>> > to be switched back to kernel MSR.
+>> >
+>> > So move the test for "lite" sleep states out to power9_idle_stop.
+>> >
+>> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> > ---
+>> >  arch/powerpc/kernel/idle_book3s.S | 35 ++++++++++++++++++++++++-----------
+>> >  1 file changed, 24 insertions(+), 11 deletions(-)  
+>> 
+>> This is blowing up for me on mambo:
+>
+> Oh this is a known bug in mambo that does not match the hardware.
+>
+> You need >= Mambo.7.8.21, or this firmware patch to work around
+> the issue for old mambos.
 
-Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+As discussed elsewhere this still breaks on new mambo with more than one
+CPU. So I've dropped it for now.
+
+cheers
