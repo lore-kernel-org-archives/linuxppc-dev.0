@@ -1,30 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0064.outbound.protection.outlook.com [104.47.36.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkH8T3T7XzDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:29:45 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dan Streetman <ddstreet@ieee.org>, Haren Myneni <haren@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Michael Neuling <mikey@neuling.org>, suka@us.ibm.com,
- Ram Pai <linuxram@us.ibm.com>, npiggin@gmail.com,
- Haren Myneni <hbabu@us.ibm.com>
-Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
- engine
-In-Reply-To: <CALZtONBBvrfWkiFQipMrM9+VxsbBkHMFOAbgL0OBm5gb8yZ=LQ@mail.gmail.com>
-References: <1500699702.23205.8.camel@hbabu-laptop>
- <CALZtONBGVQy2iwkb8WpVd-_QG7bLFTvUbnuub6CCXP55YpQiSQ@mail.gmail.com>
- <1504041817.2358.32.camel@kernel.crashing.org>
- <59A5E2AE.5060400@linux.vnet.ibm.com>
- <CALZtONBBvrfWkiFQipMrM9+VxsbBkHMFOAbgL0OBm5gb8yZ=LQ@mail.gmail.com>
-Date: Fri, 01 Sep 2017 21:29:44 +1000
-Message-ID: <87bmmu64if.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkHDK01vvzDqbZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:33:05 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Machine Check in P2010(e500v2)
+Date: Fri, 1 Sep 2017 11:32:57 +0000
+Message-ID: <1504265576.20777.61.camel@infinera.com>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,59 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Dan,
+I am trying to debug a Machine Check for a P2010 (e500v2) CPU:
 
-Thanks for reviewing this series.
+[   28.111816] Caused by (from MCSR=3D10008): Bus - Read Data Bus Error
+[   28.117998] Oops: Machine check, sig: 7 [#1]
+[   28.122263] P1010 RDB
+[   28.124529] Modules linked in: linux_bcm_knet(PO) linux_user_bde(PO) lin=
+ux_kernel_bde(PO)
+[   28.132718] CPU: 0 PID: 470 Comm: emxp2_hw_bl Tainted: P           O    =
+4.1.38+ #49
+[   28.140376] task: db16cd10 ti: df128000 task.ti: df128000
+[   28.145770] NIP: 00000000 LR: 10a4e404 CTR: 10046c38
+[   28.150730] REGS: df129f10 TRAP: 0204   Tainted: P           O     (4.1.=
+38+)
+[   28.157776] MSR: 0002d000 <CE,EE,PR,ME>  CR: 44002428  XER: 00000000
+[   28.164140] DEAR: b7187000 ESR: 00000000
+GPR00: 10a4e404 bf86ea30 b7ca94a0 132f9fa8 07006000 07000000 00000000 132f9=
+fd8
+GPR08: b7149000 b7159000 0003e000 bf86ea20 24004424 11d6cf7c 00000000 00000=
+000
+GPR16: 10f6e29c 10f6c872 10f6db01 0000b541 0000b541 11d92fcc 00000011 00000=
+001
+GPR24: 01a4d12d 132ffbf0 11d60000 00000000 07006000 00000000 132f9fa8 00000=
+000
+[   28.196375] NIP [00000000]   (null)
+[   28.199859] LR [10a4e404] 0x10a4e404
+[   28.203426] Call Trace:
+[   28.205866] ---[ end trace f456255ddf9bee83 ]---
 
-Dan Streetman <ddstreet@ieee.org> writes:
-> On Tue, Aug 29, 2017 at 5:54 PM, Haren Myneni <haren@linux.vnet.ibm.com> wrote:
->> On 08/29/2017 02:23 PM, Benjamin Herrenschmidt wrote:
->>> On Tue, 2017-08-29 at 09:58 -0400, Dan Streetman wrote:
->>>>> +
->>>>> +       ret = -EINVAL;
->>>>> +       if (coproc && coproc->vas.rxwin) {
->>>>> +               wmem->txwin = nx842_alloc_txwin(coproc);
->>>>
->>>> this is wrong.  the workmem is scratch memory that's valid only for
->>>> the duration of a single operation.
->>
->> Correct, workmem is used until crypto_free is called.
->
-> that's not a 'single operation'.  a single operation is compress() or
-> decompress().
->
->>>>
->>>> do you actually need a txwin per crypto transform?  or do you need a
->>>> txwin per coprocessor?  or txwin per processor?  either per-coproc or
->>>> per-cpu should be created at driver init and held separately
->>>> (globally) instead of a per-transform txwin.  I really don't see why
->>>> you would need a txwin per transform, because the coproc should not
->>>> care how many different transforms there are.
->>>
->>> We should only need a single window for the whole kernel really, plus
->>> one per user process who wants direct access but that's not relevant
->>> here.
->>
->> Opening send window for each crypto transform (crypto_alloc,
->> compression/decompression, ..., crypto_free) so that does not
->> have to wait for the previous copy/paste complete.
->> VAS will map send and receive windows, and can cache in send
->> windows (up to 128). So I thought using the same send window
->> (per chip) for more requests (say 1000) may be adding overhead.
->>
->> I will make changes if you prefer using 1 send window per chip.
->
-> i don't have the spec, so i shouldn't be making the decision on it,
-> but i do know putting a persistent field into the workmem is the wrong
-> location.  If it's valid for the life of the transform, put it into
-> the transform context.  The workmem buffer is intended to be used only
-> during a single operation - it's "working memory" to perform each
-> individual crypto transformation.
+I cannot figure out why NIP is NULL ? It LOOKs like NIP is set to
+MCSRR0 early on but maybe it is lost somehow?
 
-I agree workmem isn't the right place for the txwin. But I don't believe
-it actually breaks anything to put txwin there.
+Anyhow, looking at entry_32.S:
+	.globl	mcheck_transfer_to_handler
+mcheck_transfer_to_handler:
+	mfspr	r0,SPRN_DSRR0
+	stw	r0,_DSRR0(r11)
+	mfspr	r0,SPRN_DSRR1
+	stw	r0,_DSRR1(r11)
+	/* fall through */
 
-So for now I'm going to merge this series as-is and I've asked Haren to
-send fixes as soon as he can to clean it up.
+	.globl	debug_transfer_to_handler
+debug_transfer_to_handler:
+	mfspr	r0,SPRN_CSRR0
+	stw	r0,_CSRR0(r11)
+	mfspr	r0,SPRN_CSRR1
+	stw	r0,_CSRR1(r11)
+	/* fall through */
 
-cheers
+	.globl	crit_transfer_to_handler
+crit_transfer_to_handler:
+
+It looks odd that DSRRx is assigned in mcheck and CSRRx in debug and
+crit has none. Should not this assigment be shifted down one level?
+
+  Jocke=
