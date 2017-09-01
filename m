@@ -1,19 +1,21 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKpy0vkyzDqfx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:46 +1000 (AEST)
-In-Reply-To: <1477769829-22230-9-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKq35vZMzDqjF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:51 +1000 (AEST)
+In-Reply-To: <31790d2a-26b4-54f5-e52d-5637be0b676f@users.sourceforge.net>
+To: SF Markus Elfring <elfring@users.sourceforge.net>,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jan Kara <jack@suse.cz>,
+ Jens Axboe <axboe@fb.com>, Dan Williams <dan.j.williams@intel.com>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, kernel-janitors@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [08/15] powerpc/iommu: use permission-specific DEVICE_ATTR
- variants
-Message-Id: <3xkKpy0Lxrz9t2d@ozlabs.org>
-Date: Fri,  1 Sep 2017 23:29:45 +1000 (AEST)
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [1/4] axonram: Delete an error message for a failed memory
+ allocation in axon_ram_probe()
+Message-Id: <3xkKq351vNz9t3P@ozlabs.org>
+Date: Fri,  1 Sep 2017 23:29:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-10-29 at 19:37:02 UTC, Julia Lawall wrote:
-> Use DEVICE_ATTR_RW for read-write attributes.  This simplifies the
-> source code, improves readbility, and reduces the chance of
-> inconsistencies.
+On Thu, 2017-08-03 at 19:12:50 UTC, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 3 Aug 2017 19:49:18 +0200
 > 
-> The semantic patch that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
+> Omit an extra message for a memory allocation failure in this function.
 > 
-> // <smpl>
-> @rw@
-> declarer name DEVICE_ATTR;
-> identifier x,x_show,x_store;
-> @@
+> This issue was detected by using the Coccinelle software.
 > 
-> DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
-> 
-> @script:ocaml@
-> x << rw.x;
-> x_show << rw.x_show;
-> x_store << rw.x_store;
-> @@
-> 
-> if not (x^"_show" = x_show && x^"_store" = x_store)
-> then Coccilib.include_match false
-> 
-> @@
-> declarer name DEVICE_ATTR_RW;
-> identifier rw.x,rw.x_show,rw.x_store;
-> @@
-> 
-> - DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
-> + DEVICE_ATTR_RW(x);
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8a7aef2cb3dafd2e8560750f4e5ad2
+https://git.kernel.org/powerpc/c/a1bddf3991573f3dff2762bfca5e11
 
 cheers
