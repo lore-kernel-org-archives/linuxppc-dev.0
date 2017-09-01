@@ -1,12 +1,23 @@
-Return-Path: <turtle.in.the.kernel@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xk0T84tpJzDqgB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 10:28:12 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id a77so910913qkb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 17:28:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xk0VX0q61zDqgx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 10:29:23 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v810Svn1059163
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 20:29:21 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cpnp0vx6d-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 20:29:20 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 31 Aug 2017 18:29:20 -0600
 Subject: Re: [PATCH 19/31] timer: Remove open-coded casts for .data and
  .function
 To: Kees Cook <keescook@chromium.org>, Thomas Gleixner <tglx@linutronix.de>
@@ -18,12 +29,12 @@ Cc: Samuel Ortiz <samuel@sortiz.org>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <1504222183-61202-1-git-send-email-keescook@chromium.org>
  <1504222183-61202-20-git-send-email-keescook@chromium.org>
-From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
-Message-ID: <571a97d3-97ed-e86f-71c8-afdc5237d244@gmail.com>
-Date: Thu, 31 Aug 2017 17:28:07 -0700
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Thu, 31 Aug 2017 17:29:13 -0700
 MIME-Version: 1.0
 In-Reply-To: <1504222183-61202-20-git-send-email-keescook@chromium.org>
 Content-Type: text/plain; charset=utf-8
+Message-Id: <35df171b-7a0c-d4bc-b90d-254283232e72@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,6 +65,9 @@ On 08/31/2017 04:29 PM, Kees Cook wrote:
 >  drivers/scsi/ibmvscsi/ibmvfc.c   | 14 ++++++--------
 >  drivers/scsi/ibmvscsi/ibmvscsi.c |  8 ++++----
 >  3 files changed, 13 insertions(+), 14 deletions(-)
+
+Resending from correct email address.
+
 For ibmvfc & ibmvscsi portions:
 
 Acked-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
