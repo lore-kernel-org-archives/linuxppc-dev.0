@@ -1,22 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkFP94vvvzDqmb
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 20:10:37 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>
-Subject: Re: [PATCH V12] powerpc/vphn: Update CPU topology when VPHN enabled
-In-Reply-To: <ab71f6fe-4afa-16ce-ee95-4f255a4ece44@linux.vnet.ibm.com>
-References: <ab71f6fe-4afa-16ce-ee95-4f255a4ece44@linux.vnet.ibm.com>
-Date: Fri, 01 Sep 2017 20:10:36 +1000
-Message-ID: <87h8wm686b.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkG1d0X3fzDqXy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 20:38:45 +1000 (AEST)
+Date: Fri, 1 Sep 2017 20:38:41 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.com, mpe@ellerman.id.au
+Subject: Re: [PATCH RFC] KVM: PPC: Book3S: Add MMIO emulation for VMX
+ instructions
+Message-ID: <20170901103841.GA29876@fergus.ozlabs.ibm.com>
+References: <1504045082-16178-1-git-send-email-joserz@linux.vnet.ibm.com>
+ <1504045082-16178-2-git-send-email-joserz@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1504045082-16178-2-git-send-email-joserz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,82 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Tue, Aug 29, 2017 at 07:18:02PM -0300, Jose Ricardo Ziviani wrote:
+> This patch provides the MMIO load/store vector indexed
+> X-Form emulation.
+> 
+> Instructions implemented: lvx, stvx
+> 
+> Signed-off-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
 
-Thanks for trying to reduce this down to the minimum required.
+Thanks for the patch.  The basic outline of it looks fine.  The parts
+where you are accessing the VMX register image in memory are a bit
+hard to follow, and I'll have to check them in detail.
 
-But ...
+Longer term, I want to switch over to using the instruction emulation
+infrastructure in arch/powerpc/lib/sstep.c that I have recently
+expanded to handle almost all load and store instructions.  That will
+reduce duplication and should simplify all of this code enormously.
 
-Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
-> powerpc/numa: On Power systems with shared configurations of CPUs
-> and memory, there are some issues with the association of additional
-> CPUs and memory to nodes when hot-adding resources.  This patch
-> addresses some of those problems.
->
-> First, it corrects the currently broken capability to set the
-> topology for shared CPUs in LPARs.  At boot time for shared CPU
-> lpars, the topology for each CPU was being set to node zero.  Now
-> when numa_update_cpu_topology() is called appropriately, the Virtual
-> Processor Home Node (VPHN) capabilities information provided by the
-> pHyp allows the appropriate node in the shared configuration to be
-> selected for the CPU.
-
-That should be one patch.
-
-> Next, it updates the initialization checks to independently recognize
-> PRRN or VPHN support.
-
-And another.
-
-> Next, during hotplug CPU operations, it resets the timer on topology
-> update work function to a small value to better ensure that the CPU
-> topology is detected and configured sooner.
-
-Another.
-
-> Also, fix an end-of-updates processing problem observed occasionally
-> in numa_update_cpu_topology().
-
-And another.
-
-
-I would have let you get away with lumping it all in together, except
-that it doesn't compile when CONFIG_PPC_SPLPAR=3Dn:
-
-  In file included from ../include/linux/topology.h:35:0,
-                   from ../include/linux/gfp.h:8,
-                   from ../include/linux/irq.h:17,
-                   from ../arch/powerpc/include/asm/hardirq.h:5,
-                   from ../include/linux/hardirq.h:8,
-                   from ../include/linux/interrupt.h:12,
-                   from ../arch/powerpc/platforms/pseries/hotplug-cpu.c:24:
-  ../arch/powerpc/platforms/pseries/hotplug-cpu.c: In function =E2=80=98dlp=
-ar_online_cpu=E2=80=99:
-  ../arch/powerpc/include/asm/topology.h:103:38: error: statement with no e=
-ffect [-Werror=3Dunused-value]
-   #define timed_topology_update(nsecs) 0
-                                        ^
-  ../arch/powerpc/platforms/pseries/hotplug-cpu.c:366:4: note: in expansion=
- of macro =E2=80=98timed_topology_update=E2=80=99
-      timed_topology_update(1);
-      ^~~~~~~~~~~~~~~~~~~~~
-  ../arch/powerpc/platforms/pseries/hotplug-cpu.c: In function =E2=80=98dlp=
-ar_offline_cpu=E2=80=99:
-  ../arch/powerpc/include/asm/topology.h:103:38: error: statement with no e=
-ffect [-Werror=3Dunused-value]
-   #define timed_topology_update(nsecs) 0
-                                        ^
-  ../arch/powerpc/platforms/pseries/hotplug-cpu.c:533:5: note: in expansion=
- of macro =E2=80=98timed_topology_update=E2=80=99
-       timed_topology_update(1);
-       ^~~~~~~~~~~~~~~~~~~~~
-  cc1: all warnings being treated as errors
-
-
-So please fix that up, split it, and resend.
-
-I know it would have been fairly easy for me to fix that compiler error,
-but it tells me you haven't tested that configuration at all, which is
-the bigger problem. Please at least give it a smoke test.
-
-cheers
+Regards,
+Paul.
