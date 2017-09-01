@@ -1,22 +1,51 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <srs0=2ieg=ac=linux.vnet.ibm.com=bharata@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xk7tm6vGhzDqh5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 16:02:24 +1000 (AEST)
-Message-ID: <1504245709.4974.75.camel@kernel.crashing.org>
-Subject: Re: [PATCH v3 6/8] powerpc/xive: introduce H_INT_ESB hcall
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>
-Date: Fri, 01 Sep 2017 16:01:49 +1000
-In-Reply-To: <20170830194617.26621-7-clg@kaod.org>
-References: <20170830194617.26621-1-clg@kaod.org>
- <20170830194617.26621-7-clg@kaod.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xk91g3KRGzDqk7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 16:53:27 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xk91g1v1Xz8vSj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 16:53:27 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xk91f4k68z9s83
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Sep 2017 16:53:26 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v816rIla032017
+ for <linuxppc-dev@ozlabs.org>; Fri, 1 Sep 2017 02:53:24 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cq2fc91c7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 01 Sep 2017 02:53:24 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <bharata@linux.vnet.ibm.com>;
+ Fri, 1 Sep 2017 16:53:21 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v816rJDL41353460
+ for <linuxppc-dev@ozlabs.org>; Fri, 1 Sep 2017 16:53:19 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v816rA1G025714
+ for <linuxppc-dev@ozlabs.org>; Fri, 1 Sep 2017 16:53:10 +1000
+Date: Fri, 1 Sep 2017 12:23:13 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ arbab@linux.vnet.ibm.com
+Subject: Re: [FIX PATCH v0] powerpc: Fix memory unplug failure on radix guest
+Reply-To: bharata@linux.vnet.ibm.com
+References: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
+Message-Id: <20170901065313.GA3093@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,146 +55,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-30 at 21:46 +0200, Cédric Le Goater wrote:
-> The H_INT_ESB hcall() is used to issue a load or store to the ESB page
-> instead of using the MMIO pages. This can be used as a workaround on
-> some HW issues. The OS knows that this hcall should be used on an
-> interrupt source when the ESB hcall flag is set to 1 in the hcall
-> H_INT_GET_SOURCE_INFO.
+On Thu, Aug 10, 2017 at 02:53:48PM +0530, Bharata B Rao wrote:
+> For a PowerKVM guest, it is possible to specify a DIMM device in
+> addition to the system RAM at boot time. When such a cold plugged DIMM
+> device is removed from a radix guest, we hit the following warning in the
+> guest kernel resulting in the eventual failure of memory unplug:
 > 
-> To maintain the frontier between the xive frontend and backend, we
-> introduce a new xive operation 'esb_rw' to be used in the routines
-> doing memory accesses on the ESBs.
+> remove_pud_table: unaligned range
+> WARNING: CPU: 3 PID: 164 at arch/powerpc/mm/pgtable-radix.c:597 remove_pagetable+0x468/0xca0
+> Call Trace:
+> remove_pagetable+0x464/0xca0 (unreliable)
+> radix__remove_section_mapping+0x24/0x40
+> remove_section_mapping+0x28/0x60
+> arch_remove_memory+0xcc/0x120
+> remove_memory+0x1ac/0x270
+> dlpar_remove_lmb+0x1ac/0x210
+> dlpar_memory+0xbc4/0xeb0
+> pseries_hp_work_fn+0x1a4/0x230
+> process_one_work+0x1cc/0x660
+> worker_thread+0xac/0x6d0
+> kthread+0x16c/0x1b0
+> ret_from_kernel_thread+0x5c/0x74
 > 
-> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+> The DIMM memory that is cold plugged gets merged to the same memblock
+> region as RAM and hence gets mapped at 1G alignment. However since the
+> removal is done for one LMB (lmb size 256MB) at a time, the address
+> of the LMB (which is 256MB aligned) would get flagged as unaligned
+> in remove_pud_table() resulting in the above failure.
+> 
+> This problem is not seen for hot plugged memory because for the
+> hot plugged memory, the mappings are created separately for each
+> LMB and hence they all get aligned at 256MB.
+> 
+> To fix this problem for the cold plugged memory, let us mark the
+> cold plugged memblock region explicitly as HOTPLUGGED so that the
+> region doesn't get merged with RAM. All the memory that is discovered
+> via ibm,dynamic-memory-configuration is marked so(1). Next identify
+> such regions in radix_init_pgtable() and create separate mappings
+> within that region for each LMB so that they get don't get aligned
+> like RAM region at 1G (2).
+> 
+> (1) For PowerKVM guests, all boot time memory is represented via
+> memory@XXXX nodes and hot plugged/pluggable memory is represented via
+> ibm,dynamic-memory-reconfiguration property. We are marking all
+> hotplugged memory that is in ASSIGNED state during boot as HOTPLUGGED.
+> With this only cold plugged memory gets marked for PowerKVM but
+> need to check how this will affect PowerVM guests.
+> 
+> (2) To create separate mappings for every LMB in the hot plugged
+> region, we need lmb-size. I am currently using memory_block_size_bytes()
+> API to get the lmb-size. Since this is early init time code, the
+> machine type isn't probed yet and hence memory_block_size_bytes()
+> would return the default LMB size as 16MB. Hence we end up creating
+> separate mappings at much lower granularity than what we can ideally
+> do for pseries machine.
+> 
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/prom.c      |  1 +
+>  arch/powerpc/mm/pgtable-radix.c | 17 ++++++++++++++---
+>  2 files changed, 15 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index f830562..24ecf53 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -524,6 +524,7 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+>  					size = 0x80000000ul - base;
+>  			}
+>  			memblock_add(base, size);
+> +			memblock_mark_hotplug(base, size);
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+One of the suggestions was to make the above conditional to radix so
+that PowerVM doesn't get affected by this. However early_radix_enabled()
+check isn't usable yet at this point and MMU_FTR_TYPE_RADIX will get set
+only a bit later in early_init_devtree().
 
----
->  arch/powerpc/include/asm/xive.h          |  1 +
->  arch/powerpc/sysdev/xive/common.c        | 10 ++++++--
->  arch/powerpc/sysdev/xive/spapr.c         | 44 +++++++++++++++++++++++++++++++-
->  arch/powerpc/sysdev/xive/xive-internal.h |  1 +
->  4 files changed, 53 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-> index 64ec9bbcf03e..371fbebf1ec9 100644
-> --- a/arch/powerpc/include/asm/xive.h
-> +++ b/arch/powerpc/include/asm/xive.h
-> @@ -56,6 +56,7 @@ struct xive_irq_data {
->  #define XIVE_IRQ_FLAG_SHIFT_BUG	0x04
->  #define XIVE_IRQ_FLAG_MASK_FW	0x08
->  #define XIVE_IRQ_FLAG_EOI_FW	0x10
-> +#define XIVE_IRQ_FLAG_H_INT_ESB	0x20
->  
->  #define XIVE_INVALID_CHIP_ID	-1
->  
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-> index ac5f18a66742..8fd58773c241 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -198,7 +198,10 @@ static u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
->  	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->  		offset |= offset << 4;
->  
-> -	val = in_be64(xd->eoi_mmio + offset);
-> +	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
-> +		val = xive_ops->esb_rw(xd->hw_irq, offset, 0, 0);
-> +	else
-> +		val = in_be64(xd->eoi_mmio + offset);
->  
->  	return (u8)val;
->  }
-> @@ -209,7 +212,10 @@ static void xive_esb_write(struct xive_irq_data *xd, u32 offset, u64 data)
->  	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->  		offset |= offset << 4;
->  
-> -	out_be64(xd->eoi_mmio + offset, data);
-> +	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
-> +		xive_ops->esb_rw(xd->hw_irq, offset, data, 1);
-> +	else
-> +		out_be64(xd->eoi_mmio + offset, data);
->  }
->  
->  #ifdef CONFIG_XMON
-> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-> index 0fcae7504353..43e9eeb0d39f 100644
-> --- a/arch/powerpc/sysdev/xive/spapr.c
-> +++ b/arch/powerpc/sysdev/xive/spapr.c
-> @@ -224,7 +224,46 @@ static long plpar_int_sync(unsigned long flags, unsigned long lisn)
->  	return 0;
->  }
->  
-> -#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60)) /* TODO */
-> +#define XIVE_ESB_FLAG_STORE (1ull << (63 - 63))
-> +
-> +static long plpar_int_esb(unsigned long flags,
-> +			  unsigned long lisn,
-> +			  unsigned long offset,
-> +			  unsigned long in_data,
-> +			  unsigned long *out_data)
-> +{
-> +	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> +	long rc;
-> +
-> +	pr_devel("H_INT_ESB flags=%lx lisn=%lx offset=%lx in=%lx\n",
-> +		flags,  lisn, offset, in_data);
-> +
-> +	rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset, in_data);
-> +	if (rc) {
-> +		pr_err("H_INT_ESB lisn=%ld offset=%ld returned %ld\n",
-> +		       lisn, offset, rc);
-> +		return  rc;
-> +	}
-> +
-> +	*out_data = retbuf[0];
-> +
-> +	return 0;
-> +}
-> +
-> +static u64 xive_spapr_esb_rw(u32 lisn, u32 offset, u64 data, bool write)
-> +{
-> +	unsigned long read_data;
-> +	long rc;
-> +
-> +	rc = plpar_int_esb(write ? XIVE_ESB_FLAG_STORE : 0,
-> +			   lisn, offset, data, &read_data);
-> +	if (rc)
-> +		return -1;
-> +
-> +	return write ? 0 : read_data;
-> +}
-> +
-> +#define XIVE_SRC_H_INT_ESB     (1ull << (63 - 60))
->  #define XIVE_SRC_LSI           (1ull << (63 - 61))
->  #define XIVE_SRC_TRIGGER       (1ull << (63 - 62))
->  #define XIVE_SRC_STORE_EOI     (1ull << (63 - 63))
-> @@ -244,6 +283,8 @@ static int xive_spapr_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
->  	if (rc)
->  		return  -EINVAL;
->  
-> +	if (flags & XIVE_SRC_H_INT_ESB)
-> +		data->flags  |= XIVE_IRQ_FLAG_H_INT_ESB;
->  	if (flags & XIVE_SRC_STORE_EOI)
->  		data->flags  |= XIVE_IRQ_FLAG_STORE_EOI;
->  	if (flags & XIVE_SRC_LSI)
-> @@ -487,6 +528,7 @@ static const struct xive_ops xive_spapr_ops = {
->  	.setup_cpu		= xive_spapr_setup_cpu,
->  	.teardown_cpu		= xive_spapr_teardown_cpu,
->  	.sync_source		= xive_spapr_sync_source,
-> +	.esb_rw			= xive_spapr_esb_rw,
->  #ifdef CONFIG_SMP
->  	.get_ipi		= xive_spapr_get_ipi,
->  	.put_ipi		= xive_spapr_put_ipi,
-> diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
-> index dd1e2022cce4..f34abed0c05f 100644
-> --- a/arch/powerpc/sysdev/xive/xive-internal.h
-> +++ b/arch/powerpc/sysdev/xive/xive-internal.h
-> @@ -47,6 +47,7 @@ struct xive_ops {
->  	void	(*update_pending)(struct xive_cpu *xc);
->  	void	(*eoi)(u32 hw_irq);
->  	void	(*sync_source)(u32 hw_irq);
-> +	u64	(*esb_rw)(u32 hw_irq, u32 offset, u64 data, bool write);
->  #ifdef CONFIG_SMP
->  	int	(*get_ipi)(unsigned int cpu, struct xive_cpu *xc);
->  	void	(*put_ipi)(unsigned int cpu, struct xive_cpu *xc);
+Regards,
+Bharata.
