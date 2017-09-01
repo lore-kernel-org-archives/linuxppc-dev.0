@@ -1,17 +1,35 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0064.outbound.protection.outlook.com [104.47.36.64])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c00::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkHDK01vvzDqbZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:33:05 +1000 (AEST)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Machine Check in P2010(e500v2)
-Date: Fri, 1 Sep 2017 11:32:57 +0000
-Message-ID: <1504265576.20777.61.camel@infinera.com>
-Content-Type: text/plain; charset="iso-8859-15"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkHFZ1c8yzDqfx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:34:10 +1000 (AEST)
+Received: by mail-pf0-x22c.google.com with SMTP id g13so7404444pfm.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 04:34:10 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: linux-pci <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Liuxinliang \(Matthew Liu\)" <z.liuxinliang@hisilicon.com>,
+ Zou Rongrong <zourongrong@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, David Airlie <airlied@linux.ie>, "Vetter\,
+ Daniel" <daniel.vetter@intel.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ dri-devel <dri-devel@lists.freedesktop.org>, Lukas Wunner <lukas@wunner.de>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
+In-Reply-To: <CAKv+Gu84njSF5uOvNtknGdOd5auU7zw9scFeTq5v-=OhExgOqA@mail.gmail.com>
+References: <20170901072744.2409-1-dja@axtens.net>
+ <CAKv+Gu84njSF5uOvNtknGdOd5auU7zw9scFeTq5v-=OhExgOqA@mail.gmail.com>
+Date: Fri, 01 Sep 2017 21:34:03 +1000
+Message-ID: <877exi4pqs.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,58 +39,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I am trying to debug a Machine Check for a P2010 (e500v2) CPU:
+Hi Ard,
 
-[   28.111816] Caused by (from MCSR=3D10008): Bus - Read Data Bus Error
-[   28.117998] Oops: Machine check, sig: 7 [#1]
-[   28.122263] P1010 RDB
-[   28.124529] Modules linked in: linux_bcm_knet(PO) linux_user_bde(PO) lin=
-ux_kernel_bde(PO)
-[   28.132718] CPU: 0 PID: 470 Comm: emxp2_hw_bl Tainted: P           O    =
-4.1.38+ #49
-[   28.140376] task: db16cd10 ti: df128000 task.ti: df128000
-[   28.145770] NIP: 00000000 LR: 10a4e404 CTR: 10046c38
-[   28.150730] REGS: df129f10 TRAP: 0204   Tainted: P           O     (4.1.=
-38+)
-[   28.157776] MSR: 0002d000 <CE,EE,PR,ME>  CR: 44002428  XER: 00000000
-[   28.164140] DEAR: b7187000 ESR: 00000000
-GPR00: 10a4e404 bf86ea30 b7ca94a0 132f9fa8 07006000 07000000 00000000 132f9=
-fd8
-GPR08: b7149000 b7159000 0003e000 bf86ea20 24004424 11d6cf7c 00000000 00000=
-000
-GPR16: 10f6e29c 10f6c872 10f6db01 0000b541 0000b541 11d92fcc 00000011 00000=
-001
-GPR24: 01a4d12d 132ffbf0 11d60000 00000000 07006000 00000000 132f9fa8 00000=
-000
-[   28.196375] NIP [00000000]   (null)
-[   28.199859] LR [10a4e404] 0x10a4e404
-[   28.203426] Call Trace:
-[   28.205866] ---[ end trace f456255ddf9bee83 ]---
+> If we are all in agreement that fixing X is not an option, I think
+> this is a reasonable approach
 
-I cannot figure out why NIP is NULL ? It LOOKs like NIP is set to
-MCSRR0 early on but maybe it is lost somehow?
+This did come up in discussion at some earlier point in one of the many
+spins we've done of this - I don't remember if you brought it up or
+someone else did - but my concern was this: If it were just X we would
+be fine, but if we go down that path I'm worried about also having to
+fix Mir/Wayland/whatever-the-new-exciting-display-server-is-this-week,
+ad nauseum.
 
-Anyhow, looking at entry_32.S:
-	.globl	mcheck_transfer_to_handler
-mcheck_transfer_to_handler:
-	mfspr	r0,SPRN_DSRR0
-	stw	r0,_DSRR0(r11)
-	mfspr	r0,SPRN_DSRR1
-	stw	r0,_DSRR1(r11)
-	/* fall through */
+> Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 
-	.globl	debug_transfer_to_handler
-debug_transfer_to_handler:
-	mfspr	r0,SPRN_CSRR0
-	stw	r0,_CSRR0(r11)
-	mfspr	r0,SPRN_CSRR1
-	stw	r0,_CSRR1(r11)
-	/* fall through */
+Thanks!
 
-	.globl	crit_transfer_to_handler
-crit_transfer_to_handler:
-
-It looks odd that DSRRx is assigned in mcheck and CSRRx in debug and
-crit has none. Should not this assigment be shifted down one level?
-
-  Jocke=
+Regards,
+Daniel
