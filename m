@@ -1,27 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkG1n2HkWzDqjS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 20:38:53 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id k3so1438931pfc.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 03:38:53 -0700 (PDT)
-Date: Fri, 1 Sep 2017 20:38:37 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Shilpasri G Bhat
- <shilpa.bhat@linux.vnet.ibm.com>, Pavithra Prakash
- <pavirampu@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, "Gautham R.
- Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Clear LPCR[PECE1] via stop-api only
- for deep state offline
-Message-ID: <20170901203837.765f1875@roar.ozlabs.ibm.com>
-In-Reply-To: <e75eda1b-c6ae-fe74-d45c-2c98e366be2a@linux.vnet.ibm.com>
-References: <1504180061-32345-1-git-send-email-ego@linux.vnet.ibm.com>
- <e75eda1b-c6ae-fe74-d45c-2c98e366be2a@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkH8T3T7XzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:29:45 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dan Streetman <ddstreet@ieee.org>, Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>, suka@us.ibm.com,
+ Ram Pai <linuxram@us.ibm.com>, npiggin@gmail.com,
+ Haren Myneni <hbabu@us.ibm.com>
+Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
+ engine
+In-Reply-To: <CALZtONBBvrfWkiFQipMrM9+VxsbBkHMFOAbgL0OBm5gb8yZ=LQ@mail.gmail.com>
+References: <1500699702.23205.8.camel@hbabu-laptop>
+ <CALZtONBGVQy2iwkb8WpVd-_QG7bLFTvUbnuub6CCXP55YpQiSQ@mail.gmail.com>
+ <1504041817.2358.32.camel@kernel.crashing.org>
+ <59A5E2AE.5060400@linux.vnet.ibm.com>
+ <CALZtONBBvrfWkiFQipMrM9+VxsbBkHMFOAbgL0OBm5gb8yZ=LQ@mail.gmail.com>
+Date: Fri, 01 Sep 2017 21:29:44 +1000
+Message-ID: <87bmmu64if.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,89 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 1 Sep 2017 15:38:59 +0530
-Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> wrote:
+Hi Dan,
 
-> On 08/31/2017 05:37 PM, Nicholas Piggin wrote:
-> > On Thu, 31 Aug 2017 17:17:41 +0530
-> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-> >  
-> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > >
-> > > commit 24be85a23d1f ("powerpc/powernv: Clear PECE1 in LPCR via
-> > > stop-api only on Hotplug") clears the PECE1 bit of the LPCR via
-> > > stop-api during CPU-Hotplug to prevent wakeup due to a decrementer on
-> > > an offlined CPU which is in a deep stop state.
-> > >
-> > > In the case where the stop-api support is found to be lacking, the
-> > > commit 785a12afdb4a ("powerpc/powernv/idle: Disable LOSE_FULL_CONTEXT
-> > > states when stop-api fails") disables deep states that lose hypervisor
-> > > context. Thus in this case, the offlined CPU will be put to some
-> > > shallow idle state.
-> > >
-> > > However, we currently unconditionally clear the PECE1 in LPCR via
-> > > stop-api during CPU-Hotplug even when deep states are disabled due to
-> > > stop-api failure.
-> > >
-> > > Fix this by clearing PECE1 of LPCR via stop-api during CPU-Hotplug
-> > > *only* when the offlined CPU will be put to a deep state that loses
-> > > hypervisor context.  
-> >
-> > This looks okay to me. The bug is due to calling opal_slw_set_reg when
-> > firmware has not enabled that feature, right?  
-> Yes,
-> 
-> In the case where the stop-api support is found to be lacking, the 
-> commit 785a12afdb4a ("powerpc/powernv/idle: Disable LOSE_FULL_CONTEXT 
-> states when stop-api fails") disables deep states that lose hypervisor 
-> context. Thus in this case, the offlined CPU will be put to some shallow 
-> idle state.
-> 
-> If a shallow state ( < stop4 ) is being chosen for cpu hotplug, then :
-> 1) this opal call is not required.
-> 2) may not be supported.
-> 
-> Hence  should call opal_slw_set_reg() only if a deep state chosen for 
-> cpu hotplug.
+Thanks for reviewing this series.
 
-That makes sense, thanks for confirming.
+Dan Streetman <ddstreet@ieee.org> writes:
+> On Tue, Aug 29, 2017 at 5:54 PM, Haren Myneni <haren@linux.vnet.ibm.com> wrote:
+>> On 08/29/2017 02:23 PM, Benjamin Herrenschmidt wrote:
+>>> On Tue, 2017-08-29 at 09:58 -0400, Dan Streetman wrote:
+>>>>> +
+>>>>> +       ret = -EINVAL;
+>>>>> +       if (coproc && coproc->vas.rxwin) {
+>>>>> +               wmem->txwin = nx842_alloc_txwin(coproc);
+>>>>
+>>>> this is wrong.  the workmem is scratch memory that's valid only for
+>>>> the duration of a single operation.
+>>
+>> Correct, workmem is used until crypto_free is called.
+>
+> that's not a 'single operation'.  a single operation is compress() or
+> decompress().
+>
+>>>>
+>>>> do you actually need a txwin per crypto transform?  or do you need a
+>>>> txwin per coprocessor?  or txwin per processor?  either per-coproc or
+>>>> per-cpu should be created at driver init and held separately
+>>>> (globally) instead of a per-transform txwin.  I really don't see why
+>>>> you would need a txwin per transform, because the coproc should not
+>>>> care how many different transforms there are.
+>>>
+>>> We should only need a single window for the whole kernel really, plus
+>>> one per user process who wants direct access but that's not relevant
+>>> here.
+>>
+>> Opening send window for each crypto transform (crypto_alloc,
+>> compression/decompression, ..., crypto_free) so that does not
+>> have to wait for the previous copy/paste complete.
+>> VAS will map send and receive windows, and can cache in send
+>> windows (up to 128). So I thought using the same send window
+>> (per chip) for more requests (say 1000) may be adding overhead.
+>>
+>> I will make changes if you prefer using 1 send window per chip.
+>
+> i don't have the spec, so i shouldn't be making the decision on it,
+> but i do know putting a persistent field into the workmem is the wrong
+> location.  If it's valid for the life of the transform, put it into
+> the transform context.  The workmem buffer is intended to be used only
+> during a single operation - it's "working memory" to perform each
+> individual crypto transformation.
 
-> >  
-> > >
-> > > Fixes: commit 24be85a23d1f ("powerpc/powernv: Clear PECE1 in LPCR via
-> > > stop-api only on Hotplug")
-> > >
-> > > Reported-by: Pavithra Prakash <pavirampu@linux.vnet.ibm.com>
-> > > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+I agree workmem isn't the right place for the txwin. But I don't believe
+it actually breaks anything to put txwin there.
 
+So for now I'm going to merge this series as-is and I've asked Haren to
+send fixes as soon as he can to clean it up.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
-
-> > > ---
-> > >  arch/powerpc/platforms/powernv/idle.c | 8 +++++++-
-> > >  1 file changed, 7 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/arch/powerpc/platforms/powernv/idle.c  
-> > b/arch/powerpc/platforms/powernv/idle.c  
-> > > index 9f59041..23f8fba 100644
-> > > --- a/arch/powerpc/platforms/powernv/idle.c
-> > > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > > @@ -393,7 +393,13 @@ static void  
-> > pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)  
-> > >      u64 pir = get_hard_smp_processor_id(cpu);
-> > >
-> > >      mtspr(SPRN_LPCR, lpcr_val);
-> > > -    opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-> > > +
-> > > +    /*
-> > > +     * Program the LPCR via stop-api only for deepest stop state
-> > > +     * can lose hypervisor context.
-> > > +     */
-> > > +    if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT)
-> > > +        opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-> > >  }
-> > >
-> > >  /*  
-> >  
-> 
+cheers
