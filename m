@@ -1,40 +1,22 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xk0VX0q61zDqgx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 10:29:23 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v810Svn1059163
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 20:29:21 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cpnp0vx6d-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 20:29:20 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 31 Aug 2017 18:29:20 -0600
-Subject: Re: [PATCH 19/31] timer: Remove open-coded casts for .data and
- .function
-To: Kees Cook <keescook@chromium.org>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Samuel Ortiz <samuel@sortiz.org>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
- netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1504222183-61202-1-git-send-email-keescook@chromium.org>
- <1504222183-61202-20-git-send-email-keescook@chromium.org>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Thu, 31 Aug 2017 17:29:13 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xk2vB4ZXjzDqfx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 12:17:26 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id r187so798242pfr.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Aug 2017 19:17:26 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH] selftests/powerpc: fix build error in powerpc ptrace
+ selftests.
+Date: Fri,  1 Sep 2017 10:17:14 +0800
+Message-Id: <1504232234-4161-1-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1504222183-61202-20-git-send-email-keescook@chromium.org>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <35df171b-7a0c-d4bc-b90d-254283232e72@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,30 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/31/2017 04:29 PM, Kees Cook wrote:
-> This standardizes the callback and data prototypes in several places that
-> perform casting, in an effort to remove more open-coded .data and
-> .function uses in favor of setup_timer().
-> 
-> Cc: Samuel Ortiz <samuel@sortiz.org>
-> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-> Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-> Cc: netdev@vger.kernel.org
-> Cc: linux-scsi@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  drivers/net/irda/bfin_sir.c      |  5 +++--
->  drivers/scsi/ibmvscsi/ibmvfc.c   | 14 ++++++--------
->  drivers/scsi/ibmvscsi/ibmvscsi.c |  8 ++++----
->  3 files changed, 13 insertions(+), 14 deletions(-)
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-Resending from correct email address.
+GCC 7 will take "r2" in clobber list as an error will it will get following
+build errors for powerpc ptrace selftests even with -fno-pic option:
+  ptrace-tm-vsx.c: In function ‘tm_vsx’:
+  ptrace-tm-vsx.c:42:2: error: PIC register clobbered by ‘r2’ in ‘asm’
+    asm __volatile__(
+    ^~~
+  make[1]: *** [ptrace-tm-vsx] Error 1
+  ptrace-tm-spd-vsx.c: In function ‘tm_spd_vsx’:
+  ptrace-tm-spd-vsx.c:55:2: error: PIC register clobbered by ‘r2’ in ‘asm’
+    asm __volatile__(
+    ^~~
+  make[1]: *** [ptrace-tm-spd-vsx] Error 1
+  ptrace-tm-spr.c: In function ‘tm_spr’:
+  ptrace-tm-spr.c:46:2: error: PIC register clobbered by ‘r2’ in ‘asm’
+    asm __volatile__(
+    ^~~
 
-For ibmvfc & ibmvscsi portions:
+This patch fix the build error by removing "r2" out of clobber list.
 
-Acked-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Reported-by: Seth Forshee <seth.forshee@canonical.com>
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Tested-by: Seth Forshee <seth.forshee@canonical.com>
+---
+ tools/testing/selftests/powerpc/ptrace/Makefile            | 2 +-
+ tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c | 4 ++--
+ tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c     | 3 +--
+ tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c     | 2 +-
+ 4 files changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
+index fe6bc60..c836f6d 100644
+--- a/tools/testing/selftests/powerpc/ptrace/Makefile
++++ b/tools/testing/selftests/powerpc/ptrace/Makefile
+@@ -6,7 +6,7 @@ include ../../lib.mk
+ 
+ all: $(TEST_PROGS)
+ 
+-CFLAGS += -m64 -I../../../../../usr/include -I../tm -mhtm
++CFLAGS += -m64 -I../../../../../usr/include -I../tm -mhtm -fno-pic
+ 
+ $(TEST_PROGS): ../harness.c ../utils.c ../lib/reg.S ptrace.h
+ 
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
+index 0df3c23..277dade 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
+@@ -79,8 +79,8 @@ void tm_spd_vsx(void)
+ 		: [res] "=r" (result), [texasr] "=r" (texasr)
+ 		: [fp_load] "r" (fp_load), [fp_load_ckpt] "r" (fp_load_ckpt),
+ 		[sprn_texasr] "i"  (SPRN_TEXASR)
+-		: "memory", "r0", "r1", "r2", "r3", "r4",
+-		"r8", "r9", "r10", "r11"
++		: "memory", "r0", "r1", "r3", "r4",
++		"r7", "r8", "r9", "r10", "r11"
+ 		);
+ 
+ 	if (result) {
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
+index 94e57cb..51427a2 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
+@@ -76,8 +76,7 @@ void tm_spr(void)
+ 		: [tfhar] "=r" (tfhar), [res] "=r" (result),
+ 		[texasr] "=r" (texasr), [cptr1] "=r" (cptr1)
+ 		: [sprn_texasr] "i"  (SPRN_TEXASR)
+-		: "memory", "r0", "r1", "r2", "r3", "r4",
+-		"r8", "r9", "r10", "r11", "r31"
++		: "memory", "r0", "r8", "r31"
+ 		);
+ 
+ 	/* There are 2 32bit instructions before tbegin. */
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
+index b4081e2..17c23ca 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
+@@ -67,7 +67,7 @@ void tm_vsx(void)
+ 		: [res] "=r" (result), [texasr] "=r" (texasr)
+ 		: [fp_load] "r" (fp_load), [fp_load_ckpt] "r" (fp_load_ckpt),
+ 		[sprn_texasr] "i"  (SPRN_TEXASR), [cptr1] "r" (&cptr[1])
+-		: "memory", "r0", "r1", "r2", "r3", "r4",
++		: "memory", "r0", "r1", "r3", "r4",
+ 		"r7", "r8", "r9", "r10", "r11"
+ 		);
+ 
+-- 
+1.8.3.1
