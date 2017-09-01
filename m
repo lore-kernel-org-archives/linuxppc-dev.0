@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKq85QRjzDqjB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:56 +1000 (AEST)
-In-Reply-To: <fc2ad536-a772-f006-43c4-1ddf6e296ebb@linux.vnet.ibm.com>
-To: John Allen <jallen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKqC3Y0zzDqjB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:59 +1000 (AEST)
+In-Reply-To: <1504066360-30128-2-git-send-email-paulus@ozlabs.org>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/pseries: Don't attempt to acquire drc during memory hot
- add for assigned lmbs
-Message-Id: <3xkKq82ypvz9t3t@ozlabs.org>
-Date: Fri,  1 Sep 2017 23:29:55 +1000 (AEST)
+Subject: Re: [v3,
+ 01/17] powerpc: Correct instruction code for xxlor instruction
+Message-Id: <3xkKqB58Ddz9t3p@ozlabs.org>
+Date: Fri,  1 Sep 2017 23:29:58 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-23 at 17:18:43 UTC, John Allen wrote:
-> Check if an LMB is assigned before attempting to call dlpar_acquire_drc in
-> order to avoid any unnecessary rtas calls. This substantially reduces the
-> running time of memory hot add on lpars with large amounts of memory.
+On Wed, 2017-08-30 at 04:12:24 UTC, Paul Mackerras wrote:
+> The instruction code for xxlor that commit 0016a4cf5582 ("powerpc:
+> Emulate most Book I instructions in emulate_step()", 2010-06-15)
+> added is actually the code for xxlnor.  It is used in get_vsr()
+> and put_vsr() and the effect of the error is that if emulate_step
+> is used to emulate a VSX load or store from any register other
+> than vsr0, the bitwise complement of the correct value will be
+> loaded or stored.  This corrects the error.
 > 
-> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
-> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Fixes: 0016a4cf5582 ("powerpc: Emulate most Book I instructions in emulate_step()")
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/afb5519fdb346201728040cab4e08c
+https://git.kernel.org/powerpc/c/93b2d3cf3733b4060d3623161551f5
 
 cheers
