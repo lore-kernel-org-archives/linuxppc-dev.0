@@ -1,33 +1,24 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkHFZ1c8yzDqfx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:34:10 +1000 (AEST)
-Received: by mail-pf0-x22c.google.com with SMTP id g13so7404444pfm.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 04:34:10 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: linux-pci <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Liuxinliang \(Matthew Liu\)" <z.liuxinliang@hisilicon.com>,
- Zou Rongrong <zourongrong@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Bjorn Helgaas <helgaas@kernel.org>, David Airlie <airlied@linux.ie>, "Vetter\,
- Daniel" <daniel.vetter@intel.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- dri-devel <dri-devel@lists.freedesktop.org>, Lukas Wunner <lukas@wunner.de>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
-In-Reply-To: <CAKv+Gu84njSF5uOvNtknGdOd5auU7zw9scFeTq5v-=OhExgOqA@mail.gmail.com>
-References: <20170901072744.2409-1-dja@axtens.net>
- <CAKv+Gu84njSF5uOvNtknGdOd5auU7zw9scFeTq5v-=OhExgOqA@mail.gmail.com>
-Date: Fri, 01 Sep 2017 21:34:03 +1000
-Message-ID: <877exi4pqs.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkHFs2KJPzDqgB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:34:25 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Haren Myneni <haren@linux.vnet.ibm.com>, Dan Streetman <ddstreet@ieee.org>
+Cc: mikey@neuling.org, Herbert Xu <herbert@gondor.apana.org.au>,
+ Ram Pai <linuxram@us.ibm.com>, npiggin@gmail.com, suka@us.ibm.com,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
+ engine
+In-Reply-To: <59A7BE4E.1040806@linux.vnet.ibm.com>
+References: <1500699702.23205.8.camel@hbabu-laptop>
+ <878ti35l7z.fsf@concordia.ellerman.id.au>
+ <CALZtONDnFLiGhTRNs89VWr3nrY0Bp9VPRqFXA0iEaa6U_+w4Ag@mail.gmail.com>
+ <59A7BE4E.1040806@linux.vnet.ibm.com>
+Date: Fri, 01 Sep 2017 21:34:24 +1000
+Message-ID: <878thy64an.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,21 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ard,
+Haren Myneni <haren@linux.vnet.ibm.com> writes:
+>> On Mon, Aug 28, 2017 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>> Hi Haren,
+>>>
+>>> Some comments inline ...
+>>>
+>>> Haren Myneni <haren@linux.vnet.ibm.com> writes:
+>>>
+>>>> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+>>>> index c0dd4c7e17d3..13089a0b9dfa 100644
+>>>> --- a/drivers/crypto/nx/nx-842-powernv.c
+>>>> +++ b/drivers/crypto/nx/nx-842-powernv.c
+>>>> @@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
+>>>>
+>>>>  #define WORKMEM_ALIGN        (CRB_ALIGN)
+>>>>  #define CSB_WAIT_MAX (5000) /* ms */
+>>>> +#define VAS_RETRIES  (10)
+>>>
+>>> Where does that number come from?
+>
+> Sometimes HW returns copy/paste failures. So we should retry the
+> request again. With 10 retries, Test running 12 hours was successful
+> for repeated compression/decompression requests with 1024 threads.
 
-> If we are all in agreement that fixing X is not an option, I think
-> this is a reasonable approach
+But why 10. Why not 5, or 100, or 1, or 10,000?
 
-This did come up in discussion at some earlier point in one of the many
-spins we've done of this - I don't remember if you brought it up or
-someone else did - but my concern was this: If it were just X we would
-be fine, but if we go down that path I'm worried about also having to
-fix Mir/Wayland/whatever-the-new-exciting-display-server-is-this-week,
-ad nauseum.
+Presumably when we have to retry it means the NX is too busy to service the
+request?
 
-> Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Do we have any way to find out how long it might be busy for?
 
-Thanks!
+Should we try an NX on another chip?
 
-Regards,
-Daniel
+We should also take into account the size of our request, ie. are we
+asking the NX to compress one page, or 1GB ?
+
+If it's just one page maybe we should fall back to software immediately.
+
+cheers
