@@ -1,18 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKq25bFXzDqkb
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:50 +1000 (AEST)
-In-Reply-To: <1501707705-32425-1-git-send-email-Julia.Lawall@lip6.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKpy0vkyzDqfx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:46 +1000 (AEST)
+In-Reply-To: <1477769829-22230-9-git-send-email-Julia.Lawall@lip6.fr>
 To: Julia Lawall <Julia.Lawall@lip6.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: powerpc/macintosh: constify wf_sensor_ops structures
-Message-Id: <3xkKq244Czz9t3F@ozlabs.org>
-Date: Fri,  1 Sep 2017 23:29:50 +1000 (AEST)
+Cc: Paul Mackerras <paulus@samba.org>, kernel-janitors@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [08/15] powerpc/iommu: use permission-specific DEVICE_ATTR
+ variants
+Message-Id: <3xkKpy0Lxrz9t2d@ozlabs.org>
+Date: Fri,  1 Sep 2017 23:29:45 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,53 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-08-02 at 21:01:45 UTC, Julia Lawall wrote:
-> The wf_sensor_ops structures are only stored in the ops field of a
-> wf_sensor structure, which is declared as const.  Thus the
-> wf_sensor_ops structures themselves can be const.
+On Sat, 2016-10-29 at 19:37:02 UTC, Julia Lawall wrote:
+> Use DEVICE_ATTR_RW for read-write attributes.  This simplifies the
+> source code, improves readbility, and reduces the chance of
+> inconsistencies.
 > 
-> Done with the help of Coccinelle.
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
 > 
 > // <smpl>
-> @r disable optional_qualifier@
-> identifier i;
-> position p;
+> @rw@
+> declarer name DEVICE_ATTR;
+> identifier x,x_show,x_store;
 > @@
-> static struct wf_sensor_ops i@p = { ... };
 > 
-> @ok1@
-> identifier r.i;
-> struct wf_sensor s;
-> position p;
-> @@
-> s.ops = &i@p
+> DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
 > 
-> @ok2@
-> identifier r.i;
-> struct wf_sat_sensor s;
-> position p;
+> @script:ocaml@
+> x << rw.x;
+> x_show << rw.x_show;
+> x_store << rw.x_store;
 > @@
-> s.sens.ops = &i@p
 > 
-> @bad@
-> position p != {r.p,ok1.p,ok2.p};
-> identifier r.i;
-> struct wf_sensor_ops e;
-> @@
-> e@i@p
+> if not (x^"_show" = x_show && x^"_store" = x_store)
+> then Coccilib.include_match false
 > 
-> @depends on !bad disable optional_qualifier@
-> identifier r.i;
 > @@
-> static
-> +const
->  struct wf_sensor_ops i = { ... };
+> declarer name DEVICE_ATTR_RW;
+> identifier rw.x,rw.x_show,rw.x_store;
+> @@
+> 
+> - DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
+> + DEVICE_ATTR_RW(x);
 > // </smpl>
 > 
 > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/de854e54d79bc0ad5c45c5be50821b
+https://git.kernel.org/powerpc/c/8a7aef2cb3dafd2e8560750f4e5ad2
 
 cheers
