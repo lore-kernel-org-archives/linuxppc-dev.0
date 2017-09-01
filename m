@@ -1,26 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkHFs2KJPzDqgB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 21:34:25 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Haren Myneni <haren@linux.vnet.ibm.com>, Dan Streetman <ddstreet@ieee.org>
-Cc: mikey@neuling.org, Herbert Xu <herbert@gondor.apana.org.au>,
- Ram Pai <linuxram@us.ibm.com>, npiggin@gmail.com, suka@us.ibm.com,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
- engine
-In-Reply-To: <59A7BE4E.1040806@linux.vnet.ibm.com>
-References: <1500699702.23205.8.camel@hbabu-laptop>
- <878ti35l7z.fsf@concordia.ellerman.id.au>
- <CALZtONDnFLiGhTRNs89VWr3nrY0Bp9VPRqFXA0iEaa6U_+w4Ag@mail.gmail.com>
- <59A7BE4E.1040806@linux.vnet.ibm.com>
-Date: Fri, 01 Sep 2017 21:34:24 +1000
-Message-ID: <878thy64an.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKpz0zmVzDqfx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:47 +1000 (AEST)
+In-Reply-To: <98cb37ed-adee-3e13-8501-baa500c27951@users.sourceforge.net>
+To: SF Markus Elfring <elfring@users.sourceforge.net>,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Oliver O'Halloran <oohall@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Rashmica Gupta <rashmica.g@gmail.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: powerpc/mm: Use seq_putc() in two functions
+Message-Id: <3xkKpy6bTSz9t32@ozlabs.org>
+Date: Fri,  1 Sep 2017 23:29:46 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Haren Myneni <haren@linux.vnet.ibm.com> writes:
->> On Mon, Aug 28, 2017 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> Hi Haren,
->>>
->>> Some comments inline ...
->>>
->>> Haren Myneni <haren@linux.vnet.ibm.com> writes:
->>>
->>>> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
->>>> index c0dd4c7e17d3..13089a0b9dfa 100644
->>>> --- a/drivers/crypto/nx/nx-842-powernv.c
->>>> +++ b/drivers/crypto/nx/nx-842-powernv.c
->>>> @@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
->>>>
->>>>  #define WORKMEM_ALIGN        (CRB_ALIGN)
->>>>  #define CSB_WAIT_MAX (5000) /* ms */
->>>> +#define VAS_RETRIES  (10)
->>>
->>> Where does that number come from?
->
-> Sometimes HW returns copy/paste failures. So we should retry the
-> request again. With 10 retries, Test running 12 hours was successful
-> for repeated compression/decompression requests with 1024 threads.
+On Sun, 2017-05-07 at 14:38:36 UTC, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 7 May 2017 16:32:04 +0200
+> 
+> Two single characters (line breaks) should be put into a sequence.
+> Thus use the corresponding function "seq_putc".
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-But why 10. Why not 5, or 100, or 1, or 10,000?
+Applied to powerpc next, thanks.
 
-Presumably when we have to retry it means the NX is too busy to service the
-request?
-
-Do we have any way to find out how long it might be busy for?
-
-Should we try an NX on another chip?
-
-We should also take into account the size of our request, ie. are we
-asking the NX to compress one page, or 1GB ?
-
-If it's just one page maybe we should fall back to software immediately.
+https://git.kernel.org/powerpc/c/aae85e3c20ec3baa90aa901a517c8f
 
 cheers
