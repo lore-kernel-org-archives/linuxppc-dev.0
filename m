@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKq233wbzDqkY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkKq25bFXzDqkb
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Sep 2017 23:29:50 +1000 (AEST)
-In-Reply-To: <20170718214339.7774-32-robh@kernel.org>
-To: Rob Herring <robh@kernel.org>,
+In-Reply-To: <1501707705-32425-1-git-send-email-Julia.Lawall@lip6.fr>
+To: Julia Lawall <Julia.Lawall@lip6.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: Re: macintosh: Convert to using %pOF instead of full_name
-Message-Id: <3xkKq15MV3z9t3t@ozlabs.org>
-Date: Fri,  1 Sep 2017 23:29:49 +1000 (AEST)
+Subject: Re: powerpc/macintosh: constify wf_sensor_ops structures
+Message-Id: <3xkKq244Czz9t3F@ozlabs.org>
+Date: Fri,  1 Sep 2017 23:29:50 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-07-18 at 21:43:12 UTC, Rob Herring wrote:
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
+On Wed, 2017-08-02 at 21:01:45 UTC, Julia Lawall wrote:
+> The wf_sensor_ops structures are only stored in the ops field of a
+> wf_sensor structure, which is declared as const.  Thus the
+> wf_sensor_ops structures themselves can be const.
 > 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
+> Done with the help of Coccinelle.
+> 
+> // <smpl>
+> @r disable optional_qualifier@
+> identifier i;
+> position p;
+> @@
+> static struct wf_sensor_ops i@p = { ... };
+> 
+> @ok1@
+> identifier r.i;
+> struct wf_sensor s;
+> position p;
+> @@
+> s.ops = &i@p
+> 
+> @ok2@
+> identifier r.i;
+> struct wf_sat_sensor s;
+> position p;
+> @@
+> s.sens.ops = &i@p
+> 
+> @bad@
+> position p != {r.p,ok1.p,ok2.p};
+> identifier r.i;
+> struct wf_sensor_ops e;
+> @@
+> e@i@p
+> 
+> @depends on !bad disable optional_qualifier@
+> identifier r.i;
+> @@
+> static
+> +const
+>  struct wf_sensor_ops i = { ... };
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b6a945ae03fd3962b51b27ecedf4f1
+https://git.kernel.org/powerpc/c/de854e54d79bc0ad5c45c5be50821b
 
 cheers
