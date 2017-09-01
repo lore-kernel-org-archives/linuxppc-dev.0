@@ -1,43 +1,21 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <daniel@iogearbox.net>
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkTDc5J4DzDqj8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2017 05:04:00 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v81J1ld4063010
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Sep 2017 15:03:58 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cqa74b77y-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Sep 2017 15:03:58 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Sat, 2 Sep 2017 05:03:56 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v81J3r1D38862848
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Sep 2017 05:03:53 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v81J3jo2015394
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Sep 2017 05:03:45 +1000
-Date: Sat, 2 Sep 2017 00:33:49 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Sandipan Das <sandipan@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, daniel@iogearbox.net, ast@fb.com,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/1] bpf: take advantage of stack_depth tracking in
- powerpc JIT
-References: <20170901185301.17978-1-sandipan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkTqY04VvzDqZx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2017 05:30:48 +1000 (AEST)
+Message-ID: <59A9B1D5.7030307@iogearbox.net>
+Date: Fri, 01 Sep 2017 21:15:33 +0200
+From: Daniel Borkmann <daniel@iogearbox.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Sandipan Das <sandipan@linux.vnet.ibm.com>, mpe@ellerman.id.au
+CC: naveen.n.rao@linux.vnet.ibm.com, ast@fb.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/1] bpf: take advantage of stack_depth tracking in powerpc
+ JIT
+References: <20170901185301.17978-1-sandipan@linux.vnet.ibm.com>
 In-Reply-To: <20170901185301.17978-1-sandipan@linux.vnet.ibm.com>
-Message-Id: <20170901190349.mc63kiia45m3fxul@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,124 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/09/02 12:23AM, Sandipan Das wrote:
+On 09/01/2017 08:53 PM, Sandipan Das wrote:
 > Take advantage of stack_depth tracking, originally introduced for
 > x64, in powerpc JIT as well. Round up allocated stack by 16 bytes
 > to make sure it stays aligned for functions called from JITed bpf
 > program.
-> 
+>
 > Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
-> ---
 
-LGTM, thanks!
-Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-
-Michael,
-Seeing as this is powerpc specific, can you please take this through 
-your tree?
-
-
-Thanks,
-Naveen
-
->  arch/powerpc/net/bpf_jit64.h      |  7 ++++---
->  arch/powerpc/net/bpf_jit_comp64.c | 16 ++++++++++------
->  2 files changed, 14 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/net/bpf_jit64.h b/arch/powerpc/net/bpf_jit64.h
-> index 62fa7589db2b..8bdef7ed28a8 100644
-> --- a/arch/powerpc/net/bpf_jit64.h
-> +++ b/arch/powerpc/net/bpf_jit64.h
-> @@ -23,7 +23,7 @@
->   *		[   nv gpr save area	] 8*8		|
->   *		[    tail_call_cnt	] 8		|
->   *		[    local_tmp_var	] 8		|
-> - * fp (r31) -->	[   ebpf stack space	] 512		|
-> + * fp (r31) -->	[   ebpf stack space	] upto 512	|
->   *		[     frame header	] 32/112	|
->   * sp (r1) --->	[    stack pointer	] --------------
->   */
-> @@ -32,8 +32,8 @@
->  #define BPF_PPC_STACK_SAVE	(8*8)
->  /* for bpf JIT code internal usage */
->  #define BPF_PPC_STACK_LOCALS	16
-> -/* Ensure this is quadword aligned */
-> -#define BPF_PPC_STACKFRAME	(STACK_FRAME_MIN_SIZE + MAX_BPF_STACK + \
-> +/* stack frame excluding BPF stack, ensure this is quadword aligned */
-> +#define BPF_PPC_STACKFRAME	(STACK_FRAME_MIN_SIZE + \
->  				 BPF_PPC_STACK_LOCALS + BPF_PPC_STACK_SAVE)
-> 
->  #ifndef __ASSEMBLY__
-> @@ -103,6 +103,7 @@ struct codegen_context {
->  	 */
->  	unsigned int seen;
->  	unsigned int idx;
-> +	unsigned int stack_size;
->  };
-> 
->  #endif /* !__ASSEMBLY__ */
-> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-> index 6ba5d253e857..a01362c88f6a 100644
-> --- a/arch/powerpc/net/bpf_jit_comp64.c
-> +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> @@ -69,7 +69,7 @@ static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
->  static int bpf_jit_stack_local(struct codegen_context *ctx)
->  {
->  	if (bpf_has_stack_frame(ctx))
-> -		return STACK_FRAME_MIN_SIZE + MAX_BPF_STACK;
-> +		return STACK_FRAME_MIN_SIZE + ctx->stack_size;
->  	else
->  		return -(BPF_PPC_STACK_SAVE + 16);
->  }
-> @@ -82,8 +82,9 @@ static int bpf_jit_stack_tailcallcnt(struct codegen_context *ctx)
->  static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
->  {
->  	if (reg >= BPF_PPC_NVR_MIN && reg < 32)
-> -		return (bpf_has_stack_frame(ctx) ? BPF_PPC_STACKFRAME : 0)
-> -							- (8 * (32 - reg));
-> +		return (bpf_has_stack_frame(ctx) ?
-> +			(BPF_PPC_STACKFRAME + ctx->stack_size) : 0)
-> +				- (8 * (32 - reg));
-> 
->  	pr_err("BPF JIT is asking about unknown registers");
->  	BUG();
-> @@ -134,7 +135,7 @@ static void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
->  			PPC_BPF_STL(0, 1, PPC_LR_STKOFF);
->  		}
-> 
-> -		PPC_BPF_STLU(1, 1, -BPF_PPC_STACKFRAME);
-> +		PPC_BPF_STLU(1, 1, -(BPF_PPC_STACKFRAME + ctx->stack_size));
->  	}
-> 
->  	/*
-> @@ -161,7 +162,7 @@ static void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
->  	/* Setup frame pointer to point to the bpf stack area */
->  	if (bpf_is_seen_register(ctx, BPF_REG_FP))
->  		PPC_ADDI(b2p[BPF_REG_FP], 1,
-> -				STACK_FRAME_MIN_SIZE + MAX_BPF_STACK);
-> +				STACK_FRAME_MIN_SIZE + ctx->stack_size);
->  }
-> 
->  static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx)
-> @@ -183,7 +184,7 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
-> 
->  	/* Tear down our stack frame */
->  	if (bpf_has_stack_frame(ctx)) {
-> -		PPC_ADDI(1, 1, BPF_PPC_STACKFRAME);
-> +		PPC_ADDI(1, 1, BPF_PPC_STACKFRAME + ctx->stack_size);
->  		if (ctx->seen & SEEN_FUNC) {
->  			PPC_BPF_LL(0, 1, PPC_LR_STKOFF);
->  			PPC_MTLR(0);
-> @@ -993,6 +994,9 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
-> 
->  	memset(&cgctx, 0, sizeof(struct codegen_context));
-> 
-> +	/* Make sure that the stack is quadword aligned. */
-> +	cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
-> +
->  	/* Scouting faux-generate pass 0 */
->  	if (bpf_jit_build_body(fp, 0, &cgctx, addrs)) {
->  		/* We hit something illegal or unsupported. */
-> -- 
-> 2.13.5
-> 
+Awesome, thanks for following up! :)
