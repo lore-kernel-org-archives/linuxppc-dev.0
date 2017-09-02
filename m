@@ -1,25 +1,36 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-it0-x22a.google.com (mail-it0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c0b::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xky3J5K6fzDqXs
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2017 23:42:36 +1000 (AEST)
-Message-ID: <1504359756.4728.7.camel@neuling.org>
-Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
- engine
-From: Michael Neuling <mikey@neuling.org>
-To: Haren Myneni <haren@linux.vnet.ibm.com>, Dan Streetman <ddstreet@ieee.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Ram Pai <linuxram@us.ibm.com>,
- npiggin@gmail.com, suka@us.ibm.com, Linux Crypto Mailing List
- <linux-crypto@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Date: Sat, 02 Sep 2017 23:42:36 +1000
-In-Reply-To: <59AA6E71.8070704@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xl1RW0kxdzDqkQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Sep 2017 02:15:19 +1000 (AEST)
+Received: by mail-it0-x22a.google.com with SMTP id k189so3613594itk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Sep 2017 09:15:18 -0700 (PDT)
+MIME-Version: 1.0
+Sender: ddstreet@gmail.com
+In-Reply-To: <87bmmu64if.fsf@concordia.ellerman.id.au>
 References: <1500699702.23205.8.camel@hbabu-laptop>
  <CALZtONBGVQy2iwkb8WpVd-_QG7bLFTvUbnuub6CCXP55YpQiSQ@mail.gmail.com>
- <59AA6E71.8070704@linux.vnet.ibm.com>
+ <1504041817.2358.32.camel@kernel.crashing.org>
+ <59A5E2AE.5060400@linux.vnet.ibm.com>
+ <CALZtONBBvrfWkiFQipMrM9+VxsbBkHMFOAbgL0OBm5gb8yZ=LQ@mail.gmail.com>
+ <87bmmu64if.fsf@concordia.ellerman.id.au>
+From: Dan Streetman <ddstreet@ieee.org>
+Date: Sat, 2 Sep 2017 12:14:35 -0400
+Message-ID: <CALZtONA9H4X2iTea-jqYT6PYLhB9BWwYYMMb=DS8kGBfJ6PvUA@mail.gmail.com>
+Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
+ engine
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Haren Myneni <haren@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>, suka@us.ibm.com,
+ Ram Pai <linuxram@us.ibm.com>, npiggin@gmail.com,
+ Haren Myneni <hbabu@us.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +40,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Sep 1, 2017 at 7:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Hi Dan,
+>
+> Thanks for reviewing this series.
+>
+> Dan Streetman <ddstreet@ieee.org> writes:
+>> On Tue, Aug 29, 2017 at 5:54 PM, Haren Myneni <haren@linux.vnet.ibm.com> wrote:
+>>> On 08/29/2017 02:23 PM, Benjamin Herrenschmidt wrote:
+>>>> On Tue, 2017-08-29 at 09:58 -0400, Dan Streetman wrote:
+>>>>>> +
+>>>>>> +       ret = -EINVAL;
+>>>>>> +       if (coproc && coproc->vas.rxwin) {
+>>>>>> +               wmem->txwin = nx842_alloc_txwin(coproc);
+>>>>>
+>>>>> this is wrong.  the workmem is scratch memory that's valid only for
+>>>>> the duration of a single operation.
+>>>
+>>> Correct, workmem is used until crypto_free is called.
+>>
+>> that's not a 'single operation'.  a single operation is compress() or
+>> decompress().
+>>
+>>>>>
+>>>>> do you actually need a txwin per crypto transform?  or do you need a
+>>>>> txwin per coprocessor?  or txwin per processor?  either per-coproc or
+>>>>> per-cpu should be created at driver init and held separately
+>>>>> (globally) instead of a per-transform txwin.  I really don't see why
+>>>>> you would need a txwin per transform, because the coproc should not
+>>>>> care how many different transforms there are.
+>>>>
+>>>> We should only need a single window for the whole kernel really, plus
+>>>> one per user process who wants direct access but that's not relevant
+>>>> here.
+>>>
+>>> Opening send window for each crypto transform (crypto_alloc,
+>>> compression/decompression, ..., crypto_free) so that does not
+>>> have to wait for the previous copy/paste complete.
+>>> VAS will map send and receive windows, and can cache in send
+>>> windows (up to 128). So I thought using the same send window
+>>> (per chip) for more requests (say 1000) may be adding overhead.
+>>>
+>>> I will make changes if you prefer using 1 send window per chip.
+>>
+>> i don't have the spec, so i shouldn't be making the decision on it,
+>> but i do know putting a persistent field into the workmem is the wrong
+>> location.  If it's valid for the life of the transform, put it into
+>> the transform context.  The workmem buffer is intended to be used only
+>> during a single operation - it's "working memory" to perform each
+>> individual crypto transformation.
+>
+> I agree workmem isn't the right place for the txwin. But I don't believe
+> it actually breaks anything to put txwin there.
 
-> > > +static int nx842_powernv_crypto_init_vas(struct crypto_tfm *tfm)
-> > > +{
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct nx842_crypto_ctx *c=
-tx =3D crypto_tfm_ctx(tfm);
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct nx842_workmem *wmem=
-;
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct nx842_coproc *copro=
-c;
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int ret;
-> > > +
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0ret =3D nx842_crypto_init(=
-tfm, &nx842_powernv_driver);
-> > > +
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (ret)
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0return ret;
-> > > +
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0wmem =3D PTR_ALIGN((struct=
- nx842_workmem *)ctx->wmem,
-> > > WORKMEM_ALIGN);
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0coproc =3D per_cpu(coproc_=
-inst, smp_processor_id());
-> >=20
-> > this is wrong.=C2=A0=C2=A0the crypto transform init function is not gua=
-ranteed
-> > to be called by the same processor that later uses it.=C2=A0=C2=A0Just =
-because
-> > that happens to be how zswap operates doesn't guarantee other crypto
-> > users will do the same.
->=20
-> Dan, Sorry missed this comment.=C2=A0
->=20
-> Right, The actual crypto request can be executed on other processor than =
-the
-> CPU when the init is executed. The main goal is open send window on the N=
-X
-> engine which is on the same chip for the corresponding CPU. So we are OK =
-if
-> the request is scheduled on other CPU as long as it belongs to same chip.
-> Otherwise in the worst case we will end up using remote NX.=C2=A0=C2=A0
+it doesn't currently no, but workmem should be able to be memset(0) at
+the start of each compress/decompress operation without breaking
+anything.
 
-You want the NX to be close to the requester CPU, but probably more importa=
-ntly
-you want the NX close to the memory it's going to be operating on.=C2=A0
+Otherwise, the workmem fields should just go directly into the
+nx842_crypto_ctx, which contains other persistent fields.
 
-Preferably they would all be on the same node.
+My concern isn't about breaking anything right now, it's about
+misusing the design causing obscure breakage later.
 
-Mikey=20
+>
+> So for now I'm going to merge this series as-is and I've asked Haren to
+> send fixes as soon as he can to clean it up.
+
+sure, as i said i've been out of the 842 area for years now so i was
+going to just stay out of it...I just happened to notice things i
+thought i should comment on :-)
+
+>
+> cheers
