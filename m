@@ -1,42 +1,23 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xkjNC25b2zDqZB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2017 14:11:23 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8243jiA099057
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 Sep 2017 00:11:20 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cqgjesru2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Sep 2017 00:11:20 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 2 Sep 2017 00:11:20 -0400
-Date: Fri, 01 Sep 2017 21:11:02 -0700
-From: Haren Myneni <haren@linux.vnet.ibm.com>
+Return-Path: <rpjday@crashcourse.ca>
+Received: from cpanel2.indieserve.net (cpanel2.indieserve.net [199.212.143.6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xkmrQ49clzDqYy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Sep 2017 16:47:32 +1000 (AEST)
+Received: from cpec03f0ed08c7f-cm68b6fcf980b0.cpe.net.cable.rogers.com
+ ([174.118.92.171]:47232 helo=localhost.localdomain)
+ by cpanel2.indieserve.net with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.89)
+ (envelope-from <rpjday@crashcourse.ca>) id 1do2DI-0007IJ-E0
+ for linuxppc-dev@lists.ozlabs.org; Sat, 02 Sep 2017 02:47:28 -0400
+Date: Sat, 2 Sep 2017 02:47:26 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] arch/powerpc: Standardize DTS status assignments from "ok"
+ to "okay"
+Message-ID: <alpine.LFD.2.21.1709020244110.10577@localhost.localdomain>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: Dan Streetman <ddstreet@ieee.org>, mikey@neuling.org,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Ram Pai <linuxram@us.ibm.com>, npiggin@gmail.com, suka@us.ibm.com,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH V3 6/6] crypto/nx: Add P9 NX support for 842 compression
- engine
-References: <1500699702.23205.8.camel@hbabu-laptop>
- <878ti35l7z.fsf@concordia.ellerman.id.au>
- <CALZtONDnFLiGhTRNs89VWr3nrY0Bp9VPRqFXA0iEaa6U_+w4Ag@mail.gmail.com>
- <59A7BE4E.1040806@linux.vnet.ibm.com>
- <878thy64an.fsf@concordia.ellerman.id.au>
-In-Reply-To: <878thy64an.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <59AA2F56.7090307@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,64 +27,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/01/2017 04:34 AM, Michael Ellerman wrote:
-> Haren Myneni <haren@linux.vnet.ibm.com> writes:
->>> On Mon, Aug 28, 2017 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>> Hi Haren,
->>>>
->>>> Some comments inline ...
->>>>
->>>> Haren Myneni <haren@linux.vnet.ibm.com> writes:
->>>>
->>>>> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
->>>>> index c0dd4c7e17d3..13089a0b9dfa 100644
->>>>> --- a/drivers/crypto/nx/nx-842-powernv.c
->>>>> +++ b/drivers/crypto/nx/nx-842-powernv.c
->>>>> @@ -32,6 +33,9 @@ MODULE_ALIAS_CRYPTO("842-nx");
->>>>>
->>>>>  #define WORKMEM_ALIGN        (CRB_ALIGN)
->>>>>  #define CSB_WAIT_MAX (5000) /* ms */
->>>>> +#define VAS_RETRIES  (10)
->>>>
->>>> Where does that number come from?
->>
->> Sometimes HW returns copy/paste failures. So we should retry the
->> request again. With 10 retries, Test running 12 hours was successful
->> for repeated compression/decompression requests with 1024 threads.
-> 
-> But why 10. Why not 5, or 100, or 1, or 10,000?
 
-VAS spec says small number of retries. During my 12 hour test with 1024 threads - doing continuous compression/decompression requests, noticed around 6 or 7 retries needed. Hence used 10 retries.  
+While the current kernel drivers/of/ code allows developers to be
+sloppy and use a DTS status value of "ok", the current DTSpec 0.1
+makes it clear that the proper spelling is "okay", so fix the small
+number of PowerPC .dts files that do this.
 
-> 
-> Presumably when we have to retry it means the NX is too busy to service the
-> request?
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-One possible case. We can also see failures when receive/send credit are exhausted or reached the cached windows limit.
+---
 
-> 
-> Do we have any way to find out how long it might be busy for?
-Hard to know the reason of failure. VAS simply returns success or failure without providing the actual reason.
+diff --git a/arch/powerpc/boot/dts/akebono.dts b/arch/powerpc/boot/dts/akebono.dts
+index e61d5dc..660ee21 100644
+--- a/arch/powerpc/boot/dts/akebono.dts
++++ b/arch/powerpc/boot/dts/akebono.dts
+@@ -40,7 +40,7 @@
+ 			d-cache-size = <32768>;
+ 			dcr-controller;
+ 			dcr-access-method = "native";
+-			status = "ok";
++			status = "okay";
+ 		};
+ 		cpu@1 {
+ 			device_type = "cpu";
+diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
+index b0b26d8..64eaf7e 100644
+--- a/arch/powerpc/boot/dts/bluestone.dts
++++ b/arch/powerpc/boot/dts/bluestone.dts
+@@ -109,7 +109,7 @@
 
-> 
-> Should we try an NX on another chip?
-Hard to decide whether to fall back on other NX engine since no way to know the actual failure reason on the current NX or no idea whether other NX is free. 
+ 	OCM: ocm@400040000 {
+ 		compatible = "ibm,ocm";
+-		status = "ok";
++		status = "okay";
+ 		cell-index = <1>;
+ 		/* configured in U-Boot */
+ 		reg = <4 0x00040000 0x8000>; /* 32K */
+diff --git a/arch/powerpc/boot/dts/currituck.dts b/arch/powerpc/boot/dts/currituck.dts
+index 4191e18..093c4bc 100644
+--- a/arch/powerpc/boot/dts/currituck.dts
++++ b/arch/powerpc/boot/dts/currituck.dts
+@@ -39,7 +39,7 @@
+ 			d-cache-size = <32768>;
+ 			dcr-controller;
+ 			dcr-access-method = "native";
+-			status = "ok";
++			status = "okay";
+ 		};
+ 		cpu@1 {
+ 			device_type = "cpu";
+diff --git a/arch/powerpc/boot/dts/iss4xx-mpic.dts b/arch/powerpc/boot/dts/iss4xx-mpic.dts
+index 23e9d9b..9804ada 100644
+--- a/arch/powerpc/boot/dts/iss4xx-mpic.dts
++++ b/arch/powerpc/boot/dts/iss4xx-mpic.dts
+@@ -43,7 +43,7 @@
+ 			d-cache-size = <32768>;
+ 			dcr-controller;
+ 			dcr-access-method = "native";
+-			status = "ok";
++			status = "okay";
+ 		};
+ 		cpu@1 {
+ 			device_type = "cpu";
 
-> 
-> We should also take into account the size of our request, ie. are we
-> asking the NX to compress one page, or 1GB ?
+-- 
 
-842 compression/decompression request size for NX is always fixed. So divide in to smaller requests for large buffer. Whereas NX gzip engine is different - can be configurable request size. We can look at this optimization when gzip support is added.   
-   
-> 
-> If it's just one page maybe we should fall back to software immediately.
+========================================================================
+Robert P. J. Day                                 Ottawa, Ontario, CANADA
+                        http://crashcourse.ca
 
-Right now falls back to SW decompression after 10 retries. Whereas user can use SW 842 compression upon failures.
-
-We are planning to look in to performance analysis as part of VAS/NX optimizatiion and make necessary changes.
-
-Thanks
-Haren
-> 
-> cheers
-> 
+Twitter:                                       http://twitter.com/rpjday
+LinkedIn:                               http://ca.linkedin.com/in/rpjday
+========================================================================
