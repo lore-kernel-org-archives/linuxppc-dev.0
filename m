@@ -1,19 +1,22 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:84ea::])
- (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xlSY56ssTzDrhs
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Sep 2017 19:36:40 +1000 (AEST)
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.13: Reported regressions as of Sunday, 2017-09-03
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Message-ID: <12c76b2b-9985-ffff-afe2-2382c24bcc72@leemhuis.info>
-Date: Sun, 3 Sep 2017 11:36:31 +0200
+Return-Path: <rpjday@crashcourse.ca>
+Received: from cpanel2.indieserve.net (cpanel2.indieserve.net [199.212.143.6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xlV2P150gzDqj2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Sep 2017 20:43:40 +1000 (AEST)
+Date: Sun, 3 Sep 2017 06:43:33 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: devicetree@vger.kernel.org, linux-mips@linux-mips.org, monstr@monstr.eu,
+ Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] devicetree: Remove remaining references/tests for
+ "chosen@0"
+In-Reply-To: <1504390854.4974.108.camel@kernel.crashing.org>
+Message-ID: <alpine.LFD.2.21.1709030637090.24875@localhost.localdomain>
+References: <alpine.LFD.2.21.1709020416130.13598@localhost.localdomain>
+ <1504390854.4974.108.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi! Find below my fifth regression report for Linux 4.13. It lists 4
-regressions I'm currently aware of. There are no new ones; 2 got fixed
-since the last report.
+On Sun, 3 Sep 2017, Benjamin Herrenschmidt wrote:
 
-You can also find the report at http://bit.ly/lnxregrep413 where I try
-to update it every now and then.
+> On Sat, 2017-09-02 at 04:43 -0400, Robert P. J. Day wrote:
+> > Since, according to a recent devicetree ML posting by Rob Herring,
+> > the node "/chosen@0" is most likely for real Open Firmware and
+> > does not apply to DTSpec, remove all remaining tests and
+> > references for that node, of which there are very few left:
+>
+> Technically that would break Open Firmware systems where the node is
+> really called chosen@0
+>
+> Now I'm not sure such a thing actually exist however.
+>
+> My collection of DTs don't seem to have one, except in the ancient
+> html variants that were extracted by the pengionppc folks for the
+> original PowerMac 8600 but I wonder if that's a bug in the
+> extraction script since they also have @0 on /packages etc...
 
-As always: Are you aware of any other regressions? Then please let me
-know. For details see http://bit.ly/lnxregtrackid And please tell me if
-there is anything in the report that shouldn't be there.
+  obviously, this isn't a priority issue, i was just working off a
+comment by rob herring that "chosen@0" is not defined by the current
+DTSpec 0.1, so it seemed appropriate to toss it. if there's a reason
+to hang onto it, that's fine with me.
 
-Ciao, Thorsten
+  however, given the diff stat of the change to remove every single
+reference to that node name in the current kernel source:
 
-P.S.: Thx to all those that CCed me on regression reports or provided
-other input, it makes compiling these reports a whole lot easier!
+ arch/microblaze/kernel/prom.c | 3 +--
+ arch/mips/generic/yamon-dt.c  | 4 ----
+ arch/powerpc/boot/oflib.c     | 7 ++-----
+ drivers/of/base.c             | 2 --
+ drivers/of/fdt.c              | 5 +----
+ 5 files changed, 4 insertions(+), 17 deletions(-)
 
-== Current regressions ==
+it seems inconsistent that three architectures would be testing for
+that node, but none of the rest. consistency suggests that every
+architecture should take it into account, or none should.
 
-[x86/mm/gup] e585513b76: will-it-scale.per_thread_ops -6.9% regression
-Status: Asked on the list, but looks like issue gets ignored by everyone
-Note: I'm a bit unsure if adding this issue to this list was a good
-idea. Side note: Was reported against linux-next in May already
-Reported: 2017-07-10
-http://lkml.kernel.org/r/20170710024020.GA26389@yexl-desktop
-Cause: https://git.kernel.org/torvalds/c/e585513b76f7
+  anyway, not a big deal, i'm fine with any decision.
 
-[lkp-robot] [Btrfs] 28785f70ef: xfstests.generic.273.fail
-Status: Jeff: "We're not ignoring it. […] collection of bugs that
-approximate a correct result, and we're addressing them individually.[…]"
-Reported: 2017-07-26 Last known developer activity: 2017-08-10
-https://lkml.kernel.org/r/20170726062352.GC4877@yexl-desktop
-https://lkml.kernel.org/r/bcd49705-e63a-4439-1620-57cd16f5bc09@suse.com
-Cause: https://git.kernel.org/torvalds/c/28785f70ef88
-Linux-Regression-ID: lr#a7d273
+rday
 
-Build regression: cc1: error: '-march=r3000' requires '-mfp32'
-Note: is there any way to query 0-day to see if this is still happening?
-Reported: 2017-08-13
-https://lkml.org/lkml/2017/8/13/38
-Cause: https://git.kernel.org/torvalds/c/89a55278dee4
+-- 
 
-usb:xhci: regression when ATI chipsets detected
-Status: Fix in usb-next/usb-testing
-Reported: 2017-08-23 Last known developer activity: 2017-08-28
-https://lkml.kernel.org/r/1503485760-15146-1-git-send-email-Sandeep.Singh@amd.com
-Cause: https://git.kernel.org/torvalds/c/e788787ef4f9
+========================================================================
+Robert P. J. Day                                 Ottawa, Ontario, CANADA
+                        http://crashcourse.ca
 
-
-== Fixed since last report ==
-
-[Dell xps13 9630] Could not be woken up from suspend-to-idle via usb
-keyboard
-Status: was a tracking bug that got closed by the developer that created it
-Reported: 2017-07-24
-https://bugzilla.kernel.org/show_bug.cgi?id=196459
-Cause: https://git.kernel.org/torvalds/c/33e4f80ee69b
-Linux-Regression-ID: lr#bd29ab
-
-CIFS mount error -112 due to "SMB3 by default for security reasons"
-Status: Situation not perfect, but improved a lot by
-https://git.kernel.org/torvalds/c/7e682f766f28
-Note: https://lkml.org/lkml/2017/8/31/843
-Reported: 2017-08-06
-https://bugzilla.kernel.org/show_bug.cgi?id=196599
-Cause: https://git.kernel.org/torvalds/c/eef914a9eb5e /
-https://git.kernel.org/torvalds/c/908b852df1d5
-Linux-Regression-ID: lr#60efe5
+Twitter:                                       http://twitter.com/rpjday
+LinkedIn:                               http://ca.linkedin.com/in/rpjday
+========================================================================
