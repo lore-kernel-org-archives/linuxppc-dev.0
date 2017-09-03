@@ -1,30 +1,23 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com
- [IPv6:2607:f8b0:4003:c06::230])
+Return-Path: <linus971@gmail.com>
+Received: from mail-it0-x236.google.com (mail-it0-x236.google.com
+ [IPv6:2607:f8b0:4001:c0b::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xlcNh0sjFzDqgB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 01:29:56 +1000 (AEST)
-Received: by mail-oi0-x230.google.com with SMTP id r203so30031228oih.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Sep 2017 08:29:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xlfb768RqzDqjs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 03:09:07 +1000 (AEST)
+Received: by mail-it0-x236.google.com with SMTP id t134so5974888ita.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Sep 2017 10:09:07 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
-References: <1504436701-20700-1-git-send-email-lukma@denx.de>
- <AM5PR0401MB262706674539BFE651706CC6E3900@AM5PR0401MB2627.eurprd04.prod.outlook.com>
- <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Sun, 3 Sep 2017 12:29:53 -0300
-Message-ID: <CAOMZO5Bifb8VcOLTd5dEY9KvnvY1jwVr4R4DVRT65Yzm7n6dpA@mail.gmail.com>
-Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
- to system freq
-To: =?UTF-8?Q?=C5=81ukasz_Majewski?= <lukma@denx.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Sender: linus971@gmail.com
+In-Reply-To: <12c76b2b-9985-ffff-afe2-2382c24bcc72@leemhuis.info>
+References: <12c76b2b-9985-ffff-afe2-2382c24bcc72@leemhuis.info>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sun, 3 Sep 2017 10:09:05 -0700
+Message-ID: <CA+55aFwYXH=M2zm+eZ6+28g+ivLO1J0ubzA-=PNnVnZmLbMROw@mail.gmail.com>
+Subject: Re: Linux 4.13: Reported regressions as of Sunday, 2017-09-03
+To: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Jonathan Corbet <corbet@lwn.net>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,37 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 3, 2017 at 11:40 AM, =C5=81ukasz Majewski <lukma@denx.de> wrote=
-:
+On Sun, Sep 3, 2017 at 2:36 AM, Thorsten Leemhuis
+<regressions@leemhuis.info> wrote:
+>
+> [x86/mm/gup] e585513b76: will-it-scale.per_thread_ops -6.9% regression
+> Status: Asked on the list, but looks like issue gets ignored by everyone
+> Note: I'm a bit unsure if adding this issue to this list was a good
+> idea. Side note: Was reported against linux-next in May already
+> Reported: 2017-07-10
+> http://lkml.kernel.org/r/20170710024020.GA26389@yexl-desktop
+> Cause: https://git.kernel.org/torvalds/c/e585513b76f7
 
-> This is the part of fsl_ssi_set_bclk() function which is called after
-> fsl_ssi_set_dai_sysclk() (which sets ssi_private->bitclk_freq =3D freq;).
->
-> Before the aforementioned check we do have:
->
->         if (ssi_private->bitclk_freq)
->                 freq =3D ssi_private->bitclk_freq;
->         else
->                 freq =3D params_channels(hw_params) * 32 *
-> params_rate(hw_params);
->
->
-> Which assigns freq =3D bitclk_freq (66 MHz)
->
-> And then we break on this particular check:
->
-> 66MHz * 5 > 66 MHz.
->
->
->
-> The culprit IMHO is the  ssi_private->bitclk_freq =3D freq; in the
-> fsl_ssi_set_dai_sysclk(), since we _should_ set SSI's IP block clock
-> (ssi_private->clk), not the bit clock (BCLK).
->
->
-> This patch just quits early if it detects change, which don't need to be
-> done.
+Sadly, while I love the concept of performance tracking, the
+"will-it-scale" reports haven't really been reliable enough to really
+be useful. There is a _ton_ of noise in the numbers, and the
+test-cases don't seem to be stable enough to really track sanely.
 
-Thanks for the clarification.
+I wish it was otherwise, because we also got a report of "57.3%
+improvement of will-it-scale.per_process_ops" this release.
 
-Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+So I find the kernel test robot performance tracking very interesting
+in theory, but as things stand now I think it's just that:
+"interesting". Not quite ready for action.
+
+                 Linus
