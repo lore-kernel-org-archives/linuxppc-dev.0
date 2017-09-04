@@ -1,29 +1,46 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bp@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmDLQ1yD5zDqjv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 01:30:05 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v84FTDKA012858
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Sep 2017 11:30:03 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cs8rsjjwm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Sep 2017 11:30:03 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Mon, 4 Sep 2017 16:30:01 +0100
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V2] cxl: Add support for POWER9 DD2
-Date: Mon,  4 Sep 2017 17:29:55 +0200
-Message-Id: <1504538995-13792-1-git-send-email-clombard@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xmGSY01WMzDqXj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 03:05:32 +1000 (AEST)
+Date: Mon, 4 Sep 2017 19:05:25 +0200
+From: Borislav Petkov <bp@suse.de>
+To: Brijesh Singh <brijesh.singh@amd.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-efi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Piotr Luc <piotr.luc@intel.com>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Reza Arbab <arbab@linux.vnet.ibm.com>,
+ David Howells <dhowells@redhat.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Laura Abbott <labbott@redhat.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Jonathan Corbet <corbet@lwn.net>, Dave Airlie <airlied@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>, Tejun Heo <tj@kernel.org>,
+ Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC Part1 PATCH v3 16/17] X86/KVM: Provide support to create
+ Guest and HV shared per-CPU variables
+Message-ID: <20170904170525.toyulxwaevef42qe@pd.tnic>
+References: <20170724190757.11278-1-brijesh.singh@amd.com>
+ <20170724190757.11278-17-brijesh.singh@amd.com>
+ <20170829102258.gxk227js4yw47qi3@pd.tnic>
+ <0810a732-9c77-a543-ffeb-7fd2d8f46266@amd.com>
+ <20170830174655.ehrnmynotmp7laka@pd.tnic>
+ <8155b5b2-b2b3-bc8f-33ae-b81b661a2e38@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <8155b5b2-b2b3-bc8f-33ae-b81b661a2e38@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,146 +50,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL initialization sequence has been updated to DD2.
-This patch adapts to the changes, retaining compatibility with DD1.
-The patch includes some changes to DD1 fix-ups as well.
+On Fri, Sep 01, 2017 at 05:52:13PM -0500, Brijesh Singh wrote:
+>  So far, we have not seen the need for having such functions except
+> this cases. The approach we have right now works just fine and not
+> sure if its worth adding new functions.
 
-Tests performed on some of the old/new hardware.
+Then put the call to kvm_map_hv_shared_decrypted() into
+kvm_smp_prepare_boot_cpu() to denote that you're executing this whole
+stuff only once during guest init.
 
-The function is_page_fault(), for POWER9, lists the Translation Checkout
-Responses where the page fault will be handled by copro_handle_mm_fault().
-This list is too restrictive and not necessary.
+Now you're doing additional jumping-through-hoops with that once static
+var just so you can force something which needs to execute only once but
+gets called in a per-CPU path.
 
-This patches removes this restriction and all page faults, whatever the
-reason, will be handled. In this case, the interruption is always
-acknowledged.
+See what I mean?
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Thoughts ?
+> 
+> [1] Commit :7f8b7e7 x86/mm: Add support for early encryption/decryption of memory
 
----
-Changelog[v2]
- - Rebase to latest upstream.
- - Update the function is_page_fault()
----
- drivers/misc/cxl/cxl.h   |  2 ++
- drivers/misc/cxl/fault.c | 15 ++-------------
- drivers/misc/cxl/pci.c   | 46 +++++++++++++++++++++++-----------------------
- 3 files changed, 27 insertions(+), 36 deletions(-)
+Add
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index b1afecc..0167df8 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -100,6 +100,8 @@ static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
- static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
- /* PSL registers - CAIA 2 */
- static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
-+static const cxl_p1_reg_t CXL_XSL9_INV      = {0x0110};
-+static const cxl_p1_reg_t CXL_XSL9_DEF      = {0x0140};
- static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
- static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
- static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 6eed7d0..0cf7f4a 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -204,22 +204,11 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
- 
- static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
- {
--	u64 crs; /* Translation Checkout Response Status */
--
- 	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
- 		return true;
- 
--	if (cxl_is_power9()) {
--		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
--		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_STEG) ||
--		    (crs == CXL_PSL9_DSISR_An_URTCH)) {
--			return true;
--		}
--	}
-+	if (cxl_is_power9())
-+		return true;
- 
- 	return false;
- }
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index d18b3d9..3edc991 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -401,7 +401,8 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
- 	*capp_unit_id = get_capp_unit_id(np, *phb_index);
- 	of_node_put(np);
- 	if (!*capp_unit_id) {
--		pr_err("cxl: invalid capp unit id\n");
-+		pr_err("cxl: invalid capp unit id (phb_index: %d)\n",
-+		       *phb_index);
- 		return -ENODEV;
- 	}
- 
-@@ -475,37 +476,36 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
- 	psl_fircntl |= 0x1ULL; /* ce_thresh */
- 	cxl_p1_write(adapter, CXL_PSL9_FIR_CNTL, psl_fircntl);
- 
--	/* vccredits=0x1  pcklat=0x4 */
--	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0000000000001810ULL);
--
--	/*
--	 * For debugging with trace arrays.
--	 * Configure RX trace 0 segmented mode.
--	 * Configure CT trace 0 segmented mode.
--	 * Configure LA0 trace 0 segmented mode.
--	 * Configure LA1 trace 0 segmented mode.
-+	/* Setup the PSL to transmit packets on the PCIe before the
-+	 * CAPP is enabled
- 	 */
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000000ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000003ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000005ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000006ULL);
-+	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0001001000002A10ULL);
- 
- 	/*
- 	 * A response to an ASB_Notify request is returned by the
- 	 * system as an MMIO write to the address defined in
--	 * the PSL_TNR_ADDR register
-+	 * the PSL_TNR_ADDR register.
-+	 * keep the Reset Value: 0x00020000E0000000
- 	 */
--	/* PSL_TNR_ADDR */
- 
--	/* NORST */
--	cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x8000000000000000ULL);
-+	/* Enable XSL rty limit */
-+	cxl_p1_write(adapter, CXL_XSL9_DEF, 0x51F8000000000005ULL);
-+
-+	/* Change XSL_INV dummy read threshold */
-+	cxl_p1_write(adapter, CXL_XSL9_INV, 0x0000040007FFC200ULL);
- 
--	/* allocate the apc machines */
--	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
-+	if (phb_index == 3) {
-+		/* disable machines 31-47 and 20-27 for DMA */
-+		cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000FF3FFFF0000ULL);
-+	}
-+
-+	/* Snoop machines */
-+	cxl_p1_write(adapter, CXL_PSL9_APCDEDALLOC, 0x800F000200000000ULL);
- 
--	/* Disable vc dd1 fix */
--	if (cxl_is_power9_dd1())
--		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
-+	if (cxl_is_power9_dd1()) {
-+		/* Disabling deadlock counter CAR */
-+		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0020000000000001ULL);
-+	}
- 
- 	return 0;
- }
+[core]
+        abbrev = 12
+
+to the core section of your .gitconfig.
+
 -- 
-2.7.4
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
