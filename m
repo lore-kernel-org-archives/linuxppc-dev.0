@@ -1,26 +1,21 @@
-Return-Path: <srs0=sulk=af=kernel.crashing.org=benh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 4.mo68.mail-out.ovh.net (4.mo68.mail-out.ovh.net [46.105.59.63])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xm0Vp0DrSzDqkh
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 16:36:34 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xm0Vn6YDRz8snT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 16:36:33 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xm0Vn1lvRz9s72
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2017 16:36:32 +1000 (AEST)
-Message-ID: <1504506982.2250.21.camel@kernel.crashing.org>
-Subject: [RFC/PATCH] powerpc/eeh: Create PHB PEs after EEH is initialized
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Cc: Russell Currey <ruscur@russell.cc>, Michael Neuling
- <michael.neuling@au1.ibm.com>
-Date: Mon, 04 Sep 2017 16:36:22 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xm0Xh3qGtzDql8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 16:38:12 +1000 (AEST)
+Received: from player789.ha.ovh.net (b9.ovh.net [213.186.33.59])
+ by mo68.mail-out.ovh.net (Postfix) with ESMTP id 29DC77B6C7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 08:38:07 +0200 (CEST)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Subject: [PATCH] powerpc/xive: Fix section __init warning
+Date: Mon,  4 Sep 2017 08:37:55 +0200
+Message-Id: <20170904063755.6836-1-clg@kaod.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Otherwise we end up not yet having computed the right
-diag data size on powernv where EEH initialization
-is delayed, thus causing memory corruption later on
-when calling OPAL.
+xive_spapr_init() is called from a __init routine and calls __init
+routines.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
+ arch/powerpc/sysdev/xive/spapr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Russell, what do you think ? The end result is that the PEs
-for the PHBs are created much later. I suppose that might cause
-changes of behaviour if, for example, we hit EEH while probing
-before we call eeh_init() again. Hopefully we have all the
-appropriate NULL checks to deal with it though...
-
-Another option would be to break up eeh_init() between calling
-the backend init, which we would unconditionally do early (ie
-removing the special powernv test) and a new eeh_create_pe()'s
-which would explicitely be called by the backend at the "right"
-time...
-
-Without either fix, we are currently corrupting kernel memory
-when hitting EEH on a PHB PE (fences for example).
-
-If this ends up being the right approach, then we need a CC
-stable as well.
-
- arch/powerpc/kernel/eeh.c     |  4 ++++
- arch/powerpc/kernel/eeh_dev.c | 18 ------------------
- 2 files changed, 4 insertions(+), 18 deletions(-)
-
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 63992b2d8e15..f27eecd5ec7f 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1018,6 +1018,10 @@ int eeh_init(void)
- 	} else if ((ret = eeh_ops->init()))
- 		return ret;
- 
-+	/* Initialize PHB PEs */
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
-+		eeh_dev_phb_init_dynamic(hose);
-+
- 	/* Initialize EEH event */
- 	ret = eeh_event_init();
- 	if (ret)
-diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
-index d6b2ca70d14d..0820b73288c0 100644
---- a/arch/powerpc/kernel/eeh_dev.c
-+++ b/arch/powerpc/kernel/eeh_dev.c
-@@ -83,21 +83,3 @@ void eeh_dev_phb_init_dynamic(struct pci_controller *phb)
- 	/* EEH PE for PHB */
- 	eeh_phb_pe_create(phb);
+diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+index 43e9eeb0d39f..f24a70bc6855 100644
+--- a/arch/powerpc/sysdev/xive/spapr.c
++++ b/arch/powerpc/sysdev/xive/spapr.c
+@@ -593,7 +593,7 @@ static bool xive_get_max_prio(u8 *max_prio)
+ 	return true;
  }
--
--/**
-- * eeh_dev_phb_init - Create EEH devices for devices included in existing PHBs
-- *
-- * Scan all the existing PHBs and create EEH devices for their OF
-- * nodes and their children OF nodes
-- */
--static int __init eeh_dev_phb_init(void)
--{
--	struct pci_controller *phb, *tmp;
--
--	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
--		eeh_dev_phb_init_dynamic(phb);
--
--	return 0;
--}
--
--core_initcall(eeh_dev_phb_init);
+ 
+-bool xive_spapr_init(void)
++bool __init xive_spapr_init(void)
+ {
+ 	struct device_node *np;
+ 	struct resource r;
+-- 
+2.13.5
