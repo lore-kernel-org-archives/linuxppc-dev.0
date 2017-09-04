@@ -1,50 +1,17 @@
-Return-Path: <srs0=ikvj=ae=linux.vnet.ibm.com=stewart@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xlppd61H4zDqYb
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 09:19:37 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xlppd434lz8tDD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 09:19:37 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xlppd10klz9s8J
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2017 09:19:36 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v83NJOFk050195
- for <linuxppc-dev@ozlabs.org>; Sun, 3 Sep 2017 19:19:35 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2crnwt1qgw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Sun, 03 Sep 2017 19:19:34 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Sun, 3 Sep 2017 19:19:33 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Brian King <brking@linux.vnet.ibm.com>,
- "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, "dougmill\@us.ibm.com" <dougmill@us.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Turn on SCSI_AACRAID in powernv_defconfig
-In-Reply-To: <87mv6f56vl.fsf@concordia.ellerman.id.au>
-References: <1503899802-13248-1-git-send-email-mpe@ellerman.id.au>
- <72f7e609-58b9-32dc-4090-fdbd97d0c924@linux.vnet.ibm.com>
- <87h8wq1uvv.fsf@concordia.ellerman.id.au>
- <58487ce7-aea1-39c1-b9c8-cd8435e493e0@linux.vnet.ibm.com>
- <87shg91fgc.fsf@concordia.ellerman.id.au> <87y3q0hxtm.fsf@linux.vnet.ibm.com>
- <877exjud52.fsf@concordia.ellerman.id.au>
- <5011affa-e820-1362-2af2-3507f8aeb914@linux.vnet.ibm.com>
- <87mv6f56vl.fsf@concordia.ellerman.id.au>
-Date: Mon, 04 Sep 2017 09:19:19 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xlx1D42HJzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 13:59:12 +1000 (AEST)
+Date: Mon, 4 Sep 2017 13:59:00 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix kernel crash in emulation of vector loads and
+ stores
+Message-ID: <20170904035900.GA16532@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87y3pvgyko.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,24 +21,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
->> 2. On a bare metal machine, if you set ipr.fast_reboot=1 on the skiboot
->>    kernel, then we should also avoid resetting the ipr adapter, so ipr
->>    init on the kernel being kexec booted from skiboot should be extremely fast. 
->
-> OK, I didn't know that was an option, so that might help.
->
->> ...
->> If you've got cases where ipr init is taking a long time, I'd be
->> interested to know what scenarios are the most annoying to see if there
->> is any opportunity to improve.
->
-> Yeah booting bare metal is where I see it (not using ipr.fast_reboot).
+Commit 350779a29f11 ("powerpc: Handle most loads and stores in
+instruction emulation code", 2017-08-30) changed the register usage
+in get_vr and put_vr with the aim of leaving the register number in
+r3 untouched on return.  Unfortunately, r6 was not a good choice, as
+the callers as of 350779a29f11 store a MSR value in r6.  Then, in
+commit c22435a5f3d8 ("powerpc: Emulate FP/vector/VSX loads/stores
+correctly when regs not live", 2017-08-30), the saving and restoring
+of the MSR got moved into get_vr and put_vr.  Either way, the effect
+is that we put a value in MSR that only has the 0x3f8 bits non-zero,
+meaning that we are switching to 32-bit mode.  That leads to a crash
+like this:
 
-Hrm... We should probably enable that by default for petitboot then.
+Unable to handle kernel paging request for instruction fetch
+Faulting instruction address: 0x0007bea0
+Oops: Kernel access of bad area, sig: 11 [#12]
+LE SMP NR_CPUS=2048 NUMA PowerNV
+Modules linked in: vmx_crypto binfmt_misc ip_tables x_tables autofs4 crc32c_vpmsum
+CPU: 6 PID: 32659 Comm: trashy_testcase Tainted: G      D         4.13.0-rc2-00313-gf3026f57e6ed-dirty #23
+task: c000000f1bb9e780 task.stack: c000000f1ba98000
+NIP:  000000000007bea0 LR: c00000000007b054 CTR: c00000000007be70
+REGS: c000000f1ba9b960 TRAP: 0400   Tainted: G      D          (4.13.0-rc2-00313-gf3026f57e6ed-dirty)
+MSR:  10000000400010a1 <HV,ME,IR,LE>  CR: 48000228  XER: 00000000
+CFAR: c00000000007be74 SOFTE: 1
+GPR00: c00000000007b054 c000000f1ba9bbe0 c000000000e6e000 000000000000001d
+GPR04: c000000f1ba9bc00 c00000000007be70 00000000000000e8 9000000002009033
+GPR08: 0000000002000000 100000000282f033 000000000b0a0900 0000000000001009
+GPR12: 0000000000000000 c00000000fd42100 0706050303020100 a5a5a5a5a5a5a5a5
+GPR16: 2e2e2e2e2e2de70c 2e2e2e2e2e2e2e2d 0000000000ff00ff 0606040202020000
+GPR20: 000000000000005b ffffffffffffffff 0000000003020100 0000000000000000
+GPR24: c000000f1ab90020 c000000f1ba9bc00 0000000000000001 0000000000000001
+GPR28: c000000f1ba9bc90 c000000f1ba9bea0 000000000b0a0908 0000000000000001
+NIP [000000000007bea0] 0x7bea0
+LR [c00000000007b054] emulate_loadstore+0x1044/0x1280
+Call Trace:
+[c000000f1ba9bbe0] [c000000000076b80] analyse_instr+0x60/0x34f0 (unreliable)
+[c000000f1ba9bc70] [c00000000007b7ec] emulate_step+0x23c/0x544
+[c000000f1ba9bce0] [c000000000053424] arch_uprobe_skip_sstep+0x24/0x40
+[c000000f1ba9bd00] [c00000000024b2f8] uprobe_notify_resume+0x598/0xba0
+[c000000f1ba9be00] [c00000000001c284] do_notify_resume+0xd4/0xf0
+[c000000f1ba9be30] [c00000000000bd44] ret_from_except_lite+0x70/0x74
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+---[ end trace a7ae7a7f3e0256b5 ]---
 
-It'd at least cut some time off booting straight through to OS.
+To fix this, we just revert to using r3 as before, since the callers
+don't rely on r3 being left unmodified.
 
+Fortunately, this can't be triggered by a misaligned load or store,
+because vector loads and stores truncate misaligned addresses rather
+than taking an alignment interrupt.  It can be triggered using
+uprobes.
+
+Fixes: 350779a29f11 ("powerpc: Handle most loads and stores in instruction emulation code")
+Reported-by: Anton Blanchard <anton@ozlabs.org>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/lib/ldstfp.S | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/lib/ldstfp.S b/arch/powerpc/lib/ldstfp.S
+index 7b5cf5e..ae15eba 100644
+--- a/arch/powerpc/lib/ldstfp.S
++++ b/arch/powerpc/lib/ldstfp.S
+@@ -77,7 +77,7 @@ _GLOBAL(get_vr)
+ 	oris	r7, r6, MSR_VEC@h
+ 	MTMSRD(r7)
+ 	isync
+-	rlwinm	r6,r3,3,0xf8
++	rlwinm	r3,r3,3,0xf8
+ 	bcl	20,31,1f
+ reg = 0
+ 	.rept	32
+@@ -86,7 +86,7 @@ reg = 0
+ reg = reg + 1
+ 	.endr
+ 1:	mflr	r5
+-	add	r5,r6,r5
++	add	r5,r3,r5
+ 	mtctr	r5
+ 	mtlr	r0
+ 	bctr
+@@ -101,7 +101,7 @@ _GLOBAL(put_vr)
+ 	oris	r7, r6, MSR_VEC@h
+ 	MTMSRD(r7)
+ 	isync
+-	rlwinm	r6,r3,3,0xf8
++	rlwinm	r3,r3,3,0xf8
+ 	bcl	20,31,1f
+ reg = 0
+ 	.rept	32
+@@ -110,7 +110,7 @@ reg = 0
+ reg = reg + 1
+ 	.endr
+ 1:	mflr	r5
+-	add	r5,r6,r5
++	add	r5,r3,r5
+ 	mtctr	r5
+ 	mtlr	r0
+ 	bctr
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+2.7.4
