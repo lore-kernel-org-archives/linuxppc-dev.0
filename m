@@ -1,17 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=sulk=af=kernel.crashing.org=benh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xlz6j5XShzDqjy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 15:34:05 +1000 (AEST)
-Date: Mon, 4 Sep 2017 15:34:02 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xm0Vp0DrSzDqkh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 16:36:34 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xm0Vn6YDRz8snT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Sep 2017 16:36:33 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xm0Vn1lvRz9s72
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2017 16:36:32 +1000 (AEST)
+Message-ID: <1504506982.2250.21.camel@kernel.crashing.org>
+Subject: [RFC/PATCH] powerpc/eeh: Create PHB PEs after EEH is initialized
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Implement cross-endian emulation of larx and stcx
- instructions
-Message-ID: <20170904053402.GB16532@fergus.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: Russell Currey <ruscur@russell.cc>, Michael Neuling
+ <michael.neuling@au1.ibm.com>
+Date: Mon, 04 Sep 2017 16:36:22 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,178 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds byte-swapping of the values loaded or stored by the
-load with reservation (larx) and store conditional (stcx)
-instructions when the execution environment being emulated has
-the opposite endianness to the kernel.  This should have been done
-in commit d955189ae427 ("powerpc: Handle opposite-endian processes
-in emulation code", 2017-08-30) but was missed then.
+Otherwise we end up not yet having computed the right
+diag data size on powernv where EEH initialization
+is delayed, thus causing memory corruption later on
+when calling OPAL.
 
-Since op->reg is used quite frequently in emulate_loadstore(),
-this puts op->reg into rd at the beginning of the function and
-replaces subsequent uses of op->reg with rd.
-
-This does not affect alignment interrupt handling, since these
-instructions cannot be emulated when the address is not aligned,
-because we have no way to do atomic unaligned accesses, in
-general.
-
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/lib/sstep.c | 47 ++++++++++++++++++++++++++++++-----------------
- 1 file changed, 30 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index fb9f58b..0590417 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -2719,6 +2719,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	type = op->type & INSTR_TYPE_MASK;
- 	cross_endian = (regs->msr & MSR_LE) != (MSR_KERNEL & MSR_LE);
- 	ea = truncate_if_32bit(regs->msr, op->ea);
-+	rd = op->reg;
+Russell, what do you think ? The end result is that the PEs
+for the PHBs are created much later. I suppose that might cause
+changes of behaviour if, for example, we hit EEH while probing
+before we call eeh_init() again. Hopefully we have all the
+appropriate NULL checks to deal with it though...
+
+Another option would be to break up eeh_init() between calling
+the backend init, which we would unconditionally do early (ie
+removing the special powernv test) and a new eeh_create_pe()'s
+which would explicitely be called by the backend at the "right"
+time...
+
+Without either fix, we are currently corrupting kernel memory
+when hitting EEH on a PHB PE (fences for example).
+
+If this ends up being the right approach, then we need a CC
+stable as well.
+
+ arch/powerpc/kernel/eeh.c     |  4 ++++
+ arch/powerpc/kernel/eeh_dev.c | 18 ------------------
+ 2 files changed, 4 insertions(+), 18 deletions(-)
+
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 63992b2d8e15..f27eecd5ec7f 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1018,6 +1018,10 @@ int eeh_init(void)
+ 	} else if ((ret = eeh_ops->init()))
+ 		return ret;
  
- 	switch (type) {
- 	case LARX:
-@@ -2745,7 +2746,12 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 			__get_user_asmx(val, ea, err, "ldarx");
- 			break;
- 		case 16:
--			err = do_lqarx(ea, &regs->gpr[op->reg]);
-+			err = do_lqarx(ea, &regs->gpr[rd]);
-+			if (unlikely(cross_endian)) {
-+				val = byterev_8(regs->gpr[rd]);
-+				regs->gpr[rd] = byterev_8(regs->gpr[rd + 1]);
-+				regs->gpr[rd + 1] = val;
-+			}
- 			break;
- #endif
- 		default:
-@@ -2755,8 +2761,11 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 			regs->dar = ea;
- 			break;
- 		}
--		if (size < 16)
--			regs->gpr[op->reg] = val;
-+		if (size < 16) {
-+			if (unlikely(cross_endian))
-+				val = byterev_8(val);
-+			regs->gpr[rd] = val;
-+		}
- 		break;
- 
- 	case STCX:
-@@ -2764,6 +2773,8 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 			return -EACCES;		/* can't handle misaligned */
- 		if (!address_ok(regs, ea, size))
- 			return -EFAULT;
-+		if (unlikely(cross_endian))
-+			do_byterev(&op->val, size);
- 		err = 0;
- 		switch (size) {
- #ifdef __powerpc64__
-@@ -2782,8 +2793,12 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 			__put_user_asmx(op->val, ea, err, "stdcx.", cr);
- 			break;
- 		case 16:
--			err = do_stqcx(ea, regs->gpr[op->reg],
--				       regs->gpr[op->reg + 1], &cr);
-+			if (unlikely(cross_endian))
-+				err = do_stqcx(ea, byterev_8(regs->gpr[rd + 1]),
-+					       op->val, &cr);
-+			else
-+				err = do_stqcx(ea, op->val, regs->gpr[rd + 1],
-+					       &cr);
- 			break;
- #endif
- 		default:
-@@ -2800,16 +2815,16 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	case LOAD:
- #ifdef __powerpc64__
- 		if (size == 16) {
--			err = emulate_lq(regs, ea, op->reg, cross_endian);
-+			err = emulate_lq(regs, ea, rd, cross_endian);
- 			break;
- 		}
- #endif
--		err = read_mem(&regs->gpr[op->reg], ea, size, regs);
-+		err = read_mem(&regs->gpr[rd], ea, size, regs);
- 		if (!err) {
- 			if (op->type & SIGNEXT)
--				do_signext(&regs->gpr[op->reg], size);
-+				do_signext(&regs->gpr[rd], size);
- 			if ((op->type & BYTEREV) == (cross_endian ? 0 : BYTEREV))
--				do_byterev(&regs->gpr[op->reg], size);
-+				do_byterev(&regs->gpr[rd], size);
- 		}
- 		break;
- 
-@@ -2830,7 +2845,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	case LOAD_VMX:
- 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
- 			return 0;
--		err = do_vec_load(op->reg, ea, size, regs, cross_endian);
-+		err = do_vec_load(rd, ea, size, regs, cross_endian);
- 		break;
- #endif
- #ifdef CONFIG_VSX
-@@ -2841,7 +2856,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 		 * Some VSX instructions check the MSR_VEC bit rather than MSR_VSX
- 		 * when the target of the instruction is a vector register.
- 		 */
--		if (op->reg >= 32 && (op->vsx_flags & VSX_CHECK_VEC))
-+		if (rd >= 32 && (op->vsx_flags & VSX_CHECK_VEC))
- 			msrbit = MSR_VEC;
- 		if (!(regs->msr & MSR_PR) && !(regs->msr & msrbit))
- 			return 0;
-@@ -2852,7 +2867,6 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	case LOAD_MULTI:
- 		if (!address_ok(regs, ea, size))
- 			return -EFAULT;
--		rd = op->reg;
- 		for (i = 0; i < size; i += 4) {
- 			unsigned int v32 = 0;
- 
-@@ -2874,12 +2888,12 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	case STORE:
- #ifdef __powerpc64__
- 		if (size == 16) {
--			err = emulate_stq(regs, ea, op->reg, cross_endian);
-+			err = emulate_stq(regs, ea, rd, cross_endian);
- 			break;
- 		}
- #endif
- 		if ((op->type & UPDATE) && size == sizeof(long) &&
--		    op->reg == 1 && op->update_reg == 1 &&
-+		    rd == 1 && op->update_reg == 1 &&
- 		    !(regs->msr & MSR_PR) &&
- 		    ea >= regs->gpr[1] - STACK_INT_FRAME_SIZE) {
- 			err = handle_stack_update(ea, regs);
-@@ -2901,7 +2915,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	case STORE_VMX:
- 		if (!(regs->msr & MSR_PR) && !(regs->msr & MSR_VEC))
- 			return 0;
--		err = do_vec_store(op->reg, ea, size, regs, cross_endian);
-+		err = do_vec_store(rd, ea, size, regs, cross_endian);
- 		break;
- #endif
- #ifdef CONFIG_VSX
-@@ -2912,7 +2926,7 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 		 * Some VSX instructions check the MSR_VEC bit rather than MSR_VSX
- 		 * when the target of the instruction is a vector register.
- 		 */
--		if (op->reg >= 32 && (op->vsx_flags & VSX_CHECK_VEC))
-+		if (rd >= 32 && (op->vsx_flags & VSX_CHECK_VEC))
- 			msrbit = MSR_VEC;
- 		if (!(regs->msr & MSR_PR) && !(regs->msr & msrbit))
- 			return 0;
-@@ -2923,7 +2937,6 @@ int emulate_loadstore(struct pt_regs *regs, struct instruction_op *op)
- 	case STORE_MULTI:
- 		if (!address_ok(regs, ea, size))
- 			return -EFAULT;
--		rd = op->reg;
- 		for (i = 0; i < size; i += 4) {
- 			unsigned int v32 = regs->gpr[rd];
- 
--- 
-2.7.4
++	/* Initialize PHB PEs */
++	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
++		eeh_dev_phb_init_dynamic(hose);
++
+ 	/* Initialize EEH event */
+ 	ret = eeh_event_init();
+ 	if (ret)
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index d6b2ca70d14d..0820b73288c0 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -83,21 +83,3 @@ void eeh_dev_phb_init_dynamic(struct pci_controller *phb)
+ 	/* EEH PE for PHB */
+ 	eeh_phb_pe_create(phb);
+ }
+-
+-/**
+- * eeh_dev_phb_init - Create EEH devices for devices included in existing PHBs
+- *
+- * Scan all the existing PHBs and create EEH devices for their OF
+- * nodes and their children OF nodes
+- */
+-static int __init eeh_dev_phb_init(void)
+-{
+-	struct pci_controller *phb, *tmp;
+-
+-	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+-		eeh_dev_phb_init_dynamic(phb);
+-
+-	return 0;
+-}
+-
+-core_initcall(eeh_dev_phb_init);
