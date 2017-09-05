@@ -1,26 +1,35 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from cpanel2.indieserve.net (cpanel2.indieserve.net [199.212.143.6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xn07F1P4RzDqZ8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 07:23:04 +1000 (AEST)
-Date: Tue, 5 Sep 2017 17:22:57 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Rob Herring <robh@kernel.org>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Linux-MIPS <linux-mips@linux-mips.org>, Michal Simek <monstr@monstr.eu>,
- Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] devicetree: Remove remaining references/tests for
- "chosen@0"
-In-Reply-To: <CAL_JsqJNoWAAi3Nj5KxAf5ov73nfPVaGeT1RTNgzZGpdxZ7s=w@mail.gmail.com>
-Message-ID: <alpine.LFD.2.21.1709051720470.5346@localhost.localdomain>
-References: <alpine.LFD.2.21.1709020416130.13598@localhost.localdomain>
- <1504390854.4974.108.camel@kernel.crashing.org>
- <alpine.LFD.2.21.1709030637090.24875@localhost.localdomain>
- <CAL_JsqJNoWAAi3Nj5KxAf5ov73nfPVaGeT1RTNgzZGpdxZ7s=w@mail.gmail.com>
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xn25x3XGZzDrFq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 08:52:04 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id m1so2266333pfk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Sep 2017 15:52:04 -0700 (PDT)
+Date: Tue, 5 Sep 2017 15:52:26 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: =?utf-8?Q?=C5=81ukasz?= Majewski <lukma@denx.de>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, "festevam@gmail.com" <festevam@gmail.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+Message-ID: <20170905225225.GA14132@Asurada-Nvidia>
+References: <1504436701-20700-1-git-send-email-lukma@denx.de>
+ <AM5PR0401MB262706674539BFE651706CC6E3900@AM5PR0401MB2627.eurprd04.prod.outlook.com>
+ <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
+ <20170905052031.GB2774@Asurada-CZ80>
+ <819784e1-910b-6833-997a-2097e147bd0c@denx.de>
+ <20170905181108.GB23906@Asurada-Nvidia>
+ <cfb8f844-87aa-f1f3-bd55-4f2b60f3cf88@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <cfb8f844-87aa-f1f3-bd55-4f2b60f3cf88@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +39,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 5 Sep 2017, Rob Herring wrote:
+On Tue, Sep 05, 2017 at 11:13:40PM +0200, Łukasz Majewski wrote:
 
-> On Sun, Sep 3, 2017 at 5:43 AM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-> > On Sun, 3 Sep 2017, Benjamin Herrenschmidt wrote:
+> They key point here is the asoc_simple_card_parse_clk() function
+> from simple-card-utils.c
+> 
+> Please look how the clock is assigned; It first checks for cpu
+> clock, then for "system-clock-frequency" DTS node and _finally_
+> looks for another "child" clock [1], which is the codec attached to
+> I2C.
+
+Here is the routine that I understood from the code:
+1) asoc_simple_card_parse_clk_cpu(dev, cpu, dai_link, cpu_dai);
+   => asoc_simple_card_parse_clk(dev, cpu,        // cpu node in sound{} [1]
+		   		 dai_link->cpu_of_node,     // node ssi2 [2]
+				 cpu_dai, dai_link->cpu_dai_name);
+   ==> 1.1) devm_get_clk_from_child(dev, node, NULL);                 // [1]
+   ==> 1.2) of_property_read_u32(node, "system-clock-frequency", &val)// [1]
+   ==> 1.3) devm_get_clk_from_child(dev, dai_of_node, NULL);          // [2]
+
+2) asoc_simple_card_parse_clk_codec(dev, codec, dai_link, codec_dai);
+   => asoc_simple_card_parse_clk(dev, codec,    // codec node in sound{} [3]
+		   		 dai_link->codec_of_node,// node tfa9879 [4]
+				 codec_dai, dai_link->codec_dai_name);
+   ==> 2.1) devm_get_clk_from_child(dev, node, NULL);                 // [3]
+   ==> 2.2) of_property_read_u32(node, "system-clock-frequency", &val)// [3]
+   ==> 2.3) devm_get_clk_from_child(dev, dai_of_node, NULL);          // [4]
+
+For the cpu routine, it first checks for clock property under cpu
+node of simple-card, then for "system-clock-frequency" in the cpu
+node of simple-card, and finally looks for clock property in ssi2
+node.
+
+For codec routine, it first checks for clock property under codec
+node of simple-card, then for "system-clock-frequency" in codec
+node of simple-card, and finally looks for clock property in the
+tfa9879 node.
+
+The cpu and codec are totally separate, aren't they? And I don't
+think it's right if not.
+
+> >>which has clock from I2C (66 MHz).
 > >
-> >> On Sat, 2017-09-02 at 04:43 -0400, Robert P. J. Day wrote:
-> >> > Since, according to a recent devicetree ML posting by Rob Herring,
-> >> > the node "/chosen@0" is most likely for real Open Firmware and
-> >> > does not apply to DTSpec, remove all remaining tests and
-> >> > references for that node, of which there are very few left:
-> >>
-> >> Technically that would break Open Firmware systems where the node is
-> >> really called chosen@0
-> >>
-> >> Now I'm not sure such a thing actually exist however.
-> >>
-> >> My collection of DTs don't seem to have one, except in the ancient
-> >> html variants that were extracted by the pengionppc folks for the
-> >> original PowerMac 8600 but I wonder if that's a bug in the
-> >> extraction script since they also have @0 on /packages etc...
-> >
-> >   obviously, this isn't a priority issue, i was just working off a
-> > comment by rob herring that "chosen@0" is not defined by the current
-> > DTSpec 0.1, so it seemed appropriate to toss it. if there's a reason
-> > to hang onto it, that's fine with me.
-> >
-> >   however, given the diff stat of the change to remove every single
-> > reference to that node name in the current kernel source:
-> >
-> >  arch/microblaze/kernel/prom.c | 3 +--
-> >  arch/mips/generic/yamon-dt.c  | 4 ----
-> >  arch/powerpc/boot/oflib.c     | 7 ++-----
-> >  drivers/of/base.c             | 2 --
-> >  drivers/of/fdt.c              | 5 +----
-> >  5 files changed, 4 insertions(+), 17 deletions(-)
-> >
-> > it seems inconsistent that three architectures would be testing for
-> > that node, but none of the rest. consistency suggests that every
-> > architecture should take it into account, or none should.
->
-> I generally agree and have moved various things from arch to
-> drivers/of/ to ensure that. But for legacy things, we have to allow
-> for exceptions. I agree with Ben and think that microblaze (they
-> generally just copied PPC), MIPS, and the FDT code in drivers/of/ can
-> be changed.
+> >You mean I2C scl or I2S sclk?
+> 
+> I2C scl.
 
-  i'm not quite sure what people have agreed on, so i'll just leave it
-in the hands of others here to submit patches for what they think is
-appropriate.
+A couple of things here.....
+1) I don't think I2C scl can run at 66MHz...The 66MHz is probably
+   the ipg clock of I2C controller.
+2) Even if the scl does run at 66MHz, there is no point in passing
+   the clock of I2C scl into an I2S dai-link.
+   
+So I feel something must be wrong. I suggest you to add some printk
+to check the names of those nodes and x_of_node in the simple card
+driver.
 
-rday
+> My DTS [1] (it is different than other in-tree supported codecs - at
+> least I did not find similar setup in DTSes):
+> 
+> 	sound {
+> 		compatible = "simple-audio-card";
+> 		label = "tfa9879-mono";
+> 
+> 		simple-audio-card,dai-link {
+> 			/* DAC */
+> 			format = "i2s";
+> 			bitclock-master = <&dailink_master>;
+> 			frame-master = <&dailink_master>;
+> 
+> 			dailink_master: cpu {
+> 			    sound-dai = <&ssi2>;
+> 			};
+> 			codec {
+> 			    sound-dai = <&codec>;
+> 			};
+> 		};
 
--- 
-
-========================================================================
-Robert P. J. Day                                 Ottawa, Ontario, CANADA
-                        http://crashcourse.ca
-
-Twitter:                                       http://twitter.com/rpjday
-LinkedIn:                               http://ca.linkedin.com/in/rpjday
-========================================================================
+I remember there is another style for a single dai-link. Could you
+please try that one? There is an example in:
+    Documentation/devicetree/bindings/sound/simple-card.txt
