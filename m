@@ -1,40 +1,31 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x232.google.com (mail-pg0-x232.google.com
+ [IPv6:2607:f8b0:400e:c05::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmZg13QtczDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 15:15:40 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id r75so1978490wmf.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Sep 2017 22:15:40 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Tue, 5 Sep 2017 07:15:34 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Adrian Hunter <adrian.hunter@intel.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Andi Kleen <ak@linux.intel.com>, Anton Blanchard <anton@au1.ibm.com>,
- Flavio Bruno Leitner <fbl@redhat.com>,
- Jack Henschel <jackdev@mailbox.org>, Jiri Olsa <jolsa@redhat.com>,
- Kan Liang <kan.liang@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Mark Rutland <mark.rutland@arm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Petlan <mpetlan@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Taeung Song <treeze.taeung@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Wang Nan <wangnan0@huawei.com>, Yao Jin <yao.jin@linux.intel.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [GIT PULL 00/13] perf/core improvements and fixes
-Message-ID: <20170905051534.p5xzgpcfrizcx67u@gmail.com>
-References: <20170904140044.22912-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xmZmk1hRRzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 15:20:37 +1000 (AEST)
+Received: by mail-pg0-x232.google.com with SMTP id j6so6748445pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Sep 2017 22:20:37 -0700 (PDT)
+Date: Mon, 4 Sep 2017 22:20:32 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: =?utf-8?Q?=C5=81ukasz?= Majewski <lukma@denx.de>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, "festevam@gmail.com" <festevam@gmail.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+Message-ID: <20170905052031.GB2774@Asurada-CZ80>
+References: <1504436701-20700-1-git-send-email-lukma@denx.de>
+ <AM5PR0401MB262706674539BFE651706CC6E3900@AM5PR0401MB2627.eurprd04.prod.outlook.com>
+ <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170904140044.22912-1-acme@kernel.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,128 +35,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, Sep 03, 2017 at 04:40:21PM +0200, Łukasz Majewski wrote:
+> >/*
+> >* Hardware limitation: The bclk rate must be
+> >* never greater than 1/5 IPG clock rate
+> >*/
+> >if (freq * 5 > clk_get_rate(ssi_private->clk)) {
+> >dev_err(cpu_dai->dev, "bitclk > ipgclk/5\n");
+> >return -EINVAL;
+> >}
+> >
+> 
+> Unfortunately not.
+> 
+> This is the part of fsl_ssi_set_bclk() function which is called after
+> fsl_ssi_set_dai_sysclk() (which sets ssi_private->bitclk_freq = freq;).
+> 
+> Before the aforementioned check we do have:
+> 
+> 	if (ssi_private->bitclk_freq)
+> 		freq = ssi_private->bitclk_freq;
+> 	else
+> 		freq = params_channels(hw_params) * 32 * 	params_rate(hw_params);
+> 
+> 
+> Which assigns freq = bitclk_freq (66 MHz)
+> 
+[...]
+> And then we break on this particular check:
+> 66MHz * 5 > 66 MHz.
+[...]
 
-* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
+Does the check fail and return an error here, or not?
 
-> Hi Ingo,
-> 
-> 	Please consider pulling,
-> 
-> - Arnaldo
-> 
-> Test results at the end of this message, as usual.
-> 
-> The following changes since commit 1b2f76d77a277bb70d38ad0991ed7f16bbc115a9:
-> 
->   Merge tag 'perf-core-for-mingo-4.14-20170829' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2017-08-29 23:13:56 +0200)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-4.14-20170901
-> 
-> for you to fetch changes up to eba9fac017617e685d648339e29a1453a30cb065:
-> 
->   perf annotate browser: Help for cycling thru hottest instructions with TAB/shift+TAB (2017-09-01 14:55:40 -0300)
-> 
-> ----------------------------------------------------------------
-> perf/core improvements and fixes:
-> 
-> - Support syscall name glob matching in 'perf trace' (Arnaldo Carvalho de Melo)
-> 
->   e.g.:
-> 
->    # perf trace -e pkey_*
->    32.784 (0.006 ms): pkey/16018 pkey_alloc(init_val: DISABLE_WRITE) = -1 EINVAL Invalid argument
->    32.795 (0.004 ms): pkey/16018 pkey_mprotect(start: 0x7f380d0a6000, len: 4096, prot: READ|WRITE, pkey: -1) = 0
->    32.801 (0.002 ms): pkey/16018 pkey_free(pkey: -1                ) = -1 EINVAL Invalid argument
->    ^C#
-> 
-> - Do not auto merge counts for explicitely specified events in
->   'perf stat' (Arnaldo Carvalho de Melo)
-> 
-> - Fix syntax in documentation of .perfconfig intel-pt option (Jack Henschel)
-> 
-> - Calculate the average cycles of iterations for loops detected by the
->   branch history support in 'perf report' (Jin Yao)
-> 
-> - Support PERF_SAMPLE_PHYS_ADDR as a sort key "phys_daddr" in the 'script', 'mem',
->   'top' and 'report'. Also add a test entry for it in 'perf test' (Kan Liang)
-> 
-> - Fix 'Object code reading' 'perf test' entry in PowerPC (Ravi Bangoria)
-> 
-> - Remove some duplicate Power9 duplicate vendor events (described in JSON
->   files) (Sukadev Bhattiprolu)
-> 
-> - Add help entry in the TUI annotate browser about cycling thru hottest
->   instructions with TAB/shift+TAB (Arnaldo Carvalho de Melo)
-> 
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> ----------------------------------------------------------------
-> Arnaldo Carvalho de Melo (4):
->       perf syscalltbl: Support glob matching on syscall names
->       perf trace: Support syscall name globbing
->       perf stat: Only auto-merge events that are PMU aliases
->       perf annotate browser: Help for cycling thru hottest instructions with TAB/shift+TAB
-> 
-> Jack Henschel (1):
->       perf intel-pt: Fix syntax in documentation of config option
-> 
-> Jin Yao (1):
->       perf report: Calculate the average cycles of iterations
-> 
-> Kan Liang (5):
->       perf tools: Support new sample type for physical address
->       perf sort: Add sort option for physical address
->       perf mem: Support physical address
->       perf script: Support physical address
->       perf test: Add test case for PERF_SAMPLE_PHYS_ADDR
-> 
-> Ravi Bangoria (1):
->       perf test powerpc: Fix 'Object code reading' test
-> 
-> Sukadev Bhattiprolu (1):
->       perf vendor events powerpc: Remove duplicate events
-> 
->  tools/include/uapi/linux/perf_event.h              |   4 +-
->  tools/perf/Documentation/intel-pt.txt              |   2 +-
->  tools/perf/Documentation/perf-mem.txt              |   4 +
->  tools/perf/Documentation/perf-record.txt           |   5 +-
->  tools/perf/Documentation/perf-report.txt           |   1 +
->  tools/perf/Documentation/perf-script.txt           |   2 +-
->  tools/perf/Documentation/perf-trace.txt            |   2 +-
->  tools/perf/builtin-mem.c                           |  97 ++++++++++++-----
->  tools/perf/builtin-record.c                        |   2 +
->  tools/perf/builtin-script.c                        |  15 ++-
->  tools/perf/builtin-stat.c                          |   2 +-
->  tools/perf/builtin-trace.c                         |  39 ++++++-
->  tools/perf/perf.h                                  |   1 +
->  .../pmu-events/arch/powerpc/power9/frontend.json   |   7 +-
->  .../perf/pmu-events/arch/powerpc/power9/other.json | 120 ---------------------
->  .../pmu-events/arch/powerpc/power9/pipeline.json   |   7 +-
->  tools/perf/pmu-events/arch/powerpc/power9/pmc.json |   7 +-
->  tools/perf/tests/code-reading.c                    |   5 +
->  tools/perf/tests/sample-parsing.c                  |   6 +-
->  tools/perf/ui/browsers/annotate.c                  |   3 +-
->  tools/perf/ui/browsers/hists.c                     |   8 +-
->  tools/perf/ui/stdio/hist.c                         |  10 +-
->  tools/perf/util/callchain.c                        |  49 ++++-----
->  tools/perf/util/callchain.h                        |   9 +-
->  tools/perf/util/event.h                            |   1 +
->  tools/perf/util/evsel.c                            |  19 +++-
->  tools/perf/util/evsel.h                            |   1 +
->  tools/perf/util/hist.c                             |   4 +
->  tools/perf/util/hist.h                             |   1 +
->  tools/perf/util/machine.c                          |  96 ++++++++++-------
->  tools/perf/util/parse-events.c                     |  24 +++--
->  tools/perf/util/session.c                          |   3 +
->  tools/perf/util/sort.c                             |  42 ++++++++
->  tools/perf/util/sort.h                             |   1 +
->  tools/perf/util/symbol.h                           |   1 +
->  tools/perf/util/syscalltbl.c                       |  33 ++++++
->  tools/perf/util/syscalltbl.h                       |   3 +
->  37 files changed, 368 insertions(+), 268 deletions(-)
+> The culprit IMHO is the  ssi_private->bitclk_freq = freq; in the
+> fsl_ssi_set_dai_sysclk(), since we _should_ set SSI's IP block clock
+> (ssi_private->clk), not the bit clock (BCLK).
 
-Pulled, thanks a lot Arnaldo!
+No. We should not set the IP block clock. That's from IPG bus
+on certain IMX SoCs. Setting it might change IPG bus clocks
+which might break the system.
 
-	Ingo
+And apparently, we shouldn't set bitclk to 66MHz either. Can
+you help to find where this 66MHz comes from?
+
+> This patch just quits early if it detects change, which don't need to be
+> done.
+
+I kinda see your point is to error out before hw_params(). So
+I feel it would be better to have a similar 5-times-check in
+the set_sysclk() too, if it's really necessary.
+
+Btw, I don't see simple card calling set_sysclk() function in
+any earlier stage than hw_params(). I am wondering how did you
+encounter the problem?
+
+Thanks
+Nicolin
