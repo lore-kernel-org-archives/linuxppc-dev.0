@@ -1,33 +1,33 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmvHn2xdLzDqq1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 03:45:08 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id 63so417079pgc.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Sep 2017 10:45:08 -0700 (PDT)
-Date: Tue, 5 Sep 2017 10:45:29 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xmvsL5GCYzDqZx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 04:10:45 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id t3so2327524pgt.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Sep 2017 11:10:45 -0700 (PDT)
+Date: Tue, 5 Sep 2017 11:11:09 -0700
 From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Mark Brown <broonie@kernel.org>
-Cc: =?utf-8?Q?=C5=81ukasz?= Majewski <lukma@denx.de>,
- Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: =?utf-8?Q?=C5=81ukasz?= Majewski <lukma@denx.de>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, "festevam@gmail.com" <festevam@gmail.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
  to system freq
-Message-ID: <20170905174528.GA23906@Asurada-Nvidia>
+Message-ID: <20170905181108.GB23906@Asurada-Nvidia>
 References: <1504436701-20700-1-git-send-email-lukma@denx.de>
- <20170905050602.GA2774@Asurada-CZ80>
- <bbcb123b-8700-501f-e6d9-cab9e212de40@denx.de>
- <20170905075247.GA6112@Asurada>
- <deb40031-9db0-d667-7314-352cf548c295@denx.de>
- <20170905151550.5mhb535p22lsohlh@sirena.org.uk>
+ <AM5PR0401MB262706674539BFE651706CC6E3900@AM5PR0401MB2627.eurprd04.prod.outlook.com>
+ <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
+ <20170905052031.GB2774@Asurada-CZ80>
+ <819784e1-910b-6833-997a-2097e147bd0c@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170905151550.5mhb535p22lsohlh@sirena.org.uk>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <819784e1-910b-6833-997a-2097e147bd0c@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,51 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 05, 2017 at 04:15:50PM +0100, Mark Brown wrote:
- 
-> > Just to be clear:
-> 
-> > What clock shall be set with:
-> 
-> > struct snd_soc_dai_ops {
-> > 	int (*set_sysclk)(struct snd_soc_dai *dai,
-> > 		int clk_id, unsigned int freq, int dir);
-> > }
-> 
-> > callback?
-> 
-> > The SSI IP block or BCLK ?
-> 
-> Not the BCLK, probably the IP clock but perhaps nothing.  The bclk is
-> usually derived from the sample rate and width, the system clock is the
-> clock rate going into the device.  It doesn't *have* to be configured
-> (particuarly if it's discoverable by the IP and managable via the clock
-> API).
+On Tue, Sep 05, 2017 at 10:35:34AM +0200, Łukasz Majewski wrote:
 
-Hmm...to clarify the things, some background here:
-	
-SSI has mainly two different clock inputs internally (not external
-pads such as bclk or lrclk): IP block clock (ipg_clk in Reference
-Manual) and sys clock (ccm_ssi_clk in Reference Manual). According
-to RM, ccm_ssi_clk: "module/system clock for bit clock generation".
+> >And apparently, we shouldn't set bitclk to 66MHz either. Can
+> >you help to find where this 66MHz comes from?
 
-The ipg clock is merely used to access registers, and has nothing
-(directly) to do with external clock outputs. The driver shall not
-change the ipg clock as the system ipg clock (its parent clock)
-might be messed and even system time would get weird -- happened
-once when the fsl_spdif driver used to call clk_set_rate() on its
-ipg clock. Although the clock controller should have some kind of
-protection in my opinion, we just avoid IP clock rate change in all
-audio drivers as well.
+> 2. int asoc_simple_card_init_dai() @ simple-card-utils.c
 
-On the other hand, the sys clock (baudclk in the driver) should be
-configured whenever it's related to external clock outputs. When I
-implemented this set_sysclk() for fsl_ssi.c, I used it to set this
-sys clock (baudclk) by a machine driver, in order to set bit clock.
-Then someone patched the driver by moving all the code to set_bclk()
-to make machine drivers simpler. Now the set_sysclk() is remained
-to give machine drivers a chance to override clock configurations
-in the hw_params(). This could be used in TDM or some other special
-cases (It could also have a purpose for backwards compatibility).
+Oh, I just searched in the simple-card.c but missed this file.
 
-So here, we should set baudclk (BCLK generator).
+> In this function (point 2.) the
+> simple_dai->sysclk is set and:
+> snd_soc_dai_set_sysclk(dai, 0, simple_dai->sysclk, 0)
+> which sets frequency to 66 MHz [*].
+> 
+> The asoc_simple_card_init_dai() is called in
+> asoc_simple_card_dai_init() @ simple-card.c
+> which is assigned to dai_link->init
+> dai_link->init		= asoc_simple_card_dai_init; @ simple_card.c
+> 
+> And the sysclk itself is defined at:
+> -------------------------------------
+> dai_props->codec_dai->sysclk, which is used at:a
+
+Why codec_dai? Why not dai_props->cpu_dai->sysclk since we are talking
+about SSI?
+
+> asoc_simple_card_startup(), asoc_simple_card_shutdown() and others
+> functions at simple-card.c
+> It is setup at:
+> asoc_simple_card_parse_clk() @ simple-card-utils.c from macro:
+> #define asoc_simple_card_parse_clk_cpu()
+> And the problem is:
+> -------------------
+> 
+> At the
+> asoc_simple_card_parse_clk()
+> we finally go to dts node:
+> /soc/aips-bus@02100000/i2c@021a0000/tfa9879@6C
+
+This tfa9879 should be the CODEC right?
+
+> which has clock from I2C (66 MHz).
+
+You mean I2C scl or I2S sclk?
+
+-----------------------------------------------------------------
+
+But anyway, I feel very confused here as you have 66MHz clock rate
+(regardless of it purpose) for a codec dai but it's been passed to
+a cpu dai (SSI).
+
+> [*] - I could workaround this problem by setting:
+> 
+> system-clock-frequency = <0> in
+> 
+> 			dailink_master: cpu {
+> 			    sound-dai = <&ssi2>;
+> 			};
+> 
+> but this is IMHO even worse hack.... than this patch.
+
+I haven't used simple-card for a while so I forgot how to define
+its DT bindings specifically. But you should assign ssi2 as the
+CPU dai and assign tfa9879 as a CODEC dai.
