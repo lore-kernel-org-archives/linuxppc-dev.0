@@ -1,21 +1,34 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0058.outbound.protection.outlook.com [104.47.37.58])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmgCX6FMtzDqXn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 18:40:40 +1000 (AEST)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>, "york.sun@nxp.com"
- <york.sun@nxp.com>
-Subject: Re: Machine Check in P2010(e500v2)
-Date: Tue, 5 Sep 2017 08:40:33 +0000
-Message-ID: <1504600831.27247.20.camel@infinera.com>
-References: <1504265576.20777.61.camel@infinera.com>
-In-Reply-To: <1504265576.20777.61.camel@infinera.com>
-Content-Type: text/plain; charset="iso-8859-15"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xmkmZ3JkQzDrJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 21:21:02 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v85BKKP0089393
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Sep 2017 07:20:59 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2csqt5u9kv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Sep 2017 07:20:59 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 5 Sep 2017 12:20:57 +0100
+Subject: Re: [PATCH V2] cxl: Add support for POWER9 DD2
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+References: <1504538995-13792-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 5 Sep 2017 13:20:54 +0200
 MIME-Version: 1.0
+In-Reply-To: <1504538995-13792-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <0cde622f-107c-92f2-42c6-b41e0e0133be@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,108 +38,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So after some debugging I found this bug:
-@@ -996,7 +998,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
-        if (is_in_pci_mem_space(addr)) {
-                if (user_mode(regs)) {
-                        pagefault_disable();
--                       ret =3D get_user(regs->nip, &inst);
-+                       ret =3D get_user(inst, (__u32 __user *)regs->nip);
-                        pagefault_enable();
-                } else {
-                        ret =3D probe_kernel_address(regs->nip, inst);
-
-However, the kernel still locked up after fixing that.
-Now I wonder why this fixup is there in the first place? The routine
-will not really fixup the insn, just return 0xffffffff for the failing
-read and then advance the process NIP.
-
-Removing the fixup does not help either, kernel still locks up:
-[   28.170532] Machine check in kernel mode.
-[   28.174538] Caused by (from MCSR=3D10008):
-[   28.182804] Bus - Read Data Bus Error: DAR:b7013000
-[   28.197079] Oops: Machine check, sig: 7 [#1]
-[   28.201343] P1010 RDB
-[   28.203608] Modules linked in: linux_bcm_knet(PO) linux_user_bde(PO) lin=
-ux_kernel_bde(PO)
-[   28.211796] CPU: 0 PID: 470 Comm: emxp2_hw_bl Tainted: P           O    =
-4.1.38+ #201
-[   28.219540] task: db16ed10 ti: df122000 task.ti: df122000
-[   28.224935] NIP: 10a4e2f4 LR: 10a4e404 CTR: 10046c38
-[   28.229896] REGS: df123f10 TRAP: 0204   Tainted: P           O     (4.1.=
-38+)
-[   28.236942] MSR: 0002d000 <CE,EE,PR,ME>  CR: 44002428  XER: 00000000
-[   28.243306] DEAR: b7013000 ESR: 00000000
-GPR00: 10a4e404 bfab2730 b7b354a0 132f9fa8 07006000 07000000 00000000 132f9=
-fd8
-GPR08: b6fd5000 b6fe5000 0003e000 bfab2720 24004424 11d6cf7c 00000000 00000=
-000
-GPR16: 10f6e29c 10f6c872 10f6db01 0000b541 0000b541 11d92fcc 00000011 00000=
-001
-GPR24: 01a5bd3e 132ffbf0 11d60000 00000000 07006000 00000000 132f9fa8 00000=
-000
-[   28.275547] NIP [10a4e2f4] 0x10a4e2f4
-[   28.279204] LR [10a4e404] 0x10a4e404
-[   28.282772] Call Trace:
-[   28.285213] ---[ end trace 9f8b64ab1e83f449 ]---
-[   28.289825]
 
 
- Jocke=20
+Le 04/09/2017 à 17:29, Christophe Lombard a écrit :
+> The PSL initialization sequence has been updated to DD2.
+> This patch adapts to the changes, retaining compatibility with DD1.
+> The patch includes some changes to DD1 fix-ups as well.
+> 
+> Tests performed on some of the old/new hardware.
+> 
+> The function is_page_fault(), for POWER9, lists the Translation Checkout
+> Responses where the page fault will be handled by copro_handle_mm_fault().
+> This list is too restrictive and not necessary.
+> 
+> This patches removes this restriction and all page faults, whatever the
+> reason, will be handled. In this case, the interruption is always
+> acknowledged.
+> 
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> 
+> ---
 
-On Fri, 2017-09-01 at 13:32 +0200, Joakim Tjernlund wrote:
-> I am trying to debug a Machine Check for a P2010 (e500v2) CPU:
->=20
-> [   28.111816] Caused by (from MCSR=3D10008): Bus - Read Data Bus Error
-> [   28.117998] Oops: Machine check, sig: 7 [#1]
-> [   28.122263] P1010 RDB
-> [   28.124529] Modules linked in: linux_bcm_knet(PO) linux_user_bde(PO) l=
-inux_kernel_bde(PO)
-> [   28.132718] CPU: 0 PID: 470 Comm: emxp2_hw_bl Tainted: P           O  =
-  4.1.38+ #49
-> [   28.140376] task: db16cd10 ti: df128000 task.ti: df128000
-> [   28.145770] NIP: 00000000 LR: 10a4e404 CTR: 10046c38
-> [   28.150730] REGS: df129f10 TRAP: 0204   Tainted: P           O     (4.=
-1.38+)
-> [   28.157776] MSR: 0002d000 <CE,EE,PR,ME>  CR: 44002428  XER: 00000000
-> [   28.164140] DEAR: b7187000 ESR: 00000000
-> GPR00: 10a4e404 bf86ea30 b7ca94a0 132f9fa8 07006000 07000000 00000000 132=
-f9fd8
-> GPR08: b7149000 b7159000 0003e000 bf86ea20 24004424 11d6cf7c 00000000 000=
-00000
-> GPR16: 10f6e29c 10f6c872 10f6db01 0000b541 0000b541 11d92fcc 00000011 000=
-00001
-> GPR24: 01a4d12d 132ffbf0 11d60000 00000000 07006000 00000000 132f9fa8 000=
-00000
-> [   28.196375] NIP [00000000]   (null)
-> [   28.199859] LR [10a4e404] 0x10a4e404
-> [   28.203426] Call Trace:
-> [   28.205866] ---[ end trace f456255ddf9bee83 ]---
->=20
-> I cannot figure out why NIP is NULL ? It LOOKs like NIP is set to
-> MCSRR0 early on but maybe it is lost somehow?
->=20
-> Anyhow, looking at entry_32.S:
-> 	.globl	mcheck_transfer_to_handler
-> mcheck_transfer_to_handler:
-> 	mfspr	r0,SPRN_DSRR0
-> 	stw	r0,_DSRR0(r11)
-> 	mfspr	r0,SPRN_DSRR1
-> 	stw	r0,_DSRR1(r11)
-> 	/* fall through */
->=20
-> 	.globl	debug_transfer_to_handler
-> debug_transfer_to_handler:
-> 	mfspr	r0,SPRN_CSRR0
-> 	stw	r0,_CSRR0(r11)
-> 	mfspr	r0,SPRN_CSRR1
-> 	stw	r0,_CSRR1(r11)
-> 	/* fall through */
->=20
-> 	.globl	crit_transfer_to_handler
-> crit_transfer_to_handler:
->=20
-> It looks odd that DSRRx is assigned in mcheck and CSRRx in debug and
-> crit has none. Should not this assigment be shifted down one level?
->=20
->   Jocke
+I'm ok with those changes.
+We should add to the commit message that we'll have more changes coming, 
+at least to add the phb reset when switching to capi mode (if we still 
+can't get rid of it). The other item is capp recovery, which is still 
+being worked on, but any change required there would hopefully be 
+limited to skiboot.
+
+With the above:
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+   Fred
+
+
+> Changelog[v2]
+>   - Rebase to latest upstream.
+>   - Update the function is_page_fault()
+> ---
+>   drivers/misc/cxl/cxl.h   |  2 ++
+>   drivers/misc/cxl/fault.c | 15 ++-------------
+>   drivers/misc/cxl/pci.c   | 46 +++++++++++++++++++++++-----------------------
+>   3 files changed, 27 insertions(+), 36 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index b1afecc..0167df8 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -100,6 +100,8 @@ static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
+>   static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
+>   /* PSL registers - CAIA 2 */
+>   static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
+> +static const cxl_p1_reg_t CXL_XSL9_INV      = {0x0110};
+> +static const cxl_p1_reg_t CXL_XSL9_DEF      = {0x0140};
+>   static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
+>   static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
+>   static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
+> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+> index 6eed7d0..0cf7f4a 100644
+> --- a/drivers/misc/cxl/fault.c
+> +++ b/drivers/misc/cxl/fault.c
+> @@ -204,22 +204,11 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
+> 
+>   static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
+>   {
+> -	u64 crs; /* Translation Checkout Response Status */
+> -
+>   	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
+>   		return true;
+> 
+> -	if (cxl_is_power9()) {
+> -		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
+> -		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
+> -		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
+> -		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
+> -		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
+> -		    (crs == CXL_PSL9_DSISR_An_PF_STEG) ||
+> -		    (crs == CXL_PSL9_DSISR_An_URTCH)) {
+> -			return true;
+> -		}
+> -	}
+> +	if (cxl_is_power9())
+> +		return true;
+> 
+>   	return false;
+>   }
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index d18b3d9..3edc991 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -401,7 +401,8 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+>   	*capp_unit_id = get_capp_unit_id(np, *phb_index);
+>   	of_node_put(np);
+>   	if (!*capp_unit_id) {
+> -		pr_err("cxl: invalid capp unit id\n");
+> +		pr_err("cxl: invalid capp unit id (phb_index: %d)\n",
+> +		       *phb_index);
+>   		return -ENODEV;
+>   	}
+> 
+> @@ -475,37 +476,36 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
+>   	psl_fircntl |= 0x1ULL; /* ce_thresh */
+>   	cxl_p1_write(adapter, CXL_PSL9_FIR_CNTL, psl_fircntl);
+> 
+> -	/* vccredits=0x1  pcklat=0x4 */
+> -	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0000000000001810ULL);
+> -
+> -	/*
+> -	 * For debugging with trace arrays.
+> -	 * Configure RX trace 0 segmented mode.
+> -	 * Configure CT trace 0 segmented mode.
+> -	 * Configure LA0 trace 0 segmented mode.
+> -	 * Configure LA1 trace 0 segmented mode.
+> +	/* Setup the PSL to transmit packets on the PCIe before the
+> +	 * CAPP is enabled
+>   	 */
+> -	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000000ULL);
+> -	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000003ULL);
+> -	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000005ULL);
+> -	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000006ULL);
+> +	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0001001000002A10ULL);
+> 
+>   	/*
+>   	 * A response to an ASB_Notify request is returned by the
+>   	 * system as an MMIO write to the address defined in
+> -	 * the PSL_TNR_ADDR register
+> +	 * the PSL_TNR_ADDR register.
+> +	 * keep the Reset Value: 0x00020000E0000000
+>   	 */
+> -	/* PSL_TNR_ADDR */
+> 
+> -	/* NORST */
+> -	cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x8000000000000000ULL);
+> +	/* Enable XSL rty limit */
+> +	cxl_p1_write(adapter, CXL_XSL9_DEF, 0x51F8000000000005ULL);
+> +
+> +	/* Change XSL_INV dummy read threshold */
+> +	cxl_p1_write(adapter, CXL_XSL9_INV, 0x0000040007FFC200ULL);
+> 
+> -	/* allocate the apc machines */
+> -	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
+> +	if (phb_index == 3) {
+> +		/* disable machines 31-47 and 20-27 for DMA */
+> +		cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000FF3FFFF0000ULL);
+> +	}
+> +
+> +	/* Snoop machines */
+> +	cxl_p1_write(adapter, CXL_PSL9_APCDEDALLOC, 0x800F000200000000ULL);
+> 
+> -	/* Disable vc dd1 fix */
+> -	if (cxl_is_power9_dd1())
+> -		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
+> +	if (cxl_is_power9_dd1()) {
+> +		/* Disabling deadlock counter CAR */
+> +		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0020000000000001ULL);
+> +	}
+> 
+>   	return 0;
+>   }
+> 
