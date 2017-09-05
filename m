@@ -1,31 +1,53 @@
-Return-Path: <srs0=cfcn=ag=gmail.com=bsingharora@ozlabs.org>
+Return-Path: <srs0=kz3q=ag=linux.vnet.ibm.com=bharata@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmYLV1ZCJzDrFs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 14:16:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xmYT43HYLzDrJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 14:22:00 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xmYLT6blDz8t2N
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 14:16:17 +1000 (AEST)
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xmYT42bpVz8sxj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 14:22:00 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xmYLT1wsLz9s9Y
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2017 14:16:17 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id q76so1096876pfq.5
- for <linuxppc-dev@ozlabs.org>; Mon, 04 Sep 2017 21:16:17 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: npiggin@gmail.com,
-	mahesh@linux.vnet.ibm.com,
-	alistair@popple.id.au
-Cc: linuxppc-dev@ozlabs.org,
-	Balbir Singh <bsingharora@gmail.com>
-Subject: [rfc 3/3] powerpc/mce: hookup memory_failure for UE errors
-Date: Tue,  5 Sep 2017 14:15:55 +1000
-Message-Id: <20170905041555.27696-4-bsingharora@gmail.com>
-In-Reply-To: <20170905041555.27696-1-bsingharora@gmail.com>
-References: <20170905041555.27696-1-bsingharora@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3xmYT36sYDz9s9Y
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2017 14:21:59 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v854KI4x123482
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 Sep 2017 00:21:58 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cs9f2bdsc-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 05 Sep 2017 00:21:57 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <bharata@linux.vnet.ibm.com>;
+ Tue, 5 Sep 2017 14:21:55 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v854Kc8q36241510
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 Sep 2017 14:20:38 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v854KU50002668
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 Sep 2017 14:20:30 +1000
+Date: Tue, 5 Sep 2017 09:50:32 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, aneesh.kumar@linux.vnet.ibm.com,
+ arbab@linux.vnet.ibm.com
+Subject: Re: [FIX PATCH v0] powerpc: Fix memory unplug failure on radix guest
+Reply-To: bharata@linux.vnet.ibm.com
+References: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
+ <20170901065313.GA3093@in.ibm.com>
+ <e9eb4fb9-79ea-118a-f2b6-5501556a1181@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e9eb4fb9-79ea-118a-f2b6-5501556a1181@linux.vnet.ibm.com>
+Message-Id: <20170905042032.GA4230@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,135 +57,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we are in user space and hit a UE error, we now have the
-basic infrastructure to walk the page tables and find out
-the effective address that was accessed, since the DAR
-is not valid.
+On Fri, Sep 01, 2017 at 09:11:18AM -0500, Nathan Fontenot wrote:
+> On 09/01/2017 01:53 AM, Bharata B Rao wrote:
+> > On Thu, Aug 10, 2017 at 02:53:48PM +0530, Bharata B Rao wrote:
+> >> For a PowerKVM guest, it is possible to specify a DIMM device in
+> >> addition to the system RAM at boot time. When such a cold plugged DIMM
+> >> device is removed from a radix guest, we hit the following warning in the
+> >> guest kernel resulting in the eventual failure of memory unplug:
+> >>
+> >> remove_pud_table: unaligned range
+> >> WARNING: CPU: 3 PID: 164 at arch/powerpc/mm/pgtable-radix.c:597 remove_pagetable+0x468/0xca0
+> >> Call Trace:
+> >> remove_pagetable+0x464/0xca0 (unreliable)
+> >> radix__remove_section_mapping+0x24/0x40
+> >> remove_section_mapping+0x28/0x60
+> >> arch_remove_memory+0xcc/0x120
+> >> remove_memory+0x1ac/0x270
+> >> dlpar_remove_lmb+0x1ac/0x210
+> >> dlpar_memory+0xbc4/0xeb0
+> >> pseries_hp_work_fn+0x1a4/0x230
+> >> process_one_work+0x1cc/0x660
+> >> worker_thread+0xac/0x6d0
+> >> kthread+0x16c/0x1b0
+> >> ret_from_kernel_thread+0x5c/0x74
+> >>
+> >> The DIMM memory that is cold plugged gets merged to the same memblock
+> >> region as RAM and hence gets mapped at 1G alignment. However since the
+> >> removal is done for one LMB (lmb size 256MB) at a time, the address
+> >> of the LMB (which is 256MB aligned) would get flagged as unaligned
+> >> in remove_pud_table() resulting in the above failure.
+> >>
+> >> This problem is not seen for hot plugged memory because for the
+> >> hot plugged memory, the mappings are created separately for each
+> >> LMB and hence they all get aligned at 256MB.
+> >>
+> >> To fix this problem for the cold plugged memory, let us mark the
+> >> cold plugged memblock region explicitly as HOTPLUGGED so that the
+> >> region doesn't get merged with RAM. All the memory that is discovered
+> >> via ibm,dynamic-memory-configuration is marked so(1). Next identify
+> >> such regions in radix_init_pgtable() and create separate mappings
+> >> within that region for each LMB so that they get don't get aligned
+> >> like RAM region at 1G (2).
+> >>
+> >> (1) For PowerKVM guests, all boot time memory is represented via
+> >> memory@XXXX nodes and hot plugged/pluggable memory is represented via
+> >> ibm,dynamic-memory-reconfiguration property. We are marking all
+> >> hotplugged memory that is in ASSIGNED state during boot as HOTPLUGGED.
+> >> With this only cold plugged memory gets marked for PowerKVM but
+> >> need to check how this will affect PowerVM guests.
+> >>
+> >> (2) To create separate mappings for every LMB in the hot plugged
+> >> region, we need lmb-size. I am currently using memory_block_size_bytes()
+> >> API to get the lmb-size. Since this is early init time code, the
+> >> machine type isn't probed yet and hence memory_block_size_bytes()
+> >> would return the default LMB size as 16MB. Hence we end up creating
+> >> separate mappings at much lower granularity than what we can ideally
+> >> do for pseries machine.
+> >>
+> >> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> >> ---
+> >>  arch/powerpc/kernel/prom.c      |  1 +
+> >>  arch/powerpc/mm/pgtable-radix.c | 17 ++++++++++++++---
+> >>  2 files changed, 15 insertions(+), 3 deletions(-)
+> >>
+> >> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> >> index f830562..24ecf53 100644
+> >> --- a/arch/powerpc/kernel/prom.c
+> >> +++ b/arch/powerpc/kernel/prom.c
+> >> @@ -524,6 +524,7 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+> >>  					size = 0x80000000ul - base;
+> >>  			}
+> >>  			memblock_add(base, size);
+> >> +			memblock_mark_hotplug(base, size);
+> > 
+> > One of the suggestions was to make the above conditional to radix so
+> > that PowerVM doesn't get affected by this. However early_radix_enabled()
+> > check isn't usable yet at this point and MMU_FTR_TYPE_RADIX will get set
+> > only a bit later in early_init_devtree().
+> 
+> We do walk the dynamic reconfiguration memory again in the numa code, see
+> parse_drconf_memory() in numa.c, would it far enough along in boot to use
+> early_radix_enabled() and mark the memory hotplug at this point?
 
-We use a work_queue content to hookup the bad pfn, any
-other context causes problems, since memory_failure itself
-can call into schedule() via lru_drain_ bits.
+parse_drconf_memory() in numa.c happens after radix page tables are setup.
+Hence setting the hotplugged state from it will not help.
 
-We could probably poison the struct page to avoid a race
-between detection and taking corrective action.
-
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/kernel/mce.c | 62 ++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 59 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index f41a75d..39986d5 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -39,11 +39,20 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
- static DEFINE_PER_CPU(int, mce_queue_count);
- static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
- 
-+/* Queue for delayed MCE UE events. */
-+static DEFINE_PER_CPU(int, mce_ue_count);
-+static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_ue_event_queue);
-+
- static void machine_check_process_queued_event(struct irq_work *work);
-+void machine_check_ue_event(struct machine_check_event *evt);
-+static void machine_process_ue_event(struct work_struct *work);
-+
- static struct irq_work mce_event_process_work = {
-         .func = machine_check_process_queued_event,
- };
- 
-+DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
-+
- static void mce_set_error_info(struct machine_check_event *mce,
- 			       struct mce_error_info *mce_err)
- {
-@@ -143,6 +152,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
- 		if (phys_addr != ULONG_MAX) {
- 			mce->u.ue_error.physical_address_provided = true;
- 			mce->u.ue_error.physical_address = phys_addr;
-+			machine_check_ue_event(mce);
- 		}
- 	}
- 	return;
-@@ -197,6 +207,26 @@ void release_mce_event(void)
- 	get_mce_event(NULL, true);
- }
- 
-+
-+/*
-+ * Queue up the MCE event which then can be handled later.
-+ */
-+void machine_check_ue_event(struct machine_check_event *evt)
-+{
-+	int index;
-+
-+	index = __this_cpu_inc_return(mce_ue_count) - 1;
-+	/* If queue is full, just return for now. */
-+	if (index >= MAX_MC_EVT) {
-+		__this_cpu_dec(mce_ue_count);
-+		return;
-+	}
-+	memcpy(this_cpu_ptr(&mce_ue_event_queue[index]), evt, sizeof(*evt));
-+
-+	/* Queue work to process this event later. */
-+	schedule_work(&mce_ue_event_work);
-+}
-+
- /*
-  * Queue up the MCE event which then can be handled later.
-  */
-@@ -219,7 +249,32 @@ void machine_check_queue_event(void)
- 	/* Queue irq work to process this event later. */
- 	irq_work_queue(&mce_event_process_work);
- }
--
-+/*
-+ * process pending MCE event from the mce event queue. This function will be
-+ * called during syscall exit.
-+ */
-+static void machine_process_ue_event(struct work_struct *work)
-+{
-+	int index;
-+	struct machine_check_event *evt;
-+
-+	while (__this_cpu_read(mce_ue_count) > 0) {
-+		index = __this_cpu_read(mce_ue_count) - 1;
-+		evt = this_cpu_ptr(&mce_ue_event_queue[index]);
-+#ifdef CONFIG_MEMORY_FAILURE
-+		/*
-+		 * This should probably queued elsewhere, but
-+		 * oh! well
-+		 */
-+		if (evt->error_type == MCE_ERROR_TYPE_UE) {
-+			if (evt->u.ue_error.physical_address_provided)
-+				memory_failure(evt->u.ue_error.physical_address,
-+						SIGBUS, 0);
-+		}
-+#endif
-+		__this_cpu_dec(mce_ue_count);
-+	}
-+}
- /*
-  * process pending MCE event from the mce event queue. This function will be
-  * called during syscall exit.
-@@ -227,6 +282,7 @@ void machine_check_queue_event(void)
- static void machine_check_process_queued_event(struct irq_work *work)
- {
- 	int index;
-+	struct machine_check_event *evt;
- 
- 	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
- 
-@@ -236,8 +292,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
- 	 */
- 	while (__this_cpu_read(mce_queue_count) > 0) {
- 		index = __this_cpu_read(mce_queue_count) - 1;
--		machine_check_print_event_info(
--				this_cpu_ptr(&mce_event_queue[index]), false);
-+		evt = this_cpu_ptr(&mce_event_queue[index]);
-+		machine_check_print_event_info(evt, false);
- 		__this_cpu_dec(mce_queue_count);
- 	}
- }
--- 
-2.9.5
+Regards,
+Bharata.
