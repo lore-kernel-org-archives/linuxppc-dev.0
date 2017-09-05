@@ -1,23 +1,13 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmlT75dkzzDrFM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 21:52:43 +1000 (AEST)
-Subject: Re: powerpc/eeh: Delete an error message for a failed memory
- allocation in two functions
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Russell Currey <ruscur@russell.cc>,
- kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <3xkKq44VX5z9t3x@ozlabs.org>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <84ad8bb6-2ecf-ef88-ddc1-0fb830170a20@users.sourceforge.net>
-Date: Tue, 5 Sep 2017 13:52:17 +0200
-MIME-Version: 1.0
-In-Reply-To: <3xkKq44VX5z9t3x@ozlabs.org>
-Content-Type: text/plain; charset=utf-8
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xmllV6t0yzDrJF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 22:05:10 +1000 (AEST)
+From: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+To: linuxppc-dev linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ York Sun <york.sun@nxp.com>
+Subject: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
+Date: Tue,  5 Sep 2017 13:59:43 +0200
+Message-Id: <20170905115943.19919-1-joakim.tjernlund@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +17,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Applied to powerpc next, thanks.
-> 
-> https://git.kernel.org/powerpc/c/6ab41161b44a3b4d504ac29c9dd997
+get_user() had it args reversed causing NIP to be NULL:ed instead
+of fixing up the PCI access.
 
-Thanks that you picked another update suggestion up.
+Note: This still hangs my P1020 Freescale CPU hard, but at least
+I get a NIP now.
 
-* It might matter to mention that only one patch hunk was accepted in this case.
+Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-* Can it be that the adjusted commit subject does contain a typo at the moment?
-  Would the wording “powerpc/eeh: Delete a message for an "out of memory error"
-  (at init time)” be more appropriate there?
-
-Regards,
-Markus
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 7c8b779c329a..9e64c12dff6a 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -996,7 +996,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
+ 	if (is_in_pci_mem_space(addr)) {
+ 		if (user_mode(regs)) {
+ 			pagefault_disable();
+-			ret = get_user(regs->nip, &inst);
++			ret = get_user(inst, (__u32 __user *)regs->nip);
+ 			pagefault_enable();
+ 		} else {
+ 			ret = probe_kernel_address(regs->nip, inst);
+-- 
+2.13.5
