@@ -1,53 +1,27 @@
-Return-Path: <srs0=kz3q=ag=linux.vnet.ibm.com=bharata@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmYT43HYLzDrJ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 14:22:00 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xmYT42bpVz8sxj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 14:22:00 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xmYT36sYDz9s9Y
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2017 14:21:59 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v854KI4x123482
- for <linuxppc-dev@ozlabs.org>; Tue, 5 Sep 2017 00:21:58 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cs9f2bdsc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 05 Sep 2017 00:21:57 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Tue, 5 Sep 2017 14:21:55 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v854Kc8q36241510
- for <linuxppc-dev@ozlabs.org>; Tue, 5 Sep 2017 14:20:38 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v854KU50002668
- for <linuxppc-dev@ozlabs.org>; Tue, 5 Sep 2017 14:20:30 +1000
-Date: Tue, 5 Sep 2017 09:50:32 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, aneesh.kumar@linux.vnet.ibm.com,
- arbab@linux.vnet.ibm.com
-Subject: Re: [FIX PATCH v0] powerpc: Fix memory unplug failure on radix guest
-Reply-To: bharata@linux.vnet.ibm.com
-References: <1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com>
- <20170901065313.GA3093@in.ibm.com>
- <e9eb4fb9-79ea-118a-f2b6-5501556a1181@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xmZS33DxMzDqZ9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 15:06:11 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id m9so1340256pgd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Sep 2017 22:06:10 -0700 (PDT)
+Date: Mon, 4 Sep 2017 22:06:03 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Lukasz Majewski <lukma@denx.de>
+Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+Message-ID: <20170905050602.GA2774@Asurada-CZ80>
+References: <1504436701-20700-1-git-send-email-lukma@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e9eb4fb9-79ea-118a-f2b6-5501556a1181@linux.vnet.ibm.com>
-Message-Id: <20170905042032.GA4230@in.ibm.com>
+In-Reply-To: <1504436701-20700-1-git-send-email-lukma@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,90 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 01, 2017 at 09:11:18AM -0500, Nathan Fontenot wrote:
-> On 09/01/2017 01:53 AM, Bharata B Rao wrote:
-> > On Thu, Aug 10, 2017 at 02:53:48PM +0530, Bharata B Rao wrote:
-> >> For a PowerKVM guest, it is possible to specify a DIMM device in
-> >> addition to the system RAM at boot time. When such a cold plugged DIMM
-> >> device is removed from a radix guest, we hit the following warning in the
-> >> guest kernel resulting in the eventual failure of memory unplug:
-> >>
-> >> remove_pud_table: unaligned range
-> >> WARNING: CPU: 3 PID: 164 at arch/powerpc/mm/pgtable-radix.c:597 remove_pagetable+0x468/0xca0
-> >> Call Trace:
-> >> remove_pagetable+0x464/0xca0 (unreliable)
-> >> radix__remove_section_mapping+0x24/0x40
-> >> remove_section_mapping+0x28/0x60
-> >> arch_remove_memory+0xcc/0x120
-> >> remove_memory+0x1ac/0x270
-> >> dlpar_remove_lmb+0x1ac/0x210
-> >> dlpar_memory+0xbc4/0xeb0
-> >> pseries_hp_work_fn+0x1a4/0x230
-> >> process_one_work+0x1cc/0x660
-> >> worker_thread+0xac/0x6d0
-> >> kthread+0x16c/0x1b0
-> >> ret_from_kernel_thread+0x5c/0x74
-> >>
-> >> The DIMM memory that is cold plugged gets merged to the same memblock
-> >> region as RAM and hence gets mapped at 1G alignment. However since the
-> >> removal is done for one LMB (lmb size 256MB) at a time, the address
-> >> of the LMB (which is 256MB aligned) would get flagged as unaligned
-> >> in remove_pud_table() resulting in the above failure.
-> >>
-> >> This problem is not seen for hot plugged memory because for the
-> >> hot plugged memory, the mappings are created separately for each
-> >> LMB and hence they all get aligned at 256MB.
-> >>
-> >> To fix this problem for the cold plugged memory, let us mark the
-> >> cold plugged memblock region explicitly as HOTPLUGGED so that the
-> >> region doesn't get merged with RAM. All the memory that is discovered
-> >> via ibm,dynamic-memory-configuration is marked so(1). Next identify
-> >> such regions in radix_init_pgtable() and create separate mappings
-> >> within that region for each LMB so that they get don't get aligned
-> >> like RAM region at 1G (2).
-> >>
-> >> (1) For PowerKVM guests, all boot time memory is represented via
-> >> memory@XXXX nodes and hot plugged/pluggable memory is represented via
-> >> ibm,dynamic-memory-reconfiguration property. We are marking all
-> >> hotplugged memory that is in ASSIGNED state during boot as HOTPLUGGED.
-> >> With this only cold plugged memory gets marked for PowerKVM but
-> >> need to check how this will affect PowerVM guests.
-> >>
-> >> (2) To create separate mappings for every LMB in the hot plugged
-> >> region, we need lmb-size. I am currently using memory_block_size_bytes()
-> >> API to get the lmb-size. Since this is early init time code, the
-> >> machine type isn't probed yet and hence memory_block_size_bytes()
-> >> would return the default LMB size as 16MB. Hence we end up creating
-> >> separate mappings at much lower granularity than what we can ideally
-> >> do for pseries machine.
-> >>
-> >> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/kernel/prom.c      |  1 +
-> >>  arch/powerpc/mm/pgtable-radix.c | 17 ++++++++++++++---
-> >>  2 files changed, 15 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> >> index f830562..24ecf53 100644
-> >> --- a/arch/powerpc/kernel/prom.c
-> >> +++ b/arch/powerpc/kernel/prom.c
-> >> @@ -524,6 +524,7 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
-> >>  					size = 0x80000000ul - base;
-> >>  			}
-> >>  			memblock_add(base, size);
-> >> +			memblock_mark_hotplug(base, size);
-> > 
-> > One of the suggestions was to make the above conditional to radix so
-> > that PowerVM doesn't get affected by this. However early_radix_enabled()
-> > check isn't usable yet at this point and MMU_FTR_TYPE_RADIX will get set
-> > only a bit later in early_init_devtree().
+On Sun, Sep 03, 2017 at 01:05:01PM +0200, Lukasz Majewski wrote:
+> The problem is visible in the following setup (on the imx6q):
+> "simple-audio-card" -> ssi2 -> I2S + I2C -> codec
 > 
-> We do walk the dynamic reconfiguration memory again in the numa code, see
-> parse_drconf_memory() in numa.c, would it far enough along in boot to use
-> early_radix_enabled() and mark the memory hotplug at this point?
+> The function call log (simple-card probe -> CONFIG_SND_SIMPLE_CARD):
+> 
+> asoc_simple_card_init_dai() @ sound/soc/generic/simple-card-utils.c
+> snd_soc_dai_set_sysclk()
+> fsl_ssi_set_dai_sysclk() @ sound/soc/fsl/fsl_ssi.c
+> 
+> The last call is changing the bit clock (BCLK) frequency to SSI's IP
+> block clock (ipg = 66 MHz) [1].
 
-parse_drconf_memory() in numa.c happens after radix page tables are setup.
-Hence setting the hotplugged state from it will not help.
+I think a bigger question here is why the routine sets BCLK to 66MHz.
 
-Regards,
-Bharata.
+> This is wrong, since IMX SSI block requires the I2S BCLK to be less
+> than 1/5 of [1].
+> 
+> As a result the driver initialization passes without any errors, but the
+> speaker-test test case breaks.
+> 
+> This commit checks if the fsl_ssi_set_dai_sysclk() frequency passed is
+> not equal to [1].
+
+I don't feel it's quite comprehensive...what if it's being set to 67MHz.
+
+Thanks
+Nicolin
+
+> Signed-off-by: Lukasz Majewski <lukma@denx.de>
+> ---
+>  sound/soc/fsl/fsl_ssi.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+> index 173cb84..1186fa9 100644
+> --- a/sound/soc/fsl/fsl_ssi.c
+> +++ b/sound/soc/fsl/fsl_ssi.c
+> @@ -809,6 +809,8 @@ static int fsl_ssi_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
+>  		int clk_id, unsigned int freq, int dir)
+>  {
+>  	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
+> +	if (clk_get_rate(ssi_private->clk) == freq)
+> +		return 0;
+>  
+>  	ssi_private->bitclk_freq = freq;
+>  
+> -- 
+> 2.1.4
+> 
