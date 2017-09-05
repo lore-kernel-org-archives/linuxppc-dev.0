@@ -1,31 +1,31 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.co.uk>
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xmqDc6cBczDrJ6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 00:42:08 +1000 (AEST)
-Received: from mail-qt0-f177.google.com (mail-qt0-f177.google.com
- [209.85.216.177])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DD9AC21E93
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Sep 2017 14:42:06 +0000 (UTC)
-Received: by mail-qt0-f177.google.com with SMTP id q8so8180971qtb.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Sep 2017 07:42:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xmrx23rNWzDrH3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 01:58:46 +1000 (AEST)
+Date: Tue, 5 Sep 2017 16:15:50 +0100
+From: Mark Brown <broonie@kernel.org>
+To: =?utf-8?Q?=C5=81ukasz?= Majewski <lukma@denx.de>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+Message-ID: <20170905151550.5mhb535p22lsohlh@sirena.org.uk>
+References: <1504436701-20700-1-git-send-email-lukma@denx.de>
+ <20170905050602.GA2774@Asurada-CZ80>
+ <bbcb123b-8700-501f-e6d9-cab9e212de40@denx.de>
+ <20170905075247.GA6112@Asurada>
+ <deb40031-9db0-d667-7314-352cf548c295@denx.de>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.21.1709020416130.13598@localhost.localdomain>
-References: <alpine.LFD.2.21.1709020416130.13598@localhost.localdomain>
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 5 Sep 2017 09:41:45 -0500
-Message-ID: <CAL_JsqKKePqec7OER=MMSTDXTGiYiuM5jE0QWg_nUvmvQoEw4g@mail.gmail.com>
-Subject: Re: [PATCH] devicetree: Remove remaining references/tests for
- "chosen@0"
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Linux-MIPS <linux-mips@linux-mips.org>,
- Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>,
- Michal Simek <monstr@monstr.eu>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="3iuz7zolhzcycwef"
+In-Reply-To: <deb40031-9db0-d667-7314-352cf548c295@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,44 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 2, 2017 at 3:43 AM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
->
-> Since, according to a recent devicetree ML posting by Rob Herring,
-> the node "/chosen@0" is most likely for real Open Firmware and does
-> not apply to DTSpec, remove all remaining tests and references for
-> that node, of which there are very few left:
->
->  arch/microblaze/kernel/prom.c | 3 +--
->  arch/mips/generic/yamon-dt.c  | 4 ----
->  arch/powerpc/boot/oflib.c     | 7 ++-----
->  drivers/of/base.c             | 2 --
->  drivers/of/fdt.c              | 5 +----
->  5 files changed, 4 insertions(+), 17 deletions(-)
->
-> This should be innocuous as, in all of the three arch/ files above,
-> there is a test for "chosen" immediately before the test for
-> "chosen@0", so nothing should change.
->
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
->
-> ---
->
->   if this patch is premature, then just ignore it, thanks.
->
-> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-> index 68f0999..c81bfd7 100644
-> --- a/arch/microblaze/kernel/prom.c
-> +++ b/arch/microblaze/kernel/prom.c
-> @@ -53,8 +53,7 @@ static int __init early_init_dt_scan_chosen_serial(unsigned long node,
->
->         pr_debug("%s: depth: %d, uname: %s\n", __func__, depth, uname);
->
-> -       if (depth == 1 && (strcmp(uname, "chosen") == 0 ||
-> -                               strcmp(uname, "chosen@0") == 0)) {
-> +       if (depth == 1 && (strcmp(uname, "chosen") == 0)) {
 
-I'd really hoped to remove early_init_dt_scan_chosen_serial()
-altogether. It may now be just a matter of adding the compatible
-strings to the uartlite earlycon.
+--3iuz7zolhzcycwef
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Rob
+On Tue, Sep 05, 2017 at 10:19:05AM +0200, =C5=81ukasz Majewski wrote:
+> On 09/05/2017 09:52 AM, Nicolin Chen wrote:
+
+> > Can you elaborate why you set ipg clock as bclk? I don't remember SSI c=
+ould
+> > derive bitclock from ipg clock.
+
+> Just to be clear:
+
+> What clock shall be set with:
+
+> struct snd_soc_dai_ops {
+> 	int (*set_sysclk)(struct snd_soc_dai *dai,
+> 		int clk_id, unsigned int freq, int dir);
+> }
+
+> callback?
+
+> The SSI IP block or BCLK ?
+
+Not the BCLK, probably the IP clock but perhaps nothing.  The bclk is
+usually derived from the sample rate and width, the system clock is the
+clock rate going into the device.  It doesn't *have* to be configured
+(particuarly if it's discoverable by the IP and managable via the clock
+API).
+
+--3iuz7zolhzcycwef
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlmuv6UACgkQJNaLcl1U
+h9AtnAf9EKIG4u66WmYu2NBsfi05jokTgDc1bNTu0zLnl/+F8ryoGAMkfvzlrJGX
+Mpu73cneyDQuN7H6EVrt57xrlERwnObjioUeBED5gS1z+ViM2j1AEShfIkC3msC5
+ug0jgq8gO+IpnJssqag5FfVtToVFvvJNzKP48Y5O9cq2kN0Up81bXom6iLYPKaIF
+WNJKezxlmZ1GbvvJ3u+fbi6IR9ECIwgkcxndrU4Z6wIJZSsaynA6JerTsqpcwj+b
+ycCppn4IpOqVtd6XmOpj5wxUb+lPbzzJlWl0PpDOCb8Vnk0zbEq2rHBJy1pNQZ1c
+ZQts3u2G4Xm+ZXqZn2G1yNyTVwF8fw==
+=Kce/
+-----END PGP SIGNATURE-----
+
+--3iuz7zolhzcycwef--
