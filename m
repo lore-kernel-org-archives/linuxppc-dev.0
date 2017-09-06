@@ -1,27 +1,36 @@
-Return-Path: <leoyang.li@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0046.outbound.protection.outlook.com [104.47.0.46])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <lukma@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnbsr3L6RzDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 07:13:35 +1000 (AEST)
-From: Leo Li <leoyang.li@nxp.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, York Sun
- <york.sun@nxp.com>
-Subject: RE: Machine Check in P2010(e500v2)
-Date: Wed, 6 Sep 2017 21:13:28 +0000
-Message-ID: <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-References: <1504265576.20777.61.camel@infinera.com>
- <1504600831.27247.20.camel@infinera.com>
- <VI1PR04MB2078E4FFD1B27961F63D88689A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <AM4PR0401MB16992DFADBD59ADEF8E3ACC08F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504729020.27247.120.camel@infinera.com>
- <AM4PR0401MB16990A5A3D77ED57C9A645D98F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504731221.27247.126.camel@infinera.com>
-In-Reply-To: <1504731221.27247.126.camel@infinera.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnc092w8gzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 07:19:03 +1000 (AEST)
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, "festevam@gmail.com" <festevam@gmail.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <AM5PR0401MB262706674539BFE651706CC6E3900@AM5PR0401MB2627.eurprd04.prod.outlook.com>
+ <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
+ <20170905052031.GB2774@Asurada-CZ80>
+ <819784e1-910b-6833-997a-2097e147bd0c@denx.de>
+ <20170905181108.GB23906@Asurada-Nvidia>
+ <cfb8f844-87aa-f1f3-bd55-4f2b60f3cf88@denx.de>
+ <20170905225225.GA14132@Asurada-Nvidia>
+ <ae1d3e2a-d618-05e2-1572-5593caff1ee0@denx.de>
+ <20170906173348.GA28104@Asurada-Nvidia>
+ <69352458-2e90-a847-2c2f-bba259a32162@denx.de>
+ <20170906194748.GA31334@Asurada-Nvidia>
+From: =?UTF-8?Q?=c5=81ukasz_Majewski?= <lukma@denx.de>
+Message-ID: <14a174b2-df3b-73f2-a5c2-7bd4ca9b0882@denx.de>
+Date: Wed, 6 Sep 2017 23:18:54 +0200
 MIME-Version: 1.0
+In-Reply-To: <20170906194748.GA31334@Asurada-Nvidia>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,93 +40,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 09/06/2017 09:47 PM, Nicolin Chen wrote:
+> On Wed, Sep 06, 2017 at 08:35:50PM +0200, Łukasz Majewski wrote:
+>   
+>> 	clocks = <&clks IMX6QDL_CLK_SSI2_IPG>,
+>> 		 <&clks IMX6QDL_CLK_SSI2>;
+>> 	clock-names = "ipg", "baud";
+> 
+>>>>   			dailink_master: cpu {
+>>>>   			    sound-dai = <&ssi2>;
+>>>> 			    clock = <&SSSS>;
+>>
+>> 	If possible I do prefer a solution, which uses only DTS.
+>> Side question - how to refer to baud clock from [1]?
+> 
+> Just add a property to this cpu node like:
+> 	clock = <&clks IMX6QDL_CLK_SSI2>;
+
+Ok.
+
+> 
+>>>> 			    system-clock-frequency = <XXXX>;
+> 
+> This would not be necessary unless you want to specify a clock rate
+> so as to override the clock rate configuration in hw_params().
+
+Ok.
+
+> 
+>>> This is the right solution based on current simple-card driver. For
+>>> SSI (having two clocks), you have to specify the baud clock in the
+>>> cpu node like that. I believe this is what the simple-card designer
+>>> expected users to do since the cpu node is the first place that the
+>>> driver tries to look at.
+>>
+>> I will give a shoot the option with adding the ipg clock.
+> 
+> No, not ipg clock. You should use the second clock -- baud clock.
+
+Yes. Correct - the baud clock.
+
+> 
 
 
-> -----Original Message-----
-> From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> Sent: Wednesday, September 06, 2017 3:54 PM
-> To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York Sun
-> <york.sun@nxp.com>
-> Subject: Re: Machine Check in P2010(e500v2)
->=20
-> On Wed, 2017-09-06 at 20:28 +0000, Leo Li wrote:
-> > > -----Original Message-----
-> > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> > > Sent: Wednesday, September 06, 2017 3:17 PM
-> > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York
-> > > Sun <york.sun@nxp.com>
-> > > Subject: Re: Machine Check in P2010(e500v2)
-> > >
-> > > On Wed, 2017-09-06 at 19:31 +0000, Leo Li wrote:
-> > > > > -----Original Message-----
-> > > > > From: York Sun
-> > > > > Sent: Wednesday, September 06, 2017 10:38 AM
-> > > > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-
-> > > > > dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>
-> > > > > Subject: Re: Machine Check in P2010(e500v2)
-> > > > >
-> > > > > Scott is no longer with Freescale/NXP. Adding Leo.
-> > > > >
-> > > > > On 09/05/2017 01:40 AM, Joakim Tjernlund wrote:
-> > > > > > So after some debugging I found this bug:
-> > > > > > @@ -996,7 +998,7 @@ int fsl_pci_mcheck_exception(struct pt_regs
-> *regs)
-> > > > > >          if (is_in_pci_mem_space(addr)) {
-> > > > > >                  if (user_mode(regs)) {
-> > > > > >                          pagefault_disable();
-> > > > > > -                       ret =3D get_user(regs->nip, &inst);
-> > > > > > +                       ret =3D get_user(inst, (__u32 __user
-> > > > > > + *)regs->nip);
-> > > > > >                          pagefault_enable();
-> > > > > >                  } else {
-> > > > > >                          ret =3D probe_kernel_address(regs->nip=
-,
-> > > > > > inst);
-> > > > > >
-> > > > > > However, the kernel still locked up after fixing that.
-> > > > > > Now I wonder why this fixup is there in the first place? The
-> > > > > > routine will not really fixup the insn, just return 0xffffffff
-> > > > > > for the failing read and then advance the process NIP.
-> > > >
-> > > > You are right.  The code here only gives 0xffffffff to the load
-> > > > instructions and
-> > >
-> > > continue with the next instruction when the load instruction is
-> > > causing the machine check.  This will prevent a system lockup when
-> > > reading from PCI/RapidIO device which is link down.
-> > > >
-> > > > I don't know what is actual problem in your case.  Maybe it is a
-> > > > write
-> > >
-> > > instruction instead of read?   Or the code is in a infinite loop wait=
-ing for a
-> valid
-> > > read result?  Are you able to do some further debugging with the NIP
-> > > correctly printed?
-> > > >
-> > >
-> > > According to the MC it is a Read and the NIP also leads to a read in =
-the
-> program.
-> > > ATM, I have disabled the fixup but I will enable that again.
-> > > Question, is it safe add a small printk when this MC happens(after
-> > > fixing up)? I need to see that it has happened as the error is somewh=
-at
-> random.
-> >
-> > I think it is safe to add printk as the current machine check handlers =
-are also
-> using printk.
->=20
-> I hope so, but if the fixup fires there is no printk at all so I was a bi=
-t unsure.
-> Don't like this fixup though, is there not a better way than faking a rea=
-d to user
-> space(or kernel for that matter) ?
+-- 
+Best regards,
 
-I don't have a better idea.  Without the fixup, the offending load instruct=
-ion will never finish if there is anything wrong with the backing device an=
-d freeze the whole system.  Do you have any suggestion in mind?
+Lukasz Majewski
 
-Regards,
-Leo
+--
+
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
