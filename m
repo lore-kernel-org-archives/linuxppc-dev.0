@@ -1,36 +1,28 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0040.outbound.protection.outlook.com [104.47.41.40])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnczl3yJrzDrSS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 08:03:46 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v86Lxt5b108186
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Sep 2017 18:03:44 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ctr0hnu74-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Sep 2017 18:03:44 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 6 Sep 2017 18:03:43 -0400
-Subject: Re: [PATCH V13 4/4] powerpc/vphn: Fix numa update end-loop bug
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- John Allen <jallen@linux.vnet.ibm.com>
-References: <b967cb9b-efc4-3ff3-27c8-876a81250133@linux.vnet.ibm.com>
- <0babc60c-8e66-e2f2-c316-c569a2ee1dfb@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Wed, 6 Sep 2017 17:03:40 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnf1L3pf9zDrVk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 08:50:13 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
+ <york.sun@nxp.com>
+Subject: Re: Machine Check in P2010(e500v2)
+Date: Wed, 6 Sep 2017 22:50:05 +0000
+Message-ID: <1504738204.27247.133.camel@infinera.com>
+References: <1504265576.20777.61.camel@infinera.com>
+ <1504600831.27247.20.camel@infinera.com>
+ <VI1PR04MB2078E4FFD1B27961F63D88689A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <AM4PR0401MB16992DFADBD59ADEF8E3ACC08F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504729020.27247.120.camel@infinera.com>
+ <AM4PR0401MB16990A5A3D77ED57C9A645D98F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504731221.27247.126.camel@infinera.com>
+ <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+In-Reply-To: <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-In-Reply-To: <0babc60c-8e66-e2f2-c316-c569a2ee1dfb@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <53b65d0a-65e5-2a45-dcba-bbc8e132f5bb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,79 +32,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2017-09-06 at 21:13 +0000, Leo Li wrote:
+> > -----Original Message-----
+> > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > Sent: Wednesday, September 06, 2017 3:54 PM
+> > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York Su=
+n
+> > <york.sun@nxp.com>
+> > Subject: Re: Machine Check in P2010(e500v2)
+> >=20
+> > On Wed, 2017-09-06 at 20:28 +0000, Leo Li wrote:
+> > > > -----Original Message-----
+> > > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > > > Sent: Wednesday, September 06, 2017 3:17 PM
+> > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; Yor=
+k
+> > > > Sun <york.sun@nxp.com>
+> > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > >=20
+> > > > On Wed, 2017-09-06 at 19:31 +0000, Leo Li wrote:
+> > > > > > -----Original Message-----
+> > > > > > From: York Sun
+> > > > > > Sent: Wednesday, September 06, 2017 10:38 AM
+> > > > > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-
+> > > > > > dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>
+> > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > >=20
+> > > > > > Scott is no longer with Freescale/NXP. Adding Leo.
+> > > > > >=20
+> > > > > > On 09/05/2017 01:40 AM, Joakim Tjernlund wrote:
+> > > > > > > So after some debugging I found this bug:
+> > > > > > > @@ -996,7 +998,7 @@ int fsl_pci_mcheck_exception(struct pt_re=
+gs
+> >=20
+> > *regs)
+> > > > > > >          if (is_in_pci_mem_space(addr)) {
+> > > > > > >                  if (user_mode(regs)) {
+> > > > > > >                          pagefault_disable();
+> > > > > > > -                       ret =3D get_user(regs->nip, &inst);
+> > > > > > > +                       ret =3D get_user(inst, (__u32 __user
+> > > > > > > + *)regs->nip);
+> > > > > > >                          pagefault_enable();
+> > > > > > >                  } else {
+> > > > > > >                          ret =3D probe_kernel_address(regs->n=
+ip,
+> > > > > > > inst);
+> > > > > > >=20
+> > > > > > > However, the kernel still locked up after fixing that.
+> > > > > > > Now I wonder why this fixup is there in the first place? The
+> > > > > > > routine will not really fixup the insn, just return 0xfffffff=
+f
+> > > > > > > for the failing read and then advance the process NIP.
+> > > > >=20
+> > > > > You are right.  The code here only gives 0xffffffff to the load
+> > > > > instructions and
+> > > >=20
+> > > > continue with the next instruction when the load instruction is
+> > > > causing the machine check.  This will prevent a system lockup when
+> > > > reading from PCI/RapidIO device which is link down.
+> > > > >=20
+> > > > > I don't know what is actual problem in your case.  Maybe it is a
+> > > > > write
+> > > >=20
+> > > > instruction instead of read?   Or the code is in a infinite loop wa=
+iting for a
+> >=20
+> > valid
+> > > > read result?  Are you able to do some further debugging with the NI=
+P
+> > > > correctly printed?
+> > > > >=20
+> > > >=20
+> > > > According to the MC it is a Read and the NIP also leads to a read i=
+n the
+> >=20
+> > program.
+> > > > ATM, I have disabled the fixup but I will enable that again.
+> > > > Question, is it safe add a small printk when this MC happens(after
+> > > > fixing up)? I need to see that it has happened as the error is some=
+what
+> >=20
+> > random.
+> > >=20
+> > > I think it is safe to add printk as the current machine check handler=
+s are also
+> >=20
+> > using printk.
+> >=20
+> > I hope so, but if the fixup fires there is no printk at all so I was a =
+bit unsure.
+> > Don't like this fixup though, is there not a better way than faking a r=
+ead to user
+> > space(or kernel for that matter) ?
+>=20
+> I don't have a better idea.  Without the fixup, the offending load instru=
+ction will never finish if there is anything wrong with the backing device =
+and freeze the whole system.  Do you have any suggestion in mind?
+>=20
 
+But it never finishes the load, it just fakes a load of 0xfffffffff, for us=
+er space I rather have it signal
+a SIGBUS but that does not seem to work either, at least not for us but tha=
+t could be a bug in general MC code
+ maybe.
+This fixup might be valid for kernel only as it has never worked for user s=
+pace due to the bug I found.
 
-On 09/06/2017 09:45 AM, Nathan Fontenot wrote:
-> On 09/01/2017 10:48 AM, Michael Bringmann wrote:
->> powerpc/vphn: On Power systems with shared configurations of CPUs
->> and memory, there are some issues with the association of additional
->> CPUs and memory to nodes when hot-adding resources.  This patch
->> fixes an end-of-updates processing problem observed occasionally
->> in numa_update_cpu_topology().
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/numa.c |    7 +++++++
->>  1 file changed, 7 insertions(+)
->>
->> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->> index 3a5b334..fccf23f 100644
->> --- a/arch/powerpc/mm/numa.c
->> +++ b/arch/powerpc/mm/numa.c
->> @@ -1410,6 +1410,13 @@ int numa_update_cpu_topology(bool cpus_locked)
->>  		cpu = cpu_last_thread_sibling(cpu);
->>  	}
->>
->> +	/*
->> +	 * Prevent processing of 'updates' from overflowing array
->> +	 * in cases where last entry filled in a 'next' pointer.
->> +	 */
->> +	if (i)
->> +		updates[i-1].next = NULL;
->> +
-> 
-> This really looks like the bug is in the code above this where we
-> fill in the updates array for each of the sibling cpus. The code
-> there assumes that if the current update entry is not the end that
-> there will be more updates and blindly sets the next pointer.
-> 
-> Perhaps correcting the logic in that code to next pointers. Set the
-> ud pointer to NULL before the outer for_each_cpu() loop. Then in the
-> inner for_each_cpu(sibling,...) loop update the ud-> next pointer as
-> the first operation.
-> 
-> 		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
-> 			if (ud)
-> 				ud->next = &updates[i];
-> 			...
-> 		}
-> 
-> Obviously untested, but I think this would prevent setting the next
-> pointer in the last update entry that is filled out erroneously.
+Where can I read about this errata ?
 
-The above fragment looks to skip initialization of the 'next' pointer
-in the first element of the the 'updates'.  That would abort subsequent
-evaluation of the array too soon, I believe.  I would like to take another look
-to see whether the current check 'if (i < weight) ud->next = &updates[i];'
-is having problems due to i being 0-relative and weight being 1-relative.
-
->   
-> -Nathan
-
-Michael
-
-> 
->>  	pr_debug("Topology update for the following CPUs:\n");
->>  	if (cpumask_weight(&updated_cpus)) {
->>  		for (ud = &updates[0]; ud; ud = ud->next) {
->>
-> 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+ Jocke
