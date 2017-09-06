@@ -1,50 +1,36 @@
-Return-Path: <srs0=tuhh=ah=linux.vnet.ibm.com=brking@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnPsq5XrVzDrKf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 23:42:55 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xnPsq4dfLz8t3H
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 23:42:55 +1000 (AEST)
+Return-Path: <nfont@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xnPsq0xB0z9sNV
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2017 23:42:54 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnQk93HxpzDrKx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 00:21:21 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v86DgRXO128812
- for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2017 09:42:53 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ctckutdc9-1
+ v86EL9ZX058185
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Sep 2017 10:21:19 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ctey86n1q-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 06 Sep 2017 09:42:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Sep 2017 10:21:15 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Wed, 6 Sep 2017 09:42:52 -0400
-Subject: Re: [PATCH] powerpc/powernv: Turn on SCSI_AACRAID in powernv_defconfig
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, "dougmill@us.ibm.com" <dougmill@us.ibm.com>
-References: <1503899802-13248-1-git-send-email-mpe@ellerman.id.au>
- <72f7e609-58b9-32dc-4090-fdbd97d0c924@linux.vnet.ibm.com>
- <87h8wq1uvv.fsf@concordia.ellerman.id.au>
- <58487ce7-aea1-39c1-b9c8-cd8435e493e0@linux.vnet.ibm.com>
- <87shg91fgc.fsf@concordia.ellerman.id.au> <87y3q0hxtm.fsf@linux.vnet.ibm.com>
- <877exjud52.fsf@concordia.ellerman.id.au>
- <5011affa-e820-1362-2af2-3507f8aeb914@linux.vnet.ibm.com>
- <87mv6f56vl.fsf@concordia.ellerman.id.au> <87y3pvgyko.fsf@linux.vnet.ibm.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Wed, 6 Sep 2017 08:42:50 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 6 Sep 2017 10:20:27 -0400
+Subject: Re: [PATCH V13 1/4] powerpc/vphn: Update CPU topology when VPHN
+ enabled
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ John Allen <jallen@linux.vnet.ibm.com>
+References: <9d924c2f-9ad7-f544-519c-5ae967105069@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 6 Sep 2017 09:20:23 -0500
 MIME-Version: 1.0
-In-Reply-To: <87y3pvgyko.fsf@linux.vnet.ibm.com>
+In-Reply-To: <9d924c2f-9ad7-f544-519c-5ae967105069@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <38f27cd0-7f1a-b3ca-d8f3-615bd97637be@linux.vnet.ibm.com>
+Message-Id: <ed69e975-2282-0a50-484c-84db5156583e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,39 +40,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/03/2017 06:19 PM, Stewart Smith wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->>> 2. On a bare metal machine, if you set ipr.fast_reboot=1 on the skiboot
->>>    kernel, then we should also avoid resetting the ipr adapter, so ipr
->>>    init on the kernel being kexec booted from skiboot should be extremely fast. 
->>
->> OK, I didn't know that was an option, so that might help.
->>
->>> ...
->>> If you've got cases where ipr init is taking a long time, I'd be
->>> interested to know what scenarios are the most annoying to see if there
->>> is any opportunity to improve.
->>
->> Yeah booting bare metal is where I see it (not using ipr.fast_reboot).
+On 09/01/2017 10:48 AM, Michael Bringmann wrote:
+> powerpc/vphn: On Power systems with shared configurations of CPUs
+> and memory, there are some issues with the association of additional
+> CPUs and memory to nodes when hot-adding resources.  This patch
+> corrects the currently broken capability to set the topology for
+> shared CPUs in LPARs.  At boot time for shared CPU lpars, the
+> topology for each CPU was being set to node zero.  Now when
+> numa_update_cpu_topology() is called appropriately, the Virtual
+> Processor Home Node (VPHN) capabilities information provided by the
+> pHyp allows the appropriate node in the shared configuration to be
+> selected for the CPU.
 > 
-> Hrm... We should probably enable that by default for petitboot then.
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> ---
+> Changes in V13:
+>   -- Split patch for improved review
+> ---
+>  arch/powerpc/mm/numa.c |   31 ++++++++++++++++++++++++++++---
+>  1 file changed, 28 insertions(+), 3 deletions(-)
 > 
-> It'd at least cut some time off booting straight through to OS.
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index b95c584..312f6ee 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -1153,6 +1153,8 @@ struct topology_update_data {
+>  static int vphn_enabled;
+>  static int prrn_enabled;
+>  static void reset_topology_timer(void);
+> +static int topology_inited;
+> +static int topology_update_needed;
+> 
+>  /*
+>   * Store the current values of the associativity change counters in the
+> @@ -1246,6 +1248,11 @@ static long vphn_get_associativity(unsigned long cpu,
+>  			"hcall_vphn() experienced a hardware fault "
+>  			"preventing VPHN. Disabling polling...\n");
+>  		stop_topology_update();
+> +		break;
+> +	case H_SUCCESS:
+> +		dbg("VPHN hcall succeeded. Reset polling...\n");
+> +		timed_topology_update(0);
+> +		break;
+>  	}
+> 
+>  	return rc;
+> @@ -1323,8 +1330,11 @@ int numa_update_cpu_topology(bool cpus_locked)
+>  	struct device *dev;
+>  	int weight, new_nid, i = 0;
+> 
+> -	if (!prrn_enabled && !vphn_enabled)
+> +	if (!prrn_enabled && !vphn_enabled) {
+> +		if (!topology_inited)
+> +			topology_update_needed = 1;
+>  		return 0;
+> +	}
+> 
+>  	weight = cpumask_weight(&cpu_associativity_changes_mask);
+>  	if (!weight)
+> @@ -1363,6 +1373,8 @@ int numa_update_cpu_topology(bool cpus_locked)
+>  			cpumask_andnot(&cpu_associativity_changes_mask,
+>  					&cpu_associativity_changes_mask,
+>  					cpu_sibling_mask(cpu));
+> +			pr_info("Assoc chg gives same node %d for cpu%d\n",
+> +					new_nid, cpu);
 
-Agreed. I'd be interested to hear if that helps address the issue
-Michael is seeing.
+As mentioned previously, this should either be removed or changed to a
+debug statement.
 
-You can easily test this by exiting to a petitboot shell:
+>  			cpu = cpu_last_thread_sibling(cpu);
+>  			continue;
+>  		}
+> @@ -1433,6 +1445,7 @@ int numa_update_cpu_topology(bool cpus_locked)
+> 
+>  out:
+>  	kfree(updates);
+> +	topology_update_needed = 0;
+>  	return changed;
+>  }
+> 
+> @@ -1453,6 +1466,13 @@ static void topology_schedule_update(void)
+>  	schedule_work(&topology_work);
+>  }
+> 
+> +void shared_topology_update(void)
+> +{
+> +	if (firmware_has_feature(FW_FEATURE_VPHN) &&
+> +		   lppaca_shared_proc(get_lppaca()))
 
-echo 1 > /sys/module/ipr/parameters/fast_reboot
+Could we just check vphn_enabled here? The init routine will set this to true
+only if the feature is supported and we are using shared processors.
 
-Then go back to petitboot and boot the OS.
+Also, this routine seems a bit odd. The only place it is called from is an
+init routine, topology_update_init. Is there a reason this check couldn't just
+be in that routine, or it seems like you could just call topology_schedule_update
+directly from start_topology_update when vphn is initialized.
 
-Thanks,
+-Nathan
 
-Brian
-
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+> +		topology_schedule_update();
+> +}
+> +
+>  static void topology_timer_fn(unsigned long ignored)
+>  {
+>  	if (prrn_enabled && cpumask_weight(&cpu_associativity_changes_mask))
+> @@ -1519,7 +1539,6 @@ int start_topology_update(void)
+>  	if (firmware_has_feature(FW_FEATURE_PRRN)) {
+>  		if (!prrn_enabled) {
+>  			prrn_enabled = 1;
+> -			vphn_enabled = 0;
+>  #ifdef CONFIG_SMP
+>  			rc = of_reconfig_notifier_register(&dt_update_nb);
+>  #endif
+> @@ -1527,7 +1546,6 @@ int start_topology_update(void)
+>  	} else if (firmware_has_feature(FW_FEATURE_VPHN) &&
+>  		   lppaca_shared_proc(get_lppaca())) {
+>  		if (!vphn_enabled) {
+> -			prrn_enabled = 0;
+>  			vphn_enabled = 1;
+>  			setup_cpu_associativity_change_counters();
+>  			init_timer_deferrable(&topology_timer);
+> @@ -1613,9 +1631,16 @@ static int topology_update_init(void)
+>  	if (topology_updates_enabled)
+>  		start_topology_update();
+> 
+> +	shared_topology_update();
+> +
+>  	if (!proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops))
+>  		return -ENOMEM;
+> 
+> +	topology_inited = 1;
+> +	if (topology_update_needed)
+> +		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
+> +					nr_cpumask_bits);
+> +
+>  	return 0;
+>  }
+>  device_initcall(topology_update_init);
+> 
