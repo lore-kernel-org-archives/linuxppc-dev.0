@@ -1,35 +1,34 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <lukma@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnDvM6HV2zDqZ7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 16:58:39 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v866trUI056095
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Sep 2017 02:58:37 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ctc018r7w-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Sep 2017 02:58:37 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 6 Sep 2017 07:58:35 +0100
-Subject: Re: [PATCH v2 2/2] powerpc/powernv/npu: Don't explicitly flush nmmu
- tlb
-To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: arbab@linux.vnet.ibm.com, mpe@ellerman.id.au, andrew.donnellan@au1.ibm.com
-References: <1504662540-27527-1-git-send-email-alistair@popple.id.au>
- <1504662540-27527-2-git-send-email-alistair@popple.id.au>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Wed, 6 Sep 2017 08:58:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnHG72Z9gzDqh5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 18:45:01 +1000 (AEST)
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1504436701-20700-1-git-send-email-lukma@denx.de>
+ <AM5PR0401MB262706674539BFE651706CC6E3900@AM5PR0401MB2627.eurprd04.prod.outlook.com>
+ <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
+ <20170905052031.GB2774@Asurada-CZ80>
+ <819784e1-910b-6833-997a-2097e147bd0c@denx.de>
+ <20170905181108.GB23906@Asurada-Nvidia>
+ <cfb8f844-87aa-f1f3-bd55-4f2b60f3cf88@denx.de>
+ <CAOMZO5BpEo2+kSrzkM90xS-h6i5Ozy8Wr2tn0pmhsXnY0x6Lrg@mail.gmail.com>
+From: =?UTF-8?Q?=c5=81ukasz_Majewski?= <lukma@denx.de>
+Message-ID: <62c203f0-4718-fc32-9054-771f265e3ef0@denx.de>
+Date: Wed, 6 Sep 2017 10:44:48 +0200
 MIME-Version: 1.0
-In-Reply-To: <1504662540-27527-2-git-send-email-alistair@popple.id.au>
+In-Reply-To: <CAOMZO5BpEo2+kSrzkM90xS-h6i5Ozy8Wr2tn0pmhsXnY0x6Lrg@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <d645fb72-5cf3-9661-136f-9633ca94a6af@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,108 +38,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Fabio,
 
-
-Le 06/09/2017 à 03:49, Alistair Popple a écrit :
-> The nest mmu required an explicit flush as a tlbi would not flush it in the
-> same way as the core. However an alternate firmware fix exists which should
-> eliminate the need for this flush, so instead add a device-tree property
-> (ibm,nmmu-flush) on the NVLink2 PHB to enable it only if required.
+> On Tue, Sep 5, 2017 at 6:13 PM, Łukasz Majewski <lukma@denx.de> wrote:
 > 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> ---
-
-FWIW,
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-> Changes for v2:
->   - Use mm_context_add_copro()/mm_context_remove_copro() instead
->     of inc_mm_active_cpus()/dec_mm_active_cpus()
+>> &i2c1 {
+>>          clock-frequency = <400000>;
+>>          pinctrl-names = "default";
+>>          pinctrl-0 = <&pinctrl_i2c1>;
+>>          status = "okay";
+>>
+>>          codec: tfa9879@6C {
+>>                  #sound-dai-cells = <0>;
+>>                  compatible = "tfa9879";
 > 
->   arch/powerpc/platforms/powernv/npu-dma.c | 28 +++++++++++++++++++++++-----
->   arch/powerpc/platforms/powernv/pci.h     |  3 +++
->   2 files changed, 26 insertions(+), 5 deletions(-)
+> This codec seems to miss device tree support. Don't you need something
+> like this?
 > 
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> index 2fff9a65..f6cbc1a 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -395,6 +395,7 @@ struct npu_context {
->   	struct pci_dev *npdev[NV_MAX_NPUS][NV_MAX_LINKS];
->   	struct mmu_notifier mn;
->   	struct kref kref;
-> +	bool nmmu_flush;
+> --- a/sound/soc/codecs/tfa9879.c
+> +++ b/sound/soc/codecs/tfa9879.c
+> @@ -312,9 +312,15 @@ static const struct i2c_device_id tfa9879_i2c_id[] = {
+>   };
+>   MODULE_DEVICE_TABLE(i2c, tfa9879_i2c_id);
 > 
->   	/* Callback to stop translation requests on a given GPU */
->   	struct npu_context *(*release_cb)(struct npu_context *, void *);
-> @@ -545,11 +546,13 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
->   	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS];
->   	unsigned long pid = npu_context->mm->context.id;
-> 
-> -	/*
-> -	 * Unfortunately the nest mmu does not support flushing specific
-> -	 * addresses so we have to flush the whole mm.
-> -	 */
-> -	flush_all_mm(npu_context->mm);
-> +	if (npu_context->nmmu_flush)
-> +		/*
-> +		 * Unfortunately the nest mmu does not support flushing specific
-> +		 * addresses so we have to flush the whole mm once before
-> +		 * shooting down the GPU translation.
-> +		 */
-> +		flush_all_mm(npu_context->mm);
-> 
->   	/*
->   	 * Loop over all the NPUs this process is active on and launch
-> @@ -722,6 +725,16 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
->   		return ERR_PTR(-ENODEV);
->   	npu_context->npdev[npu->index][nvlink_index] = npdev;
-> 
-> +	if (!nphb->npu.nmmu_flush) {
-> +		/*
-> +		 * If we're not explicitly flushing ourselves we need to mark
-> +		 * the thread for global flushes
-> +		 */
-> +		npu_context->nmmu_flush = false;
-> +		mm_context_add_copro(mm);
-> +	} else
-> +		npu_context->nmmu_flush = true;
+> +static const struct of_device_id tfa9879_of_match[] = {
+> +       { .compatible = "nxp,tfa9879", },
+> +       { }
+> +};
 > +
->   	return npu_context;
->   }
->   EXPORT_SYMBOL(pnv_npu2_init_context);
-> @@ -731,6 +744,9 @@ static void pnv_npu2_release_context(struct kref *kref)
->   	struct npu_context *npu_context =
->   		container_of(kref, struct npu_context, kref);
+>   static struct i2c_driver tfa9879_i2c_driver = {
+>          .driver = {
+>                  .name = "tfa9879",
+> +               .of_match_table = tfa9879_of_match,
+>          },
+>          .probe = tfa9879_i2c_probe,
+>          .remove = tfa9879_i2c_remove,
 > 
-> +	if (!npu_context->nmmu_flush)
-> +		mm_context_remove_copro(npu_context->mm);
-> +
->   	npu_context->mm->context.npu_context = NULL;
->   	mmu_notifier_unregister(&npu_context->mn,
->   				npu_context->mm);
-> @@ -819,6 +835,8 @@ int pnv_npu2_init(struct pnv_phb *phb)
->   	static int npu_index;
->   	uint64_t rc = 0;
-> 
-> +	phb->npu.nmmu_flush =
-> +		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
->   	for_each_child_of_node(phb->hose->dn, dn) {
->   		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
->   		if (gpdev) {
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index a95273c..22025c6 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -187,6 +187,9 @@ struct pnv_phb {
-> 
->   		/* Bitmask for MMIO register usage */
->   		unsigned long mmio_atsd_usage;
-> +
-> +		/* Do we need to explicitly flush the nest mmu? */
-> +		bool nmmu_flush;
->   	} npu;
-> 
->   #ifdef CONFIG_CXL_BASE
-> 
+
+
+Maybe it should be added, but the driver is probed via I2C "node" in dts.
+
+I took the codec (tfa9879) driver as-is.
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+--
+
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
