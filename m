@@ -1,17 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnBkk3TxFzDrJQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 15:21:02 +1000 (AEST)
-Message-ID: <1504675255.15183.1.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc/kvm/xive: Don't access TIMA using byte accesses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>
-Date: Wed, 06 Sep 2017 15:20:55 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnDvM6HV2zDqZ7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 16:58:39 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v866trUI056095
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Sep 2017 02:58:37 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ctc018r7w-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Sep 2017 02:58:37 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 6 Sep 2017 07:58:35 +0100
+Subject: Re: [PATCH v2 2/2] powerpc/powernv/npu: Don't explicitly flush nmmu
+ tlb
+To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: arbab@linux.vnet.ibm.com, mpe@ellerman.id.au, andrew.donnellan@au1.ibm.com
+References: <1504662540-27527-1-git-send-email-alistair@popple.id.au>
+ <1504662540-27527-2-git-send-email-alistair@popple.id.au>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 6 Sep 2017 08:58:31 +0200
+MIME-Version: 1.0
+In-Reply-To: <1504662540-27527-2-git-send-email-alistair@popple.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <d645fb72-5cf3-9661-136f-9633ca94a6af@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,70 +39,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The TIMA only supports byte stores to the CPPR, for everything else,
-we need to do a 32-bit or 64-bit load.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Fixes: 2c4fb78f78b6e420604ee1b05bdfb5c1d637869f
----
- arch/powerpc/kvm/book3s_hv_rm_xive.c    | 1 -
- arch/powerpc/kvm/book3s_xive.c          | 1 -
- arch/powerpc/kvm/book3s_xive_template.c | 7 ++++---
- 3 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_xive.c b/arch/powerpc/kvm/book3s_hv_rm_xive.c
-index abf5f01b6eb1..5b81a807d742 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_xive.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_xive.c
-@@ -38,7 +38,6 @@ static inline void __iomem *get_tima_phys(void)
- #define __x_tima		get_tima_phys()
- #define __x_eoi_page(xd)	((void __iomem *)((xd)->eoi_page))
- #define __x_trig_page(xd)	((void __iomem *)((xd)->trig_page))
--#define __x_readb	__raw_rm_readb
- #define __x_writeb	__raw_rm_writeb
- #define __x_readw	__raw_rm_readw
- #define __x_readq	__raw_rm_readq
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index 08b200a0bbce..13304622ab1c 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -48,7 +48,6 @@
- #define __x_tima		xive_tima
- #define __x_eoi_page(xd)	((void __iomem *)((xd)->eoi_mmio))
- #define __x_trig_page(xd)	((void __iomem *)((xd)->trig_mmio))
--#define __x_readb	__raw_readb
- #define __x_writeb	__raw_writeb
- #define __x_readw	__raw_readw
- #define __x_readq	__raw_readq
-diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
-index d1ed2c41b5d2..c7a5deadd1cc 100644
---- a/arch/powerpc/kvm/book3s_xive_template.c
-+++ b/arch/powerpc/kvm/book3s_xive_template.c
-@@ -28,7 +28,8 @@ static void GLUE(X_PFX,ack_pending)(struct kvmppc_xive_vcpu *xc)
- 	 * bit.
- 	 */
- 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
--		u8 pipr = __x_readb(__x_tima + TM_QW1_OS + TM_PIPR);
-+		__be64 qw1 = __x_readq(__x_tima + TM_QW1_OS);
-+		u8 pipr = be64_to_cpu(qw1) & 0xff;
- 		if (pipr >= xc->hw_cppr)
- 			return;
- 	}
-@@ -336,7 +337,6 @@ X_STATIC unsigned long GLUE(X_PFX,h_ipoll)(struct kvm_vcpu *vcpu, unsigned long
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
- 	u8 pending = xc->pending;
- 	u32 hirq;
--	u8 pipr;
- 
- 	pr_devel("H_IPOLL(server=%ld)\n", server);
- 
-@@ -353,7 +353,8 @@ X_STATIC unsigned long GLUE(X_PFX,h_ipoll)(struct kvm_vcpu *vcpu, unsigned long
- 		pending = 0xff;
- 	} else {
- 		/* Grab pending interrupt if any */
--		pipr = __x_readb(__x_tima + TM_QW1_OS + TM_PIPR);
-+		__be64 qw1 = __x_readq(__x_tima + TM_QW1_OS);
-+		u8 pipr = be64_to_cpu(qw1) & 0xff;
- 		if (pipr < 8)
- 			pending |= 1 << pipr;
- 	}
+Le 06/09/2017 à 03:49, Alistair Popple a écrit :
+> The nest mmu required an explicit flush as a tlbi would not flush it in the
+> same way as the core. However an alternate firmware fix exists which should
+> eliminate the need for this flush, so instead add a device-tree property
+> (ibm,nmmu-flush) on the NVLink2 PHB to enable it only if required.
+> 
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> ---
+
+FWIW,
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+
+> Changes for v2:
+>   - Use mm_context_add_copro()/mm_context_remove_copro() instead
+>     of inc_mm_active_cpus()/dec_mm_active_cpus()
+> 
+>   arch/powerpc/platforms/powernv/npu-dma.c | 28 +++++++++++++++++++++++-----
+>   arch/powerpc/platforms/powernv/pci.h     |  3 +++
+>   2 files changed, 26 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> index 2fff9a65..f6cbc1a 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -395,6 +395,7 @@ struct npu_context {
+>   	struct pci_dev *npdev[NV_MAX_NPUS][NV_MAX_LINKS];
+>   	struct mmu_notifier mn;
+>   	struct kref kref;
+> +	bool nmmu_flush;
+> 
+>   	/* Callback to stop translation requests on a given GPU */
+>   	struct npu_context *(*release_cb)(struct npu_context *, void *);
+> @@ -545,11 +546,13 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+>   	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS];
+>   	unsigned long pid = npu_context->mm->context.id;
+> 
+> -	/*
+> -	 * Unfortunately the nest mmu does not support flushing specific
+> -	 * addresses so we have to flush the whole mm.
+> -	 */
+> -	flush_all_mm(npu_context->mm);
+> +	if (npu_context->nmmu_flush)
+> +		/*
+> +		 * Unfortunately the nest mmu does not support flushing specific
+> +		 * addresses so we have to flush the whole mm once before
+> +		 * shooting down the GPU translation.
+> +		 */
+> +		flush_all_mm(npu_context->mm);
+> 
+>   	/*
+>   	 * Loop over all the NPUs this process is active on and launch
+> @@ -722,6 +725,16 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+>   		return ERR_PTR(-ENODEV);
+>   	npu_context->npdev[npu->index][nvlink_index] = npdev;
+> 
+> +	if (!nphb->npu.nmmu_flush) {
+> +		/*
+> +		 * If we're not explicitly flushing ourselves we need to mark
+> +		 * the thread for global flushes
+> +		 */
+> +		npu_context->nmmu_flush = false;
+> +		mm_context_add_copro(mm);
+> +	} else
+> +		npu_context->nmmu_flush = true;
+> +
+>   	return npu_context;
+>   }
+>   EXPORT_SYMBOL(pnv_npu2_init_context);
+> @@ -731,6 +744,9 @@ static void pnv_npu2_release_context(struct kref *kref)
+>   	struct npu_context *npu_context =
+>   		container_of(kref, struct npu_context, kref);
+> 
+> +	if (!npu_context->nmmu_flush)
+> +		mm_context_remove_copro(npu_context->mm);
+> +
+>   	npu_context->mm->context.npu_context = NULL;
+>   	mmu_notifier_unregister(&npu_context->mn,
+>   				npu_context->mm);
+> @@ -819,6 +835,8 @@ int pnv_npu2_init(struct pnv_phb *phb)
+>   	static int npu_index;
+>   	uint64_t rc = 0;
+> 
+> +	phb->npu.nmmu_flush =
+> +		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
+>   	for_each_child_of_node(phb->hose->dn, dn) {
+>   		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
+>   		if (gpdev) {
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index a95273c..22025c6 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -187,6 +187,9 @@ struct pnv_phb {
+> 
+>   		/* Bitmask for MMIO register usage */
+>   		unsigned long mmio_atsd_usage;
+> +
+> +		/* Do we need to explicitly flush the nest mmu? */
+> +		bool nmmu_flush;
+>   	} npu;
+> 
+>   #ifdef CONFIG_CXL_BASE
+> 
