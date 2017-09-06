@@ -1,28 +1,52 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0040.outbound.protection.outlook.com [104.47.41.40])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <srs0=mryy=ah=au1.ibm.com=benh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnf1L3pf9zDrVk
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 08:50:13 +1000 (AEST)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
- <york.sun@nxp.com>
-Subject: Re: Machine Check in P2010(e500v2)
-Date: Wed, 6 Sep 2017 22:50:05 +0000
-Message-ID: <1504738204.27247.133.camel@infinera.com>
-References: <1504265576.20777.61.camel@infinera.com>
- <1504600831.27247.20.camel@infinera.com>
- <VI1PR04MB2078E4FFD1B27961F63D88689A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <AM4PR0401MB16992DFADBD59ADEF8E3ACC08F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504729020.27247.120.camel@infinera.com>
- <AM4PR0401MB16990A5A3D77ED57C9A645D98F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504731221.27247.126.camel@infinera.com>
- <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-In-Reply-To: <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="iso-8859-15"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnf8P4ssNzDrVk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 08:56:21 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xnf8P4L16z8w2j
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 08:56:21 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xnf8P1LY0z9t2R
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2017 08:56:20 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v86MrfYM135865
+ for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2017 18:56:18 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ctsxdrtj1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 06 Sep 2017 18:56:18 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
+ Thu, 7 Sep 2017 08:56:16 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v86MuE0n41091218
+ for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2017 08:56:14 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v86Mu5cV002972
+ for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2017 08:56:05 +1000
+Subject: Re: [rfc 2/3] powerpc/mce: Extract physical_address for UE errors
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Balbir Singh <bsingharora@gmail.com>, npiggin@gmail.com,
+ mahesh@linux.vnet.ibm.com, alistair@popple.id.au
+Cc: linuxppc-dev@ozlabs.org
+Date: Thu, 07 Sep 2017 08:56:12 +1000
+In-Reply-To: <20170905041555.27696-3-bsingharora@gmail.com>
+References: <20170905041555.27696-1-bsingharora@gmail.com>
+ <20170905041555.27696-3-bsingharora@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1504738572.2371.3.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,112 +56,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-09-06 at 21:13 +0000, Leo Li wrote:
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> > Sent: Wednesday, September 06, 2017 3:54 PM
-> > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York Su=
-n
-> > <york.sun@nxp.com>
-> > Subject: Re: Machine Check in P2010(e500v2)
-> >=20
-> > On Wed, 2017-09-06 at 20:28 +0000, Leo Li wrote:
-> > > > -----Original Message-----
-> > > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> > > > Sent: Wednesday, September 06, 2017 3:17 PM
-> > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; Yor=
-k
-> > > > Sun <york.sun@nxp.com>
-> > > > Subject: Re: Machine Check in P2010(e500v2)
-> > > >=20
-> > > > On Wed, 2017-09-06 at 19:31 +0000, Leo Li wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: York Sun
-> > > > > > Sent: Wednesday, September 06, 2017 10:38 AM
-> > > > > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-
-> > > > > > dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>
-> > > > > > Subject: Re: Machine Check in P2010(e500v2)
-> > > > > >=20
-> > > > > > Scott is no longer with Freescale/NXP. Adding Leo.
-> > > > > >=20
-> > > > > > On 09/05/2017 01:40 AM, Joakim Tjernlund wrote:
-> > > > > > > So after some debugging I found this bug:
-> > > > > > > @@ -996,7 +998,7 @@ int fsl_pci_mcheck_exception(struct pt_re=
-gs
-> >=20
-> > *regs)
-> > > > > > >          if (is_in_pci_mem_space(addr)) {
-> > > > > > >                  if (user_mode(regs)) {
-> > > > > > >                          pagefault_disable();
-> > > > > > > -                       ret =3D get_user(regs->nip, &inst);
-> > > > > > > +                       ret =3D get_user(inst, (__u32 __user
-> > > > > > > + *)regs->nip);
-> > > > > > >                          pagefault_enable();
-> > > > > > >                  } else {
-> > > > > > >                          ret =3D probe_kernel_address(regs->n=
-ip,
-> > > > > > > inst);
-> > > > > > >=20
-> > > > > > > However, the kernel still locked up after fixing that.
-> > > > > > > Now I wonder why this fixup is there in the first place? The
-> > > > > > > routine will not really fixup the insn, just return 0xfffffff=
-f
-> > > > > > > for the failing read and then advance the process NIP.
-> > > > >=20
-> > > > > You are right.  The code here only gives 0xffffffff to the load
-> > > > > instructions and
-> > > >=20
-> > > > continue with the next instruction when the load instruction is
-> > > > causing the machine check.  This will prevent a system lockup when
-> > > > reading from PCI/RapidIO device which is link down.
-> > > > >=20
-> > > > > I don't know what is actual problem in your case.  Maybe it is a
-> > > > > write
-> > > >=20
-> > > > instruction instead of read?   Or the code is in a infinite loop wa=
-iting for a
-> >=20
-> > valid
-> > > > read result?  Are you able to do some further debugging with the NI=
-P
-> > > > correctly printed?
-> > > > >=20
-> > > >=20
-> > > > According to the MC it is a Read and the NIP also leads to a read i=
-n the
-> >=20
-> > program.
-> > > > ATM, I have disabled the fixup but I will enable that again.
-> > > > Question, is it safe add a small printk when this MC happens(after
-> > > > fixing up)? I need to see that it has happened as the error is some=
-what
-> >=20
-> > random.
-> > >=20
-> > > I think it is safe to add printk as the current machine check handler=
-s are also
-> >=20
-> > using printk.
-> >=20
-> > I hope so, but if the fixup fires there is no printk at all so I was a =
-bit unsure.
-> > Don't like this fixup though, is there not a better way than faking a r=
-ead to user
-> > space(or kernel for that matter) ?
->=20
-> I don't have a better idea.  Without the fixup, the offending load instru=
-ction will never finish if there is anything wrong with the backing device =
-and freeze the whole system.  Do you have any suggestion in mind?
->=20
+On Tue, 2017-09-05 at 14:15 +1000, Balbir Singh wrote:
+>  void save_mce_event(struct pt_regs *regs, long handled,
+>                     struct mce_error_info *mce_err,
+> -                   uint64_t nip, uint64_t addr)
+> +                   uint64_t nip, uint64_t addr, uint64_t phys_addr)
+>  {
+>         int index = __this_cpu_inc_return(mce_nest_count) - 1;
+>         struct machine_check_event *mce = this_cpu_ptr(&mce_event[index]);
+> @@ -140,6 +140,10 @@ void save_mce_event(struct pt_regs *regs, long handled,
+>         } else if (mce->error_type == MCE_ERROR_TYPE_UE) {
+>                 mce->u.ue_error.effective_address_provided = true;
+>                 mce->u.ue_error.effective_address = addr;
+> +               if (phys_addr != ULONG_MAX) {
+> +                       mce->u.ue_error.physical_address_provided = true;
+> +                       mce->u.ue_error.physical_address = phys_addr;
+> +               }
+>         }
+>         return;
 
-But it never finishes the load, it just fakes a load of 0xfffffffff, for us=
-er space I rather have it signal
-a SIGBUS but that does not seem to work either, at least not for us but tha=
-t could be a bug in general MC code
- maybe.
-This fixup might be valid for kernel only as it has never worked for user s=
-pace due to the bug I found.
+Where is "addr" coming from ? Keep in mind that on P9 at least, a UE
+will *not* give you an EA in DAR in most cases.
 
-Where can I read about this errata ?
-
- Jocke
+Ben.
