@@ -1,34 +1,17 @@
-Return-Path: <srs0=f3gt=ah=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xn9m55JGdzDrJL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 14:37:09 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xn9m53R9Pz8t37
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 14:37:09 +1000 (AEST)
-Received: from mail-vk0-x22d.google.com (mail-vk0-x22d.google.com
- [IPv6:2607:f8b0:400c:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xn9m46FwFz9sNV
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2017 14:37:08 +1000 (AEST)
-Received: by mail-vk0-x22d.google.com with SMTP id x85so10172623vkx.5
- for <linuxppc-dev@ozlabs.org>; Tue, 05 Sep 2017 21:37:08 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170906103621.092395dd@roar.ozlabs.ibm.com>
-References: <20170905041555.27696-1-bsingharora@gmail.com>
- <20170905041555.27696-3-bsingharora@gmail.com>
- <20170906103621.092395dd@roar.ozlabs.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 6 Sep 2017 14:37:05 +1000
-Message-ID: <CAKTCnzmWiNgW1Q8A6S30=gTn-EuLQYVBneXX9MKHQOH+n8buAg@mail.gmail.com>
-Subject: Re: [rfc 2/3] powerpc/mce: Extract physical_address for UE errors
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Alistair Popple <alistair@popple.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnBkk3TxFzDrJQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 15:21:02 +1000 (AEST)
+Message-ID: <1504675255.15183.1.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/kvm/xive: Don't access TIMA using byte accesses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>
+Date: Wed, 06 Sep 2017 15:20:55 +1000
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,178 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 6, 2017 at 10:36 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Tue,  5 Sep 2017 14:15:54 +1000
-> Balbir Singh <bsingharora@gmail.com> wrote:
->
->> Walk the page table for NIP and extract the instruction. Then
->> use the instruction to find the effective address via analyse_instr().
->>
->> We might have page table walking races, but we expect them to
->> be rare, the physical address extraction is best effort. The idea
->> is to then hook up this infrastructure to memory failure eventually.
->
-> Cool. Too bad hardware doesn't give us the RA.
->
->>
->> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
->> ---
->>  arch/powerpc/include/asm/mce.h  |  2 +-
->>  arch/powerpc/kernel/mce.c       |  6 ++++-
->>  arch/powerpc/kernel/mce_power.c | 60 +++++++++++++++++++++++++++++++++++++----
->>  3 files changed, 61 insertions(+), 7 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
->> index 75292c7..3a1226e 100644
->> --- a/arch/powerpc/include/asm/mce.h
->> +++ b/arch/powerpc/include/asm/mce.h
->> @@ -204,7 +204,7 @@ struct mce_error_info {
->>
->>  extern void save_mce_event(struct pt_regs *regs, long handled,
->>                          struct mce_error_info *mce_err, uint64_t nip,
->> -                        uint64_t addr);
->> +                        uint64_t addr, uint64_t phys_addr);
->>  extern int get_mce_event(struct machine_check_event *mce, bool release);
->>  extern void release_mce_event(void);
->>  extern void machine_check_queue_event(void);
->> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
->> index e254399..f41a75d 100644
->> --- a/arch/powerpc/kernel/mce.c
->> +++ b/arch/powerpc/kernel/mce.c
->> @@ -82,7 +82,7 @@ static void mce_set_error_info(struct machine_check_event *mce,
->>   */
->>  void save_mce_event(struct pt_regs *regs, long handled,
->>                   struct mce_error_info *mce_err,
->> -                 uint64_t nip, uint64_t addr)
->> +                 uint64_t nip, uint64_t addr, uint64_t phys_addr)
->>  {
->>       int index = __this_cpu_inc_return(mce_nest_count) - 1;
->>       struct machine_check_event *mce = this_cpu_ptr(&mce_event[index]);
->> @@ -140,6 +140,10 @@ void save_mce_event(struct pt_regs *regs, long handled,
->>       } else if (mce->error_type == MCE_ERROR_TYPE_UE) {
->>               mce->u.ue_error.effective_address_provided = true;
->>               mce->u.ue_error.effective_address = addr;
->> +             if (phys_addr != ULONG_MAX) {
->> +                     mce->u.ue_error.physical_address_provided = true;
->> +                     mce->u.ue_error.physical_address = phys_addr;
->> +             }
->>       }
->>       return;
->>  }
->> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
->> index b76ca19..b77a698 100644
->> --- a/arch/powerpc/kernel/mce_power.c
->> +++ b/arch/powerpc/kernel/mce_power.c
->> @@ -27,6 +27,25 @@
->>  #include <asm/mmu.h>
->>  #include <asm/mce.h>
->>  #include <asm/machdep.h>
->> +#include <asm/pgtable.h>
->> +#include <asm/pte-walk.h>
->> +#include <asm/sstep.h>
->> +
->> +static unsigned long addr_to_pfn(struct mm_struct *mm, unsigned long addr)
->> +{
->> +     pte_t *ptep;
->> +     unsigned long flags;
->> +
->> +     local_irq_save(flags);
->> +     if (mm == current->mm)
->> +             ptep = find_current_mm_pte(mm->pgd, addr, NULL, NULL);
->> +     else
->> +             ptep = find_init_mm_pte(addr, NULL);
->> +     local_irq_restore(flags);
->> +     if (!ptep)
->> +             return ULONG_MAX;
->> +     return pte_pfn(*ptep);
->
-> I think you need to check that it's still cacheable memory here?
-> !pte_speical && pfn <= highest_memmap_pfn?
->
+The TIMA only supports byte stores to the CPPR, for everything else,
+we need to do a 32-bit or 64-bit load.
 
-find_*pte will return a NULL PTE, so we do have a check there. !pte_special is a
-good check to have, I'll add it
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Fixes: 2c4fb78f78b6e420604ee1b05bdfb5c1d637869f
+---
+ arch/powerpc/kvm/book3s_hv_rm_xive.c    | 1 -
+ arch/powerpc/kvm/book3s_xive.c          | 1 -
+ arch/powerpc/kvm/book3s_xive_template.c | 7 ++++---
+ 3 files changed, 4 insertions(+), 5 deletions(-)
 
-
->
->> +}
->>
->>  static void flush_tlb_206(unsigned int num_sets, unsigned int action)
->>  {
->> @@ -489,7 +508,8 @@ static int mce_handle_ierror(struct pt_regs *regs,
->>
->>  static int mce_handle_derror(struct pt_regs *regs,
->>               const struct mce_derror_table table[],
->> -             struct mce_error_info *mce_err, uint64_t *addr)
->> +             struct mce_error_info *mce_err, uint64_t *addr,
->> +             uint64_t *phys_addr)
->>  {
->>       uint64_t dsisr = regs->dsisr;
->>       int handled = 0;
->> @@ -555,7 +575,37 @@ static int mce_handle_derror(struct pt_regs *regs,
->>               mce_err->initiator = table[i].initiator;
->>               if (table[i].dar_valid)
->>                       *addr = regs->dar;
->> -
->> +             else if (mce_err->severity == MCE_SEV_ERROR_SYNC &&
->> +                             table[i].error_type == MCE_ERROR_TYPE_UE) {
->> +                     /*
->> +                      * Carefully look at the NIP to determine
->> +                      * the instruction to analyse. Reading the NIP
->> +                      * in real-mode is tricky and can lead to recursive
->> +                      * faults
->> +                      */
->
-> What recursive faults? If you ensure NIP is cacheable memory, I guess you
-> can get a recursive machine check from reading it, but that's probably
-> tolerable.
-
-
-Yep, just wanted to call it out here.
-
->
->> +                     int instr;
->> +                     struct mm_struct *mm;
->> +                     unsigned long nip = regs->nip;
->> +                     unsigned long pfn = 0, instr_addr;
->> +                     struct instruction_op op;
->> +                     struct pt_regs tmp = *regs;
->> +
->> +                     if (user_mode(regs))
->> +                             mm = current->mm;
->> +                     else
->> +                             mm = &init_mm;
->> +
->> +                     pfn = addr_to_pfn(mm, nip);
->> +                     if (pfn != ULONG_MAX) {
->> +                             instr_addr = (pfn << PAGE_SHIFT) + (nip & ~PAGE_MASK);
->> +                             instr = *(unsigned int *)(instr_addr);
->> +                             if (!analyse_instr(&op, &tmp, instr)) {
->> +                                     pfn = addr_to_pfn(mm, op.ea);
->> +                                     *addr = op.ea;
->> +                                     *phys_addr = pfn;
->> +                             }
->
-> Instruction may no longer be a load/store at this point, right? Or
-> instruction or page tables could have changed so this does not point to
-> a valid pfn of cacheable memory. memory_failure() has some checks, but
-> I wouldn't mind if you put some checks in here so you can enumerate all
-> the ways this can go wrong :P
-
-OK.. I'll add a comment or a warning to indicate the error, I suspect at this
-point, it means we raced w.r.t pte entry or we had a bad NIP/EA. It could
-also mean the opcode was not a load store.
-
->
-> Hopefully after Paulus's instruction analyzer rework you'll be able to
-> avoid the pt_regs on stack, but that's probably okay for a backport.
-> MCEs have a lot of stack and don't use too much.
->
-
-Yep, I kept it so that it could be backported, but I can change it in
-a follow-up
-patch
-
-Thanks for the detailed review!
-
-Balbir Singh.
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_xive.c b/arch/powerpc/kvm/book3s_hv_rm_xive.c
+index abf5f01b6eb1..5b81a807d742 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_xive.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_xive.c
+@@ -38,7 +38,6 @@ static inline void __iomem *get_tima_phys(void)
+ #define __x_tima		get_tima_phys()
+ #define __x_eoi_page(xd)	((void __iomem *)((xd)->eoi_page))
+ #define __x_trig_page(xd)	((void __iomem *)((xd)->trig_page))
+-#define __x_readb	__raw_rm_readb
+ #define __x_writeb	__raw_rm_writeb
+ #define __x_readw	__raw_rm_readw
+ #define __x_readq	__raw_rm_readq
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+index 08b200a0bbce..13304622ab1c 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -48,7 +48,6 @@
+ #define __x_tima		xive_tima
+ #define __x_eoi_page(xd)	((void __iomem *)((xd)->eoi_mmio))
+ #define __x_trig_page(xd)	((void __iomem *)((xd)->trig_mmio))
+-#define __x_readb	__raw_readb
+ #define __x_writeb	__raw_writeb
+ #define __x_readw	__raw_readw
+ #define __x_readq	__raw_readq
+diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
+index d1ed2c41b5d2..c7a5deadd1cc 100644
+--- a/arch/powerpc/kvm/book3s_xive_template.c
++++ b/arch/powerpc/kvm/book3s_xive_template.c
+@@ -28,7 +28,8 @@ static void GLUE(X_PFX,ack_pending)(struct kvmppc_xive_vcpu *xc)
+ 	 * bit.
+ 	 */
+ 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		u8 pipr = __x_readb(__x_tima + TM_QW1_OS + TM_PIPR);
++		__be64 qw1 = __x_readq(__x_tima + TM_QW1_OS);
++		u8 pipr = be64_to_cpu(qw1) & 0xff;
+ 		if (pipr >= xc->hw_cppr)
+ 			return;
+ 	}
+@@ -336,7 +337,6 @@ X_STATIC unsigned long GLUE(X_PFX,h_ipoll)(struct kvm_vcpu *vcpu, unsigned long
+ 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+ 	u8 pending = xc->pending;
+ 	u32 hirq;
+-	u8 pipr;
+ 
+ 	pr_devel("H_IPOLL(server=%ld)\n", server);
+ 
+@@ -353,7 +353,8 @@ X_STATIC unsigned long GLUE(X_PFX,h_ipoll)(struct kvm_vcpu *vcpu, unsigned long
+ 		pending = 0xff;
+ 	} else {
+ 		/* Grab pending interrupt if any */
+-		pipr = __x_readb(__x_tima + TM_QW1_OS + TM_PIPR);
++		__be64 qw1 = __x_readq(__x_tima + TM_QW1_OS);
++		u8 pipr = be64_to_cpu(qw1) & 0xff;
+ 		if (pipr < 8)
+ 			pending |= 1 << pipr;
+ 	}
