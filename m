@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnL8Y6Z7jzDqY3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 20:55:25 +1000 (AEST)
-In-Reply-To: <1504303424-28452-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnL8Z2KC4zDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Sep 2017 20:55:26 +1000 (AEST)
+In-Reply-To: <20170904035900.GA16532@fergus.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: paulus@samba.org
-Subject: Re: powerpc/sstep: Avoid used uninitialized error
-Message-Id: <3xnL8X56dYz9sNc@ozlabs.org>
-Date: Wed,  6 Sep 2017 20:55:24 +1000 (AEST)
+Subject: Re: powerpc: Fix kernel crash in emulation of vector loads and stores
+Message-Id: <3xnL8Y6ZBRz9sRV@ozlabs.org>
+Date: Wed,  6 Sep 2017 20:55:25 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,18 +19,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-09-01 at 22:03:44 UTC, Michael Ellerman wrote:
-> Older compilers think val may be used uninitialized:
+On Mon, 2017-09-04 at 03:59:00 UTC, Paul Mackerras wrote:
+> Commit 350779a29f11 ("powerpc: Handle most loads and stores in
+> instruction emulation code", 2017-08-30) changed the register usage
+> in get_vr and put_vr with the aim of leaving the register number in
+> r3 untouched on return.  Unfortunately, r6 was not a good choice, as
+> the callers as of 350779a29f11 store a MSR value in r6.  Then, in
+> commit c22435a5f3d8 ("powerpc: Emulate FP/vector/VSX loads/stores
+> correctly when regs not live", 2017-08-30), the saving and restoring
+> of the MSR got moved into get_vr and put_vr.  Either way, the effect
+> is that we put a value in MSR that only has the 0x3f8 bits non-zero,
+> meaning that we are switching to 32-bit mode.  That leads to a crash
+> like this:
 > 
->   arch/powerpc/lib/sstep.c: In function 'emulate_loadstore':
->   arch/powerpc/lib/sstep.c:2758:23: error: 'val' may be used uninitialized in this function
+> Unable to handle kernel paging request for instruction fetch
+> Faulting instruction address: 0x0007bea0
+> Oops: Kernel access of bad area, sig: 11 [#12]
+> LE SMP NR_CPUS=2048 NUMA PowerNV
+> Modules linked in: vmx_crypto binfmt_misc ip_tables x_tables autofs4 crc32c_vpmsum
+> CPU: 6 PID: 32659 Comm: trashy_testcase Tainted: G      D         4.13.0-rc2-00313-gf3026f57e6ed-dirty #23
+> task: c000000f1bb9e780 task.stack: c000000f1ba98000
+> NIP:  000000000007bea0 LR: c00000000007b054 CTR: c00000000007be70
+> REGS: c000000f1ba9b960 TRAP: 0400   Tainted: G      D          (4.13.0-rc2-00313-gf3026f57e6ed-dirty)
+> MSR:  10000000400010a1 <HV,ME,IR,LE>  CR: 48000228  XER: 00000000
+> CFAR: c00000000007be74 SOFTE: 1
+> GPR00: c00000000007b054 c000000f1ba9bbe0 c000000000e6e000 000000000000001d
+> GPR04: c000000f1ba9bc00 c00000000007be70 00000000000000e8 9000000002009033
+> GPR08: 0000000002000000 100000000282f033 000000000b0a0900 0000000000001009
+> GPR12: 0000000000000000 c00000000fd42100 0706050303020100 a5a5a5a5a5a5a5a5
+> GPR16: 2e2e2e2e2e2de70c 2e2e2e2e2e2e2e2d 0000000000ff00ff 0606040202020000
+> GPR20: 000000000000005b ffffffffffffffff 0000000003020100 0000000000000000
+> GPR24: c000000f1ab90020 c000000f1ba9bc00 0000000000000001 0000000000000001
+> GPR28: c000000f1ba9bc90 c000000f1ba9bea0 000000000b0a0908 0000000000000001
+> NIP [000000000007bea0] 0x7bea0
+> LR [c00000000007b054] emulate_loadstore+0x1044/0x1280
+> Call Trace:
+> [c000000f1ba9bbe0] [c000000000076b80] analyse_instr+0x60/0x34f0 (unreliable)
+> [c000000f1ba9bc70] [c00000000007b7ec] emulate_step+0x23c/0x544
+> [c000000f1ba9bce0] [c000000000053424] arch_uprobe_skip_sstep+0x24/0x40
+> [c000000f1ba9bd00] [c00000000024b2f8] uprobe_notify_resume+0x598/0xba0
+> [c000000f1ba9be00] [c00000000001c284] do_notify_resume+0xd4/0xf0
+> [c000000f1ba9be30] [c00000000000bd44] ret_from_except_lite+0x70/0x74
+> Instruction dump:
+> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> ---[ end trace a7ae7a7f3e0256b5 ]---
 > 
-> We know better, but initialise val to 0 to avoid breaking the build.
+> To fix this, we just revert to using r3 as before, since the callers
+> don't rely on r3 being left unmodified.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fortunately, this can't be triggered by a misaligned load or store,
+> because vector loads and stores truncate misaligned addresses rather
+> than taking an alignment interrupt.  It can be triggered using
+> uprobes.
+> 
+> Fixes: 350779a29f11 ("powerpc: Handle most loads and stores in instruction emulation code")
+> Reported-by: Anton Blanchard <anton@ozlabs.org>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> Tested-by: Anton Blanchard <anton@samba.org>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/3b79b26101936bbdb7a5c69161c69d
+https://git.kernel.org/powerpc/c/4716e488abc22d487e298ee6c0c7d7
 
 cheers
