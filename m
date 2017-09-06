@@ -1,36 +1,36 @@
-Return-Path: <lukma@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnc092w8gzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 07:19:03 +1000 (AEST)
-Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
- to system freq
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Timur Tabi <timur@tabi.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, "festevam@gmail.com" <festevam@gmail.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <AM5PR0401MB262706674539BFE651706CC6E3900@AM5PR0401MB2627.eurprd04.prod.outlook.com>
- <07e54d28-3bbc-aad2-146b-30867c0bc337@denx.de>
- <20170905052031.GB2774@Asurada-CZ80>
- <819784e1-910b-6833-997a-2097e147bd0c@denx.de>
- <20170905181108.GB23906@Asurada-Nvidia>
- <cfb8f844-87aa-f1f3-bd55-4f2b60f3cf88@denx.de>
- <20170905225225.GA14132@Asurada-Nvidia>
- <ae1d3e2a-d618-05e2-1572-5593caff1ee0@denx.de>
- <20170906173348.GA28104@Asurada-Nvidia>
- <69352458-2e90-a847-2c2f-bba259a32162@denx.de>
- <20170906194748.GA31334@Asurada-Nvidia>
-From: =?UTF-8?Q?=c5=81ukasz_Majewski?= <lukma@denx.de>
-Message-ID: <14a174b2-df3b-73f2-a5c2-7bd4ca9b0882@denx.de>
-Date: Wed, 6 Sep 2017 23:18:54 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnczl3yJrzDrSS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 08:03:46 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v86Lxt5b108186
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Sep 2017 18:03:44 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ctr0hnu74-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Sep 2017 18:03:44 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 6 Sep 2017 18:03:43 -0400
+Subject: Re: [PATCH V13 4/4] powerpc/vphn: Fix numa update end-loop bug
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ John Allen <jallen@linux.vnet.ibm.com>
+References: <b967cb9b-efc4-3ff3-27c8-876a81250133@linux.vnet.ibm.com>
+ <0babc60c-8e66-e2f2-c316-c569a2ee1dfb@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Date: Wed, 6 Sep 2017 17:03:40 -0500
 MIME-Version: 1.0
-In-Reply-To: <20170906194748.GA31334@Asurada-Nvidia>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <0babc60c-8e66-e2f2-c316-c569a2ee1dfb@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <53b65d0a-65e5-2a45-dcba-bbc8e132f5bb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,56 +40,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/06/2017 09:47 PM, Nicolin Chen wrote:
-> On Wed, Sep 06, 2017 at 08:35:50PM +0200, Łukasz Majewski wrote:
+
+
+On 09/06/2017 09:45 AM, Nathan Fontenot wrote:
+> On 09/01/2017 10:48 AM, Michael Bringmann wrote:
+>> powerpc/vphn: On Power systems with shared configurations of CPUs
+>> and memory, there are some issues with the association of additional
+>> CPUs and memory to nodes when hot-adding resources.  This patch
+>> fixes an end-of-updates processing problem observed occasionally
+>> in numa_update_cpu_topology().
+>>
+>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/mm/numa.c |    7 +++++++
+>>  1 file changed, 7 insertions(+)
+>>
+>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> index 3a5b334..fccf23f 100644
+>> --- a/arch/powerpc/mm/numa.c
+>> +++ b/arch/powerpc/mm/numa.c
+>> @@ -1410,6 +1410,13 @@ int numa_update_cpu_topology(bool cpus_locked)
+>>  		cpu = cpu_last_thread_sibling(cpu);
+>>  	}
+>>
+>> +	/*
+>> +	 * Prevent processing of 'updates' from overflowing array
+>> +	 * in cases where last entry filled in a 'next' pointer.
+>> +	 */
+>> +	if (i)
+>> +		updates[i-1].next = NULL;
+>> +
+> 
+> This really looks like the bug is in the code above this where we
+> fill in the updates array for each of the sibling cpus. The code
+> there assumes that if the current update entry is not the end that
+> there will be more updates and blindly sets the next pointer.
+> 
+> Perhaps correcting the logic in that code to next pointers. Set the
+> ud pointer to NULL before the outer for_each_cpu() loop. Then in the
+> inner for_each_cpu(sibling,...) loop update the ud-> next pointer as
+> the first operation.
+> 
+> 		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
+> 			if (ud)
+> 				ud->next = &updates[i];
+> 			...
+> 		}
+> 
+> Obviously untested, but I think this would prevent setting the next
+> pointer in the last update entry that is filled out erroneously.
+
+The above fragment looks to skip initialization of the 'next' pointer
+in the first element of the the 'updates'.  That would abort subsequent
+evaluation of the array too soon, I believe.  I would like to take another look
+to see whether the current check 'if (i < weight) ud->next = &updates[i];'
+is having problems due to i being 0-relative and weight being 1-relative.
+
 >   
->> 	clocks = <&clks IMX6QDL_CLK_SSI2_IPG>,
->> 		 <&clks IMX6QDL_CLK_SSI2>;
->> 	clock-names = "ipg", "baud";
+> -Nathan
+
+Michael
+
 > 
->>>>   			dailink_master: cpu {
->>>>   			    sound-dai = <&ssi2>;
->>>> 			    clock = <&SSSS>;
+>>  	pr_debug("Topology update for the following CPUs:\n");
+>>  	if (cpumask_weight(&updated_cpus)) {
+>>  		for (ud = &updates[0]; ud; ud = ud->next) {
 >>
->> 	If possible I do prefer a solution, which uses only DTS.
->> Side question - how to refer to baud clock from [1]?
 > 
-> Just add a property to this cpu node like:
-> 	clock = <&clks IMX6QDL_CLK_SSI2>;
-
-Ok.
-
-> 
->>>> 			    system-clock-frequency = <XXXX>;
-> 
-> This would not be necessary unless you want to specify a clock rate
-> so as to override the clock rate configuration in hw_params().
-
-Ok.
-
-> 
->>> This is the right solution based on current simple-card driver. For
->>> SSI (having two clocks), you have to specify the baud clock in the
->>> cpu node like that. I believe this is what the simple-card designer
->>> expected users to do since the cpu node is the first place that the
->>> driver tries to look at.
->>
->> I will give a shoot the option with adding the ipg clock.
-> 
-> No, not ipg clock. You should use the second clock -- baud clock.
-
-Yes. Correct - the baud clock.
-
-> 
-
 
 -- 
-Best regards,
-
-Lukasz Majewski
-
---
-
-DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
