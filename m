@@ -1,37 +1,33 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <broonie@sirena.co.uk>
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xp1gM20CnzDrWN
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 23:35:59 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v87DYjev135481
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Sep 2017 09:35:57 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cu72y861r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 09:35:56 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 7 Sep 2017 09:35:53 -0400
-Subject: Re: [PATCH V13 4/4] powerpc/vphn: Fix numa update end-loop bug
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xp1sF67YxzDrWN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 23:44:31 +1000 (AEST)
+Date: Thu, 7 Sep 2017 14:44:11 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: =?utf-8?Q?=C5=81ukasz?= Majewski <lukma@denx.de>,
+ Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- John Allen <jallen@linux.vnet.ibm.com>
-References: <b967cb9b-efc4-3ff3-27c8-876a81250133@linux.vnet.ibm.com>
- <0babc60c-8e66-e2f2-c316-c569a2ee1dfb@linux.vnet.ibm.com>
- <53b65d0a-65e5-2a45-dcba-bbc8e132f5bb@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Thu, 7 Sep 2017 08:35:49 -0500
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+Message-ID: <20170907134411.uzwh54lstzmvp6dd@sirena.co.uk>
+References: <1504436701-20700-1-git-send-email-lukma@denx.de>
+ <20170905050602.GA2774@Asurada-CZ80>
+ <bbcb123b-8700-501f-e6d9-cab9e212de40@denx.de>
+ <20170905075247.GA6112@Asurada>
+ <deb40031-9db0-d667-7314-352cf548c295@denx.de>
+ <20170905151550.5mhb535p22lsohlh@sirena.org.uk>
+ <20170905174528.GA23906@Asurada-Nvidia>
 MIME-Version: 1.0
-In-Reply-To: <53b65d0a-65e5-2a45-dcba-bbc8e132f5bb@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <77caa097-9d7e-93aa-bdc5-2a971687ef08@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="rgvmcye5ctp4qbis"
+In-Reply-To: <20170905174528.GA23906@Asurada-Nvidia>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,79 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/06/2017 05:03 PM, Michael Bringmann wrote:
-> 
-> 
-> On 09/06/2017 09:45 AM, Nathan Fontenot wrote:
->> On 09/01/2017 10:48 AM, Michael Bringmann wrote:
->>> powerpc/vphn: On Power systems with shared configurations of CPUs
->>> and memory, there are some issues with the association of additional
->>> CPUs and memory to nodes when hot-adding resources.  This patch
->>> fixes an end-of-updates processing problem observed occasionally
->>> in numa_update_cpu_topology().
->>>
->>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->>> ---
->>>  arch/powerpc/mm/numa.c |    7 +++++++
->>>  1 file changed, 7 insertions(+)
->>>
->>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->>> index 3a5b334..fccf23f 100644
->>> --- a/arch/powerpc/mm/numa.c
->>> +++ b/arch/powerpc/mm/numa.c
->>> @@ -1410,6 +1410,13 @@ int numa_update_cpu_topology(bool cpus_locked)
->>>  		cpu = cpu_last_thread_sibling(cpu);
->>>  	}
->>>
->>> +	/*
->>> +	 * Prevent processing of 'updates' from overflowing array
->>> +	 * in cases where last entry filled in a 'next' pointer.
->>> +	 */
->>> +	if (i)
->>> +		updates[i-1].next = NULL;
->>> +
->>
->> This really looks like the bug is in the code above this where we
->> fill in the updates array for each of the sibling cpus. The code
->> there assumes that if the current update entry is not the end that
->> there will be more updates and blindly sets the next pointer.
->>
->> Perhaps correcting the logic in that code to next pointers. Set the
->> ud pointer to NULL before the outer for_each_cpu() loop. Then in the
->> inner for_each_cpu(sibling,...) loop update the ud-> next pointer as
->> the first operation.
->>
->> 		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
->> 			if (ud)
->> 				ud->next = &updates[i];
->> 			...
->> 		}
->>
->> Obviously untested, but I think this would prevent setting the next
->> pointer in the last update entry that is filled out erroneously.
-> 
-> The above fragment looks to skip initialization of the 'next' pointer
-> in the first element of the the 'updates'.  That would abort subsequent
-> evaluation of the array too soon, I believe.  I would like to take another look
-> to see whether the current check 'if (i < weight) ud->next = &updates[i];'
-> is having problems due to i being 0-relative and weight being 1-relative.
 
-Another thing to keep in mind is that cpus can be skipped by checks earlier
-in the loop. There is not guarantee that we will add 'weight' elements to
-the ud list.
+--rgvmcye5ctp4qbis
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Nathan
- 
-> 
->>   
->> -Nathan
-> 
-> Michael
-> 
->>
->>>  	pr_debug("Topology update for the following CPUs:\n");
->>>  	if (cpumask_weight(&updated_cpus)) {
->>>  		for (ud = &updates[0]; ud; ud = ud->next) {
->>>
->>
-> 
+On Tue, Sep 05, 2017 at 10:45:29AM -0700, Nicolin Chen wrote:
+
+> The ipg clock is merely used to access registers, and has nothing
+> (directly) to do with external clock outputs. The driver shall not
+> change the ipg clock as the system ipg clock (its parent clock)
+> might be messed and even system time would get weird -- happened
+> once when the fsl_spdif driver used to call clk_set_rate() on its
+> ipg clock. Although the clock controller should have some kind of
+> protection in my opinion, we just avoid IP clock rate change in all
+> audio drivers as well.
+
+Yes, the clock API needs constraints code.
+
+> On the other hand, the sys clock (baudclk in the driver) should be
+> configured whenever it's related to external clock outputs. When I
+> implemented this set_sysclk() for fsl_ssi.c, I used it to set this
+> sys clock (baudclk) by a machine driver, in order to set bit clock.
+> Then someone patched the driver by moving all the code to set_bclk()
+> to make machine drivers simpler. Now the set_sysclk() is remained
+> to give machine drivers a chance to override clock configurations
+> in the hw_params(). This could be used in TDM or some other special
+> cases (It could also have a purpose for backwards compatibility).
+
+> So here, we should set baudclk (BCLK generator).
+
+No, that's just going to cause confusion - if all the other drivers are
+using set_sysclk() to set an input clock rate to the IP rather than an
+output clock but your driver does something else then sooner or later
+someone will run into trouble with that. =20
+
+--rgvmcye5ctp4qbis
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlmxTSoACgkQJNaLcl1U
+h9D6BggAhvgy6CFp6gK7LdASMfJ/yXPXLKrd5loBZcc6V768OgfLWhV27lMkZVR2
+Y4x6glGIG0CdkZEgpFdb8IFXnYuMXk6dHLSDPVHs2Um/1J2w0QzvEO2IttSfJhuc
+G1HCx+TRKn6XmTX2nmC+gkj3Tr8D6ANVbnFOg22/CnUgdiPF+eDeQwCUEuFuytR3
+Zy24+99zVI2C7N/wZl4CwX0bQjYoyql21OxHWwF6BNo2fa7XGMDcqqnX7EorLW8E
+CslI/0j7agznM0wQhdY7Jy2DgVJOmACSbtsuiPlslPzzt+32axY0oWXIEGoSnGRc
+2SplsrX9DOPbqVN9jamSMZ/AjJHwOA==
+=pAg9
+-----END PGP SIGNATURE-----
+
+--rgvmcye5ctp4qbis--
