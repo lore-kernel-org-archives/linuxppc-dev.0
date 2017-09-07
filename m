@@ -1,23 +1,25 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <srs0=nllt=ai=kernel.crashing.org=benh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnpcW6sMMzDqG3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 15:17:47 +1000 (AEST)
-Date: Thu, 7 Sep 2017 15:17:41 +1000
-From: Anton Blanchard <anton@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- bharata@linux.vnet.ibm.com, arbab@linux.vnet.ibm.com, npiggin@gmail.com,
- mikey@neuling.org, cyrilbur@gmail.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Increase memory block size to 1GB on
- radix
-Message-ID: <20170907151741.41ee33a8@kryten>
-In-Reply-To: <ab33351f-1d52-2e55-8aeb-32813ca52e94@linux.vnet.ibm.com>
-References: <20170907050551.4632-1-anton@ozlabs.org>
- <ab33351f-1d52-2e55-8aeb-32813ca52e94@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnrLh310BzDrVy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 16:35:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xnrLh2JBXz8sfq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 16:35:56 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xnrLf6y4dz9s82
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2017 16:35:54 +1000 (AEST)
+Message-ID: <1504766140.12628.14.camel@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/eeh: Create PHB PEs after EEH is initialized
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Cc: Russell Currey <ruscur@au1.ibm.com>
+Date: Thu, 07 Sep 2017 16:35:40 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Otherwise we end up not yet having computed the right
+diag data size on powernv where EEH initialization
+is delayed, thus causing memory corruption later on
+when calling OPAL.
 
-> There is a similar issue being worked on w.r.t pseries.
-> 
-> https://lkml.kernel.org/r/1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com
-> 
-> The question is should we map these regions ? ie, we need to tell the 
-> kernel memory region that we would like to hot unplug later so that
-> we avoid doing kernel allocations from that. If we do that, then we
-> can possibly map them via 2M size ?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/eeh.c     |  4 ++++
+ arch/powerpc/kernel/eeh_dev.c | 18 ------------------
+ 2 files changed, 4 insertions(+), 18 deletions(-)
 
-But all of memory on PowerNV should be able to be hot unplugged, so
-there are two options as I see it - either increase the memory block
-size, or map everything with 2MB pages. 
-
-Anton
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 63992b2d8e15..f27eecd5ec7f 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1018,6 +1018,10 @@ int eeh_init(void)
+ 	} else if ((ret = eeh_ops->init()))
+ 		return ret;
+ 
++	/* Initialize PHB PEs */
++	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
++		eeh_dev_phb_init_dynamic(hose);
++
+ 	/* Initialize EEH event */
+ 	ret = eeh_event_init();
+ 	if (ret)
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index d6b2ca70d14d..0820b73288c0 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -83,21 +83,3 @@ void eeh_dev_phb_init_dynamic(struct pci_controller *phb)
+ 	/* EEH PE for PHB */
+ 	eeh_phb_pe_create(phb);
+ }
+-
+-/**
+- * eeh_dev_phb_init - Create EEH devices for devices included in existing PHBs
+- *
+- * Scan all the existing PHBs and create EEH devices for their OF
+- * nodes and their children OF nodes
+- */
+-static int __init eeh_dev_phb_init(void)
+-{
+-	struct pci_controller *phb, *tmp;
+-
+-	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+-		eeh_dev_phb_init_dynamic(phb);
+-
+-	return 0;
+-}
+-
+-core_initcall(eeh_dev_phb_init);
