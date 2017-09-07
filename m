@@ -3,19 +3,20 @@ Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
  [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xp3MX6qLlzDrWX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 00:52:24 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id v82so4426355pgb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 07:52:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xp3Mc5STtzDrXs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 00:52:28 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id m9so5058072pgd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 07:52:28 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Anton Blanchard <anton@samba.org>
-Subject: [RFC PATCH 3/8] powerpc/64s/radix: optimize TLB range flush barriers
-Date: Fri,  8 Sep 2017 00:51:43 +1000
-Message-Id: <20170907145148.24398-4-npiggin@gmail.com>
+Subject: [RFC PATCH 4/8] powerpc/64s/radix: Implement _tlbie(l)_va_range flush
+ functions
+Date: Fri,  8 Sep 2017 00:51:44 +1000
+Message-Id: <20170907145148.24398-5-npiggin@gmail.com>
 In-Reply-To: <20170907145148.24398-1-npiggin@gmail.com>
 References: <20170907145148.24398-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,126 +28,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Short range flushes issue a sequences of tlbie(l) instructions for
-individual effective addresses. These do not all require individual
-barrier sequences, only one set around all instructions.
-
-Commit f7327e0ba3 ("powerpc/mm/radix: Remove unnecessary ptesync")
-made a similar optimization for tlbiel for PID flushing.
-
-For tlbie, the ISA says:
-
-    The tlbsync instruction provides an ordering function for the
-    effects of all tlbie instructions executed by the thread executing
-    the tlbsync instruction, with respect to the memory barrier
-    created by a subsequent ptesync instruction executed by the same
-    thread.
+Move the barriers and range iteration down into the _tlbie* level,
+which improves readability.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/tlb-radix.c | 41 ++++++++++++++++++++++++++++++++---------
- 1 file changed, 32 insertions(+), 9 deletions(-)
+ arch/powerpc/mm/tlb-radix.c | 70 ++++++++++++++++++++++++++-------------------
+ 1 file changed, 40 insertions(+), 30 deletions(-)
 
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 1ed61baf58da..c30f3faf5356 100644
+index c30f3faf5356..1d3cbc01596d 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -84,7 +84,7 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+@@ -85,7 +85,7 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
  }
  
--static inline void _tlbiel_va(unsigned long va, unsigned long pid,
-+static inline void __tlbiel_va(unsigned long va, unsigned long pid,
- 			      unsigned long ap, unsigned long ric)
+ static inline void __tlbiel_va(unsigned long va, unsigned long pid,
+-			      unsigned long ap, unsigned long ric)
++			       unsigned long ap, unsigned long ric)
  {
  	unsigned long rb,rs,prs,r;
-@@ -95,14 +95,20 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
- 	prs = 1; /* process scoped */
- 	r = 1;   /* raidx format */
  
--	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
--	asm volatile("ptesync": : :"memory");
- 	trace_tlbie(0, 1, rb, rs, ric, prs, r);
+@@ -101,13 +101,28 @@ static inline void __tlbiel_va(unsigned long va, unsigned long pid,
  }
  
--static inline void _tlbie_va(unsigned long va, unsigned long pid,
-+static inline void _tlbiel_va(unsigned long va, unsigned long pid,
-+			      unsigned long ap, unsigned long ric)
+ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+-			      unsigned long ap, unsigned long ric)
++			      unsigned long psize, unsigned long ric)
+ {
++	unsigned long ap = mmu_get_ap(psize);
++
+ 	asm volatile("ptesync": : :"memory");
+ 	__tlbiel_va(va, pid, ap, ric);
+ 	asm volatile("ptesync": : :"memory");
+ }
+ 
++static inline void _tlbiel_va_range(unsigned long start, unsigned long end,
++				    unsigned long pid, unsigned long page_size,
++				    unsigned long psize)
 +{
++	unsigned long addr;
++	unsigned long ap = mmu_get_ap(psize);
++
 +	asm volatile("ptesync": : :"memory");
-+	__tlbiel_va(va, pid, ap, ric);
++	for (addr = start; addr < end; addr += page_size)
++		__tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
 +	asm volatile("ptesync": : :"memory");
 +}
 +
-+static inline void __tlbie_va(unsigned long va, unsigned long pid,
+ static inline void __tlbie_va(unsigned long va, unsigned long pid,
  			     unsigned long ap, unsigned long ric)
  {
- 	unsigned long rb,rs,prs,r;
-@@ -113,13 +119,20 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
- 	prs = 1; /* process scoped */
- 	r = 1;   /* raidx format */
- 
--	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
--	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+@@ -125,13 +140,27 @@ static inline void __tlbie_va(unsigned long va, unsigned long pid,
  }
  
-+static inline void _tlbie_va(unsigned long va, unsigned long pid,
-+			     unsigned long ap, unsigned long ric)
+ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+-			     unsigned long ap, unsigned long ric)
++			      unsigned long psize, unsigned long ric)
+ {
++	unsigned long ap = mmu_get_ap(psize);
++
+ 	asm volatile("ptesync": : :"memory");
+ 	__tlbie_va(va, pid, ap, ric);
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ }
+ 
++static inline void _tlbie_va_range(unsigned long start, unsigned long end,
++				    unsigned long pid, unsigned long page_size,
++				    unsigned long psize)
 +{
++	unsigned long addr;
++	unsigned long ap = mmu_get_ap(psize);
++
 +	asm volatile("ptesync": : :"memory");
-+	__tlbie_va(va, pid, ap, ric);
++	for (addr = start; addr < end; addr += page_size)
++		__tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
 +	asm volatile("eieio; tlbsync; ptesync": : :"memory");
 +}
-+
-+
+ 
  /*
   * Base TLB flushing operations:
-  *
-@@ -335,14 +348,20 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
- 			_tlbiel_pid(pid, RIC_FLUSH_TLB);
- 		else
- 			_tlbie_pid(pid, RIC_FLUSH_TLB);
-+
- 	} else {
-+		asm volatile("ptesync": : :"memory");
- 		for (addr = start; addr < end; addr += page_size) {
+@@ -173,12 +202,11 @@ void radix__local_flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmadd
+ 				       int psize)
+ {
+ 	unsigned long pid;
+-	unsigned long ap = mmu_get_ap(psize);
  
- 			if (local)
--				_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
-+				__tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
- 			else
--				_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
-+				__tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
- 		}
-+		if (local)
-+			asm volatile("ptesync": : :"memory");
-+		else
-+			asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ 	preempt_disable();
+ 	pid = mm ? mm->context.id : 0;
+ 	if (pid != MMU_NO_CONTEXT)
+-		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
++		_tlbiel_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
+ 	preempt_enable();
+ }
+ 
+@@ -238,16 +266,15 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
+ 				 int psize)
+ {
+ 	unsigned long pid;
+-	unsigned long ap = mmu_get_ap(psize);
+ 
+ 	pid = mm ? mm->context.id : 0;
+ 	if (unlikely(pid == MMU_NO_CONTEXT))
+ 		return;
+ 	preempt_disable();
+ 	if (!mm_is_thread_local(mm))
+-		_tlbie_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
++		_tlbie_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
+ 	else
+-		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
++		_tlbiel_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
+ 	preempt_enable();
+ }
+ 
+@@ -331,9 +358,7 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+ 				  unsigned long end, int psize)
+ {
+ 	unsigned long pid;
+-	unsigned long addr;
+ 	bool local;
+-	unsigned long ap = mmu_get_ap(psize);
+ 	unsigned long page_size = 1UL << mmu_psize_defs[psize].shift;
+ 
+ 	pid = mm ? mm->context.id : 0;
+@@ -350,18 +375,10 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+ 			_tlbie_pid(pid, RIC_FLUSH_TLB);
+ 
+ 	} else {
+-		asm volatile("ptesync": : :"memory");
+-		for (addr = start; addr < end; addr += page_size) {
+-
+-			if (local)
+-				__tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
+-			else
+-				__tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
+-		}
+ 		if (local)
+-			asm volatile("ptesync": : :"memory");
++			_tlbiel_va_range(start, end, pid, page_size, psize);
+ 		else
+-			asm volatile("eieio; tlbsync; ptesync": : :"memory");
++			_tlbie_va_range(start, end, pid, page_size, psize);
  	}
  	preempt_enable();
  }
-@@ -373,6 +392,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+@@ -369,7 +386,6 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ {
+-	unsigned long ap = mmu_get_ap(mmu_virtual_psize);
+ 	unsigned long pid, end;
+ 	bool local;
+ 
+@@ -392,18 +408,12 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
  		_tlbie_pid(pid, RIC_FLUSH_PWC);
  
  	/* Then iterate the pages */
-+	asm volatile("ptesync": : :"memory");
+-	asm volatile("ptesync": : :"memory");
  	end = addr + HPAGE_PMD_SIZE;
- 	for (; addr < end; addr += PAGE_SIZE) {
- 		if (local)
-@@ -380,7 +400,10 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 		else
- 			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
- 	}
--
-+	if (local)
-+		asm volatile("ptesync": : :"memory");
-+	else
-+		asm volatile("eieio; tlbsync; ptesync": : :"memory");
+-	for (; addr < end; addr += PAGE_SIZE) {
+-		if (local)
+-			_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
+-		else
+-			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
+-	}
++
+ 	if (local)
+-		asm volatile("ptesync": : :"memory");
++		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize);
+ 	else
+-		asm volatile("eieio; tlbsync; ptesync": : :"memory");
++		_tlbie_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize);
  	preempt_enable();
  }
  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
