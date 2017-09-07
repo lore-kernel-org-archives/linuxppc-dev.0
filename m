@@ -1,24 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpFNY4nYBzDrYn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 08:23:57 +1000 (AEST)
-Message-ID: <1504823028.12628.39.camel@kernel.crashing.org>
-Subject: Re: UIO memmap of PCi devices not working?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 08 Sep 2017 08:23:48 +1000
-In-Reply-To: <1504779569.31322.16.camel@infinera.com>
-References: <1504711235.27247.110.camel@infinera.com>
- <1504768612.12628.19.camel@kernel.crashing.org>
- <1504768943.27247.149.camel@infinera.com>
- <1504773212.12628.26.camel@kernel.crashing.org>
- <1504774792.31322.13.camel@infinera.com>
- <1504779569.31322.16.camel@infinera.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpGG529NyzDrXd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 09:03:24 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id v82so517847pgb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 16:03:24 -0700 (PDT)
+Date: Thu, 7 Sep 2017 16:03:48 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Mark Brown <broonie@kernel.org>
+Cc: =?utf-8?Q?=C5=81ukasz?= Majewski <lukma@denx.de>,
+ Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sound: soc: fsl: Do not set DAI sysclk when it is equal
+ to system freq
+Message-ID: <20170907230345.GA20531@Asurada-Nvidia>
+References: <1504436701-20700-1-git-send-email-lukma@denx.de>
+ <20170905050602.GA2774@Asurada-CZ80>
+ <bbcb123b-8700-501f-e6d9-cab9e212de40@denx.de>
+ <20170905075247.GA6112@Asurada>
+ <deb40031-9db0-d667-7314-352cf548c295@denx.de>
+ <20170905151550.5mhb535p22lsohlh@sirena.org.uk>
+ <20170905174528.GA23906@Asurada-Nvidia>
+ <20170907134411.uzwh54lstzmvp6dd@sirena.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170907134411.uzwh54lstzmvp6dd@sirena.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-09-07 at 10:19 +0000, Joakim Tjernlund wrote:
-> > Problem is that pci_mem_offset is gone, the closed I can find is mem_offset
-> > but that is an array,maybe just mem_offset[0] ?
-> > 
-> > > I'm not sure exactly what's going
-> > > on in your case, if you have a problem can you add printk to instrument
-> > > ?
-> > 
-> > Seems to be something else going on in out board. Anyhow, the mem_offset should
-> > be fixed to compile, nice to have it behind a CONFIG option. Then
-> > one can start the process to remove the special casing easier.
+On Thu, Sep 07, 2017 at 02:44:11PM +0100, Mark Brown wrote:
+ 
+> > On the other hand, the sys clock (baudclk in the driver) should be
+> > configured whenever it's related to external clock outputs. When I
+> > implemented this set_sysclk() for fsl_ssi.c, I used it to set this
+> > sys clock (baudclk) by a machine driver, in order to set bit clock.
+> > Then someone patched the driver by moving all the code to set_bclk()
+> > to make machine drivers simpler. Now the set_sysclk() is remained
+> > to give machine drivers a chance to override clock configurations
+> > in the hw_params(). This could be used in TDM or some other special
+> > cases (It could also have a purpose for backwards compatibility).
 > 
-> After sorting the bugs in our app, it works with and without above patch.
+> > So here, we should set baudclk (BCLK generator).
+> 
+> No, that's just going to cause confusion - if all the other drivers are
+> using set_sysclk() to set an input clock rate to the IP rather than an
+> output clock but your driver does something else then sooner or later
+> someone will run into trouble with that.  
 
-Ok. I don't see a pressing need to change what we are doing in the
-kernel then.
-
-Cheers,
-Ben.
+I admit I had that concern. Probably I should have deprecated this
+set_sysclk(). I will try to patch it and hw_params() accordingly.
