@@ -1,24 +1,42 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0073.outbound.protection.outlook.com [104.47.37.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xnxJr53LMzDrSb
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 20:19:40 +1000 (AEST)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>
-Subject: Re: UIO memmap of PCi devices not working?
-Date: Thu, 7 Sep 2017 10:19:31 +0000
-Message-ID: <1504779569.31322.16.camel@infinera.com>
-References: <1504711235.27247.110.camel@infinera.com>
- <1504768612.12628.19.camel@kernel.crashing.org>
- <1504768943.27247.149.camel@infinera.com>
- <1504773212.12628.26.camel@kernel.crashing.org>
- <1504774792.31322.13.camel@infinera.com>
-In-Reply-To: <1504774792.31322.13.camel@infinera.com>
-Content-Type: text/plain; charset="iso-8859-15"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnzsT2NrDzDrW5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 22:14:36 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v87CE8v2015360
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Sep 2017 08:14:34 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cu1p0cw8b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 08:14:34 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Thu, 7 Sep 2017 22:14:31 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v87CES1R38535254
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Sep 2017 22:14:28 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v87CERWA031011
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Sep 2017 22:14:28 +1000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: [PATCH] cxl: Dump PSL_FIR1/2 registers on PSL9 error irq
+Date: Thu,  7 Sep 2017 17:43:46 +0530
+Message-Id: <20170907121346.22011-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,138 +46,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-09-07 at 10:59 +0200, Joakim Tjernlund wrote:
-> On Thu, 2017-09-07 at 18:33 +1000, Benjamin Herrenschmidt wrote:
-> > On Thu, 2017-09-07 at 07:22 +0000, Joakim Tjernlund wrote:
-> > > On Thu, 2017-09-07 at 17:16 +1000, Benjamin Herrenschmidt wrote:
-> > > > On Wed, 2017-09-06 at 15:20 +0000, Joakim Tjernlund wrote:
-> > > > > Having problems to mmap PCI UIO devices and stumbeled over this p=
-age:
-> > > > >  http://billfarrow.blogspot.se/2010/09/userspace-access-to-pci-me=
-mory.html
-> > > > > it claims some adjustments are needed for UIO mmap over PCI to wo=
-rk.
-> > > > > These are #if 0 ATM and trying to enable them fails build.
-> > > > >=20
-> > > > > Can this be fixed to at least build again ?
-> > > > > The reason for having #if 0 in the first place appears to be old =
-X servers,
-> > > > > is that still true? Can the special casing be removed now?
-> > > >=20
-> > > > This article seems out of date... I *think* things should work with=
-out
-> > > > change by just mmap'ing the appropriate sysfs files. I'm not sure w=
-hy
-> > > > the author thought that had to be ifdef'ed out...
-> > >=20
-> > > Isn't that what the article is doing(mmaping sysfs files)?
-> > > And the article author is #ifdefing it back, not out.
-> >=20
-> > Yes sorry that's what I meant. It should work as-is.
-> >=20
-> > > >=20
-> > > > Let me know if you have problems.
-> > >=20
-> > > Sure, we still are looking=20
-> > >=20
-> > > >=20
-> > > > As far as I know, the generic code will call pci_resource_to_user()
-> > > > which on powerpc will return a physical address that already includ=
-es
-> > > > the offset, which is why we don't later add it.
-> > > >=20
-> > > > Now we could probably tear all that out and use the new generic cod=
-e
-> > > > instead as I *think* X has (very) long been fixed but I'd have to s=
-pend
-> > > > some time triple checking and testing on old HW which I don't have =
-the
-> > > > bandwidth for right now.=20
-> > >=20
-> > > Could you fixup the code which is now #if 0 ? I wan't to test the
-> > > difference and I not sure how to fix the build problem after changing
-> > > those two #if 0 to #if 1
-> > > Even better if they could be a CONFIG option instead.
-> >=20
-> > Hrm it's tricky, you shouldn't just turn that ifdef back on without
-> > also changing pci_resource_to_user().
->=20
-> There are two ifdef to change:
-> __pci_mmap_make_offset():
-> #if 0 /* See comment in pci_resource_to_user() for why this is disabled *=
-/
-> 		*offset +=3D hose->pci_mem_offset;
-> #endif
->=20
-> and
->=20
-> pci_resource_to_user()
-> 	/* We pass a fully fixed up address to userland for MMIO instead of
-> 	 * a BAR value because X is lame and expects to be able to use that
-> 	 * to pass to /dev/mem !
-> 	 *
-> 	 * That means that we'll have potentially 64 bits values where some
-> 	 * userland apps only expect 32 (like X itself since it thinks only
-> 	 * Sparc has 64 bits MMIO) but if we don't do that, we break it on
-> 	 * 32 bits CHRPs :-(
-> 	 *
-> 	 * Hopefully, the sysfs insterface is immune to that gunk. Once X
-> 	 * has been fixed (and the fix spread enough), we can re-enable the
-> 	 * 2 lines below and pass down a BAR value to userland. In that case
-> 	 * we'll also have to re-enable the matching code in
-> 	 * __pci_mmap_make_offset().
-> 	 *
-> 	 * BenH.
-> 	 */
-> #if 0
-> 	else if (rsrc->flags & IORESOURCE_MEM)
-> 		offset =3D hose->pci_mem_offset;
-> #endif
+For PSL9 currently we aren't dumping the PSL FIR1/2 registers when a
+PSL error interrupt is triggered. Contents of these registers are
+useful in debugging AFU issues.
 
-This seems to work, just a hack though:
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -314,8 +314,8 @@ static struct resource *__pci_mmap_make_offset(struct p=
-ci_dev *dev,
-=20
-        /* If memory, add on the PCI bridge address offset */
-        if (mmap_state =3D=3D pci_mmap_mem) {
--#if 0 /* See comment in pci_resource_to_user() for why this is disabled */
--               *offset +=3D hose->pci_mem_offset;
-+#if 1  /* See comment in pci_resource_to_user() for why this is disabled *=
-/
-+               *offset +=3D hose->mem_offset[0];
- #endif
-                res_bit =3D IORESOURCE_MEM;
-        } else {
-@@ -634,9 +634,9 @@ void pci_resource_to_user(const struct pci_dev *dev, in=
-t bar,
-         *
-         * BenH.
-         */
--#if 0
-+#if 1
-        else if (rsrc->flags & IORESOURCE_MEM)
--               offset =3D hose->pci_mem_offset;
-+               offset =3D hose->mem_offset[0];
- #endif
-=20
-        *start =3D rsrc->start - offset;
+This patch fixes issue by updating the cxl_native_err_irq_dump_regs()
+to dump these regs on PSL error interrupt thereby bringing the
+behavior in line with PSL on POWER-8.
 
->=20
-> Problem is that pci_mem_offset is gone, the closed I can find is mem_offs=
-et
-> but that is an array,maybe just mem_offset[0] ?
->=20
-> > I'm not sure exactly what's going
-> > on in your case, if you have a problem can you add printk to instrument
-> > ?
->=20
-> Seems to be something else going on in out board. Anyhow, the mem_offset =
-should
-> be fixed to compile, nice to have it behind a CONFIG option. Then
-> one can start the process to remove the special casing easier.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/native.c | 13 +++++++++++--
+ drivers/misc/cxl/pci.c    |  1 +
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-After sorting the bugs in our app, it works with and without above patch.
-
- Jocke=
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 4a82c313cf71..60b91e95821d 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -1261,8 +1261,17 @@ void cxl_native_err_irq_dump_regs(struct cxl *adapter)
+ {
+ 	u64 fir1, fir2;
+ 
+-	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
+-	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
++	if (cxl_is_power8()) {
++		fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
++		fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
++	} else if (cxl_is_power9()) {
++		fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
++		fir2 = cxl_p1_read(adapter, CXL_PSL9_FIR2);
++	} else {
++		/* Dont report garbage */
++		fir1 = fir2 = 0;
++		WARN_ON(1);
++	}
+ 
+ 	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
+ }
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index d18b3d9292fd..597e145f38e3 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1762,6 +1762,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
+ 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
+ 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
+ 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
++	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
+ 	.debugfs_stop_trace = cxl_stop_trace_psl9,
+ 	.write_timebase_ctrl = write_timebase_ctrl_psl9,
+ 	.timebase_read = timebase_read_psl9,
+-- 
+2.13.5
