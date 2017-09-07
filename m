@@ -1,37 +1,20 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dave@stgolabs.net>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpBHN2mGLzDrX7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 06:04:15 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v87Jxhtc109650
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Sep 2017 16:04:12 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cu89ppryu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 16:04:12 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 7 Sep 2017 14:04:11 -0600
-Subject: Re: [PATCH V13 4/4] powerpc/vphn: Fix numa update end-loop bug
-To: linuxppc-dev@lists.ozlabs.org
-References: <b967cb9b-efc4-3ff3-27c8-876a81250133@linux.vnet.ibm.com>
- <0babc60c-8e66-e2f2-c316-c569a2ee1dfb@linux.vnet.ibm.com>
- <53b65d0a-65e5-2a45-dcba-bbc8e132f5bb@linux.vnet.ibm.com>
- <77caa097-9d7e-93aa-bdc5-2a971687ef08@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Thu, 7 Sep 2017 15:04:06 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpCLS2HzWzDrWZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 06:51:59 +1000 (AEST)
+Date: Thu, 7 Sep 2017 13:51:46 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Laurent Dufour <laurent.du4@free.fr>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/mm: Fix missing mmap_sem release
+Message-ID: <20170907205146.GG17982@linux-80c1.suse>
+References: <1504801529-15113-1-git-send-email-laurent.du4@free.fr>
 MIME-Version: 1.0
-In-Reply-To: <77caa097-9d7e-93aa-bdc5-2a971687ef08@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <756d15f9-fa17-263e-491e-7215f5ec586a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1504801529-15113-1-git-send-email-laurent.du4@free.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,117 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simplest change IMO:
+On Thu, 07 Sep 2017, Laurent Dufour wrote:
 
-		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
-			ud = &updates[i++];
-+			ud->next = &updates[i];
-                        ud->cpu = sibling;
-                        ud->new_nid = new_nid;
-                        ud->old_nid = numa_cpu_lookup_table[sibling];
-                        cpumask_set_cpu(sibling, &updated_cpus);
--                       if (i < weight)
--                               ud->next = &updates[i];
-                }
-                cpu = cpu_last_thread_sibling(cpu);
+>The commit b5c8f0fd595d ("powerpc/mm: Rework mm_fault_error()") reviewed
+>the way the error path is managed in __do_page_fault() but it was a bit too
+>agressive when handling a case by returning without releasing the mmap_sem.
+>
+>By the way, replacing current->mm->mmap_sem by mm->mmap_sem as mm is set to
+>current->mm.
+>
+>Fixes: b5c8f0fd595d ("powerpc/mm: Rework mm_fault_error()")
+>Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>Signed-off-by: Laurent Dufour <laurent.du4@free.fr>
+>---
+> arch/powerpc/mm/fault.c | 3 ++-
+> 1 file changed, 2 insertions(+), 1 deletion(-)
+>
+>diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>index 4797d08581ce..f799ccf37d27 100644
+>--- a/arch/powerpc/mm/fault.c
+>+++ b/arch/powerpc/mm/fault.c
 
-	}
+But... here:
 
-	if (i)
-		updates[i-1].next = NULL;
+	/*
+	 * If we need to retry the mmap_sem has already been released,
+	 * and if there is a fatal signal pending there is no guarantee
+	 * that we made any progress. Handle this case first.
+	 */
 
-Link all of the updates together, and NULL the link pointer in the
-last entry to be filled in.  No worries about invalid comparisons.
-Reduced code.
+>@@ -521,10 +521,11 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+> 		 * User mode? Just return to handle the fatal exception otherwise
+> 		 * return to bad_page_fault
+> 		 */
+>+		up_read(&mm->mmap_sem);
+> 		return is_user ? 0 : SIGBUS;
+> 	}
 
-Michael
+Per the above comment, for that case handle_mm_fault()
+has already released mmap_sem. The same occurs in x86,
+for example.
 
-
-On 09/07/2017 08:35 AM, Nathan Fontenot wrote:
-> On 09/06/2017 05:03 PM, Michael Bringmann wrote:
->>
->>
->> On 09/06/2017 09:45 AM, Nathan Fontenot wrote:
->>> On 09/01/2017 10:48 AM, Michael Bringmann wrote:
->>>> powerpc/vphn: On Power systems with shared configurations of CPUs
->>>> and memory, there are some issues with the association of additional
->>>> CPUs and memory to nodes when hot-adding resources.  This patch
->>>> fixes an end-of-updates processing problem observed occasionally
->>>> in numa_update_cpu_topology().
->>>>
->>>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->>>> ---
->>>>  arch/powerpc/mm/numa.c |    7 +++++++
->>>>  1 file changed, 7 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->>>> index 3a5b334..fccf23f 100644
->>>> --- a/arch/powerpc/mm/numa.c
->>>> +++ b/arch/powerpc/mm/numa.c
->>>> @@ -1410,6 +1410,13 @@ int numa_update_cpu_topology(bool cpus_locked)
->>>>  		cpu = cpu_last_thread_sibling(cpu);
->>>>  	}
->>>>
->>>> +	/*
->>>> +	 * Prevent processing of 'updates' from overflowing array
->>>> +	 * in cases where last entry filled in a 'next' pointer.
->>>> +	 */
->>>> +	if (i)
->>>> +		updates[i-1].next = NULL;
->>>> +
->>>
->>> This really looks like the bug is in the code above this where we
->>> fill in the updates array for each of the sibling cpus. The code
->>> there assumes that if the current update entry is not the end that
->>> there will be more updates and blindly sets the next pointer.
->>>
->>> Perhaps correcting the logic in that code to next pointers. Set the
->>> ud pointer to NULL before the outer for_each_cpu() loop. Then in the
->>> inner for_each_cpu(sibling,...) loop update the ud-> next pointer as
->>> the first operation.
->>>
->>> 		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
->>> 			if (ud)
->>> 				ud->next = &updates[i];
->>> 			...
->>> 		}
->>>
->>> Obviously untested, but I think this would prevent setting the next
->>> pointer in the last update entry that is filled out erroneously.
->>
->> The above fragment looks to skip initialization of the 'next' pointer
->> in the first element of the the 'updates'.  That would abort subsequent
->> evaluation of the array too soon, I believe.  I would like to take another look
->> to see whether the current check 'if (i < weight) ud->next = &updates[i];'
->> is having problems due to i being 0-relative and weight being 1-relative.
-> 
-> Another thing to keep in mind is that cpus can be skipped by checks earlier
-> in the loop. There is not guarantee that we will add 'weight' elements to
-> the ud list.
-> 
-> -Nathan
-> 
->>
->>>   
->>> -Nathan
->>
->> Michael
->>
->>>
->>>>  	pr_debug("Topology update for the following CPUs:\n");
->>>>  	if (cpumask_weight(&updated_cpus)) {
->>>>  		for (ud = &updates[0]; ud; ud = ud->next) {
->>>>
->>>
->>
-> 
-> 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+Thanks,
+Davidlohr
