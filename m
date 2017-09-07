@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpDzf5QywzDrWR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 08:05:50 +1000 (AEST)
-Message-ID: <1504821938.12628.28.camel@kernel.crashing.org>
-Subject: Re: [RFC PATCH 8/8] powerpc/64s/radix: Only flush local TLB for
- spurious fault flushes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpFMQ4tWjzDrWt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 08:22:58 +1000 (AEST)
+Message-ID: <1504822968.12628.38.camel@kernel.crashing.org>
+Subject: Re: UIO memmap of PCi devices not working?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>, Anton Blanchard
- <anton@samba.org>
-Date: Fri, 08 Sep 2017 08:05:38 +1000
-In-Reply-To: <20170907145148.24398-9-npiggin@gmail.com>
-References: <20170907145148.24398-1-npiggin@gmail.com>
- <20170907145148.24398-9-npiggin@gmail.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 08 Sep 2017 08:22:48 +1000
+In-Reply-To: <1504774792.31322.13.camel@infinera.com>
+References: <1504711235.27247.110.camel@infinera.com>
+ <1504768612.12628.19.camel@kernel.crashing.org>
+ <1504768943.27247.149.camel@infinera.com>
+ <1504773212.12628.26.camel@kernel.crashing.org>
+ <1504774792.31322.13.camel@infinera.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,146 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-09-08 at 00:51 +1000, Nicholas Piggin wrote:
-> When permissiveness is relaxed, or found to have been relaxed by
-> another thread, we flush that address out of the TLB to avoid a
-> future fault or micro-fault due to a stale TLB entry.
+On Thu, 2017-09-07 at 08:59 +0000, Joakim Tjernlund wrote:
 > 
-> Currently for processes with TLBs on other CPUs, this flush is always
-> done with a global tlbie. Although that could reduce faults on remote
-> CPUs, a broadcast operation seems to be wasteful for something that
-> can be handled in-core by the remote CPU if it comes to it.
+> > Hrm it's tricky, you shouldn't just turn that ifdef back on without
+> > also changing pci_resource_to_user().
 > 
-> This is not benchmarked yet. It does seem cut some tlbie operations
-> from the bus.
+> There are two ifdef to change:
+> __pci_mmap_make_offset():
+> #if 0 /* See comment in pci_resource_to_user() for why this is disabled */
+> 		*offset += hose->pci_mem_offset;
+> #endif
+> 
+> and
+> 
+> pci_resource_to_user()
+> 	/* We pass a fully fixed up address to userland for MMIO instead of
+> 	 * a BAR value because X is lame and expects to be able to use that
+> 	 * to pass to /dev/mem !
+> 	 *
+> 	 * That means that we'll have potentially 64 bits values where some
+> 	 * userland apps only expect 32 (like X itself since it thinks only
+> 	 * Sparc has 64 bits MMIO) but if we don't do that, we break it on
+> 	 * 32 bits CHRPs :-(
+> 	 *
+> 	 * Hopefully, the sysfs insterface is immune to that gunk. Once X
+> 	 * has been fixed (and the fix spread enough), we can re-enable the
+> 	 * 2 lines below and pass down a BAR value to userland. In that case
+> 	 * we'll also have to re-enable the matching code in
+> 	 * __pci_mmap_make_offset().
+> 	 *
+> 	 * BenH.
+> 	 */
+> #if 0
+> 	else if (rsrc->flags & IORESOURCE_MEM)
+> 		offset = hose->pci_mem_offset;
+> #endif
+> 
+> Problem is that pci_mem_offset is gone, the closed I can find is mem_offset
+> but that is an array,maybe just mem_offset[0] ?
 
-What happens with the nest MMU here ?
+No, you'd have to scan the array of resources to find which offset
+applies.
 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  5 ++++
->  arch/powerpc/include/asm/book3s/64/tlbflush.h      | 11 +++++++++
->  arch/powerpc/mm/pgtable-book3s64.c                 |  5 +++-
->  arch/powerpc/mm/pgtable.c                          |  2 +-
->  arch/powerpc/mm/tlb-radix.c                        | 27 ++++++++++++++++++++++
->  5 files changed, 48 insertions(+), 2 deletions(-)
+> > I'm not sure exactly what's going
+> > on in your case, if you have a problem can you add printk to instrument
+> > ?
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> index b12460b306a7..34cd864b8fc1 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> @@ -16,6 +16,8 @@ extern bool radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long sta
->  					 unsigned long end, int psize);
->  extern void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
->  				       unsigned long start, unsigned long end);
-> +extern void radix__local_flush_pmd_tlb_range(struct vm_area_struct *vma,
-> +				unsigned long start, unsigned long end);
->  extern void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
->  			    unsigned long end);
->  extern void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end);
-> @@ -24,6 +26,9 @@ extern void radix__local_flush_tlb_mm(struct mm_struct *mm);
->  extern void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
->  extern void radix__local_flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
->  					      int psize);
-> +extern void radix__local_flush_tlb_range_psize(struct mm_struct *mm,
-> +				unsigned long start, unsigned long end,
-> +				int psize);
->  extern void radix__tlb_flush(struct mmu_gather *tlb);
->  #ifdef CONFIG_SMP
->  extern void radix__flush_tlb_mm(struct mm_struct *mm);
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-> index 72b925f97bab..8a8b3e11a28e 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
-> @@ -83,6 +83,17 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
->  #define flush_tlb_mm(mm)		local_flush_tlb_mm(mm)
->  #define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
->  #endif /* CONFIG_SMP */
-> +
-> +#define flush_tlb_fix_spurious_fault flush_tlb_fix_spurious_fault
-> +static inline void flush_tlb_fix_spurious_fault(struct vm_area_struct *vma,
-> +						unsigned long address)
-> +{
-> +	if (radix_enabled())
-> +		radix__local_flush_tlb_page(vma, address);
-> +	else
-> +		flush_tlb_page(vma, address);
-> +}
-> +
->  /*
->   * flush the page walk cache for the address
->   */
-> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-> index 3b65917785a5..e46f346388d6 100644
-> --- a/arch/powerpc/mm/pgtable-book3s64.c
-> +++ b/arch/powerpc/mm/pgtable-book3s64.c
-> @@ -40,7 +40,10 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
->  	if (changed) {
->  		__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp),
->  					pmd_pte(entry), address);
-> -		flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
-> +		if (radix_enabled())
-> +			radix__local_flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
-> +		else
-> +			flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
->  	}
->  	return changed;
->  }
-> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-> index a03ff3d99e0c..acd6ae8062ce 100644
-> --- a/arch/powerpc/mm/pgtable.c
-> +++ b/arch/powerpc/mm/pgtable.c
-> @@ -223,7 +223,7 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
->  		if (!is_vm_hugetlb_page(vma))
->  			assert_pte_locked(vma->vm_mm, address);
->  		__ptep_set_access_flags(vma->vm_mm, ptep, entry, address);
-> -		flush_tlb_page(vma, address);
-> +		flush_tlb_fix_spurious_fault(vma, address);
->  	}
->  	return changed;
->  }
-> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> index 7452e1f4aa3c..bcb41d037593 100644
-> --- a/arch/powerpc/mm/tlb-radix.c
-> +++ b/arch/powerpc/mm/tlb-radix.c
-> @@ -396,6 +396,27 @@ void radix__tlb_flush(struct mmu_gather *tlb)
->  static unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
->  static unsigned long tlb_local_single_page_flush_ceiling __read_mostly = POWER9_TLB_SETS_RADIX * 2;
->  
-> +void radix__local_flush_tlb_range_psize(struct mm_struct *mm,
-> +				unsigned long start, unsigned long end,
-> +				int psize)
-> +{
-> +	unsigned long pid;
-> +	unsigned int page_shift = mmu_psize_defs[psize].shift;
-> +	unsigned long page_size = 1UL << page_shift;
-> +
-> +	pid = mm ? mm->context.id : 0;
-> +	if (unlikely(pid == MMU_NO_CONTEXT))
-> +		return;
-> +
-> +	preempt_disable();
-> +	if (end == TLB_FLUSH_ALL || ((end - start) >> page_shift) >
-> +				tlb_local_single_page_flush_ceiling)
-> +		_tlbiel_pid(pid, RIC_FLUSH_TLB);
-> +	else
-> +		_tlbiel_va_range(start, end, pid, page_size, psize);
-> +	preempt_enable();
-> +}
-> +
->  static bool __radix__flush_tlb_range_psize(struct mm_struct *mm,
->  				unsigned long start, unsigned long end,
->  				int psize, bool also_pwc)
-> @@ -518,6 +539,12 @@ void radix__flush_tlb_lpid(unsigned long lpid)
->  }
->  EXPORT_SYMBOL(radix__flush_tlb_lpid);
->  
-> +void radix__local_flush_pmd_tlb_range(struct vm_area_struct *vma,
-> +				unsigned long start, unsigned long end)
-> +{
-> +	radix__local_flush_tlb_range_psize(vma->vm_mm, start, end, MMU_PAGE_2M);
-> +}
-> +
->  void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
->  				unsigned long start, unsigned long end)
->  {
+> Seems to be something else going on in out board. Anyhow, the mem_offset should
+> be fixed to compile, nice to have it behind a CONFIG option. Then
+> one can start the process to remove the special casing easier.
+
+Again, why do you need to remove it ? Can you find anything with the
+existing code (with its #if'0) that is broken ?
+
+Cheers,
+Ben.
