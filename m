@@ -1,21 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0041.outbound.protection.outlook.com [104.47.38.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xntyY0FPczDqYV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 18:33:40 +1000 (AEST)
-Message-ID: <1504773212.12628.26.camel@kernel.crashing.org>
-Subject: Re: UIO memmap of PCi devices not working?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 07 Sep 2017 18:33:32 +1000
-In-Reply-To: <1504768943.27247.149.camel@infinera.com>
-References: <1504711235.27247.110.camel@infinera.com>
- <1504768612.12628.19.camel@kernel.crashing.org>
- <1504768943.27247.149.camel@infinera.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xnv7Z38jgzDrKL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Sep 2017 18:41:29 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
+ <york.sun@nxp.com>
+Subject: Re: Machine Check in P2010(e500v2)
+Date: Thu, 7 Sep 2017 08:41:20 +0000
+Message-ID: <1504773676.31322.2.camel@infinera.com>
+References: <1504265576.20777.61.camel@infinera.com>
+ <1504600831.27247.20.camel@infinera.com>
+ <VI1PR04MB2078E4FFD1B27961F63D88689A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <AM4PR0401MB16992DFADBD59ADEF8E3ACC08F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504729020.27247.120.camel@infinera.com>
+ <AM4PR0401MB16990A5A3D77ED57C9A645D98F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504731221.27247.126.camel@infinera.com>
+ <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504738204.27247.133.camel@infinera.com>
+In-Reply-To: <1504738204.27247.133.camel@infinera.com>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +33,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-09-07 at 07:22 +0000, Joakim Tjernlund wrote:
-> On Thu, 2017-09-07 at 17:16 +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2017-09-06 at 15:20 +0000, Joakim Tjernlund wrote:
-> > > Having problems to mmap PCI UIO devices and stumbeled over this page:
-> > >  http://billfarrow.blogspot.se/2010/09/userspace-access-to-pci-memory.html
-> > > it claims some adjustments are needed for UIO mmap over PCI to work.
-> > > These are #if 0 ATM and trying to enable them fails build.
-> > > 
-> > > Can this be fixed to at least build again ?
-> > > The reason for having #if 0 in the first place appears to be old X servers,
-> > > is that still true? Can the special casing be removed now?
-> > 
-> > This article seems out of date... I *think* things should work without
-> > change by just mmap'ing the appropriate sysfs files. I'm not sure why
-> > the author thought that had to be ifdef'ed out...
-> 
-> Isn't that what the article is doing(mmaping sysfs files)?
-> And the article author is #ifdefing it back, not out.
+On Thu, 2017-09-07 at 00:50 +0200, Joakim Tjernlund wrote:
+> On Wed, 2017-09-06 at 21:13 +0000, Leo Li wrote:
+> > > -----Original Message-----
+> > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > > Sent: Wednesday, September 06, 2017 3:54 PM
+> > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York =
+Sun
+> > > <york.sun@nxp.com>
+> > > Subject: Re: Machine Check in P2010(e500v2)
+> > >=20
+> > > On Wed, 2017-09-06 at 20:28 +0000, Leo Li wrote:
+> > > > > -----Original Message-----
+> > > > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > > > > Sent: Wednesday, September 06, 2017 3:17 PM
+> > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; Y=
+ork
+> > > > > Sun <york.sun@nxp.com>
+> > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > >=20
+> > > > > On Wed, 2017-09-06 at 19:31 +0000, Leo Li wrote:
+> > > > > > > -----Original Message-----
+> > > > > > > From: York Sun
+> > > > > > > Sent: Wednesday, September 06, 2017 10:38 AM
+> > > > > > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxpp=
+c-
+> > > > > > > dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>
+> > > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > > >=20
+> > > > > > > Scott is no longer with Freescale/NXP. Adding Leo.
+> > > > > > >=20
+> > > > > > > On 09/05/2017 01:40 AM, Joakim Tjernlund wrote:
+> > > > > > > > So after some debugging I found this bug:
+> > > > > > > > @@ -996,7 +998,7 @@ int fsl_pci_mcheck_exception(struct pt_=
+regs
+> > >=20
+> > > *regs)
+> > > > > > > >          if (is_in_pci_mem_space(addr)) {
+> > > > > > > >                  if (user_mode(regs)) {
+> > > > > > > >                          pagefault_disable();
+> > > > > > > > -                       ret =3D get_user(regs->nip, &inst);
+> > > > > > > > +                       ret =3D get_user(inst, (__u32 __use=
+r
+> > > > > > > > + *)regs->nip);
+> > > > > > > >                          pagefault_enable();
+> > > > > > > >                  } else {
+> > > > > > > >                          ret =3D probe_kernel_address(regs-=
+>nip,
+> > > > > > > > inst);
+> > > > > > > >=20
+> > > > > > > > However, the kernel still locked up after fixing that.
+> > > > > > > > Now I wonder why this fixup is there in the first place? Th=
+e
+> > > > > > > > routine will not really fixup the insn, just return 0xfffff=
+fff
+> > > > > > > > for the failing read and then advance the process NIP.
+> > > > > >=20
+> > > > > > You are right.  The code here only gives 0xffffffff to the load
+> > > > > > instructions and
+> > > > >=20
+> > > > > continue with the next instruction when the load instruction is
+> > > > > causing the machine check.  This will prevent a system lockup whe=
+n
+> > > > > reading from PCI/RapidIO device which is link down.
+> > > > > >=20
+> > > > > > I don't know what is actual problem in your case.  Maybe it is =
+a
+> > > > > > write
+> > > > >=20
+> > > > > instruction instead of read?   Or the code is in a infinite loop =
+waiting for a
+> > >=20
+> > > valid
+> > > > > read result?  Are you able to do some further debugging with the =
+NIP
+> > > > > correctly printed?
+> > > > > >=20
+> > > > >=20
+> > > > > According to the MC it is a Read and the NIP also leads to a read=
+ in the
+> > >=20
+> > > program.
+> > > > > ATM, I have disabled the fixup but I will enable that again.
+> > > > > Question, is it safe add a small printk when this MC happens(afte=
+r
+> > > > > fixing up)? I need to see that it has happened as the error is so=
+mewhat
+> > >=20
+> > > random.
+> > > >=20
+> > > > I think it is safe to add printk as the current machine check handl=
+ers are also
+> > >=20
+> > > using printk.
+> > >=20
+> > > I hope so, but if the fixup fires there is no printk at all so I was =
+a bit unsure.
+> > > Don't like this fixup though, is there not a better way than faking a=
+ read to user
+> > > space(or kernel for that matter) ?
+> >=20
+> > I don't have a better idea.  Without the fixup, the offending load inst=
+ruction will never finish if there is anything wrong with the backing devic=
+e and freeze the whole system.  Do you have any suggestion in mind?
+> >=20
+>=20
+> But it never finishes the load, it just fakes a load of 0xfffffffff, for =
+user space I rather have it signal
+> a SIGBUS but that does not seem to work either, at least not for us but t=
+hat could be a bug in general MC code
+>  maybe.
+> This fixup might be valid for kernel only as it has never worked for user=
+ space due to the bug I found.
+>=20
+> Where can I read about this errata ?
 
-Yes sorry that's what I meant. It should work as-is.
+I have look high and low an cannot find an errata which maps to this fixup.
+The closest I get is A-005125 which seems to have another workaround, I can=
+not find
+any evidence that this workaround has been applied in Linux, can you?
 
-> > 
-> > Let me know if you have problems.
-> 
-> Sure, we still are looking 
-> 
-> > 
-> > As far as I know, the generic code will call pci_resource_to_user()
-> > which on powerpc will return a physical address that already includes
-> > the offset, which is why we don't later add it.
-> > 
-> > Now we could probably tear all that out and use the new generic code
-> > instead as I *think* X has (very) long been fixed but I'd have to spend
-> > some time triple checking and testing on old HW which I don't have the
-> > bandwidth for right now. 
-> 
-> Could you fixup the code which is now #if 0 ? I wan't to test the
-> difference and I not sure how to fix the build problem after changing
-> those two #if 0 to #if 1
-> Even better if they could be a CONFIG option instead.
-
-Hrm it's tricky, you shouldn't just turn that ifdef back on without
-also changing pci_resource_to_user(). I'm not sure exactly what's going
-on in your case, if you have a problem can you add printk to instrument
-?
-
-Cheers,
-Ben.
+ Jocke=
