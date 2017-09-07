@@ -1,21 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xp3MT298KzDrXg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 00:52:21 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id h4so1228396pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 07:52:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xp3MX6qLlzDrWX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 00:52:24 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id v82so4426355pgb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 07:52:24 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Anton Blanchard <anton@samba.org>
-Subject: [RFC PATCH 2/8] powerpc/64s/radix: tlbie improve preempt handling
-Date: Fri,  8 Sep 2017 00:51:42 +1000
-Message-Id: <20170907145148.24398-3-npiggin@gmail.com>
+Subject: [RFC PATCH 3/8] powerpc/64s/radix: optimize TLB range flush barriers
+Date: Fri,  8 Sep 2017 00:51:43 +1000
+Message-Id: <20170907145148.24398-4-npiggin@gmail.com>
 In-Reply-To: <20170907145148.24398-1-npiggin@gmail.com>
 References: <20170907145148.24398-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,152 +27,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Preempt should be consistently disabled for mm_is_thread_local tests,
-so bring the rest of these under preempt_disable().
+Short range flushes issue a sequences of tlbie(l) instructions for
+individual effective addresses. These do not all require individual
+barrier sequences, only one set around all instructions.
 
-Preempt does not need to be disabled for the mm->context.id tests, which
-allows simplification and removal of gotos.
+Commit f7327e0ba3 ("powerpc/mm/radix: Remove unnecessary ptesync")
+made a similar optimization for tlbiel for PID flushing.
+
+For tlbie, the ISA says:
+
+    The tlbsync instruction provides an ordering function for the
+    effects of all tlbie instructions executed by the thread executing
+    the tlbsync instruction, with respect to the memory barrier
+    created by a subsequent ptesync instruction executed by the same
+    thread.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/tlb-radix.c | 47 +++++++++++++++++++++------------------------
- 1 file changed, 22 insertions(+), 25 deletions(-)
+ arch/powerpc/mm/tlb-radix.c | 41 ++++++++++++++++++++++++++++++++---------
+ 1 file changed, 32 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index b3e849c4886e..1ed61baf58da 100644
+index 1ed61baf58da..c30f3faf5356 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -186,16 +186,15 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
- 
--	preempt_disable();
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto no_context;
-+		return;
- 
-+	preempt_disable();
- 	if (!mm_is_thread_local(mm))
- 		_tlbie_pid(pid, RIC_FLUSH_TLB);
- 	else
- 		_tlbiel_pid(pid, RIC_FLUSH_TLB);
--no_context:
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__flush_tlb_mm);
-@@ -204,16 +203,15 @@ static void radix__flush_all_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
- 
--	preempt_disable();
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto no_context;
-+		return;
- 
-+	preempt_disable();
- 	if (!mm_is_thread_local(mm))
- 		_tlbie_pid(pid, RIC_FLUSH_ALL);
- 	else
- 		_tlbiel_pid(pid, RIC_FLUSH_ALL);
--no_context:
- 	preempt_enable();
+@@ -84,7 +84,7 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
+ 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
  }
  
-@@ -229,15 +227,14 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 	unsigned long pid;
- 	unsigned long ap = mmu_get_ap(psize);
+-static inline void _tlbiel_va(unsigned long va, unsigned long pid,
++static inline void __tlbiel_va(unsigned long va, unsigned long pid,
+ 			      unsigned long ap, unsigned long ric)
+ {
+ 	unsigned long rb,rs,prs,r;
+@@ -95,14 +95,20 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
  
--	preempt_disable();
- 	pid = mm ? mm->context.id : 0;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto bail;
-+		return;
-+	preempt_disable();
- 	if (!mm_is_thread_local(mm))
- 		_tlbie_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
- 	else
- 		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
--bail:
- 	preempt_enable();
+-	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+-	asm volatile("ptesync": : :"memory");
+ 	trace_tlbie(0, 1, rb, rs, ric, prs, r);
  }
  
-@@ -322,46 +319,44 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+-static inline void _tlbie_va(unsigned long va, unsigned long pid,
++static inline void _tlbiel_va(unsigned long va, unsigned long pid,
++			      unsigned long ap, unsigned long ric)
++{
++	asm volatile("ptesync": : :"memory");
++	__tlbiel_va(va, pid, ap, ric);
++	asm volatile("ptesync": : :"memory");
++}
++
++static inline void __tlbie_va(unsigned long va, unsigned long pid,
+ 			     unsigned long ap, unsigned long ric)
  {
- 	unsigned long pid;
- 	unsigned long addr;
--	int local = mm_is_thread_local(mm);
-+	bool local;
- 	unsigned long ap = mmu_get_ap(psize);
- 	unsigned long page_size = 1UL << mmu_psize_defs[psize].shift;
+ 	unsigned long rb,rs,prs,r;
+@@ -113,13 +119,20 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
  
--
--	preempt_disable();
- 	pid = mm ? mm->context.id : 0;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto err_out;
-+		return;
+-	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+-	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ }
  
-+	preempt_disable();
-+	local = mm_is_thread_local(mm);
- 	if (end == TLB_FLUSH_ALL ||
- 	    (end - start) > tlb_single_page_flush_ceiling * page_size) {
- 		if (local)
++static inline void _tlbie_va(unsigned long va, unsigned long pid,
++			     unsigned long ap, unsigned long ric)
++{
++	asm volatile("ptesync": : :"memory");
++	__tlbie_va(va, pid, ap, ric);
++	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++}
++
++
+ /*
+  * Base TLB flushing operations:
+  *
+@@ -335,14 +348,20 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
  			_tlbiel_pid(pid, RIC_FLUSH_TLB);
  		else
  			_tlbie_pid(pid, RIC_FLUSH_TLB);
--		goto err_out;
--	}
--	for (addr = start; addr < end; addr += page_size) {
-+	} else {
-+		for (addr = start; addr < end; addr += page_size) {
++
+ 	} else {
++		asm volatile("ptesync": : :"memory");
+ 		for (addr = start; addr < end; addr += page_size) {
  
--		if (local)
--			_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
--		else
--			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
-+			if (local)
-+				_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
-+			else
-+				_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
-+		}
+ 			if (local)
+-				_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
++				__tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
+ 			else
+-				_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
++				__tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
+ 		}
++		if (local)
++			asm volatile("ptesync": : :"memory");
++		else
++			asm volatile("eieio; tlbsync; ptesync": : :"memory");
  	}
--err_out:
  	preempt_enable();
  }
+@@ -373,6 +392,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 		_tlbie_pid(pid, RIC_FLUSH_PWC);
  
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- {
--	int local = mm_is_thread_local(mm);
- 	unsigned long ap = mmu_get_ap(mmu_virtual_psize);
- 	unsigned long pid, end;
--
-+	bool local;
- 
- 	pid = mm ? mm->context.id : 0;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto no_context;
-+		return;
- 
- 	/* 4k page size, just blow the world */
- 	if (PAGE_SIZE == 0x1000) {
-@@ -369,6 +364,8 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 		return;
- 	}
- 
-+	preempt_disable();
-+	local = mm_is_thread_local(mm);
- 	/* Otherwise first do the PWC */
- 	if (local)
- 		_tlbiel_pid(pid, RIC_FLUSH_PWC);
-@@ -383,7 +380,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 	/* Then iterate the pages */
++	asm volatile("ptesync": : :"memory");
+ 	end = addr + HPAGE_PMD_SIZE;
+ 	for (; addr < end; addr += PAGE_SIZE) {
+ 		if (local)
+@@ -380,7 +400,10 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
  		else
  			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
  	}
--no_context:
-+
+-
++	if (local)
++		asm volatile("ptesync": : :"memory");
++	else
++		asm volatile("eieio; tlbsync; ptesync": : :"memory");
  	preempt_enable();
  }
  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
