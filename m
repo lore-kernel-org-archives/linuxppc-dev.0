@@ -1,15 +1,16 @@
-Return-Path: <laurent.du4@free.fr>
-Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [212.27.42.3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xp5RJ12D8zDrWN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 02:25:48 +1000 (AEST)
-From: Laurent Dufour <laurent.du4@free.fr>
-To: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/mm: Fix missing mmap_sem release
-Date: Thu,  7 Sep 2017 18:25:29 +0200
-Message-Id: <1504801529-15113-1-git-send-email-laurent.du4@free.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xp6TR3NLWzDrX5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 03:12:43 +1000 (AEST)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Expose TSCR via sysfs
+Date: Fri,  8 Sep 2017 03:11:12 +1000
+Message-Id: <20170907171112.29579-1-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,36 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The commit b5c8f0fd595d ("powerpc/mm: Rework mm_fault_error()") reviewed
-the way the error path is managed in __do_page_fault() but it was a bit too
-agressive when handling a case by returning without releasing the mmap_sem.
+From: Anton Blanchard <anton@samba.org>
 
-By the way, replacing current->mm->mmap_sem by mm->mmap_sem as mm is set to
-current->mm.
+The thread switch control register (TSCR) is a per core register
+that configures how the CPU shares resources between SMT threads.
 
-Fixes: b5c8f0fd595d ("powerpc/mm: Rework mm_fault_error()")
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Laurent Dufour <laurent.du4@free.fr>
+Exposing it via sysfs allows us to tune it at run time.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/mm/fault.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/sysfs.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 4797d08581ce..f799ccf37d27 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -521,10 +521,11 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 		 * User mode? Just return to handle the fatal exception otherwise
- 		 * return to bad_page_fault
- 		 */
-+		up_read(&mm->mmap_sem);
- 		return is_user ? 0 : SIGBUS;
- 	}
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 4437c70c7c2b..b60a441092b9 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -485,6 +485,7 @@ SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
+ SYSFS_SPRSETUP(purr, SPRN_PURR);
+ SYSFS_SPRSETUP(spurr, SPRN_SPURR);
+ SYSFS_SPRSETUP(pir, SPRN_PIR);
++SYSFS_SPRSETUP(tscr, SPRN_TSCR);
  
--	up_read(&current->mm->mmap_sem);
-+	up_read(&mm->mmap_sem);
+ /*
+   Lets only enable read for phyp resources and
+@@ -495,6 +496,7 @@ static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
+ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+ static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
+ static DEVICE_ATTR(pir, 0400, show_pir, NULL);
++static DEVICE_ATTR(tscr, 0600, show_tscr, store_tscr);
  
- 	if (unlikely(fault & VM_FAULT_ERROR))
- 		return mm_fault_error(regs, address, fault);
+ /*
+  * This is the system wide DSCR register default value. Any
+@@ -774,6 +776,9 @@ static int register_cpu_online(unsigned int cpu)
+ 
+ 	if (cpu_has_feature(CPU_FTR_PPCAS_ARCH_V2))
+ 		device_create_file(s, &dev_attr_pir);
++
++	if (cpu_has_feature(CPU_FTR_ARCH_206))
++		device_create_file(s, &dev_attr_tscr);
+ #endif /* CONFIG_PPC64 */
+ 
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+@@ -856,6 +861,9 @@ static int unregister_cpu_online(unsigned int cpu)
+ 
+ 	if (cpu_has_feature(CPU_FTR_PPCAS_ARCH_V2))
+ 		device_remove_file(s, &dev_attr_pir);
++
++	if (cpu_has_feature(CPU_FTR_ARCH_206))
++		device_remove_file(s, &dev_attr_tscr);
+ #endif /* CONFIG_PPC64 */
+ 
+ #ifdef CONFIG_PPC_FSL_BOOK3E
 -- 
-2.7.4
+2.11.0
