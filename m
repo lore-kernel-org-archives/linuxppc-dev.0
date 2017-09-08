@@ -1,29 +1,32 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0080.outbound.protection.outlook.com [104.47.42.80])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpdzl4J5jzDrbs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 23:52:17 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v88DnSjt107457
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Sep 2017 09:52:15 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2curkxusxb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 09:52:15 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Fri, 8 Sep 2017 14:52:13 +0100
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V3] cxl: Add support for POWER9 DD2
-Date: Fri,  8 Sep 2017 15:52:11 +0200
-Message-Id: <1504878731-28636-1-git-send-email-clombard@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpcd60Gy9zDrZ3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 22:51:03 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
+ <york.sun@nxp.com>
+Subject: Re: Machine Check in P2010(e500v2)
+Date: Fri, 8 Sep 2017 12:50:54 +0000
+Message-ID: <1504875052.31322.38.camel@infinera.com>
+References: <1504265576.20777.61.camel@infinera.com>
+ <1504600831.27247.20.camel@infinera.com>
+ <VI1PR04MB2078E4FFD1B27961F63D88689A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <AM4PR0401MB16992DFADBD59ADEF8E3ACC08F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504729020.27247.120.camel@infinera.com>
+ <AM4PR0401MB16990A5A3D77ED57C9A645D98F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504731221.27247.126.camel@infinera.com>
+ <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504738204.27247.133.camel@infinera.com>
+ <1504773676.31322.2.camel@infinera.com>
+ <AM4PR0401MB16993C0235EA67562A8B8D4E8F940@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504864463.31322.31.camel@infinera.com>
+In-Reply-To: <1504864463.31322.31.camel@infinera.com>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,156 +36,219 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL initialization sequence has been updated to DD2.
-This patch adapts to the changes, retaining compatibility with DD1.
-The patch includes some changes to DD1 fix-ups as well.
+On Fri, 2017-09-08 at 11:54 +0200, Joakim Tjernlund wrote:
+> On Thu, 2017-09-07 at 18:54 +0000, Leo Li wrote:
+> > > -----Original Message-----
+> > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > > Sent: Thursday, September 07, 2017 3:41 AM
+> > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York =
+Sun
+> > > <york.sun@nxp.com>
+> > > Subject: Re: Machine Check in P2010(e500v2)
+> > >=20
+> > > On Thu, 2017-09-07 at 00:50 +0200, Joakim Tjernlund wrote:
+> > > > On Wed, 2017-09-06 at 21:13 +0000, Leo Li wrote:
+> > > > > > -----Original Message-----
+> > > > > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > > > > > Sent: Wednesday, September 06, 2017 3:54 PM
+> > > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>;
+> > > > > > York Sun <york.sun@nxp.com>
+> > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > >=20
+> > > > > > On Wed, 2017-09-06 at 20:28 +0000, Leo Li wrote:
+> > > > > > > > -----Original Message-----
+> > > > > > > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.co=
+m]
+> > > > > > > > Sent: Wednesday, September 06, 2017 3:17 PM
+> > > > > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li
+> > > > > > > > <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
+> > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > > > >=20
+> > > > > > > > On Wed, 2017-09-06 at 19:31 +0000, Leo Li wrote:
+> > > > > > > > > > -----Original Message-----
+> > > > > > > > > > From: York Sun
+> > > > > > > > > > Sent: Wednesday, September 06, 2017 10:38 AM
+> > > > > > > > > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>;
+> > > > > > > > > > linuxppc- dev@lists.ozlabs.org; Leo Li
+> > > > > > > > > > <leoyang.li@nxp.com>
+> > > > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > > > > > >=20
+> > > > > > > > > > Scott is no longer with Freescale/NXP. Adding Leo.
+> > > > > > > > > >=20
+> > > > > > > > > > On 09/05/2017 01:40 AM, Joakim Tjernlund wrote:
+> > > > > > > > > > > So after some debugging I found this bug:
+> > > > > > > > > > > @@ -996,7 +998,7 @@ int fsl_pci_mcheck_exception(stru=
+ct
+> > > > > > > > > > > pt_regs
+> > > > > >=20
+> > > > > > *regs)
+> > > > > > > > > > >          if (is_in_pci_mem_space(addr)) {
+> > > > > > > > > > >                  if (user_mode(regs)) {
+> > > > > > > > > > >                          pagefault_disable();
+> > > > > > > > > > > -                       ret =3D get_user(regs->nip, &=
+inst);
+> > > > > > > > > > > +                       ret =3D get_user(inst, (__u32
+> > > > > > > > > > > + __user *)regs->nip);
+> > > > > > > > > > >                          pagefault_enable();
+> > > > > > > > > > >                  } else {
+> > > > > > > > > > >                          ret =3D
+> > > > > > > > > > > probe_kernel_address(regs->nip, inst);
+> > > > > > > > > > >=20
+> > > > > > > > > > > However, the kernel still locked up after fixing that=
+.
+> > > > > > > > > > > Now I wonder why this fixup is there in the first pla=
+ce?
+> > > > > > > > > > > The routine will not really fixup the insn, just retu=
+rn
+> > > > > > > > > > > 0xffffffff for the failing read and then advance the =
+process NIP.
+> > > > > > > > >=20
+> > > > > > > > > You are right.  The code here only gives 0xffffffff to th=
+e
+> > > > > > > > > load instructions and
+> > > > > > > >=20
+> > > > > > > > continue with the next instruction when the load instructio=
+n
+> > > > > > > > is causing the machine check.  This will prevent a system
+> > > > > > > > lockup when reading from PCI/RapidIO device which is link d=
+own.
+> > > > > > > > >=20
+> > > > > > > > > I don't know what is actual problem in your case.  Maybe =
+it
+> > > > > > > > > is a write
+> > > > > > > >=20
+> > > > > > > > instruction instead of read?   Or the code is in a infinite=
+ loop waiting for
+> > >=20
+> > > a
+> > > > > >=20
+> > > > > > valid
+> > > > > > > > read result?  Are you able to do some further debugging wit=
+h
+> > > > > > > > the NIP correctly printed?
+> > > > > > > > >=20
+> > > > > > > >=20
+> > > > > > > > According to the MC it is a Read and the NIP also leads to =
+a
+> > > > > > > > read in the
+> > > > > >=20
+> > > > > > program.
+> > > > > > > > ATM, I have disabled the fixup but I will enable that again=
+.
+> > > > > > > > Question, is it safe add a small printk when this MC
+> > > > > > > > happens(after fixing up)? I need to see that it has happene=
+d
+> > > > > > > > as the error is somewhat
+> > > > > >=20
+> > > > > > random.
+> > > > > > >=20
+> > > > > > > I think it is safe to add printk as the current machine check
+> > > > > > > handlers are also
+> > > > > >=20
+> > > > > > using printk.
+> > > > > >=20
+> > > > > > I hope so, but if the fixup fires there is no printk at all so =
+I was a bit unsure.
+> > > > > > Don't like this fixup though, is there not a better way than
+> > > > > > faking a read to user space(or kernel for that matter) ?
+> > > > >=20
+> > > > > I don't have a better idea.  Without the fixup, the offending loa=
+d instruction
+> > >=20
+> > > will never finish if there is anything wrong with the backing device =
+and freeze the
+> > > whole system.  Do you have any suggestion in mind?
+> > > > >=20
+> > > >=20
+> > > > But it never finishes the load, it just fakes a load of 0xfffffffff=
+,
+> > > > for user space I rather have it signal a SIGBUS but that does not s=
+eem
+> > > > to work either, at least not for us but that could be a bug in gene=
+ral MC code
+> > >=20
+> > > maybe.
+> > > > This fixup might be valid for kernel only as it has never worked fo=
+r user space
+> > >=20
+> > > due to the bug I found.
+> > > >=20
+> > > > Where can I read about this errata ?
+> > >=20
+> > > I have look high and low an cannot find an errata which maps to this =
+fixup.
+> > > The closest I get is A-005125 which seems to have another workaround,=
+ I cannot
+> > > find any evidence that this workaround has been applied in Linux, can=
+ you?
+> >=20
+> > This is not A-005125.  There was an erratum for this issue with older s=
+ilicons (e.g. erratum PCI-ex 3 for MPC8572). =20
+> > " When its link goes down, the PCI Express controller clears all outsta=
+nding transactions with an
+> > error indicator and sends a link down exception to the interrupt contro=
+ller if
+> > PEX_PME_MES_DISR[LDDD] =3D 0. If, however, any transactions are sent to=
+ the controller after
+> > the link down event, they are accepted by the controller and wait for t=
+he link to come back up
+> > before starting any timeout counters (for example, completion timeout).=
+ There is no mechanism to
+> > cancel the new transactions short of a device HRESET. "
+> >=20
+> > But it was removed in newer silicon like P2020/P2010 probably because a=
+ Machine Check will be triggered in this situation to deal with the stalled=
+ instruction and no longer considered it as a hardware issue.
+> >=20
+>=20
+> Maybe this fixup should be configurable then?
+>=20
+> > The A-005125 is dealt with in u-boot.   https://lists.denx.de/pipermail=
+/u-boot/2013-August/161185.html
+>=20
+> Yes, I found it eventually :)
+>=20
+> However, I cannot return to normal execution. I can follow the code to re=
+turning from
+> machine_check_exception() and moving into ASM handler for returning from =
+a ME but then I
+> am a bit lost. It does not seem to be any problem executing, it feels mor=
+e like a SW bug
+> dealing with machine checks. Don't known how to diagnose this further and=
+ could use some pointers.
+>=20
+>  Jocke
 
-Tests performed on some of the old/new hardware.
+I note that MSR_RI is not set in MSR, can that be a clue?
 
-The function is_page_fault(), for POWER9, lists the Translation Checkout
-Responses where the page fault will be handled by copro_handle_mm_fault().
-This list is too restrictive and not necessary.
+[   28.118737] Machine check in kernel mode.
+[   28.122751] Caused by (from MCSR=3D10008): Bus - Read Data Bus Error: DA=
+R:b6f02000
+[   28.133106] Oops: Machine check, sig: 7 [#1]
+[   28.137370] P2010 RDB
+[   28.139636] Modules linked in: linux_bcm_knet(PO) linux_user_bde(PO) lin=
+ux_kernel_bde(PO)
+[   28.147826] CPU: 0 PID: 470 Comm: emxp2_hw_bl Tainted: P           O    =
+4.1.38+ #206
+[   28.155570] task: db16cd10 ti: df12a000 task.ti: df12a000
+[   28.160964] NIP: 10a4e2f4 LR: 10a4e404 CTR: 10046c38
+[   28.165925] REGS: df12bf10 TRAP: 0204   Tainted: P           O     (4.1.=
+38+)
+[   28.172971] MSR: 0002d000 <CE,EE,PR,ME>  CR: 44002428  XER: 00000000
+[   28.179336] DEAR: b6f02000 ESR: 00000000
+GPR00: 10a4e404 bff8cc90 b7a244a0 132f9fa8 07006000 07000000 00000000 132f9=
+fd8
+GPR08: b6ec4000 b6ed4000 0003e000 bff8cc80 24004424 11d6cf7c 00000000 00000=
+000
+GPR16: 10f6e29c 10f6c872 10f6db01 0000b541 0000b541 11d92fcc 00000011 00000=
+001
+GPR24: 01a5048d 132ffbf0 11d60000 00000000 07006000 00000000 132f9fa8 00000=
+000
+[   28.211576] NIP [10a4e2f4] 0x10a4e2f4
+[   28.215233] LR [10a4e404] 0x10a4e404
+[   28.218802] Call Trace:
+[   28.221243] ---[ end trace bc4afbb242721e8a ]---
 
-This patches removes this restriction and all page faults, whatever the
-reason, will be handled. In this case, the interruption is always
-acknowledged.
+Finally, I am on kernel 4.1.43
 
-The following features will be added soon:
-- phb reset when switching to capi mode.
-- cxllib update to support new functions.
-
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
----
-Changelog[v3]
- - Update commit message
-
-Changelog[v2]
- - Rebase to latest upstream.
- - Update the function is_page_fault()
----
- drivers/misc/cxl/cxl.h   |  2 ++
- drivers/misc/cxl/fault.c | 15 ++-------------
- drivers/misc/cxl/pci.c   | 47 ++++++++++++++++++++++++-----------------------
- 3 files changed, 28 insertions(+), 36 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index b1afecc..0167df8 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -100,6 +100,8 @@ static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
- static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
- /* PSL registers - CAIA 2 */
- static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
-+static const cxl_p1_reg_t CXL_XSL9_INV      = {0x0110};
-+static const cxl_p1_reg_t CXL_XSL9_DEF      = {0x0140};
- static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
- static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
- static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 6eed7d0..0cf7f4a 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -204,22 +204,11 @@ static bool cxl_is_segment_miss(struct cxl_context *ctx, u64 dsisr)
- 
- static bool cxl_is_page_fault(struct cxl_context *ctx, u64 dsisr)
- {
--	u64 crs; /* Translation Checkout Response Status */
--
- 	if ((cxl_is_power8()) && (dsisr & CXL_PSL_DSISR_An_DM))
- 		return true;
- 
--	if (cxl_is_power9()) {
--		crs = (dsisr & CXL_PSL9_DSISR_An_CO_MASK);
--		if ((crs == CXL_PSL9_DSISR_An_PF_SLR) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_RGC) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_RGP) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_HRH) ||
--		    (crs == CXL_PSL9_DSISR_An_PF_STEG) ||
--		    (crs == CXL_PSL9_DSISR_An_URTCH)) {
--			return true;
--		}
--	}
-+	if (cxl_is_power9())
-+		return true;
- 
- 	return false;
- }
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index d18b3d9..a5baab3 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -401,7 +401,8 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
- 	*capp_unit_id = get_capp_unit_id(np, *phb_index);
- 	of_node_put(np);
- 	if (!*capp_unit_id) {
--		pr_err("cxl: invalid capp unit id\n");
-+		pr_err("cxl: invalid capp unit id (phb_index: %d)\n",
-+		       *phb_index);
- 		return -ENODEV;
- 	}
- 
-@@ -475,37 +476,37 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
- 	psl_fircntl |= 0x1ULL; /* ce_thresh */
- 	cxl_p1_write(adapter, CXL_PSL9_FIR_CNTL, psl_fircntl);
- 
--	/* vccredits=0x1  pcklat=0x4 */
--	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0000000000001810ULL);
--
--	/*
--	 * For debugging with trace arrays.
--	 * Configure RX trace 0 segmented mode.
--	 * Configure CT trace 0 segmented mode.
--	 * Configure LA0 trace 0 segmented mode.
--	 * Configure LA1 trace 0 segmented mode.
-+	/* Setup the PSL to transmit packets on the PCIe before the
-+	 * CAPP is enabled
- 	 */
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000000ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000003ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000005ULL);
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x8040800080000006ULL);
-+	cxl_p1_write(adapter, CXL_PSL9_DSNDCTL, 0x0001001000002A10ULL);
- 
- 	/*
- 	 * A response to an ASB_Notify request is returned by the
- 	 * system as an MMIO write to the address defined in
--	 * the PSL_TNR_ADDR register
-+	 * the PSL_TNR_ADDR register.
-+	 * keep the Reset Value: 0x00020000E0000000
- 	 */
--	/* PSL_TNR_ADDR */
- 
--	/* NORST */
--	cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x8000000000000000ULL);
-+	/* Enable XSL rty limit */
-+	cxl_p1_write(adapter, CXL_XSL9_DEF, 0x51F8000000000005ULL);
-+
-+	/* Change XSL_INV dummy read threshold */
-+	cxl_p1_write(adapter, CXL_XSL9_INV, 0x0000040007FFC200ULL);
-+
-+	if (phb_index == 3) {
-+		/* disable machines 31-47 and 20-27 for DMA */
-+		cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000FF3FFFF0000ULL);
-+	}
- 
--	/* allocate the apc machines */
--	cxl_p1_write(adapter, CXL_PSL9_APCDEDTYPE, 0x40000003FFFF0000ULL);
-+	/* Snoop machines */
-+	cxl_p1_write(adapter, CXL_PSL9_APCDEDALLOC, 0x800F000200000000ULL);
- 
--	/* Disable vc dd1 fix */
--	if (cxl_is_power9_dd1())
--		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0400000000000001ULL);
-+	if (cxl_is_power9_dd1()) {
-+		/* Disabling deadlock counter CAR */
-+		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0020000000000001ULL);
-+	} else
-+		cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x4000000000000000ULL);
- 
- 	return 0;
- }
--- 
-2.7.4
+ Jocke=
