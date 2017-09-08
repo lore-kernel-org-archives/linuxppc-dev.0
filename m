@@ -1,15 +1,45 @@
-Return-Path: <sojkam1@fel.cvut.cz>
-Received: from smtpx.feld.cvut.cz (smtpx.feld.cvut.cz [147.32.192.33])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xpWYz03QqzDrbN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 19:03:02 +1000 (AEST)
-From: Michal Sojka <sojkam1@fel.cvut.cz>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Unable to handle kernel paging request for unaligned access
-Date: Fri, 08 Sep 2017 10:55:46 +0200
-Message-ID: <877ex9lgbx.fsf@steelpick.2x.cz>
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpX2l2W4mzDrZp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 19:24:31 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v889NwHm106900
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Sep 2017 05:24:27 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cur3hsarf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 05:24:27 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 8 Sep 2017 10:24:25 +0100
+Subject: Re: [PATCH v2 00/20] Speculative page faults
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20170821022629.GA541@jagdpanzerIV.localdomain>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Fri, 8 Sep 2017 11:24:16 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170821022629.GA541@jagdpanzerIV.localdomain>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6302a906-221d-c977-4aea-67202eb3d96d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,105 +49,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On 21/08/2017 04:26, Sergey Senozhatsky wrote:
+> Hello,
+> 
+> On (08/18/17 00:04), Laurent Dufour wrote:
+>> This is a port on kernel 4.13 of the work done by Peter Zijlstra to
+>> handle page fault without holding the mm semaphore [1].
+>>
+>> The idea is to try to handle user space page faults without holding the
+>> mmap_sem. This should allow better concurrency for massively threaded
+>> process since the page fault handler will not wait for other threads memory
+>> layout change to be done, assuming that this change is done in another part
+>> of the process's memory space. This type page fault is named speculative
+>> page fault. If the speculative page fault fails because of a concurrency is
+>> detected or because underlying PMD or PTE tables are not yet allocating, it
+>> is failing its processing and a classic page fault is then tried.
+>>
+>> The speculative page fault (SPF) has to look for the VMA matching the fault
+>> address without holding the mmap_sem, so the VMA list is now managed using
+>> SRCU allowing lockless walking. The only impact would be the deferred file
+>> derefencing in the case of a file mapping, since the file pointer is
+>> released once the SRCU cleaning is done.  This patch relies on the change
+>> done recently by Paul McKenney in SRCU which now runs a callback per CPU
+>> instead of per SRCU structure [1].
+>>
+>> The VMA's attributes checked during the speculative page fault processing
+>> have to be protected against parallel changes. This is done by using a per
+>> VMA sequence lock. This sequence lock allows the speculative page fault
+>> handler to fast check for parallel changes in progress and to abort the
+>> speculative page fault in that case.
+>>
+>> Once the VMA is found, the speculative page fault handler would check for
+>> the VMA's attributes to verify that the page fault has to be handled
+>> correctly or not. Thus the VMA is protected through a sequence lock which
+>> allows fast detection of concurrent VMA changes. If such a change is
+>> detected, the speculative page fault is aborted and a *classic* page fault
+>> is tried.  VMA sequence locks are added when VMA attributes which are
+>> checked during the page fault are modified.
+>>
+>> When the PTE is fetched, the VMA is checked to see if it has been changed,
+>> so once the page table is locked, the VMA is valid, so any other changes
+>> leading to touching this PTE will need to lock the page table, so no
+>> parallel change is possible at this time.
+> 
+> [ 2311.315400] ======================================================
+> [ 2311.315401] WARNING: possible circular locking dependency detected
+> [ 2311.315403] 4.13.0-rc5-next-20170817-dbg-00039-gaf11d7500492-dirty #1743 Not tainted
+> [ 2311.315404] ------------------------------------------------------
+> [ 2311.315406] khugepaged/43 is trying to acquire lock:
+> [ 2311.315407]  (&mapping->i_mmap_rwsem){++++}, at: [<ffffffff8111b339>] rmap_walk_file+0x5a/0x147
+> [ 2311.315415] 
+>                but task is already holding lock:
+> [ 2311.315416]  (fs_reclaim){+.+.}, at: [<ffffffff810ebd80>] fs_reclaim_acquire+0x12/0x35
+> [ 2311.315420] 
+>                which lock already depends on the new lock.
+> 
+> [ 2311.315422] 
+>                the existing dependency chain (in reverse order) is:
+> [ 2311.315423] 
+>                -> #3 (fs_reclaim){+.+.}:
+> [ 2311.315427]        fs_reclaim_acquire+0x32/0x35
+> [ 2311.315429]        __alloc_pages_nodemask+0x8d/0x217
+> [ 2311.315432]        pte_alloc_one+0x13/0x5e
+> [ 2311.315434]        __pte_alloc+0x1f/0x83
+> [ 2311.315436]        move_page_tables+0x2c9/0x5ac
+> [ 2311.315438]        move_vma.isra.25+0xff/0x2a2
+> [ 2311.315439]        SyS_mremap+0x41b/0x49e
+> [ 2311.315442]        entry_SYSCALL_64_fastpath+0x18/0xad
+> [ 2311.315443] 
+>                -> #2 (&vma->vm_sequence/1){+.+.}:
+> [ 2311.315449]        write_seqcount_begin_nested+0x1b/0x1d
+> [ 2311.315451]        __vma_adjust+0x1b7/0x5d6
+> [ 2311.315453]        __split_vma+0x142/0x1a3
+> [ 2311.315454]        do_munmap+0x128/0x2af
+> [ 2311.315455]        vm_munmap+0x5a/0x73
+> [ 2311.315458]        elf_map+0xb1/0xce
+> [ 2311.315459]        load_elf_binary+0x8e0/0x1348
+> [ 2311.315462]        search_binary_handler+0x70/0x1f3
+> [ 2311.315464]        load_script+0x1a6/0x1b5
+> [ 2311.315466]        search_binary_handler+0x70/0x1f3
+> [ 2311.315468]        do_execveat_common+0x461/0x691
+> [ 2311.315471]        kernel_init+0x5a/0xf0
+> [ 2311.315472]        ret_from_fork+0x27/0x40
+> [ 2311.315473] 
+>                -> #1 (&vma->vm_sequence){+.+.}:
+> [ 2311.315478]        write_seqcount_begin_nested+0x1b/0x1d
+> [ 2311.315480]        __vma_adjust+0x19c/0x5d6
+> [ 2311.315481]        __split_vma+0x142/0x1a3
+> [ 2311.315482]        do_munmap+0x128/0x2af
+> [ 2311.315484]        vm_munmap+0x5a/0x73
+> [ 2311.315485]        elf_map+0xb1/0xce
+> [ 2311.315487]        load_elf_binary+0x8e0/0x1348
+> [ 2311.315489]        search_binary_handler+0x70/0x1f3
+> [ 2311.315490]        load_script+0x1a6/0x1b5
+> [ 2311.315492]        search_binary_handler+0x70/0x1f3
+> [ 2311.315494]        do_execveat_common+0x461/0x691
+> [ 2311.315496]        kernel_init+0x5a/0xf0
+> [ 2311.315497]        ret_from_fork+0x27/0x40
+> [ 2311.315498] 
+>                -> #0 (&mapping->i_mmap_rwsem){++++}:
+> [ 2311.315503]        lock_acquire+0x176/0x19e
+> [ 2311.315505]        down_read+0x3b/0x55
+> [ 2311.315507]        rmap_walk_file+0x5a/0x147
+> [ 2311.315508]        page_referenced+0x11c/0x134
+> [ 2311.315511]        shrink_page_list+0x36b/0xb80
+> [ 2311.315512]        shrink_inactive_list+0x1d9/0x437
+> [ 2311.315514]        shrink_node_memcg.constprop.71+0x3e7/0x571
+> [ 2311.315515]        shrink_node+0x3f/0x149
+> [ 2311.315517]        try_to_free_pages+0x270/0x45f
+> [ 2311.315518]        __alloc_pages_slowpath+0x34a/0xaa2
+> [ 2311.315520]        __alloc_pages_nodemask+0x111/0x217
+> [ 2311.315523]        khugepaged_alloc_page+0x17/0x45
+> [ 2311.315524]        khugepaged+0xa29/0x16b5
+> [ 2311.315527]        kthread+0xfb/0x103
+> [ 2311.315529]        ret_from_fork+0x27/0x40
+> [ 2311.315530] 
+>                other info that might help us debug this:
+> 
+> [ 2311.315531] Chain exists of:
+>                  &mapping->i_mmap_rwsem --> &vma->vm_sequence/1 --> fs_reclaim
 
-commit 31bfdb036f12 ("powerpc: Use instruction emulation infrastructure
-to handle alignment faults", 2017-08-30) breaks my MPC5200B system. Boot
-log is below. Let me know if you need more information to debug the
-problem.
+Hi Sergey,
 
-Best regards,
--Michal Sojka
+I can't see where such a chain could happen.
+
+I tried to recreate it on top of the latest mm tree, to latest stack output
+but I can't get it.
+How did you raised this one ?
+
+Thanks,
+Laurent.
 
 
-Linux version 4.13.0-rc2+ (wsh@steelpick) (gcc version 4.7.2 (OSELAS.Toolchain-2012.12.1)) #33 Fri Sep 8 09:36:26 CEST 2017
-Found initrd at 0xc7c38000:0xc7e5f499
-Using mpc5200-simple-platform machine description
------------------------------------------------------
-Hash_size         = 0x0
-phys_mem_size     = 0x8000000
-dcache_bsize      = 0x20
-icache_bsize      = 0x20
-cpu_features      = 0x0000000000020460
-  possible        = 0x0000000005a6fd77
-  always          = 0x0000000000020000
-cpu_user_features = 0x8c000000 0x00000000
-mmu_features      = 0x00010000
------------------------------------------------------
-PCI host bridge /pci@f0000d00 (primary) ranges:
- MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000 Prefetch
- MEM 0x00000000a0000000..0x00000000afffffff -> 0x00000000a0000000 
-  IO 0x00000000b0000000..0x00000000b0ffffff -> 0x0000000000000000
-Zone ranges:
-  DMA      [mem 0x0000000000000000-0x0000000007ffffff]
-  Normal   empty
-Movable zone start for each node
-Early memory node ranges
-  node   0: [mem 0x0000000000000000-0x0000000007ffffff]
-Initmem setup node 0 [mem 0x0000000000000000-0x0000000007ffffff]
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 32512
-Kernel command line: console=ttyPSC0,115200
-PID hash table entries: 512 (order: -1, 2048 bytes)
-Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
-Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
-Memory: 125136K/131072K available (1924K kernel code, 88K rwdata, 188K rodata, 108K init, 187K bss, 5936K reserved, 0K cma-reserved)
-Kernel virtual memory layout:
-  * 0xfffdf000..0xfffff000  : fixmap
-  * 0xfcffb000..0xfe000000  : early ioremap
-  * 0xc9000000..0xfcffb000  : vmalloc & ioremap
-SLUB: HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-NR_IRQS: 512, nr_irqs: 512, preallocated irqs: 16
-MPC52xx PIC is up and running!
-clocksource: timebase: mask: 0xffffffffffffffff max_cycles: 0x79c5e18f3, max_idle_ns: 440795202740 ns
-clocksource: timebase mult[1e4d9365] shift[24] registered
-console [ttyPSC0] enabled
-pid_max: default: 4096 minimum: 301
-Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
-clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
-random: get_random_u32 called from 0xc00d06f4 with crng_init=0
-NET: Registered protocol family 16
-mpc52xx_irqhost_map: Critical IRQ #3 is unsupported! Nopping it.
-PCI: Probing PCI hardware
-PCI host bridge to bus 0100:00
-pci_bus 0100:00: root bus resource [io  0x0000-0xffffff]
-pci_bus 0100:00: root bus resource [mem 0x80000000-0x9fffffff pref]
-pci_bus 0100:00: root bus resource [mem 0xa0000000-0xafffffff]
-pci_bus 0100:00: root bus resource [bus 00-ff]
-DMA: MPC52xx BestComm driver
-Unable to handle kernel paging request for unaligned access at address 0xc9018020
-Faulting instruction address: 0xc0013a38
-Oops: Kernel access of bad area, sig: 7 [#1]
-BE mpc5200-simple-platform
-CPU: 0 PID: 1 Comm: swapper Not tainted 4.13.0-rc2+ #33
-task: c781c000 task.stack: c7820000
-NIP:  c0013a38 LR: c00f5d70 CTR: 0000000f
-REGS: c7821ce0 TRAP: 0600   Not tainted  (4.13.0-rc2+)
-MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 48000088  XER: 2000005f
-DAR: c9018020 DSISR: 00017c07 
-GPR00: 00000007 c7821d90 c781c000 c9018000 00000000 00000200 c901801c 00000004 
-GPR08: 00000200 0000000f 00000700 c9018000 24000044 00000000 c00043c8 00000000 
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 0000001c 
-GPR24: c0240000 00000000 00000000 c0230f10 c01f2808 00000000 c0240000 c78035a0 
-Call Trace:
-[c7821d90] [c00f5d2c] 0xc00f5d2c (unreliable)
-[c7821de0] [c01111d8] 0xc01111d8
-[c7821df0] [c010ff48] 0xc010ff48
-[c7821e20] [c0110074] 0xc0110074
-[c7821e40] [c010e4a4] 0xc010e4a4
-[c7821e70] [c010ecd8] 0xc010ecd8
-[c7821e90] [c01107fc] 0xc01107fc
-[c7821ea0] [c02119b0] 0xc02119b0
-[c7821f00] [c0211b70] 0xc0211b70
-[c7821f30] [c00043e0] 0xc00043e0
-[c7821f40] [c000e2e4] 0xc000e2e4
---- interrupt: 0 at   (null)
-    LR =   (null)
-Instruction dump:
-7d072a14 5509d97e 3529ffff 40810038 68e0001c 5400f0bf 41820010 7c0903a6 
-94860004 4200fffc 7d2903a6 38e00004 <7c0737ec> 38c60020 4200fff8 550506fe 
----[ end trace 1e206a9c64fbd101 ]---
-
-Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000007
-
-Rebooting in 180 seconds..
+> 
+> [ 2311.315537]  Possible unsafe locking scenario:
+> 
+> [ 2311.315538]        CPU0                    CPU1
+> [ 2311.315539]        ----                    ----
+> [ 2311.315540]   lock(fs_reclaim);
+> [ 2311.315542]                                lock(&vma->vm_sequence/1);
+> [ 2311.315545]                                lock(fs_reclaim);
+> [ 2311.315547]   lock(&mapping->i_mmap_rwsem);
+> [ 2311.315549] 
+>                 *** DEADLOCK ***
+> 
+> [ 2311.315551] 1 lock held by khugepaged/43:
+> [ 2311.315552]  #0:  (fs_reclaim){+.+.}, at: [<ffffffff810ebd80>] fs_reclaim_acquire+0x12/0x35
+> [ 2311.315556] 
+>                stack backtrace:
+> [ 2311.315559] CPU: 0 PID: 43 Comm: khugepaged Not tainted 4.13.0-rc5-next-20170817-dbg-00039-gaf11d7500492-dirty #1743
+> [ 2311.315560] Call Trace:
+> [ 2311.315564]  dump_stack+0x67/0x8e
+> [ 2311.315568]  print_circular_bug.isra.39+0x1c7/0x1d4
+> [ 2311.315570]  __lock_acquire+0xb1a/0xe06
+> [ 2311.315572]  ? graph_unlock+0x69/0x69
+> [ 2311.315575]  lock_acquire+0x176/0x19e
+> [ 2311.315577]  ? rmap_walk_file+0x5a/0x147
+> [ 2311.315579]  down_read+0x3b/0x55
+> [ 2311.315581]  ? rmap_walk_file+0x5a/0x147
+> [ 2311.315583]  rmap_walk_file+0x5a/0x147
+> [ 2311.315585]  page_referenced+0x11c/0x134
+> [ 2311.315587]  ? page_vma_mapped_walk_done.isra.15+0xb/0xb
+> [ 2311.315589]  ? page_get_anon_vma+0x6d/0x6d
+> [ 2311.315591]  shrink_page_list+0x36b/0xb80
+> [ 2311.315593]  ? _raw_spin_unlock_irq+0x29/0x46
+> [ 2311.315595]  shrink_inactive_list+0x1d9/0x437
+> [ 2311.315597]  shrink_node_memcg.constprop.71+0x3e7/0x571
+> [ 2311.315600]  shrink_node+0x3f/0x149
+> [ 2311.315602]  try_to_free_pages+0x270/0x45f
+> [ 2311.315604]  __alloc_pages_slowpath+0x34a/0xaa2
+> [ 2311.315608]  ? ___might_sleep+0xd5/0x234
+> [ 2311.315609]  __alloc_pages_nodemask+0x111/0x217
+> [ 2311.315612]  khugepaged_alloc_page+0x17/0x45
+> [ 2311.315613]  khugepaged+0xa29/0x16b5
+> [ 2311.315616]  ? remove_wait_queue+0x47/0x47
+> [ 2311.315618]  ? collapse_shmem.isra.43+0x882/0x882
+> [ 2311.315620]  kthread+0xfb/0x103
+> [ 2311.315622]  ? __list_del_entry+0x1d/0x1d
+> [ 2311.315624]  ret_from_fork+0x27/0x40
+> 
+> 	-ss
+> 
