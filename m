@@ -1,26 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpPr64HM3zDqZ9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 14:44:54 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id g65so662687pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 21:44:53 -0700 (PDT)
-Date: Fri, 8 Sep 2017 14:44:37 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>, Anton Blanchard  <anton@samba.org>
-Subject: Re: [RFC PATCH 8/8] powerpc/64s/radix: Only flush local TLB for
- spurious fault flushes
-Message-ID: <20170908144437.65c6c982@roar.ozlabs.ibm.com>
-In-Reply-To: <1504821938.12628.28.camel@kernel.crashing.org>
-References: <20170907145148.24398-1-npiggin@gmail.com>
- <20170907145148.24398-9-npiggin@gmail.com>
- <1504821938.12628.28.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpQkL3YyNzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 15:24:57 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id q76so927475pfq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Sep 2017 22:24:57 -0700 (PDT)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: broonie@kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, tiwai@suse.com, perex@perex.cz,
+ lgirdwood@gmail.com, fabio.estevam@nxp.com, timur@tabi.org, lukma@denx.de,
+ caleb@crome.org, max.krummenacher@toradex.com, arnaud.mouiche@invoxia.com,
+ mpa@pengutronix.de, mail@maciej.szmigiero.name
+Subject: [PATCH] ASoC: fsl_ssi: Override bit clock rate based on slot number
+Date: Thu,  7 Sep 2017 22:23:43 -0700
+Message-Id: <1504848223-3376-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +26,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 08 Sep 2017 08:05:38 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+The set_sysclk() now is used to override the output bit clock rate.
+But this is not a common way to implement a set_dai_sysclk(). And
+this creates a problem when a general machine driver (simple-card
+for example) tries to do set_dai_sysclk() by passing an input clock
+rate for the baud clock instead of setting the bit clock rate as
+fsl_ssi driver expected.
 
-> On Fri, 2017-09-08 at 00:51 +1000, Nicholas Piggin wrote:
-> > When permissiveness is relaxed, or found to have been relaxed by
-> > another thread, we flush that address out of the TLB to avoid a
-> > future fault or micro-fault due to a stale TLB entry.
-> > 
-> > Currently for processes with TLBs on other CPUs, this flush is always
-> > done with a global tlbie. Although that could reduce faults on remote
-> > CPUs, a broadcast operation seems to be wasteful for something that
-> > can be handled in-core by the remote CPU if it comes to it.
-> > 
-> > This is not benchmarked yet. It does seem cut some tlbie operations
-> > from the bus.  
-> 
-> What happens with the nest MMU here ?
+So this patch solves this problem by firstly removing set_sysclk()
+since the hw_params() can calculate the bit clock rate. Secondly,
+in order not to break those TDM use cases which previously might
+have been using set_sysclk() to override the bit clock rate, this
+patch changes the driver to override it based on the slot number.
 
-Good question, I'm not sure. I can't tell from the UM or not if the
-agent and NMMU must discard cached translations if there is a
-translation cached but it has a permission fault. It's not clear 
-from that I've read that if it's relying on the host to send back a
-tlbie.
+The patch also removes an obsolete comment of the dir parameter.
 
-I'll keep digging.
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ sound/soc/fsl/fsl_ssi.c | 26 ++++++++------------------
+ 1 file changed, 8 insertions(+), 18 deletions(-)
 
-Thanks,
-Nick
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 64598d1..3657c88 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -197,12 +197,12 @@ struct fsl_ssi_soc_data {
+  * @use_dma: DMA is used or FIQ with stream filter
+  * @use_dual_fifo: DMA with support for both FIFOs used
+  * @fifo_deph: Depth of the SSI FIFOs
++ * @slots: number of slots
+  * @rxtx_reg_val: Specific register settings for receive/transmit configuration
+  *
+  * @clk: SSI clock
+  * @baudclk: SSI baud clock for master mode
+  * @baudclk_streams: Active streams that are using baudclk
+- * @bitclk_freq: bitclock frequency set by .set_dai_sysclk
+  *
+  * @dma_params_tx: DMA transmit parameters
+  * @dma_params_rx: DMA receive parameters
+@@ -233,12 +233,12 @@ struct fsl_ssi_private {
+ 	bool use_dual_fifo;
+ 	bool has_ipg_clk_name;
+ 	unsigned int fifo_depth;
++	unsigned int slots;
+ 	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
+ 
+ 	struct clk *clk;
+ 	struct clk *baudclk;
+ 	unsigned int baudclk_streams;
+-	unsigned int bitclk_freq;
+ 
+ 	/* regcache for volatile regs */
+ 	u32 regcache_sfcsr;
+@@ -700,8 +700,7 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
+  * Note: This function can be only called when using SSI as DAI master
+  *
+  * Quick instruction for parameters:
+- * freq: Output BCLK frequency = samplerate * 32 (fixed) * channels
+- * dir: SND_SOC_CLOCK_OUT -> TxBCLK, SND_SOC_CLOCK_IN -> RxBCLK.
++ * freq: Output BCLK frequency = samplerate * 32 (fixed) * slots (or channels)
+  */
+ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 		struct snd_soc_dai *cpu_dai,
+@@ -716,9 +715,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 	unsigned int freq;
+ 	bool baudclk_is_used;
+ 
+-	/* Prefer the explicitly set bitclock frequency */
+-	if (ssi_private->bitclk_freq)
+-		freq = ssi_private->bitclk_freq;
++	/* Generate bit clock based on the slot or channel number */
++	if (ssi_private->slots)
++		freq = ssi_private->slots * 32 * params_rate(hw_params);
+ 	else
+ 		freq = params_channels(hw_params) * 32 * params_rate(hw_params);
+ 
+@@ -805,16 +804,6 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static int fsl_ssi_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
+-		int clk_id, unsigned int freq, int dir)
+-{
+-	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
+-
+-	ssi_private->bitclk_freq = freq;
+-
+-	return 0;
+-}
+-
+ /**
+  * fsl_ssi_hw_params - program the sample size
+  *
+@@ -1121,6 +1110,8 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
+ 
+ 	regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_SSIEN, val);
+ 
++	ssi_private->slots = slots;
++
+ 	return 0;
+ }
+ 
+@@ -1191,7 +1182,6 @@ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
+ 	.hw_params	= fsl_ssi_hw_params,
+ 	.hw_free	= fsl_ssi_hw_free,
+ 	.set_fmt	= fsl_ssi_set_dai_fmt,
+-	.set_sysclk	= fsl_ssi_set_dai_sysclk,
+ 	.set_tdm_slot	= fsl_ssi_set_dai_tdm_slot,
+ 	.trigger	= fsl_ssi_trigger,
+ };
+-- 
+2.7.4
