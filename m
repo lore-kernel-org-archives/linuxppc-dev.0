@@ -1,35 +1,32 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
+ [IPv6:2607:f8b0:400c:c08::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpqCS1tDxzDrcT
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 06:48:04 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v88KiTUu145077
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Sep 2017 16:48:02 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cv0tgmaym-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 16:48:01 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 8 Sep 2017 14:48:01 -0600
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- John Allen <jallen@linux.vnet.ibm.com>
-In-Reply-To: <74fb879c-19bf-3abf-4491-1f0db162e7d8@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V14 4/4] powerpc/vphn: Fix numa update end-loop bug
-Date: Fri, 8 Sep 2017 15:47:56 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xprcD6NjgzDrbq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 07:51:08 +1000 (AEST)
+Received: by mail-ua0-x242.google.com with SMTP id s15so1075857uag.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 14:51:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <b6e0b987-8e45-77f1-c627-0df38979369a@linux.vnet.ibm.com>
+In-Reply-To: <1504768881.12628.23.camel@kernel.crashing.org>
+References: <20170907050551.4632-1-anton@ozlabs.org>
+ <ab33351f-1d52-2e55-8aeb-32813ca52e94@linux.vnet.ibm.com>
+ <20170907151741.41ee33a8@kryten>
+ <1504768881.12628.23.camel@kernel.crashing.org>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Sat, 9 Sep 2017 07:51:05 +1000
+Message-ID: <CAKTCnzk_O9Oacr+y08=PBLZpXX3-tZbdGoT6b-iwxb1zZphAVA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/powernv: Increase memory block size to 1GB on
+ radix
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anton Blanchard <anton@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Cyril Bur <cyrilbur@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,46 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/vphn: On Power systems with shared configurations of CPUs
-and memory, there are some issues with the association of additional
-CPUs and memory to nodes when hot-adding resources.  This patch
-fixes an end-of-updates processing problem observed occasionally
-in numa_update_cpu_topology().
+On Thu, Sep 7, 2017 at 5:21 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2017-09-07 at 15:17 +1000, Anton Blanchard wrote:
+>> Hi,
+>>
+>> > There is a similar issue being worked on w.r.t pseries.
+>> >
+>> > https://lkml.kernel.org/r/1502357028-27465-1-git-send-email-bharata@linux.vnet.ibm.com
+>> >
+>> > The question is should we map these regions ? ie, we need to tell the
+>> > kernel memory region that we would like to hot unplug later so that
+>> > we avoid doing kernel allocations from that. If we do that, then we
+>> > can possibly map them via 2M size ?
+>>
+>> But all of memory on PowerNV should be able to be hot unplugged, so
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-Changes in V14:
-  -- More code cleanup
----
- arch/powerpc/mm/numa.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+For this ideally we need movable mappings for the regions we intend
+to hot-unplug - no? Otherwise, there is no guarantee that hot-unplug
+will work
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 32f5f8d..ec098b3 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1401,16 +1401,22 @@ int numa_update_cpu_topology(bool cpus_locked)
- 
- 		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
- 			ud = &updates[i++];
-+			ud->next = &updates[i];
- 			ud->cpu = sibling;
- 			ud->new_nid = new_nid;
- 			ud->old_nid = numa_cpu_lookup_table[sibling];
- 			cpumask_set_cpu(sibling, &updated_cpus);
--			if (i < weight)
--				ud->next = &updates[i];
- 		}
- 		cpu = cpu_last_thread_sibling(cpu);
- 	}
- 
-+	/*
-+	 * Prevent processing of 'updates' from overflowing array
-+	 * where last entry filled in a 'next' pointer.
-+	 */
-+	if (i)
-+		updates[i-1].next = NULL;
-+
- 	pr_debug("Topology update for the following CPUs:\n");
- 	if (cpumask_weight(&updated_cpus)) {
- 		for (ud = &updates[0]; ud; ud = ud->next) {
+>> there are two options as I see it - either increase the memory block
+>> size, or map everything with 2MB pages.
+>
+> Or be smarter and map with 1G when blocks of 1G are available and break
+> down to 2M where necessary, it shouldn't be too hard.
+>
+
+strict_rwx patches added helpers to do this
+
+Balbir Singh.
