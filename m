@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpss30776zDrd8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 08:47:19 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id d70so2319717qkc.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 15:47:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpss45JJdzDrcv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 08:47:20 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id h21so2358529qth.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 15:47:20 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au,
@@ -15,9 +15,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
  linuxram@us.ibm.com
-Subject: [PATCH 20/25] powerpc: Handle exceptions caused by pkey violation
-Date: Fri,  8 Sep 2017 15:45:08 -0700
-Message-Id: <1504910713-7094-29-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH 21/25] powerpc: introduce get_pte_pkey() helper
+Date: Fri,  8 Sep 2017 15:45:09 -0700
+Message-Id: <1504910713-7094-30-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,82 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Handle Data and  Instruction exceptions caused by memory
-protection-key.
-
-The CPU will detect the key fault if the HPTE is already
-programmed with the key.
-
-However if the HPTE is not  hashed, a key fault will not
-be detected by the  hardware. The   software will detect
-pkey violation in such a case.
+get_pte_pkey() helper returns the pkey associated with
+a address corresponding to a given mm_struct.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/mm/fault.c |   37 ++++++++++++++++++++++++++++++++-----
- 1 files changed, 32 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    5 +++++
+ arch/powerpc/mm/hash_utils_64.c               |   24 ++++++++++++++++++++++++
+ 2 files changed, 29 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 4797d08..a16bc43 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -145,6 +145,23 @@ static noinline int bad_area(struct pt_regs *regs, unsigned long address)
- 	return __bad_area(regs, address, SEGV_MAPERR);
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 2e22357..8716031 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -451,6 +451,11 @@ extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap,
+ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		     pte_t *ptep, unsigned long trap, unsigned long flags,
+ 		     int ssize, unsigned int shift, unsigned int mmu_psize);
++
++#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++u16 get_pte_pkey(struct mm_struct *mm, unsigned long address);
++#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
++
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ extern int __hash_page_thp(unsigned long ea, unsigned long access,
+ 			   unsigned long vsid, pmd_t *pmdp, unsigned long trap,
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index a739a2d..5917d45 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1572,6 +1572,30 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	local_irq_restore(flags);
  }
  
-+static int bad_page_fault_exception(struct pt_regs *regs, unsigned long address,
-+					int si_code)
++#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++/*
++ * return the protection key associated with the given address
++ * and the mm_struct.
++ */
++u16 get_pte_pkey(struct mm_struct *mm, unsigned long address)
 +{
-+	int sig = SIGBUS;
-+	int code = BUS_OBJERR;
++	pte_t *ptep;
++	u16 pkey = 0;
++	unsigned long flags;
 +
-+#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	if (si_code & DSISR_KEYFAULT) {
-+		sig = SIGSEGV;
-+		code = SEGV_PKUERR;
-+	}
-+#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
++	if (!mm || !mm->pgd)
++		return 0;
 +
-+	_exception(sig, regs, code, address);
-+	return 0;
++	local_irq_save(flags);
++	ptep = find_linux_pte(mm->pgd, address, NULL, NULL);
++	if (ptep)
++		pkey = pte_to_pkey_bits(pte_val(READ_ONCE(*ptep)));
++	local_irq_restore(flags);
++
++	return pkey;
 +}
-+
- static int do_sigbus(struct pt_regs *regs, unsigned long address,
- 		     unsigned int fault)
- {
-@@ -391,11 +408,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 		return 0;
- 
- 	if (unlikely(page_fault_is_bad(error_code))) {
--		if (is_user) {
--			_exception(SIGBUS, regs, BUS_OBJERR, address);
--			return 0;
--		}
--		return SIGBUS;
-+		if (!is_user)
-+			return SIGBUS;
-+		return bad_page_fault_exception(regs, address, error_code);
- 	}
- 
- 	/* Additional sanity check(s) */
-@@ -492,6 +507,18 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	if (unlikely(access_error(is_write, is_exec, vma)))
- 		return bad_area(regs, address);
- 
-+#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
-+			is_exec, 0))
-+		return __bad_area(regs, address, SEGV_PKUERR);
 +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
 +
-+
-+	/* handle_mm_fault() needs to know if its a instruction access
-+	 * fault.
-+	 */
-+	if (is_exec)
-+		flags |= FAULT_FLAG_INSTRUCTION;
- 	/*
- 	 * If for any reason at all we couldn't handle the fault,
- 	 * make sure we exit gracefully rather than endlessly redo
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ static inline void tm_flush_hash_page(int local)
+ {
 -- 
 1.7.1
