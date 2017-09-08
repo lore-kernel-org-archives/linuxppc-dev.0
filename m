@@ -1,28 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
- [IPv6:2607:f8b0:400e:c00::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <laurent.du4@free.fr>
+Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [212.27.42.3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpSw82MRDzDqF7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 17:03:35 +1000 (AEST)
-Received: by mail-pf0-x22d.google.com with SMTP id e199so3260794pfh.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 00:03:35 -0700 (PDT)
-Date: Fri, 8 Sep 2017 17:03:16 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>, Anton Blanchard  <anton@samba.org>,
- Alistair Popple <apopple@au1.ibm.com>
-Subject: Re: [RFC PATCH 8/8] powerpc/64s/radix: Only flush local TLB for
- spurious fault flushes
-Message-ID: <20170908170316.11f33cc6@roar.ozlabs.ibm.com>
-In-Reply-To: <20170908144437.65c6c982@roar.ozlabs.ibm.com>
-References: <20170907145148.24398-1-npiggin@gmail.com>
- <20170907145148.24398-9-npiggin@gmail.com>
- <1504821938.12628.28.camel@kernel.crashing.org>
- <20170908144437.65c6c982@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpT1c1VX4zDqF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Sep 2017 17:08:20 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/mm: Fix missing mmap_sem release
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <1504801529-15113-1-git-send-email-laurent.du4@free.fr>
+ <20170907205146.GG17982@linux-80c1.suse>
+From: Laurent Dufour <laurent.du4@free.fr>
+Message-ID: <a4026b4a-3525-fc9e-d6d2-3fc5d9de6bf7@free.fr>
+Date: Fri, 8 Sep 2017 09:08:02 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170907205146.GG17982@linux-80c1.suse>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 8 Sep 2017 14:44:37 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> On Fri, 08 Sep 2017 08:05:38 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On 07/09/2017 22:51, Davidlohr Bueso wrote:
+> On Thu, 07 Sep 2017, Laurent Dufour wrote:
 > 
-> > On Fri, 2017-09-08 at 00:51 +1000, Nicholas Piggin wrote:  
-> > > When permissiveness is relaxed, or found to have been relaxed by
-> > > another thread, we flush that address out of the TLB to avoid a
-> > > future fault or micro-fault due to a stale TLB entry.
-> > > 
-> > > Currently for processes with TLBs on other CPUs, this flush is always
-> > > done with a global tlbie. Although that could reduce faults on remote
-> > > CPUs, a broadcast operation seems to be wasteful for something that
-> > > can be handled in-core by the remote CPU if it comes to it.
-> > > 
-> > > This is not benchmarked yet. It does seem cut some tlbie operations
-> > > from the bus.    
-> > 
-> > What happens with the nest MMU here ?  
+>> The commit b5c8f0fd595d ("powerpc/mm: Rework mm_fault_error()") reviewed
+>> the way the error path is managed in __do_page_fault() but it was a bit too
+>> agressive when handling a case by returning without releasing the mmap_sem.
+>>
+>> By the way, replacing current->mm->mmap_sem by mm->mmap_sem as mm is set to
+>> current->mm.
+>>
+>> Fixes: b5c8f0fd595d ("powerpc/mm: Rework mm_fault_error()")
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Signed-off-by: Laurent Dufour <laurent.du4@free.fr>
+>> ---
+>> arch/powerpc/mm/fault.c | 3 ++-
+>> 1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index 4797d08581ce..f799ccf37d27 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
 > 
-> Good question, I'm not sure. I can't tell from the UM or not if the
-> agent and NMMU must discard cached translations if there is a
-> translation cached but it has a permission fault. It's not clear 
-> from that I've read that if it's relying on the host to send back a
-> tlbie.
+> But... here:
 > 
-> I'll keep digging.
+>     /*
+>      * If we need to retry the mmap_sem has already been released,
+>      * and if there is a fatal signal pending there is no guarantee
+>      * that we made any progress. Handle this case first.
+>      */
+> 
+>> @@ -521,10 +521,11 @@ static int __do_page_fault(struct pt_regs *regs,
+>> unsigned long address,
+>>          * User mode? Just return to handle the fatal exception otherwise
+>>          * return to bad_page_fault
+>>          */
+>> +        up_read(&mm->mmap_sem);
+>>         return is_user ? 0 : SIGBUS;
+>>     }
+> 
+> Per the above comment, for that case handle_mm_fault()
+> has already released mmap_sem. The same occurs in x86,
+> for example.
 
-Okay, talking to Alistair and for NPU/CAPI, this is a concern because
-the NMMU may not walk page tables if it has a cached translation. Have
-to confirm that with hardware.
+Oops, my bad.
 
-So we've got them wanting to hook into the core code and make it give
-them tibies.
-
-For now I'll put this on hold until NPU and CAPI and VAS get their
-patches in and working, then maybe revisit. Might be good to get them
-all moved to using a common nmmu.c driver that gives them a page fault
-handler and uses mmu notifiers to do their nmmu invalidations.
-
-Thanks,
-Nick
+Please forget about this stupid patch...
