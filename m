@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
+ [IPv6:2607:f8b0:400d:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpsrN5g8VzDrWB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 08:46:44 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id i14so2311555qke.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 15:46:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpsrQ2YcVzDrcw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 08:46:46 +1000 (AEST)
+Received: by mail-qk0-x241.google.com with SMTP id d70so2319242qkc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 15:46:46 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au,
@@ -15,9 +15,10 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
  linuxram@us.ibm.com
-Subject: [PATCH 01/25] powerpc: initial pkey plumbing
-Date: Fri,  8 Sep 2017 15:44:49 -0700
-Message-Id: <1504910713-7094-10-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH 02/25] powerpc: define an additional vma bit for protection
+ keys.
+Date: Fri,  8 Sep 2017 15:44:50 -0700
+Message-Id: <1504910713-7094-11-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,197 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Basic  plumbing  to   initialize  the   pkey  system.
-Nothing is enabled yet. A later patch will enable it
-ones all the infrastructure is in place.
+powerpc needs an additional vma bit to support 32 keys.
+Till the additional vma bit lands in include/linux/mm.h
+we have to define  it  in powerpc specific header file.
+This is  needed to get pkeys working on power.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/Kconfig                   |   16 +++++++++++
- arch/powerpc/include/asm/mmu_context.h |    5 +++
- arch/powerpc/include/asm/pkeys.h       |   45 ++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/setup_64.c         |    4 +++
- arch/powerpc/mm/Makefile               |    1 +
- arch/powerpc/mm/hash_utils_64.c        |    1 +
- arch/powerpc/mm/pkeys.c                |   33 +++++++++++++++++++++++
- 7 files changed, 105 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/include/asm/pkeys.h
- create mode 100644 arch/powerpc/mm/pkeys.c
+ arch/powerpc/include/asm/pkeys.h |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9fc3c0b..a4cd210 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -864,6 +864,22 @@ config SECCOMP
- 
- 	  If unsure, say Y. Only embedded should say N here.
- 
-+config PPC64_MEMORY_PROTECTION_KEYS
-+	prompt "PowerPC Memory Protection Keys"
-+	def_bool y
-+	# Note: only available in 64-bit mode
-+	depends on PPC64
-+	select ARCH_USES_HIGH_VMA_FLAGS
-+	select ARCH_HAS_PKEYS
-+	---help---
-+	  Memory Protection Keys provides a mechanism for enforcing
-+	  page-based protections, but without requiring modification of the
-+	  page tables when an application changes protection domains.
-+
-+	  For details, see Documentation/vm/protection-keys.txt
-+
-+	  If unsure, say y.
-+
- endmenu
- 
- config ISA_DMA_API
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 3095925..7badf29 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -141,5 +141,10 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- 	/* by default, allow everything */
- 	return true;
- }
-+
-+#ifndef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+#define pkey_initialize()
-+#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
 diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-new file mode 100644
-index 0000000..c02305a
---- /dev/null
+index c02305a..44e01a2 100644
+--- a/arch/powerpc/include/asm/pkeys.h
 +++ b/arch/powerpc/include/asm/pkeys.h
-@@ -0,0 +1,45 @@
-+#ifndef _ASM_PPC64_PKEYS_H
-+#define _ASM_PPC64_PKEYS_H
-+
-+extern bool pkey_inited;
-+extern bool pkey_execute_disable_support;
-+#define ARCH_VM_PKEY_FLAGS 0
-+
-+static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
-+{
-+	return (pkey == 0);
-+}
-+
-+static inline int mm_pkey_alloc(struct mm_struct *mm)
-+{
-+	return -1;
-+}
-+
-+static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
-+{
-+	return -EINVAL;
-+}
+@@ -3,6 +3,24 @@
+ 
+ extern bool pkey_inited;
+ extern bool pkey_execute_disable_support;
 +
 +/*
-+ * Try to dedicate one of the protection keys to be used as an
-+ * execute-only protection key.
++ * powerpc needs an additional vma bit to support 32 keys.
++ * Till the additional vma bit lands in include/linux/mm.h
++ * we have to carry the hunk below. This is  needed to get
++ * pkeys working on power. -- Ram
 + */
-+static inline int execute_only_pkey(struct mm_struct *mm)
-+{
-+	return 0;
-+}
++#ifndef VM_HIGH_ARCH_BIT_4
++#define VM_HIGH_ARCH_BIT_4	36
++#define VM_HIGH_ARCH_4	BIT(VM_HIGH_ARCH_BIT_4)
++#define VM_PKEY_SHIFT VM_HIGH_ARCH_BIT_0
++#define VM_PKEY_BIT0	VM_HIGH_ARCH_0
++#define VM_PKEY_BIT1	VM_HIGH_ARCH_1
++#define VM_PKEY_BIT2	VM_HIGH_ARCH_2
++#define VM_PKEY_BIT3	VM_HIGH_ARCH_3
++#define VM_PKEY_BIT4	VM_HIGH_ARCH_4
++#endif
 +
-+static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
-+		int prot, int pkey)
-+{
-+	return 0;
-+}
-+
-+static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-+		unsigned long init_val)
-+{
-+	return 0;
-+}
-+
-+extern void pkey_initialize(void);
-+#endif /*_ASM_PPC64_PKEYS_H */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index b89c6aa..3b67014 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -37,6 +37,7 @@
- #include <linux/memblock.h>
- #include <linux/memory.h>
- #include <linux/nmi.h>
-+#include <linux/pkeys.h>
+ #define ARCH_VM_PKEY_FLAGS 0
  
- #include <asm/io.h>
- #include <asm/kdump.h>
-@@ -316,6 +317,9 @@ void __init early_setup(unsigned long dt_ptr)
- 	/* Initialize the hash table or TLB handling */
- 	early_init_mmu();
- 
-+	/* initialize the key subsystem */
-+	pkey_initialize();
-+
- 	/*
- 	 * At this point, we can let interrupts switch to virtual mode
- 	 * (the MMU has been setup), so adjust the MSR in the PACA to
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index fb844d2..927620a 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -43,3 +43,4 @@ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
- obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
- obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
- obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
-+obj-$(CONFIG_PPC64_MEMORY_PROTECTION_KEYS)	+= pkeys.o
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0dff57b..67f62b5 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -35,6 +35,7 @@
- #include <linux/memblock.h>
- #include <linux/context_tracking.h>
- #include <linux/libfdt.h>
-+#include <linux/pkeys.h>
- 
- #include <asm/debugfs.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-new file mode 100644
-index 0000000..418a05b
---- /dev/null
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -0,0 +1,33 @@
-+/*
-+ * PowerPC Memory Protection Keys management
-+ * Copyright (c) 2015, Intel Corporation.
-+ * Copyright (c) 2017, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ */
-+#include <linux/pkeys.h>                /* PKEY_*                       */
-+
-+bool pkey_inited;
-+bool pkey_execute_disable_support;
-+
-+void __init pkey_initialize(void)
-+{
-+	/* disable the pkey system till everything
-+	 * is in place. A patch further down the
-+	 * line will enable it.
-+	 */
-+	pkey_inited = false;
-+
-+	/*
-+	 * disable execute_disable support for now.
-+	 * A patch further down will enable it.
-+	 */
-+	pkey_execute_disable_support = false;
-+}
+ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
 -- 
 1.7.1
