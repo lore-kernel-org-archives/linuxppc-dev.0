@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xplgD3ZgLzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 04:08:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xplgF5F42zDrYd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 04:08:25 +1000 (AEST)
 Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v88I4Yca056689
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Sep 2017 14:08:21 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cuw4n1bcb-1
+ v88I4YgL056603
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Sep 2017 14:08:23 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cuw4n1be6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 14:08:21 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 14:08:23 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Fri, 8 Sep 2017 19:08:18 +0100
+ Fri, 8 Sep 2017 19:08:21 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -31,11 +31,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v3 18/20] perf tools: Add support for the SPF perf event
-Date: Fri,  8 Sep 2017 20:07:02 +0200
+Subject: [PATCH v3 19/20] x86/mm: Add speculative pagefault handling
+Date: Fri,  8 Sep 2017 20:07:03 +0200
 In-Reply-To: <1504894024-2750-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1504894024-2750-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1504894024-2750-19-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1504894024-2750-20-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,79 +45,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for the new speculative faults event.
+From: Peter Zijlstra <peterz@infradead.org>
 
+Try a speculative fault before acquiring mmap_sem, if it returns with
+VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
+traditional fault.
+
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+
+[Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
+ handle_speculative_fault()]
+[Retry with usual fault path in the case VM_ERROR is returned by
+ handle_speculative_fault(). This allows signal to be delivered]
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- tools/include/uapi/linux/perf_event.h | 1 +
- tools/perf/util/evsel.c               | 1 +
- tools/perf/util/parse-events.c        | 4 ++++
- tools/perf/util/parse-events.l        | 1 +
- tools/perf/util/python.c              | 1 +
- 5 files changed, 8 insertions(+)
+ arch/x86/include/asm/pgtable_types.h |  7 +++++++
+ arch/x86/mm/fault.c                  | 19 +++++++++++++++++++
+ 2 files changed, 26 insertions(+)
 
-diff --git a/tools/include/uapi/linux/perf_event.h b/tools/include/uapi/linux/perf_event.h
-index 2a37ae925d85..8ee9a661018d 100644
---- a/tools/include/uapi/linux/perf_event.h
-+++ b/tools/include/uapi/linux/perf_event.h
-@@ -111,6 +111,7 @@ enum perf_sw_ids {
- 	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
- 	PERF_COUNT_SW_DUMMY			= 9,
- 	PERF_COUNT_SW_BPF_OUTPUT		= 10,
-+	PERF_COUNT_SW_SPF			= 11,
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index f1492473f10e..aadc8ecb91fb 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -257,6 +257,13 @@ enum page_cache_mode {
+ #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
+ #endif
  
- 	PERF_COUNT_SW_MAX,			/* non-ABI */
- };
-diff --git a/tools/perf/util/evsel.c b/tools/perf/util/evsel.c
-index d9bd632ed7db..983e8104b523 100644
---- a/tools/perf/util/evsel.c
-+++ b/tools/perf/util/evsel.c
-@@ -432,6 +432,7 @@ const char *perf_evsel__sw_names[PERF_COUNT_SW_MAX] = {
- 	"alignment-faults",
- 	"emulation-faults",
- 	"dummy",
-+	"speculative-faults",
- };
++/*
++ * Advertise that we call the Speculative Page Fault handler.
++ */
++#ifdef CONFIG_X86_64
++#define __HAVE_ARCH_CALL_SPF
++#endif
++
+ #ifdef CONFIG_X86_32
+ # include <asm/pgtable_32_types.h>
+ #else
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index b836a7274e12..652af5524f42 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -1365,6 +1365,24 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 	if (error_code & PF_INSTR)
+ 		flags |= FAULT_FLAG_INSTRUCTION;
  
- static const char *__perf_evsel__sw_name(u64 config)
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index f44aeba51d1f..ac2ebf99e965 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -135,6 +135,10 @@ struct event_symbol event_symbols_sw[PERF_COUNT_SW_MAX] = {
- 		.symbol = "bpf-output",
- 		.alias  = "",
- 	},
-+	[PERF_COUNT_SW_SPF] = {
-+		.symbol = "speculative-faults",
-+		.alias	= "spf",
-+	},
- };
- 
- #define __PERF_EVENT_FIELD(config, name) \
-diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
-index c42edeac451f..af3e52fb9103 100644
---- a/tools/perf/util/parse-events.l
-+++ b/tools/perf/util/parse-events.l
-@@ -289,6 +289,7 @@ alignment-faults				{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_AL
- emulation-faults				{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_EMULATION_FAULTS); }
- dummy						{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_DUMMY); }
- bpf-output					{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_BPF_OUTPUT); }
-+speculative-faults|spf				{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_SPF); }
- 
++#ifdef __HAVE_ARCH_CALL_SPF
++	if (error_code & PF_USER) {
++		fault = handle_speculative_fault(mm, address, flags);
++
++		/*
++		 * We also check against VM_FAULT_ERROR because we have to
++		 * raise a signal by calling later mm_fault_error() which
++		 * requires the vma pointer to be set. So in that case,
++		 * we fall through the normal path.
++		 */
++		if (!(fault & VM_FAULT_RETRY || fault & VM_FAULT_ERROR)) {
++			perf_sw_event(PERF_COUNT_SW_SPF, 1,
++				      regs, address);
++			goto done;
++		}
++	}
++#endif /* __HAVE_ARCH_CALL_SPF */
++
  	/*
- 	 * We have to handle the kernel PMU event cycles-ct/cycles-t/mem-loads/mem-stores separately.
-diff --git a/tools/perf/util/python.c b/tools/perf/util/python.c
-index c129e99114ae..12209adb7cb5 100644
---- a/tools/perf/util/python.c
-+++ b/tools/perf/util/python.c
-@@ -1141,6 +1141,7 @@ static struct {
- 	PERF_CONST(COUNT_SW_ALIGNMENT_FAULTS),
- 	PERF_CONST(COUNT_SW_EMULATION_FAULTS),
- 	PERF_CONST(COUNT_SW_DUMMY),
-+	PERF_CONST(COUNT_SW_SPF),
+ 	 * When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in
+@@ -1474,6 +1492,7 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 		return;
+ 	}
  
- 	PERF_CONST(SAMPLE_IP),
- 	PERF_CONST(SAMPLE_TID),
++done:
+ 	/*
+ 	 * Major/minor page fault accounting. If any of the events
+ 	 * returned VM_FAULT_MAJOR, we account it as a major fault.
 -- 
 2.7.4
