@@ -3,10 +3,10 @@ Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
  [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpsrh56MRzDrcq
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 08:47:00 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id p55so2360678qtc.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 15:47:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xpsrk5kNvzDrd6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 08:47:02 +1000 (AEST)
+Received: by mail-qt0-x241.google.com with SMTP id 7so2357084qtz.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 15:47:02 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au,
@@ -15,10 +15,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
  linuxram@us.ibm.com
-Subject: [PATCH 10/25] powerpc: store and restore the pkey state across
- context switches
-Date: Fri,  8 Sep 2017 15:44:58 -0700
-Message-Id: <1504910713-7094-19-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH 11/25] powerpc: introduce execute-only pkey
+Date: Fri,  8 Sep 2017 15:44:59 -0700
+Message-Id: <1504910713-7094-20-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,135 +29,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Store and restore the AMR, IAMR and UAMOR register state of the task
-before scheduling out and after scheduling in, respectively.
+This patch provides the implementation of execute-only pkey.
+The architecture-independent layer expects the arch-dependent
+layer, to support the ability to create and enable a special
+key which has execute-only permission.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/pkeys.h     |    4 +++
- arch/powerpc/include/asm/processor.h |    5 ++++
- arch/powerpc/kernel/process.c        |   10 ++++++++
- arch/powerpc/mm/pkeys.c              |   39 ++++++++++++++++++++++++++++++++++
- 4 files changed, 58 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu.h |    1 +
+ arch/powerpc/include/asm/pkeys.h         |    9 ++++-
+ arch/powerpc/mm/pkeys.c                  |   57 ++++++++++++++++++++++++++++++
+ 3 files changed, 66 insertions(+), 1 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 55950f4..ee18ba0 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -115,6 +115,7 @@ struct patb_entry {
+ 	 * bit unset -> key available for allocation
+ 	 */
+ 	u32 pkey_allocation_map;
++	s16 execute_only_pkey; /* key holding execute-only protection */
+ #endif
+ } mm_context_t;
+ 
 diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 7fd48a4..78c5362 100644
+index 78c5362..0cf115f 100644
 --- a/arch/powerpc/include/asm/pkeys.h
 +++ b/arch/powerpc/include/asm/pkeys.h
-@@ -143,5 +143,9 @@ static inline void pkey_mm_init(struct mm_struct *mm)
+@@ -115,11 +115,16 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
+  * Try to dedicate one of the protection keys to be used as an
+  * execute-only protection key.
+  */
++extern int __execute_only_pkey(struct mm_struct *mm);
+ static inline int execute_only_pkey(struct mm_struct *mm)
+ {
+-	return 0;
++	if (!pkey_inited || !pkey_execute_disable_support)
++		return -1;
++
++	return __execute_only_pkey(mm);
+ }
+ 
++
+ static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
+ 		int prot, int pkey)
+ {
+@@ -141,6 +146,8 @@ static inline void pkey_mm_init(struct mm_struct *mm)
+ 	if (!pkey_inited)
+ 		return;
  	mm_pkey_allocation_map(mm) = initial_allocation_mask;
++	/* -1 means unallocated or invalid */
++	mm->context.execute_only_pkey = -1;
  }
  
-+extern void thread_pkey_regs_save(struct thread_struct *thread);
-+extern void thread_pkey_regs_restore(struct thread_struct *new_thread,
-+			struct thread_struct *old_thread);
-+extern void thread_pkey_regs_init(struct thread_struct *thread);
- extern void pkey_initialize(void);
- #endif /*_ASM_PPC64_PKEYS_H */
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index fab7ff8..de9d9ba 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -309,6 +309,11 @@ struct thread_struct {
- 	struct thread_vr_state ckvr_state; /* Checkpointed VR state */
- 	unsigned long	ckvrsave; /* Checkpointed VRSAVE */
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	unsigned long	amr;
-+	unsigned long	iamr;
-+	unsigned long	uamor;
-+#endif
- #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
- 	void*		kvm_shadow_vcpu; /* KVM internal data */
- #endif /* CONFIG_KVM_BOOK3S_32_HANDLER */
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a0c74bb..ba80002 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -42,6 +42,7 @@
- #include <linux/hw_breakpoint.h>
- #include <linux/uaccess.h>
- #include <linux/elf-randomize.h>
-+#include <linux/pkeys.h>
- 
- #include <asm/pgtable.h>
- #include <asm/io.h>
-@@ -1085,6 +1086,9 @@ static inline void save_sprs(struct thread_struct *t)
- 		t->tar = mfspr(SPRN_TAR);
- 	}
- #endif
-+#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	thread_pkey_regs_save(t);
-+#endif
- }
- 
- static inline void restore_sprs(struct thread_struct *old_thread,
-@@ -1120,6 +1124,9 @@ static inline void restore_sprs(struct thread_struct *old_thread,
- 			mtspr(SPRN_TAR, new_thread->tar);
- 	}
- #endif
-+#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	thread_pkey_regs_restore(new_thread, old_thread);
-+#endif
- }
- 
- #ifdef CONFIG_PPC_BOOK3S_64
-@@ -1705,6 +1712,9 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 	current->thread.tm_tfiar = 0;
- 	current->thread.load_tm = 0;
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	thread_pkey_regs_init(&current->thread);
-+#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
- }
- EXPORT_SYMBOL(start_thread);
- 
+ extern void thread_pkey_regs_save(struct thread_struct *thread);
 diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 2282864..7cd1be4 100644
+index 7cd1be4..8a24983 100644
 --- a/arch/powerpc/mm/pkeys.c
 +++ b/arch/powerpc/mm/pkeys.c
-@@ -149,3 +149,42 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 	init_amr(pkey, new_amr_bits);
- 	return 0;
+@@ -188,3 +188,60 @@ void thread_pkey_regs_init(struct thread_struct *thread)
+ 	write_iamr(0x0ul);
+ 	write_uamor(0x0ul);
  }
 +
-+void thread_pkey_regs_save(struct thread_struct *thread)
++static inline bool pkey_allows_readwrite(int pkey)
 +{
-+	if (!pkey_inited)
-+		return;
++	int pkey_shift = pkeyshift(pkey);
 +
-+	/* @TODO skip saving any registers if the thread
-+	 * has not used any keys yet.
-+	 */
++	if (!(read_uamor() & (0x3UL << pkey_shift)))
++		return true;
 +
-+	thread->amr = read_amr();
-+	thread->iamr = read_iamr();
-+	thread->uamor = read_uamor();
++	return !(read_amr() & ((AMR_RD_BIT|AMR_WR_BIT) << pkey_shift));
 +}
 +
-+void thread_pkey_regs_restore(struct thread_struct *new_thread,
-+			struct thread_struct *old_thread)
++int __execute_only_pkey(struct mm_struct *mm)
 +{
-+	if (!pkey_inited)
-+		return;
++	bool need_to_set_mm_pkey = false;
++	int execute_only_pkey = mm->context.execute_only_pkey;
++	int ret;
 +
-+	/* @TODO just reset uamor to zero if the new_thread
-+	 * has not used any keys yet.
++	/* Do we need to assign a pkey for mm's execute-only maps? */
++	if (execute_only_pkey == -1) {
++		/* Go allocate one to use, which might fail */
++		execute_only_pkey = mm_pkey_alloc(mm);
++		if (execute_only_pkey < 0)
++			return -1;
++		need_to_set_mm_pkey = true;
++	}
++
++	/*
++	 * We do not want to go through the relatively costly
++	 * dance to set AMR if we do not need to.  Check it
++	 * first and assume that if the execute-only pkey is
++	 * readwrite-disabled than we do not have to set it
++	 * ourselves.
 +	 */
++	if (!need_to_set_mm_pkey &&
++	    !pkey_allows_readwrite(execute_only_pkey))
++		return execute_only_pkey;
 +
-+	if (old_thread->amr != new_thread->amr)
-+		write_amr(new_thread->amr);
-+	if (old_thread->iamr != new_thread->iamr)
-+		write_iamr(new_thread->iamr);
-+	if (old_thread->uamor != new_thread->uamor)
-+		write_uamor(new_thread->uamor);
-+}
++	/*
++	 * Set up AMR so that it denies access for everything
++	 * other than execution.
++	 */
++	ret = __arch_set_user_pkey_access(current, execute_only_pkey,
++			(PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
++	/*
++	 * If the AMR-set operation failed somehow, just return
++	 * 0 and effectively disable execute-only support.
++	 */
++	if (ret) {
++		mm_set_pkey_free(mm, execute_only_pkey);
++		return -1;
++	}
 +
-+void thread_pkey_regs_init(struct thread_struct *thread)
-+{
-+	write_amr(0x0ul);
-+	write_iamr(0x0ul);
-+	write_uamor(0x0ul);
++	/* We got one, store it and use it from here on out */
++	if (need_to_set_mm_pkey)
++		mm->context.execute_only_pkey = execute_only_pkey;
++	return execute_only_pkey;
 +}
 -- 
 1.7.1
