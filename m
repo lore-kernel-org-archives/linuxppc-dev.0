@@ -1,34 +1,28 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0070.outbound.protection.outlook.com [104.47.33.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xqDSb6ZmrzDrKk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 22:45:51 +1000 (AEST)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
- <york.sun@nxp.com>
-Subject: Re: Machine Check in P2010(e500v2)
-Date: Sat, 9 Sep 2017 12:45:43 +0000
-Message-ID: <1504961140.31322.69.camel@infinera.com>
-References: <1504265576.20777.61.camel@infinera.com>
- <1504600831.27247.20.camel@infinera.com>
- <VI1PR04MB2078E4FFD1B27961F63D88689A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <AM4PR0401MB16992DFADBD59ADEF8E3ACC08F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504729020.27247.120.camel@infinera.com>
- <AM4PR0401MB16990A5A3D77ED57C9A645D98F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504731221.27247.126.camel@infinera.com>
- <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504738204.27247.133.camel@infinera.com>
- <1504773676.31322.2.camel@infinera.com>
- <AM4PR0401MB16993C0235EA67562A8B8D4E8F940@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1504864463.31322.31.camel@infinera.com>
- <1504875052.31322.38.camel@infinera.com>
- <AM4PR0401MB1699D52CA4E6FB227412D9608F950@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-In-Reply-To: <AM4PR0401MB1699D52CA4E6FB227412D9608F950@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="iso-8859-15"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xqS5l3gwRzDrhq
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Sep 2017 07:30:19 +1000 (AEST)
+Date: Sun, 10 Sep 2017 07:30:14 +1000
+In-Reply-To: <20170908111547.0f30e1a5@kryten>
+References: <20170907050551.4632-1-anton@ozlabs.org>
+ <ab33351f-1d52-2e55-8aeb-32813ca52e94@linux.vnet.ibm.com>
+ <20170907151741.41ee33a8@kryten>
+ <20170907155902.kpzhgqqsxbwxwce5@arbab-laptop.localdomain>
+ <20170908111547.0f30e1a5@kryten>
 MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="----MDY8HTV68M8EGKV60U40LYMJJYW6P7"
+Subject: Re: [PATCH] powerpc/powernv: Increase memory block size to 1GB on
+ radix
+To: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@ozlabs.org>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>
+CC: mikey@neuling.org, npiggin@gmail.com, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ bharata@linux.vnet.ibm.com, cyrilbur@gmail.com
+From: Michael Ellerman <michael@ellerman.id.au>
+Message-ID: <943A12E3-39BC-403D-81B3-CCB37993DE9A@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,265 +32,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-09-08 at 22:27 +0000, Leo Li wrote:
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> > Sent: Friday, September 08, 2017 7:51 AM
-> > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York Su=
-n
-> > <york.sun@nxp.com>
-> > Subject: Re: Machine Check in P2010(e500v2)
-> >=20
-> > On Fri, 2017-09-08 at 11:54 +0200, Joakim Tjernlund wrote:
-> > > On Thu, 2017-09-07 at 18:54 +0000, Leo Li wrote:
-> > > > > -----Original Message-----
-> > > > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> > > > > Sent: Thursday, September 07, 2017 3:41 AM
-> > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>;
-> > > > > York Sun <york.sun@nxp.com>
-> > > > > Subject: Re: Machine Check in P2010(e500v2)
-> > > > >=20
-> > > > > On Thu, 2017-09-07 at 00:50 +0200, Joakim Tjernlund wrote:
-> > > > > > On Wed, 2017-09-06 at 21:13 +0000, Leo Li wrote:
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: Joakim Tjernlund
-> > > > > > > > [mailto:Joakim.Tjernlund@infinera.com]
-> > > > > > > > Sent: Wednesday, September 06, 2017 3:54 PM
-> > > > > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li
-> > > > > > > > <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
-> > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
-> > > > > > > >=20
-> > > > > > > > On Wed, 2017-09-06 at 20:28 +0000, Leo Li wrote:
-> > > > > > > > > > -----Original Message-----
-> > > > > > > > > > From: Joakim Tjernlund
-> > > > > > > > > > [mailto:Joakim.Tjernlund@infinera.com]
-> > > > > > > > > > Sent: Wednesday, September 06, 2017 3:17 PM
-> > > > > > > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li
-> > > > > > > > > > <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
-> > > > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
-> > > > > > > > > >=20
-> > > > > > > > > > On Wed, 2017-09-06 at 19:31 +0000, Leo Li wrote:
-> > > > > > > > > > > > -----Original Message-----
-> > > > > > > > > > > > From: York Sun
-> > > > > > > > > > > > Sent: Wednesday, September 06, 2017 10:38 AM
-> > > > > > > > > > > > To: Joakim Tjernlund
-> > > > > > > > > > > > <Joakim.Tjernlund@infinera.com>;
-> > > > > > > > > > > > linuxppc- dev@lists.ozlabs.org; Leo Li
-> > > > > > > > > > > > <leoyang.li@nxp.com>
-> > > > > > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
-> > > > > > > > > > > >=20
-> > > > > > > > > > > > Scott is no longer with Freescale/NXP. Adding Leo.
-> > > > > > > > > > > >=20
-> > > > > > > > > > > > On 09/05/2017 01:40 AM, Joakim Tjernlund wrote:
-> > > > > > > > > > > > > So after some debugging I found this bug:
-> > > > > > > > > > > > > @@ -996,7 +998,7 @@ int
-> > > > > > > > > > > > > fsl_pci_mcheck_exception(struct pt_regs
-> > > > > > > >=20
-> > > > > > > > *regs)
-> > > > > > > > > > > > >          if (is_in_pci_mem_space(addr)) {
-> > > > > > > > > > > > >                  if (user_mode(regs)) {
-> > > > > > > > > > > > >                          pagefault_disable();
-> > > > > > > > > > > > > -                       ret =3D get_user(regs->ni=
-p, &inst);
-> > > > > > > > > > > > > +                       ret =3D get_user(inst,
-> > > > > > > > > > > > > + (__u32 __user *)regs->nip);
-> > > > > > > > > > > > >                          pagefault_enable();
-> > > > > > > > > > > > >                  } else {
-> > > > > > > > > > > > >                          ret =3D
-> > > > > > > > > > > > > probe_kernel_address(regs->nip, inst);
-> > > > > > > > > > > > >=20
-> > > > > > > > > > > > > However, the kernel still locked up after fixing =
-that.
-> > > > > > > > > > > > > Now I wonder why this fixup is there in the first=
- place?
-> > > > > > > > > > > > > The routine will not really fixup the insn, just
-> > > > > > > > > > > > > return 0xffffffff for the failing read and then a=
-dvance the
-> >=20
-> > process NIP.
-> > > > > > > > > > >=20
-> > > > > > > > > > > You are right.  The code here only gives 0xffffffff t=
-o
-> > > > > > > > > > > the load instructions and
-> > > > > > > > > >=20
-> > > > > > > > > > continue with the next instruction when the load
-> > > > > > > > > > instruction is causing the machine check.  This will
-> > > > > > > > > > prevent a system lockup when reading from PCI/RapidIO d=
-evice
-> >=20
-> > which is link down.
-> > > > > > > > > > >=20
-> > > > > > > > > > > I don't know what is actual problem in your case.
-> > > > > > > > > > > Maybe it is a write
-> > > > > > > > > >=20
-> > > > > > > > > > instruction instead of read?   Or the code is in a infi=
-nite loop
-> >=20
-> > waiting for
-> > > > >=20
-> > > > > a
-> > > > > > > >=20
-> > > > > > > > valid
-> > > > > > > > > > read result?  Are you able to do some further debugging
-> > > > > > > > > > with the NIP correctly printed?
-> > > > > > > > > > >=20
-> > > > > > > > > >=20
-> > > > > > > > > > According to the MC it is a Read and the NIP also leads
-> > > > > > > > > > to a read in the
-> > > > > > > >=20
-> > > > > > > > program.
-> > > > > > > > > > ATM, I have disabled the fixup but I will enable that a=
-gain.
-> > > > > > > > > > Question, is it safe add a small printk when this MC
-> > > > > > > > > > happens(after fixing up)? I need to see that it has
-> > > > > > > > > > happened as the error is somewhat
-> > > > > > > >=20
-> > > > > > > > random.
-> > > > > > > > >=20
-> > > > > > > > > I think it is safe to add printk as the current machine
-> > > > > > > > > check handlers are also
-> > > > > > > >=20
-> > > > > > > > using printk.
-> > > > > > > >=20
-> > > > > > > > I hope so, but if the fixup fires there is no printk at all=
- so I was a bit
-> >=20
-> > unsure.
-> > > > > > > > Don't like this fixup though, is there not a better way tha=
-n
-> > > > > > > > faking a read to user space(or kernel for that matter) ?
-> > > > > > >=20
-> > > > > > > I don't have a better idea.  Without the fixup, the offending
-> > > > > > > load instruction
-> > > > >=20
-> > > > > will never finish if there is anything wrong with the backing
-> > > > > device and freeze the whole system.  Do you have any suggestion i=
-n mind?
-> > > > > > >=20
-> > > > > >=20
-> > > > > > But it never finishes the load, it just fakes a load of
-> > > > > > 0xfffffffff, for user space I rather have it signal a SIGBUS bu=
-t
-> > > > > > that does not seem to work either, at least not for us but that
-> > > > > > could be a bug in general MC code
-> > > > >=20
-> > > > > maybe.
-> > > > > > This fixup might be valid for kernel only as it has never worke=
-d
-> > > > > > for user space
-> > > > >=20
-> > > > > due to the bug I found.
-> > > > > >=20
-> > > > > > Where can I read about this errata ?
-> > > > >=20
-> > > > > I have look high and low an cannot find an errata which maps to t=
-his fixup.
-> > > > > The closest I get is A-005125 which seems to have another
-> > > > > workaround, I cannot find any evidence that this workaround has b=
-een
-> >=20
-> > applied in Linux, can you?
-> > > >=20
-> > > > This is not A-005125.  There was an erratum for this issue with old=
-er silicons
-> >=20
-> > (e.g. erratum PCI-ex 3 for MPC8572).
-> > > > " When its link goes down, the PCI Express controller clears all
-> > > > outstanding transactions with an error indicator and sends a link
-> > > > down exception to the interrupt controller if PEX_PME_MES_DISR[LDDD=
-]
-> > > > =3D 0. If, however, any transactions are sent to the controller aft=
-er
-> > > > the link down event, they are accepted by the controller and wait
-> > > > for the link to come back up before starting any timeout counters (=
-for
-> >=20
-> > example, completion timeout). There is no mechanism to cancel the new
-> > transactions short of a device HRESET. "
-> > > >=20
-> > > > But it was removed in newer silicon like P2020/P2010 probably becau=
-se a
-> >=20
-> > Machine Check will be triggered in this situation to deal with the stal=
-led
-> > instruction and no longer considered it as a hardware issue.
-> > > >=20
-> > >=20
-> > > Maybe this fixup should be configurable then?
->=20
-> No.  My point is that the problem was no longer considered a hardware iss=
-ue because of the machine check mechanism is in place to handle it.  If the=
-re is no handling of this special case, we would still experience a system =
-hang if this situation really occurs.
->=20
-> > >=20
-> > > > The A-005125 is dealt with in u-boot.
-> >=20
-> > https://emea01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fli=
-sts.de
-> > nx.de%2Fpipermail%2Fu-boot%2F2013-
-> > August%2F161185.html&data=3D01%7C01%7Cleoyang.li%40nxp.com%7Ccb8a93e
-> > 0090e48eb53a008d4f6b84235%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0&
-> > sdata=3D8sR4yoXA4adqMHz6TY%2BvmYpfCBTcYEZHjPuANjz%2F1EQ%3D&reserve
-> > d=3D0
-> > >=20
-> > > Yes, I found it eventually :)
-> > >=20
-> > > However, I cannot return to normal execution. I can follow the code t=
-o
-> > > returning from
-> > > machine_check_exception() and moving into ASM handler for returning
-> > > from a ME but then I am a bit lost. It does not seem to be any proble=
-m
-> > > executing, it feels more like a SW bug dealing with machine checks. D=
-on't
-> >=20
-> > known how to diagnose this further and could use some pointers.
->=20
-> Is the execution returned to the user application?  I doubt the system ha=
-ng is caused by the machine check handling.
-> You can try to comment out the machine check handling code and check if t=
-here is any improvement and see if
-> this is related to the machine check handling.
+------MDY8HTV68M8EGKV60U40LYMJJYW6P7
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-It tries to return to user app but I cannot see what happens as the system =
-lock up when the
-MC returns.
-How do you mean comment out MC handling? The simplest path is the PCI fixup=
- which will
-just do regs->nip +=3D 4; and then return to user space. That still does no=
-t work as
-as soon MC handling returns, the system is locked up.
+We should do the 1G block size as a fix, and backport it, and then make the=
+ hot unplug code smarter=2E
 
->=20
-> Machine check is a serious situation and not always possible to be recove=
-red from.=20
+cheers
 
-This one should at least not kill the whole system. It is a simple bus erro=
-r in user space and
-the app should get SIGBUS and the the system should carry on.=20
+On 8 September 2017 11:15:47 am AEST, Anton Blanchard <anton@ozlabs=2Eorg>=
+ wrote:
+>Hi Reza,
+>
+>> I may be misunderstanding this, but what if we did something like x86
+>
+>> does? When trying to unplug a region smaller than the mapping, they
+>> fill that part of the pagetable with 0xFD instead of freeing the
+>> whole thing=2E Once the whole thing is 0xFD, free it=2E
+>>=20
+>> See arch/x86/mm/init_64=2Ec:remove_{pte,pmd,pud}_table()
+>>=20
+>> ---%<---
+>> 	memset((void *)addr, PAGE_INUSE, next - addr);
+>>=20
+>> 	page_addr =3D page_address(pte_page(*pte));
+>> 	if (!memchr_inv(page_addr, PAGE_INUSE, PAGE_SIZE)) {
+>> 		=2E=2E=2E
+>> 		pte_clear(&init_mm, addr, pte);
+>> 		=2E=2E=2E
+>> 	}
+>> ---%<---
+>
+>But you only have 1GB ptes at this point, you'd need to start
+>instantiating a new level in the tree, and populate 2MB ptes=2E
+>
+>That is what Ben is suggesting=2E I'm happy to go any way (fix hotplug
+>to handle this, or increase the memblock size on PowerNV to 1GB), I
+>just
+>need a solution=2E
+>
+>Anton
 
-> I would focus more on debugging why the machine check is triggered by the=
- user space application.
-> Can you locate what code is causing this machine check from user space? =
-=20
-> Is it accessing some hardware related space which is not ready?=20
-> Or is it accessing address that it shouldn't have accessed?
+--=20
+Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E
+------MDY8HTV68M8EGKV60U40LYMJJYW6P7
+Content-Type: text/html;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-of course, this is ongoing and getting closer a solution. The MC looking th=
-e machine completely
-does not make this any easier though.
-These are 2 separate things, fixing the cause and not having a simple bus e=
-rror lock up the machine.
-I am focusing on fixing the lockup.
-
-I have been following the execution in the kernel and I always end up in th=
-e ASM returning
-from the MC.
-The other day we got a similar PCI MC(bus error) on T1042 CPU(e5500/e500mc)=
- and there
-the system survived. The one thing I see different there is that MSR RI is =
-set
-when entering MC, why is that?
-
- Jocke=
+<html><head></head><body>We should do the 1G block size as a fix, and backp=
+ort it, and then make the hot unplug code smarter=2E<br>
+<br>
+cheers<br><br><div class=3D"gmail_quote">On 8 September 2017 11:15:47 am A=
+EST, Anton Blanchard &lt;anton@ozlabs=2Eorg&gt; wrote:<blockquote class=3D"=
+gmail_quote" style=3D"margin: 0pt 0pt 0pt 0=2E8ex; border-left: 1px solid r=
+gb(204, 204, 204); padding-left: 1ex;">
+<pre class=3D"k9mail">Hi Reza,<br /><br /><blockquote class=3D"gmail_quote=
+" style=3D"margin: 0pt 0pt 1ex 0=2E8ex; border-left: 1px solid #729fcf; pad=
+ding-left: 1ex;"> I may be misunderstanding this, but what if we did someth=
+ing like x86 <br /> does? When trying to unplug a region smaller than the m=
+apping, they<br /> fill that part of the pagetable with 0xFD instead of fre=
+eing the<br /> whole thing=2E Once the whole thing is 0xFD, free it=2E<br /=
+> <br /> See arch/x86/mm/init_64=2Ec:remove_{pte,pmd,pud}_table()<br /> <br=
+ /> ---%&lt;---<br />  memset((void *)addr, PAGE_INUSE, next - addr);<br />=
+ <br />  page_addr =3D page_address(pte_page(*pte));<br />  if (!memchr_inv=
+(page_addr, PAGE_INUSE, PAGE_SIZE)) {<br />   =2E=2E=2E<br />   pte_clear(&=
+amp;init_mm, addr, pte);<br />   =2E=2E=2E<br />  }<br /> ---%&lt;---<br />=
+</blockquote><br />But you only have 1GB ptes at this point, you'd need to =
+start<br />instantiating a new level in the tree, and populate 2MB ptes=2E<=
+br /><br />That is what Ben is suggesting=2E I'm happy to go any way (fix h=
+otplug<br />to handle this, or increase the memblock size on PowerNV to 1GB=
+), I just<br />need a solution=2E<br /><br />Anton<br /><br /></pre></block=
+quote></div><br>
+-- <br>
+Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E</b=
+ody></html>
+------MDY8HTV68M8EGKV60U40LYMJJYW6P7--
