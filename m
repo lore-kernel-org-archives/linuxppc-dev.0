@@ -1,25 +1,34 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0070.outbound.protection.outlook.com [104.47.33.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xpssC66nWzDrcr
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 08:47:27 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id q8so2360567qtb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Sep 2017 15:47:27 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au,
-	linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
- linuxram@us.ibm.com
-Subject: [PATCH 25/25] powerpc: Enable pkey subsystem
-Date: Fri,  8 Sep 2017 15:45:13 -0700
-Message-Id: <1504910713-7094-34-git-send-email-linuxram@us.ibm.com>
-In-Reply-To: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
-References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xqDSb6ZmrzDrKk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Sep 2017 22:45:51 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
+ <york.sun@nxp.com>
+Subject: Re: Machine Check in P2010(e500v2)
+Date: Sat, 9 Sep 2017 12:45:43 +0000
+Message-ID: <1504961140.31322.69.camel@infinera.com>
+References: <1504265576.20777.61.camel@infinera.com>
+ <1504600831.27247.20.camel@infinera.com>
+ <VI1PR04MB2078E4FFD1B27961F63D88689A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <AM4PR0401MB16992DFADBD59ADEF8E3ACC08F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504729020.27247.120.camel@infinera.com>
+ <AM4PR0401MB16990A5A3D77ED57C9A645D98F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504731221.27247.126.camel@infinera.com>
+ <AM4PR0401MB16995FE3651C5F423FBAD2278F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504738204.27247.133.camel@infinera.com>
+ <1504773676.31322.2.camel@infinera.com>
+ <AM4PR0401MB16993C0235EA67562A8B8D4E8F940@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1504864463.31322.31.camel@infinera.com>
+ <1504875052.31322.38.camel@infinera.com>
+ <AM4PR0401MB1699D52CA4E6FB227412D9608F950@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+In-Reply-To: <AM4PR0401MB1699D52CA4E6FB227412D9608F950@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,220 +38,265 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PAPR defines 'ibm,processor-storage-keys' property. It exports
-two values.The first value indicates the number of data-access
-keys and the second indicates the number of instruction-access
-keys. Though this hints that keys  can  be  either data access
-or instruction access only,that is not the case in reality.Any
-key can be of any kind.  This patch adds all the keys and uses
-that as the total number of keys available to us.
+On Fri, 2017-09-08 at 22:27 +0000, Leo Li wrote:
+> > -----Original Message-----
+> > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > Sent: Friday, September 08, 2017 7:51 AM
+> > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>; York Su=
+n
+> > <york.sun@nxp.com>
+> > Subject: Re: Machine Check in P2010(e500v2)
+> >=20
+> > On Fri, 2017-09-08 at 11:54 +0200, Joakim Tjernlund wrote:
+> > > On Thu, 2017-09-07 at 18:54 +0000, Leo Li wrote:
+> > > > > -----Original Message-----
+> > > > > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> > > > > Sent: Thursday, September 07, 2017 3:41 AM
+> > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li <leoyang.li@nxp.com>;
+> > > > > York Sun <york.sun@nxp.com>
+> > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > >=20
+> > > > > On Thu, 2017-09-07 at 00:50 +0200, Joakim Tjernlund wrote:
+> > > > > > On Wed, 2017-09-06 at 21:13 +0000, Leo Li wrote:
+> > > > > > > > -----Original Message-----
+> > > > > > > > From: Joakim Tjernlund
+> > > > > > > > [mailto:Joakim.Tjernlund@infinera.com]
+> > > > > > > > Sent: Wednesday, September 06, 2017 3:54 PM
+> > > > > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li
+> > > > > > > > <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
+> > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > > > >=20
+> > > > > > > > On Wed, 2017-09-06 at 20:28 +0000, Leo Li wrote:
+> > > > > > > > > > -----Original Message-----
+> > > > > > > > > > From: Joakim Tjernlund
+> > > > > > > > > > [mailto:Joakim.Tjernlund@infinera.com]
+> > > > > > > > > > Sent: Wednesday, September 06, 2017 3:17 PM
+> > > > > > > > > > To: linuxppc-dev@lists.ozlabs.org; Leo Li
+> > > > > > > > > > <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
+> > > > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > > > > > >=20
+> > > > > > > > > > On Wed, 2017-09-06 at 19:31 +0000, Leo Li wrote:
+> > > > > > > > > > > > -----Original Message-----
+> > > > > > > > > > > > From: York Sun
+> > > > > > > > > > > > Sent: Wednesday, September 06, 2017 10:38 AM
+> > > > > > > > > > > > To: Joakim Tjernlund
+> > > > > > > > > > > > <Joakim.Tjernlund@infinera.com>;
+> > > > > > > > > > > > linuxppc- dev@lists.ozlabs.org; Leo Li
+> > > > > > > > > > > > <leoyang.li@nxp.com>
+> > > > > > > > > > > > Subject: Re: Machine Check in P2010(e500v2)
+> > > > > > > > > > > >=20
+> > > > > > > > > > > > Scott is no longer with Freescale/NXP. Adding Leo.
+> > > > > > > > > > > >=20
+> > > > > > > > > > > > On 09/05/2017 01:40 AM, Joakim Tjernlund wrote:
+> > > > > > > > > > > > > So after some debugging I found this bug:
+> > > > > > > > > > > > > @@ -996,7 +998,7 @@ int
+> > > > > > > > > > > > > fsl_pci_mcheck_exception(struct pt_regs
+> > > > > > > >=20
+> > > > > > > > *regs)
+> > > > > > > > > > > > >          if (is_in_pci_mem_space(addr)) {
+> > > > > > > > > > > > >                  if (user_mode(regs)) {
+> > > > > > > > > > > > >                          pagefault_disable();
+> > > > > > > > > > > > > -                       ret =3D get_user(regs->ni=
+p, &inst);
+> > > > > > > > > > > > > +                       ret =3D get_user(inst,
+> > > > > > > > > > > > > + (__u32 __user *)regs->nip);
+> > > > > > > > > > > > >                          pagefault_enable();
+> > > > > > > > > > > > >                  } else {
+> > > > > > > > > > > > >                          ret =3D
+> > > > > > > > > > > > > probe_kernel_address(regs->nip, inst);
+> > > > > > > > > > > > >=20
+> > > > > > > > > > > > > However, the kernel still locked up after fixing =
+that.
+> > > > > > > > > > > > > Now I wonder why this fixup is there in the first=
+ place?
+> > > > > > > > > > > > > The routine will not really fixup the insn, just
+> > > > > > > > > > > > > return 0xffffffff for the failing read and then a=
+dvance the
+> >=20
+> > process NIP.
+> > > > > > > > > > >=20
+> > > > > > > > > > > You are right.  The code here only gives 0xffffffff t=
+o
+> > > > > > > > > > > the load instructions and
+> > > > > > > > > >=20
+> > > > > > > > > > continue with the next instruction when the load
+> > > > > > > > > > instruction is causing the machine check.  This will
+> > > > > > > > > > prevent a system lockup when reading from PCI/RapidIO d=
+evice
+> >=20
+> > which is link down.
+> > > > > > > > > > >=20
+> > > > > > > > > > > I don't know what is actual problem in your case.
+> > > > > > > > > > > Maybe it is a write
+> > > > > > > > > >=20
+> > > > > > > > > > instruction instead of read?   Or the code is in a infi=
+nite loop
+> >=20
+> > waiting for
+> > > > >=20
+> > > > > a
+> > > > > > > >=20
+> > > > > > > > valid
+> > > > > > > > > > read result?  Are you able to do some further debugging
+> > > > > > > > > > with the NIP correctly printed?
+> > > > > > > > > > >=20
+> > > > > > > > > >=20
+> > > > > > > > > > According to the MC it is a Read and the NIP also leads
+> > > > > > > > > > to a read in the
+> > > > > > > >=20
+> > > > > > > > program.
+> > > > > > > > > > ATM, I have disabled the fixup but I will enable that a=
+gain.
+> > > > > > > > > > Question, is it safe add a small printk when this MC
+> > > > > > > > > > happens(after fixing up)? I need to see that it has
+> > > > > > > > > > happened as the error is somewhat
+> > > > > > > >=20
+> > > > > > > > random.
+> > > > > > > > >=20
+> > > > > > > > > I think it is safe to add printk as the current machine
+> > > > > > > > > check handlers are also
+> > > > > > > >=20
+> > > > > > > > using printk.
+> > > > > > > >=20
+> > > > > > > > I hope so, but if the fixup fires there is no printk at all=
+ so I was a bit
+> >=20
+> > unsure.
+> > > > > > > > Don't like this fixup though, is there not a better way tha=
+n
+> > > > > > > > faking a read to user space(or kernel for that matter) ?
+> > > > > > >=20
+> > > > > > > I don't have a better idea.  Without the fixup, the offending
+> > > > > > > load instruction
+> > > > >=20
+> > > > > will never finish if there is anything wrong with the backing
+> > > > > device and freeze the whole system.  Do you have any suggestion i=
+n mind?
+> > > > > > >=20
+> > > > > >=20
+> > > > > > But it never finishes the load, it just fakes a load of
+> > > > > > 0xfffffffff, for user space I rather have it signal a SIGBUS bu=
+t
+> > > > > > that does not seem to work either, at least not for us but that
+> > > > > > could be a bug in general MC code
+> > > > >=20
+> > > > > maybe.
+> > > > > > This fixup might be valid for kernel only as it has never worke=
+d
+> > > > > > for user space
+> > > > >=20
+> > > > > due to the bug I found.
+> > > > > >=20
+> > > > > > Where can I read about this errata ?
+> > > > >=20
+> > > > > I have look high and low an cannot find an errata which maps to t=
+his fixup.
+> > > > > The closest I get is A-005125 which seems to have another
+> > > > > workaround, I cannot find any evidence that this workaround has b=
+een
+> >=20
+> > applied in Linux, can you?
+> > > >=20
+> > > > This is not A-005125.  There was an erratum for this issue with old=
+er silicons
+> >=20
+> > (e.g. erratum PCI-ex 3 for MPC8572).
+> > > > " When its link goes down, the PCI Express controller clears all
+> > > > outstanding transactions with an error indicator and sends a link
+> > > > down exception to the interrupt controller if PEX_PME_MES_DISR[LDDD=
+]
+> > > > =3D 0. If, however, any transactions are sent to the controller aft=
+er
+> > > > the link down event, they are accepted by the controller and wait
+> > > > for the link to come back up before starting any timeout counters (=
+for
+> >=20
+> > example, completion timeout). There is no mechanism to cancel the new
+> > transactions short of a device HRESET. "
+> > > >=20
+> > > > But it was removed in newer silicon like P2020/P2010 probably becau=
+se a
+> >=20
+> > Machine Check will be triggered in this situation to deal with the stal=
+led
+> > instruction and no longer considered it as a hardware issue.
+> > > >=20
+> > >=20
+> > > Maybe this fixup should be configurable then?
+>=20
+> No.  My point is that the problem was no longer considered a hardware iss=
+ue because of the machine check mechanism is in place to handle it.  If the=
+re is no handling of this special case, we would still experience a system =
+hang if this situation really occurs.
+>=20
+> > >=20
+> > > > The A-005125 is dealt with in u-boot.
+> >=20
+> > https://emea01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fli=
+sts.de
+> > nx.de%2Fpipermail%2Fu-boot%2F2013-
+> > August%2F161185.html&data=3D01%7C01%7Cleoyang.li%40nxp.com%7Ccb8a93e
+> > 0090e48eb53a008d4f6b84235%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0&
+> > sdata=3D8sR4yoXA4adqMHz6TY%2BvmYpfCBTcYEZHjPuANjz%2F1EQ%3D&reserve
+> > d=3D0
+> > >=20
+> > > Yes, I found it eventually :)
+> > >=20
+> > > However, I cannot return to normal execution. I can follow the code t=
+o
+> > > returning from
+> > > machine_check_exception() and moving into ASM handler for returning
+> > > from a ME but then I am a bit lost. It does not seem to be any proble=
+m
+> > > executing, it feels more like a SW bug dealing with machine checks. D=
+on't
+> >=20
+> > known how to diagnose this further and could use some pointers.
+>=20
+> Is the execution returned to the user application?  I doubt the system ha=
+ng is caused by the machine check handling.
+> You can try to comment out the machine check handling code and check if t=
+here is any improvement and see if
+> this is related to the machine check handling.
 
-Non PAPR platforms do not define this property   in the device
-tree yet. Here, we   hardcode   CPUs   that   support  pkey by
-consulting PowerISA3.0
+It tries to return to user app but I cannot see what happens as the system =
+lock up when the
+MC returns.
+How do you mean comment out MC handling? The simplest path is the PCI fixup=
+ which will
+just do regs->nip +=3D 4; and then return to user space. That still does no=
+t work as
+as soon MC handling returns, the system is locked up.
 
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- arch/powerpc/include/asm/cputable.h    |   15 ++++++++++-----
- arch/powerpc/include/asm/mmu_context.h |    1 +
- arch/powerpc/include/asm/pkeys.h       |   21 +++++++++++++++++++++
- arch/powerpc/kernel/prom.c             |   19 +++++++++++++++++++
- arch/powerpc/mm/pkeys.c                |   19 ++++++++++++++-----
- 5 files changed, 65 insertions(+), 10 deletions(-)
+>=20
+> Machine check is a serious situation and not always possible to be recove=
+red from.=20
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index a9bf921..31ed1d2 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -214,7 +214,9 @@ enum {
- #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
- #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
- #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
-+#define CPU_FTR_PKEY			LONG_ASM_CONST(0x2000000000000000)
- #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
-+#define CPU_FTR_PKEY_EXECUTE		LONG_ASM_CONST(0x8000000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -435,7 +437,8 @@ enum {
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_PURR | \
--	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_DABRX)
-+	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_DABRX | \
-+	    CPU_FTR_PKEY)
- #define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -443,7 +446,7 @@ enum {
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
- 	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR | \
--	    CPU_FTR_DABRX)
-+	    CPU_FTR_DABRX | CPU_FTR_PKEY)
- #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -452,7 +455,7 @@ enum {
- 	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
--	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX)
-+	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX | CPU_FTR_PKEY)
- #define CPU_FTRS_POWER8 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -462,7 +465,8 @@ enum {
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
- 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
--	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP)
-+	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_PKEY |\
-+	    CPU_FTR_PKEY_EXECUTE)
- #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
- #define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
- #define CPU_FTRS_POWER9 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-@@ -474,7 +478,8 @@ enum {
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
- 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
--	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
-+	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | \
-+	    CPU_FTR_PKEY | CPU_FTR_PKEY_EXECUTE)
- #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
- 			     (~CPU_FTR_SAO))
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 9a56355..98ac713 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -148,6 +148,7 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- 
- #define pkey_initialize()
- #define pkey_mm_init(mm)
-+#define pkey_mmu_values(total_data, total_execute)
- 
- static inline int vma_pkey(struct vm_area_struct *vma)
- {
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index a0111de..baac435 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -1,9 +1,12 @@
- #ifndef _ASM_PPC64_PKEYS_H
- #define _ASM_PPC64_PKEYS_H
- 
-+#include <asm/firmware.h>
-+
- extern bool pkey_inited;
- extern bool pkey_execute_disable_support;
- extern int pkeys_total; /* total pkeys as per device tree */
-+extern int pkey_total_execute; /* total execute pkeys as per device tree */
- extern u32 initial_allocation_mask;/* bits set for reserved keys */
- 
- /*
-@@ -223,6 +226,24 @@ static inline void pkey_mm_init(struct mm_struct *mm)
- 	mm->context.execute_only_pkey = -1;
- }
- 
-+static inline void pkey_mmu_values(int total_data, int total_execute)
-+{
-+	/*
-+	 * since any pkey can be used for data or execute, we
-+	 * will  just  treat all keys as equal and track them
-+	 * as one entity.
-+	 */
-+	pkeys_total = total_data;
-+}
-+
-+static inline bool pkey_mmu_enabled(void)
-+{
-+	if (firmware_has_feature(FW_FEATURE_LPAR))
-+		return pkeys_total;
-+	else
-+		return cpu_has_feature(CPU_FTR_PKEY);
-+}
-+
- extern void thread_pkey_regs_save(struct thread_struct *thread);
- extern void thread_pkey_regs_restore(struct thread_struct *new_thread,
- 			struct thread_struct *old_thread);
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index f830562..f61da26 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -35,6 +35,7 @@
- #include <linux/of_fdt.h>
- #include <linux/libfdt.h>
- #include <linux/cpu.h>
-+#include <linux/pkeys.h>
- 
- #include <asm/prom.h>
- #include <asm/rtas.h>
-@@ -228,6 +229,23 @@ static void __init check_cpu_pa_features(unsigned long node)
- 		      ibm_pa_features, ARRAY_SIZE(ibm_pa_features));
- }
- 
-+static void __init check_cpu_pkey_feature(unsigned long node)
-+{
-+	const __be32 *ftrs;
-+	int len, total_data, total_execute;
-+
-+	ftrs = of_get_flat_dt_prop(node,
-+		"ibm,processor-storage-keys", &len);
-+	if (ftrs == NULL)
-+		return;
-+
-+	len /= sizeof(int);
-+	total_execute = (len >= 2) ? be32_to_cpu(ftrs[1]) : 0;
-+	total_data = (len >= 1) ? be32_to_cpu(ftrs[0]) : 0;
-+	pkey_mmu_values(total_data, total_execute);
-+}
-+
-+
- #ifdef CONFIG_PPC_STD_MMU_64
- static void __init init_mmu_slb_size(unsigned long node)
- {
-@@ -391,6 +409,7 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 
- 		check_cpu_feature_properties(node);
- 		check_cpu_pa_features(node);
-+		check_cpu_pkey_feature(node);
- 	}
- 
- 	identical_pvr_fixup(node);
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 21c3b42..c3ed473 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -37,15 +37,24 @@ void __init pkey_initialize(void)
- 	 * line will enable it.
- 	 */
- 	pkey_inited = false;
-+	if (pkey_mmu_enabled())
-+		pkey_inited = !radix_enabled();
-+	if (!pkey_inited)
-+		return;
- 
- 	/*
--	 * disable execute_disable support for now.
--	 * A patch further down will enable it.
-+	 * the device tree cannot be relied on for 
-+	 * execute_disable support. Hence we depend
-+	 * on CPU FTR.
- 	 */
--	pkey_execute_disable_support = false;
-+	pkey_execute_disable_support = cpu_has_feature(CPU_FTR_PKEY_EXECUTE);
- 
--	/* Lets assume 32 keys */
--	pkeys_total = 32;
-+	/*
-+	 * Lets assume 32 keys if we are not told
-+	 * the number of pkeys.
-+	 */
-+	if (!pkeys_total)
-+		pkeys_total = 32;
- 
- #ifdef CONFIG_PPC_4K_PAGES
- 	/*
--- 
-1.7.1
+This one should at least not kill the whole system. It is a simple bus erro=
+r in user space and
+the app should get SIGBUS and the the system should carry on.=20
+
+> I would focus more on debugging why the machine check is triggered by the=
+ user space application.
+> Can you locate what code is causing this machine check from user space? =
+=20
+> Is it accessing some hardware related space which is not ready?=20
+> Or is it accessing address that it shouldn't have accessed?
+
+of course, this is ongoing and getting closer a solution. The MC looking th=
+e machine completely
+does not make this any easier though.
+These are 2 separate things, fixing the cause and not having a simple bus e=
+rror lock up the machine.
+I am focusing on fixing the lockup.
+
+I have been following the execution in the kernel and I always end up in th=
+e ASM returning
+from the MC.
+The other day we got a similar PCI MC(bus error) on T1042 CPU(e5500/e500mc)=
+ and there
+the system survived. The one thing I see different there is that MSR RI is =
+set
+when entering MC, why is that?
+
+ Jocke=
