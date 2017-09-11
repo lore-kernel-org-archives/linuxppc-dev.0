@@ -1,35 +1,38 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xr8Rh3KGPzDrb9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 10:48:16 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id q76so4232805pfq.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Sep 2017 17:48:16 -0700 (PDT)
-Date: Mon, 11 Sep 2017 09:45:23 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 00/20] Speculative page faults
-Message-ID: <20170911004523.GA2938@jagdpanzerIV.localdomain>
-References: <1503007519-26777-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170821022629.GA541@jagdpanzerIV.localdomain>
- <6302a906-221d-c977-4aea-67202eb3d96d@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xrD000h7jzDrZ8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 13:27:59 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id g65so4151060pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Sep 2017 20:27:59 -0700 (PDT)
+Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
+ Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Jike Song
+ <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
+ Arvind Yadav <arvind.yadav.cs@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Woodhouse <dwmw2@infradead.org>, Kirti Wankhede
+ <kwankhede@nvidia.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
+ Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org
+References: <20170807072548.3023-1-aik@ozlabs.ru>
+ <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
+ <3be3fca3-7f66-0f13-b93a-d3db40a8a934@ozlabs.ru>
+ <79581f70-a4c9-dac9-a671-4de7f55bd86e@ozlabs.ru>
+Message-ID: <3c8302eb-0485-809b-6052-a8ceacd119e7@ozlabs.ru>
+Date: Mon, 11 Sep 2017 13:27:46 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6302a906-221d-c977-4aea-67202eb3d96d@linux.vnet.ibm.com>
+In-Reply-To: <79581f70-a4c9-dac9-a671-4de7f55bd86e@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,18 +42,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (09/08/17 11:24), Laurent Dufour wrote:
-> Hi Sergey,
+On 29/08/17 12:58, Alexey Kardashevskiy wrote:
+> On 21/08/17 12:47, Alexey Kardashevskiy wrote:
+>> Folks,
+>>
+>> Ok, people did talk, exchanged ideas, lovely :) What happens now? Do I
+>> repost this or go back to PCI bus flags or something else? Thanks.
 > 
-> I can't see where such a chain could happen.
 > 
-> I tried to recreate it on top of the latest mm tree, to latest stack output
-> but I can't get it.
-> How did you raised this one ?
+> Anyone, any help? How do we proceed with this? Thanks.
 
-Hi Laurent,
+Ping, anyone?
 
-didn't do anything special, the box even wasn't under severe memory
-pressure. can re-test your new patch set.
+Or everybody is just waiting for the kvm forum to discuss it in person? Thanks.
 
-	-ss
+
+
+> 
+> 
+> 
+>>
+>>
+>>
+>> On 14/08/17 19:45, Alexey Kardashevskiy wrote:
+>>> Folks,
+>>>
+>>> Is there anything to change besides those compiler errors and David's
+>>> comment in 5/5? Or the while patchset is too bad? Thanks.
+>>>
+>>>
+>>>
+>>> On 07/08/17 17:25, Alexey Kardashevskiy wrote:
+>>>> This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
+>>>> http://www.spinics.net/lists/kvm/msg152232.html
+>>>>
+>>>> This time it is using "caps" in IOMMU groups. The main question is if PCI
+>>>> bus flags or IOMMU domains are still better (and which one).
+>>>
+>>>>
+>>>>
+>>>>
+>>>> Here is some background:
+>>>>
+>>>> Current vfio-pci implementation disallows to mmap the page
+>>>> containing MSI-X table in case that users can write directly
+>>>> to MSI-X table and generate an incorrect MSIs.
+>>>>
+>>>> However, this will cause some performance issue when there
+>>>> are some critical device registers in the same page as the
+>>>> MSI-X table. We have to handle the mmio access to these
+>>>> registers in QEMU emulation rather than in guest.
+>>>>
+>>>> To solve this issue, this series allows to expose MSI-X table
+>>>> to userspace when hardware enables the capability of interrupt
+>>>> remapping which can ensure that a given PCI device can only
+>>>> shoot the MSIs assigned for it. And we introduce a new bus_flags
+>>>> PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
+>>>> for different archs.
+>>>>
+>>>>
+>>>> This is based on sha1
+>>>> 26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
+>>>>
+>>>> Please comment. Thanks.
+>>>>
+>>>> Changelog:
+>>>>
+>>>> v5:
+>>>> * redid the whole thing via so-called IOMMU group capabilities
+>>>>
+>>>> v4:
+>>>> * rebased on recent upstream
+>>>> * got all 6 patches from v2 (v3 was missing some)
+>>>>
+>>>>
+>>>>
+>>>>
+>>>> Alexey Kardashevskiy (5):
+>>>>   iommu: Add capabilities to a group
+>>>>   iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
+>>>>     remapping
+>>>>   iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
+>>>>     enabled
+>>>>   powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
+>>>>   vfio-pci: Allow to expose MSI-X table to userspace when safe
+>>>>
+>>>>  include/linux/iommu.h            | 20 ++++++++++++++++++++
+>>>>  include/linux/vfio.h             |  1 +
+>>>>  arch/powerpc/kernel/iommu.c      |  1 +
+>>>>  drivers/iommu/amd_iommu.c        |  3 +++
+>>>>  drivers/iommu/intel-iommu.c      |  3 +++
+>>>>  drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
+>>>>  drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
+>>>>  drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
+>>>>  drivers/vfio/vfio.c              | 15 +++++++++++++++
+>>>>  9 files changed, 99 insertions(+), 4 deletions(-)
+>>>>
+>>>
+>>>
+>>
+>>
+> 
+> 
+
+
+-- 
+Alexey
