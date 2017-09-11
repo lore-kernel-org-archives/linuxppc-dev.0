@@ -1,38 +1,47 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xrD000h7jzDrZ8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 13:27:59 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id g65so4151060pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Sep 2017 20:27:59 -0700 (PDT)
-Subject: Re: [RFC PATCH v5 0/5] vfio-pci: Add support for mmapping MSI-X table
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Yongji Xie <elohimes@gmail.com>,
- Eric Auger <eric.auger@redhat.com>, Kyle Mahlkuch <Kyle.Mahlkuch@ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>, Jike Song
- <jike.song@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
- Arvind Yadav <arvind.yadav.cs@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Woodhouse <dwmw2@infradead.org>, Kirti Wankhede
- <kwankhede@nvidia.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Neo Jia <cjia@nvidia.com>, Paul Mackerras <paulus@samba.org>,
- Vlad Tsyrklevich <vlad@tsyrklevich.net>, iommu@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org
-References: <20170807072548.3023-1-aik@ozlabs.ru>
- <8f5f7b82-3c10-7f39-b587-db4c4424f04c@ozlabs.ru>
- <3be3fca3-7f66-0f13-b93a-d3db40a8a934@ozlabs.ru>
- <79581f70-a4c9-dac9-a671-4de7f55bd86e@ozlabs.ru>
-Message-ID: <3c8302eb-0485-809b-6052-a8ceacd119e7@ozlabs.ru>
-Date: Mon, 11 Sep 2017 13:27:46 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xrFVV4srfzDrZh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 14:36:02 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8B4YAa7077366
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 00:35:59 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2cwd14dk4a-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 00:35:58 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 11 Sep 2017 14:35:56 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v8B4Zrfr43384972
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 14:35:53 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v8B4ZiYB014296
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 14:35:46 +1000
+Subject: Re: [PATCH v3 2/3] drm: add fallback default device detection
+To: Daniel Axtens <dja@axtens.net>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, gabriele.paoloni@huawei.com,
+ ard.biesheuvel@linaro.org, airlied@linux.ie, will.deacon@arm.com,
+ dri-devel@lists.freedesktop.org, z.liuxinliang@hisilicon.com,
+ alex.williamson@redhat.com, lukas@wunner.de, helgaas@kernel.org,
+ catalin.marinas@arm.com, zourongrong@gmail.com, daniel.vetter@intel.com
+References: <20170901072744.2409-1-dja@axtens.net>
+ <20170901072744.2409-3-dja@axtens.net>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Mon, 11 Sep 2017 14:35:51 +1000
 MIME-Version: 1.0
-In-Reply-To: <79581f70-a4c9-dac9-a671-4de7f55bd86e@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170901072744.2409-3-dja@axtens.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <ccea6f96-4658-b25a-a8ba-2959815318e3@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,109 +51,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/08/17 12:58, Alexey Kardashevskiy wrote:
-> On 21/08/17 12:47, Alexey Kardashevskiy wrote:
->> Folks,
->>
->> Ok, people did talk, exchanged ideas, lovely :) What happens now? Do I
->> repost this or go back to PCI bus flags or something else? Thanks.
+On 01/09/17 17:27, Daniel Axtens wrote:
+> The VGA arbiter selects a default VGA device that is enabled and
+> reachable via the legacy VGA resources (mem 0xa0000-0xbffff, io
+> 0x3b0-0x3bb, io 0x3c0-0x3df, etc).
 > 
+> (As a special case for x86 and IA64, this can be overridden by
+> EFI.)
 > 
-> Anyone, any help? How do we proceed with this? Thanks.
+> If there is no such device, e.g., because there's no enabled VGA
+> device, the host bridge doesn't support access to those legacy
+> resources, or a PCI-PCI bridge doesn't have VGA Enable set, a
+> platform may select an arbitrary device by calling
+> pci_set_default_display(). powerpc does this, for example.
+> 
+> If there is also no platform hook, there will be no default
+> device nominated. This is not necessarily what we want.
+> 
+> Add handling for devices that aren't handled by the vga arbiter or
+> platform by adding a late initcall and a class enable hook. If there
+> is no default from vgaarb or the platform then the first VGA card
+> that is enabled, has a driver bound, and can decode memory or I/O
+> will be marked as default.
+> 
+> This means single-card setups on systems without access to legacy
+> areas and without arch hooks will work. Multi-card setups on these
+> systems will nominate an arbitrary device, rather than no devices.
+> 
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> 
+> ---
+> 
+> v3:
+> 
+> Split out from re-organisation for simplicity.
+> Add better description and better documentaion.
+> 
+> Thanks to (in no particular order), Daniel Vetter, Lorenzo Pieralisi,
+> Ard Biesheuvel and Dave Airlie. Special thanks to Ben Herrenschmidt
+> and Bjorn Helgass, whose prose I have borrowed.
+> 
+> v1:
+> 
+> Tested on:
+>   - x86_64 laptop
+>   - arm64 D05 board with hibmc card
+>   - qemu powerpc with tcg and bochs std-vga
+> 
+> I know this adds another config option and that's a bit sad, but
+> we can't include it unconditionally as it depends on PCI.
+> Suggestions welcome.
 
-Ping, anyone?
+Tested on our iMac G5, the fallback handler doesn't fire (which should 
+be correct).
 
-Or everybody is just waiting for the kvm forum to discuss it in person? Thanks.
+Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-
-
-> 
-> 
-> 
->>
->>
->>
->> On 14/08/17 19:45, Alexey Kardashevskiy wrote:
->>> Folks,
->>>
->>> Is there anything to change besides those compiler errors and David's
->>> comment in 5/5? Or the while patchset is too bad? Thanks.
->>>
->>>
->>>
->>> On 07/08/17 17:25, Alexey Kardashevskiy wrote:
->>>> This is a followup for "[PATCH kernel v4 0/6] vfio-pci: Add support for mmapping MSI-X table"
->>>> http://www.spinics.net/lists/kvm/msg152232.html
->>>>
->>>> This time it is using "caps" in IOMMU groups. The main question is if PCI
->>>> bus flags or IOMMU domains are still better (and which one).
->>>
->>>>
->>>>
->>>>
->>>> Here is some background:
->>>>
->>>> Current vfio-pci implementation disallows to mmap the page
->>>> containing MSI-X table in case that users can write directly
->>>> to MSI-X table and generate an incorrect MSIs.
->>>>
->>>> However, this will cause some performance issue when there
->>>> are some critical device registers in the same page as the
->>>> MSI-X table. We have to handle the mmio access to these
->>>> registers in QEMU emulation rather than in guest.
->>>>
->>>> To solve this issue, this series allows to expose MSI-X table
->>>> to userspace when hardware enables the capability of interrupt
->>>> remapping which can ensure that a given PCI device can only
->>>> shoot the MSIs assigned for it. And we introduce a new bus_flags
->>>> PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
->>>> for different archs.
->>>>
->>>>
->>>> This is based on sha1
->>>> 26c5cebfdb6c "Merge branch 'parisc-4.13-4' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux"
->>>>
->>>> Please comment. Thanks.
->>>>
->>>> Changelog:
->>>>
->>>> v5:
->>>> * redid the whole thing via so-called IOMMU group capabilities
->>>>
->>>> v4:
->>>> * rebased on recent upstream
->>>> * got all 6 patches from v2 (v3 was missing some)
->>>>
->>>>
->>>>
->>>>
->>>> Alexey Kardashevskiy (5):
->>>>   iommu: Add capabilities to a group
->>>>   iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if MSI controller enables IRQ
->>>>     remapping
->>>>   iommu/intel/amd: Set IOMMU_GROUP_CAP_ISOLATE_MSIX if IRQ remapping is
->>>>     enabled
->>>>   powerpc/iommu: Set IOMMU_GROUP_CAP_ISOLATE_MSIX
->>>>   vfio-pci: Allow to expose MSI-X table to userspace when safe
->>>>
->>>>  include/linux/iommu.h            | 20 ++++++++++++++++++++
->>>>  include/linux/vfio.h             |  1 +
->>>>  arch/powerpc/kernel/iommu.c      |  1 +
->>>>  drivers/iommu/amd_iommu.c        |  3 +++
->>>>  drivers/iommu/intel-iommu.c      |  3 +++
->>>>  drivers/iommu/iommu.c            | 35 +++++++++++++++++++++++++++++++++++
->>>>  drivers/vfio/pci/vfio_pci.c      | 20 +++++++++++++++++---
->>>>  drivers/vfio/pci/vfio_pci_rdwr.c |  5 ++++-
->>>>  drivers/vfio/vfio.c              | 15 +++++++++++++++
->>>>  9 files changed, 99 insertions(+), 4 deletions(-)
->>>>
->>>
->>>
->>
->>
-> 
+> +static void vga_default_enable_hook(struct pci_dev *pdev)
+> +{
+> +       if (!vga_default_active)
+> +	       return;
+> +
+> +       if (pci_default_display())
+> +               return;
+> +
+> +       vga_default_try_device(pdev);
+> +}
+> +DECLARE_PCI_FIXUP_CLASS_ENABLE(PCI_ANY_ID, PCI_ANY_ID,
+> +			       PCI_CLASS_DISPLAY_VGA, 8,
+> +			       vga_default_enable_hook)
 > 
 
+Looks like you have some spaces/tabs inconsistencies here.
 
 -- 
-Alexey
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
