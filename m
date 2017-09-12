@@ -1,27 +1,35 @@
-Return-Path: <arnaud.mouiche@invoxia.com>
-Received: from mail-wr0-x232.google.com (mail-wr0-x232.google.com
- [IPv6:2a00:1450:400c:c0c::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xs6lY0bq1zDr8P
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 00:35:20 +1000 (AEST)
-Received: by mail-wr0-x232.google.com with SMTP id 108so23208433wra.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2017 07:35:20 -0700 (PDT)
-Subject: Re: [PATCH] ASoC: fsl_ssi: Override bit clock rate based on slot
- number
-To: Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, tiwai@suse.com, perex@perex.cz,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, timur@tabi.org, lukma@denx.de,
- caleb@crome.org, max.krummenacher@toradex.com, mpa@pengutronix.de,
- mail@maciej.szmigiero.name
-References: <1504848223-3376-1-git-send-email-nicoleotsuka@gmail.com>
-From: Arnaud Mouiche <arnaud.mouiche@invoxia.com>
-Message-ID: <2020d72a-4517-55d0-59a1-171c71f91c7b@invoxia.com>
-Date: Tue, 12 Sep 2017 16:35:13 +0200
-MIME-Version: 1.0
-In-Reply-To: <1504848223-3376-1-git-send-email-nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xs8gp1Mf8zDrDg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 02:02:12 +1000 (AEST)
+From: Michal Suchanek <msuchanek@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Corbet <corbet@lwn.net>, Jessica Yu <jeyu@kernel.org>,
+ Rusty Russell <rusty@rustcorp.com.au>, Jason Baron <jbaron@akamai.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.de>, Daniel Axtens <dja@axtens.net>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ "Sylvain 'ythier' Hitier" <sylvain.hitier@gmail.com>,
+ David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@kernel.org>,
+ Kees Cook <keescook@chromium.org>, Thomas Gleixner <tglx@linutronix.de>,
+ "Steven Rostedt," <rostedt@goodmis.org>, Michal Hocko <mhocko@suse.com>,
+ Laura Abbott <lauraa@codeaurora.org>, Tejun Heo <tj@kernel.org>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Lokesh Vutla <lokeshvutla@ti.com>,
+ Baoquan He <bhe@redhat.com>, Ilya Matveychikov <matvejchikov@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v8 1/6] powerpc/fadump: reduce memory consumption for capture
+ kernel
+Date: Tue, 12 Sep 2017 18:01:39 +0200
+Message-Id: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,171 +39,231 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Nicolin
+With fadump (dump capture) kernel booting like a regular kernel, it needs
+almost the same amount of memory to boot as the production kernel, which is
+unwarranted for a dump capture kernel. But with no option to disable some
+of the unnecessary subsystems in fadump kernel, that much memory is wasted
+on fadump, depriving the production kernel of that memory.
 
-On 08/09/2017 07:23, Nicolin Chen wrote:
-> The set_sysclk() now is used to override the output bit clock rate.
-> But this is not a common way to implement a set_dai_sysclk(). And
-> this creates a problem when a general machine driver (simple-card
-> for example) tries to do set_dai_sysclk() by passing an input clock
-> rate for the baud clock instead of setting the bit clock rate as
-> fsl_ssi driver expected.
->
-> So this patch solves this problem by firstly removing set_sysclk()
-> since the hw_params() can calculate the bit clock rate. Secondly,
-> in order not to break those TDM use cases which previously might
-> have been using set_sysclk() to override the bit clock rate, this
-> patch changes the driver to override it based on the slot number.
->
-> The patch also removes an obsolete comment of the dir parameter.
->
-> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-> ---
->   sound/soc/fsl/fsl_ssi.c | 26 ++++++++------------------
->   1 file changed, 8 insertions(+), 18 deletions(-)
->
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> index 64598d1..3657c88 100644
-> --- a/sound/soc/fsl/fsl_ssi.c
-> +++ b/sound/soc/fsl/fsl_ssi.c
-> @@ -197,12 +197,12 @@ struct fsl_ssi_soc_data {
->    * @use_dma: DMA is used or FIQ with stream filter
->    * @use_dual_fifo: DMA with support for both FIFOs used
->    * @fifo_deph: Depth of the SSI FIFOs
-> + * @slots: number of slots
->    * @rxtx_reg_val: Specific register settings for receive/transmit configuration
->    *
->    * @clk: SSI clock
->    * @baudclk: SSI baud clock for master mode
->    * @baudclk_streams: Active streams that are using baudclk
-> - * @bitclk_freq: bitclock frequency set by .set_dai_sysclk
->    *
->    * @dma_params_tx: DMA transmit parameters
->    * @dma_params_rx: DMA receive parameters
-> @@ -233,12 +233,12 @@ struct fsl_ssi_private {
->   	bool use_dual_fifo;
->   	bool has_ipg_clk_name;
->   	unsigned int fifo_depth;
-> +	unsigned int slots;
->   	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
->   
->   	struct clk *clk;
->   	struct clk *baudclk;
->   	unsigned int baudclk_streams;
-> -	unsigned int bitclk_freq;
->   
->   	/* regcache for volatile regs */
->   	u32 regcache_sfcsr;
-> @@ -700,8 +700,7 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
->    * Note: This function can be only called when using SSI as DAI master
->    *
->    * Quick instruction for parameters:
-> - * freq: Output BCLK frequency = samplerate * 32 (fixed) * channels
-> - * dir: SND_SOC_CLOCK_OUT -> TxBCLK, SND_SOC_CLOCK_IN -> RxBCLK.
-> + * freq: Output BCLK frequency = samplerate * 32 (fixed) * slots (or channels)
+Introduce kernel parameter 'fadump_extra_args=' that would take regular
+parameters as a space separated quoted string, to be enforced when fadump
+is active. This 'fadump_extra_args=' parameter can be leveraged to pass
+parameters like nr_cpus=1, cgroup_disable=memory and numa=off, to disable
+unwarranted resources/subsystems.
 
-Slots are not necessarily 32 bits width.
-Indeed, a simple grep of snd_soc_dai_set_tdm_slot shows 16, 24, 32 and 0 
-bits usage. (don't know the real meaning of 0 BTW...)
-So, it should be good to also remember the slots width given in 
-snd_soc_dai_set_tdm_slot() call.
+Also, ensure the log "Firmware-assisted dump is active" is printed early
+in the boot process to put the subsequent fadump messages in context.
 
-Anyway, there is something wrong in the snd_soc_codec_set_sysclk usage 
-by fsl_ssi
-Let's get a look again at the description:
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+Changes from v6:
+Correct and simplify quote handling. Ideally I would like to extend
+parse_args to give the length of the original quoted value to callback.
+However, parse_args removes at most one doubel-quote from the start and
+one from the end so that is easy to detect. Otherwise all other users
+will have to be updated to trash the new argument.
+Changes from v7:
+Handle leading quote in parameter name.
+---
+ arch/powerpc/include/asm/fadump.h |   2 +
+ arch/powerpc/kernel/fadump.c      | 122 +++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/prom.c        |   7 +++
+ 3 files changed, 128 insertions(+), 3 deletions(-)
 
-    /**
-      * snd_soc_dai_set_sysclk - configure DAI system or master clock.
-      * @dai: DAI
-      * @clk_id: DAI specific clock ID
-      * @freq: new clock frequency in Hz
-      * @dir: new clock direction - input/output.
-      *
-      * Configures the DAI master (MCLK) or system (SYSCLK) clocking.
-      */
-    int snd_soc_dai_set_sysclk(struct snd_soc_dai *dai, int clk_id,
-         unsigned int freq, int dir)
-
-So, it can be used to configure 2 different clocks (and more) with 
-different usages.
-
-Lukasz complains that simple-card is configuring MCLK incorrectly. but 
-simple-card, only want to configure the SYSCLK, whereas fsl_ssi 
-understand "configure the MCLK..." (fsl_ssi doesn't check the clk_id at all)
-
-I think the problem is here.
-I would propose a new clk_id
-
-     #define FSL_SSI_SYSCLK_MCLK 1
-
-And leave fsl_ssi_set_dai_sysclk(xxx, FSL_SSI_SYSCLK_MCLK, ...) override 
-the computed mlck.
-This will leave a way for obscure TDM users to specify a specific a 
-random mclk frequency for obscure reasons...
-Unfortunately, such generic clock_id (sysclk, mclk) were never defined 
-widely.
-
-Is it really needed ? It is true that, up to now, we are using 
-fsl_ssi_set_dai_sysclk() in addition to snd_soc_dai_set_tdm_slot() only 
-because this was the only way to deal with correct mclk setting. And if 
-now, snd_soc_dai_set_tdm_slot() do its job correctly, 
-fsl_ssi_set_dai_sysclk() will become useless (except for obscure TDM 
-users of course)
-
-Will it break TDM users ?
-I will say yes, surely, but TDM users (at least myself) may consider 
-something will break in TDM audio area every-time we jump to a new linux 
-release...
-
-Arnaud
-
->    */
->   static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
->   		struct snd_soc_dai *cpu_dai,
-> @@ -716,9 +715,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
->   	unsigned int freq;
->   	bool baudclk_is_used;
->   
-> -	/* Prefer the explicitly set bitclock frequency */
-> -	if (ssi_private->bitclk_freq)
-> -		freq = ssi_private->bitclk_freq;
-> +	/* Generate bit clock based on the slot or channel number */
-> +	if (ssi_private->slots)
-> +		freq = ssi_private->slots * 32 * params_rate(hw_params);
->   	else
->   		freq = params_channels(hw_params) * 32 * params_rate(hw_params);
->   
-> @@ -805,16 +804,6 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
->   	return 0;
->   }
->   
-> -static int fsl_ssi_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
-> -		int clk_id, unsigned int freq, int dir)
-> -{
-> -	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
-> -
-> -	ssi_private->bitclk_freq = freq;
-> -
-> -	return 0;
-> -}
-> -
->   /**
->    * fsl_ssi_hw_params - program the sample size
->    *
-> @@ -1121,6 +1110,8 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
->   
->   	regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_SSIEN, val);
->   
-> +	ssi_private->slots = slots;
-> +
->   	return 0;
->   }
->   
-> @@ -1191,7 +1182,6 @@ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
->   	.hw_params	= fsl_ssi_hw_params,
->   	.hw_free	= fsl_ssi_hw_free,
->   	.set_fmt	= fsl_ssi_set_dai_fmt,
-> -	.set_sysclk	= fsl_ssi_set_dai_sysclk,
->   	.set_tdm_slot	= fsl_ssi_set_dai_tdm_slot,
->   	.trigger	= fsl_ssi_trigger,
->   };
+diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+index 5a23010af600..41b50b317a67 100644
+--- a/arch/powerpc/include/asm/fadump.h
++++ b/arch/powerpc/include/asm/fadump.h
+@@ -208,12 +208,14 @@ extern int early_init_dt_scan_fw_dump(unsigned long node,
+ 		const char *uname, int depth, void *data);
+ extern int fadump_reserve_mem(void);
+ extern int setup_fadump(void);
++extern void enforce_fadump_extra_args(char *cmdline);
+ extern int is_fadump_active(void);
+ extern int should_fadump_crash(void);
+ extern void crash_fadump(struct pt_regs *, const char *);
+ extern void fadump_cleanup(void);
+ 
+ #else	/* CONFIG_FA_DUMP */
++static inline void enforce_fadump_extra_args(char *cmdline) { }
+ static inline int is_fadump_active(void) { return 0; }
+ static inline int should_fadump_crash(void) { return 0; }
+ static inline void crash_fadump(struct pt_regs *regs, const char *str) { }
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index e1431800bfb9..0e08f1a80af2 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -78,8 +78,10 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
+ 	 * dump data waiting for us.
+ 	 */
+ 	fdm_active = of_get_flat_dt_prop(node, "ibm,kernel-dump", NULL);
+-	if (fdm_active)
++	if (fdm_active) {
++		pr_info("Firmware-assisted dump is active.\n");
+ 		fw_dump.dump_active = 1;
++	}
+ 
+ 	/* Get the sizes required to store dump data for the firmware provided
+ 	 * dump sections.
+@@ -339,8 +341,11 @@ int __init fadump_reserve_mem(void)
+ {
+ 	unsigned long base, size, memory_boundary;
+ 
+-	if (!fw_dump.fadump_enabled)
++	if (!fw_dump.fadump_enabled) {
++		if (fw_dump.dump_active)
++			pr_warn("Firmware-assisted dump was active but kernel booted with fadump disabled!\n");
+ 		return 0;
++	}
+ 
+ 	if (!fw_dump.fadump_supported) {
+ 		printk(KERN_INFO "Firmware-assisted dump is not supported on"
+@@ -380,7 +385,6 @@ int __init fadump_reserve_mem(void)
+ 		memory_boundary = memblock_end_of_DRAM();
+ 
+ 	if (fw_dump.dump_active) {
+-		printk(KERN_INFO "Firmware-assisted dump is active.\n");
+ 		/*
+ 		 * If last boot has crashed then reserve all the memory
+ 		 * above boot_memory_size so that we don't touch it until
+@@ -467,6 +471,118 @@ static int __init early_fadump_reserve_mem(char *p)
+ }
+ early_param("fadump_reserve_mem", early_fadump_reserve_mem);
+ 
++#define FADUMP_EXTRA_ARGS_PARAM		"fadump_extra_args="
++#define FADUMP_EXTRA_ARGS_LEN		(strlen(FADUMP_EXTRA_ARGS_PARAM) - 1)
++
++struct param_info {
++	char		*cmdline;
++	char		*tmp_cmdline;
++	int		 shortening;
++};
++
++static void __init fadump_update_params(struct param_info *param_info,
++					char *param, char *val)
++{
++	ptrdiff_t param_offset = param - param_info->tmp_cmdline;
++	size_t vallen = val ? strlen(val) : 0;
++	char *tgt = param_info->cmdline + param_offset
++				- param_info->shortening;
++	int shortening = 0;
++	int quoted = 0;
++
++	if (!val)
++		return;
++
++	/* leading '"' removed from parameter */
++	if ((param > param_info->tmp_cmdline) && *(param - 1) == '"') {
++		quoted = 1;
++		shortening += 1;
++		tgt--;
++	}
++
++	/* next_arg removes one leading and one trailing '"' */
++	if (*(tgt + FADUMP_EXTRA_ARGS_LEN + 1) == '"')
++		shortening += 1;
++	if (*(tgt + FADUMP_EXTRA_ARGS_LEN + 1 + vallen + shortening) == '"')
++		shortening += 1;
++
++	/* remove one leading and one trailing quote if both are present */
++	if ((val[0] == '"') && (val[vallen - 1] == '"')) {
++		shortening += 2;
++		vallen -= 2;
++		val++;
++	}
++
++	/* some characters were removed - move the trailing part of cmdline */
++	if (shortening) {
++		char *src;
++
++		strncpy(tgt, FADUMP_EXTRA_ARGS_PARAM, FADUMP_EXTRA_ARGS_LEN);
++		tgt += FADUMP_EXTRA_ARGS_LEN;
++		*tgt++ = ' ';
++
++		strncpy(tgt, val, vallen);
++		tgt += vallen;
++
++		src = tgt + shortening;
++		memmove(tgt, src, strlen(src) + 1);
++	} else {
++		/* remove the '=' */
++		*(tgt + FADUMP_EXTRA_ARGS_LEN) = ' ';
++	}
++
++	param_info->shortening += shortening;
++}
++
++/*
++ * Reworks command line parameters and splits 'fadump_extra_args=' param
++ * to enforce the parameters passed through it
++ */
++static int __init fadump_rework_cmdline_params(char *param, char *val,
++					       const char *unused, void *arg)
++{
++	struct param_info *param_info = (struct param_info *)arg;
++
++	if (strncmp(param, FADUMP_EXTRA_ARGS_PARAM,
++		     strlen(FADUMP_EXTRA_ARGS_PARAM) - 1))
++		return 0;
++
++	fadump_update_params(param_info, param, val);
++
++	return 0;
++}
++
++/*
++ * Replace every occurrence of 'fadump_extra_args="param1 param2 param3"'
++ * in cmdline with 'fadump_extra_args param1 param2 param3' by stripping
++ * off '=' and quotes, if any. This ensures that the additional parameters
++ * passed with 'fadump_extra_args=' are enforced.
++ */
++void __init enforce_fadump_extra_args(char *cmdline)
++{
++	static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;
++	static char init_cmdline[COMMAND_LINE_SIZE] __initdata;
++	struct param_info param_info;
++
++	if (strstr(cmdline, FADUMP_EXTRA_ARGS_PARAM) == NULL)
++		return;
++
++	pr_info("Modifying command line to enforce the additional parameters passed through 'fadump_extra_args='");
++
++	param_info.cmdline = cmdline;
++	param_info.tmp_cmdline = tmp_cmdline;
++	param_info.shortening = 0;
++
++	strlcpy(init_cmdline, cmdline, COMMAND_LINE_SIZE);
++
++	strlcpy(tmp_cmdline, cmdline, COMMAND_LINE_SIZE);
++	parse_args("fadump params", tmp_cmdline, NULL, 0, 0, 0,
++			&param_info, &fadump_rework_cmdline_params);
++
++	pr_info("Original command line: %s\n", init_cmdline);
++	pr_info("Modified command line: %s\n", cmdline);
++}
++
+ static int register_fw_dump(struct fadump_mem_struct *fdm)
+ {
+ 	int rc, err;
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index f83056297441..2e6f40217266 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -693,6 +693,13 @@ void __init early_init_devtree(void *params)
+ 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+ 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+ 
++	/*
++	 * Look for 'fadump_extra_args=' parameter and enfore the additional
++	 * parameters passed to it if fadump is active.
++	 */
++	if (is_fadump_active())
++		enforce_fadump_extra_args(boot_command_line);
++
+ 	parse_early_param();
+ 
+ 	/* make sure we've parsed cmdline for mem= before this */
+-- 
+2.10.2
