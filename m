@@ -2,8 +2,8 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xs8gp1KkjzDqjt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 02:02:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xs8gr2QLbzDqjt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 02:02:16 +1000 (AEST)
 From: Michal Suchanek <msuchanek@suse.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -26,10 +26,9 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Baoquan He <bhe@redhat.com>, Ilya Matveychikov <matvejchikov@gmail.com>,
  linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v8 2/6] powerpc/fadump: update documentation about
- 'fadump_extra_args=' parameter
-Date: Tue, 12 Sep 2017 18:01:40 +0200
-Message-Id: <5db2fb2d68310ae455eaa5a713358de62ff398d9.1505231820.git.msuchanek@suse.de>
+Subject: [PATCH v8 3/6] lib/cmdline.c: Remove quotes symmetrically.
+Date: Tue, 12 Sep 2017 18:01:41 +0200
+Message-Id: <9ad57a14bf19e798c5a3643e57a28e829a8518a2.1505231820.git.msuchanek@suse.de>
 In-Reply-To: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
 References: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
 In-Reply-To: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
@@ -43,52 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the introduction of 'fadump_extra_args=' parameter to pass additional
-parameters to fadump (capture) kernel, update documentation about it.
+Remove quotes from argument value only if there is qoute on both sides.
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- Documentation/powerpc/firmware-assisted-dump.txt | 20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+ lib/cmdline.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
-index bdd344aa18d9..2df88524d2c7 100644
---- a/Documentation/powerpc/firmware-assisted-dump.txt
-+++ b/Documentation/powerpc/firmware-assisted-dump.txt
-@@ -162,7 +162,19 @@ How to enable firmware-assisted dump (fadump):
+diff --git a/lib/cmdline.c b/lib/cmdline.c
+index 171c19b6888e..6d398a8b63fc 100644
+--- a/lib/cmdline.c
++++ b/lib/cmdline.c
+@@ -227,14 +227,12 @@ char *next_arg(char *args, char **param, char **val)
+ 		*val = args + equals + 1;
  
- 1. Set config option CONFIG_FA_DUMP=y and build kernel.
- 2. Boot into linux kernel with 'fadump=on' kernel cmdline option.
--3. Optionally, user can also set 'crashkernel=' kernel cmdline
-+3. A user can pass additional command line parameters as a space
-+   separated quoted list through 'fadump_extra_args=' parameter,
-+   to be enforced when fadump is active. For example, parameter
-+   'fadump_extra_args="nr_cpus=1 numa=off udev.children-max=2"'
-+   will be changed to 'fadump_extra_args nr_cpus=1  numa=off
-+   udev.children-max=2' in-place when fadump is active. This
-+   parameter has no affect when fadump is not active. Multiple
-+   instances of 'fadump_extra_args=' can be passed. This provision
-+   can be used to reduce memory consumption during dump capture by
-+   disabling unwarranted resources/subsystems like CPUs, NUMA
-+   and such. Value with spaces can be passed as
-+   'fadump_extra_args=""parameter="value with spaces"""'
-+4. Optionally, user can also set 'crashkernel=' kernel cmdline
-    to specify size of the memory to reserve for boot memory dump
-    preservation.
+ 		/* Don't include quotes in value. */
+-		if (**val == '"') {
+-			(*val)++;
+-			if (args[i-1] == '"')
+-				args[i-1] = '\0';
++		if ((args[i-1] == '"') && ((quoted) || (**val == '"'))) {
++			args[i-1] = '\0';
++			if (!quoted)
++				(*val)++;
+ 		}
+ 	}
+-	if (quoted && args[i-1] == '"')
+-		args[i-1] = '\0';
  
-@@ -172,6 +184,12 @@ NOTE: 1. 'fadump_reserve_mem=' parameter has been deprecated. Instead
-       2. If firmware-assisted dump fails to reserve memory then it
-          will fallback to existing kdump mechanism if 'crashkernel='
-          option is set at kernel cmdline.
-+      3. Special parameters like '--' passed inside fadump_extra_args are also
-+         just left in-place. So, the user is advised to consider this while
-+         specifying such parameters. It may be required to quote the argument
-+         to fadump_extra_args when the bootloader uses double-quotes as
-+         argument delimiter as well. eg
-+        append = " fadump_extra_args=\"nr_cpus=1 numa=off udev.children-max=2\""
- 
- Sysfs/debugfs files:
- ------------
+ 	if (args[i]) {
+ 		args[i] = '\0';
 -- 
 2.10.2
