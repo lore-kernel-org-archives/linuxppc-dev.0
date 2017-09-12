@@ -1,18 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20170912150344.2d6702d1@roar.ozlabs.ibm.com>
-References: <20170912043859.32473-1-bsingharora@gmail.com>
- <20170912150344.2d6702d1@roar.ozlabs.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 12 Sep 2017 17:11:42 +1000
-Message-ID: <CAKTCnzmSn+gyYKj0Bksiu0iBLnRkd+PwMjvE=LYe4x7dFrrHeA@mail.gmail.com>
-Subject: Re: [PATCH v1 0/4] Revisit MCE handling for UE Errors
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, skiboot list <skiboot@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xrzP44wFzzDr13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2017 19:03:50 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] crypto: talitos - Don't provide setkey for non hmac hashing
+ algs.
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, Stephan Muller <smueller@chronox.de>
+Message-Id: <20170912090339.56D8369CAD@po15668-vm-win7.idsi0.si.c-s.fr>
+Date: Tue, 12 Sep 2017 11:03:39 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,36 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 12, 2017 at 3:03 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> Hi Balbir,
->
-> Very cool. How are you testing it? Is it failing memory pages
-> and poisoning them out properly?
->
+Today, md5sum fails with error -ENOKEY because a setkey
+function is set for non hmac hashing algs, see strace output below:
 
-Yep, I tested it and it seems to work correctly so far. I am testing this
-on a simulator with injected MCE UE errors for both the data and
-instruction side.
+mmap(NULL, 378880, PROT_READ, MAP_SHARED, 6, 0) = 0x77f50000
+accept(3, 0, NULL)                      = 7
+vmsplice(5, [{"bin/\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 378880}], 1, SPLICE_F_MORE|SPLICE_F_GIFT) = 262144
+splice(4, NULL, 7, NULL, 262144, SPLICE_F_MORE) = -1 ENOKEY (Required key not available)
+write(2, "Generation of hash for file kcap"..., 50) = 50
+munmap(0x77f50000, 378880)              = 0
 
-> Looks like you have a printk in the machine_check_early path,
-> which you shouldn't. I guess because we don't mark that context
-> as an NMI. Which we could... but I think you want to put as
-> little as possible in that path, so avoiding the print would
-> be preferable. Perhaps you could mark the mce event somehow that
-> the failure can be reported during processing it?
->
+This patch ensures that setkey() function is set only
+for hmac hashing.
 
-Good point, I did see that printk handles stuff via printk_nmi_enter/exit,
-but its best avoided. Will spin v2
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/crypto/talitos.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> Firmware logging is a good question, I could not really see
-> where this all gets plumbed through. If this is expected to be
-> a common problem for some types of attached memory, then we
-> really need to build up a log of these errors that can be used
-> to exclude the memory after a reboot too. Do we have anything
-> like this capability in firmware?
-
-It's to be built, we should log these to NVRAM and revisit at every
-boot to isolate these pages
-
-Balbir Singh.
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 79791c690858..5cc160078286 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -3057,7 +3057,8 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
+ 		t_alg->algt.alg.hash.final = ahash_final;
+ 		t_alg->algt.alg.hash.finup = ahash_finup;
+ 		t_alg->algt.alg.hash.digest = ahash_digest;
+-		t_alg->algt.alg.hash.setkey = ahash_setkey;
++		if (!strncmp(alg->cra_name, "hmac", 4))
++			t_alg->algt.alg.hash.setkey = ahash_setkey;
+ 		t_alg->algt.alg.hash.import = ahash_import;
+ 		t_alg->algt.alg.hash.export = ahash_export;
+ 
+-- 
+2.13.3
