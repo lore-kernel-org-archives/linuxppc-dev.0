@@ -2,8 +2,8 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xs8gr2QLbzDqjt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 02:02:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xs8gs684zzDqjt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 02:02:17 +1000 (AEST)
 From: Michal Suchanek <msuchanek@suse.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -26,9 +26,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Baoquan He <bhe@redhat.com>, Ilya Matveychikov <matvejchikov@gmail.com>,
  linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v8 3/6] lib/cmdline.c: Remove quotes symmetrically.
-Date: Tue, 12 Sep 2017 18:01:41 +0200
-Message-Id: <9ad57a14bf19e798c5a3643e57a28e829a8518a2.1505231820.git.msuchanek@suse.de>
+Subject: [PATCH v8 4/6] powerpc/fadump: update the dequoting logic to match
+ lib/cmdline.c
+Date: Tue, 12 Sep 2017 18:01:42 +0200
+Message-Id: <490bce7afcb8ae57880cb83d5cf1a07ba1a0fc60.1505231820.git.msuchanek@suse.de>
 In-Reply-To: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
 References: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
 In-Reply-To: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
@@ -42,35 +43,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove quotes from argument value only if there is qoute on both sides.
-
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- lib/cmdline.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/fadump.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/lib/cmdline.c b/lib/cmdline.c
-index 171c19b6888e..6d398a8b63fc 100644
---- a/lib/cmdline.c
-+++ b/lib/cmdline.c
-@@ -227,14 +227,12 @@ char *next_arg(char *args, char **param, char **val)
- 		*val = args + equals + 1;
- 
- 		/* Don't include quotes in value. */
--		if (**val == '"') {
--			(*val)++;
--			if (args[i-1] == '"')
--				args[i-1] = '\0';
-+		if ((args[i-1] == '"') && ((quoted) || (**val == '"'))) {
-+			args[i-1] = '\0';
-+			if (!quoted)
-+				(*val)++;
- 		}
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 0e08f1a80af2..b214c1e333dd 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -501,10 +501,12 @@ static void __init fadump_update_params(struct param_info *param_info,
  	}
--	if (quoted && args[i-1] == '"')
--		args[i-1] = '\0';
  
- 	if (args[i]) {
- 		args[i] = '\0';
+ 	/* next_arg removes one leading and one trailing '"' */
+-	if (*(tgt + FADUMP_EXTRA_ARGS_LEN + 1) == '"')
+-		shortening += 1;
+-	if (*(tgt + FADUMP_EXTRA_ARGS_LEN + 1 + vallen + shortening) == '"')
++	if ((*(tgt + FADUMP_EXTRA_ARGS_LEN + 1 + vallen + shortening) == '"') &&
++	    (quoted || (*(tgt + FADUMP_EXTRA_ARGS_LEN + 1) == '"'))) {
+ 		shortening += 1;
++		if (!quoted)
++			shortening += 1;
++	}
+ 
+ 	/* remove one leading and one trailing quote if both are present */
+ 	if ((val[0] == '"') && (val[vallen - 1] == '"')) {
 -- 
 2.10.2
