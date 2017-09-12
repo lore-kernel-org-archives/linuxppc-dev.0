@@ -1,21 +1,15 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xrsWy0YvZzDrJc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2017 14:39:26 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id f84so5793851pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Sep 2017 21:39:25 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au
-Cc: npiggin@gmail.com, mahesh@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v1 4/4] powerpc/mce: hookup memory_failure for UE errors
-Date: Tue, 12 Sep 2017 14:38:59 +1000
-Message-Id: <20170912043859.32473-5-bsingharora@gmail.com>
+Return-Path: <npiggin@gmail.com>
+Date: Tue, 12 Sep 2017 15:03:44 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: mpe@ellerman.id.au, mahesh@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, <skiboot@lists.ozlabs.org>
+Subject: Re: [PATCH v1 0/4] Revisit MCE handling for UE Errors
+Message-ID: <20170912150344.2d6702d1@roar.ozlabs.ibm.com>
 In-Reply-To: <20170912043859.32473-1-bsingharora@gmail.com>
 References: <20170912043859.32473-1-bsingharora@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,136 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we are in user space and hit a UE error, we now have the
-basic infrastructure to walk the page tables and find out
-the effective address that was accessed, since the DAR
-is not valid.
+Hi Balbir,
 
-We use a work_queue content to hookup the bad pfn, any
-other context causes problems, since memory_failure itself
-can call into schedule() via lru_drain_ bits.
+Very cool. How are you testing it? Is it failing memory pages
+and poisoning them out properly?
 
-We could probably poison the struct page to avoid a race
-between detection and taking corrective action.
+Looks like you have a printk in the machine_check_early path,
+which you shouldn't. I guess because we don't mark that context
+as an NMI. Which we could... but I think you want to put as
+little as possible in that path, so avoiding the print would
+be preferable. Perhaps you could mark the mce event somehow that
+the failure can be reported during processing it?
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/kernel/mce.c | 63 ++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 60 insertions(+), 3 deletions(-)
+Firmware logging is a good question, I could not really see
+where this all gets plumbed through. If this is expected to be
+a common problem for some types of attached memory, then we
+really need to build up a log of these errors that can be used
+to exclude the memory after a reboot too. Do we have anything
+like this capability in firmware?
 
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index f41a75d..d9be9e4 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -39,11 +39,21 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
- static DEFINE_PER_CPU(int, mce_queue_count);
- static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
- 
-+/* Queue for delayed MCE UE events. */
-+static DEFINE_PER_CPU(int, mce_ue_count);
-+static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT],
-+					mce_ue_event_queue);
-+
- static void machine_check_process_queued_event(struct irq_work *work);
-+void machine_check_ue_event(struct machine_check_event *evt);
-+static void machine_process_ue_event(struct work_struct *work);
-+
- static struct irq_work mce_event_process_work = {
-         .func = machine_check_process_queued_event,
- };
- 
-+DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
-+
- static void mce_set_error_info(struct machine_check_event *mce,
- 			       struct mce_error_info *mce_err)
- {
-@@ -143,6 +153,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
- 		if (phys_addr != ULONG_MAX) {
- 			mce->u.ue_error.physical_address_provided = true;
- 			mce->u.ue_error.physical_address = phys_addr;
-+			machine_check_ue_event(mce);
- 		}
- 	}
- 	return;
-@@ -197,6 +208,26 @@ void release_mce_event(void)
- 	get_mce_event(NULL, true);
- }
- 
-+
-+/*
-+ * Queue up the MCE event which then can be handled later.
-+ */
-+void machine_check_ue_event(struct machine_check_event *evt)
-+{
-+	int index;
-+
-+	index = __this_cpu_inc_return(mce_ue_count) - 1;
-+	/* If queue is full, just return for now. */
-+	if (index >= MAX_MC_EVT) {
-+		__this_cpu_dec(mce_ue_count);
-+		return;
-+	}
-+	memcpy(this_cpu_ptr(&mce_ue_event_queue[index]), evt, sizeof(*evt));
-+
-+	/* Queue work to process this event later. */
-+	schedule_work(&mce_ue_event_work);
-+}
-+
- /*
-  * Queue up the MCE event which then can be handled later.
-  */
-@@ -219,7 +250,32 @@ void machine_check_queue_event(void)
- 	/* Queue irq work to process this event later. */
- 	irq_work_queue(&mce_event_process_work);
- }
--
-+/*
-+ * process pending MCE event from the mce event queue. This function will be
-+ * called during syscall exit.
-+ */
-+static void machine_process_ue_event(struct work_struct *work)
-+{
-+	int index;
-+	struct machine_check_event *evt;
-+
-+	while (__this_cpu_read(mce_ue_count) > 0) {
-+		index = __this_cpu_read(mce_ue_count) - 1;
-+		evt = this_cpu_ptr(&mce_ue_event_queue[index]);
-+#ifdef CONFIG_MEMORY_FAILURE
-+		/*
-+		 * This should probably queued elsewhere, but
-+		 * oh! well
-+		 */
-+		if (evt->error_type == MCE_ERROR_TYPE_UE) {
-+			if (evt->u.ue_error.physical_address_provided)
-+				memory_failure(evt->u.ue_error.physical_address,
-+						SIGBUS, 0);
-+		}
-+#endif
-+		__this_cpu_dec(mce_ue_count);
-+	}
-+}
- /*
-  * process pending MCE event from the mce event queue. This function will be
-  * called during syscall exit.
-@@ -227,6 +283,7 @@ void machine_check_queue_event(void)
- static void machine_check_process_queued_event(struct irq_work *work)
- {
- 	int index;
-+	struct machine_check_event *evt;
- 
- 	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
- 
-@@ -236,8 +293,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
- 	 */
- 	while (__this_cpu_read(mce_queue_count) > 0) {
- 		index = __this_cpu_read(mce_queue_count) - 1;
--		machine_check_print_event_info(
--				this_cpu_ptr(&mce_event_queue[index]), false);
-+		evt = this_cpu_ptr(&mce_event_queue[index]);
-+		machine_check_print_event_info(evt, false);
- 		__this_cpu_dec(mce_queue_count);
- 	}
- }
--- 
-2.9.5
+Thanks,
+Nick
+
+On Tue, 12 Sep 2017 14:38:55 +1000
+Balbir Singh <bsingharora@gmail.com> wrote:
+
+> This patch series is designed to hook up memory_failure on
+> UE errors, this is specially helpful for user_mode UE errors.
+> 
+> The first patch is a cleanup patch, it removes dead code.
+> I could not find any users of get_mce_fault_addr().
+> The second patch walks kernel/user mode page tables in
+> real mode to extract the effective address of the instruction
+> that caused the UE error and the effective address it was
+> trying to access (for load/store). The third patch hooks
+> up the pfn for instruction UE errors (ierror).
+> 
+> The fourth patch hooks up memory_failure to the MCE patch.
+> 
+> TODO:
+> Log the address in NVRAM, so that we can recover from
+> bad pages at boot and keep the blacklist persistent.
+> 
+> Changelog v2:
+> 	- address review comments from Nick and Mahesh
+> 	(initialization of pfn and more comments on failure
+> 	when addr_to_pfn() or anaylse_instr() fail)
+> 	- Hookup ierrors to the framework as well
+> 	(comments from Mahesh)
+> 
+> Balbir Singh (4):
+>   powerpc/mce.c: Remove unused function get_mce_fault_addr()
+>   powerpc/mce: Hookup derror (load/store) UE errors
+>   powerpc/mce: Hookup ierror (instruction) UE errors
+>   powerpc/mce: hookup memory_failure for UE errors
+> 
+>  arch/powerpc/include/asm/mce.h  |   4 +-
+>  arch/powerpc/kernel/mce.c       | 108 ++++++++++++++++++++++++----------------
+>  arch/powerpc/kernel/mce_power.c | 105 +++++++++++++++++++++++++++++++++++---
+>  3 files changed, 163 insertions(+), 54 deletions(-)
+> 
