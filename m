@@ -1,33 +1,17 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xsJNx5zFjzDrNC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 07:49:53 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8CLmaCw082466
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2017 17:49:51 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cxpge3ah0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2017 17:49:51 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 12 Sep 2017 15:49:50 -0600
-To: linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com,
- Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/kernel: Add 'ibm,thread-groups' property for CPU
- allocation
-Date: Tue, 12 Sep 2017 16:49:46 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <25045c72-e951-cc32-38d6-84ab36e8a117@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Message-ID: <1505258314.12628.151.camel@kernel.crashing.org>
+Subject: Re: [RFC PATCH 1/2] core: implement OPAL_SIGNAL_SYSTEM_RESET with
+ POWER9 scoms
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ skiboot@lists.ozlabs.org
+Cc: Alistair Popple <alistair@popple.id.au>
+Date: Wed, 13 Sep 2017 09:18:34 +1000
+In-Reply-To: <20170912160553.13422-2-npiggin@gmail.com>
+References: <20170912160553.13422-1-npiggin@gmail.com>
+ <20170912160553.13422-2-npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,271 +21,379 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/kernel: Add logic to parse the new property 'ibm,thread-groups"
-when it is present.  The content of this property explicitly defines the
-number of threads per core as well as the PowerPC 'threads_core_mask'.
-The design provides a common device-tree for both P9 normal core and
-P9 fused core systems.  The property updates the kernel to know CPUs
-of each core are actually present, and then use the map when adding
-cores to the system at boot, or during hotplug operations.  Previously,
-this information was inferred solely from embedded code and the
-"ibm,ppc-interrupt-server#s" in the system device tree.
+On Wed, 2017-09-13 at 02:05 +1000, Nicholas Piggin wrote:
+> This implements a way to raise system reset interrupts on other
+> cores. This has not yet been tested on DD2 or with deeper sleep
+> states.
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/cputhreads.h        |    2 +
- arch/powerpc/kernel/prom.c                   |   76 ++++++++++++++++++++++++++
- arch/powerpc/kernel/setup-common.c           |   30 +++++++---
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   13 ++++
- 4 files changed, 109 insertions(+), 12 deletions(-)
+Reminds me, we need to workaround a bug with XSCOMs on P9
 
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index 9377bdf..e57f679 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -30,6 +30,8 @@
- #define threads_core_mask	(*get_cpu_mask(0))
- #endif
- 
-+extern cpumask_t pseries_thread_group_mask;
-+
- /* cpu_thread_mask_to_cores - Return a cpumask of one per cores
-  *                            hit by the argument
-  *
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index f830562..eead1e3 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -67,6 +67,9 @@
- #define DBG(fmt...)
- #endif
- 
-+cpumask_t pseries_thread_group_mask;
-+EXPORT_SYMBOL(pseries_thread_group_mask);
-+
- #ifdef CONFIG_PPC64
- int __initdata iommu_is_off;
- int __initdata iommu_force_on;
-@@ -302,6 +305,73 @@ static void __init check_cpu_feature_properties(unsigned long node)
- 	}
- }
- 
-+static void __init early_init_setup_thread_group_mask(unsigned long node,
-+						cpumask_t *thread_group_mask)
-+{
-+	const __be32 *thrgrp;
-+	int len, rc = 0;
-+
-+	cpumask_clear(thread_group_mask);
-+
-+	thrgrp = of_get_flat_dt_prop(node, "ibm,thread-groups", &len);
-+	if (thrgrp) {
-+		u32 cc_type = 0, no_split = 0, thr_per_split = 0;
-+		int j, k;
-+
-+		/* Characteristic type per table */
-+		cc_type = of_read_number(thrgrp++, 1);
-+
-+		/*
-+		 * 1 : Group shares common L1, translation cache, and
-+		 *     instruction data flow
-+		 * >1 : Reserved
-+		  */
-+		if (cc_type != 1) {
-+			rc = -EINVAL;
-+			goto endit;
-+		}
-+
-+		/* No. splits */
-+		no_split = of_read_number(thrgrp++, 1);
-+		if (no_split == 0) {
-+			rc = -EINVAL;
-+			goto endit;
-+		}
-+
-+		/* Threads per split */
-+		thr_per_split = of_read_number(thrgrp++, 1);
-+		if (thr_per_split == 0) {
-+			rc = -EINVAL;
-+			goto endit;
-+		}
-+
-+		DBG("INFO: Node %d; ibm,thread-group "
-+			"(cc_t=%d, no_spl=%d, thr_p_spl=%d)\n",
-+			(int)node, (int)cc_type, (int)no_split,
-+			(int)thr_per_split);
-+
-+		for (j = 0; j < no_split; j++) {
-+			for (k = 0; k < thr_per_split; k++) {
-+				u32 t = of_read_number(thrgrp++, 1);
-+
-+				cpumask_set_cpu(t, thread_group_mask);
-+				DBG("INFO: Node %d; enable thread %d\n", (int)node, (int)t);
-+			}
-+		}
-+	} else {
-+		DBG("WARNING: Node %d; ibm,thread-group property not found\n",
-+			(int)node);
-+		cpumask_setall(thread_group_mask);
-+	}
-+
-+endit:
-+	if (rc) {
-+		DBG("WARNING: Node %d; error processing ibm,thread-group property\n",
-+			(int)node);
-+		cpumask_setall(thread_group_mask);
-+	}
-+}
-+
- static int __init early_init_dt_scan_cpus(unsigned long node,
- 					  const char *uname, int depth,
- 					  void *data)
-@@ -325,11 +395,17 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 
- 	nthreads = len / sizeof(int);
- 
-+	/* Figure out the thread subset */
-+	early_init_setup_thread_group_mask(node, &pseries_thread_group_mask);
-+
- 	/*
- 	 * Now see if any of these threads match our boot cpu.
- 	 * NOTE: This must match the parsing done in smp_setup_cpu_maps.
- 	 */
- 	for (i = 0; i < nthreads; i++) {
-+		if (!cpumask_test_cpu(i % nthreads, &pseries_thread_group_mask))
-+			continue;
-+
- 		/*
- 		 * version 2 of the kexec param format adds the phys cpuid of
- 		 * booted proc.
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 94a9482..430fe4a 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -427,13 +427,16 @@ void __init check_for_initrd(void)
- EXPORT_SYMBOL_GPL(threads_shift);
- EXPORT_SYMBOL_GPL(threads_core_mask);
- 
--static void __init cpu_init_thread_core_maps(int tpc)
-+static void __init cpu_init_thread_core_maps(int tpc,
-+				cpumask_t *thread_group_mask)
- {
-+	cpumask_t work_mask;
- 	int i;
- 
- 	threads_per_core = tpc;
- 	threads_per_subcore = tpc;
- 	cpumask_clear(&threads_core_mask);
-+	cpumask_clear(&work_mask);
- 
- 	/* This implementation only supports power of 2 number of threads
- 	 * for simplicity and performance
-@@ -442,14 +445,14 @@ static void __init cpu_init_thread_core_maps(int tpc)
- 	BUG_ON(tpc != (1 << threads_shift));
- 
- 	for (i = 0; i < tpc; i++)
--		cpumask_set_cpu(i, &threads_core_mask);
-+		cpumask_set_cpu(i, &work_mask);
-+	cpumask_and(&threads_core_mask, &work_mask, thread_group_mask);
- 
- 	printk(KERN_INFO "CPU maps initialized for %d thread%s per core\n",
- 	       tpc, tpc > 1 ? "s" : "");
- 	printk(KERN_DEBUG " (thread shift is %d)\n", threads_shift);
- }
- 
--
- /**
-  * setup_cpu_maps - initialize the following cpu maps:
-  *                  cpu_possible_mask
-@@ -503,17 +506,24 @@ void __init smp_setup_cpu_maps(void)
- 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
- 			bool avail;
- 
--			DBG("    thread %d -> cpu %d (hard id %d)\n",
--			    j, cpu, be32_to_cpu(intserv[j]));
--
- 			avail = of_device_is_available(dn);
- 			if (!avail)
- 				avail = !of_property_match_string(dn,
- 						"enable-method", "spin-table");
- 
--			set_cpu_present(cpu, avail);
--			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
--			set_cpu_possible(cpu, true);
-+			DBG("    thread %d -> cpu %d (hard id %d)\n",
-+			    j, cpu, be32_to_cpu(intserv[j]));
-+
-+			if (cpumask_test_cpu(cpu % nthreads,
-+						&pseries_thread_group_mask)) {
-+				set_cpu_present(cpu, avail);
-+				set_hard_smp_processor_id(cpu,
-+						be32_to_cpu(intserv[j]));
-+				set_cpu_possible(cpu, true);
-+			} else {
-+				set_cpu_present(cpu, false);
-+				set_cpu_possible(cpu, false);
-+			}
- 			cpu++;
- 		}
- 	}
-@@ -572,7 +582,7 @@ void __init smp_setup_cpu_maps(void)
- 	 * every CPU in the system. If that is not the case, then some code
- 	 * here will have to be reworked
- 	 */
--	cpu_init_thread_core_maps(nthreads);
-+	cpu_init_thread_core_maps(nthreads, &pseries_thread_group_mask);
- 
- 	/* Now that possible cpus are set, set nr_cpu_ids for later use */
- 	setup_nr_cpu_ids();
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 6afd1ef..a714fe2 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -35,6 +35,7 @@
- #include <asm/vdso_datapage.h>
- #include <asm/xics.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/cputhreads.h>
- 
- #include "pseries.h"
- #include "offline_states.h"
-@@ -251,8 +252,10 @@ static int pseries_add_processor(struct device_node *np)
- 	zalloc_cpumask_var(&tmp, GFP_KERNEL);
- 
- 	nthreads = len / sizeof(u32);
--	for (i = 0; i < nthreads; i++)
--		cpumask_set_cpu(i, tmp);
-+	for (i = 0; i < nthreads; i++) {
-+		if (cpumask_test_cpu(i % nthreads, &pseries_thread_group_mask))
-+			cpumask_set_cpu(i, tmp);
-+	}
- 
- 	cpu_maps_update_begin();
- 
-@@ -317,6 +320,8 @@ static void pseries_remove_processor(struct device_node *np)
- 
- 	cpu_maps_update_begin();
- 	for (i = 0; i < nthreads; i++) {
-+		if (!cpumask_test_cpu(i % nthreads, &pseries_thread_group_mask))
-+			continue;
- 		thread = be32_to_cpu(intserv[i]);
- 		for_each_present_cpu(cpu) {
- 			if (get_hard_smp_processor_id(cpu) != thread)
-@@ -349,6 +354,8 @@ static int dlpar_online_cpu(struct device_node *dn)
- 
- 	cpu_maps_update_begin();
- 	for (i = 0; i < nthreads; i++) {
-+		if (!cpumask_test_cpu(i % nthreads, &pseries_thread_group_mask))
-+			continue;
- 		thread = be32_to_cpu(intserv[i]);
- 		for_each_present_cpu(cpu) {
- 			if (get_hard_smp_processor_id(cpu) != thread)
-@@ -510,6 +517,8 @@ static int dlpar_offline_cpu(struct device_node *dn)
- 
- 	cpu_maps_update_begin();
- 	for (i = 0; i < nthreads; i++) {
-+		if (!cpumask_test_cpu(i % nthreads, &pseries_thread_group_mask))
-+			continue;
- 		thread = be32_to_cpu(intserv[i]);
- 		for_each_present_cpu(cpu) {
- 			if (get_hard_smp_processor_id(cpu) != thread)
+PSCOMs to core in the range 20010A80-20010Ab8 (list below) can fail
+occasionally with an error of 4 (PCB_ADDRESS_ERROR). We need to
+(silently) retry up to 32 times.
+
+> 0000000020010A80 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SCOMC
+> 0000000020010A81 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SCOMD
+> 0000000020010A82 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.OCC_SCOMC
+> 0000000020010A83 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.OCC_SCOMD
+> 0000000020010A84 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SPR_MODE
+> 0000000020010A85 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.CTRL
+> 0000000020010A86 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SCR0
+> 0000000020010A87 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SCR1
+> 0000000020010A88 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SCR2
+> 0000000020010A89 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SCR3
+> 0000000020010A8E EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V0_HMER
+> 0000000020010A92 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V0_HMER
+> 0000000020010A8F EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V1_HMER
+> 0000000020010A93 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V1_HMER
+> 0000000020010A90 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V2_HMER
+> 0000000020010A94 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V2_HMER
+> 0000000020010A91 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V3_HMER
+> 0000000020010A95 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.V3_HMER
+> 0000000020010A96 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.HMEER
+> 0000000020010A97 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SPATTN
+> 0000000020010A98 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SPATTN
+> 0000000020010A99 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SPATTN
+> 0000000020010A9A EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SPATTN_MASK
+> 0000000020010A9B EXP.EC.CC.PCC0.PMC.THREAD_INFO
+> 0000000020010A9C EXP.EC.CC.PCC0.PMC.DIRECT_CONTROLS
+> 0000000020010A9D ECP.PC.PMU.SPR_CORE.RAS_MODEREG
+> 0000000020010A9E EXP.EC.CC.PCC0.COMMON.POW.THROTTLE_CONTROL
+> 0000000020010A9F EXP.EC.CC.PCC0.TFDP.TFP.SPURR_FREQ_DETECT_CYC_CNT
+> 0000000020010AA0 EXP.EC.CC.PCC0.TFDP.TFP.SPURR_FREQ_SCALE
+> 0000000020010AA1 EXP.EC.CC.PCC0.TFDP.TFP.SPURR_FREQ_REF
+> 0000000020010AA2 EXP.EC.CC.PCC0.TFDP.TFP.PWM_EVENTS
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_READ
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC000
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC001
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC010
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC011
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC100
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC101
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC110
+> 0000000020010AA3 EXP.EC.CC.PCC0.TOD_SYNC111
+> 0000000020010AA4 EXP.EC.CC.PCC0.COMMON.TFC.TOD_STEP_CHECK
+> 0000000020010AA5 ECP.PC.PMU.SPR_CORE.SHID0
+> 0000000020010AA6 ECP.PC.PMU.SPR_CORE.HV_STATE
+> 0000000020010AA7 ECP.PC.PMU.SPR_CORE.CORE_FUSES
+> 0000000020010AA8 ECP.PC.IMA.IMA_EVENT_MASK
+> 0000000020010AA9 ECP.PC.IMA.IMA_TRACE
+> 0000000020010AAA ECP.PC.T0_PMU_SCOM
+> 0000000020010AAB ECP.PC.T1_PMU_SCOM
+> 0000000020010AAC ECP.PC.T2_PMU_SCOM
+> 0000000020010AAD ECP.PC.T3_PMU_SCOM
+> 0000000020010AAE ECP.PC.PMU.PMUC.SIER_MASK
+> 0000000020010AAF ECP.PC.PMU.PMUC.SRC_MASK
+> 0000000020010AB0 ECP.PC.PMU.SPR_CORE.PMU_SCOMC
+> 0000000020010AB2 ECP.PC.PMU.SPR_CORE.PMU_SCOMC_EN
+> 0000000020010AB3 EXP.EC.CC.PCC0.PMC.CORE_THREAD_STATE
+> 0000000020010AB4 ECP.PC.PMU.SPR_CORE.INV_ERATE
+> 0000000020010AB5 ECP.PC.PMU.SPR_CORE.SPR_CORE_HOLD_OUT
+> 0000000020010AB6 ECP.PC.PMU.SPR_CORE.PMU_HOLD_OUT
+> 0000000020010AB7 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.TFAC_HOLD_OUT
+> 0000000020010AB8 EXP.EC.CC.PCC0.COMMON.SPR_COMMON.SPR_COMMON_HOLD_OUT 
+> ---
+>  core/Makefile.inc       |   1 +
+>  core/sreset.c           | 237 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  hw/xscom.c              |   2 +
+>  include/skiboot.h       |   3 +
+>  platforms/mambo/mambo.c |   3 +-
+>  5 files changed, 245 insertions(+), 1 deletion(-)
+>  create mode 100644 core/sreset.c
+> 
+> diff --git a/core/Makefile.inc b/core/Makefile.inc
+> index f2de2f64..16204978 100644
+> --- a/core/Makefile.inc
+> +++ b/core/Makefile.inc
+> @@ -9,6 +9,7 @@ CORE_OBJS += vpd.o hostservices.o platform.o nvram.o nvram-format.o hmi.o
+>  CORE_OBJS += console-log.o ipmi.o time-utils.o pel.o pool.o errorlog.o
+>  CORE_OBJS += timer.o i2c.o rtc.o flash.o sensor.o ipmi-opal.o
+>  CORE_OBJS += flash-subpartition.o bitmap.o buddy.o pci-quirk.o powercap.o psr.o
+> +CORE_OBJS += sreset.o
+>  
+>  ifeq ($(SKIBOOT_GCOV),1)
+>  CORE_OBJS += gcov-profiling.o
+> diff --git a/core/sreset.c b/core/sreset.c
+> new file mode 100644
+> index 00000000..ff20fe71
+> --- /dev/null
+> +++ b/core/sreset.c
+> @@ -0,0 +1,237 @@
+> +/* Copyright 2017 IBM Corp.
+> + *
+> + * Licensed under the Apache License, Version 2.0 (the "License");
+> + * you may not use this file except in compliance with the License.
+> + * You may obtain a copy of the License at
+> + *
+> + * 	http://www.apache.org/licenses/LICENSE-2.0
+> + *
+> + * Unless required by applicable law or agreed to in writing, software
+> + * distributed under the License is distributed on an "AS IS" BASIS,
+> + * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+> + * implied.
+> + * See the License for the specific language governing permissions and
+> + * limitations under the License.
+> + */
+> +
+> +#include <skiboot.h>
+> +#include <cpu.h>
+> +#include <fsp.h>
+> +#include <psi.h>
+> +#include <opal.h>
+> +#include <xscom.h>
+> +#include <interrupts.h>
+> +#include <cec.h>
+> +#include <timebase.h>
+> +#include <pci.h>
+> +#include <chip.h>
+> +#include <chiptod.h>
+> +#include <ipmi.h>
+> +
+> +#define P9_RAS_STATUS			0x10a02
+> +#define P9_RSTAT_QUIESCED(t)		PPC_BITMASK(0 + 8*(t), 3 + 8*(t))
+> +#define P9_RAS_MODEREG			0x10a9d
+> +#define P9_DIRECT_CONTROLS		0x10a9c
+> +#define P9_DCTL_STOP(t)			PPC_BIT(7 + 8*(t))
+> +#define P9_DCTL_CONT(t)			PPC_BIT(6 + 8*(t))
+> +#define P9_DCTL_SRESET(t)		PPC_BIT(4 + 8*(t))
+> +#define P9_DCTL_PWR(t)			PPC_BIT(32 + 8*(t))
+> +
+> +#define P9_CORE_THREAD_STATE		0x10ab3
+> +#define P9_CTS_STOP(t)			PPC_BIT(56 + (t))
+> +
+> +#define PPM_GPMMR			0xf0100
+> +#define PPM_SPWKUP_OTR			0xf010a
+> +#define SPECIAL_WKUP_DONE		PPC_BIT(1)
+> +
+> +
+> +static int core_set_special_wakeup(struct cpu_thread *cpu)
+> +{
+> +	uint32_t chip_id = pir_to_chip_id(cpu->pir);
+> +	uint32_t core_id = pir_to_core_id(cpu->pir);
+> +	uint32_t swake_addr;
+> +	uint32_t gpmmr_addr;
+> +	uint64_t val;
+> +	int i;
+> +
+> +	swake_addr = XSCOM_ADDR_P9_EC(core_id, PPM_SPWKUP_OTR);
+> +	gpmmr_addr = XSCOM_ADDR_P9_EC(core_id, PPM_GPMMR);
+> +
+> +	xscom_read(chip_id, swake_addr, &val);
+> +	if (xscom_write(chip_id, swake_addr, PPC_BIT(0))) {
+> +		prlog(PR_WARNING, "SRESET: Unable to write SPWKUP_OTR register\n");
+> +		return OPAL_HARDWARE;
+> +	}
+> +	xscom_read(chip_id, swake_addr, &val);
+> +
+> +	for (i = 0; i < 100; i++) {
+> +		if (xscom_read(chip_id, gpmmr_addr, &val)) {
+> +			prlog(PR_WARNING, "SRESET: Unable to read GPMMR register\n");
+> +			return OPAL_HARDWARE;
+> +		}
+> +		if (val & SPECIAL_WKUP_DONE)
+> +			return 0;
+> +
+> +		time_wait_us(1);
+> +	}
+> +
+> +	xscom_read(chip_id, swake_addr, &val);
+> +	xscom_write(chip_id, swake_addr, 0);
+> +	xscom_read(chip_id, swake_addr, &val);
+> +
+> +	prlog(PR_WARNING, "SRESET: Special wakeup mode could not be set.\n");
+> +	return OPAL_HARDWARE;
+> +}
+> +
+> +static void core_clear_special_wakeup(struct cpu_thread *cpu)
+> +{
+> +	uint32_t chip_id = pir_to_chip_id(cpu->pir);
+> +	uint32_t core_id = pir_to_core_id(cpu->pir);
+> +	uint32_t swake_addr;
+> +	uint64_t val;
+> +
+> +	swake_addr = XSCOM_ADDR_P9_EC(core_id, PPM_SPWKUP_OTR);
+> +
+> +	/* De-assert special wakeup bit */
+> +	xscom_read(chip_id, swake_addr, &val);
+> +	xscom_write(chip_id, swake_addr, 0);
+> +	xscom_read(chip_id, swake_addr, &val);
+> +}
+> +
+> +static int thread_quiesced(struct cpu_thread *cpu)
+> +{
+> +	uint32_t chip_id = pir_to_chip_id(cpu->pir);
+> +	uint32_t core_id = pir_to_core_id(cpu->pir);
+> +	uint32_t thread_id = pir_to_thread_id(cpu->pir);
+> +	uint32_t ras_addr;
+> +	uint64_t ras_status;
+> +
+> +	ras_addr = XSCOM_ADDR_P9_EC(core_id, P9_RAS_STATUS);
+> +	if (xscom_read(chip_id, ras_addr, &ras_status)) {
+> +		prlog(PR_WARNING, "SRESET: Unable to read status register\n");
+> +		return OPAL_HARDWARE;
+> +	}
+> +
+> +	if ((ras_status & P9_RSTAT_QUIESCED(thread_id))
+> +		   	== P9_RSTAT_QUIESCED(thread_id))
+> +		return 1;
+> +
+> +	return 0;
+> +}
+> +
+> +static int stop_thread(struct cpu_thread *cpu)
+> +{
+> +	uint32_t chip_id = pir_to_chip_id(cpu->pir);
+> +	uint32_t core_id = pir_to_core_id(cpu->pir);
+> +	uint32_t thread_id = pir_to_thread_id(cpu->pir);
+> +	uint32_t dctl_addr;
+> +	int i;
+> +
+> +	dctl_addr = XSCOM_ADDR_P9_EC(core_id, P9_DIRECT_CONTROLS);
+> +
+> +	xscom_write(chip_id, dctl_addr, P9_DCTL_STOP(thread_id));
+> +
+> +	for (i = 0; i < 100; i++) {
+> +		int rc = thread_quiesced(cpu);
+> +		if (rc < 0)
+> +			break;
+> +		if (rc)
+> +			return 0;
+> +	}
+> +
+> +	xscom_write(chip_id, dctl_addr, P9_DCTL_CONT(thread_id));
+> +	prlog(PR_WARNING, "SRESET: Could not quiesce thread\n");
+> +	return OPAL_HARDWARE;
+> +}
+> +
+> +static int sreset_thread(struct cpu_thread *cpu)
+> +{
+> +	uint32_t chip_id = pir_to_chip_id(cpu->pir);
+> +	uint32_t core_id = pir_to_core_id(cpu->pir);
+> +	uint32_t thread_id = pir_to_thread_id(cpu->pir);
+> +	uint32_t dctl_addr;
+> +	uint32_t cts_addr;
+> +	uint64_t cts_val;
+> +
+> +	dctl_addr = XSCOM_ADDR_P9_EC(core_id, P9_DIRECT_CONTROLS);
+> +	cts_addr = XSCOM_ADDR_P9_EC(core_id, P9_CORE_THREAD_STATE);
+> +
+> +	if (xscom_read(chip_id, cts_addr, &cts_val)) {
+> +		prlog(PR_WARNING, "SRESET: Unable to read CORE_THREAD_STATE register\n");
+> +		return OPAL_HARDWARE;
+> +	}
+> +	if (!(cts_val & P9_CTS_STOP(thread_id))) {
+> +		/* Clear SRR1[46:47] */
+> +		if (xscom_write(chip_id, dctl_addr, P9_DCTL_PWR(thread_id))) {
+> +			prlog(PR_WARNING, "SRESET: Unable to set power saving mode\n");
+> +			return OPAL_HARDWARE;
+> +		}
+> +	}
+> +
+> +	if (xscom_write(chip_id, dctl_addr, P9_DCTL_SRESET(thread_id))) {
+> +		prlog(PR_WARNING, "SRESET: Unable to write DIRECT_CONTROLS register\n");
+> +		return OPAL_HARDWARE;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +// static struct lock sreset_lock = LOCK_UNLOCKED;
+> +
+> +static int64_t sreset_cpu(struct cpu_thread *cpu)
+> +{
+> +	int rc;
+> +
+> +	if (this_cpu() == cpu) {
+> +		prlog(PR_WARNING, "SRESET: Unable to reset self\n");
+> +		return OPAL_UNSUPPORTED;
+> +	}
+> +	if (this_cpu()->primary == cpu->primary) {
+> +		prlog(PR_WARNING, "SRESET: Unable to reset threads on same core\n");
+> +		return OPAL_PARTIAL;
+> +	}
+> +
+> +	rc = thread_quiesced(cpu);
+> +	if (rc < 0)
+> +		return rc;
+> +	if (rc) {
+> +		prlog(PR_WARNING, "SRESET: Thread is quiesced already\n");
+> +		return OPAL_WRONG_STATE;
+> +	}
+> +
+> +	rc = core_set_special_wakeup(cpu);
+> +	if (rc)
+> +		return rc;
+> +
+> +	rc = stop_thread(cpu);
+> +	if (rc) {
+> +		core_clear_special_wakeup(cpu);
+> +		return rc;
+> +	}
+> +
+> +	rc = sreset_thread(cpu);
+> +
+> +	core_clear_special_wakeup(cpu);
+> +
+> +	return 0;
+> +}
+> +
+> +int64_t signal_system_reset(int cpu_nr)
+> +{
+> +	struct cpu_thread *cpu;
+> +
+> +	if (proc_gen != proc_gen_p9)
+> +		return OPAL_UNSUPPORTED;
+> +
+> +	/* Reset a single CPU */
+> +	if (cpu_nr >= 0) {
+> +		cpu = find_cpu_by_server(cpu_nr);
+> +		if (!cpu) {
+> +			printf("SRESET: could not find cpu by server %d\n", cpu_nr);
+> +			return OPAL_PARAMETER;
+> +		}
+> +		return sreset_cpu(cpu);
+> +	}
+> +	printf("SRESET: unsupported %d\n", cpu_nr);
+> +	return OPAL_PARTIAL;
+> +}
+> diff --git a/hw/xscom.c b/hw/xscom.c
+> index 7bd78bf9..f3e04291 100644
+> --- a/hw/xscom.c
+> +++ b/hw/xscom.c
+> @@ -705,6 +705,8 @@ static void xscom_init_chip_info(struct proc_chip *chip)
+>  		printf("P9 DD%i.%i%d detected\n", 0xf & (chip->ec_level >> 4),
+>  		       chip->ec_level & 0xf, rev);
+>  		chip->ec_rev = rev;
+> +
+> +		opal_register(OPAL_SIGNAL_SYSTEM_RESET, signal_system_reset, 1);
+>  	}
+>  }
+>  
+> diff --git a/include/skiboot.h b/include/skiboot.h
+> index 4b7d5197..37fd774f 100644
+> --- a/include/skiboot.h
+> +++ b/include/skiboot.h
+> @@ -198,6 +198,9 @@ extern char __sym_map_end[];
+>  extern unsigned long get_symbol(unsigned long addr,
+>  				char **sym, char **sym_end);
+>  
+> +/* System reset */
+> +extern int64_t signal_system_reset(int cpu_nr);
+> +
+>  /* Fast reboot support */
+>  extern void disable_fast_reboot(const char *reason);
+>  extern void fast_reboot(void);
+> diff --git a/platforms/mambo/mambo.c b/platforms/mambo/mambo.c
+> index cb6e103c..e306ba5c 100644
+> --- a/platforms/mambo/mambo.c
+> +++ b/platforms/mambo/mambo.c
+> @@ -259,7 +259,8 @@ static int64_t mambo_signal_system_reset(int32_t cpu_nr)
+>  
+>  static void mambo_sreset_init(void)
+>  {
+> -	opal_register(OPAL_SIGNAL_SYSTEM_RESET, mambo_signal_system_reset, 1);
+> +	if (0)
+> +		opal_register(OPAL_SIGNAL_SYSTEM_RESET, mambo_signal_system_reset, 1);
+>  }
+>  
+>  static void mambo_platform_init(void)
