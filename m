@@ -3,43 +3,38 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xsrzZ62LyzDqpb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:18:18 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xst0K2gGSzDqp3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:04:01 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8DJFPij100753
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 15:18:15 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cy5jj9478-1
+ v8DK3wRD107205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 16:03:58 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cy9umehw9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 15:18:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 16:03:57 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 14 Sep 2017 05:18:12 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8DJGsQA37486768
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:16:54 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8DJGrgU011932
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:16:54 +1000
-Date: Thu, 14 Sep 2017 00:46:50 +0530
+ Thu, 14 Sep 2017 06:03:50 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v8DK3mno41287682
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:03:48 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v8DK3l4X024886
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:03:48 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ingo Molnar <mingo@kernel.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Oleg Nesterov <oleg@redhat.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] uprobe: Warn if unable to install breakpoint
-References: <20170831183215.4306-1-naveen.n.rao@linux.vnet.ibm.com>
- <87r2vr57jq.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87r2vr57jq.fsf@concordia.ellerman.id.au>
-Message-Id: <20170913191650.f57qytp7ztvwihy6@naverao1-tp.localdomain>
+To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH] powerpc/uprobes: Fixup si_addr if we took an exception
+ while single stepping
+Date: Thu, 14 Sep 2017 01:33:30 +0530
+Message-Id: <20170913200330.15606-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,53 +44,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/09/01 03:09PM, Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> 
-> > When we try to install a uprobe breakpoint in uprobe_mmap(), we ignore
-> > all errors encountered in the process per this comment at the top of
-> > the function:
-> >     /*
-> >      * Called from mmap_region/vma_adjust with mm->mmap_sem acquired.
-> >      *
-> >      * Currently we ignore all errors and always return 0, the callers
-> >      * can't handle the failure anyway.
-> >      */
-> >
-> > However, this is very confusing for users since no probe hits are
-> > recorded nor is an error logged in dmesg.
-> >
-> > Fix this by logging an error in dmesg so that users can discover that
-> > there was an issue with the uprobe. To facilitate use of uprobe_warn(),
-> > we move that function to the top of the file.
-> >
-> > With this patch, we see a message similar to this in dmesg:
-> >     [  201.449213] uprobe: uprobe_t:9740 failed to setup probe at 0x95c (-524)
-> >
-> > Reported-by: Anton Blanchard <anton@samba.org>
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> >  kernel/events/uprobes.c | 21 ++++++++++++++-------
-> >  1 file changed, 14 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
-> > index 0e137f98a50c..587c591a535c 100644
-> > --- a/kernel/events/uprobes.c
-> > +++ b/kernel/events/uprobes.c
-> > @@ -112,6 +112,12 @@ struct xol_area {
-> >  	unsigned long 			vaddr;		/* Page(s) of instruction slots */
-> >  };
-> >  
-> > +static void uprobe_warn(struct task_struct *t, const char *msg)
-> > +{
-> > +	pr_warn("uprobe: %s:%d failed to %s\n",
-> > +			current->comm, current->pid, msg);
-> 
-> That should probably be ratelimited no?
+If the single-stepped instruction causes an exception, we may end up
+setting siginfo.si_addr to the address of the uprobe xol area. This is
+not desirable since the address won't make sense for the process if it
+wants to handle the exception. Fixup the si_addr field in such cases.
 
-Uprobes can only be installed by root today, so it is not as bad. But, I 
-do agree that it is good to ratelimit. I will send a subsequent patch to 
-do this.
+Reported-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/uprobes.h |  7 +++++++
+ arch/powerpc/kernel/traps.c        |  4 ++++
+ arch/powerpc/kernel/uprobes.c      | 17 +++++++++++++++++
+ 3 files changed, 28 insertions(+)
 
-Thanks for the review,
-- Naveen
+diff --git a/arch/powerpc/include/asm/uprobes.h b/arch/powerpc/include/asm/uprobes.h
+index 7422a999a39a..13fc6af3c1fd 100644
+--- a/arch/powerpc/include/asm/uprobes.h
++++ b/arch/powerpc/include/asm/uprobes.h
+@@ -23,6 +23,7 @@
+  */
+ 
+ #include <linux/notifier.h>
++#include <asm/siginfo.h>
+ #include <asm/probes.h>
+ 
+ typedef ppc_opcode_t uprobe_opcode_t;
+@@ -45,4 +46,10 @@ struct arch_uprobe_task {
+ 	unsigned long	saved_trap_nr;
+ };
+ 
++#ifdef CONFIG_UPROBES
++extern void uprobe_fixup_exception(struct pt_regs *regs, siginfo_t *info);
++#else
++static inline void uprobe_fixup_exception(struct pt_regs *regs, siginfo_t *info) { }
++#endif
++
+ #endif	/* _ASM_UPROBES_H */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index ec74e203ee04..1bb858a37029 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -66,6 +66,7 @@
+ #include <asm/hmi.h>
+ #include <sysdev/fsl_pci.h>
+ #include <asm/kprobes.h>
++#include <asm/uprobes.h>
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC_CORE)
+ int (*__debugger)(struct pt_regs *regs) __read_mostly;
+@@ -292,6 +293,9 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+ 	info.si_signo = signr;
+ 	info.si_code = code;
+ 	info.si_addr = (void __user *) addr;
++
++	uprobe_fixup_exception(regs, &info);
++
+ 	force_sig_info(signr, &info, current);
+ }
+ 
+diff --git a/arch/powerpc/kernel/uprobes.c b/arch/powerpc/kernel/uprobes.c
+index 5d105b8eeece..a361a56e6210 100644
+--- a/arch/powerpc/kernel/uprobes.c
++++ b/arch/powerpc/kernel/uprobes.c
+@@ -25,6 +25,7 @@
+ #include <linux/uprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
++#include <linux/signal.h>
+ 
+ #include <asm/sstep.h>
+ 
+@@ -214,3 +215,19 @@ bool arch_uretprobe_is_alive(struct return_instance *ret, enum rp_check ctx,
+ 	else
+ 		return regs->gpr[1] < ret->stack;
+ }
++
++void uprobe_fixup_exception(struct pt_regs *regs, siginfo_t *info)
++{
++	struct task_struct *t = current;
++	struct uprobe_task *utask = t->utask;
++
++	if (likely(!utask || !utask->active_uprobe))
++		return;
++
++	/*
++	 * We reset si_addr here.
++	 * regs->nip is reset during our way back through uprobe_deny_signal()
++	 */
++	if (info->si_addr == (void __user *) utask->xol_vaddr)
++		info->si_addr = (void __user *) utask->vaddr;
++}
+-- 
+2.14.1
