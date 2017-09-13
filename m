@@ -3,19 +3,19 @@ Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
  [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xsWWQ683HzDrJ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 16:11:14 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id m30so2254825pgn.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2017 23:11:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xsWWT2rjyzDqlw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 16:11:17 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id d8so7219238pgt.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Sep 2017 23:11:17 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: mpe@ellerman.id.au,
 	npiggin@gmail.com,
 	mahesh@linux.vnet.ibm.com
 Cc: linuxppc-dev@lists.ozlabs.org,
 	Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v2 4/5] powerpc/mce: Hookup ierror (instruction) UE errors
-Date: Wed, 13 Sep 2017 16:10:48 +1000
-Message-Id: <20170913061049.13256-5-bsingharora@gmail.com>
+Subject: [PATCH v2 5/5] powerpc/mce: hookup memory_failure for UE errors
+Date: Wed, 13 Sep 2017 16:10:49 +1000
+Message-Id: <20170913061049.13256-6-bsingharora@gmail.com>
 In-Reply-To: <20170913061049.13256-1-bsingharora@gmail.com>
 References: <20170913061049.13256-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,63 +27,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hookup instruction errors (UE) for memory offling via memory_failure()
-in a manner similar to load/store errors (derror). Since we have access
-to the NIP, the conversion is a one step process in this case.
+If we are in user space and hit a UE error, we now have the
+basic infrastructure to walk the page tables and find out
+the effective address that was accessed, since the DAR
+is not valid.
+
+We use a work_queue content to hookup the bad pfn, any
+other context causes problems, since memory_failure itself
+can call into schedule() via lru_drain_ bits.
+
+We could probably poison the struct page to avoid a race
+between detection and taking corrective action.
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/kernel/mce_power.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/mce.c | 67 ++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 64 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index 2dfbbe0..3bc9500 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -488,7 +488,8 @@ static int mce_find_instr_ea_and_pfn(struct pt_regs *regs, uint64_t *addr,
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index c7acc33..f20345a 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -39,11 +39,21 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
+ static DEFINE_PER_CPU(int, mce_queue_count);
+ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
  
- static int mce_handle_ierror(struct pt_regs *regs,
- 		const struct mce_ierror_table table[],
--		struct mce_error_info *mce_err, uint64_t *addr)
-+		struct mce_error_info *mce_err, uint64_t *addr,
-+		uint64_t *phys_addr)
++/* Queue for delayed MCE UE events. */
++static DEFINE_PER_CPU(int, mce_ue_count);
++static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT],
++					mce_ue_event_queue);
++
+ static void machine_check_process_queued_event(struct irq_work *work);
++void machine_check_ue_event(struct machine_check_event *evt);
++static void machine_process_ue_event(struct work_struct *work);
++
+ static struct irq_work mce_event_process_work = {
+         .func = machine_check_process_queued_event,
+ };
+ 
++DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
++
+ static void mce_set_error_info(struct machine_check_event *mce,
+ 			       struct mce_error_info *mce_err)
  {
- 	uint64_t srr1 = regs->msr;
- 	int handled = 0;
-@@ -540,8 +541,23 @@ static int mce_handle_ierror(struct pt_regs *regs,
+@@ -143,6 +153,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
+ 		if (phys_addr != ULONG_MAX) {
+ 			mce->u.ue_error.physical_address_provided = true;
+ 			mce->u.ue_error.physical_address = phys_addr;
++			machine_check_ue_event(mce);
  		}
- 		mce_err->severity = table[i].severity;
- 		mce_err->initiator = table[i].initiator;
--		if (table[i].nip_valid)
-+		if (table[i].nip_valid) {
- 			*addr = regs->nip;
-+			if (mce_err->severity == MCE_SEV_ERROR_SYNC &&
-+				table[i].error_type == MCE_ERROR_TYPE_UE) {
-+				unsigned long pfn;
-+				struct mm_struct *mm;
-+
-+				if (user_mode(regs))
-+					mm = current->mm;
-+				else
-+					mm = &init_mm;
-+
-+				pfn = addr_to_pfn(mm, regs->nip);
-+				if (pfn != ULONG_MAX)
-+					*phys_addr = pfn;
-+			}
-+		}
- 		return handled;
  	}
+ 	return;
+@@ -197,6 +208,26 @@ void release_mce_event(void)
+ 	get_mce_event(NULL, true);
+ }
  
-@@ -669,7 +685,8 @@ static long mce_handle_error(struct pt_regs *regs,
- 		handled = mce_handle_derror(regs, dtable, &mce_err, &addr,
- 				&phys_addr);
- 	else
--		handled = mce_handle_ierror(regs, itable, &mce_err, &addr);
-+		handled = mce_handle_ierror(regs, itable, &mce_err, &addr,
-+				&phys_addr);
++
++/*
++ * Queue up the MCE event which then can be handled later.
++ */
++void machine_check_ue_event(struct machine_check_event *evt)
++{
++	int index;
++
++	index = __this_cpu_inc_return(mce_ue_count) - 1;
++	/* If queue is full, just return for now. */
++	if (index >= MAX_MC_EVT) {
++		__this_cpu_dec(mce_ue_count);
++		return;
++	}
++	memcpy(this_cpu_ptr(&mce_ue_event_queue[index]), evt, sizeof(*evt));
++
++	/* Queue work to process this event later. */
++	schedule_work(&mce_ue_event_work);
++}
++
+ /*
+  * Queue up the MCE event which then can be handled later.
+  */
+@@ -219,7 +250,36 @@ void machine_check_queue_event(void)
+ 	/* Queue irq work to process this event later. */
+ 	irq_work_queue(&mce_event_process_work);
+ }
+-
++/*
++ * process pending MCE event from the mce event queue. This function will be
++ * called during syscall exit.
++ */
++static void machine_process_ue_event(struct work_struct *work)
++{
++	int index;
++	struct machine_check_event *evt;
++
++	while (__this_cpu_read(mce_ue_count) > 0) {
++		index = __this_cpu_read(mce_ue_count) - 1;
++		evt = this_cpu_ptr(&mce_ue_event_queue[index]);
++#ifdef CONFIG_MEMORY_FAILURE
++		/*
++		 * This should probably queued elsewhere, but
++		 * oh! well
++		 */
++		if (evt->error_type == MCE_ERROR_TYPE_UE) {
++			if (evt->u.ue_error.physical_address_provided)
++				memory_failure(evt->u.ue_error.physical_address,
++						SIGBUS, 0);
++			else
++				pr_warn("Failed to identify bad address from "
++					"where the uncorrectable error (UE) "
++					"was generated\n");
++		}
++#endif
++		__this_cpu_dec(mce_ue_count);
++	}
++}
+ /*
+  * process pending MCE event from the mce event queue. This function will be
+  * called during syscall exit.
+@@ -227,6 +287,7 @@ void machine_check_queue_event(void)
+ static void machine_check_process_queued_event(struct irq_work *work)
+ {
+ 	int index;
++	struct machine_check_event *evt;
  
- 	if (!handled && mce_err.error_type == MCE_ERROR_TYPE_UE)
- 		handled = mce_handle_ue_error(regs);
+ 	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
+ 
+@@ -236,8 +297,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
+ 	 */
+ 	while (__this_cpu_read(mce_queue_count) > 0) {
+ 		index = __this_cpu_read(mce_queue_count) - 1;
+-		machine_check_print_event_info(
+-				this_cpu_ptr(&mce_event_queue[index]), false);
++		evt = this_cpu_ptr(&mce_event_queue[index]);
++		machine_check_print_event_info(evt, false);
+ 		__this_cpu_dec(mce_queue_count);
+ 	}
+ }
 -- 
 2.9.5
