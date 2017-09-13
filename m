@@ -1,47 +1,45 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xsnrB0N10zDrKj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 02:56:41 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xsrzZ62LyzDqpb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:18:18 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8DGthZL070161
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 12:56:39 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2cy58jk098-1
+ v8DJFPij100753
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 15:18:15 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cy5jj9478-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 12:56:38 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 15:18:14 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 13 Sep 2017 17:56:34 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 04/20] mm: VMA sequence count
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1504894024-2750-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1504894024-2750-5-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170913115354.GA7756@jagdpanzerIV.localdomain>
-Date: Wed, 13 Sep 2017 18:56:25 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 14 Sep 2017 05:18:12 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v8DJGsQA37486768
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:16:54 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v8DJGrgU011932
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:16:54 +1000
+Date: Thu, 14 Sep 2017 00:46:50 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ingo Molnar <mingo@kernel.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] uprobe: Warn if unable to install breakpoint
+References: <20170831183215.4306-1-naveen.n.rao@linux.vnet.ibm.com>
+ <87r2vr57jq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20170913115354.GA7756@jagdpanzerIV.localdomain>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <44849c10-bc67-b55e-5788-d3c6bb5e7ad1@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87r2vr57jq.fsf@concordia.ellerman.id.au>
+Message-Id: <20170913191650.f57qytp7ztvwihy6@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,128 +49,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sergey,
+On 2017/09/01 03:09PM, Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> 
+> > When we try to install a uprobe breakpoint in uprobe_mmap(), we ignore
+> > all errors encountered in the process per this comment at the top of
+> > the function:
+> >     /*
+> >      * Called from mmap_region/vma_adjust with mm->mmap_sem acquired.
+> >      *
+> >      * Currently we ignore all errors and always return 0, the callers
+> >      * can't handle the failure anyway.
+> >      */
+> >
+> > However, this is very confusing for users since no probe hits are
+> > recorded nor is an error logged in dmesg.
+> >
+> > Fix this by logging an error in dmesg so that users can discover that
+> > there was an issue with the uprobe. To facilitate use of uprobe_warn(),
+> > we move that function to the top of the file.
+> >
+> > With this patch, we see a message similar to this in dmesg:
+> >     [  201.449213] uprobe: uprobe_t:9740 failed to setup probe at 0x95c (-524)
+> >
+> > Reported-by: Anton Blanchard <anton@samba.org>
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> >  kernel/events/uprobes.c | 21 ++++++++++++++-------
+> >  1 file changed, 14 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
+> > index 0e137f98a50c..587c591a535c 100644
+> > --- a/kernel/events/uprobes.c
+> > +++ b/kernel/events/uprobes.c
+> > @@ -112,6 +112,12 @@ struct xol_area {
+> >  	unsigned long 			vaddr;		/* Page(s) of instruction slots */
+> >  };
+> >  
+> > +static void uprobe_warn(struct task_struct *t, const char *msg)
+> > +{
+> > +	pr_warn("uprobe: %s:%d failed to %s\n",
+> > +			current->comm, current->pid, msg);
+> 
+> That should probably be ratelimited no?
 
-On 13/09/2017 13:53, Sergey Senozhatsky wrote:
-> Hi,
-> 
-> On (09/08/17 20:06), Laurent Dufour wrote:
-> [..]
->> @@ -903,6 +910,7 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>  		mm->map_count--;
->>  		mpol_put(vma_policy(next));
->>  		kmem_cache_free(vm_area_cachep, next);
->> +		write_seqcount_end(&next->vm_sequence);
->>  		/*
->>  		 * In mprotect's case 6 (see comments on vma_merge),
->>  		 * we must remove another next too. It would clutter
->> @@ -932,11 +940,14 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>  		if (remove_next == 2) {
->>  			remove_next = 1;
->>  			end = next->vm_end;
->> +			write_seqcount_end(&vma->vm_sequence);
->>  			goto again;
->> -		}
->> -		else if (next)
->> +		} else if (next) {
->> +			if (next != vma)
->> +				write_seqcount_begin_nested(&next->vm_sequence,
->> +							    SINGLE_DEPTH_NESTING);
->>  			vma_gap_update(next);
->> -		else {
->> +		} else {
->>  			/*
->>  			 * If remove_next == 2 we obviously can't
->>  			 * reach this path.
->> @@ -962,6 +973,10 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>  	if (insert && file)
->>  		uprobe_mmap(insert);
->>  
->> +	if (next && next != vma)
->> +		write_seqcount_end(&next->vm_sequence);
->> +	write_seqcount_end(&vma->vm_sequence);
-> 
-> 
-> ok, so what I got on my box is:
-> 
-> vm_munmap()  -> down_write_killable(&mm->mmap_sem)
->  do_munmap()
->   __split_vma()
->    __vma_adjust()  -> write_seqcount_begin(&vma->vm_sequence)
->                    -> write_seqcount_begin_nested(&next->vm_sequence, SINGLE_DEPTH_NESTING)
-> 
-> so this gives 3 dependencies  ->mmap_sem   ->   ->vm_seq
->                               ->vm_seq     ->   ->vm_seq/1
->                               ->mmap_sem   ->   ->vm_seq/1
-> 
-> 
-> SyS_mremap() -> down_write_killable(&current->mm->mmap_sem)
->  move_vma()   -> write_seqcount_begin(&vma->vm_sequence)
->               -> write_seqcount_begin_nested(&new_vma->vm_sequence, SINGLE_DEPTH_NESTING);
->   move_page_tables()
->    __pte_alloc()
->     pte_alloc_one()
->      __alloc_pages_nodemask()
->       fs_reclaim_acquire()
-> 
-> 
-> I think here we have prepare_alloc_pages() call, that does
-> 
->         -> fs_reclaim_acquire(gfp_mask)
->         -> fs_reclaim_release(gfp_mask)
-> 
-> so that adds one more dependency  ->mmap_sem   ->   ->vm_seq    ->   fs_reclaim
->                                   ->mmap_sem   ->   ->vm_seq/1  ->   fs_reclaim
-> 
-> 
-> now, under memory pressure we hit the slow path and perform direct
-> reclaim. direct reclaim is done under fs_reclaim lock, so we end up
-> with the following call chain
-> 
-> __alloc_pages_nodemask()
->  __alloc_pages_slowpath()
->   __perform_reclaim()       ->   fs_reclaim_acquire(gfp_mask);
->    try_to_free_pages()
->     shrink_node()
->      shrink_active_list()
->       rmap_walk_file()      ->   i_mmap_lock_read(mapping);
-> 
-> 
-> and this break the existing dependency. since we now take the leaf lock
-> (fs_reclaim) first and the the root lock (->mmap_sem).
+Uprobes can only be installed by root today, so it is not as bad. But, I 
+do agree that it is good to ratelimit. I will send a subsequent patch to 
+do this.
 
-Thanks for looking at this.
-I'm sorry, I should have miss something.
-
-My understanding is that there are 2 chains of locks:
- 1. from __vma_adjust() mmap_sem -> i_mmap_rwsem -> vm_seq
- 2. from move_vmap() mmap_sem -> vm_seq -> fs_reclaim
- 2. from __alloc_pages_nodemask() fs_reclaim -> i_mmap_rwsem
-
-So the solution would be to have in __vma_adjust()
- mmap_sem -> vm_seq -> i_mmap_rwsem
-
-But this will raised the following dependency from  unmap_mapping_range()
-unmap_mapping_range() 		-> i_mmap_rwsem
- unmap_mapping_range_tree()
-  unmap_mapping_range_vma()
-   zap_page_range_single()
-    unmap_single_vma()
-     unmap_page_range()	 	-> vm_seq
-
-And there is no way to get rid of it easily as in unmap_mapping_range()
-there is no VMA identified yet.
-
-That's being said I can't see any clear way to get lock dependency cleaned
-here.
-Furthermore, this is not clear to me how a deadlock could happen as vm_seq
-is a sequence lock, and there is no way to get blocked here.
-
-Cheers,
-Laurent.
-
-> 
-> well, seems to be the case.
-> 
-> 	-ss
-> 
+Thanks for the review,
+- Naveen
