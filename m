@@ -1,25 +1,31 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xstw43j2RzDqsP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:45:24 +1000 (AEST)
-Date: Thu, 14 Sep 2017 06:45:20 +1000
-In-Reply-To: <20170913181116.7c202661@kitsune.suse.cz>
-References: <20170720015322.24307-1-npiggin@gmail.com>
- <3xNQyy1Ck3z9s7v@ozlabs.org> <20170913181116.7c202661@kitsune.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xsxwt5W8QzDrCn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 09:01:18 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id m30so738332pgn.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 16:01:18 -0700 (PDT)
+Date: Wed, 13 Sep 2017 16:01:48 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Arnaud Mouiche <arnaud.mouiche@invoxia.com>
+Cc: broonie@kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ tiwai@suse.com, perex@perex.cz, lgirdwood@gmail.com,
+ fabio.estevam@nxp.com, timur@tabi.org, lukma@denx.de,
+ caleb@crome.org, max.krummenacher@toradex.com, mpa@pengutronix.de,
+ mail@maciej.szmigiero.name
+Subject: Re: [PATCH] ASoC: fsl_ssi: Override bit clock rate based on slot
+ number
+Message-ID: <20170913230147.GA21287@Asurada-Nvidia>
+References: <1504848223-3376-1-git-send-email-nicoleotsuka@gmail.com>
+ <2020d72a-4517-55d0-59a1-171c71f91c7b@invoxia.com>
+ <20170912213233.GA11419@Asurada-Nvidia>
+ <fdb71350-0b89-8c5a-9ed0-c744bb6f2118@invoxia.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----DEHMNEACHNVZ4ZG39C0JTOSRY347M2"
-Subject: Re: POWER9 PMU stops after idle workaround
-To: =?ISO-8859-1?Q?Michal_Such=E1nek?= <msuchanek@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>
-CC: Michael Ellerman <patch-notifications@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, Madhavan Srinivasan <masriniv@in.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <michael@ellerman.id.au>
-Message-ID: <28856C53-7CC6-4250-909E-27FD80029F19@ellerman.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fdb71350-0b89-8c5a-9ed0-c744bb6f2118@invoxia.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,95 +35,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------DEHMNEACHNVZ4ZG39C0JTOSRY347M2
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, Sep 13, 2017 at 10:02:20AM +0200, Arnaud Mouiche wrote:
 
-Yeah I messed up the subject when comitting, from memory, so I had to rebas=
-e and force push=2E
+> >Could you please give me a few set of examples of how you set
+> >set_sysclk(), set_tdm_slot() with the current driver? The idea
+> >here is to figure out a way to calculate the bclk in hw_params
+> >without getting set_sysclk() involved any more.
 
-I think this is it:
+> Here is one, where a bclk = 4*16*fs is expected
 
-https://git=2Ekernel=2Eorg/pub/scm/linux/kernel/git/powerpc/linux=2Egit/co=
-mmit/?id=3D09539f9b123652e969894d6299ae0df2fe12cb5d
+> In another setup, there are 8 x 16 bits slots, whatever the number
+> of active channels is.
+> In this case bclk = 128 * fs
+> The number of slots is completely arbitrary. Some slots can even be
+> reserved for communication between codecs that don't communicate
+> with linux.
 
-cheers
+In summary, bclk = sample rate * slots * slot_width;
 
+I will update my patch soon.
 
+> >Unfortunately, it looks like a work around to me. I understand
+> >the idea of leaving set_sysclk() out there to override the bit
+> >clock is convenient, but it is not a standard ALSA design and
+> >may eventually introduce new problems like today.
+> 
+> I agree. I'm not conservative at all concerning this question.
+> I don't see a way to remove set_sysclk without breaking current TDM
+> users anyway, at least for those who don't have their code
+> upstreamed.
 
-On 14 September 2017 2:11:16 am AEST, "Michal Such=C3=A1nek" <msuchanek@su=
-se=2Ede> wrote:
->On Thu,  3 Aug 2017 20:19:38 +1000 (AEST)
->Michael Ellerman <patch-notifications@ellerman=2Eid=2Eau> wrote:
->
->> On Thu, 2017-07-20 at 01:53:22 UTC, Nicholas Piggin wrote:
->> > POWER9 DD2 PMU can stop after a state-loss idle in some conditions=2E
->> >=20
->> > A solution is to set then clear MMCRA[60] after wake from
->state-loss
->> > idle=2E
->> >=20
->> > Signed-off-by: Nicholas Piggin <npiggin@gmail=2Ecom>
->> > Acked-by: Madhavan Srinivasan <maddy@linux=2Evnet=2Eibm=2Ecom>
->> > Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux=2Evnet=2Eibm=2Ecom=
->
->> > Acked-by: Anton Blanchard <anton@samba=2Eorg> =20
->>=20
->> Applied to powerpc fixes, thanks=2E
->>=20
->> https://git=2Ekernel=2Eorg/powerpc/c/bdd21ddb919d28f9c62cdc6286cac9
->>=20
->> cheers
->
->Not there anymore=2E I see this only in the merge branch=2E
->
->Thanks
->
->Michal
+Which TDM case would be broken by this removal? The only impact
+that I can see is that the ASoC core returns an ENOTSUPP for a
+set_sysclk() call now, which is something that a dai-link driver
+should have taken care of anyway.
 
---=20
-Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E
-------DEHMNEACHNVZ4ZG39C0JTOSRY347M2
-Content-Type: text/html;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+> All information provided through snd_soc_dai_set_tdm_slot( cpu_dai,
+> mask, mask, slots, width ) should be enough
+> In this case, for TDM users
+> 
+>    bclk = slots * width * fs   (where slots is != channels)
 
-<html><head></head><body>Yeah I messed up the subject when comitting, from =
-memory, so I had to rebase and force push=2E<br>
-<br>
-I think this is it:<br>
-<br>
-<a href=3D"https://git=2Ekernel=2Eorg/pub/scm/linux/kernel/git/powerpc/lin=
-ux=2Egit/commit/?id=3D09539f9b123652e969894d6299ae0df2fe12cb5d">https://git=
-=2Ekernel=2Eorg/pub/scm/linux/kernel/git/powerpc/linux=2Egit/commit/?id=3D0=
-9539f9b123652e969894d6299ae0df2fe12cb5d</a><br>
-<br>
-cheers<br>
-<br>
-<br><br><div class=3D"gmail_quote">On 14 September 2017 2:11:16 am AEST, &=
-quot;Michal Such=C3=A1nek&quot; &lt;msuchanek@suse=2Ede&gt; wrote:<blockquo=
-te class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0=2E8ex; border-left:=
- 1px solid rgb(204, 204, 204); padding-left: 1ex;">
-<pre class=3D"k9mail">On Thu,  3 Aug 2017 20:19:38 +1000 (AEST)<br />Micha=
-el Ellerman &lt;patch-notifications@ellerman=2Eid=2Eau&gt; wrote:<br /><br =
-/><blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 1ex 0=2E8ex; b=
-order-left: 1px solid #729fcf; padding-left: 1ex;"> On Thu, 2017-07-20 at 0=
-1:53:22 UTC, Nicholas Piggin wrote:<br /><blockquote class=3D"gmail_quote" =
-style=3D"margin: 0pt 0pt 1ex 0=2E8ex; border-left: 1px solid #ad7fa8; paddi=
-ng-left: 1ex;"> POWER9 DD2 PMU can stop after a state-loss idle in some con=
-ditions=2E<br /> <br /> A solution is to set then clear MMCRA[60] after wak=
-e from state-loss<br /> idle=2E<br /> <br /> Signed-off-by: Nicholas Piggin=
- &lt;npiggin@gmail=2Ecom&gt;<br /> Acked-by: Madhavan Srinivasan &lt;maddy@=
-linux=2Evnet=2Eibm=2Ecom&gt;<br /> Reviewed-by: Vaidyanathan Srinivasan &lt=
-;svaidy@linux=2Evnet=2Eibm=2Ecom&gt;<br /> Acked-by: Anton Blanchard &lt;an=
-ton@samba=2Eorg&gt;  <br /></blockquote> <br /> Applied to powerpc fixes, t=
-hanks=2E<br /> <br /> <a href=3D"https://git=2Ekernel=2Eorg/powerpc/c/bdd21=
-ddb919d28f9c62cdc6286cac9">https://git=2Ekernel=2Eorg/powerpc/c/bdd21ddb919=
-d28f9c62cdc6286cac9</a><br /> <br /> cheers<br /></blockquote><br />Not the=
-re anymore=2E I see this only in the merge branch=2E<br /><br />Thanks<br /=
-><br />Michal<br /><br /></pre></blockquote></div><br>
--- <br>
-Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E</b=
-ody></html>
-------DEHMNEACHNVZ4ZG39C0JTOSRY347M2--
+> will manage 99 % of the cases.
+> And the remaining 1% will concern people who need to hack the kernel
+> so widely they don't care about the set_sysclk removal.
+
+A patch from those people will be always welcome.
+
+> - fsl-asoc-card.c : *something will break since
+> snd_soc_dai_set_sysclk returned code is checked*
+
+I've already submitted a patch to ignore all ENOTSUPP.
