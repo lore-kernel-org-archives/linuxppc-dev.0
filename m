@@ -1,18 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Date: Wed, 13 Sep 2017 23:27:16 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org, Alistair Popple
- <alistair@popple.id.au>
-Subject: Re: [RFC PATCH 1/2] core: implement OPAL_SIGNAL_SYSTEM_RESET with
- POWER9 scoms
-Message-ID: <20170913232716.138ca093@roar.ozlabs.ibm.com>
-In-Reply-To: <1505258314.12628.151.camel@kernel.crashing.org>
-References: <20170912160553.13422-1-npiggin@gmail.com>
- <20170912160553.13422-2-npiggin@gmail.com>
- <1505258314.12628.151.camel@kernel.crashing.org>
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xskR71B6pzDrJm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 00:23:14 +1000 (AEST)
+Subject: [PATCH] powerpc: Fix handling of alignment interrupt on dcbz
+ instruction
+To: Michal Sojka <sojkam1@fel.cvut.cz>,
+ Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
+References: <20170913045124.GA5071@fergus.ozlabs.ibm.com>
+ <56511543-E4A4-45B9-8BE3-A8FA2D8BCE0E@ellerman.id.au>
+ <87ingnyspl.fsf@steelpick.2x.cz>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <2a58c736-9daa-6cfa-a5b3-284a019e33dc@xenosoft.de>
+Date: Wed, 13 Sep 2017 16:23:02 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <87ingnyspl.fsf@steelpick.2x.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,24 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 Sep 2017 09:18:34 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On 13 September 2017 at 09:15AM, Michal Sojka wrote:
+> On Wed, Sep 13 2017, Michael Ellerman wrote:
+>> Michal, Christian, can you please confirm this fixes the problems you
+>> were seeing.
+> Yes, it fixes my problem. Thanks.
+>
+> -Michal
+>
+It also fixes my problem. Many thanks!
 
-> On Wed, 2017-09-13 at 02:05 +1000, Nicholas Piggin wrote:
-> > This implements a way to raise system reset interrupts on other
-> > cores. This has not yet been tested on DD2 or with deeper sleep
-> > states.  
-> 
-> Reminds me, we need to workaround a bug with XSCOMs on P9
-> 
-> PSCOMs to core in the range 20010A80-20010Ab8 (list below) can fail
-> occasionally with an error of 4 (PCB_ADDRESS_ERROR). We need to
-> (silently) retry up to 32 times.
-
-[snip]
-
-So, just put a loop into xscom_read and xscom_write for those
-addresses for P9 chips?
-
-Thanks,
-Nick
+-- Christian
