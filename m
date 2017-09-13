@@ -1,23 +1,33 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x242.google.com (mail-vk0-x242.google.com
+ [IPv6:2607:f8b0:400c:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xsXSN0WcczDqlw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 16:53:40 +1000 (AEST)
-Date: Wed, 13 Sep 2017 16:53:34 +1000
-In-Reply-To: <20170913045124.GA5071@fergus.ozlabs.ibm.com>
-References: <20170913045124.GA5071@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xsYrF1NyFzDr2L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 17:55:56 +1000 (AEST)
+Received: by mail-vk0-x242.google.com with SMTP id j189so3295880vka.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 00:55:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----9Y8GLQBIIT65PSDGMBMIISFIEIJMLP"
-Subject: Re: [PATCH] powerpc: Fix handling of alignment interrupt on dcbz
- instruction
-To: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
- linuxppc-dev@ozlabs.org
-CC: Michal Sojka <sojkam1@fel.cvut.cz>,
- Christian Zigotzky <chzigotzky@xenosoft.de>
-From: Michael Ellerman <michael@ellerman.id.au>
-Message-ID: <56511543-E4A4-45B9-8BE3-A8FA2D8BCE0E@ellerman.id.au>
+In-Reply-To: <1504910713-7094-2-git-send-email-linuxram@us.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-2-git-send-email-linuxram@us.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 13 Sep 2017 17:55:53 +1000
+Message-ID: <CAKTCnzmBhDzYiKtieV-7RKAXRqpjwvcw6J+9wdX_8d1_PBvEZw@mail.gmail.com>
+Subject: Re: [PATCH 1/7] powerpc: introduce pte_set_hash_slot() helper
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+ "Haren Myneni/Beaverton/IBM" <hbabu@us.ibm.com>,
+ Michal Hocko <mhocko@kernel.org>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,80 +37,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------9Y8GLQBIIT65PSDGMBMIISFIEIJMLP
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-Michal, Christian, can you please confirm this fixes the problems you were =
-seeing=2E
-
-cheers
-
-On 13 September 2017 2:51:24 pm AEST, Paul Mackerras <paulus@ozlabs=2Eorg>=
- wrote:
->This fixes the emulation of the dcbz instruction in the alignment
->interrupt handler=2E  The error was that we were comparing just the
->instruction type field of op=2Etype rather than the whole thing,
->and therefore the comparison "type !=3D CACHEOP + DCBZ" was always
->true=2E
+On Sat, Sep 9, 2017 at 8:44 AM, Ram Pai <linuxram@us.ibm.com> wrote:
+> Introduce pte_set_hash_slot().It  sets the (H_PAGE_F_SECOND|H_PAGE_F_GIX)
+> bits at  the   appropriate   location   in   the   PTE  of  4K  PTE.  For
+> 64K PTE, it  sets  the  bits  in  the  second  part  of  the  PTE. Though
+> the implementation  for the former just needs the slot parameter, it does
+> take some additional parameters to keep the prototype consistent.
 >
->Fixes: 31bfdb036f12 ("powerpc: Use instruction emulation infrastructure
->to handle alignment faults")
->Signed-off-by: Paul Mackerras <paulus@ozlabs=2Eorg>
->---
-> arch/powerpc/kernel/align=2Ec | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+> This function  will  be  handy  as  we   work   towards  re-arranging the
+> bits in the later patches.
 >
->diff --git a/arch/powerpc/kernel/align=2Ec b/arch/powerpc/kernel/align=2E=
-c
->index 26b9994d27ee=2E=2E43ef25156480 100644
->--- a/arch/powerpc/kernel/align=2Ec
->+++ b/arch/powerpc/kernel/align=2Ec
->@@ -341,7 +341,7 @@ int fix_alignment(struct pt_regs *regs)
->=20
-> 	type =3D op=2Etype & INSTR_TYPE_MASK;
-> 	if (!OP_IS_LOAD_STORE(type)) {
->-		if (type !=3D CACHEOP + DCBZ)
->+		if (op=2Etype !=3D CACHEOP + DCBZ)
-> 			return -EINVAL;
-> 		PPC_WARN_ALIGNMENT(dcbz, regs);
-> 		r =3D emulate_dcbz(op=2Eea, regs);
->--=20
->2=2E11=2E0
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hash-4k.h  |   15 +++++++++++++++
+>  arch/powerpc/include/asm/book3s/64/hash-64k.h |   25 +++++++++++++++++++++++++
+>  2 files changed, 40 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> index 0c4e470..8909039 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> @@ -48,6 +48,21 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
+>  }
+>  #endif
+>
+> +/*
+> + * 4k pte format is  different  from  64k  pte  format.  Saving  the
+> + * hash_slot is just a matter of returning the pte bits that need to
+> + * be modified. On 64k pte, things are a  little  more  involved and
+> + * hence  needs   many   more  parameters  to  accomplish  the  same.
+> + * However we  want  to abstract this out from the caller by keeping
+> + * the prototype consistent across the two formats.
+> + */
+> +static inline unsigned long pte_set_hash_slot(pte_t *ptep, real_pte_t rpte,
+> +                       unsigned int subpg_index, unsigned long slot)
+> +{
+> +       return (slot << H_PAGE_F_GIX_SHIFT) &
+> +               (H_PAGE_F_SECOND | H_PAGE_F_GIX);
+> +}
+> +
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>
+>  static inline char *get_hpte_slot_array(pmd_t *pmdp)
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> index 9732837..6652669 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> @@ -74,6 +74,31 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
+>         return (pte_val(rpte.pte) >> H_PAGE_F_GIX_SHIFT) & 0xf;
+>  }
+>
+> +/*
+> + * Commit the hash slot and return pte bits that needs to be modified.
+> + * The caller is expected to modify the pte bits accordingly and
+> + * commit the pte to memory.
+> + */
+> +static inline unsigned long pte_set_hash_slot(pte_t *ptep, real_pte_t rpte,
+> +               unsigned int subpg_index, unsigned long slot)
+> +{
+> +       unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+> +
+> +       rpte.hidx &= ~(0xfUL << (subpg_index << 2));
+> +       *hidxp = rpte.hidx  | (slot << (subpg_index << 2));
+> +       /*
+> +        * Commit the hidx bits to memory before returning.
+> +        * Anyone reading  pte  must  ensure hidx bits are
+> +        * read  only  after  reading the pte by using the
 
---=20
-Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E
-------9Y8GLQBIIT65PSDGMBMIISFIEIJMLP
-Content-Type: text/html;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Can you lose the only and make it "read after reading the pte"
+read only is easy to confuse as read-only
 
-<html><head></head><body>Michal, Christian, can you please confirm this fix=
-es the problems you were seeing=2E<br>
-<br>
-cheers<br><br><div class=3D"gmail_quote">On 13 September 2017 2:51:24 pm A=
-EST, Paul Mackerras &lt;paulus@ozlabs=2Eorg&gt; wrote:<blockquote class=3D"=
-gmail_quote" style=3D"margin: 0pt 0pt 0pt 0=2E8ex; border-left: 1px solid r=
-gb(204, 204, 204); padding-left: 1ex;">
-<pre class=3D"k9mail">This fixes the emulation of the dcbz instruction in =
-the alignment<br />interrupt handler=2E  The error was that we were compari=
-ng just the<br />instruction type field of op=2Etype rather than the whole =
-thing,<br />and therefore the comparison &quot;type !=3D CACHEOP + DCBZ&quo=
-t; was always<br />true=2E<br /><br />Fixes: 31bfdb036f12 (&quot;powerpc: U=
-se instruction emulation infrastructure to handle alignment faults&quot;)<b=
-r />Signed-off-by: Paul Mackerras &lt;paulus@ozlabs=2Eorg&gt;<br />---<br /=
-> arch/powerpc/kernel/align=2Ec | 2 +-<br /> 1 file changed, 1 insertion(+)=
-, 1 deletion(-)<br /><br />diff --git a/arch/powerpc/kernel/align=2Ec b/arc=
-h/powerpc/kernel/align=2Ec<br />index 26b9994d27ee=2E=2E43ef25156480 100644=
-<br />--- a/arch/powerpc/kernel/align=2Ec<br />+++ b/arch/powerpc/kernel/al=
-ign=2Ec<br />@@ -341,7 +341,7 @@ int fix_alignment(struct pt_regs *regs)<br=
- /> <br />  type =3D op=2Etype &amp; INSTR_TYPE_MASK;<br />  if (!OP_IS_LOA=
-D_STORE(type)) {<br />-  if (type !=3D CACHEOP + DCBZ)<br />+  if (op=2Etyp=
-e !=3D CACHEOP + DCBZ)<br />    return -EINVAL;<br />   PPC_WARN_ALIGNMENT(=
-dcbz, regs);<br />   r =3D emulate_dcbz(op=2Eea, regs);</pre></blockquote><=
-/div><br>
--- <br>
-Sent from my Android phone with K-9 Mail=2E Please excuse my brevity=2E</b=
-ody></html>
-------9Y8GLQBIIT65PSDGMBMIISFIEIJMLP--
+> +        * read-side  barrier  smp_rmb(). __real_pte() can
+> +        * help ensure that.
+> +        */
+> +       smp_wmb();
+> +
+> +       /* no pte bits to be modified, return 0x0UL */
+> +       return 0x0UL;
+
+Acked-by: Balbir Singh <bsingharora@gmail.com>
+
+Balbir Singh.
