@@ -1,27 +1,27 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
- [IPv6:2607:f8b0:4001:c06::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=k8tc=ap=russell.cc=ruscur@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xt0SW4brNzDqlR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 10:55:23 +1000 (AEST)
-Received: by mail-io0-x229.google.com with SMTP id n69so11104605ioi.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 17:55:23 -0700 (PDT)
-Sender: Larry Finger <larry.finger@gmail.com>
-Subject: Re: Regression for Power PC in 4.14-rc0 - bisected to commit
- 31bfdb036f12
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-References: <201709140009.v8E08n9S024108@mx0a-001b2d01.pphosted.com>
- <77fb14dd-26d5-a647-bed1-142d56d26374@au1.ibm.com>
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Message-ID: <cc4ee203-0224-91e3-ef60-7180dfb275ce@lwfinger.net>
-Date: Wed, 13 Sep 2017 19:55:20 -0500
-MIME-Version: 1.0
-In-Reply-To: <77fb14dd-26d5-a647-bed1-142d56d26374@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xt0z06Th6zDql1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 11:18:20 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xt0z05gmzz8t79
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 11:18:20 +1000 (AEST)
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xt0z02m4mz9ryv
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2017 11:18:20 +1000 (AEST)
+Message-ID: <1505351529.3761.1.camel@russell.cc>
+Subject: Re: [PATCH 2/2] powerpc/powernv: Rework EEH initialization on powernv
+From: Russell Currey <ruscur@russell.cc>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Date: Thu, 14 Sep 2017 11:12:09 +1000
+In-Reply-To: <1504766144.12628.15.camel@kernel.crashing.org>
+References: <1504766144.12628.15.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,24 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/13/2017 07:37 PM, Andrew Donnellan wrote:
-> On 14/09/17 10:07, Larry Finger wrote:
->> When booting my PowerBook Aluminum G4, I get a pop-up screen that says "The 
->> system is running in low-graphics  mode. Your screen, graphics card, and input 
->> device settings could not be detected correctly. You will need to configure 
->> these yourself." This is a big-endian 74xx CPU. The lscpu command says it is a 
->> PowerBook5,6 model.
->>
->> This problem has been bisected to commit 31bfdb036f12 ("powerpc: Use 
->> instruction emulation infrastructure to handle alignment faults"). I am 
->> confident of the accuracy of the bisection.
->>
->> Attached is the configuration.
+On Thu, 2017-09-07 at 16:35 +1000, Benjamin Herrenschmidt wrote:
+> Remove the post_init callback which is only used
+> by powernv, we can just call it explicitly from
+> the powernv code.
 > 
-> Try with https://patchwork.ozlabs.org/patch/813153/
+> This partially kills the ability to "disable" eeh at
+> runtime via debugfs as this was calling that same
+> callback again, but this is both unused and broken
+> in several ways. If we want to revive it, we need
+> to create a dedicated enable/disable callback on the
+> backend that does the right thing.
 > 
-> (A selftest for the instruction emulation will make its way upstream eventually...)
+> Let the bulk of eeh initialize normally at
+> core_initcall() like it does on pseries by removing
+> the hack in eeh_init() that delays it.
+> 
+> Instead we make sure our eeh->probe cleanly bails
+> out of the PEs haven't been created yet and we force
+> a re-probe where we used to call eeh_init() again.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-That patch does fix my problem. Thanks for the quick response.
-
-Larry
+Acked-by: Russell Currey <ruscur@russell.cc>
