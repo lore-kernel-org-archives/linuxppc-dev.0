@@ -1,48 +1,29 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtDcn0lYHzDqws
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 20:03:20 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8E9wxIL005808
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:03:18 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cyq8m1p5k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:03:15 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 14 Sep 2017 20:03:11 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8EA37SB42991686
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 20:03:07 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8EA3786016701
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 20:03:07 +1000
-Date: Thu, 14 Sep 2017 15:33:04 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/5] powerpc/kprobes: Do not suppress instruction
- emulation if a single run failed
-References: <2bc413d679c563d3ee338c318066777318577ab2.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
- <a3a2ddbd004f0410943edb998011cfd31b97384e.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170913165359.475cb23ca0f76f88c3626d31@kernel.org>
- <20170914063807.6cmvisfiwfeluuv3@naverao1-tp.localdomain>
- <20170914024527.c5e52b918372e00061371014@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170914024527.c5e52b918372e00061371014@kernel.org>
-Message-Id: <20170914100304.loobdbpt6swg4t4m@naverao1-tp.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtDjK0kKDzDr13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 20:07:16 +1000 (AEST)
+Message-ID: <1505383610.12628.193.camel@kernel.crashing.org>
+Subject: Re: [PATCH kernel] powerpc/powernv: Update comment about shifting
+ IOV BAR
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Laight <David.Laight@ACULAB.COM>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>
+Cc: Alistair Popple <alistair@popple.id.au>, Bjorn Helgaas
+ <helgaas@kernel.org>, "shan.gavin@gmail.com" <shan.gavin@gmail.com>, Paul
+ Mackerras <paulus@samba.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, David Gibson <david@gibson.dropbear.id.au>
+Date: Thu, 14 Sep 2017 20:06:50 +1000
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD0076B19@AcuExch.aculab.com>
+References: <20170831033412.1971-1-aik@ozlabs.ru>
+ <0d7068aa-7331-0ce0-145d-8afe1e83a8ec@ozlabs.ru>
+ <1505358454.12628.185.camel@kernel.crashing.org>
+ <18f3462e-09ee-ce02-f9c6-eafad68cb9c6@ozlabs.ru>
+ <1505360385.12628.187.camel@kernel.crashing.org>
+ <063D6719AE5E284EB5DD2968C1650D6DD0076B19@AcuExch.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,33 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/09/14 02:45AM, Masami Hiramatsu wrote:
-> On Thu, 14 Sep 2017 12:08:07 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Thu, 2017-09-14 at 09:27 +0000, David Laight wrote:
+> You can logically 'hotplug' PCI(e) on any system [1].
 > 
-> > On 2017/09/13 04:53PM, Masami Hiramatsu wrote:
-> > > On Thu, 14 Sep 2017 02:50:33 +0530
-> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > Currently, we disable instruction emulation if emulate_step() fails for
-> > > > any reason. However, such failures could be transient and specific to a
-> > > > particular run. Instead, only disable instruction emulation if we have
-> > > > never been able to emulate this. If we had emulated this instruction
-> > > > successfully at least once, then we single step only this probe hit and
-> > > > continue to try emulating the instruction in subsequent probe hits.
-> > > 
-> > > Hmm, would this mean that the instruction is emulatable or not depends
-> > > on context? What kind of situation is considerable?
-> > 
-> > Yes, as an example, a load/store instruction can cause exceptions 
-> > depending on the address. In some of those cases, we will have to single 
-> > step the instruction, but we will be able to emulate in most scenarios.
+> The 'problem' is that whatever enumerates the PCI(e) at system
+> powerup doesn't normally assign extra resources to bridges to allow
+> for devices that aren't present at boot time.
+> So you can normally only replace cards with ones that use the same
+> (or less) resources, or that are not behind any bridges.
+> This is problematic if you have a docking station connected via
+> a bridge.
+
+There's also the problem of Max Payload Size. If you can hotplug behind
+a bridge then the standard algorithm of finding the max of all devices
+behind a host bridge doesn't work anymore and you have to clamp
+everybody to 128 bytes.
+
+> [1] Apart from some annoying x86 Dell servers we have which generate
+> an NMI when the PCIe link goes down (when we reprogram the fpga).
+> They also fail to boot if a link doesn't come up...
 > 
-> OK, I got it.
-> Could you add this example as comment in the code so that readers can
-> easily understand?
-
-Sure.
-
-Thanks,
-Naveen
+>         David
