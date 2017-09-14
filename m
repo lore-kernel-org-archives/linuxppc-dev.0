@@ -1,9 +1,9 @@
 Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYLP31WvzDrW0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 08:37:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYLV6VlwzDrWX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 08:37:06 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -13,9 +13,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v8 11/11] mm: stop zeroing memory during allocation in vmemmap
-Date: Thu, 14 Sep 2017 18:35:17 -0400
-Message-Id: <20170914223517.8242-12-pasha.tatashin@oracle.com>
+Subject: [PATCH v8 03/11] mm: deferred_init_memmap improvements
+Date: Thu, 14 Sep 2017 18:35:09 -0400
+Message-Id: <20170914223517.8242-4-pasha.tatashin@oracle.com>
 In-Reply-To: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 References: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,123 +27,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vmemmap_alloc_block() will no longer zero the block, so zero memory
-at its call sites for everything except struct pages.  Struct page memory
-is zero'd by struct page initialization.
+This patch fixes two issues in deferred_init_memmap
 
-Replace allocators in sprase-vmemmap to use the non-zeroing version. So,
-we will get the performance improvement by zeroing the memory in parallel
-when struct pages are zeroed.
+=====
+In deferred_init_memmap() where all deferred struct pages are initialized
+we have a check like this:
+
+if (page->flags) {
+	VM_BUG_ON(page_zone(page) != zone);
+	goto free_range;
+}
+
+This way we are checking if the current deferred page has already been
+initialized. It works, because memory for struct pages has been zeroed, and
+the only way flags are not zero if it went through __init_single_page()
+before.  But, once we change the current behavior and won't zero the memory
+in memblock allocator, we cannot trust anything inside "struct page"es
+until they are initialized. This patch fixes this.
+
+The deferred_init_memmap() is re-written to loop through only free memory
+ranges provided by memblock.
+
+=====
+This patch fixes another existing issue on systems that have holes in
+zones i.e CONFIG_HOLES_IN_ZONE is defined.
+
+In for_each_mem_pfn_range() we have code like this:
+
+if (!pfn_valid_within(pfn)
+	goto free_range;
+
+Note: 'page' is not set to NULL and is not incremented but 'pfn' advances.
+Thus means if deferred struct pages are enabled on systems with these kind
+of holes, linux would get memory corruptions. I have fixed this issue by
+defining a new macro that performs all the necessary operations when we
+free the current set of pages.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- include/linux/mm.h  | 11 +++++++++++
- mm/sparse-vmemmap.c | 15 +++++++--------
- mm/sparse.c         |  6 +++---
- 3 files changed, 21 insertions(+), 11 deletions(-)
+ mm/page_alloc.c | 161 +++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 78 insertions(+), 83 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index a7bba4ce79ba..25848764570f 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -2501,6 +2501,17 @@ static inline void *vmemmap_alloc_block_buf(unsigned long size, int node)
- 	return __vmemmap_alloc_block_buf(size, node, NULL);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index c841af88836a..d132c801d2c1 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1410,14 +1410,17 @@ void clear_zone_contiguous(struct zone *zone)
  }
  
-+static inline void *vmemmap_alloc_block_zero(unsigned long size, int node)
+ #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
+-static void __init deferred_free_range(struct page *page,
+-					unsigned long pfn, int nr_pages)
++static void __init deferred_free_range(unsigned long pfn,
++				       unsigned long nr_pages)
+ {
+-	int i;
++	struct page *page;
++	unsigned long i;
+ 
+-	if (!page)
++	if (!nr_pages)
+ 		return;
+ 
++	page = pfn_to_page(pfn);
++
+ 	/* Free a large naturally-aligned chunk if possible */
+ 	if (nr_pages == pageblock_nr_pages &&
+ 	    (pfn & (pageblock_nr_pages - 1)) == 0) {
+@@ -1443,19 +1446,82 @@ static inline void __init pgdat_init_report_one_done(void)
+ 		complete(&pgdat_init_all_done_comp);
+ }
+ 
++#define DEFERRED_FREE(nr_free, free_base_pfn, page)			\
++({									\
++	unsigned long nr = (nr_free);					\
++									\
++	deferred_free_range((free_base_pfn), (nr));			\
++	(free_base_pfn) = 0;						\
++	(nr_free) = 0;							\
++	page = NULL;							\
++	nr;								\
++})
++
++static unsigned long deferred_init_range(int nid, int zid, unsigned long pfn,
++					 unsigned long end_pfn)
 +{
-+	void *p = vmemmap_alloc_block(size, node);
++	struct mminit_pfnnid_cache nid_init_state = { };
++	unsigned long nr_pgmask = pageblock_nr_pages - 1;
++	unsigned long free_base_pfn = 0;
++	unsigned long nr_pages = 0;
++	unsigned long nr_free = 0;
++	struct page *page = NULL;
 +
-+	if (!p)
-+		return NULL;
-+	memset(p, 0, size);
++	for (; pfn < end_pfn; pfn++) {
++		/*
++		 * First we check if pfn is valid on architectures where it is
++		 * possible to have holes within pageblock_nr_pages. On systems
++		 * where it is not possible, this function is optimized out.
++		 *
++		 * Then, we check if a current large page is valid by only
++		 * checking the validity of the head pfn.
++		 *
++		 * meminit_pfn_in_nid is checked on systems where pfns can
++		 * interleave within a node: a pfn is between start and end
++		 * of a node, but does not belong to this memory node.
++		 *
++		 * Finally, we minimize pfn page lookups and scheduler checks by
++		 * performing it only once every pageblock_nr_pages.
++		 */
++		if (!pfn_valid_within(pfn)) {
++			nr_pages += DEFERRED_FREE(nr_free, free_base_pfn, page);
++		} else if (!(pfn & nr_pgmask) && !pfn_valid(pfn)) {
++			nr_pages += DEFERRED_FREE(nr_free, free_base_pfn, page);
++		} else if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
++			nr_pages += DEFERRED_FREE(nr_free, free_base_pfn, page);
++		} else if (page && (pfn & nr_pgmask)) {
++			page++;
++			__init_single_page(page, pfn, zid, nid);
++			nr_free++;
++		} else {
++			nr_pages += DEFERRED_FREE(nr_free, free_base_pfn, page);
++			page = pfn_to_page(pfn);
++			__init_single_page(page, pfn, zid, nid);
++			free_base_pfn = pfn;
++			nr_free = 1;
++			cond_resched();
++		}
++	}
++	/* Free the last block of pages to allocator */
++	nr_pages += DEFERRED_FREE(nr_free, free_base_pfn, page);
 +
-+	return p;
++	return nr_pages;
 +}
 +
- void vmemmap_verify(pte_t *, int, unsigned long, unsigned long);
- int vmemmap_populate_basepages(unsigned long start, unsigned long end,
- 			       int node);
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index d1a39b8051e0..c2f5654e7c9d 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -41,7 +41,7 @@ static void * __ref __earlyonly_bootmem_alloc(int node,
- 				unsigned long align,
- 				unsigned long goal)
+ /* Initialise remaining memory on a node */
+ static int __init deferred_init_memmap(void *data)
  {
--	return memblock_virt_alloc_try_nid(size, align, goal,
-+	return memblock_virt_alloc_try_nid_raw(size, align, goal,
- 					    BOOTMEM_ALLOC_ACCESSIBLE, node);
- }
+ 	pg_data_t *pgdat = data;
+ 	int nid = pgdat->node_id;
+-	struct mminit_pfnnid_cache nid_init_state = { };
+ 	unsigned long start = jiffies;
+ 	unsigned long nr_pages = 0;
+-	unsigned long walk_start, walk_end;
+-	int i, zid;
++	unsigned long spfn, epfn;
++	phys_addr_t spa, epa;
++	int zid;
+ 	struct zone *zone;
+ 	unsigned long first_init_pfn = pgdat->first_deferred_pfn;
+ 	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
++	u64 i;
  
-@@ -54,9 +54,8 @@ void * __meminit vmemmap_alloc_block(unsigned long size, int node)
- 	if (slab_is_available()) {
- 		struct page *page;
+ 	if (first_init_pfn == ULONG_MAX) {
+ 		pgdat_init_report_one_done();
+@@ -1477,83 +1543,12 @@ static int __init deferred_init_memmap(void *data)
+ 		if (first_init_pfn < zone_end_pfn(zone))
+ 			break;
+ 	}
++	first_init_pfn = max(zone->zone_start_pfn, first_init_pfn);
  
--		page = alloc_pages_node(node,
--			GFP_KERNEL | __GFP_ZERO | __GFP_RETRY_MAYFAIL,
--			get_order(size));
-+		page = alloc_pages_node(node, GFP_KERNEL | __GFP_RETRY_MAYFAIL,
-+					get_order(size));
- 		if (page)
- 			return page_address(page);
- 		return NULL;
-@@ -183,7 +182,7 @@ pmd_t * __meminit vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node)
- {
- 	pmd_t *pmd = pmd_offset(pud, addr);
- 	if (pmd_none(*pmd)) {
--		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
-+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
- 		pmd_populate_kernel(&init_mm, pmd, p);
-@@ -195,7 +194,7 @@ pud_t * __meminit vmemmap_pud_populate(p4d_t *p4d, unsigned long addr, int node)
- {
- 	pud_t *pud = pud_offset(p4d, addr);
- 	if (pud_none(*pud)) {
--		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
-+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
- 		pud_populate(&init_mm, pud, p);
-@@ -207,7 +206,7 @@ p4d_t * __meminit vmemmap_p4d_populate(pgd_t *pgd, unsigned long addr, int node)
- {
- 	p4d_t *p4d = p4d_offset(pgd, addr);
- 	if (p4d_none(*p4d)) {
--		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
-+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
- 		p4d_populate(&init_mm, p4d, p);
-@@ -219,7 +218,7 @@ pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
- {
- 	pgd_t *pgd = pgd_offset_k(addr);
- 	if (pgd_none(*pgd)) {
--		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
-+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
- 		pgd_populate(&init_mm, pgd, p);
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 83b3bf6461af..d22f51bb7c79 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -437,9 +437,9 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
+-	for_each_mem_pfn_range(i, nid, &walk_start, &walk_end, NULL) {
+-		unsigned long pfn, end_pfn;
+-		struct page *page = NULL;
+-		struct page *free_base_page = NULL;
+-		unsigned long free_base_pfn = 0;
+-		int nr_to_free = 0;
+-
+-		end_pfn = min(walk_end, zone_end_pfn(zone));
+-		pfn = first_init_pfn;
+-		if (pfn < walk_start)
+-			pfn = walk_start;
+-		if (pfn < zone->zone_start_pfn)
+-			pfn = zone->zone_start_pfn;
+-
+-		for (; pfn < end_pfn; pfn++) {
+-			if (!pfn_valid_within(pfn))
+-				goto free_range;
+-
+-			/*
+-			 * Ensure pfn_valid is checked every
+-			 * pageblock_nr_pages for memory holes
+-			 */
+-			if ((pfn & (pageblock_nr_pages - 1)) == 0) {
+-				if (!pfn_valid(pfn)) {
+-					page = NULL;
+-					goto free_range;
+-				}
+-			}
+-
+-			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
+-				page = NULL;
+-				goto free_range;
+-			}
+-
+-			/* Minimise pfn page lookups and scheduler checks */
+-			if (page && (pfn & (pageblock_nr_pages - 1)) != 0) {
+-				page++;
+-			} else {
+-				nr_pages += nr_to_free;
+-				deferred_free_range(free_base_page,
+-						free_base_pfn, nr_to_free);
+-				free_base_page = NULL;
+-				free_base_pfn = nr_to_free = 0;
+-
+-				page = pfn_to_page(pfn);
+-				cond_resched();
+-			}
+-
+-			if (page->flags) {
+-				VM_BUG_ON(page_zone(page) != zone);
+-				goto free_range;
+-			}
+-
+-			__init_single_page(page, pfn, zid, nid);
+-			if (!free_base_page) {
+-				free_base_page = page;
+-				free_base_pfn = pfn;
+-				nr_to_free = 0;
+-			}
+-			nr_to_free++;
+-
+-			/* Where possible, batch up pages for a single free */
+-			continue;
+-free_range:
+-			/* Free the current block of pages to allocator */
+-			nr_pages += nr_to_free;
+-			deferred_free_range(free_base_page, free_base_pfn,
+-								nr_to_free);
+-			free_base_page = NULL;
+-			free_base_pfn = nr_to_free = 0;
+-		}
+-		/* Free the last block of pages to allocator */
+-		nr_pages += nr_to_free;
+-		deferred_free_range(free_base_page, free_base_pfn, nr_to_free);
+-
+-		first_init_pfn = max(end_pfn, first_init_pfn);
++	for_each_free_mem_range(i, nid, MEMBLOCK_NONE, &spa, &epa, NULL) {
++		spfn = max_t(unsigned long, first_init_pfn, PFN_UP(spa));
++		epfn = min_t(unsigned long, zone_end_pfn(zone), PFN_DOWN(epa));
++		nr_pages += deferred_init_range(nid, zid, spfn, epfn);
  	}
  
- 	size = PAGE_ALIGN(size);
--	map = memblock_virt_alloc_try_nid(size * map_count,
--					  PAGE_SIZE, __pa(MAX_DMA_ADDRESS),
--					  BOOTMEM_ALLOC_ACCESSIBLE, nodeid);
-+	map = memblock_virt_alloc_try_nid_raw(size * map_count,
-+					      PAGE_SIZE, __pa(MAX_DMA_ADDRESS),
-+					      BOOTMEM_ALLOC_ACCESSIBLE, nodeid);
- 	if (map) {
- 		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
- 			if (!present_section_nr(pnum))
+ 	/* Sanity check that the next zone really is unpopulated */
 -- 
 2.14.1
