@@ -1,25 +1,31 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtDmt1zfbzDr2L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 20:10:22 +1000 (AEST)
-Date: Thu, 14 Sep 2017 03:10:19 -0700
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Kamalesh Babulal
- <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/5] powerpc/kprobes: Fix warnings from
- __this_cpu_read() on preempt kernels
-Message-Id: <20170914031019.6660f4533c10691816dd27d1@kernel.org>
-In-Reply-To: <20170914064720.u36di37zsascsqtp@naverao1-tp.localdomain>
-References: <2bc413d679c563d3ee338c318066777318577ab2.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
- <63b0f9f3fd3d95d758678a892b87b7c561545c99.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170913173655.1ada3c799d98cab104c45cae@kernel.org>
- <20170914064720.u36di37zsascsqtp@naverao1-tp.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtF5K39RmzDr8P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 20:24:37 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8EAOB4E128562
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:24:35 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2cyqvb0gq3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 06:24:34 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Thu, 14 Sep 2017 04:24:34 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: obh+dt@kernel.org, frowand.list@gmail.com, devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: [PATCH] drivers: of: static DT reservations incorrectly added to
+ dynamic list
+Date: Thu, 14 Sep 2017 20:24:15 +1000
+Message-Id: <20170914102415.26395-1-stewart@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,127 +35,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Sep 2017 12:17:20 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+There are two types of memory reservations firmware can ask the kernel
+to make in the device tree: static and dynamic.
+See Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
 
-> On 2017/09/13 05:36PM, Masami Hiramatsu wrote:
-> > On Thu, 14 Sep 2017 02:50:34 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > 
-> > > Kamalesh pointed out that we are getting the below call traces with
-> > > livepatched functions when we enable CONFIG_PREEMPT:
-> > > 
-> > > [  495.470721] BUG: using __this_cpu_read() in preemptible [00000000] code: cat/8394
-> > > [  495.471167] caller is is_current_kprobe_addr+0x30/0x90
-> > > [  495.471171] CPU: 4 PID: 8394 Comm: cat Tainted: G              K 4.13.0-rc7-nnr+ #95
-> > > [  495.471173] Call Trace:
-> > > [  495.471178] [c00000008fd9b960] [c0000000009f039c] dump_stack+0xec/0x160 (unreliable)
-> > > [  495.471184] [c00000008fd9b9a0] [c00000000059169c] check_preemption_disabled+0x15c/0x170
-> > > [  495.471187] [c00000008fd9ba30] [c000000000046460] is_current_kprobe_addr+0x30/0x90
-> > > [  495.471191] [c00000008fd9ba60] [c00000000004e9a0] ftrace_call+0x1c/0xb8
-> > > [  495.471195] [c00000008fd9bc30] [c000000000376fd8] seq_read+0x238/0x5c0
-> > > [  495.471199] [c00000008fd9bcd0] [c0000000003cfd78] proc_reg_read+0x88/0xd0
-> > > [  495.471203] [c00000008fd9bd00] [c00000000033e5d4] __vfs_read+0x44/0x1b0
-> > > [  495.471206] [c00000008fd9bd90] [c0000000003402ec] vfs_read+0xbc/0x1b0
-> > > [  495.471210] [c00000008fd9bde0] [c000000000342138] SyS_read+0x68/0x110
-> > > [  495.471214] [c00000008fd9be30] [c00000000000bc6c] system_call+0x58/0x6c
-> > > 
-> > > Commit c05b8c4474c030 ("powerpc/kprobes: Skip livepatch_handler() for
-> > > jprobes") introduced a helper is_current_kprobe_addr() to help determine
-> > > if the current function has been livepatched or if it has a jprobe
-> > > installed, both of which modify the NIP.
-> > > 
-> > > In the case of a jprobe, kprobe_ftrace_handler() disables pre-emption
-> > > before calling into setjmp_pre_handler() which returns without disabling
-> > > pre-emption. This is done to ensure that the jprobe han dler won't
-> > > disappear beneath us if the jprobe is unregistered between the
-> > > setjmp_pre_handler() and the subsequent longjmp_break_handler() called
-> > > from the jprobe handler. Due to this, we can use __this_cpu_read() in
-> > > is_current_kprobe_addr() with the pre-emption check as we know that
-> > > pre-emption will be disabled.
-> > > 
-> > > However, if this function has been livepatched, we are still doing this
-> > > check and when we do so, pre-emption won't necessarily be disabled. This
-> > > results in the call trace shown above.
-> > > 
-> > > Fix this by only invoking is_current_kprobe_addr() when pre-emption is
-> > > disabled. And since we now guard this within a pre-emption check, we can
-> > > instead use raw_cpu_read() to get the current_kprobe value skipping the
-> > > check done by __this_cpu_read().
-> > 
-> > Hmm, can you disable preempt temporary at this function and read it?
-> 
-> Yes, but I felt this approach is more optimal specifically for live 
-> patching. We don't normally expect preemption to be disabled while 
-> handling a livepatched function, so the simple 'if (!preemptible())'
-> check helps us bypass looking at current_kprobe.
+If you have greater than 16 entries in /reserved-memory (as we do on
+POWER9 systems) you would get this scary looking error message:
+[    0.000000] OF: reserved mem: not enough space all defined regions.
 
-Ah, I see. this is for checking "jprobes", since kprobes/kretprobes
-usually already done there.
+This is harmless if all your reservations are static (which with OPAL on
+POWER9, they are).
 
-> 
-> The check also ensures we can use raw_cpu_read() safely in other 
-> scenarios. Do you see any other concerns with this approach?
+It is not harmless if you have any dynamic reservations after the 16th.
 
-Yes, there are 2 reasons.
+In the first pass over the fdt to find reservations, the child nodes of
+/reserved-memory are added to a static array in of_reserved_mem.c so that
+memory can be reserved in a 2nd pass. The array has 16 entries. This is why,
+on my dual socket POWER9 system, I get that error 4 times with 20 static
+reservations.
 
-At first, if user's custom kprobe pre-handler changes NIP for their
-custom handwriting livepatching, such handler will enable preemption
-before return. We don't prohibit it. I think this function can not
-detect it.
+We don't have a problem on ppc though, as in arch/powerpc/kernel/prom.c
+we look at the new style /reserved-ranges property to do reservations,
+and this logic was introduced in 0962e8004e974 (well before any powernv
+system shipped).
 
-And also, the function "name" is very confusing :)
-Especially, since this symbol is exported, if you are checking jprobes
-context, it should be renamed, at least it starts with "__" so that
-show it as local use.
+Google shows up no occurances of that exact error message, so we're probably
+safe in that no machine that people use has memory not being reserved when
+it should be.
 
-Thank you,
+The fix is simple, as there's a different code path for static and dynamic
+allocations, we just don't add the region to the list if it's static. Since
+it's a static *OR* dynamic region, this is a perfectly valid thing to do
+(although I have not checked every real world device tree on the planet
+for this condition)
 
+Fixes: 3f0c8206644836e4f10a6b9fc47cda6a9a372f9b
+Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+NOTE: I've done only fairly limited testing of this on POWER, I
+certainly haven't tested on ARM or *anything* with dynamic
+allocations. So, testing and comments welcome.
+---
+ drivers/of/fdt.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-> 
-> Thanks,
-> Naveen
-> 
-> > 
-> > Thank you,
-> > 
-> > > 
-> > > Fixes: c05b8c4474c030 ("powerpc/kprobes: Skip livepatch_handler() for jprobes")
-> > > Reported-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > > ---
-> > >  arch/powerpc/kernel/kprobes.c | 8 ++++++--
-> > >  1 file changed, 6 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> > > index e848fe2c93fb..db40b13fd3d1 100644
-> > > --- a/arch/powerpc/kernel/kprobes.c
-> > > +++ b/arch/powerpc/kernel/kprobes.c
-> > > @@ -45,8 +45,12 @@ struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
-> > >  
-> > >  int is_current_kprobe_addr(unsigned long addr)
-> > >  {
-> > > -	struct kprobe *p = kprobe_running();
-> > > -	return (p && (unsigned long)p->addr == addr) ? 1 : 0;
-> > > +	if (!preemptible()) {
-> > > +		struct kprobe *p = raw_cpu_read(current_kprobe);
-> > > +		return (p && (unsigned long)p->addr == addr) ? 1 : 0;
-> > > +	}
-> > > +
-> > > +	return 0;
-> > >  }
-> > >  
-> > >  bool arch_within_kprobe_blacklist(unsigned long addr)
-> > > -- 
-> > > 2.14.1
-> > > 
-> > 
-> > 
-> > -- 
-> > Masami Hiramatsu <mhiramat@kernel.org>
-> > 
-> 
-
-
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index ce30c9a588a4..a9a44099ed69 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -587,7 +587,7 @@ static int __init __reserved_mem_reserve_reg(unsigned long node,
+ 	phys_addr_t base, size;
+ 	int len;
+ 	const __be32 *prop;
+-	int nomap, first = 1;
++	int nomap;
+ 
+ 	prop = of_get_flat_dt_prop(node, "reg", &len);
+ 	if (!prop)
+@@ -614,10 +614,6 @@ static int __init __reserved_mem_reserve_reg(unsigned long node,
+ 				uname, &base, (unsigned long)size / SZ_1M);
+ 
+ 		len -= t_len;
+-		if (first) {
+-			fdt_reserved_mem_save_node(node, uname, base, size);
+-			first = 0;
+-		}
+ 	}
+ 	return 0;
+ }
 -- 
-Masami Hiramatsu <mhiramat@kernel.org>
+2.13.5
