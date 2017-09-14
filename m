@@ -2,7 +2,7 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYL35F2XzDrVw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYL35NftzDrVy
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 08:36:43 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
@@ -13,9 +13,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v8 01/11] x86/mm: setting fields in deferred pages
-Date: Thu, 14 Sep 2017 18:35:07 -0400
-Message-Id: <20170914223517.8242-2-pasha.tatashin@oracle.com>
+Subject: [PATCH v8 08/11] mm: zero reserved and unavailable struct pages
+Date: Thu, 14 Sep 2017 18:35:14 -0400
+Message-Id: <20170914223517.8242-9-pasha.tatashin@oracle.com>
 In-Reply-To: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 References: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,82 +27,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Without deferred struct page feature (CONFIG_DEFERRED_STRUCT_PAGE_INIT),
-flags and other fields in "struct page"es are never changed prior to first
-initializing struct pages by going through __init_single_page().
+Some memory is reserved but unavailable: not present in memblock.memory
+(because not backed by physical pages), but present in memblock.reserved.
+Such memory has backing struct pages, but they are not initialized by going
+through __init_single_page().
 
-With deferred struct page feature enabled, however, we set fields in
-register_page_bootmem_info that are subsequently clobbered right after in
-free_all_bootmem:
+In some cases these struct pages are accessed even if they do not contain
+any data. One example is page_to_pfn() might access page->flags if this is
+where section information is stored (CONFIG_SPARSEMEM,
+SECTION_IN_PAGE_FLAGS).
 
-        mem_init() {
-                register_page_bootmem_info();
-                free_all_bootmem();
-                ...
-        }
+Since, struct pages are zeroed in __init_single_page(), and not during
+allocation time, we must zero such struct pages explicitly.
 
-When register_page_bootmem_info() is called only non-deferred struct pages
-are initialized. But, this function goes through some reserved pages which
-might be part of the deferred, and thus are not yet initialized.
+The patch involves adding a new memblock iterator:
+	for_each_resv_unavail_range(i, p_start, p_end)
 
-  mem_init
-   register_page_bootmem_info
-    register_page_bootmem_info_node
-     get_page_bootmem
-      .. setting fields here ..
-      such as: page->freelist = (void *)type;
-
-  free_all_bootmem()
-   free_low_memory_core_early()
-    for_each_reserved_mem_region()
-     reserve_bootmem_region()
-      init_reserved_page() <- Only if this is deferred reserved page
-       __init_single_pfn()
-        __init_single_page()
-            memset(0) <-- Loose the set fields here
-
-We end-up with issue where, currently we do not observe problem as memory
-is explicitly zeroed. But, if flag asserts are changed we can start hitting
-issues.
-
-Also, because in this patch series we will stop zeroing struct page memory
-during allocation, we must make sure that struct pages are properly
-initialized prior to using them.
-
-The deferred-reserved pages are initialized in free_all_bootmem().
-Therefore, the fix is to switch the above calls.
+Which iterates through reserved && !memory lists, and we zero struct pages
+explicitly by calling mm_zero_struct_page().
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- arch/x86/mm/init_64.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ include/linux/memblock.h | 16 ++++++++++++++++
+ include/linux/mm.h       |  6 ++++++
+ mm/page_alloc.c          | 30 ++++++++++++++++++++++++++++++
+ 3 files changed, 52 insertions(+)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 048fbe8fc274..42b4b7a585c2 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1173,12 +1173,17 @@ void __init mem_init(void)
+diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+index bae11c7e7bf3..bdd4268f9323 100644
+--- a/include/linux/memblock.h
++++ b/include/linux/memblock.h
+@@ -237,6 +237,22 @@ unsigned long memblock_next_valid_pfn(unsigned long pfn, unsigned long max_pfn);
+ 	for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved,	\
+ 			       nid, flags, p_start, p_end, p_nid)
  
- 	/* clear_bss() already clear the empty_zero_page */
- 
--	register_page_bootmem_info();
--
- 	/* this will put all memory onto the freelists */
- 	free_all_bootmem();
- 	after_bootmem = 1;
- 
-+	/* Must be done after boot memory is put on freelist, because here we
-+	 * might set fields in deferred struct pages that have not yet been
-+	 * initialized, and free_all_bootmem() initializes all the reserved
-+	 * deferred pages for us.
-+	 */
-+	register_page_bootmem_info();
++/**
++ * for_each_resv_unavail_range - iterate through reserved and unavailable memory
++ * @i: u64 used as loop variable
++ * @flags: pick from blocks based on memory attributes
++ * @p_start: ptr to phys_addr_t for start address of the range, can be %NULL
++ * @p_end: ptr to phys_addr_t for end address of the range, can be %NULL
++ *
++ * Walks over unavailabled but reserved (reserved && !memory) areas of memblock.
++ * Available as soon as memblock is initialized.
++ * Note: because this memory does not belong to any physical node, flags and
++ * nid arguments do not make sense and thus not exported as arguments.
++ */
++#define for_each_resv_unavail_range(i, p_start, p_end)			\
++	for_each_mem_range(i, &memblock.reserved, &memblock.memory,	\
++			   NUMA_NO_NODE, MEMBLOCK_NONE, p_start, p_end, NULL)
 +
- 	/* Register memory areas for /proc/kcore */
- 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR,
- 			 PAGE_SIZE, KCORE_OTHER);
+ static inline void memblock_set_region_flags(struct memblock_region *r,
+ 					     unsigned long flags)
+ {
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 50b74d628243..a7bba4ce79ba 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2010,6 +2010,12 @@ extern int __meminit __early_pfn_to_nid(unsigned long pfn,
+ 					struct mminit_pfnnid_cache *state);
+ #endif
+ 
++#ifdef CONFIG_HAVE_MEMBLOCK
++void zero_resv_unavail(void);
++#else
++static inline void zero_resv_unavail(void) {}
++#endif
++
+ extern void set_dma_reserve(unsigned long new_dma_reserve);
+ extern void memmap_init_zone(unsigned long, int, unsigned long,
+ 				unsigned long, enum memmap_context);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 4b630ee91430..1d38d391dffd 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -6202,6 +6202,34 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
+ 	free_area_init_core(pgdat);
+ }
+ 
++#ifdef CONFIG_HAVE_MEMBLOCK
++/*
++ * Only struct pages that are backed by physical memory are zeroed and
++ * initialized by going through __init_single_page(). But, there are some
++ * struct pages which are reserved in memblock allocator and their fields
++ * may be accessed (for example page_to_pfn() on some configuration accesses
++ * flags). We must explicitly zero those struct pages.
++ */
++void __paginginit zero_resv_unavail(void)
++{
++	phys_addr_t start, end;
++	unsigned long pfn;
++	u64 i, pgcnt;
++
++	/* Loop through ranges that are reserved, but do not have reported
++	 * physical memory backing.
++	 */
++	pgcnt = 0;
++	for_each_resv_unavail_range(i, &start, &end) {
++		for (pfn = PFN_DOWN(start); pfn < PFN_UP(end); pfn++) {
++			mm_zero_struct_page(pfn_to_page(pfn));
++			pgcnt++;
++		}
++	}
++	pr_info("Reserved but unavailable: %lld pages", pgcnt);
++}
++#endif /* CONFIG_HAVE_MEMBLOCK */
++
+ #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
+ 
+ #if MAX_NUMNODES > 1
+@@ -6625,6 +6653,7 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
+ 			node_set_state(nid, N_MEMORY);
+ 		check_for_memory(pgdat, nid);
+ 	}
++	zero_resv_unavail();
+ }
+ 
+ static int __init cmdline_parse_core(char *p, unsigned long *core)
+@@ -6788,6 +6817,7 @@ void __init free_area_init(unsigned long *zones_size)
+ {
+ 	free_area_init_node(0, zones_size,
+ 			__pa(PAGE_OFFSET) >> PAGE_SHIFT, NULL);
++	zero_resv_unavail();
+ }
+ 
+ static int page_alloc_cpu_dead(unsigned int cpu)
 -- 
 2.14.1
