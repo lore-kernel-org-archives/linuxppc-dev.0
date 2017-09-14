@@ -1,8 +1,8 @@
 Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYL34GmszDrVs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYL35F2XzDrVw
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 08:36:43 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
@@ -13,9 +13,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v8 06/11] mm: zero struct pages during initialization
-Date: Thu, 14 Sep 2017 18:35:12 -0400
-Message-Id: <20170914223517.8242-7-pasha.tatashin@oracle.com>
+Subject: [PATCH v8 01/11] x86/mm: setting fields in deferred pages
+Date: Thu, 14 Sep 2017 18:35:07 -0400
+Message-Id: <20170914223517.8242-2-pasha.tatashin@oracle.com>
 In-Reply-To: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 References: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,63 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add struct page zeroing as a part of initialization of other fields in
-__init_single_page().
+Without deferred struct page feature (CONFIG_DEFERRED_STRUCT_PAGE_INIT),
+flags and other fields in "struct page"es are never changed prior to first
+initializing struct pages by going through __init_single_page().
 
-This single thread performance collected on: Intel(R) Xeon(R) CPU E7-8895
-v3 @ 2.60GHz with 1T of memory (268400646 pages in 8 nodes):
+With deferred struct page feature enabled, however, we set fields in
+register_page_bootmem_info that are subsequently clobbered right after in
+free_all_bootmem:
 
-                        BASE            FIX
-sparse_init     11.244671836s   0.007199623s
-zone_sizes_init  4.879775891s   8.355182299s
-                  --------------------------
-Total           16.124447727s   8.362381922s
+        mem_init() {
+                register_page_bootmem_info();
+                free_all_bootmem();
+                ...
+        }
 
-sparse_init is where memory for struct pages is zeroed, and the zeroing
-part is moved later in this patch into __init_single_page(), which is
-called from zone_sizes_init().
+When register_page_bootmem_info() is called only non-deferred struct pages
+are initialized. But, this function goes through some reserved pages which
+might be part of the deferred, and thus are not yet initialized.
+
+  mem_init
+   register_page_bootmem_info
+    register_page_bootmem_info_node
+     get_page_bootmem
+      .. setting fields here ..
+      such as: page->freelist = (void *)type;
+
+  free_all_bootmem()
+   free_low_memory_core_early()
+    for_each_reserved_mem_region()
+     reserve_bootmem_region()
+      init_reserved_page() <- Only if this is deferred reserved page
+       __init_single_pfn()
+        __init_single_page()
+            memset(0) <-- Loose the set fields here
+
+We end-up with issue where, currently we do not observe problem as memory
+is explicitly zeroed. But, if flag asserts are changed we can start hitting
+issues.
+
+Also, because in this patch series we will stop zeroing struct page memory
+during allocation, we must make sure that struct pages are properly
+initialized prior to using them.
+
+The deferred-reserved pages are initialized in free_all_bootmem().
+Therefore, the fix is to switch the above calls.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
-Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- include/linux/mm.h | 9 +++++++++
- mm/page_alloc.c    | 1 +
- 2 files changed, 10 insertions(+)
+ arch/x86/mm/init_64.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index f8c10d336e42..50b74d628243 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -94,6 +94,15 @@ extern int mmap_rnd_compat_bits __read_mostly;
- #define mm_forbids_zeropage(X)	(0)
- #endif
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 048fbe8fc274..42b4b7a585c2 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1173,12 +1173,17 @@ void __init mem_init(void)
  
-+/*
-+ * On some architectures it is expensive to call memset() for small sizes.
-+ * Those architectures should provide their own implementation of "struct page"
-+ * zeroing by defining this macro in <asm/pgtable.h>.
-+ */
-+#ifndef mm_zero_struct_page
-+#define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
-+#endif
+ 	/* clear_bss() already clear the empty_zero_page */
+ 
+-	register_page_bootmem_info();
+-
+ 	/* this will put all memory onto the freelists */
+ 	free_all_bootmem();
+ 	after_bootmem = 1;
+ 
++	/* Must be done after boot memory is put on freelist, because here we
++	 * might set fields in deferred struct pages that have not yet been
++	 * initialized, and free_all_bootmem() initializes all the reserved
++	 * deferred pages for us.
++	 */
++	register_page_bootmem_info();
 +
- /*
-  * Default maximum number of active map areas, this limits the number of vmas
-  * per mm struct. Users can overwrite this number by sysctl but there is a
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index a8dbd405ed94..4b630ee91430 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1170,6 +1170,7 @@ static void free_one_page(struct zone *zone,
- static void __meminit __init_single_page(struct page *page, unsigned long pfn,
- 				unsigned long zone, int nid)
- {
-+	mm_zero_struct_page(page);
- 	set_page_links(page, zone, nid, pfn);
- 	init_page_count(page);
- 	page_mapcount_reset(page);
+ 	/* Register memory areas for /proc/kcore */
+ 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR,
+ 			 PAGE_SIZE, KCORE_OTHER);
 -- 
 2.14.1
