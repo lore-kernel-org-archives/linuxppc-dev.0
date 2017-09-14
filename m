@@ -1,27 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xt5Pl1KvZzDqyH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 14:38:19 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id e69so996410pfg.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 21:38:18 -0700 (PDT)
-Date: Thu, 14 Sep 2017 14:38:07 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 02/25] powerpc: define an additional vma bit for
- protection keys.
-Message-ID: <20170914143807.03cd9aa3@firefly.ozlabs.ibm.com>
-In-Reply-To: <1504910713-7094-11-git-send-email-linuxram@us.ibm.com>
-References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-11-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xt698694SzDrFs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 15:12:28 +1000 (AEST)
+Date: Thu, 14 Sep 2017 14:57:07 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Possible bug in commit f3b3f28493d9
+Message-ID: <20170914045707.GA25715@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,17 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  8 Sep 2017 15:44:50 -0700
-Ram Pai <linuxram@us.ibm.com> wrote:
+Commit f3b3f28493d9 ("powerpc/powernv/idle: Don't override
+default/deepest directly in kernel", 2017-03-22) made the following
+change in pnv_cpu_offline() in arch/powerpc/platforms/powernv/idle.c:
 
-> powerpc needs an additional vma bit to support 32 keys.
-> Till the additional vma bit lands in include/linux/mm.h
-> we have to define  it  in powerpc specific header file.
-> This is  needed to get pkeys working on power.
-> 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
+-	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++	if (cpu_has_feature(CPU_FTR_ARCH_300) && deepest_stop_found) {
+ 		srr1 = power9_idle_stop(pnv_deepest_stop_psscr_val,
+ 					pnv_deepest_stop_psscr_mask);
+ 	} else if (idle_states & OPAL_PM_WINKLE_ENABLED) {
+ 		srr1 = power7_winkle();
 
-"This" being an arch specific hack for the additional bit?
+Which seems to be saying that previously, on POWER9 we would always
+call power9_idle_stop(), but now we might possibly call
+power7_idle_insn() to do a nap or sleep or rvwinkle instruction.
 
-Balbir
+Is this really what was meant?  Nap, sleep and rvwinkle are illegal
+instructions on POWER9.  It looks to me as if that statement needs to
+be restructured to do what the commit description says, which is to
+call power9_idle_stop if we have found a valid stop state, and
+otherwise to poll.
+
+At present we are relying on idle_states not not having any of the
+nap/sleep/winkle bits set in it.  Is that guaranteed on POWER9?  If so
+it is at least deserving of a comment.
+
+Paul.
