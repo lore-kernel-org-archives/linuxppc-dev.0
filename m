@@ -1,9 +1,9 @@
 Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYL448c0zDrVs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 08:36:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtYLD6GPSzDrWl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 08:36:52 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -13,9 +13,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  Steven.Sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v8 10/11] arm64/kasan: explicitly zero kasan shadow memory
-Date: Thu, 14 Sep 2017 18:35:16 -0400
-Message-Id: <20170914223517.8242-11-pasha.tatashin@oracle.com>
+Subject: [PATCH v8 09/11] x86/kasan: explicitly zero kasan shadow memory
+Date: Thu, 14 Sep 2017 18:35:15 -0400
+Message-Id: <20170914223517.8242-10-pasha.tatashin@oracle.com>
 In-Reply-To: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 References: <20170914223517.8242-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,17 +39,46 @@ Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
 ---
- arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
+ arch/x86/mm/kasan_init_64.c | 66 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
-index 81f03959a4ab..e78a9ecbb687 100644
---- a/arch/arm64/mm/kasan_init.c
-+++ b/arch/arm64/mm/kasan_init.c
-@@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
- 		set_pgd(pgd_offset_k(start), __pgd(0));
- }
+diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
+index bc84b73684b7..cc0399032673 100644
+--- a/arch/x86/mm/kasan_init_64.c
++++ b/arch/x86/mm/kasan_init_64.c
+@@ -84,6 +84,66 @@ static struct notifier_block kasan_die_notifier = {
+ };
+ #endif
  
++/*
++ * x86 variant of vmemmap_populate() uses either PMD_SIZE pages or base pages
++ * to map allocated memory.  This routine determines the page size for the given
++ * address from vmemmap.
++ */
++static u64 get_vmemmap_pgsz(u64 addr)
++{
++	pgd_t *pgd;
++	p4d_t *p4d;
++	pud_t *pud;
++	pmd_t *pmd;
++
++	pgd = pgd_offset_k(addr);
++	BUG_ON(pgd_none(*pgd) || pgd_large(*pgd));
++
++	p4d = p4d_offset(pgd, addr);
++	BUG_ON(p4d_none(*p4d) || p4d_large(*p4d));
++
++	pud = pud_offset(p4d, addr);
++	BUG_ON(pud_none(*pud) || pud_large(*pud));
++
++	pmd = pmd_offset(pud, addr);
++	BUG_ON(pmd_none(*pmd));
++
++	if (pmd_large(*pmd))
++		return PMD_SIZE;
++	return PAGE_SIZE;
++}
++
 +/*
 + * Memory that was allocated by vmemmap_populate is not zeroed, so we must
 + * zero it here explicitly.
@@ -57,43 +86,36 @@ index 81f03959a4ab..e78a9ecbb687 100644
 +static void
 +zero_vmemmap_populated_memory(void)
 +{
-+	struct memblock_region *reg;
-+	u64 start, end;
++	u64 i, start, end;
 +
-+	for_each_memblock(memory, reg) {
-+		start = __phys_to_virt(reg->base);
-+		end = __phys_to_virt(reg->base + reg->size);
++	for (i = 0; i < E820_MAX_ENTRIES && pfn_mapped[i].end; i++) {
++		void *kaddr_start = pfn_to_kaddr(pfn_mapped[i].start);
++		void *kaddr_end = pfn_to_kaddr(pfn_mapped[i].end);
 +
-+		if (start >= end)
-+			break;
-+
-+		start = (u64)kasan_mem_to_shadow((void *)start);
-+		end = (u64)kasan_mem_to_shadow((void *)end);
++		start = (u64)kasan_mem_to_shadow(kaddr_start);
++		end = (u64)kasan_mem_to_shadow(kaddr_end);
 +
 +		/* Round to the start end of the mapped pages */
-+		start = round_down(start, SWAPPER_BLOCK_SIZE);
-+		end = round_up(end, SWAPPER_BLOCK_SIZE);
++		start = rounddown(start, get_vmemmap_pgsz(start));
++		end = roundup(end, get_vmemmap_pgsz(start));
 +		memset((void *)start, 0, end - start);
 +	}
 +
-+	start = (u64)kasan_mem_to_shadow(_text);
++	start = (u64)kasan_mem_to_shadow(_stext);
 +	end = (u64)kasan_mem_to_shadow(_end);
 +
 +	/* Round to the start end of the mapped pages */
-+	start = round_down(start, SWAPPER_BLOCK_SIZE);
-+	end = round_up(end, SWAPPER_BLOCK_SIZE);
++	start = rounddown(start, get_vmemmap_pgsz(start));
++	end = roundup(end, get_vmemmap_pgsz(start));
 +	memset((void *)start, 0, end - start);
 +}
 +
- void __init kasan_init(void)
+ void __init kasan_early_init(void)
  {
- 	u64 kimg_shadow_start, kimg_shadow_end;
-@@ -205,8 +240,15 @@ void __init kasan_init(void)
- 			pfn_pte(sym_to_pfn(kasan_zero_page), PAGE_KERNEL_RO));
- 
- 	memset(kasan_zero_page, 0, PAGE_SIZE);
-+
- 	cpu_replace_ttbr1(lm_alias(swapper_pg_dir));
+ 	int i;
+@@ -146,6 +206,12 @@ void __init kasan_init(void)
+ 	load_cr3(init_top_pgt);
+ 	__flush_tlb_all();
  
 +	/*
 +	 * vmemmap_populate does not zero the memory, so we need to zero it
@@ -101,8 +123,8 @@ index 81f03959a4ab..e78a9ecbb687 100644
 +	 */
 +	zero_vmemmap_populated_memory();
 +
- 	/* At this point kasan is fully initialized. Enable error messages */
- 	init_task.kasan_depth = 0;
- 	pr_info("KernelAddressSanitizer initialized\n");
+ 	/*
+ 	 * kasan_zero_page has been used as early shadow memory, thus it may
+ 	 * contain some garbage. Now we can clear and write protect it, since
 -- 
 2.14.1
