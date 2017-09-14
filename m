@@ -1,24 +1,16 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtFkM4S5rzDqrC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 20:53:15 +1000 (AEST)
-Date: Thu, 14 Sep 2017 03:53:12 -0700
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Kamalesh Babulal
- <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/5] powerpc/jprobes: Disable preemption when triggered
- through ftrace
-Message-Id: <20170914035312.6750060c7790e31f7728fcef@kernel.org>
-In-Reply-To: <20170914102539.3hnz3gtx5my4qm6g@naverao1-tp.localdomain>
-References: <2bc413d679c563d3ee338c318066777318577ab2.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
- <12e85578f8c036d31a0c2197a8956cdb7e0f945b.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
- <20170913170549.00b607d35f9c754d4d2ca027@kernel.org>
- <20170914102539.3hnz3gtx5my4qm6g@naverao1-tp.localdomain>
-Mime-Version: 1.0
+Return-Path: <npiggin@gmail.com>
+Date: Thu, 14 Sep 2017 21:26:03 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alistair Popple
+ <alistair@popple.id.au>
+Subject: Re: [RFC PATCH 2/2] powerpc/powernv: implement NMI IPIs with
+ OPAL_SIGNAL_SYSTEM_RESET
+Message-ID: <20170914212603.356c66b1@roar.ozlabs.ibm.com>
+In-Reply-To: <20170912160553.13422-3-npiggin@gmail.com>
+References: <20170912160553.13422-1-npiggin@gmail.com>
+ <20170912160553.13422-3-npiggin@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,70 +21,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Sep 2017 15:55:39 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Wed, 13 Sep 2017 02:05:53 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-> On 2017/09/13 05:05PM, Masami Hiramatsu wrote:
-> > On Thu, 14 Sep 2017 02:50:35 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > 
-> > > KPROBES_SANITY_TEST throws the below splat when CONFIG_PREEMPT is
-> > > enabled:
-> > > 
-> > > [    3.140410] Kprobe smoke test: started
-> > > [    3.149680] DEBUG_LOCKS_WARN_ON(val > preempt_count())
-> > > [    3.149684] ------------[ cut here ]------------
-> > > [    3.149695] WARNING: CPU: 19 PID: 1 at kernel/sched/core.c:3094 preempt_count_sub+0xcc/0x140
-> > > [    3.149699] Modules linked in:
-> > > [    3.149705] CPU: 19 PID: 1 Comm: swapper/0 Not tainted 4.13.0-rc7-nnr+ #97
-> > > [    3.149709] task: c0000000fea80000 task.stack: c0000000feb00000
-> > > [    3.149713] NIP:  c00000000011d3dc LR: c00000000011d3d8 CTR: c000000000a090d0
-> > > [    3.149718] REGS: c0000000feb03400 TRAP: 0700   Not tainted  (4.13.0-rc7-nnr+)
-> > > [    3.149722] MSR:  8000000000021033 <SF,ME,IR,DR,RI,LE>  CR: 28000282  XER: 00000000
-> > > [    3.149732] CFAR: c00000000015aa18 SOFTE: 0
-> > > <snip>
-> > > [    3.149786] NIP [c00000000011d3dc] preempt_count_sub+0xcc/0x140
-> > > [    3.149790] LR [c00000000011d3d8] preempt_count_sub+0xc8/0x140
-> > > [    3.149794] Call Trace:
-> > > [    3.149798] [c0000000feb03680] [c00000000011d3d8] preempt_count_sub+0xc8/0x140 (unreliable)
-> > > [    3.149804] [c0000000feb036e0] [c000000000046198] kprobe_handler+0x228/0x4b0
-> > > [    3.149810] [c0000000feb03750] [c0000000000269c8] program_check_exception+0x58/0x3b0
-> > > [    3.149816] [c0000000feb037c0] [c00000000000903c] program_check_common+0x16c/0x170
-> > > [    3.149822] --- interrupt: 0 at kprobe_target+0x8/0x20
-> > >                    LR = init_test_probes+0x248/0x7d0
-> > > [    3.149829] [c0000000feb03ab0] [c000000000e4f048] kp+0x0/0x80 (unreliable)
-> > > [    3.149835] [c0000000feb03b10] [c00000000004ea60] livepatch_handler+0x38/0x74
-> > > [    3.149841] [c0000000feb03ba0] [c000000000d0de54] init_kprobes+0x1d8/0x208
-> > > [    3.149846] [c0000000feb03c40] [c00000000000daa8] do_one_initcall+0x68/0x1d0
-> > > [    3.149852] [c0000000feb03d00] [c000000000ce44f0] kernel_init_freeable+0x298/0x374
-> > > [    3.149857] [c0000000feb03dc0] [c00000000000dd84] kernel_init+0x24/0x160
-> > > [    3.149863] [c0000000feb03e30] [c00000000000bfec] ret_from_kernel_thread+0x5c/0x70
-> > > [    3.149867] Instruction dump:
-> > > [    3.149871] 419effdc 3d22001b 39299240 81290000 2f890000 409effc8 3c82ffcb 3c62ffcb
-> > > [    3.149879] 3884bc68 3863bc18 4803d5fd 60000000 <0fe00000> 4bffffa8 60000000 60000000
-> > > [    3.149890] ---[ end trace 432dd46b4ce3d29f ]---
-> > > [    3.166003] Kprobe smoke test: passed successfully
-> > > 
-> > > The issue is that we aren't disabling preemption in
-> > > kprobe_ftrace_handler(). Disable it.
-> > 
-> > Oops, right! Similar patch may need for x86 too.
+> There are two complications. The first is that sreset from stop states
+> come in with SRR1 set to do a powersave wakeup, with an sreset reason
+> encoded.
 > 
-> Indeed, I will send a patch for that.
-> 
-> On a related note, I've been looking into why we have !PREEMPT for 
-> CONFIG_OPTPROBES. It looks like the primary reason is x86 having to deal 
-> with replacing multiple instructions. However, that isn't true with arm 
-> and powerpc. So, does it make sense to move 'depends on !PREEMPT' to the 
-> x86 code? Are there other scenarios where it might cause issues for 
-> arm/powerpc?
+> The second is that threads on the same core can't be signalled directly
+> so we must designate a bounce CPU to reflect the IPI back.
 
-Indeed! Whuat I expected was to replace several instructions in RISC processors
-for jumping far site (like load & jump), but you chose different approach.
-So there is no reason to prehibit that.
+This is a revised patch with only DD2 enablement. DD2 allows threads on
+the same core to be IPIed. It's much simpler, and most of the code is
+fixing the watchdog and preventing it from triggering from xmon (which
+will be split into other patches of course).
 
-Thanks!
+It's probably a better starting point to get this working and merged
+first, then revisiting bouncing.
 
+---
+ arch/powerpc/include/asm/opal-api.h            |  1 +
+ arch/powerpc/include/asm/opal.h                |  2 ++
+ arch/powerpc/kernel/irq.c                      | 20 ++++++++++++++++++
+ arch/powerpc/kernel/watchdog.c                 | 29 +++++++++++++++-----------
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/powernv.h       |  1 +
+ arch/powerpc/platforms/powernv/setup.c         |  3 +++
+ arch/powerpc/platforms/powernv/smp.c           | 24 +++++++++++++++++++++
+ arch/powerpc/xmon/xmon.c                       | 17 +++++++++++----
+ 9 files changed, 82 insertions(+), 16 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 450a60b81d2a..9d191ebea706 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -188,6 +188,7 @@
+ #define OPAL_XIVE_DUMP				142
+ #define OPAL_XIVE_RESERVED3			143
+ #define OPAL_XIVE_RESERVED4			144
++#define OPAL_SIGNAL_SYSTEM_RESET		145
+ #define OPAL_NPU_INIT_CONTEXT			146
+ #define OPAL_NPU_DESTROY_CONTEXT		147
+ #define OPAL_NPU_MAP_LPAR			148
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 726c23304a57..7d7613c49f2b 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -281,6 +281,8 @@ int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
+ int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
+ int opal_sensor_group_clear(u32 group_hndl, int token);
+ 
++int64_t opal_signal_system_reset(int32_t cpu);
++
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+ 				   int depth, void *data);
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 4e65bf82f5e0..8ffebb9437e5 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -407,11 +407,31 @@ static const u8 srr1_to_lazyirq[0x10] = {
+ 	PACA_IRQ_HMI,
+ 	0, 0, 0, 0, 0 };
+ 
++static noinline void replay_system_reset(void)
++{
++	struct pt_regs regs;
++
++	ppc_save_regs(&regs);
++
++	get_paca()->in_nmi = 1;
++	system_reset_exception(&regs);
++	get_paca()->in_nmi = 0;
++}
++
+ void irq_set_pending_from_srr1(unsigned long srr1)
+ {
+ 	unsigned int idx = (srr1 & SRR1_WAKEMASK_P8) >> 18;
+ 
+ 	/*
++	 * 0100b SRR1 reason is system reset. Take it now,
++	 * which is immediately after registers are restored
++	 * from idle. It's an NMI, so interrupts needn't be
++	 * re-enabled.
++	 */
++	if (unlikely(idx == 4))
++		replay_system_reset();
++
++	/*
+ 	 * The 0 index (SRR1[42:45]=b0000) must always evaluate to 0,
+ 	 * so this can be called unconditionally with srr1 wake reason.
+ 	 */
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index 2f6eadd9408d..1fb9379dc683 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -97,8 +97,7 @@ static void wd_lockup_ipi(struct pt_regs *regs)
+ 	else
+ 		dump_stack();
+ 
+-	if (hardlockup_panic)
+-		nmi_panic(regs, "Hard LOCKUP");
++	/* Do not panic from here because that can recurse into NMI IPI layer */
+ }
+ 
+ static void set_cpumask_stuck(const struct cpumask *cpumask, u64 tb)
+@@ -134,15 +133,18 @@ static void watchdog_smp_panic(int cpu, u64 tb)
+ 	pr_emerg("Watchdog CPU:%d detected Hard LOCKUP other CPUS:%*pbl\n",
+ 			cpu, cpumask_pr_args(&wd_smp_cpus_pending));
+ 
+-	/*
+-	 * Try to trigger the stuck CPUs.
+-	 */
+-	for_each_cpu(c, &wd_smp_cpus_pending) {
+-		if (c == cpu)
+-			continue;
+-		smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
++	if (!sysctl_hardlockup_all_cpu_backtrace) {
++		/*
++		 * Try to trigger the stuck CPUs, unless we are going to
++		 * get a backtrace on all of them anyway.
++		 */
++		for_each_cpu(c, &wd_smp_cpus_pending) {
++			if (c == cpu)
++				continue;
++			smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
++		}
++		smp_flush_nmi_ipi(1000000);
+ 	}
+-	smp_flush_nmi_ipi(1000000);
+ 
+ 	/* Take the stuck CPUs out of the watch group */
+ 	set_cpumask_stuck(&wd_smp_cpus_pending, tb);
+@@ -275,9 +277,12 @@ void arch_touch_nmi_watchdog(void)
+ {
+ 	unsigned long ticks = tb_ticks_per_usec * wd_timer_period_ms * 1000;
+ 	int cpu = smp_processor_id();
++	u64 tb = get_tb();
+ 
+-	if (get_tb() - per_cpu(wd_timer_tb, cpu) >= ticks)
+-		watchdog_timer_interrupt(cpu);
++	if (tb - per_cpu(wd_timer_tb, cpu) >= ticks) {
++		per_cpu(wd_timer_tb, cpu) = tb;
++		wd_smp_clear_cpu_pending(cpu, tb);
++	}
+ }
+ EXPORT_SYMBOL(arch_touch_nmi_watchdog);
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 8c1ede2d3f7e..37cd170201a2 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -307,6 +307,7 @@ OPAL_CALL(opal_xive_get_vp_info,		OPAL_XIVE_GET_VP_INFO);
+ OPAL_CALL(opal_xive_set_vp_info,		OPAL_XIVE_SET_VP_INFO);
+ OPAL_CALL(opal_xive_sync,			OPAL_XIVE_SYNC);
+ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
++OPAL_CALL(opal_signal_system_reset,		OPAL_SIGNAL_SYSTEM_RESET);
+ OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+ OPAL_CALL(opal_npu_map_lpar,			OPAL_NPU_MAP_LPAR);
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index a159d48573d7..49add2037e0d 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -3,6 +3,7 @@
+ 
+ #ifdef CONFIG_SMP
+ extern void pnv_smp_init(void);
++extern int pnv_system_reset_exception(struct pt_regs *regs);
+ #else
+ static inline void pnv_smp_init(void) { }
+ #endif
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 897aa1400eb8..4fdaa1d7c4cd 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -282,6 +282,9 @@ static void __init pnv_setup_machdep_opal(void)
+ 	ppc_md.restart = pnv_restart;
+ 	pm_power_off = pnv_power_off;
+ 	ppc_md.halt = pnv_halt;
++#ifdef CONFIG_SMP
++	ppc_md.system_reset_exception = pnv_system_reset_exception;
++#endif
+ 	ppc_md.machine_check_exception = opal_machine_check;
+ 	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
+ 	ppc_md.hmi_exception_early = opal_hmi_exception_early;
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index c17f81e433f7..83343832e07e 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -290,6 +290,28 @@ static void __init pnv_smp_probe(void)
+ 	}
+ }
+ 
++int pnv_system_reset_exception(struct pt_regs *regs)
++{
++	if (smp_handle_nmi_ipi(regs))
++		return 1;
++	return 0;
++}
++
++static int pnv_cause_nmi_ipi(int cpu)
++{
++	int64_t rc;
++
++	rc = opal_signal_system_reset(cpu);
++	if (rc == OPAL_SUCCESS)
++		return 1;
++
++	/*
++	 * Don't cope with OPAL_PARTIAL yet (just punt to regular IPI)
++	 */
++
++	return 0;
++}
++
+ static struct smp_ops_t pnv_smp_ops = {
+ 	.message_pass	= NULL, /* Use smp_muxed_ipi_message_pass */
+ 	.cause_ipi	= NULL,	/* Filled at runtime by pnv_smp_probe() */
+@@ -308,6 +330,8 @@ static struct smp_ops_t pnv_smp_ops = {
+ /* This is called very early during platform setup_arch */
+ void __init pnv_smp_init(void)
+ {
++	if (opal_check_token(OPAL_SIGNAL_SYSTEM_RESET))
++		pnv_smp_ops.cause_nmi_ipi = pnv_cause_nmi_ipi;
+ 	smp_ops = &pnv_smp_ops;
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 33351c6704b1..d9a12102b111 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -530,14 +530,19 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+ 
+  waiting:
+ 	secondary = 1;
++	spin_begin();
+ 	while (secondary && !xmon_gate) {
+ 		if (in_xmon == 0) {
+-			if (fromipi)
++			if (fromipi) {
++				spin_end();
+ 				goto leave;
++			}
+ 			secondary = test_and_set_bit(0, &in_xmon);
+ 		}
+-		barrier();
++		spin_cpu_relax();
++		touch_nmi_watchdog();
+ 	}
++	spin_end();
+ 
+ 	if (!secondary && !xmon_gate) {
+ 		/* we are the first cpu to come in */
+@@ -568,21 +573,25 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+ 		mb();
+ 		xmon_gate = 1;
+ 		barrier();
++		touch_nmi_watchdog();
+ 	}
+ 
+  cmdloop:
+ 	while (in_xmon) {
+ 		if (secondary) {
++			spin_begin();
+ 			if (cpu == xmon_owner) {
+ 				if (!test_and_set_bit(0, &xmon_taken)) {
+ 					secondary = 0;
++					spin_end();
+ 					continue;
+ 				}
+ 				/* missed it */
+ 				while (cpu == xmon_owner)
+-					barrier();
++					spin_cpu_relax();
+ 			}
+-			barrier();
++			spin_cpu_relax();
++			touch_nmi_watchdog();
+ 		} else {
+ 			cmd = cmds(regs);
+ 			if (cmd != 0) {
 -- 
-Masami Hiramatsu <mhiramat@kernel.org>
+2.13.3
