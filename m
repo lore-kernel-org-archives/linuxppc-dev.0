@@ -1,49 +1,25 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xt9nF11d7zDrJg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 17:55:28 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8E7riDN092428
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 03:55:26 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cygdudhgm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 03:55:25 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 14 Sep 2017 08:55:22 +0100
-Subject: Re: [PATCH v3 04/20] mm: VMA sequence count
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1504894024-2750-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1504894024-2750-5-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170913115354.GA7756@jagdpanzerIV.localdomain>
- <44849c10-bc67-b55e-5788-d3c6bb5e7ad1@linux.vnet.ibm.com>
- <20170914003116.GA599@jagdpanzerIV.localdomain>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 14 Sep 2017 09:55:13 +0200
-MIME-Version: 1.0
-In-Reply-To: <20170914003116.GA599@jagdpanzerIV.localdomain>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <441ff1c6-72a7-5d96-02c8-063578affb62@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtB896p1rzDqXp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 18:11:53 +1000 (AEST)
+Message-ID: <1505376692.12628.191.camel@kernel.crashing.org>
+Subject: Re: [PATCH 02/25] powerpc: define an additional vma bit for
+ protection keys.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Balbir Singh <bsingharora@gmail.com>, Ram Pai <linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ ebiederm@xmission.com
+Date: Thu, 14 Sep 2017 18:11:32 +1000
+In-Reply-To: <20170914143807.03cd9aa3@firefly.ozlabs.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-11-git-send-email-linuxram@us.ibm.com>
+ <20170914143807.03cd9aa3@firefly.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,147 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 2017-09-14 at 14:38 +1000, Balbir Singh wrote:
+> On Fri,  8 Sep 2017 15:44:50 -0700
+> Ram Pai <linuxram@us.ibm.com> wrote:
+> 
+> > powerpc needs an additional vma bit to support 32 keys.
+> > Till the additional vma bit lands in include/linux/mm.h
+> > we have to define  it  in powerpc specific header file.
+> > This is  needed to get pkeys working on power.
+> > 
+> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> > ---
+> 
+> "This" being an arch specific hack for the additional bit?
 
-On 14/09/2017 02:31, Sergey Senozhatsky wrote:
-> Hi,
-> 
-> On (09/13/17 18:56), Laurent Dufour wrote:
->> Hi Sergey,
->>
->> On 13/09/2017 13:53, Sergey Senozhatsky wrote:
->>> Hi,
->>>
->>> On (09/08/17 20:06), Laurent Dufour wrote:
-> [..]
->>> ok, so what I got on my box is:
->>>
->>> vm_munmap()  -> down_write_killable(&mm->mmap_sem)
->>>  do_munmap()
->>>   __split_vma()
->>>    __vma_adjust()  -> write_seqcount_begin(&vma->vm_sequence)
->>>                    -> write_seqcount_begin_nested(&next->vm_sequence, SINGLE_DEPTH_NESTING)
->>>
->>> so this gives 3 dependencies  ->mmap_sem   ->   ->vm_seq
->>>                               ->vm_seq     ->   ->vm_seq/1
->>>                               ->mmap_sem   ->   ->vm_seq/1
->>>
->>>
->>> SyS_mremap() -> down_write_killable(&current->mm->mmap_sem)
->>>  move_vma()   -> write_seqcount_begin(&vma->vm_sequence)
->>>               -> write_seqcount_begin_nested(&new_vma->vm_sequence, SINGLE_DEPTH_NESTING);
->>>   move_page_tables()
->>>    __pte_alloc()
->>>     pte_alloc_one()
->>>      __alloc_pages_nodemask()
->>>       fs_reclaim_acquire()
->>>
->>>
->>> I think here we have prepare_alloc_pages() call, that does
->>>
->>>         -> fs_reclaim_acquire(gfp_mask)
->>>         -> fs_reclaim_release(gfp_mask)
->>>
->>> so that adds one more dependency  ->mmap_sem   ->   ->vm_seq    ->   fs_reclaim
->>>                                   ->mmap_sem   ->   ->vm_seq/1  ->   fs_reclaim
->>>
->>>
->>> now, under memory pressure we hit the slow path and perform direct
->>> reclaim. direct reclaim is done under fs_reclaim lock, so we end up
->>> with the following call chain
->>>
->>> __alloc_pages_nodemask()
->>>  __alloc_pages_slowpath()
->>>   __perform_reclaim()       ->   fs_reclaim_acquire(gfp_mask);
->>>    try_to_free_pages()
->>>     shrink_node()
->>>      shrink_active_list()
->>>       rmap_walk_file()      ->   i_mmap_lock_read(mapping);
->>>
->>>
->>> and this break the existing dependency. since we now take the leaf lock
->>> (fs_reclaim) first and the the root lock (->mmap_sem).
->>
->> Thanks for looking at this.
->> I'm sorry, I should have miss something.
-> 
-> no prob :)
-> 
-> 
->> My understanding is that there are 2 chains of locks:
->>  1. from __vma_adjust() mmap_sem -> i_mmap_rwsem -> vm_seq
->>  2. from move_vmap() mmap_sem -> vm_seq -> fs_reclaim
->>  2. from __alloc_pages_nodemask() fs_reclaim -> i_mmap_rwsem
-> 
-> yes, as far as lockdep warning suggests.
-> 
->> So the solution would be to have in __vma_adjust()
->>  mmap_sem -> vm_seq -> i_mmap_rwsem
->>
->> But this will raised the following dependency from  unmap_mapping_range()
->> unmap_mapping_range() 		-> i_mmap_rwsem
->>  unmap_mapping_range_tree()
->>   unmap_mapping_range_vma()
->>    zap_page_range_single()
->>     unmap_single_vma()
->>      unmap_page_range()	 	-> vm_seq
->>
->> And there is no way to get rid of it easily as in unmap_mapping_range()
->> there is no VMA identified yet.
->>
->> That's being said I can't see any clear way to get lock dependency cleaned
->> here.
->> Furthermore, this is not clear to me how a deadlock could happen as vm_seq
->> is a sequence lock, and there is no way to get blocked here.
-> 
-> as far as I understand,
->    seq locks can deadlock, technically. not on the write() side, but on
-> the read() side:
-> 
-> read_seqcount_begin()
->  raw_read_seqcount_begin()
->    __read_seqcount_begin()
-> 
-> and __read_seqcount_begin() spins for ever
-> 
->    __read_seqcount_begin()
->    {
->     repeat:
->      ret = READ_ONCE(s->sequence);
->      if (unlikely(ret & 1)) {
->          cpu_relax();
->          goto repeat;
->      }
->      return ret;
->    }
-> 
-> 
-> so if there are two CPUs, one doing write_seqcount() and the other one
-> doing read_seqcount() then what can happen is something like this
-> 
-> 	CPU0					CPU1
-> 
-> 						fs_reclaim_acquire()
-> 	write_seqcount_begin()
-> 	fs_reclaim_acquire()			read_seqcount_begin()
-> 	write_seqcount_end()
-> 
-> CPU0 can't write_seqcount_end() because of fs_reclaim_acquire() from
-> CPU1, CPU1 can't read_seqcount_begin() because CPU0 did write_seqcount_begin()
-> and now waits for fs_reclaim_acquire(). makes sense?
+Arch VMA bits ? really ? I'd rather we limit ourselves to 16 keys first
+then push for adding the extra bit to the generic code.
 
-Yes, this makes sense.
-
-But in the case of this series, there is no call to
-__read_seqcount_begin(), and the reader (the speculative page fault
-handler), is just checking for (vm_seq & 1) and if this is true, simply
-exit the speculative path without waiting.
-So there is no deadlock possibility.
-
-The bad case would be to have 2 concurrent threads calling
-write_seqcount_begin() on the same VMA, leading a wrongly freed sequence
-lock but this can't happen because of the mmap_sem holding for write in
-such a case.
-
-Cheers,
-Laurent.
+Ben.
