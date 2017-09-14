@@ -1,38 +1,23 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pg0-x232.google.com (mail-pg0-x232.google.com
- [IPv6:2607:f8b0:400e:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xszwp2wFjzDqjS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 10:31:22 +1000 (AEST)
-Received: by mail-pg0-x232.google.com with SMTP id j16so3396923pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Sep 2017 17:31:22 -0700 (PDT)
-Date: Thu, 14 Sep 2017 09:31:16 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v3 04/20] mm: VMA sequence count
-Message-ID: <20170914003116.GA599@jagdpanzerIV.localdomain>
-References: <1504894024-2750-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1504894024-2750-5-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170913115354.GA7756@jagdpanzerIV.localdomain>
- <44849c10-bc67-b55e-5788-d3c6bb5e7ad1@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44849c10-bc67-b55e-5788-d3c6bb5e7ad1@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xt03G1GLRzDqjS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 10:36:58 +1000 (AEST)
+Date: Wed, 13 Sep 2017 17:36:55 -0700
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/5] powerpc/kprobes: Fix warnings from
+ __this_cpu_read() on preempt kernels
+Message-Id: <20170913173655.1ada3c799d98cab104c45cae@kernel.org>
+In-Reply-To: <63b0f9f3fd3d95d758678a892b87b7c561545c99.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <2bc413d679c563d3ee338c318066777318577ab2.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
+ <63b0f9f3fd3d95d758678a892b87b7c561545c99.1505336870.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,130 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 14 Sep 2017 02:50:34 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-On (09/13/17 18:56), Laurent Dufour wrote:
-> Hi Sergey,
+> Kamalesh pointed out that we are getting the below call traces with
+> livepatched functions when we enable CONFIG_PREEMPT:
 > 
-> On 13/09/2017 13:53, Sergey Senozhatsky wrote:
-> > Hi,
-> > 
-> > On (09/08/17 20:06), Laurent Dufour wrote:
-[..]
-> > ok, so what I got on my box is:
-> > 
-> > vm_munmap()  -> down_write_killable(&mm->mmap_sem)
-> >  do_munmap()
-> >   __split_vma()
-> >    __vma_adjust()  -> write_seqcount_begin(&vma->vm_sequence)
-> >                    -> write_seqcount_begin_nested(&next->vm_sequence, SINGLE_DEPTH_NESTING)
-> > 
-> > so this gives 3 dependencies  ->mmap_sem   ->   ->vm_seq
-> >                               ->vm_seq     ->   ->vm_seq/1
-> >                               ->mmap_sem   ->   ->vm_seq/1
-> > 
-> > 
-> > SyS_mremap() -> down_write_killable(&current->mm->mmap_sem)
-> >  move_vma()   -> write_seqcount_begin(&vma->vm_sequence)
-> >               -> write_seqcount_begin_nested(&new_vma->vm_sequence, SINGLE_DEPTH_NESTING);
-> >   move_page_tables()
-> >    __pte_alloc()
-> >     pte_alloc_one()
-> >      __alloc_pages_nodemask()
-> >       fs_reclaim_acquire()
-> > 
-> > 
-> > I think here we have prepare_alloc_pages() call, that does
-> > 
-> >         -> fs_reclaim_acquire(gfp_mask)
-> >         -> fs_reclaim_release(gfp_mask)
-> > 
-> > so that adds one more dependency  ->mmap_sem   ->   ->vm_seq    ->   fs_reclaim
-> >                                   ->mmap_sem   ->   ->vm_seq/1  ->   fs_reclaim
-> > 
-> > 
-> > now, under memory pressure we hit the slow path and perform direct
-> > reclaim. direct reclaim is done under fs_reclaim lock, so we end up
-> > with the following call chain
-> > 
-> > __alloc_pages_nodemask()
-> >  __alloc_pages_slowpath()
-> >   __perform_reclaim()       ->   fs_reclaim_acquire(gfp_mask);
-> >    try_to_free_pages()
-> >     shrink_node()
-> >      shrink_active_list()
-> >       rmap_walk_file()      ->   i_mmap_lock_read(mapping);
-> > 
-> > 
-> > and this break the existing dependency. since we now take the leaf lock
-> > (fs_reclaim) first and the the root lock (->mmap_sem).
+> [  495.470721] BUG: using __this_cpu_read() in preemptible [00000000] code: cat/8394
+> [  495.471167] caller is is_current_kprobe_addr+0x30/0x90
+> [  495.471171] CPU: 4 PID: 8394 Comm: cat Tainted: G              K 4.13.0-rc7-nnr+ #95
+> [  495.471173] Call Trace:
+> [  495.471178] [c00000008fd9b960] [c0000000009f039c] dump_stack+0xec/0x160 (unreliable)
+> [  495.471184] [c00000008fd9b9a0] [c00000000059169c] check_preemption_disabled+0x15c/0x170
+> [  495.471187] [c00000008fd9ba30] [c000000000046460] is_current_kprobe_addr+0x30/0x90
+> [  495.471191] [c00000008fd9ba60] [c00000000004e9a0] ftrace_call+0x1c/0xb8
+> [  495.471195] [c00000008fd9bc30] [c000000000376fd8] seq_read+0x238/0x5c0
+> [  495.471199] [c00000008fd9bcd0] [c0000000003cfd78] proc_reg_read+0x88/0xd0
+> [  495.471203] [c00000008fd9bd00] [c00000000033e5d4] __vfs_read+0x44/0x1b0
+> [  495.471206] [c00000008fd9bd90] [c0000000003402ec] vfs_read+0xbc/0x1b0
+> [  495.471210] [c00000008fd9bde0] [c000000000342138] SyS_read+0x68/0x110
+> [  495.471214] [c00000008fd9be30] [c00000000000bc6c] system_call+0x58/0x6c
 > 
-> Thanks for looking at this.
-> I'm sorry, I should have miss something.
-
-no prob :)
-
-
-> My understanding is that there are 2 chains of locks:
->  1. from __vma_adjust() mmap_sem -> i_mmap_rwsem -> vm_seq
->  2. from move_vmap() mmap_sem -> vm_seq -> fs_reclaim
->  2. from __alloc_pages_nodemask() fs_reclaim -> i_mmap_rwsem
-
-yes, as far as lockdep warning suggests.
-
-> So the solution would be to have in __vma_adjust()
->  mmap_sem -> vm_seq -> i_mmap_rwsem
+> Commit c05b8c4474c030 ("powerpc/kprobes: Skip livepatch_handler() for
+> jprobes") introduced a helper is_current_kprobe_addr() to help determine
+> if the current function has been livepatched or if it has a jprobe
+> installed, both of which modify the NIP.
 > 
-> But this will raised the following dependency from  unmap_mapping_range()
-> unmap_mapping_range() 		-> i_mmap_rwsem
->  unmap_mapping_range_tree()
->   unmap_mapping_range_vma()
->    zap_page_range_single()
->     unmap_single_vma()
->      unmap_page_range()	 	-> vm_seq
+> In the case of a jprobe, kprobe_ftrace_handler() disables pre-emption
+> before calling into setjmp_pre_handler() which returns without disabling
+> pre-emption. This is done to ensure that the jprobe han dler won't
+> disappear beneath us if the jprobe is unregistered between the
+> setjmp_pre_handler() and the subsequent longjmp_break_handler() called
+> from the jprobe handler. Due to this, we can use __this_cpu_read() in
+> is_current_kprobe_addr() with the pre-emption check as we know that
+> pre-emption will be disabled.
 > 
-> And there is no way to get rid of it easily as in unmap_mapping_range()
-> there is no VMA identified yet.
+> However, if this function has been livepatched, we are still doing this
+> check and when we do so, pre-emption won't necessarily be disabled. This
+> results in the call trace shown above.
 > 
-> That's being said I can't see any clear way to get lock dependency cleaned
-> here.
-> Furthermore, this is not clear to me how a deadlock could happen as vm_seq
-> is a sequence lock, and there is no way to get blocked here.
+> Fix this by only invoking is_current_kprobe_addr() when pre-emption is
+> disabled. And since we now guard this within a pre-emption check, we can
+> instead use raw_cpu_read() to get the current_kprobe value skipping the
+> check done by __this_cpu_read().
 
-as far as I understand,
-   seq locks can deadlock, technically. not on the write() side, but on
-the read() side:
+Hmm, can you disable preempt temporary at this function and read it?
 
-read_seqcount_begin()
- raw_read_seqcount_begin()
-   __read_seqcount_begin()
+Thank you,
 
-and __read_seqcount_begin() spins for ever
+> 
+> Fixes: c05b8c4474c030 ("powerpc/kprobes: Skip livepatch_handler() for jprobes")
+> Reported-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/kprobes.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index e848fe2c93fb..db40b13fd3d1 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -45,8 +45,12 @@ struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
+>  
+>  int is_current_kprobe_addr(unsigned long addr)
+>  {
+> -	struct kprobe *p = kprobe_running();
+> -	return (p && (unsigned long)p->addr == addr) ? 1 : 0;
+> +	if (!preemptible()) {
+> +		struct kprobe *p = raw_cpu_read(current_kprobe);
+> +		return (p && (unsigned long)p->addr == addr) ? 1 : 0;
+> +	}
+> +
+> +	return 0;
+>  }
+>  
+>  bool arch_within_kprobe_blacklist(unsigned long addr)
+> -- 
+> 2.14.1
+> 
 
-   __read_seqcount_begin()
-   {
-    repeat:
-     ret = READ_ONCE(s->sequence);
-     if (unlikely(ret & 1)) {
-         cpu_relax();
-         goto repeat;
-     }
-     return ret;
-   }
 
-
-so if there are two CPUs, one doing write_seqcount() and the other one
-doing read_seqcount() then what can happen is something like this
-
-	CPU0					CPU1
-
-						fs_reclaim_acquire()
-	write_seqcount_begin()
-	fs_reclaim_acquire()			read_seqcount_begin()
-	write_seqcount_end()
-
-CPU0 can't write_seqcount_end() because of fs_reclaim_acquire() from
-CPU1, CPU1 can't read_seqcount_begin() because CPU0 did write_seqcount_begin()
-and now waits for fs_reclaim_acquire(). makes sense?
-
-	-ss
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
