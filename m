@@ -1,53 +1,34 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtCYp15n8zDrJg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 19:15:41 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8E9Est3108152
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:15:39 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2cypskgs8b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 05:15:39 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 14 Sep 2017 10:15:36 +0100
-Subject: Re: [PATCH v3 04/20] mm: VMA sequence count
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1504894024-2750-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1504894024-2750-5-git-send-email-ldufour@linux.vnet.ibm.com>
- <20170913115354.GA7756@jagdpanzerIV.localdomain>
- <44849c10-bc67-b55e-5788-d3c6bb5e7ad1@linux.vnet.ibm.com>
- <20170914003116.GA599@jagdpanzerIV.localdomain>
- <441ff1c6-72a7-5d96-02c8-063578affb62@linux.vnet.ibm.com>
- <20170914081358.GG599@jagdpanzerIV.localdomain>
- <26fa0b71-4053-5af7-baa0-e5fff9babf41@linux.vnet.ibm.com>
- <20170914091101.GH599@jagdpanzerIV.localdomain>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 14 Sep 2017 11:15:27 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtCbk1JbwzDrKx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 19:17:21 +1000 (AEST)
+Subject: Re: [PATCH v3] Make initramfs honor CONFIG_DEVTMPFS_MOUNT
+To: Rob Landley <rob@landley.net>, Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>, mhocko@suse.com,
+ peterz@infradead.org, viresh.kumar@linaro.org,
+ Benjamin Tissoires <benjamin.tissoires@redhat.com>, mingo@kernel.org,
+ lokeshvutla@ti.com, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linux-input@vger.kernel.org, thomas.lendacky@amd.com, lauraa@codeaurora.org,
+ keescook@chromium.org, Jiri Kosina <jikos@kernel.org>, rostedt@goodmis.org,
+ linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, tglx@linutronix.de,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, tj@kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <1495700957.9020.43.camel@abdul.in.ibm.com>
+ <8760gp9jjl.fsf@concordia.ellerman.id.au>
+ <20170526072437.46499fbd@canb.auug.org.au>
+ <87a7e82d-0af5-7f9e-6bd6-7e28b238e866@landley.net>
+ <87r2z86ykt.fsf@concordia.ellerman.id.au>
+ <4aa9cb26-f868-0720-e5c8-3c4e08afad20@landley.net>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <3ba5ddc7-d1a2-7f54-0a26-0752f3975226@c-s.fr>
+Date: Thu, 14 Sep 2017 11:17:16 +0200
 MIME-Version: 1.0
-In-Reply-To: <20170914091101.GH599@jagdpanzerIV.localdomain>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <9605ce43-0f61-48d7-88e2-88220b773494@linux.vnet.ibm.com>
+In-Reply-To: <4aa9cb26-f868-0720-e5c8-3c4e08afad20@landley.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,13 +38,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/09/2017 11:11, Sergey Senozhatsky wrote:
-> On (09/14/17 10:58), Laurent Dufour wrote:
-> [..]
->> That's right, but here this is the  sequence counter mm->mm_seq, not the
->> vm_seq one.
+Le 14/09/2017 à 01:51, Rob Landley a écrit :
+> From: Rob Landley <rob@landley.net>
 > 
-> d'oh... you are right.
+> Make initramfs honor CONFIG_DEVTMPFS_MOUNT, and move
+> /dev/console open after devtmpfs mount.
+> 
+> Add workaround for Debian bug that was copied by Ubuntu.
 
-So I'm doubting about the probability of a deadlock here, but I don't like
-to see lockdep complaining. Is there an easy way to make it happy ?
+Is that a bug only for Debian ? Why ?
+Why should a Debian bug be fixed by a workaround in the mainline kernel ?
+
+> 
+> Signed-off-by: Rob Landley <rob@landley.net>
+> ---
+> 
+> v2 discussion: http://lkml.iu.edu/hypermail/linux/kernel/1705.2/05611.html
+> 
+>   drivers/base/Kconfig |   14 ++++----------
+>   fs/namespace.c       |   14 ++++++++++++++
+>   init/main.c          |   15 +++++++++------
+>   3 files changed, 27 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+> index f046d21..97352d4 100644
+> --- a/drivers/base/Kconfig
+> +++ b/drivers/base/Kconfig
+> @@ -48,16 +48,10 @@ config DEVTMPFS_MOUNT
+>   	bool "Automount devtmpfs at /dev, after the kernel mounted the rootfs"
+>   	depends on DEVTMPFS
+>   	help
+> -	  This will instruct the kernel to automatically mount the
+> -	  devtmpfs filesystem at /dev, directly after the kernel has
+> -	  mounted the root filesystem. The behavior can be overridden
+> -	  with the commandline parameter: devtmpfs.mount=0|1.
+> -	  This option does not affect initramfs based booting, here
+> -	  the devtmpfs filesystem always needs to be mounted manually
+> -	  after the rootfs is mounted.
+> -	  With this option enabled, it allows to bring up a system in
+> -	  rescue mode with init=/bin/sh, even when the /dev directory
+> -	  on the rootfs is completely empty.
+> +	  Automatically mount devtmpfs at /dev on the root filesystem, which
+> +	  lets the system to come up in rescue mode with [rd]init=/bin/sh.
+> +	  Override with devtmpfs.mount=0 on the commandline. Initramfs can
+> +	  create a /dev dir as needed, other rootfs needs the mount point.
+
+Why modifying the initial text ?
+Why talking about rescue mode only, whereas this feature mainly concerns 
+the standard mode.
+
+>   
+>   config STANDALONE
+>   	bool "Select only drivers that don't need compile-time external firmware"
+> diff --git a/fs/namespace.c b/fs/namespace.c
+> index f8893dc..06057d7 100644
+> --- a/fs/namespace.c
+> +++ b/fs/namespace.c
+> @@ -2417,7 +2417,21 @@ static int do_add_mount(struct mount *newmnt, struct path *path, int mnt_flags)
+>   	err = -EBUSY;
+>   	if (path->mnt->mnt_sb == newmnt->mnt.mnt_sb &&
+>   	    path->mnt->mnt_root == path->dentry)
+> +	{
+> +		if (IS_ENABLED(CONFIG_DEVTMPFS_MOUNT) &&
+> +		    !strcmp(path->mnt->mnt_sb->s_type->name, "devtmpfs"))
+> +		{
+> +			/* Debian's kernel config enables DEVTMPFS_MOUNT, then
+> +			   its initramfs setup script tries to mount devtmpfs
+> +			   again, and if the second mount-over-itself fails
+> +			   the script overmounts a tmpfs on /dev to hide the
+> +			   existing contents, then boot fails with empty /dev. */
+
+Does it matter for the kernel code what Debian's kernel config does ?
+
+> +			printk(KERN_WARNING "Debian bug workaround for devtmpfs overmount.");
+
+Is this log message worth it when this modification goes in mainline 
+kernel ?
+
+If so, pr_err() should be used instead.
+
+> +
+> +			err = 0;
+> +		}
+>   		goto unlock;
+> +	}
+>   
+>   	err = -EINVAL;
+>   	if (d_is_symlink(newmnt->mnt.mnt_root))
+> diff --git a/init/main.c b/init/main.c
+> index 0ee9c686..0d8e5ec 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -1065,12 +1065,6 @@ static noinline void __init kernel_init_freeable(void)
+>   
+>   	do_basic_setup();
+>   
+> -	/* Open the /dev/console on the rootfs, this should never fail */
+> -	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
+> -		pr_err("Warning: unable to open an initial console.\n");
+> -
+> -	(void) sys_dup(0);
+> -	(void) sys_dup(0);
+>   	/*
+>   	 * check if there is an early userspace init.  If yes, let it do all
+>   	 * the work
+> @@ -1082,8 +1076,17 @@ static noinline void __init kernel_init_freeable(void)
+>   	if (sys_access((const char __user *) ramdisk_execute_command, 0) != 0) {
+>   		ramdisk_execute_command = NULL;
+>   		prepare_namespace();
+> +	} else if (IS_ENABLED(CONFIG_DEVTMPFS_MOUNT)) {
+> +		sys_mkdir("/dev", 0755);
+
+Why not, but couldn't we also expect the initramfs to already contains 
+that mountpoint ?
+
+> +		devtmpfs_mount("/dev");
+>   	}
+>   
+> +	/* Open the /dev/console on the rootfs, this should never fail */
+> +	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
+> +		pr_err("Warning: unable to open an initial console.\n");
+> +	(void) sys_dup(0);
+> +	(void) sys_dup(0);
+> +
+>   	/*
+>   	 * Ok, we have completed the initial bootup, and
+>   	 * we're essentially up and running. Get rid of the
+> 
+
+
+Christophe
