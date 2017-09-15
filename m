@@ -1,23 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtcGT6xrlzDrRw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 10:48:49 +1000 (AEST)
-Date: Fri, 15 Sep 2017 10:48:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Greg Kurz <groug@kaod.org>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Sam Bobroff <sam.bobroff@au1.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: fix oops when checking KVM_CAP_PPC_HTM
-Message-ID: <20170915004839.GA5250@umbus.fritz.box>
-References: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
+Return-Path: <mark.rutland@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xtclq0hGgzDrVy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 11:10:46 +1000 (AEST)
+Date: Fri, 15 Sep 2017 02:10:36 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, Steven.Sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v8 10/11] arm64/kasan: explicitly zero kasan shadow memory
+Message-ID: <20170915011035.GA6936@remoulade>
+References: <20170914223517.8242-1-pasha.tatashin@oracle.com>
+ <20170914223517.8242-11-pasha.tatashin@oracle.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
-In-Reply-To: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170914223517.8242-11-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,89 +30,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---OXfL5xGRrasGEqWY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Sep 14, 2017 at 11:56:25PM +0200, Greg Kurz wrote:
-> The following program causes a kernel oops:
->=20
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <sys/ioctl.h>
-> #include <linux/kvm.h>
->=20
-> main()
-> {
->     int fd =3D open("/dev/kvm", O_RDWR);
->     ioctl(fd, KVM_CHECK_EXTENSION, KVM_CAP_PPC_HTM);
-> }
->=20
-> This happens because when using the global KVM fd with
-> KVM_CHECK_EXTENSION, kvm_vm_ioctl_check_extension() gets
-> called with a NULL kvm argument, which gets dereferenced
-> in is_kvmppc_hv_enabled(). Spotted while reading the code.
->=20
-> Let's use the hv_enabled fallback variable, like everywhere
-> else in this function.
->=20
-> Fixes: 23528bb21ee2 ("KVM: PPC: Introduce KVM_CAP_PPC_HTM")
-> Cc: stable@vger.kernel.org # v4.7+
-> Signed-off-by: Greg Kurz <groug@kaod.org>
-
-I don't think this is right.  I'm pretty sure you want to fall back to
-hv_enabled *only when* kvm is NULL.  Otherwise if you have a PR guest
-on an HV capable machine, this will give the wrong answer, when called
-for that specific VM.
-
+On Thu, Sep 14, 2017 at 06:35:16PM -0400, Pavel Tatashin wrote:
+> To optimize the performance of struct page initialization,
+> vmemmap_populate() will no longer zero memory.
+> 
+> We must explicitly zero the memory that is allocated by vmemmap_populate()
+> for kasan, as this memory does not go through struct page initialization
+> path.
+> 
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Reviewed-by: Bob Picco <bob.picco@oracle.com>
 > ---
->  arch/powerpc/kvm/powerpc.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 3480faaf1ef8..ee279c7f4802 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -644,8 +644,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, lon=
-g ext)
->  		break;
->  #endif
->  	case KVM_CAP_PPC_HTM:
-> -		r =3D cpu_has_feature(CPU_FTR_TM_COMP) &&
-> -		    is_kvmppc_hv_enabled(kvm);
-> +		r =3D cpu_has_feature(CPU_FTR_TM_COMP) && hv_enabled;
->  		break;
->  	default:
->  		r =3D 0;
->=20
+>  arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+> 
+> diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+> index 81f03959a4ab..e78a9ecbb687 100644
+> --- a/arch/arm64/mm/kasan_init.c
+> +++ b/arch/arm64/mm/kasan_init.c
+> @@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
+>  		set_pgd(pgd_offset_k(start), __pgd(0));
+>  }
+>  
+> +/*
+> + * Memory that was allocated by vmemmap_populate is not zeroed, so we must
+> + * zero it here explicitly.
+> + */
+> +static void
+> +zero_vmemmap_populated_memory(void)
+> +{
+> +	struct memblock_region *reg;
+> +	u64 start, end;
+> +
+> +	for_each_memblock(memory, reg) {
+> +		start = __phys_to_virt(reg->base);
+> +		end = __phys_to_virt(reg->base + reg->size);
+> +
+> +		if (start >= end)
+> +			break;
+> +
+> +		start = (u64)kasan_mem_to_shadow((void *)start);
+> +		end = (u64)kasan_mem_to_shadow((void *)end);
+> +
+> +		/* Round to the start end of the mapped pages */
+> +		start = round_down(start, SWAPPER_BLOCK_SIZE);
+> +		end = round_up(end, SWAPPER_BLOCK_SIZE);
+> +		memset((void *)start, 0, end - start);
+> +	}
+> +
+> +	start = (u64)kasan_mem_to_shadow(_text);
+> +	end = (u64)kasan_mem_to_shadow(_end);
+> +
+> +	/* Round to the start end of the mapped pages */
+> +	start = round_down(start, SWAPPER_BLOCK_SIZE);
+> +	end = round_up(end, SWAPPER_BLOCK_SIZE);
+> +	memset((void *)start, 0, end - start);
+> +}
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I really don't see the need to duplicate the existing logic to iterate over
+memblocks, calculate the addresses, etc.
 
---OXfL5xGRrasGEqWY
-Content-Type: application/pgp-signature; name="signature.asc"
+Why can't we just have a zeroing wrapper? e.g. something like the below.
 
------BEGIN PGP SIGNATURE-----
+I really don't see why we couldn't have a generic function in core code to do
+this, even if vmemmap_populate() doesn't.
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlm7I2IACgkQbDjKyiDZ
-s5IVQBAAwLBwQr6BrKvpLsKPRRxYraIoo8Ik5+W551pBFbeG9efZb/RJA4cpgoBt
-L6kLok23ZSG/QyWgvgXx696T2TQd3jXq61vpY0b7JrpIlGM6ztKcnVdABNZV1UDy
-Gqv0KF4WqW8MxmsZ62YEsoq24cZA1uyAwjQnwaGXSfRUFrMdVd4+RGUfdp7q9xjx
-MzxaLnTdftQ++OHUWFXzr1sgm3+fxM0REODPepXR0dDKMQT+gh6GnBdA+XiUNiA+
-Ftx8BkezE8k9x6QSKdamx4IXcvUMKaZrSSyIhGtxF4T83rbApk7ATsgJYDo8F0GX
-yDeTXkyV6SnrRZWdYFujXEvbPaGJ8vEcBQBW7/tTHmPvBvQN+BTdF0ic6gAII9i9
-eGvpp/NW/cLfXkF85yp4FmphTB2qQ/g+P5uKbUfTYcKwDv6Cf7I9oyr0/q7NE/D5
-81s9RB5lxji8/Fpm1vjGRFWK+Xq2+jy1bAsAQ/H+uJMp5LP7c71fdbjq9+0wuUZe
-pv8uZjXSDLvOxcSbWbKi9dQ4sWpckKT+vpArTfa9cQS3kyI3A9d+QkoReiTVgi81
-ibma3XhnTlZHx2LksH2Ph/cUrcRPJXXuJ86x4tZVqBpY6+NxcyHw/Ffbdvq4ufqE
-s42ndRUBK6MFqXGHk/7uHI9O6FB660a499wt+DfmF0xpEfWEPoM=
-=lHab
------END PGP SIGNATURE-----
+Thanks,
+Mark.
 
---OXfL5xGRrasGEqWY--
+---->8----
+diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+index 81f0395..698d065 100644
+--- a/arch/arm64/mm/kasan_init.c
++++ b/arch/arm64/mm/kasan_init.c
+@@ -135,6 +135,17 @@ static void __init clear_pgds(unsigned long start,
+                set_pgd(pgd_offset_k(start), __pgd(0));
+ }
+ 
++void kasan_populate_shadow(unsigned long shadow_start, unsigned long shadow_end,
++                          nid_t nid)
++{
++       shadow_start = round_down(shadow_start, SWAPPER_BLOCK_SIZE);
++       shadow_end = round_up(shadow_end, SWAPPER_BLOCK_SIZE);
++
++       vmemmap_populate(shadow_start, shadow_end, nid);
++
++       memset((void *)shadow_start, 0, shadow_end - shadow_start);
++}
++
+ void __init kasan_init(void)
+ {
+        u64 kimg_shadow_start, kimg_shadow_end;
+@@ -161,8 +172,8 @@ void __init kasan_init(void)
+ 
+        clear_pgds(KASAN_SHADOW_START, KASAN_SHADOW_END);
+ 
+-       vmemmap_populate(kimg_shadow_start, kimg_shadow_end,
+-                        pfn_to_nid(virt_to_pfn(lm_alias(_text))));
++       kasah_populate_shadow(kimg_shadow_start, kimg_shadow_end,
++                             pfn_to_nid(virt_to_pfn(lm_alias(_text))));
+ 
+        /*
+         * vmemmap_populate() has populated the shadow region that covers the
+@@ -191,9 +202,9 @@ void __init kasan_init(void)
+                if (start >= end)
+                        break;
+ 
+-               vmemmap_populate((unsigned long)kasan_mem_to_shadow(start),
+-                               (unsigned long)kasan_mem_to_shadow(end),
+-                               pfn_to_nid(virt_to_pfn(start)));
++               kasan_populate_shadow((unsigned long)kasan_mem_to_shadow(start),
++                                     (unsigned long)kasan_mem_to_shadow(end),
++                                     pfn_to_nid(virt_to_pfn(start)));
+        }
+ 
+        /*
