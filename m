@@ -2,7 +2,7 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xv1tg1cMdzDrZf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xv1tg1X2RzDrZZ
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 03:03:07 +1000 (AEST)
 From: Michal Suchanek <msuchanek@suse.de>
 To: Jonathan Corbet <corbet@lwn.net>,
@@ -21,9 +21,10 @@ To: Jonathan Corbet <corbet@lwn.net>,
  Ilya Matveychikov <matvejchikov@gmail.com>, Ingo Molnar <mingo@kernel.org>,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/6] powerpc/fadump: stop removing quotes in argument parsing.
-Date: Fri, 15 Sep 2017 19:02:48 +0200
-Message-Id: <7c84e1fab6b78006eabf819b453b826aff078be1.1505494668.git.msuchanek@suse.de>
+Subject: [PATCH 4/6] powerpc/fadump: Update fadump ducumentation on quoting
+ arguments.
+Date: Fri, 15 Sep 2017 19:02:49 +0200
+Message-Id: <31980608f5b18f850076f4abe4f8aa2077b02fd0.1505494668.git.msuchanek@suse.de>
 In-Reply-To: <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
 References: <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
 In-Reply-To: <4fabdf584ad18d6aae61e331f783a5020567f634.1505231820.git.msuchanek@suse.de>
@@ -39,26 +40,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- arch/powerpc/kernel/fadump.c | 7 -------
- 1 file changed, 7 deletions(-)
+ Documentation/powerpc/firmware-assisted-dump.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 1678d99ea835..275ea42a27d5 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -494,13 +494,6 @@ static void __init fadump_update_params(struct param_info *param_info,
- 	if (!val)
- 		return;
- 
--	/* remove one leading and one trailing quote if both are present */
--	if ((val[0] == '"') && (val[vallen - 1] == '"')) {
--		shortening += 2;
--		vallen -= 2;
--		val++;
--	}
--
- 	strncpy(tgt, FADUMP_EXTRA_ARGS_PARAM, FADUMP_EXTRA_ARGS_LEN);
- 	tgt += FADUMP_EXTRA_ARGS_LEN;
- 	*tgt++ = ' ';
+diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
+index 2df88524d2c7..5705f55ffae4 100644
+--- a/Documentation/powerpc/firmware-assisted-dump.txt
++++ b/Documentation/powerpc/firmware-assisted-dump.txt
+@@ -173,7 +173,7 @@ How to enable firmware-assisted dump (fadump):
+    can be used to reduce memory consumption during dump capture by
+    disabling unwarranted resources/subsystems like CPUs, NUMA
+    and such. Value with spaces can be passed as
+-   'fadump_extra_args=""parameter="value with spaces"""'
++   'fadump_extra_args="parameter=\"value with spaces\""'
+ 4. Optionally, user can also set 'crashkernel=' kernel cmdline
+    to specify size of the memory to reserve for boot memory dump
+    preservation.
 -- 
 2.10.2
