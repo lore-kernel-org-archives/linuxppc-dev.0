@@ -1,40 +1,25 @@
-Return-Path: <srs0=m9cn=as=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvwY22WZVzDrnt
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:58 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xvwY161Qnz8vnV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:57 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xvwY06NJTz9t4k
- for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 14:05:56 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8H44Ttu101921
- for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:53 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d101w1k3e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:53 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sat, 16 Sep 2017 22:05:52 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 10/10] powerpc/vas, nx-842: Define and use chip_to_vas_id()
-Date: Sat, 16 Sep 2017 21:05:28 -0700
-In-Reply-To: <1505621128-23877-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1505621128-23877-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1505621128-23877-11-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xw1NG4j5TzDrbD
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 17:43:42 +1000 (AEST)
+Date: Fri, 15 Sep 2017 18:59:37 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Greg Kurz <groug@kaod.org>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@ozlabs.org>, Sam Bobroff <sam.bobroff@au1.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: fix oops when checking KVM_CAP_PPC_HTM
+Message-ID: <20170915085937.GO5250@umbus.fritz.box>
+References: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
+ <20170915004839.GA5250@umbus.fritz.box>
+ <20170915075249.0e9879a4@bahia.lan>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="gqEssfNGWsEa4HfM"
+In-Reply-To: <20170915075249.0e9879a4@bahia.lan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,96 +29,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define a helper, chip_to_vas_id() to map a given chip id to corresponding
-vas id.
 
-Normally, callers of vas_rx_win_open() and vas_tx_win_open() would need
-the VAS window to be on the same chip where the calling thread is executing.
-These callers can pass in -1 for the VAS id.
+--gqEssfNGWsEa4HfM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This interface will be useful if a thread running on one chip wants to open
-a window on another chip (like the NX-842 driver does during start up).
+On Fri, Sep 15, 2017 at 07:52:49AM +0200, Greg Kurz wrote:
+> Dang! The mail relay at OVH has blacklisted Paul's address :-\
+>=20
+> <paulus@samba.org>: host smtp.samba.org[144.76.82.148] said: 550-blacklis=
+ted at
+>     zen.spamhaus.org 550 https://www.spamhaus.org/sbl/query/SBL370982 (in=
+ reply
+>     to RCPT TO command)
+>=20
+> Cc'ing Paul at ozlabs.org
+>=20
+> On Fri, 15 Sep 2017 10:48:39 +1000
+> David Gibson <david@gibson.dropbear.id.au> wrote:
+>=20
+> > On Thu, Sep 14, 2017 at 11:56:25PM +0200, Greg Kurz wrote:
+> > > The following program causes a kernel oops:
+> > >=20
+> > > #include <sys/types.h>
+> > > #include <sys/stat.h>
+> > > #include <fcntl.h>
+> > > #include <sys/ioctl.h>
+> > > #include <linux/kvm.h>
+> > >=20
+> > > main()
+> > > {
+> > >     int fd =3D open("/dev/kvm", O_RDWR);
+> > >     ioctl(fd, KVM_CHECK_EXTENSION, KVM_CAP_PPC_HTM);
+> > > }
+> > >=20
+> > > This happens because when using the global KVM fd with
+> > > KVM_CHECK_EXTENSION, kvm_vm_ioctl_check_extension() gets
+> > > called with a NULL kvm argument, which gets dereferenced
+> > > in is_kvmppc_hv_enabled(). Spotted while reading the code.
+> > >=20
+> > > Let's use the hv_enabled fallback variable, like everywhere
+> > > else in this function.
+> > >=20
+> > > Fixes: 23528bb21ee2 ("KVM: PPC: Introduce KVM_CAP_PPC_HTM")
+> > > Cc: stable@vger.kernel.org # v4.7+
+> > > Signed-off-by: Greg Kurz <groug@kaod.org> =20
+> >=20
+> > I don't think this is right.  I'm pretty sure you want to fall back to
+> > hv_enabled *only when* kvm is NULL.  Otherwise if you have a PR guest
+> > on an HV capable machine, this will give the wrong answer, when called
+> > for that specific VM.
+> >=20
+>=20
+> Hmmm... this is what we get with this patch applied:
+>=20
+> open("/dev/kvm", O_RDWR)                =3D 3
+> ioctl(3, KVM_CHECK_EXTENSION, 0x84)     =3D 1 <=3D=3D if HV is present
+> ioctl(3, KVM_CREATE_VM, 0x1)            =3D 4 <=3D=3D HV
+> ioctl(4, KVM_CHECK_EXTENSION, 0x84)     =3D 1
+> ioctl(3, KVM_CREATE_VM, 0x2)            =3D 5 <=3D=3D PR
+> ioctl(5, KVM_CHECK_EXTENSION, 0x84)     =3D 0
+>=20
+> The hv_enabled variable is set as follows:
+>=20
+> 	/* Assume we're using HV mode when the HV module is loaded */
+> 	int hv_enabled =3D kvmppc_hv_ops ? 1 : 0;
+>=20
+> 	if (kvm) {
+> 		/*
+> 		 * Hooray - we know which VM type we're running on. Depend on
+> 		 * that rather than the guess above.
+> 		 */
+> 		hv_enabled =3D is_kvmppc_hv_enabled(kvm);
+> 	}
+>=20
+> so we're good. :)
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/vas.h       |  9 +++++++++
- arch/powerpc/platforms/powernv/vas.c | 11 +++++++++++
- drivers/crypto/nx/nx-842-powernv.c   | 18 +++---------------
- 3 files changed, 23 insertions(+), 15 deletions(-)
+Oh, sorry, missed that bit.  In that case.
 
-diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index fd5963a..044748f 100644
---- a/arch/powerpc/include/asm/vas.h
-+++ b/arch/powerpc/include/asm/vas.h
-@@ -104,6 +104,15 @@ struct vas_tx_win_attr {
- };
- 
- /*
-+ * Helper to map a chip id to VAS id.
-+ * For POWER9, this is a 1:1 mapping. In the future this maybe a 1:N
-+ * mapping in which case, we will need to update this helper.
-+ *
-+ * Return the VAS id or -1 if no matching vasid is found.
-+ */
-+int chip_to_vas_id(int chipid);
-+
-+/*
-  * Helper to initialize receive window attributes to defaults for an
-  * NX window.
-  */
-diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
-index abb7090..cd9a733 100644
---- a/arch/powerpc/platforms/powernv/vas.c
-+++ b/arch/powerpc/platforms/powernv/vas.c
-@@ -123,6 +123,17 @@ struct vas_instance *find_vas_instance(int vasid)
- 	return NULL;
- }
- 
-+int chip_to_vas_id(int chipid)
-+{
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu) {
-+		if (cpu_to_chip_id(cpu) == chipid)
-+			return per_cpu(cpu_vas_id, cpu);
-+	}
-+	return -1;
-+}
-+
- static int vas_probe(struct platform_device *pdev)
- {
- 	return init_vas_instance(pdev);
-diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index 874ddf5..eb221ed 100644
---- a/drivers/crypto/nx/nx-842-powernv.c
-+++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -847,24 +847,12 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
- 		return -EINVAL;
- 	}
- 
--	for_each_compatible_node(dn, NULL, "ibm,power9-vas-x") {
--		if (of_get_ibm_chip_id(dn) == chip_id)
--			break;
--	}
--
--	if (!dn) {
--		pr_err("Missing VAS device node\n");
-+	vasid = chip_to_vas_id(chip_id);
-+	if (vasid < 0) {
-+		pr_err("Unable to map chip_id %d to vasid\n", chip_id);
- 		return -EINVAL;
- 	}
- 
--	if (of_property_read_u32(dn, "ibm,vas-id", &vasid)) {
--		pr_err("Missing ibm,vas-id device property\n");
--		of_node_put(dn);
--		return -EINVAL;
--	}
--
--	of_node_put(dn);
--
- 	for_each_child_of_node(pn, dn) {
- 		if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
- 			ret = vas_cfg_coproc_info(dn, chip_id, vasid);
--- 
-2.7.4
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+
+
+> The last sentence in the commit message is maybe^wprobably not comprehens=
+ive
+> enough...
+>=20
+> What about the following ?
+>=20
+> The hv_enabled variable is initialized to 1 if HV is loaded or 0 otherwis=
+e.
+> In the case KVM_CHECK_EXTENSION is used with a VM fd, hv_enabled is updat=
+ed
+> to is_kvmppc_hv_enabled(kvm). Let's use it here, like everywhere else in =
+this
+> function.
+>=20
+> > > ---
+> > >  arch/powerpc/kvm/powerpc.c |    3 +--
+> > >  1 file changed, 1 insertion(+), 2 deletions(-)
+> > >=20
+> > > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> > > index 3480faaf1ef8..ee279c7f4802 100644
+> > > --- a/arch/powerpc/kvm/powerpc.c
+> > > +++ b/arch/powerpc/kvm/powerpc.c
+> > > @@ -644,8 +644,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm,=
+ long ext)
+> > >  		break;
+> > >  #endif
+> > >  	case KVM_CAP_PPC_HTM:
+> > > -		r =3D cpu_has_feature(CPU_FTR_TM_COMP) &&
+> > > -		    is_kvmppc_hv_enabled(kvm);
+> > > +		r =3D cpu_has_feature(CPU_FTR_TM_COMP) && hv_enabled;
+> > >  		break;
+> > >  	default:
+> > >  		r =3D 0;
+> > >  =20
+> >=20
+>=20
+
+
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--gqEssfNGWsEa4HfM
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlm7lnkACgkQbDjKyiDZ
+s5IvmhAAqMkY232v9BkO3XCwKDUrTiCWURnw5hAH96/SVtZYdm6rh4KdzyA99m/n
+stJhzxFHRrU1qWPL9Jf4b3AhrSWyGo+4mVmwefXG783ef3auXhge/1hMzCAK8214
+c3Vf4jY7VeRG4ZJ0u1l9TmJ+rHdL9+beXMqk9+CQww6g5Y0VIHUPzSRBKPQN3viq
+zGLhrfjdNkE0p/6lDbvLRikRDRZA83SHJFTemIeftG5tRTYYjoqhYTH0+IV8ZWIA
+doAZPmtQnnutmg+WN1euIoSVifnkMlWd5h2VJsW0MOzP8OIogTpfP4Bd8jYLGmjL
+tE1psssfn3bLxRq0Z1MVe462MmRPfjIxiT+5rEuhddpKutFa9iM//kd8XrgC2bMQ
+iU1lB2SvoJcP2Om2cd8amx0mp4eL7l6MMyH0rAsGfoZs2+jalp8irXVODivAsjOA
+ZA+xNngpUA8YPcvpTNSrEcoDOrffrpNjpSlr2AsSr6sJLhBuLXzCbJeV0yINeeAt
+dD+KXmyyAJKeKx2UFlgXPlLFakKnrkLQpGUOK9LzpFhG63fOOuFyFAtx4UU0qilg
+xYwEIuZFyRhI94JrAGUOX2T5ZlcTv090T/9zfQSopV90scsiCYmzvpb7w3wPqX5L
+aOIxPNGuXBD76GSyM1rNe1vQStYk0ewH8tg/dOozEcgndiEUY2A=
+=5LV8
+-----END PGP SIGNATURE-----
+
+--gqEssfNGWsEa4HfM--
