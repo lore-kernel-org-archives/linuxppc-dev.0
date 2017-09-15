@@ -1,13 +1,11 @@
-Return-Path: <bp@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <brijesh.singh@amd.com>
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0047.outbound.protection.outlook.com [104.47.34.47])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xv10g520JzDrYs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 02:23:14 +1000 (AEST)
-Date: Fri, 15 Sep 2017 18:22:56 +0200
-From: Borislav Petkov <bp@suse.de>
-To: Brijesh Singh <brijesh.singh@amd.com>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xv16F16h7zDrYs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 02:28:04 +1000 (AEST)
+Cc: brijesh.singh@amd.com, Tom Lendacky <thomas.lendacky@amd.com>,
  "H. Peter Anvin" <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>,
  David Laight <David.Laight@aculab.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -16,20 +14,18 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>,
- David Howells <dhowells@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Christoph Lameter <cl@linux.com>,
- Jonathan Corbet <corbet@lwn.net>,
- Radim =?utf-8?Q?Krcm=C3=A1r?= <rkrcmar@redhat.com>,
+ David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Christoph Lameter <cl@linux.com>, Jonathan Corbet <corbet@lwn.net>,
+ =?UTF-8?Q?Radim_Krcm=c3=a1r?= <rkrcmar@redhat.com>,
  Piotr Luc <piotr.luc@intel.com>, Ingo Molnar <mingo@redhat.com>,
  Dave Airlie <airlied@redhat.com>, Kees Cook <keescook@chromium.org>,
  Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  Reza Arbab <arbab@linux.vnet.ibm.com>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Laura Abbott <labbott@redhat.com>, Tony Luck <tony.luck@intel.com>,
- Ard.Biesheuvel@zytor.com
+ Thomas Gleixner <tglx@linutronix.de>, Laura Abbott <labbott@redhat.com>,
+ Tony Luck <tony.luck@intel.com>, Ard.Biesheuvel@zytor.com
 Subject: Re: [RFC Part1 PATCH v3 13/17] x86/io: Unroll string I/O when SEV is
  active
-Message-ID: <20170915162256.7l4vyy4ee5zeqbir@pd.tnic>
+To: Borislav Petkov <bp@suse.de>
 References: <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
  <CAK8P3a3h7JpmkW7W=HwqAuWWmro=ngj6HSeiiML_=T82x-FtZQ@mail.gmail.com>
  <ed6d4ce7-97a6-f664-d7d7-4ff48bc6f06a@amd.com>
@@ -40,9 +36,13 @@ References: <063D6719AE5E284EB5DD2968C1650D6DD003FB85@AcuExch.aculab.com>
  <95314c89-2620-8bb7-cbe8-cd9bc3adabb0@amd.com>
  <20170915143935.6vtfp5rtj5h324fi@pd.tnic>
  <ad628a45-8e4e-9cfc-2cc4-33dc6bf4613a@amd.com>
+ <20170915162256.7l4vyy4ee5zeqbir@pd.tnic>
+From: Brijesh Singh <brijesh.singh@amd.com>
+Message-ID: <100e9186-c28e-1caa-4bd5-1a2624cc5c01@amd.com>
+Date: Fri, 15 Sep 2017 11:27:48 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <ad628a45-8e4e-9cfc-2cc4-33dc6bf4613a@amd.com>
+In-Reply-To: <20170915162256.7l4vyy4ee5zeqbir@pd.tnic>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,19 +52,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 15, 2017 at 09:48:53AM -0500, Brijesh Singh wrote:
-> I see the similar issue with non SEV guest with my simple patch below.
-> Guest will reboot as soon as it tries to enable the key.
 
-Can't do it there as the pagetable is not setup yet and you're probably
-getting a #PF on any of the derefs down the static_key_enable() path.
 
-I guess one possible place to enable the static key would be in
-mem_encrypt_init() where everything should be set up already.
+On 09/15/2017 11:22 AM, Borislav Petkov wrote:
+> mem_encrypt_init() where everything should be set up already.
 
--- 
-Regards/Gruss,
-    Boris.
 
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+Yep, its safe to derefs the static key in mem_encrypt_init(). I've
+tried the approach and it seems to be work fine. I will include the
+required changes in next rev. thanks
