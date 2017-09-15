@@ -1,17 +1,27 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtkQl1g7tzDrZZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 15:26:23 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: david@gibson.dropbear.id.au, paulus@samba.org, benh@kernel.crashing.org,
- mikey@neuling.org
-Subject: [PATCH] KVM: PPC: Book3S HV: Check for updated HDSISR on P9 HDSI
- exception
-Date: Fri, 15 Sep 2017 15:26:14 +1000
-Message-Id: <20170915052614.8231-1-mikey@neuling.org>
+Return-Path: <groug@kaod.org>
+Received: from 4.mo2.mail-out.ovh.net (4.mo2.mail-out.ovh.net [87.98.172.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtl1X0w0vzDrXS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 15:53:02 +1000 (AEST)
+Received: from player770.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo2.mail-out.ovh.net (Postfix) with ESMTP id 0E4A0ABE1C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 07:52:58 +0200 (CEST)
+Date: Fri, 15 Sep 2017 07:52:49 +0200
+From: Greg Kurz <groug@kaod.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, Paul Mackerras
+ <paulus@ozlabs.org>, Sam Bobroff <sam.bobroff@au1.ibm.com>, Paolo Bonzini
+ <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: fix oops when checking KVM_CAP_PPC_HTM
+Message-ID: <20170915075249.0e9879a4@bahia.lan>
+In-Reply-To: <20170915004839.GA5250@umbus.fritz.box>
+References: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
+ <20170915004839.GA5250@umbus.fritz.box>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ boundary="Sig_/2v=IlCQP/zUiszbsYapkfca"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,59 +31,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER9 DD2.1 and below, sometimes on a Hypervisor Data Storage
-Interrupt (HDSI) the HDSISR is not be updated at all.
+--Sig_/2v=IlCQP/zUiszbsYapkfca
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-To work around this we put a canary value into the HDSISR before
-returning to a guest and then check for this canary when we take a
-HDSI. If we find the canary on a HDSI, we know the hardware didn't
-update the HDSISR. In this case we return to the guest to retake the
-HDSI which should correctly update the HDSISR the second time HDSI
-entry.
+Dang! The mail relay at OVH has blacklisted Paul's address :-\
 
-After talking to Paulus we've applied this workaround to all POWER9
-CPUs. The workaround of returning to the guest shouldn't ever be
-triggered on well behaving CPU. The extra instructions should have
-negligible performance impact.
+<paulus@samba.org>: host smtp.samba.org[144.76.82.148] said: 550-blackliste=
+d at
+    zen.spamhaus.org 550 https://www.spamhaus.org/sbl/query/SBL370982 (in r=
+eply
+    to RCPT TO command)
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+Cc'ing Paul at ozlabs.org
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 663a4a861e..70dca60569 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1118,6 +1118,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- BEGIN_FTR_SECTION
- 	mtspr	SPRN_PPR, r0
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-+
-+/* Move canary into DSISR to check for later */
-+BEGIN_FTR_SECTION
-+	li	r0, 0x7fff
-+	mtspr	SPRN_HDSISR, r0
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-+
- 	ld	r0, VCPU_GPR(R0)(r4)
- 	ld	r4, VCPU_GPR(R4)(r4)
- 
-@@ -1947,9 +1954,14 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
- kvmppc_hdsi:
- 	ld	r3, VCPU_KVM(r9)
- 	lbz	r0, KVM_RADIX(r3)
--	cmpwi	r0, 0
- 	mfspr	r4, SPRN_HDAR
- 	mfspr	r6, SPRN_HDSISR
-+BEGIN_FTR_SECTION
-+	/* Look for DSISR canary. If we find it, retry instruction */
-+	cmpdi	r6, 0x7fff
-+	beq	6f
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-+	cmpwi	r0, 0
- 	bne	.Lradix_hdsi		/* on radix, just save DAR/DSISR/ASDR */
- 	/* HPTE not found fault or protection fault? */
- 	andis.	r0, r6, (DSISR_NOHPTE | DSISR_PROTFAULT)@h
--- 
-2.11.0
+On Fri, 15 Sep 2017 10:48:39 +1000
+David Gibson <david@gibson.dropbear.id.au> wrote:
+
+> On Thu, Sep 14, 2017 at 11:56:25PM +0200, Greg Kurz wrote:
+> > The following program causes a kernel oops:
+> >=20
+> > #include <sys/types.h>
+> > #include <sys/stat.h>
+> > #include <fcntl.h>
+> > #include <sys/ioctl.h>
+> > #include <linux/kvm.h>
+> >=20
+> > main()
+> > {
+> >     int fd =3D open("/dev/kvm", O_RDWR);
+> >     ioctl(fd, KVM_CHECK_EXTENSION, KVM_CAP_PPC_HTM);
+> > }
+> >=20
+> > This happens because when using the global KVM fd with
+> > KVM_CHECK_EXTENSION, kvm_vm_ioctl_check_extension() gets
+> > called with a NULL kvm argument, which gets dereferenced
+> > in is_kvmppc_hv_enabled(). Spotted while reading the code.
+> >=20
+> > Let's use the hv_enabled fallback variable, like everywhere
+> > else in this function.
+> >=20
+> > Fixes: 23528bb21ee2 ("KVM: PPC: Introduce KVM_CAP_PPC_HTM")
+> > Cc: stable@vger.kernel.org # v4.7+
+> > Signed-off-by: Greg Kurz <groug@kaod.org> =20
+>=20
+> I don't think this is right.  I'm pretty sure you want to fall back to
+> hv_enabled *only when* kvm is NULL.  Otherwise if you have a PR guest
+> on an HV capable machine, this will give the wrong answer, when called
+> for that specific VM.
+>=20
+
+Hmmm... this is what we get with this patch applied:
+
+open("/dev/kvm", O_RDWR)                =3D 3
+ioctl(3, KVM_CHECK_EXTENSION, 0x84)     =3D 1 <=3D=3D if HV is present
+ioctl(3, KVM_CREATE_VM, 0x1)            =3D 4 <=3D=3D HV
+ioctl(4, KVM_CHECK_EXTENSION, 0x84)     =3D 1
+ioctl(3, KVM_CREATE_VM, 0x2)            =3D 5 <=3D=3D PR
+ioctl(5, KVM_CHECK_EXTENSION, 0x84)     =3D 0
+
+The hv_enabled variable is set as follows:
+
+	/* Assume we're using HV mode when the HV module is loaded */
+	int hv_enabled =3D kvmppc_hv_ops ? 1 : 0;
+
+	if (kvm) {
+		/*
+		 * Hooray - we know which VM type we're running on. Depend on
+		 * that rather than the guess above.
+		 */
+		hv_enabled =3D is_kvmppc_hv_enabled(kvm);
+	}
+
+so we're good. :)
+
+The last sentence in the commit message is maybe^wprobably not comprehensive
+enough...
+
+What about the following ?
+
+The hv_enabled variable is initialized to 1 if HV is loaded or 0 otherwise.
+In the case KVM_CHECK_EXTENSION is used with a VM fd, hv_enabled is updated
+to is_kvmppc_hv_enabled(kvm). Let's use it here, like everywhere else in th=
+is
+function.
+
+> > ---
+> >  arch/powerpc/kvm/powerpc.c |    3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
+> >=20
+> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> > index 3480faaf1ef8..ee279c7f4802 100644
+> > --- a/arch/powerpc/kvm/powerpc.c
+> > +++ b/arch/powerpc/kvm/powerpc.c
+> > @@ -644,8 +644,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, l=
+ong ext)
+> >  		break;
+> >  #endif
+> >  	case KVM_CAP_PPC_HTM:
+> > -		r =3D cpu_has_feature(CPU_FTR_TM_COMP) &&
+> > -		    is_kvmppc_hv_enabled(kvm);
+> > +		r =3D cpu_has_feature(CPU_FTR_TM_COMP) && hv_enabled;
+> >  		break;
+> >  	default:
+> >  		r =3D 0;
+> >  =20
+>=20
+
+
+--Sig_/2v=IlCQP/zUiszbsYapkfca
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iF0EARECAB0WIQQr1DtEU17Ap5iU26IC/DrrAQHbwgUCWbtqsQAKCRAC/DrrAQHb
+wkw/AJ4hcObSU0V8DToF5lB4G8R7/oXVvQCginbzy+RwhmgfKqEf0nsX5zvJoR8=
+=vUvB
+-----END PGP SIGNATURE-----
+
+--Sig_/2v=IlCQP/zUiszbsYapkfca--
