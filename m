@@ -1,26 +1,23 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xtclq0hGgzDrVy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 11:10:46 +1000 (AEST)
-Date: Fri, 15 Sep 2017 02:10:36 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, Steven.Sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v8 10/11] arm64/kasan: explicitly zero kasan shadow memory
-Message-ID: <20170915011035.GA6936@remoulade>
-References: <20170914223517.8242-1-pasha.tatashin@oracle.com>
- <20170914223517.8242-11-pasha.tatashin@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170914223517.8242-11-pasha.tatashin@oracle.com>
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtcx40Rb0zDqZ4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 11:18:47 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id j16so508707pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Sep 2017 18:18:47 -0700 (PDT)
+Message-ID: <1505438319.2732.1.camel@gmail.com>
+Subject: Re: [PATCH v2] powerpc/tm: Flush TM only if CPU has TM feature
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, sam.bobroff@au1.ibm.com, stable@vger.kernel.org
+Date: Fri, 15 Sep 2017 11:18:39 +1000
+In-Reply-To: <1505355228-15039-1-git-send-email-gromero@linux.vnet.ibm.com>
+References: <1505315421-13266-1-git-send-email-gromero@linux.vnet.ibm.com>
+ <1505355228-15039-1-git-send-email-gromero@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,120 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 14, 2017 at 06:35:16PM -0400, Pavel Tatashin wrote:
-> To optimize the performance of struct page initialization,
-> vmemmap_populate() will no longer zero memory.
+On Wed, 2017-09-13 at 22:13 -0400, Gustavo Romero wrote:
+> Commit cd63f3c ("powerpc/tm: Fix saving of TM SPRs in core dump")
+> added code to access TM SPRs in flush_tmregs_to_thread(). However
+> flush_tmregs_to_thread() does not check if TM feature is available on
+> CPU before trying to access TM SPRs in order to copy live state to
+> thread structures. flush_tmregs_to_thread() is indeed guarded by
+> CONFIG_PPC_TRANSACTIONAL_MEM but it might be the case that kernel
+> was compiled with CONFIG_PPC_TRANSACTIONAL_MEM enabled and ran on
+> a CPU without TM feature available, thus rendering the execution
+> of TM instructions that are treated by the CPU as illegal instructions.
 > 
-> We must explicitly zero the memory that is allocated by vmemmap_populate()
-> for kasan, as this memory does not go through struct page initialization
-> path.
+> The fix is just to add proper checking in flush_tmregs_to_thread()
+> if CPU has the TM feature before accessing any TM-specific resource,
+> returning immediately if TM is no available on the CPU. Adding
+> that checking in flush_tmregs_to_thread() instead of in places
+> where it is called, like in vsr_get() and vsr_set(), is better because
+> avoids the same problem cropping up elsewhere.
 > 
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+> Cc: stable@vger.kernel.org # v4.13+
+> Fixes: cd63f3c ("powerpc/tm: Fix saving of TM SPRs in core dump")
+> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+
+Keeping in mind I reviewed cd63f3c and feeling a bit sheepish having
+missed this.
+
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+
 > ---
->  arch/arm64/mm/kasan_init.c | 42 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 42 insertions(+)
+>  arch/powerpc/kernel/ptrace.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
-> index 81f03959a4ab..e78a9ecbb687 100644
-> --- a/arch/arm64/mm/kasan_init.c
-> +++ b/arch/arm64/mm/kasan_init.c
-> @@ -135,6 +135,41 @@ static void __init clear_pgds(unsigned long start,
->  		set_pgd(pgd_offset_k(start), __pgd(0));
->  }
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index 07cd22e..f52ad5b 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -131,7 +131,7 @@ static void flush_tmregs_to_thread(struct task_struct *tsk)
+>  	 * in the appropriate thread structures from live.
+>  	 */
 >  
-> +/*
-> + * Memory that was allocated by vmemmap_populate is not zeroed, so we must
-> + * zero it here explicitly.
-> + */
-> +static void
-> +zero_vmemmap_populated_memory(void)
-> +{
-> +	struct memblock_region *reg;
-> +	u64 start, end;
-> +
-> +	for_each_memblock(memory, reg) {
-> +		start = __phys_to_virt(reg->base);
-> +		end = __phys_to_virt(reg->base + reg->size);
-> +
-> +		if (start >= end)
-> +			break;
-> +
-> +		start = (u64)kasan_mem_to_shadow((void *)start);
-> +		end = (u64)kasan_mem_to_shadow((void *)end);
-> +
-> +		/* Round to the start end of the mapped pages */
-> +		start = round_down(start, SWAPPER_BLOCK_SIZE);
-> +		end = round_up(end, SWAPPER_BLOCK_SIZE);
-> +		memset((void *)start, 0, end - start);
-> +	}
-> +
-> +	start = (u64)kasan_mem_to_shadow(_text);
-> +	end = (u64)kasan_mem_to_shadow(_end);
-> +
-> +	/* Round to the start end of the mapped pages */
-> +	start = round_down(start, SWAPPER_BLOCK_SIZE);
-> +	end = round_up(end, SWAPPER_BLOCK_SIZE);
-> +	memset((void *)start, 0, end - start);
-> +}
-
-I really don't see the need to duplicate the existing logic to iterate over
-memblocks, calculate the addresses, etc.
-
-Why can't we just have a zeroing wrapper? e.g. something like the below.
-
-I really don't see why we couldn't have a generic function in core code to do
-this, even if vmemmap_populate() doesn't.
-
-Thanks,
-Mark.
-
----->8----
-diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
-index 81f0395..698d065 100644
---- a/arch/arm64/mm/kasan_init.c
-+++ b/arch/arm64/mm/kasan_init.c
-@@ -135,6 +135,17 @@ static void __init clear_pgds(unsigned long start,
-                set_pgd(pgd_offset_k(start), __pgd(0));
- }
- 
-+void kasan_populate_shadow(unsigned long shadow_start, unsigned long shadow_end,
-+                          nid_t nid)
-+{
-+       shadow_start = round_down(shadow_start, SWAPPER_BLOCK_SIZE);
-+       shadow_end = round_up(shadow_end, SWAPPER_BLOCK_SIZE);
-+
-+       vmemmap_populate(shadow_start, shadow_end, nid);
-+
-+       memset((void *)shadow_start, 0, shadow_end - shadow_start);
-+}
-+
- void __init kasan_init(void)
- {
-        u64 kimg_shadow_start, kimg_shadow_end;
-@@ -161,8 +172,8 @@ void __init kasan_init(void)
- 
-        clear_pgds(KASAN_SHADOW_START, KASAN_SHADOW_END);
- 
--       vmemmap_populate(kimg_shadow_start, kimg_shadow_end,
--                        pfn_to_nid(virt_to_pfn(lm_alias(_text))));
-+       kasah_populate_shadow(kimg_shadow_start, kimg_shadow_end,
-+                             pfn_to_nid(virt_to_pfn(lm_alias(_text))));
- 
-        /*
-         * vmemmap_populate() has populated the shadow region that covers the
-@@ -191,9 +202,9 @@ void __init kasan_init(void)
-                if (start >= end)
-                        break;
- 
--               vmemmap_populate((unsigned long)kasan_mem_to_shadow(start),
--                               (unsigned long)kasan_mem_to_shadow(end),
--                               pfn_to_nid(virt_to_pfn(start)));
-+               kasan_populate_shadow((unsigned long)kasan_mem_to_shadow(start),
-+                                     (unsigned long)kasan_mem_to_shadow(end),
-+                                     pfn_to_nid(virt_to_pfn(start)));
-        }
- 
-        /*
+> -	if (tsk != current)
+> +	if ((!cpu_has_feature(CPU_FTR_TM)) || (tsk != current))
+>  		return;
+>  
+>  	if (MSR_TM_SUSPENDED(mfmsr())) {
