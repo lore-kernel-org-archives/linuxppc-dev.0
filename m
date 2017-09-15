@@ -1,15 +1,17 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xv1tj0mYdzDrYl
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 03:03:09 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Jonathan Corbet <corbet@lwn.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xv2833y0FzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 03:14:43 +1000 (AEST)
+Date: Fri, 15 Sep 2017 18:14:09 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Michal Suchanek <msuchanek@suse.de>
+Cc: Jonathan Corbet <corbet@lwn.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
- Jani Nikula <jani.nikula@intel.com>, Michal Suchanek <msuchanek@suse.de>,
+ Jani Nikula <jani.nikula@intel.com>,
  Kamlakant Patel <kamlakant.patel@broadcom.com>,
  Bamvor Jian Zhang <bamvor.zhangjian@linaro.org>,
  Tamara Diaconita <diaconitatamara@gmail.com>,
@@ -18,17 +20,18 @@ To: Jonathan Corbet <corbet@lwn.net>,
  Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Nicholas Piggin <npiggin@gmail.com>, Baoquan He <bhe@redhat.com>,
- Ilya Matveychikov <matvejchikov@gmail.com>, Ingo Molnar <mingo@kernel.org>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 6/6] Documentation/admin-guide: single quotes in kernel
- arguments.
-Date: Fri, 15 Sep 2017 19:02:51 +0200
-Message-Id: <44dd719f756a9e1b8388730b0b4562507027d35a.1505494668.git.msuchanek@suse.de>
-In-Reply-To: <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
-References: <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
-In-Reply-To: <4fabdf584ad18d6aae61e331f783a5020567f634.1505231820.git.msuchanek@suse.de>
+ Ilya Matveychikov <matvejchikov@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/6] lib/cmdline.c: Add backslash support to kernel
+ commandline parsing.
+Message-ID: <20170915171409.GZ5426@ZenIV.linux.org.uk>
 References: <4fabdf584ad18d6aae61e331f783a5020567f634.1505231820.git.msuchanek@suse.de>
+ <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,27 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- Documentation/admin-guide/kernel-parameters.rst | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+On Fri, Sep 15, 2017 at 07:02:46PM +0200, Michal Suchanek wrote:
 
-diff --git a/Documentation/admin-guide/kernel-parameters.rst b/Documentation/admin-guide/kernel-parameters.rst
-index 722d3f771924..1f9837266417 100644
---- a/Documentation/admin-guide/kernel-parameters.rst
-+++ b/Documentation/admin-guide/kernel-parameters.rst
-@@ -35,9 +35,10 @@ can also be entered as::
- 
- 	log-buf-len=1M print_fatal_signals=1
- 
--Double-quotes and backslashes can be used to protect spaces in values, e.g.::
-+Double-quotes single-quaotes and backslashes can be used to protect spaces
-+in values, e.g.::
- 
--	param="spaces in here" param2=spaces\ in\ here
-+	param="spaces in here" param2=spaces\ in\ here param3='@%# !\'
- 
- cpu lists:
- ----------
--- 
-2.10.2
+>  	for (i = 0; args[i]; i++) {
+> -		if (isspace(args[i]) && !in_quote)
+> +		if (isspace(args[i]) && !in_quote && !backslash)
+>  			break;
+> -		if (equals == 0) {
+> -			if (args[i] == '=')
+> -				equals = i;
+> +
+> +		if ((equals == 0) && (args[i] == '='))
+> +			equals = i;
+> +
+> +		if (!backslash) {
+> +			if ((args[i] == '"') || (args[i] == '\\')) {
+> +				if (args[i] == '"')
+> +					in_quote = !in_quote;
+> +				if (args[i] == '\\')
+> +					backslash = 1;
+> +
+> +				memmove(args + 1, args, i);
+> +				args++;
+> +				i--;
+> +			}
+> +		} else {
+> +			backslash = 0;
+>  		}
+> -		if (args[i] == '"')
+> -			in_quote = !in_quote;
+>  	}
+
+... and that makes for Unidiomatic Work With Strings Award for this September.
+Using memmove() for string rewrite is almost always bad taste; in this case
+it's also (as usual) broken.
