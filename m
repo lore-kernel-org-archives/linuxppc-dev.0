@@ -2,14 +2,16 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xtkQb3gDnzDrJg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 15:26:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xtkQl1g7tzDrZZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 15:26:23 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, benh@kernel.crashing.org
-Subject: [PATCH 1/2] powerpc: Add workaround for P9 vector CI load issue
-Date: Fri, 15 Sep 2017 15:25:48 +1000
-Message-Id: <20170915052549.8105-1-mikey@neuling.org>
+To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: david@gibson.dropbear.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ mikey@neuling.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Check for updated HDSISR on P9 HDSI
+ exception
+Date: Fri, 15 Sep 2017 15:26:14 +1000
+Message-Id: <20170915052614.8231-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,434 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 DD2.1 and earlier has an issue where some cache inhibited
-vector load will return bad data. The workaround is two part, one
-firmware/microcode part triggers HMI interrupts when hitting such
-loads, the other part is this patch which then emulates the
-instructions in Linux.
+On POWER9 DD2.1 and below, sometimes on a Hypervisor Data Storage
+Interrupt (HDSI) the HDSISR is not be updated at all.
 
-The affected instructions are limited to lxvd2x, lxvw4x, lxvb16x and
-lxvh8x.
+To work around this we put a canary value into the HDSISR before
+returning to a guest and then check for this canary when we take a
+HDSI. If we find the canary on a HDSI, we know the hardware didn't
+update the HDSISR. In this case we return to the guest to retake the
+HDSI which should correctly update the HDSISR the second time HDSI
+entry.
 
-When an instruction triggers the HMI, all threads in the core will be
-sent to the HMI handler, not just the one running the vector load.
-
-In general, these spurious HMIs are detected by the emulation code and
-we just return back to the running process. Unfortunately, if a
-spurious interrupt occurs on a vector load that's to normal memory we
-have no way to detect that it's spurious (unless we walk the page
-tables, which is very expensive). In this case we emulate the load but
-we need do so using a vector load itself to ensure 128bit atomicity is
-preserved.
-
-Some additional debugfs emulated instruction counters are added also.
+After talking to Paulus we've applied this workaround to all POWER9
+CPUs. The workaround of returning to the guest shouldn't ever be
+triggered on well behaving CPU. The extra instructions should have
+negligible performance impact.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/emulated_ops.h |   4 +
- arch/powerpc/include/asm/paca.h         |   1 +
- arch/powerpc/include/asm/uaccess.h      |  17 +++
- arch/powerpc/kernel/exceptions-64s.S    |  16 ++-
- arch/powerpc/kernel/mce.c               |  30 ++++-
- arch/powerpc/kernel/traps.c             | 201 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/smp.c    |   7 ++
- 7 files changed, 271 insertions(+), 5 deletions(-)
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/emulated_ops.h b/arch/powerpc/include/asm/emulated_ops.h
-index f00e10e2a3..651e135449 100644
---- a/arch/powerpc/include/asm/emulated_ops.h
-+++ b/arch/powerpc/include/asm/emulated_ops.h
-@@ -55,6 +55,10 @@ extern struct ppc_emulated {
- 	struct ppc_emulated_entry mfdscr;
- 	struct ppc_emulated_entry mtdscr;
- 	struct ppc_emulated_entry lq_stq;
-+	struct ppc_emulated_entry lxvw4x;
-+	struct ppc_emulated_entry lxvh8x;
-+	struct ppc_emulated_entry lxvd2x;
-+	struct ppc_emulated_entry lxvb16x;
- #endif
- } ppc_emulated;
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 663a4a861e..70dca60569 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1118,6 +1118,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_PPR, r0
+ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
++
++/* Move canary into DSISR to check for later */
++BEGIN_FTR_SECTION
++	li	r0, 0x7fff
++	mtspr	SPRN_HDSISR, r0
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++
+ 	ld	r0, VCPU_GPR(R0)(r4)
+ 	ld	r4, VCPU_GPR(R4)(r4)
  
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 04b60af027..1e06310ccc 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -210,6 +210,7 @@ struct paca_struct {
- 	 */
- 	u16 in_mce;
- 	u8 hmi_event_available;		/* HMI event is available */
-+	u8 hmi_p9_special_emu;		/* HMI P9 special emulation */
- #endif
- 
- 	/* Stuff for accurate time accounting */
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 9c0e60ca16..e34f15e727 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -173,6 +173,23 @@ do {								\
- 
- extern long __get_user_bad(void);
- 
-+/*
-+ * This does an atomic 128 byte aligned load from userspace.
-+ * Upto caller to do enable_kernel_vmx() before calling!
-+ */
-+#define __get_user_atomic_128_aligned(kaddr, uaddr, err)		\
-+	__asm__ __volatile__(				\
-+		"1:	lvx  0,0,%1	# get user\n"	\
-+		" 	stvx 0,0,%2	# put kernel\n"	\
-+		"2:\n"					\
-+		".section .fixup,\"ax\"\n"		\
-+		"3:	li %0,%3\n"			\
-+		"	b 2b\n"				\
-+		".previous\n"				\
-+		EX_TABLE(1b, 3b)			\
-+		: "=r" (err)			\
-+		: "b" (uaddr), "b" (kaddr), "i" (-EFAULT), "0" (err))
-+
- #define __get_user_asm(x, addr, err, op)		\
- 	__asm__ __volatile__(				\
- 		"1:	"op" %1,0(%2)	# get_user\n"	\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 48da0f5d2f..8c32dd4cac 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1010,6 +1010,8 @@ TRAMP_REAL_BEGIN(hmi_exception_early)
- 	EXCEPTION_PROLOG_COMMON_3(0xe60)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	BRANCH_LINK_TO_FAR(hmi_exception_realmode) /* Function call ABI */
-+	cmpdi	cr0,r3,0
-+
- 	/* Windup the stack. */
- 	/* Move original HSRR0 and HSRR1 into the respective regs */
- 	ld	r9,_MSR(r1)
-@@ -1026,10 +1028,15 @@ TRAMP_REAL_BEGIN(hmi_exception_early)
- 	REST_8GPRS(2, r1)
- 	REST_GPR(10, r1)
- 	ld	r11,_CCR(r1)
-+	REST_2GPRS(12, r1)
-+	bne	1f
- 	mtcr	r11
- 	REST_GPR(11, r1)
--	REST_2GPRS(12, r1)
--	/* restore original r1. */
-+	ld	r1,GPR1(r1)
-+	hrfid
-+
-+1:	mtcr	r11
-+	REST_GPR(11, r1)
- 	ld	r1,GPR1(r1)
- 
- 	/*
-@@ -1042,8 +1049,9 @@ hmi_exception_after_realmode:
- 	EXCEPTION_PROLOG_0(PACA_EXGEN)
- 	b	tramp_real_hmi_exception
- 
--EXC_COMMON_ASYNC(hmi_exception_common, 0xe60, handle_hmi_exception)
--
-+EXC_COMMON_BEGIN(hmi_exception_common)
-+EXCEPTION_COMMON(PACA_EXGEN, 0xe60, hmi_exception_common, handle_hmi_exception,
-+        ret_from_except, FINISH_NAP;ADD_NVGPRS;ADD_RECONCILE;RUNLATCH_ON)
- 
- EXC_REAL_OOL_MASKABLE_HV(h_doorbell, 0xe80, 0x20)
- EXC_VIRT_OOL_MASKABLE_HV(h_doorbell, 0x4e80, 0x20, 0xe80)
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index 9b2ea7e71c..f588951b17 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -470,6 +470,34 @@ long hmi_exception_realmode(struct pt_regs *regs)
- {
- 	__this_cpu_inc(irq_stat.hmi_exceptions);
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	/* Workaround for P9 vector CI loads (see p9_hmi_special_emu) */
-+	if (pvr_version_is(PVR_POWER9)) {
-+		unsigned long hmer = mfspr(SPRN_HMER);
-+
-+		/* Do we have the debug bit set */
-+		if (hmer & PPC_BIT(17)) {
-+			hmer &= ~PPC_BIT(17);
-+			mtspr(SPRN_HMER, hmer);
-+
-+			/*
-+			 * Now to avoid problems with soft-disable we
-+			 * only do the emulation if we are coming from
-+			 * user space
-+			 */
-+			if (user_mode(regs))
-+				local_paca->hmi_p9_special_emu = 1;
-+
-+			/*
-+			 * Don't bother going to OPAL if that's the
-+			 * only relevant bit.
-+			 */
-+			if (!(hmer & mfspr(SPRN_HMEER)))
-+				return local_paca->hmi_p9_special_emu;
-+		}
-+	}
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-+
- 	wait_for_subcore_guest_exit();
- 
- 	if (ppc_md.hmi_exception_early)
-@@ -477,5 +505,5 @@ long hmi_exception_realmode(struct pt_regs *regs)
- 
- 	wait_for_tb_resync();
- 
--	return 0;
-+	return 1;
- }
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index ec74e203ee..9b9bdf15e4 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -37,6 +37,7 @@
- #include <linux/kdebug.h>
- #include <linux/ratelimit.h>
- #include <linux/context_tracking.h>
-+#include <linux/smp.h>
- 
- #include <asm/emulated_ops.h>
- #include <asm/pgtable.h>
-@@ -691,6 +692,187 @@ void SMIException(struct pt_regs *regs)
- 	die("System Management Interrupt", regs, SIGABRT);
- }
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+static void p9_hmi_special_emu(struct pt_regs *regs)
-+{
-+	unsigned int ra, rb, t, i, sel, instr, rc;
-+	const void __user *addr;
-+	u8 vbuf[16], *vdst;
-+	unsigned long ea, msr, msr_mask;
-+	bool swap;
-+
-+	if (__get_user_inatomic(instr, (unsigned int __user *)regs->nip))
-+		return;
-+
-+	/*
-+	 * lxvb16x	opcode: 0x7c0006d8
-+	 * lxvd2x	opcode: 0x7c000698
-+	 * lxvh8x	opcode: 0x7c000658
-+	 * lxvw4x	opcode: 0x7c000618
-+	 */
-+	if ((instr & 0xfc00073e) != 0x7c000618) {
-+		pr_devel("HMI vec emu: not vector CI %i:%s[%d] nip=%016lx"
-+			 " instr=%08x\n",
-+			 smp_processor_id(), current->comm, current->pid,
-+			 regs->nip, instr);
-+		return;
-+	}
-+
-+	/* Grab vector registers into the task struct */
-+	msr = regs->msr; /* Grab msr before we flush the bits */
-+	flush_vsx_to_thread(current);
-+	enable_kernel_altivec();
-+
-+	/*
-+	 * Is userspace running with a different endian (this is rare but
-+	 * impossible
-+	 */
-+	swap = (msr & MSR_LE) != (MSR_KERNEL & MSR_LE);
-+
-+	/* Decode the instruction */
-+	ra = (instr >> 16) & 0x1f;
-+	rb = (instr >> 11) & 0x1f;
-+	t = (instr >> 21) & 0x1f;
-+	if (instr & 1)
-+		vdst = (u8 *)&current->thread.vr_state.vr[t];
-+	else
-+		vdst = (u8 *)&current->thread.fp_state.fpr[t][0];
-+
-+	/* Grab the vector address */
-+	ea = regs->gpr[rb] + (ra ? regs->gpr[ra] : 0);
-+	if (is_32bit_task())
-+		ea &= 0xfffffffful;
-+	addr = (__force const void __user *)ea;
-+
-+	/* Check it */
-+	if (!access_ok(VERIFY_READ, addr, 16)) {
-+		pr_devel("HMI vec emu: bad access %i:%s[%d] nip=%016lx"
-+			 " instr=%08x addr=%016lx\n",
-+			 smp_processor_id(), current->comm, current->pid,
-+			 regs->nip, instr, (unsigned long)addr);
-+		return;
-+	}
-+
-+	/* Read the vector */
-+	rc = 0;
-+	if ((unsigned long)addr & 0xfUL)
-+		/* unaligned case */
-+		rc = __copy_from_user_inatomic(vbuf, addr, 16);
-+	else
-+		__get_user_atomic_128_aligned(vbuf, addr, rc);
-+	if (rc) {
-+		pr_devel("HMI vec emu: page fault %i:%s[%d] nip=%016lx"
-+			 " instr=%08x addr=%016lx\n",
-+			 smp_processor_id(), current->comm, current->pid,
-+			 regs->nip, instr, (unsigned long)addr);
-+		return;
-+	}
-+
-+	pr_devel("HMI vec emu: emulated vector CI %i:%s[%d] nip=%016lx"
-+		 " instr=%08x addr=%016lx\n",
-+		 smp_processor_id(), current->comm, current->pid, regs->nip,
-+		 instr, (unsigned long) addr);
-+
-+	/* Grab instruction "selector" */
-+	sel = (instr >> 6) & 3;
-+
-+	/*
-+	 * Check to make sure the facility is actually enabled. This
-+	 * could happen if we get a false positive hit.
-+	 *
-+	 * lxvd2x/lxvw4x always check MSR VSX sel = 0,2
-+	 * lxvh8x/lxvb16x check MSR VSX or VEC depending on VSR used sel = 1,3
-+	 */
-+	msr_mask = MSR_VSX;
-+	if ((sel & 1) && (instr & 1)) /* lxvh8x & lxvb16x + VSR >= 32 */
-+		msr_mask = MSR_VEC;
-+	if (!(msr & msr_mask)) {
-+		pr_devel("HMI vec emu: MSR fac clear %i:%s[%d] nip=%016lx"
-+			 " instr=%08x msr:%016lx\n",
-+			 smp_processor_id(), current->comm, current->pid,
-+			 regs->nip, instr, msr);
-+		return;
-+	}
-+
-+	/* Do logging here before we modify sel based on endian */
-+	switch (sel) {
-+	case 0:	/* lxvw4x */
-+		PPC_WARN_EMULATED(lxvw4x, regs);
-+		break;
-+	case 1: /* lxvh8x */
-+		PPC_WARN_EMULATED(lxvh8x, regs);
-+		break;
-+	case 2: /* lxvd2x */
-+		PPC_WARN_EMULATED(lxvd2x, regs);
-+		break;
-+	case 3: /* lxvb16x */
-+		PPC_WARN_EMULATED(lxvb16x, regs);
-+		break;
-+	}
-+
-+#ifdef __LITTLE_ENDIAN__
-+	/*
-+	 * An LE kernel stores the vector in the task struct as an LE
-+	 * byte array (effectively swapping both the components and
-+	 * the content of the components). Those instructions expect
-+	 * the components to remain in ascending address order, so we
-+	 * swap them back.
-+	 *
-+	 * If we are running a BE user space, the expectation is that
-+	 * of a simple memcpy, so forcing the emulation to look like
-+	 * a lxvb16x should do the trick.
-+	 */
-+	if (swap)
-+		sel = 3;
-+
-+	switch (sel) {
-+	case 0:	/* lxvw4x */
-+		for (i = 0; i < 4; i++)
-+			((u32 *)vdst)[i] = ((u32 *)vbuf)[3-i];
-+		break;
-+	case 1: /* lxvh8x */
-+		for (i = 0; i < 8; i++)
-+			((u16 *)vdst)[i] = ((u16 *)vbuf)[7-i];
-+		break;
-+	case 2: /* lxvd2x */
-+		for (i = 0; i < 2; i++)
-+			((u64 *)vdst)[i] = ((u64 *)vbuf)[1-i];
-+		break;
-+	case 3: /* lxvb16x */
-+		for (i = 0; i < 16; i++)
-+			vdst[i] = vbuf[15-i];
-+		break;
-+	}
-+#else /* __LITTLE_ENDIAN__ */
-+	/* On a big endian kernel, a BE userspace only needs a memcpy */
-+	if (!swap)
-+		sel = 3;
-+
-+	/* Otherwise, we need to swap the content of the components */
-+	switch (sel) {
-+	case 0:	/* lxvw4x */
-+		for (i = 0; i < 4; i++)
-+			((u32 *)vdst)[i] = cpu_to_le32(((u32 *)vbuf)[i]);
-+		break;
-+	case 1: /* lxvh8x */
-+		for (i = 0; i < 8; i++)
-+			((u16 *)vdst)[i] = cpu_to_le16(((u16 *)vbuf)[i]);
-+		break;
-+	case 2: /* lxvd2x */
-+		for (i = 0; i < 2; i++)
-+			((u64 *)vdst)[i] = cpu_to_le64(((u64 *)vbuf)[i]);
-+		break;
-+	case 3: /* lxvb16x */
-+		memcpy(vdst, vbuf, 16);
-+		break;
-+	}
-+#endif /* !__LITTLE_ENDIAN__ */
-+
-+	/* Go to next instruction */
-+	regs->nip += 4;
-+}
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-+
- void handle_hmi_exception(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs;
-@@ -698,6 +880,21 @@ void handle_hmi_exception(struct pt_regs *regs)
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	/* Real mode flagged P9 special emu is needed */
-+	if (local_paca->hmi_p9_special_emu) {
-+		local_paca->hmi_p9_special_emu = 0;
-+
-+		/*
-+		 * We don't want to take page faults while doing the
-+		 * emulation, we just replay the instruction if necessary.
-+		 */
-+		pagefault_disable();
-+		p9_hmi_special_emu(regs);
-+		pagefault_enable();
-+	}
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-+
- 	if (ppc_md.handle_hmi_exception)
- 		ppc_md.handle_hmi_exception(regs);
- 
-@@ -1916,6 +2113,10 @@ struct ppc_emulated ppc_emulated = {
- 	WARN_EMULATED_SETUP(mfdscr),
- 	WARN_EMULATED_SETUP(mtdscr),
- 	WARN_EMULATED_SETUP(lq_stq),
-+	WARN_EMULATED_SETUP(lxvw4x),
-+	WARN_EMULATED_SETUP(lxvh8x),
-+	WARN_EMULATED_SETUP(lxvd2x),
-+	WARN_EMULATED_SETUP(lxvb16x),
- #endif
- };
- 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index c17f81e433..355d3f99ca 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -49,6 +49,13 @@
- 
- static void pnv_smp_setup_cpu(int cpu)
- {
-+	/*
-+	 * P9 workaround for CI vector load (see traps.c),
-+	 * enable the corresponding HMI interrupt
-+	 */
-+	if (pvr_version_is(PVR_POWER9))
-+		mtspr(SPRN_HMEER, mfspr(SPRN_HMEER) | PPC_BIT(17));
-+
- 	if (xive_enabled())
- 		xive_smp_setup_cpu();
- 	else if (cpu != boot_cpuid)
+@@ -1947,9 +1954,14 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
+ kvmppc_hdsi:
+ 	ld	r3, VCPU_KVM(r9)
+ 	lbz	r0, KVM_RADIX(r3)
+-	cmpwi	r0, 0
+ 	mfspr	r4, SPRN_HDAR
+ 	mfspr	r6, SPRN_HDSISR
++BEGIN_FTR_SECTION
++	/* Look for DSISR canary. If we find it, retry instruction */
++	cmpdi	r6, 0x7fff
++	beq	6f
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++	cmpwi	r0, 0
+ 	bne	.Lradix_hdsi		/* on radix, just save DAR/DSISR/ASDR */
+ 	/* HPTE not found fault or protection fault? */
+ 	andis.	r0, r6, (DSISR_NOHPTE | DSISR_PROTFAULT)@h
 -- 
 2.11.0
