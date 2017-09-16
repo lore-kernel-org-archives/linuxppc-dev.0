@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvDxq2dgPzDrbr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 11:21:35 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id i14so2432790qke.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 18:21:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvDxt60k1zDrbr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 11:21:38 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id g128so2445544qke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 18:21:38 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
@@ -17,9 +17,9 @@ Cc: arnd@arndb.de, akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
  linuxram@us.ibm.com
-Subject: [PATCH 1/6] mm: introduce an additional vma bit for powerpc pkey
-Date: Fri, 15 Sep 2017 18:21:05 -0700
-Message-Id: <1505524870-4783-2-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH 2/6] mm, x86 : introduce arch_pkeys_enabled()
+Date: Fri, 15 Sep 2017 18:21:06 -0700
+Message-Id: <1505524870-4783-3-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1505524870-4783-1-git-send-email-linuxram@us.ibm.com>
 References: <1505524870-4783-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,73 +31,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently only 4bits are allocated in the vma flags to hold 16
-keys. This is sufficient for x86. PowerPC  supports  32  keys,
-which needs 5bits. This patch allocates an  additional bit.
+Arch neutral code needs to know if the architecture supports
+protection  keys  to  display protection key in smaps. Hence
+introducing arch_pkeys_enabled().
+
+This patch also provides x86 implementation for
+arch_pkeys_enabled().
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- fs/proc/task_mmu.c |    6 ++++--
- include/linux/mm.h |   16 ++++++++++------
- 2 files changed, 14 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/pkeys.h |    1 +
+ arch/x86/kernel/fpu/xstate.c |    5 +++++
+ include/linux/pkeys.h        |    5 +++++
+ 3 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index b836fd6..cf25306 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -661,13 +661,15 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
- 		[ilog2(VM_MERGEABLE)]	= "mg",
- 		[ilog2(VM_UFFD_MISSING)]= "um",
- 		[ilog2(VM_UFFD_WP)]	= "uw",
--#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-+#ifdef CONFIG_ARCH_HAS_PKEYS
- 		/* These come out via ProtectionKey: */
- 		[ilog2(VM_PKEY_BIT0)]	= "",
- 		[ilog2(VM_PKEY_BIT1)]	= "",
- 		[ilog2(VM_PKEY_BIT2)]	= "",
- 		[ilog2(VM_PKEY_BIT3)]	= "",
--#endif
-+		/* Additional bit used by ppc64 */
-+		[ilog2(VM_PKEY_BIT4)]	= "",
-+#endif /* CONFIG_ARCH_HAS_PKEYS */
- 	};
- 	size_t i;
+diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
+index b3b09b9..fa82799 100644
+--- a/arch/x86/include/asm/pkeys.h
++++ b/arch/x86/include/asm/pkeys.h
+@@ -5,6 +5,7 @@
  
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 46b9ac5..6d72ec0 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -208,21 +208,25 @@ extern int overcommit_kbytes_handler(struct ctl_table *, int, void __user *,
- #define VM_HIGH_ARCH_BIT_1	33	/* bit only usable on 64-bit architectures */
- #define VM_HIGH_ARCH_BIT_2	34	/* bit only usable on 64-bit architectures */
- #define VM_HIGH_ARCH_BIT_3	35	/* bit only usable on 64-bit architectures */
-+#define VM_HIGH_ARCH_BIT_4	36	/* bit only usable on 64-bit architectures */
- #define VM_HIGH_ARCH_0	BIT(VM_HIGH_ARCH_BIT_0)
- #define VM_HIGH_ARCH_1	BIT(VM_HIGH_ARCH_BIT_1)
- #define VM_HIGH_ARCH_2	BIT(VM_HIGH_ARCH_BIT_2)
- #define VM_HIGH_ARCH_3	BIT(VM_HIGH_ARCH_BIT_3)
-+#define VM_HIGH_ARCH_4	BIT(VM_HIGH_ARCH_BIT_4)
- #endif /* CONFIG_ARCH_USES_HIGH_VMA_FLAGS */
+ extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 		unsigned long init_val);
++extern bool arch_pkeys_enabled(void);
  
--#if defined(CONFIG_X86)
--# define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
--#if defined (CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS)
-+#ifdef CONFIG_ARCH_HAS_PKEYS
- # define VM_PKEY_SHIFT	VM_HIGH_ARCH_BIT_0
--# define VM_PKEY_BIT0	VM_HIGH_ARCH_0	/* A protection key is a 4-bit value */
--# define VM_PKEY_BIT1	VM_HIGH_ARCH_1
-+# define VM_PKEY_BIT0	VM_HIGH_ARCH_0 /* A protection key is a 4-bit value */
-+# define VM_PKEY_BIT1	VM_HIGH_ARCH_1 /* on x86 and 5-bit value on ppc64   */
- # define VM_PKEY_BIT2	VM_HIGH_ARCH_2
- # define VM_PKEY_BIT3	VM_HIGH_ARCH_3
--#endif
-+# define VM_PKEY_BIT4	VM_HIGH_ARCH_4
-+#endif /* CONFIG_ARCH_HAS_PKEYS */
+ /*
+  * Try to dedicate one of the protection keys to be used as an
+diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
+index c24ac1e..df594b8 100644
+--- a/arch/x86/kernel/fpu/xstate.c
++++ b/arch/x86/kernel/fpu/xstate.c
+@@ -918,6 +918,11 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 
+ 	return 0;
+ }
 +
-+#if defined(CONFIG_X86)
-+# define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
- #elif defined(CONFIG_PPC)
- # define VM_SAO		VM_ARCH_1	/* Strong Access Ordering (powerpc) */
- #elif defined(CONFIG_PARISC)
++bool arch_pkeys_enabled(void)
++{
++	return boot_cpu_has(X86_FEATURE_OSPKE);
++}
+ #endif /* ! CONFIG_ARCH_HAS_PKEYS */
+ 
+ /*
+diff --git a/include/linux/pkeys.h b/include/linux/pkeys.h
+index a1bacf1..d120810 100644
+--- a/include/linux/pkeys.h
++++ b/include/linux/pkeys.h
+@@ -34,6 +34,11 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 	return 0;
+ }
+ 
++static inline bool arch_pkeys_enabled(void)
++{
++	return false;
++}
++
+ static inline void copy_init_pkru_to_fpregs(void)
+ {
+ }
 -- 
 1.7.1
