@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvDxt60k1zDrbr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 11:21:38 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id g128so2445544qke.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 18:21:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvDxx0FwDzDrbw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 11:21:40 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id o77so2436557qke.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 18:21:40 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
@@ -17,9 +17,9 @@ Cc: arnd@arndb.de, akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
  linuxram@us.ibm.com
-Subject: [PATCH 2/6] mm, x86 : introduce arch_pkeys_enabled()
-Date: Fri, 15 Sep 2017 18:21:06 -0700
-Message-Id: <1505524870-4783-3-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH 3/6] mm: display pkey in smaps if arch_pkeys_enabled() is true
+Date: Fri, 15 Sep 2017 18:21:07 -0700
+Message-Id: <1505524870-4783-4-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1505524870-4783-1-git-send-email-linuxram@us.ibm.com>
 References: <1505524870-4783-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,63 +31,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arch neutral code needs to know if the architecture supports
-protection  keys  to  display protection key in smaps. Hence
-introducing arch_pkeys_enabled().
+Currently the  architecture  specific code is expected to
+display  the  protection  keys  in  smap  for a given vma.
+This can lead to redundant code and possibly to divergent
+formats in which the key gets displayed.
 
-This patch also provides x86 implementation for
-arch_pkeys_enabled().
+This  patch  changes  the implementation. It displays the
+pkey only if the architecture support pkeys.
+
+x86 arch_show_smap() function is not needed anymore.
+Delete it.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/x86/include/asm/pkeys.h |    1 +
- arch/x86/kernel/fpu/xstate.c |    5 +++++
- include/linux/pkeys.h        |    5 +++++
- 3 files changed, 11 insertions(+), 0 deletions(-)
+ arch/x86/kernel/setup.c |    8 --------
+ fs/proc/task_mmu.c      |   11 ++++++-----
+ 2 files changed, 6 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index b3b09b9..fa82799 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -5,6 +5,7 @@
- 
- extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 		unsigned long init_val);
-+extern bool arch_pkeys_enabled(void);
- 
- /*
-  * Try to dedicate one of the protection keys to be used as an
-diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
-index c24ac1e..df594b8 100644
---- a/arch/x86/kernel/fpu/xstate.c
-+++ b/arch/x86/kernel/fpu/xstate.c
-@@ -918,6 +918,11 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 3486d04..1953bce 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -1340,11 +1340,3 @@ static int __init register_kernel_offset_dumper(void)
  	return 0;
  }
-+
-+bool arch_pkeys_enabled(void)
-+{
-+	return boot_cpu_has(X86_FEATURE_OSPKE);
-+}
- #endif /* ! CONFIG_ARCH_HAS_PKEYS */
+ __initcall(register_kernel_offset_dumper);
+-
+-void arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
+-{
+-	if (!boot_cpu_has(X86_FEATURE_OSPKE))
+-		return;
+-
+-	seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
+-}
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index cf25306..667d44a 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -16,6 +16,7 @@
+ #include <linux/mmu_notifier.h>
+ #include <linux/page_idle.h>
+ #include <linux/shmem_fs.h>
++#include <linux/pkeys.h>
  
- /*
-diff --git a/include/linux/pkeys.h b/include/linux/pkeys.h
-index a1bacf1..d120810 100644
---- a/include/linux/pkeys.h
-+++ b/include/linux/pkeys.h
-@@ -34,6 +34,11 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 	return 0;
+ #include <asm/elf.h>
+ #include <linux/uaccess.h>
+@@ -714,10 +715,6 @@ static int smaps_hugetlb_range(pte_t *pte, unsigned long hmask,
  }
+ #endif /* HUGETLB_PAGE */
  
-+static inline bool arch_pkeys_enabled(void)
-+{
-+	return false;
-+}
-+
- static inline void copy_init_pkru_to_fpregs(void)
+-void __weak arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
+-{
+-}
+-
+ static int show_smap(struct seq_file *m, void *v, int is_pid)
  {
- }
+ 	struct vm_area_struct *vma = v;
+@@ -803,7 +800,11 @@ static int show_smap(struct seq_file *m, void *v, int is_pid)
+ 		   (vma->vm_flags & VM_LOCKED) ?
+ 			(unsigned long)(mss.pss >> (10 + PSS_SHIFT)) : 0);
+ 
+-	arch_show_smap(m, vma);
++#ifdef CONFIG_ARCH_HAS_PKEYS
++	if (arch_pkeys_enabled())
++		seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
++#endif
++
+ 	show_smap_vma_flags(m, vma);
+ 	m_cache_vma(m, vma);
+ 	return 0;
 -- 
 1.7.1
