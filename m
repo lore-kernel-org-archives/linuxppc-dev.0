@@ -1,12 +1,12 @@
 Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvJRL5WH9zDrnw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 13:58:54 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id d8so2241256pgt.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 20:58:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvJRS1NklzDrnY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 13:59:00 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id i23so2069426pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 20:59:00 -0700 (PDT)
 From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -19,9 +19,9 @@ Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: [PATCH 2/5] ia64: Add .opd based function descriptor dereference
-Date: Sat, 16 Sep 2017 12:53:44 +0900
-Message-Id: <20170916035347.19705-3-sergey.senozhatsky@gmail.com>
+Subject: [PATCH 3/5] powerpc64: Add .opd based function descriptor dereference
+Date: Sat, 16 Sep 2017 12:53:45 +0900
+Message-Id: <20170916035347.19705-4-sergey.senozhatsky@gmail.com>
 In-Reply-To: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
 References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,7 +34,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 We are moving towards separate kernel and module function descriptor
-dereference callbacks. This patch enables it for IA64.
+dereference callbacks. This patch enables it for powerpc64.
 
 For pointers that belong to the kernel
 -  Added __start_opd and __end_opd pointers, to track the kernel
@@ -51,78 +51,104 @@ For pointers that belong to a module
 
 Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 ---
- arch/ia64/include/asm/sections.h | 14 +++++++++++++-
- arch/ia64/kernel/module.c        | 13 +++++++++++++
- arch/ia64/kernel/vmlinux.lds.S   |  2 ++
- 3 files changed, 28 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/module.h   |  3 +++
+ arch/powerpc/include/asm/sections.h | 13 +++++++++++++
+ arch/powerpc/kernel/module_64.c     | 16 ++++++++++++++++
+ arch/powerpc/kernel/vmlinux.lds.S   |  2 ++
+ 4 files changed, 34 insertions(+)
 
-diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index 2ab2003698ef..bff3f3535609 100644
---- a/arch/ia64/include/asm/sections.h
-+++ b/arch/ia64/include/asm/sections.h
-@@ -25,8 +25,11 @@ extern char __start_gate_fsyscall_patchlist[], __end_gate_fsyscall_patchlist[];
- extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_bubble_down_patchlist[];
- extern char __start_unwind[], __end_unwind[];
- extern char __start_ivt_text[], __end_ivt_text[];
-+extern char __start_opd[], __end_opd[];
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index 6c0132c7212f..7e28442827f1 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -45,6 +45,9 @@ struct mod_arch_specific {
+ 	unsigned long tramp;
+ #endif
  
++	/* For module function descriptor dereference */
++	unsigned long start_opd;
++	unsigned long end_opd;
+ #else /* powerpc64 */
+ 	/* Indices of PLT sections within module. */
+ 	unsigned int core_plt_section;
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index 7902d6358854..7cc4db86952b 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -16,6 +16,9 @@ extern char __end_interrupts[];
+ extern char __prom_init_toc_start[];
+ extern char __prom_init_toc_end[];
+ 
++extern char __start_opd[];
++extern char __end_opd[];
++
+ static inline int in_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_stext && addr < (unsigned long)__init_end)
+@@ -66,6 +69,8 @@ static inline int overlaps_kvm_tmp(unsigned long start, unsigned long end)
+ 
+ #ifdef PPC64_ELF_ABI_v1
  #undef dereference_function_descriptor
 +#undef dereference_kernel_function_descriptor
 +
  static inline void *dereference_function_descriptor(void *ptr)
  {
- 	struct fdesc *desc = ptr;
-@@ -37,6 +40,15 @@ static inline void *dereference_function_descriptor(void *ptr)
+ 	struct ppc64_opd_entry *desc = ptr;
+@@ -75,6 +80,14 @@ static inline void *dereference_function_descriptor(void *ptr)
+ 		ptr = p;
  	return ptr;
  }
- 
++
 +static inline void *dereference_kernel_function_descriptor(void *ptr)
 +{
-+	/*
-+	 * Check if the ptr is a function descriptor and thus needs to
-+	 * be dereferenced.
-+	 */
 +	if (ptr < (void *)__start_opd || (void *)__end_opd < ptr)
 +		return ptr;
++
 +	return dereference_function_descriptor(ptr);
 +}
+ #endif /* PPC64_ELF_ABI_v1 */
  
- #endif /* _ASM_IA64_SECTIONS_H */
--
-diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
-index d1d945c6bd05..d42f1e19d75d 100644
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -35,6 +35,7 @@
+ #endif
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 0b0f89685b67..52aa5d668364 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -344,6 +344,11 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
+ 			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
+ 					  sechdrs[i].sh_size);
++		else if (strcmp(secstrings + sechdrs[i].sh_name, ".opd")==0) {
++			me->arch.start_opd = sechdrs[i].sh_offset;
++			me->arch.end_opd = me->arch.start_opd +
++					sechdrs[i].sh_size;
++		}
  
- #include <asm/patch.h>
- #include <asm/unaligned.h>
-+#include <asm/sections.h>
- 
- #define ARCH_MODULE_DEBUG 0
- 
-@@ -917,3 +918,15 @@ module_arch_cleanup (struct module *mod)
- 	if (mod->arch.core_unw_table)
- 		unw_remove_unwind_table(mod->arch.core_unw_table);
+ 		/* We don't handle .init for the moment: rename to _init */
+ 		while ((p = strstr(secstrings + sechdrs[i].sh_name, ".init")))
+@@ -712,6 +717,17 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 	return 0;
  }
-+
+ 
++#ifdef PPC64_ELF_ABI_v1
 +unsigned long dereference_module_function_descriptor(struct module *mod,
-+					     unsigned long addr)
++						     unsigned long addr)
 +{
-+	Elf64_Shdr *opd = mod->arch.opd;
-+
-+	if (addr < opd->sh_addr ||
-+			(opd->sh_addr + opd->sh_size) < addr)
++	if (addr < mod->arch.start_opd || mod->arch.end_opd < addr)
 +		return addr;
 +
 +	return dereference_function_descriptor(addr);
 +}
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 798026dde52e..f872ba5ff82a 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -107,7 +107,9 @@ SECTIONS {
- 	RODATA
++#endif /* PPC64_ELF_ABI_v1 */
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
+ #ifdef CC_USING_MPROFILE_KERNEL
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 882628fa6987..70e10251e083 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -277,7 +277,9 @@ SECTIONS
+ 	}
  
  	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
 +		__start_opd = .;
@@ -130,6 +156,6 @@ index 798026dde52e..f872ba5ff82a 100644
 +		__end_opd = .;
  	}
  
- 	/*
+ 	. = ALIGN(256);
 -- 
 2.14.1
