@@ -1,30 +1,25 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3xv8m61dgJzDrZq
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 08:12:53 +1000 (AEST)
-Date: Fri, 15 Sep 2017 22:51:48 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, Steven.Sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v8 10/11] arm64/kasan: explicitly zero kasan shadow memory
-Message-ID: <20170915215147.GA11849@remoulade>
-References: <20170914223517.8242-1-pasha.tatashin@oracle.com>
- <20170914223517.8242-11-pasha.tatashin@oracle.com>
- <20170915011035.GA6936@remoulade>
- <c76f72fc-21ed-62d0-014e-8509c0374f96@oracle.com>
- <20170915203852.GA10749@remoulade>
- <bff836ec-3922-1783-6cb4-94d1be92544b@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <bff836ec-3922-1783-6cb4-94d1be92544b@oracle.com>
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvDxm34L7zDrbr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 11:21:31 +1000 (AEST)
+Received: by mail-qt0-x242.google.com with SMTP id f24so2499623qte.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 18:21:31 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-doc@vger.kernel.org
+Cc: arnd@arndb.de, akpm@linux-foundation.org, corbet@lwn.net, mingo@redhat.com,
+ benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
+ linuxram@us.ibm.com
+Subject: [PATCH 0/6] mm, x86, powerpc: Memory Protection Keys enhancement
+Date: Fri, 15 Sep 2017 18:21:04 -0700
+Message-Id: <1505524870-4783-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,32 +29,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 15, 2017 at 05:20:59PM -0400, Pavel Tatashin wrote:
-> Hi Mark,
-> 
-> I had this option  back upto version 3, where zero flag was passed into
-> vmemmap_alloc_block(), but I was asked to remove it, because it required too
-> many changes in other places.
+The patch-series enhances memory protection keys feature.
 
-Ok. Sorry for bringing back a point that had already been covered.
+The patch(1)  introduces  an  additional  vma bit to support 32
+pkeys.  PowerPC supports 32 pkeys.
 
-> So, the current approach is cleaner, but the idea is that kasan should use
-> its own version of vmemmap_populate() for both x86 and ARM, but I think it is
-> outside of the scope of this work.
+The patch(2,3)  introduces a new interface arch_pkeys_enabled(),
+this  interface  can   be used by arch-neutral code to display
+protection key value in smap.
 
-I appreciate that this is unrelated to your ultimate goal, and that this is
-somewhat frustrating given the KASAN code is arguably abusing the
-vmemmap_populate() interface.
+The patch(4) introduces a syfs interface, to display the static
+attributes  of the protection key. Eg: max number of keys.
 
-However, I do think we need to migrate the KASAN code to a proper interface
-immediately, rather than making it worse in the interim.
+The last two patches, (5,6) update documentation.
 
-> If you think I should add these function in this project, than sure I can
-> send a new version with kasanmap_populate() functions.
+A separate patch series that enhances selftest will follow. The
+entire  patch  series  that  enables  pkeys  on  powerpc  is at 
+https://github.com/rampai/memorykeys.git memkey.v9-rc1
 
-I would very much appreciate if you could send a version with a
-kasan_map_populate() interface. I'm more than happy to review/test that portion
-of the series, or to help if there's some problem which makes that difficult.
+Testing:
+-------
+This  patches are tested on powerpc platform using a
+enhaced set of selftests.
+Could not test on x86 since I do not have access to
+one with pkey support.
 
-Thanks,
-Mark.
+History:
+-------
+version v3:
+	(1) sysfs interface - thanks Thiago.
+	(2) Documentation update.
+
+version v2:
+	(1) Documentation   is   updated   to  better 
+		capture the semantics.
+	(2) introduced   arch_pkeys_enabled() to find
+       		if an arch enables pkeys.  Correspond-
+		ing change in logic that displays key
+		value in smaps.
+	(3) code  rearranged  in many places based on
+       		comments from   Dave Hansen,   Balbir,
+	       	Anshuman.	
+version v1: Initial version
+
+Ram Pai (5):
+  mm: introduce an additional vma bit for powerpc pkey
+  mm, x86 : introduce arch_pkeys_enabled()
+  mm: display pkey in smaps if arch_pkeys_enabled() is true
+  Documentation/x86: Move protecton key documentation to arch neutral
+    directory
+  Documentation/vm: PowerPC specific updates to memory protection keys
+
+Thiago Jung Bauermann (1):
+  mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys: Add sysfs interface
+
+ Documentation/vm/protection-keys.txt  |  160 +++++++++++++++++++++++++++++++++
+ Documentation/x86/protection-keys.txt |   85 -----------------
+ arch/powerpc/include/asm/pkeys.h      |    2 +
+ arch/powerpc/mm/pkeys.c               |   20 ++++
+ arch/x86/include/asm/mmu_context.h    |    4 +-
+ arch/x86/include/asm/pkeys.h          |    2 +
+ arch/x86/kernel/fpu/xstate.c          |    5 +
+ arch/x86/kernel/setup.c               |    8 --
+ arch/x86/mm/pkeys.c                   |    8 ++
+ fs/proc/task_mmu.c                    |   17 ++--
+ include/linux/mm.h                    |   16 ++--
+ include/linux/pkeys.h                 |    9 ++
+ mm/mprotect.c                         |   88 ++++++++++++++++++
+ 13 files changed, 317 insertions(+), 107 deletions(-)
+ create mode 100644 Documentation/vm/protection-keys.txt
+ delete mode 100644 Documentation/x86/protection-keys.txt
