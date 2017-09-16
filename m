@@ -1,12 +1,12 @@
 Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvJRY4c6JzDrnl
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 13:59:05 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id m30so2240752pgn.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 20:59:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvJRg34q5zDrhx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 13:59:11 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id g65so2071349pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Sep 2017 20:59:11 -0700 (PDT)
 From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -19,9 +19,10 @@ Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: [PATCH 4/5] parisc64: Add .opd based function descriptor dereference
-Date: Sat, 16 Sep 2017 12:53:46 +0900
-Message-Id: <20170916035347.19705-5-sergey.senozhatsky@gmail.com>
+Subject: [PATCH 5/5] symbol lookup: use new kernel and module dereference
+ functions
+Date: Sat, 16 Sep 2017 12:53:47 +0900
+Message-Id: <20170916035347.19705-6-sergey.senozhatsky@gmail.com>
 In-Reply-To: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
 References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,123 +34,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are moving towards separate kernel and module function descriptor
-dereference callbacks. This patch enables it for parisc64.
+Call appropriate function descriptor dereference ARCH callbacks:
+- dereference_kernel_function_descriptor() if the pointer is a
+  kernel symbol;
 
-For pointers that belong to the kernel
--  Added __start_opd and __end_opd pointers, to track the kernel
-   .opd section address range;
+- dereference_module_function_descriptor() if the pointer is a
+  module symbol.
 
--  Added dereference_kernel_function_descriptor(). Now we
-   will dereference only function pointers that are within
-   [__start_opd, __end_opd];
-
-For pointers that belong to a module
--  Added dereference_module_function_descriptor() to handle module
-   function descriptor dereference. Now we will dereference only
-   pointers that are within [module->opd.start, module->opd.end].
+This patch also removes dereference_function_descriptor() from
+'%pF/%pf' vsprintf handler, because it has the same behavior with
+'%pS/%ps' now.
 
 Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 ---
- arch/parisc/boot/compressed/vmlinux.lds.S |  2 ++
- arch/parisc/include/asm/sections.h        |  3 +++
- arch/parisc/kernel/module.c               | 14 ++++++++++++++
- arch/parisc/kernel/process.c              | 10 ++++++++++
- arch/parisc/kernel/vmlinux.lds.S          |  2 ++
- 5 files changed, 31 insertions(+)
+ Documentation/printk-formats.txt | 15 +++++----------
+ kernel/kallsyms.c                |  1 +
+ kernel/module.c                  |  1 +
+ lib/vsprintf.c                   |  5 +----
+ 4 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/arch/parisc/boot/compressed/vmlinux.lds.S b/arch/parisc/boot/compressed/vmlinux.lds.S
-index a4ce3314e78e..4ebd4e65524c 100644
---- a/arch/parisc/boot/compressed/vmlinux.lds.S
-+++ b/arch/parisc/boot/compressed/vmlinux.lds.S
-@@ -29,7 +29,9 @@ SECTIONS
- 	. = ALIGN(16);
- 	/* Linkage tables */
- 	.opd : {
-+		__start_opd = .;
- 		*(.opd)
-+		__end_opd = .;
- 	} PROVIDE (__gp = .);
- 	.plt : {
- 		*(.plt)
-diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
-index 9d13c3507ad6..e3cde650b2f9 100644
---- a/arch/parisc/include/asm/sections.h
-+++ b/arch/parisc/include/asm/sections.h
-@@ -6,7 +6,10 @@
+diff --git a/Documentation/printk-formats.txt b/Documentation/printk-formats.txt
+index 361789df51ec..b2afafc84638 100644
+--- a/Documentation/printk-formats.txt
++++ b/Documentation/printk-formats.txt
+@@ -50,26 +50,23 @@ Symbols/Function Pointers
  
- #ifdef CONFIG_64BIT
- #undef dereference_function_descriptor
-+#undef dereference_kernel_function_descriptor
-+
- void *dereference_function_descriptor(void *);
-+void *dereference_kernel_function_descriptor(void *);
- #endif
+ ::
  
- #endif
-diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
-index f1a76935a314..bc2eae8634fd 100644
---- a/arch/parisc/kernel/module.c
-+++ b/arch/parisc/kernel/module.c
-@@ -954,3 +954,17 @@ void module_arch_cleanup(struct module *mod)
- {
- 	deregister_unwind_table(mod);
- }
-+
-+#ifdef CONFIG_64BIT
-+unsigned long dereference_module_function_descriptor(struct module *mod,
-+					     unsigned long addr)
-+{
-+	void *opd_sz = mod->arch.fdesc_offset +
-+		       mod->arch.fdesc_max * sizeof(Elf64_Fdesc);
-+
-+	if (addr < mod->arch.fdesc_offset || opd_sz < addr)
-+		return addr;
-+
-+	return dereference_function_descriptor(addr);
-+}
-+#endif
-diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
-index 30f92391a93e..f30776bdaa79 100644
---- a/arch/parisc/kernel/process.c
-+++ b/arch/parisc/kernel/process.c
-@@ -267,6 +267,8 @@ get_wchan(struct task_struct *p)
- }
++	%pS	versatile_init+0x0/0x110
++	%ps	versatile_init
+ 	%pF	versatile_init+0x0/0x110
+ 	%pf	versatile_init
+-	%pS	versatile_init+0x0/0x110
+ 	%pSR	versatile_init+0x9/0x110
+ 		(with __builtin_extract_return_addr() translation)
+-	%ps	versatile_init
+ 	%pB	prev_fn_of_versatile_init+0x88/0x88
  
- #ifdef CONFIG_64BIT
-+extern char __start_opd[], __end_opd[];
-+
- void *dereference_function_descriptor(void *ptr)
- {
- 	Elf64_Fdesc *desc = ptr;
-@@ -276,6 +278,14 @@ void *dereference_function_descriptor(void *ptr)
- 		ptr = p;
- 	return ptr;
- }
-+
-+void *dereference_kernel_function_descriptor(void *ptr)
-+{
-+	if (ptr < (void *)__start_opd || (void *)__end_opd < ptr)
-+		return ptr;
-+
-+	return dereference_function_descriptor(ptr);
-+}
- #endif
+-The ``F`` and ``f`` specifiers are for printing function pointers,
+-for example, f->func, &gettimeofday. They have the same result as
+-``S`` and ``s`` specifiers. But they do an extra conversion on
+-ia64, ppc64 and parisc64 architectures where the function pointers
+-are actually function descriptors.
+-
+ The ``S`` and ``s`` specifiers can be used for printing symbols
+ from direct addresses, for example, __builtin_return_address(0),
+ (void *)regs->ip. They result in the symbol name with (``S``) or
+ without (``s``) offsets. If KALLSYMS are disabled then the symbol
+ address is printed instead.
  
- static inline unsigned long brk_rnd(void)
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index ffe2cbf52d1a..ab030895dd1e 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -99,7 +99,9 @@ SECTIONS
- 	. = ALIGN(16);
- 	/* Linkage tables */
- 	.opd : {
-+		__start_opd = .;
- 		*(.opd)
-+		__end_opd = .;
- 	} PROVIDE (__gp = .);
- 	.plt : {
- 		*(.plt)
++Note, that the ``F`` and ``f`` specifiers are identical to ``S`` (``s``)
++and thus deprecated.
++
+ The ``B`` specifier results in the symbol name with offsets and should be
+ used when printing stack backtraces. The specifier takes into
+ consideration the effect of compiler optimisations which may occur
+@@ -77,8 +74,6 @@ when tail-call``s are used and marked with the noreturn GCC attribute.
+ 
+ Examples::
+ 
+-	printk("Going to call: %pF\n", gettimeofday);
+-	printk("Going to call: %pF\n", p->func);
+ 	printk("%s: called from %pS\n", __func__, (void *)_RET_IP_);
+ 	printk("%s: called from %pS\n", __func__,
+ 				(void *)__builtin_return_address(0));
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 127e7cfafa55..e2fc09ea9509 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -322,6 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
+ 	if (is_ksym_addr(addr)) {
+ 		unsigned long pos;
+ 
++		addr = dereference_kernel_function_descriptor(addr);
+ 		pos = get_symbol_pos(addr, symbolsize, offset);
+ 		/* Grab name */
+ 		kallsyms_expand_symbol(get_symbol_offset(pos),
+diff --git a/kernel/module.c b/kernel/module.c
+index 87cdb46863cd..4f591f2bbf5a 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -3948,6 +3948,7 @@ const char *module_address_lookup(unsigned long addr,
+ 	preempt_disable();
+ 	mod = __module_address(addr);
+ 	if (mod) {
++		addr = dereference_module_function_descriptor(mod, addr);
+ 		if (modname)
+ 			*modname = mod->name;
+ 		ret = get_ksymbol(mod, addr, size, offset);
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 86c3385b9eb3..bf04b4f5d8e7 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -40,7 +40,6 @@
+ #include "../mm/internal.h"	/* For the trace_print_flags arrays */
+ 
+ #include <asm/page.h>		/* for PAGE_SIZE */
+-#include <asm/sections.h>	/* for dereference_function_descriptor() */
+ #include <asm/byteorder.h>	/* cpu_to_le16 */
+ 
+ #include <linux/string_helpers.h>
+@@ -1721,10 +1720,8 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+ 	}
+ 
+ 	switch (*fmt) {
+-	case 'F':
++	case 'F': /* %pF and %pf are kept for compatibility reasons only */
+ 	case 'f':
+-		ptr = dereference_function_descriptor(ptr);
+-		/* Fallthrough */
+ 	case 'S':
+ 	case 's':
+ 	case 'B':
 -- 
 2.14.1
