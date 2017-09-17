@@ -2,39 +2,39 @@ Return-Path: <srs0=m9cn=as=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvwXn3S6LzDrn7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvwXk5X5vzDrnd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:42 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xvwXn17QWz8vmk
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:45 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xvwXk3n1sz8t3H
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:42 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xvwXm2PYNz9t2M
- for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 14:05:44 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8H44Pte097551
- for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:42 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d0wk9bad6-1
+ by ozlabs.org (Postfix) with ESMTPS id 3xvwXk07Hzz9t2M
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 14:05:41 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8H44TqL064052
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:39 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d0y9aaxu2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:41 -0400
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:39 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sat, 16 Sep 2017 22:05:40 -0600
+ Sat, 16 Sep 2017 22:05:39 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 02/10] powerpc/vas: Validate window credits
-Date: Sat, 16 Sep 2017 21:05:20 -0700
+Subject: [PATCH 01/10] powerpc/vas: init missing fields from [rt]xattr
+Date: Sat, 16 Sep 2017 21:05:19 -0700
 In-Reply-To: <1505621128-23877-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1505621128-23877-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1505621128-23877-3-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1505621128-23877-2-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,55 +44,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NX-842, the only user of VAS, sets the window credits to default values
-but VAS should check the credits against the possible max values.
-
-The VAS_WCREDS_MIN is not needed and can be dropped.
+Initialize a few missing window context fields from the window attributes
+specified by the caller. These fields are currently set to their default
+values by the caller (NX-842), but would be good to apply them anyway.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
  arch/powerpc/platforms/powernv/vas-window.c | 6 ++++++
- arch/powerpc/platforms/powernv/vas.h        | 4 ++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ 1 file changed, 6 insertions(+)
 
 diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index cec7ab7..a2fe120 100644
+index 5aae845..cec7ab7 100644
 --- a/arch/powerpc/platforms/powernv/vas-window.c
 +++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -738,6 +738,9 @@ static bool rx_win_args_valid(enum vas_cop_type cop,
- 	if (attr->rx_fifo_size > VAS_RX_FIFO_SIZE_MAX)
- 		return false;
+@@ -679,10 +679,13 @@ static void init_winctx_for_rxwin(struct vas_window *rxwin,
  
-+	if (attr->wcreds_max > VAS_RX_WCREDS_MAX)
-+		return false;
-+
- 	if (attr->nx_win) {
- 		/* cannot be fault or user window if it is nx */
- 		if (attr->fault_win || attr->user_win)
-@@ -927,6 +930,9 @@ static bool tx_win_args_valid(enum vas_cop_type cop,
- 	if (cop > VAS_COP_TYPE_MAX)
- 		return false;
+ 	winctx->nx_win = rxattr->nx_win;
+ 	winctx->fault_win = rxattr->fault_win;
++	winctx->user_win = rxattr->user_win;
++	winctx->rej_no_credit = rxattr->rej_no_credit;
+ 	winctx->rx_word_mode = rxattr->rx_win_ord_mode;
+ 	winctx->tx_word_mode = rxattr->tx_win_ord_mode;
+ 	winctx->rx_wcred_mode = rxattr->rx_wcred_mode;
+ 	winctx->tx_wcred_mode = rxattr->tx_wcred_mode;
++	winctx->notify_early = rxattr->notify_early;
  
-+	if (attr->wcreds_max > VAS_TX_WCREDS_MAX)
-+		return false;
-+
- 	if (attr->user_win &&
- 			(cop != VAS_COP_TYPE_FTW || attr->rsvd_txbuf_count))
- 		return false;
-diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index 38dee5d..fea0de4 100644
---- a/arch/powerpc/platforms/powernv/vas.h
-+++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -106,8 +106,8 @@
-  *
-  * TODO: Needs tuning for per-process credits
-  */
--#define VAS_WCREDS_MIN			16
--#define VAS_WCREDS_MAX			((64 << 10) - 1)
-+#define VAS_RX_WCREDS_MAX		((64 << 10) - 1)
-+#define VAS_TX_WCREDS_MAX		((4 << 10) - 1)
- #define VAS_WCREDS_DEFAULT		(1 << 10)
+ 	if (winctx->nx_win) {
+ 		winctx->data_stamp = true;
+@@ -889,11 +892,14 @@ static void init_winctx_for_txwin(struct vas_window *txwin,
+ 	winctx->user_win = txattr->user_win;
+ 	winctx->nx_win = txwin->rxwin->nx_win;
+ 	winctx->pin_win = txattr->pin_win;
++	winctx->rej_no_credit = txattr->rej_no_credit;
++	winctx->rsvd_txbuf_enable = txattr->rsvd_txbuf_enable;
  
- /*
+ 	winctx->rx_wcred_mode = txattr->rx_wcred_mode;
+ 	winctx->tx_wcred_mode = txattr->tx_wcred_mode;
+ 	winctx->rx_word_mode = txattr->rx_win_ord_mode;
+ 	winctx->tx_word_mode = txattr->tx_win_ord_mode;
++	winctx->rsvd_txbuf_count = txattr->rsvd_txbuf_count;
+ 
+ 	if (winctx->nx_win) {
+ 		winctx->data_stamp = true;
 -- 
 2.7.4
