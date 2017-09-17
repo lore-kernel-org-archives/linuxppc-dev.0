@@ -1,39 +1,38 @@
-Return-Path: <rob@landley.net>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=m9cn=as=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvwV8699VzDrnY
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:03:26 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id r20so1705901oie.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 21:03:26 -0700 (PDT)
-Subject: Re: [PATCH v3] Make initramfs honor CONFIG_DEVTMPFS_MOUNT
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, mhocko@suse.com,
- peterz@infradead.org, viresh.kumar@linaro.org,
- Benjamin Tissoires <benjamin.tissoires@redhat.com>, mingo@kernel.org,
- lokeshvutla@ti.com, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linux-input@vger.kernel.org, thomas.lendacky@amd.com, lauraa@codeaurora.org,
- keescook@chromium.org, Jiri Kosina <jikos@kernel.org>, rostedt@goodmis.org,
- linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, tglx@linutronix.de,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, tj@kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <1495700957.9020.43.camel@abdul.in.ibm.com>
- <8760gp9jjl.fsf@concordia.ellerman.id.au>
- <20170526072437.46499fbd@canb.auug.org.au>
- <87a7e82d-0af5-7f9e-6bd6-7e28b238e866@landley.net>
- <87r2z86ykt.fsf@concordia.ellerman.id.au>
- <4aa9cb26-f868-0720-e5c8-3c4e08afad20@landley.net>
- <3ba5ddc7-d1a2-7f54-0a26-0752f3975226@c-s.fr>
-From: Rob Landley <rob@landley.net>
-Message-ID: <d6a5ba05-5de2-24e0-49ae-437058001b37@landley.net>
-Date: Sat, 16 Sep 2017 23:03:19 -0500
-MIME-Version: 1.0
-In-Reply-To: <3ba5ddc7-d1a2-7f54-0a26-0752f3975226@c-s.fr>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvwXk6C0dzDrnq
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:42 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3xvwXk3sngz8v8G
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:05:42 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3xvwXj0qhMz9sRm
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 14:05:40 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8H44ZN6014090
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:38 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2d0vwg4kme-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2017 00:05:38 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Sat, 16 Sep 2017 22:05:38 -0600
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 00/10] powerpc/vas: cleanup and optimizations
+Date: Sat, 16 Sep 2017 21:05:18 -0700
+Message-Id: <1505621128-23877-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,54 +42,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/14/2017 04:17 AM, Christophe LEROY wrote:
-> Le 14/09/2017 à 01:51, Rob Landley a écrit :
->> From: Rob Landley <rob@landley.net>
->>
->> Make initramfs honor CONFIG_DEVTMPFS_MOUNT, and move
->> /dev/console open after devtmpfs mount.
->>
->> Add workaround for Debian bug that was copied by Ubuntu.
-> 
-> Is that a bug only for Debian ? Why ?
+Sanitize cpu/chip id to VAS id mapping, improve vas_win_close()
+performance and add a check for return of credits.
 
-Look down, specifically this bit:
+Also, fix up couple of initializations/error checks and cleanup
+some comments and debug code.
 
->> v2 discussion:
->> http://lkml.iu.edu/hypermail/linux/kernel/1705.2/05611.html
+Sukadev Bhattiprolu (10):
+  powerpc/vas: init missing fields from [rt]xattr
+  powerpc/vas: Validate window credits
+  powerpc/vas: Cleanup some debug code
+  powerpc/vas: Drop poll_window_cast_out().
+  powerpc/vas: Use helper to unpin/close window
+  powerpc/vas: Reduce polling interval for busy state
+  powerpc/vas: Save configured window credits
+  powerpc/vas: poll for return of window credits
+  powerpc/vas: Create cpu to vas id mapping
+  powerpc/vas, nx-842: Define and use chip_to_vas_id()
 
-That's some discussion of version 2 of this patch, which was merged for
-a while last dev cycle, then backed out again because it triggered the
-same bug in a number of system init scripts:
+ arch/powerpc/include/asm/vas.h              |   9 ++
+ arch/powerpc/platforms/powernv/vas-window.c | 133 +++++++++++++++++++++-------
+ arch/powerpc/platforms/powernv/vas.c        |  25 +++++-
+ arch/powerpc/platforms/powernv/vas.h        |  61 ++++---------
+ drivers/crypto/nx/nx-842-powernv.c          |  18 +---
+ 5 files changed, 154 insertions(+), 92 deletions(-)
 
-  http://lkml.iu.edu/hypermail/linux/kernel/1705.2/07072.html
-  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01182.html
-  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01505.html
-  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01320.html
-
-All of whom copied the broken error "recovery" path from debian. If they
-checked whether it was already mounted, or didn't _blank_ the /dev
-directory in response to mounting the exact same filesystem over itself
-giving -EBUSY, the system would work fine. Heck, if you built a kernel
-with a static /dev in initramfs and no devtmpfs configured in, the
-script would break things exactly the same way. The breakage is that
-script takes a hammer to a perfectly functional /dev directory and then
-continues the boot with an empty /dev. That's bonkers.
-
-> Why should a Debian bug be fixed by a workaround in the mainline kernel ?
-
-That was my argument last time, and the answer was "Breaking userspace
-is bad, mmmkay." Even when userspace is doing something REALLY OBVIOUSLY
-STUPID and it is _clearly_ their fault, as long as they got there first
-they've established the status quo and it doesn't matter how silly it is.
-
-This was explicitly stated to me here:
-
-  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/03292.html
-
-I.E. don't argue with me, argue with him. :)
-
-So, I added a workaround with a printk in hopes of embarassing them into
-someday fixing it.
-
-Rob
+-- 
+2.7.4
