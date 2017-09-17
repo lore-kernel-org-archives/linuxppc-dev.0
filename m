@@ -1,25 +1,39 @@
-Return-Path: <prvs=42551c893=jschoenh@amazon.com>
-Received: from smtp-fw-33001.amazon.com (smtp-fw-33001.amazon.com
- [207.171.190.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rob@landley.net>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xvk3X5hcDzDrnf
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 06:13:11 +1000 (AEST)
-From: =?UTF-8?q?Jan=20H=2E=20Sch=C3=B6nherr?= <jschoenh@amazon.de>
-To: Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>
-Cc: =?UTF-8?q?Jan=20H=2E=20Sch=C3=B6nherr?= <jschoenh@amazon.de>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- sachinp@linux.vnet.ibm.com, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- kvm@vger.kernel.org
-Subject: [PATCH] Revert "KVM: Don't accept obviously wrong gsi values via
- KVM_IRQFD"
-Date: Sat, 16 Sep 2017 22:12:24 +0200
-Message-Id: <1505592744-31498-1-git-send-email-jschoenh@amazon.de>
-In-Reply-To: <04cde7c8-d41f-96e2-2b4b-2287b8f04bfc@amazon.de>
-References: <04cde7c8-d41f-96e2-2b4b-2287b8f04bfc@amazon.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xvwV8699VzDrnY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 14:03:26 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id r20so1705901oie.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Sep 2017 21:03:26 -0700 (PDT)
+Subject: Re: [PATCH v3] Make initramfs honor CONFIG_DEVTMPFS_MOUNT
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>, mhocko@suse.com,
+ peterz@infradead.org, viresh.kumar@linaro.org,
+ Benjamin Tissoires <benjamin.tissoires@redhat.com>, mingo@kernel.org,
+ lokeshvutla@ti.com, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linux-input@vger.kernel.org, thomas.lendacky@amd.com, lauraa@codeaurora.org,
+ keescook@chromium.org, Jiri Kosina <jikos@kernel.org>, rostedt@goodmis.org,
+ linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, tglx@linutronix.de,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, tj@kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <1495700957.9020.43.camel@abdul.in.ibm.com>
+ <8760gp9jjl.fsf@concordia.ellerman.id.au>
+ <20170526072437.46499fbd@canb.auug.org.au>
+ <87a7e82d-0af5-7f9e-6bd6-7e28b238e866@landley.net>
+ <87r2z86ykt.fsf@concordia.ellerman.id.au>
+ <4aa9cb26-f868-0720-e5c8-3c4e08afad20@landley.net>
+ <3ba5ddc7-d1a2-7f54-0a26-0752f3975226@c-s.fr>
+From: Rob Landley <rob@landley.net>
+Message-ID: <d6a5ba05-5de2-24e0-49ae-437058001b37@landley.net>
+Date: Sat, 16 Sep 2017 23:03:19 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <3ba5ddc7-d1a2-7f54-0a26-0752f3975226@c-s.fr>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +43,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit 36ae3c0a36b7456432fedce38ae2f7bd3e01a563.
+On 09/14/2017 04:17 AM, Christophe LEROY wrote:
+> Le 14/09/2017 à 01:51, Rob Landley a écrit :
+>> From: Rob Landley <rob@landley.net>
+>>
+>> Make initramfs honor CONFIG_DEVTMPFS_MOUNT, and move
+>> /dev/console open after devtmpfs mount.
+>>
+>> Add workaround for Debian bug that was copied by Ubuntu.
+> 
+> Is that a bug only for Debian ? Why ?
 
-The commit broke compilation on !CONFIG_HAVE_KVM_IRQ_ROUTING. Also,
-there may be cases with CONFIG_HAVE_KVM_IRQ_ROUTING, where larger
-gsi values make sense.
+Look down, specifically this bit:
 
-As the commit was meant as an early indicator to user space that
-something is wrong, reverting just restores the previous behavior
-where overly large values are ignored when encountered (without
-any direct feedback).
+>> v2 discussion:
+>> http://lkml.iu.edu/hypermail/linux/kernel/1705.2/05611.html
 
-Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Signed-off-by: Jan H. Schönherr <jschoenh@amazon.de>
----
- virt/kvm/eventfd.c | 2 --
- 1 file changed, 2 deletions(-)
+That's some discussion of version 2 of this patch, which was merged for
+a while last dev cycle, then backed out again because it triggered the
+same bug in a number of system init scripts:
 
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index c608ab4..f2ac53a 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -565,8 +565,6 @@ kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
- {
- 	if (args->flags & ~(KVM_IRQFD_FLAG_DEASSIGN | KVM_IRQFD_FLAG_RESAMPLE))
- 		return -EINVAL;
--	if (args->gsi >= KVM_MAX_IRQ_ROUTES)
--		return -EINVAL;
- 
- 	if (args->flags & KVM_IRQFD_FLAG_DEASSIGN)
- 		return kvm_irqfd_deassign(kvm, args);
--- 
-2.3.1.dirty
+  http://lkml.iu.edu/hypermail/linux/kernel/1705.2/07072.html
+  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01182.html
+  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01505.html
+  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01320.html
+
+All of whom copied the broken error "recovery" path from debian. If they
+checked whether it was already mounted, or didn't _blank_ the /dev
+directory in response to mounting the exact same filesystem over itself
+giving -EBUSY, the system would work fine. Heck, if you built a kernel
+with a static /dev in initramfs and no devtmpfs configured in, the
+script would break things exactly the same way. The breakage is that
+script takes a hammer to a perfectly functional /dev directory and then
+continues the boot with an empty /dev. That's bonkers.
+
+> Why should a Debian bug be fixed by a workaround in the mainline kernel ?
+
+That was my argument last time, and the answer was "Breaking userspace
+is bad, mmmkay." Even when userspace is doing something REALLY OBVIOUSLY
+STUPID and it is _clearly_ their fault, as long as they got there first
+they've established the status quo and it doesn't matter how silly it is.
+
+This was explicitly stated to me here:
+
+  http://lkml.iu.edu/hypermail/linux/kernel/1705.3/03292.html
+
+I.E. don't argue with me, argue with him. :)
+
+So, I added a workaround with a printk in hopes of embarassing them into
+someday fixing it.
+
+Rob
