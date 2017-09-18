@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwfJC4BYTzDrT1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:27:23 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id m30so4890730pgn.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 01:27:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwfJG4xcqzDrWV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:27:26 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id q76so4299944pfq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 01:27:26 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 1/5] powerpc/watchdog: do not panic from locked CPU's IPI
- handler
-Date: Mon, 18 Sep 2017 18:27:02 +1000
-Message-Id: <20170918082706.6485-2-npiggin@gmail.com>
+Subject: [PATCH 2/5] powerpc/watchdog: do not backtrace locked CPUs twice if
+ allcpus backtrace is enabled
+Date: Mon, 18 Sep 2017 18:27:03 +1000
+Message-Id: <20170918082706.6485-3-npiggin@gmail.com>
 In-Reply-To: <20170918082706.6485-1-npiggin@gmail.com>
 References: <20170918082706.6485-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,31 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SMP watchdog will detect locked CPUs and IPI them to print a
-backtrace and registers. If panic on hard lockup is enabled, do
-not panic from this handler, because that can cause recursion into
-the IPI layer during the panic.
-
-The caller already panics in this case.
+If sysctl_hardlockup_all_cpu_backtrace is enabled, there is no need to
+IPI stuck CPUs for backtrace before trigger_allbutself_cpu_backtrace(),
+which does the same thing again.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/watchdog.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/kernel/watchdog.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 2f6eadd9408d..532a1adbe89b 100644
+index 532a1adbe89b..920e61c79f47 100644
 --- a/arch/powerpc/kernel/watchdog.c
 +++ b/arch/powerpc/kernel/watchdog.c
-@@ -97,8 +97,7 @@ static void wd_lockup_ipi(struct pt_regs *regs)
- 	else
- 		dump_stack();
+@@ -133,15 +133,18 @@ static void watchdog_smp_panic(int cpu, u64 tb)
+ 	pr_emerg("Watchdog CPU:%d detected Hard LOCKUP other CPUS:%*pbl\n",
+ 			cpu, cpumask_pr_args(&wd_smp_cpus_pending));
  
--	if (hardlockup_panic)
--		nmi_panic(regs, "Hard LOCKUP");
-+	/* Do not panic from here because that can recurse into NMI IPI layer */
- }
+-	/*
+-	 * Try to trigger the stuck CPUs.
+-	 */
+-	for_each_cpu(c, &wd_smp_cpus_pending) {
+-		if (c == cpu)
+-			continue;
+-		smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
++	if (!sysctl_hardlockup_all_cpu_backtrace) {
++		/*
++		 * Try to trigger the stuck CPUs, unless we are going to
++		 * get a backtrace on all of them anyway.
++		 */
++		for_each_cpu(c, &wd_smp_cpus_pending) {
++			if (c == cpu)
++				continue;
++			smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
++		}
++		smp_flush_nmi_ipi(1000000);
+ 	}
+-	smp_flush_nmi_ipi(1000000);
  
- static void set_cpumask_stuck(const struct cpumask *cpumask, u64 tb)
+ 	/* Take the stuck CPUs out of the watch group */
+ 	set_cpumask_stuck(&wd_smp_cpus_pending, tb);
 -- 
 2.13.3
