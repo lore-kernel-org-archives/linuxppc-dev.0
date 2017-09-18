@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwfJG4xcqzDrWV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:27:26 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id q76so4299944pfq.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 01:27:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwfJK3p2NzDrWb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:27:29 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id g65so4307992pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 01:27:29 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 2/5] powerpc/watchdog: do not backtrace locked CPUs twice if
- allcpus backtrace is enabled
-Date: Mon, 18 Sep 2017 18:27:03 +1000
-Message-Id: <20170918082706.6485-3-npiggin@gmail.com>
+Subject: [PATCH 3/5] powerpc/watchdog: do not trigger SMP crash from
+ touch_nmi_watchdog
+Date: Mon, 18 Sep 2017 18:27:04 +1000
+Message-Id: <20170918082706.6485-4-npiggin@gmail.com>
 In-Reply-To: <20170918082706.6485-1-npiggin@gmail.com>
 References: <20170918082706.6485-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,45 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If sysctl_hardlockup_all_cpu_backtrace is enabled, there is no need to
-IPI stuck CPUs for backtrace before trigger_allbutself_cpu_backtrace(),
-which does the same thing again.
+In xmon, touch_nmi_watchdog() is not expected to be checking that
+other CPUs have not touched the watchdog, so the code will just
+call touch_nmi_watchdog() once before re-enabling hard interrupts.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Just update our CPU's state, and ignore apparently stuck SMP threads.
+
+Arguably touch_nmi_watchdog should check for SMP lockups, and
+callers should be fixed, but that's not trivial for the input code
+of xmon.
 ---
- arch/powerpc/kernel/watchdog.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/watchdog.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 532a1adbe89b..920e61c79f47 100644
+index 920e61c79f47..1fb9379dc683 100644
 --- a/arch/powerpc/kernel/watchdog.c
 +++ b/arch/powerpc/kernel/watchdog.c
-@@ -133,15 +133,18 @@ static void watchdog_smp_panic(int cpu, u64 tb)
- 	pr_emerg("Watchdog CPU:%d detected Hard LOCKUP other CPUS:%*pbl\n",
- 			cpu, cpumask_pr_args(&wd_smp_cpus_pending));
+@@ -277,9 +277,12 @@ void arch_touch_nmi_watchdog(void)
+ {
+ 	unsigned long ticks = tb_ticks_per_usec * wd_timer_period_ms * 1000;
+ 	int cpu = smp_processor_id();
++	u64 tb = get_tb();
  
--	/*
--	 * Try to trigger the stuck CPUs.
--	 */
--	for_each_cpu(c, &wd_smp_cpus_pending) {
--		if (c == cpu)
--			continue;
--		smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
-+	if (!sysctl_hardlockup_all_cpu_backtrace) {
-+		/*
-+		 * Try to trigger the stuck CPUs, unless we are going to
-+		 * get a backtrace on all of them anyway.
-+		 */
-+		for_each_cpu(c, &wd_smp_cpus_pending) {
-+			if (c == cpu)
-+				continue;
-+			smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
-+		}
-+		smp_flush_nmi_ipi(1000000);
- 	}
--	smp_flush_nmi_ipi(1000000);
+-	if (get_tb() - per_cpu(wd_timer_tb, cpu) >= ticks)
+-		watchdog_timer_interrupt(cpu);
++	if (tb - per_cpu(wd_timer_tb, cpu) >= ticks) {
++		per_cpu(wd_timer_tb, cpu) = tb;
++		wd_smp_clear_cpu_pending(cpu, tb);
++	}
+ }
+ EXPORT_SYMBOL(arch_touch_nmi_watchdog);
  
- 	/* Take the stuck CPUs out of the watch group */
- 	set_cpumask_stuck(&wd_smp_cpus_pending, tb);
 -- 
 2.13.3
