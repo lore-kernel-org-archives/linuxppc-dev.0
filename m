@@ -1,21 +1,20 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0048.outbound.protection.outlook.com [104.47.38.48])
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0048.outbound.protection.outlook.com [104.47.34.48])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwyYV4rsBzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 06:39:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwyYX12BczDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 06:39:59 +1000 (AEST)
 From: Roy Pledge <roy.pledge@nxp.com>
 To: <leoyang.li@nxp.com>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
  <devicetree@vger.kernel.org>
 CC: <oss@buserror.net>, <madalin.bucur@nxp.com>, <catalin.marinas@arm.com>,
- <linux@armlinux.org.uk>, <arnd@arndb.de>, <mark.rutland@arm.com>, Roy Pledge
- <roy.pledge@nxp.com>
-Subject: [v5 01/12] soc/fsl/qbman: Add common routine for QBMan private
- allocations
-Date: Mon, 18 Sep 2017 16:39:36 -0400
-Message-ID: <1505767187-4596-2-git-send-email-roy.pledge@nxp.com>
+ <linux@armlinux.org.uk>, <arnd@arndb.de>, <mark.rutland@arm.com>, Claudiu
+ Manoil <claudiu.manoil@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
+Subject: [v5 05/12] soc/fsl/qbman: Drop set/clear_bits usage
+Date: Mon, 18 Sep 2017 16:39:40 -0400
+Message-ID: <1505767187-4596-6-git-send-email-roy.pledge@nxp.com>
 In-Reply-To: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
 References: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
 Reply-To: <roy.pledge@nxp.com>
@@ -30,126 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The QBMan device uses several memory regions to manage frame
-queues and buffers. Add a common routine for extracting and
-initializing these reserved memory areas.
+From: Madalin Bucur <madalin.bucur@nxp.com>
 
+Replace PPC specific set/clear_bits API with standard
+bit twiddling so driver is portalable outside PPC.
+
+Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 ---
- drivers/soc/fsl/qbman/Makefile   |  2 +-
- drivers/soc/fsl/qbman/dpaa_sys.c | 78 ++++++++++++++++++++++++++++++++++++++++
- drivers/soc/fsl/qbman/dpaa_sys.h |  4 +++
- 3 files changed, 83 insertions(+), 1 deletion(-)
- create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.c
+ drivers/soc/fsl/qbman/bman.c | 2 +-
+ drivers/soc/fsl/qbman/qman.c | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/Makefile b/drivers/soc/fsl/qbman/Makefile
-index 7ae199f..3cbd08a 100644
---- a/drivers/soc/fsl/qbman/Makefile
-+++ b/drivers/soc/fsl/qbman/Makefile
-@@ -1,6 +1,6 @@
- obj-$(CONFIG_FSL_DPAA)                          += bman_ccsr.o qman_ccsr.o \
- 						   bman_portal.o qman_portal.o \
--						   bman.o qman.o
-+						   bman.o qman.o dpaa_sys.o
+diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
+index 604e45c..ff8998f 100644
+--- a/drivers/soc/fsl/qbman/bman.c
++++ b/drivers/soc/fsl/qbman/bman.c
+@@ -616,7 +616,7 @@ int bman_p_irqsource_add(struct bman_portal *p, u32 bits)
+ 	unsigned long irqflags;
  
- obj-$(CONFIG_FSL_BMAN_TEST)                     += bman-test.o
- bman-test-y                                      = bman_test.o
-diff --git a/drivers/soc/fsl/qbman/dpaa_sys.c b/drivers/soc/fsl/qbman/dpaa_sys.c
-new file mode 100644
-index 0000000..9436aa8
---- /dev/null
-+++ b/drivers/soc/fsl/qbman/dpaa_sys.c
-@@ -0,0 +1,78 @@
-+/* Copyright 2017 NXP Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of NXP Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY NXP Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL NXP Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include <linux/dma-mapping.h>
-+#include "dpaa_sys.h"
-+
-+/*
-+ * Initialize a devices private memory region
-+ */
-+int qbman_init_private_mem(struct device *dev, int idx, dma_addr_t *addr,
-+				size_t *size)
-+{
-+	int ret;
-+	struct device_node *mem_node;
-+	u64 size64;
-+
-+	ret = of_reserved_mem_device_init_by_idx(dev, dev->of_node, idx);
-+	if (ret) {
-+		dev_err(dev,
-+			"of_reserved_mem_device_init_by_idx(%d) failed 0x%x\n",
-+			idx, ret);
-+		return -ENODEV;
-+	}
-+	mem_node = of_parse_phandle(dev->of_node, "memory-region", 0);
-+	if (mem_node) {
-+		ret = of_property_read_u64(mem_node, "size", &size64);
-+		if (ret) {
-+			dev_err(dev, "of_address_to_resource fails 0x%x\n",
-+			        ret);
-+			return -ENODEV;
-+		}
-+		*size = size64;
-+	} else {
-+		dev_err(dev, "No memory-region found for index %d\n", idx);
-+		return -ENODEV;
-+	}
-+
-+	if (!dma_zalloc_coherent(dev, *size, addr, 0)) {
-+		dev_err(dev, "DMA Alloc memory failed\n");
-+		return -ENODEV;
-+	}
-+
-+	/*
-+	 * Disassociate the reserved memory area from the device
-+	 * because a device can only have one DMA memory area. This
-+	 * should be fine since the memory is allocated and initialized
-+	 * and only ever accessed by the QBMan device from now on
-+	 */
-+	of_reserved_mem_device_release(dev);
-+	return 0;
-+}
-diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/dpaa_sys.h
-index 2ce394a..676af82 100644
---- a/drivers/soc/fsl/qbman/dpaa_sys.h
-+++ b/drivers/soc/fsl/qbman/dpaa_sys.h
-@@ -102,4 +102,8 @@ static inline u8 dpaa_cyc_diff(u8 ringsize, u8 first, u8 last)
- /* Offset applied to genalloc pools due to zero being an error return */
- #define DPAA_GENALLOC_OFF	0x80000000
+ 	local_irq_save(irqflags);
+-	set_bits(bits & BM_PIRQ_VISIBLE, &p->irq_sources);
++	p->irq_sources |= bits & BM_PIRQ_VISIBLE;
+ 	bm_out(&p->p, BM_REG_IER, p->irq_sources);
+ 	local_irq_restore(irqflags);
+ 	return 0;
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 1bcfc51..25419e1 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -908,12 +908,12 @@ static inline int qm_mc_result_timeout(struct qm_portal *portal,
  
-+/* Initialize the devices private memory region */
-+int qbman_init_private_mem(struct device *dev, int idx, dma_addr_t *addr,
-+				size_t *size);
-+
- #endif	/* __DPAA_SYS_H */
+ static inline void fq_set(struct qman_fq *fq, u32 mask)
+ {
+-	set_bits(mask, &fq->flags);
++	fq->flags |= mask;
+ }
+ 
+ static inline void fq_clear(struct qman_fq *fq, u32 mask)
+ {
+-	clear_bits(mask, &fq->flags);
++	fq->flags &= ~mask;
+ }
+ 
+ static inline int fq_isset(struct qman_fq *fq, u32 mask)
+@@ -1574,7 +1574,7 @@ void qman_p_irqsource_add(struct qman_portal *p, u32 bits)
+ 	unsigned long irqflags;
+ 
+ 	local_irq_save(irqflags);
+-	set_bits(bits & QM_PIRQ_VISIBLE, &p->irq_sources);
++	p->irq_sources |= bits & QM_PIRQ_VISIBLE;
+ 	qm_out(&p->p, QM_REG_IER, p->irq_sources);
+ 	local_irq_restore(irqflags);
+ }
+@@ -1597,7 +1597,7 @@ void qman_p_irqsource_remove(struct qman_portal *p, u32 bits)
+ 	 */
+ 	local_irq_save(irqflags);
+ 	bits &= QM_PIRQ_VISIBLE;
+-	clear_bits(bits, &p->irq_sources);
++	p->irq_sources &= ~bits;
+ 	qm_out(&p->p, QM_REG_IER, p->irq_sources);
+ 	ier = qm_in(&p->p, QM_REG_IER);
+ 	/*
 -- 
 2.7.4
