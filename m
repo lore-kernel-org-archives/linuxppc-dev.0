@@ -1,30 +1,29 @@
-Return-Path: <deller@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <roy.pledge@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30055.outbound.protection.outlook.com [40.107.3.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xww1K1XYvzDq78
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 04:45:23 +1000 (AEST)
-Date: Mon, 18 Sep 2017 20:39:02 +0200
-From: Helge Deller <deller@gmx.de>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "James E . J . Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] [RFC] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-Message-ID: <20170918183902.GA30752@p100.box>
-References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
- <20170918174432.4fksyzco2g6gczwe@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xww5d0TkSzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 04:49:07 +1000 (AEST)
+From: Roy Pledge <roy.pledge@nxp.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: "mark.rutland@arm.com" <mark.rutland@arm.com>, "arnd@arndb.de"
+ <arnd@arndb.de>, Madalin-cristian Bucur <madalin.bucur@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, "oss@buserror.net" <oss@buserror.net>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [v4 07/11] soc/fsl/qbman: Rework portal mapping calls for ARM/PPC
+Date: Mon, 18 Sep 2017 18:48:57 +0000
+Message-ID: <DB6PR04MB29996429111F806DADFEA28386630@DB6PR04MB2999.eurprd04.prod.outlook.com>
+References: <1503607075-28970-1-git-send-email-roy.pledge@nxp.com>
+ <1503607075-28970-8-git-send-email-roy.pledge@nxp.com>
+ <20170914140014.taz7qwphfqm66kw7@localhost>
+ <DB6PR04MB29990A7A076761DDACCC1904866F0@DB6PR04MB2999.eurprd04.prod.outlook.com>
+ <20170915214902.5argyl7d7bz4wykf@localhost>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170918174432.4fksyzco2g6gczwe@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,117 +33,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Luck, Tony <tony.luck@intel.com>:
-> On Sat, Sep 16, 2017 at 12:53:42PM +0900, Sergey Senozhatsky wrote:
-> > 	Hello
-> > 
-> > 	RFC
-> > 
-> > 	On some arches C function pointers are indirect and point to
-> > a function descriptor, which contains the actual pointer to the code.
-> > This mostly doesn't matter, except for cases when people want to print
-> > out function pointers in symbolic format, because the usual '%pS/%ps'
-> > does not work on those arches as expected. That's the reason why we
-> > have '%pF/%pf', but since it's here because of a subtle ABI detail
-> > specific to some arches (ppc64/ia64/parisc64) it's easy to misuse
-> > '%pF/%pf' and '%pS/%ps' (see [1], for example).
-> 
-> A few new warnings when building on ia64:
-> 
-> arch/ia64/kernel/module.c:931: warning: passing argument 1 of 'dereference_function_descriptor' makes pointer from integer without a cast
-> arch/ia64/kernel/module.c:931: warning: return makes integer from pointer without a cast
-> kernel/kallsyms.c:325: warning: assignment makes integer from pointer without a cast
-> kernel/kallsyms.c:325: warning: passing argument 1 of 'dereference_kernel_function_descriptor' makes pointer from integer without a cast
-
-
-I got similiar warnings on parisc.
-This patch on top of yours fixed those:
-
-diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
-index bc2eae8..4f34b46 100644
---- a/arch/parisc/kernel/module.c
-+++ b/arch/parisc/kernel/module.c
-@@ -66,6 +66,7 @@
- 
- #include <asm/pgtable.h>
- #include <asm/unwind.h>
-+#include <asm/sections.h>
- 
- #if 0
- #define DEBUGP printk
-@@ -959,12 +960,12 @@ void module_arch_cleanup(struct module *mod)
- unsigned long dereference_module_function_descriptor(struct module *mod,
- 					     unsigned long addr)
- {
--	void *opd_sz = mod->arch.fdesc_offset +
-+	unsigned long opd_sz = mod->arch.fdesc_offset +
- 		       mod->arch.fdesc_max * sizeof(Elf64_Fdesc);
- 
- 	if (addr < mod->arch.fdesc_offset || opd_sz < addr)
- 		return addr;
- 
--	return dereference_function_descriptor(addr);
-+	return (unsigned long) dereference_function_descriptor((void *) addr);
- }
- #endif
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index e2fc09e..76f4de6 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -322,7 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
- 	if (is_ksym_addr(addr)) {
- 		unsigned long pos;
- 
--		addr = dereference_kernel_function_descriptor(addr);
-+		addr = dereference_kernel_function_descriptor((void *) addr);
- 		pos = get_symbol_pos(addr, symbolsize, offset);
- 		/* Grab name */
- 		kallsyms_expand_symbol(get_symbol_offset(pos),
-
-
-I did tried your testcases too.
-
-"echo 1 > /proc/sys/vm/drop_caches" gave correct output:
- printk#1 schedule_timeout+0x0/0x4a8
- printk#2 schedule_timeout+0x0/0x4a8
- printk#3 proc_sys_call_handler+0x120/0x180
- printk#4 proc_sys_call_handler+0x120/0x180
- printk#5 proc_sys_call_handler+0x120/0x180
- printk#6 proc_sys_call_handler+0x120/0x180
-
-and here is "modprobe zram":
- printk#7 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
- printk#8 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
- printk#9 do_one_initcall+0x194/0x290
- printk#10 do_one_initcall+0x194/0x290
- printk#11 do_one_initcall+0x194/0x290
- printk#12 do_one_initcall+0x194/0x290
- printk#13 zram_init+0x22c/0x2a0 [zram]
- printk#14 zram_init+0x22c/0x2a0 [zram]
- printk#15 zram_init+0x22c/0x2a0 [zram]
- printk#16 zram_init+0x22c/0x2a0 [zram]
-
-I wonder why printk#7 and printk#8 don't show "zram_init"...
-
-
-Regarding your patches:
-
-In arch/parisc/kernel/process.c:
-+void *dereference_kernel_function_descriptor(void *ptr)
-+{
-+       if (ptr < (void *)__start_opd || (void *)__end_opd < ptr)
-
-This needs to be (__end_opd is outside):
-+       if (ptr < (void *)__start_opd || (void *)__end_opd <= ptr)
-
-The same is true for the checks in the other arches.
-
-
-I'd suggest to move the various
-	extern char __start_opd[], __end_opd[];
-out of arch/<arch>/include/asm/sections.h and into <asm-generic/sections.h>
-
-
-I'll continue to test.
-
-Helge
+On 9/15/2017 5:49 PM, Catalin Marinas wrote:=0A=
+> On Thu, Sep 14, 2017 at 07:07:50PM +0000, Roy Pledge wrote:=0A=
+>> On 9/14/2017 10:00 AM, Catalin Marinas wrote:=0A=
+>>> On Thu, Aug 24, 2017 at 04:37:51PM -0400, Roy Pledge wrote:=0A=
+>>>> @@ -123,23 +122,34 @@ static int bman_portal_probe(struct platform_dev=
+ice *pdev)=0A=
+>>>>    	}=0A=
+>>>>    	pcfg->irq =3D irq;=0A=
+>>>>    =0A=
+>>>> -	va =3D ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0])=
+, 0);=0A=
+>>>> -	if (!va) {=0A=
+>>>> -		dev_err(dev, "ioremap::CE failed\n");=0A=
+>>>> +	/*=0A=
+>>>> +	 * TODO: Ultimately we would like to use a cacheable/non-shareable=
+=0A=
+>>>> +	 * (coherent) mapping for the portal on both architectures but that=
+=0A=
+>>>> +	 * isn't currently available in the kernel.  Because of HW differenc=
+es=0A=
+>>>> +	 * PPC needs to be mapped cacheable while ARM SoCs will work with no=
+n=0A=
+>>>> +	 * cacheable mappings=0A=
+>>>> +	 */=0A=
+>>>=0A=
+>>> This comment mentions "cacheable/non-shareable (coherent)". Was this=0A=
+>>> meant for ARM platforms? Because non-shareable is not coherent, nor is=
+=0A=
+>>> this combination guaranteed to work with different CPUs and=0A=
+>>> interconnects.=0A=
+>>=0A=
+>> My wording is poor I should have been clearer that non-shareable =3D=3D=
+=0A=
+>> non-coherent.  I will fix this.=0A=
+>>=0A=
+>> We do understand that cacheable/non shareable isn't supported on all=0A=
+>> CPU/interconnect combinations but we have verified with ARM that for the=
+=0A=
+>> CPU/interconnects we have integrated QBMan on our use is OK. The note is=
+=0A=
+>> here to try to explain why the mapping is different right now. Once we=
+=0A=
+>> get the basic QBMan support integrated for ARM we do plan to try to have=
+=0A=
+>> patches integrated that enable the cacheable mapping as it gives a=0A=
+>> significant performance boost.=0A=
+> =0A=
+> I will definitely not ack those patches (at least not in the form I've=0A=
+> seen, assuming certain eviction order of the bytes in a cacheline). The=
+=0A=
+> reason is that it is incredibly fragile, highly dependent on the CPU=0A=
+> microarchitecture and interconnects. Assuming that you ever only have a=
+=0A=
+> single SoC with this device, you may get away with #ifdefs in the=0A=
+> driver. But if you support two or more SoCs with different behaviours,=0A=
+> you'd have to make run-time decisions in the driver or run-time code=0A=
+> patching. We are very keen on single kernel binary image/drivers and=0A=
+> architecturally compliant code (the cacheable mapping hacks are well=0A=
+> outside the architecture behaviour).=0A=
+> =0A=
+=0A=
+Let's put this particular point on hold for now, I would like to focus =0A=
+on getting the basic functions merged in ASAP. I removed the comment in =0A=
+question (it sort of happened naturally when I applied your other =0A=
+comments) in the next revision of the patchset.  I have submitted the =0A=
+patches to our automated test system for sanity checking and I will sent =
+=0A=
+a new patchset once I get the results.=0A=
+=0A=
+Thanks again for your comments - they have been very useful and have =0A=
+improved the quality of the code for sure.=0A=
+=0A=
+>>>> diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/=
+dpaa_sys.h=0A=
+>>>> index 81a9a5e..0a1d573 100644=0A=
+>>>> --- a/drivers/soc/fsl/qbman/dpaa_sys.h=0A=
+>>>> +++ b/drivers/soc/fsl/qbman/dpaa_sys.h=0A=
+>>>> @@ -51,12 +51,12 @@=0A=
+>>>>    =0A=
+>>>>    static inline void dpaa_flush(void *p)=0A=
+>>>>    {=0A=
+>>>> +	/*=0A=
+>>>> +	 * Only PPC needs to flush the cache currently - on ARM the mapping=
+=0A=
+>>>> +	 * is non cacheable=0A=
+>>>> +	 */=0A=
+>>>>    #ifdef CONFIG_PPC=0A=
+>>>>    	flush_dcache_range((unsigned long)p, (unsigned long)p+64);=0A=
+>>>> -#elif defined(CONFIG_ARM)=0A=
+>>>> -	__cpuc_flush_dcache_area(p, 64);=0A=
+>>>> -#elif defined(CONFIG_ARM64)=0A=
+>>>> -	__flush_dcache_area(p, 64);=0A=
+>>>>    #endif=0A=
+>>>>    }=0A=
+>>>=0A=
+>>> Dropping the private API cache maintenance is fine and the memory is WC=
+=0A=
+>>> now for ARM (mapping to Normal NonCacheable). However, do you require=
+=0A=
+>>> any barriers here? Normal NC doesn't guarantee any ordering.=0A=
+>>=0A=
+>> The barrier is done in the code where the command is formed. We follow=
+=0A=
+>> this pattern=0A=
+>> a) Zero the command cache line (the device never reacts to a 0 command=
+=0A=
+>> verb so a cast out of this will have no effect)=0A=
+>> b) Fill in everything in the command except the command verb (byte 0)=0A=
+>> c) Execute a memory barrier=0A=
+>> d) Set the command verb (byte 0)=0A=
+>> e) Flush the command=0A=
+>> If a castout happens between d) and e) doesn't matter since it was about=
+=0A=
+>> to be flushed anyway .  Any castout before d) will not cause HW to=0A=
+>> process the command because verb is still 0. The barrier at c) prevents=
+=0A=
+>> reordering so the HW cannot see the verb set before the command is forme=
+d.=0A=
+> =0A=
+> I think that's fine, the dpaa_flush() can be a no-op with non-cacheable=
+=0A=
+> memory (I had forgotten the details).=0A=
+> =0A=
+=0A=
