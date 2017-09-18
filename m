@@ -1,26 +1,20 @@
-Return-Path: <roy.pledge@nxp.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0046.outbound.protection.outlook.com [104.47.33.46])
+Return-Path: <dcb314@hotmail.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-oln040092067073.outbound.protection.outlook.com [40.92.67.73])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwyYg63ynzDq78
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 06:40:07 +1000 (AEST)
-From: Roy Pledge <roy.pledge@nxp.com>
-To: <leoyang.li@nxp.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
- <devicetree@vger.kernel.org>
-CC: <oss@buserror.net>, <madalin.bucur@nxp.com>, <catalin.marinas@arm.com>,
- <linux@armlinux.org.uk>, <arnd@arndb.de>, <mark.rutland@arm.com>, Claudiu
- Manoil <claudiu.manoil@nxp.com>, Stuart Yoder <stuart.yoder@nxp.com>, Roy
- Pledge <roy.pledge@nxp.com>
-Subject: [v5 12/12] soc/fsl/qbman: Enable FSL_LAYERSCAPE config on ARM
-Date: Mon, 18 Sep 2017 16:39:47 -0400
-Message-ID: <1505767187-4596-13-git-send-email-roy.pledge@nxp.com>
-In-Reply-To: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
-References: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
-Reply-To: <roy.pledge@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwycf3nMnzDqXj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 06:42:42 +1000 (AEST)
+From: David Binderman <dcb314@hotmail.com>
+To: "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
+ <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:541: bad condition ?
+Date: Mon, 18 Sep 2017 20:42:29 +0000
+Message-ID: <HE1PR0802MB2331572C98E215722EE4411C9C630@HE1PR0802MB2331.eurprd08.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@nxp.com>
+Hello there,
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
-Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
-[Stuart: changed to use ARCH_LAYERSCAPE]
-Signed-off-by: Stuart Yoder <stuart.yoder@nxp.com>
-Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
----
- drivers/soc/fsl/qbman/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:543]: (warning) Identical condit=
+ion 's1<s2', second condition is always false
 
-diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-index 757033c..fb4e6bf 100644
---- a/drivers/soc/fsl/qbman/Kconfig
-+++ b/drivers/soc/fsl/qbman/Kconfig
-@@ -1,6 +1,6 @@
- menuconfig FSL_DPAA
- 	bool "Freescale DPAA 1.x support"
--	depends on FSL_SOC_BOOKE
-+	depends on (FSL_SOC_BOOKE || ARCH_LAYERSCAPE)
- 	select GENERIC_ALLOCATOR
- 	help
- 	  The Freescale Data Path Acceleration Architecture (DPAA) is a set of
--- 
-2.7.4
+Source code is
+
+    if (s1 < s2)
+        return 1;
+    if (s2 > s1)
+        return -1;
+
+Suggest code rework.
+
+Regards
+
+David Binderman=
