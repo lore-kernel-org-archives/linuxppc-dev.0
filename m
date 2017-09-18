@@ -1,19 +1,13 @@
-Return-Path: <darrick.wong@oracle.com>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xx0Qy1pkDzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 08:04:26 +1000 (AEST)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v8IM4NTQ008479
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 22:04:24 GMT
-Date: Mon, 18 Sep 2017 15:04:12 -0700
-From: "Darrick J. Wong" <darrick.wong@oracle.com>
+Return-Path: <david@fromorbit.com>
+Received: from ipmail01.adl2.internode.on.net (ipmail01.adl2.internode.on.net
+ [150.101.137.133])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xx0SM5ScdzDqYV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 08:05:39 +1000 (AEST)
+Date: Tue, 19 Sep 2017 08:05:02 +1000
+From: Dave Chinner <david@fromorbit.com>
 To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Dave Chinner <david@fromorbit.com>, Jens Axboe <axboe@kernel.dk>,
- Christoph Hellwig <hch@lst.de>, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  linux-xfs <linux-xfs@vger.kernel.org>,
  linux-next <linux-next@vger.kernel.org>,
@@ -21,7 +15,7 @@ Cc: Dave Chinner <david@fromorbit.com>, Jens Axboe <axboe@kernel.dk>,
  chandan <chandan@linux.vnet.ibm.com>
 Subject: Re: [linux-next][XFS][trinity] WARNING: CPU: 32 PID: 31369 at
  fs/iomap.c:993
-Message-ID: <20170918220412.GB6533@magnolia>
+Message-ID: <20170918220502.GL10621@dastard>
 References: <1505746565.6990.18.camel@abdul.in.ibm.com>
  <20170918152706.GA11482@lst.de>
  <8abed401-1634-760f-6543-4652fa495315@kernel.dk>
@@ -79,28 +73,12 @@ On Mon, Sep 18, 2017 at 05:00:58PM -0500, Eric Sandeen wrote:
 > without the ZOMG I THINK I OOPSED that a WARN_ON produces?  Or do we 
 > want/need the backtrace?
 
-Maybe we could state a little more directly what's going on:
+backtrace is actually useful - that's how I recently learnt that
+splice now supports direct IO.....
 
-if (err)
-	printk_once(KERN_INFO "Urk, collision detected between direct IO and page cache, YHL. HAND.\n"); ?
+Cheers,
 
-8-)
-
---D
-
-> 
-> -Eric
-> 
-> > It needs to be on by default, bu tI'm sure we can wrap it with
-> > something like an xfs_alert_tag() type of construct so the tag can
-> > be set in /proc/fs/xfs/panic_mask to suppress it if testers so
-> > desire.
-> > 
-> > Cheers,
-> > 
-> > Dave.
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-next" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
