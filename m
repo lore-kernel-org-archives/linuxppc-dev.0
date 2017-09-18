@@ -1,20 +1,26 @@
-Return-Path: <dcb314@hotmail.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-oln040092067073.outbound.protection.outlook.com [40.92.67.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwycf3nMnzDqXj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 06:42:42 +1000 (AEST)
-From: David Binderman <dcb314@hotmail.com>
-To: "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:541: bad condition ?
-Date: Mon, 18 Sep 2017 20:42:29 +0000
-Message-ID: <HE1PR0802MB2331572C98E215722EE4411C9C630@HE1PR0802MB2331.eurprd08.prod.outlook.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <david@fromorbit.com>
+Received: from ipmail01.adl2.internode.on.net (ipmail01.adl2.internode.on.net
+ [150.101.137.133])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3xwzjG0gPdzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 07:31:45 +1000 (AEST)
+Date: Tue, 19 Sep 2017 07:31:43 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Christoph Hellwig <hch@lst.de>, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-xfs <linux-xfs@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ chandan <chandan@linux.vnet.ibm.com>
+Subject: Re: [linux-next][XFS][trinity] WARNING: CPU: 32 PID: 31369 at
+ fs/iomap.c:993
+Message-ID: <20170918213143.GJ10621@dastard>
+References: <1505746565.6990.18.camel@abdul.in.ibm.com>
+ <20170918152706.GA11482@lst.de>
+ <8abed401-1634-760f-6543-4652fa495315@kernel.dk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8abed401-1634-760f-6543-4652fa495315@kernel.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello there,
+On Mon, Sep 18, 2017 at 09:28:55AM -0600, Jens Axboe wrote:
+> On 09/18/2017 09:27 AM, Christoph Hellwig wrote:
+> > On Mon, Sep 18, 2017 at 08:26:05PM +0530, Abdul Haleem wrote:
+> >> Hi,
+> >>
+> >> A warning is triggered from:
+> >>
+> >> file fs/iomap.c in function iomap_dio_rw
+> >>
+> >>     if (ret)
+> >>         goto out_free_dio;
+> >>
+> >>     ret = invalidate_inode_pages2_range(mapping,
+> >>             start >> PAGE_SHIFT, end >> PAGE_SHIFT);
+> >>>>  WARN_ON_ONCE(ret);
+> >>     ret = 0;
+> >>
+> >>     inode_dio_begin(inode);
+> > 
+> > This is expected and an indication of a problematic workload - which
+> > may be triggered by a fuzzer.
+> 
+> If it's expected, why don't we kill the WARN_ON_ONCE()? I get it all
+> the time running xfstests as well.
 
-linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:543]: (warning) Identical condit=
-ion 's1<s2', second condition is always false
+Because when a user reports a data corruption, the only evidence we
+have that they are running an app that does something stupid is this
+warning in their syslogs.  Tracepoints are not useful for replacing
+warnings about data corruption vectors being triggered.
 
-Source code is
+It needs to be on by default, bu tI'm sure we can wrap it with
+something like an xfs_alert_tag() type of construct so the tag can
+be set in /proc/fs/xfs/panic_mask to suppress it if testers so
+desire.
 
-    if (s1 < s2)
-        return 1;
-    if (s2 > s1)
-        return -1;
+Cheers,
 
-Suggest code rework.
+Dave.
 
-Regards
-
-David Binderman=
+-- 
+Dave Chinner
+david@fromorbit.com
