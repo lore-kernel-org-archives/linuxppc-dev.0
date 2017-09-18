@@ -1,28 +1,26 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwZpS6jsPzDrW0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 15:49:52 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id v82so4753772pgb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Sep 2017 22:49:51 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Cc: benh@kernel.crashing.org, z.liuxinliang@hisilicon.com,
- zourongrong@gmail.com, catalin.marinas@arm.com, will.deacon@arm.com,
- gabriele.paoloni@huawei.com, helgaas@kernel.org, airlied@linux.ie,
- daniel.vetter@intel.com, alex.williamson@redhat.com,
- dri-devel@lists.freedesktop.org, lukas@wunner.de, ard.biesheuvel@linaro.org,
- lorenzo.pieralisi@arm.com
-Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
-In-Reply-To: <20170901072744.2409-1-dja@axtens.net>
-References: <20170901072744.2409-1-dja@axtens.net>
-Date: Mon, 18 Sep 2017 15:49:45 +1000
-Message-ID: <87d16oeeti.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwbPp3jwVzDrWC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 16:17:01 +1000 (AEST)
+Subject: Re: [PATCH] KVM: PPC: fix oops when checking KVM_CAP_PPC_HTM
+To: David Gibson <david@gibson.dropbear.id.au>, Greg Kurz <groug@kaod.org>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@ozlabs.org>, Sam Bobroff <sam.bobroff@au1.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org
+References: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
+ <20170915004839.GA5250@umbus.fritz.box> <20170915075249.0e9879a4@bahia.lan>
+ <20170915085937.GO5250@umbus.fritz.box>
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <29d31b9f-1b24-a2d4-5dff-756cd38025d6@redhat.com>
+Date: Mon, 18 Sep 2017 08:16:50 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20170915085937.GO5250@umbus.fritz.box>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="c2h3i5V78rXOhfMqcS1tIgiDPCOuLcGKC"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,75 +30,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--c2h3i5V78rXOhfMqcS1tIgiDPCOuLcGKC
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-The merge window is well over by now - is there anything else I can do
-to get this series to a mergeable state? I'm not particularly across the
-rules for drm-misc, so please let me know if there are things I need to
-be doing.
+On 15.09.2017 10:59, David Gibson wrote:
+> On Fri, Sep 15, 2017 at 07:52:49AM +0200, Greg Kurz wrote:
+>> Dang! The mail relay at OVH has blacklisted Paul's address :-\
+>>
+>> <paulus@samba.org>: host smtp.samba.org[144.76.82.148] said: 550-black=
+listed at
+>>     zen.spamhaus.org 550 https://www.spamhaus.org/sbl/query/SBL370982 =
+(in reply
+>>     to RCPT TO command)
+>>
+>> Cc'ing Paul at ozlabs.org
+>>
+>> On Fri, 15 Sep 2017 10:48:39 +1000
+>> David Gibson <david@gibson.dropbear.id.au> wrote:
+>>
+>>> On Thu, Sep 14, 2017 at 11:56:25PM +0200, Greg Kurz wrote:
+>>>> The following program causes a kernel oops:
+>>>>
+>>>> #include <sys/types.h>
+>>>> #include <sys/stat.h>
+>>>> #include <fcntl.h>
+>>>> #include <sys/ioctl.h>
+>>>> #include <linux/kvm.h>
+>>>>
+>>>> main()
+>>>> {
+>>>>     int fd =3D open("/dev/kvm", O_RDWR);
+>>>>     ioctl(fd, KVM_CHECK_EXTENSION, KVM_CAP_PPC_HTM);
+>>>> }
+>>>>
+>>>> This happens because when using the global KVM fd with
+>>>> KVM_CHECK_EXTENSION, kvm_vm_ioctl_check_extension() gets
+>>>> called with a NULL kvm argument, which gets dereferenced
+>>>> in is_kvmppc_hv_enabled(). Spotted while reading the code.
+>>>>
+>>>> Let's use the hv_enabled fallback variable, like everywhere
+>>>> else in this function.
+>>>>
+>>>> Fixes: 23528bb21ee2 ("KVM: PPC: Introduce KVM_CAP_PPC_HTM")
+>>>> Cc: stable@vger.kernel.org # v4.7+
+>>>> Signed-off-by: Greg Kurz <groug@kaod.org> =20
+>>>
+>>> I don't think this is right.  I'm pretty sure you want to fall back t=
+o
+>>> hv_enabled *only when* kvm is NULL.  Otherwise if you have a PR guest=
 
-Regards,
-Daniel
+>>> on an HV capable machine, this will give the wrong answer, when calle=
+d
+>>> for that specific VM.
+>>>
+>>
+>> Hmmm... this is what we get with this patch applied:
+>>
+>> open("/dev/kvm", O_RDWR)                =3D 3
+>> ioctl(3, KVM_CHECK_EXTENSION, 0x84)     =3D 1 <=3D=3D if HV is present=
 
-Daniel Axtens <dja@axtens.net> writes:
+>> ioctl(3, KVM_CREATE_VM, 0x1)            =3D 4 <=3D=3D HV
+>> ioctl(4, KVM_CHECK_EXTENSION, 0x84)     =3D 1
+>> ioctl(3, KVM_CREATE_VM, 0x2)            =3D 5 <=3D=3D PR
+>> ioctl(5, KVM_CHECK_EXTENSION, 0x84)     =3D 0
+>>
+>> The hv_enabled variable is set as follows:
+>>
+>> 	/* Assume we're using HV mode when the HV module is loaded */
+>> 	int hv_enabled =3D kvmppc_hv_ops ? 1 : 0;
+>>
+>> 	if (kvm) {
+>> 		/*
+>> 		 * Hooray - we know which VM type we're running on. Depend on
+>> 		 * that rather than the guess above.
+>> 		 */
+>> 		hv_enabled =3D is_kvmppc_hv_enabled(kvm);
+>> 	}
+>>
+>> so we're good. :)
+>=20
+> Oh, sorry, missed that bit.  In that case.
+>=20
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-> This patch set:
->
->  - splits the default display handling out from VGA arbiter, into its
->    own file and behind its own Kconfig option (and gives the functions
->    better names).
->
->  - adds extra detection of default devices. To be nominated, the vga
->    arbiter and platform hooks must not have nominated a default. A
->    card will then only be nominated if it has a driver attached and
->    has IO or memory decoding enabled.
->
->  - adds relevant documentation.
->
-> The practical impact of this is improved X autoconfiguration on some
-> arm64 systems.
->
-> Changes in v3:
->
->  - Add documentation - thanks Daniel Vetter for pointing it out.
->
->  - Clarify explanations. Thanks to everyone for continuing to bear
->    with my incomplete understanding of PCI and provide some clarity.
->
->  - Split refactoring and adding functionality.
->
-> Changes in v2: https://www.spinics.net/lists/linux-pci/msg64007.html
->
-> Drop all the powerpc patches. [explanation snipped]
->
-> v1: https://www.spinics.net/lists/linux-pci/msg63581.html
->
-> Regards,
-> Daniel
->
-> Daniel Axtens (3):
->   drm: split default display handler out of VGA arbiter
->   drm: add fallback default device detection
->   drm: documentation for default display device
->
->  Documentation/gpu/default_display.rst |  93 +++++++++++++++++++
->  Documentation/gpu/index.rst           |   1 +
->  arch/ia64/pci/fixup.c                 |   6 +-
->  arch/powerpc/kernel/pci-common.c      |   6 +-
->  arch/x86/pci/fixup.c                  |   6 +-
->  arch/x86/video/fbdev.c                |   4 +-
->  drivers/gpu/vga/Kconfig               |  12 +++
->  drivers/gpu/vga/Makefile              |   1 +
->  drivers/gpu/vga/default_display.c     | 163 ++++++++++++++++++++++++++++++++++
->  drivers/gpu/vga/vga_switcheroo.c      |   8 +-
->  drivers/gpu/vga/vgaarb.c              |  61 +++----------
->  drivers/pci/pci-sysfs.c               |   4 +-
->  include/linux/default_display.h       |  44 +++++++++
->  include/linux/vgaarb.h                |  15 ----
->  14 files changed, 344 insertions(+), 80 deletions(-)
->  create mode 100644 Documentation/gpu/default_display.rst
->  create mode 100644 drivers/gpu/vga/default_display.c
->  create mode 100644 include/linux/default_display.h
->
-> -- 
-> 2.11.0
+LGTM, too:
+
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+
+
+--c2h3i5V78rXOhfMqcS1tIgiDPCOuLcGKC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJZv2TWAAoJEC7Z13T+cC21CLsP/1VlrgxYeklegTwvgI4oABls
+Q9HOKQmFUpT7TwnIy6/zHnk1NhKXRaum9wux8tBiZy9OnRU551F+JLF5rMuOiuDz
+ArGfCWRzfTuBSF1j2KpWe/w8VlNn6Rr72Sh+4eBlP0mhcbiwVo5ucn6+9vRYn15R
+sAfUr5BrZZubso73ILNkrNCqKDiwJ37u//GaHWFTQXkgK0PP3hkOAXMQ45jOdje9
+hM1P69adrB4elgbpxGteR9ce+w1BfgVOhiKMfW3Nuf2gEU3vbtk0y2dEmhMqrcxJ
+riquRdapE1u2oIxh8x96HMvZvVaHHoUjYP984QEfAo8sN75anMbVNVMO+dtuN9U1
+WTGD9wJ5TNM5VPxWyQHLdg6WzSJdy5WuU3bvLLqGpYuMq1nnO8UYYU7y2Rf1glFz
+36xi6MNRVkumBwgB9PG1i9rGEKy5cribZBUgcRqcQo+xr5VY73hzeOcGVnjThGy/
+/R31dRomEon6T4j28XktEJywaiyoK0kfYKH85BHMtRQO+N/Cl0Zs3q3mS9EEYpQk
+wXC1r9bYhCNE9lheCHcA7UtzxI/wpHMwU/MjqnzZKYP9+olRjCzB8PXZHyUSDORs
+PYjMOfZrMqKfrijad1AsqtMfBMgHmtZJMRhi9/Phwfz6APgWcXXYubO1dJ9LSHTh
+tkWUdpAOHbx50qfTFakR
+=ZSqF
+-----END PGP SIGNATURE-----
+
+--c2h3i5V78rXOhfMqcS1tIgiDPCOuLcGKC--
