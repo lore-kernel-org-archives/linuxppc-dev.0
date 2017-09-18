@@ -1,26 +1,18 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwdy821hbzDrH3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:11:44 +1000 (AEST)
-Subject: Re: [PATCH] Revert "KVM: Don't accept obviously wrong gsi values via
- KVM_IRQFD"
-To: Michael Ellerman <mpe@ellerman.id.au>,
- =?UTF-8?Q?Jan_H._Sch=c3=b6nherr?= <jschoenh@amazon.de>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
-Cc: sachinp@linux.vnet.ibm.com, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <04cde7c8-d41f-96e2-2b4b-2287b8f04bfc@amazon.de>
- <1505592744-31498-1-git-send-email-jschoenh@amazon.de>
- <871sn4jyjz.fsf@concordia.ellerman.id.au>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <31ff0f44-b380-62b3-4a8a-d3c1e49c7c3c@redhat.com>
-Date: Mon, 18 Sep 2017 10:11:24 +0200
-MIME-Version: 1.0
-In-Reply-To: <871sn4jyjz.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwfJ84v1wzDrT1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:27:20 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id v5so4896379pgn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 01:27:20 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 0/5] More NMI IPI enablement work
+Date: Mon, 18 Sep 2017 18:27:01 +1000
+Message-Id: <20170918082706.6485-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18/09/2017 08:44, Michael Ellerman wrote:
-> "Jan H. Schönherr" <jschoenh@amazon.de> writes:
-> 
->> This reverts commit 36ae3c0a36b7456432fedce38ae2f7bd3e01a563.
->>
->> The commit broke compilation on !CONFIG_HAVE_KVM_IRQ_ROUTING. Also,
->> there may be cases with CONFIG_HAVE_KVM_IRQ_ROUTING, where larger
->> gsi values make sense.
->>
->> As the commit was meant as an early indicator to user space that
->> something is wrong, reverting just restores the previous behavior
->> where overly large values are ignored when encountered (without
->> any direct feedback).
->>
->> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
->> Signed-off-by: Jan H. Schönherr <jschoenh@amazon.de>
->> ---
->>  virt/kvm/eventfd.c | 2 --
->>  1 file changed, 2 deletions(-)
-> 
-> Can someone merge this or preferably just send it straight to Linus, the
-> original patch has broken the powerpc build in mainline.
+Hi,
 
-I can send it later today.
+Here is the NMI IPI enablement for powernv, which requires
+supported firmware and hardware:
 
-Paolo
+https://lists.ozlabs.org/pipermail/skiboot/2017-September/009111.html
+
+And some preceeding patches that fix issues I ran into when
+testing it.
+
+Thanks,
+Nick
+
+Nicholas Piggin (5):
+  powerpc/watchdog: do not panic from locked CPU's IPI handler
+  powerpc/watchdog: do not backtrace locked CPUs twice if allcpus
+    backtrace is enabled
+  powerpc/watchdog: do not trigger SMP crash from touch_nmi_watchdog
+  powerpc/xmon: avoid tripping SMP hardlockup watchdog
+  powerpc/powernv: implement NMI IPI with OPAL_SIGNAL_SYSTEM_RESET
+
+ arch/powerpc/include/asm/opal-api.h            |  1 +
+ arch/powerpc/include/asm/opal.h                |  2 ++
+ arch/powerpc/kernel/irq.c                      | 43 +++++++++++++++++++---
+ arch/powerpc/kernel/watchdog.c                 | 29 ++++++++-------
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/powernv.h       |  1 +
+ arch/powerpc/platforms/powernv/setup.c         |  3 ++
+ arch/powerpc/platforms/powernv/smp.c           | 50 ++++++++++++++++++++++++++
+ arch/powerpc/xmon/xmon.c                       | 17 ++++++---
+ 9 files changed, 127 insertions(+), 20 deletions(-)
+
+-- 
+2.13.3
