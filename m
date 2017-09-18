@@ -1,10 +1,10 @@
 Return-Path: <roy.pledge@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0051.outbound.protection.outlook.com [104.47.38.51])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0064.outbound.protection.outlook.com [104.47.37.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwyYV4v6SzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 06:39:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwyYV4rw5zDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 06:39:56 +1000 (AEST)
 From: Roy Pledge <roy.pledge@nxp.com>
 To: <leoyang.li@nxp.com>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
@@ -12,12 +12,9 @@ To: <leoyang.li@nxp.com>, <linuxppc-dev@lists.ozlabs.org>,
 CC: <oss@buserror.net>, <madalin.bucur@nxp.com>, <catalin.marinas@arm.com>,
  <linux@armlinux.org.uk>, <arnd@arndb.de>, <mark.rutland@arm.com>, Roy Pledge
  <roy.pledge@nxp.com>
-Subject: [v5 02/12] soc/fsl/qbman: Use shared-dma-pool for BMan private memory
- allocations
-Date: Mon, 18 Sep 2017 16:39:37 -0400
-Message-ID: <1505767187-4596-3-git-send-email-roy.pledge@nxp.com>
-In-Reply-To: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
-References: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
+Subject: [v5 00/12] soc/fsl/qbman: Enable QBMan on ARM Platforms
+Date: Mon, 18 Sep 2017 16:39:35 -0400
+Message-ID: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
 Reply-To: <roy.pledge@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -30,39 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the shared-memory-pool mechanism for free buffer proxy record
-area allocation.
+This patch series enables DPAA1 QBMan devices for ARM and
+ARM64 architectures. This allows the LS1043A and LS1046A to use
+QBMan functionality which allows access to ethernet and cyptographic
+devices for example.
 
-Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
----
- drivers/soc/fsl/qbman/bman_ccsr.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Changes since v4:
+- Introduce a common function for QBMan private memory initialization
+- Fix sparse warnings making sure that __iomem and __be32 are respected
+- Control different memremap() attributes using a #define
 
-diff --git a/drivers/soc/fsl/qbman/bman_ccsr.c b/drivers/soc/fsl/qbman/bman_ccsr.c
-index eaa9585..05c4223 100644
---- a/drivers/soc/fsl/qbman/bman_ccsr.c
-+++ b/drivers/soc/fsl/qbman/bman_ccsr.c
-@@ -201,6 +201,21 @@ static int fsl_bman_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
-+	/*
-+	 * If FBPR memory wasn't defined using the qbman compatible string
-+	 * try using the of_reserved_mem_device method
-+	 */
-+	if (!fbpr_a) {
-+		ret = qbman_init_private_mem(dev, 0, &fbpr_a, &fbpr_sz);
-+		if (ret) {
-+			dev_err(dev, "qbman_init_private_mem() failed 0x%x\n",
-+				ret);
-+			return -ENODEV;
-+		}
-+	}
-+
-+	dev_dbg(dev, "Allocated FBPR 0x%llx 0x%zx\n", fbpr_a, fbpr_sz);
-+
- 	bm_set_memory(fbpr_a, fbpr_sz);
- 
- 	err_irq = platform_get_irq(pdev, 0);
--- 
+Changes since v3:
+- Use memremap() instead of ioremap() for non iomem QBMan portal regions
+- Ensured the __iomem attribute is respected when accessing iomem mapped regions
+- Removed calls to flush/invalidate/prefetch for ARM/ARM64 since mapping is done as write combine
+
+Changes since v2:
+- Fixed some misspellings
+- Added 'no-map' constraint to device tree bindings
+- Described ordering contraint on regions in the device tree
+- Removed confusing comment regarding non-shareable mappings
+- Added warning if old reserved-memory technique is used on ARM
+
+Changes since v1:
+- Reworked private memory allocations to use shared-dma-pool on ARM platforms
+
+
+Claudiu Manoil (2):
+  soc/fsl/qbman: Drop L1_CACHE_BYTES compile time check
+  soc/fsl/qbman: Add missing headers on ARM
+
+Madalin Bucur (4):
+  soc/fsl/qbman: Drop set/clear_bits usage
+  soc/fsl/qbman: add QMAN_REV32
+  soc/fsl/qbman: different register offsets on ARM
+  soc/fsl/qbman: Enable FSL_LAYERSCAPE config on ARM
+
+Roy Pledge (5):
+  soc/fsl/qbman: Add common routine for QBMan private allocations
+  soc/fsl/qbman: Use shared-dma-pool for BMan private memory allocations
+  soc/fsl/qbman: Use shared-dma-pool for QMan private memory allocations
+  dt-bindings: soc/fsl: Update reserved memory binding for QBMan
+  soc/fsl/qbman: Rework portal mapping calls for ARM/PPC
+
+Valentin Rothberg (1):
+  soc/fsl/qbman: Fix ARM32 typo
+
+ Documentation/devicetree/bindings/soc/fsl/bman.txt | 12 +--
+ Documentation/devicetree/bindings/soc/fsl/qman.txt | 26 ++++--
+ drivers/soc/fsl/qbman/Kconfig                      |  2 +-
+ drivers/soc/fsl/qbman/Makefile                     |  2 +-
+ drivers/soc/fsl/qbman/bman.c                       | 42 ++++++++--
+ drivers/soc/fsl/qbman/bman_ccsr.c                  | 15 ++++
+ drivers/soc/fsl/qbman/bman_portal.c                | 23 +++---
+ drivers/soc/fsl/qbman/bman_priv.h                  |  8 +-
+ drivers/soc/fsl/qbman/dpaa_sys.c                   | 78 ++++++++++++++++++
+ drivers/soc/fsl/qbman/dpaa_sys.h                   | 25 ++++--
+ drivers/soc/fsl/qbman/qman.c                       | 77 +++++++++++++-----
+ drivers/soc/fsl/qbman/qman_ccsr.c                  | 95 +++++++++++++++-------
+ drivers/soc/fsl/qbman/qman_portal.c                | 23 +++---
+ drivers/soc/fsl/qbman/qman_priv.h                  | 11 +--
+ drivers/soc/fsl/qbman/qman_test.h                  |  2 -
+ 15 files changed, 318 insertions(+), 123 deletions(-)
+ create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.c
+
+--
 2.7.4
