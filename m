@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwfJN0J2LzDrWk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:27:32 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id h4so4311992pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 01:27:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xwfJR1LXqzDrXy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 18:27:35 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id q76so4300076pfq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 01:27:35 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 4/5] powerpc/xmon: avoid tripping SMP hardlockup watchdog
-Date: Mon, 18 Sep 2017 18:27:05 +1000
-Message-Id: <20170918082706.6485-5-npiggin@gmail.com>
+Subject: [PATCH 5/5] powerpc/powernv: implement NMI IPI with
+ OPAL_SIGNAL_SYSTEM_RESET
+Date: Mon, 18 Sep 2017 18:27:06 +1000
+Message-Id: <20170918082706.6485-6-npiggin@gmail.com>
 In-Reply-To: <20170918082706.6485-1-npiggin@gmail.com>
 References: <20170918082706.6485-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,72 +25,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SMP hardlockup watchdog cross-checks other CPUs for lockups,
-which causes xmon headaches because it's assuming interrupts
-hard disabled means no watchdog troubles. Try to improve that by
-calling touch_nmi_watchdog() in obvious places where secondaries
-are spinning.
+This allows MSR[EE]=0 lockups to be detected on an OPAL (bare metal)
+system similarly to the hcall NMI IPI on pseries guests, when the
+platform/firmware supports it.
 
-Also annotate these spin loops with spin_begin/end calls.
+This is an example of CPU10 spinning with interrupts hard disabled:
+
+Watchdog CPU:32 detected Hard LOCKUP other CPUS:10
+Watchdog CPU:10 Hard LOCKUP
+CPU: 10 PID: 4410 Comm: bash Not tainted 4.13.0-rc7-00074-ge89ce1f89f62-dirty #34
+task: c0000003a82b4400 task.stack: c0000003af55c000
+NIP: c0000000000a7b38 LR: c000000000659044 CTR: c0000000000a7b00
+REGS: c00000000fd23d80 TRAP: 0100   Not tainted  (4.13.0-rc7-00074-ge89ce1f89f62-dirty)
+MSR: 90000000000c1033 <SF,HV,ME,IR,DR,RI,LE>
+CR: 28422222  XER: 20000000
+CFAR: c0000000000a7b38 SOFTE: 0
+GPR00: c000000000659044 c0000003af55fbb0 c000000001072a00 0000000000000078
+GPR04: c0000003c81b5c80 c0000003c81cc7e8 9000000000009033 0000000000000000
+GPR08: 0000000000000000 c0000000000a7b00 0000000000000001 9000000000001003
+GPR12: c0000000000a7b00 c00000000fd83200 0000000010180df8 0000000010189e60
+GPR16: 0000000010189ed8 0000000010151270 000000001018bd88 000000001018de78
+GPR20: 00000000370a0668 0000000000000001 00000000101645e0 0000000010163c10
+GPR24: 00007fffd14d6294 00007fffd14d6290 c000000000fba6f0 0000000000000004
+GPR28: c000000000f351d8 0000000000000078 c000000000f4095c 0000000000000000
+NIP [c0000000000a7b38] sysrq_handle_xmon+0x38/0x40
+LR [c000000000659044] __handle_sysrq+0xe4/0x270
+Call Trace:
+[c0000003af55fbd0] [c000000000659044] __handle_sysrq+0xe4/0x270
+[c0000003af55fc70] [c000000000659810] write_sysrq_trigger+0x70/0xa0
+[c0000003af55fca0] [c0000000003da650] proc_reg_write+0xb0/0x110
+[c0000003af55fcf0] [c0000000003423bc] __vfs_write+0x6c/0x1b0
+[c0000003af55fd90] [c000000000344398] vfs_write+0xd8/0x240
+[c0000003af55fde0] [c00000000034632c] SyS_write+0x6c/0x110
+[c0000003af55fe30] [c00000000000b220] system_call+0x58/0x6c
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/xmon/xmon.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/opal-api.h            |  1 +
+ arch/powerpc/include/asm/opal.h                |  2 ++
+ arch/powerpc/kernel/irq.c                      | 43 +++++++++++++++++++---
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/powernv.h       |  1 +
+ arch/powerpc/platforms/powernv/setup.c         |  3 ++
+ arch/powerpc/platforms/powernv/smp.c           | 50 ++++++++++++++++++++++++++
+ 7 files changed, 97 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 33351c6704b1..d9a12102b111 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -530,14 +530,19 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 450a60b81d2a..9d191ebea706 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -188,6 +188,7 @@
+ #define OPAL_XIVE_DUMP				142
+ #define OPAL_XIVE_RESERVED3			143
+ #define OPAL_XIVE_RESERVED4			144
++#define OPAL_SIGNAL_SYSTEM_RESET		145
+ #define OPAL_NPU_INIT_CONTEXT			146
+ #define OPAL_NPU_DESTROY_CONTEXT		147
+ #define OPAL_NPU_MAP_LPAR			148
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 726c23304a57..7d7613c49f2b 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -281,6 +281,8 @@ int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
+ int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
+ int opal_sensor_group_clear(u32 group_hndl, int token);
  
-  waiting:
- 	secondary = 1;
-+	spin_begin();
- 	while (secondary && !xmon_gate) {
- 		if (in_xmon == 0) {
--			if (fromipi)
-+			if (fromipi) {
-+				spin_end();
- 				goto leave;
-+			}
- 			secondary = test_and_set_bit(0, &in_xmon);
- 		}
--		barrier();
-+		spin_cpu_relax();
-+		touch_nmi_watchdog();
++int64_t opal_signal_system_reset(int32_t cpu);
++
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+ 				   int depth, void *data);
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 4e65bf82f5e0..472d294d0df5 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -394,11 +394,21 @@ bool prep_irq_for_idle_irqsoff(void)
+ /*
+  * Take the SRR1 wakeup reason, index into this table to find the
+  * appropriate irq_happened bit.
++ *
++ * Sytem reset exceptions taken in idle state also come through here,
++ * but they are NMI interrupts so do not need to wait for IRQs to be
++ * restored, and should be taken as early as practical. These are marked
++ * with 0xff in the table. The Power ISA specifies 0100b as the system
++ * reset interrupt reason, but POWER9 DD1 can set 0010b.
+  */
++#define IRQ_SYSTEM_RESET	0xff
++
+ static const u8 srr1_to_lazyirq[0x10] = {
+-	0, 0, 0,
+-	PACA_IRQ_DBELL,
+ 	0,
++	0,
++	IRQ_SYSTEM_RESET,
++	PACA_IRQ_DBELL,
++	IRQ_SYSTEM_RESET,
+ 	PACA_IRQ_DBELL,
+ 	PACA_IRQ_DEC,
+ 	0,
+@@ -407,15 +417,40 @@ static const u8 srr1_to_lazyirq[0x10] = {
+ 	PACA_IRQ_HMI,
+ 	0, 0, 0, 0, 0 };
+ 
++static noinline void replay_system_reset(void)
++{
++	struct pt_regs regs;
++
++	ppc_save_regs(&regs);
++	regs.trap = 0x100;
++	get_paca()->in_nmi = 1;
++	system_reset_exception(&regs);
++	get_paca()->in_nmi = 0;
++}
++
+ void irq_set_pending_from_srr1(unsigned long srr1)
+ {
+ 	unsigned int idx = (srr1 & SRR1_WAKEMASK_P8) >> 18;
++	u8 reason = srr1_to_lazyirq[idx];
++
++	/*
++	 * Take the system reset now, which is immediately after registers
++	 * are restored from idle. It's an NMI, so interrupts need not be
++	 * re-enabled when it's taken.
++	 */
++	if (unlikely(reason == IRQ_SYSTEM_RESET)) {
++		replay_system_reset();
++		return;
++	}
+ 
+ 	/*
+ 	 * The 0 index (SRR1[42:45]=b0000) must always evaluate to 0,
+-	 * so this can be called unconditionally with srr1 wake reason.
++	 * so this can be called unconditionally with the SRR1 wake
++	 * reason as returned by the idle code. If a future CPU was to
++	 * designate this as an interrupt reason, then a new index for
++	 * no interrupt must be assigned.
+ 	 */
+-	local_paca->irq_happened |= srr1_to_lazyirq[idx];
++	local_paca->irq_happened |= reason;
+ }
+ #endif /* CONFIG_PPC_BOOK3S */
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 8c1ede2d3f7e..37cd170201a2 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -307,6 +307,7 @@ OPAL_CALL(opal_xive_get_vp_info,		OPAL_XIVE_GET_VP_INFO);
+ OPAL_CALL(opal_xive_set_vp_info,		OPAL_XIVE_SET_VP_INFO);
+ OPAL_CALL(opal_xive_sync,			OPAL_XIVE_SYNC);
+ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
++OPAL_CALL(opal_signal_system_reset,		OPAL_SIGNAL_SYSTEM_RESET);
+ OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+ OPAL_CALL(opal_npu_map_lpar,			OPAL_NPU_MAP_LPAR);
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index a159d48573d7..49add2037e0d 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -3,6 +3,7 @@
+ 
+ #ifdef CONFIG_SMP
+ extern void pnv_smp_init(void);
++extern int pnv_system_reset_exception(struct pt_regs *regs);
+ #else
+ static inline void pnv_smp_init(void) { }
+ #endif
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 897aa1400eb8..4fdaa1d7c4cd 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -282,6 +282,9 @@ static void __init pnv_setup_machdep_opal(void)
+ 	ppc_md.restart = pnv_restart;
+ 	pm_power_off = pnv_power_off;
+ 	ppc_md.halt = pnv_halt;
++#ifdef CONFIG_SMP
++	ppc_md.system_reset_exception = pnv_system_reset_exception;
++#endif
+ 	ppc_md.machine_check_exception = opal_machine_check;
+ 	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
+ 	ppc_md.hmi_exception_early = opal_hmi_exception_early;
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index c17f81e433f7..23da03eda954 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -290,6 +290,54 @@ static void __init pnv_smp_probe(void)
  	}
-+	spin_end();
+ }
  
- 	if (!secondary && !xmon_gate) {
- 		/* we are the first cpu to come in */
-@@ -568,21 +573,25 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 		mb();
- 		xmon_gate = 1;
- 		barrier();
-+		touch_nmi_watchdog();
- 	}
++int pnv_system_reset_exception(struct pt_regs *regs)
++{
++	if (smp_handle_nmi_ipi(regs))
++		return 1;
++	return 0;
++}
++
++static int pnv_cause_nmi_ipi(int cpu)
++{
++	int64_t rc;
++
++	if (cpu >= 0) {
++		rc = opal_signal_system_reset(get_hard_smp_processor_id(cpu));
++		if (rc != OPAL_SUCCESS)
++			return 0;
++		return 1;
++
++	} else if (cpu == NMI_IPI_ALL_OTHERS) {
++		bool success = true;
++		int c;
++
++
++		/*
++		 * We do not use broadcasts (yet), because it's not clear
++		 * exactly what semantics Linux wants or the firmware should
++		 * provide.
++		 */
++		for_each_online_cpu(c) {
++			if (c == smp_processor_id())
++				continue;
++
++			rc = opal_signal_system_reset(
++						get_hard_smp_processor_id(c));
++			if (rc != OPAL_SUCCESS)
++				success = false;
++		}
++		if (success)
++			return 1;
++
++		/*
++		 * Caller will fall back to doorbells, which may pick
++		 * up the remainders.
++		 */
++	}
++
++	return 0;
++}
++
+ static struct smp_ops_t pnv_smp_ops = {
+ 	.message_pass	= NULL, /* Use smp_muxed_ipi_message_pass */
+ 	.cause_ipi	= NULL,	/* Filled at runtime by pnv_smp_probe() */
+@@ -308,6 +356,8 @@ static struct smp_ops_t pnv_smp_ops = {
+ /* This is called very early during platform setup_arch */
+ void __init pnv_smp_init(void)
+ {
++	if (opal_check_token(OPAL_SIGNAL_SYSTEM_RESET))
++		pnv_smp_ops.cause_nmi_ipi = pnv_cause_nmi_ipi;
+ 	smp_ops = &pnv_smp_ops;
  
-  cmdloop:
- 	while (in_xmon) {
- 		if (secondary) {
-+			spin_begin();
- 			if (cpu == xmon_owner) {
- 				if (!test_and_set_bit(0, &xmon_taken)) {
- 					secondary = 0;
-+					spin_end();
- 					continue;
- 				}
- 				/* missed it */
- 				while (cpu == xmon_owner)
--					barrier();
-+					spin_cpu_relax();
- 			}
--			barrier();
-+			spin_cpu_relax();
-+			touch_nmi_watchdog();
- 		} else {
- 			cmd = cmds(regs);
- 			if (cmd != 0) {
+ #ifdef CONFIG_HOTPLUG_CPU
 -- 
 2.13.3
