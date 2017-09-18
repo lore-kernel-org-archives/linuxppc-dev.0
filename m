@@ -1,35 +1,30 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <deller@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xwvf972K9zDqGs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 04:28:49 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8IIOQTF085090
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 14:28:47 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d2ea04hm1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Sep 2017 14:28:46 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 18 Sep 2017 14:28:46 -0400
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/hotplug: Ensure nodes initialized for hotplug
-In-Reply-To: <49626c85-d466-3f99-bde8-f459e278f6ee@linux.vnet.ibm.com>
-Date: Mon, 18 Sep 2017 13:28:41 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xww1K1XYvzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 04:45:23 +1000 (AEST)
+Date: Mon, 18 Sep 2017 20:39:02 +0200
+From: Helge Deller <deller@gmx.de>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E . J . Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] [RFC] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+Message-ID: <20170918183902.GA30752@p100.box>
+References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
+ <20170918174432.4fksyzco2g6gczwe@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <a5f7fdb2-d974-03c6-5ecc-c7f726f2b244@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170918174432.4fksyzco2g6gczwe@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,60 +34,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/hotplug: On systems like PowerPC which allow 'hot-add' of CPU,
-it may occur that the new resources are to be inserted into nodes
-that were not used for memory resources at bootup.  Many different
-configurations of PowerPC resources may need to be supported depending
-upon the environment.  This patch fixes some problems encountered at
-runtime with configurations that support memory-less nodes, but which
-allow CPUs to be added at and after boot.
+* Luck, Tony <tony.luck@intel.com>:
+> On Sat, Sep 16, 2017 at 12:53:42PM +0900, Sergey Senozhatsky wrote:
+> > 	Hello
+> > 
+> > 	RFC
+> > 
+> > 	On some arches C function pointers are indirect and point to
+> > a function descriptor, which contains the actual pointer to the code.
+> > This mostly doesn't matter, except for cases when people want to print
+> > out function pointers in symbolic format, because the usual '%pS/%ps'
+> > does not work on those arches as expected. That's the reason why we
+> > have '%pF/%pf', but since it's here because of a subtle ABI detail
+> > specific to some arches (ppc64/ia64/parisc64) it's easy to misuse
+> > '%pF/%pf' and '%pS/%ps' (see [1], for example).
+> 
+> A few new warnings when building on ia64:
+> 
+> arch/ia64/kernel/module.c:931: warning: passing argument 1 of 'dereference_function_descriptor' makes pointer from integer without a cast
+> arch/ia64/kernel/module.c:931: warning: return makes integer from pointer without a cast
+> kernel/kallsyms.c:325: warning: assignment makes integer from pointer without a cast
+> kernel/kallsyms.c:325: warning: passing argument 1 of 'dereference_kernel_function_descriptor' makes pointer from integer without a cast
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |   17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index b385cd0..e811dd1 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -551,7 +551,7 @@ static int numa_setup_cpu(unsigned long lcpu)
- 	nid = of_node_to_nid_single(cpu);
+I got similiar warnings on parisc.
+This patch on top of yours fixed those:
+
+diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
+index bc2eae8..4f34b46 100644
+--- a/arch/parisc/kernel/module.c
++++ b/arch/parisc/kernel/module.c
+@@ -66,6 +66,7 @@
  
- out_present:
--	if (nid < 0 || !node_online(nid))
-+	if (nid < 0 || !node_possible(nid))
- 		nid = first_online_node;
+ #include <asm/pgtable.h>
+ #include <asm/unwind.h>
++#include <asm/sections.h>
  
- 	map_cpu_to_node(lcpu, nid);
-@@ -1325,6 +1325,17 @@ static long vphn_get_associativity(unsigned long cpu,
- 	return rc;
+ #if 0
+ #define DEBUGP printk
+@@ -959,12 +960,12 @@ void module_arch_cleanup(struct module *mod)
+ unsigned long dereference_module_function_descriptor(struct module *mod,
+ 					     unsigned long addr)
+ {
+-	void *opd_sz = mod->arch.fdesc_offset +
++	unsigned long opd_sz = mod->arch.fdesc_offset +
+ 		       mod->arch.fdesc_max * sizeof(Elf64_Fdesc);
+ 
+ 	if (addr < mod->arch.fdesc_offset || opd_sz < addr)
+ 		return addr;
+ 
+-	return dereference_function_descriptor(addr);
++	return (unsigned long) dereference_function_descriptor((void *) addr);
  }
+ #endif
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index e2fc09e..76f4de6 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -322,7 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
+ 	if (is_ksym_addr(addr)) {
+ 		unsigned long pos;
  
-+static int verify_node_preparation(int nid)
+-		addr = dereference_kernel_function_descriptor(addr);
++		addr = dereference_kernel_function_descriptor((void *) addr);
+ 		pos = get_symbol_pos(addr, symbolsize, offset);
+ 		/* Grab name */
+ 		kallsyms_expand_symbol(get_symbol_offset(pos),
+
+
+I did tried your testcases too.
+
+"echo 1 > /proc/sys/vm/drop_caches" gave correct output:
+ printk#1 schedule_timeout+0x0/0x4a8
+ printk#2 schedule_timeout+0x0/0x4a8
+ printk#3 proc_sys_call_handler+0x120/0x180
+ printk#4 proc_sys_call_handler+0x120/0x180
+ printk#5 proc_sys_call_handler+0x120/0x180
+ printk#6 proc_sys_call_handler+0x120/0x180
+
+and here is "modprobe zram":
+ printk#7 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
+ printk#8 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
+ printk#9 do_one_initcall+0x194/0x290
+ printk#10 do_one_initcall+0x194/0x290
+ printk#11 do_one_initcall+0x194/0x290
+ printk#12 do_one_initcall+0x194/0x290
+ printk#13 zram_init+0x22c/0x2a0 [zram]
+ printk#14 zram_init+0x22c/0x2a0 [zram]
+ printk#15 zram_init+0x22c/0x2a0 [zram]
+ printk#16 zram_init+0x22c/0x2a0 [zram]
+
+I wonder why printk#7 and printk#8 don't show "zram_init"...
+
+
+Regarding your patches:
+
+In arch/parisc/kernel/process.c:
++void *dereference_kernel_function_descriptor(void *ptr)
 +{
-+	if ((NODE_DATA(nid) == NULL) ||
-+	    (NODE_DATA(nid)->node_spanned_pages == 0)) {
-+		if (try_online_node(nid))
-+			return first_online_node;
-+	}
-+
-+	return nid;
-+}
-+
- /*
-  * Update the CPU maps and sysfs entries for a single CPU when its NUMA
-  * characteristics change. This function doesn't perform any locking and is
-@@ -1433,9 +1444,11 @@ int numa_update_cpu_topology(bool cpus_locked)
- 		/* Use associativity from first thread for all siblings */
- 		vphn_get_associativity(cpu, associativity);
- 		new_nid = associativity_to_nid(associativity);
--		if (new_nid < 0 || !node_online(new_nid))
-+		if (new_nid < 0 || !node_possible(new_nid))
- 			new_nid = first_online_node;
- 
-+		new_nid = verify_node_preparation(new_nid);
-+
- 		if (new_nid == numa_cpu_lookup_table[cpu]) {
- 			cpumask_andnot(&cpu_associativity_changes_mask,
- 					&cpu_associativity_changes_mask,
++       if (ptr < (void *)__start_opd || (void *)__end_opd < ptr)
+
+This needs to be (__end_opd is outside):
++       if (ptr < (void *)__start_opd || (void *)__end_opd <= ptr)
+
+The same is true for the checks in the other arches.
+
+
+I'd suggest to move the various
+	extern char __start_opd[], __end_opd[];
+out of arch/<arch>/include/asm/sections.h and into <asm-generic/sections.h>
+
+
+I'll continue to test.
+
+Helge
