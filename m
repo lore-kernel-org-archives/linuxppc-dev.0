@@ -1,10 +1,10 @@
 Return-Path: <Zhiqiang.Hou@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0053.outbound.protection.outlook.com [104.47.37.53])
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0083.outbound.protection.outlook.com [104.47.34.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxHyn2hG3zDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 19:44:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxHyt62c7zDqYG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 19:44:38 +1000 (AEST)
 From: Zhiqiang Hou <Zhiqiang.Hou@nxp.com>
 To: <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <linux-pci@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
@@ -13,9 +13,9 @@ To: <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <shawnguo@kernel.org>, <Mingkai.Hu@nxp.com>, <Minghuan.Lian@nxp.com>,
  <roy.zang@nxp.com>
 CC: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
-Subject: [PATCH 1/5] irqchip/ls-scfg-msi: add LS1012a MSI support
-Date: Tue, 19 Sep 2017 17:26:54 +0800
-Message-ID: <20170919092658.22482-2-Zhiqiang.Hou@nxp.com>
+Subject: [PATCH 2/5] arm64: dts: ls1012a: Add MSI controller DT node
+Date: Tue, 19 Sep 2017 17:26:55 +0800
+Message-ID: <20170919092658.22482-3-Zhiqiang.Hou@nxp.com>
 In-Reply-To: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
 References: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
 MIME-Version: 1.0
@@ -31,38 +31,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
 
-The ls1012a implement only 1 msi controller, and it is the same as
-ls1043a.
+Add MSI controller node for ls1012a platform.
 
 Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
 ---
- .../devicetree/bindings/interrupt-controller/fsl,ls-scfg-msi.txt         | 1 +
- drivers/irqchip/irq-ls-scfg-msi.c                                        | 1 +
- 2 files changed, 2 insertions(+)
+ arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-scfg-msi.txt b/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-scfg-msi.txt
-index 49ccabbfa6f3..a4ff93d6b7f3 100644
---- a/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-scfg-msi.txt
-+++ b/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-scfg-msi.txt
-@@ -8,6 +8,7 @@ Required properties:
-               "fsl,ls1043a-msi"
-               "fsl,ls1046a-msi"
-               "fsl,ls1043a-v1.1-msi"
-+              "fsl,ls1012a-msi"
- - msi-controller: indicates that this is a PCIe MSI controller node
- - reg: physical base address of the controller and length of memory mapped.
- - interrupts: an interrupt to the parent interrupt controller.
-diff --git a/drivers/irqchip/irq-ls-scfg-msi.c b/drivers/irqchip/irq-ls-scfg-msi.c
-index 119f4ef0d421..57e3d900f19e 100644
---- a/drivers/irqchip/irq-ls-scfg-msi.c
-+++ b/drivers/irqchip/irq-ls-scfg-msi.c
-@@ -316,6 +316,7 @@ static const struct of_device_id ls_scfg_msi_id[] = {
- 	{ .compatible = "fsl,1s1021a-msi", .data = &ls1021_msi_cfg},
- 	{ .compatible = "fsl,1s1043a-msi", .data = &ls1021_msi_cfg},
- 
-+	{ .compatible = "fsl,ls1012a-msi", .data = &ls1021_msi_cfg },
- 	{ .compatible = "fsl,ls1021a-msi", .data = &ls1021_msi_cfg },
- 	{ .compatible = "fsl,ls1043a-msi", .data = &ls1021_msi_cfg },
- 	{ .compatible = "fsl,ls1043a-v1.1-msi", .data = &ls1043_v1_1_msi_cfg },
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
+index df83915d6ea6..a7698ac7264b 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
+@@ -471,5 +471,12 @@
+ 			dr_mode = "host";
+ 			phy_type = "ulpi";
+ 		};
++
++		msi: msi-controller1@1572000 {
++			compatible = "fsl,ls1012a-msi";
++			reg = <0x0 0x1572000 0x0 0x8>;
++			msi-controller;
++			interrupts = <0 126 IRQ_TYPE_LEVEL_HIGH>;
++		};
+ 	};
+ };
 -- 
 2.14.1
