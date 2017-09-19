@@ -1,30 +1,28 @@
-Return-Path: <deller@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <joserz@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxPpn6MWZzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 00:08:01 +1000 (AEST)
-Subject: Re: [PATCH 0/5] [RFC] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- "Luck, Tony" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "James E . J . Bottomley" <jejb@parisc-linux.org>,
- Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
- <20170918174432.4fksyzco2g6gczwe@intel.com> <20170918183902.GA30752@p100.box>
- <20170919020537.GA16991@jagdpanzerIV.localdomain>
-From: Helge Deller <deller@gmx.de>
-Message-ID: <f1e7c2b0-8c52-7e21-b311-d886f5c4c20e@gmx.de>
-Date: Tue, 19 Sep 2017 16:07:17 +0200
-MIME-Version: 1.0
-In-Reply-To: <20170919020537.GA16991@jagdpanzerIV.localdomain>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxQCM1TQ3zDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 00:25:50 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8JENvoj065934
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 10:25:47 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d30nvs2m2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 10:25:47 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
+ Tue, 19 Sep 2017 10:25:47 -0400
+From: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/eeh: Disable EEH stack dump by default
+Date: Tue, 19 Sep 2017 11:25:39 -0300
+Message-Id: <1505831139-6053-1-git-send-email-joserz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +32,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19.09.2017 04:05, Sergey Senozhatsky wrote:
-> On (09/18/17 20:39), Helge Deller wrote:
->> I did tried your testcases [on parisc] too.
+Today, each EEH causes a stack dump to be printed in the logs. In
+production environment it's not quite necessary. Thus, this patch
+adds a new command line argument in order to enable the stack
+dump for debugging purposes.
+
+For example, instead of the following:
+
+[  131.778661] EEH: Frozen PHB#2-PE#fd detected
+[  131.778672] EEH: PE location: N/A, PHB location: N/A
+[  131.778677] CPU: 21 PID: 10098 Comm: lspci Not tainted ...
+[  131.778680] Call Trace:
+[  131.778686] [c0000003a140bab0] [c000000000beb58c] dump_stack+...
+<snip ~10 lines>
+[  131.778770] EEH: Detected PCI bus error on PHB#2-PE#fd
+[  131.778775] EEH: This PCI device has failed 1 times in the last hour
 ...
->> and here is "modprobe zram":
->>   printk#7 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
->>   printk#8 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
->>   printk#9 do_one_initcall+0x194/0x290
->>   printk#10 do_one_initcall+0x194/0x290
->>   printk#11 do_one_initcall+0x194/0x290
->>   printk#12 do_one_initcall+0x194/0x290
->>   printk#13 zram_init+0x22c/0x2a0 [zram]
->>   printk#14 zram_init+0x22c/0x2a0 [zram]
->>   printk#15 zram_init+0x22c/0x2a0 [zram]
->>   printk#16 zram_init+0x22c/0x2a0 [zram]
->>
->> I wonder why printk#7 and printk#8 don't show "zram_init"...
-> 
-> interesting... what does the unpatched kernel show?
 
-Really strange.
-The unpatched kernel shows __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 too.
-The symbol should be known, because later on in printk13 it shows correctly zram_init.
-I'll need to dig deeper into it, but at least the regression is not due
-to your patch.
+we will have this by default:
 
-Helge
+[12777.175880] EEH: Frozen PHB#2-PE#fd detected
+[12777.175893] EEH: PE location: N/A, PHB location: N/A
+[12777.175922] EEH: Detected PCI bus error on PHB#2-PE#fd
+[12777.175931] EEH: This PCI device has failed 2 times in the last hour
+...
+
+Signed-off-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh.c | 26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 9e81678..4336c3b1 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -157,6 +157,19 @@ static int __init eeh_setup(char *str)
+ __setup("eeh=", eeh_setup);
+ 
+ /*
++ * It's not necessary to dump the stack trace when an EEH occours
++ * in the production environment. For debugging, the command line
++ * option "enable_eeh_stacktrace" brings the stack dump back
++ */
++static bool eeh_show_stacktrace;
++static int __init enable_eeh_stacktrace(char *p)
++{
++	eeh_show_stacktrace = true;
++	return 0;
++}
++early_param("enable_eeh_stacktrace", enable_eeh_stacktrace);
++
++/*
+  * This routine captures assorted PCI configuration space data
+  * for the indicated PCI device, and puts them into a buffer
+  * for RTAS error logging.
+@@ -407,7 +420,10 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
+ 
+ 	pr_err("EEH: PHB#%x failure detected, location: %s\n",
+ 		phb_pe->phb->global_number, eeh_pe_loc_get(phb_pe));
+-	dump_stack();
++
++	if (eeh_show_stacktrace)
++		dump_stack();
++
+ 	eeh_send_failure_event(phb_pe);
+ 
+ 	return 1;
+@@ -504,7 +520,9 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 				eeh_driver_name(dev), eeh_pci_name(dev));
+ 			printk(KERN_ERR "EEH: Might be infinite loop in %s driver\n",
+ 				eeh_driver_name(dev));
+-			dump_stack();
++
++			if (eeh_show_stacktrace)
++				dump_stack();
+ 		}
+ 		goto dn_unlock;
+ 	}
+@@ -572,7 +590,9 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 	       pe->phb->global_number, pe->addr);
+ 	pr_err("EEH: PE location: %s, PHB location: %s\n",
+ 	       eeh_pe_loc_get(pe), eeh_pe_loc_get(phb_pe));
+-	dump_stack();
++
++	if (eeh_show_stacktrace)
++		dump_stack();
+ 
+ 	eeh_send_failure_event(pe);
+ 
+-- 
+2.7.4
