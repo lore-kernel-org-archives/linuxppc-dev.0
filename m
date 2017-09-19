@@ -1,23 +1,30 @@
-Return-Path: <broonie@sirena.co.uk>
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <deller@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxPLc1jPZzDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 23:47:02 +1000 (AEST)
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, broonie@kernel.org,
- alsa-devel@alsa-project.org, timur@tabi.org, arnaud.mouiche@invoxia.com,
- linux-kernel@vger.kernel.org, tiwai@suse.com, lgirdwood@gmail.com,
- caleb@crome.org, max.krummenacher@toradex.com, lukma@denx.de,
- fabio.estevam@nxp.com, mail@maciej.szmigiero.name,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_ssi: Caculate bit clock rate using slot number and
- width" to the asoc tree
-In-Reply-To: <1505358429-18314-1-git-send-email-nicoleotsuka@gmail.com>
-Message-Id: <E1duIrT-0008Jm-7r@debutante>
-Date: Tue, 19 Sep 2017 14:46:51 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxPpn6MWZzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 00:08:01 +1000 (AEST)
+Subject: Re: [PATCH 0/5] [RFC] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ "Luck, Tony" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E . J . Bottomley" <jejb@parisc-linux.org>,
+ Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
+ Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
+ <20170918174432.4fksyzco2g6gczwe@intel.com> <20170918183902.GA30752@p100.box>
+ <20170919020537.GA16991@jagdpanzerIV.localdomain>
+From: Helge Deller <deller@gmx.de>
+Message-ID: <f1e7c2b0-8c52-7e21-b311-d886f5c4c20e@gmx.de>
+Date: Tue, 19 Sep 2017 16:07:17 +0200
+MIME-Version: 1.0
+In-Reply-To: <20170919020537.GA16991@jagdpanzerIV.localdomain>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,180 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+On 19.09.2017 04:05, Sergey Senozhatsky wrote:
+> On (09/18/17 20:39), Helge Deller wrote:
+>> I did tried your testcases [on parisc] too.
+...
+>> and here is "modprobe zram":
+>>   printk#7 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
+>>   printk#8 __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 [zram]
+>>   printk#9 do_one_initcall+0x194/0x290
+>>   printk#10 do_one_initcall+0x194/0x290
+>>   printk#11 do_one_initcall+0x194/0x290
+>>   printk#12 do_one_initcall+0x194/0x290
+>>   printk#13 zram_init+0x22c/0x2a0 [zram]
+>>   printk#14 zram_init+0x22c/0x2a0 [zram]
+>>   printk#15 zram_init+0x22c/0x2a0 [zram]
+>>   printk#16 zram_init+0x22c/0x2a0 [zram]
+>>
+>> I wonder why printk#7 and printk#8 don't show "zram_init"...
+> 
+> interesting... what does the unpatched kernel show?
 
-   ASoC: fsl_ssi: Caculate bit clock rate using slot number and width
+Really strange.
+The unpatched kernel shows __UNIQUE_ID_vermagic8+0xb9a4/0xbd04 too.
+The symbol should be known, because later on in printk13 it shows correctly zram_init.
+I'll need to dig deeper into it, but at least the regression is not due
+to your patch.
 
-has been applied to the asoc tree at
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
->From b0a7043d5c2ccdd306959f295bf1a62be025cbf5 Mon Sep 17 00:00:00 2001
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-Date: Wed, 13 Sep 2017 20:07:09 -0700
-Subject: [PATCH] ASoC: fsl_ssi: Caculate bit clock rate using slot number and
- width
-
-The set_sysclk() now is used to override the output bit clock rate.
-But this is not a common way to implement a set_dai_sysclk(). And
-this creates a problem when a general machine driver (simple-card
-for example) tries to do set_dai_sysclk() by passing an input clock
-rate for the baud clock instead of setting the bit clock rate as
-fsl_ssi driver expected.
-
-So this patch solves this problem by firstly removing set_sysclk()
-since the hw_params() can calculate the bit clock rate. Secondly,
-in order not to break those TDM use cases which previously might
-have been using set_sysclk() to override the bit clock rate, this
-patch changes the driver to calculate the bit clock rate using the
-slot number and the slot width from the via set_tdm_slot().
-
-The patch also removes an obsolete comment of the dir parameter.
-
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl_ssi.c | 46 ++++++++++++++++++++++++++--------------------
- 1 file changed, 26 insertions(+), 20 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 64598d1183f8..f2f51e06e22c 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -197,12 +197,13 @@ struct fsl_ssi_soc_data {
-  * @use_dma: DMA is used or FIQ with stream filter
-  * @use_dual_fifo: DMA with support for both FIFOs used
-  * @fifo_deph: Depth of the SSI FIFOs
-+ * @slot_width: width of each DAI slot
-+ * @slots: number of slots
-  * @rxtx_reg_val: Specific register settings for receive/transmit configuration
-  *
-  * @clk: SSI clock
-  * @baudclk: SSI baud clock for master mode
-  * @baudclk_streams: Active streams that are using baudclk
-- * @bitclk_freq: bitclock frequency set by .set_dai_sysclk
-  *
-  * @dma_params_tx: DMA transmit parameters
-  * @dma_params_rx: DMA receive parameters
-@@ -233,12 +234,13 @@ struct fsl_ssi_private {
- 	bool use_dual_fifo;
- 	bool has_ipg_clk_name;
- 	unsigned int fifo_depth;
-+	unsigned int slot_width;
-+	unsigned int slots;
- 	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
- 
- 	struct clk *clk;
- 	struct clk *baudclk;
- 	unsigned int baudclk_streams;
--	unsigned int bitclk_freq;
- 
- 	/* regcache for volatile regs */
- 	u32 regcache_sfcsr;
-@@ -700,8 +702,8 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
-  * Note: This function can be only called when using SSI as DAI master
-  *
-  * Quick instruction for parameters:
-- * freq: Output BCLK frequency = samplerate * 32 (fixed) * channels
-- * dir: SND_SOC_CLOCK_OUT -> TxBCLK, SND_SOC_CLOCK_IN -> RxBCLK.
-+ * freq: Output BCLK frequency = samplerate * slots * slot_width
-+ *       (In 2-channel I2S Master mode, slot_width is fixed 32)
-  */
- static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 		struct snd_soc_dai *cpu_dai,
-@@ -712,15 +714,21 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	int synchronous = ssi_private->cpu_dai_drv.symmetric_rates, ret;
- 	u32 pm = 999, div2, psr, stccr, mask, afreq, factor, i;
- 	unsigned long clkrate, baudrate, tmprate;
-+	unsigned int slots = params_channels(hw_params);
-+	unsigned int slot_width = 32;
- 	u64 sub, savesub = 100000;
- 	unsigned int freq;
- 	bool baudclk_is_used;
- 
--	/* Prefer the explicitly set bitclock frequency */
--	if (ssi_private->bitclk_freq)
--		freq = ssi_private->bitclk_freq;
--	else
--		freq = params_channels(hw_params) * 32 * params_rate(hw_params);
-+	/* Override slots and slot_width if being specifically set... */
-+	if (ssi_private->slots)
-+		slots = ssi_private->slots;
-+	/* ...but keep 32 bits if slots is 2 -- I2S Master mode */
-+	if (ssi_private->slot_width && slots != 2)
-+		slot_width = ssi_private->slot_width;
-+
-+	/* Generate bit clock based on the slot number and slot width */
-+	freq = slots * slot_width * params_rate(hw_params);
- 
- 	/* Don't apply it to any non-baudclk circumstance */
- 	if (IS_ERR(ssi_private->baudclk))
-@@ -805,16 +813,6 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--static int fsl_ssi_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
--		int clk_id, unsigned int freq, int dir)
--{
--	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
--
--	ssi_private->bitclk_freq = freq;
--
--	return 0;
--}
--
- /**
-  * fsl_ssi_hw_params - program the sample size
-  *
-@@ -1095,6 +1093,12 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
- 	struct regmap *regs = ssi_private->regs;
- 	u32 val;
- 
-+	/* The word length should be 8, 10, 12, 16, 18, 20, 22 or 24 */
-+	if (slot_width & 1 || slot_width < 8 || slot_width > 24) {
-+		dev_err(cpu_dai->dev, "invalid slot width: %d\n", slot_width);
-+		return -EINVAL;
-+	}
-+
- 	/* The slot number should be >= 2 if using Network mode or I2S mode */
- 	regmap_read(regs, CCSR_SSI_SCR, &val);
- 	val &= CCSR_SSI_SCR_I2S_MODE_MASK | CCSR_SSI_SCR_NET;
-@@ -1121,6 +1125,9 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
- 
- 	regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_SSIEN, val);
- 
-+	ssi_private->slot_width = slot_width;
-+	ssi_private->slots = slots;
-+
- 	return 0;
- }
- 
-@@ -1191,7 +1198,6 @@ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
- 	.hw_params	= fsl_ssi_hw_params,
- 	.hw_free	= fsl_ssi_hw_free,
- 	.set_fmt	= fsl_ssi_set_dai_fmt,
--	.set_sysclk	= fsl_ssi_set_dai_sysclk,
- 	.set_tdm_slot	= fsl_ssi_set_dai_tdm_slot,
- 	.trigger	= fsl_ssi_trigger,
- };
--- 
-2.14.1
+Helge
