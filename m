@@ -1,22 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxJKZ5Bn1zDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 20:00:50 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, maddy@linux.vnet.ibm.com,
- tglx@linutronix.de, mingo@kernel.org, kan.liang@intel.com,
- linux-kernel@vger.kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/sysrq: Fix oops whem ppmu is not registered
-In-Reply-To: <1505801826-12396-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-References: <1505801826-12396-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Date: Tue, 19 Sep 2017 20:00:49 +1000
-Message-ID: <87wp4vknxq.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxJPf3bcqzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 20:04:22 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id u18so1674070pgo.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 03:04:22 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH v1 0/3] powerpc: memcmp() optimization
+Date: Tue, 19 Sep 2017 18:03:56 +0800
+Message-Id: <1505815439-18720-1-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-> Kernel crashes if power pmu is not registered and user tries to dump
-> regs with 'echo p > /proc/sysrq-trigger'. Sample log:
->
->   Unable to handle kernel paging request for data at address 0x00000008
->   Faulting instruction address: 0xc0000000000d52f0
->
->   NIP [c0000000000d52f0] perf_event_print_debug+0x10/0x230
->   LR [c00000000058a938] sysrq_handle_showregs+0x38/0x50
->   Call Trace:
->    printk+0x38/0x4c (unreliable)
->    __handle_sysrq+0xe4/0x270
->    write_sysrq_trigger+0x64/0x80
->    proc_reg_write+0x80/0xd0
->    __vfs_write+0x40/0x200
->    vfs_write+0xc8/0x240
->    SyS_write+0x60/0x110
->    system_call+0x58/0x6c
+There is some room to optimize memcmp() in powerpc for following 2 cases:
+(1) Even src/dst addresses are not aligned with 8 bytes at the beginning,
+memcmp() can align them and go with .Llong comparision mode without
+fallback to .Lshort comparision mode do compare buffer byte by byte.
+(2) VMX instructions can be used to speed up for large size comparision.
 
-Thanks.
+This patch set also updates selftest case to make it compiled.
 
-I added:
 
-  Fixes: 5f6d0380c640 ("powerpc/perf: Define perf_event_print_debug() to print PMU register values")
+Simon Guo (3):
+  powerpc: Align bytes before fall back to .Lshort in powerpc memcmp
+  powerpc: enhance memcmp() with VMX instruction for long bytes
+    comparision
+  powerpc:selftest update memcmp selftest according to kernel change
 
-But I don't think I'll Cc stable, I can't think why we'd ever *not* have
-a ppmu registered. How did you hit it?
+ arch/powerpc/include/asm/asm-prototypes.h          |   2 +-
+ arch/powerpc/lib/copypage_power7.S                 |   2 +-
+ arch/powerpc/lib/memcmp_64.S                       | 165 ++++++++++++++++++++-
+ arch/powerpc/lib/memcpy_power7.S                   |   2 +-
+ arch/powerpc/lib/vmx-helper.c                      |   2 +-
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      |   2 +-
+ .../selftests/powerpc/stringloops/asm/ppc_asm.h    |  31 ++++
+ 7 files changed, 197 insertions(+), 9 deletions(-)
 
-cheers
+-- 
+1.8.3.1
