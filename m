@@ -1,23 +1,20 @@
-Return-Path: <Zhiqiang.Hou@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0073.outbound.protection.outlook.com [104.47.37.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxHz82kQtzDqXj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 19:44:52 +1000 (AEST)
-From: Zhiqiang Hou <Zhiqiang.Hou@nxp.com>
-To: <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linuxppc-dev@lists.ozlabs.org>, <marc.zyngier@arm.com>,
- <robh+dt@kernel.org>, <mark.rutland@arm.com>, <bhelgaas@google.com>,
- <shawnguo@kernel.org>, <Mingkai.Hu@nxp.com>, <Minghuan.Lian@nxp.com>,
- <roy.zang@nxp.com>
-CC: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
-Subject: [PATCH 5/5] arm64: dts: ls1046a: add PCIe controller DT nodes
-Date: Tue, 19 Sep 2017 17:26:58 +0800
-Message-ID: <20170919092658.22482-6-Zhiqiang.Hou@nxp.com>
-In-Reply-To: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
-References: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxJKZ5Bn1zDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 20:00:50 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, maddy@linux.vnet.ibm.com,
+ tglx@linutronix.de, mingo@kernel.org, kan.liang@intel.com,
+ linux-kernel@vger.kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/sysrq: Fix oops whem ppmu is not registered
+In-Reply-To: <1505801826-12396-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+References: <1505801826-12396-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Date: Tue, 19 Sep 2017 20:00:49 +1000
+Message-ID: <87wp4vknxq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,100 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 
-LS1046a implements 3 PCIe 3.0 controllers.
+> Kernel crashes if power pmu is not registered and user tries to dump
+> regs with 'echo p > /proc/sysrq-trigger'. Sample log:
+>
+>   Unable to handle kernel paging request for data at address 0x00000008
+>   Faulting instruction address: 0xc0000000000d52f0
+>
+>   NIP [c0000000000d52f0] perf_event_print_debug+0x10/0x230
+>   LR [c00000000058a938] sysrq_handle_showregs+0x38/0x50
+>   Call Trace:
+>    printk+0x38/0x4c (unreliable)
+>    __handle_sysrq+0xe4/0x270
+>    write_sysrq_trigger+0x64/0x80
+>    proc_reg_write+0x80/0xd0
+>    __vfs_write+0x40/0x200
+>    vfs_write+0xc8/0x240
+>    SyS_write+0x60/0x110
+>    system_call+0x58/0x6c
 
-Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
----
- arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi | 75 ++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
+Thanks.
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
-index c8ff0baddf1d..eac8c32f64b0 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
-@@ -661,6 +661,81 @@
- 				     <GIC_SPI 157 IRQ_TYPE_LEVEL_HIGH>;
- 		};
- 
-+		pcie@3400000 {
-+			compatible = "fsl,ls1046a-pcie", "snps,dw-pcie";
-+			reg = <0x00 0x03400000 0x0 0x00100000   /* controller registers */
-+			       0x40 0x00000000 0x0 0x00002000>; /* configuration space */
-+			reg-names = "regs", "config";
-+			interrupts = <GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>, /* controller interrupt */
-+				     <GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>; /* PME interrupt */
-+			interrupt-names = "aer", "pme";
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			dma-coherent;
-+			num-lanes = <4>;
-+			bus-range = <0x0 0xff>;
-+			ranges = <0x81000000 0x0 0x00000000 0x40 0x00010000 0x0 0x00010000   /* downstream I/O */
-+				  0x82000000 0x0 0x40000000 0x40 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
-+			msi-parent = <&msi1>, <&msi2>, <&msi3>;
-+			#interrupt-cells = <1>;
-+			interrupt-map-mask = <0 0 0 7>;
-+			interrupt-map = <0000 0 0 1 &gic GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 2 &gic GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 3 &gic GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 4 &gic GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
-+		};
-+
-+		pcie@3500000 {
-+			compatible = "fsl,ls1046a-pcie", "snps,dw-pcie";
-+			reg = <0x00 0x03500000 0x0 0x00100000   /* controller registers */
-+			       0x48 0x00000000 0x0 0x00002000>; /* configuration space */
-+			reg-names = "regs", "config";
-+			interrupts = <GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>, /* controller interrupt */
-+				     <GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>; /* PME interrupt */
-+			interrupt-names = "aer", "pme";
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			dma-coherent;
-+			num-lanes = <2>;
-+			bus-range = <0x0 0xff>;
-+			ranges = <0x81000000 0x0 0x00000000 0x48 0x00010000 0x0 0x00010000   /* downstream I/O */
-+				  0x82000000 0x0 0x40000000 0x48 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
-+			msi-parent = <&msi2>, <&msi3>, <&msi1>;
-+			#interrupt-cells = <1>;
-+			interrupt-map-mask = <0 0 0 7>;
-+			interrupt-map = <0000 0 0 1 &gic GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 2 &gic GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 3 &gic GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 4 &gic GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>;
-+		};
-+
-+		pcie@3600000 {
-+			compatible = "fsl,ls1046a-pcie", "snps,dw-pcie";
-+			reg = <0x00 0x03600000 0x0 0x00100000   /* controller registers */
-+			       0x50 0x00000000 0x0 0x00002000>; /* configuration space */
-+			reg-names = "regs", "config";
-+			interrupts = <GIC_SPI 162 IRQ_TYPE_LEVEL_HIGH>, /* controller interrupt */
-+				     <GIC_SPI 161 IRQ_TYPE_LEVEL_HIGH>; /* PME interrupt */
-+			interrupt-names = "aer", "pme";
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			dma-coherent;
-+			num-lanes = <2>;
-+			bus-range = <0x0 0xff>;
-+			ranges = <0x81000000 0x0 0x00000000 0x50 0x00010000 0x0 0x00010000   /* downstream I/O */
-+				  0x82000000 0x0 0x40000000 0x50 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
-+			msi-parent = <&msi3>, <&msi1>, <&msi2>;
-+			#interrupt-cells = <1>;
-+			interrupt-map-mask = <0 0 0 7>;
-+			interrupt-map = <0000 0 0 1 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 2 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 3 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
-+					<0000 0 0 4 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>;
-+		};
-+
- 	};
- 
- 	reserved-memory {
--- 
-2.14.1
+I added:
+
+  Fixes: 5f6d0380c640 ("powerpc/perf: Define perf_event_print_debug() to print PMU register values")
+
+But I don't think I'll Cc stable, I can't think why we'd ever *not* have
+a ppmu registered. How did you hit it?
+
+cheers
