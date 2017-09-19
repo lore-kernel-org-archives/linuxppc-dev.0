@@ -1,37 +1,22 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxK1Y4J6LzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 20:32:01 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id j16so1819297pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 03:32:01 -0700 (PDT)
-Date: Tue, 19 Sep 2017 19:31:54 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "James E . J . Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- Alexei Starovoitov <ast@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
- Jessica Yu <jeyu@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/5] powerpc64: Add .opd based function descriptor
- dereference
-Message-ID: <20170919103154.GC401@jagdpanzerIV.localdomain>
-References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
- <20170916035347.19705-4-sergey.senozhatsky@gmail.com>
- <20170916094345.d332z3odceqiyrll@naverao1-tp.localdomain>
- <87shfjkmxe.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxK7W5gLkzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 20:37:11 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: David Binderman <dcb314@hotmail.com>,
+ "benh\@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "paulus\@samba.org" <paulus@samba.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:541: bad condition ?
+In-Reply-To: <HE1PR0802MB2331572C98E215722EE4411C9C630@HE1PR0802MB2331.eurprd08.prod.outlook.com>
+References: <HE1PR0802MB2331572C98E215722EE4411C9C630@HE1PR0802MB2331.eurprd08.prod.outlook.com>
+Date: Tue, 19 Sep 2017 20:37:10 +1000
+Message-ID: <87poankm95.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87shfjkmxe.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,45 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (09/19/17 20:22), Michael Ellerman wrote:
-> > On 2017/09/16 12:53PM, Sergey Senozhatsky wrote:
-> >> We are moving towards separate kernel and module function descriptor
-> >> dereference callbacks. This patch enables it for powerpc64.
-> >> 
-> >> For pointers that belong to the kernel
-> >> -  Added __start_opd and __end_opd pointers, to track the kernel
-> >>    .opd section address range;
-> >> 
-> >> -  Added dereference_kernel_function_descriptor(). Now we
-> >>    will dereference only function pointers that are within
-> >>    [__start_opd, __end_opd];
-> >> 
-> >> For pointers that belong to a module
-> >> -  Added dereference_module_function_descriptor() to handle module
-> >>    function descriptor dereference. Now we will dereference only
-> >>    pointers that are within [module->opd.start, module->opd.end].
-> >
-> > Would it be simpler to just use kernel_text_address() and dereference 
-> > everything else? See commit 83e840c770f2c5 ("powerpc64/elfv1: Only 
-> > dereference function descriptor for non-text symbols") for a related 
-> > patch.
-> 
-> Yeah that would be a lot simpler and probably work perfectly well.
+David Binderman <dcb314@hotmail.com> writes:
 
-unlike ppc_function_entry(), printk() can get called on any symbol,
-not just function pointers.
+> Hello there,
+>
+> linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:543]: (warning) Identical condition 's1<s2', second condition is always false
+>
+> Source code is
+>
+>     if (s1 < s2)
+>         return 1;
+>     if (s2 > s1)
+>         return -1;
+>
+> Suggest code rework.
 
-for example,
+Um thanks.
 
-cat /proc/kallsyms | grep shrinker_rwsem
-ffffffff81a4b1e0 d shrinker_rwsem
+It's trying to implement a sort comparison returning -1, 0, 1.
 
-or
+So it's pretty obviously wrong, but also harmless AFAICS, because it's
+just an optimisation before doing a full comparison using memcmp().
 
-cat /proc/kallsyms | grep vm_total_pages
-ffffffff81dcd418 B vm_total_pages
+So yeah we should fix it, but not an actual bug AFAICS.
 
-
-and so on.
-
-	-ss
+cheers
