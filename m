@@ -1,48 +1,31 @@
-Return-Path: <akshay.adiga@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxQMZ6H0rzDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 00:32:58 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8JEUCkt020238
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 10:32:56 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d31uccv2p-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 10:32:55 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
- Wed, 20 Sep 2017 00:32:51 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8JEWntH41877626
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 00:32:49 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8JEWnVq030668
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 00:32:49 +1000
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- pavrampu <pavrampu@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Clear LPCR[PECE1] via stop-api only for
- deep state offline
-References: <1504180061-32345-1-git-send-email-ego@linux.vnet.ibm.com>
- <40a9c8f5d12d3885c1e54b9e4835eb25@linux.vnet.ibm.com>
-Date: Tue, 19 Sep 2017 20:02:43 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxVmN4ybgzDq8f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 03:51:16 +1000 (AEST)
+Received: from mail-qk0-f175.google.com (mail-qk0-f175.google.com
+ [209.85.220.175])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 891C921C9B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 17:51:14 +0000 (UTC)
+Received: by mail-qk0-f175.google.com with SMTP id r141so407658qke.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 10:51:14 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <40a9c8f5d12d3885c1e54b9e4835eb25@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Message-Id: <5c6e69c8-13c2-e06e-c4e0-92afeb998eaa@linux.vnet.ibm.com>
+In-Reply-To: <20170914102415.26395-1-stewart@linux.vnet.ibm.com>
+References: <20170914102415.26395-1-stewart@linux.vnet.ibm.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 19 Sep 2017 12:50:53 -0500
+Message-ID: <CAL_JsqL29j59wJtmOAuD=N7Tccv2rxEMav90yxTyGTfhwHQUsw@mail.gmail.com>
+Subject: Re: [PATCH] drivers: of: static DT reservations incorrectly added to
+ dynamic list
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: obh+dt@kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,63 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-Any comments on this patch ?
-
-On 09/06/2017 02:32 PM, pavrampu wrote:
-> On 2017-08-31 17:17, Gautham R. Shenoy wrote:
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >
-> > commit 24be85a23d1f ("powerpc/powernv: Clear PECE1 in LPCR via
-> > stop-api only on Hotplug") clears the PECE1 bit of the LPCR via
-> > stop-api during CPU-Hotplug to prevent wakeup due to a decrementer on
-> > an offlined CPU which is in a deep stop state.
-> >
-> > In the case where the stop-api support is found to be lacking, the
-> > commit 785a12afdb4a ("powerpc/powernv/idle: Disable LOSE_FULL_CONTEXT
-> > states when stop-api fails") disables deep states that lose hypervisor
-> > context. Thus in this case, the offlined CPU will be put to some
-> > shallow idle state.
-> >
-> > However, we currently unconditionally clear the PECE1 in LPCR via
-> > stop-api during CPU-Hotplug even when deep states are disabled due to
-> > stop-api failure.
-> >
-> > Fix this by clearing PECE1 of LPCR via stop-api during CPU-Hotplug
-> > *only* when the offlined CPU will be put to a deep state that loses
-> > hypervisor context.
-> >
-> > Fixes: commit 24be85a23d1f ("powerpc/powernv: Clear PECE1 in LPCR via
-> > stop-api only on Hotplug")
-> >
-> > Reported-by: Pavithra Prakash <pavirampu@linux.vnet.ibm.com>
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+On Thu, Sep 14, 2017 at 5:24 AM, Stewart Smith
+<stewart@linux.vnet.ibm.com> wrote:
+> There are two types of memory reservations firmware can ask the kernel
+> to make in the device tree: static and dynamic.
+> See Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
 >
-> Tested-by: Pavithra Prakash <pavrampu@linux.vnet.ibm.com>
+> If you have greater than 16 entries in /reserved-memory (as we do on
+> POWER9 systems) you would get this scary looking error message:
+> [    0.000000] OF: reserved mem: not enough space all defined regions.
 >
-> > ---
-> >  arch/powerpc/platforms/powernv/idle.c | 8 +++++++-
-> >  1 file changed, 7 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/platforms/powernv/idle.c
-> > b/arch/powerpc/platforms/powernv/idle.c
-> > index 9f59041..23f8fba 100644
-> > --- a/arch/powerpc/platforms/powernv/idle.c
-> > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > @@ -393,7 +393,13 @@ static void pnv_program_cpu_hotplug_lpcr(unsigned
-> > int cpu, u64 lpcr_val)
-> >      u64 pir = get_hard_smp_processor_id(cpu);
-> >
-> >      mtspr(SPRN_LPCR, lpcr_val);
-> > -    opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-> > +
-> > +    /*
-> > +     * Program the LPCR via stop-api only for deepest stop state
-> > +     * can lose hypervisor context.
-> > +     */
-> > +    if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT)
-> > +        opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-> >  }
-> >
-> >  /*
+> This is harmless if all your reservations are static (which with OPAL on
+> POWER9, they are).
+>
+> It is not harmless if you have any dynamic reservations after the 16th.
+>
+> In the first pass over the fdt to find reservations, the child nodes of
+> /reserved-memory are added to a static array in of_reserved_mem.c so that
+> memory can be reserved in a 2nd pass. The array has 16 entries. This is why,
+> on my dual socket POWER9 system, I get that error 4 times with 20 static
+> reservations.
+>
+> We don't have a problem on ppc though, as in arch/powerpc/kernel/prom.c
+> we look at the new style /reserved-ranges property to do reservations,
+> and this logic was introduced in 0962e8004e974 (well before any powernv
+> system shipped).
+>
+> Google shows up no occurances of that exact error message, so we're probably
+> safe in that no machine that people use has memory not being reserved when
+> it should be.
+>
+> The fix is simple, as there's a different code path for static and dynamic
+> allocations, we just don't add the region to the list if it's static. Since
+> it's a static *OR* dynamic region, this is a perfectly valid thing to do
+> (although I have not checked every real world device tree on the planet
+> for this condition)
+
+If the region is dynamic (i.e. no reg prop), then we bail from
+__reserved_mem_reserve_reg. So wouldn't this change make the list be
+empty always?
+
+Won't we have problems with lookups for devices with a "memory-region"
+property if static allocations are not in the list?
+
+I'm inclined to just make the safe and easy change of increasing the
+array to 32 entries. That should be enough for everyone (TM).
+
+Rob
