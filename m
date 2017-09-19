@@ -1,10 +1,10 @@
 Return-Path: <Zhiqiang.Hou@nxp.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0067.outbound.protection.outlook.com [104.47.40.67])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0066.outbound.protection.outlook.com [104.47.37.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxHyz612PzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 19:44:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxHz31pXjzDqYN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 19:44:47 +1000 (AEST)
 From: Zhiqiang Hou <Zhiqiang.Hou@nxp.com>
 To: <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <linux-pci@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
@@ -13,9 +13,9 @@ To: <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <shawnguo@kernel.org>, <Mingkai.Hu@nxp.com>, <Minghuan.Lian@nxp.com>,
  <roy.zang@nxp.com>
 CC: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
-Subject: [PATCH 3/5] PCI: layerscape: Add support for ls1012a
-Date: Tue, 19 Sep 2017 17:26:56 +0800
-Message-ID: <20170919092658.22482-4-Zhiqiang.Hou@nxp.com>
+Subject: [PATCH 4/5] arm64: dts: ls1012a: Add PCIe controller DT node
+Date: Tue, 19 Sep 2017 17:26:57 +0800
+Message-ID: <20170919092658.22482-5-Zhiqiang.Hou@nxp.com>
 In-Reply-To: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
 References: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
 MIME-Version: 1.0
@@ -31,35 +31,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
 
+Add PCIe controller node for ls1012a platform.
+
 Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
 ---
- Documentation/devicetree/bindings/pci/layerscape-pci.txt | 1 +
- drivers/pci/dwc/pci-layerscape.c                         | 1 +
- 2 files changed, 2 insertions(+)
+ arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-index c0484da0f20d..66df1e81e0b8 100644
---- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-+++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-@@ -18,6 +18,7 @@ Required properties:
-         "fsl,ls2088a-pcie"
-         "fsl,ls1088a-pcie"
-         "fsl,ls1046a-pcie"
-+        "fsl,ls1012a-pcie"
- - reg: base addresses and lengths of the PCIe controller register blocks.
- - interrupts: A list of interrupt outputs of the controller. Must contain an
-   entry for each entry in the interrupt-names property.
-diff --git a/drivers/pci/dwc/pci-layerscape.c b/drivers/pci/dwc/pci-layerscape.c
-index 87fa486bee2c..3b01e309a55e 100644
---- a/drivers/pci/dwc/pci-layerscape.c
-+++ b/drivers/pci/dwc/pci-layerscape.c
-@@ -253,6 +253,7 @@ static struct ls_pcie_drvdata ls2088_drvdata = {
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
+index a7698ac7264b..140570d45ff3 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
+@@ -478,5 +478,29 @@
+ 			msi-controller;
+ 			interrupts = <0 126 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
++
++		pcie@3400000 {
++			compatible = "fsl,ls1012a-pcie", "snps,dw-pcie";
++			reg = <0x00 0x03400000 0x0 0x00100000   /* controller registers */
++			       0x40 0x00000000 0x0 0x00002000>; /* configuration space */
++			reg-names = "regs", "config";
++			interrupts = <0 118 0x4>, /* controller interrupt */
++				     <0 117 0x4>; /* PME interrupt */
++			interrupt-names = "aer", "pme";
++			#address-cells = <3>;
++			#size-cells = <2>;
++			device_type = "pci";
++			num-lanes = <4>;
++			bus-range = <0x0 0xff>;
++			ranges = <0x81000000 0x0 0x00000000 0x40 0x00010000 0x0 0x00010000   /* downstream I/O */
++				  0x82000000 0x0 0x40000000 0x40 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
++			msi-parent = <&msi>;
++			#interrupt-cells = <1>;
++			interrupt-map-mask = <0 0 0 7>;
++			interrupt-map = <0000 0 0 1 &gic 0 110 IRQ_TYPE_LEVEL_HIGH>,
++					<0000 0 0 2 &gic 0 111 IRQ_TYPE_LEVEL_HIGH>,
++					<0000 0 0 3 &gic 0 112 IRQ_TYPE_LEVEL_HIGH>,
++					<0000 0 0 4 &gic 0 113 IRQ_TYPE_LEVEL_HIGH>;
++		};
+ 	};
  };
- 
- static const struct of_device_id ls_pcie_of_match[] = {
-+	{ .compatible = "fsl,ls1012a-pcie", .data = &ls1046_drvdata },
- 	{ .compatible = "fsl,ls1021a-pcie", .data = &ls1021_drvdata },
- 	{ .compatible = "fsl,ls1043a-pcie", .data = &ls1043_drvdata },
- 	{ .compatible = "fsl,ls1046a-pcie", .data = &ls1046_drvdata },
 -- 
 2.14.1
