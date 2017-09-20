@@ -1,23 +1,27 @@
-Return-Path: <srs0=lg7u=av=kernel.crashing.org=benh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy0G50NkCzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 23:00:13 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xy0G46vMyz8x29
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 23:00:12 +1000 (AEST)
-Message-ID: <1505912404.12628.325.camel@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc/eeh: Create PHB PEs after EEH is initialized
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: Russell Currey <ruscur@au1.ibm.com>
-Date: Wed, 20 Sep 2017 23:00:04 +1000
-In-Reply-To: <87h8vxljpf.fsf@concordia.ellerman.id.au>
-References: <1504766140.12628.14.camel@kernel.crashing.org>
- <87h8vxljpf.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy1WL5l1YzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 23:56:46 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id i23so1227243pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 06:56:46 -0700 (PDT)
+Date: Wed, 20 Sep 2017 23:56:27 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v3 4/4] powerpc/64s: idle ESL=0 stop can avoid MSR and
+ save/restore overhead
+Message-ID: <20170920235627.3413797f@roar.ozlabs.ibm.com>
+In-Reply-To: <87k21i69lu.fsf@concordia.ellerman.id.au>
+References: <20170825043036.18236-1-npiggin@gmail.com>
+ <20170825043036.18236-5-npiggin@gmail.com>
+ <87pobd1em0.fsf@concordia.ellerman.id.au>
+ <20170830221045.6fd10787@roar.ozlabs.ibm.com>
+ <87k21i69lu.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-09-20 at 20:59 +1000, Michael Ellerman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > Otherwise we end up not yet having computed the right
-> > diag data size on powernv where EEH initialization
-> > is delayed, thus causing memory corruption later on
-> > when calling OPAL.
-> 
-> When did this break? Do we have a commit we can tag with Fixes: ?
-> Stable?
-> 
-> I assume we want to merge this ASAP as a fix, I think I can safely take
-> this without patch 2?
+On Fri, 01 Sep 2017 19:39:41 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Russell, can you help Michael with that ? I don't even remember what's
-in patch 2 :)
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > On Wed, 30 Aug 2017 21:25:59 +1000
+> > Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >  
+> >> Nicholas Piggin <npiggin@gmail.com> writes:
+> >>   
+> >> > When stop is executed with EC=ESL=0, it appears to execute like a
+> >> > normal instruction (resuming from NIP when woken by interrupt).
+> >> > So all the save/restore handling can be avoided completely. In
+> >> > particular NV GPRs do not have to be saved, and MSR does not have
+> >> > to be switched back to kernel MSR.
+> >> >
+> >> > So move the test for "lite" sleep states out to power9_idle_stop.
+> >> >
+> >> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> >> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> >> > ---
+> >> >  arch/powerpc/kernel/idle_book3s.S | 35 ++++++++++++++++++++++++-----------
+> >> >  1 file changed, 24 insertions(+), 11 deletions(-)    
+> >> 
+> >> This is blowing up for me on mambo:  
+> >
+> > Oh this is a known bug in mambo that does not match the hardware.
+> >
+> > You need >= Mambo.7.8.21, or this firmware patch to work around
+> > the issue for old mambos.  
+> 
+> As discussed elsewhere this still breaks on new mambo with more than one
+> CPU. So I've dropped it for now.
 
-Cheers,
-Ben.
+This now seems to be properly fixed in mambo with commit 11783550ee11.
+
+Skiboot also has a patch merged which disables the problematic state on
+mambo so older versions won't crash.
+
+d2a24406a49 ("idle: disable stop*_lite POWER9 idle states for Mambo platform")
+
+So this could be re-applied now.
+
+Thanks,
+Nick
