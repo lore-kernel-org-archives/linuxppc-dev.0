@@ -1,42 +1,28 @@
-Return-Path: <rob@landley.net>
-Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
- [IPv6:2607:f8b0:4003:c06::241])
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxlcb73bNzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:30:23 +1000 (AEST)
-Received: by mail-oi0-x241.google.com with SMTP id h9so410833oia.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 20:30:23 -0700 (PDT)
-Subject: Re: [PATCH v3] Make initramfs honor CONFIG_DEVTMPFS_MOUNT
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Stephen Rothwell <sfr@canb.auug.org.au>, sachinp
- <sachinp@linux.vnet.ibm.com>, mhocko@suse.com, peterz@infradead.org,
- viresh.kumar@linaro.org, Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- mingo@kernel.org, lokeshvutla@ti.com,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linux-input@vger.kernel.org,
- thomas.lendacky@amd.com, lauraa@codeaurora.org, keescook@chromium.org,
- Jiri Kosina <jikos@kernel.org>, rostedt@goodmis.org,
- linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, tglx@linutronix.de,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, tj@kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <1495700957.9020.43.camel@abdul.in.ibm.com>
- <8760gp9jjl.fsf@concordia.ellerman.id.au>
- <20170526072437.46499fbd@canb.auug.org.au>
- <87a7e82d-0af5-7f9e-6bd6-7e28b238e866@landley.net>
- <87r2z86ykt.fsf@concordia.ellerman.id.au>
- <4aa9cb26-f868-0720-e5c8-3c4e08afad20@landley.net>
- <3ba5ddc7-d1a2-7f54-0a26-0752f3975226@c-s.fr>
- <d6a5ba05-5de2-24e0-49ae-437058001b37@landley.net>
- <20170917135119.nqo6dffx2zuqh36l@khazad-dum.debian.net>
-From: Rob Landley <rob@landley.net>
-Message-ID: <a8d56238-ae16-4b15-f60d-731f267737f4@landley.net>
-Date: Tue, 19 Sep 2017 22:29:54 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxly434pbzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:45:31 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id e69so689927pfg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 20:45:31 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: Traceback due to 'powerpc/mm: Fix kernel RAM protection...' when
+ running ppc image in qemu
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+References: <20170919182459.GA7933@roeck-us.net>
+ <8760ce9iib.fsf@concordia.ellerman.id.au>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <daaad0c4-75af-4b02-20d0-b0b8e327f94a@roeck-us.net>
+Date: Tue, 19 Sep 2017 20:45:27 -0700
 MIME-Version: 1.0
-In-Reply-To: <20170917135119.nqo6dffx2zuqh36l@khazad-dum.debian.net>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <8760ce9iib.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,41 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/17/2017 08:51 AM, Henrique de Moraes Holschuh wrote:
-> On Sat, 16 Sep 2017, Rob Landley wrote:
->> So, I added a workaround with a printk in hopes of embarassing them into
->> someday fixing it.
+On 09/19/2017 08:05 PM, Michael Ellerman wrote:
+> Guenter Roeck <linux@roeck-us.net> writes:
 > 
-> Oh, it will be fixed in Debian alright.
-
-Cool!
-
-But part of the problem is people upgrade the kernel on existing
-deployed root filesystems, some of which are a fork off of a fork off of
-debian, so we won't exhaust the broken userspace for probably a couple
-years.
-
-I'd put it in feature-removal-schedule.txt but Linus zapped that, so...
-
-> I am just waiting the issue to
-> settle a bit to file the bug reports, or maybe even send in the Debian
-> patches myself (note that I am not responsible for the code in question,
-> so I am not wearing a brown paperbag at this time).  Even if I didn't do
-> it, there are several other Debian Developers reading LKML that could do
-> it (provided they noticed this specific thread and are aware of the
-> situation) :p
-
-There was a previous thread last merge window they didn't notice. I was
-hoping the warning would be obvious enough. :)
-
-> I can even push for the fixes to be accepted into the stable and
-> oldstable branches of Debian, but that can take anything from a few
-> weeks to several months, due to the way our stable releases work.  But
-> it would eventually happen.
+>> Hi,
+>>
+>> I see a the following traceback when running an SMP image based on
+>> 85xx/mpc85xx_cds_defconfig in qemu.
+>>
+>> ------------[ cut here ]------------
+>> WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 smp_call_function_many+0xcc/0x2fc
+>> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.14.0-rc1-00009-g0666f56 #1
+>> task: cf830000 task.stack: cf82e000
+>> NIP:  c00a93c8 LR: c00a9634 CTR: 00000001
+>> REGS: cf82fde0 TRAP: 0700   Not tainted  (4.14.0-rc1-00009-g0666f56)
+>> MSR:  00021000 <CE,ME>  CR: 24000082  XER: 00000000
+>>
+>> GPR00: c00a9634 cf82fe90 cf830000 c050ad3c c0015a54 00000000 00000001 00000001
+>> GPR08: 00000001 00000000 00000000 cf82e000 24000084 00000000 c0003150 00000000
+>> GPR16: 00000000 00000000 00000000 00000000 00000000 00000001 00000000 c0510000
+>> GPR24: 00000000 c0015a54 00000000 c050ad3c c051823c c050ad3c 00000025 00000000
+>> NIP [c00a93c8] smp_call_function_many+0xcc/0x2fc
+>> LR [c00a9634] smp_call_function+0x3c/0x50
+>> Call Trace:
+>> [cf82fe90] [00000010] 0x10 (unreliable)
+>> [cf82fed0] [c00a9634] smp_call_function+0x3c/0x50
+>> [cf82fee0] [c0015d2c] flush_tlb_kernel_range+0x20/0x38
+>> [cf82fef0] [c001524c] mark_initmem_nx+0x154/0x16c
+>> [cf82ff20] [c001484c] free_initmem+0x20/0x4c
+>> [cf82ff30] [c000316c] kernel_init+0x1c/0x108
+>> [cf82ff40] [c000f3a8] ret_from_kernel_thread+0x5c/0x64
+>> Instruction dump:
+>> 7c0803a6 7d808120 38210040 4e800020 3d20c052 812981a0 2f890000 40beffac
+>> 3d20c051 8929ac64 2f890000 40beff9c <0fe00000> 4bffff94 7fc3f378 7f64db78
+>> ---[ end trace 7da7bdcf8b15ddb3 ]---
 > 
-> Whether such fixes will ever make it to LTS branches, especially
-> Ubuntu's, *that* I don't know.
+> Thanks.
+> 
+> I guess the system still runs OK otherwise, you're just seeing the warning?
+> 
+Yes, though I am not sure if that is because there is only one active CPU (there is
+still only one if I say "-smp 4" on the qemu command line).
 
-I have no idea what that powerpc system was, the guy didn't say...
+>> A complete log is available at:
+>> http://kerneltests.org/builders/qemu-ppc-master/builds/814/steps/qemubuildcommand/logs/stdio
+>>
+>> Bisect points to commit 3184cc4b6f6a1dc0 ("powerpc/mm: Fix kernel RAM protection
+>> after freeing unused memory on PPC32"). Bisect log is attached. A quick look
+>> suggests that mark_initmem_nx() is called with interrupts disabled, which
+>> triggers the traceback.
+> 
+> Hmm. Yes the MSR says you have interrupts disabled (EE missing).
+> 
+> But I don't see why. start_kernel() did local_irq_enable(), so I don't
+> understand why we got to mark_initmem_nx() with them disabled. I'll hope
+> that Christophe has some idea.
+> 
+Good question. I only see this with one of 9 ppc emulations, with 85xx/mpc85xx_cds_defconfig
++CONFIG_DEVTMPFS=y +CONFIG_SMP=y. Maybe there is a platform specific init function
+which leaves interrupts disabled. Question is which one that might be.
 
-Rob
+Guenter
