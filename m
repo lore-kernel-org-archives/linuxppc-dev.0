@@ -1,33 +1,24 @@
-Return-Path: <santosh@fossix.org>
+Return-Path: <wei.guo.simon@gmail.com>
 Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
  [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz2GT50HmzDrJL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:34:09 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id h4so62213pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 22:34:09 -0700 (PDT)
-Date: Fri, 22 Sep 2017 11:04:04 +0530
-From: Santosh Sivaraj <santosh@fossix.org>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-Message-ID: <20170922053404.3zpfpwetabjut2er@santosiv.in.ibm.com>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xz2Mr03SXzDrJL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:38:47 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id g65so63646pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 22:38:47 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ David Laight <David.Laight@ACULAB.COM>,
+ Christophe LEROY <christophe.leroy@c-s.fr>,
+ Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH v2 0/3] powerpc/64: memcmp() optimization
+Date: Thu, 21 Sep 2017 07:34:37 +0800
+Message-Id: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="3gqke7d3an37ypbd"
-In-Reply-To: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,142 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Simon Guo <wei.guo.simon@gmail.com>
 
---3gqke7d3an37ypbd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+There is some room to optimize memcmp() in powerpc 64 bits version for
+following 2 cases:
+(1) Even src/dst addresses are not aligned with 8 bytes at the beginning,
+memcmp() can align them and go with .Llong comparision mode without
+fallback to .Lshort comparision mode do compare buffer byte by byte.
+(2) VMX instructions can be used to speed up for large size comparision.
 
-* Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote (on 2017-09-20 16=
-:29:02 +0000):
+This patch set also updates memcmp selftest case to make it compiled and
+incorporate large size comparison case.
 
->         Hello
->=20
->         RFC
->=20
->         On some arches C function pointers are indirect and point to
-> a function descriptor, which contains the actual pointer to the code.
-> This mostly doesn't matter, except for cases when people want to print
-> out function pointers in symbolic format, because the usual '%pS/%ps'
-> does not work on those arches as expected. That's the reason why we
-> have '%pF/%pf', but since it's here because of a subtle ABI detail
-> specific to some arches (ppc64/ia64/parisc64) it's easy to misuse
-> '%pF/%pf' and '%pS/%ps' (see [1], for example).
->=20
->         This patch set attempts to move ia64/ppc64/parisc64 C function
-> pointer ABI details out of printk() to arch code. Function dereference
-> code now checks if a pointer belongs to a .opd ELF section and dereferenc=
-es
-> that pointer only if it does. The kernel and modules have their own .opd
-> sections that's why I use two different ARCH functions: for kernel and
-> for module pointer dereference.
->=20
->         I planned to remove dereference_function_descriptor() entirely,
-> but then I discovered a bunch other uses cases (kgdbts, init/main.c,
-> extable, etc.), so I decided to keep dereference_function_descriptor()
-> around because the main point of this patch set is to deprecate %pF/%pf.
-> But at the same time, I think I can go further and handle both kernel
-> and module descriptor dereference in dereference_function_descriptor().
-> We need a module pointer for module .opd check, so that will come at an
-> extra cost of module lookup (may be there will some other issues along
-> the way, haven't checked it).
->=20
-> Right now we've got:
->=20
-> - dereference_function_descriptor(addr)
->         a generic (old) function. it simply attempts to dereference
->         whatever pointer we give it.
->=20
-> - dereference_kernel_function_descriptor(addr)
->         dereferences a kernel pointer if it's within the kernel's .opd
->         section.
->=20
-> - dereference_module_function_descriptor(module, addr)
->         dereference a module pointer if it's within the module's .opd
->         section.
->=20
->=20
-> *** A BIG NOTE ***
->         I don't own ia64/ppc64/parisc64 hardware, so the patches are not
->         tested. Sorry about that!
+v1 -> v2:
+- update 8bytes unaligned bytes comparison method.
+- fix a VMX comparision bug.
+- enhanced the original memcmp() selftest.
+- add powerpc/64 to subject/commit message.
 
-Tested patch series on ppc64 sucessfully.
+Simon Guo (3):
+  powerpc/64: Align bytes before fall back to .Lshort in powerpc64
+    memcmp().
+  powerpc/64: enhance memcmp() with VMX instruction for long bytes
+    comparision
+  powerpc:selftest update memcmp_64 selftest for VMX implementation
 
-You may add tested by to the series.
+ arch/powerpc/include/asm/asm-prototypes.h          |   2 +-
+ arch/powerpc/lib/copypage_power7.S                 |   2 +-
+ arch/powerpc/lib/memcmp_64.S                       | 181 ++++++++++++++++++++-
+ arch/powerpc/lib/memcpy_power7.S                   |   2 +-
+ arch/powerpc/lib/vmx-helper.c                      |   2 +-
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      |   2 +-
+ .../selftests/powerpc/stringloops/asm/ppc_asm.h    |  31 ++++
+ .../testing/selftests/powerpc/stringloops/memcmp.c |  63 ++++---
+ 8 files changed, 254 insertions(+), 31 deletions(-)
 
-Tested-by: Santosh Sivaraj <santosh@fossix.org>
-
-Thanks,
-Santosh
-
->=20
-> Another note:
->         I need to check what is BPF symbol lookup and do we need to
->         do any dereference there.
->=20
-> v2:
-> -- convert dereference_function_descriptor() to unsigned long
-> -- fix kernel descriptor range checks (Helge)
-> -- fix parisc module descriptor range check (Helge)
-> -- fix ppc64 module range check
-> -- add checkpatch patch
->=20
->=20
-> Sergey Senozhatsky (7):
->   switch dereference_function_descriptor() to `unsigned long'
->   sections: split dereference_function_descriptor()
->   ia64: Add .opd based function descriptor dereference
->   powerpc64: Add .opd based function descriptor dereference
->   parisc64: Add .opd based function descriptor dereference
->   symbol lookup: use new kernel and module dereference functions
->   checkpatch: add pF/pf deprecation warning
->=20
->  Documentation/printk-formats.txt          | 15 +++++----------
->  arch/ia64/include/asm/sections.h          | 16 ++++++++++++----
->  arch/ia64/kernel/module.c                 | 13 +++++++++++++
->  arch/ia64/kernel/vmlinux.lds.S            |  2 ++
->  arch/parisc/boot/compressed/vmlinux.lds.S |  2 ++
->  arch/parisc/include/asm/sections.h        |  4 +++-
->  arch/parisc/kernel/module.c               | 17 +++++++++++++++++
->  arch/parisc/kernel/process.c              | 15 ++++++++++++---
->  arch/parisc/kernel/vmlinux.lds.S          |  2 ++
->  arch/parisc/mm/init.c                     |  4 ++--
->  arch/powerpc/include/asm/module.h         |  3 +++
->  arch/powerpc/include/asm/sections.h       | 17 ++++++++++++++---
->  arch/powerpc/kernel/module_64.c           | 16 ++++++++++++++++
->  arch/powerpc/kernel/vmlinux.lds.S         |  2 ++
->  drivers/misc/kgdbts.c                     |  2 +-
->  include/asm-generic/sections.h            |  8 ++++++--
->  include/linux/moduleloader.h              |  4 ++++
->  init/main.c                               |  2 +-
->  kernel/extable.c                          |  2 +-
->  kernel/kallsyms.c                         |  1 +
->  kernel/module.c                           |  9 ++++++++-
->  lib/vsprintf.c                            |  5 +----
->  scripts/checkpatch.pl                     |  6 ++++--
->  23 files changed, 132 insertions(+), 35 deletions(-)
-
---=20
-
---3gqke7d3an37ypbd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQJHBAEBCAAxFiEEEPhI2K1zm+w17KotztxEnntb8vcFAlnEoMwTHHNhbnRvc2hA
-Zm9zc2l4Lm9yZwAKCRDO3ESee1vy9/yREACtsc+xLsqli2HsZB6P2keSw+mETPQH
-LIZsQwpM7NFJl0CunhLUXCJMAlrTcEJzQwSe6r49U4WGCMGA42ZHowOWTPJnXd3l
-+jbSpvDg8lTWlwonzZd+TvkYUI7XPKwWULN3S8kxYWXi+3FioLTV1RPWlFreChmV
-5tfLASliqeO4M/7coSS/DFWqTtQ2xYuVDPSITR9VeiVZ8z4/6CMw9H4C20XaTjOs
-UrxoFinqv6tGjG2cyq3es+PiipYkahVdrwuxqqaxs6ZXJ2tvdVer9EvUmf3MxWsg
-RdR2y/mCSKnIHRUCwohxD6bTtqIPq8FZ4f3kzrig8LygJfJOTdS0KedAdBzdAaAI
-yk6WIddOwIpCDF/edzOUo3C6YO/CbxtDO9BoXfgberT8aDfQlC2nDQ18nAoKapmk
-kNu6h8zUP45HMNiuq1pz/oXbUb3INNNzip9oIdYpS0B437xm6iVIkXnj2f2yWvFK
-qrvNmjjvfMOP28KH+0NIXPlnDxeZSBtEjHxJhBAhBD1JhD6prnOEKBVEVG0XhpPm
-As5SNjzWc4gcB3I0kWy6vobwZDWiSEAoYTNnQ94DaUvpv+9HUNAMNBn7tGEwCWgP
-l8yZJppf0kFd9eYAhMBr9zRtLN9uiS03iim34Pn9xvAzgMUP0A8cv9r5cOGEBL4n
-u7B7rmeWpS0iGA==
-=kfaZ
------END PGP SIGNATURE-----
-
---3gqke7d3an37ypbd--
+-- 
+1.8.3.1
