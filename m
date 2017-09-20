@@ -1,22 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
+ [IPv6:2607:f8b0:4001:c06::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy8kb75NszDqXp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 05:21:58 +1000 (AEST)
-Subject: Re: [PATCH 0/6] crypto: talitos - various fixes
-From: christophe leroy <christophe.leroy@c-s.fr>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
-References: <cover.1505825623.git.christophe.leroy@c-s.fr>
- <d1a928d5-d5cd-baf6-a6bf-2375cce4b4a4@c-s.fr>
-Message-ID: <b708d7a7-1ee2-db0a-70ff-f5e36901a230@c-s.fr>
-Date: Wed, 20 Sep 2017 21:21:46 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy9SK3sc8zDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 05:54:40 +1000 (AEST)
+Received: by mail-io0-x236.google.com with SMTP id v36so6204334ioi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 12:54:40 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <d1a928d5-d5cd-baf6-a6bf-2375cce4b4a4@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: keescook@google.com
+In-Reply-To: <1505893239.30180.24.camel@abdul.in.ibm.com>
+References: <1505198479.10243.23.camel@abdul>
+ <1505893239.30180.24.camel@abdul.in.ibm.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 20 Sep 2017 12:54:37 -0700
+Message-ID: <CAGXu5jKMGuc-i0vfZx3TYx4iq35PCF0T1y9zv9A=k7ieES2Qkg@mail.gmail.com>
+Subject: Re: [linux-next][Oops] memory hot-unplug results fault instruction
+ address at /include/linux/list.h:104
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ sachinp <sachinp@linux.vnet.ibm.com>,
+ stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-next <linux-next@vger.kernel.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +33,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-What's going wrong ? I have resent it and it the same again, the serie 
-is not dispatched on the linux-crypto list, but when I answer to a mail 
-of the serie, the answer shows up.
-
-What could be the issue ?
-
-Christophe
-
-Le 20/09/2017 à 10:35, Christophe LEROY a écrit :
-> Looks like the linux-crypto list and patchwork was out of order when I 
-> sent this. I will send again, sorry for the noise on the other lists.
-> 
-> Le 19/09/2017 à 14:58, Christophe Leroy a écrit :
->> This serie provide various fixes on the talitos driver.
+On Wed, Sep 20, 2017 at 12:40 AM, Abdul Haleem
+<abdhalee@linux.vnet.ibm.com> wrote:
+> On Tue, 2017-09-12 at 12:11 +0530, abdul wrote:
+>> Hi,
 >>
->> Christophe Leroy (6):
->>    crypto: talitos - Don't provide setkey for non hmac hashing algs.
->>    crypto: talitos - fix hashing
->>    crypto: talitos - fix sha224
->>    crypto: talitos - fix AEAD test failures
->>    crypto: talitos - use kzalloc instead of kmalloc
->>    crypto: talitos - fix memory corruption on SEC2
+>> Memory hot-unplug on PowerVM LPAR running next-20170911 results in
+>> Faulting instruction address: 0xc0000000002b56c4
 >>
->>   drivers/crypto/talitos.c | 81 
->> +++++++++++++++++++++---------------------------
->>   drivers/crypto/talitos.h |  2 --
->>   2 files changed, 36 insertions(+), 47 deletions(-)
+>> which maps to the below code path:
 >>
+>> 0xc0000000002b56c4 is in __rmqueue (./include/linux/list.h:104).
+>> 99     * This is only for internal list manipulation where we know
+>> 100    * the prev/next entries already!
+>> 101    */
+>> 102   static inline void __list_del(struct list_head * prev, struct
+>> list_head * next)
+>> 103   {
+>> 104           next->prev = prev;
+>> 105           WRITE_ONCE(prev->next, next);
+>> 106   }
+>> 107
+>> 108   /**
+>>
+>
+> I see another kernel Oops when running transparent hugepages
+> de-fragmentation test.
+>
+> And the faulty instruction address again pointing to same code line
+> 0xc00000000026f9f4 is in compaction_alloc (./include/linux/list.h:104)
+>
+> steps to recreate:
+> -----------------
+> 1. Enable transparent hugepages ("always")
+> 2. Turn off the defrag $ echo 0 > khugepaged/defrag
+> 3. Write random to memory path
+> 4. Set huge pages numbers
+> 5. Turn on defrag $ echo 1 > khugepaged/defrag
+>
+>
+> new trace:
+> ----------
+> Unable to handle kernel paging request for data at address
+> 0x5deadbeef0000108
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+This looks like use-after-list-removal, that value appears to be LIST_POISON1.
+
+Try enabling CONFIG_DEBUG_LIST to see if you get better details?
+
+-Kees
+
+-- 
+Kees Cook
+Pixel Security
