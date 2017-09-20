@@ -1,38 +1,43 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <daniel.black@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxh0V6hkGzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 10:47:22 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id i130so724717pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 17:47:22 -0700 (PDT)
-Date: Wed, 20 Sep 2017 09:47:15 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- "Luck, Tony" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "James E . J . Bottomley" <jejb@parisc-linux.org>,
- Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] [RFC] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-Message-ID: <20170920004715.GA6298@jagdpanzerIV.localdomain>
-References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
- <20170918174432.4fksyzco2g6gczwe@intel.com>
- <20170918183902.GA30752@p100.box>
- <20170919020537.GA16991@jagdpanzerIV.localdomain>
- <f1e7c2b0-8c52-7e21-b311-d886f5c4c20e@gmx.de>
- <20170919200357.GA15803@p100.box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxj060W5TzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:32:05 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8K1UHbp092223
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 21:32:03 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d3e86spry-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 21:32:03 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <daniel.black@au1.ibm.com>;
+ Wed, 20 Sep 2017 11:32:01 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v8K1VxRX37421290
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:31:59 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v8K1Vwpb013046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:31:58 +1000
+From: Daniel Black <daniel.black@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, pbonzini@redhat.com
+Cc: Daniel Black <daniel.black@au1.ibm.com>, trivial@kernel.org,
+ abdhalee@linux.vnet.ibm.com, sachinp@linux.vnet.ibm.com, jschoenh@amazon.de
+Subject: [PATCH] KVM: KVM_MAX_IRQ_ROUTES only defined with
+ CONFIG_HAVE_KVM_IRQ_ROUTING
+Date: Wed, 20 Sep 2017 11:31:39 +1000
+In-Reply-To: <1505579069.9665.22.camel@abdul.in.ibm.com>
+References: <1505579069.9665.22.camel@abdul.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170919200357.GA15803@p100.box>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <20170920013139.13329-1-daniel.black@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,35 +47,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (09/19/17 22:03), Helge Deller wrote:
-[..]
-> Your implementation of dereference_module_function_descriptor() in
-> arch/parisc/kernel/module.c is faulty.
-> mod->arch.fdesc_offset is relative to the base address of the module,
-> so you need to add to mod->core_layout.base.
+Commit 36ae3c0a36b7 introduced code using KVM_MAX_IRQ_ROUTES. This
+define isn't available on all platforms. As it is dependent on
+CONFIG_HAVE_KVM_IRQ_ROUTING this define is used to enable the code
+in 36ae3c0a36b7.
 
-aha, got it. I should have figured that out.
-many thanks!
+Fixes: 36ae3c0a36b7 ("KVM: Don't accept obviously wrong gsi values via KVM_IRQFD")
+Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Suggested-by: Jan H. Schönherr <jschoenh@amazon.de>
+Signed-off-by: Daniel Black <daniel.black@au.ibm.com>
+---
+ virt/kvm/eventfd.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-
-> Here is the relevant patch to fix this issue (against mainline).
-> Additionally I compare against mod->arch.fdesc_count instead of
-> mod->arch.fdesc_max.
-
-hmm, .fdesc_max looked relevant to me. it's count_fdescs() - the
-number of R_PARISC_FPTR64 relocation entries.
-
-but ok, will use .fdesc_count.
-
-
-> Can you please fold it into your patch
-> [PATCH 4/5] parisc64: Add .opd based function descriptor dereference
-> for the next round?
-
-sure, will fold. + SoB.
-
-I think I'll try to re-spin the series today (or tomorrow, I'm slightly
-overloaded with another stuff right now). I've received enough bug reports
-no need to wait for another week ;)
-
-	-ss
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+index c608ab4..75910dd 100644
+--- a/virt/kvm/eventfd.c
++++ b/virt/kvm/eventfd.c
+@@ -565,8 +565,10 @@ kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
+ {
+ 	if (args->flags & ~(KVM_IRQFD_FLAG_DEASSIGN | KVM_IRQFD_FLAG_RESAMPLE))
+ 		return -EINVAL;
++#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
+ 	if (args->gsi >= KVM_MAX_IRQ_ROUTES)
+ 		return -EINVAL;
++#endif
+ 
+ 	if (args->flags & KVM_IRQFD_FLAG_DEASSIGN)
+ 		return kvm_irqfd_deassign(kvm, args);
+-- 
+2.9.5
