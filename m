@@ -1,12 +1,12 @@
 Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy4w90jxBzDqXp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 02:30:01 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id g65so1389011pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 09:30:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy4wH0rbhzDqYY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 02:30:07 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id u18so1919413pgo.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 09:30:07 -0700 (PDT)
 From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -17,11 +17,11 @@ Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
  Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: [RFC][PATCH v2 6/7] symbol lookup: use new kernel and module
- dereference functions
-Date: Thu, 21 Sep 2017 01:29:08 +0900
-Message-Id: <20170920162910.32053-7-sergey.senozhatsky@gmail.com>
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>
+Subject: [RFC][PATCH v2 7/7] checkpatch: add pF/pf deprecation warning
+Date: Thu, 21 Sep 2017 01:29:09 +0900
+Message-Id: <20170920162910.32053-8-sergey.senozhatsky@gmail.com>
 In-Reply-To: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
 References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,117 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Call appropriate function descriptor dereference ARCH callbacks:
-- dereference_kernel_function_descriptor() if the pointer is a
-  kernel symbol;
+We deprecated '%pF/%pf' printk specifiers, since '%pS/%ps' is now smart
+enough to handle function pointer dereference on platforms where such
+dereference is required.
 
-- dereference_module_function_descriptor() if the pointer is a
-  module symbol.
+checkpatch warning example:
 
-This patch also removes dereference_function_descriptor() from
-'%pF/%pf' vsprintf handler, because it has the same behavior with
-'%pS/%ps' now.
+WARNING: Use '%pS/%ps' instead. This pointer extension was deprecated: '%pF'
 
 Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Andy Whitcroft <apw@canonical.com>
+Cc: Joe Perches <joe@perches.com>
 ---
- Documentation/printk-formats.txt | 15 +++++----------
- kernel/kallsyms.c                |  1 +
- kernel/module.c                  |  1 +
- lib/vsprintf.c                   |  5 +----
- 4 files changed, 8 insertions(+), 14 deletions(-)
+ scripts/checkpatch.pl | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/printk-formats.txt b/Documentation/printk-formats.txt
-index 361789df51ec..b2afafc84638 100644
---- a/Documentation/printk-formats.txt
-+++ b/Documentation/printk-formats.txt
-@@ -50,26 +50,23 @@ Symbols/Function Pointers
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index dd2c262aebbf..5945e4843466 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -5762,18 +5762,20 @@ sub process {
+ 		        for (my $count = $linenr; $count <= $lc; $count++) {
+ 				my $fmt = get_quoted_string($lines[$count - 1], raw_line($count, 0));
+ 				$fmt =~ s/%%//g;
+-				if ($fmt =~ /(\%[\*\d\.]*p(?![\WFfSsBKRraEhMmIiUDdgVCbGNO]).)/) {
++				if ($fmt =~ /(\%[\*\d\.]*p(?![\WSsBKRraEhMmIiUDdgVCbGNO]).)/) {
+ 					$bad_extension = $1;
+ 					last;
+ 				}
+ 			}
+ 			if ($bad_extension ne "") {
+ 				my $stat_real = raw_line($linenr, 0);
++				my $error_msg = "Invalid vsprintf pointer extension ";
+ 				for (my $count = $linenr + 1; $count <= $lc; $count++) {
+ 					$stat_real = $stat_real . "\n" . raw_line($count, 0);
+ 				}
++				$error_msg = "Use '%pS/%ps' instead. This pointer extension was deprecated:" if ($bad_extension =~ /pF|pf/);
+ 				WARN("VSPRINTF_POINTER_EXTENSION",
+-				     "Invalid vsprintf pointer extension '$bad_extension'\n" . "$here\n$stat_real\n");
++				     "$error_msg '$bad_extension'\n" . "$here\n$stat_real\n");
+ 			}
+ 		}
  
- ::
- 
-+	%pS	versatile_init+0x0/0x110
-+	%ps	versatile_init
- 	%pF	versatile_init+0x0/0x110
- 	%pf	versatile_init
--	%pS	versatile_init+0x0/0x110
- 	%pSR	versatile_init+0x9/0x110
- 		(with __builtin_extract_return_addr() translation)
--	%ps	versatile_init
- 	%pB	prev_fn_of_versatile_init+0x88/0x88
- 
--The ``F`` and ``f`` specifiers are for printing function pointers,
--for example, f->func, &gettimeofday. They have the same result as
--``S`` and ``s`` specifiers. But they do an extra conversion on
--ia64, ppc64 and parisc64 architectures where the function pointers
--are actually function descriptors.
--
- The ``S`` and ``s`` specifiers can be used for printing symbols
- from direct addresses, for example, __builtin_return_address(0),
- (void *)regs->ip. They result in the symbol name with (``S``) or
- without (``s``) offsets. If KALLSYMS are disabled then the symbol
- address is printed instead.
- 
-+Note, that the ``F`` and ``f`` specifiers are identical to ``S`` (``s``)
-+and thus deprecated.
-+
- The ``B`` specifier results in the symbol name with offsets and should be
- used when printing stack backtraces. The specifier takes into
- consideration the effect of compiler optimisations which may occur
-@@ -77,8 +74,6 @@ when tail-call``s are used and marked with the noreturn GCC attribute.
- 
- Examples::
- 
--	printk("Going to call: %pF\n", gettimeofday);
--	printk("Going to call: %pF\n", p->func);
- 	printk("%s: called from %pS\n", __func__, (void *)_RET_IP_);
- 	printk("%s: called from %pS\n", __func__,
- 				(void *)__builtin_return_address(0));
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index 127e7cfafa55..e2fc09ea9509 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -322,6 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
- 	if (is_ksym_addr(addr)) {
- 		unsigned long pos;
- 
-+		addr = dereference_kernel_function_descriptor(addr);
- 		pos = get_symbol_pos(addr, symbolsize, offset);
- 		/* Grab name */
- 		kallsyms_expand_symbol(get_symbol_offset(pos),
-diff --git a/kernel/module.c b/kernel/module.c
-index b792e814150a..63361de377ad 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -3948,6 +3948,7 @@ const char *module_address_lookup(unsigned long addr,
- 	preempt_disable();
- 	mod = __module_address(addr);
- 	if (mod) {
-+		addr = dereference_module_function_descriptor(mod, addr);
- 		if (modname)
- 			*modname = mod->name;
- 		ret = get_ksymbol(mod, addr, size, offset);
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index bcd906a39010..bf04b4f5d8e7 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -40,7 +40,6 @@
- #include "../mm/internal.h"	/* For the trace_print_flags arrays */
- 
- #include <asm/page.h>		/* for PAGE_SIZE */
--#include <asm/sections.h>	/* for dereference_function_descriptor() */
- #include <asm/byteorder.h>	/* cpu_to_le16 */
- 
- #include <linux/string_helpers.h>
-@@ -1721,10 +1720,8 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
- 	}
- 
- 	switch (*fmt) {
--	case 'F':
-+	case 'F': /* %pF and %pf are kept for compatibility reasons only */
- 	case 'f':
--		ptr = (void *)dereference_function_descriptor((unsigned long)ptr);
--		/* Fallthrough */
- 	case 'S':
- 	case 's':
- 	case 'B':
 -- 
 2.14.1
