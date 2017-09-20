@@ -1,40 +1,35 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <deller@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxwjv5p14zDqR8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 20:20:35 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8KAJlI2058869
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 06:20:32 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d3nqqk4h3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 06:20:31 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Wed, 20 Sep 2017 20:20:12 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8KAKA3Q42074224
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 20:20:10 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8KAK9Nc013397
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 20:20:09 +1000
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/livepatch: Fix livepatch stack access
-Date: Wed, 20 Sep 2017 15:49:51 +0530
-Message-Id: <1505902791-26383-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxwl54GBPzDrFT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 20:21:36 +1000 (AEST)
+Subject: Re: [PATCH 0/5] [RFC] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+To: David Laight <David.Laight@ACULAB.COM>,
+ 'Sergey Senozhatsky' <sergey.senozhatsky.work@gmail.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>, "Luck, Tony" <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@kernel.org>,
+ "James E . J . Bottomley" <jejb@parisc-linux.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Alexei Starovoitov <ast@kernel.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton
+ <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
+ <20170918174432.4fksyzco2g6gczwe@intel.com> <20170918183902.GA30752@p100.box>
+ <20170919020537.GA16991@jagdpanzerIV.localdomain>
+ <063D6719AE5E284EB5DD2968C1650D6DD007A0D0@AcuExch.aculab.com>
+ <a7a0f1f6-781b-eba3-9b81-69b979503990@gmx.de>
+ <063D6719AE5E284EB5DD2968C1650D6DD007AF31@AcuExch.aculab.com>
+From: Helge Deller <deller@gmx.de>
+Message-ID: <b8b35299-cfce-c5dc-536d-b21a71187cc8@gmx.de>
+Date: Wed, 20 Sep 2017 12:20:56 +0200
+MIME-Version: 1.0
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD007AF31@AcuExch.aculab.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,151 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While running stress test with livepatch module loaded, kernel
-bug was triggered.
+On 20.09.2017 10:41, David Laight wrote:
+> From: Helge Deller
+>> Sent: 19 September 2017 21:08
+> ...
+>>> Using 'unsigned long' for any kind of pointer is an accident
+>>> waiting do happen.
+>>> It also makes it difficult to typecheck the function calls.
+>>> Using 'void *' isn't any better.
+>>> Either a pointer to an undefined struct, or a struct containing
+>>> a single 'char' member, is likely to be safest.
+>>
+>> David, you might be right in most cases, but in this case I'd prefer
+>> unsigned long too. I think this will create the least amount of
+>> typecasts here.
+> 
+> I've not looked at the specifics case...
+> 
+> Another option is using a struct with a single member and
+> passing it by value.
 
-cpu 0x5: Vector: 400 (Instruction Access) at [c0000000eb9d3b60]
-    pc: c0000000eb9d3e30
-    lr: c0000000eb9d3e30
-    sp: c0000000eb9d3de0
-   msr: 800000001280b033
-  current = 0xc0000000dbd38700
-  paca    = 0xc00000000fe01400   softe: 0        irq_happened: 0x01
-    pid   = 8618, comm = make
-Linux version 4.13.0+ (root@ubuntu) (gcc version 6.3.0 20170406 (Ubuntu 6.3.0-12ubuntu2)) #1 SMP Wed Sep 13 03:49:27 EDT 2017
+Actually, we do already have correct structs which could be referenced:
+parisc: struct Elf64_Fdesc
+ia64:	struct fdesc
+ppc64:	struct ppc64_opd_entry
 
-5:mon> t
-[c0000000eb9d3de0] c0000000eb9d3e30 (unreliable)
-[c0000000eb9d3e30] c000000000008ab4 hardware_interrupt_common+0x114/0x120
- --- Exception: 501 (Hardware Interrupt) at c000000000053040 livepatch_handler+0x4c/0x74
-[c0000000eb9d4120] 0000000057ac6e9d (unreliable)
-[d0000000089d9f78] 2e0965747962382e
-SP (965747962342e09) is in userspace
+One could "#define platform_opd_entry" to each of those depending on the platform and use it.
+It might be misleading though, because the pointer which is handed over to
+dereference_function_descriptor() can be such a pointer but isn't necessary.
+I'll leave it up to Sergey to decide.
 
-When an interrupt is served in between the livepatch_handler execution,
-there are chances of the livepatch_stack/task task getting corrupted.
-
-                    CPU 1
-                 =============
-Task A                          Interrupt Handler
-=========                       =================
-livepatch_handler:
- mr r0, r1
- ld r1, TI_livepatch_sp(r12)
-                                hardware_interrupt_common
-                                |_do_IRQ
-                                  |_ call_do_irq:
-                                        mflr r0
-                                        std  r0,16(r1)
-                                        stdu r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
-                                            ...
-lis r2, STACK_END_MAGIC@h
-ori r2, r2, STACK_END_MAGIC@l
-ld  r12, -8(r1)      <- livepatch stack is corrupted.
-
-Fix the corruption by using r11 register for livepatch stack manipulation,
-instead of shuffling task stack and livepatch stack into r1 register.
-Using r11 register also avoids disabling/enabling irq's while setting
-up the livepatch stack.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 45 +++++++++-----------------
- 1 file changed, 15 insertions(+), 30 deletions(-)
-
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index c98e90b..b4e2b71 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -181,34 +181,25 @@ _GLOBAL(ftrace_stub)
- 	 *  - we have no stack frame and can not allocate one
- 	 *  - LR points back to the original caller (in A)
- 	 *  - CTR holds the new NIP in C
--	 *  - r0 & r12 are free
--	 *
--	 * r0 can't be used as the base register for a DS-form load or store, so
--	 * we temporarily shuffle r1 (stack pointer) into r0 and then put it back.
-+	 *  - r0, r11 & r12 are free
- 	 */
- livepatch_handler:
- 	CURRENT_THREAD_INFO(r12, r1)
-
--	/* Save stack pointer into r0 */
--	mr	r0, r1
--
- 	/* Allocate 3 x 8 bytes */
--	ld	r1, TI_livepatch_sp(r12)
--	addi	r1, r1, 24
--	std	r1, TI_livepatch_sp(r12)
-+	ld	r11, TI_livepatch_sp(r12)
-+	addi	r11, r11, 24
-+	std	r11, TI_livepatch_sp(r12)
-
- 	/* Save toc & real LR on livepatch stack */
--	std	r2,  -24(r1)
-+	std	r2,  -24(r11)
- 	mflr	r12
--	std	r12, -16(r1)
-+	std	r12, -16(r11)
-
- 	/* Store stack end marker */
- 	lis     r12, STACK_END_MAGIC@h
- 	ori     r12, r12, STACK_END_MAGIC@l
--	std	r12, -8(r1)
--
--	/* Restore real stack pointer */
--	mr	r1, r0
-+	std	r12, -8(r11)
-
- 	/* Put ctr in r12 for global entry and branch there */
- 	mfctr	r12
-@@ -216,36 +207,30 @@ livepatch_handler:
-
- 	/*
- 	 * Now we are returning from the patched function to the original
--	 * caller A. We are free to use r0 and r12, and we can use r2 until we
-+	 * caller A. We are free to use r11, r12 and we can use r2 until we
- 	 * restore it.
- 	 */
-
- 	CURRENT_THREAD_INFO(r12, r1)
-
--	/* Save stack pointer into r0 */
--	mr	r0, r1
--
--	ld	r1, TI_livepatch_sp(r12)
-+	ld	r11, TI_livepatch_sp(r12)
-
- 	/* Check stack marker hasn't been trashed */
- 	lis     r2,  STACK_END_MAGIC@h
- 	ori     r2,  r2, STACK_END_MAGIC@l
--	ld	r12, -8(r1)
-+	ld	r12, -8(r11)
- 1:	tdne	r12, r2
- 	EMIT_BUG_ENTRY 1b, __FILE__, __LINE__ - 1, 0
-
- 	/* Restore LR & toc from livepatch stack */
--	ld	r12, -16(r1)
-+	ld	r12, -16(r11)
- 	mtlr	r12
--	ld	r2,  -24(r1)
-+	ld	r2,  -24(r11)
-
- 	/* Pop livepatch stack frame */
--	CURRENT_THREAD_INFO(r12, r0)
--	subi	r1, r1, 24
--	std	r1, TI_livepatch_sp(r12)
--
--	/* Restore real stack pointer */
--	mr	r1, r0
-+	CURRENT_THREAD_INFO(r12, r1)
-+	subi	r11, r11, 24
-+	std	r11, TI_livepatch_sp(r12)
-
- 	/* Return to original caller of live patched function */
- 	blr
---
-2.7.4
+Helge
