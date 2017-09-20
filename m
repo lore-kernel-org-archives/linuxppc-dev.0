@@ -1,43 +1,35 @@
-Return-Path: <daniel.black@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxj060W5TzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:32:05 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8K1UHbp092223
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 21:32:03 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d3e86spry-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Sep 2017 21:32:03 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <daniel.black@au1.ibm.com>;
- Wed, 20 Sep 2017 11:32:01 +1000
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8K1VxRX37421290
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:31:59 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8K1Vwpb013046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:31:58 +1000
-From: Daniel Black <daniel.black@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, pbonzini@redhat.com
-Cc: Daniel Black <daniel.black@au1.ibm.com>, trivial@kernel.org,
- abdhalee@linux.vnet.ibm.com, sachinp@linux.vnet.ibm.com, jschoenh@amazon.de
-Subject: [PATCH] KVM: KVM_MAX_IRQ_ROUTES only defined with
- CONFIG_HAVE_KVM_IRQ_ROUTING
-Date: Wed, 20 Sep 2017 11:31:39 +1000
-In-Reply-To: <1505579069.9665.22.camel@abdul.in.ibm.com>
-References: <1505579069.9665.22.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxjQx0fKzzDqR8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:51:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "James E . J . Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ Alexei Starovoitov <ast@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-kernel@vger.kernel.org, Jessica Yu <jeyu@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 3/5] powerpc64: Add .opd based function descriptor
+ dereference
+In-Reply-To: <20170919103154.GC401@jagdpanzerIV.localdomain>
+References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
+ <20170916035347.19705-4-sergey.senozhatsky@gmail.com>
+ <20170916094345.d332z3odceqiyrll@naverao1-tp.localdomain>
+ <87shfjkmxe.fsf@concordia.ellerman.id.au>
+ <20170919103154.GC401@jagdpanzerIV.localdomain>
+Date: Wed, 20 Sep 2017 11:51:49 +1000
+Message-ID: <878tha9lxm.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <20170920013139.13329-1-daniel.black@au.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,33 +39,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 36ae3c0a36b7 introduced code using KVM_MAX_IRQ_ROUTES. This
-define isn't available on all platforms. As it is dependent on
-CONFIG_HAVE_KVM_IRQ_ROUTING this define is used to enable the code
-in 36ae3c0a36b7.
+Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com> writes:
 
-Fixes: 36ae3c0a36b7 ("KVM: Don't accept obviously wrong gsi values via KVM_IRQFD")
-Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Suggested-by: Jan H. Schönherr <jschoenh@amazon.de>
-Signed-off-by: Daniel Black <daniel.black@au.ibm.com>
----
- virt/kvm/eventfd.c | 2 ++
- 1 file changed, 2 insertions(+)
+> On (09/19/17 20:22), Michael Ellerman wrote:
+>> > On 2017/09/16 12:53PM, Sergey Senozhatsky wrote:
+>> >> We are moving towards separate kernel and module function descriptor
+>> >> dereference callbacks. This patch enables it for powerpc64.
+>> >> 
+>> >> For pointers that belong to the kernel
+>> >> -  Added __start_opd and __end_opd pointers, to track the kernel
+>> >>    .opd section address range;
+>> >> 
+>> >> -  Added dereference_kernel_function_descriptor(). Now we
+>> >>    will dereference only function pointers that are within
+>> >>    [__start_opd, __end_opd];
+>> >> 
+>> >> For pointers that belong to a module
+>> >> -  Added dereference_module_function_descriptor() to handle module
+>> >>    function descriptor dereference. Now we will dereference only
+>> >>    pointers that are within [module->opd.start, module->opd.end].
+>> >
+>> > Would it be simpler to just use kernel_text_address() and dereference 
+>> > everything else? See commit 83e840c770f2c5 ("powerpc64/elfv1: Only 
+>> > dereference function descriptor for non-text symbols") for a related 
+>> > patch.
+>> 
+>> Yeah that would be a lot simpler and probably work perfectly well.
+>
+> unlike ppc_function_entry(), printk() can get called on any symbol,
+> not just function pointers.
+>
+> for example,
+>
+> cat /proc/kallsyms | grep shrinker_rwsem
+> ffffffff81a4b1e0 d shrinker_rwsem
 
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index c608ab4..75910dd 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -565,8 +565,10 @@ kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
- {
- 	if (args->flags & ~(KVM_IRQFD_FLAG_DEASSIGN | KVM_IRQFD_FLAG_RESAMPLE))
- 		return -EINVAL;
-+#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
- 	if (args->gsi >= KVM_MAX_IRQ_ROUTES)
- 		return -EINVAL;
-+#endif
- 
- 	if (args->flags & KVM_IRQFD_FLAG_DEASSIGN)
- 		return kvm_irqfd_deassign(kvm, args);
--- 
-2.9.5
+Yep, good point. So your patch is probably good then. Maybe someone
+other than me can find time to test it ;)
+
+cheers
