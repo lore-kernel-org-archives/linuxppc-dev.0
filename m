@@ -1,20 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxxrh3n0xzDqZs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 21:11:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxySZ433VzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 21:39:10 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Bhumika Goyal <bhumirks@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: make irq_chip const, __initdata and __initconst
-In-Reply-To: <alpine.DEB.2.20.1709200833320.4638@hadrien>
-References: <1505743967-19448-1-git-send-email-bhumirks@gmail.com>
- <87o9q5lwgq.fsf@concordia.ellerman.id.au>
- <alpine.DEB.2.20.1709200833320.4638@hadrien>
-Date: Wed, 20 Sep 2017 21:11:31 +1000
-Message-ID: <87efr1lj4s.fsf@concordia.ellerman.id.au>
+To: Rob Herring <robh@kernel.org>, abdul <abdhalee@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ sachinp <sachinp@linux.vnet.ibm.com>
+Subject: Re: [mainline][DLPAR][Oops] OF: ERROR: Bad of_node_put() on /cpus
+In-Reply-To: <CAL_JsqLXpU3kr7bD0NYZhYBbzxmGzqPL3j0jfLLMpSmXwPGvOw@mail.gmail.com>
+References: <1505473476.9665.13.camel@abdul.in.ibm.com>
+ <CAL_JsqLXpU3kr7bD0NYZhYBbzxmGzqPL3j0jfLLMpSmXwPGvOw@mail.gmail.com>
+Date: Wed, 20 Sep 2017 21:39:05 +1000
+Message-ID: <87bmm5lhuu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,33 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Julia Lawall <julia.lawall@lip6.fr> writes:
+Rob Herring <robh@kernel.org> writes:
 
-> On Wed, 20 Sep 2017, Michael Ellerman wrote:
+> On Fri, Sep 15, 2017 at 6:04 AM, abdul <abdhalee@linux.vnet.ibm.com> wrote:
+>> Hi,
+>>
+>> Mainline kernel panics during DLPAR CPU add/remove operation.
+>>
+>> Machine Type: Power8 PowerVM LPAR
+>> kernel 4.13.0
 >
->> Bhumika Goyal <bhumirks@gmail.com> writes:
->>
->> > Make ehv_pic_irq_chip, mpic_ipi_chip and mpic_tm_chip const as they are
->> > used only as a copy operation. This usage is during init, so make them
->> > __initconst too.
->> > Make mpic_ipi_chip __initdata as it is only modified during the init
->> > phase and there is no reference of it anywhere after init.
->>
->> The change log doesn't seem to match the code.
->>
->> It's mpic_tm_chip which you marked __initdata, and that looks wrong, as
->> we keep a pointer to it here:
->>
->> 	mpic->hc_tm = mpic_tm_chip;
->
-> This looks like a memory copy.
+> Did 4.12 work or when was it last working? I'm not seeing anything
+> recent in the DT code that looks suspicious.
 
-Yes you're right.
+I'm pretty sure it's:
 
-That's pretty horrible given the size of struct irq_chip, but it's not a
-bug in this patch.
+int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
+{
+	int rc;
 
-There are 5 struct irq_chip's embedded in struct mpic, it must be
-enormous!
+	dn->parent = parent;
+
+	rc = of_attach_node(dn);
+	if (rc) {
+		printk(KERN_ERR "Failed to add device node %pOF\n", dn);
+		return rc;
+	}
+
+	of_node_put(dn->parent);
+HERE    ^^^^^^^^^^
+
+	return 0;
+}
+
+
+Prior to 215ee763f8cb ("powerpc: pseries: remove dlpar_attach_node
+dependency on full path"), we re-looked up the parent, and got another
+reference on it. That meant the put before the return there was correct.
+But now it's not because the caller has a reference to parent but it's
+not ours to drop.
+
+Testing a fix, will report back.
 
 cheers
