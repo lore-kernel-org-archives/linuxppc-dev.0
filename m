@@ -1,9 +1,9 @@
 Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy9zx0kF2zDqYG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 06:18:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy9zy1xkwzDrFp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 06:18:37 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -14,9 +14,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
  mgorman@techsingularity.net, steven.sistare@oracle.com,
  daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v9 09/12] mm/kasan: kasan specific map populate function
-Date: Wed, 20 Sep 2017 16:17:11 -0400
-Message-Id: <20170920201714.19817-10-pasha.tatashin@oracle.com>
+Subject: [PATCH v9 10/12] x86/kasan: use kasan_map_populate()
+Date: Wed, 20 Sep 2017 16:17:12 -0400
+Message-Id: <20170920201714.19817-11-pasha.tatashin@oracle.com>
 In-Reply-To: <20170920201714.19817-1-pasha.tatashin@oracle.com>
 References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,121 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During early boot, kasan uses vmemmap_populate() to establish its shadow
-memory. But, that interface is intended for struct pages use.
+To optimize the performance of struct page initialization,
+vmemmap_populate() will no longer zero memory.
 
-Because of the current project, vmemmap won't be zeroed during allocation,
-but kasan expects that memory to be zeroed. We are adding a new
-kasan_map_populate() function to resolve this difference.
+Therefore, we must use a new interface to allocate and map kasan shadow
+memory, that also zeroes memory for us.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 ---
- arch/arm64/include/asm/pgtable.h |  3 ++
- include/linux/kasan.h            |  2 ++
- mm/kasan/kasan_init.c            | 67 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 72 insertions(+)
+ arch/x86/mm/kasan_init_64.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index bc4e92337d16..d89713f04354 100644
---- a/arch/arm64/include/asm/pgtable.h
-+++ b/arch/arm64/include/asm/pgtable.h
-@@ -381,6 +381,9 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
- 				 PUD_TYPE_TABLE)
- #endif
+diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
+index bc84b73684b7..2db95efd208e 100644
+--- a/arch/x86/mm/kasan_init_64.c
++++ b/arch/x86/mm/kasan_init_64.c
+@@ -23,7 +23,7 @@ static int __init map_range(struct range *range)
+ 	start = (unsigned long)kasan_mem_to_shadow(pfn_to_kaddr(range->start));
+ 	end = (unsigned long)kasan_mem_to_shadow(pfn_to_kaddr(range->end));
  
-+#define pmd_large(pmd)		pmd_sect(pmd)
-+#define pud_large(pud)		pud_sect(pud)
-+
- static inline void set_pmd(pmd_t *pmdp, pmd_t pmd)
- {
- 	*pmdp = pmd;
-diff --git a/include/linux/kasan.h b/include/linux/kasan.h
-index a5c7046f26b4..7e13df1722c2 100644
---- a/include/linux/kasan.h
-+++ b/include/linux/kasan.h
-@@ -78,6 +78,8 @@ size_t kasan_metadata_size(struct kmem_cache *cache);
- 
- bool kasan_save_enable_multi_shot(void);
- void kasan_restore_multi_shot(bool enabled);
-+int __meminit kasan_map_populate(unsigned long start, unsigned long end,
-+				 int node);
- 
- #else /* CONFIG_KASAN */
- 
-diff --git a/mm/kasan/kasan_init.c b/mm/kasan/kasan_init.c
-index 554e4c0f23a2..57a973f05f63 100644
---- a/mm/kasan/kasan_init.c
-+++ b/mm/kasan/kasan_init.c
-@@ -197,3 +197,70 @@ void __init kasan_populate_zero_shadow(const void *shadow_start,
- 		zero_p4d_populate(pgd, addr, next);
- 	} while (pgd++, addr = next, addr != end);
+-	return vmemmap_populate(start, end, NUMA_NO_NODE);
++	return kasan_map_populate(start, end, NUMA_NO_NODE);
  }
-+
-+/* Creates mappings for kasan during early boot. The mapped memory is zeroed */
-+int __meminit kasan_map_populate(unsigned long start, unsigned long end,
-+				 int node)
-+{
-+	unsigned long addr, pfn, next;
-+	unsigned long long size;
-+	pgd_t *pgd;
-+	p4d_t *p4d;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	int ret;
-+
-+	ret = vmemmap_populate(start, end, node);
-+	/*
-+	 * We might have partially populated memory, so check for no entries,
-+	 * and zero only those that actually exist.
-+	 */
-+	for (addr = start; addr < end; addr = next) {
-+		pgd = pgd_offset_k(addr);
-+		if (pgd_none(*pgd)) {
-+			next = pgd_addr_end(addr, end);
-+			continue;
-+		}
-+
-+		p4d = p4d_offset(pgd, addr);
-+		if (p4d_none(*p4d)) {
-+			next = p4d_addr_end(addr, end);
-+			continue;
-+		}
-+
-+		pud = pud_offset(p4d, addr);
-+		if (pud_none(*pud)) {
-+			next = pud_addr_end(addr, end);
-+			continue;
-+		}
-+		if (pud_large(*pud)) {
-+			/* This is PUD size page */
-+			next = pud_addr_end(addr, end);
-+			size = PUD_SIZE;
-+			pfn = pud_pfn(*pud);
-+		} else {
-+			pmd = pmd_offset(pud, addr);
-+			if (pmd_none(*pmd)) {
-+				next = pmd_addr_end(addr, end);
-+				continue;
-+			}
-+			if (pmd_large(*pmd)) {
-+				/* This is PMD size page */
-+				next = pmd_addr_end(addr, end);
-+				size = PMD_SIZE;
-+				pfn = pmd_pfn(*pmd);
-+			} else {
-+				pte = pte_offset_kernel(pmd, addr);
-+				next = addr + PAGE_SIZE;
-+				if (pte_none(*pte))
-+					continue;
-+				/* This is base size page */
-+				size = PAGE_SIZE;
-+				pfn = pte_pfn(*pte);
-+			}
-+		}
-+		memset(phys_to_virt(PFN_PHYS(pfn)), 0, size);
-+	}
-+	return ret;
-+}
+ 
+ static void __init clear_pgds(unsigned long start,
+@@ -136,9 +136,9 @@ void __init kasan_init(void)
+ 		kasan_mem_to_shadow((void *)PAGE_OFFSET + MAXMEM),
+ 		kasan_mem_to_shadow((void *)__START_KERNEL_map));
+ 
+-	vmemmap_populate((unsigned long)kasan_mem_to_shadow(_stext),
+-			(unsigned long)kasan_mem_to_shadow(_end),
+-			NUMA_NO_NODE);
++	kasan_map_populate((unsigned long)kasan_mem_to_shadow(_stext),
++			   (unsigned long)kasan_mem_to_shadow(_end),
++			   NUMA_NO_NODE);
+ 
+ 	kasan_populate_zero_shadow(kasan_mem_to_shadow((void *)MODULES_END),
+ 			(void *)KASAN_SHADOW_END);
 -- 
 2.14.1
