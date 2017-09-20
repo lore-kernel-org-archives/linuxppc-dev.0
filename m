@@ -1,29 +1,28 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
- [IPv6:2607:f8b0:4001:c06::236])
+Return-Path: <deller@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy9SK3sc8zDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 05:54:40 +1000 (AEST)
-Received: by mail-io0-x236.google.com with SMTP id v36so6204334ioi.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 12:54:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy9wN0zGvzDqTc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 06:15:31 +1000 (AEST)
+Subject: Re: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>
+Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
+ Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
+From: Helge Deller <deller@gmx.de>
+Message-ID: <b0665fe7-fc57-7795-3cee-f33cd806b850@gmx.de>
+Date: Wed, 20 Sep 2017 22:14:49 +0200
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1505893239.30180.24.camel@abdul.in.ibm.com>
-References: <1505198479.10243.23.camel@abdul>
- <1505893239.30180.24.camel@abdul.in.ibm.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 20 Sep 2017 12:54:37 -0700
-Message-ID: <CAGXu5jKMGuc-i0vfZx3TYx4iq35PCF0T1y9zv9A=k7ieES2Qkg@mail.gmail.com>
-Subject: Re: [linux-next][Oops] memory hot-unplug results fault instruction
- address at /include/linux/list.h:104
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- sachinp <sachinp@linux.vnet.ibm.com>,
- stephen Rothwell <sfr@canb.auug.org.au>,
- linux-next <linux-next@vger.kernel.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,56 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 20, 2017 at 12:40 AM, Abdul Haleem
-<abdhalee@linux.vnet.ibm.com> wrote:
-> On Tue, 2017-09-12 at 12:11 +0530, abdul wrote:
->> Hi,
->>
->> Memory hot-unplug on PowerVM LPAR running next-20170911 results in
->> Faulting instruction address: 0xc0000000002b56c4
->>
->> which maps to the below code path:
->>
->> 0xc0000000002b56c4 is in __rmqueue (./include/linux/list.h:104).
->> 99     * This is only for internal list manipulation where we know
->> 100    * the prev/next entries already!
->> 101    */
->> 102   static inline void __list_del(struct list_head * prev, struct
->> list_head * next)
->> 103   {
->> 104           next->prev = prev;
->> 105           WRITE_ONCE(prev->next, next);
->> 106   }
->> 107
->> 108   /**
->>
->
-> I see another kernel Oops when running transparent hugepages
-> de-fragmentation test.
->
-> And the faulty instruction address again pointing to same code line
-> 0xc00000000026f9f4 is in compaction_alloc (./include/linux/list.h:104)
->
-> steps to recreate:
-> -----------------
-> 1. Enable transparent hugepages ("always")
-> 2. Turn off the defrag $ echo 0 > khugepaged/defrag
-> 3. Write random to memory path
-> 4. Set huge pages numbers
-> 5. Turn on defrag $ echo 1 > khugepaged/defrag
->
->
-> new trace:
-> ----------
-> Unable to handle kernel paging request for data at address
-> 0x5deadbeef0000108
+On 20.09.2017 18:29, Sergey Senozhatsky wrote:
+>          This patch set attempts to move ia64/ppc64/parisc64 C function
+> pointer ABI details out of printk() to arch code. Function dereference
+> code now checks if a pointer belongs to a .opd ELF section and dereferences
+> that pointer only if it does. The kernel and modules have their own .opd
+> sections that's why I use two different ARCH functions: for kernel and
+> for module pointer dereference.
+> ...> *** A BIG NOTE ***
+>          I don't own ia64/ppc64/parisc64 hardware, so the patches are not
+>          tested. Sorry about that!
 
-This looks like use-after-list-removal, that value appears to be LIST_POISON1.
 
-Try enabling CONFIG_DEBUG_LIST to see if you get better details?
+I just now tested your patch series successfully on parisc64.
 
--Kees
+You may add to the whole series:
+Tested-by: Helge Deller <deller@gmx.de> # parisc64
 
--- 
-Kees Cook
-Pixel Security
+  
+> Another note:
+>          I need to check what is BPF symbol lookup and do we need to
+>          do any dereference there.
+
+Not relevant for parisc, since we don't support it yet.
+
+Helge
