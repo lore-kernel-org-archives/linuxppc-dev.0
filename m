@@ -1,30 +1,34 @@
-Return-Path: <deller@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <joserz@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy6nf6myDzDqXy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 03:54:30 +1000 (AEST)
-Subject: Re: [RFC][PATCH v2 7/7] checkpatch: add pF/pf deprecation warning
-To: Joe Perches <joe@perches.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>
-Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
- <20170920162910.32053-8-sergey.senozhatsky@gmail.com>
- <1505929138.12311.5.camel@perches.com>
-From: Helge Deller <deller@gmx.de>
-Message-ID: <ddf9b54b-34d9-c1e2-e34f-a1cc055b8cf7@gmx.de>
-Date: Wed, 20 Sep 2017 19:53:49 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy6pr1CHkzDqjK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 03:55:31 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8KHs4cI021730
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:55:29 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d3umvdfna-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:55:28 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
+ Wed, 20 Sep 2017 11:55:28 -0600
+Date: Wed, 20 Sep 2017 14:55:17 -0300
+From: joserz@linux.vnet.ibm.com
+To: Michael Ellerman <mpe@ellerman.id.au>, andrew.donnellan@au1.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, ruscur@russell.cc
+Subject: Re: [PATCH] powerpc/eeh: Disable EEH stack dump by default
+References: <1505831139-6053-1-git-send-email-joserz@linux.vnet.ibm.com>
+ <87r2v2kmcz.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1505929138.12311.5.camel@perches.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87r2v2kmcz.fsf@concordia.ellerman.id.au>
+Message-Id: <20170920175517.GA19761@pacoca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,20 +38,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20.09.2017 19:38, Joe Perches wrote:
-> On Thu, 2017-09-21 at 01:29 +0900, Sergey Senozhatsky wrote:
->> We deprecated '%pF/%pf' printk specifiers, since '%pS/%ps' is now smart
->> enough to handle function pointer dereference on platforms where such
->> dereference is required.
->>
->> checkpatch warning example:
->>
->> WARNING: Use '%pS/%ps' instead. This pointer extension was deprecated: '%pF'
+On Wed, Sep 20, 2017 at 02:47:08PM +1000, Michael Ellerman wrote:
+> Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com> writes:
 > 
-> If this series is accepted,  I think this message
-> is unclear and would prefer something like:
+> > Today, each EEH causes a stack dump to be printed in the logs. In
+> > production environment it's not quite necessary. Thus, this patch
+> 
+> I'm unconvinced. A production environment is exactly where you don't
+> want to be getting an EEH, and so if you *do* then every bit of
+> information is helpful.
+> 
+> > For example, instead of the following:
+> >
+> > [  131.778661] EEH: Frozen PHB#2-PE#fd detected
+> > [  131.778672] EEH: PE location: N/A, PHB location: N/A
+> > [  131.778677] CPU: 21 PID: 10098 Comm: lspci Not tainted ...
+> > [  131.778680] Call Trace:
+> > [  131.778686] [c0000003a140bab0] [c000000000beb58c] dump_stack+...
+> > <snip ~10 lines>
+> > [  131.778770] EEH: Detected PCI bus error on PHB#2-PE#fd
+> > [  131.778775] EEH: This PCI device has failed 1 times in the last hour
+> > ...
+> >
+> > we will have this by default:
+> >
+> > [12777.175880] EEH: Frozen PHB#2-PE#fd detected
+> > [12777.175893] EEH: PE location: N/A, PHB location: N/A
+> > [12777.175922] EEH: Detected PCI bus error on PHB#2-PE#fd
+> > [12777.175931] EEH: This PCI device has failed 2 times in the last hour
+> 
+> *What* PCI device?
+> 
+> How am I supposed to know what device/driver just failed? If I had the
+> stack trace I could probably at least work it out based on the driver
+> involved.
+> 
+> cheers
+> 
 
-Is it worth to mention, that it's still needed in older kernels?
-Just in case some patch get's backported.
-
-Helge
+Thank you guys! More people told me it's important to keep it as is.
+Please, disregard this patch.
