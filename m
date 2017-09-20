@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz2My0QsVzDsN0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:38:53 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id i130so86197pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 22:38:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xz2N056mrzDsMT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:38:56 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id f84so57959pfj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 22:38:56 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -14,10 +14,10 @@ Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
  David Laight <David.Laight@ACULAB.COM>,
  Christophe LEROY <christophe.leroy@c-s.fr>,
  Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX instruction for
- long bytes comparision
-Date: Thu, 21 Sep 2017 07:34:39 +0800
-Message-Id: <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 3/3] powerpc:selftest update memcmp_64 selftest for VMX
+ implementation
+Date: Thu, 21 Sep 2017 07:34:40 +0800
+Message-Id: <1505950480-14830-4-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,228 +31,208 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patch add VMX primitives to do memcmp() in case the compare size
-exceeds 4K bytes.
+This patch adjust selftest memcmp_64 so that memcmp selftest can be
+compiled successfully.
 
-Test result with following test program(replace the "^>" with ""):
-------
-># cat tools/testing/selftests/powerpc/stringloops/memcmp.c
->#include <malloc.h>
->#include <stdlib.h>
->#include <string.h>
->#include <time.h>
->#include "utils.h"
->#define SIZE (1024 * 1024 * 900)
->#define ITERATIONS 40
-
-int test_memcmp(const void *s1, const void *s2, size_t n);
-
-static int testcase(void)
-{
-        char *s1;
-        char *s2;
-        unsigned long i;
-
-        s1 = memalign(128, SIZE);
-        if (!s1) {
-                perror("memalign");
-                exit(1);
-        }
-
-        s2 = memalign(128, SIZE);
-        if (!s2) {
-                perror("memalign");
-                exit(1);
-        }
-
-        for (i = 0; i < SIZE; i++)  {
-                s1[i] = i & 0xff;
-                s2[i] = i & 0xff;
-        }
-        for (i = 0; i < ITERATIONS; i++) {
-		int ret = test_memcmp(s1, s2, SIZE);
-
-		if (ret) {
-			printf("return %d at[%ld]! should have returned zero\n", ret, i);
-			abort();
-		}
-	}
-
-        return 0;
-}
-
-int main(void)
-{
-        return test_harness(testcase, "memcmp");
-}
-------
-Without VMX patch:
-       7.435191479 seconds time elapsed                                          ( +- 0.51% )
-With VMX patch:
-       6.802038938 seconds time elapsed                                          ( +- 0.56% )
-		There is ~+8% improvement.
-
-However I am not aware whether there is use case in kernel for memcmp on
-large size yet.
+It also adds testcases for memcmp over 4K bytes size.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/include/asm/asm-prototypes.h |  2 +-
- arch/powerpc/lib/copypage_power7.S        |  2 +-
- arch/powerpc/lib/memcmp_64.S              | 82 +++++++++++++++++++++++++++++++
- arch/powerpc/lib/memcpy_power7.S          |  2 +-
- arch/powerpc/lib/vmx-helper.c             |  2 +-
- 5 files changed, 86 insertions(+), 4 deletions(-)
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      |  2 +-
+ .../selftests/powerpc/stringloops/asm/ppc_asm.h    | 31 +++++++++++
+ .../testing/selftests/powerpc/stringloops/memcmp.c | 63 +++++++++++++++-------
+ 3 files changed, 75 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 7330150..e6530d8 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -49,7 +49,7 @@ void __trace_hcall_exit(long opcode, unsigned long retval,
- /* VMX copying */
- int enter_vmx_usercopy(void);
- int exit_vmx_usercopy(void);
--int enter_vmx_copy(void);
-+int enter_vmx_ops(void);
- void * exit_vmx_copy(void *dest);
- 
- /* Traps */
-diff --git a/arch/powerpc/lib/copypage_power7.S b/arch/powerpc/lib/copypage_power7.S
-index ca5fc8f..9e7729e 100644
---- a/arch/powerpc/lib/copypage_power7.S
-+++ b/arch/powerpc/lib/copypage_power7.S
-@@ -60,7 +60,7 @@ _GLOBAL(copypage_power7)
- 	std	r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
- 	std	r0,16(r1)
- 	stdu	r1,-STACKFRAMESIZE(r1)
--	bl	enter_vmx_copy
-+	bl	enter_vmx_ops
- 	cmpwi	r3,0
- 	ld	r0,STACKFRAMESIZE+16(r1)
- 	ld	r3,STK_REG(R31)(r1)
-diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-index 6dccfb8..40218fc 100644
---- a/arch/powerpc/lib/memcmp_64.S
-+++ b/arch/powerpc/lib/memcmp_64.S
-@@ -162,6 +162,13 @@ _GLOBAL(memcmp)
+diff --git a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+index 80d34a9..a9da02d 100644
+--- a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
++++ b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+@@ -35,7 +35,7 @@
+ 	li	r3,0
  	blr
  
- .Llong:
-+#ifdef CONFIG_ALTIVEC
-+	/* Try to use vmx loop if length is larger than 4K */
-+	cmpldi  cr6,r5,4096
-+	bgt	cr6,.Lvmx_cmp
-+
-+.Llong_novmx_cmp:
-+#endif
- 	li	off8,8
- 	li	off16,16
- 	li	off24,24
-@@ -319,4 +326,79 @@ _GLOBAL(memcmp)
- 8:
+-FUNC_START(enter_vmx_copy)
++FUNC_START(enter_vmx_ops)
+ 	li	r3,1
  	blr
  
-+#ifdef CONFIG_ALTIVEC
-+.Lvmx_cmp:
-+	mflr    r0
-+	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
-+	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
-+	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
-+	std     r0,16(r1)
-+	stdu    r1,-STACKFRAMESIZE(r1)
-+	bl      enter_vmx_ops
-+	cmpwi   cr1,r3,0
-+	ld      r0,STACKFRAMESIZE+16(r1)
-+	ld      r3,STK_REG(R31)(r1)
-+	ld      r4,STK_REG(R30)(r1)
-+	ld      r5,STK_REG(R29)(r1)
-+	addi	r1,r1,STACKFRAMESIZE
-+	mtlr    r0
-+	beq     cr1,.Llong_novmx_cmp
+diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
+index 11bece8..c8bb360 100644
+--- a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
++++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
+@@ -1,3 +1,5 @@
++#ifndef _PPC_ASM_H
++#define __PPC_ASM_H
+ #include <ppc-asm.h>
+ 
+ #ifndef r1
+@@ -5,3 +7,32 @@
+ #endif
+ 
+ #define _GLOBAL(A) FUNC_START(test_ ## A)
 +
-+3:
-+	/* Enter with src/dst address 8 bytes aligned, and len is
-+	 * no less than 4KB. Need to align with 16 bytes further.
-+	 */
-+	andi.	rA,r3,8
-+	beq	4f
-+	LD	rA,0,r3
-+	LD	rB,0,r4
-+	cmpld	cr0,rA,rB
-+	bne	cr0,.LcmpAB_lightweight
++#define CONFIG_ALTIVEC
 +
-+	addi	r3,r3,8
-+	addi	r4,r4,8
-+	addi	r5,r5,-8
++#define R14 r14
++#define R15 r15
++#define R16 r16
++#define R17 r17
++#define R18 r18
++#define R19 r19
++#define R20 r20
++#define R21 r21
++#define R22 r22
++#define R29 r29
++#define R30 r30
++#define R31 r31
 +
-+4:
-+	/* compare 32 bytes for each loop */
-+	srdi	r0,r5,5
-+	mtctr	r0
-+	andi.	r5,r5,31
-+	li	off16,16
++#define STACKFRAMESIZE	256
++#define STK_REG(i)	(112 + ((i)-14)*8)
 +
-+.balign 16
-+5:
-+	lvx 	v0,0,r3
-+	lvx 	v1,0,r4
-+	vcmpequd. v0,v0,v1
-+	bf	24,7f
-+	lvx 	v0,off16,r3
-+	lvx 	v1,off16,r4
-+	vcmpequd. v0,v0,v1
-+	bf	24,6f
-+	addi	r3,r3,32
-+	addi	r4,r4,32
-+	bdnz	5b
++#define _GLOBAL(A) FUNC_START(test_ ## A)
++#define _GLOBAL_TOC(A) _GLOBAL(A)
 +
-+	cmpdi	r5,0
-+	beq	.Lzero
-+	b	.L8bytes_aligned
++#define PPC_MTOCRF(A, B)	mtocrf A, B
 +
-+6:
-+	addi	r3,r3,16
-+	addi	r4,r4,16
++FUNC_START(enter_vmx_ops)
++	li      r3, 1
++	blr
 +
-+7:
-+	LD	rA,0,r3
-+	LD	rB,0,r4
-+	cmpld	cr0,rA,rB
-+	bne	cr0,.LcmpAB_lightweight
-+
-+	li	off8,8
-+	LD	rA,off8,r3
-+	LD	rB,off8,r4
-+	cmpld	cr0,rA,rB
-+	bne	cr0,.LcmpAB_lightweight
-+	b	.Lzero
 +#endif
- EXPORT_SYMBOL(memcmp)
-diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
-index 193909a..682e386 100644
---- a/arch/powerpc/lib/memcpy_power7.S
-+++ b/arch/powerpc/lib/memcpy_power7.S
-@@ -230,7 +230,7 @@ _GLOBAL(memcpy_power7)
- 	std	r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
- 	std	r0,16(r1)
- 	stdu	r1,-STACKFRAMESIZE(r1)
--	bl	enter_vmx_copy
-+	bl	enter_vmx_ops
- 	cmpwi	cr1,r3,0
- 	ld	r0,STACKFRAMESIZE+16(r1)
- 	ld	r3,STK_REG(R31)(r1)
-diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
-index bf925cd..923a9ab 100644
---- a/arch/powerpc/lib/vmx-helper.c
-+++ b/arch/powerpc/lib/vmx-helper.c
-@@ -53,7 +53,7 @@ int exit_vmx_usercopy(void)
+diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp.c b/tools/testing/selftests/powerpc/stringloops/memcmp.c
+index 30b1222..4826669 100644
+--- a/tools/testing/selftests/powerpc/stringloops/memcmp.c
++++ b/tools/testing/selftests/powerpc/stringloops/memcmp.c
+@@ -1,20 +1,27 @@
+ #include <malloc.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <time.h>
+ #include "utils.h"
+ 
+ #define SIZE 256
+ #define ITERATIONS 10000
+ 
++#define LARGE_SIZE (5 * 1024)
++#define LARGE_ITERATIONS 1000
++#define LARGE_MAX_OFFSET 16
++#define LARGE_SIZE_START 4096
++
+ int test_memcmp(const void *s1, const void *s2, size_t n);
+ 
+ /* test all offsets and lengths */
+-static void test_one(char *s1, char *s2)
++static void test_one(char *s1, char *s2, unsigned long max_offset,
++		unsigned long size_start)
+ {
+ 	unsigned long offset, size;
+ 
+-	for (offset = 0; offset < SIZE; offset++) {
+-		for (size = 0; size < (SIZE-offset); size++) {
++	for (offset = 0; offset < max_offset; offset++) {
++		for (size = size_start; size < (SIZE-offset); size++) {
+ 			int x, y;
+ 			unsigned long i;
+ 
+@@ -38,66 +45,82 @@ static void test_one(char *s1, char *s2)
+ 	}
+ }
+ 
+-static int testcase(void)
++static int testcase(bool islarge)
+ {
+ 	char *s1;
+ 	char *s2;
+ 	unsigned long i;
+ 
+-	s1 = memalign(128, SIZE);
++	unsigned long alloc_size = islarge ? LARGE_SIZE : SIZE;
++	int iterations = islarge ? LARGE_ITERATIONS : ITERATIONS;
++
++	s1 = memalign(128, alloc_size);
+ 	if (!s1) {
+ 		perror("memalign");
+ 		exit(1);
+ 	}
+ 
+-	s2 = memalign(128, SIZE);
++	s2 = memalign(128, alloc_size);
+ 	if (!s2) {
+ 		perror("memalign");
+ 		exit(1);
+ 	}
+ 
+-	srandom(1);
++	srandom(time(0));
+ 
+-	for (i = 0; i < ITERATIONS; i++) {
++	for (i = 0; i < iterations; i++) {
+ 		unsigned long j;
+ 		unsigned long change;
+ 
+-		for (j = 0; j < SIZE; j++)
++		for (j = 0; j < alloc_size; j++)
+ 			s1[j] = random();
+ 
+-		memcpy(s2, s1, SIZE);
++		memcpy(s2, s1, alloc_size);
+ 
+ 		/* change one byte */
+-		change = random() % SIZE;
++		change = random() % alloc_size;
+ 		s2[change] = random() & 0xff;
+ 
+-		test_one(s1, s2);
++		if (islarge)
++			test_one(s1, s2, LARGE_MAX_OFFSET, LARGE_SIZE_START);
++		else
++			test_one(s1, s2, SIZE, 0);
+ 	}
+ 
+-	srandom(1);
++	srandom(time(0));
+ 
+-	for (i = 0; i < ITERATIONS; i++) {
++	for (i = 0; i < iterations; i++) {
+ 		unsigned long j;
+ 		unsigned long change;
+ 
+-		for (j = 0; j < SIZE; j++)
++		for (j = 0; j < alloc_size; j++)
+ 			s1[j] = random();
+ 
+-		memcpy(s2, s1, SIZE);
++		memcpy(s2, s1, alloc_size);
+ 
+ 		/* change multiple bytes, 1/8 of total */
+-		for (j = 0; j < SIZE / 8; j++) {
+-			change = random() % SIZE;
++		for (j = 0; j < alloc_size / 8; j++) {
++			change = random() % alloc_size;
+ 			s2[change] = random() & 0xff;
+ 		}
+ 
+-		test_one(s1, s2);
++		if (islarge)
++			test_one(s1, s2, LARGE_MAX_OFFSET, LARGE_SIZE_START);
++		else
++			test_one(s1, s2, SIZE, 0);
+ 	}
+ 
  	return 0;
  }
  
--int enter_vmx_copy(void)
-+int enter_vmx_ops(void)
++static int testcases(void)
++{
++	testcase(0);
++	testcase(1);
++	return 0;
++}
++
+ int main(void)
  {
- 	if (in_interrupt())
- 		return 0;
+-	return test_harness(testcase, "memcmp");
++	return test_harness(testcases, "memcmp");
+ }
 -- 
 1.8.3.1
