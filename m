@@ -1,8 +1,8 @@
 Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyB030P9vzDrCX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyB026tpxzDr5G
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 06:18:42 +1000 (AEST)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
@@ -14,9 +14,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
  mgorman@techsingularity.net, steven.sistare@oracle.com,
  daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v9 05/12] mm: defining memblock_virt_alloc_try_nid_raw
-Date: Wed, 20 Sep 2017 16:17:07 -0400
-Message-Id: <20170920201714.19817-6-pasha.tatashin@oracle.com>
+Subject: [PATCH v9 12/12] mm: stop zeroing memory during allocation in vmemmap
+Date: Wed, 20 Sep 2017 16:17:14 -0400
+Message-Id: <20170920201714.19817-13-pasha.tatashin@oracle.com>
 In-Reply-To: <20170920201714.19817-1-pasha.tatashin@oracle.com>
 References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,236 +28,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* A new variant of memblock_virt_alloc_* allocations:
-memblock_virt_alloc_try_nid_raw()
-    - Does not zero the allocated memory
-    - Does not panic if request cannot be satisfied
+vmemmap_alloc_block() will no longer zero the block, so zero memory
+at its call sites for everything except struct pages.  Struct page memory
+is zero'd by struct page initialization.
 
-* optimize early system hash allocations
-
-Clients can call alloc_large_system_hash() with flag: HASH_ZERO to specify
-that memory that was allocated for system hash needs to be zeroed,
-otherwise the memory does not need to be zeroed, and client will initialize
-it.
-
-If memory does not need to be zero'd, call the new
-memblock_virt_alloc_raw() interface, and thus improve the boot performance.
-
-* debug for raw alloctor
-
-When CONFIG_DEBUG_VM is enabled, this patch sets all the memory that is
-returned by memblock_virt_alloc_try_nid_raw() to ones to ensure that no
-places excpect zeroed memory.
+Replace allocators in sprase-vmemmap to use the non-zeroing version. So,
+we will get the performance improvement by zeroing the memory in parallel
+when struct pages are zeroed.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
 Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
 Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 Reviewed-by: Bob Picco <bob.picco@oracle.com>
-Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- include/linux/bootmem.h | 27 ++++++++++++++++++++++
- mm/memblock.c           | 60 +++++++++++++++++++++++++++++++++++++++++++------
- mm/page_alloc.c         | 15 ++++++-------
- 3 files changed, 87 insertions(+), 15 deletions(-)
+ include/linux/mm.h  | 11 +++++++++++
+ mm/sparse-vmemmap.c | 15 +++++++--------
+ mm/sparse.c         |  6 +++---
+ 3 files changed, 21 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index e223d91b6439..ea30b3987282 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -160,6 +160,9 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
- #define BOOTMEM_ALLOC_ANYWHERE		(~(phys_addr_t)0)
- 
- /* FIXME: Move to memblock.h at a point where we remove nobootmem.c */
-+void *memblock_virt_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
-+				      phys_addr_t min_addr,
-+				      phys_addr_t max_addr, int nid);
- void *memblock_virt_alloc_try_nid_nopanic(phys_addr_t size,
- 		phys_addr_t align, phys_addr_t min_addr,
- 		phys_addr_t max_addr, int nid);
-@@ -176,6 +179,14 @@ static inline void * __init memblock_virt_alloc(
- 					    NUMA_NO_NODE);
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index a7bba4ce79ba..25848764570f 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2501,6 +2501,17 @@ static inline void *vmemmap_alloc_block_buf(unsigned long size, int node)
+ 	return __vmemmap_alloc_block_buf(size, node, NULL);
  }
  
-+static inline void * __init memblock_virt_alloc_raw(
-+					phys_addr_t size,  phys_addr_t align)
++static inline void *vmemmap_alloc_block_zero(unsigned long size, int node)
 +{
-+	return memblock_virt_alloc_try_nid_raw(size, align, BOOTMEM_LOW_LIMIT,
-+					    BOOTMEM_ALLOC_ACCESSIBLE,
-+					    NUMA_NO_NODE);
++	void *p = vmemmap_alloc_block(size, node);
++
++	if (!p)
++		return NULL;
++	memset(p, 0, size);
++
++	return p;
 +}
 +
- static inline void * __init memblock_virt_alloc_nopanic(
- 					phys_addr_t size, phys_addr_t align)
+ void vmemmap_verify(pte_t *, int, unsigned long, unsigned long);
+ int vmemmap_populate_basepages(unsigned long start, unsigned long end,
+ 			       int node);
+diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+index d1a39b8051e0..c2f5654e7c9d 100644
+--- a/mm/sparse-vmemmap.c
++++ b/mm/sparse-vmemmap.c
+@@ -41,7 +41,7 @@ static void * __ref __earlyonly_bootmem_alloc(int node,
+ 				unsigned long align,
+ 				unsigned long goal)
  {
-@@ -257,6 +268,14 @@ static inline void * __init memblock_virt_alloc(
- 	return __alloc_bootmem(size, align, BOOTMEM_LOW_LIMIT);
+-	return memblock_virt_alloc_try_nid(size, align, goal,
++	return memblock_virt_alloc_try_nid_raw(size, align, goal,
+ 					    BOOTMEM_ALLOC_ACCESSIBLE, node);
  }
  
-+static inline void * __init memblock_virt_alloc_raw(
-+					phys_addr_t size,  phys_addr_t align)
-+{
-+	if (!align)
-+		align = SMP_CACHE_BYTES;
-+	return __alloc_bootmem_nopanic(size, align, BOOTMEM_LOW_LIMIT);
-+}
-+
- static inline void * __init memblock_virt_alloc_nopanic(
- 					phys_addr_t size, phys_addr_t align)
+@@ -54,9 +54,8 @@ void * __meminit vmemmap_alloc_block(unsigned long size, int node)
+ 	if (slab_is_available()) {
+ 		struct page *page;
+ 
+-		page = alloc_pages_node(node,
+-			GFP_KERNEL | __GFP_ZERO | __GFP_RETRY_MAYFAIL,
+-			get_order(size));
++		page = alloc_pages_node(node, GFP_KERNEL | __GFP_RETRY_MAYFAIL,
++					get_order(size));
+ 		if (page)
+ 			return page_address(page);
+ 		return NULL;
+@@ -183,7 +182,7 @@ pmd_t * __meminit vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node)
  {
-@@ -309,6 +328,14 @@ static inline void * __init memblock_virt_alloc_try_nid(phys_addr_t size,
- 					  min_addr);
- }
- 
-+static inline void * __init memblock_virt_alloc_try_nid_raw(
-+			phys_addr_t size, phys_addr_t align,
-+			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
-+{
-+	return ___alloc_bootmem_node_nopanic(NODE_DATA(nid), size, align,
-+				min_addr, max_addr);
-+}
-+
- static inline void * __init memblock_virt_alloc_try_nid_nopanic(
- 			phys_addr_t size, phys_addr_t align,
- 			phys_addr_t min_addr, phys_addr_t max_addr, int nid)
-diff --git a/mm/memblock.c b/mm/memblock.c
-index 91205780e6b1..1f299fb1eb08 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -1327,7 +1327,6 @@ static void * __init memblock_virt_alloc_internal(
- 	return NULL;
- done:
- 	ptr = phys_to_virt(alloc);
--	memset(ptr, 0, size);
- 
- 	/*
- 	 * The min_count is set to 0 so that bootmem allocated blocks
-@@ -1340,6 +1339,45 @@ static void * __init memblock_virt_alloc_internal(
- 	return ptr;
- }
- 
-+/**
-+ * memblock_virt_alloc_try_nid_raw - allocate boot memory block without zeroing
-+ * memory and without panicking
-+ * @size: size of memory block to be allocated in bytes
-+ * @align: alignment of the region and block's size
-+ * @min_addr: the lower bound of the memory region from where the allocation
-+ *	  is preferred (phys address)
-+ * @max_addr: the upper bound of the memory region from where the allocation
-+ *	      is preferred (phys address), or %BOOTMEM_ALLOC_ACCESSIBLE to
-+ *	      allocate only from memory limited by memblock.current_limit value
-+ * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-+ *
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. Does not zero allocated memory, does not panic if request
-+ * cannot be satisfied.
-+ *
-+ * RETURNS:
-+ * Virtual address of allocated memory block on success, NULL on failure.
-+ */
-+void * __init memblock_virt_alloc_try_nid_raw(
-+			phys_addr_t size, phys_addr_t align,
-+			phys_addr_t min_addr, phys_addr_t max_addr,
-+			int nid)
-+{
-+	void *ptr;
-+
-+	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
-+		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
-+		     (u64)max_addr, (void *)_RET_IP_);
-+
-+	ptr = memblock_virt_alloc_internal(size, align,
-+					   min_addr, max_addr, nid);
-+#ifdef CONFIG_DEBUG_VM
-+	if (ptr && size > 0)
-+		memset(ptr, 0xff, size);
-+#endif
-+	return ptr;
-+}
-+
- /**
-  * memblock_virt_alloc_try_nid_nopanic - allocate boot memory block
-  * @size: size of memory block to be allocated in bytes
-@@ -1351,8 +1389,8 @@ static void * __init memblock_virt_alloc_internal(
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public version of _memblock_virt_alloc_try_nid_nopanic() which provides
-- * additional debug information (including caller info), if enabled.
-+ * Public function, provides additional debug information (including caller
-+ * info), if enabled. This function zeroes the allocated memory.
-  *
-  * RETURNS:
-  * Virtual address of allocated memory block on success, NULL on failure.
-@@ -1362,11 +1400,17 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
- 				phys_addr_t min_addr, phys_addr_t max_addr,
- 				int nid)
+ 	pmd_t *pmd = pmd_offset(pud, addr);
+ 	if (pmd_none(*pmd)) {
+-		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
++		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
+ 		if (!p)
+ 			return NULL;
+ 		pmd_populate_kernel(&init_mm, pmd, p);
+@@ -195,7 +194,7 @@ pud_t * __meminit vmemmap_pud_populate(p4d_t *p4d, unsigned long addr, int node)
  {
-+	void *ptr;
-+
- 	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx %pF\n",
- 		     __func__, (u64)size, (u64)align, nid, (u64)min_addr,
- 		     (u64)max_addr, (void *)_RET_IP_);
--	return memblock_virt_alloc_internal(size, align, min_addr,
--					     max_addr, nid);
-+
-+	ptr = memblock_virt_alloc_internal(size, align,
-+					   min_addr, max_addr, nid);
-+	if (ptr)
-+		memset(ptr, 0, size);
-+	return ptr;
- }
+ 	pud_t *pud = pud_offset(p4d, addr);
+ 	if (pud_none(*pud)) {
+-		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
++		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
+ 		if (!p)
+ 			return NULL;
+ 		pud_populate(&init_mm, pud, p);
+@@ -207,7 +206,7 @@ p4d_t * __meminit vmemmap_p4d_populate(pgd_t *pgd, unsigned long addr, int node)
+ {
+ 	p4d_t *p4d = p4d_offset(pgd, addr);
+ 	if (p4d_none(*p4d)) {
+-		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
++		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
+ 		if (!p)
+ 			return NULL;
+ 		p4d_populate(&init_mm, p4d, p);
+@@ -219,7 +218,7 @@ pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
+ {
+ 	pgd_t *pgd = pgd_offset_k(addr);
+ 	if (pgd_none(*pgd)) {
+-		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
++		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
+ 		if (!p)
+ 			return NULL;
+ 		pgd_populate(&init_mm, pgd, p);
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 83b3bf6461af..d22f51bb7c79 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -437,9 +437,9 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
+ 	}
  
- /**
-@@ -1380,7 +1424,7 @@ void * __init memblock_virt_alloc_try_nid_nopanic(
-  *	      allocate only from memory limited by memblock.current_limit value
-  * @nid: nid of the free area to find, %NUMA_NO_NODE for any node
-  *
-- * Public panicking version of _memblock_virt_alloc_try_nid_nopanic()
-+ * Public panicking version of memblock_virt_alloc_try_nid_nopanic()
-  * which provides debug information (including caller info), if enabled,
-  * and panics if the request can not be satisfied.
-  *
-@@ -1399,8 +1443,10 @@ void * __init memblock_virt_alloc_try_nid(
- 		     (u64)max_addr, (void *)_RET_IP_);
- 	ptr = memblock_virt_alloc_internal(size, align,
- 					   min_addr, max_addr, nid);
--	if (ptr)
-+	if (ptr) {
-+		memset(ptr, 0, size);
- 		return ptr;
-+	}
- 
- 	panic("%s: Failed to allocate %llu bytes align=0x%llx nid=%d from=0x%llx max_addr=0x%llx\n",
- 	      __func__, (u64)size, (u64)align, nid, (u64)min_addr,
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d132c801d2c1..a8dbd405ed94 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -7299,18 +7299,17 @@ void *__init alloc_large_system_hash(const char *tablename,
- 
- 	log2qty = ilog2(numentries);
- 
--	/*
--	 * memblock allocator returns zeroed memory already, so HASH_ZERO is
--	 * currently not used when HASH_EARLY is specified.
--	 */
- 	gfp_flags = (flags & HASH_ZERO) ? GFP_ATOMIC | __GFP_ZERO : GFP_ATOMIC;
- 	do {
- 		size = bucketsize << log2qty;
--		if (flags & HASH_EARLY)
--			table = memblock_virt_alloc_nopanic(size, 0);
--		else if (hashdist)
-+		if (flags & HASH_EARLY) {
-+			if (flags & HASH_ZERO)
-+				table = memblock_virt_alloc_nopanic(size, 0);
-+			else
-+				table = memblock_virt_alloc_raw(size, 0);
-+		} else if (hashdist) {
- 			table = __vmalloc(size, gfp_flags, PAGE_KERNEL);
--		else {
-+		} else {
- 			/*
- 			 * If bucketsize is not a power-of-two, we may free
- 			 * some pages at the end of hash table which
+ 	size = PAGE_ALIGN(size);
+-	map = memblock_virt_alloc_try_nid(size * map_count,
+-					  PAGE_SIZE, __pa(MAX_DMA_ADDRESS),
+-					  BOOTMEM_ALLOC_ACCESSIBLE, nodeid);
++	map = memblock_virt_alloc_try_nid_raw(size * map_count,
++					      PAGE_SIZE, __pa(MAX_DMA_ADDRESS),
++					      BOOTMEM_ALLOC_ACCESSIBLE, nodeid);
+ 	if (map) {
+ 		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
+ 			if (!present_section_nr(pnum))
 -- 
 2.14.1
