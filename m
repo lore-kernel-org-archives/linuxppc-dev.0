@@ -1,38 +1,33 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0042.hostedemail.com
+ [216.40.44.42])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy65V3fswzDqXy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 03:23:09 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8KHJqr4034856
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:23:06 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d3s8mxedx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:23:06 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 20 Sep 2017 11:23:05 -0600
-Subject: Re: [mainline][DLPAR][Oops] OF: ERROR: Bad of_node_put() on /cpus
-To: Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh@kernel.org>,
- abdul <abdhalee@linux.vnet.ibm.com>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>
-References: <1505473476.9665.13.camel@abdul.in.ibm.com>
- <CAL_JsqLXpU3kr7bD0NYZhYBbzxmGzqPL3j0jfLLMpSmXwPGvOw@mail.gmail.com>
- <87bmm5lhuu.fsf@concordia.ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Wed, 20 Sep 2017 10:23:01 -0700
-MIME-Version: 1.0
-In-Reply-To: <87bmm5lhuu.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <3c15ac5c-c966-be45-1a6c-ba3fa1b9e439@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy6dF4CslzDqXw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 03:47:12 +1000 (AEST)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave06.hostedemail.com (Postfix) with ESMTP id 96388800CAC4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 17:39:08 +0000 (UTC)
+Message-ID: <1505929138.12311.5.camel@perches.com>
+Subject: Re: [RFC][PATCH v2 7/7] checkpatch: add pF/pf deprecation warning
+From: Joe Perches <joe@perches.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tony Luck
+ <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, James Bottomley
+ <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>
+Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
+ Alexei Starovoitov <ast@kernel.org>,  linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>
+Date: Wed, 20 Sep 2017 10:38:58 -0700
+In-Reply-To: <20170920162910.32053-8-sergey.senozhatsky@gmail.com>
+References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
+ <20170920162910.32053-8-sergey.senozhatsky@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,57 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/20/2017 04:39 AM, Michael Ellerman wrote:
-> Rob Herring <robh@kernel.org> writes:
+On Thu, 2017-09-21 at 01:29 +0900, Sergey Senozhatsky wrote:
+> We deprecated '%pF/%pf' printk specifiers, since '%pS/%ps' is now smart
+> enough to handle function pointer dereference on platforms where such
+> dereference is required.
 > 
->> On Fri, Sep 15, 2017 at 6:04 AM, abdul <abdhalee@linux.vnet.ibm.com> wrote:
->>> Hi,
->>>
->>> Mainline kernel panics during DLPAR CPU add/remove operation.
->>>
->>> Machine Type: Power8 PowerVM LPAR
->>> kernel 4.13.0
->>
->> Did 4.12 work or when was it last working? I'm not seeing anything
->> recent in the DT code that looks suspicious.
+> checkpatch warning example:
 > 
-> I'm pretty sure it's:
-> 
-> int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
-> {
-> 	int rc;
-> 
-> 	dn->parent = parent;
-> 
-> 	rc = of_attach_node(dn);
-> 	if (rc) {
-> 		printk(KERN_ERR "Failed to add device node %pOF\n", dn);
-> 		return rc;
-> 	}
-> 
-> 	of_node_put(dn->parent);
-> HERE    ^^^^^^^^^^
-> 
-> 	return 0;
-> }
-> 
-> 
-> Prior to 215ee763f8cb ("powerpc: pseries: remove dlpar_attach_node
-> dependency on full path"), we re-looked up the parent, and got another
-> reference on it. That meant the put before the return there was correct.
-> But now it's not because the caller has a reference to parent but it's
-> not ours to drop.
-> 
-> Testing a fix, will report back.
+> WARNING: Use '%pS/%ps' instead. This pointer extension was deprecated: '%pF'
 
-So, that patch slipped past me. Not only is the parent reference not ours to drop, but
-when I went and looked at dlpar_cpu_add() I also noticed that of_node_put() was done on
-the parent prior to the call to dlpar_attach_node(). With the addition of "parent" to the
-dlpar_attach_node() parameter list dlpar_cpu_add() needs to be fixed up to hold the
-"parent" reference until after dlpar_attach_node() returns.
+If this series is accepted,  I think this message
+is unclear and would prefer something like:
+---
+scripts/checkpatch.pl | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
--Tyrel
-
-> 
-> cheers
-> 
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index dd2c262aebbf..71f3273d5913 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -5762,18 +5762,25 @@ sub process {
+ 		        for (my $count = $linenr; $count <= $lc; $count++) {
+ 				my $fmt = get_quoted_string($lines[$count - 1], raw_line($count, 0));
+ 				$fmt =~ s/%%//g;
+-				if ($fmt =~ /(\%[\*\d\.]*p(?![\WFfSsBKRraEhMmIiUDdgVCbGNO]).)/) {
++				if ($fmt =~ /(\%[\*\d\.]*p(?![\WSsBKRraEhMmIiUDdgVCbGNO]).)/) {
+ 					$bad_extension = $1;
+ 					last;
+ 				}
+ 			}
+ 			if ($bad_extension ne "") {
+ 				my $stat_real = raw_line($linenr, 0);
++				my $ext_type = "Invalid";
++				my $use = "";
+ 				for (my $count = $linenr + 1; $count <= $lc; $count++) {
+ 					$stat_real = $stat_real . "\n" . raw_line($count, 0);
+ 				}
++				if ($bad_extension =~ /p[Ff]/i) {
++					$ext_type = "Deprecated";
++					$use = " - use %pS instead";
++					$use =~ s/pS/ps/ if ($bad_extension =~ /pf/);
++				}
+ 				WARN("VSPRINTF_POINTER_EXTENSION",
+-				     "Invalid vsprintf pointer extension '$bad_extension'\n" . "$here\n$stat_real\n");
++				     "$ext_type vsprintf pointer extension '$bad_extension'$use\n" . "$here\n$stat_real\n");
+ 			}
+ 		}
+ 
