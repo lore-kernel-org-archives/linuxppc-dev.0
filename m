@@ -1,24 +1,27 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-pf0-f195.google.com (mail-pf0-f195.google.com
+ [209.85.192.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyB0725ZBzDrFM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 06:18:47 +1000 (AEST)
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v9 06/12] mm: zero struct pages during initialization
-Date: Wed, 20 Sep 2017 16:17:08 -0400
-Message-Id: <20170920201714.19817-7-pasha.tatashin@oracle.com>
-In-Reply-To: <20170920201714.19817-1-pasha.tatashin@oracle.com>
-References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyBky0pKnzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 06:52:25 +1000 (AEST)
+Received: by mail-pf0-f195.google.com with SMTP id f84so1629521pfj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:52:25 -0700 (PDT)
+Date: Wed, 20 Sep 2017 15:52:22 -0500
+From: Rob Herring <robh@kernel.org>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-rtc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org
+Subject: Re: [PATCH 1/3] RTC: rv3029: fix vendor string
+Message-ID: <20170920205222.u445mraruddz3ufl@rob-hp-laptop>
+References: <20170915020004.24272-1-alexandre.belloni@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170915020004.24272-1-alexandre.belloni@free-electrons.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +31,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add struct page zeroing as a part of initialization of other fields in
-__init_single_page().
+On Fri, Sep 15, 2017 at 04:00:02AM +0200, Alexandre Belloni wrote:
+> The vendor string for Microcrystal is microcrystal.
+> 
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> ---
+>  Documentation/devicetree/bindings/trivial-devices.txt | 2 +-
+>  drivers/rtc/rtc-rv3029c2.c                            | 2 ++
+>  2 files changed, 3 insertions(+), 1 deletion(-)
 
-This single thread performance collected on: Intel(R) Xeon(R) CPU E7-8895
-v3 @ 2.60GHz with 1T of memory (268400646 pages in 8 nodes):
-
-                        BASE            FIX
-sparse_init     11.244671836s   0.007199623s
-zone_sizes_init  4.879775891s   8.355182299s
-                  --------------------------
-Total           16.124447727s   8.362381922s
-
-sparse_init is where memory for struct pages is zeroed, and the zeroing
-part is moved later in this patch into __init_single_page(), which is
-called from zone_sizes_init().
-
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Reviewed-by: Bob Picco <bob.picco@oracle.com>
-Acked-by: Michal Hocko <mhocko@suse.com>
----
- include/linux/mm.h | 9 +++++++++
- mm/page_alloc.c    | 1 +
- 2 files changed, 10 insertions(+)
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index f8c10d336e42..50b74d628243 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -94,6 +94,15 @@ extern int mmap_rnd_compat_bits __read_mostly;
- #define mm_forbids_zeropage(X)	(0)
- #endif
- 
-+/*
-+ * On some architectures it is expensive to call memset() for small sizes.
-+ * Those architectures should provide their own implementation of "struct page"
-+ * zeroing by defining this macro in <asm/pgtable.h>.
-+ */
-+#ifndef mm_zero_struct_page
-+#define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
-+#endif
-+
- /*
-  * Default maximum number of active map areas, this limits the number of vmas
-  * per mm struct. Users can overwrite this number by sysctl but there is a
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index a8dbd405ed94..4b630ee91430 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1170,6 +1170,7 @@ static void free_one_page(struct zone *zone,
- static void __meminit __init_single_page(struct page *page, unsigned long pfn,
- 				unsigned long zone, int nid)
- {
-+	mm_zero_struct_page(page);
- 	set_page_links(page, zone, nid, pfn);
- 	init_page_count(page);
- 	page_mapcount_reset(page);
--- 
-2.14.1
+Acked-by: Rob Herring <robh@kernel.org>
