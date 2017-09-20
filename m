@@ -1,31 +1,22 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0023.hostedemail.com
- [216.40.44.23])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy7SP3cPVzDr4N
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 04:24:36 +1000 (AEST)
-Message-ID: <1505931868.12311.7.camel@perches.com>
-Subject: Re: [RFC][PATCH v2 7/7] checkpatch: add pF/pf deprecation warning
-From: Joe Perches <joe@perches.com>
-To: Helge Deller <deller@gmx.de>, Sergey Senozhatsky
- <sergey.senozhatsky@gmail.com>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
- <fenghua.yu@intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>
-Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>,  linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>
-Date: Wed, 20 Sep 2017 11:24:28 -0700
-In-Reply-To: <ddf9b54b-34d9-c1e2-e34f-a1cc055b8cf7@gmx.de>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
- <20170920162910.32053-8-sergey.senozhatsky@gmail.com>
- <1505929138.12311.5.camel@perches.com>
- <ddf9b54b-34d9-c1e2-e34f-a1cc055b8cf7@gmx.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy8kb75NszDqXp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 05:21:58 +1000 (AEST)
+Subject: Re: [PATCH 0/6] crypto: talitos - various fixes
+From: christophe leroy <christophe.leroy@c-s.fr>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
+References: <cover.1505825623.git.christophe.leroy@c-s.fr>
+ <d1a928d5-d5cd-baf6-a6bf-2375cce4b4a4@c-s.fr>
+Message-ID: <b708d7a7-1ee2-db0a-70ff-f5e36901a230@c-s.fr>
+Date: Wed, 20 Sep 2017 21:21:46 +0200
+MIME-Version: 1.0
+In-Reply-To: <d1a928d5-d5cd-baf6-a6bf-2375cce4b4a4@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,24 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-09-20 at 19:53 +0200, Helge Deller wrote:
-> On 20.09.2017 19:38, Joe Perches wrote:
-> > On Thu, 2017-09-21 at 01:29 +0900, Sergey Senozhatsky wrote:
-> > > We deprecated '%pF/%pf' printk specifiers, since '%pS/%ps' is now smart
-> > > enough to handle function pointer dereference on platforms where such
-> > > dereference is required.
-> > > 
-> > > checkpatch warning example:
-> > > 
-> > > WARNING: Use '%pS/%ps' instead. This pointer extension was deprecated: '%pF'
-> > 
-> > If this series is accepted,  I think this message
-> > is unclear and would prefer something like:
+What's going wrong ? I have resent it and it the same again, the serie 
+is not dispatched on the linux-crypto list, but when I answer to a mail 
+of the serie, the answer shows up.
+
+What could be the issue ?
+
+Christophe
+
+Le 20/09/2017 à 10:35, Christophe LEROY a écrit :
+> Looks like the linux-crypto list and patchwork was out of order when I 
+> sent this. I will send again, sorry for the noise on the other lists.
 > 
-> Is it worth to mention, that it's still needed in older kernels?
-> Just in case some patch get's backported.
+> Le 19/09/2017 à 14:58, Christophe Leroy a écrit :
+>> This serie provide various fixes on the talitos driver.
+>>
+>> Christophe Leroy (6):
+>>    crypto: talitos - Don't provide setkey for non hmac hashing algs.
+>>    crypto: talitos - fix hashing
+>>    crypto: talitos - fix sha224
+>>    crypto: talitos - fix AEAD test failures
+>>    crypto: talitos - use kzalloc instead of kmalloc
+>>    crypto: talitos - fix memory corruption on SEC2
+>>
+>>   drivers/crypto/talitos.c | 81 
+>> +++++++++++++++++++++---------------------------
+>>   drivers/crypto/talitos.h |  2 --
+>>   2 files changed, 36 insertions(+), 47 deletions(-)
+>>
 
-I think probably not.
-
-There are relatively few references and
-modifications are unlikely to be backported.
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
