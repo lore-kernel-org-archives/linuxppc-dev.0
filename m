@@ -1,45 +1,26 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxtl64njQzDqT0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 18:51:30 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8K8pExM107618
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 04:51:28 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d3e87fecu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 04:51:28 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 20 Sep 2017 18:51:25 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8K8pNXF39256084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 18:51:23 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8K8pGcb024705
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 18:51:16 +1000
-Subject: Re: [PATCH] cxl: Provide debugfs access to PSL_DEBUG/XSL_DEBUG
- registers
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>
-References: <20170920062322.6582-1-vaibhav@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 20 Sep 2017 18:51:22 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxwBK5wcMzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 19:56:40 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id i130so1382726pgc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 02:56:40 -0700 (PDT)
+Date: Wed, 20 Sep 2017 17:56:35 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v1 1/3] powerpc: Align bytes before fall back to .Lshort
+ in powerpc memcmp
+Message-ID: <20170920095635.GA3387@simonLocalRHEL7.x64>
+References: <1505815439-18720-1-git-send-email-wei.guo.simon@gmail.com>
+ <1505815439-18720-2-git-send-email-wei.guo.simon@gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6DD0079D63@AcuExch.aculab.com>
 MIME-Version: 1.0
-In-Reply-To: <20170920062322.6582-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <3d95159e-eb30-03a1-64af-f685098f4066@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD0079D63@AcuExch.aculab.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,52 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/09/17 16:23, Vaibhav Jain wrote:
-> Access to PSL/XSL_DEBUG registers on the adapter provides easy access
-> to the debug facilities provided by PSL/XSL. So this patch adds two
-> new files (debug, xsl-debug) to the cxl-adapter specific debugfs
-> folder located at /sys/kernel/debugfs/cxl/card<n>, which will provide
-> direct r/w access to corrosponding debug registers in the adapter
-> config-space.
+On Tue, Sep 19, 2017 at 10:12:50AM +0000, David Laight wrote:
+> From: wei.guo.simon@gmail.com
+> > Sent: 19 September 2017 11:04
+> > Currently memcmp() in powerpc will fall back to .Lshort (compare per byte
+> > mode) if either src or dst address is not 8 bytes aligned. It can be
+> > opmitized if both addresses are with the same offset with 8 bytes boundary.
+> > 
+> > memcmp() can align the src/dst address with 8 bytes firstly and then
+> > compare with .Llong mode.
 > 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
-> ---
->   drivers/misc/cxl/cxl.h     | 1 +
->   drivers/misc/cxl/debugfs.c | 4 ++++
->   2 files changed, 5 insertions(+)
+> Why not mask both addresses with ~7 and mask/shift the read value to ignore
+> the unwanted high (BE) or low (LE) bits.
 > 
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index b1afeccbb97f..2c10b536427a 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -100,6 +100,7 @@ static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
->   static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
->   /* PSL registers - CAIA 2 */
->   static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
-> +static const cxl_p1_reg_t CXL_XSL9_DBG      = {0x0130};
->   static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
->   static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
->   static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
-> diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
-> index eae9d749f967..10ff569c1272 100644
-> --- a/drivers/misc/cxl/debugfs.c
-> +++ b/drivers/misc/cxl/debugfs.c
-> @@ -65,6 +65,10 @@ void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir)
->   	debugfs_create_io_x64("fir2", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR2));
->   	debugfs_create_io_x64("fir_cntl", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR_CNTL));
->   	debugfs_create_io_x64("trace", S_IRUSR | S_IWUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_TRACECFG));
-> +	debugfs_create_io_x64("debug", 0600, dir,
-> +			      _cxl_p1_addr(adapter, CXL_PSL9_DEBUG));
-> +	debugfs_create_io_x64("xsl-debug", 0600, dir,
-> +			      _cxl_p1_addr(adapter, CXL_XSL9_DBG));
->   }
->   
->   void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir)
+> The same can be done at the end of the compare with any final, partial word.
 > 
+> 	David
+>  
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Yes. That will be better. A prototyping shows ~5% improvement on 32 bytes 
+size comparison with v1. I will rework on v2.
+
+Thanks for the suggestion.
+
+BR,
+- Simon
