@@ -1,25 +1,22 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxwP029XxzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 20:05:54 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Simon Guo' <wei.guo.simon@gmail.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Naveen
- N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: RE: [PATCH v1 1/3] powerpc: Align bytes before fall back to .Lshort
- in powerpc memcmp
-Date: Wed, 20 Sep 2017 10:05:49 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD007B037@AcuExch.aculab.com>
-References: <1505815439-18720-1-git-send-email-wei.guo.simon@gmail.com>
- <1505815439-18720-2-git-send-email-wei.guo.simon@gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6DD0079D63@AcuExch.aculab.com>
- <20170920095635.GA3387@simonLocalRHEL7.x64>
-In-Reply-To: <20170920095635.GA3387@simonLocalRHEL7.x64>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxwQS05c1zDqYN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 20:07:11 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id e69so1013314pfg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 03:07:11 -0700 (PDT)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ fabio.estevam@nxp.com, peter.ujfalusi@ti.com, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-omap@vger.kernel.org
+Subject: [PATCH 0/3] ASoC: Handle return value of devm_kasprintf
+Date: Wed, 20 Sep 2017 15:36:08 +0530
+Message-Id: <1505901971-12004-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo
-> Sent: 20 September 2017 10:57
-> On Tue, Sep 19, 2017 at 10:12:50AM +0000, David Laight wrote:
-> > From: wei.guo.simon@gmail.com
-> > > Sent: 19 September 2017 11:04
-> > > Currently memcmp() in powerpc will fall back to .Lshort (compare per =
-byte
-> > > mode) if either src or dst address is not 8 bytes aligned. It can be
-> > > opmitized if both addresses are with the same offset with 8 bytes bou=
-ndary.
-> > >
-> > > memcmp() can align the src/dst address with 8 bytes firstly and then
-> > > compare with .Llong mode.
-> >
-> > Why not mask both addresses with ~7 and mask/shift the read value to ig=
-nore
-> > the unwanted high (BE) or low (LE) bits.
-> >
-> > The same can be done at the end of the compare with any final, partial =
-word.
->=20
-> Yes. That will be better. A prototyping shows ~5% improvement on 32 bytes
-> size comparison with v1. I will rework on v2.
+devm_kasprintf() can fail here and we must check its return value.
 
-Clearly you have to be careful to return the correct +1/-1 on mismatch.
+Arvind Yadav (3):
+  [PATCH 1/3] ASoC: davinci-mcasp: Handle return value of devm_kasprintf
+  [PATCH 2/3] ASoC: fsl-asoc-card: Handle return value of devm_kasprintf
+  [PATCH 3/3] ASoC: omap-hdmi-audio: Handle return value of devm_kasprintf
 
-For systems that can do misaligned transfers you can compare the first
-word, then compare aligned words and finally the last word.
-Rather like a memcpy() function I wrote (for NetBDSD) that copied
-the last word first, then a whole number of words aligned at the start.
-(Hope no one expected anything special for overlapping copies.)
+ sound/soc/davinci/davinci-mcasp.c | 12 ++++++++++++
+ sound/soc/fsl/fsl-asoc-card.c     |  2 ++
+ sound/soc/omap/omap-hdmi-audio.c  |  3 +++
+ 3 files changed, 17 insertions(+)
 
-	David
+-- 
+1.9.1
