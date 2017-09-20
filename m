@@ -2,32 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xxjQx0fKzzDqR8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 11:51:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xxl4K70x1zDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 13:05:53 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+To: Guenter Roeck <linux@roeck-us.net>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: linux-kernel@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "James E . J . Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- Alexei Starovoitov <ast@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- linux-kernel@vger.kernel.org, Jessica Yu <jeyu@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/5] powerpc64: Add .opd based function descriptor
- dereference
-In-Reply-To: <20170919103154.GC401@jagdpanzerIV.localdomain>
-References: <20170916035347.19705-1-sergey.senozhatsky@gmail.com>
- <20170916035347.19705-4-sergey.senozhatsky@gmail.com>
- <20170916094345.d332z3odceqiyrll@naverao1-tp.localdomain>
- <87shfjkmxe.fsf@concordia.ellerman.id.au>
- <20170919103154.GC401@jagdpanzerIV.localdomain>
-Date: Wed, 20 Sep 2017 11:51:49 +1000
-Message-ID: <878tha9lxm.fsf@concordia.ellerman.id.au>
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: Traceback due to 'powerpc/mm: Fix kernel RAM protection...' when
+ running ppc image in qemu
+In-Reply-To: <20170919182459.GA7933@roeck-us.net>
+References: <20170919182459.GA7933@roeck-us.net>
+Date: Wed, 20 Sep 2017 13:05:48 +1000
+Message-ID: <8760ce9iib.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,42 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com> writes:
+Guenter Roeck <linux@roeck-us.net> writes:
 
-> On (09/19/17 20:22), Michael Ellerman wrote:
->> > On 2017/09/16 12:53PM, Sergey Senozhatsky wrote:
->> >> We are moving towards separate kernel and module function descriptor
->> >> dereference callbacks. This patch enables it for powerpc64.
->> >> 
->> >> For pointers that belong to the kernel
->> >> -  Added __start_opd and __end_opd pointers, to track the kernel
->> >>    .opd section address range;
->> >> 
->> >> -  Added dereference_kernel_function_descriptor(). Now we
->> >>    will dereference only function pointers that are within
->> >>    [__start_opd, __end_opd];
->> >> 
->> >> For pointers that belong to a module
->> >> -  Added dereference_module_function_descriptor() to handle module
->> >>    function descriptor dereference. Now we will dereference only
->> >>    pointers that are within [module->opd.start, module->opd.end].
->> >
->> > Would it be simpler to just use kernel_text_address() and dereference 
->> > everything else? See commit 83e840c770f2c5 ("powerpc64/elfv1: Only 
->> > dereference function descriptor for non-text symbols") for a related 
->> > patch.
->> 
->> Yeah that would be a lot simpler and probably work perfectly well.
+> Hi,
 >
-> unlike ppc_function_entry(), printk() can get called on any symbol,
-> not just function pointers.
+> I see a the following traceback when running an SMP image based on
+> 85xx/mpc85xx_cds_defconfig in qemu.
 >
-> for example,
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 smp_call_function_many+0xcc/0x2fc
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.14.0-rc1-00009-g0666f56 #1
+> task: cf830000 task.stack: cf82e000
+> NIP:  c00a93c8 LR: c00a9634 CTR: 00000001
+> REGS: cf82fde0 TRAP: 0700   Not tainted  (4.14.0-rc1-00009-g0666f56)
+> MSR:  00021000 <CE,ME>  CR: 24000082  XER: 00000000
 >
-> cat /proc/kallsyms | grep shrinker_rwsem
-> ffffffff81a4b1e0 d shrinker_rwsem
+> GPR00: c00a9634 cf82fe90 cf830000 c050ad3c c0015a54 00000000 00000001 00000001 
+> GPR08: 00000001 00000000 00000000 cf82e000 24000084 00000000 c0003150 00000000 
+> GPR16: 00000000 00000000 00000000 00000000 00000000 00000001 00000000 c0510000 
+> GPR24: 00000000 c0015a54 00000000 c050ad3c c051823c c050ad3c 00000025 00000000 
+> NIP [c00a93c8] smp_call_function_many+0xcc/0x2fc
+> LR [c00a9634] smp_call_function+0x3c/0x50
+> Call Trace:
+> [cf82fe90] [00000010] 0x10 (unreliable)
+> [cf82fed0] [c00a9634] smp_call_function+0x3c/0x50
+> [cf82fee0] [c0015d2c] flush_tlb_kernel_range+0x20/0x38
+> [cf82fef0] [c001524c] mark_initmem_nx+0x154/0x16c
+> [cf82ff20] [c001484c] free_initmem+0x20/0x4c
+> [cf82ff30] [c000316c] kernel_init+0x1c/0x108
+> [cf82ff40] [c000f3a8] ret_from_kernel_thread+0x5c/0x64
+> Instruction dump:
+> 7c0803a6 7d808120 38210040 4e800020 3d20c052 812981a0 2f890000 40beffac 
+> 3d20c051 8929ac64 2f890000 40beff9c <0fe00000> 4bffff94 7fc3f378 7f64db78 
+> ---[ end trace 7da7bdcf8b15ddb3 ]---
 
-Yep, good point. So your patch is probably good then. Maybe someone
-other than me can find time to test it ;)
+Thanks.
+
+I guess the system still runs OK otherwise, you're just seeing the warning?
+
+> A complete log is available at:
+> http://kerneltests.org/builders/qemu-ppc-master/builds/814/steps/qemubuildcommand/logs/stdio
+>
+> Bisect points to commit 3184cc4b6f6a1dc0 ("powerpc/mm: Fix kernel RAM protection
+> after freeing unused memory on PPC32"). Bisect log is attached. A quick look
+> suggests that mark_initmem_nx() is called with interrupts disabled, which
+> triggers the traceback.
+
+Hmm. Yes the MSR says you have interrupts disabled (EE missing).
+
+But I don't see why. start_kernel() did local_irq_enable(), so I don't
+understand why we got to mark_initmem_nx() with them disabled. I'll hope
+that Christophe has some idea.
 
 cheers
