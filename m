@@ -1,27 +1,27 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <sergey.senozhatsky@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy1WL5l1YzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 23:56:46 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id i23so1227243pfi.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 06:56:46 -0700 (PDT)
-Date: Wed, 20 Sep 2017 23:56:27 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v3 4/4] powerpc/64s: idle ESL=0 stop can avoid MSR and
- save/restore overhead
-Message-ID: <20170920235627.3413797f@roar.ozlabs.ibm.com>
-In-Reply-To: <87k21i69lu.fsf@concordia.ellerman.id.au>
-References: <20170825043036.18236-1-npiggin@gmail.com>
- <20170825043036.18236-5-npiggin@gmail.com>
- <87pobd1em0.fsf@concordia.ellerman.id.au>
- <20170830221045.6fd10787@roar.ozlabs.ibm.com>
- <87k21i69lu.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy4vV6Cf8zDqR8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 02:29:26 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id d8so1911440pgt.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 09:29:26 -0700 (PDT)
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>
+Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
+ Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+Date: Thu, 21 Sep 2017 01:29:02 +0900
+Message-Id: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +31,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 01 Sep 2017 19:39:41 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+        Hello
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > On Wed, 30 Aug 2017 21:25:59 +1000
-> > Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >  
-> >> Nicholas Piggin <npiggin@gmail.com> writes:
-> >>   
-> >> > When stop is executed with EC=ESL=0, it appears to execute like a
-> >> > normal instruction (resuming from NIP when woken by interrupt).
-> >> > So all the save/restore handling can be avoided completely. In
-> >> > particular NV GPRs do not have to be saved, and MSR does not have
-> >> > to be switched back to kernel MSR.
-> >> >
-> >> > So move the test for "lite" sleep states out to power9_idle_stop.
-> >> >
-> >> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> >> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >> > ---
-> >> >  arch/powerpc/kernel/idle_book3s.S | 35 ++++++++++++++++++++++++-----------
-> >> >  1 file changed, 24 insertions(+), 11 deletions(-)    
-> >> 
-> >> This is blowing up for me on mambo:  
-> >
-> > Oh this is a known bug in mambo that does not match the hardware.
-> >
-> > You need >= Mambo.7.8.21, or this firmware patch to work around
-> > the issue for old mambos.  
-> 
-> As discussed elsewhere this still breaks on new mambo with more than one
-> CPU. So I've dropped it for now.
+        RFC
 
-This now seems to be properly fixed in mambo with commit 11783550ee11.
+        On some arches C function pointers are indirect and point to
+a function descriptor, which contains the actual pointer to the code.
+This mostly doesn't matter, except for cases when people want to print
+out function pointers in symbolic format, because the usual '%pS/%ps'
+does not work on those arches as expected. That's the reason why we
+have '%pF/%pf', but since it's here because of a subtle ABI detail
+specific to some arches (ppc64/ia64/parisc64) it's easy to misuse
+'%pF/%pf' and '%pS/%ps' (see [1], for example).
 
-Skiboot also has a patch merged which disables the problematic state on
-mambo so older versions won't crash.
+        This patch set attempts to move ia64/ppc64/parisc64 C function
+pointer ABI details out of printk() to arch code. Function dereference
+code now checks if a pointer belongs to a .opd ELF section and dereferences
+that pointer only if it does. The kernel and modules have their own .opd
+sections that's why I use two different ARCH functions: for kernel and
+for module pointer dereference.
 
-d2a24406a49 ("idle: disable stop*_lite POWER9 idle states for Mambo platform")
+        I planned to remove dereference_function_descriptor() entirely,
+but then I discovered a bunch other uses cases (kgdbts, init/main.c,
+extable, etc.), so I decided to keep dereference_function_descriptor()
+around because the main point of this patch set is to deprecate %pF/%pf.
+But at the same time, I think I can go further and handle both kernel
+and module descriptor dereference in dereference_function_descriptor().
+We need a module pointer for module .opd check, so that will come at an
+extra cost of module lookup (may be there will some other issues along
+the way, haven't checked it).
 
-So this could be re-applied now.
+Right now we've got:
 
-Thanks,
-Nick
+- dereference_function_descriptor(addr)
+        a generic (old) function. it simply attempts to dereference
+        whatever pointer we give it.
+
+- dereference_kernel_function_descriptor(addr)
+        dereferences a kernel pointer if it's within the kernel's .opd
+        section.
+
+- dereference_module_function_descriptor(module, addr)
+        dereference a module pointer if it's within the module's .opd
+        section.
+
+
+*** A BIG NOTE ***
+        I don't own ia64/ppc64/parisc64 hardware, so the patches are not
+        tested. Sorry about that!
+
+Another note:
+        I need to check what is BPF symbol lookup and do we need to
+        do any dereference there.
+
+v2:
+-- convert dereference_function_descriptor() to unsigned long
+-- fix kernel descriptor range checks (Helge)
+-- fix parisc module descriptor range check (Helge)
+-- fix ppc64 module range check
+-- add checkpatch patch
+
+
+Sergey Senozhatsky (7):
+  switch dereference_function_descriptor() to `unsigned long'
+  sections: split dereference_function_descriptor()
+  ia64: Add .opd based function descriptor dereference
+  powerpc64: Add .opd based function descriptor dereference
+  parisc64: Add .opd based function descriptor dereference
+  symbol lookup: use new kernel and module dereference functions
+  checkpatch: add pF/pf deprecation warning
+
+ Documentation/printk-formats.txt          | 15 +++++----------
+ arch/ia64/include/asm/sections.h          | 16 ++++++++++++----
+ arch/ia64/kernel/module.c                 | 13 +++++++++++++
+ arch/ia64/kernel/vmlinux.lds.S            |  2 ++
+ arch/parisc/boot/compressed/vmlinux.lds.S |  2 ++
+ arch/parisc/include/asm/sections.h        |  4 +++-
+ arch/parisc/kernel/module.c               | 17 +++++++++++++++++
+ arch/parisc/kernel/process.c              | 15 ++++++++++++---
+ arch/parisc/kernel/vmlinux.lds.S          |  2 ++
+ arch/parisc/mm/init.c                     |  4 ++--
+ arch/powerpc/include/asm/module.h         |  3 +++
+ arch/powerpc/include/asm/sections.h       | 17 ++++++++++++++---
+ arch/powerpc/kernel/module_64.c           | 16 ++++++++++++++++
+ arch/powerpc/kernel/vmlinux.lds.S         |  2 ++
+ drivers/misc/kgdbts.c                     |  2 +-
+ include/asm-generic/sections.h            |  8 ++++++--
+ include/linux/moduleloader.h              |  4 ++++
+ init/main.c                               |  2 +-
+ kernel/extable.c                          |  2 +-
+ kernel/kallsyms.c                         |  1 +
+ kernel/module.c                           |  9 ++++++++-
+ lib/vsprintf.c                            |  5 +----
+ scripts/checkpatch.pl                     |  6 ++++--
+ 23 files changed, 132 insertions(+), 35 deletions(-)
+
+-- 
+2.14.1
