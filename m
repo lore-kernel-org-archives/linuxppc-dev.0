@@ -1,12 +1,12 @@
 Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xy4wH0rbhzDqYY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 02:30:07 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id u18so1919413pgo.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 09:30:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xy4wN6pn3zDqXw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 02:30:12 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id d8so1912528pgt.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 09:30:12 -0700 (PDT)
 From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -20,8 +20,8 @@ Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>
 Subject: [RFC][PATCH v2 7/7] checkpatch: add pF/pf deprecation warning
-Date: Thu, 21 Sep 2017 01:29:09 +0900
-Message-Id: <20170920162910.32053-8-sergey.senozhatsky@gmail.com>
+Date: Thu, 21 Sep 2017 01:29:10 +0900
+Message-Id: <20170920162910.32053-9-sergey.senozhatsky@gmail.com>
 In-Reply-To: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
 References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
