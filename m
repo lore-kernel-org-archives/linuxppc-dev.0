@@ -1,33 +1,23 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
- [IPv6:2607:f8b0:400e:c00::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyWkb50l2zDqjC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 19:38:15 +1000 (AEST)
-Received: by mail-pf0-x233.google.com with SMTP id g65so2953326pfe.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 02:38:15 -0700 (PDT)
-Date: Thu, 21 Sep 2017 18:38:08 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH v2 6/7] symbol lookup: use new kernel and module
- dereference functions
-Message-ID: <20170921093808.GE773@jagdpanzerIV.localdomain>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
- <20170920162910.32053-7-sergey.senozhatsky@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyX5n3JkHzDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 19:54:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
+ abdhalee@linux.vnet.ibm.com, paulus@samba.org, sachinp@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/pseries: fix "OF: ERROR: Bad of_node_put() on
+ /cpus" during DLPAR
+In-Reply-To: <1505941372-9147-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1505473476.9665.13.camel@abdul.in.ibm.com>
+ <1505941372-9147-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Date: Thu, 21 Sep 2017 19:54:51 +1000
+Message-ID: <87h8vwcr6c.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170920162910.32053-7-sergey.senozhatsky@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,46 +27,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (09/21/17 01:29), Sergey Senozhatsky wrote:
-[..]
-> +	%pS	versatile_init+0x0/0x110
-> +	%ps	versatile_init
->  	%pF	versatile_init+0x0/0x110
->  	%pf	versatile_init
-> -	%pS	versatile_init+0x0/0x110
->  	%pSR	versatile_init+0x9/0x110
->  		(with __builtin_extract_return_addr() translation)
-> -	%ps	versatile_init
->  	%pB	prev_fn_of_versatile_init+0x88/0x88
+Hi Tyrel,
+
+Thanks for jumping on this.
+
+Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+> Commit 215ee763f8cb ("powerpc: pseries: remove dlpar_attach_node dependency on
+> full path") reworked dlpar_attach_node() to no longer look up the parent
+> node "/cpus", but instead to have the parent node passed by the caller in the
+> function parameter list. As a result dlpar_attach_node() is no longer
+> responsible for freeing the reference to the parent node. However,
+> commit 215ee763f8cb failed to remove the of_node_put(parent) call in
+> dlpar_attach_node(), or to take into account that the reference to the
+> parent in the caller dlpar_cpu_add() needs to be held until after
+> dlpar_attach_node() returns. As a result doing repeated cpu add/remove dlpar
+> operations will eventually result in the following error:
+>
+> OF: ERROR: Bad of_node_put() on /cpus
+> CPU: 0 PID: 10896 Comm: drmgr Not tainted 4.13.0-autotest #1
+> Call Trace:
+> [c00000026ecdf810] [c00000000278a2a4] dump_stack+0x15c/0x1f8
+> (unreliable)
+> [c00000026ecdf850] [c0000000025371a4] of_node_release+0x1a4/0x1c0
+> [c00000026ecdf8e0] [c0000000027948c8] kobject_put+0x1a8/0x310
+> [c00000026ecdf960] [c000000002794bdc] kobject_del+0xbc/0xf0
+> [c00000026ecdf990] [c000000002535ff4] __of_detach_node_sysfs+0x144/0x210
+> [c00000026ecdf9d0] [c000000002536f70] of_detach_node+0xf0/0x180
+> [c00000026ecdfa40] [c0000000016ed494] dlpar_detach_node+0xc4/0x120
+> [c00000026ecdfa80] [c0000000016f47d0] dlpar_cpu_remove+0x280/0x560
+> [c00000026ecdfb60] [c0000000016f4d9c] dlpar_cpu_release+0xbc/0x1b0
+> [c00000026ecdfbb0] [c00000000161279c] arch_cpu_release+0x6c/0xb0
+> [c00000026ecdfbe0] [c00000000218ebf0] cpu_release_store+0xa0/0x100
+> [c00000026ecdfc20] [c000000002178388] dev_attr_store+0x68/0xa0
+> [c00000026ecdfc50] [c000000001bfaae8] sysfs_kf_write+0xa8/0xf0
+> [c00000026ecdfc80] [c000000001bf8a3c] kernfs_fop_write+0x2cc/0x400
+> [c00000026ecdfce0] [c000000001ad33fc] __vfs_write+0x5c/0x340
+> [c00000026ecdfd80] [c000000001ad89e8] vfs_write+0x1a8/0x3d0
+> [c00000026ecdfdd0] [c000000001ad9178] SyS_write+0xa8/0x1a0
+> [c00000026ecdfe30] [c0000000015eb8e0] system_call+0x58/0x6c
+
+I usually omit all the addresses in the change log, they don't add much
+for future readers. I fixed it up myself.
+
+> Fix the issue by removing the of_node_put(parent) call from
+> dlpar_attach_node(), and ensuring that the reference to the parent node
+> is properly held and released by the caller dlpar_cpu_add().
+>
+> Fixes: 215ee763f8cb ("powerpc: pseries: remove dlpar_attach_node dependency on full path")
+> Cc: stable@vger.kernel.org # v4.13+
+
+It doesn't need to go to stable, v4.13 doesn't have that commit, it's
+only in v4.14-rc1.
+
+I dropped the stable tag.
+
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index fc0d8f9..473d817 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -462,15 +462,17 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+>  	}
 >  
-> -The ``F`` and ``f`` specifiers are for printing function pointers,
-> -for example, f->func, &gettimeofday. They have the same result as
-> -``S`` and ``s`` specifiers. But they do an extra conversion on
-> -ia64, ppc64 and parisc64 architectures where the function pointers
-> -are actually function descriptors.
-> -
->  The ``S`` and ``s`` specifiers can be used for printing symbols
->  from direct addresses, for example, __builtin_return_address(0),
->  (void *)regs->ip. They result in the symbol name with (``S``) or
->  without (``s``) offsets. If KALLSYMS are disabled then the symbol
->  address is printed instead.
+>  	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
+> -	of_node_put(parent);
+>  	if (!dn) {
+>  		pr_warn("Failed call to configure-connector, drc index: %x\n",
+>  			drc_index);
+>  		dlpar_release_drc(drc_index);
+> +		of_node_put(parent);
+>  		return -EINVAL;
+>  	}
 >  
-> +Note, that the ``F`` and ``f`` specifiers are identical to ``S`` (``s``)
-> +and thus deprecated.
+>  	rc = dlpar_attach_node(dn, parent);
 
-JFI,
+I added a comment here that I had in my version:
 
-I have updated this part. it's probably too early to completely
-wipe out pF/pf info.
++       /* Regardless we are done with parent now */
 
-the updated Doc goes like this:
+> +	of_node_put(parent);
+> +
+>  	if (rc) {
+>  		saved_rc = rc;
+>  		pr_warn("Failed to attach node %s, rc: %d, drc index: %x\n",
 
-+Note, that the ``F`` and ``f`` specifiers are identical to ``S`` (``s``)
-+and thus deprecated. We have ``F`` and ``f`` because on ia64, ppc64 and
-+parisc64 function pointers are indirect and, in fact, are function
-+descriptors, which require additional dereferencing before we can lookup
-+the symbol. As of now, ``S`` and ``s`` perform dereferencing on those
-+platforms (when needed), so ``F`` and ``f`` exist for compatibility
-+reasons only.
-
-	-ss
+cheers
