@@ -1,21 +1,22 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyX8c5S3mzDsMC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 19:57:20 +1000 (AEST)
-Message-ID: <1505987840.15768.18.camel@neuling.org>
-Subject: Re: [PATCH v2] powerpc: Handle MCE on POWER9 with only DSISR bit 33
- set
-From: Michael Neuling <mikey@neuling.org>
-To: Nicholas Piggin <nicholas.piggin@gmail.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 21 Sep 2017 19:57:20 +1000
-In-Reply-To: <20170921181801.5a260281@roar.ozlabs.ibm.com>
-References: <20170921020434.21018-1-mikey@neuling.org>
- <20170921181801.5a260281@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyXH06X8HzDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 20:02:52 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/livepatch: Fix livepatch stack access
+In-Reply-To: <1505902791-26383-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+References: <1505902791-26383-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+Date: Thu, 21 Sep 2017 20:02:52 +1000
+Message-ID: <87d16kcqsz.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,70 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-09-21 at 18:18 +1000, Nicholas Piggin wrote:
-> On Thu, 21 Sep 2017 12:04:34 +1000
-> Michael Neuling <mikey@neuling.org> wrote:
->=20
-> > On POWER9 DD2.1 and below, it's possible to get Machine Check
-> > Exception (MCE) where only DSISR bit 33 is set. This will result in
-> > the linux MCE handler seeing an unknown event, which triggers linux to
-> > crash.
-> >=20
-> > We change this by detecting unknown events in the MCE handler and
-> > marking them as handled so that we no longer crash. We do this only on
-> > chip revisions known to have this problem.
-> >=20
-> > MCE that occurs like this is spurious, so we don't need to do anything
-> > in terms of servicing it. If there is something that needs to be
-> > serviced, the CPU will raise the MCE again with the correct DSISR so
-> > that it can be serviced properly.
-> >=20
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> > v2 update commit message based on Balbir's comments
-> > ---
-> > =C2=A0arch/powerpc/kernel/mce_power.c | 15 +++++++++++++++
-> > =C2=A01 file changed, 15 insertions(+)
-> >=20
-> > diff --git a/arch/powerpc/kernel/mce_power.c
-> > b/arch/powerpc/kernel/mce_power.c
-> > index b76ca198e0..72ec667136 100644
-> > --- a/arch/powerpc/kernel/mce_power.c
-> > +++ b/arch/powerpc/kernel/mce_power.c
-> > @@ -595,6 +595,7 @@ static long mce_handle_error(struct pt_regs *regs,
-> > =C2=A0	uint64_t addr;
-> > =C2=A0	uint64_t srr1 =3D regs->msr;
-> > =C2=A0	long handled;
-> > +	unsigned long pvr;
-> > =C2=A0
-> > =C2=A0	if (SRR1_MC_LOADSTORE(srr1))
-> > =C2=A0		handled =3D mce_handle_derror(regs, dtable, &mce_err, &addr);
-> > @@ -604,6 +605,20 @@ static long mce_handle_error(struct pt_regs *regs,
-> > =C2=A0	if (!handled && mce_err.error_type =3D=3D MCE_ERROR_TYPE_UE)
-> > =C2=A0		handled =3D mce_handle_ue_error(regs);
-> > =C2=A0
-> > +	/*
-> > +	=C2=A0* On POWER9 DD2.1 and below, it's possible to get machine
-> > +	=C2=A0* check where only DSISR bit 33 is set. This will result in
-> > +	=C2=A0* the MCE handler seeing an unknown event and us crashing.
-> > +	=C2=A0* Change this to mark as handled on these revisions.
-> > +	=C2=A0*/
-> > +	pvr =3D mfspr(SPRN_PVR);
-> > +	if (((PVR_VER(pvr) =3D=3D PVR_POWER9) &&
-> > +	=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0(PVR_CFG(pvr) =3D=3D 2) &&
-> > +	=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0(PVR_MIN(pvr) <=3D 1)) || cpu_has_featu=
-re(CPU_FTR_POWER9_DD1))
-> > +		/* DD2.1 and below */
-> > +		if (mce_err.error_type =3D=3D MCE_ERROR_TYPE_UNKNOWN)
-> > +		=C2=A0=C2=A0=C2=A0=C2=A0handled =3D 1;
->=20
-> I might be missing something, but can you just do
->=20
-> =C2=A0 if (regs->dsisr =3D=3D 0x40000000)
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 1;
->=20
-> In __machine_check_early_realmode_p9() ?
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
 
-You're right, thanks.
+> While running stress test with livepatch module loaded, kernel
+> bug was triggered.
+>
+> cpu 0x5: Vector: 400 (Instruction Access) at [c0000000eb9d3b60]
+>     pc: c0000000eb9d3e30
+>     lr: c0000000eb9d3e30
+>     sp: c0000000eb9d3de0
+>    msr: 800000001280b033
+>   current = 0xc0000000dbd38700
+>   paca    = 0xc00000000fe01400   softe: 0        irq_happened: 0x01
+>     pid   = 8618, comm = make
+> Linux version 4.13.0+ (root@ubuntu) (gcc version 6.3.0 20170406 (Ubuntu 6.3.0-12ubuntu2)) #1 SMP Wed Sep 13 03:49:27 EDT 2017
+>
+> 5:mon> t
+> [c0000000eb9d3de0] c0000000eb9d3e30 (unreliable)
+> [c0000000eb9d3e30] c000000000008ab4 hardware_interrupt_common+0x114/0x120
+>  --- Exception: 501 (Hardware Interrupt) at c000000000053040 livepatch_handler+0x4c/0x74
+> [c0000000eb9d4120] 0000000057ac6e9d (unreliable)
+> [d0000000089d9f78] 2e0965747962382e
+> SP (965747962342e09) is in userspace
+>
+> When an interrupt is served in between the livepatch_handler execution,
+> there are chances of the livepatch_stack/task task getting corrupted.
 
-Mikey
+Ouch. That's pretty broken by me.
+
+> Fix the corruption by using r11 register for livepatch stack manipulation,
+> instead of shuffling task stack and livepatch stack into r1 register.
+> Using r11 register also avoids disabling/enabling irq's while setting
+> up the livepatch stack.
+
+I'm trying to think if there's some reason I didn't use r11. But I can't
+remember anything specific. I suspect I just didn't check the ABI
+closely enough, and knew I could use r0 and r12 so stuck with them.
+
+cheers
