@@ -1,38 +1,24 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xylnl4K37zDqT0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 04:41:46 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8LIf0Gn014697
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 14:41:44 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d4fnuj8nx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 14:41:43 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 21 Sep 2017 12:41:43 -0600
-Subject: Re: [PATCH 1/2] powerpc/pseries: fix "OF: ERROR: Bad of_node_put() on
- /cpus" during DLPAR
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
- abdhalee@linux.vnet.ibm.com, paulus@samba.org,
- sachinp@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
-References: <1505473476.9665.13.camel@abdul.in.ibm.com>
- <1505941372-9147-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <87h8vwcr6c.fsf@concordia.ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Thu, 21 Sep 2017 11:41:37 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyls06MFDzDqjC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 04:44:36 +1000 (AEST)
+Subject: Re: Traceback due to 'powerpc/mm: Fix kernel RAM protection...' when
+ running ppc image in qemu
+To: Guenter Roeck <linux@roeck-us.net>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+References: <20170919182459.GA7933@roeck-us.net>
+ <8760ce9iib.fsf@concordia.ellerman.id.au>
+ <daaad0c4-75af-4b02-20d0-b0b8e327f94a@roeck-us.net>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <41b8af14-ada8-448f-5da7-92640ea8c3e7@c-s.fr>
+Date: Thu, 21 Sep 2017 20:44:32 +0200
 MIME-Version: 1.0
-In-Reply-To: <87h8vwcr6c.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <550d2a57-ccf8-1dd2-f91b-d05606de766f@linux.vnet.ibm.com>
+In-Reply-To: <daaad0c4-75af-4b02-20d0-b0b8e327f94a@roeck-us.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,104 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/21/2017 02:54 AM, Michael Ellerman wrote:
-> Hi Tyrel,
-> 
-> Thanks for jumping on this.
-> 
-> Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
->> Commit 215ee763f8cb ("powerpc: pseries: remove dlpar_attach_node dependency on
->> full path") reworked dlpar_attach_node() to no longer look up the parent
->> node "/cpus", but instead to have the parent node passed by the caller in the
->> function parameter list. As a result dlpar_attach_node() is no longer
->> responsible for freeing the reference to the parent node. However,
->> commit 215ee763f8cb failed to remove the of_node_put(parent) call in
->> dlpar_attach_node(), or to take into account that the reference to the
->> parent in the caller dlpar_cpu_add() needs to be held until after
->> dlpar_attach_node() returns. As a result doing repeated cpu add/remove dlpar
->> operations will eventually result in the following error:
+
+
+Le 20/09/2017 à 05:45, Guenter Roeck a écrit :
+> On 09/19/2017 08:05 PM, Michael Ellerman wrote:
+>> Guenter Roeck <linux@roeck-us.net> writes:
 >>
->> OF: ERROR: Bad of_node_put() on /cpus
->> CPU: 0 PID: 10896 Comm: drmgr Not tainted 4.13.0-autotest #1
->> Call Trace:
->> [c00000026ecdf810] [c00000000278a2a4] dump_stack+0x15c/0x1f8
->> (unreliable)
->> [c00000026ecdf850] [c0000000025371a4] of_node_release+0x1a4/0x1c0
->> [c00000026ecdf8e0] [c0000000027948c8] kobject_put+0x1a8/0x310
->> [c00000026ecdf960] [c000000002794bdc] kobject_del+0xbc/0xf0
->> [c00000026ecdf990] [c000000002535ff4] __of_detach_node_sysfs+0x144/0x210
->> [c00000026ecdf9d0] [c000000002536f70] of_detach_node+0xf0/0x180
->> [c00000026ecdfa40] [c0000000016ed494] dlpar_detach_node+0xc4/0x120
->> [c00000026ecdfa80] [c0000000016f47d0] dlpar_cpu_remove+0x280/0x560
->> [c00000026ecdfb60] [c0000000016f4d9c] dlpar_cpu_release+0xbc/0x1b0
->> [c00000026ecdfbb0] [c00000000161279c] arch_cpu_release+0x6c/0xb0
->> [c00000026ecdfbe0] [c00000000218ebf0] cpu_release_store+0xa0/0x100
->> [c00000026ecdfc20] [c000000002178388] dev_attr_store+0x68/0xa0
->> [c00000026ecdfc50] [c000000001bfaae8] sysfs_kf_write+0xa8/0xf0
->> [c00000026ecdfc80] [c000000001bf8a3c] kernfs_fop_write+0x2cc/0x400
->> [c00000026ecdfce0] [c000000001ad33fc] __vfs_write+0x5c/0x340
->> [c00000026ecdfd80] [c000000001ad89e8] vfs_write+0x1a8/0x3d0
->> [c00000026ecdfdd0] [c000000001ad9178] SyS_write+0xa8/0x1a0
->> [c00000026ecdfe30] [c0000000015eb8e0] system_call+0x58/0x6c
-> 
-> I usually omit all the addresses in the change log, they don't add much
-> for future readers. I fixed it up myself.
-
-Ok, good point. I'll be sure to try and remember for future patches.
-
-> 
->> Fix the issue by removing the of_node_put(parent) call from
->> dlpar_attach_node(), and ensuring that the reference to the parent node
->> is properly held and released by the caller dlpar_cpu_add().
+>>> Hi,
+>>>
+>>> I see a the following traceback when running an SMP image based on
+>>> 85xx/mpc85xx_cds_defconfig in qemu.
+>>>
+>>> ------------[ cut here ]------------
+>>> WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 
+>>> smp_call_function_many+0xcc/0x2fc
+>>> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.14.0-rc1-00009-g0666f56 #1
+>>> task: cf830000 task.stack: cf82e000
+>>> NIP:  c00a93c8 LR: c00a9634 CTR: 00000001
+>>> REGS: cf82fde0 TRAP: 0700   Not tainted  (4.14.0-rc1-00009-g0666f56)
+>>> MSR:  00021000 <CE,ME>  CR: 24000082  XER: 00000000
+>>>
+>>> GPR00: c00a9634 cf82fe90 cf830000 c050ad3c c0015a54 00000000 00000001 
+>>> 00000001
+>>> GPR08: 00000001 00000000 00000000 cf82e000 24000084 00000000 c0003150 
+>>> 00000000
+>>> GPR16: 00000000 00000000 00000000 00000000 00000000 00000001 00000000 
+>>> c0510000
+>>> GPR24: 00000000 c0015a54 00000000 c050ad3c c051823c c050ad3c 00000025 
+>>> 00000000
+>>> NIP [c00a93c8] smp_call_function_many+0xcc/0x2fc
+>>> LR [c00a9634] smp_call_function+0x3c/0x50
+>>> Call Trace:
+>>> [cf82fe90] [00000010] 0x10 (unreliable)
+>>> [cf82fed0] [c00a9634] smp_call_function+0x3c/0x50
+>>> [cf82fee0] [c0015d2c] flush_tlb_kernel_range+0x20/0x38
+>>> [cf82fef0] [c001524c] mark_initmem_nx+0x154/0x16c
+>>> [cf82ff20] [c001484c] free_initmem+0x20/0x4c
+>>> [cf82ff30] [c000316c] kernel_init+0x1c/0x108
+>>> [cf82ff40] [c000f3a8] ret_from_kernel_thread+0x5c/0x64
+>>> Instruction dump:
+>>> 7c0803a6 7d808120 38210040 4e800020 3d20c052 812981a0 2f890000 40beffac
+>>> 3d20c051 8929ac64 2f890000 40beff9c <0fe00000> 4bffff94 7fc3f378 
+>>> 7f64db78
+>>> ---[ end trace 7da7bdcf8b15ddb3 ]---
 >>
->> Fixes: 215ee763f8cb ("powerpc: pseries: remove dlpar_attach_node dependency on full path")
->> Cc: stable@vger.kernel.org # v4.13+
+>> Thanks.
+>>
+>> I guess the system still runs OK otherwise, you're just seeing the 
+>> warning?
+>>
+> Yes, though I am not sure if that is because there is only one active 
+> CPU (there is
+> still only one if I say "-smp 4" on the qemu command line).
 > 
-> It doesn't need to go to stable, v4.13 doesn't have that commit, it's
-> only in v4.14-rc1.
+>>> A complete log is available at:
+>>> http://kerneltests.org/builders/qemu-ppc-master/builds/814/steps/qemubuildcommand/logs/stdio 
+>>>
+>>>
+>>> Bisect points to commit 3184cc4b6f6a1dc0 ("powerpc/mm: Fix kernel RAM 
+>>> protection
+>>> after freeing unused memory on PPC32"). Bisect log is attached. A 
+>>> quick look
+>>> suggests that mark_initmem_nx() is called with interrupts disabled, 
+>>> which
+>>> triggers the traceback.
+>>
+>> Hmm. Yes the MSR says you have interrupts disabled (EE missing).
+>>
+>> But I don't see why. start_kernel() did local_irq_enable(), so I don't
+>> understand why we got to mark_initmem_nx() with them disabled. I'll hope
+>> that Christophe has some idea.
+>>
+> Good question. I only see this with one of 9 ppc emulations, with 
+> 85xx/mpc85xx_cds_defconfig
+> +CONFIG_DEVTMPFS=y +CONFIG_SMP=y. Maybe there is a platform specific 
+> init function
+> which leaves interrupts disabled. Question is which one that might be.
+> 
 
-My bad, Abdul mentioned 4.13.0 in his email, but sure enough you are correct.
+Unfortunatly no, I have no idea. My three platforms (860, 885 and 8321) 
+are not SMPs so that warning would not appear, but I added a WARN_ON(1) 
+just become calling mark_initmem_nx(), and I can confirm that MSR has EE 
+set on all three at that time.
 
-[root@ltcalpine2-lp2 linux]# git tag --contains 215ee763f8cb
-v4.14-rc1
+So as you suggest, there must be a platform specific stuff leaving the 
+interrupts disabled.
 
-Thanks for catching that.
+Christophe
 
-> 
-> I dropped the stable tag.
-> 
->> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> index fc0d8f9..473d817 100644
->> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> @@ -462,15 +462,17 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->>  	}
->>  
->>  	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
->> -	of_node_put(parent);
->>  	if (!dn) {
->>  		pr_warn("Failed call to configure-connector, drc index: %x\n",
->>  			drc_index);
->>  		dlpar_release_drc(drc_index);
->> +		of_node_put(parent);
->>  		return -EINVAL;
->>  	}
->>  
->>  	rc = dlpar_attach_node(dn, parent);
-> 
-> I added a comment here that I had in my version:
-Sure np.
 
--Tyrel
-
-> 
-> +       /* Regardless we are done with parent now */
-> 
->> +	of_node_put(parent);
->> +
->>  	if (rc) {
->>  		saved_rc = rc;
->>  		pr_warn("Failed to attach node %s, rc: %d, drc index: %x\n",
-> 
-> cheers
-> 
+> Guenter
