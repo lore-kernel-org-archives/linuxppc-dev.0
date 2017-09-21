@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyKGW5yhszDqTc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 11:46:43 +1000 (AEST)
-In-Reply-To: <1505355228-15039-1-git-send-email-gromero@linux.vnet.ibm.com>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyKGX5G2bzDqXn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 11:46:44 +1000 (AEST)
+In-Reply-To: <20170919104553.5146-1-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: stable@vger.kernel.org, mikey@neuling.org, cyrilbur@gmail.com,
- sam.bobroff@au1.ibm.com
-Subject: Re: [v2] powerpc/tm: Flush TM only if CPU has TM feature
-Message-Id: <3xyKGW31PFz9sPk@ozlabs.org>
-Date: Thu, 21 Sep 2017 11:46:43 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/2] powerpc/sstep: Fix issues with set_cr0()
+Message-Id: <3xyKGX3RVdz9sPm@ozlabs.org>
+Date: Thu, 21 Sep 2017 11:46:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-09-14 at 02:13:48 UTC, Gustavo Romero wrote:
-> Commit cd63f3c ("powerpc/tm: Fix saving of TM SPRs in core dump")
-> added code to access TM SPRs in flush_tmregs_to_thread(). However
-> flush_tmregs_to_thread() does not check if TM feature is available on
-> CPU before trying to access TM SPRs in order to copy live state to
-> thread structures. flush_tmregs_to_thread() is indeed guarded by
-> CONFIG_PPC_TRANSACTIONAL_MEM but it might be the case that kernel
-> was compiled with CONFIG_PPC_TRANSACTIONAL_MEM enabled and ran on
-> a CPU without TM feature available, thus rendering the execution
-> of TM instructions that are treated by the CPU as illegal instructions.
+On Tue, 2017-09-19 at 10:45:52 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> The fix is just to add proper checking in flush_tmregs_to_thread()
-> if CPU has the TM feature before accessing any TM-specific resource,
-> returning immediately if TM is no available on the CPU. Adding
-> that checking in flush_tmregs_to_thread() instead of in places
-> where it is called, like in vsr_get() and vsr_set(), is better because
-> avoids the same problem cropping up elsewhere.
+> set_cr0() broke when we changed analyse_instr() to not modify the
+> register state. Instead of looking at regs->gpr[x] which has not
+> been updated yet, we need to look at op->val.
 > 
-> Cc: stable@vger.kernel.org # v4.13+
-> Fixes: cd63f3c ("powerpc/tm: Fix saving of TM SPRs in core dump")
-> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
-> Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+> Fixes: 3cdfcbfd32b9 ("powerpc: Change analyse_instr so it doesn't modify *regs")
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Applied to powerpc fixes, thanks.
+Series applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/c1fa0768a8713b135848f78fd43ffc
+https://git.kernel.org/powerpc/c/ad47ff3e33503e0969db2d4f9a4094
 
 cheers
