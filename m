@@ -1,22 +1,18 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyV5t2x7KzDsM5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 18:24:50 +1000 (AEST)
-Date: Thu, 21 Sep 2017 16:06:53 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- Stephan Muller <smueller@chronox.de>
-Subject: Re: [PATCH] crypto: talitos - Don't provide setkey for non hmac
- hashing algs.
-Message-ID: <20170921080653.GE7718@gondor.apana.org.au>
-References: <20170912090339.56D8369CAD@po15668-vm-win7.idsi0.si.c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170912090339.56D8369CAD@po15668-vm-win7.idsi0.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyWjv0WYpzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 19:37:38 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] mm: fix RODATA_TEST failure "rodata_test: test data was not
+ read only"
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Kees Cook <keescook@chromium.org>, Jinbum Park <jinb.park7@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Message-Id: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
+Date: Thu, 21 Sep 2017 11:37:28 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 12, 2017 at 11:03:39AM +0200, Christophe Leroy wrote:
-> Today, md5sum fails with error -ENOKEY because a setkey
-> function is set for non hmac hashing algs, see strace output below:
-> 
-> mmap(NULL, 378880, PROT_READ, MAP_SHARED, 6, 0) = 0x77f50000
-> accept(3, 0, NULL)                      = 7
-> vmsplice(5, [{"bin/\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 378880}], 1, SPLICE_F_MORE|SPLICE_F_GIFT) = 262144
-> splice(4, NULL, 7, NULL, 262144, SPLICE_F_MORE) = -1 ENOKEY (Required key not available)
-> write(2, "Generation of hash for file kcap"..., 50) = 50
-> munmap(0x77f50000, 378880)              = 0
-> 
-> This patch ensures that setkey() function is set only
-> for hmac hashing.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On powerpc, RODATA_TEST fails with message the following messages:
 
-Patch applied.  Thanks.
+[    6.199505] Freeing unused kernel memory: 528K
+[    6.203935] rodata_test: test data was not read only
+
+This is because GCC allocates it to .data section:
+
+c0695034 g     O .data	00000004 rodata_test_data
+
+Since commit 056b9d8a76924 ("mm: remove rodata_test_data export,
+add pr_fmt"), rodata_test_data is used only inside rodata_test.c
+By declaring it static, it gets properly allocated into .rodata
+section instead of .data:
+
+c04df710 l     O .rodata	00000004 rodata_test_data
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ mm/rodata_test.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/rodata_test.c b/mm/rodata_test.c
+index 6bb4deb12e78..d908c8769b48 100644
+--- a/mm/rodata_test.c
++++ b/mm/rodata_test.c
+@@ -14,7 +14,7 @@
+ #include <linux/uaccess.h>
+ #include <asm/sections.h>
+ 
+-const int rodata_test_data = 0xC3;
++static const int rodata_test_data = 0xC3;
+ 
+ void rodata_test(void)
+ {
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.13.3
