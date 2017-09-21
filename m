@@ -1,36 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x22b.google.com (mail-vk0-x22b.google.com
+ [IPv6:2607:f8b0:400c:c05::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyXWn15kZzDqT0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 20:13:57 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Landley <rob@landley.net>, Christophe LEROY <christophe.leroy@c-s.fr>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, mhocko@suse.com, peterz@infradead.org,
- viresh.kumar@linaro.org, Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- mingo@kernel.org, lokeshvutla@ti.com,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linux-input@vger.kernel.org,
- thomas.lendacky@amd.com, lauraa@codeaurora.org, keescook@chromium.org,
- Jiri Kosina <jikos@kernel.org>, rostedt@goodmis.org,
- linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, tglx@linutronix.de,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, tj@kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3] Make initramfs honor CONFIG_DEVTMPFS_MOUNT
-In-Reply-To: <d6a5ba05-5de2-24e0-49ae-437058001b37@landley.net>
-References: <1495700957.9020.43.camel@abdul.in.ibm.com>
- <8760gp9jjl.fsf@concordia.ellerman.id.au>
- <20170526072437.46499fbd@canb.auug.org.au>
- <87a7e82d-0af5-7f9e-6bd6-7e28b238e866@landley.net>
- <87r2z86ykt.fsf@concordia.ellerman.id.au>
- <4aa9cb26-f868-0720-e5c8-3c4e08afad20@landley.net>
- <3ba5ddc7-d1a2-7f54-0a26-0752f3975226@c-s.fr>
- <d6a5ba05-5de2-24e0-49ae-437058001b37@landley.net>
-Date: Thu, 21 Sep 2017 20:13:55 +1000
-Message-ID: <878th8cqak.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyYZ36ydCzDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 21:00:59 +1000 (AEST)
+Received: by mail-vk0-x22b.google.com with SMTP id p204so2860146vkp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 04:00:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87d16kcqsz.fsf@concordia.ellerman.id.au>
+References: <1505902791-26383-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ <87d16kcqsz.fsf@concordia.ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Thu, 21 Sep 2017 21:00:56 +1000
+Message-ID: <CAKTCnznFX=HkB9jUEKCHb=gbZxuupHpRrbwuM93cN=jAU5Wyhg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/livepatch: Fix livepatch stack access
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,61 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Landley <rob@landley.net> writes:
+On Thu, Sep 21, 2017 at 8:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
+>
+>> While running stress test with livepatch module loaded, kernel
+>> bug was triggered.
+>>
+>> cpu 0x5: Vector: 400 (Instruction Access) at [c0000000eb9d3b60]
+>>     pc: c0000000eb9d3e30
+>>     lr: c0000000eb9d3e30
+>>     sp: c0000000eb9d3de0
+>>    msr: 800000001280b033
+>>   current = 0xc0000000dbd38700
+>>   paca    = 0xc00000000fe01400   softe: 0        irq_happened: 0x01
+>>     pid   = 8618, comm = make
+>> Linux version 4.13.0+ (root@ubuntu) (gcc version 6.3.0 20170406 (Ubuntu 6.3.0-12ubuntu2)) #1 SMP Wed Sep 13 03:49:27 EDT 2017
+>>
+>> 5:mon> t
+>> [c0000000eb9d3de0] c0000000eb9d3e30 (unreliable)
+>> [c0000000eb9d3e30] c000000000008ab4 hardware_interrupt_common+0x114/0x120
+>>  --- Exception: 501 (Hardware Interrupt) at c000000000053040 livepatch_handler+0x4c/0x74
+>> [c0000000eb9d4120] 0000000057ac6e9d (unreliable)
+>> [d0000000089d9f78] 2e0965747962382e
+>> SP (965747962342e09) is in userspace
+>>
+>> When an interrupt is served in between the livepatch_handler execution,
+>> there are chances of the livepatch_stack/task task getting corrupted.
+>
+> Ouch. That's pretty broken by me.
+>
 
-> On 09/14/2017 04:17 AM, Christophe LEROY wrote:
->> Le 14/09/2017 =C3=A0 01:51, Rob Landley a =C3=A9crit :
->>> From: Rob Landley <rob@landley.net>
->>>
->>> Make initramfs honor CONFIG_DEVTMPFS_MOUNT, and move
->>> /dev/console open after devtmpfs mount.
->>>
->>> Add workaround for Debian bug that was copied by Ubuntu.
->>=20
->> Is that a bug only for Debian ? Why ?
->
-> Look down, specifically this bit:
->
->>> v2 discussion:
->>> http://lkml.iu.edu/hypermail/linux/kernel/1705.2/05611.html
->
-> That's some discussion of version 2 of this patch, which was merged for
-> a while last dev cycle, then backed out again because it triggered the
-> same bug in a number of system init scripts:
->
->   http://lkml.iu.edu/hypermail/linux/kernel/1705.2/07072.html
->   http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01182.html
->   http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01505.html
->   http://lkml.iu.edu/hypermail/linux/kernel/1705.3/01320.html
->
-> All of whom copied the broken error "recovery" path from debian. If they
-> checked whether it was already mounted, or didn't _blank_ the /dev
-> directory in response to mounting the exact same filesystem over itself
-> giving -EBUSY, the system would work fine. Heck, if you built a kernel
-> with a static /dev in initramfs and no devtmpfs configured in, the
-> script would break things exactly the same way. The breakage is that
-> script takes a hammer to a perfectly functional /dev directory and then
-> continues the boot with an empty /dev. That's bonkers.
->
->> Why should a Debian bug be fixed by a workaround in the mainline kernel ?
->
-> That was my argument last time, and the answer was "Breaking userspace
-> is bad, mmmkay." Even when userspace is doing something REALLY OBVIOUSLY
-> STUPID and it is _clearly_ their fault, as long as they got there first
-> they've established the status quo and it doesn't matter how silly it is.
->
-> This was explicitly stated to me here:
->
->   http://lkml.iu.edu/hypermail/linux/kernel/1705.3/03292.html
->
-> I.E. don't argue with me, argue with him. :)
+I was worried more about preemption as I said in the review comment earlier,
+this is new. It looks like we restored the wrong r1 on returning from
+the interrupt
+context? It would be nice to see any pt_regs changes due to the interrupt.
+Did the interrupt handling code called something that needed live-patching?
 
-I'm still here. And I'm still right :)
 
-No one wants their system to stop booting because of this obscure
-functionality.
+>> Fix the corruption by using r11 register for livepatch stack manipulation,
+>> instead of shuffling task stack and livepatch stack into r1 register.
+>> Using r11 register also avoids disabling/enabling irq's while setting
+>> up the livepatch stack.
+>
+> I'm trying to think if there's some reason I didn't use r11. But I can't
+> remember anything specific. I suspect I just didn't check the ABI
 
-Just put it behind a new config option which defaults off. No
-workarounds required, no broken systems, no long email threads required.
+We can't use r11, this is ftrace with regs, we've restore registers before
+calling livepatch_handler, I don't think we can clobber r11, but I might
+be sleep deprived and missing something
 
-cheers
+> closely enough, and knew I could use r0 and r12 so stuck with them.
+>
+> cheers
+
+Balbir
