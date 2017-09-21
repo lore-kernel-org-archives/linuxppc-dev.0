@@ -3,8 +3,8 @@ Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyh6F1NmqzDqT0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 01:55:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyh6G1WyczDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 01:55:50 +1000 (AEST)
 From: Mark Brown <broonie@kernel.org>
 To: Arvind Yadav <arvind.yadav.cs@gmail.com>
 Cc: Mark Brown <broonie@kernel.org>, lgirdwood@gmail.com, broonie@kernel.org,
@@ -13,11 +13,11 @@ Cc: Mark Brown <broonie@kernel.org>, lgirdwood@gmail.com, broonie@kernel.org,
  alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
  linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl-asoc-card: Handle return value of devm_kasprintf"
- to the asoc tree
-In-Reply-To: <d973fbc962f750ef87c0bccf7b2df6536c8e987f.1505971045.git.arvind.yadav.cs@gmail.com>
-Message-Id: <E1dv3p2-0006Lg-0Q@debutante>
-Date: Thu, 21 Sep 2017 16:55:28 +0100
+Subject: Applied "ASoC: omap-hdmi-audio: Handle return value of
+ devm_kasprintf" to the asoc tree
+In-Reply-To: <1505901971-12004-4-git-send-email-arvind.yadav.cs@gmail.com>
+Message-Id: <E1dv3p8-0006N6-Or@debutante>
+Date: Thu, 21 Sep 2017 16:55:34 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: fsl-asoc-card: Handle return value of devm_kasprintf
+   ASoC: omap-hdmi-audio: Handle return value of devm_kasprintf
 
 has been applied to the asoc tree at
 
@@ -54,33 +54,32 @@ to this mail.
 Thanks,
 Mark
 
->From 7add71b623a2b2abc2e0947a21fb31e2c8f71e18 Mon Sep 17 00:00:00 2001
+>From 94a6a8e8b57a8ece33b97a6dfc5f7eae61ff96f8 Mon Sep 17 00:00:00 2001
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 21 Sep 2017 10:50:03 +0530
-Subject: [PATCH] ASoC: fsl-asoc-card: Handle return value of devm_kasprintf
+Date: Wed, 20 Sep 2017 15:36:11 +0530
+Subject: [PATCH] ASoC: omap-hdmi-audio: Handle return value of devm_kasprintf
 
 devm_kasprintf() can fail here and we must check its return value.
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl-asoc-card.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ sound/soc/omap/omap-hdmi-audio.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 3772abbdd7b7..1225e0399de8 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -639,6 +639,10 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 				devm_kasprintf(&pdev->dev, GFP_KERNEL,
- 					       "ac97-codec.%u",
- 					       (unsigned int)idx);
-+		if (!priv->dai_link[0].codec_name) {
-+			ret = -ENOMEM;
-+			goto asrc_fail;
-+		}
- 	}
+diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-audio.c
+index 3e9cc4842a1d..8eeac7cab1c1 100644
+--- a/sound/soc/omap/omap-hdmi-audio.c
++++ b/sound/soc/omap/omap-hdmi-audio.c
+@@ -362,6 +362,9 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
  
- 	priv->dai_link[0].platform_of_node = cpu_np;
+ 	card->name = devm_kasprintf(dev, GFP_KERNEL,
+ 				    "HDMI %s", dev_name(ad->dssdev));
++	if (!card->name)
++		return -ENOMEM;
++
+ 	card->owner = THIS_MODULE;
+ 	card->dai_link =
+ 		devm_kzalloc(dev, sizeof(*(card->dai_link)), GFP_KERNEL);
 -- 
 2.14.1
