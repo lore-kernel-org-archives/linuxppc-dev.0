@@ -1,23 +1,16 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyQ1r1r4WzDqjC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 15:21:04 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id f84so2069464pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 22:21:04 -0700 (PDT)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- fabio.estevam@nxp.com, peter.ujfalusi@ti.com, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyQ6G3554zDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 15:24:54 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-omap@vger.kernel.org
-Subject: [PATCH v2 2/3] ASoC: fsl-asoc-card: Handle return value of
- devm_kasprintf
-Date: Thu, 21 Sep 2017 10:50:03 +0530
-Message-Id: <d973fbc962f750ef87c0bccf7b2df6536c8e987f.1505971045.git.arvind.yadav.cs@gmail.com>
+	mikey@neuling.org
+Subject: [PATCH] powerpc: Add PPC_EMULATED_STATS to powernv_defconfig
+Date: Thu, 21 Sep 2017 15:24:49 +1000
+Message-Id: <20170921052449.20057-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-devm_kasprintf() can fail here and we must check its return value.
+This is useful, especially for developers.
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
-changes in v2:
-               Set return 'ret' to -ENOMEM.
+ arch/powerpc/configs/powernv_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
- sound/soc/fsl/fsl-asoc-card.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 2db4d0c..a389885 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -639,6 +639,10 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 				devm_kasprintf(&pdev->dev, GFP_KERNEL,
- 					       "ac97-codec.%u",
- 					       (unsigned int)idx);
-+		if (!priv->dai_link[0].codec_name) {
-+			ret = -ENOMEM;
-+			goto asrc_fail;
-+		}
- 	}
- 
- 	priv->dai_link[0].platform_of_node = cpu_np;
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index caee834760..3fb2a7ab54 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -295,6 +295,7 @@ CONFIG_FUNCTION_GRAPH_TRACER=y
+ CONFIG_SCHED_TRACER=y
+ CONFIG_FTRACE_SYSCALLS=y
+ CONFIG_BLK_DEV_IO_TRACE=y
++CONFIG_PPC_EMULATED_STATS=y
+ CONFIG_CODE_PATCHING_SELFTEST=y
+ CONFIG_FTR_FIXUP_SELFTEST=y
+ CONFIG_MSI_BITMAP_SELFTEST=y
 -- 
-1.9.1
+2.11.0
