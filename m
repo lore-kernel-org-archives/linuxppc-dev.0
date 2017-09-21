@@ -3,21 +3,21 @@ Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyh6G1WyczDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 01:55:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyh776fQrzDrFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 01:56:35 +1000 (AEST)
 From: Mark Brown <broonie@kernel.org>
 To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, timur@tabi.org, nicoleotsuka@gmail.com,
- Xiubo.Lee@gmail.com, fabio.estevam@nxp.com, peter.ujfalusi@ti.com,
- alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
- linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org
-Subject: Applied "ASoC: omap-hdmi-audio: Handle return value of
- devm_kasprintf" to the asoc tree
-In-Reply-To: <1505901971-12004-4-git-send-email-arvind.yadav.cs@gmail.com>
-Message-Id: <E1dv3p8-0006N6-Or@debutante>
-Date: Thu, 21 Sep 2017 16:55:34 +0100
+Cc: Peter Ujfalusi <peter.ujfalusi@ti.com>, Mark Brown <broonie@kernel.org>,
+ lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ fabio.estevam@nxp.com, peter.ujfalusi@ti.com, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+Subject: Applied "ASoC: davinci-mcasp: Handle return value of devm_kasprintf"
+ to the asoc tree
+In-Reply-To: <1505901971-12004-2-git-send-email-arvind.yadav.cs@gmail.com>
+Message-Id: <E1dv3pM-0006Oy-DZ@debutante>
+Date: Thu, 21 Sep 2017 16:55:48 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: omap-hdmi-audio: Handle return value of devm_kasprintf
+   ASoC: davinci-mcasp: Handle return value of devm_kasprintf
 
 has been applied to the asoc tree at
 
@@ -54,32 +54,56 @@ to this mail.
 Thanks,
 Mark
 
->From 94a6a8e8b57a8ece33b97a6dfc5f7eae61ff96f8 Mon Sep 17 00:00:00 2001
+>From 0c8b794c4a10aaf7ac0d4a49be2b2638e2038adb Mon Sep 17 00:00:00 2001
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Wed, 20 Sep 2017 15:36:11 +0530
-Subject: [PATCH] ASoC: omap-hdmi-audio: Handle return value of devm_kasprintf
+Date: Wed, 20 Sep 2017 15:36:09 +0530
+Subject: [PATCH] ASoC: davinci-mcasp: Handle return value of devm_kasprintf
 
 devm_kasprintf() can fail here and we must check its return value.
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Acked-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/omap/omap-hdmi-audio.c | 3 +++
- 1 file changed, 3 insertions(+)
+ sound/soc/davinci/davinci-mcasp.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-audio.c
-index 3e9cc4842a1d..8eeac7cab1c1 100644
---- a/sound/soc/omap/omap-hdmi-audio.c
-+++ b/sound/soc/omap/omap-hdmi-audio.c
-@@ -362,6 +362,9 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
- 
- 	card->name = devm_kasprintf(dev, GFP_KERNEL,
- 				    "HDMI %s", dev_name(ad->dssdev));
-+	if (!card->name)
-+		return -ENOMEM;
-+
- 	card->owner = THIS_MODULE;
- 	card->dai_link =
- 		devm_kzalloc(dev, sizeof(*(card->dai_link)), GFP_KERNEL);
+diff --git a/sound/soc/davinci/davinci-mcasp.c b/sound/soc/davinci/davinci-mcasp.c
+index 40be08cecea4..804c6f2bcf21 100644
+--- a/sound/soc/davinci/davinci-mcasp.c
++++ b/sound/soc/davinci/davinci-mcasp.c
+@@ -1868,6 +1868,10 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
+ 	if (irq >= 0) {
+ 		irq_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s_common",
+ 					  dev_name(&pdev->dev));
++		if (!irq_name) {
++			ret = -ENOMEM;
++			goto err;
++		}
+ 		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+ 						davinci_mcasp_common_irq_handler,
+ 						IRQF_ONESHOT | IRQF_SHARED,
+@@ -1885,6 +1889,10 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
+ 	if (irq >= 0) {
+ 		irq_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s_rx",
+ 					  dev_name(&pdev->dev));
++		if (!irq_name) {
++			ret = -ENOMEM;
++			goto err;
++		}
+ 		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+ 						davinci_mcasp_rx_irq_handler,
+ 						IRQF_ONESHOT, irq_name, mcasp);
+@@ -1900,6 +1908,10 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
+ 	if (irq >= 0) {
+ 		irq_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s_tx",
+ 					  dev_name(&pdev->dev));
++		if (!irq_name) {
++			ret = -ENOMEM;
++			goto err;
++		}
+ 		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+ 						davinci_mcasp_tx_irq_handler,
+ 						IRQF_ONESHOT, irq_name, mcasp);
 -- 
 2.14.1
