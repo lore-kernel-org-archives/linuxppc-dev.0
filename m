@@ -1,19 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyP0d6NG4zDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 14:34:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyPW25nQZzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 14:57:50 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com, anju@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/perf: Fix for core/nest imc call trace on
- cpuhotplug
-In-Reply-To: <1505151134-26128-1-git-send-email-anju@linux.vnet.ibm.com>
-References: <1505151134-26128-1-git-send-email-anju@linux.vnet.ibm.com>
-Date: Thu, 21 Sep 2017 14:34:57 +1000
-Message-ID: <87r2v0d5zi.fsf@concordia.ellerman.id.au>
+To: Russell Currey <ruscur@russell.cc>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/eeh: Create PHB PEs after EEH is initialized
+In-Reply-To: <1505960399.19485.0.camel@russell.cc>
+References: <1504766140.12628.14.camel@kernel.crashing.org>
+ <87h8vxljpf.fsf@concordia.ellerman.id.au>
+ <1505960399.19485.0.camel@russell.cc>
+Date: Thu, 21 Sep 2017 14:57:50 +1000
+Message-ID: <87mv5od4xd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,19 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
+Russell Currey <ruscur@russell.cc> writes:
 
-> Nest/core pmu units are enabled only when it is used. A reference count is
-> maintained for the events which uses the nest/core pmu units. Currently in
-> *_imc_counters_release function a WARN() is used for notification of any
-> underflow of ref count. Replace WARN() with a pr_info since it is an overkill.
+> On Wed, 2017-09-20 at 20:59 +1000, Michael Ellerman wrote:
+>> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+>> 
+>> > Otherwise we end up not yet having computed the right
+>> > diag data size on powernv where EEH initialization
+>> > is delayed, thus causing memory corruption later on
+>> > when calling OPAL.
+>> 
+>> When did this break? Do we have a commit we can tag with Fixes: ?
+>> Stable?
+>> 
+>> I assume we want to merge this ASAP as a fix, I think I can safely take
+>> this without patch 2?
+>> 
+>> cheers
+>
+> Yes it should be merged ASAP as a fix, and fixes
+> 5cb1f8fdddb7475f38ea9fba48da17c002eec90b.
 
-As discussed elsewhere this is not the right solution.
-
-If it's OK for the reference count to be negative, then we shouldn't
-print anything when it is.
-
-But I don't understand how it can be OK for the refcount to be negative.
-That means someone has a negative number of references to something?
+Thanks. I've put patch 1 in fixes-test.
 
 cheers
