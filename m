@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyKGW6TQ3zDqXn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyKGW5yhszDqTc
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 11:46:43 +1000 (AEST)
-In-Reply-To: <20170915100821.7254-1-naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <1505355228-15039-1-git-send-email-gromero@linux.vnet.ibm.com>
+To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/kprobes: Update optprobes to use emulate_update_regs()
-Message-Id: <3xyKGW4mR8z9sNr@ozlabs.org>
+Cc: stable@vger.kernel.org, mikey@neuling.org, cyrilbur@gmail.com,
+ sam.bobroff@au1.ibm.com
+Subject: Re: [v2] powerpc/tm: Flush TM only if CPU has TM feature
+Message-Id: <3xyKGW31PFz9sPk@ozlabs.org>
 Date: Thu, 21 Sep 2017 11:46:43 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,25 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-09-15 at 10:08:21 UTC, "Naveen N. Rao" wrote:
-> Optprobes depended on an updated regs->nip from analyse_instr() to
-> identify the location to branch back from the optprobes trampoline.
-> However, since commit 3cdfcbfd32b9d ("powerpc: Change analyse_instr so
-> it doesn't modify *regs"), analyse_instr() doesn't update the registers
-> anymore.  Due to this, we end up branching back from the optprobes
-> trampoline to the same branch into the trampoline resulting in a loop.
+On Thu, 2017-09-14 at 02:13:48 UTC, Gustavo Romero wrote:
+> Commit cd63f3c ("powerpc/tm: Fix saving of TM SPRs in core dump")
+> added code to access TM SPRs in flush_tmregs_to_thread(). However
+> flush_tmregs_to_thread() does not check if TM feature is available on
+> CPU before trying to access TM SPRs in order to copy live state to
+> thread structures. flush_tmregs_to_thread() is indeed guarded by
+> CONFIG_PPC_TRANSACTIONAL_MEM but it might be the case that kernel
+> was compiled with CONFIG_PPC_TRANSACTIONAL_MEM enabled and ran on
+> a CPU without TM feature available, thus rendering the execution
+> of TM instructions that are treated by the CPU as illegal instructions.
 > 
-> Fix this by calling out to emulate_update_regs() before using the nip.
-> Additionally, explicitly compare the return value from analyse_instr()
-> to 1, rather than just checking for !0 so as to guard against any
-> future changes to analyse_instr() that may result in -1 being returned
-> in more scenarios.
+> The fix is just to add proper checking in flush_tmregs_to_thread()
+> if CPU has the TM feature before accessing any TM-specific resource,
+> returning immediately if TM is no available on the CPU. Adding
+> that checking in flush_tmregs_to_thread() instead of in places
+> where it is called, like in vsr_get() and vsr_set(), is better because
+> avoids the same problem cropping up elsewhere.
 > 
-> Fixes: 3cdfcbfd32b9d ("powerpc: Change analyse_instr so it doesn't modify *regs")
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Cc: stable@vger.kernel.org # v4.13+
+> Fixes: cd63f3c ("powerpc/tm: Fix saving of TM SPRs in core dump")
+> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+> Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/8afafa6fba7809c0785018b77c95b1
+https://git.kernel.org/powerpc/c/c1fa0768a8713b135848f78fd43ffc
 
 cheers
