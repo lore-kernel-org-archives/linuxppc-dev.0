@@ -1,21 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyPW25nQZzDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 14:57:50 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Russell Currey <ruscur@russell.cc>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/eeh: Create PHB PEs after EEH is initialized
-In-Reply-To: <1505960399.19485.0.camel@russell.cc>
-References: <1504766140.12628.14.camel@kernel.crashing.org>
- <87h8vxljpf.fsf@concordia.ellerman.id.au>
- <1505960399.19485.0.camel@russell.cc>
-Date: Thu, 21 Sep 2017 14:57:50 +1000
-Message-ID: <87mv5od4xd.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyQ1r1r4WzDqjC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 15:21:04 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id f84so2069464pfj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Sep 2017 22:21:04 -0700 (PDT)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ fabio.estevam@nxp.com, peter.ujfalusi@ti.com, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-omap@vger.kernel.org
+Subject: [PATCH v2 2/3] ASoC: fsl-asoc-card: Handle return value of
+ devm_kasprintf
+Date: Thu, 21 Sep 2017 10:50:03 +0530
+Message-Id: <d973fbc962f750ef87c0bccf7b2df6536c8e987f.1505971045.git.arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Russell Currey <ruscur@russell.cc> writes:
+devm_kasprintf() can fail here and we must check its return value.
 
-> On Wed, 2017-09-20 at 20:59 +1000, Michael Ellerman wrote:
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> 
->> > Otherwise we end up not yet having computed the right
->> > diag data size on powernv where EEH initialization
->> > is delayed, thus causing memory corruption later on
->> > when calling OPAL.
->> 
->> When did this break? Do we have a commit we can tag with Fixes: ?
->> Stable?
->> 
->> I assume we want to merge this ASAP as a fix, I think I can safely take
->> this without patch 2?
->> 
->> cheers
->
-> Yes it should be merged ASAP as a fix, and fixes
-> 5cb1f8fdddb7475f38ea9fba48da17c002eec90b.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+changes in v2:
+               Set return 'ret' to -ENOMEM.
 
-Thanks. I've put patch 1 in fixes-test.
+ sound/soc/fsl/fsl-asoc-card.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-cheers
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 2db4d0c..a389885 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -639,6 +639,10 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 				devm_kasprintf(&pdev->dev, GFP_KERNEL,
+ 					       "ac97-codec.%u",
+ 					       (unsigned int)idx);
++		if (!priv->dai_link[0].codec_name) {
++			ret = -ENOMEM;
++			goto asrc_fail;
++		}
+ 	}
+ 
+ 	priv->dai_link[0].platform_of_node = cpu_np;
+-- 
+1.9.1
