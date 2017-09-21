@@ -1,23 +1,46 @@
-Return-Path: <broonie@sirena.co.uk>
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyh776fQrzDrFJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 01:56:35 +1000 (AEST)
-From: Mark Brown <broonie@kernel.org>
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: Peter Ujfalusi <peter.ujfalusi@ti.com>, Mark Brown <broonie@kernel.org>,
- lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- timur@tabi.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- fabio.estevam@nxp.com, peter.ujfalusi@ti.com, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
-Subject: Applied "ASoC: davinci-mcasp: Handle return value of devm_kasprintf"
- to the asoc tree
-In-Reply-To: <1505901971-12004-2-git-send-email-arvind.yadav.cs@gmail.com>
-Message-Id: <E1dv3pM-0006Oy-DZ@debutante>
-Date: Thu, 21 Sep 2017 16:55:48 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyjRy1ySWzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 02:56:13 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8LGtPW5005574
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 12:56:11 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d4gryss18-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 12:56:10 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 22 Sep 2017 02:56:08 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v8LGu5RQ38535364
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 02:56:05 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v8LGtthx029135
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 02:55:56 +1000
+Date: Thu, 21 Sep 2017 22:25:59 +0530
+From: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc/livepatch: Fix livepatch stack access
+References: <1505902791-26383-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ <87d16kcqsz.fsf@concordia.ellerman.id.au>
+ <CAKTCnznFX=HkB9jUEKCHb=gbZxuupHpRrbwuM93cN=jAU5Wyhg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKTCnznFX=HkB9jUEKCHb=gbZxuupHpRrbwuM93cN=jAU5Wyhg@mail.gmail.com>
+Message-Id: <20170921165559.ki4dnggjv7t25dah@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,83 +50,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+On 2017/09/21 09:00PM, Balbir Singh wrote:
+> On Thu, Sep 21, 2017 at 8:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
+> >
+> >> While running stress test with livepatch module loaded, kernel
+> >> bug was triggered.
+> >>
+> >> cpu 0x5: Vector: 400 (Instruction Access) at [c0000000eb9d3b60]
+> >>     pc: c0000000eb9d3e30
+> >>     lr: c0000000eb9d3e30
+> >>     sp: c0000000eb9d3de0
+> >>    msr: 800000001280b033
+> >>   current = 0xc0000000dbd38700
+> >>   paca    = 0xc00000000fe01400   softe: 0        irq_happened: 0x01
+> >>     pid   = 8618, comm = make
+> >> Linux version 4.13.0+ (root@ubuntu) (gcc version 6.3.0 20170406 (Ubuntu 6.3.0-12ubuntu2)) #1 SMP Wed Sep 13 03:49:27 EDT 2017
+> >>
+> >> 5:mon> t
+> >> [c0000000eb9d3de0] c0000000eb9d3e30 (unreliable)
+> >> [c0000000eb9d3e30] c000000000008ab4 hardware_interrupt_common+0x114/0x120
+> >>  --- Exception: 501 (Hardware Interrupt) at c000000000053040 livepatch_handler+0x4c/0x74
+> >> [c0000000eb9d4120] 0000000057ac6e9d (unreliable)
+> >> [d0000000089d9f78] 2e0965747962382e
+> >> SP (965747962342e09) is in userspace
+> >>
+> >> When an interrupt is served in between the livepatch_handler execution,
+> >> there are chances of the livepatch_stack/task task getting corrupted.
+> >
+> > Ouch. That's pretty broken by me.
+> >
+> 
+> I was worried more about preemption as I said in the review comment earlier,
+> this is new. It looks like we restored the wrong r1 on returning from
+> the interrupt
+> context? It would be nice to see any pt_regs changes due to the interrupt.
+> Did the interrupt handling code called something that needed live-patching?
 
-   ASoC: davinci-mcasp: Handle return value of devm_kasprintf
+The problem is just that the livepatch stack grows up, rather than down.  
+So, when this stack is used during interrupt handling, we'll clobber 
+part of this stack.
 
-has been applied to the asoc tree at
+There aren't any pt_regs changes due to this afaics. Just the livepatch 
+stack being over-written.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+> 
+> >> Fix the corruption by using r11 register for livepatch stack manipulation,
+> >> instead of shuffling task stack and livepatch stack into r1 register.
+> >> Using r11 register also avoids disabling/enabling irq's while setting
+> >> up the livepatch stack.
+> >
+> > I'm trying to think if there's some reason I didn't use r11. But I can't
+> > remember anything specific. I suspect I just didn't check the ABI
+> 
+> We can't use r11, this is ftrace with regs, we've restore registers before
+> calling livepatch_handler, I don't think we can clobber r11, but I might
+> be sleep deprived and missing something
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
+r11 is volatile and meant for usage in function linkage. With 
+-mprofile-kernel, we've just entered the new function and haven't 
+touched r11 yet. So, it appears to me that we can definetely use/clobber 
+it, along with r0 and r12.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
->From 0c8b794c4a10aaf7ac0d4a49be2b2638e2038adb Mon Sep 17 00:00:00 2001
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Wed, 20 Sep 2017 15:36:09 +0530
-Subject: [PATCH] ASoC: davinci-mcasp: Handle return value of devm_kasprintf
-
-devm_kasprintf() can fail here and we must check its return value.
-
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Acked-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/davinci/davinci-mcasp.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/sound/soc/davinci/davinci-mcasp.c b/sound/soc/davinci/davinci-mcasp.c
-index 40be08cecea4..804c6f2bcf21 100644
---- a/sound/soc/davinci/davinci-mcasp.c
-+++ b/sound/soc/davinci/davinci-mcasp.c
-@@ -1868,6 +1868,10 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
- 	if (irq >= 0) {
- 		irq_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s_common",
- 					  dev_name(&pdev->dev));
-+		if (!irq_name) {
-+			ret = -ENOMEM;
-+			goto err;
-+		}
- 		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
- 						davinci_mcasp_common_irq_handler,
- 						IRQF_ONESHOT | IRQF_SHARED,
-@@ -1885,6 +1889,10 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
- 	if (irq >= 0) {
- 		irq_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s_rx",
- 					  dev_name(&pdev->dev));
-+		if (!irq_name) {
-+			ret = -ENOMEM;
-+			goto err;
-+		}
- 		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
- 						davinci_mcasp_rx_irq_handler,
- 						IRQF_ONESHOT, irq_name, mcasp);
-@@ -1900,6 +1908,10 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
- 	if (irq >= 0) {
- 		irq_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s_tx",
- 					  dev_name(&pdev->dev));
-+		if (!irq_name) {
-+			ret = -ENOMEM;
-+			goto err;
-+		}
- 		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
- 						davinci_mcasp_tx_irq_handler,
- 						IRQF_ONESHOT, irq_name, mcasp);
--- 
-2.14.1
+- Naveen
