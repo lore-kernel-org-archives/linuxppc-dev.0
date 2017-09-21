@@ -1,36 +1,23 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Return-Path: <nicholas.piggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyTBk29C7zDqT0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 17:43:58 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id m30so3009496pgn.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 00:43:57 -0700 (PDT)
-Date: Thu, 21 Sep 2017 16:43:51 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Helge Deller <deller@gmx.de>, Joe Perches <joe@perches.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Andy Whitcroft <apw@canonical.com>
-Subject: Re: [RFC][PATCH v2 7/7] checkpatch: add pF/pf deprecation warning
-Message-ID: <20170921074351.GC773@jagdpanzerIV.localdomain>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
- <20170920162910.32053-8-sergey.senozhatsky@gmail.com>
- <1505929138.12311.5.camel@perches.com>
- <ddf9b54b-34d9-c1e2-e34f-a1cc055b8cf7@gmx.de>
- <1505931868.12311.7.camel@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyTyp6hGXzDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 18:18:42 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id a7so2209736pfj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 01:18:42 -0700 (PDT)
+Date: Thu, 21 Sep 2017 18:18:01 +1000
+From: Nicholas Piggin <nicholas.piggin@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc: Handle MCE on POWER9 with only DSISR bit 33
+ set
+Message-ID: <20170921181801.5a260281@roar.ozlabs.ibm.com>
+In-Reply-To: <20170921020434.21018-1-mikey@neuling.org>
+References: <20170921020434.21018-1-mikey@neuling.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1505931868.12311.7.camel@perches.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,27 +27,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (09/20/17 11:24), Joe Perches wrote:
-> On Wed, 2017-09-20 at 19:53 +0200, Helge Deller wrote:
-[..]
-> > Is it worth to mention, that it's still needed in older kernels?
-> > Just in case some patch get's backported.
+On Thu, 21 Sep 2017 12:04:34 +1000
+Michael Neuling <mikey@neuling.org> wrote:
 
-good question.
-
-> I think probably not.
+> On POWER9 DD2.1 and below, it's possible to get Machine Check
+> Exception (MCE) where only DSISR bit 33 is set. This will result in
+> the linux MCE handler seeing an unknown event, which triggers linux to
+> crash.
 > 
-> There are relatively few references and
-> modifications are unlikely to be backported.
+> We change this by detecting unknown events in the MCE handler and
+> marking them as handled so that we no longer crash. We do this only on
+> chip revisions known to have this problem.
+> 
+> MCE that occurs like this is spurious, so we don't need to do anything
+> in terms of servicing it. If there is something that needs to be
+> serviced, the CPU will raise the MCE again with the correct DSISR so
+> that it can be serviced properly.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+> v2 update commit message based on Balbir's comments
+> ---
+>  arch/powerpc/kernel/mce_power.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+> index b76ca198e0..72ec667136 100644
+> --- a/arch/powerpc/kernel/mce_power.c
+> +++ b/arch/powerpc/kernel/mce_power.c
+> @@ -595,6 +595,7 @@ static long mce_handle_error(struct pt_regs *regs,
+>  	uint64_t addr;
+>  	uint64_t srr1 = regs->msr;
+>  	long handled;
+> +	unsigned long pvr;
+>  
+>  	if (SRR1_MC_LOADSTORE(srr1))
+>  		handled = mce_handle_derror(regs, dtable, &mce_err, &addr);
+> @@ -604,6 +605,20 @@ static long mce_handle_error(struct pt_regs *regs,
+>  	if (!handled && mce_err.error_type == MCE_ERROR_TYPE_UE)
+>  		handled = mce_handle_ue_error(regs);
+>  
+> +	/*
+> +	 * On POWER9 DD2.1 and below, it's possible to get machine
+> +	 * check where only DSISR bit 33 is set. This will result in
+> +	 * the MCE handler seeing an unknown event and us crashing.
+> +	 * Change this to mark as handled on these revisions.
+> +	 */
+> +	pvr = mfspr(SPRN_PVR);
+> +	if (((PVR_VER(pvr) == PVR_POWER9) &&
+> +	     (PVR_CFG(pvr) == 2) &&
+> +	     (PVR_MIN(pvr) <= 1)) || cpu_has_feature(CPU_FTR_POWER9_DD1))
+> +		/* DD2.1 and below */
+> +		if (mce_err.error_type == MCE_ERROR_TYPE_UNKNOWN)
+> +		    handled = 1;
 
-I tend to agree.
+I might be missing something, but can you just do
 
-unlikely anyone backports printk message updates. I have quickly glanced
-through stable-4.9 and haven't seen such backports. well, may be there
-are some.
+  if (regs->dsisr == 0x40000000)
+      return 1;
 
-can tweak the warning a bit, probably. e.g. "if you are planning to
-backport your change to kernels older than 4.14 then ignore this
-warning". but not sure if it's worth it.
+In __machine_check_early_realmode_p9() ?
 
-	-ss
+Thanks,
+Nick
