@@ -1,22 +1,17 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyYZd684mzDsMC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 21:01:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xyYnH1KPYzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 21:10:43 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: cody@codyps.com
-Cc: David Binderman <dcb314@hotmail.com>,
- "benh\@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus\@samba.org" <paulus@samba.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:541: bad condition ?
-In-Reply-To: <87poankm95.fsf@concordia.ellerman.id.au>
-References: <HE1PR0802MB2331572C98E215722EE4411C9C630@HE1PR0802MB2331.eurprd08.prod.outlook.com>
- <87poankm95.fsf@concordia.ellerman.id.au>
-Date: Thu, 21 Sep 2017 21:01:28 +1000
-Message-ID: <87y3p8b9iv.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 0/5] More NMI IPI enablement work
+In-Reply-To: <20170918082706.6485-1-npiggin@gmail.com>
+References: <20170918082706.6485-1-npiggin@gmail.com>
+Date: Thu, 21 Sep 2017 21:10:42 +1000
+Message-ID: <87vakcb93h.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,31 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ + Cody in case he's still interested]
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> David Binderman <dcb314@hotmail.com> writes:
+> Hi,
 >
->> Hello there,
->>
->> linux-4.14-rc1/arch/powerpc/perf/hv-24x7.c:543]: (warning) Identical condition 's1<s2', second condition is always false
->>
->> Source code is
->>
->>     if (s1 < s2)
->>         return 1;
->>     if (s2 > s1)
->>         return -1;
->>
->> Suggest code rework.
+> Here is the NMI IPI enablement for powernv, which requires
+> supported firmware and hardware:
 >
-> Um thanks.
+> https://lists.ozlabs.org/pipermail/skiboot/2017-September/009111.html
 >
-> It's trying to implement a sort comparison returning -1, 0, 1.
->
-> So it's pretty obviously wrong, but also harmless AFAICS, because it's
-> just an optimisation before doing a full comparison using memcmp().
->
-> So yeah we should fix it, but not an actual bug AFAICS.
->
-> cheers
+> And some preceeding patches that fix issues I ran into when
+> testing it.
+
+Are any of these critical such that I should pick them up for 4.14 or
+earlier?
+
+cheers
