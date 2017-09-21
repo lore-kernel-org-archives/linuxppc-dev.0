@@ -1,46 +1,31 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <leoyang.li@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0076.outbound.protection.outlook.com [104.47.0.76])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xyjRy1ySWzDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 02:56:13 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8LGtPW5005574
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 12:56:11 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d4gryss18-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 12:56:10 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 22 Sep 2017 02:56:08 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8LGu5RQ38535364
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 02:56:05 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8LGtthx029135
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 02:55:56 +1000
-Date: Thu, 21 Sep 2017 22:25:59 +0530
-From: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc/livepatch: Fix livepatch stack access
-References: <1505902791-26383-1-git-send-email-kamalesh@linux.vnet.ibm.com>
- <87d16kcqsz.fsf@concordia.ellerman.id.au>
- <CAKTCnznFX=HkB9jUEKCHb=gbZxuupHpRrbwuM93cN=jAU5Wyhg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xylhB0pBwzDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 04:36:54 +1000 (AEST)
+From: Leo Li <leoyang.li@nxp.com>
+To: Rob Herring <robh+dt@kernel.org>, "mark.rutland@arm.com"
+ <mark.rutland@arm.com>
+CC: "oss@buserror.net" <oss@buserror.net>, Madalin-cristian Bucur
+ <madalin.bucur@nxp.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "arnd@arndb.de"
+ <arnd@arndb.de>, Roy Pledge <roy.pledge@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>
+Subject: RE: [v5 04/12] dt-bindings: soc/fsl: Update reserved memory binding
+ for QBMan
+Date: Thu, 21 Sep 2017 18:36:47 +0000
+Message-ID: <AM4PR0401MB1699D419007FB551153BD9CD8F660@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+References: <1505767187-4596-1-git-send-email-roy.pledge@nxp.com>
+ <1505767187-4596-5-git-send-email-roy.pledge@nxp.com>
+In-Reply-To: <1505767187-4596-5-git-send-email-roy.pledge@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKTCnznFX=HkB9jUEKCHb=gbZxuupHpRrbwuM93cN=jAU5Wyhg@mail.gmail.com>
-Message-Id: <20170921165559.ki4dnggjv7t25dah@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,66 +35,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/09/21 09:00PM, Balbir Singh wrote:
-> On Thu, Sep 21, 2017 at 8:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
-> >
-> >> While running stress test with livepatch module loaded, kernel
-> >> bug was triggered.
-> >>
-> >> cpu 0x5: Vector: 400 (Instruction Access) at [c0000000eb9d3b60]
-> >>     pc: c0000000eb9d3e30
-> >>     lr: c0000000eb9d3e30
-> >>     sp: c0000000eb9d3de0
-> >>    msr: 800000001280b033
-> >>   current = 0xc0000000dbd38700
-> >>   paca    = 0xc00000000fe01400   softe: 0        irq_happened: 0x01
-> >>     pid   = 8618, comm = make
-> >> Linux version 4.13.0+ (root@ubuntu) (gcc version 6.3.0 20170406 (Ubuntu 6.3.0-12ubuntu2)) #1 SMP Wed Sep 13 03:49:27 EDT 2017
-> >>
-> >> 5:mon> t
-> >> [c0000000eb9d3de0] c0000000eb9d3e30 (unreliable)
-> >> [c0000000eb9d3e30] c000000000008ab4 hardware_interrupt_common+0x114/0x120
-> >>  --- Exception: 501 (Hardware Interrupt) at c000000000053040 livepatch_handler+0x4c/0x74
-> >> [c0000000eb9d4120] 0000000057ac6e9d (unreliable)
-> >> [d0000000089d9f78] 2e0965747962382e
-> >> SP (965747962342e09) is in userspace
-> >>
-> >> When an interrupt is served in between the livepatch_handler execution,
-> >> there are chances of the livepatch_stack/task task getting corrupted.
-> >
-> > Ouch. That's pretty broken by me.
-> >
-> 
-> I was worried more about preemption as I said in the review comment earlier,
-> this is new. It looks like we restored the wrong r1 on returning from
-> the interrupt
-> context? It would be nice to see any pt_regs changes due to the interrupt.
-> Did the interrupt handling code called something that needed live-patching?
 
-The problem is just that the livepatch stack grows up, rather than down.  
-So, when this stack is used during interrupt handling, we'll clobber 
-part of this stack.
+> -----Original Message-----
+> From: Roy Pledge [mailto:roy.pledge@nxp.com]
+> Sent: Monday, September 18, 2017 3:40 PM
+> To: Leo Li <leoyang.li@nxp.com>; linuxppc-dev@lists.ozlabs.org; linux-arm=
+-
+> kernel@lists.infradead.org; linux-kernel@vger.kernel.org;
+> devicetree@vger.kernel.org
+> Cc: oss@buserror.net; Madalin-cristian Bucur <madalin.bucur@nxp.com>;
+> catalin.marinas@arm.com; linux@armlinux.org.uk; arnd@arndb.de;
+> mark.rutland@arm.com; Roy Pledge <roy.pledge@nxp.com>
+> Subject: [v5 04/12] dt-bindings: soc/fsl: Update reserved memory binding =
+for
+> QBMan
+>=20
+> Updates the QMan and BMan device tree bindings for reserved memory
+> nodes. This makes the reserved memory allocation compatible with
+> the shared-dma-pool usage.
+>=20
+> Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 
-There aren't any pt_regs changes due to this afaics. Just the livepatch 
-stack being over-written.
+Hi Rob and Mark,
 
-> 
-> >> Fix the corruption by using r11 register for livepatch stack manipulation,
-> >> instead of shuffling task stack and livepatch stack into r1 register.
-> >> Using r11 register also avoids disabling/enabling irq's while setting
-> >> up the livepatch stack.
-> >
-> > I'm trying to think if there's some reason I didn't use r11. But I can't
-> > remember anything specific. I suspect I just didn't check the ABI
-> 
-> We can't use r11, this is ftrace with regs, we've restore registers before
-> calling livepatch_handler, I don't think we can clobber r11, but I might
-> be sleep deprived and missing something
+Would you help to review this binding patch and ACK if it is ok?
 
-r11 is volatile and meant for usage in function linkage. With 
--mprofile-kernel, we've just entered the new function and haven't 
-touched r11 yet. So, it appears to me that we can definetely use/clobber 
-it, along with r0 and r12.
+Regards,
+Leo
 
-- Naveen
+> ---
+>  Documentation/devicetree/bindings/soc/fsl/bman.txt | 12 +++++-----
+>  Documentation/devicetree/bindings/soc/fsl/qman.txt | 26 ++++++++++++++++=
+-
+> -----
+>  2 files changed, 26 insertions(+), 12 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/bman.txt
+> b/Documentation/devicetree/bindings/soc/fsl/bman.txt
+> index 47ac834..48eed14 100644
+> --- a/Documentation/devicetree/bindings/soc/fsl/bman.txt
+> +++ b/Documentation/devicetree/bindings/soc/fsl/bman.txt
+> @@ -65,8 +65,8 @@ to the respective BMan instance
+>  BMan Private Memory Node
+>=20
+>  BMan requires a contiguous range of physical memory used for the backing
+> store
+> -for BMan Free Buffer Proxy Records (FBPR). This memory is reserved/alloc=
+ated
+> as a
+> -node under the /reserved-memory node
+> +for BMan Free Buffer Proxy Records (FBPR). This memory is reserved/alloc=
+ated
+> as
+> +a node under the /reserved-memory node.
+>=20
+>  The BMan FBPR memory node must be named "bman-fbpr"
+>=20
+> @@ -75,7 +75,9 @@ PROPERTIES
+>  - compatible
+>  	Usage:		required
+>  	Value type:	<stringlist>
+> -	Definition:	Must inclide "fsl,bman-fbpr"
+> +	Definition:	PPC platforms: Must include "fsl,bman-fbpr"
+> +			ARM platforms: Must include "shared-dma-pool"
+> +				       as well as the "no-map" property
+>=20
+>  The following constraints are relevant to the FBPR private memory:
+>  	- The size must be 2^(size + 1), with size =3D 11..33. That is 4 KiB to
+> @@ -100,10 +102,10 @@ The example below shows a BMan FBPR dynamic
+> allocation memory node
+>  		ranges;
+>=20
+>  		bman_fbpr: bman-fbpr {
+> -			compatible =3D "fsl,bman-fbpr";
+> -			alloc-ranges =3D <0 0 0x10 0>;
+> +			compatible =3D "shared-mem-pool";
+>  			size =3D <0 0x1000000>;
+>  			alignment =3D <0 0x1000000>;
+> +			no-map;
+>  		};
+>  	};
+>=20
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/qman.txt
+> b/Documentation/devicetree/bindings/soc/fsl/qman.txt
+> index 556ebb8..ee96afd 100644
+> --- a/Documentation/devicetree/bindings/soc/fsl/qman.txt
+> +++ b/Documentation/devicetree/bindings/soc/fsl/qman.txt
+> @@ -60,6 +60,12 @@ are located at offsets 0xbf8 and 0xbfc
+>  	Value type:	<prop-encoded-array>
+>  	Definition:	Reference input clock. Its frequency is half of the
+>  			platform clock
+> +- memory-regions
+> +	Usage:		Required for ARM
+> +	Value type:	<phandle array>
+> +	Definition:	List of phandles referencing the QMan private memory
+> +			nodes (described below). The qman-fqd node must be
+> +			first followed by qman-pfdr node. Only used on ARM
+>=20
+>  Devices connected to a QMan instance via Direct Connect Portals (DCP) mu=
+st
+> link
+>  to the respective QMan instance
+> @@ -74,7 +80,9 @@ QMan Private Memory Nodes
+>=20
+>  QMan requires two contiguous range of physical memory used for the backi=
+ng
+> store
+>  for QMan Frame Queue Descriptor (FQD) and Packed Frame Descriptor Record
+> (PFDR).
+> -This memory is reserved/allocated as a nodes under the /reserved-memory
+> node
+> +This memory is reserved/allocated as a node under the /reserved-memory
+> node.
+> +
+> +For additional details about reserved memory regions see reserved-memory=
+.txt
+>=20
+>  The QMan FQD memory node must be named "qman-fqd"
+>=20
+> @@ -83,7 +91,9 @@ PROPERTIES
+>  - compatible
+>  	Usage:		required
+>  	Value type:	<stringlist>
+> -	Definition:	Must inclide "fsl,qman-fqd"
+> +	Definition:	PPC platforms: Must include "fsl,qman-fqd"
+> +			ARM platforms: Must include "shared-dma-pool"
+> +				       as well as the "no-map" property
+>=20
+>  The QMan PFDR memory node must be named "qman-pfdr"
+>=20
+> @@ -92,7 +102,9 @@ PROPERTIES
+>  - compatible
+>  	Usage:		required
+>  	Value type:	<stringlist>
+> -	Definition:	Must inclide "fsl,qman-pfdr"
+> +	Definition:	PPC platforms: Must include "fsl,qman-pfdr"
+> +			ARM platforms: Must include "shared-dma-pool"
+> +				       as well as the "no-map" property
+>=20
+>  The following constraints are relevant to the FQD and PFDR private memor=
+y:
+>  	- The size must be 2^(size + 1), with size =3D 11..29. That is 4 KiB to
+> @@ -117,16 +129,16 @@ The example below shows a QMan FQD and a PFDR
+> dynamic allocation memory nodes
+>  		ranges;
+>=20
+>  		qman_fqd: qman-fqd {
+> -			compatible =3D "fsl,qman-fqd";
+> -			alloc-ranges =3D <0 0 0x10 0>;
+> +			compatible =3D "shared-dma-pool";
+>  			size =3D <0 0x400000>;
+>  			alignment =3D <0 0x400000>;
+> +			no-map;
+>  		};
+>  		qman_pfdr: qman-pfdr {
+> -			compatible =3D "fsl,qman-pfdr";
+> -			alloc-ranges =3D <0 0 0x10 0>;
+> +			compatible =3D "shared-dma-pool";
+>  			size =3D <0 0x2000000>;
+>  			alignment =3D <0 0x2000000>;
+> +			no-map;
+>  		};
+>  	};
+>=20
+> --
+> 2.7.4
