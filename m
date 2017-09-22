@@ -1,24 +1,27 @@
-Return-Path: <groug@kaod.org>
-Received: from 7.mo173.mail-out.ovh.net (7.mo173.mail-out.ovh.net
- [46.105.44.159])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x244.google.com (mail-ua0-x244.google.com
+ [IPv6:2607:f8b0:400c:c08::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz9b86X3czDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 21:04:03 +1000 (AEST)
-Received: from player687.ha.ovh.net (b9.ovh.net [213.186.33.59])
- by mo173.mail-out.ovh.net (Postfix) with ESMTP id C083B73762
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 11:34:43 +0200 (CEST)
-Subject: [PATCH] KVM: PPC: Book3S PR: only call slbmte for valid SLB entries
-From: Greg Kurz <groug@kaod.org>
-To: kvm-ppc@vger.kernel.org
-Cc: Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- qemu-ppc@nongnu.org
-Date: Fri, 22 Sep 2017 11:34:29 +0200
-Message-ID: <150607286967.26027.12529646475118424696.stgit@bahia.lan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xz9cx36n9zDrGy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 21:05:37 +1000 (AEST)
+Received: by mail-ua0-x244.google.com with SMTP id q29so217899uaf.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 04:05:37 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20170922033221.31609-1-mikey@neuling.org>
+References: <20170922033221.31609-1-mikey@neuling.org>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 22 Sep 2017 21:05:33 +1000
+Message-ID: <CAKTCnznis_M=p94Ruf5d31JHuPsoo0v62uZ4orQ4Y9vz3aR7dQ@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc: Handle MCE on POWER9 with only DSISR bit 33
+ set
+To: Michael Neuling <mikey@neuling.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Nicholas Piggin <nicholas.piggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
-some of which are valid (ie, SLB_ESID_V is set) and the rest are
-likely all-zeroes (with QEMU at least).
+On Fri, Sep 22, 2017 at 1:32 PM, Michael Neuling <mikey@neuling.org> wrote:
+> On POWER9 DD2.1 and below, it's possible for a paste instruction to
+> cause a Machine Check Exception (MCE) where only DSISR bit 33 is
+> set. This will result in the MCE handler seeing an unknown event,
+> which triggers linux to crash.
+>
+> We change this by detecting unknown events caused by load/stores in
+> the MCE handler and marking them as handled so that we no longer
+> crash.
+>
+> An MCE that occurs like this is spurious, so we don't need to do
+> anything in terms of servicing it. If there is something that needs to
+> be serviced, the CPU will raise the MCE again with the correct DSISR
+> so that it can be serviced properly.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com
+> --
+> v3: Simplification and SRR1 check suggestions from Nick
+> v2: update commit message based on Balbir's comments
+> ---
+>  arch/powerpc/kernel/mce_power.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>
+> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+> index b76ca198e0..e423cf0e43 100644
+> --- a/arch/powerpc/kernel/mce_power.c
+> +++ b/arch/powerpc/kernel/mce_power.c
+> @@ -624,5 +624,15 @@ long __machine_check_early_realmode_p8(struct pt_regs *regs)
+>
+>  long __machine_check_early_realmode_p9(struct pt_regs *regs)
+>  {
+> +       /*
+> +        * On POWER9 DD2.1 and below, it's possible to get machine
+> +        * check caused by a paste instruction where only DSISR bit 33
+> +        * is set. This will result in the MCE handler seeing an
+> +        * unknown event and us crashing.  Change this to mark as
+> +        * handled.
+> +        */
+> +       if (SRR1_MC_LOADSTORE(regs->msr) && regs->dsisr == 0x40000000)
+> +               return 1;
+> +
 
-Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
-assumes to find the SLB index in the 3 lower bits of its rb argument.
-When passed zeroed arguments, it happily overwrites the 0th SLB entry
-with zeroes. This is exactly what happens while doing live migration
-with QEMU when the destination pushes the incoming SLB descriptors to
-KVM PR. When reloading the SLBs at the next synchronization, QEMU first
-clears its SLB array and only restore valid ones, but the 0th one is
-now gone and we cannot access the corresponding memory anymore:
-
-(qemu) x/x $pc
-c0000000000b742c: Cannot access memory
-
-To avoid this, let's filter out non-valid SLB entries, like we
-already do for Book3S HV.
-
-Signed-off-by: Greg Kurz <groug@kaod.org>
----
- arch/powerpc/kvm/book3s_pr.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 3beb4ff469d1..cb6894e55f97 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1328,8 +1328,10 @@ static int kvm_arch_vcpu_ioctl_set_sregs_pr(struct kvm_vcpu *vcpu,
- 	vcpu3s->sdr1 = sregs->u.s.sdr1;
- 	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
- 		for (i = 0; i < 64; i++) {
--			vcpu->arch.mmu.slbmte(vcpu, sregs->u.s.ppc64.slb[i].slbv,
--						    sregs->u.s.ppc64.slb[i].slbe);
-+			u64 rb = sregs->u.s.ppc64.slb[i].slbe;
-+			u64 rs = sregs->u.s.ppc64.slb[i].slbv;
-+			if (rb & SLB_ESID_V)
-+				vcpu->arch.mmu.slbmte(vcpu, rs, rb);
- 		}
- 	} else {
- 		for (i = 0; i < 16; i++) {
+Acked-by: Balbir SIngh <bsingharora@gmail.com>
