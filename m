@@ -1,34 +1,25 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFdb6FrPzDsMV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:06:27 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8ME5V4k020524
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:06:25 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d51894727-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:06:24 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 22 Sep 2017 08:06:24 -0600
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-To: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- "Juan J . Alvarez" <jjalvare@us.ibm.com>
-Subject: [PATCH v2 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-Date: Fri, 22 Sep 2017 09:06:08 -0500
-In-Reply-To: <20170922140608.47665-1-bryantly@linux.vnet.ibm.com>
-References: <20170922140608.47665-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20170922140608.47665-3-bryantly@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFf85J1FzDsMK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:06:56 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id j16so703513pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 07:06:56 -0700 (PDT)
+Message-ID: <1506089208.1155.32.camel@gmail.com>
+Subject: Re: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX
+ instruction for long bytes comparision
+From: Cyril Bur <cyrilbur@gmail.com>
+To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
+Cc: David Laight <David.Laight@ACULAB.COM>, "Naveen N.  Rao"
+ <naveen.n.rao@linux.vnet.ibm.com>
+Date: Sat, 23 Sep 2017 00:06:48 +1000
+In-Reply-To: <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
+References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
+ <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,68 +29,247 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the machine dependent call for
-pcibios_bus_add_device, since the previous patch
-separated the calls out between the PowerNV and PowerVM.
+On Thu, 2017-09-21 at 07:34 +0800, wei.guo.simon@gmail.com wrote:
+> From: Simon Guo <wei.guo.simon@gmail.com>
+> 
+> This patch add VMX primitives to do memcmp() in case the compare size
+> exceeds 4K bytes.
+> 
 
-The difference here is that for the PowerVM environment
-we do not want match_driver set because in this environment
-we do not want the VF device drivers to load immediately, due to
-firmware loading the device node when VF device is assigned to the
-logical partition.
+Hi Simon,
 
-This patch will depend on the patch linked below, which is under
-review.
+Sorry I didn't see this sooner, I've actually been working on a kernel
+version of glibc commit dec4a7105e (powerpc: Improve memcmp performance
+for POWER8) unfortunately I've been distracted and it still isn't done.
+I wonder if we can consolidate our efforts here. One thing I did come
+across in my testing is that for memcmp() that will fail early (I
+haven't narrowed down the the optimal number yet) the cost of enabling
+VMX actually turns out to be a performance regression, as such I've
+added a small check of the first 64 bytes to the start before enabling
+VMX to ensure the penalty is worth taking.
 
-https://patchwork.kernel.org/patch/9882915/
+Also, you should consider doing 4K and greater, KSM (Kernel Samepage
+Merging) uses PAGE_SIZE which can be as small as 4K.
 
-Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
----
- arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+Cyril
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 1eef46d9cf30..ac72011a045c 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
- static DEFINE_SPINLOCK(slot_errbuf_lock);
- static int eeh_error_buf_size;
- 
-+void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
-+{
-+	struct pci_dn *pdn = pci_get_pdn(pdev);
-+
-+	if (!pdev->is_virtfn)
-+		return;
-+
-+	pdn->device_id  =  pdev->device;
-+	pdn->vendor_id  =  pdev->vendor;
-+	pdn->class_code =  pdev->class;
-+
-+	/*
-+	 * The following operations will fail if VF's sysfs files
-+	 * aren't created or its resources aren't finalized.
-+	 */
-+	eeh_add_device_early(pdn);
-+	eeh_add_device_late(pdev);
-+	eeh_sysfs_add_device(pdev);
-+	pdev->match_driver = -1;
-+}
-+
- /**
-  * pseries_eeh_init - EEH platform dependent initialization
-  *
-@@ -120,6 +141,9 @@ static int pseries_eeh_init(void)
- 	/* Set EEH probe mode */
- 	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
- 
-+	/* Set EEH machine dependent code */
-+	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
-+
- 	return 0;
- }
- 
--- 
-2.11.0 (Apple Git-81)
+> Test result with following test program(replace the "^>" with ""):
+> ------
+> > # cat tools/testing/selftests/powerpc/stringloops/memcmp.c
+> > #include <malloc.h>
+> > #include <stdlib.h>
+> > #include <string.h>
+> > #include <time.h>
+> > #include "utils.h"
+> > #define SIZE (1024 * 1024 * 900)
+> > #define ITERATIONS 40
+> 
+> int test_memcmp(const void *s1, const void *s2, size_t n);
+> 
+> static int testcase(void)
+> {
+>         char *s1;
+>         char *s2;
+>         unsigned long i;
+> 
+>         s1 = memalign(128, SIZE);
+>         if (!s1) {
+>                 perror("memalign");
+>                 exit(1);
+>         }
+> 
+>         s2 = memalign(128, SIZE);
+>         if (!s2) {
+>                 perror("memalign");
+>                 exit(1);
+>         }
+> 
+>         for (i = 0; i < SIZE; i++)  {
+>                 s1[i] = i & 0xff;
+>                 s2[i] = i & 0xff;
+>         }
+>         for (i = 0; i < ITERATIONS; i++) {
+> 		int ret = test_memcmp(s1, s2, SIZE);
+> 
+> 		if (ret) {
+> 			printf("return %d at[%ld]! should have returned zero\n", ret, i);
+> 			abort();
+> 		}
+> 	}
+> 
+>         return 0;
+> }
+> 
+> int main(void)
+> {
+>         return test_harness(testcase, "memcmp");
+> }
+> ------
+> Without VMX patch:
+>        7.435191479 seconds time elapsed                                          ( +- 0.51% )
+> With VMX patch:
+>        6.802038938 seconds time elapsed                                          ( +- 0.56% )
+> 		There is ~+8% improvement.
+> 
+> However I am not aware whether there is use case in kernel for memcmp on
+> large size yet.
+> 
+> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> ---
+>  arch/powerpc/include/asm/asm-prototypes.h |  2 +-
+>  arch/powerpc/lib/copypage_power7.S        |  2 +-
+>  arch/powerpc/lib/memcmp_64.S              | 82 +++++++++++++++++++++++++++++++
+>  arch/powerpc/lib/memcpy_power7.S          |  2 +-
+>  arch/powerpc/lib/vmx-helper.c             |  2 +-
+>  5 files changed, 86 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+> index 7330150..e6530d8 100644
+> --- a/arch/powerpc/include/asm/asm-prototypes.h
+> +++ b/arch/powerpc/include/asm/asm-prototypes.h
+> @@ -49,7 +49,7 @@ void __trace_hcall_exit(long opcode, unsigned long retval,
+>  /* VMX copying */
+>  int enter_vmx_usercopy(void);
+>  int exit_vmx_usercopy(void);
+> -int enter_vmx_copy(void);
+> +int enter_vmx_ops(void);
+>  void * exit_vmx_copy(void *dest);
+>  
+>  /* Traps */
+> diff --git a/arch/powerpc/lib/copypage_power7.S b/arch/powerpc/lib/copypage_power7.S
+> index ca5fc8f..9e7729e 100644
+> --- a/arch/powerpc/lib/copypage_power7.S
+> +++ b/arch/powerpc/lib/copypage_power7.S
+> @@ -60,7 +60,7 @@ _GLOBAL(copypage_power7)
+>  	std	r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
+>  	std	r0,16(r1)
+>  	stdu	r1,-STACKFRAMESIZE(r1)
+> -	bl	enter_vmx_copy
+> +	bl	enter_vmx_ops
+>  	cmpwi	r3,0
+>  	ld	r0,STACKFRAMESIZE+16(r1)
+>  	ld	r3,STK_REG(R31)(r1)
+> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+> index 6dccfb8..40218fc 100644
+> --- a/arch/powerpc/lib/memcmp_64.S
+> +++ b/arch/powerpc/lib/memcmp_64.S
+> @@ -162,6 +162,13 @@ _GLOBAL(memcmp)
+>  	blr
+>  
+>  .Llong:
+> +#ifdef CONFIG_ALTIVEC
+> +	/* Try to use vmx loop if length is larger than 4K */
+> +	cmpldi  cr6,r5,4096
+> +	bgt	cr6,.Lvmx_cmp
+> +
+> +.Llong_novmx_cmp:
+> +#endif
+>  	li	off8,8
+>  	li	off16,16
+>  	li	off24,24
+> @@ -319,4 +326,79 @@ _GLOBAL(memcmp)
+>  8:
+>  	blr
+>  
+> +#ifdef CONFIG_ALTIVEC
+> +.Lvmx_cmp:
+> +	mflr    r0
+> +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
+> +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
+> +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
+> +	std     r0,16(r1)
+> +	stdu    r1,-STACKFRAMESIZE(r1)
+> +	bl      enter_vmx_ops
+> +	cmpwi   cr1,r3,0
+> +	ld      r0,STACKFRAMESIZE+16(r1)
+> +	ld      r3,STK_REG(R31)(r1)
+> +	ld      r4,STK_REG(R30)(r1)
+> +	ld      r5,STK_REG(R29)(r1)
+> +	addi	r1,r1,STACKFRAMESIZE
+> +	mtlr    r0
+> +	beq     cr1,.Llong_novmx_cmp
+> +
+> +3:
+> +	/* Enter with src/dst address 8 bytes aligned, and len is
+> +	 * no less than 4KB. Need to align with 16 bytes further.
+> +	 */
+> +	andi.	rA,r3,8
+> +	beq	4f
+> +	LD	rA,0,r3
+> +	LD	rB,0,r4
+> +	cmpld	cr0,rA,rB
+> +	bne	cr0,.LcmpAB_lightweight
+> +
+> +	addi	r3,r3,8
+> +	addi	r4,r4,8
+> +	addi	r5,r5,-8
+> +
+> +4:
+> +	/* compare 32 bytes for each loop */
+> +	srdi	r0,r5,5
+> +	mtctr	r0
+> +	andi.	r5,r5,31
+> +	li	off16,16
+> +
+> +.balign 16
+> +5:
+> +	lvx 	v0,0,r3
+> +	lvx 	v1,0,r4
+> +	vcmpequd. v0,v0,v1
+> +	bf	24,7f
+> +	lvx 	v0,off16,r3
+> +	lvx 	v1,off16,r4
+> +	vcmpequd. v0,v0,v1
+> +	bf	24,6f
+> +	addi	r3,r3,32
+> +	addi	r4,r4,32
+> +	bdnz	5b
+> +
+> +	cmpdi	r5,0
+> +	beq	.Lzero
+> +	b	.L8bytes_aligned
+> +
+> +6:
+> +	addi	r3,r3,16
+> +	addi	r4,r4,16
+> +
+> +7:
+> +	LD	rA,0,r3
+> +	LD	rB,0,r4
+> +	cmpld	cr0,rA,rB
+> +	bne	cr0,.LcmpAB_lightweight
+> +
+> +	li	off8,8
+> +	LD	rA,off8,r3
+> +	LD	rB,off8,r4
+> +	cmpld	cr0,rA,rB
+> +	bne	cr0,.LcmpAB_lightweight
+> +	b	.Lzero
+> +#endif
+>  EXPORT_SYMBOL(memcmp)
+> diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
+> index 193909a..682e386 100644
+> --- a/arch/powerpc/lib/memcpy_power7.S
+> +++ b/arch/powerpc/lib/memcpy_power7.S
+> @@ -230,7 +230,7 @@ _GLOBAL(memcpy_power7)
+>  	std	r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
+>  	std	r0,16(r1)
+>  	stdu	r1,-STACKFRAMESIZE(r1)
+> -	bl	enter_vmx_copy
+> +	bl	enter_vmx_ops
+>  	cmpwi	cr1,r3,0
+>  	ld	r0,STACKFRAMESIZE+16(r1)
+>  	ld	r3,STK_REG(R31)(r1)
+> diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
+> index bf925cd..923a9ab 100644
+> --- a/arch/powerpc/lib/vmx-helper.c
+> +++ b/arch/powerpc/lib/vmx-helper.c
+> @@ -53,7 +53,7 @@ int exit_vmx_usercopy(void)
+>  	return 0;
+>  }
+>  
+> -int enter_vmx_copy(void)
+> +int enter_vmx_ops(void)
+>  {
+>  	if (in_interrupt())
+>  		return 0;
