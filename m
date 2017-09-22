@@ -1,25 +1,21 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFf85J1FzDsMK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:06:56 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id j16so703513pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 07:06:56 -0700 (PDT)
-Message-ID: <1506089208.1155.32.camel@gmail.com>
-Subject: Re: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX
- instruction for long bytes comparision
-From: Cyril Bur <cyrilbur@gmail.com>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: David Laight <David.Laight@ACULAB.COM>, "Naveen N.  Rao"
- <naveen.n.rao@linux.vnet.ibm.com>
-Date: Sat, 23 Sep 2017 00:06:48 +1000
-In-Reply-To: <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
-References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
- <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFjD1wf1zDsNh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:09:36 +1000 (AEST)
+Date: Fri, 22 Sep 2017 11:09:06 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] perf tools: allow overriding MAX_NR_CPUS at compile time
+Message-ID: <20170922140906.GE29668@kernel.org>
+References: <20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,247 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-09-21 at 07:34 +0800, wei.guo.simon@gmail.com wrote:
-> From: Simon Guo <wei.guo.simon@gmail.com>
+Em Fri, Sep 22, 2017 at 01:20:43PM +0200, Christophe Leroy escreveu:
+> After update of kernel, perf tool doesn't run anymore on my
+> 32MB RAM powerpc board, but still runs on a 128MB RAM board:
 > 
-> This patch add VMX primitives to do memcmp() in case the compare size
-> exceeds 4K bytes.
+> ~# strace perf
+> execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) = -1 ENOMEM (Cannot allocate memory)
+> --- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
+> +++ killed by SIGSEGV +++
+> Segmentation fault
 > 
+> objdump -x shows that .bss section has a huge size of 24Mbytes:
+> 
+>  27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
+> 
+> With especially the following objects having quite big size
+> 
+> 10205f80 l     O .bss	00140000              runtime_cycles_stats
+> 10345f80 l     O .bss	00140000              runtime_stalled_cycles_front_stats
+> 10485f80 l     O .bss	00140000              runtime_stalled_cycles_back_stats
+> 105c5f80 l     O .bss	00140000              runtime_branches_stats
+> 10705f80 l     O .bss	00140000              runtime_cacherefs_stats
+> 10845f80 l     O .bss	00140000              runtime_l1_dcache_stats
+> 10985f80 l     O .bss	00140000              runtime_l1_icache_stats
+> 10ac5f80 l     O .bss	00140000              runtime_ll_cache_stats
+> 10c05f80 l     O .bss	00140000              runtime_itlb_cache_stats
+> 10d45f80 l     O .bss	00140000              runtime_dtlb_cache_stats
+> 10e85f80 l     O .bss	00140000              runtime_cycles_in_tx_stats
+> 10fc5f80 l     O .bss	00140000              runtime_transaction_stats
+> 11105f80 l     O .bss	00140000              runtime_elision_stats
+> 11245f80 l     O .bss	00140000              runtime_topdown_total_slots
+> 11385f80 l     O .bss	00140000              runtime_topdown_slots_retired
+> 114c5f80 l     O .bss	00140000              runtime_topdown_slots_issued
+> 11605f80 l     O .bss	00140000              runtime_topdown_fetch_bubbles
+> 11745f80 l     O .bss	00140000              runtime_topdown_recovery_bubbles
+> 
+> This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
+> to 1024"), because many tables are sized with MAX_NR_CPUS
+> 
+> This patch gives the opportunity to redefine MAX_NR_CPUS via
+> 
+> make EXTRA_CFLAGS=-DMAX_NR_CPUS=1
 
-Hi Simon,
+I'll probably apply this, but the right thing would be to get rid of
+MAX_NR_CPUS completely and instead allocate that using sysconf:
 
-Sorry I didn't see this sooner, I've actually been working on a kernel
-version of glibc commit dec4a7105e (powerpc: Improve memcmp performance
-for POWER8) unfortunately I've been distracted and it still isn't done.
-I wonder if we can consolidate our efforts here. One thing I did come
-across in my testing is that for memcmp() that will fail early (I
-haven't narrowed down the the optimal number yet) the cost of enabling
-VMX actually turns out to be a performance regression, as such I've
-added a small check of the first 64 bytes to the start before enabling
-VMX to ensure the penalty is worth taking.
-
-Also, you should consider doing 4K and greater, KSM (Kernel Samepage
-Merging) uses PAGE_SIZE which can be as small as 4K.
-
-Cyril
-
-> Test result with following test program(replace the "^>" with ""):
-> ------
-> > # cat tools/testing/selftests/powerpc/stringloops/memcmp.c
-> > #include <malloc.h>
-> > #include <stdlib.h>
-> > #include <string.h>
-> > #include <time.h>
-> > #include "utils.h"
-> > #define SIZE (1024 * 1024 * 900)
-> > #define ITERATIONS 40
-> 
-> int test_memcmp(const void *s1, const void *s2, size_t n);
-> 
-> static int testcase(void)
-> {
->         char *s1;
->         char *s2;
->         unsigned long i;
-> 
->         s1 = memalign(128, SIZE);
->         if (!s1) {
->                 perror("memalign");
->                 exit(1);
->         }
-> 
->         s2 = memalign(128, SIZE);
->         if (!s2) {
->                 perror("memalign");
->                 exit(1);
->         }
-> 
->         for (i = 0; i < SIZE; i++)  {
->                 s1[i] = i & 0xff;
->                 s2[i] = i & 0xff;
->         }
->         for (i = 0; i < ITERATIONS; i++) {
-> 		int ret = test_memcmp(s1, s2, SIZE);
-> 
-> 		if (ret) {
-> 			printf("return %d at[%ld]! should have returned zero\n", ret, i);
-> 			abort();
-> 		}
-> 	}
-> 
->         return 0;
-> }
-> 
-> int main(void)
-> {
->         return test_harness(testcase, "memcmp");
-> }
-> ------
-> Without VMX patch:
->        7.435191479 seconds time elapsed                                          ( +- 0.51% )
-> With VMX patch:
->        6.802038938 seconds time elapsed                                          ( +- 0.56% )
-> 		There is ~+8% improvement.
-> 
-> However I am not aware whether there is use case in kernel for memcmp on
-> large size yet.
-> 
-> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+[root@jouet ~]# perf trace -e open,getdents getconf _NPROCESSORS_CONF
+4
+     0.014 ( 0.011 ms): getconf/2452 open(filename: /etc/ld.so.cache, flags: CLOEXEC                       ) = 3
+     0.045 ( 0.008 ms): getconf/2452 open(filename: /lib64/libc.so.6, flags: CLOEXEC                       ) = 3
+     0.264 ( 0.012 ms): getconf/2452 open(filename: /usr/lib/locale/locale-archive, flags: CLOEXEC         ) = 3
+     0.315 ( 0.028 ms): getconf/2452 open(filename: /sys/devices/system/cpu, flags: CLOEXEC|DIRECTORY|NONBLOCK) = 3
+     0.349 ( 0.013 ms): getconf/2452 getdents(fd: 3</sys/devices/system/cpu>, dirent: 0x944030, count: 32768) = 624
+     0.365 ( 0.001 ms): getconf/2452 getdents(fd: 3</sys/devices/system/cpu>, dirent: 0x944030, count: 32768) = 0
+[root@jouet ~]#
+ 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > ---
->  arch/powerpc/include/asm/asm-prototypes.h |  2 +-
->  arch/powerpc/lib/copypage_power7.S        |  2 +-
->  arch/powerpc/lib/memcmp_64.S              | 82 +++++++++++++++++++++++++++++++
->  arch/powerpc/lib/memcpy_power7.S          |  2 +-
->  arch/powerpc/lib/vmx-helper.c             |  2 +-
->  5 files changed, 86 insertions(+), 4 deletions(-)
+>  tools/perf/perf.h | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-> index 7330150..e6530d8 100644
-> --- a/arch/powerpc/include/asm/asm-prototypes.h
-> +++ b/arch/powerpc/include/asm/asm-prototypes.h
-> @@ -49,7 +49,7 @@ void __trace_hcall_exit(long opcode, unsigned long retval,
->  /* VMX copying */
->  int enter_vmx_usercopy(void);
->  int exit_vmx_usercopy(void);
-> -int enter_vmx_copy(void);
-> +int enter_vmx_ops(void);
->  void * exit_vmx_copy(void *dest);
->  
->  /* Traps */
-> diff --git a/arch/powerpc/lib/copypage_power7.S b/arch/powerpc/lib/copypage_power7.S
-> index ca5fc8f..9e7729e 100644
-> --- a/arch/powerpc/lib/copypage_power7.S
-> +++ b/arch/powerpc/lib/copypage_power7.S
-> @@ -60,7 +60,7 @@ _GLOBAL(copypage_power7)
->  	std	r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
->  	std	r0,16(r1)
->  	stdu	r1,-STACKFRAMESIZE(r1)
-> -	bl	enter_vmx_copy
-> +	bl	enter_vmx_ops
->  	cmpwi	r3,0
->  	ld	r0,STACKFRAMESIZE+16(r1)
->  	ld	r3,STK_REG(R31)(r1)
-> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> index 6dccfb8..40218fc 100644
-> --- a/arch/powerpc/lib/memcmp_64.S
-> +++ b/arch/powerpc/lib/memcmp_64.S
-> @@ -162,6 +162,13 @@ _GLOBAL(memcmp)
->  	blr
->  
->  .Llong:
-> +#ifdef CONFIG_ALTIVEC
-> +	/* Try to use vmx loop if length is larger than 4K */
-> +	cmpldi  cr6,r5,4096
-> +	bgt	cr6,.Lvmx_cmp
-> +
-> +.Llong_novmx_cmp:
-> +#endif
->  	li	off8,8
->  	li	off16,16
->  	li	off24,24
-> @@ -319,4 +326,79 @@ _GLOBAL(memcmp)
->  8:
->  	blr
->  
-> +#ifdef CONFIG_ALTIVEC
-> +.Lvmx_cmp:
-> +	mflr    r0
-> +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
-> +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
-> +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
-> +	std     r0,16(r1)
-> +	stdu    r1,-STACKFRAMESIZE(r1)
-> +	bl      enter_vmx_ops
-> +	cmpwi   cr1,r3,0
-> +	ld      r0,STACKFRAMESIZE+16(r1)
-> +	ld      r3,STK_REG(R31)(r1)
-> +	ld      r4,STK_REG(R30)(r1)
-> +	ld      r5,STK_REG(R29)(r1)
-> +	addi	r1,r1,STACKFRAMESIZE
-> +	mtlr    r0
-> +	beq     cr1,.Llong_novmx_cmp
-> +
-> +3:
-> +	/* Enter with src/dst address 8 bytes aligned, and len is
-> +	 * no less than 4KB. Need to align with 16 bytes further.
-> +	 */
-> +	andi.	rA,r3,8
-> +	beq	4f
-> +	LD	rA,0,r3
-> +	LD	rB,0,r4
-> +	cmpld	cr0,rA,rB
-> +	bne	cr0,.LcmpAB_lightweight
-> +
-> +	addi	r3,r3,8
-> +	addi	r4,r4,8
-> +	addi	r5,r5,-8
-> +
-> +4:
-> +	/* compare 32 bytes for each loop */
-> +	srdi	r0,r5,5
-> +	mtctr	r0
-> +	andi.	r5,r5,31
-> +	li	off16,16
-> +
-> +.balign 16
-> +5:
-> +	lvx 	v0,0,r3
-> +	lvx 	v1,0,r4
-> +	vcmpequd. v0,v0,v1
-> +	bf	24,7f
-> +	lvx 	v0,off16,r3
-> +	lvx 	v1,off16,r4
-> +	vcmpequd. v0,v0,v1
-> +	bf	24,6f
-> +	addi	r3,r3,32
-> +	addi	r4,r4,32
-> +	bdnz	5b
-> +
-> +	cmpdi	r5,0
-> +	beq	.Lzero
-> +	b	.L8bytes_aligned
-> +
-> +6:
-> +	addi	r3,r3,16
-> +	addi	r4,r4,16
-> +
-> +7:
-> +	LD	rA,0,r3
-> +	LD	rB,0,r4
-> +	cmpld	cr0,rA,rB
-> +	bne	cr0,.LcmpAB_lightweight
-> +
-> +	li	off8,8
-> +	LD	rA,off8,r3
-> +	LD	rB,off8,r4
-> +	cmpld	cr0,rA,rB
-> +	bne	cr0,.LcmpAB_lightweight
-> +	b	.Lzero
-> +#endif
->  EXPORT_SYMBOL(memcmp)
-> diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
-> index 193909a..682e386 100644
-> --- a/arch/powerpc/lib/memcpy_power7.S
-> +++ b/arch/powerpc/lib/memcpy_power7.S
-> @@ -230,7 +230,7 @@ _GLOBAL(memcpy_power7)
->  	std	r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
->  	std	r0,16(r1)
->  	stdu	r1,-STACKFRAMESIZE(r1)
-> -	bl	enter_vmx_copy
-> +	bl	enter_vmx_ops
->  	cmpwi	cr1,r3,0
->  	ld	r0,STACKFRAMESIZE+16(r1)
->  	ld	r3,STK_REG(R31)(r1)
-> diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
-> index bf925cd..923a9ab 100644
-> --- a/arch/powerpc/lib/vmx-helper.c
-> +++ b/arch/powerpc/lib/vmx-helper.c
-> @@ -53,7 +53,7 @@ int exit_vmx_usercopy(void)
->  	return 0;
+> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+> index dc442ba21bf6..a9db563da0a9 100644
+> --- a/tools/perf/perf.h
+> +++ b/tools/perf/perf.h
+> @@ -23,7 +23,9 @@ static inline unsigned long long rdclock(void)
+>  	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
 >  }
 >  
-> -int enter_vmx_copy(void)
-> +int enter_vmx_ops(void)
->  {
->  	if (in_interrupt())
->  		return 0;
+> +#ifndef MAX_NR_CPUS
+>  #define MAX_NR_CPUS			1024
+> +#endif
+>  
+>  extern const char *input_name;
+>  extern bool perf_host, perf_guest;
+> -- 
+> 2.13.3
