@@ -1,35 +1,35 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
+Return-Path: <fbarrat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFwr5NM4zDrGy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:19:40 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8MEGQNq110324
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:19:38 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d50ac8nrp-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xzK2m6FTCzDqjC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 02:40:00 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8MGYnIv060728
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 12:39:58 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d553pb7e3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:19:38 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 12:39:57 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 22 Sep 2017 08:19:37 -0600
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-To: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- "Juan J . Alvarez" <jjalvare@us.ibm.com>
-Subject: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-Date: Fri, 22 Sep 2017 09:19:28 -0500
-In-Reply-To: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
-References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Fri, 22 Sep 2017 17:39:55 +0100
+Subject: Re: [PATCH] cxl: Fix memory page not handled
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+References: <1506085728-10754-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: John W Walthour <jwalthour@us.ibm.com>
+Date: Fri, 22 Sep 2017 18:39:52 +0200
+MIME-Version: 1.0
+In-Reply-To: <1506085728-10754-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <371e11d8-4d1b-660d-88ad-5d828502739b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,68 +39,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the machine dependent call for
-pcibios_bus_add_device, since the previous patch
-separated the calls out between the PowerNV and PowerVM.
 
-The difference here is that for the PowerVM environment
-we do not want match_driver set because in this environment
-we do not want the VF device drivers to load immediately, due to
-firmware loading the device node when VF device is assigned to the
-logical partition.
 
-This patch will depend on the patch linked below, which is under
-review.
+Le 22/09/2017 à 15:08, Christophe Lombard a écrit :
+> The a in-kernel 'library' API can be called by drivers to help
 
-https://patchwork.kernel.org/patch/9882915/
 
-Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
----
- arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+"the in-kernel library"
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 6b812ad990e4..45946ee90985 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
- static DEFINE_SPINLOCK(slot_errbuf_lock);
- static int eeh_error_buf_size;
- 
-+void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
-+{
-+	struct pci_dn *pdn = pci_get_pdn(pdev);
-+
-+	if (!pdev->is_virtfn)
-+		return;
-+
-+	pdn->device_id  =  pdev->device;
-+	pdn->vendor_id  =  pdev->vendor;
-+	pdn->class_code =  pdev->class;
-+
-+	/*
-+	 * The following operations will fail if VF's sysfs files
-+	 * aren't created or its resources aren't finalized.
-+	 */
-+	eeh_add_device_early(pdn);
-+	eeh_add_device_late(pdev);
-+	eeh_sysfs_add_device(pdev);
-+	pdev->match_driver = -1;
-+}
-+
- /**
-  * pseries_eeh_init - EEH platform dependent initialization
-  *
-@@ -120,6 +141,9 @@ static int pseries_eeh_init(void)
- 	/* Set EEH probe mode */
- 	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
- 
-+	/* Set EEH machine dependent code */
-+	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
-+
- 	return 0;
- }
- 
--- 
-2.11.0 (Apple Git-81)
+
+
+> interaction with an IBM XSL on a POWER9 system.
+> 
+> The cxllib_handle_fault() API is used to handle memory fault. All memory
+> pages of the specified buffer have to be handled but the last page is
+> never touched, and the address the adapter is trying to access is never
+
+nitpick: "never touched"? I thought it could be. It all depends on the 
+input parameter. But it doesn't really matter, there's a bug.
+
+
+> sent to the kernel for resolution.
+> 
+> This patch updates the loop on the memory pages to be handled.
+> 
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> 
+> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL");
+> ---
+>   drivers/misc/cxl/cxllib.c | 13 +++++++++++--
+>   1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+> index 5dba23c..0c1eaf0 100644
+> --- a/drivers/misc/cxl/cxllib.c
+> +++ b/drivers/misc/cxl/cxllib.c
+> @@ -219,8 +219,17 @@ int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
+> 
+>   	down_read(&mm->mmap_sem);
+> 
+> -	for (dar = addr; dar < addr + size; dar += page_size) {
+> -		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
+> +	vma = find_vma(mm, addr);
+> +	if (!vma) {
+> +		pr_err("Can't find vma for addr %016llx\n", addr);
+> +		rc = -EFAULT;
+> +		goto out;
+> +	}
+> +	/* get the size of the pages allocated */
+> +	page_size = vma_kernel_pagesize(vma);
+> +
+> +	for (dar = (addr & ~(page_size - 1)); dar <= (addr + size); dar += page_size) {
+
+
+The end boundary should be 'dar < (addr + size)', or we may hit an extra 
+page, which could fail (and cause the call to return an error). Thanks 
+to John for spotting it!
+
+   Fred
+
+
+> +		if (dar < vma->vm_start || dar > vma->vm_end) {
+>   			vma = find_vma(mm, addr);
+>   			if (!vma) {
+>   				pr_err("Can't find vma for addr %016llx\n", addr);
+> 
