@@ -3,29 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFwn6PPszDrFM
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:19:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFwr5NM4zDrGy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:19:40 +1000 (AEST)
 Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8MEGQaQ110342
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:19:33 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d50ac8ngr-1
+ v8MEGQNq110324
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:19:38 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2d50ac8nrp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:19:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:19:38 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 22 Sep 2017 08:19:32 -0600
+ Fri, 22 Sep 2017 08:19:37 -0600
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v3 0/2] Prepartion for SR-IOV PowerVM Enablement
-Date: Fri, 22 Sep 2017 09:19:26 -0500
-Message-Id: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+ linuxppc-dev@lists.ozlabs.org,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ "Juan J . Alvarez" <jjalvare@us.ibm.com>
+Subject: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
+Date: Fri, 22 Sep 2017 09:19:28 -0500
+In-Reply-To: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+Message-Id: <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,31 +39,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series is to prepare for enabling SR-IOV
-on pseries. It separates the calls to be machine dependent
-and does not change any current functionality.
+This patch adds the machine dependent call for
+pcibios_bus_add_device, since the previous patch
+separated the calls out between the PowerNV and PowerVM.
 
-The patch linked below which is currently in review is a dependency:
+The difference here is that for the PowerVM environment
+we do not want match_driver set because in this environment
+we do not want the VF device drivers to load immediately, due to
+firmware loading the device node when VF device is assigned to the
+logical partition.
+
+This patch will depend on the patch linked below, which is under
+review.
+
 https://patchwork.kernel.org/patch/9882915/
 
-v1 - Initial patch
-v2 - Addressed Bjorn's comment on creating a highly platform
-     dependent global exported symbol.
-v3 - Based patch off linux-ppc/master
+Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
+---
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Bryant G. Ly (2):
-  powerpc/kernel: Separate SR-IOV Calls
-  pseries/eeh: Add Pseries pcibios_bus_add_device
-
- arch/powerpc/include/asm/machdep.h           |  7 ++++++
- arch/powerpc/include/asm/pci-bridge.h        |  4 +---
- arch/powerpc/kernel/eeh_driver.c             |  4 ++--
- arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
- arch/powerpc/kernel/pci_dn.c                 |  6 -----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--------------
- arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
- arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++
- 8 files changed, 78 insertions(+), 29 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index 6b812ad990e4..45946ee90985 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
+ static DEFINE_SPINLOCK(slot_errbuf_lock);
+ static int eeh_error_buf_size;
+ 
++void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
++{
++	struct pci_dn *pdn = pci_get_pdn(pdev);
++
++	if (!pdev->is_virtfn)
++		return;
++
++	pdn->device_id  =  pdev->device;
++	pdn->vendor_id  =  pdev->vendor;
++	pdn->class_code =  pdev->class;
++
++	/*
++	 * The following operations will fail if VF's sysfs files
++	 * aren't created or its resources aren't finalized.
++	 */
++	eeh_add_device_early(pdn);
++	eeh_add_device_late(pdev);
++	eeh_sysfs_add_device(pdev);
++	pdev->match_driver = -1;
++}
++
+ /**
+  * pseries_eeh_init - EEH platform dependent initialization
+  *
+@@ -120,6 +141,9 @@ static int pseries_eeh_init(void)
+ 	/* Set EEH probe mode */
+ 	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
+ 
++	/* Set EEH machine dependent code */
++	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
++
+ 	return 0;
+ }
+ 
 -- 
 2.11.0 (Apple Git-81)
