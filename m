@@ -1,27 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x244.google.com (mail-ua0-x244.google.com
- [IPv6:2607:f8b0:400c:c08::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz9cx36n9zDrGy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 21:05:37 +1000 (AEST)
-Received: by mail-ua0-x244.google.com with SMTP id q29so217899uaf.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 04:05:37 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20170922033221.31609-1-mikey@neuling.org>
-References: <20170922033221.31609-1-mikey@neuling.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 22 Sep 2017 21:05:33 +1000
-Message-ID: <CAKTCnznis_M=p94Ruf5d31JHuPsoo0v62uZ4orQ4Y9vz3aR7dQ@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc: Handle MCE on POWER9 with only DSISR bit 33
- set
-To: Michael Neuling <mikey@neuling.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nicholas Piggin <nicholas.piggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xz9yW2RtszDqjC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 21:20:50 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] perf tools: allow overriding MAX_NR_CPUS at compile time
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr>
+Date: Fri, 22 Sep 2017 13:20:43 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 22, 2017 at 1:32 PM, Michael Neuling <mikey@neuling.org> wrote:
-> On POWER9 DD2.1 and below, it's possible for a paste instruction to
-> cause a Machine Check Exception (MCE) where only DSISR bit 33 is
-> set. This will result in the MCE handler seeing an unknown event,
-> which triggers linux to crash.
->
-> We change this by detecting unknown events caused by load/stores in
-> the MCE handler and marking them as handled so that we no longer
-> crash.
->
-> An MCE that occurs like this is spurious, so we don't need to do
-> anything in terms of servicing it. If there is something that needs to
-> be serviced, the CPU will raise the MCE again with the correct DSISR
-> so that it can be serviced properly.
->
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com
-> --
-> v3: Simplification and SRR1 check suggestions from Nick
-> v2: update commit message based on Balbir's comments
-> ---
->  arch/powerpc/kernel/mce_power.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index b76ca198e0..e423cf0e43 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -624,5 +624,15 @@ long __machine_check_early_realmode_p8(struct pt_regs *regs)
->
->  long __machine_check_early_realmode_p9(struct pt_regs *regs)
->  {
-> +       /*
-> +        * On POWER9 DD2.1 and below, it's possible to get machine
-> +        * check caused by a paste instruction where only DSISR bit 33
-> +        * is set. This will result in the MCE handler seeing an
-> +        * unknown event and us crashing.  Change this to mark as
-> +        * handled.
-> +        */
-> +       if (SRR1_MC_LOADSTORE(regs->msr) && regs->dsisr == 0x40000000)
-> +               return 1;
-> +
+After update of kernel, perf tool doesn't run anymore on my
+32MB RAM powerpc board, but still runs on a 128MB RAM board:
 
-Acked-by: Balbir SIngh <bsingharora@gmail.com>
+~# strace perf
+execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) = -1 ENOMEM (Cannot allocate memory)
+--- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
++++ killed by SIGSEGV +++
+Segmentation fault
+
+objdump -x shows that .bss section has a huge size of 24Mbytes:
+
+ 27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
+
+With especially the following objects having quite big size
+
+10205f80 l     O .bss	00140000              runtime_cycles_stats
+10345f80 l     O .bss	00140000              runtime_stalled_cycles_front_stats
+10485f80 l     O .bss	00140000              runtime_stalled_cycles_back_stats
+105c5f80 l     O .bss	00140000              runtime_branches_stats
+10705f80 l     O .bss	00140000              runtime_cacherefs_stats
+10845f80 l     O .bss	00140000              runtime_l1_dcache_stats
+10985f80 l     O .bss	00140000              runtime_l1_icache_stats
+10ac5f80 l     O .bss	00140000              runtime_ll_cache_stats
+10c05f80 l     O .bss	00140000              runtime_itlb_cache_stats
+10d45f80 l     O .bss	00140000              runtime_dtlb_cache_stats
+10e85f80 l     O .bss	00140000              runtime_cycles_in_tx_stats
+10fc5f80 l     O .bss	00140000              runtime_transaction_stats
+11105f80 l     O .bss	00140000              runtime_elision_stats
+11245f80 l     O .bss	00140000              runtime_topdown_total_slots
+11385f80 l     O .bss	00140000              runtime_topdown_slots_retired
+114c5f80 l     O .bss	00140000              runtime_topdown_slots_issued
+11605f80 l     O .bss	00140000              runtime_topdown_fetch_bubbles
+11745f80 l     O .bss	00140000              runtime_topdown_recovery_bubbles
+
+This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
+to 1024"), because many tables are sized with MAX_NR_CPUS
+
+This patch gives the opportunity to redefine MAX_NR_CPUS via
+
+make EXTRA_CFLAGS=-DMAX_NR_CPUS=1
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ tools/perf/perf.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index dc442ba21bf6..a9db563da0a9 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -23,7 +23,9 @@ static inline unsigned long long rdclock(void)
+ 	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+ }
+ 
++#ifndef MAX_NR_CPUS
+ #define MAX_NR_CPUS			1024
++#endif
+ 
+ extern const char *input_name;
+ extern bool perf_host, perf_guest;
+-- 
+2.13.3
