@@ -1,29 +1,31 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
+Return-Path: <bryantly@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xzDMM5Ct6zDqjC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 23:09:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xzFdS0nhczDqjC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 00:06:19 +1000 (AEST)
 Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8MD8keA021681
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 09:09:00 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d4yn36kcm-1
+ v8ME5BXx052721
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:06:17 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d53mfhv1q-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 09:08:56 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 10:06:16 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Fri, 22 Sep 2017 14:08:52 +0100
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH] cxl: Fix memory page not handled
-Date: Fri, 22 Sep 2017 15:08:48 +0200
-Message-Id: <1506085728-10754-1-git-send-email-clombard@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Fri, 22 Sep 2017 08:06:16 -0600
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+To: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/2] Prepartion for SR-IOV PowerVM Enablement
+Date: Fri, 22 Sep 2017 09:06:06 -0500
+Message-Id: <20170922140608.47665-1-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,46 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The a in-kernel 'library' API can be called by drivers to help
-interaction with an IBM XSL on a POWER9 system.
+This patch series is to prepare for enabling SR-IOV
+on pseries. It separates the calls to be machine dependent
+and does not change any current functionality.
 
-The cxllib_handle_fault() API is used to handle memory fault. All memory
-pages of the specified buffer have to be handled but the last page is
-never touched, and the address the adapter is trying to access is never
-sent to the kernel for resolution.
+This patch which is currently in review is a dependency:
+https://patchwork.kernel.org/patch/9882915/
 
-This patch updates the loop on the memory pages to be handled.
+Bryant G. Ly (2):
+  powerpc/kernel: Separate SR-IOV Calls
+  pseries/eeh: Add Pseries pcibios_bus_add_device
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+ arch/powerpc/include/asm/machdep.h           |  7 ++++++
+ arch/powerpc/include/asm/pci-bridge.h        |  4 +---
+ arch/powerpc/kernel/eeh_driver.c             |  4 ++--
+ arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
+ arch/powerpc/kernel/pci_dn.c                 |  6 -----
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 34 +++++++++++++++-------------
+ arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++
+ 8 files changed, 79 insertions(+), 29 deletions(-)
 
-Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL");
----
- drivers/misc/cxl/cxllib.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index 5dba23c..0c1eaf0 100644
---- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -219,8 +219,17 @@ int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
- 
- 	down_read(&mm->mmap_sem);
- 
--	for (dar = addr; dar < addr + size; dar += page_size) {
--		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
-+	vma = find_vma(mm, addr);
-+	if (!vma) {
-+		pr_err("Can't find vma for addr %016llx\n", addr);
-+		rc = -EFAULT;
-+		goto out;
-+	}
-+	/* get the size of the pages allocated */
-+	page_size = vma_kernel_pagesize(vma);
-+
-+	for (dar = (addr & ~(page_size - 1)); dar <= (addr + size); dar += page_size) {
-+		if (dar < vma->vm_start || dar > vma->vm_end) {
- 			vma = find_vma(mm, addr);
- 			if (!vma) {
- 				pr_err("Can't find vma for addr %016llx\n", addr);
 -- 
-2.7.4
+2.11.0 (Apple Git-81)
