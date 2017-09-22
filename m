@@ -1,47 +1,33 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <santosh@fossix.org>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz1tq6QWPzDsM4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:17:07 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8M5DpI3116113
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 01:17:04 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d4pnj90t7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 01:17:04 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Fri, 22 Sep 2017 15:17:01 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8M5Gx9b42270850
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:16:59 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8M5Gn7i018157
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:16:49 +1000
-Subject: Re: [PATCH] powerpc/livepatch: Fix livepatch stack access
-To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-References: <1505902791-26383-1-git-send-email-kamalesh@linux.vnet.ibm.com>
- <87d16kcqsz.fsf@concordia.ellerman.id.au>
- <CAKTCnznFX=HkB9jUEKCHb=gbZxuupHpRrbwuM93cN=jAU5Wyhg@mail.gmail.com>
- <20170921165559.ki4dnggjv7t25dah@naverao1-tp.localdomain>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Fri, 22 Sep 2017 10:46:54 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xz2GT50HmzDrJL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 15:34:09 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id h4so62213pfk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 22:34:09 -0700 (PDT)
+Date: Fri, 22 Sep 2017 11:04:04 +0530
+From: Santosh Sivaraj <santosh@fossix.org>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+Message-ID: <20170922053404.3zpfpwetabjut2er@santosiv.in.ibm.com>
+References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20170921165559.ki4dnggjv7t25dah@naverao1-tp.localdomain>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <2c388462-22ce-45cf-5a83-e31ccef3fe61@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="3gqke7d3an37ypbd"
+In-Reply-To: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,79 +37,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 21 September 2017 10:25 PM, Naveen N . Rao wrote:
-> On 2017/09/21 09:00PM, Balbir Singh wrote:
->> On Thu, Sep 21, 2017 at 8:02 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
->>>
->>>> While running stress test with livepatch module loaded, kernel
->>>> bug was triggered.
->>>>
->>>> cpu 0x5: Vector: 400 (Instruction Access) at [c0000000eb9d3b60]
->>>>     pc: c0000000eb9d3e30
->>>>     lr: c0000000eb9d3e30
->>>>     sp: c0000000eb9d3de0
->>>>    msr: 800000001280b033
->>>>   current = 0xc0000000dbd38700
->>>>   paca    = 0xc00000000fe01400   softe: 0        irq_happened: 0x01
->>>>     pid   = 8618, comm = make
->>>> Linux version 4.13.0+ (root@ubuntu) (gcc version 6.3.0 20170406 (Ubuntu 6.3.0-12ubuntu2)) #1 SMP Wed Sep 13 03:49:27 EDT 2017
->>>>
->>>> 5:mon> t
->>>> [c0000000eb9d3de0] c0000000eb9d3e30 (unreliable)
->>>> [c0000000eb9d3e30] c000000000008ab4 hardware_interrupt_common+0x114/0x120
->>>>  --- Exception: 501 (Hardware Interrupt) at c000000000053040 livepatch_handler+0x4c/0x74
->>>> [c0000000eb9d4120] 0000000057ac6e9d (unreliable)
->>>> [d0000000089d9f78] 2e0965747962382e
->>>> SP (965747962342e09) is in userspace
->>>>
->>>> When an interrupt is served in between the livepatch_handler execution,
->>>> there are chances of the livepatch_stack/task task getting corrupted.
->>>
->>> Ouch. That's pretty broken by me.
->>>
->>
->> I was worried more about preemption as I said in the review comment earlier,
->> this is new. It looks like we restored the wrong r1 on returning from
->> the interrupt
->> context? It would be nice to see any pt_regs changes due to the interrupt.
->> Did the interrupt handling code called something that needed live-patching?
->
-> The problem is just that the livepatch stack grows up, rather than down.
-> So, when this stack is used during interrupt handling, we'll clobber
-> part of this stack.
->
-> There aren't any pt_regs changes due to this afaics. Just the livepatch
-> stack being over-written.
->
->>
->>>> Fix the corruption by using r11 register for livepatch stack manipulation,
->>>> instead of shuffling task stack and livepatch stack into r1 register.
->>>> Using r11 register also avoids disabling/enabling irq's while setting
->>>> up the livepatch stack.
->>>
->>> I'm trying to think if there's some reason I didn't use r11. But I can't
->>> remember anything specific. I suspect I just didn't check the ABI
->>
->> We can't use r11, this is ftrace with regs, we've restore registers before
->> calling livepatch_handler, I don't think we can clobber r11, but I might
->> be sleep deprived and missing something
->
-> r11 is volatile and meant for usage in function linkage. With
-> -mprofile-kernel, we've just entered the new function and haven't
-> touched r11 yet. So, it appears to me that we can definetely use/clobber
-> it, along with r0 and r12.
->
 
-Misread the question from Balbir. livepatch_handler is called in mcount
-context, which is very early in the function execution. r11 might
-have live values used by the calling function, those are restored by
-ftrace code but the called/calling function cannot rely on it, after
-a function call as pointed out by Naveen.
+--3gqke7d3an37ypbd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In non-ftrace context, r11 is also used/clobbered between function calls 
-to load the stub address.
+* Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote (on 2017-09-20 16=
+:29:02 +0000):
 
--- 
-cheers,
-Kamalesh.
+>         Hello
+>=20
+>         RFC
+>=20
+>         On some arches C function pointers are indirect and point to
+> a function descriptor, which contains the actual pointer to the code.
+> This mostly doesn't matter, except for cases when people want to print
+> out function pointers in symbolic format, because the usual '%pS/%ps'
+> does not work on those arches as expected. That's the reason why we
+> have '%pF/%pf', but since it's here because of a subtle ABI detail
+> specific to some arches (ppc64/ia64/parisc64) it's easy to misuse
+> '%pF/%pf' and '%pS/%ps' (see [1], for example).
+>=20
+>         This patch set attempts to move ia64/ppc64/parisc64 C function
+> pointer ABI details out of printk() to arch code. Function dereference
+> code now checks if a pointer belongs to a .opd ELF section and dereferenc=
+es
+> that pointer only if it does. The kernel and modules have their own .opd
+> sections that's why I use two different ARCH functions: for kernel and
+> for module pointer dereference.
+>=20
+>         I planned to remove dereference_function_descriptor() entirely,
+> but then I discovered a bunch other uses cases (kgdbts, init/main.c,
+> extable, etc.), so I decided to keep dereference_function_descriptor()
+> around because the main point of this patch set is to deprecate %pF/%pf.
+> But at the same time, I think I can go further and handle both kernel
+> and module descriptor dereference in dereference_function_descriptor().
+> We need a module pointer for module .opd check, so that will come at an
+> extra cost of module lookup (may be there will some other issues along
+> the way, haven't checked it).
+>=20
+> Right now we've got:
+>=20
+> - dereference_function_descriptor(addr)
+>         a generic (old) function. it simply attempts to dereference
+>         whatever pointer we give it.
+>=20
+> - dereference_kernel_function_descriptor(addr)
+>         dereferences a kernel pointer if it's within the kernel's .opd
+>         section.
+>=20
+> - dereference_module_function_descriptor(module, addr)
+>         dereference a module pointer if it's within the module's .opd
+>         section.
+>=20
+>=20
+> *** A BIG NOTE ***
+>         I don't own ia64/ppc64/parisc64 hardware, so the patches are not
+>         tested. Sorry about that!
+
+Tested patch series on ppc64 sucessfully.
+
+You may add tested by to the series.
+
+Tested-by: Santosh Sivaraj <santosh@fossix.org>
+
+Thanks,
+Santosh
+
+>=20
+> Another note:
+>         I need to check what is BPF symbol lookup and do we need to
+>         do any dereference there.
+>=20
+> v2:
+> -- convert dereference_function_descriptor() to unsigned long
+> -- fix kernel descriptor range checks (Helge)
+> -- fix parisc module descriptor range check (Helge)
+> -- fix ppc64 module range check
+> -- add checkpatch patch
+>=20
+>=20
+> Sergey Senozhatsky (7):
+>   switch dereference_function_descriptor() to `unsigned long'
+>   sections: split dereference_function_descriptor()
+>   ia64: Add .opd based function descriptor dereference
+>   powerpc64: Add .opd based function descriptor dereference
+>   parisc64: Add .opd based function descriptor dereference
+>   symbol lookup: use new kernel and module dereference functions
+>   checkpatch: add pF/pf deprecation warning
+>=20
+>  Documentation/printk-formats.txt          | 15 +++++----------
+>  arch/ia64/include/asm/sections.h          | 16 ++++++++++++----
+>  arch/ia64/kernel/module.c                 | 13 +++++++++++++
+>  arch/ia64/kernel/vmlinux.lds.S            |  2 ++
+>  arch/parisc/boot/compressed/vmlinux.lds.S |  2 ++
+>  arch/parisc/include/asm/sections.h        |  4 +++-
+>  arch/parisc/kernel/module.c               | 17 +++++++++++++++++
+>  arch/parisc/kernel/process.c              | 15 ++++++++++++---
+>  arch/parisc/kernel/vmlinux.lds.S          |  2 ++
+>  arch/parisc/mm/init.c                     |  4 ++--
+>  arch/powerpc/include/asm/module.h         |  3 +++
+>  arch/powerpc/include/asm/sections.h       | 17 ++++++++++++++---
+>  arch/powerpc/kernel/module_64.c           | 16 ++++++++++++++++
+>  arch/powerpc/kernel/vmlinux.lds.S         |  2 ++
+>  drivers/misc/kgdbts.c                     |  2 +-
+>  include/asm-generic/sections.h            |  8 ++++++--
+>  include/linux/moduleloader.h              |  4 ++++
+>  init/main.c                               |  2 +-
+>  kernel/extable.c                          |  2 +-
+>  kernel/kallsyms.c                         |  1 +
+>  kernel/module.c                           |  9 ++++++++-
+>  lib/vsprintf.c                            |  5 +----
+>  scripts/checkpatch.pl                     |  6 ++++--
+>  23 files changed, 132 insertions(+), 35 deletions(-)
+
+--=20
+
+--3gqke7d3an37ypbd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJHBAEBCAAxFiEEEPhI2K1zm+w17KotztxEnntb8vcFAlnEoMwTHHNhbnRvc2hA
+Zm9zc2l4Lm9yZwAKCRDO3ESee1vy9/yREACtsc+xLsqli2HsZB6P2keSw+mETPQH
+LIZsQwpM7NFJl0CunhLUXCJMAlrTcEJzQwSe6r49U4WGCMGA42ZHowOWTPJnXd3l
++jbSpvDg8lTWlwonzZd+TvkYUI7XPKwWULN3S8kxYWXi+3FioLTV1RPWlFreChmV
+5tfLASliqeO4M/7coSS/DFWqTtQ2xYuVDPSITR9VeiVZ8z4/6CMw9H4C20XaTjOs
+UrxoFinqv6tGjG2cyq3es+PiipYkahVdrwuxqqaxs6ZXJ2tvdVer9EvUmf3MxWsg
+RdR2y/mCSKnIHRUCwohxD6bTtqIPq8FZ4f3kzrig8LygJfJOTdS0KedAdBzdAaAI
+yk6WIddOwIpCDF/edzOUo3C6YO/CbxtDO9BoXfgberT8aDfQlC2nDQ18nAoKapmk
+kNu6h8zUP45HMNiuq1pz/oXbUb3INNNzip9oIdYpS0B437xm6iVIkXnj2f2yWvFK
+qrvNmjjvfMOP28KH+0NIXPlnDxeZSBtEjHxJhBAhBD1JhD6prnOEKBVEVG0XhpPm
+As5SNjzWc4gcB3I0kWy6vobwZDWiSEAoYTNnQ94DaUvpv+9HUNAMNBn7tGEwCWgP
+l8yZJppf0kFd9eYAhMBr9zRtLN9uiS03iim34Pn9xvAzgMUP0A8cv9r5cOGEBL4n
+u7B7rmeWpS0iGA==
+=kfaZ
+-----END PGP SIGNATURE-----
+
+--3gqke7d3an37ypbd--
