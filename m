@@ -3,11 +3,11 @@ Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
  [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz2s2615nzDsM5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 16:00:38 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id m30so95306pgn.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 23:00:38 -0700 (PDT)
-Date: Fri, 22 Sep 2017 16:00:19 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xz2vp1mlfzDsMy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 16:03:02 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id v5so100695pgn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Sep 2017 23:03:02 -0700 (PDT)
+Date: Fri, 22 Sep 2017 16:02:49 +1000
 From: Balbir Singh <bsingharora@gmail.com>
 To: Ram Pai <linuxram@us.ibm.com>
 Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
@@ -17,12 +17,12 @@ Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
  benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
  aneesh.kumar@linux.vnet.ibm.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 4/6] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys: Add
- sysfs interface
-Message-ID: <20170922160019.0d6d1eae@firefly.ozlabs.ibm.com>
-In-Reply-To: <1505524870-4783-5-git-send-email-linuxram@us.ibm.com>
+Subject: Re: [PATCH 3/6] mm: display pkey in smaps if arch_pkeys_enabled()
+ is true
+Message-ID: <20170922160249.73b36922@firefly.ozlabs.ibm.com>
+In-Reply-To: <1505524870-4783-4-git-send-email-linuxram@us.ibm.com>
 References: <1505524870-4783-1-git-send-email-linuxram@us.ibm.com>
- <1505524870-4783-5-git-send-email-linuxram@us.ibm.com>
+ <1505524870-4783-4-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,57 +34,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Sep 2017 18:21:08 -0700
+On Fri, 15 Sep 2017 18:21:07 -0700
 Ram Pai <linuxram@us.ibm.com> wrote:
 
-> From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Currently the  architecture  specific code is expected to
+> display  the  protection  keys  in  smap  for a given vma.
+> This can lead to redundant code and possibly to divergent
+> formats in which the key gets displayed.
 > 
-> Expose useful information for programs using memory protection keys.
-> Provide implementation for powerpc and x86.
+> This  patch  changes  the implementation. It displays the
+> pkey only if the architecture support pkeys.
 > 
-> On a powerpc system with pkeys support, here is what is shown:
-> 
-> $ head /sys/kernel/mm/protection_keys/*
-> ==> /sys/kernel/mm/protection_keys/disable_access_supported <==  
-> true
-> 
-> ==> /sys/kernel/mm/protection_keys/disable_execute_supported <==  
-> true
-> 
-> ==> /sys/kernel/mm/protection_keys/disable_write_supported <==  
-> true
-> 
-> ==> /sys/kernel/mm/protection_keys/total_keys <==  
-> 32
-> 
-> ==> /sys/kernel/mm/protection_keys/usable_keys <==  
-> 29
-> 
-> And on an x86 without pkeys support:
-> 
-> $ head /sys/kernel/mm/protection_keys/*
-> ==> /sys/kernel/mm/protection_keys/disable_access_supported <==  
-> false
-> 
-> ==> /sys/kernel/mm/protection_keys/disable_execute_supported <==  
-> false
-> 
-> ==> /sys/kernel/mm/protection_keys/disable_write_supported <==  
-> false
-> 
-> ==> /sys/kernel/mm/protection_keys/total_keys <==  
-> 1
-> 
-> ==> /sys/kernel/mm/protection_keys/usable_keys <==  
-> 0
+> x86 arch_show_smap() function is not needed anymore.
+> Delete it.
 > 
 > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 > ---
+>  arch/x86/kernel/setup.c |    8 --------
+>  fs/proc/task_mmu.c      |   11 ++++++-----
+>  2 files changed, 6 insertions(+), 13 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 3486d04..1953bce 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -1340,11 +1340,3 @@ static int __init register_kernel_offset_dumper(void)
+>  	return 0;
+>  }
+>  __initcall(register_kernel_offset_dumper);
+> -
+> -void arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
+> -{
+> -	if (!boot_cpu_has(X86_FEATURE_OSPKE))
+> -		return;
+> -
+> -	seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
+> -}
+> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+> index cf25306..667d44a 100644
+> --- a/fs/proc/task_mmu.c
+> +++ b/fs/proc/task_mmu.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/mmu_notifier.h>
+>  #include <linux/page_idle.h>
+>  #include <linux/shmem_fs.h>
+> +#include <linux/pkeys.h>
+>  
+>  #include <asm/elf.h>
+>  #include <linux/uaccess.h>
+> @@ -714,10 +715,6 @@ static int smaps_hugetlb_range(pte_t *pte, unsigned long hmask,
+>  }
+>  #endif /* HUGETLB_PAGE */
+>  
+> -void __weak arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
+> -{
+> -}
+> -
+>  static int show_smap(struct seq_file *m, void *v, int is_pid)
+>  {
+>  	struct vm_area_struct *vma = v;
+> @@ -803,7 +800,11 @@ static int show_smap(struct seq_file *m, void *v, int is_pid)
+>  		   (vma->vm_flags & VM_LOCKED) ?
+>  			(unsigned long)(mss.pss >> (10 + PSS_SHIFT)) : 0);
+>  
+> -	arch_show_smap(m, vma);
+> +#ifdef CONFIG_ARCH_HAS_PKEYS
+> +	if (arch_pkeys_enabled())
+> +		seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
+> +#endif
 
-Just curious, how do you see this being used? For debugging
-or will applications parse these properties and use them?
-It's hard for an application to partition its address space
-among keys at runtime, would you agree?
+Can CONFIG_ARCH_HAS_PKEYS be true, but the kernel compiled without
+support for them or it's just not enabled? I think the
+earlier per_arch function was better
 
-Balbir Singh.
+Balbir
