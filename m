@@ -1,17 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <allen.lkml@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz9yW2RtszDqjC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 21:20:50 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] perf tools: allow overriding MAX_NR_CPUS at compile time
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr>
-Date: Fri, 22 Sep 2017 13:20:43 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xzBH15lCCzDqjC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 21:35:09 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id i130so490619pgc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 04:35:09 -0700 (PDT)
+From: Allen Pais <allen.lkml@gmail.com>
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Allen Pais <allen.lkml@gmail.com>
+Subject: [PATCH 0/3] use setup_timer() helper function.
+Date: Fri, 22 Sep 2017 17:04:57 +0530
+Message-Id: <1506080100-5660-1-git-send-email-allen.lkml@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,65 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After update of kernel, perf tool doesn't run anymore on my
-32MB RAM powerpc board, but still runs on a 128MB RAM board:
+This series uses setup_timer() helper function. The series
+addresses the files under arch/powerpc/*.
 
-~# strace perf
-execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) = -1 ENOMEM (Cannot allocate memory)
---- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
-+++ killed by SIGSEGV +++
-Segmentation fault
 
-objdump -x shows that .bss section has a huge size of 24Mbytes:
+Allen Pais (3):
+  powerpc: oprofile: use setup_timer() helper.
+  powerpc: use setup_timer() helper.
+  powerpc: powermac: use setup_timer() helper.
 
- 27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
+ arch/powerpc/kernel/tau_6xx.c             | 3 +--
+ arch/powerpc/oprofile/op_model_cell.c     | 8 ++------
+ arch/powerpc/platforms/powermac/low_i2c.c | 4 +---
+ 3 files changed, 4 insertions(+), 11 deletions(-)
 
-With especially the following objects having quite big size
-
-10205f80 l     O .bss	00140000              runtime_cycles_stats
-10345f80 l     O .bss	00140000              runtime_stalled_cycles_front_stats
-10485f80 l     O .bss	00140000              runtime_stalled_cycles_back_stats
-105c5f80 l     O .bss	00140000              runtime_branches_stats
-10705f80 l     O .bss	00140000              runtime_cacherefs_stats
-10845f80 l     O .bss	00140000              runtime_l1_dcache_stats
-10985f80 l     O .bss	00140000              runtime_l1_icache_stats
-10ac5f80 l     O .bss	00140000              runtime_ll_cache_stats
-10c05f80 l     O .bss	00140000              runtime_itlb_cache_stats
-10d45f80 l     O .bss	00140000              runtime_dtlb_cache_stats
-10e85f80 l     O .bss	00140000              runtime_cycles_in_tx_stats
-10fc5f80 l     O .bss	00140000              runtime_transaction_stats
-11105f80 l     O .bss	00140000              runtime_elision_stats
-11245f80 l     O .bss	00140000              runtime_topdown_total_slots
-11385f80 l     O .bss	00140000              runtime_topdown_slots_retired
-114c5f80 l     O .bss	00140000              runtime_topdown_slots_issued
-11605f80 l     O .bss	00140000              runtime_topdown_fetch_bubbles
-11745f80 l     O .bss	00140000              runtime_topdown_recovery_bubbles
-
-This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
-to 1024"), because many tables are sized with MAX_NR_CPUS
-
-This patch gives the opportunity to redefine MAX_NR_CPUS via
-
-make EXTRA_CFLAGS=-DMAX_NR_CPUS=1
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- tools/perf/perf.h | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index dc442ba21bf6..a9db563da0a9 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -23,7 +23,9 @@ static inline unsigned long long rdclock(void)
- 	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
- }
- 
-+#ifndef MAX_NR_CPUS
- #define MAX_NR_CPUS			1024
-+#endif
- 
- extern const char *input_name;
- extern bool perf_host, perf_guest;
 -- 
-2.13.3
+2.7.4
