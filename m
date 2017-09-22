@@ -1,27 +1,38 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xz8W43dPRzDsND
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 20:15:28 +1000 (AEST)
-Date: Fri, 22 Sep 2017 18:14:05 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Corentin Labbe <clabbe.montjoie@gmail.com>
-Cc: davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
- hpa@zytor.com, x86@kernel.org, horia.geanta@nxp.com,
- dan.douglass@nxp.com, thomas.lendacky@amd.com, gary.hook@amd.com,
- harsh@chelsio.com, matthias.bgg@gmail.com,
- leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/11] crypto: gcm - add GCM IV size constant
-Message-ID: <20170922101405.GI16270@gondor.apana.org.au>
-References: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170822080818.12486-1-clabbe.montjoie@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xz8XL1Z3qzDsMN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 20:16:33 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8MAEf1j047381
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 06:16:31 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2d4y6vvy4f-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Sep 2017 06:16:31 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Fri, 22 Sep 2017 04:16:30 -0600
+Subject: Re: [linux-next][EXT4][Oops]kernel panics when running fsfuzzer
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, chandan
+ <chandan@linux.vnet.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>, Andreas Dilger
+ <adilger.kernel@dilger.ca>, Jan Kara <jack@suse.com>,
+ linux-ext4@vger.kernel.org
+Date: Fri, 22 Sep 2017 15:46:21 +0530
+In-Reply-To: <87lgl9lvhj.fsf@concordia.ellerman.id.au>
+References: <1505741461.6990.11.camel@abdul.in.ibm.com>
+ <87lgl9lvhj.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1506075381.17232.18.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +42,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 22, 2017 at 10:08:07AM +0200, Corentin Labbe wrote:
-> Many GCM users use directly GCM IV size instead of using some constant.
+On Wed, 2017-09-20 at 16:44 +1000, Michael Ellerman wrote:
+> Abdul Haleem <abdhalee@linux.vnet.ibm.com> writes:
 > 
-> This patch add all IV size constant used by GCM and convert drivers for using them..
+> > Hi,
+> >
+> > next kernel panics when running fsfuzzer test on ext4 file system.
+> >
+> > Machine Type: Power 7 PowerVM LPAR
+> > kernel : 4.13.0-next-20170915
+> > config : attached
+> > Test: fsfuzzer
+> >
+> > dmesg:
+> > -----
+> > EXT4-fs (loop1): couldn't mount RDWR because of unsupported optional
+> > features (e4000000)
+> > JBD2: no valid journal superblock found
+> > EXT4-fs (loop1): error loading journal
+> > EXT4-fs (loop1): mounted filesystem with ordered data mode. Opts: (null)
+> > EXT4-fs error (device loop1): ext4_mb_generate_buddy:756: group 0, block
+> > bitmap and bg descriptor inconsistent: 1077 vs 1045 free clusters
+> > Unable to handle kernel paging request for data at address 0x00000008
+> > Faulting instruction address: 0xd0000000084b0424
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > BE SMP NR_CPUS=2048 NUMA pSeries
+> > Dumping ftrace buffer: 
+> >    (ftrace buffer empty)
+> > Modules linked in: cramfs(E) dlci(E) 8021q(E) garp(E) mrp(E) af_key(E)
+> > ieee802154_socket(E) ieee802154(E) rpcrdma(E) ib_isert(E)
+> > iscsi_target_mod(E) ib_iser(E) libiscsi(E) ib_srpt(E) target_core_mod(E)
+> > ib_srp(E) hidp(E) ib_ipoib(E) cmtp(E) kernelcapi(E) rdma_ucm(E)
+> > ib_ucm(E) bnep(E) ib_uverbs(E) rfcomm(E) bluetooth(E) ib_umad(E)
+> > rdma_cm(E) ecdh_generic(E) rfkill(E) ib_cm(E) iw_cm(E) pptp(E) gre(E)
+> > l2tp_ppp(E) l2tp_netlink(E) l2tp_core(E) ip6_udp_tunnel(E) udp_tunnel(E)
+> > pppoe(E) pppox(E) ppp_generic(E) slhc(E) crypto_user(E) ib_core(E)
+> > nfnetlink(E) scsi_transport_iscsi(E) atm(E) sctp(E) dccp_ipv4(E)
+> > netlink_diag(E) dccp_diag(E) ip6table_filter(E) af_packet_diag(E)
+> > unix_diag(E) tcp_diag(E) udp_diag(E) ebtable_filter(E) bridge(E) sg(E)
+> > ibmveth(E) rpadlpar_io(E) loop(E) xt_CHECKSUM(E) iptable_mangle(E)
+> >  ipt_MASQUERADE(E) nf_nat_masquerade_ipv4(E) iptable_nat(E)
+> > nf_nat_ipv4(E) nf_nat(E) nf_conntrack_ipv4(E) nf_defrag_ipv4(E)
+> > xt_conntrack(E) nf_conntrack(E) ipt_REJECT(E) nf_reject_ipv4(E) tun(E)
+> > stp(E) llc(E) rpaphp(E) kvm_pr(E) kvm(E) ebtables(E) ip6_tables(E)
+> > dccp(E) inet_diag(E) iptable_filter(E) nfsd(E) auth_rpcgss(E) nfs_acl(E)
+> > lockd(E) grace(E) sunrpc(E) binfmt_misc(E) ip_tables(E) ext4(E)
+> > mbcache(E) jbd2(E) sd_mod(E) ibmvscsi(E) scsi_transport_srp(E) [last
+> > unloaded: netlink_diag]
+> > CPU: 15 PID: 32523 Comm: jbd2/loop1-8 Tainted: G        W   E
+> > 4.13.0-next-20170915-autotest #1
 > 
-> Corentin Labbe (11):
->   crypto: gcm - add GCM iv size constant
->   crypto: caam - Use GCM IV size constant
->   crypto: ccp - Use GCM IV size constant
->   crypto: nx - Use GCM IV size constant
->   crypto: atmel - Use GCM IV size constant
->   crypto: bcm - Use GCM IV size constant
->   crypto: mediatek - Use GCM IV size constant
->   crypto: chelsio - Use GCM IV size constant
->   crypto: omap - Use GCM IV size constant
->   crypto: gcm - Use GCM IV size constant
->   crypto: aesni - Use GCM IV size constant
+> These would be easier to read if they weren't word-wrapped.
 
-All applied.  Thanks.
+Yes, I will keep it pre formatted next time.
+> 
+> > task: c000000189664900 task.stack: c0000009f122c000
+> > NIP:  d0000000084b0424 LR: d0000000084a8040 CTR: c000000000373fe0
+> > REGS: c0000009f122f590 TRAP: 0300   Tainted: G        W   E > (4.13.0-next-20170915-autotest)
+> > MSR:  800000000280b032 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI>  CR: 28002022
+> > XER: 20000000  
+> > CFAR: c000000000008718 DAR: 0000000000000008 DSISR: 40000000 SOFTE: 1 
+> > GPR00: d0000000084a8040 c0000009f122f810 d0000000084bf010 > c00000093b66a7d0 
+> > GPR04: f0000000024ed980 c00000093b66a578 c00000093b66a578 > 0000000000000001 
+> > GPR08: 0000000000000000 0000000000000000 0000000000000000 > d0000000084b2738 
+> > GPR12: c000000000373fe0 c00000000e939d80 c000000000118350 > c0000013f0bc22c0 
+> > GPR16: c0000009f65e4000 c0000009f122fb20 0000000000000000 > c00000108a749824 
+> > GPR20: c0000009f791cf9c 0000000000000000 c0000009f791cf60 > d0000000084b6cb0 
+> > GPR24: 0000000000000000 c00000108a749880 0000000000000000 > c0000009f791d300 
+> > GPR28: c00000093b66a7d0 c0000009f122c000 0000000000000000 > c0000013f8f389b8 
+> > NIP [d0000000084b0424] .jbd2_journal_put_journal_head+0x94/0x22c [jbd2]
+> > LR [d0000000084a8040] .__jbd2_journal_remove_checkpoint+0x70/0x200 > [jbd2]
+> > Call Trace:
+> > [c0000009f122f810] [d0000000084b04ec] .jbd2_journal_put_journal_head +0x15c/0x22c [jbd2] (unreliable)
+> > [c0000009f122f890] [d0000000084a8040] .__jbd2_journal_remove_checkpoint +0x70/0x200 [jbd2]
+> > [c0000009f122f930] [d0000000084a8b98] .__jbd2_log_wait_for_space +0x368/0x3d0 [jbd2]
+> > [c0000009f122f9c0] [d0000000084a8c5c] .__jbd2_journal_clean_checkpoint_list+0x5c/0xc0 > [jbd2]
+> > [c0000009f122fa60] [d0000000084a4e2c] .jbd2_journal_commit_transaction +0x33c/0x2f80 [jbd2]
+> > [c0000009f122fc90] [d0000000084ad160] .jbd2_journal_init_inode +0x390/0x5a0 [jbd2]
+> > [c0000009f122fd70] [c0000000001184ac] .kthread+0x15c/0x1a0
+> > [c0000009f122fe30] [c00000000000b4e4] .ret_from_kernel_thread+0x58/0x74
+> > Instruction dump:
+> > 7c2004ac 7d40f8a8 7d4a4878 7d40f9ad 40c2fff4 38210080 e8010010 ebc1fff0 
+> > ebe1fff8 7c0803a6 4e800020 ebdf0040 <e93e000a> 79290fe0 0b090000 e93e0028 
+> > ---[ end trace bd674540a2bf235c ]---
+> 
+> The instruction dump is:
+> 
+> lwsync
+> ldarx   r10,0,r31	# probably bit_spin_unlock() in jbd_unlock_bh_journal_head()
+> andc    r10,r10,r9
+> stdcx.  r10,0,r31
+> bne-    0xfffffffffffffff4
+> addi    r1,r1,128
+> ld      r0,16(r1)
+> ld      r30,-16(r1)
+> ld      r31,-8(r1)
+> mtlr    r0
+> blr			# return
+> 
+> ld      r30,64(r31)
+> lwa     r9,8(r30)	# <-- POP, r30 is NULL
+> rldicl  r9,r9,1,63
+> tdnei   r9,0		# Most likely a BUG_ON()
+> ld      r9,40(r30)
+> 
+> Perhaps:
+> 
+> 	J_ASSERT_JH(jh, jh->b_jcount >= 0);
+> 
+> And given:
+> 
+> struct journal_head {
+> 	/*
+> 	 * Points back to our buffer_head. [jbd_lock_bh_journal_head()]
+> 	 */
+> 	struct buffer_head *b_bh;
+> 
+> 	/*
+> 	 * Reference count - see description in journal.c
+> 	 * [jbd_lock_bh_journal_head()]
+> 	 */
+> 	int b_jcount;
+> 
+> 
+> ie. b_jcount is 8 bytes into the struct, that looks likely.
+> 
+> So we had a jh that was NULL.
+> 
+> 
+> Is it reproducible?
+
+No, bug is not seen once for 3 re-run from yesterday.
+
+Hope to hit it again in the future CI runs.
+
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Regard's
+
+Abdul Haleem
+IBM Linux Technology Centre
