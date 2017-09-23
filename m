@@ -1,28 +1,26 @@
-Return-Path: <srs0=myp6=ax=flex--wak.bounces.google.com=3i6pfwqmkdlwycmiqqing.eqonkpwzrre-fgxq1ncdu.qti@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 1.mo179.mail-out.ovh.net (1.mo179.mail-out.ovh.net
+ [178.33.111.220])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xzVmH6yQLzDqR8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 09:58:07 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3xzVmH6Pksz8vpg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 09:58:07 +1000 (AEST)
-Received: from mail-oi0-x249.google.com (mail-oi0-x249.google.com
- [IPv6:2607:f8b0:4003:c06::249])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3xzVmG6JnRz9sNw
- for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2017 09:58:06 +1000 (AEST)
-Received: by mail-oi0-x249.google.com with SMTP id t11so222590oib.22
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2017 16:58:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3xzkH16GbQzDqR8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 18:37:01 +1000 (AEST)
+Received: from player794.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo179.mail-out.ovh.net (Postfix) with ESMTP id E069C64C9D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 10:27:47 +0200 (CEST)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Subject: [PATCH 2/2] powerpc/xive: fix cpu removal
+Date: Sat, 23 Sep 2017 10:26:56 +0200
+Message-Id: <20170923082656.27219-3-clg@kaod.org>
+In-Reply-To: <20170923082656.27219-1-clg@kaod.org>
+References: <20170923082656.27219-1-clg@kaod.org>
 MIME-Version: 1.0
-Date: Fri, 22 Sep 2017 16:58:00 -0700
-Message-Id: <20170922235800.19348-1-wak@google.com>
-Subject: [PATCH] powerpc/opal: Fix EBUSY bug in acquiring tokens
-From: "William A. Kennington III" <wak@google.com>
-To: linuxppc-dev@ozlabs.org
-Cc: rlippert@google.com, wak@google.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,51 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current code checks the completion map to look for the first token
-that is complete. In some cases, a completion can come in but the token
-can still be on lease to the caller processing the completion. If this
-completed but unreleased token is the first token found in the bitmap by
-another tasks trying to acquire a token, then the __test_and_set_bit
-call will fail since the token will still be on lease. The acquisition
-will then fail with an EBUSY.
+When a CPU is hot unplugged, the IPI interrupt source should be
+deconfigured and the event queue cleared.
 
-This patch reorganizes the acquisition code to look at the
-opal_async_token_map for an unleased token. If the token has no lease it
-must have no outstanding completions so we should never see an EBUSY,
-unless we have leased out too many tokens. Since
-opal_async_get_token_inrerruptible is protected by a semaphore, we will
-practically never see EBUSY anymore.
-
-Signed-off-by: William A. Kennington III <wak@google.com>
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/platforms/powernv/opal-async.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/xive/common.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
-index cf33769a7b72..45b3feb8aa2f 100644
---- a/arch/powerpc/platforms/powernv/opal-async.c
-+++ b/arch/powerpc/platforms/powernv/opal-async.c
-@@ -39,18 +39,18 @@ int __opal_async_get_token(void)
- 	int token;
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 1c087ed7427f..b9440ac7a3c1 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1398,6 +1398,14 @@ void xive_teardown_cpu(void)
  
- 	spin_lock_irqsave(&opal_async_comp_lock, flags);
--	token = find_first_bit(opal_async_complete_map, opal_max_async_tokens);
-+	token = find_first_zero_bit(opal_async_token_map, opal_max_async_tokens);
- 	if (token >= opal_max_async_tokens) {
- 		token = -EBUSY;
- 		goto out;
- 	}
+ 	if (xive_ops->teardown_cpu)
+ 		xive_ops->teardown_cpu(cpu, xc);
++
++#ifdef CONFIG_SMP
++	/* Get rid of IPI */
++	xive_cleanup_cpu_ipi(cpu, xc);
++#endif
++
++	/* Disable and free the queues */
++	xive_cleanup_cpu_queues(cpu, xc);
+ }
  
--	if (__test_and_set_bit(token, opal_async_token_map)) {
-+	if (!__test_and_clear_bit(token, opal_async_complete_map)) {
- 		token = -EBUSY;
- 		goto out;
- 	}
- 
--	__clear_bit(token, opal_async_complete_map);
-+	__set_bit(token, opal_async_token_map);
- 
- out:
- 	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
+ void xive_kexec_teardown_cpu(int secondary)
 -- 
-2.14.1.821.g8fa685d3b7-goog
+2.13.5
