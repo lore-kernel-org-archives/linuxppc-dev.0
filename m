@@ -1,22 +1,28 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
+Return-Path: <keescook@google.com>
+Received: from mail-it0-x232.google.com (mail-it0-x232.google.com
+ [IPv6:2607:f8b0:4001:c0b::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y0bGB0cqPzDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 04:24:17 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id u48so3765366qtc.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Sep 2017 11:24:17 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au,
-	linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com
-Subject: [RFC] powerpc: add sys_pkey_modify() system call
-Date: Sun, 24 Sep 2017 11:23:54 -0700
-Message-Id: <1506277434-13773-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y0cS313CSzDsN9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 05:17:54 +1000 (AEST)
+Received: by mail-it0-x232.google.com with SMTP id o200so4989243itg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Sep 2017 12:17:54 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
+References: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
+From: Kees Cook <keescook@chromium.org>
+Date: Sun, 24 Sep 2017 12:17:51 -0700
+Message-ID: <CAGXu5jJ54+bCcXaPK1ExsxtTDPHNn1+1gywb3TDbe-SEtt1zuQ@mail.gmail.com>
+Subject: Re: [PATCH] mm: fix RODATA_TEST failure "rodata_test: test data was
+ not read only"
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jinbum Park <jinb.park7@gmail.com>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,112 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-sys_pkey_modify()  is   powerpc  specific  system  call.  It
-enables  the ability to modify *any* attribute of a key.
+On Thu, Sep 21, 2017 at 2:37 AM, Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
+> On powerpc, RODATA_TEST fails with message the following messages:
+>
+> [    6.199505] Freeing unused kernel memory: 528K
+> [    6.203935] rodata_test: test data was not read only
+>
+> This is because GCC allocates it to .data section:
+>
+> c0695034 g     O .data  00000004 rodata_test_data
 
-Since powerpc disallows modification of IAMR from user space
-an application is unable to change a key's execute-attribute.
+Uuuh... that seems like a compiler bug. It's marked "const" -- it
+should never end up in .data. I would argue that this has done exactly
+what it was supposed to do, and shows that something has gone wrong.
+It should always be const. Adding "static" should just change
+visibility. (I'm not opposed to the static change, but it seems to
+paper over a problem with the compiler...)
 
-This system call helps accomplish the above.
+-Kees
 
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- arch/powerpc/include/asm/systbl.h      |    1 +
- arch/powerpc/include/asm/unistd.h      |    2 +-
- arch/powerpc/include/uapi/asm/unistd.h |    1 +
- arch/powerpc/kernel/entry_64.S         |    9 +++++++++
- arch/powerpc/mm/pkeys.c                |   29 +++++++++++++++++++++++++++++
- 5 files changed, 41 insertions(+), 1 deletions(-)
+>
+> Since commit 056b9d8a76924 ("mm: remove rodata_test_data export,
+> add pr_fmt"), rodata_test_data is used only inside rodata_test.c
+> By declaring it static, it gets properly allocated into .rodata
+> section instead of .data:
+>
+> c04df710 l     O .rodata        00000004 rodata_test_data
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  mm/rodata_test.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/mm/rodata_test.c b/mm/rodata_test.c
+> index 6bb4deb12e78..d908c8769b48 100644
+> --- a/mm/rodata_test.c
+> +++ b/mm/rodata_test.c
+> @@ -14,7 +14,7 @@
+>  #include <linux/uaccess.h>
+>  #include <asm/sections.h>
+>
+> -const int rodata_test_data = 0xC3;
+> +static const int rodata_test_data = 0xC3;
+>
+>  void rodata_test(void)
+>  {
+> --
+> 2.13.3
+>
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index b33b551..d6f667e 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -391,3 +391,4 @@
- SYSCALL(pkey_alloc)
- SYSCALL(pkey_free)
- SYSCALL(pkey_mprotect)
-+PPC64ONLY(pkey_modify)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index daf1ba9..1e97086 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define NR_syscalls		387
-+#define NR_syscalls		388
- 
- #define __NR__exit __NR_exit
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 71ae45e..c70b6d3 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -397,5 +397,6 @@
- #define __NR_pkey_alloc		384
- #define __NR_pkey_free		385
- #define __NR_pkey_mprotect	386
-+#define __NR_pkey_modify	387
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 4a0fd4f..5980b9e 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -455,6 +455,15 @@ _GLOBAL(ppc_switch_endian)
- 	bl	sys_switch_endian
- 	b	.Lsyscall_exit
- 
-+_GLOBAL(ppc_pkey_modify)
-+	bl	save_nvgprs
-+#ifdef  CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-+	bl	sys_pkey_modify
-+#else
-+	bl	sys_ni_syscall
-+#endif
-+	b	.Lsyscall_exit
-+
- _GLOBAL(ret_from_fork)
- 	bl	schedule_tail
- 	REST_NVGPRS(r1)
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index de2e88f..bd16bc4 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -364,3 +364,32 @@ bool arch_vma_access_permitted(struct vm_area_struct *vma,
- 
- 	return pkey_access_permitted(pkey, write, execute);
- }
-+
-+unsigned int arch_usable_pkeys(void)
-+{
-+	unsigned int reserved;
-+
-+	if (!pkey_inited)
-+		return 0;
-+
-+	/* Reserve one more to account for the execute-only pkey. */
-+	reserved = hweight32(initial_allocation_mask) + 1;
-+
-+	return pkeys_total > reserved ? pkeys_total - reserved : 0;
-+}
-+
-+bool arch_supports_pkeys(int cap)
-+{
-+	if (cap & PKEY_DISABLE_EXECUTE)
-+		return pkey_execute_disable_support;
-+	return (cap & (PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
-+}
-+
-+long sys_pkey_modify(int pkey, unsigned long new_val)
-+{
-+	/* check for unsupported init values */
-+	if (new_val & ~PKEY_ACCESS_MASK)
-+		return -EINVAL;
-+
-+	return __arch_set_user_pkey_access(current, pkey, new_val);
-+}
+
+
 -- 
-1.7.1
+Kees Cook
+Pixel Security
