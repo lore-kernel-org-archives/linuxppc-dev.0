@@ -1,26 +1,30 @@
-Return-Path: <clg@kaod.org>
-Received: from 7.mo179.mail-out.ovh.net (7.mo179.mail-out.ovh.net
- [46.105.61.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3xzkVQ0SBKzDqTc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 18:46:52 +1000 (AEST)
-Received: from player794.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo179.mail-out.ovh.net (Postfix) with ESMTP id 44C6064397
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Sep 2017 10:27:42 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y0X9r5KX8zDqNh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 02:05:20 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id u18so3568287pgo.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Sep 2017 09:05:20 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: Traceback due to 'powerpc/mm: Fix kernel RAM protection...' when
+ running ppc image in qemu
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH 1/2] powerpc/xive: fix IPI reset
-Date: Sat, 23 Sep 2017 10:26:55 +0200
-Message-Id: <20170923082656.27219-2-clg@kaod.org>
-In-Reply-To: <20170923082656.27219-1-clg@kaod.org>
-References: <20170923082656.27219-1-clg@kaod.org>
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+References: <20170919182459.GA7933@roeck-us.net>
+ <8760ce9iib.fsf@concordia.ellerman.id.au>
+ <daaad0c4-75af-4b02-20d0-b0b8e327f94a@roeck-us.net>
+ <41b8af14-ada8-448f-5da7-92640ea8c3e7@c-s.fr>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <ed5747c4-42ff-0b74-eddd-29b63876889f@roeck-us.net>
+Date: Sun, 24 Sep 2017 09:05:15 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <41b8af14-ada8-448f-5da7-92640ea8c3e7@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +34,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When resetting an IPI, hw_ipi should also be set to zero.
+On 09/21/2017 11:44 AM, Christophe LEROY wrote:
+> 
+> 
+> Le 20/09/2017 à 05:45, Guenter Roeck a écrit :
+>> On 09/19/2017 08:05 PM, Michael Ellerman wrote:
+>>> Guenter Roeck <linux@roeck-us.net> writes:
+>>>
+>>>> Hi,
+>>>>
+>>>> I see a the following traceback when running an SMP image based on
+>>>> 85xx/mpc85xx_cds_defconfig in qemu.
+>>>>
+>>>> ------------[ cut here ]------------
+>>>> WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 smp_call_function_many+0xcc/0x2fc
+>>>> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.14.0-rc1-00009-g0666f56 #1
+>>>> task: cf830000 task.stack: cf82e000
+>>>> NIP:  c00a93c8 LR: c00a9634 CTR: 00000001
+>>>> REGS: cf82fde0 TRAP: 0700   Not tainted  (4.14.0-rc1-00009-g0666f56)
+>>>> MSR:  00021000 <CE,ME>  CR: 24000082  XER: 00000000
+>>>>
+>>>> GPR00: c00a9634 cf82fe90 cf830000 c050ad3c c0015a54 00000000 00000001 00000001
+>>>> GPR08: 00000001 00000000 00000000 cf82e000 24000084 00000000 c0003150 00000000
+>>>> GPR16: 00000000 00000000 00000000 00000000 00000000 00000001 00000000 c0510000
+>>>> GPR24: 00000000 c0015a54 00000000 c050ad3c c051823c c050ad3c 00000025 00000000
+>>>> NIP [c00a93c8] smp_call_function_many+0xcc/0x2fc
+>>>> LR [c00a9634] smp_call_function+0x3c/0x50
+>>>> Call Trace:
+>>>> [cf82fe90] [00000010] 0x10 (unreliable)
+>>>> [cf82fed0] [c00a9634] smp_call_function+0x3c/0x50
+>>>> [cf82fee0] [c0015d2c] flush_tlb_kernel_range+0x20/0x38
+>>>> [cf82fef0] [c001524c] mark_initmem_nx+0x154/0x16c
+>>>> [cf82ff20] [c001484c] free_initmem+0x20/0x4c
+>>>> [cf82ff30] [c000316c] kernel_init+0x1c/0x108
+>>>> [cf82ff40] [c000f3a8] ret_from_kernel_thread+0x5c/0x64
+>>>> Instruction dump:
+>>>> 7c0803a6 7d808120 38210040 4e800020 3d20c052 812981a0 2f890000 40beffac
+>>>> 3d20c051 8929ac64 2f890000 40beff9c <0fe00000> 4bffff94 7fc3f378 7f64db78
+>>>> ---[ end trace 7da7bdcf8b15ddb3 ]---
+>>>
+>>> Thanks.
+>>>
+>>> I guess the system still runs OK otherwise, you're just seeing the warning?
+>>>
+>> Yes, though I am not sure if that is because there is only one active CPU (there is
+>> still only one if I say "-smp 4" on the qemu command line).
+>>
+>>>> A complete log is available at:
+>>>> http://kerneltests.org/builders/qemu-ppc-master/builds/814/steps/qemubuildcommand/logs/stdio
+>>>>
+>>>> Bisect points to commit 3184cc4b6f6a1dc0 ("powerpc/mm: Fix kernel RAM protection
+>>>> after freeing unused memory on PPC32"). Bisect log is attached. A quick look
+>>>> suggests that mark_initmem_nx() is called with interrupts disabled, which
+>>>> triggers the traceback.
+>>>
+>>> Hmm. Yes the MSR says you have interrupts disabled (EE missing).
+>>>
+>>> But I don't see why. start_kernel() did local_irq_enable(), so I don't
+>>> understand why we got to mark_initmem_nx() with them disabled. I'll hope
+>>> that Christophe has some idea.
+>>>
+>> Good question. I only see this with one of 9 ppc emulations, with 85xx/mpc85xx_cds_defconfig
+>> +CONFIG_DEVTMPFS=y +CONFIG_SMP=y. Maybe there is a platform specific init function
+>> which leaves interrupts disabled. Question is which one that might be.
+>>
+> 
+> Unfortunatly no, I have no idea. My three platforms (860, 885 and 8321) are not SMPs so that warning would not appear, but I added a WARN_ON(1) just become calling mark_initmem_nx(), and I can confirm that MSR has EE set on all three at that time.
+> 
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/spapr.c | 4 ++++
- 1 file changed, 4 insertions(+)
+You should still be able to compile and run a SMP kernel. mpc85xx_cds_defconfig
+without CONFIG_SMP=y does not show the warning either.
 
-diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-index f24a70bc6855..d9c4c9366049 100644
---- a/arch/powerpc/sysdev/xive/spapr.c
-+++ b/arch/powerpc/sysdev/xive/spapr.c
-@@ -431,7 +431,11 @@ static int xive_spapr_get_ipi(unsigned int cpu, struct xive_cpu *xc)
- 
- static void xive_spapr_put_ipi(unsigned int cpu, struct xive_cpu *xc)
- {
-+	if (!xc->hw_ipi)
-+		return;
-+
- 	xive_irq_bitmap_free(xc->hw_ipi);
-+	xc->hw_ipi = 0;
- }
- #endif /* CONFIG_SMP */
- 
--- 
-2.13.5
+Turns out interrupts are disabled in change_page_attr(), called by mark_initmem_nx().
+change_page_attr() calls flush_tlb_kernel_range() with interrupts disabled.
+This only happens if CONFIG_PPC_MMU_NOHASH=y.
+Given that, I would assume that this will be seen with every 32 bit ppc build which has
+CONFIG_SMP=y and CONFIG_PPC_MMU_NOHASH=y.
+
+Maybe the problem was really introduced with commit e611939fc8ec1 ("powerpc/mm: Ensure
+change_page_attr() doesn't invalidate pinned TLBs"). From the context it appears that
+flush_tlb_kernel_range() should not be called with interrupts disabled.
+Indeed, moving flush_tlb_kernel_range() outside the irq disabled code fixes
+the problem for me.
+
+Thanks,
+Guenter
+
+> So as you suggest, there must be a platform specific stuff leaving the interrupts disabled.
+> 
+> Christophe
+> 
+> 
+>> Guenter
+> 
