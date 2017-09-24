@@ -1,23 +1,22 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y0Z4S5lT5zDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 03:30:48 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id u18so3659711pgo.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Sep 2017 10:30:48 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Guenter Roeck <linux@roeck-us.net>,
- Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/mm: Call flush_tlb_kernel_range with interrupts
- enabled
-Date: Sun, 24 Sep 2017 10:30:43 -0700
-Message-Id: <1506274243-28540-1-git-send-email-linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y0bGB0cqPzDqNh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 04:24:17 +1000 (AEST)
+Received: by mail-qt0-x244.google.com with SMTP id u48so3765366qtc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Sep 2017 11:24:17 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au,
+	linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com
+Subject: [RFC] powerpc: add sys_pkey_modify() system call
+Date: Sun, 24 Sep 2017 11:23:54 -0700
+Message-Id: <1506277434-13773-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +26,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-flush_tlb_kernel_range() may call smp_call_function_many() which expects
-interrupts to be enabled. This results in a traceback.
+sys_pkey_modify()  is   powerpc  specific  system  call.  It
+enables  the ability to modify *any* attribute of a key.
 
-WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 smp_call_function_many+0xcc/0x2fc
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.14.0-rc1-00009-g0666f56 #1
-task: cf830000 task.stack: cf82e000
-NIP:  c00a93c8 LR: c00a9634 CTR: 00000001
-REGS: cf82fde0 TRAP: 0700   Not tainted  (4.14.0-rc1-00009-g0666f56)
-MSR:  00021000 <CE,ME>  CR: 24000082  XER: 00000000
+Since powerpc disallows modification of IAMR from user space
+an application is unable to change a key's execute-attribute.
 
-GPR00: c00a9634 cf82fe90 cf830000 c050ad3c c0015a54 00000000 00000001 00000001
-GPR08: 00000001 00000000 00000000 cf82e000 24000084 00000000 c0003150 00000000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000001 00000000 c0510000
-GPR24: 00000000 c0015a54 00000000 c050ad3c c051823c c050ad3c 00000025 00000000
-NIP [c00a93c8] smp_call_function_many+0xcc/0x2fc
-LR [c00a9634] smp_call_function+0x3c/0x50
-Call Trace:
-[cf82fe90] [00000010] 0x10 (unreliable)
-[cf82fed0] [c00a9634] smp_call_function+0x3c/0x50
-[cf82fee0] [c0015d2c] flush_tlb_kernel_range+0x20/0x38
-[cf82fef0] [c001524c] mark_initmem_nx+0x154/0x16c
-[cf82ff20] [c001484c] free_initmem+0x20/0x4c
-[cf82ff30] [c000316c] kernel_init+0x1c/0x108
-[cf82ff40] [c000f3a8] ret_from_kernel_thread+0x5c/0x64
-Instruction dump:
-7c0803a6 7d808120 38210040 4e800020 3d20c052 812981a0 2f890000 40beffac
-3d20c051 8929ac64 2f890000 40beff9c <0fe00000> 4bffff94 7fc3f378 7f64db78
+This system call helps accomplish the above.
 
-Fixes: 3184cc4b6f6a ("powerpc/mm: Fix kernel RAM protection after freeing ...")
-Fixes: e611939fc8ec ("powerpc/mm: Ensure change_page_attr() doesn't ...")
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/mm/pgtable_32.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/systbl.h      |    1 +
+ arch/powerpc/include/asm/unistd.h      |    2 +-
+ arch/powerpc/include/uapi/asm/unistd.h |    1 +
+ arch/powerpc/kernel/entry_64.S         |    9 +++++++++
+ arch/powerpc/mm/pkeys.c                |   29 +++++++++++++++++++++++++++++
+ 5 files changed, 41 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 65eda1997c3f..f6c7f54c0515 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -361,9 +361,9 @@ static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
- 			break;
- 	}
- 	wmb();
-+	local_irq_restore(flags);
- 	flush_tlb_kernel_range((unsigned long)page_address(start),
- 			       (unsigned long)page_address(page));
--	local_irq_restore(flags);
- 	return err;
- }
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index b33b551..d6f667e 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -391,3 +391,4 @@
+ SYSCALL(pkey_alloc)
+ SYSCALL(pkey_free)
+ SYSCALL(pkey_mprotect)
++PPC64ONLY(pkey_modify)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index daf1ba9..1e97086 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
  
+ 
+-#define NR_syscalls		387
++#define NR_syscalls		388
+ 
+ #define __NR__exit __NR_exit
+ 
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 71ae45e..c70b6d3 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -397,5 +397,6 @@
+ #define __NR_pkey_alloc		384
+ #define __NR_pkey_free		385
+ #define __NR_pkey_mprotect	386
++#define __NR_pkey_modify	387
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 4a0fd4f..5980b9e 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -455,6 +455,15 @@ _GLOBAL(ppc_switch_endian)
+ 	bl	sys_switch_endian
+ 	b	.Lsyscall_exit
+ 
++_GLOBAL(ppc_pkey_modify)
++	bl	save_nvgprs
++#ifdef  CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++	bl	sys_pkey_modify
++#else
++	bl	sys_ni_syscall
++#endif
++	b	.Lsyscall_exit
++
+ _GLOBAL(ret_from_fork)
+ 	bl	schedule_tail
+ 	REST_NVGPRS(r1)
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index de2e88f..bd16bc4 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -364,3 +364,32 @@ bool arch_vma_access_permitted(struct vm_area_struct *vma,
+ 
+ 	return pkey_access_permitted(pkey, write, execute);
+ }
++
++unsigned int arch_usable_pkeys(void)
++{
++	unsigned int reserved;
++
++	if (!pkey_inited)
++		return 0;
++
++	/* Reserve one more to account for the execute-only pkey. */
++	reserved = hweight32(initial_allocation_mask) + 1;
++
++	return pkeys_total > reserved ? pkeys_total - reserved : 0;
++}
++
++bool arch_supports_pkeys(int cap)
++{
++	if (cap & PKEY_DISABLE_EXECUTE)
++		return pkey_execute_disable_support;
++	return (cap & (PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
++}
++
++long sys_pkey_modify(int pkey, unsigned long new_val)
++{
++	/* check for unsupported init values */
++	if (new_val & ~PKEY_ACCESS_MASK)
++		return -EINVAL;
++
++	return __arch_set_user_pkey_access(current, pkey, new_val);
++}
 -- 
-2.7.4
+1.7.1
