@@ -1,29 +1,27 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y1L766mHszDsPs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 09:35:46 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id a7so4236608pfj.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 16:35:46 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, benh@kernel.crashing.org,
- z.liuxinliang@hisilicon.com, zourongrong@gmail.com, catalin.marinas@arm.com,
- will.deacon@arm.com, gabriele.paoloni@huawei.com, airlied@linux.ie,
- daniel.vetter@intel.com, alex.williamson@redhat.com,
- dri-devel@lists.freedesktop.org, lukas@wunner.de, ard.biesheuvel@linaro.org,
- lorenzo.pieralisi@arm.com
-Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
-In-Reply-To: <20170925163948.GD15970@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170901072744.2409-1-dja@axtens.net>
- <20170925163948.GD15970@bhelgaas-glaptop.roam.corp.google.com>
-Date: Tue, 26 Sep 2017 09:35:40 +1000
-Message-ID: <87zi9ixsfn.fsf@linkitivity.dja.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y1Lfy0NmRzDsM9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 09:59:53 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id j16so5727862pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 16:59:53 -0700 (PDT)
+Message-ID: <1506383986.2918.4.camel@gmail.com>
+Subject: Re: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX
+ instruction for long bytes comparision
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, David Laight <David.Laight@ACULAB.COM>,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Date: Tue, 26 Sep 2017 09:59:46 +1000
+In-Reply-To: <20170923211843.GA10899@simonLocalRHEL7.x64>
+References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
+ <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
+ <1506089208.1155.32.camel@gmail.com>
+ <20170923211843.GA10899@simonLocalRHEL7.x64>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,79 +31,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Bjorn,
+On Sun, 2017-09-24 at 05:18 +0800, Simon Guo wrote:
+> Hi Cyril,
+> On Sat, Sep 23, 2017 at 12:06:48AM +1000, Cyril Bur wrote:
+> > On Thu, 2017-09-21 at 07:34 +0800, wei.guo.simon@gmail.com wrote:
+> > > From: Simon Guo <wei.guo.simon@gmail.com>
+> > > 
+> > > This patch add VMX primitives to do memcmp() in case the compare size
+> > > exceeds 4K bytes.
+> > > 
+> > 
+> > Hi Simon,
+> > 
+> > Sorry I didn't see this sooner, I've actually been working on a kernel
+> > version of glibc commit dec4a7105e (powerpc: Improve memcmp performance
+> > for POWER8) unfortunately I've been distracted and it still isn't done.
+> 
+> Thanks for sync with me. Let's consolidate our effort together :)
+> 
+> I have a quick check on glibc commit dec4a7105e. 
+> Looks the aligned case comparison with VSX is launched without rN size
+> limitation, which means it will have a VSX reg load penalty even when the 
+> length is 9 bytes.
+> 
 
-> But I think trying to split the "default device" part out from the VGA
-> arbiter ends up being overkill and making things more complicated
-> instead of simpler.
-Fair enough.
+This was written for userspace which doesn't have to explicitly enable
+VMX in order to use it - we need to be smarter in the kernel.
 
-> Would something like the following work for you as well as the powerpc
-> case?  On powerpc, we already use vga_set_default_device() to select a
-> device that doesn't use legacy VGA resources, so maybe we can just do
-> the same on ARM64?
+> It did some optimization when src/dest addrs don't have the same offset 
+> on 8 bytes alignment boundary. I need to read more closely.
+> 
+> > I wonder if we can consolidate our efforts here. One thing I did come
+> > across in my testing is that for memcmp() that will fail early (I
+> > haven't narrowed down the the optimal number yet) the cost of enabling
+> > VMX actually turns out to be a performance regression, as such I've
+> > added a small check of the first 64 bytes to the start before enabling
+> > VMX to ensure the penalty is worth taking.
+> 
+> Will there still be a penalty if the 65th byte differs?  
+> 
 
-It looks good. I'll try to get some time on the test system to test it
-and I'll pester my friends at IBM to give it a go as well.
+I haven't benchmarked it exactly, my rationale for 64 bytes was that it
+is the stride of the vectorised copy loop so, if we know we'll fail
+before even completing one iteration of the vectorized loop there isn't
+any point using the vector regs.
 
-> I suppose there might be wrinkles in how the arbiter deals with
-> multiple graphics devices on those systems, since I don't think it
-> identifies these devices that don't use the legacy resources, but it
-> seems like we live with whatever those on are powerpc and probably can
-> on ARM64 as well.
+> > 
+> > Also, you should consider doing 4K and greater, KSM (Kernel Samepage
+> > Merging) uses PAGE_SIZE which can be as small as 4K.
+> 
+> Currently the VMX will only be applied when size exceeds 4K. Are you
+> suggesting a bigger threshold than 4K?
+> 
 
-I would say so, yes.
+Equal to or greater than 4K, KSM will benefit.
 
-Thanks for sticking with this!
-
-Regards,
-Daniel
-
->
->
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 02831a396419..0ac7aa346c69 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1740,15 +1740,3 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
-> -
-> -static void fixup_vga(struct pci_dev *pdev)
-> -{
-> -	u16 cmd;
-> -
-> -	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-> -	if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
-> -		vga_set_default_device(pdev);
-> -
-> -}
-> -DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
-> -			      PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
-> diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
-> index 76875f6299b8..9df4802c5f04 100644
-> --- a/drivers/gpu/vga/vgaarb.c
-> +++ b/drivers/gpu/vga/vgaarb.c
-> @@ -1468,6 +1468,21 @@ static int __init vga_arb_device_init(void)
->  			vgaarb_info(dev, "no bridge control possible\n");
->  	}
->  
-> +	if (!vga_default_device()) {
-> +		list_for_each_entry(vgadev, &vga_list, list) {
-> +			struct device *dev = &vgadev->pdev->dev;
-> +			u16 cmd;
-> +
-> +			pdev = vgadev->pdev;
-> +			pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-> +			if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
-> +				vgaarb_info(dev, "setting as boot device\n");
-> +				vga_set_default_device(pdev);
-> +				break;
-> +			}
-> +		}
-> +	}
-> +
->  	pr_info("loaded\n");
->  	return rc;
->  }
+> We can sync more offline for v3.
+> 
+> Thanks,
+> - Simon
