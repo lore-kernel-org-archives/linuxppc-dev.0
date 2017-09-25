@@ -2,32 +2,34 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y1CXv3crvzDsN9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 04:39:10 +1000 (AEST)
-Date: Mon, 25 Sep 2017 20:39:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y1CZW0CKLzDsNH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 04:40:34 +1000 (AEST)
+Date: Mon, 25 Sep 2017 20:40:30 +0200
 From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Tamara Diaconita <diaconitatamara@gmail.com>, Baoquan He
- <bhe@redhat.com>, Kamlakant Patel <kamlakant.patel@broadcom.com>, Jonathan
- Corbet <corbet@lwn.net>, Jani Nikula <jani.nikula@intel.com>, Mahesh
- Salgaonkar <mahesh@linux.vnet.ibm.com>, Trond Myklebust
- <trond.myklebust@primarydata.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Bamvor
- Jian Zhang <bamvor.zhangjian@linaro.org>, Andrew Morton
- <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, Hari
- Bathini <hbathini@linux.vnet.ibm.com>, Ilya Matveychikov
- <matvejchikov@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH 1/6] lib/cmdline.c: Add backslash support to kernel
- commandline parsing.
-Message-ID: <20170925203901.0009b327@naga>
-In-Reply-To: <20170915192856.1d5708b6@kitsune.suse.cz>
-References: <4fabdf584ad18d6aae61e331f783a5020567f634.1505231820.git.msuchanek@suse.de>
- <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
- <20170915171409.GZ5426@ZenIV.linux.org.uk>
- <20170915192856.1d5708b6@kitsune.suse.cz>
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Jani Nikula <jani.nikula@intel.com>, Kamlakant Patel
+ <kamlakant.patel@broadcom.com>, Bamvor Jian Zhang
+ <bamvor.zhangjian@linaro.org>, Tamara Diaconita
+ <diaconitatamara@gmail.com>, Trond Myklebust
+ <trond.myklebust@primarydata.com>, Hari Bathini
+ <hbathini@linux.vnet.ibm.com>, Mahesh Salgaonkar
+ <mahesh@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Baoquan He <bhe@redhat.com>, Ilya
+ Matveychikov <matvejchikov@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 6/6] Documentation/admin-guide: single quotes in kernel
+ arguments.
+Message-ID: <20170925204030.1afb306d@naga>
+In-Reply-To: <95aef744-2f5f-31ad-a05b-7173d840ef47@infradead.org>
+References: <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
+ <44dd719f756a9e1b8388730b0b4562507027d35a.1505494668.git.msuchanek@suse.de>
+ <95aef744-2f5f-31ad-a05b-7173d840ef47@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,56 +39,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Sep 2017 19:28:56 +0200
-Michal Such=C3=A1nek <msuchanek@suse.de> wrote:
+On Fri, 15 Sep 2017 10:59:00 -0700
+Randy Dunlap <rdunlap@infradead.org> wrote:
 
-> On Fri, 15 Sep 2017 18:14:09 +0100
-> Al Viro <viro@ZenIV.linux.org.uk> wrote:
->=20
-> > On Fri, Sep 15, 2017 at 07:02:46PM +0200, Michal Suchanek wrote:
-> >  =20
-> > >  	for (i =3D 0; args[i]; i++) {
-> > > -		if (isspace(args[i]) && !in_quote)
-> > > +		if (isspace(args[i]) && !in_quote && !backslash)
-> > >  			break;
-> > > -		if (equals =3D=3D 0) {
-> > > -			if (args[i] =3D=3D '=3D')
-> > > -				equals =3D i;
-> > > +
-> > > +		if ((equals =3D=3D 0) && (args[i] =3D=3D '=3D'))
-> > > +			equals =3D i;
-> > > +
-> > > +		if (!backslash) {
-> > > +			if ((args[i] =3D=3D '"') || (args[i] =3D=3D
-> > > '\\')) {
-> > > +				if (args[i] =3D=3D '"')
-> > > +					in_quote =3D !in_quote;
-> > > +				if (args[i] =3D=3D '\\')
-> > > +					backslash =3D 1;
-> > > +
-> > > +				memmove(args + 1, args, i);
-> > > +				args++;
-> > > +				i--;
-> > > +			}
-> > > +		} else {
-> > > +			backslash =3D 0;
-> > >  		}
-> > > -		if (args[i] =3D=3D '"')
-> > > -			in_quote =3D !in_quote;
-> > >  	}   =20
-> >=20
-> > ... and that makes for Unidiomatic Work With Strings Award for this
-> > September. Using memmove() for string rewrite is almost always bad
-> > taste; in this case it's also (as usual) broken. =20
->=20
-> Care to share how it is broken?
+> On 09/15/17 10:02, Michal Suchanek wrote:
+> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> > ---
+> >  Documentation/admin-guide/kernel-parameters.rst | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/Documentation/admin-guide/kernel-parameters.rst
+> > b/Documentation/admin-guide/kernel-parameters.rst index
+> > 722d3f771924..1f9837266417 100644 ---
+> > a/Documentation/admin-guide/kernel-parameters.rst +++
+> > b/Documentation/admin-guide/kernel-parameters.rst @@ -35,9 +35,10
+> > @@ can also be entered as:: 
+> >  	log-buf-len=1M print_fatal_signals=1
+> >  
+> > -Double-quotes and backslashes can be used to protect spaces in
+> > values, e.g.:: +Double-quotes single-quaotes and backslashes can be
+> > used to protect spaces  
+> 
+>                  single-quotes
+> 
 
-Guess not. I will assume it is perfectly fine then. It works perfectly
-fine in my testing.
-
-Using memmove for string rewrite is not a matter of taste. It is the
-only library function with sane semantics for rewrite of anything. Then
-again open-coding it is always an option and maybe in better taste for
-some :->
+Thanks for catching the typo
 
 Michal
