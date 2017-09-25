@@ -1,35 +1,26 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y1CZW0CKLzDsNH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 04:40:34 +1000 (AEST)
-Date: Mon, 25 Sep 2017 20:40:30 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- Jani Nikula <jani.nikula@intel.com>, Kamlakant Patel
- <kamlakant.patel@broadcom.com>, Bamvor Jian Zhang
- <bamvor.zhangjian@linaro.org>, Tamara Diaconita
- <diaconitatamara@gmail.com>, Trond Myklebust
- <trond.myklebust@primarydata.com>, Hari Bathini
- <hbathini@linux.vnet.ibm.com>, Mahesh Salgaonkar
- <mahesh@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
- Nicholas Piggin <npiggin@gmail.com>, Baoquan He <bhe@redhat.com>, Ilya
- Matveychikov <matvejchikov@gmail.com>, Ingo Molnar <mingo@kernel.org>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 6/6] Documentation/admin-guide: single quotes in kernel
- arguments.
-Message-ID: <20170925204030.1afb306d@naga>
-In-Reply-To: <95aef744-2f5f-31ad-a05b-7173d840ef47@infradead.org>
-References: <28da60231eb848981e858fa33e3b7e33f8547111.1505494668.git.msuchanek@suse.de>
- <44dd719f756a9e1b8388730b0b4562507027d35a.1505494668.git.msuchanek@suse.de>
- <95aef744-2f5f-31ad-a05b-7173d840ef47@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y1DxR0BFnzDsN9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 05:42:01 +1000 (AEST)
+Date: Mon, 25 Sep 2017 14:41:31 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: Kees Cook <keescook@chromium.org>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>, Jinbum Park <jinb.park7@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] mm: fix RODATA_TEST failure "rodata_test: test data was
+ not read only"
+Message-ID: <20170925194130.GV8421@gate.crashing.org>
+References: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
+ <CAGXu5jJ54+bCcXaPK1ExsxtTDPHNn1+1gywb3TDbe-SEtt1zuQ@mail.gmail.com>
+ <20170925073721.GM8421@gate.crashing.org>
+ <063D6719AE5E284EB5DD2968C1650D6DD007F58B@AcuExch.aculab.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD007F58B@AcuExch.aculab.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,30 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Sep 2017 10:59:00 -0700
-Randy Dunlap <rdunlap@infradead.org> wrote:
-
-> On 09/15/17 10:02, Michal Suchanek wrote:
-> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> > ---
-> >  Documentation/admin-guide/kernel-parameters.rst | 5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
+On Mon, Sep 25, 2017 at 04:01:55PM +0000, David Laight wrote:
+> From: Segher Boessenkool
+> > The compiler puts this item in .sdata, for 32-bit.  There is no .srodata,
+> > so if it wants to use a small data section, it must use .sdata .
 > > 
-> > diff --git a/Documentation/admin-guide/kernel-parameters.rst
-> > b/Documentation/admin-guide/kernel-parameters.rst index
-> > 722d3f771924..1f9837266417 100644 ---
-> > a/Documentation/admin-guide/kernel-parameters.rst +++
-> > b/Documentation/admin-guide/kernel-parameters.rst @@ -35,9 +35,10
-> > @@ can also be entered as:: 
-> >  	log-buf-len=1M print_fatal_signals=1
-> >  
-> > -Double-quotes and backslashes can be used to protect spaces in
-> > values, e.g.:: +Double-quotes single-quaotes and backslashes can be
-> > used to protect spaces  
+> > Non-external, non-referenced symbols are not put in .sdata, that is the
+> > difference you see with the "static".
+> > 
+> > I don't think there is a bug here.  If you think there is, please open
+> > a GCC bug.
 > 
->                  single-quotes
+> The .sxxx sections are for 'small' data that can be accessed (typically)
+> using small offsets from a global register.
+> This means that all sections must be adjacent in the image.
+> So you can't really have readonly small data.
 > 
+> My guess is that the linker script is putting .srodata in with .sdata.
 
-Thanks for catching the typo
+.srodata does not *exist* (in the ABI).
 
-Michal
+
+Segher
