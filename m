@@ -1,29 +1,27 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jack@suse.cz>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y0yfq0H3tzDr4N
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 18:58:26 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8P8sdqT125142
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 04:58:22 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d6w0df86h-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 04:58:21 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Mon, 25 Sep 2017 09:58:20 +0100
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V2] cxl: Fix memory page not handled
-Date: Mon, 25 Sep 2017 10:58:16 +0200
-Message-Id: <1506329896-2417-1-git-send-email-clombard@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y0z1v6sH8zDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 19:14:59 +1000 (AEST)
+Date: Mon, 25 Sep 2017 11:14:49 +0200
+From: Jan Kara <jack@suse.cz>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ chandan <chandan@linux.vnet.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ Andreas Dilger <adilger.kernel@dilger.ca>, Jan Kara <jack@suse.com>,
+ linux-ext4@vger.kernel.org
+Subject: Re: [linux-next][EXT4][Oops]kernel panics when running fsfuzzer
+Message-ID: <20170925091449.GB5741@quack2.suse.cz>
+References: <1505741461.6990.11.camel@abdul.in.ibm.com>
+ <87lgl9lvhj.fsf@concordia.ellerman.id.au>
+ <1506075381.17232.18.camel@abdul.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1506075381.17232.18.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The in-kernel 'library' API can be called by drivers to help
-interaction with an IBM XSL on a POWER9 system.
+On Fri 22-09-17 15:46:21, Abdul Haleem wrote:
+> On Wed, 2017-09-20 at 16:44 +1000, Michael Ellerman wrote:
+> > Is it reproducible?
+> 
+> No, bug is not seen once for 3 re-run from yesterday.
+> 
+> Hope to hit it again in the future CI runs.
 
-The cxllib_handle_fault() API is used to handle memory fault. All memory
-pages of the specified buffer have to be handled but under certain
-conditions,the last page may not be touched, and the address the
-adapter is trying to access is never sent to the kernel for resolution.
+I was also looking into this but I couldn't figure out what has happened.
+>From the crash it seems that jh->b_bh->b_private was NULL although it
+should point back to 'jh'. But that just doesn't seem possible so maybe it
+is something different. If you ever happen to hit it again, please save
+the fuzzed image so that it can be used for reproduction. Thanks!
 
-This patch reworks start address of the loop with an address aligned on
-the page size. In this context, the last page is not missed.
-
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-
-Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL");
-
----
-Changelog[v2]
- - Rebase to latest upstream.
- - Change the start address of the loop.
- - Rewrite the commit message.
----
- drivers/misc/cxl/cxllib.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index 5dba23c..ff7492d 100644
---- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -219,8 +219,17 @@ int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
- 
- 	down_read(&mm->mmap_sem);
- 
--	for (dar = addr; dar < addr + size; dar += page_size) {
--		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
-+	vma = find_vma(mm, addr);
-+	if (!vma) {
-+		pr_err("Can't find vma for addr %016llx\n", addr);
-+		rc = -EFAULT;
-+		goto out;
-+	}
-+	/* get the size of the pages allocated */
-+	page_size = vma_kernel_pagesize(vma);
-+
-+	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
-+		if (dar < vma->vm_start || dar > vma->vm_end) {
- 			vma = find_vma(mm, addr);
- 			if (!vma) {
- 				pr_err("Can't find vma for addr %016llx\n", addr);
+								Honza
 -- 
-2.7.4
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
