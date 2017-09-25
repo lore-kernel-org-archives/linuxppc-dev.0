@@ -1,26 +1,31 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y18vF3FdszDsN9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 02:39:53 +1000 (AEST)
-Date: Mon, 25 Sep 2017 11:39:48 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, benh@kernel.crashing.org,
- z.liuxinliang@hisilicon.com, zourongrong@gmail.com,
- catalin.marinas@arm.com, will.deacon@arm.com,
- gabriele.paoloni@huawei.com, airlied@linux.ie,
- daniel.vetter@intel.com, alex.williamson@redhat.com,
- dri-devel@lists.freedesktop.org, lukas@wunner.de,
- ard.biesheuvel@linaro.org, lorenzo.pieralisi@arm.com
-Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
-Message-ID: <20170925163948.GD15970@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170901072744.2409-1-dja@axtens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170901072744.2409-1-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y198l1trxzDsN9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 02:51:34 +1000 (AEST)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ v8PGpWsn003180
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 16:51:33 GMT
+From: Khalid Aziz <khalid.aziz@oracle.com>
+To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, davem@davemloft.net, dave.hansen@linux.intel.com
+Cc: Khalid Aziz <khalid.aziz@oracle.com>, bsingharora@gmail.com,
+ nborisov@suse.com, aarcange@redhat.com, tj@kernel.org, mgorman@suse.de,
+ vbabka@suse.cz, nadav.amit@gmail.com, aneesh.kumar@linux.vnet.ibm.com,
+ kirill.shutemov@linux.intel.com, heiko.carstens@de.ibm.com,
+ ak@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, Khalid Aziz <khalid@gonehiking.org>
+Subject: [PATCH v8 7/9] mm: Add address parameter to arch_validate_prot()
+Date: Mon, 25 Sep 2017 10:48:58 -0600
+Message-Id: <e4b6fcaa267628f7ef8fdbe60f05ec8d4d60b3be.1506089472.git.khalid.aziz@oracle.com>
+In-Reply-To: <cover.1506089472.git.khalid.aziz@oracle.com>
+References: <cover.1506089472.git.khalid.aziz@oracle.com>
+In-Reply-To: <cover.1506089472.git.khalid.aziz@oracle.com>
+References: <cover.1506089472.git.khalid.aziz@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,102 +35,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 01, 2017 at 05:27:41PM +1000, Daniel Axtens wrote:
-> This patch set:
-> 
->  - splits the default display handling out from VGA arbiter, into its
->    own file and behind its own Kconfig option (and gives the functions
->    better names).
-> 
->  - adds extra detection of default devices. To be nominated, the vga
->    arbiter and platform hooks must not have nominated a default. A
->    card will then only be nominated if it has a driver attached and
->    has IO or memory decoding enabled.
-> 
->  - adds relevant documentation.
-> 
-> The practical impact of this is improved X autoconfiguration on some
-> arm64 systems.
+A protection flag may not be valid across entire address space and
+hence arch_validate_prot() might need the address a protection bit is
+being set on to ensure it is a valid protection flag. For example, sparc
+processors support memory corruption detection (as part of ADI feature)
+flag on memory addresses mapped on to physical RAM but not on PFN mapped
+pages or addresses mapped on to devices. This patch adds address to the
+parameters being passed to arch_validate_prot() so protection bits can
+be validated in the relevant context.
 
-I think I gave you bad advice about trying to separate the "default
-device" idea from the VGA arbiter.
+Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
+Cc: Khalid Aziz <khalid@gonehiking.org>
+---
+v8:
+	- Added addr parameter to powerpc arch_validate_prot() (suggested
+	  by Michael Ellerman)
+v7:
+	- new patch
 
-It is true that the "VGA arbiter" per se is related to routing the
-legacy VGA resources, and the arbiter currently only selects a default
-device if it finds a device to which those resources are routed.
+ arch/powerpc/include/asm/mman.h | 4 ++--
+ arch/powerpc/kernel/syscalls.c  | 2 +-
+ include/linux/mman.h            | 2 +-
+ mm/mprotect.c                   | 2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-We have some cases where we want to select a default device that may
-not support the legacy VGA resources, or where they might not be
-routed to the device:
-
-  - systems where we match the EFI framebuffer address with a BAR, and
-    select that device as default,
-
-  - powerpc systems where there may be no host bridge window that maps
-    to the legacy VGA resources,
-
-  - your ARM64 systems where the default device may be behind a bridge
-    that doesn't support legacy VGA routing (PCI_BRIDGE_CTL_VGA)
-
-But I think trying to split the "default device" part out from the VGA
-arbiter ends up being overkill and making things more complicated
-instead of simpler.
-
-Would something like the following work for you as well as the powerpc
-case?  On powerpc, we already use vga_set_default_device() to select a
-device that doesn't use legacy VGA resources, so maybe we can just do
-the same on ARM64?
-
-I suppose there might be wrinkles in how the arbiter deals with
-multiple graphics devices on those systems, since I don't think it
-identifies these devices that don't use the legacy resources, but it
-seems like we live with whatever those on are powerpc and probably can
-on ARM64 as well.
-
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 02831a396419..0ac7aa346c69 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1740,15 +1740,3 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index 30922f699341..1d129f4521ac 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -32,7 +32,7 @@ static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
  }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
--
--static void fixup_vga(struct pci_dev *pdev)
--{
--	u16 cmd;
--
--	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
--	if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
--		vga_set_default_device(pdev);
--
--}
--DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
--			      PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
-diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
-index 76875f6299b8..9df4802c5f04 100644
---- a/drivers/gpu/vga/vgaarb.c
-+++ b/drivers/gpu/vga/vgaarb.c
-@@ -1468,6 +1468,21 @@ static int __init vga_arb_device_init(void)
- 			vgaarb_info(dev, "no bridge control possible\n");
- 	}
+ #define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
  
-+	if (!vga_default_device()) {
-+		list_for_each_entry(vgadev, &vga_list, list) {
-+			struct device *dev = &vgadev->pdev->dev;
-+			u16 cmd;
-+
-+			pdev = vgadev->pdev;
-+			pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-+			if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
-+				vgaarb_info(dev, "setting as boot device\n");
-+				vga_set_default_device(pdev);
-+				break;
-+			}
-+		}
-+	}
-+
- 	pr_info("loaded\n");
- 	return rc;
+-static inline bool arch_validate_prot(unsigned long prot)
++static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
+ {
+ 	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
+ 		return false;
+@@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
+ 		return false;
+ 	return true;
  }
+-#define arch_validate_prot(prot) arch_validate_prot(prot)
++#define arch_validate_prot arch_validate_prot
+ 
+ #endif /* CONFIG_PPC64 */
+ #endif	/* _ASM_POWERPC_MMAN_H */
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index a877bf8269fe..6d90ddbd2d11 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -48,7 +48,7 @@ static inline long do_mmap2(unsigned long addr, size_t len,
+ {
+ 	long ret = -EINVAL;
+ 
+-	if (!arch_validate_prot(prot))
++	if (!arch_validate_prot(prot, addr))
+ 		goto out;
+ 
+ 	if (shift) {
+diff --git a/include/linux/mman.h b/include/linux/mman.h
+index c8367041fafd..b42ad5c9d6a2 100644
+--- a/include/linux/mman.h
++++ b/include/linux/mman.h
+@@ -49,7 +49,7 @@ static inline void vm_unacct_memory(long pages)
+  *
+  * Returns true if the prot flags are valid
+  */
+-static inline bool arch_validate_prot(unsigned long prot)
++static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
+ {
+ 	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
+ }
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index bd0f409922cb..4f0e46bb1797 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -395,7 +395,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
+ 	end = start + len;
+ 	if (end <= start)
+ 		return -ENOMEM;
+-	if (!arch_validate_prot(prot))
++	if (!arch_validate_prot(prot, start))
+ 		return -EINVAL;
+ 
+ 	reqprot = prot;
+-- 
+2.11.0
