@@ -1,25 +1,29 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y0wsc58jFzDr4N
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 17:37:40 +1000 (AEST)
-Date: Mon, 25 Sep 2017 02:37:21 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Kees Cook <keescook@chromium.org>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>, Jinbum Park <jinb.park7@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-Subject: Re: [PATCH] mm: fix RODATA_TEST failure "rodata_test: test data was
- not read only"
-Message-ID: <20170925073721.GM8421@gate.crashing.org>
-References: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
- <CAGXu5jJ54+bCcXaPK1ExsxtTDPHNn1+1gywb3TDbe-SEtt1zuQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAGXu5jJ54+bCcXaPK1ExsxtTDPHNn1+1gywb3TDbe-SEtt1zuQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y0yfq0H3tzDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 18:58:26 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8P8sdqT125142
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 04:58:22 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2d6w0df86h-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 04:58:21 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Mon, 25 Sep 2017 09:58:20 +0100
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH V2] cxl: Fix memory page not handled
+Date: Mon, 25 Sep 2017 10:58:16 +0200
+Message-Id: <1506329896-2417-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +33,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 24, 2017 at 12:17:51PM -0700, Kees Cook wrote:
-> On Thu, Sep 21, 2017 at 2:37 AM, Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
-> > On powerpc, RODATA_TEST fails with message the following messages:
-> >
-> > [    6.199505] Freeing unused kernel memory: 528K
-> > [    6.203935] rodata_test: test data was not read only
-> >
-> > This is because GCC allocates it to .data section:
-> >
-> > c0695034 g     O .data  00000004 rodata_test_data
-> 
-> Uuuh... that seems like a compiler bug. It's marked "const" -- it
-> should never end up in .data. I would argue that this has done exactly
-> what it was supposed to do, and shows that something has gone wrong.
-> It should always be const. Adding "static" should just change
-> visibility. (I'm not opposed to the static change, but it seems to
-> paper over a problem with the compiler...)
+The in-kernel 'library' API can be called by drivers to help
+interaction with an IBM XSL on a POWER9 system.
 
-The compiler puts this item in .sdata, for 32-bit.  There is no .srodata,
-so if it wants to use a small data section, it must use .sdata .
+The cxllib_handle_fault() API is used to handle memory fault. All memory
+pages of the specified buffer have to be handled but under certain
+conditions,the last page may not be touched, and the address the
+adapter is trying to access is never sent to the kernel for resolution.
 
-Non-external, non-referenced symbols are not put in .sdata, that is the
-difference you see with the "static".
+This patch reworks start address of the loop with an address aligned on
+the page size. In this context, the last page is not missed.
 
-I don't think there is a bug here.  If you think there is, please open
-a GCC bug.
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
+Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL");
 
-Segher
+---
+Changelog[v2]
+ - Rebase to latest upstream.
+ - Change the start address of the loop.
+ - Rewrite the commit message.
+---
+ drivers/misc/cxl/cxllib.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+index 5dba23c..ff7492d 100644
+--- a/drivers/misc/cxl/cxllib.c
++++ b/drivers/misc/cxl/cxllib.c
+@@ -219,8 +219,17 @@ int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
+ 
+ 	down_read(&mm->mmap_sem);
+ 
+-	for (dar = addr; dar < addr + size; dar += page_size) {
+-		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
++	vma = find_vma(mm, addr);
++	if (!vma) {
++		pr_err("Can't find vma for addr %016llx\n", addr);
++		rc = -EFAULT;
++		goto out;
++	}
++	/* get the size of the pages allocated */
++	page_size = vma_kernel_pagesize(vma);
++
++	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
++		if (dar < vma->vm_start || dar > vma->vm_end) {
+ 			vma = find_vma(mm, addr);
+ 			if (!vma) {
+ 				pr_err("Can't find vma for addr %016llx\n", addr);
+-- 
+2.7.4
