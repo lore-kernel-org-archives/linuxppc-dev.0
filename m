@@ -1,28 +1,42 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
- [IPv6:2607:f8b0:400e:c00::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y12y96Hb7zDsNH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 22:12:01 +1000 (AEST)
-Received: by mail-pf0-x22f.google.com with SMTP id u12so3689109pfl.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 05:12:01 -0700 (PDT)
-Date: Sun, 24 Sep 2017 14:19:22 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v2 3/3] powerpc:selftest update memcmp_64 selftest for
- VMX implementation
-Message-ID: <20170924061922.GB10899@simonLocalRHEL7.x64>
-References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
- <1505950480-14830-4-git-send-email-wei.guo.simon@gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6DD007F112@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y13BW26pGzDsN9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 22:22:43 +1000 (AEST)
+Date: Mon, 25 Sep 2017 14:22:19 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ kirill@shutemov.name, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v3 04/20] mm: VMA sequence count
+Message-ID: <20170925122219.ia6cmz2tng65fhoe@hirez.programming.kicks-ass.net>
+References: <20170913115354.GA7756@jagdpanzerIV.localdomain>
+ <44849c10-bc67-b55e-5788-d3c6bb5e7ad1@linux.vnet.ibm.com>
+ <20170914003116.GA599@jagdpanzerIV.localdomain>
+ <441ff1c6-72a7-5d96-02c8-063578affb62@linux.vnet.ibm.com>
+ <20170914081358.GG599@jagdpanzerIV.localdomain>
+ <26fa0b71-4053-5af7-baa0-e5fff9babf41@linux.vnet.ibm.com>
+ <20170914091101.GH599@jagdpanzerIV.localdomain>
+ <9605ce43-0f61-48d7-88e2-88220b773494@linux.vnet.ibm.com>
+ <20170914094043.GJ599@jagdpanzerIV.localdomain>
+ <4e6c4e45-bbd6-3fd8-ee96-216892c797b3@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD007F112@AcuExch.aculab.com>
+In-Reply-To: <4e6c4e45-bbd6-3fd8-ee96-216892c797b3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +46,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
-On Mon, Sep 25, 2017 at 09:30:28AM +0000, David Laight wrote:
-> From: wei.guo.simon@gmail.com
-> > Sent: 21 September 2017 00:35
-> > This patch adjust selftest memcmp_64 so that memcmp selftest can be
-> > compiled successfully.
-> ...
-> >  #define ITERATIONS 10000
-> > 
-> > +#define LARGE_SIZE (5 * 1024)
-> > +#define LARGE_ITERATIONS 1000
-> ...
+On Fri, Sep 15, 2017 at 02:38:51PM +0200, Laurent Dufour wrote:
+> >  /*
+> >   * well... answering your question - it seems raw versions of seqcount
+> >   * functions don't call lockdep's lock_acquire/lock_release...
+> >   *
+> >   * but I have never told you that. never.
+> >   */
 > 
-> Measuring performance by doing a lot of iterations isn't ideal
-> and is pretty pointless.
-> Cold cache performance can be more useful.
-> Also you don't really want any dynamic branch prediction logic
-> tuned to the exact test you keep doing.
+> Hum... I'm not sure that would be the best way since in other case lockdep
+> checks are valid, but if getting rid of locked's warning is required to get
+> this series upstream, I'd use raw versions... Please advice...
 
-I think the (orignal) selftest aims at full coverage of functionality
-correctness, since each iteration generates a new data set by random.
-
-Thanks,
-- Simon
+No sensible other way to shut it up come to mind though. Might be best
+to use the raw primitives with a comment explaining why.
