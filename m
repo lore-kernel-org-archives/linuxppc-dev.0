@@ -1,37 +1,21 @@
-Return-Path: <deller@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <york.sun@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0077.outbound.protection.outlook.com [104.47.1.77])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y19Tp0jJ9zDsN9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 03:06:21 +1000 (AEST)
-Subject: Re: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Santosh Sivaraj <santosh@fossix.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- "Yu, Fenghua" <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
- <20170922053404.3zpfpwetabjut2er@santosiv.in.ibm.com>
- <20170922080023.GA599@jagdpanzerIV.localdomain>
- <3908561D78D1C84285E8C5FCA982C28F61381992@ORSMSX114.amr.corp.intel.com>
- <20170925070542.GA387@jagdpanzerIV.localdomain>
- <3908561D78D1C84285E8C5FCA982C28F61384020@ORSMSX114.amr.corp.intel.com>
-From: Helge Deller <deller@gmx.de>
-Message-ID: <81cfc7bc-9d3b-97c4-b9f6-a740d40231b8@gmx.de>
-Date: Mon, 25 Sep 2017 19:05:00 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y19wy0P4pzDsN9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 03:26:23 +1000 (AEST)
+From: York Sun <york.sun@nxp.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Leo Li
+ <leoyang.li@nxp.com>
+Subject: Re: FSL serial 166550 errata broken?
+Date: Mon, 25 Sep 2017 17:26:17 +0000
+Message-ID: <VI1PR04MB207821E9B5E0FE0BB629E1FA9A7A0@VI1PR04MB2078.eurprd04.prod.outlook.com>
+References: <1506358524.29657.31.camel@infinera.com>
+Reply-To: York Sun <york.sun@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <3908561D78D1C84285E8C5FCA982C28F61384020@ORSMSX114.amr.corp.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,10 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25.09.2017 18:29, Luck, Tony wrote:
->> speaking of upstream, any objections if this patch set will go through
->> the printk tree, in one piece?
-
-Fine with me too.
-
-Helge
+On 09/25/2017 09:55 AM, Joakim Tjernlund wrote:=0A=
+> We got some "broken" boards(mpx8321) where UART RX is held low(BREAK)=0A=
+> There we get a few:=0A=
+>    serial8250: too much work for irq18=0A=
+> and the board freezes.=0A=
+> =0A=
+> Looking inte to driver/CPU there is an errtum(A-004737) w.r.t BREAK handl=
+ing=0A=
+> and I can see we are hitting the irq function fsl8250_handle_irq() added=
+=0A=
+> in commit: 9deaa53ac7fa373623123aa4f18828dd62292b1a=0A=
+>   "serial: add irq handler for Freescale 16550 errata."=0A=
+> For all I can tell this workaround is broken and I cannot figure out why.=
+=0A=
+> Any pointers?=0A=
+> =0A=
+=0A=
+Jocke,=0A=
+=0A=
+Did you mean MPC8321?=0A=
+=0A=
+I personally don't have experience debugging this erratum. Have you =0A=
+tried to contact the patch author Paul Gortmaker to see how he managed =0A=
+to get it work?=0A=
+=0A=
+York=0A=
