@@ -1,42 +1,34 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y13BW26pGzDsN9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 22:22:43 +1000 (AEST)
-Date: Mon, 25 Sep 2017 14:22:19 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
- kirill@shutemov.name, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v3 04/20] mm: VMA sequence count
-Message-ID: <20170925122219.ia6cmz2tng65fhoe@hirez.programming.kicks-ass.net>
-References: <20170913115354.GA7756@jagdpanzerIV.localdomain>
- <44849c10-bc67-b55e-5788-d3c6bb5e7ad1@linux.vnet.ibm.com>
- <20170914003116.GA599@jagdpanzerIV.localdomain>
- <441ff1c6-72a7-5d96-02c8-063578affb62@linux.vnet.ibm.com>
- <20170914081358.GG599@jagdpanzerIV.localdomain>
- <26fa0b71-4053-5af7-baa0-e5fff9babf41@linux.vnet.ibm.com>
- <20170914091101.GH599@jagdpanzerIV.localdomain>
- <9605ce43-0f61-48d7-88e2-88220b773494@linux.vnet.ibm.com>
- <20170914094043.GJ599@jagdpanzerIV.localdomain>
- <4e6c4e45-bbd6-3fd8-ee96-216892c797b3@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y13DT6C2YzDsPH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 22:24:25 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8PCMAwU055397
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 08:24:23 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d6yp4ga8u-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 08:24:23 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 25 Sep 2017 13:24:21 +0100
+Subject: Re: [PATCH V2] cxl: Fix memory page not handled
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+References: <1506329896-2417-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Mon, 25 Sep 2017 14:24:18 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4e6c4e45-bbd6-3fd8-ee96-216892c797b3@linux.vnet.ibm.com>
+In-Reply-To: <1506329896-2417-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <5fce0f8f-745d-37d4-1bf1-1e0124583995@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,17 +38,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 15, 2017 at 02:38:51PM +0200, Laurent Dufour wrote:
-> >  /*
-> >   * well... answering your question - it seems raw versions of seqcount
-> >   * functions don't call lockdep's lock_acquire/lock_release...
-> >   *
-> >   * but I have never told you that. never.
-> >   */
-> 
-> Hum... I'm not sure that would be the best way since in other case lockdep
-> checks are valid, but if getting rid of locked's warning is required to get
-> this series upstream, I'd use raw versions... Please advice...
 
-No sensible other way to shut it up come to mind though. Might be best
-to use the raw primitives with a comment explaining why.
+
+Le 25/09/2017 à 10:58, Christophe Lombard a écrit :
+> The in-kernel 'library' API can be called by drivers to help
+> interaction with an IBM XSL on a POWER9 system.
+> 
+> The cxllib_handle_fault() API is used to handle memory fault. All memory
+> pages of the specified buffer have to be handled but under certain
+> conditions,the last page may not be touched, and the address the
+> adapter is trying to access is never sent to the kernel for resolution.
+> 
+> This patch reworks start address of the loop with an address aligned on
+> the page size. In this context, the last page is not missed.
+> 
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> 
+> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL");
+> 
+> ---
+
+Thanks,
+
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+
+
+> Changelog[v2]
+>   - Rebase to latest upstream.
+>   - Change the start address of the loop.
+>   - Rewrite the commit message.
+> ---
+>   drivers/misc/cxl/cxllib.c | 13 +++++++++++--
+>   1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+> index 5dba23c..ff7492d 100644
+> --- a/drivers/misc/cxl/cxllib.c
+> +++ b/drivers/misc/cxl/cxllib.c
+> @@ -219,8 +219,17 @@ int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
+> 
+>   	down_read(&mm->mmap_sem);
+> 
+> -	for (dar = addr; dar < addr + size; dar += page_size) {
+> -		if (!vma || dar < vma->vm_start || dar > vma->vm_end) {
+> +	vma = find_vma(mm, addr);
+> +	if (!vma) {
+> +		pr_err("Can't find vma for addr %016llx\n", addr);
+> +		rc = -EFAULT;
+> +		goto out;
+> +	}
+> +	/* get the size of the pages allocated */
+> +	page_size = vma_kernel_pagesize(vma);
+> +
+> +	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
+> +		if (dar < vma->vm_start || dar > vma->vm_end) {
+>   			vma = find_vma(mm, addr);
+>   			if (!vma) {
+>   				pr_err("Can't find vma for addr %016llx\n", addr);
+> 
