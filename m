@@ -1,42 +1,43 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
+Return-Path: <andrew.donnellan@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y1P0K6M0vzDsM9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 11:45:05 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y1PL03QCfzDsQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 12:00:24 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8Q1iw1A091244
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 21:45:03 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d7abcgk0p-1
+ v8Q1wa1b013509
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 22:00:21 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d7acdhkc0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 21:45:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 22:00:21 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Tue, 26 Sep 2017 11:45:00 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8Q1iv1w13172784
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 11:44:57 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8Q1ix1A032459
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 11:45:00 +1000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 26 Sep 2017 12:00:18 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v8Q20GjA36110516
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 12:00:16 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v8Q20H3g007662
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 12:00:17 +1000
 Subject: Re: [PATCH V2] cxl: Fix memory page not handled
-In-Reply-To: <1506329896-2417-1-git-send-email-clombard@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com
 References: <1506329896-2417-1-git-send-email-clombard@linux.vnet.ibm.com>
-Date: Tue, 26 Sep 2017 07:14:52 +0530
+ <87mv5imdwr.fsf@vajain21.in.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 26 Sep 2017 12:00:14 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87mv5imdwr.fsf@vajain21.in.ibm.com>
+In-Reply-To: <87mv5imdwr.fsf@vajain21.in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <b0b392f7-8210-b141-9f32-4b285bce06b9@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,16 +47,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christophe,
+On 26/09/17 11:44, Vaibhav Jain wrote:
+> Hi Christophe,
+> 
+> A minor nitpick
+> 
+> Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+> 
+>> +	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
+>> +		if (dar < vma->vm_start || dar > vma->vm_end) {
+> Code comment in mm_types.h for vm_end says it "The first byte after our
+> end address within vm_mm". So this condition should be
+> (dar < vma->vm_start || dar >= vma->vm_end)
+> 
 
-A minor nitpick
+Hmm, I *think* you're right... a quick grep through the tree seems to 
+indicate that I'm not the only one to have made that mistake...
 
-Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+Christophe if you're happy to do a v3 with this fixed as well that would 
+be great.
 
-> +	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
-> +		if (dar < vma->vm_start || dar > vma->vm_end) {
-Code comment in mm_types.h for vm_end says it "The first byte after our
-end address within vm_mm". So this condition should be
-(dar < vma->vm_start || dar >= vma->vm_end)
-
-~ Vaibhav
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
