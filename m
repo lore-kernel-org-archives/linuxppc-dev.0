@@ -2,20 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y1Ts507lZzDsNN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 15:24:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y1V583l78zDsPC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 15:34:36 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: David Gibson <david@gibson.dropbear.id.au>, Greg Kurz <groug@kaod.org>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- qemu-ppc@nongnu.org, Paul Mackerras <paulus@samba.org>,
- kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3S PR: only call slbmte for valid SLB
- entries
-In-Reply-To: <20170926035638.GI12504@umbus>
-References: <150607286967.26027.12529646475118424696.stgit@bahia.lan>
- <20170926035638.GI12504@umbus>
-Date: Tue, 26 Sep 2017 15:24:05 +1000
-Message-ID: <87mv5if2x6.fsf@concordia.ellerman.id.au>
+To: Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
+Cc: "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ David Laight <David.Laight@ACULAB.COM>, linuxppc-dev@lists.ozlabs.org,
+ raji@linux.vnet.ibm.com
+Subject: Re: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX instruction
+ for long bytes comparision
+In-Reply-To: <1506383986.2918.4.camel@gmail.com>
+References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
+ <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
+ <1506089208.1155.32.camel@gmail.com>
+ <20170923211843.GA10899@simonLocalRHEL7.x64>
+ <1506383986.2918.4.camel@gmail.com>
+Date: Tue, 26 Sep 2017 15:34:36 +1000
+Message-ID: <87k20mf2fn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,41 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Gibson <david@gibson.dropbear.id.au> writes:
+Cyril Bur <cyrilbur@gmail.com> writes:
 
-> On Fri, Sep 22, 2017 at 11:34:29AM +0200, Greg Kurz wrote:
->> Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
->> some of which are valid (ie, SLB_ESID_V is set) and the rest are
->> likely all-zeroes (with QEMU at least).
+> On Sun, 2017-09-24 at 05:18 +0800, Simon Guo wrote:
+>> Hi Cyril,
+>> On Sat, Sep 23, 2017 at 12:06:48AM +1000, Cyril Bur wrote:
+>> > On Thu, 2017-09-21 at 07:34 +0800, wei.guo.simon@gmail.com wrote:
+>> > > From: Simon Guo <wei.guo.simon@gmail.com>
+>> > > 
+>> > > This patch add VMX primitives to do memcmp() in case the compare size
+>> > > exceeds 4K bytes.
+>> > 
+>> > Sorry I didn't see this sooner, I've actually been working on a kernel
+>> > version of glibc commit dec4a7105e (powerpc: Improve memcmp performance
+>> > for POWER8) unfortunately I've been distracted and it still isn't done.
 >> 
->> Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
->> assumes to find the SLB index in the 3 lower bits of its rb argument.
->> When passed zeroed arguments, it happily overwrites the 0th SLB entry
->> with zeroes. This is exactly what happens while doing live migration
->> with QEMU when the destination pushes the incoming SLB descriptors to
->> KVM PR. When reloading the SLBs at the next synchronization, QEMU first
->> clears its SLB array and only restore valid ones, but the 0th one is
->> now gone and we cannot access the corresponding memory anymore:
+>> Thanks for sync with me. Let's consolidate our effort together :)
 >> 
->> (qemu) x/x $pc
->> c0000000000b742c: Cannot access memory
+>> I have a quick check on glibc commit dec4a7105e. 
+>> Looks the aligned case comparison with VSX is launched without rN size
+>> limitation, which means it will have a VSX reg load penalty even when the 
+>> length is 9 bytes.
 >> 
->> To avoid this, let's filter out non-valid SLB entries, like we
->> already do for Book3S HV.
->> 
->> Signed-off-by: Greg Kurz <groug@kaod.org>
 >
-> This seems like a good idea, but to make it fully correct, don't we
-> also need to fully flush the SLB before inserting the new entries.
+> This was written for userspace which doesn't have to explicitly enable
+> VMX in order to use it - we need to be smarter in the kernel.
 
-We would need to do that yeah.
+Well the kernel has to do it for them after a trap, which is actually
+even more expensive, so arguably the glibc code should be smarter too
+and the threshold before using VMX should probably be higher than in the
+kernel (to cover the cost of the trap).
 
-But I don't think I like this patch, it would mean userspace has no way
-of programming an invalid SLB entry. It's true that in general that
-isn't something we care about doing, but the API should allow it.
-
-For example the kernel could leave invalid entries in place and flip the
-valid bit when it wanted to make them valid, and this patch would
-prevent that state being successfully migrated IIUIC.
+But I digress :)
 
 cheers
