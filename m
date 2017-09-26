@@ -1,23 +1,33 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <daniel.vetter@ffwll.ch>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y1S026ZCwzDsMB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 14:00:02 +1000 (AEST)
-Date: Tue, 26 Sep 2017 13:56:38 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Greg Kurz <groug@kaod.org>
-Cc: kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- qemu-ppc@nongnu.org
-Subject: Re: [PATCH] KVM: PPC: Book3S PR: only call slbmte for valid SLB
- entries
-Message-ID: <20170926035638.GI12504@umbus>
-References: <150607286967.26027.12529646475118424696.stgit@bahia.lan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y1T6k0fWkzDsMB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 14:50:51 +1000 (AEST)
+Received: by mail-io0-x242.google.com with SMTP id d16so3958832ioj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Sep 2017 21:50:51 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="qVyHzDF4yf4A8jkR"
-In-Reply-To: <150607286967.26027.12529646475118424696.stgit@bahia.lan>
+Sender: daniel.vetter@ffwll.ch
+In-Reply-To: <87d16oeeti.fsf@linkitivity.dja.id.au>
+References: <20170901072744.2409-1-dja@axtens.net>
+ <87d16oeeti.fsf@linkitivity.dja.id.au>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 26 Sep 2017 06:50:47 +0200
+Message-ID: <CAKMK7uFq=WEYoeBBvBgSeFq9PCsqzbGiq6KiC10b1KabcayDQA@mail.gmail.com>
+Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
+To: Daniel Axtens <dja@axtens.net>
+Cc: Linux PCI <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ lorenzo.pieralisi@arm.com,
+ gabriele.paoloni@huawei.com, ard.biesheuvel@linaro.org,
+ Will Deacon <will.deacon@arm.com>, dri-devel <dri-devel@lists.freedesktop.org>,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ Rongrong Zou <zourongrong@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,85 +37,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Sep 18, 2017 at 7:49 AM, Daniel Axtens <dja@axtens.net> wrote:
+> Hi all,
+>
+> The merge window is well over by now - is there anything else I can do
+> to get this series to a mergeable state? I'm not particularly across the
+> rules for drm-misc, so please let me know if there are things I need to
+> be doing.
 
---qVyHzDF4yf4A8jkR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+drm-misc is always open for feature merging, but the patch series
+lacks full r-b by someone with clue on this stuff (i.e. probably not
+me). Pls find someone who can do the in-depth review. Just an Ack
+feels a bit thin.
+-Daniel
 
-On Fri, Sep 22, 2017 at 11:34:29AM +0200, Greg Kurz wrote:
-> Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
-> some of which are valid (ie, SLB_ESID_V is set) and the rest are
-> likely all-zeroes (with QEMU at least).
->=20
-> Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
-> assumes to find the SLB index in the 3 lower bits of its rb argument.
-> When passed zeroed arguments, it happily overwrites the 0th SLB entry
-> with zeroes. This is exactly what happens while doing live migration
-> with QEMU when the destination pushes the incoming SLB descriptors to
-> KVM PR. When reloading the SLBs at the next synchronization, QEMU first
-> clears its SLB array and only restore valid ones, but the 0th one is
-> now gone and we cannot access the corresponding memory anymore:
->=20
-> (qemu) x/x $pc
-> c0000000000b742c: Cannot access memory
->=20
-> To avoid this, let's filter out non-valid SLB entries, like we
-> already do for Book3S HV.
->=20
-> Signed-off-by: Greg Kurz <groug@kaod.org>
+>
+> Regards,
+> Daniel
+>
+> Daniel Axtens <dja@axtens.net> writes:
+>
+>> This patch set:
+>>
+>>  - splits the default display handling out from VGA arbiter, into its
+>>    own file and behind its own Kconfig option (and gives the functions
+>>    better names).
+>>
+>>  - adds extra detection of default devices. To be nominated, the vga
+>>    arbiter and platform hooks must not have nominated a default. A
+>>    card will then only be nominated if it has a driver attached and
+>>    has IO or memory decoding enabled.
+>>
+>>  - adds relevant documentation.
+>>
+>> The practical impact of this is improved X autoconfiguration on some
+>> arm64 systems.
+>>
+>> Changes in v3:
+>>
+>>  - Add documentation - thanks Daniel Vetter for pointing it out.
+>>
+>>  - Clarify explanations. Thanks to everyone for continuing to bear
+>>    with my incomplete understanding of PCI and provide some clarity.
+>>
+>>  - Split refactoring and adding functionality.
+>>
+>> Changes in v2: https://www.spinics.net/lists/linux-pci/msg64007.html
+>>
+>> Drop all the powerpc patches. [explanation snipped]
+>>
+>> v1: https://www.spinics.net/lists/linux-pci/msg63581.html
+>>
+>> Regards,
+>> Daniel
+>>
+>> Daniel Axtens (3):
+>>   drm: split default display handler out of VGA arbiter
+>>   drm: add fallback default device detection
+>>   drm: documentation for default display device
+>>
+>>  Documentation/gpu/default_display.rst |  93 +++++++++++++++++++
+>>  Documentation/gpu/index.rst           |   1 +
+>>  arch/ia64/pci/fixup.c                 |   6 +-
+>>  arch/powerpc/kernel/pci-common.c      |   6 +-
+>>  arch/x86/pci/fixup.c                  |   6 +-
+>>  arch/x86/video/fbdev.c                |   4 +-
+>>  drivers/gpu/vga/Kconfig               |  12 +++
+>>  drivers/gpu/vga/Makefile              |   1 +
+>>  drivers/gpu/vga/default_display.c     | 163 ++++++++++++++++++++++++++++++++++
+>>  drivers/gpu/vga/vga_switcheroo.c      |   8 +-
+>>  drivers/gpu/vga/vgaarb.c              |  61 +++----------
+>>  drivers/pci/pci-sysfs.c               |   4 +-
+>>  include/linux/default_display.h       |  44 +++++++++
+>>  include/linux/vgaarb.h                |  15 ----
+>>  14 files changed, 344 insertions(+), 80 deletions(-)
+>>  create mode 100644 Documentation/gpu/default_display.rst
+>>  create mode 100644 drivers/gpu/vga/default_display.c
+>>  create mode 100644 include/linux/default_display.h
+>>
+>> --
+>> 2.11.0
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
-This seems like a good idea, but to make it fully correct, don't we
-also need to fully flush the SLB before inserting the new entries.
 
-> ---
->  arch/powerpc/kvm/book3s_pr.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index 3beb4ff469d1..cb6894e55f97 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -1328,8 +1328,10 @@ static int kvm_arch_vcpu_ioctl_set_sregs_pr(struct=
- kvm_vcpu *vcpu,
->  	vcpu3s->sdr1 =3D sregs->u.s.sdr1;
->  	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
->  		for (i =3D 0; i < 64; i++) {
-> -			vcpu->arch.mmu.slbmte(vcpu, sregs->u.s.ppc64.slb[i].slbv,
-> -						    sregs->u.s.ppc64.slb[i].slbe);
-> +			u64 rb =3D sregs->u.s.ppc64.slb[i].slbe;
-> +			u64 rs =3D sregs->u.s.ppc64.slb[i].slbv;
-> +			if (rb & SLB_ESID_V)
-> +				vcpu->arch.mmu.slbmte(vcpu, rs, rb);
->  		}
->  	} else {
->  		for (i =3D 0; i < 16; i++) {
->=20
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---qVyHzDF4yf4A8jkR
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlnJz/YACgkQbDjKyiDZ
-s5JYPw/7Be4T6rPsPnjGG41qeIsjw4i1ruq3MOj0a6gFXwpiCaVf11LA9g/FcTdm
-15Y+9Yh9dKOVy77j0cB6ltpQmWGEekvHbn68bKyh0j6Q32Yyj2UUVeGNKBSRKuXE
-8Jf5D5VmzRREfH8HHp/uBmERHaRAOY2Cbv+1xDjekWMOrCOspQiAm9vWDTQuMz0t
-790IzmmkpiJw7flX4pTtMOoZAk4idn+7t40UNe4SyafrYn8oeQyTw7FXb74iojNJ
-9RTCGtgG9hYNLPboEswieQFROf0W3K+iCSwAoJDOPFiO194GUrXAkJDzO2+Law3+
-DZymJH7oHFbonM8DoswISUx2iB9fJj1T4j2UofyIG9yp+0UkrCm43ATnD5KmccQI
-fQOsDuEStSgC3nWTwokC4uWzOj9Vvl1AjkAqhnFO8sleaheZTdYF/Y1F8gN1Dto2
-taB4LagCiwf/g8fxhByyahiZT2MYojB1/Lk0AUgS4+zA3RG9c4DgNpbRJHGS/znH
-BP6f/cALWrG08fnxJ2cfDyH2khrEkvJmvpfGOTjjb1g1O2n0yIXyNpIJBYBLGyS/
-ItKot/47CQswCgO3hwAnmZQnb6n18lKx7sx0VjWu9xqGDFds0xvEmL1jE1yTLflO
-Z7sFr7YNH6TBZT9ES2+bDODJth3BkowB99E/X3LTbVQk0CR5Peg=
-=H2CU
------END PGP SIGNATURE-----
-
---qVyHzDF4yf4A8jkR--
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch
