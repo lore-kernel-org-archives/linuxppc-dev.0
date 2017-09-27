@@ -1,37 +1,16 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y2CmM0vmTzDsRD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 19:52:34 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8R9nLCi026004
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 05:52:32 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d848hgckt-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 05:52:32 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bsingharora@gmail.com>;
- Wed, 27 Sep 2017 19:52:30 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8R9pCA235258384
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 19:51:12 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8R9pCcR015064
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 19:51:12 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH 1/2] powerpc/strict_rwx: quirks for STRICT_RWX patches
-Date: Wed, 27 Sep 2017 19:51:10 +1000
-Message-Id: <20170927095111.10626-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y2Df71ZqTzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:32:15 +1000 (AEST)
+In-Reply-To: <1504766144.12628.15.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Russell Currey <ruscur@au1.ibm.com>
+Subject: Re: [2/2] powerpc/powernv: Rework EEH initialization on powernv
+Message-Id: <3y2Df70nk9z9tXs@ozlabs.org>
+Date: Wed, 27 Sep 2017 20:32:15 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,44 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch disables STRICT_RWX for power9 DD1 machines
-where due to some limitations with the way we do tlb
-updates, we clear the TLB entry of the text that's doing
-the update to kernel text and that does lead to a
-crash.
+On Thu, 2017-09-07 at 06:35:44 UTC, Benjamin Herrenschmidt wrote:
+> Remove the post_init callback which is only used
+> by powernv, we can just call it explicitly from
+> the powernv code.
+> 
+> This partially kills the ability to "disable" eeh at
+> runtime via debugfs as this was calling that same
+> callback again, but this is both unused and broken
+> in several ways. If we want to revive it, we need
+> to create a dedicated enable/disable callback on the
+> backend that does the right thing.
+> 
+> Let the bulk of eeh initialize normally at
+> core_initcall() like it does on pseries by removing
+> the hack in eeh_init() that delays it.
+> 
+> Instead we make sure our eeh->probe cleanly bails
+> out of the PEs haven't been created yet and we force
+> a re-probe where we used to call eeh_init() again.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Acked-by: Russell Currey <ruscur@russell.cc>
 
-Fixes: 7614ff3 ("powerpc/mm/radix: Implement STRICT_RWX/mark_rodata_ro() for Radix")
+Patch 2 applied to powerpc next, thanks.
 
-Cc: stable@vger.kernel.org
+https://git.kernel.org/powerpc/c/b9fde58db7e5738cacb740b0ec5479
 
-Reported-by: Andrew Jeffery <andrew@aj.id.au>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/mm/pgtable-radix.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 39c252b..c2a2b46 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -169,6 +169,18 @@ void radix__mark_rodata_ro(void)
- {
- 	unsigned long start, end;
- 
-+	/*
-+	 * mark_rodata_ro() will mark itself as !writable at some point
-+	 * due to workaround in radix__pte_update(), we'll end up with
-+	 * an invalid pte and the system will crash quite severly.
-+	 * The alternatives are quite cumbersome and leaving out
-+	 * the page containing the flush code is not very nice.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-+		pr_warn("Warning: Unable to mark rodata read only on P9 DD1\n");
-+		return;
-+	}
-+
- 	start = (unsigned long)_stext;
- 	end = (unsigned long)__init_begin;
- 
--- 
-2.9.5
+cheers
