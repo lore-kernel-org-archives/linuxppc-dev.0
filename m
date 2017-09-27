@@ -1,19 +1,30 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3y26qZ6wsSzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 16:10:00 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- Yongji Xie <elohimes@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Russell Currey <ruscur@russell.cc>, linux-pci@vger.kernel.org,
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y27Bv3dPrzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 16:26:47 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Santosh Sivaraj <santosh@fossix.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH kernel] powerpc/powernv: Reserve a hole which appears after
- enabling IOV
-Date: Wed, 27 Sep 2017 16:09:49 +1000
-Message-Id: <20170927060949.10284-1-aik@ozlabs.ru>
+ Paul Mackerras <paulus@samba.org>, James Bottomley <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
+ Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+In-Reply-To: <20170922053404.3zpfpwetabjut2er@santosiv.in.ibm.com>
+References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
+ <20170922053404.3zpfpwetabjut2er@santosiv.in.ibm.com>
+Date: Wed, 27 Sep 2017 16:26:44 +1000
+Message-ID: <87y3p0ejx7.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,79 +34,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to make generic IOV code work, the physical function IOV BAR
-should start from offset of the first VF. Since M64 segments share
-PE number space across PHB, and some PEs may be in use at the time
-when IOV is enabled, the existing code shifts the IOV BAR to the index
-of the first PE/VF. This creates a hole in IOMEM space which can be
-potentially taken by some other device.
+Santosh Sivaraj <santosh@fossix.org> writes:
 
-This reserves a temporary hole on a parent and releases it when IOV is
-disabled; the temporary resources are stored in pci_dn to avoid
-kmalloc/free.
+> * Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote (on 2017-09-20 16:29:02 +0000):
+>
+>>         Hello
+>> 
+>>         RFC
+>> 
+>>         On some arches C function pointers are indirect and point to
+>> a function descriptor, which contains the actual pointer to the code.
+>> This mostly doesn't matter, except for cases when people want to print
+>> out function pointers in symbolic format, because the usual '%pS/%ps'
+>> does not work on those arches as expected. That's the reason why we
+>> have '%pF/%pf', but since it's here because of a subtle ABI detail
+>> specific to some arches (ppc64/ia64/parisc64) it's easy to misuse
+>> '%pF/%pf' and '%pS/%ps' (see [1], for example).
+>> 
+>>         This patch set attempts to move ia64/ppc64/parisc64 C function
+>> pointer ABI details out of printk() to arch code. Function dereference
+>> code now checks if a pointer belongs to a .opd ELF section and dereferences
+>> that pointer only if it does. The kernel and modules have their own .opd
+>> sections that's why I use two different ARCH functions: for kernel and
+>> for module pointer dereference.
+>> 
+>>         I planned to remove dereference_function_descriptor() entirely,
+>> but then I discovered a bunch other uses cases (kgdbts, init/main.c,
+>> extable, etc.), so I decided to keep dereference_function_descriptor()
+>> around because the main point of this patch set is to deprecate %pF/%pf.
+>> But at the same time, I think I can go further and handle both kernel
+>> and module descriptor dereference in dereference_function_descriptor().
+>> We need a module pointer for module .opd check, so that will come at an
+>> extra cost of module lookup (may be there will some other issues along
+>> the way, haven't checked it).
+>> 
+>> Right now we've got:
+>> 
+>> - dereference_function_descriptor(addr)
+>>         a generic (old) function. it simply attempts to dereference
+>>         whatever pointer we give it.
+>> 
+>> - dereference_kernel_function_descriptor(addr)
+>>         dereferences a kernel pointer if it's within the kernel's .opd
+>>         section.
+>> 
+>> - dereference_module_function_descriptor(module, addr)
+>>         dereference a module pointer if it's within the module's .opd
+>>         section.
+>> 
+>> 
+>> *** A BIG NOTE ***
+>>         I don't own ia64/ppc64/parisc64 hardware, so the patches are not
+>>         tested. Sorry about that!
+>
+> Tested patch series on ppc64 sucessfully.
+>
+> You may add tested by to the series.
+>
+> Tested-by: Santosh Sivaraj <santosh@fossix.org>
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
+Thanks Santosh.
 
-I assume this goes to powerpc next branch but before this I'd like to
-get Bjorn's opinion as he continously commented on this bit.
----
- arch/powerpc/include/asm/pci-bridge.h     |  1 +
- arch/powerpc/platforms/powernv/pci-ioda.c | 21 ++++++++++++++++++---
- 2 files changed, 19 insertions(+), 3 deletions(-)
+I also gave it a quick spin. I'll give you an ack for the powerpc changes.
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 0b8aa1fe2d5f..62ed83db04ae 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -218,6 +218,7 @@ struct pci_dn {
- #endif
- 	struct list_head child_list;
- 	struct list_head list;
-+	struct resource holes[PCI_SRIOV_NUM_BARS];
- };
- 
- /* Get the pointer to a device_node's pci_dn */
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 57f9e55f4352..d01c1ac02ea4 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1002,9 +1002,12 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
- 	}
- 
- 	/*
--	 * After doing so, there would be a "hole" in the /proc/iomem when
--	 * offset is a positive value. It looks like the device return some
--	 * mmio back to the system, which actually no one could use it.
-+	 * Since M64 BAR shares segments among all possible 256 PEs,
-+	 * we have to shift the beginning of PF IOV BAR to make it start from
-+	 * the segment which belongs to the PE number assigned to the first VF.
-+	 * This creates a "hole" in the /proc/iomem which could be used for
-+	 * allocating other resources so we reserve this area below and
-+	 * release when IOV is released.
- 	 */
- 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
- 		res = &dev->resource[i + PCI_IOV_RESOURCES];
-@@ -1019,6 +1022,18 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
- 			 i, &res2, res, (offset > 0) ? "En" : "Dis",
- 			 num_vfs, offset);
- 		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
-+
-+		if (offset > 0) {
-+			pdn->holes[i].start = res2.start;
-+			pdn->holes[i].end = res2.start + size * offset - 1;
-+			pdn->holes[i].flags = IORESOURCE_BUS;
-+			pdn->holes[i].name = "pnv_iov_reserved";
-+			devm_request_resource(&dev->dev, res->parent,
-+					&pdn->holes[i]);
-+		} else {
-+			devm_release_resource(&dev->dev, &pdn->holes[i]);
-+			memset(&pdn->holes[i], 0, sizeof(pdn->holes[i]));
-+		}
- 	}
- 	return 0;
- }
--- 
-2.11.0
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+
+Thanks for cleaning this up Sergey.
+
+cheers
