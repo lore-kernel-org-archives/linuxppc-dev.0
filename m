@@ -1,25 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y23SL0W6xzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 13:38:10 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>,
- raji@linux.vnet.ibm.com, "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- David Laight <David.Laight@ACULAB.COM>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX instruction
- for long bytes comparision
-In-Reply-To: <20170926112623.GZ8421@gate.crashing.org>
-References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
- <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
- <1506089208.1155.32.camel@gmail.com>
- <20170923211843.GA10899@simonLocalRHEL7.x64>
- <1506383986.2918.4.camel@gmail.com> <87k20mf2fn.fsf@concordia.ellerman.id.au>
- <20170926112623.GZ8421@gate.crashing.org>
-Date: Wed, 27 Sep 2017 13:38:09 +1000
-Message-ID: <877ewkg6am.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y23nV4XLJzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 13:53:01 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id j16so7952074pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 20:53:01 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, benh@kernel.crashing.org,
+ z.liuxinliang@hisilicon.com, zourongrong@gmail.com, catalin.marinas@arm.com,
+ will.deacon@arm.com, gabriele.paoloni@huawei.com, airlied@linux.ie,
+ daniel.vetter@intel.com, alex.williamson@redhat.com,
+ dri-devel@lists.freedesktop.org, lukas@wunner.de, ard.biesheuvel@linaro.org,
+ lorenzo.pieralisi@arm.com
+Subject: Re: [PATCH v3 0/3] Split default display handling out from VGA arbiter
+In-Reply-To: <20170925163948.GD15970@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170901072744.2409-1-dja@axtens.net>
+ <20170925163948.GD15970@bhelgaas-glaptop.roam.corp.google.com>
+Date: Wed, 27 Sep 2017 13:52:55 +1000
+Message-ID: <87k20kyezs.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,38 +33,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
+Hi Bjorn,
 
-> On Tue, Sep 26, 2017 at 03:34:36PM +1000, Michael Ellerman wrote:
->> Cyril Bur <cyrilbur@gmail.com> writes:
->> > This was written for userspace which doesn't have to explicitly enable
->> > VMX in order to use it - we need to be smarter in the kernel.
+Yes, this works:
+
+Tested-by: Daniel Axtens <dja@axtens.net> # arm64, ppc64-qemu-tcg
+
+
+Regards,
+Daniel
+> On Fri, Sep 01, 2017 at 05:27:41PM +1000, Daniel Axtens wrote:
+>> This patch set:
 >> 
->> Well the kernel has to do it for them after a trap, which is actually
->> even more expensive, so arguably the glibc code should be smarter too
->> and the threshold before using VMX should probably be higher than in the
->> kernel (to cover the cost of the trap).
+>>  - splits the default display handling out from VGA arbiter, into its
+>>    own file and behind its own Kconfig option (and gives the functions
+>>    better names).
+>> 
+>>  - adds extra detection of default devices. To be nominated, the vga
+>>    arbiter and platform hooks must not have nominated a default. A
+>>    card will then only be nominated if it has a driver attached and
+>>    has IO or memory decoding enabled.
+>> 
+>>  - adds relevant documentation.
+>> 
+>> The practical impact of this is improved X autoconfiguration on some
+>> arm64 systems.
 >
-> A lot of userspace code uses V*X, more and more with newer CPUs and newer
-> compiler versions.  If you already paid the price for using vector
-> registers you do not need to again :-)
-
-True, but you don't know if you've paid the price already.
-
-You also pay the price on every context switch (more state to switch),
-so it's not free even once enabled. Which is why the kernel will
-eventually turn it off if it's unused again.
-
-But now that I've actually looked at the glibc version, it does do some
-checks for minimum length before doing any vector instructions, so
-that's probably all we want. The exact trade off between checking some
-bytes without vector vs turning on vector depends on your input data, so
-it's tricky to tune in general.
-
->> But I digress :)
+> I think I gave you bad advice about trying to separate the "default
+> device" idea from the VGA arbiter.
 >
-> Yeah sorry :-)
-
-:)
-
-cheers
+> It is true that the "VGA arbiter" per se is related to routing the
+> legacy VGA resources, and the arbiter currently only selects a default
+> device if it finds a device to which those resources are routed.
+>
+> We have some cases where we want to select a default device that may
+> not support the legacy VGA resources, or where they might not be
+> routed to the device:
+>
+>   - systems where we match the EFI framebuffer address with a BAR, and
+>     select that device as default,
+>
+>   - powerpc systems where there may be no host bridge window that maps
+>     to the legacy VGA resources,
+>
+>   - your ARM64 systems where the default device may be behind a bridge
+>     that doesn't support legacy VGA routing (PCI_BRIDGE_CTL_VGA)
+>
+> But I think trying to split the "default device" part out from the VGA
+> arbiter ends up being overkill and making things more complicated
+> instead of simpler.
+>
+> Would something like the following work for you as well as the powerpc
+> case?  On powerpc, we already use vga_set_default_device() to select a
+> device that doesn't use legacy VGA resources, so maybe we can just do
+> the same on ARM64?
+>
+> I suppose there might be wrinkles in how the arbiter deals with
+> multiple graphics devices on those systems, since I don't think it
+> identifies these devices that don't use the legacy resources, but it
+> seems like we live with whatever those on are powerpc and probably can
+> on ARM64 as well.
+>
+>
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 02831a396419..0ac7aa346c69 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -1740,15 +1740,3 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
+>  }
+>  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+>  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+> -
+> -static void fixup_vga(struct pci_dev *pdev)
+> -{
+> -	u16 cmd;
+> -
+> -	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
+> -	if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
+> -		vga_set_default_device(pdev);
+> -
+> -}
+> -DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
+> -			      PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
+> diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
+> index 76875f6299b8..9df4802c5f04 100644
+> --- a/drivers/gpu/vga/vgaarb.c
+> +++ b/drivers/gpu/vga/vgaarb.c
+> @@ -1468,6 +1468,21 @@ static int __init vga_arb_device_init(void)
+>  			vgaarb_info(dev, "no bridge control possible\n");
+>  	}
+>  
+> +	if (!vga_default_device()) {
+> +		list_for_each_entry(vgadev, &vga_list, list) {
+> +			struct device *dev = &vgadev->pdev->dev;
+> +			u16 cmd;
+> +
+> +			pdev = vgadev->pdev;
+> +			pci_read_config_word(pdev, PCI_COMMAND, &cmd);
+> +			if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
+> +				vgaarb_info(dev, "setting as boot device\n");
+> +				vga_set_default_device(pdev);
+> +				break;
+> +			}
+> +		}
+> +	}
+> +
+>  	pr_info("loaded\n");
+>  	return rc;
+>  }
