@@ -1,31 +1,31 @@
 Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y2Ddv5pWVzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:32:03 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8RAUdD9066179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 06:32:01 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d88brxa1t-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y2DxT3rvQzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:45:33 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8RAiBUd059578
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 06:45:30 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2d87tvgu87-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 06:32:01 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 06:45:30 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Wed, 27 Sep 2017 20:31:58 +1000
+ Wed, 27 Sep 2017 20:45:26 +1000
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8RAVthY41418796
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:31:55 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v8RAjO9C39518340
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:45:24 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8RAViME022099
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:31:46 +1000
+ v8RAjDUT007238
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:45:15 +1000
 Subject: Re: [PATCH v8 1/6] powerpc/fadump: reduce memory consumption for
  capture kernel
 To: Michal Suchanek <msuchanek@suse.de>,
@@ -51,12 +51,12 @@ To: Michal Suchanek <msuchanek@suse.de>,
  linux-kernel@vger.kernel.org
 References: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
 From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Wed, 27 Sep 2017 16:01:44 +0530
+Date: Wed, 27 Sep 2017 16:15:13 +0530
 MIME-Version: 1.0
 In-Reply-To: <ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de>
 Content-Type: multipart/alternative;
- boundary="------------72DDF6F3C841E74946124991"
-Message-Id: <eb7aefaa-ae7e-322e-89bc-0d4406b657c9@linux.vnet.ibm.com>
+ boundary="------------E3F0F65FF6AC0C7D9EFBB6E0"
+Message-Id: <b30c24da-ee8d-6da4-b07a-82b88f43d412@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,7 +67,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------72DDF6F3C841E74946124991
+--------------E3F0F65FF6AC0C7D9EFBB6E0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -93,8 +93,7 @@ On Tuesday 12 September 2017 09:31 PM, Michal Suchanek wrote:
 > Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 
-For the series...
-
+For the series..
 Tested-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 
 > ---
@@ -307,7 +306,7 @@ Tested-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 >   	/* make sure we've parsed cmdline for mem= before this */
 
 
---------------72DDF6F3C841E74946124991
+--------------E3F0F65FF6AC0C7D9EFBB6E0
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -341,19 +340,17 @@ in the boot process to put the subsequent fadump messages in context.
 
 Suggested-by: Michael Ellerman <a class="moz-txt-link-rfc2396E" href="mailto:mpe@ellerman.id.au">&lt;mpe@ellerman.id.au&gt;</a>
 Signed-off-by: Hari Bathini <a class="moz-txt-link-rfc2396E" href="mailto:hbathini@linux.vnet.ibm.com">&lt;hbathini@linux.vnet.ibm.com&gt;</a>
-Signed-off-by: Michal Suchanek <a class="moz-txt-link-rfc2396E" href="mailto:msuchanek@suse.de">&lt;msuchanek@suse.de&gt;</a></pre>
+Signed-off-by: Michal Suchanek <a class="moz-txt-link-rfc2396E" href="mailto:msuchanek@suse.de">&lt;msuchanek@suse.de&gt;</a>
+</pre>
     </blockquote>
     <br>
-    For the series...<br>
-    <br>
+    For the series..<br>
     Tested-by: Hari Bathini <a class="moz-txt-link-rfc2396E"
       href="mailto:hbathini@linux.vnet.ibm.com">&lt;hbathini@linux.vnet.ibm.com&gt;</a><br>
-    <pre wrap="">
-</pre>
+    <br>
     <blockquote type="cite"
 cite="mid:ee9b1eefc4057e45c5c8ec56c10513a21802543b.1505231820.git.msuchanek@suse.de">
-      <pre wrap="">
----
+      <pre wrap="">---
 Changes from v6:
 Correct and simplify quote handling. Ideally I would like to extend
 parse_args to give the length of the original quoted value to callback.
@@ -567,4 +564,4 @@ index f83056297441..2e6f40217266 100644
   </body>
 </html>
 
---------------72DDF6F3C841E74946124991--
+--------------E3F0F65FF6AC0C7D9EFBB6E0--
