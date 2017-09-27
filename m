@@ -1,38 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y25Jl72FgzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 15:01:43 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, "Luck\,
- Tony" <tony.luck@intel.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Santosh Sivaraj <santosh@fossix.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, "Yu\,
- Fenghua" <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, James Bottomley <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>,
- "linux-ia64\@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-parisc\@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-In-Reply-To: <20170925070542.GA387@jagdpanzerIV.localdomain>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
- <20170922053404.3zpfpwetabjut2er@santosiv.in.ibm.com>
- <20170922080023.GA599@jagdpanzerIV.localdomain>
- <3908561D78D1C84285E8C5FCA982C28F61381992@ORSMSX114.amr.corp.intel.com>
- <20170925070542.GA387@jagdpanzerIV.localdomain>
-Date: Wed, 27 Sep 2017 15:01:43 +1000
-Message-ID: <871smsg2fc.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y26Fz6dllzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 15:44:23 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id i23so5962044pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 22:44:23 -0700 (PDT)
+Date: Wed, 27 Sep 2017 15:44:06 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Jeremy Kerr <jk@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Meng YK Li <shlimeng@cn.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix action argument for cpufeatures-based TLB
+ flush
+Message-ID: <20170927154406.2f94b799@roar.ozlabs.ibm.com>
+In-Reply-To: <1506488151-9825-1-git-send-email-jk@ozlabs.org>
+References: <1506488151-9825-1-git-send-email-jk@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,37 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com> writes:
+On Wed, 27 Sep 2017 12:55:51 +0800
+Jeremy Kerr <jk@ozlabs.org> wrote:
 
-> On (09/22/17 16:48), Luck, Tony wrote:
-> [..]
->> Tested patch series on ia64 successfully.
->> 
->> Tested-by: Tony Luck <tony.luck@intel.com>
->
-> thanks!
->
->> After this goes upstream, you should submit a patch to get rid of
->> all uses of %pF (70 instances in 35 files) and %pf (63 in 34)
->> 
->> Perhaps break the patch by top-level directory (e.g. get all the %pF
->> and %pF in the 17 files under drivers/ in one patch).
->
-> frankly, I was going to have some sort of a lazy deprecation process:
-> didn't plan to send out a patch set that would hunt down all pf/pF-s.
-> hm...
+> Commit 41d0c2ecde introduced calls to __flush_tlb_power[89] from the
+> cpufeatures code, specifying the number of sets to flush.
+> 
+> However, these functions take an action argument, not a number of sets.
+> This means we hit the BUG() in __flush_tlb_{206,300} when using
+> cpufeatures-style configuration.
+> 
+> This change passes TLB_INVAL_SCOPE_GLOBAL instead.
+> 
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> CC: Nicholas Piggin <npiggin@gmail.com>
 
-That never works though, we have lots of cruft left over from times when
-that's happened and the conversion never quite got finished.
+Thanks for this, yes it's obviously correct. Sigh, I thought I'd posted
+the the same thing, but I didn't actually send it to linuxppc-dev. I had
+another one to use early_radix_enabled() rather than radix_enabled()
+in the series too. I'll send it.
 
-At least if you send out the patches to do the removal they might
-eventually get merged.
-
-> speaking of upstream, any objections if this patch set will go through
-> the printk tree, in one piece?
-
-Do you mind putting it in a topic branch (based on rc2) and then merge
-that into the printk tree? That way I can merge the topic branch iff
-there are conflicts later down the line towards 4.15.
-
-cheers
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
