@@ -1,38 +1,24 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y1zZt02TPzDsQP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 10:43:33 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8R0cYii046375
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 20:43:31 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2d81gk0bcw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Sep 2017 20:43:31 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 27 Sep 2017 10:43:28 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8R0hQIp33816610
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 10:43:26 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8R0hQda026161
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 10:43:26 +1000
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: stable@vger.kernel.org
-Cc: fbarrat@linux.vnet.ibm.com, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4.4] cxl: Fix driver use count
-Date: Wed, 27 Sep 2017 10:43:17 +1000
-Message-Id: <20170927004317.9671-1-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y239H4Pd2zDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 13:25:07 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: David Gibson <david@gibson.dropbear.id.au>, Greg Kurz <groug@kaod.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ qemu-ppc@nongnu.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S PR: only call slbmte for valid SLB
+ entries
+In-Reply-To: <20170926113438.GA26421@fergus.ozlabs.ibm.com>
+References: <150607286967.26027.12529646475118424696.stgit@bahia.lan>
+ <20170926035638.GI12504@umbus> <87mv5if2x6.fsf@concordia.ellerman.id.au>
+ <20170926113438.GA26421@fergus.ozlabs.ibm.com>
+Date: Wed, 27 Sep 2017 13:25:02 +1000
+Message-ID: <87a81gg6wh.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,84 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-commit 197267d0356004a31c4d6b6336598f5dff3301e1 upstream.
+> On Tue, Sep 26, 2017 at 03:24:05PM +1000, Michael Ellerman wrote:
+>> David Gibson <david@gibson.dropbear.id.au> writes:
+>> 
+>> > On Fri, Sep 22, 2017 at 11:34:29AM +0200, Greg Kurz wrote:
+>> >> Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
+>> >> some of which are valid (ie, SLB_ESID_V is set) and the rest are
+>> >> likely all-zeroes (with QEMU at least).
+>> >> 
+>> >> Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
+>> >> assumes to find the SLB index in the 3 lower bits of its rb argument.
+>> >> When passed zeroed arguments, it happily overwrites the 0th SLB entry
+>> >> with zeroes. This is exactly what happens while doing live migration
+>> >> with QEMU when the destination pushes the incoming SLB descriptors to
+>> >> KVM PR. When reloading the SLBs at the next synchronization, QEMU first
+>> >> clears its SLB array and only restore valid ones, but the 0th one is
+>> >> now gone and we cannot access the corresponding memory anymore:
+>> >> 
+>> >> (qemu) x/x $pc
+>> >> c0000000000b742c: Cannot access memory
+>> >> 
+>> >> To avoid this, let's filter out non-valid SLB entries, like we
+>> >> already do for Book3S HV.
+>> >> 
+>> >> Signed-off-by: Greg Kurz <groug@kaod.org>
+>> >
+>> > This seems like a good idea, but to make it fully correct, don't we
+>> > also need to fully flush the SLB before inserting the new entries.
+>> 
+>> We would need to do that yeah.
+>> 
+>> But I don't think I like this patch, it would mean userspace has no way
+>> of programming an invalid SLB entry. It's true that in general that
+>> isn't something we care about doing, but the API should allow it.
+>> 
+>> For example the kernel could leave invalid entries in place and flip the
+>> valid bit when it wanted to make them valid, and this patch would
+>> prevent that state being successfully migrated IIUIC.
+>
+> If I remember correctly, the architecture says that slbmfee/slbmfev
+> return all zeroes for an invalid entry, so there would be no way for
+> the guest kernel to do what you suggest.
 
-cxl keeps a driver use count, which is used with the hash memory model
-on p8 to know when to upgrade local TLBIs to global and to trigger
-callbacks to manage the MMU for PSL8.
+You're right it does.
 
-If a process opens a context and closes without attaching or fails the
-attachment, the driver use count is never decremented. As a
-consequence, TLB invalidations remain global, even if there are no
-active cxl contexts.
+We have code in xmon that reads entries and then checks for SLB_ESID_V,
+but I guess that's just overly pessimistic.
 
-We should increment the driver use count when the process is attaching
-to the cxl adapter, and not on open. It's not needed before the
-adapter starts using the context and the use count is decremented on
-the detach path, so it makes more sense.
-
-It affects only the user api. The kernel api is already doing The
-Right Thing.
-
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org # v4.2+
-Fixes: 7bb5d91a4dda ("cxl: Rework context lifetimes")
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-[ajd: backport to stable v4.4 tree]
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- drivers/misc/cxl/api.c  | 4 ++++
- drivers/misc/cxl/file.c | 8 +++++++-
- 2 files changed, 11 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index ea3eeb7011e1..690eb1a18caf 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -176,6 +176,10 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 		kernel = false;
- 	}
- 
-+	/*
-+	 * Increment driver use count. Enables global TLBIs for hash
-+	 * and callbacks to handle the segment table
-+	 */
- 	cxl_ctx_get();
- 
- 	if ((rc = cxl_attach_process(ctx, kernel, wed , 0))) {
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 10a02934bfc0..013558f4da4f 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -94,7 +94,6 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
- 
- 	pr_devel("afu_open pe: %i\n", ctx->pe);
- 	file->private_data = ctx;
--	cxl_ctx_get();
- 
- 	/* indicate success */
- 	rc = 0;
-@@ -205,11 +204,18 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	ctx->pid = get_task_pid(current, PIDTYPE_PID);
- 	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
- 
-+	/*
-+	 * Increment driver use count. Enables global TLBIs for hash
-+	 * and callbacks to handle the segment table
-+	 */
-+	cxl_ctx_get();
-+
- 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
- 
- 	if ((rc = cxl_attach_process(ctx, false, work.work_element_descriptor,
- 				     amr))) {
- 		afu_release_irqs(ctx, ctx);
-+		cxl_ctx_put();
- 		goto out;
- 	}
- 
--- 
-2.11.0
+cheers
