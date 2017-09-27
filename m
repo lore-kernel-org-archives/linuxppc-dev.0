@@ -1,16 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0058.outbound.protection.outlook.com [104.47.41.58])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y2Df81SnZzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 20:32:16 +1000 (AEST)
-In-Reply-To: <20170915052549.8105-1-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [1/2] powerpc: Add workaround for P9 vector CI load issue
-Message-Id: <3y2Df80GwFz9tXw@ozlabs.org>
-Date: Wed, 27 Sep 2017 20:32:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y2FKv3YzjzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 21:03:13 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
+ <york.sun@nxp.com>
+Subject: Re: FSL serial 166550 errata broken?
+Date: Wed, 27 Sep 2017 11:03:06 +0000
+Message-ID: <1506510185.2325.4.camel@infinera.com>
+References: <1506358524.29657.31.camel@infinera.com>
+ <VI1PR04MB207821E9B5E0FE0BB629E1FA9A7A0@VI1PR04MB2078.eurprd04.prod.outlook.com>
+In-Reply-To: <VI1PR04MB207821E9B5E0FE0BB629E1FA9A7A0@VI1PR04MB2078.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,34 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-09-15 at 05:25:48 UTC, Michael Neuling wrote:
-> POWER9 DD2.1 and earlier has an issue where some cache inhibited
-> vector load will return bad data. The workaround is two part, one
-> firmware/microcode part triggers HMI interrupts when hitting such
-> loads, the other part is this patch which then emulates the
-> instructions in Linux.
-> 
-> The affected instructions are limited to lxvd2x, lxvw4x, lxvb16x and
-> lxvh8x.
-> 
-> When an instruction triggers the HMI, all threads in the core will be
-> sent to the HMI handler, not just the one running the vector load.
-> 
-> In general, these spurious HMIs are detected by the emulation code and
-> we just return back to the running process. Unfortunately, if a
-> spurious interrupt occurs on a vector load that's to normal memory we
-> have no way to detect that it's spurious (unless we walk the page
-> tables, which is very expensive). In this case we emulate the load but
-> we need do so using a vector load itself to ensure 128bit atomicity is
-> preserved.
-> 
-> Some additional debugfs emulated instruction counters are added also.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Mon, 2017-09-25 at 17:26 +0000, York Sun wrote:
+> On 09/25/2017 09:55 AM, Joakim Tjernlund wrote:
+> > We got some "broken" boards(mpx8321) where UART RX is held low(BREAK)
+> > There we get a few:
+> >    serial8250: too much work for irq18
+> > and the board freezes.
+> >=20
+> > Looking inte to driver/CPU there is an errtum(A-004737) w.r.t BREAK han=
+dling
+> > and I can see we are hitting the irq function fsl8250_handle_irq() adde=
+d
+> > in commit: 9deaa53ac7fa373623123aa4f18828dd62292b1a
+> >   "serial: add irq handler for Freescale 16550 errata."
+> > For all I can tell this workaround is broken and I cannot figure out wh=
+y.
+> > Any pointers?
+> >=20
+>=20
+> Jocke,
+>=20
+> Did you mean MPC8321?
+>=20
+> I personally don't have experience debugging this erratum. Have you=20
+> tried to contact the patch author Paul Gortmaker to see how he managed=20
+> to get it work?
 
-Patch 1 applied to powerpc next, thanks.
+No, but I just found out it is u-boot related. If I use an very old u-boot =
+it works.
+Between then and now we did a massive upgrade of u-boot and now if breaks. =
+And no,
+bisect not possible due to local u-boot mods :)
 
-https://git.kernel.org/powerpc/c/5080332c2c893118dbc18755f35c8b
+Any idea what could be different? I cannot see and I have tested
+what I could see/think of but now I am out of ideas.
 
-cheers
+ Jocke
