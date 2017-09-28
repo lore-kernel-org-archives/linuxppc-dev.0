@@ -1,35 +1,33 @@
-Return-Path: <shlimeng@cn.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <compudj@efficios.com>
+Received: from mail.efficios.com (mail.efficios.com [167.114.142.141])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y2q7z69BjzDsQg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 19:26:39 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8S9QZOK096346
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 05:26:37 -0400
-Received: from smtp.notes.na.collabserv.com (smtp.notes.na.collabserv.com
- [192.155.248.90])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d8s38qsqu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 05:26:36 -0400
-Received: from localhost
- by smtp.notes.na.collabserv.com with smtp.notes.na.collabserv.com ESMTP
- for <linuxppc-dev@lists.ozlabs.org> from <shlimeng@cn.ibm.com>;
- Thu, 28 Sep 2017 09:24:57 -0000
-Subject: Re: [PATCH] powerpc/powernv: Use early_radix_enabled in POWER9 tlb
- flush
-In-Reply-To: <20170927054558.26007-1-npiggin@gmail.com>
-From: "Meng YK Li" <shlimeng@cn.ibm.com>
-To: npiggin@gmail.com
-Cc: jk@ozlabs.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
- "Frank J Yu" <jiangyu@cn.ibm.com>
-Date: Thu, 28 Sep 2017 09:24:53 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y2wYK2P8qzDsPp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 23:30:28 +1000 (AEST)
+Date: Thu, 28 Sep 2017 13:31:36 +0000 (UTC)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ linux-arch <linux-arch@vger.kernel.org>, Avi Kivity <avi@scylladb.com>,
+ maged michael <maged.michael@gmail.com>,
+ Boqun Feng <boqun.feng@gmail.com>, Dave Watson <davejwatson@fb.com>,
+ Will Deacon <will.deacon@arm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Andrew Hunter <ahh@google.com>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>,
+ Alan Stern <stern@rowland.harvard.edu>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, gromer <gromer@google.com>
+Message-ID: <911707916.20840.1506605496314.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20170927230436.4af88a62@roar.ozlabs.ibm.com>
+References: <20170926175151.14264-1-mathieu.desnoyers@efficios.com>
+ <33948425.19289.1506458608221.JavaMail.zimbra@efficios.com>
+ <20170927230436.4af88a62@roar.ozlabs.ibm.com>
+Subject: Re: [PATCH v4 for 4.14 1/3] membarrier: Provide register expedited
+ private command
 MIME-Version: 1.0
-References: <20170927054558.26007-1-npiggin@gmail.com>
-Content-Type: text/html; charset=UTF-8
-Message-Id: <OF23A48077.422D2246-ON002581A9.0033193F-002581A9.0033B7CC@notes.na.collabserv.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,50 +37,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<div class=3D"socmaildefaultfont" dir=3D"ltr" style=3D"font-family:Arial, H=
-elvetica, sans-serif;font-size:10.5pt" ><div dir=3D"ltr" ><span style=3D"fo=
-nt-size:0.857em;" >Nick,</span></div>
-<div dir=3D"ltr" >&nbsp;</div>
-<div dir=3D"ltr" ><span style=3D"font-size:0.857em;" >I applied your patch =
-into linux kernel 4.13, rebuild it, installed it, then had a test, still ca=
-n not boot OS. System hung here, the same as before.</span></div>
-<div dir=3D"ltr" ><span style=3D"font-size:0.857em;" >Would you please have=
- a look?</span></div>
-<div dir=3D"ltr" ><span style=3D"font-size:0.714em;" >The system is going d=
-own NOW!<br>Sent SIGTERM to all processes<br>Sent SIGKILL to all processes<=
-br>[&nbsp; 104.755810] kexec=5Fcore: Starting new kernel<br>[&nbsp; 126.157=
-029744,5] OPAL: Switch to big-endian OS</span></div>
-<div dir=3D"ltr" >&nbsp;</div>
-<div dir=3D"ltr" >&nbsp;</div>
-<div dir=3D"ltr" ><div class=3D"socmaildefaultfont" dir=3D"ltr" style=3D"fo=
-nt-family:Arial, Helvetica, sans-serif;font-size:10.5pt" ><div class=3D"soc=
-maildefaultfont" dir=3D"ltr" style=3D"font-family:Arial, Helvetica, sans-se=
-rif;font-size:10.5pt" ><div class=3D"socmaildefaultfont" dir=3D"ltr" style=
-=3D"font-family:Arial, Helvetica, sans-serif;font-size:10.5pt" ><div dir=3D=
-"ltr" ><span style=3D"font-size:0.857em;" ><font face=3D"Default Sans Serif=
-,Verdana,Arial,Helvetica,sans-serif" ><i>Best Regards!<br>Meng Li<br>IBM Op=
-enPOWER Application Engineer</i></font></span></div></div></div></div></div>
-<div dir=3D"ltr" >&nbsp;</div>
-<div dir=3D"ltr" >&nbsp;</div>
-<blockquote data-history-content-modified=3D"1" dir=3D"ltr" style=3D"border=
--left:solid #aaaaaa 2px; margin-left:5px; padding-left:5px; direction:ltr; =
-margin-right:0px" >----- Original message -----<br>From: Nicholas Piggin &l=
-t;npiggin@gmail.com&gt;<br>To: linuxppc-dev@lists.ozlabs.org<br>Cc: Nichola=
-s Piggin &lt;npiggin@gmail.com&gt;, Jeremy Kerr &lt;jk@ozlabs.org&gt;, Meng=
- YK Li &lt;shlimeng@cn.ibm.com&gt;<br>Subject: [PATCH] powerpc/powernv: Use=
- early=5Fradix=5Fenabled in POWER9 tlb flush<br>Date: Wed, Sep 27, 2017 1:4=
-6 PM<br>&nbsp;
-<div><font size=3D"2" face=3D"Default Monospace,Courier New,Courier,monospa=
-ce" >This code is used at boot and machine checks, so it should be using<br=
->early=5Fradix=5Fenabled() (which is usable any time).<br><br>Signed-off-by=
-: Nicholas Piggin &lt;npiggin@gmail.com&gt;<br>---<br>&nbsp;arch/powerpc/ke=
-rnel/mce=5Fpower.c | 2 +-<br>&nbsp;1 file changed, 1 insertion(+), 1 deleti=
-on(-)<br><br>diff --git a/arch/powerpc/kernel/mce=5Fpower.c b/arch/powerpc/=
-kernel/mce=5Fpower.c<br>index b76ca198e09c..d37e612050b5 100644<br>--- a/ar=
-ch/powerpc/kernel/mce=5Fpower.c<br>+++ b/arch/powerpc/kernel/mce=5Fpower.c<=
-br>@@ -128,7 +128,7 @@ void =5F=5Fflush=5Ftlb=5Fpower9(unsigned int action)=
-<br>&nbsp;{<br>&nbsp; unsigned int num=5Fsets;<br>&nbsp;<br>- if (radix=5Fe=
-nabled())<br>+ if (early=5Fradix=5Fenabled())<br>&nbsp; num=5Fsets =3D POWE=
-R9=5FTLB=5FSETS=5FRADIX;<br>&nbsp; else<br>&nbsp; num=5Fsets =3D POWER9=5FT=
-LB=5FSETS=5FHASH;<br>--<br>2.13.3</font><br>&nbsp;</div></blockquote>
-<div dir=3D"ltr" >&nbsp;</div></div><BR>
+----- On Sep 27, 2017, at 9:04 AM, Nicholas Piggin npiggin@gmail.com wrote:
+
+> On Tue, 26 Sep 2017 20:43:28 +0000 (UTC)
+> Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
+> 
+>> ----- On Sep 26, 2017, at 1:51 PM, Mathieu Desnoyers
+>> mathieu.desnoyers@efficios.com wrote:
+>> 
+>> > Provide a new command allowing processes to register their intent to use
+>> > the private expedited command.
+>> >   
+>> 
+>> I missed a few maintainers that should have been CC'd. Adding them now.
+>> This patch is aimed to go through Paul E. McKenney's tree.
+> 
+> Honestly this is pretty ugly new user API and fairly large amount of
+> complexity just to avoid the powerpc barrier. And you end up with arch
+> specific hooks anyway!
+> 
+> So my plan was to add an arch-overridable loop primitive that iterates
+> over all running threads for an mm.
+
+Iterating over all threads for an mm is one possible solution that has
+been listed at the membarrier BOF at LPC. We ended up dismissing this
+solution because it would not inefficient for processes which have
+lots of threads (e.g. Java).
+
+> powerpc will use its mm_cpumask for
+> iterating and use runqueue locks to avoid the barrier.
+
+This is another solution which has been rejected during the LPC BOF.
+
+What I gather from past threads is that the mm_cpumask's bits on powerpc
+are pretty much only being set, never much cleared. Therefore, over the
+lifetime of a thread which is not affined to specific processors, chances
+are that this cpumask will end up having all cores on the system. Therefore,
+you end up with the same rq lock disruption as if you would iterate on all
+online CPUs. If userspace does that in a loop, you end up, in PeterZ's words,
+with an Insta-DoS. The name may sound cool, but I gather that this is not
+a service the kernel willingly wants to provide to userspace.
+
+A cunning process could easily find a way to fill its mm_cpumask and then
+issue membarrier in a loop to bring a large system to its knees.
+
+> x86 will most
+> likely want to use its mm_cpumask to iterate.
+
+Iterating on mm_cpumask rather than online cpus adds complexity wrt memory
+barriers (unless we go for rq locks approach). We'd need, in addition to
+ensure that we have the proper barriers before/after store to rq->curr,
+to also ensure that we have the proper barriers between mm_cpumask
+updates and user-space loads/stores. Considering that we're not aiming
+at taking the rq locks anyway, iteration over all online cpus seems
+less complex than iterating on mm_cpumask on the architectures that
+keep track of it.
+
+> 
+> For the powerpc approach, yes there is some controversy about using
+> runqueue locks even for cpus that we already can interfere with, but I
+> think we have a lot of options we could look at *after* it ever shows
+> up as a problem.
+
+The DoS argument from Peter seems to be a strong opposition to grabbing
+the rq locks.
+
+Here is another point in favor of having a register command for the
+private membarrier: This gives us greater flexibility to improve the
+kernel scheduler and return-to-userspace barriers if need be in the
+future.
+
+For instance, I plan to propose a "MEMBARRIER_FLAG_SYNC_CORE" flag
+that will also provide guarantees about context synchronization of
+all cores for memory reclaim performed by JIT for the next merge
+window. So far, the following architectures seems to have the proper
+core serializing instructions already in place when returning to
+user-space: x86 (iret), powerpc (rfi), arm32/64 (return from exception,
+eret), s390/x (lpswe), ia64 (rfi), parisc (issue at least 7 instructions
+while signing around a bonfire), and mips SMP (eret).
+
+So far, AFAIU, only x86 (eventually going through sysexit), alpha
+(appears to require an explicit imb), and sparc (explicit flush + 5
+instructions around similar bonfire as parisc) appear to require special
+handling.
+
+I therefore plan to use the registration step with a
+MEMBARRIER_FLAG_SYNC_CORE flag set to set TIF flags and add the
+required context synchronizing barriers on sched_in() only for
+processes wishing to use private expedited membarrier.
+
+So I don't see much point in trying to remove that registration step.
+
+Thanks,
+
+Mathieu
+
+
+> 
+> Thanks,
+> Nick
+
+-- 
+Mathieu Desnoyers
+EfficiOS Inc.
+http://www.efficios.com
