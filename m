@@ -1,36 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0072.outbound.protection.outlook.com [104.47.37.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y30VV6qk1zDsPr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 02:28:18 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id j16so2564740pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 09:28:18 -0700 (PDT)
-Date: Fri, 29 Sep 2017 02:27:57 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>, Alexander
- Viro <viro@zeniv.linux.org.uk>, linux-arch <linux-arch@vger.kernel.org>,
- Avi Kivity <avi@scylladb.com>, maged michael <maged.michael@gmail.com>,
- Boqun Feng <boqun.feng@gmail.com>, Dave Watson <davejwatson@fb.com>, Will
- Deacon <will.deacon@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
- Andrew Hunter <ahh@google.com>, Paul Mackerras <paulus@samba.org>, Andy
- Lutomirski <luto@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, gromer <gromer@google.com>
-Subject: Re: [PATCH v4 for 4.14 1/3] membarrier: Provide register expedited
- private command
-Message-ID: <20170929022757.62d43dfc@roar.ozlabs.ibm.com>
-In-Reply-To: <20170928155115.fou577qzxepnnxqc@hirez.programming.kicks-ass.net>
-References: <20170926175151.14264-1-mathieu.desnoyers@efficios.com>
- <33948425.19289.1506458608221.JavaMail.zimbra@efficios.com>
- <20170927230436.4af88a62@roar.ozlabs.ibm.com>
- <911707916.20840.1506605496314.JavaMail.zimbra@efficios.com>
- <20170929010112.3a54be0d@roar.ozlabs.ibm.com>
- <20170928155115.fou577qzxepnnxqc@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y32n144P5zDsPq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 04:11:00 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
+ <york.sun@nxp.com>
+Subject: Re: [EXTERNAL]Re: FSL serial 166550 errata broken?
+Date: Thu, 28 Sep 2017 18:10:46 +0000
+Message-ID: <1506622245.21929.7.camel@infinera.com>
+References: <1506358524.29657.31.camel@infinera.com>
+ <VI1PR04MB207821E9B5E0FE0BB629E1FA9A7A0@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <1506510185.2325.4.camel@infinera.com>
+ <VI1PR04MB2078E07ED3BCF8C6001FA72E9A780@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <1506614061.21929.1.camel@infinera.com>
+In-Reply-To: <1506614061.21929.1.camel@infinera.com>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,48 +29,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 28 Sep 2017 17:51:15 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Thu, 2017-09-28 at 17:54 +0200, Joakim Tjernlund wrote:
+> On Wed, 2017-09-27 at 15:32 +0000, York Sun wrote:
+> > On 09/27/2017 04:03 AM, Joakim Tjernlund wrote:
+> > > On Mon, 2017-09-25 at 17:26 +0000, York Sun wrote:
+> > > > On 09/25/2017 09:55 AM, Joakim Tjernlund wrote:
+> > > > > We got some "broken" boards(mpx8321) where UART RX is held low(BR=
+EAK)
+> > > > > There we get a few:
+> > > > >     serial8250: too much work for irq18
+> > > > > and the board freezes.
+> > > > >=20
+> > > > > Looking inte to driver/CPU there is an errtum(A-004737) w.r.t BRE=
+AK handling
+> > > > > and I can see we are hitting the irq function fsl8250_handle_irq(=
+) added
+> > > > > in commit: 9deaa53ac7fa373623123aa4f18828dd62292b1a
+> > > > >    "serial: add irq handler for Freescale 16550 errata."
+> > > > > For all I can tell this workaround is broken and I cannot figure =
+out why.
+> > > > > Any pointers?
+> > > > >=20
+> > > >=20
+> > > > Jocke,
+> > > >=20
+> > > > Did you mean MPC8321?
+> > > >=20
+> > > > I personally don't have experience debugging this erratum. Have you
+> > > > tried to contact the patch author Paul Gortmaker to see how he mana=
+ged
+> > > > to get it work?
+> > >=20
+> > > No, but I just found out it is u-boot related. If I use an very old u=
+-boot it works.
+> > > Between then and now we did a massive upgrade of u-boot and now if br=
+eaks. And no,
+> > > bisect not possible due to local u-boot mods :)
+> >=20
+> > How old? It is a good sign that an old U-Boot works. Git bisect would b=
+e=20
+> > a good tool if practical. Sometimes I have to reapply some local change=
+s=20
+> > for every step of bisect to make it useful. You mileage may vary though=
+.
+> >=20
+> > >=20
+> > > Any idea what could be different? I cannot see and I have tested
+> > > what I could see/think of but now I am out of ideas.
+> >=20
+> > I don't believe we have much change for MPC8321 for a long time. If any=
+=20
+> > change has impact on kernel but not U-Boot itself, it may be other=20
+> > errata workarounds.
+> >=20
+> > I presume this happens on your own board. If I am in your shoes, I woul=
+d=20
+> > try to reduce the number of local commits and reapply them to various=20
+> > U-Boot tags to further narrow down the search scope. In the mean time,=
+=20
+> > getting register dump to compare the good and bad may be another way to=
+ go.
+>=20
+> God, this was no fun exercise but I think I found the offending commit: 8=
+2dda962f0a6449672df3378bb6b5fe54372a927
+>     serial: Unconditionally enable CONFIG_SERIAL_MULTI
+>    =20
+>     Enable CONFIG_SERIAL_MULTI for all builds of U-Boot. That includes
+>     both SPL builds and non-SPL builds, everything. To avoid poluting
+>     this patch with removal of ifdef-endif constructions containing
+>     CONFIG_SERIAL_MULTI, the CONFIG_SERIAL_MULTI is temporarily added
+>     into CPPFLAGS in config.mk . This will be again removed in following
+>     patch.
+>=20
 
-> On Fri, Sep 29, 2017 at 01:01:12AM +1000, Nicholas Piggin wrote:
-> > That's fine. If a user is not bound to a subset of CPUs, they could
-> > also cause disturbances with other syscalls and faults, taking locks,
-> > causing tlb flushes and IPIs and things.  
-> 
-> So on the big SGI class machines we've had trouble with
-> for_each_cpu() loops before, and IIRC the biggest Power box is not too
-> far from that 1-2K CPUs IIRC.
+Ok, unless I init ttyS1 in u-boot too, IRQ storm will ensue if BREAK is pre=
+sent
+when opening ttyS1:
++       /* Must init the second RS232 or IRQ storm happens
++        * when BREAK is constant on while opening ttyS1 */
++       NS16550_init((NS16550_t)CONFIG_SYS_NS16550_COM2,
++                    ns16550_calc_divisor((NS16550_t)CONFIG_SYS_NS16550_COM=
+2,
++                                         CONFIG_SYS_NS16550_CLK,
++                                         CONFIG_BAUDRATE));
 
-This is a loop in process context, interrupts on, can reschedule, no
-locks held though.
+I guess this is a kernel bug too, the driver should clear/init needed state=
+ before
+starting the device. Fixing that is not on my menu though :)
 
-The biggest power boxes are more tightly coupled than those big
-SGI systems, but even so just plodding along taking and releasing
-locks in turn would be fine on those SGI ones as well really. Not DoS
-level. This is not a single mega hot cache line or lock that is
-bouncing over the entire machine, but one process grabbing a line and
-lock from each of 1000 CPUs.
+I also noted that FSL custom irq handler, fsl8250_handle_irq, does not hand=
+le
+dma like the standard one does. I guess it needs some love too.
 
-Slight disturbance sure, but each individual CPU will see it as 1/1000th
-of a disturbance, most of the cost will be concentrated in the syscall
-caller.
-
-> 
-> Bouncing that lock across the machine is *painful*, I have vague
-> memories of cases where the lock ping-pong was most the time spend.
-> 
-> But only Power needs this, all the other architectures are fine with the
-> lockless approach for MEMBAR_EXPEDITED_PRIVATE.
-
-Yes, we can add an iterator function that power can override in a few
-lines. Less arch specific code than this proposal.
-
-> 
-> The ISYNC variant of the same however appears to want TIF flags or
-> something to aid a number of archs, the rq->lock will not help there.
-
-The SYNC_CORE? Yes it seems different. I think that's another issue
-though.
-
-Thanks,
-Nick
+ Jocke=
