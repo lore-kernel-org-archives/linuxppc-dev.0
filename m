@@ -1,16 +1,35 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3y2pwd1F2SzDsPp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 19:16:48 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH kernel v3] vfio/spapr: Add cond_resched() for huge updates
-Date: Thu, 28 Sep 2017 19:16:12 +1000
-Message-Id: <20170928091612.20717-1-aik@ozlabs.ru>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.181])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y2q5M1WfJzDsPp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 19:24:22 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Simon Guo' <wei.guo.simon@gmail.com>
+CC: 'Segher Boessenkool' <segher@kernel.crashing.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Cyril Bur <cyrilbur@gmail.com>,
+ "raji@linux.vnet.ibm.com" <raji@linux.vnet.ibm.com>, "Naveen N.  Rao"
+ <naveen.n.rao@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX
+ instruction for long bytes comparision
+Date: Thu, 28 Sep 2017 09:24:17 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0083059@AcuExch.aculab.com>
+References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
+ <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
+ <1506089208.1155.32.camel@gmail.com>
+ <20170923211843.GA10899@simonLocalRHEL7.x64>
+ <1506383986.2918.4.camel@gmail.com>
+ <87k20mf2fn.fsf@concordia.ellerman.id.au>
+ <20170926112623.GZ8421@gate.crashing.org>
+ <877ewkg6am.fsf@concordia.ellerman.id.au>
+ <20170927092758.GL8421@gate.crashing.org>
+ <063D6719AE5E284EB5DD2968C1650D6DD0082414@AcuExch.aculab.com>
+ <20170927183346.GB2752@simonLocalRHEL7.x64>
+In-Reply-To: <20170927183346.GB2752@simonLocalRHEL7.x64>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,44 +39,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Clearing very big IOMMU tables can trigger soft lockups. This adds
-cond_resched() to allow the scheduler to do context switching when
-it decides to.
+From: Simon Guo
+> Sent: 27 September 2017 19:34
+...
+> > On X86 all the AVX registers are caller saved, the system call
+> > entry could issue the instruction that invalidates them all.
+> > Kernel code running in the context of a user process could then
+> > use the registers without saving them.
+> > It would only need to set a mark to ensure they are invalidated
+> > again on return to user (might be cheap enough to do anyway).
+> > Dunno about PPC though.
+>=20
+> I am not aware of any ppc instruction which can set a "mark" or provide
+> any high granularity flag against single or subgroup of vec regs' validit=
+y.
+> But ppc experts may want to correct me.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
+I was just thinking of a software flag.
 
-The testcase is POWER9 box with 264GB guest, 4 VFIO devices from
-independent IOMMU groups, 64K IOMMU pages. This configuration produces
-4325376 TCE entries, each entry update incurs 4 OPAL calls to update
-an individual PE TCE cache; this produced lockups for more than 20s.
-Reducing table size to 4194304 (i.e. 256GB guest) or removing one
-of 4 VFIO devices makes the problem go away.
-
----
-Changes:
-v3:
-* cond_resched() checks for should_resched() so we just call resched()
-and let the cpu scheduler decide whether to switch or not
-
-v2:
-* replaced with time based solution
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 63112c36ab2d..759a5bdd40e1 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -507,6 +507,8 @@ static int tce_iommu_clear(struct tce_container *container,
- 	enum dma_data_direction direction;
- 
- 	for ( ; pages; --pages, ++entry) {
-+		cond_resched();
-+
- 		direction = DMA_NONE;
- 		oldhpa = 0;
- 		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
--- 
-2.11.0
+	David
