@@ -1,36 +1,15 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y2jpd4pBdzDsPp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 15:26:16 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id u18so680777pgo.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Sep 2017 22:26:16 -0700 (PDT)
-Date: Thu, 28 Sep 2017 02:33:46 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: 'Segher Boessenkool' <segher@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Cyril Bur <cyrilbur@gmail.com>,
- "raji@linux.vnet.ibm.com" <raji@linux.vnet.ibm.com>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 2/3] powerpc/64: enhance memcmp() with VMX instruction
- for long bytes comparision
-Message-ID: <20170927183346.GB2752@simonLocalRHEL7.x64>
-References: <1505950480-14830-1-git-send-email-wei.guo.simon@gmail.com>
- <1505950480-14830-3-git-send-email-wei.guo.simon@gmail.com>
- <1506089208.1155.32.camel@gmail.com>
- <20170923211843.GA10899@simonLocalRHEL7.x64>
- <1506383986.2918.4.camel@gmail.com>
- <87k20mf2fn.fsf@concordia.ellerman.id.au>
- <20170926112623.GZ8421@gate.crashing.org>
- <877ewkg6am.fsf@concordia.ellerman.id.au>
- <20170927092758.GL8421@gate.crashing.org>
- <063D6719AE5E284EB5DD2968C1650D6DD0082414@AcuExch.aculab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD0082414@AcuExch.aculab.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3y2k8n4V2zzDsPp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 15:42:01 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>
+Subject: [PATCH kernel v2] vfio/spapr: Add cond_resched() for huge updates
+Date: Thu, 28 Sep 2017 15:41:26 +1000
+Message-Id: <20170928054126.5347-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,40 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 27, 2017 at 09:43:44AM +0000, David Laight wrote:
-> From: Segher Boessenkool
-> > Sent: 27 September 2017 10:28
-> ...
-> > You also need nasty code to deal with the start and end of strings, with
-> > conditional branches and whatnot, which quickly overwhelms the benefit
-> > of using vector registers at all.  This tradeoff also changes with newer
-> > ISA versions.
-> 
-> The goal posts keep moving.
-> For instance with modern intel x86 cpus 'rep movsb' is by far the fastest
-> way to copy data (from cached memory).
-> 
-> > Things have to become *really* cheap before it will be good to often use
-> > vector registers in the kernel though.
-> 
-> I've had thoughts about this in the past.
-> If the vector registers belong to the current process then you might
-> get away with just saving the ones you want to use.
-> If they belong to a different process then you also need to tell the
-> FPU save code where you've saved the registers.
-> Then the IPI code can recover all the correct values.
-> 
-> On X86 all the AVX registers are caller saved, the system call
-> entry could issue the instruction that invalidates them all.
-> Kernel code running in the context of a user process could then
-> use the registers without saving them.
-> It would only need to set a mark to ensure they are invalidated
-> again on return to user (might be cheap enough to do anyway).
-> Dunno about PPC though.
+Clearing very big IOMMU tables can trigger soft lockups. This adds
+cond_resched() for every second spend in the loop.
 
-I am not aware of any ppc instruction which can set a "mark" or provide 
-any high granularity flag against single or subgroup of vec regs' validity.
-But ppc experts may want to correct me.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-Thanks,
-- Simon
+The testcase is POWER9 box with 264GB guest, 4 VFIO devices from
+independent IOMMU groups, 64K IOMMU pages. This configuration produces
+4325376 TCE entries, each entry update incurs 4 OPAL calls to update
+an individual PE TCE cache; this produced lockups for more than 20s.
+Reducing table size to 4194304 (i.e. 256GB guest) or removing one
+of 4 VFIO devices makes the problem go away.
+
+---
+Changes:
+v2:
+* replaced with time based solution
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 63112c36ab2d..b7a317520f2a 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -505,8 +505,15 @@ static int tce_iommu_clear(struct tce_container *container,
+ 	unsigned long oldhpa;
+ 	long ret;
+ 	enum dma_data_direction direction;
++	unsigned long time_limit = jiffies + HZ;
+ 
+ 	for ( ; pages; --pages, ++entry) {
++
++		if (time_after(jiffies, time_limit)) {
++			cond_resched();
++			time_limit = jiffies + HZ;
++		}
++
+ 		direction = DMA_NONE;
+ 		oldhpa = 0;
+ 		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
+-- 
+2.11.0
