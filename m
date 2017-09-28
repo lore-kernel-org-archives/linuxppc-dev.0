@@ -1,24 +1,36 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0086.outbound.protection.outlook.com [104.47.38.86])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x229.google.com (mail-pg0-x229.google.com
+ [IPv6:2607:f8b0:400e:c05::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y2zlX4c96zDsPr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 01:54:31 +1000 (AEST)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
- <york.sun@nxp.com>
-Subject: Re: [EXTERNAL]Re: FSL serial 166550 errata broken?
-Date: Thu, 28 Sep 2017 15:54:22 +0000
-Message-ID: <1506614061.21929.1.camel@infinera.com>
-References: <1506358524.29657.31.camel@infinera.com>
- <VI1PR04MB207821E9B5E0FE0BB629E1FA9A7A0@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <1506510185.2325.4.camel@infinera.com>
- <VI1PR04MB2078E07ED3BCF8C6001FA72E9A780@VI1PR04MB2078.eurprd04.prod.outlook.com>
-In-Reply-To: <VI1PR04MB2078E07ED3BCF8C6001FA72E9A780@VI1PR04MB2078.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="iso-8859-15"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y30F937k6zDsPt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 02:16:45 +1000 (AEST)
+Received: by mail-pg0-x229.google.com with SMTP id 188so1202500pgb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 09:16:45 -0700 (PDT)
+Date: Fri, 29 Sep 2017 02:16:22 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra
+ <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Alexander Viro
+ <viro@zeniv.linux.org.uk>, linux-arch <linux-arch@vger.kernel.org>, Avi
+ Kivity <avi@scylladb.com>, maged michael <maged.michael@gmail.com>, Boqun
+ Feng <boqun.feng@gmail.com>, Dave Watson <davejwatson@fb.com>, Will Deacon
+ <will.deacon@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew
+ Hunter <ahh@google.com>, Paul Mackerras <paulus@samba.org>, Andy Lutomirski
+ <luto@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, gromer <gromer@google.com>
+Subject: Re: [PATCH v4 for 4.14 1/3] membarrier: Provide register expedited
+ private command
+Message-ID: <20170929021622.5c7d6206@roar.ozlabs.ibm.com>
+In-Reply-To: <634837506.21241.1506612590749.JavaMail.zimbra@efficios.com>
+References: <20170926175151.14264-1-mathieu.desnoyers@efficios.com>
+ <33948425.19289.1506458608221.JavaMail.zimbra@efficios.com>
+ <20170927230436.4af88a62@roar.ozlabs.ibm.com>
+ <911707916.20840.1506605496314.JavaMail.zimbra@efficios.com>
+ <20170929010112.3a54be0d@roar.ozlabs.ibm.com>
+ <634837506.21241.1506612590749.JavaMail.zimbra@efficios.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,70 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-09-27 at 15:32 +0000, York Sun wrote:
-> On 09/27/2017 04:03 AM, Joakim Tjernlund wrote:
-> > On Mon, 2017-09-25 at 17:26 +0000, York Sun wrote:
-> > > On 09/25/2017 09:55 AM, Joakim Tjernlund wrote:
-> > > > We got some "broken" boards(mpx8321) where UART RX is held low(BREA=
-K)
-> > > > There we get a few:
-> > > >     serial8250: too much work for irq18
-> > > > and the board freezes.
-> > > >=20
-> > > > Looking inte to driver/CPU there is an errtum(A-004737) w.r.t BREAK=
- handling
-> > > > and I can see we are hitting the irq function fsl8250_handle_irq() =
-added
-> > > > in commit: 9deaa53ac7fa373623123aa4f18828dd62292b1a
-> > > >    "serial: add irq handler for Freescale 16550 errata."
-> > > > For all I can tell this workaround is broken and I cannot figure ou=
-t why.
-> > > > Any pointers?
-> > > >=20
-> > >=20
-> > > Jocke,
-> > >=20
-> > > Did you mean MPC8321?
-> > >=20
-> > > I personally don't have experience debugging this erratum. Have you
-> > > tried to contact the patch author Paul Gortmaker to see how he manage=
-d
-> > > to get it work?
-> >=20
-> > No, but I just found out it is u-boot related. If I use an very old u-b=
-oot it works.
-> > Between then and now we did a massive upgrade of u-boot and now if brea=
-ks. And no,
-> > bisect not possible due to local u-boot mods :)
->=20
-> How old? It is a good sign that an old U-Boot works. Git bisect would be=
-=20
-> a good tool if practical. Sometimes I have to reapply some local changes=
-=20
-> for every step of bisect to make it useful. You mileage may vary though.
->=20
-> >=20
-> > Any idea what could be different? I cannot see and I have tested
-> > what I could see/think of but now I am out of ideas.
->=20
-> I don't believe we have much change for MPC8321 for a long time. If any=20
-> change has impact on kernel but not U-Boot itself, it may be other=20
-> errata workarounds.
->=20
-> I presume this happens on your own board. If I am in your shoes, I would=
-=20
-> try to reduce the number of local commits and reapply them to various=20
-> U-Boot tags to further narrow down the search scope. In the mean time,=20
-> getting register dump to compare the good and bad may be another way to g=
-o.
+On Thu, 28 Sep 2017 15:29:50 +0000 (UTC)
+Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
 
-God, this was no fun exercise but I think I found the offending commit: 82d=
-da962f0a6449672df3378bb6b5fe54372a927
-    serial: Unconditionally enable CONFIG_SERIAL_MULTI
-   =20
-    Enable CONFIG_SERIAL_MULTI for all builds of U-Boot. That includes
-    both SPL builds and non-SPL builds, everything. To avoid poluting
-    this patch with removal of ifdef-endif constructions containing
-    CONFIG_SERIAL_MULTI, the CONFIG_SERIAL_MULTI is temporarily added
-    into CPPFLAGS in config.mk . This will be again removed in following
-    patch.
+> ----- On Sep 28, 2017, at 11:01 AM, Nicholas Piggin npiggin@gmail.com wrote:
+> 
+> > On Thu, 28 Sep 2017 13:31:36 +0000 (UTC)
+> > Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
+> >   
+> >> ----- On Sep 27, 2017, at 9:04 AM, Nicholas Piggin npiggin@gmail.com wrote:
+> >>   
+
+[snip]
+
+> >> So I don't see much point in trying to remove that registration step.  
+> > 
+> > I don't follow you. You are talking about the concept of registering
+> > intention to use a different function? And the registration API is not
+> > merged yet?  
+> 
+> Yes, I'm talking about requiring processes to invoke membarrier cmd
+> MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED before they can successfully
+> invoke membarrier cmd MEMBARRIER_CMD_PRIVATE_EXPEDITED.
+> 
+> > Let me say I'm not completely against the idea of a registration API. But
+> > don't think registration for this expedited command is necessary.  
+> 
+> Given that we have the powerpc lack-of-full-barrier-on-return-to-userspace
+> case now, and we foresee x86-sysexit, sparc, and alpha also requiring
+> special treatment when we introduce the MEMBARRIER_FLAG_SYNC_CORE behavior
+> in the next release, it seems that we'll have a hard time handling
+> architecture special cases efficiently if we don't expose the registration
+> API right away.
+
+But SYNC_CORE is a different functionality, right? You can add the
+registration API for it when that goes in.
+
+> > But (aside) let's say a tif flag turns out to be a good diea for your
+> > second case, why not just check the flag in the membarrier sys call and
+> > do the registration the first time it uses it?  
+> 
+> We also considered that option. It's mainly about guaranteeing that
+> an expedited membarrier command never blocks. If we introduce this
+> "lazy auto-registration" behavior, we end up blocking the process
+> at a random point in its execution so we can issue a synchronize_sched().
+> By exposing an explicit registration, we can control where this delay
+> occurs, and even allow library constructors to invoke the registration
+> while the process is a single threaded, therefore allowing us to completely
+> skip synchronize_sched().
+
+Okay I guess that could be a good reason. As I said I'm not opposed to
+the concept. I suppose you could even have a registration for expedited
+private even if it's a no-op on all architectures, just in case some new
+ways of implementing it can be done in future.
+
+I suppose I'm more objecting to the added complexity for powerpc, and
+more code in the fastpath to make the slowpath faster.
+
+Thanks,
+Nick
