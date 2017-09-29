@@ -1,21 +1,31 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <srs0=smtl=a6=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3Km60dHYzDsQ2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 15:26:14 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3y3Km5616Fz8vkk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 15:26:13 +1000 (AEST)
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3JSG3hCVzDsQS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 14:27:26 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id a7so232644pfj.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 21:27:26 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3y3Km501m4z9t3R
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2017 15:26:12 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id j16so427684pga.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2017 22:26:12 -0700 (PDT)
+Date: Fri, 29 Sep 2017 15:24:59 +1000
 From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v4 5/5] powerpc/mce: hookup memory_failure for UE errors
-Date: Fri, 29 Sep 2017 14:26:55 +1000
-Message-Id: <20170929042655.14570-6-bsingharora@gmail.com>
-In-Reply-To: <20170929042655.14570-1-bsingharora@gmail.com>
-References: <20170929042655.14570-1-bsingharora@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, rlippert@google.com, anton@samba.org
+Subject: Re: [PATCH] powerpc/powernv: Make opal_event_shutdown() callable
+ from IRQ context
+Message-ID: <20170929152459.78d35002@gmail.com>
+In-Reply-To: <1506657482-25196-1-git-send-email-mpe@ellerman.id.au>
+References: <1506657482-25196-1-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,144 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we are in user space and hit a UE error, we now have the
-basic infrastructure to walk the page tables and find out
-the effective address that was accessed, since the DAR
-is not valid.
+On Fri, 29 Sep 2017 13:58:02 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-We use a work_queue content to hookup the bad pfn, any
-other context causes problems, since memory_failure itself
-can call into schedule() via lru_drain_ bits.
+> In opal_event_shutdown() we free all the IRQs hanging off the
+> opal_event_irqchip. However it's not safe to do so if we're called
+> from IRQ context, because free_irq() wants to synchronise versus IRQ
+> context. This can lead to warnings and a stuck system.
+> 
+> For example from sysrq-b:
+> 
+>   Trying to free IRQ 17 from IRQ context!
+>   ------------[ cut here ]------------
+>   WARNING: CPU: 0 PID: 0 at kernel/irq/manage.c:1461 __free_irq+0x398/0x8d0
+>   ...
+>   NIP __free_irq+0x398/0x8d0
+>   LR __free_irq+0x394/0x8d0
+>   Call Trace:
+>     __free_irq+0x394/0x8d0 (unreliable)
+>     free_irq+0xa4/0x140
+>     opal_event_shutdown+0x128/0x180
+>     opal_shutdown+0x1c/0xb0
+>     pnv_shutdown+0x20/0x40
+>     machine_restart+0x38/0x90
+>     emergency_restart+0x28/0x40
+>     sysrq_handle_reboot+0x24/0x40
+>     __handle_sysrq+0x198/0x590
+>     hvc_poll+0x48c/0x8c0
+>     hvc_handle_interrupt+0x1c/0x50
+>     __handle_irq_event_percpu+0xe8/0x6e0
+>     handle_irq_event_percpu+0x34/0xe0
+>     handle_irq_event+0xc4/0x210
+>     handle_level_irq+0x250/0x770
+>     generic_handle_irq+0x5c/0xa0
+>     opal_handle_events+0x11c/0x240
+>     opal_interrupt+0x38/0x50
+>     __handle_irq_event_percpu+0xe8/0x6e0
+>     handle_irq_event_percpu+0x34/0xe0
+>     handle_irq_event+0xc4/0x210
+>     handle_fasteoi_irq+0x174/0xa10
+>     generic_handle_irq+0x5c/0xa0
+>     __do_irq+0xbc/0x4e0
+>     call_do_irq+0x14/0x24
+>     do_IRQ+0x18c/0x540
+>     hardware_interrupt_common+0x158/0x180
+> 
+> We can avoid that by using disable_irq_nosync() rather than
+> free_irq(). Although it doesn't fully free the IRQ, it should be
+> sufficient when we're shutting down, particularly in an emergency.
+> 
+> Add an in_interrupt() check and use free_irq() when we're shutting
+> down normally. It's probably OK to use disable_irq_nosync() in that
+> case too, but for now it's safer to leave that behaviour as-is.
+> 
+> Fixes: 9f0fd0499d30 ("powerpc/powernv: Add a virtual irqchip for opal events")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
 
-We could probably poison the struct page to avoid a race
-between detection and taking corrective action.
-
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/mce.c | 70 +++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 67 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index ee148f4..299553e 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -39,11 +39,21 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
- static DEFINE_PER_CPU(int, mce_queue_count);
- static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
- 
-+/* Queue for delayed MCE UE events. */
-+static DEFINE_PER_CPU(int, mce_ue_count);
-+static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT],
-+					mce_ue_event_queue);
-+
- static void machine_check_process_queued_event(struct irq_work *work);
-+void machine_check_ue_event(struct machine_check_event *evt);
-+static void machine_process_ue_event(struct work_struct *work);
-+
- static struct irq_work mce_event_process_work = {
-         .func = machine_check_process_queued_event,
- };
- 
-+DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
-+
- static void mce_set_error_info(struct machine_check_event *mce,
- 			       struct mce_error_info *mce_err)
- {
-@@ -143,6 +153,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
- 		if (phys_addr != ULONG_MAX) {
- 			mce->u.ue_error.physical_address_provided = true;
- 			mce->u.ue_error.physical_address = phys_addr;
-+			machine_check_ue_event(mce);
- 		}
- 	}
- 	return;
-@@ -197,6 +208,26 @@ void release_mce_event(void)
- 	get_mce_event(NULL, true);
- }
- 
-+
-+/*
-+ * Queue up the MCE event which then can be handled later.
-+ */
-+void machine_check_ue_event(struct machine_check_event *evt)
-+{
-+	int index;
-+
-+	index = __this_cpu_inc_return(mce_ue_count) - 1;
-+	/* If queue is full, just return for now. */
-+	if (index >= MAX_MC_EVT) {
-+		__this_cpu_dec(mce_ue_count);
-+		return;
-+	}
-+	memcpy(this_cpu_ptr(&mce_ue_event_queue[index]), evt, sizeof(*evt));
-+
-+	/* Queue work to process this event later. */
-+	schedule_work(&mce_ue_event_work);
-+}
-+
- /*
-  * Queue up the MCE event which then can be handled later.
-  */
-@@ -219,7 +250,39 @@ void machine_check_queue_event(void)
- 	/* Queue irq work to process this event later. */
- 	irq_work_queue(&mce_event_process_work);
- }
--
-+/*
-+ * process pending MCE event from the mce event queue. This function will be
-+ * called during syscall exit.
-+ */
-+static void machine_process_ue_event(struct work_struct *work)
-+{
-+	int index;
-+	struct machine_check_event *evt;
-+
-+	while (__this_cpu_read(mce_ue_count) > 0) {
-+		index = __this_cpu_read(mce_ue_count) - 1;
-+		evt = this_cpu_ptr(&mce_ue_event_queue[index]);
-+#ifdef CONFIG_MEMORY_FAILURE
-+		/*
-+		 * This should probably queued elsewhere, but
-+		 * oh! well
-+		 */
-+		if (evt->error_type == MCE_ERROR_TYPE_UE) {
-+			if (evt->u.ue_error.physical_address_provided) {
-+				unsigned long pfn;
-+
-+				pfn = evt->u.ue_error.physical_address >>
-+					PAGE_SHIFT;
-+				memory_failure(pfn, SIGBUS, 0);
-+			} else
-+				pr_warn("Failed to identify bad address from "
-+					"where the uncorrectable error (UE) "
-+					"was generated\n");
-+		}
-+#endif
-+		__this_cpu_dec(mce_ue_count);
-+	}
-+}
- /*
-  * process pending MCE event from the mce event queue. This function will be
-  * called during syscall exit.
-@@ -227,6 +290,7 @@ void machine_check_queue_event(void)
- static void machine_check_process_queued_event(struct irq_work *work)
- {
- 	int index;
-+	struct machine_check_event *evt;
- 
- 	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
- 
-@@ -236,8 +300,8 @@ static void machine_check_process_queued_event(struct irq_work *work)
- 	 */
- 	while (__this_cpu_read(mce_queue_count) > 0) {
- 		index = __this_cpu_read(mce_queue_count) - 1;
--		machine_check_print_event_info(
--				this_cpu_ptr(&mce_event_queue[index]), false);
-+		evt = this_cpu_ptr(&mce_event_queue[index]);
-+		machine_check_print_event_info(evt, false);
- 		__this_cpu_dec(mce_queue_count);
- 	}
- }
--- 
-2.9.5
+Acked-by: Balbir Singh <bsingharora@gmail.com>
