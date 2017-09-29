@@ -3,16 +3,16 @@ Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
  [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3HBD3KyvzDsQL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 13:30:12 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id d8so152742pgt.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 20:30:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3HBH2DlfzDsQf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 13:30:15 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id y192so118018pgd.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 20:30:15 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 4/6] powerpc/xmon: avoid tripping SMP hardlockup watchdog
-Date: Fri, 29 Sep 2017 13:29:40 +1000
-Message-Id: <20170929032942.4321-5-npiggin@gmail.com>
+Subject: [PATCH v2 5/6] powerpc/64s: Implement system reset idle wakeup reason
+Date: Fri, 29 Sep 2017 13:29:41 +1000
+Message-Id: <20170929032942.4321-6-npiggin@gmail.com>
 In-Reply-To: <20170929032942.4321-1-npiggin@gmail.com>
 References: <20170929032942.4321-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,72 +24,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SMP hardlockup watchdog cross-checks other CPUs for lockups,
-which causes xmon headaches because it's assuming interrupts
-hard disabled means no watchdog troubles. Try to improve that by
-calling touch_nmi_watchdog() in obvious places where secondaries
-are spinning.
+It is possible to wake from idle due to a system reset exception, in
+which case the CPU takes a system reset interrupt to wake from idle,
+with system reset as the wakeup reason.
 
-Also annotate these spin loops with spin_begin/end calls.
+The regular (not idle wakeup) system reset interrupt handler must be
+invoked in this case, otherwise the system reset interrupt is lost.
+
+Handle the system reset interrupt immediately after CPU state has been
+restored.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/xmon/xmon.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/irq.c | 41 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 38 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 33351c6704b1..d9a12102b111 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -530,14 +530,19 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 4e65bf82f5e0..4813b83b22aa 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -394,11 +394,19 @@ bool prep_irq_for_idle_irqsoff(void)
+ /*
+  * Take the SRR1 wakeup reason, index into this table to find the
+  * appropriate irq_happened bit.
++ *
++ * Sytem reset exceptions taken in idle state also come through here,
++ * but they are NMI interrupts so do not need to wait for IRQs to be
++ * restored, and should be taken as early as practical. These are marked
++ * with 0xff in the table. The Power ISA specifies 0100b as the system
++ * reset interrupt reason.
+  */
++#define IRQ_SYSTEM_RESET	0xff
++
+ static const u8 srr1_to_lazyirq[0x10] = {
+ 	0, 0, 0,
+ 	PACA_IRQ_DBELL,
+-	0,
++	IRQ_SYSTEM_RESET,
+ 	PACA_IRQ_DBELL,
+ 	PACA_IRQ_DEC,
+ 	0,
+@@ -407,15 +415,42 @@ static const u8 srr1_to_lazyirq[0x10] = {
+ 	PACA_IRQ_HMI,
+ 	0, 0, 0, 0, 0 };
  
-  waiting:
- 	secondary = 1;
-+	spin_begin();
- 	while (secondary && !xmon_gate) {
- 		if (in_xmon == 0) {
--			if (fromipi)
-+			if (fromipi) {
-+				spin_end();
- 				goto leave;
-+			}
- 			secondary = test_and_set_bit(0, &in_xmon);
- 		}
--		barrier();
-+		spin_cpu_relax();
-+		touch_nmi_watchdog();
- 	}
-+	spin_end();
++static noinline void replay_system_reset(void)
++{
++	struct pt_regs regs;
++
++	ppc_save_regs(&regs);
++	regs.trap = 0x100;
++	get_paca()->in_nmi = 1;
++	system_reset_exception(&regs);
++	get_paca()->in_nmi = 0;
++}
++
+ void irq_set_pending_from_srr1(unsigned long srr1)
+ {
+ 	unsigned int idx = (srr1 & SRR1_WAKEMASK_P8) >> 18;
++	u8 reason = srr1_to_lazyirq[idx];
++
++	/*
++	 * Take the system reset now, which is immediately after registers
++	 * are restored from idle. It's an NMI, so interrupts need not be
++	 * re-enabled before it is taken.
++	 */
++	if (unlikely(reason == IRQ_SYSTEM_RESET)) {
++		replay_system_reset();
++		return;
++	}
  
- 	if (!secondary && !xmon_gate) {
- 		/* we are the first cpu to come in */
-@@ -568,21 +573,25 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 		mb();
- 		xmon_gate = 1;
- 		barrier();
-+		touch_nmi_watchdog();
- 	}
+ 	/*
+ 	 * The 0 index (SRR1[42:45]=b0000) must always evaluate to 0,
+-	 * so this can be called unconditionally with srr1 wake reason.
++	 * so this can be called unconditionally with the SRR1 wake
++	 * reason as returned by the idle code, which uses 0 to mean no
++	 * interrupt.
++	 *
++	 * If a future CPU was to designate this as an interrupt reason,
++	 * then a new index for no interrupt must be assigned.
+ 	 */
+-	local_paca->irq_happened |= srr1_to_lazyirq[idx];
++	local_paca->irq_happened |= reason;
+ }
+ #endif /* CONFIG_PPC_BOOK3S */
  
-  cmdloop:
- 	while (in_xmon) {
- 		if (secondary) {
-+			spin_begin();
- 			if (cpu == xmon_owner) {
- 				if (!test_and_set_bit(0, &xmon_taken)) {
- 					secondary = 0;
-+					spin_end();
- 					continue;
- 				}
- 				/* missed it */
- 				while (cpu == xmon_owner)
--					barrier();
-+					spin_cpu_relax();
- 			}
--			barrier();
-+			spin_cpu_relax();
-+			touch_nmi_watchdog();
- 		} else {
- 			cmd = cmds(regs);
- 			if (cmd != 0) {
 -- 
 2.13.3
