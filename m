@@ -1,43 +1,26 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3NXt41FGzDrFq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 17:31:41 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8T7Sx0B052242
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 03:31:39 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d98pv9ety-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 03:31:38 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 29 Sep 2017 17:31:36 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v8T7VYZn46792720
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 17:31:34 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v8T7VZtr026790
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 17:31:35 +1000
-Date: Fri, 29 Sep 2017 13:01:24 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Sandipan Das <sandipan@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, anton@samba.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc/lib/sstep: Add XER bits introduced in POWER
- ISA v3.0
-References: <20170929054410.12600-1-sandipan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3NtD5b3ZzDrFs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 17:46:44 +1000 (AEST)
+Received: by mail-qt0-x242.google.com with SMTP id o13so617177qtf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 00:46:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170929054410.12600-1-sandipan@linux.vnet.ibm.com>
-Message-Id: <20170929073124.zymjf7v7dr336ye3@naverao1-tp.localdomain>
+In-Reply-To: <1506667651-32301-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1506667651-32301-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Oliver <oohall@gmail.com>
+Date: Fri, 29 Sep 2017 17:46:41 +1000
+Message-ID: <CAOSf1CGsvnc116ZdoG7nu4WsQxVRAA3BbBZw_NL9t+NQVCEa9g@mail.gmail.com>
+Subject: Re: [PATCH] powernv: Add OCC driver to mmap sensor area
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,37 +30,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/09/29 05:44AM, Sandipan Das wrote:
-> This adds definitions for the OV32 and CA32 bits of XER that
-> were introduced in POWER ISA v3.0. There are some existing
-> instructions that currently set the OV and CA bits based on
-> certain conditions.
-> 
-> The emulation behaviour of all these instructions needs to
-> be updated to set these new bits accordingly.
-> 
-> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
-
-For this series:
-Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-
+On Fri, Sep 29, 2017 at 4:47 PM, Shilpasri G Bhat
+<shilpa.bhat@linux.vnet.ibm.com> wrote:
+> This driver provides interface to mmap the OCC sensor area
+> to userspace to parse and read OCC inband sensors.
+>
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/lib/sstep.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> index 5e8418c28bd8..16814bfc01da 100644
-> --- a/arch/powerpc/lib/sstep.c
-> +++ b/arch/powerpc/lib/sstep.c
-> @@ -31,6 +31,8 @@ extern char system_call_common[];
->  #define XER_SO		0x80000000U
->  #define XER_OV		0x40000000U
->  #define XER_CA		0x20000000U
-> +#define XER_OV32	0x00080000U
-> +#define XER_CA32	0x00040000U
-> 
->  #ifdef CONFIG_PPC_FPU
->  /*
-> -- 
-> 2.13.5
-> 
+> - The skiboot patch for this is posted here:
+> https://lists.ozlabs.org/pipermail/skiboot/2017-September/009209.html
+>
+>  arch/powerpc/platforms/powernv/Makefile   |  2 +-
+>  arch/powerpc/platforms/powernv/opal-occ.c | 88 +++++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/opal.c     |  3 ++
+>  3 files changed, 92 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/powerpc/platforms/powernv/opal-occ.c
+>
+> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+> index 37d60f7..7911295 100644
+> --- a/arch/powerpc/platforms/powernv/Makefile
+> +++ b/arch/powerpc/platforms/powernv/Makefile
+> @@ -2,7 +2,7 @@ obj-y                   += setup.o opal-wrappers.o opal.o opal-async.o idle.o
+>  obj-y                  += opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+>  obj-y                  += rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+>  obj-y                  += opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+> -obj-y                  += opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
+> +obj-y                  += opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o opal-occ.o
+>
+>  obj-$(CONFIG_SMP)      += smp.o subcore.o subcore-asm.o
+>  obj-$(CONFIG_PCI)      += pci.o pci-ioda.o npu-dma.o
+> diff --git a/arch/powerpc/platforms/powernv/opal-occ.c b/arch/powerpc/platforms/powernv/opal-occ.c
+> new file mode 100644
+> index 0000000..5ca3a41
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/opal-occ.c
+> @@ -0,0 +1,88 @@
+> +/*
+> + * Copyright IBM Corporation 2017
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#define pr_fmt(fmt) "opal-occ: " fmt
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/highmem.h>
+> +#include <asm/opal.h>
+> +
+> +static struct miscdevice occ;
+> +static u64 sensor_base, sensor_size;
+> +
+> +static int opal_occ_mmap(struct file *file, struct vm_area_struct *vma)
+> +{
+> +       if (vma->vm_flags & VM_WRITE)
+> +               return -EINVAL;
+> +
+> +       return vm_iomap_memory(vma, sensor_base, sensor_size);
+
+Hmm, this concerns me slightly. Is this going to create an IO page
+mapping (i.e. cache inhibited) or normal memory mapping?
+
+Another possible issue is that we're limited to mapping 64KB pages so
+this will expose whatever follows the sensor block in memory to user
+space unless the range is 64KB aligned. It looks like this is probably
+safe for P9 due to the layout of the sensor memory, but that might not
+be true in the future. At the very least you should have a comment
+mentioning the issue.
+
+> +}
+> +
+> +static const struct file_operations opal_occ_fops = {
+> +       .mmap           = opal_occ_mmap,
+> +       .owner          = THIS_MODULE,
+> +};
+> +
+> +static int opal_occ_probe(struct platform_device *pdev)
+> +{
+> +       u64 reg[2];
+> +       int rc;
+> +
+> +       if (!pdev || !pdev->dev.of_node)
+> +               return -ENODEV;
+> +
+> +       if (of_property_read_u64_array(pdev->dev.of_node, "occ-sensors",
+> +                                      &reg[0], 2)) {
+> +               pr_warn("occ-sensors property not found\n");
+> +               return -ENODEV;
+> +       }
+> +
+> +       sensor_base = reg[0];
+> +       sensor_size = reg[1];
+> +       occ.minor = MISC_DYNAMIC_MINOR;
+> +       occ.name = "occ";
+> +       occ.fops = &opal_occ_fops;
+> +       rc = misc_register(&occ);
+> +       if (rc)
+> +               pr_warn("Failed to register OCC device\n");
+> +
+> +       return rc;
+> +}
+> +
+> +static int opal_occ_remove(struct platform_device *pdev)
+> +{
+> +       misc_deregister(&occ);
+> +       return 0;
+> +}
+> +
+> +static const struct of_device_id opal_occ_match[] = {
+> +       { .compatible = "ibm,opal-occ-inband-sensors" },
+> +       { },
+> +};
+> +
+> +static struct platform_driver opal_occ_driver = {
+> +       .driver = {
+> +               .name           = "opal_occ",
+> +               .of_match_table = opal_occ_match,
+> +        },
+> +       .probe  = opal_occ_probe,
+> +       .remove = opal_occ_remove,
+> +};
+> +
+> +module_platform_driver(opal_occ_driver);
+> +
+> +MODULE_DESCRIPTION("PowerNV OPAL-OCC driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index 65c79ec..a4f977f 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -889,6 +889,9 @@ static int __init opal_init(void)
+>         /* Initialise OPAL sensor groups */
+>         opal_sensor_groups_init();
+>
+> +       /* Initialise OCC driver */
+> +       opal_pdev_init("ibm,opal-occ-inband-sensors");
+> +
+>         return 0;
+>  }
+>  machine_subsys_initcall(powernv, opal_init);
+> --
+> 1.8.3.1
+
+Overall I'm wondering if we really need a separate driver for this. We
+added the /ibm,opal/firmware/exports/ node to handle this sort of
+thing so it would be good if we could use that. Do you know what is
+going to consume this data in userspace?
+
+Thanks,
+oliver
