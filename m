@@ -1,17 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3HqY6dvCzDsPN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 13:59:05 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org,
-	rlippert@google.com
-Subject: [PATCH] powerpc/powernv: Make opal_event_shutdown() callable from IRQ
- context
-Date: Fri, 29 Sep 2017 13:58:02 +1000
-Message-Id: <1506657482-25196-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3JS36YmQzDsPN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 14:27:14 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id g65so268694pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 21:27:14 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v4 0/5]  Revisit MCE handling for UE Errors
+Date: Fri, 29 Sep 2017 14:26:50 +1000
+Message-Id: <20170929042655.14570-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,81 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In opal_event_shutdown() we free all the IRQs hanging off the
-opal_event_irqchip. However it's not safe to do so if we're called
-from IRQ context, because free_irq() wants to synchronise versus IRQ
-context. This can lead to warnings and a stuck system.
+This patch series is designed to hook up memory_failure on
+UE errors, this is specially helpful for user_mode UE errors.
 
-For example from sysrq-b:
+The first two patches cleanup bits, remove dead code.
+I could not find any users of get_mce_fault_addr().
+The second one improves printing of physical address
 
-  Trying to free IRQ 17 from IRQ context!
-  ------------[ cut here ]------------
-  WARNING: CPU: 0 PID: 0 at kernel/irq/manage.c:1461 __free_irq+0x398/0x8d0
-  ...
-  NIP __free_irq+0x398/0x8d0
-  LR __free_irq+0x394/0x8d0
-  Call Trace:
-    __free_irq+0x394/0x8d0 (unreliable)
-    free_irq+0xa4/0x140
-    opal_event_shutdown+0x128/0x180
-    opal_shutdown+0x1c/0xb0
-    pnv_shutdown+0x20/0x40
-    machine_restart+0x38/0x90
-    emergency_restart+0x28/0x40
-    sysrq_handle_reboot+0x24/0x40
-    __handle_sysrq+0x198/0x590
-    hvc_poll+0x48c/0x8c0
-    hvc_handle_interrupt+0x1c/0x50
-    __handle_irq_event_percpu+0xe8/0x6e0
-    handle_irq_event_percpu+0x34/0xe0
-    handle_irq_event+0xc4/0x210
-    handle_level_irq+0x250/0x770
-    generic_handle_irq+0x5c/0xa0
-    opal_handle_events+0x11c/0x240
-    opal_interrupt+0x38/0x50
-    __handle_irq_event_percpu+0xe8/0x6e0
-    handle_irq_event_percpu+0x34/0xe0
-    handle_irq_event+0xc4/0x210
-    handle_fasteoi_irq+0x174/0xa10
-    generic_handle_irq+0x5c/0xa0
-    __do_irq+0xbc/0x4e0
-    call_do_irq+0x14/0x24
-    do_IRQ+0x18c/0x540
-    hardware_interrupt_common+0x158/0x180
+The third patch walks kernel/user mode page tables in
+real mode to extract the effective address of the instruction
+that caused the UE error and the effective address it was
+trying to access (for load/store). The fourth patch hooks
+up the pfn for instruction UE errors (ierror).
 
-We can avoid that by using disable_irq_nosync() rather than
-free_irq(). Although it doesn't fully free the IRQ, it should be
-sufficient when we're shutting down, particularly in an emergency.
+The fifth patch hooks up memory_failure to the MCE patch.
 
-Add an in_interrupt() check and use free_irq() when we're shutting
-down normally. It's probably OK to use disable_irq_nosync() in that
-case too, but for now it's safer to leave that behaviour as-is.
+TODO:
+Log the address in NVRAM, so that we can recover from
+bad pages at boot and keep the blacklist persistent.
 
-Fixes: 9f0fd0499d30 ("powerpc/powernv: Add a virtual irqchip for opal events")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/opal-irqchip.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Changelog v4:
+	- Add a #define for MAX_MCE_DEPTH instead of hard
+	coding the value
+	- Refactor addr_to_pfn to deduce the right parameters
+Changelog v3:
+	- Check for recursive MCE invocations (suggested
+	by Nick)
+Changelog v2:
+	- Remove pr_warn from real mode to a more delayed
+	context, where its OK to warn.
+	- Add a trivial patch to align prints of physical
+	and effective address
+Changelog v1:
+	- Address review comments from Nick and Mahesh
+	(initialization of pfn and more comments on failure
+	when addr_to_pfn() or anaylse_instr() fail)
+	- Hookup ierrors to the framework as well
+	(comments from Mahesh)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
-index ecdcba9d1220..9d1b8c0aaf93 100644
---- a/arch/powerpc/platforms/powernv/opal-irqchip.c
-+++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
-@@ -174,8 +174,14 @@ void opal_event_shutdown(void)
- 
- 	/* First free interrupts, which will also mask them */
- 	for (i = 0; i < opal_irq_count; i++) {
--		if (opal_irqs[i])
-+		if (!opal_irqs[i])
-+			continue;
-+
-+		if (in_interrupt())
-+			disable_irq_nosync(opal_irqs[i]);
-+		else
- 			free_irq(opal_irqs[i], NULL);
-+
- 		opal_irqs[i] = 0;
- 	}
- }
+Balbir Singh (5):
+  powerpc/mce.c: Remove unused function get_mce_fault_addr()
+  powerpc/mce: align the print of physical address better
+  powerpc/mce: Hookup derror (load/store) UE errors
+  powerpc/mce: Hookup ierror (instruction) UE errors
+  powerpc/mce: hookup memory_failure for UE errors
+
+ arch/powerpc/include/asm/exception-64s.h |   5 ++
+ arch/powerpc/include/asm/mce.h           |   4 +-
+ arch/powerpc/kernel/exceptions-64s.S     |   2 +-
+ arch/powerpc/kernel/mce.c                | 117 +++++++++++++++++++------------
+ arch/powerpc/kernel/mce_power.c          | 109 +++++++++++++++++++++++++---
+ 5 files changed, 181 insertions(+), 56 deletions(-)
+
 -- 
-2.7.4
+2.9.5
