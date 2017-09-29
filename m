@@ -1,20 +1,19 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3JS4608FzDsQ0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 14:27:16 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id h4so273674pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 21:27:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3JS71vC7zDsPN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 14:27:19 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id u136so287949pgc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 21:27:19 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
 	Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v4 1/5] powerpc/mce.c: Remove unused function
- get_mce_fault_addr()
-Date: Fri, 29 Sep 2017 14:26:51 +1000
-Message-Id: <20170929042655.14570-2-bsingharora@gmail.com>
+Subject: [PATCH v4 2/5] powerpc/mce: align the print of physical address better
+Date: Fri, 29 Sep 2017 14:26:52 +1000
+Message-Id: <20170929042655.14570-3-bsingharora@gmail.com>
 In-Reply-To: <20170929042655.14570-1-bsingharora@gmail.com>
 References: <20170929042655.14570-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,77 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are no users of get_mce_fault_addr()
-
-Fixes: b63a0ff ("powerpc/powernv: Machine check exception handling.")
+Use the same alignment as Effective address and rename
+phyiscal address to Page Frame Number
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/mce.h |  2 --
- arch/powerpc/kernel/mce.c      | 39 ---------------------------------------
- 2 files changed, 41 deletions(-)
+ arch/powerpc/kernel/mce.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index 190d69a..75292c7 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -210,6 +210,4 @@ extern void release_mce_event(void);
- extern void machine_check_queue_event(void);
- extern void machine_check_print_event_info(struct machine_check_event *evt,
- 					   bool user_mode);
--extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
--
- #endif /* __ASM_PPC64_MCE_H__ */
 diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index 9b2ea7e..e254399 100644
+index e254399..fef1408 100644
 --- a/arch/powerpc/kernel/mce.c
 +++ b/arch/powerpc/kernel/mce.c
-@@ -411,45 +411,6 @@ void machine_check_print_event_info(struct machine_check_event *evt,
- }
- EXPORT_SYMBOL_GPL(machine_check_print_event_info);
- 
--uint64_t get_mce_fault_addr(struct machine_check_event *evt)
--{
--	switch (evt->error_type) {
--	case MCE_ERROR_TYPE_UE:
--		if (evt->u.ue_error.effective_address_provided)
--			return evt->u.ue_error.effective_address;
--		break;
--	case MCE_ERROR_TYPE_SLB:
--		if (evt->u.slb_error.effective_address_provided)
--			return evt->u.slb_error.effective_address;
--		break;
--	case MCE_ERROR_TYPE_ERAT:
--		if (evt->u.erat_error.effective_address_provided)
--			return evt->u.erat_error.effective_address;
--		break;
--	case MCE_ERROR_TYPE_TLB:
--		if (evt->u.tlb_error.effective_address_provided)
--			return evt->u.tlb_error.effective_address;
--		break;
--	case MCE_ERROR_TYPE_USER:
--		if (evt->u.user_error.effective_address_provided)
--			return evt->u.user_error.effective_address;
--		break;
--	case MCE_ERROR_TYPE_RA:
--		if (evt->u.ra_error.effective_address_provided)
--			return evt->u.ra_error.effective_address;
--		break;
--	case MCE_ERROR_TYPE_LINK:
--		if (evt->u.link_error.effective_address_provided)
--			return evt->u.link_error.effective_address;
--		break;
--	default:
--	case MCE_ERROR_TYPE_UNKNOWN:
--		break;
--	}
--	return 0;
--}
--EXPORT_SYMBOL(get_mce_fault_addr);
--
- /*
-  * This function is called in real mode. Strictly no printk's please.
-  *
+@@ -340,7 +340,7 @@ void machine_check_print_event_info(struct machine_check_event *evt,
+ 			printk("%s    Effective address: %016llx\n",
+ 			       level, evt->u.ue_error.effective_address);
+ 		if (evt->u.ue_error.physical_address_provided)
+-			printk("%s      Physical address: %016llx\n",
++			printk("%s    Physical address:  %016llx\n",
+ 			       level, evt->u.ue_error.physical_address);
+ 		break;
+ 	case MCE_ERROR_TYPE_SLB:
 -- 
 2.9.5
