@@ -1,31 +1,22 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3CGn5ZQtzDsPK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 10:33:53 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v8T0XpnL008535
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 20:33:51 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2d97pbb1pj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 20:33:50 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 28 Sep 2017 20:33:43 -0400
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
- nfont@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- stable@vger.kernel.org
-Subject: [PATCH] powerpc/vio: dispose of virq mapping on vdevice unregister
-Date: Thu, 28 Sep 2017 20:19:20 -0400
-Message-Id: <1506644360-8688-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3CWP6N7zzDsPK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 10:44:49 +1000 (AEST)
+Date: Fri, 29 Sep 2017 10:39:25 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH kernel v3] vfio/spapr: Add cond_resched() for huge updates
+Message-ID: <20170929003925.GC7712@umbus.fritz.box>
+References: <20170928091612.20717-1-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="5QAgd0e35j3NYeGe"
+In-Reply-To: <20170928091612.20717-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,41 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a vdevice is DLPAR removed from the system the vio subsystem doesn't
-bother unmapping the virq from the irq_domain. As a result we have a virq
-mapped to a hardware irq that is no longer valid for the irq_domain. A side
-effect is that we are left with /proc/irq/<irq#> affinity entries, and
-attempts to modify the smp_affinity of the irq will fail.
 
-In the following observed example the kernel log is spammed by
-ics_rtas_set_affinity errors after the removal of a VSCSI adapter. This is a
-result of irqbalance trying to adjust the affinity every 10 seconds.
+--5QAgd0e35j3NYeGe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-rpadlpar_io: slot U8408.E8E.10A7ACV-V5-C25 removed
-ics_rtas_set_affinity: ibm,set-xive irq=655385 returns -3
-ics_rtas_set_affinity: ibm,set-xive irq=655385 returns -3
+On Thu, Sep 28, 2017 at 07:16:12PM +1000, Alexey Kardashevskiy wrote:
+> Clearing very big IOMMU tables can trigger soft lockups. This adds
+> cond_resched() to allow the scheduler to do context switching when
+> it decides to.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-This patch fixes the issue by calling irq_dispose_mapping() on the virq of the
-viodev on unregister.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Cc: stable@vger.kernel.org
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/vio.c | 2 ++
- 1 file changed, 2 insertions(+)
+> ---
+>=20
+> The testcase is POWER9 box with 264GB guest, 4 VFIO devices from
+> independent IOMMU groups, 64K IOMMU pages. This configuration produces
+> 4325376 TCE entries, each entry update incurs 4 OPAL calls to update
+> an individual PE TCE cache; this produced lockups for more than 20s.
+> Reducing table size to 4194304 (i.e. 256GB guest) or removing one
+> of 4 VFIO devices makes the problem go away.
+>=20
+> ---
+> Changes:
+> v3:
+> * cond_resched() checks for should_resched() so we just call resched()
+> and let the cpu scheduler decide whether to switch or not
+>=20
+> v2:
+> * replaced with time based solution
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index 63112c36ab2d..759a5bdd40e1 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -507,6 +507,8 @@ static int tce_iommu_clear(struct tce_container *cont=
+ainer,
+>  	enum dma_data_direction direction;
+> =20
+>  	for ( ; pages; --pages, ++entry) {
+> +		cond_resched();
+> +
+>  		direction =3D DMA_NONE;
+>  		oldhpa =3D 0;
+>  		ret =3D iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 5f8dcda..a3228d6 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1577,6 +1577,8 @@ static struct device_attribute vio_dev_attrs[] = {
- void vio_unregister_device(struct vio_dev *viodev)
- {
- 	device_unregister(&viodev->dev);
-+	if (viodev->family == VDEVICE)
-+		irq_dispose_mapping(viodev->irq);
- }
- EXPORT_SYMBOL(vio_unregister_device);
- 
--- 
-1.7.12.4
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--5QAgd0e35j3NYeGe
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlnNlj0ACgkQbDjKyiDZ
+s5LZbhAAkG9N9ajaKO8f66U9FuB/xgbYRSBivBx3+vvwDxetQ2xqFCzb2W0M8JC0
+mOwLh2fUGcLg/nNItthid1dCqUQHbpMbzb5z1U4q+hTc6o+w/I2hV1oI5pU8zsfJ
+GX9BCNq+miCP75YlLUoCZEjmhEbLGcHRGRdL2YgvxsFBCf0aDyTsMEFzxhF/ESvt
+kLbvD6aIzSTsg+2YSy9K43+x9v7KQEjHvYee4IANx6IdHhFybYy8ATlcPbwwIUKf
+JDgZWwi1Fjod5IPMkd/3C3+onXYT7vxpzuQo4pUV6MVV6VrBQiC9JFPT1Q/TUsH4
+1UlDWqa5GYKVZM4o0tMFogJYhF7COyfw1dZZcmAilPCWqiN7df2SQ9CIr67/7UtE
+s4MzHCMGV2hNwB+4UZuZ4TYDPx2bCSNszo2aF2lrvcetJLcGTERdcvrXjaX6ea03
+w98KKGY9H2riI5DNGvwn+y1EdOXThMpFwNg7wi18a1g+y0PiRm7cT6eW0gISQYJA
+D609bK1ktRUPapbmabb4S1bp598B8ShzeodbGUvengbDgnSt/frKtjtkJDVQeNnk
+On5nSZtEOXEqql7Wqw0GTUE8OTFDAbuPJ6VTtxy7LEpo6xW84LBwb5ciLkHlZGZb
+Xxh2aRZTuUWoiJPlzchzSsB7uYIgokoLUHetof7HiL290uzpHGk=
+=uuTp
+-----END PGP SIGNATURE-----
+
+--5QAgd0e35j3NYeGe--
