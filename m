@@ -1,35 +1,31 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y363f1sRQzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 06:38:54 +1000 (AEST)
-Date: Thu, 28 Sep 2017 13:38:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: Alexei Starovoitov <alexei.starovoitov@gmail.com>, Paul McKenney
- <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
- kirill@shutemov.name, Andi Kleen <ak@linux.intel.com>, Michal Hocko
- <mhocko@kernel.org>, dave@stgolabs.net, Jan Kara <jack@suse.cz>, Matthew
- Wilcox <willy@infradead.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Paul
- Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo
- Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Will Deacon
- <will.deacon@arm.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mm
- <linux-mm@kvack.org>, haren@linux.vnet.ibm.com, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH v3 00/20] Speculative page faults
-Message-Id: <20170928133850.90c5bf2aac0f1a63e29c01a3@linux-foundation.org>
-In-Reply-To: <924a79af-6d7a-316a-1eee-3aebbfd4addf@linux.vnet.ibm.com>
-References: <CAADnVQLmSbLHwj9m33kpzAidJPvq3cbdnXjaew6oTLqHWrBbZQ@mail.gmail.com>
- <20170925163443.260d6092160ec704e2b04653@linux-foundation.org>
- <924a79af-6d7a-316a-1eee-3aebbfd4addf@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3CGn5ZQtzDsPK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 10:33:53 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v8T0XpnL008535
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 20:33:51 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2d97pbb1pj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Sep 2017 20:33:50 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 28 Sep 2017 20:33:43 -0400
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+ nfont@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ stable@vger.kernel.org
+Subject: [PATCH] powerpc/vio: dispose of virq mapping on vdevice unregister
+Date: Thu, 28 Sep 2017 20:19:20 -0400
+Message-Id: <1506644360-8688-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 28 Sep 2017 14:29:02 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+When a vdevice is DLPAR removed from the system the vio subsystem doesn't
+bother unmapping the virq from the irq_domain. As a result we have a virq
+mapped to a hardware irq that is no longer valid for the irq_domain. A side
+effect is that we are left with /proc/irq/<irq#> affinity entries, and
+attempts to modify the smp_affinity of the irq will fail.
 
-> > Laurent's [0/n] provides some nice-looking performance benefits for
-> > workloads which are chosen to show performance benefits(!) but, alas,
-> > no quantitative testing results for workloads which we may suspect will
-> > be harmed by the changes(?).  Even things as simple as impact upon
-> > single-threaded pagefault-intensive workloads and its effect upon
-> > CONFIG_SMP=n .text size?
-> 
-> I forgot to mention in my previous email the impact on the .text section.
-> 
-> Here are the metrics I got :
-> 
-> .text size	UP		SMP		Delta
-> 4.13-mmotm	8444201		8964137		6.16%
-> '' +spf		8452041		8971929		6.15%
-> 	Delta	0.09%		0.09%	
-> 
-> No major impact as you could see.
+In the following observed example the kernel log is spammed by
+ics_rtas_set_affinity errors after the removal of a VSCSI adapter. This is a
+result of irqbalance trying to adjust the affinity every 10 seconds.
 
-8k text increase seems rather a lot actually.  That's a lot more
-userspace cacheclines that get evicted during a fault...
+rpadlpar_io: slot U8408.E8E.10A7ACV-V5-C25 removed
+ics_rtas_set_affinity: ibm,set-xive irq=655385 returns -3
+ics_rtas_set_affinity: ibm,set-xive irq=655385 returns -3
 
-Is the feature actually beneficial on uniprocessor?
+This patch fixes the issue by calling irq_dispose_mapping() on the virq of the
+viodev on unregister.
+
+Cc: stable@vger.kernel.org
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/vio.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 5f8dcda..a3228d6 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1577,6 +1577,8 @@ static struct device_attribute vio_dev_attrs[] = {
+ void vio_unregister_device(struct vio_dev *viodev)
+ {
+ 	device_unregister(&viodev->dev);
++	if (viodev->family == VDEVICE)
++		irq_dispose_mapping(viodev->irq);
+ }
+ EXPORT_SYMBOL(vio_unregister_device);
+ 
+-- 
+1.7.12.4
