@@ -1,21 +1,28 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sergey.senozhatsky@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3mBt3rqbzDqG2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Sep 2017 08:17:26 +1000 (AEST)
-Date: Fri, 29 Sep 2017 16:17:22 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH kernel v3] vfio/spapr: Add cond_resched() for huge updates
-Message-ID: <20170929161722.36ff1771@w520.home>
-In-Reply-To: <20170928091612.20717-1-aik@ozlabs.ru>
-References: <20170928091612.20717-1-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3tKn4cpfzDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Sep 2017 12:53:49 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id e69so844256pfg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 19:53:49 -0700 (PDT)
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Petr Mladek <pmladek@suse.com>,
+	Steven Rostedt <rostedt@goodmis.org>
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Andrew Morton <akpm@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
+ Alexei Starovoitov <ast@kernel.org>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: [PATCHv3 0/7] printk/ia64/ppc64/parisc64: let's deprecate %pF/%pf
+ printk specifiers
+Date: Sat, 30 Sep 2017 11:53:12 +0900
+Message-Id: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +32,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 28 Sep 2017 19:16:12 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+	Hello
 
-> Clearing very big IOMMU tables can trigger soft lockups. This adds
-> cond_resched() to allow the scheduler to do context switching when
-> it decides to.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> 
-> The testcase is POWER9 box with 264GB guest, 4 VFIO devices from
-> independent IOMMU groups, 64K IOMMU pages. This configuration produces
-> 4325376 TCE entries, each entry update incurs 4 OPAL calls to update
-> an individual PE TCE cache; this produced lockups for more than 20s.
-> Reducing table size to 4194304 (i.e. 256GB guest) or removing one
-> of 4 VFIO devices makes the problem go away.
-> 
-> ---
-> Changes:
-> v3:
-> * cond_resched() checks for should_resched() so we just call resched()
-> and let the cpu scheduler decide whether to switch or not
-> 
-> v2:
-> * replaced with time based solution
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 63112c36ab2d..759a5bdd40e1 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -507,6 +507,8 @@ static int tce_iommu_clear(struct tce_container *container,
->  	enum dma_data_direction direction;
->  
->  	for ( ; pages; --pages, ++entry) {
-> +		cond_resched();
-> +
->  		direction = DMA_NONE;
->  		oldhpa = 0;
->  		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
 
-This looks fine to me, I've applied it to my local next branch for
-v4.15.  I'll push that branch next week, once I can rebase to
-4.14-rc3.  Thanks,
+	Petr, could you please pick up the series?
 
-Alex
+==========================================================================
+
+	On some arches C function pointers are indirect and point to
+a function descriptor, which contains the actual pointer to the code.
+This mostly doesn't matter, except for cases when people want to print
+out function pointers in symbolic format, because the usual '%pS/%ps'
+does not work on those arches as expected. That's the reason why we
+have '%pF/%pf', but since it's here because of a subtle ABI detail
+specific to some arches (ppc64/ia64/parisc64) it's easy to misuse
+'%pF/%pf' and '%pS/%ps' (see [1], for example).
+
+	This patch set attempts to move ia64/ppc64/parisc64 C function
+pointer ABI details out of printk() to arch code. Function dereference
+code now checks if a pointer belongs to a .opd ELF section and dereferences
+that pointer only if it does. The kernel and modules have their own .opd
+sections that's why I use two different ARCH functions: for kernel and
+for module pointer dereference.
+
+	I planned to remove dereference_function_descriptor() entirely,
+but then I discovered a bunch other uses cases (kgdbts, init/main.c,
+extable, etc.), so I decided to keep dereference_function_descriptor()
+around because the main point of this patch set is to deprecate %pF/%pf.
+But at the same time, I think I can go further and handle both kernel
+and module descriptor dereference in dereference_function_descriptor().
+We need a module pointer for module .opd check, so that will come at an
+extra cost of module lookup (may be there will some other issues along
+the way, haven't checked it).
+
+Right now we've got:
+
+- dereference_function_descriptor(addr)
+        a generic (old) function. it simply attempts to dereference
+        whatever pointer we give it.
+
+- dereference_kernel_function_descriptor(addr)
+        dereferences a kernel pointer if it's within the kernel's .opd
+        section.
+
+- dereference_module_function_descriptor(module, addr)
+        dereference a module pointer if it's within the module's .opd
+        section.
+
+v3:
+-- picked up ACKs and Tested-by
+-- tweaked checkpatch warning (Joe)
+-- updated Documentation
+
+v2:
+-- convert dereference_function_descriptor() to unsigned long
+-- fix kernel descriptor range checks (Helge)
+-- fix parisc module descriptor range check (Helge)
+-- fix ppc64 module range check
+-- add checkpatch patch
+
+Sergey Senozhatsky (7):
+  switch dereference_function_descriptor() to `unsigned long'
+  sections: split dereference_function_descriptor()
+  ia64: Add .opd based function descriptor dereference
+  powerpc64: Add .opd based function descriptor dereference
+  parisc64: Add .opd based function descriptor dereference
+  symbol lookup: use new kernel and module dereference functions
+  checkpatch: add pF/pf deprecation warning
+
+ Documentation/printk-formats.txt          | 20 ++++++++++----------
+ arch/ia64/include/asm/sections.h          | 16 ++++++++++++----
+ arch/ia64/kernel/module.c                 | 13 +++++++++++++
+ arch/ia64/kernel/vmlinux.lds.S            |  2 ++
+ arch/parisc/boot/compressed/vmlinux.lds.S |  2 ++
+ arch/parisc/include/asm/sections.h        |  4 +++-
+ arch/parisc/kernel/module.c               | 17 +++++++++++++++++
+ arch/parisc/kernel/process.c              | 15 ++++++++++++---
+ arch/parisc/kernel/vmlinux.lds.S          |  2 ++
+ arch/parisc/mm/init.c                     |  4 ++--
+ arch/powerpc/include/asm/module.h         |  3 +++
+ arch/powerpc/include/asm/sections.h       | 17 ++++++++++++++---
+ arch/powerpc/kernel/module_64.c           | 16 ++++++++++++++++
+ arch/powerpc/kernel/vmlinux.lds.S         |  2 ++
+ drivers/misc/kgdbts.c                     |  2 +-
+ include/asm-generic/sections.h            |  8 ++++++--
+ include/linux/moduleloader.h              |  4 ++++
+ init/main.c                               |  2 +-
+ kernel/extable.c                          |  2 +-
+ kernel/kallsyms.c                         |  1 +
+ kernel/module.c                           |  9 ++++++++-
+ lib/vsprintf.c                            |  5 +----
+ scripts/checkpatch.pl                     | 11 +++++++++--
+ 23 files changed, 142 insertions(+), 35 deletions(-)
+
+-- 
+2.14.2
