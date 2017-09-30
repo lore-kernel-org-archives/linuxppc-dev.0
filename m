@@ -1,12 +1,12 @@
 Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y3tLK0q7NzDqh7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Sep 2017 12:54:17 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id a7so842999pfj.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 19:54:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y3tLT6CqJzDqk0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Sep 2017 12:54:25 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id 125so879938pgj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Sep 2017 19:54:25 -0700 (PDT)
 From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 To: Petr Mladek <pmladek@suse.com>,
 	Steven Rostedt <rostedt@goodmis.org>
@@ -19,9 +19,10 @@ Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: [PATCHv3 3/7] ia64: Add .opd based function descriptor dereference
-Date: Sat, 30 Sep 2017 11:53:15 +0900
-Message-Id: <20170930025319.987-4-sergey.senozhatsky@gmail.com>
+Subject: [PATCHv3 4/7] powerpc64: Add .opd based function descriptor
+ dereference
+Date: Sat, 30 Sep 2017 11:53:16 +0900
+Message-Id: <20170930025319.987-5-sergey.senozhatsky@gmail.com>
 In-Reply-To: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
 References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,7 +35,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 We are moving towards separate kernel and module function descriptor
-dereference callbacks. This patch enables it for IA64.
+dereference callbacks. This patch enables it for powerpc64.
 
 For pointers that belong to the kernel
 -  Added __start_opd and __end_opd pointers, to track the kernel
@@ -55,19 +56,35 @@ Tested-by: Santosh Sivaraj <santosh@fossix.org> # powerpc64
 Acked-by: Michael Ellerman <mpe@ellerman.id.au> # powerpc64
 Tested-by: Tony Luck <tony.luck@intel.com> # ia64
 ---
- arch/ia64/include/asm/sections.h | 10 +++++++++-
- arch/ia64/kernel/module.c        | 13 +++++++++++++
- arch/ia64/kernel/vmlinux.lds.S   |  2 ++
- 3 files changed, 24 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/module.h   |  3 +++
+ arch/powerpc/include/asm/sections.h | 11 +++++++++++
+ arch/powerpc/kernel/module_64.c     | 16 ++++++++++++++++
+ arch/powerpc/kernel/vmlinux.lds.S   |  2 ++
+ 4 files changed, 32 insertions(+)
 
-diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index de6bfa1ef8fb..3ba7ce9d8bc8 100644
---- a/arch/ia64/include/asm/sections.h
-+++ b/arch/ia64/include/asm/sections.h
-@@ -37,6 +37,14 @@ static inline unsigned long dereference_function_descriptor(unsigned long ptr)
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index 6c0132c7212f..7e28442827f1 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -45,6 +45,9 @@ struct mod_arch_specific {
+ 	unsigned long tramp;
+ #endif
+ 
++	/* For module function descriptor dereference */
++	unsigned long start_opd;
++	unsigned long end_opd;
+ #else /* powerpc64 */
+ 	/* Indices of PLT sections within module. */
+ 	unsigned int core_plt_section;
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index 67379b8945e8..6b4ee0d1645f 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -75,6 +75,17 @@ static inline unsigned long dereference_function_descriptor(unsigned long ptr)
+ 		ptr = (unsigned long)p;
  	return ptr;
  }
- 
++
 +#undef dereference_kernel_function_descriptor
 +static inline unsigned long
 +dereference_kernel_function_descriptor(unsigned long addr)
@@ -75,45 +92,52 @@ index de6bfa1ef8fb..3ba7ce9d8bc8 100644
 +	if (addr < (unsigned long)__start_opd ||
 +			addr >= (unsigned long)__end_opd)
 +		return addr;
++
 +	return dereference_function_descriptor(addr);
 +}
+ #endif /* PPC64_ELF_ABI_v1 */
  
- #endif /* _ASM_IA64_SECTIONS_H */
--
-diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
-index d1d945c6bd05..0741ae6fa957 100644
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -35,6 +35,7 @@
+ #endif
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 0b0f89685b67..94caec045a90 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -344,6 +344,11 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
+ 			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
+ 					  sechdrs[i].sh_size);
++		else if (!strcmp(secstrings + sechdrs[i].sh_name, ".opd")) {
++			me->arch.start_opd = sechdrs[i].sh_addr;
++			me->arch.end_opd = sechdrs[i].sh_addr +
++					   sechdrs[i].sh_size;
++		}
  
- #include <asm/patch.h>
- #include <asm/unaligned.h>
-+#include <asm/sections.h>
- 
- #define ARCH_MODULE_DEBUG 0
- 
-@@ -917,3 +918,15 @@ module_arch_cleanup (struct module *mod)
- 	if (mod->arch.core_unw_table)
- 		unw_remove_unwind_table(mod->arch.core_unw_table);
+ 		/* We don't handle .init for the moment: rename to _init */
+ 		while ((p = strstr(secstrings + sechdrs[i].sh_name, ".init")))
+@@ -712,6 +717,17 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 	return 0;
  }
-+
-+unsigned long
-+dereference_module_function_descriptor(struct module *mod, unsigned long addr)
+ 
++#ifdef PPC64_ELF_ABI_v1
++unsigned long dereference_module_function_descriptor(struct module *mod,
++						     unsigned long addr)
 +{
-+	Elf64_Shdr *opd = mod->arch.opd;
-+
-+	if (addr < opd->sh_addr ||
-+			addr >= (opd->sh_addr + opd->sh_size))
++	if (addr < mod->arch.start_opd || addr >= mod->arch.end_opd)
 +		return addr;
 +
 +	return dereference_function_descriptor(addr);
 +}
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 798026dde52e..f872ba5ff82a 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -107,7 +107,9 @@ SECTIONS {
- 	RODATA
++#endif /* PPC64_ELF_ABI_v1 */
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
+ #ifdef CC_USING_MPROFILE_KERNEL
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 882628fa6987..70e10251e083 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -277,7 +277,9 @@ SECTIONS
+ 	}
  
  	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
 +		__start_opd = .;
@@ -121,6 +145,6 @@ index 798026dde52e..f872ba5ff82a 100644
 +		__end_opd = .;
  	}
  
- 	/*
+ 	. = ALIGN(256);
 -- 
 2.14.2
