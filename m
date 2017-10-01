@@ -1,22 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <chunkeey@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5mFt4xmCzDqlT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 15:26:58 +1100 (AEDT)
-Date: Tue, 3 Oct 2017 14:36:15 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
-Message-ID: <20171003033615.GA3260@umbus.fritz.box>
-References: <20170923082656.27219-1-clg@kaod.org>
- <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y4npH0LT8zDqR8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Oct 2017 01:33:10 +1100 (AEDT)
+Received: by mail-wm0-x244.google.com with SMTP id q124so6405946wmb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Oct 2017 07:33:10 -0700 (PDT)
+From: Christian Lamparter <chunkeey@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v3] powerpc: fix compile error on 64K pages on 40x, 44x
+Date: Sun,  1 Oct 2017 16:33:03 +0200
+Message-Id: <20171001143303.15671-1-chunkeey@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
-In-Reply-To: <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,60 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The mmu context on the 40x, 44x does not define pte_frag
+entry. This causes gcc abort the compilation due to:
 
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+setup-common.c: In function ‘setup_arch’:
+setup-common.c:908: error: ‘mm_context_t’ has no ‘pte_frag’
 
-On Mon, Oct 02, 2017 at 06:27:20PM +0200, C=E9dric Le Goater wrote:
-> On 09/23/2017 10:26 AM, C=E9dric Le Goater wrote:
-> > Hi,
-> >=20
-> > Here are a couple of small fixes to support CPU hot unplug. There are
-> > still some issues to be investigated as, in some occasions, after a
-> > couple of plug and unplug, the cpu which was removed receives a 'lost'
-> > interrupt. This showed to be the decrementer under QEMU.
->=20
-> So this seems to be a QEMU issue only which can be solved by=20
-> removing the DEE bit from the LPCR on P9 processor when the CPU=20
-> is stopped in rtas. PECE3 bit on P8 processors.=20
->=20
-> I think these patches are valuable fixes for 4.14. The first=20
-> is trivial and the second touches the common xive part but it
-> is only called on the pseries platform. =20
->=20
-> Could you please take a look ?
+This patch fixes the issue by removing the pte_frag
+initialization in setup-common.c.
 
-Sorry, I think I've missed something here.
+This is possible, because the compiler will do the
+initialization, since the mm_context is a sub struct of
+init_mm. init_mm is declared in mm_types.h as external linkage.
+according to C99 6.2.4.3:
+"An object whose identifier is declared with external linkage
+[...] has static storage duration."
 
-Is there a qemu bug involved in this?  Has there been a patch sent
-that I didn't spot?
+C99 defines in 6.7.8.10 that: "
+If an object that has static storage duration is not
+initialized explicitly, then:
+- if it has pointer type, it is initialized to a null pointer
+[...]
+"
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+---
+ arch/powerpc/kernel/setup-common.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
---DocE+STaALJfprDB
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlnTBa0ACgkQbDjKyiDZ
-s5JecA//dNmURblPxKiSAJy90XqMSQHi9zE02LgrhlmdyAGNh4WNvb9aIvpdSj40
-pajSVuge7KRdbk2mD0XGbnlvmnAYcUJbERKN7yAasz7S0wyPmqExeLU3bLjYfI6q
-2h7fFJsNLnIpCcU5ZO7xkDEKEuoTWwIiLSyW5yBxSZgVg8PhsqLI2kPvlEjeOtkt
-WLQM3NGXGRMEI1Jh6a9ksR77YtuQOy8Ml0EbtRbblyajisWvpR+fuhPgiBTtF7oE
-LKoIDe0f1VOPQTZFupPQ0evoJ1ElnLkFJRaS10Iimjx6ZPb2M+esZk2bb73+wy4s
-MebXsf/fEAyjho2LhMIufrkcEK25TzfcXVearEDPRUg8mW03SnU96aRVF/bvL4nf
-1cTbxxwR1DlTDbd7cqZgOOkuKZ732ir4uYuTNUZSyxHsqqAe94VIv0mb4VudCd12
-nvuXuMr/1GOENFOpwLkNvSO0X5818v/gXBuPazOkgYEEnX4bbEmFfw3R9zfKMut2
-kJJarqw6WMo1FAEtFFoFmZ3upGTTlDq+vDdRRcNmWoO65L8rQtmy3R3xA/OwwLP/
-u1T3tKFh075Ki/Mtnn9NxNEKwyaUjoTqQGdAuTcSvrjoeasYRpnGnI2nvQBNGX2j
-xBxqIHWjrQyB8hSHDRFZ8DTuoDn++5HmPe2fXPVmgNGI+Aw6bjo=
-=qB6W
------END PGP SIGNATURE-----
-
---DocE+STaALJfprDB--
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 0ac741fae90e..2e3bc16d02b2 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -904,9 +904,6 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ #endif
+ 
+-#ifdef CONFIG_PPC_64K_PAGES
+-	init_mm.context.pte_frag = NULL;
+-#endif
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ 	mm_iommu_init(&init_mm);
+ #endif
+-- 
+2.14.2
