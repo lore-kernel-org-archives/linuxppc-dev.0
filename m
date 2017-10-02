@@ -1,29 +1,32 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
- [IPv6:2607:f8b0:4001:c06::241])
+Return-Path: <keescook@google.com>
+Received: from mail-io0-x22b.google.com (mail-io0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c06::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5Wmj20j0zDqhf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 06:04:20 +1100 (AEDT)
-Received: by mail-io0-x241.google.com with SMTP id n69so3602400ioi.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Oct 2017 12:04:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5XL53vTzzDqhf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 06:29:48 +1100 (AEDT)
+Received: by mail-io0-x22b.google.com with SMTP id l15so5683785iol.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Oct 2017 12:29:48 -0700 (PDT)
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <alpine.DEB.2.20.1710021957480.2114@nanos>
-References: <alpine.DEB.2.20.1710011217510.3874@nanos>
- <CA+55aFxQsmSb=zohGZOZK7eR4n5xOHNArmCa9j1b7+wJ+khQrg@mail.gmail.com>
- <alpine.DEB.2.20.1710021957480.2114@nanos>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 2 Oct 2017 12:04:17 -0700
-Message-ID: <CA+55aFyVX_aPac8dSJPED-XLTtfQOYe_eCV7HdYKABgGazWHAg@mail.gmail.com>
-Subject: Re: [RFC GIT Pull] core watchdog sanitizing
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Don Zickus <dzickus@redhat.com>,
+Sender: keescook@google.com
+In-Reply-To: <20170925194130.GV8421@gate.crashing.org>
+References: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
+ <CAGXu5jJ54+bCcXaPK1ExsxtTDPHNn1+1gywb3TDbe-SEtt1zuQ@mail.gmail.com>
+ <20170925073721.GM8421@gate.crashing.org>
+ <063D6719AE5E284EB5DD2968C1650D6DD007F58B@AcuExch.aculab.com>
+ <20170925194130.GV8421@gate.crashing.org>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 2 Oct 2017 12:29:45 -0700
+Message-ID: <CAGXu5j+bj1NHmrrEmcwPavKubavLh1b01AyyJEFRvycg9FkLpg@mail.gmail.com>
+Subject: Re: [PATCH] mm: fix RODATA_TEST failure "rodata_test: test data was
+ not read only"
+To: Segher Boessenkool <segher@kernel.crashing.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: David Laight <David.Laight@aculab.com>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>, Jinbum Park <jinb.park7@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,35 +37,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 2, 2017 at 11:46 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+On Mon, Sep 25, 2017 at 12:41 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+> On Mon, Sep 25, 2017 at 04:01:55PM +0000, David Laight wrote:
+>> From: Segher Boessenkool
+>> > The compiler puts this item in .sdata, for 32-bit.  There is no .srodata,
+>> > so if it wants to use a small data section, it must use .sdata .
+>> >
+>> > Non-external, non-referenced symbols are not put in .sdata, that is the
+>> > difference you see with the "static".
+>> >
+>> > I don't think there is a bug here.  If you think there is, please open
+>> > a GCC bug.
+>>
+>> The .sxxx sections are for 'small' data that can be accessed (typically)
+>> using small offsets from a global register.
+>> This means that all sections must be adjacent in the image.
+>> So you can't really have readonly small data.
+>>
+>> My guess is that the linker script is putting .srodata in with .sdata.
 >
-> I agree that adding that 'run' argument was certainly not a piece of
-> art. Though I disagree with the sentiment that non-functional garbage is
-> preferrable over functionally correct code which merily contains a bad
-> implementation choice.
+> .srodata does not *exist* (in the ABI).
 
-I agree that it's somewhat arbitrary, but I also find it really hard
-to vet code where my initial reaction is just "this is too ugly".
+So, I still think this is a bug. The variable is marked const: this is
+not a _suggestion_. :) If the compiler produces output where the
+variable is writable, that's a bug.
 
-So it may be superficial, but ..
+I can't tell if this bug is related:
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=9571
 
-> Enough vented. Find below the cure for that major offense.
+-Kees
 
-Looks much better to me. Thanks.
-
-Side note: would it perhaps make sense to have that
-cpus_read_lock/unlock() sequence around the whole reconfiguration
-section?
-
-Because while looking at that sequence, it looks a bit odd to me that
-cpu's can come and go in the middle of the nmi watchdog
-reconfiguration sequence.
-
-In particular, what happens if a new CPU is brought up just as the NMI
-matchdog is being reconfigured? The NMI's have been stopped for the
-old CPU's, what happens for the new one that came up in between that
-watchdog_nmi_stop/start?
-
-This may be all obviously safe, I'm just asking for clarification.
-
-               Linus
+-- 
+Kees Cook
+Pixel Security
