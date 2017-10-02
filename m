@@ -1,28 +1,30 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5XQR5gc3zDqhf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 06:33:35 +1100 (AEDT)
-Date: Mon, 2 Oct 2017 21:32:57 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Don Zickus <dzickus@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC GIT Pull] core watchdog sanitizing
-In-Reply-To: <CA+55aFyVX_aPac8dSJPED-XLTtfQOYe_eCV7HdYKABgGazWHAg@mail.gmail.com>
-Message-ID: <alpine.DEB.2.20.1710022105570.2114@nanos>
-References: <alpine.DEB.2.20.1710011217510.3874@nanos>
- <CA+55aFxQsmSb=zohGZOZK7eR4n5xOHNArmCa9j1b7+wJ+khQrg@mail.gmail.com>
- <alpine.DEB.2.20.1710021957480.2114@nanos>
- <CA+55aFyVX_aPac8dSJPED-XLTtfQOYe_eCV7HdYKABgGazWHAg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5YC61MxnzDqhf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 07:08:49 +1100 (AEDT)
+Date: Mon, 2 Oct 2017 15:08:05 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ David Laight <David.Laight@aculab.com>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>, Jinbum Park <jinb.park7@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] mm: fix RODATA_TEST failure "rodata_test: test data was
+ not read only"
+Message-ID: <20171002200805.GF8421@gate.crashing.org>
+References: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
+ <CAGXu5jJ54+bCcXaPK1ExsxtTDPHNn1+1gywb3TDbe-SEtt1zuQ@mail.gmail.com>
+ <20170925073721.GM8421@gate.crashing.org>
+ <063D6719AE5E284EB5DD2968C1650D6DD007F58B@AcuExch.aculab.com>
+ <20170925194130.GV8421@gate.crashing.org>
+ <CAGXu5j+bj1NHmrrEmcwPavKubavLh1b01AyyJEFRvycg9FkLpg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAGXu5j+bj1NHmrrEmcwPavKubavLh1b01AyyJEFRvycg9FkLpg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,106 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2 Oct 2017, Linus Torvalds wrote:
-> Side note: would it perhaps make sense to have that
-> cpus_read_lock/unlock() sequence around the whole reconfiguration
-> section?
+On Mon, Oct 02, 2017 at 12:29:45PM -0700, Kees Cook wrote:
+> On Mon, Sep 25, 2017 at 12:41 PM, Segher Boessenkool
+> <segher@kernel.crashing.org> wrote:
+> > On Mon, Sep 25, 2017 at 04:01:55PM +0000, David Laight wrote:
+> >> From: Segher Boessenkool
+> >> > The compiler puts this item in .sdata, for 32-bit.  There is no .srodata,
+> >> > so if it wants to use a small data section, it must use .sdata .
+> >> >
+> >> > Non-external, non-referenced symbols are not put in .sdata, that is the
+> >> > difference you see with the "static".
+> >> >
+> >> > I don't think there is a bug here.  If you think there is, please open
+> >> > a GCC bug.
+> >>
+> >> The .sxxx sections are for 'small' data that can be accessed (typically)
+> >> using small offsets from a global register.
+> >> This means that all sections must be adjacent in the image.
+> >> So you can't really have readonly small data.
+> >>
+> >> My guess is that the linker script is putting .srodata in with .sdata.
+> >
+> > .srodata does not *exist* (in the ABI).
 > 
-> Because while looking at that sequence, it looks a bit odd to me that
-> cpu's can come and go in the middle of the nmi watchdog
-> reconfiguration sequence.
-> 
-> In particular, what happens if a new CPU is brought up just as the NMI
-> matchdog is being reconfigured? The NMI's have been stopped for the
-> old CPU's, what happens for the new one that came up in between that
-> watchdog_nmi_stop/start?
-> 
-> This may be all obviously safe, I'm just asking for clarification.
+> So, I still think this is a bug. The variable is marked const: this is
+> not a _suggestion_. :) If the compiler produces output where the
+> variable is writable, that's a bug.
 
-It's safe because the newly upcoming CPU will see an empty enabled mask in
-the powerpc implementation. The perf based implementation has a similar
-protection.
+C11 6.7.3/6: "If an attempt is made to modify an object defined with a
+const-qualified type through use of an lvalue with non-const-qualified
+type, the behavior is undefined."
 
-Though yes, it would be more obvious to expand the cpus locked
-section. That requires a bit of shuffling. Untested patch below.
+And that is all that "const" means.
+
+The compiler is free to put this var in *no* data section, or to copy
+it to the stack before using it, or anything else it thinks is a good
+idea.
+
+If you think it would be a good idea for the compiler to change its
+behaviour here, please file a PR (or send a patch).  Please bring
+arguments why we would want to change this.
+
+> I can't tell if this bug is related:
+> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=9571
+
+I don't think so: the only remaining bug there is that a copy of the
+constant is put in .rodata.cst8 (although there is a copy in .sdata2
+already).
 
 Thanks,
 
-	tglx
 
-8<------------------
-
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -359,21 +359,17 @@ void watchdog_nmi_stop(void)
- {
- 	int cpu;
- 
--	cpus_read_lock();
- 	for_each_cpu(cpu, &wd_cpus_enabled)
- 		stop_wd_on_cpu(cpu);
--	cpus_read_unlock();
- }
- 
- void watchdog_nmi_start(void)
- {
- 	int cpu;
- 
--	cpus_read_lock();
- 	watchdog_calc_timeouts();
- 	for_each_cpu_and(cpu, cpu_online_mask, &watchdog_cpumask)
- 		start_wd_on_cpu(cpu);
--	cpus_read_unlock();
- }
- 
- /*
---- a/kernel/smpboot.c
-+++ b/kernel/smpboot.c
-@@ -351,7 +351,7 @@ void smpboot_update_cpumask_percpu_threa
- 	static struct cpumask tmp;
- 	unsigned int cpu;
- 
--	get_online_cpus();
-+	lockdep_assert_cpus_held();
- 	mutex_lock(&smpboot_threads_lock);
- 
- 	/* Park threads that were exclusively enabled on the old mask. */
-@@ -367,7 +367,6 @@ void smpboot_update_cpumask_percpu_threa
- 	cpumask_copy(old, new);
- 
- 	mutex_unlock(&smpboot_threads_lock);
--	put_online_cpus();
- }
- 
- static DEFINE_PER_CPU(atomic_t, cpu_hotplug_state) = ATOMIC_INIT(CPU_POST_DEAD);
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -535,7 +535,6 @@ static void softlockup_update_smpboot_th
- 
- 	smpboot_update_cpumask_percpu_thread(&watchdog_threads,
- 					     &watchdog_allowed_mask);
--	__lockup_detector_cleanup();
- }
- 
- /* Temporarily park all watchdog threads */
-@@ -554,6 +553,7 @@ static void softlockup_unpark_threads(vo
- 
- static void softlockup_reconfigure_threads(void)
- {
-+	cpus_read_lock();
- 	watchdog_nmi_stop();
- 	softlockup_park_all_threads();
- 	set_sample_period();
-@@ -561,6 +561,12 @@ static void softlockup_reconfigure_threa
- 	if (watchdog_enabled && watchdog_thresh)
- 		softlockup_unpark_threads();
- 	watchdog_nmi_start();
-+	cpus_read_unlock();
-+	/*
-+	 * Must be called outside the cpus locked section to prevent
-+	 * recursive locking in the perf code.
-+	 */
-+	__lockup_detector_cleanup();
- }
- 
- /*
+Segher
