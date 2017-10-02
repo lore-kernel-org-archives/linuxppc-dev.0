@@ -1,45 +1,24 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <groug@kaod.org>
+Received: from 16.mo1.mail-out.ovh.net (16.mo1.mail-out.ovh.net
+ [178.33.104.224])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5Fpy3T42zDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Oct 2017 19:35:22 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v928YZRH044677
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Oct 2017 04:35:18 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2db6trp4h6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Oct 2017 04:35:17 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Mon, 2 Oct 2017 18:35:15 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v928ZCwp28442848
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Oct 2017 19:35:12 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v928ZDtX032325
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Oct 2017 19:35:13 +1100
-Subject: Re: [PATCH] powernv: Add OCC driver to mmap sensor area
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, Shilpasri G Bhat
- <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: ego@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, akshay.adiga@linux.vnet.ibm.com
-Date: Mon, 02 Oct 2017 10:35:02 +0200
-In-Reply-To: <87bmlqutq5.fsf@linux.vnet.ibm.com>
-References: <1506667651-32301-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <87bmlqutq5.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1506933302.25065.3.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5GJZ06LszDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Oct 2017 19:57:32 +1100 (AEDT)
+Received: from player756.ha.ovh.net (b9.ovh.net [213.186.33.59])
+ by mo1.mail-out.ovh.net (Postfix) with ESMTP id 59D759C17C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Oct 2017 10:40:32 +0200 (CEST)
+Subject: [PATCH v2] KVM: PPC: Book3S PR: only install valid SLBs during
+ KVM_SET_SREGS
+From: Greg Kurz <groug@kaod.org>
+To: kvm-ppc@vger.kernel.org
+Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Date: Mon, 02 Oct 2017 10:40:22 +0200
+Message-ID: <150693362232.15210.2878817650741484831.stgit@bahia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,21 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-10-02 at 14:14 +1100, Stewart Smith wrote:
-> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> > This driver provides interface to mmap the OCC sensor area
-> > to userspace to parse and read OCC inband sensors.
-> 
-> Why?
-> 
-> Is this for debug? If so, the existing exports interface should be used.
-> 
-> If there's actual sensors, we already have two ways of exposing sensors
-> to Linux: the OPAL_SENSOR API and the IMC API.
-> 
-> Why this method and not use the existing ones?
+Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
+some of which are valid (ie, SLB_ESID_V is set) and the rest are
+likely all-zeroes (with QEMU at least).
 
-More than that, a sensor should be exposed to userspace via hwmon, not
-some random direct userspace map.
+Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
+assumes to find the SLB index in the 3 lower bits of its rb argument.
+When passed zeroed arguments, it happily overwrites the 0th SLB entry
+with zeroes. This is exactly what happens while doing live migration
+with QEMU when the destination pushes the incoming SLB descriptors to
+KVM PR. When reloading the SLBs at the next synchronization, QEMU first
+clears its SLB array and only restore valid ones, but the 0th one is
+now gone and we cannot access the corresponding memory anymore:
 
-Ben.
+(qemu) x/x $pc
+c0000000000b742c: Cannot access memory
+
+To avoid this, let's filter out non-valid SLB entries. While here, we
+also force a full SLB flush before installing new entries.
+
+Signed-off-by: Greg Kurz <groug@kaod.org>
+---
+v2: - flush SLB before installing new entries
+---
+ arch/powerpc/kvm/book3s_pr.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 3beb4ff469d1..7cce08d610ae 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -1327,9 +1327,15 @@ static int kvm_arch_vcpu_ioctl_set_sregs_pr(struct kvm_vcpu *vcpu,
+ 
+ 	vcpu3s->sdr1 = sregs->u.s.sdr1;
+ 	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
++		/* Flush all SLB entries */
++		vcpu->arch.mmu.slbmte(vcpu, 0, 0);
++		vcpu->arch.mmu.slbia(vcpu);
++
+ 		for (i = 0; i < 64; i++) {
+-			vcpu->arch.mmu.slbmte(vcpu, sregs->u.s.ppc64.slb[i].slbv,
+-						    sregs->u.s.ppc64.slb[i].slbe);
++			u64 rb = sregs->u.s.ppc64.slb[i].slbe;
++			u64 rs = sregs->u.s.ppc64.slb[i].slbv;
++			if (rb & SLB_ESID_V)
++				vcpu->arch.mmu.slbmte(vcpu, rs, rb);
+ 		}
+ 	} else {
+ 		for (i = 0; i < 16; i++) {
