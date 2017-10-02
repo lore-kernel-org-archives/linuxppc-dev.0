@@ -1,35 +1,28 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x22f.google.com (mail-io0-x22f.google.com
- [IPv6:2607:f8b0:4001:c06::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dzickus@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5Ycd1Lw8zDqhf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 07:27:28 +1100 (AEDT)
-Received: by mail-io0-x22f.google.com with SMTP id e9so427424iod.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Oct 2017 13:27:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5Yk53FTTzDqhf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 07:32:12 +1100 (AEDT)
+Date: Mon, 2 Oct 2017 16:32:09 -0400
+From: Don Zickus <dzickus@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC GIT Pull] core watchdog sanitizing
+Message-ID: <20171002203209.rjug625pfmgh674j@redhat.com>
+References: <alpine.DEB.2.20.1710011217510.3874@nanos>
+ <CA+55aFxQsmSb=zohGZOZK7eR4n5xOHNArmCa9j1b7+wJ+khQrg@mail.gmail.com>
+ <alpine.DEB.2.20.1710021957480.2114@nanos>
+ <CA+55aFyVX_aPac8dSJPED-XLTtfQOYe_eCV7HdYKABgGazWHAg@mail.gmail.com>
+ <alpine.DEB.2.20.1710022105570.2114@nanos>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20171002200805.GF8421@gate.crashing.org>
-References: <20170921093729.1080368AC1@po15668-vm-win7.idsi0.si.c-s.fr>
- <CAGXu5jJ54+bCcXaPK1ExsxtTDPHNn1+1gywb3TDbe-SEtt1zuQ@mail.gmail.com>
- <20170925073721.GM8421@gate.crashing.org>
- <063D6719AE5E284EB5DD2968C1650D6DD007F58B@AcuExch.aculab.com>
- <20170925194130.GV8421@gate.crashing.org>
- <CAGXu5j+bj1NHmrrEmcwPavKubavLh1b01AyyJEFRvycg9FkLpg@mail.gmail.com>
- <20171002200805.GF8421@gate.crashing.org>
-From: Kees Cook <keescook@chromium.org>
-Date: Mon, 2 Oct 2017 13:27:25 -0700
-Message-ID: <CAGXu5jLQMKDxgjeRNC5uhYxy8s0Fqd=vmch75d-VarjZMYDO7g@mail.gmail.com>
-Subject: Re: [PATCH] mm: fix RODATA_TEST failure "rodata_test: test data was
- not read only"
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- David Laight <David.Laight@aculab.com>, Linux-MM <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>, Jinbum Park <jinb.park7@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.20.1710022105570.2114@nanos>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,73 +32,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 2, 2017 at 1:08 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
-> On Mon, Oct 02, 2017 at 12:29:45PM -0700, Kees Cook wrote:
->> On Mon, Sep 25, 2017 at 12:41 PM, Segher Boessenkool
->> <segher@kernel.crashing.org> wrote:
->> > On Mon, Sep 25, 2017 at 04:01:55PM +0000, David Laight wrote:
->> >> From: Segher Boessenkool
->> >> > The compiler puts this item in .sdata, for 32-bit.  There is no .srodata,
->> >> > so if it wants to use a small data section, it must use .sdata .
->> >> >
->> >> > Non-external, non-referenced symbols are not put in .sdata, that is the
->> >> > difference you see with the "static".
->> >> >
->> >> > I don't think there is a bug here.  If you think there is, please open
->> >> > a GCC bug.
->> >>
->> >> The .sxxx sections are for 'small' data that can be accessed (typically)
->> >> using small offsets from a global register.
->> >> This means that all sections must be adjacent in the image.
->> >> So you can't really have readonly small data.
->> >>
->> >> My guess is that the linker script is putting .srodata in with .sdata.
->> >
->> > .srodata does not *exist* (in the ABI).
->>
->> So, I still think this is a bug. The variable is marked const: this is
->> not a _suggestion_. :) If the compiler produces output where the
->> variable is writable, that's a bug.
->
-> C11 6.7.3/6: "If an attempt is made to modify an object defined with a
-> const-qualified type through use of an lvalue with non-const-qualified
-> type, the behavior is undefined."
->
-> And that is all that "const" means.
->
-> The compiler is free to put this var in *no* data section, or to copy
-> it to the stack before using it, or anything else it thinks is a good
-> idea.
+On Mon, Oct 02, 2017 at 07:32:57PM +0000, Thomas Gleixner wrote:
+> On Mon, 2 Oct 2017, Linus Torvalds wrote:
+> > Side note: would it perhaps make sense to have that
+> > cpus_read_lock/unlock() sequence around the whole reconfiguration
+> > section?
+> > 
+> > Because while looking at that sequence, it looks a bit odd to me that
+> > cpu's can come and go in the middle of the nmi watchdog
+> > reconfiguration sequence.
+> > 
+> > In particular, what happens if a new CPU is brought up just as the NMI
+> > matchdog is being reconfigured? The NMI's have been stopped for the
+> > old CPU's, what happens for the new one that came up in between that
+> > watchdog_nmi_stop/start?
+> > 
+> > This may be all obviously safe, I'm just asking for clarification.
+> 
+> It's safe because the newly upcoming CPU will see an empty enabled mask in
+> the powerpc implementation. The perf based implementation has a similar
+> protection.
+> 
+> Though yes, it would be more obvious to expand the cpus locked
+> section. That requires a bit of shuffling. Untested patch below.
+> 
+> Thanks,
+> 
+> 	tglx
+> 
+> 8<------------------
+> 
+> --- a/arch/powerpc/kernel/watchdog.c
+> +++ b/arch/powerpc/kernel/watchdog.c
+> @@ -359,21 +359,17 @@ void watchdog_nmi_stop(void)
+>  {
+>  	int cpu;
+>  
+> -	cpus_read_lock();
+>  	for_each_cpu(cpu, &wd_cpus_enabled)
+>  		stop_wd_on_cpu(cpu);
+> -	cpus_read_unlock();
+>  }
+>  
+>  void watchdog_nmi_start(void)
+>  {
+>  	int cpu;
+>  
+> -	cpus_read_lock();
+>  	watchdog_calc_timeouts();
+>  	for_each_cpu_and(cpu, cpu_online_mask, &watchdog_cpumask)
+>  		start_wd_on_cpu(cpu);
+> -	cpus_read_unlock();
+>  }
+>  
+>  /*
+> --- a/kernel/smpboot.c
+> +++ b/kernel/smpboot.c
+> @@ -351,7 +351,7 @@ void smpboot_update_cpumask_percpu_threa
+>  	static struct cpumask tmp;
+>  	unsigned int cpu;
+>  
+> -	get_online_cpus();
+> +	lockdep_assert_cpus_held();
+>  	mutex_lock(&smpboot_threads_lock);
+>  
+>  	/* Park threads that were exclusively enabled on the old mask. */
+> @@ -367,7 +367,6 @@ void smpboot_update_cpumask_percpu_threa
+>  	cpumask_copy(old, new);
+>  
+>  	mutex_unlock(&smpboot_threads_lock);
+> -	put_online_cpus();
+>  }
+>  
+>  static DEFINE_PER_CPU(atomic_t, cpu_hotplug_state) = ATOMIC_INIT(CPU_POST_DEAD);
+> --- a/kernel/watchdog.c
+> +++ b/kernel/watchdog.c
+> @@ -535,7 +535,6 @@ static void softlockup_update_smpboot_th
+>  
+>  	smpboot_update_cpumask_percpu_thread(&watchdog_threads,
+>  					     &watchdog_allowed_mask);
+> -	__lockup_detector_cleanup();
+>  }
+>  
+>  /* Temporarily park all watchdog threads */
+> @@ -554,6 +553,7 @@ static void softlockup_unpark_threads(vo
+>  
+>  static void softlockup_reconfigure_threads(void)
 
-The kernel depends on const things being read-only. I realize C11 says
-this is "undefined", but from a kernel security perspective, const
-means read-only, and this is true on other architectures. Now,
-strictly speaking, the compiler is just responsible for doing section
-assignment for a variable, and the linker then lays things out, but
-the result carries the requested memory protections (i.e. read-only,
-executable, etc). If "const" is just a hint, then what is the
-canonical way to have gcc put a variable into a section that the
-linker will always request be kept read-only?
+There is a second copy of ^^^^, you will need to add identical locking there
+too.
 
-> If you think it would be a good idea for the compiler to change its
-> behaviour here, please file a PR (or send a patch).  Please bring
-> arguments why we would want to change this.
+I can test both of these patches tomorrow.
 
-Sure:
-https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82411
+Cheers,
+Don
 
->> I can't tell if this bug is related:
->> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=9571
->
-> I don't think so: the only remaining bug there is that a copy of the
-> constant is put in .rodata.cst8 (although there is a copy in .sdata2
-> already).
-
-Okay, thanks for checking.
-
--Kees
-
--- 
-Kees Cook
-Pixel Security
+>  {
+> +	cpus_read_lock();
+>  	watchdog_nmi_stop();
+>  	softlockup_park_all_threads();
+>  	set_sample_period();
+> @@ -561,6 +561,12 @@ static void softlockup_reconfigure_threa
+>  	if (watchdog_enabled && watchdog_thresh)
+>  		softlockup_unpark_threads();
+>  	watchdog_nmi_start();
+> +	cpus_read_unlock();
+> +	/*
+> +	 * Must be called outside the cpus locked section to prevent
+> +	 * recursive locking in the perf code.
+> +	 */
+> +	__lockup_detector_cleanup();
+>  }
+>  
+>  /*
+> 
