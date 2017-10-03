@@ -1,43 +1,44 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y67VZ6gsfzDqp4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 05:54:14 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v93InTGO011721
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 14:54:13 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dccvkun95-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y67Vl2QX9zDqnn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 05:54:23 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v93IqjN1119018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 14:54:21 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dccusbfkm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2017 14:54:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2017 14:54:20 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 3 Oct 2017 14:54:11 -0400
+ Tue, 3 Oct 2017 14:54:19 -0400
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
  [9.57.199.106])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v93IsASc2818402
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 18:54:10 GMT
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v93IsGXx52691112
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 18:54:16 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E9F9628048
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 14:54:03 -0400 (EDT)
+ by IMSVA (Postfix) with ESMTP id D277428048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 14:54:09 -0400 (EDT)
 Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id BF0DE2803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 14:54:03 -0400 (EDT)
-Subject: [PATCH4/8] powerpc/numa: Update numa code use drmem LMB array
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id 9EB6D2803A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 14:54:09 -0400 (EDT)
+Subject: [PATCH5/8] powerpc/pseries: Update memory hotplug code to use drmem
+ LMB array
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 03 Oct 2017 13:39:59 -0500
+Date: Tue, 03 Oct 2017 13:40:05 -0500
 In-Reply-To: <150705593139.7318.5934648279979743833.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 References: <150705593139.7318.5934648279979743833.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <150705599885.7318.3858575295986824786.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Message-Id: <150705600472.7318.16658921327352335504.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,318 +48,1077 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update code in powerpc/numa.c to use the array of dynamic
-reconfiguration memory LMBs instead of parsing the device tree
-property directly. This allows for the removal of several
-helper routines and makes gathering LMB information easier.
+Update the pseries memory hotplug code to use the newly added
+dynamic reconfiguration LMB array. Doing this is required for the
+upcoming support of the version 2 of the dynamic reconfiguration
+device tree property.
 
-This patch also prepares the numa code for support of the
-version 2 dynamic reconfiguration memory property.
+In addition, making this change cleans up the code that parses the
+LMB information as we no longer need to worry about device tree
+format. This allows us to discard one of the first steps on memory
+hotpluf where we make a working copy of the device tree property and
+convert the entire property to cpu format. Instead we just use the
+LMB array directly while holding the memory hotplug lock.
+
+This patch also moves the updating of the device tree property to
+powerpc/mm/drmem.c. This allows to the hotplug code to work without
+needing to know the device tree format and provides a single
+routine for updating the device tree property. This new routine
+will handle determination of the proper device tree format to
+output to.
 
 Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/drmem.h |    1 
- arch/powerpc/mm/drmem.c          |    9 ++
- arch/powerpc/mm/numa.c           |  153 ++++++++------------------------------
- 3 files changed, 40 insertions(+), 123 deletions(-)
+ arch/powerpc/include/asm/drmem.h                |   18 +
+ arch/powerpc/mm/drmem.c                         |   81 ++++
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  516 +++++++++--------------
+ 3 files changed, 297 insertions(+), 318 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index cafe1a3b7da6..912712ecf6c6 100644
+index 912712ecf6c6..ccd8e1aa0cec 100644
 --- a/arch/powerpc/include/asm/drmem.h
 +++ b/arch/powerpc/include/asm/drmem.h
-@@ -41,5 +41,6 @@ static inline u32 drmem_lmb_size(void)
+@@ -40,7 +40,25 @@ static inline u32 drmem_lmb_size(void)
+ 	return drmem_info->lmb_size;
  }
  
++#define DRMEM_LMB_RESERVED	0x80000000
++
++static inline void drmem_mark_lmb_reserved(struct drmem_lmb *lmb)
++{
++	lmb->flags |= DRMEM_LMB_RESERVED;
++}
++
++static inline void drmem_remove_lmb_reservation(struct drmem_lmb *lmb)
++{
++	lmb->flags &= ~DRMEM_LMB_RESERVED;
++}
++
++static inline bool drmem_lmb_reserved(struct drmem_lmb *lmb)
++{
++	return lmb->flags & DRMEM_LMB_RESERVED;
++}
++
  extern int __init init_drmem_lmbs(unsigned long node);
-+extern u64 drmem_lmb_memory_max(void);
+ extern u64 drmem_lmb_memory_max(void);
++extern int drmem_update_dt(void);
  
  #endif
 diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index 8ad7cf36b2c4..96e453e1fdd7 100644
+index 96e453e1fdd7..5aaee23b315c 100644
 --- a/arch/powerpc/mm/drmem.c
 +++ b/arch/powerpc/mm/drmem.c
-@@ -61,6 +61,14 @@ int __init init_drmem_lmbs(unsigned long node)
- 	return 0;
+@@ -69,6 +69,87 @@ u64 drmem_lmb_memory_max(void)
+ 	return last_lmb->base_addr + drmem_lmb_size();
  }
  
-+u64 drmem_lmb_memory_max(void)
++static u32 drmem_lmb_flags(struct drmem_lmb *lmb)
 +{
-+	struct drmem_lmb *last_lmb;
++	return lmb->flags & ~DRMEM_LMB_RESERVED;
++}
 +
-+	last_lmb = &drmem_info->lmbs[drmem_info->n_lmbs - 1];
-+	return last_lmb->base_addr + drmem_lmb_size();
++static struct property *clone_property(struct property *prop, u32 prop_sz)
++{
++	struct property *new_prop;
++
++	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
++	if (!new_prop)
++		return NULL;
++
++	new_prop->name = kstrdup(prop->name, GFP_KERNEL);
++	new_prop->value = kzalloc(prop_sz, GFP_KERNEL);
++	if (!new_prop->name || !new_prop->value) {
++		kfree(new_prop->name);
++		kfree(new_prop->value);
++		kfree(new_prop);
++		return NULL;
++	}
++
++	new_prop->length = prop_sz;
++	of_property_set_flag(new_prop, OF_DYNAMIC);
++	return new_prop;
++}
++
++static int drmem_update_dt_v1(struct device_node *memory,
++			      struct property *prop)
++{
++	struct property *new_prop;
++	struct of_drconf_cell *dr_cell;
++	struct drmem_lmb *lmb;
++	u32 *p;
++
++	new_prop = clone_property(prop, prop->length);
++	if (!new_prop)
++		return -1;
++
++	p = new_prop->value;
++	*p++ = cpu_to_be32(drmem_info->n_lmbs);
++
++	dr_cell = (struct of_drconf_cell *)p;
++
++	for_each_drmem_lmb(lmb) {
++		dr_cell->base_addr = cpu_to_be64(lmb->base_addr);
++		dr_cell->drc_index = cpu_to_be32(lmb->drc_index);
++		dr_cell->aa_index = cpu_to_be32(lmb->aa_index);
++
++		/* Do not copy out the bit we use internally to mark
++		 * an lmb as reserved during hortplug processing.
++		 */
++		dr_cell->flags = cpu_to_be32(drmem_lmb_flags(lmb));
++
++		dr_cell++;
++	}
++
++	of_update_property(memory, new_prop);
++	return 0;
++}
++
++int drmem_update_dt(void)
++{
++	struct device_node *memory;
++	struct property *prop;
++	int rc;
++
++	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!memory)
++		return -1;
++
++	prop = of_find_property(memory, "ibm,dynamic-memory", NULL);
++	if (prop)
++		rc = drmem_update_dt_v1(memory, prop);
++	else
++		rc = -1;
++
++	of_node_put(memory);
++	return rc;
 +}
 +
  static int __init drmem_init(void)
  {
  	struct drmem_lmb *lmbs;
-@@ -81,4 +89,3 @@ static int __init drmem_init(void)
- }
- 
- late_initcall(drmem_init);
--
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index a9aa353d41cd..d03a57100d4f 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -40,6 +40,7 @@
- #include <asm/hvcall.h>
- #include <asm/setup.h>
- #include <asm/vdso.h>
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 1d48ab424bd9..11a9982b163d 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -23,6 +23,7 @@
+ #include <asm/prom.h>
+ #include <asm/sparsemem.h>
+ #include <asm/fadump.h>
 +#include <asm/drmem.h>
+ #include "pseries.h"
  
- static int numa_enabled = 1;
- 
-@@ -395,69 +396,6 @@ static unsigned long read_n_cells(int n, const __be32 **buf)
- 	return result;
+ static bool rtas_hp_event;
+@@ -100,100 +101,6 @@ static struct property *dlpar_clone_property(struct property *prop,
+ 	return new_prop;
  }
  
--/*
-- * Read the next memblock list entry from the ibm,dynamic-memory property
-- * and return the information in the provided of_drconf_cell structure.
-- */
--static void read_drconf_cell(struct of_drconf_cell *drmem, const __be32 **cellp)
+-static struct property *dlpar_clone_drconf_property(struct device_node *dn)
 -{
--	const __be32 *cp;
+-	struct property *prop, *new_prop;
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
+-	int i;
 -
--	drmem->base_addr = read_n_cells(n_mem_addr_cells, cellp);
+-	prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
+-	if (!prop)
+-		return NULL;
 -
--	cp = *cellp;
--	drmem->drc_index = of_read_number(cp, 1);
--	drmem->reserved = of_read_number(&cp[1], 1);
--	drmem->aa_index = of_read_number(&cp[2], 1);
--	drmem->flags = of_read_number(&cp[3], 1);
+-	new_prop = dlpar_clone_property(prop, prop->length);
+-	if (!new_prop)
+-		return NULL;
 -
--	*cellp = cp + 4;
+-	/* Convert the property to cpu endian-ness */
+-	p = new_prop->value;
+-	*p = be32_to_cpu(*p);
+-
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-
+-	for (i = 0; i < num_lmbs; i++) {
+-		lmbs[i].base_addr = be64_to_cpu(lmbs[i].base_addr);
+-		lmbs[i].drc_index = be32_to_cpu(lmbs[i].drc_index);
+-		lmbs[i].aa_index = be32_to_cpu(lmbs[i].aa_index);
+-		lmbs[i].flags = be32_to_cpu(lmbs[i].flags);
+-	}
+-
+-	return new_prop;
 -}
 -
--/*
-- * Retrieve and validate the ibm,dynamic-memory property of the device tree.
-- *
-- * The layout of the ibm,dynamic-memory property is a number N of memblock
-- * list entries followed by N memblock list entries.  Each memblock list entry
-- * contains information as laid out in the of_drconf_cell struct above.
-- */
--static int of_get_drconf_memory(struct device_node *memory, const __be32 **dm)
+-static void dlpar_update_drconf_property(struct device_node *dn,
+-					 struct property *prop)
 -{
--	const __be32 *prop;
--	u32 len, entries;
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
+-	int i;
 -
--	prop = of_get_property(memory, "ibm,dynamic-memory", &len);
--	if (!prop || len < sizeof(unsigned int))
--		return 0;
+-	/* Convert the property back to BE */
+-	p = prop->value;
+-	num_lmbs = *p;
+-	*p = cpu_to_be32(*p);
+-	p++;
 -
--	entries = of_read_number(prop++, 1);
+-	lmbs = (struct of_drconf_cell *)p;
+-	for (i = 0; i < num_lmbs; i++) {
+-		lmbs[i].base_addr = cpu_to_be64(lmbs[i].base_addr);
+-		lmbs[i].drc_index = cpu_to_be32(lmbs[i].drc_index);
+-		lmbs[i].aa_index = cpu_to_be32(lmbs[i].aa_index);
+-		lmbs[i].flags = cpu_to_be32(lmbs[i].flags);
+-	}
 -
--	/* Now that we know the number of entries, revalidate the size
--	 * of the property read in to ensure we have everything
--	 */
--	if (len < (entries * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int))
--		return 0;
--
--	*dm = prop;
--	return entries;
+-	rtas_hp_event = true;
+-	of_update_property(dn, prop);
+-	rtas_hp_event = false;
 -}
 -
--/*
-- * Retrieve and validate the ibm,lmb-size property for drconf memory
-- * from the device tree.
-- */
--static u64 of_get_lmb_size(struct device_node *memory)
+-static int dlpar_update_device_tree_lmb(struct of_drconf_cell *lmb)
 -{
--	const __be32 *prop;
--	u32 len;
+-	struct device_node *dn;
+-	struct property *prop;
+-	struct of_drconf_cell *lmbs;
+-	u32 *p, num_lmbs;
+-	int i;
 -
--	prop = of_get_property(memory, "ibm,lmb-size", &len);
--	if (!prop || len < sizeof(unsigned int))
--		return 0;
+-	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+-	if (!dn)
+-		return -ENODEV;
 -
--	return read_n_cells(n_mem_size_cells, &prop);
+-	prop = dlpar_clone_drconf_property(dn);
+-	if (!prop) {
+-		of_node_put(dn);
+-		return -ENODEV;
+-	}
+-
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-
+-	for (i = 0; i < num_lmbs; i++) {
+-		if (lmbs[i].drc_index == lmb->drc_index) {
+-			lmbs[i].flags = lmb->flags;
+-			lmbs[i].aa_index = lmb->aa_index;
+-
+-			dlpar_update_drconf_property(dn, prop);
+-			break;
+-		}
+-	}
+-
+-	of_node_put(dn);
+-	return 0;
 -}
 -
- struct assoc_arrays {
- 	u32	n_arrays;
- 	u32	array_sz;
-@@ -509,7 +447,7 @@ static int of_get_assoc_arrays(struct assoc_arrays *aa)
-  * This is like of_node_to_nid_single() for memory represented in the
-  * ibm,dynamic-reconfiguration-memory node.
-  */
--static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
-+static int of_drconf_to_nid_single(struct drmem_lmb *lmb,
- 				   struct assoc_arrays *aa)
+ static u32 find_aa_index(struct device_node *dr_node,
+ 			 struct property *ala_prop, const u32 *lmb_assoc)
  {
- 	int default_nid = 0;
-@@ -517,16 +455,16 @@ static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
- 	int index;
+@@ -256,7 +163,7 @@ static u32 find_aa_index(struct device_node *dr_node,
+ 	return aa_index;
+ }
  
- 	if (min_common_depth > 0 && min_common_depth <= aa->array_sz &&
--	    !(drmem->flags & DRCONF_MEM_AI_INVALID) &&
--	    drmem->aa_index < aa->n_arrays) {
--		index = drmem->aa_index * aa->array_sz + min_common_depth - 1;
-+	    !(lmb->flags & DRCONF_MEM_AI_INVALID) &&
-+	    lmb->aa_index < aa->n_arrays) {
-+		index = lmb->aa_index * aa->array_sz + min_common_depth - 1;
- 		nid = of_read_number(&aa->arrays[index], 1);
- 
- 		if (nid == 0xffff || nid >= MAX_NUMNODES)
- 			nid = default_nid;
- 
- 		if (nid > 0) {
--			index = drmem->aa_index * aa->array_sz;
-+			index = lmb->aa_index * aa->array_sz;
- 			initialize_distance_lookup_table(nid,
- 							&aa->arrays[index]);
- 		}
-@@ -661,22 +599,15 @@ static inline int __init read_usm_ranges(const __be32 **usm)
-  * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
-  * node.  This assumes n_mem_{addr,size}_cells have been set.
-  */
--static void __init parse_drconf_memory(struct device_node *memory)
-+static void __init numa_setup_drmem_lmbs(struct device_node *memory)
+-static u32 lookup_lmb_associativity_index(struct of_drconf_cell *lmb)
++static u32 lookup_lmb_associativity_index(struct drmem_lmb *lmb)
  {
--	const __be32 *uninitialized_var(dm), *usm;
--	unsigned int n, rc, ranges, is_kexec_kdump = 0;
--	unsigned long lmb_size, base, size, sz;
-+	struct drmem_lmb *lmb;
-+	const __be32 *usm;
-+	unsigned int rc, ranges, is_kexec_kdump = 0;
-+	unsigned long base, size, sz;
- 	int nid;
- 	struct assoc_arrays aa = { .arrays = NULL };
+ 	struct device_node *parent, *lmb_node, *dr_node;
+ 	struct property *ala_prop;
+@@ -299,9 +206,9 @@ static u32 lookup_lmb_associativity_index(struct of_drconf_cell *lmb)
+ 	return aa_index;
+ }
  
--	n = of_get_drconf_memory(memory, &dm);
--	if (!n)
--		return;
--
--	lmb_size = of_get_lmb_size(memory);
--	if (!lmb_size)
--		return;
--
- 	rc = of_get_assoc_arrays(&aa);
- 	if (rc)
- 		return;
-@@ -686,19 +617,15 @@ static void __init parse_drconf_memory(struct device_node *memory)
- 	if (usm != NULL)
- 		is_kexec_kdump = 1;
+-static int dlpar_add_device_tree_lmb(struct of_drconf_cell *lmb)
++static int dlpar_add_device_tree_lmb(struct drmem_lmb *lmb)
+ {
+-	int aa_index;
++	int rc, aa_index;
  
--	for (; n != 0; --n) {
--		struct of_drconf_cell drmem;
--
--		read_drconf_cell(&drmem, &dm);
--
+ 	lmb->flags |= DRCONF_MEM_ASSIGNED;
+ 
+@@ -313,17 +220,29 @@ static int dlpar_add_device_tree_lmb(struct of_drconf_cell *lmb)
+ 	}
+ 
+ 	lmb->aa_index = aa_index;
+-	return dlpar_update_device_tree_lmb(lmb);
++
++	rtas_hp_event = true;
++	rc = drmem_update_dt();
++	rtas_hp_event = false;
++
++	return rc;
+ }
+ 
+-static int dlpar_remove_device_tree_lmb(struct of_drconf_cell *lmb)
++static int dlpar_remove_device_tree_lmb(struct drmem_lmb *lmb)
+ {
++	int rc;
++
+ 	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
+ 	lmb->aa_index = 0xffffffff;
+-	return dlpar_update_device_tree_lmb(lmb);
++
++	rtas_hp_event = true;
++	rc = drmem_update_dt();
++	rtas_hp_event = false;
++
++	return rc;
+ }
+ 
+-static struct memory_block *lmb_to_memblock(struct of_drconf_cell *lmb)
++static struct memory_block *lmb_to_memblock(struct drmem_lmb *lmb)
+ {
+ 	unsigned long section_nr;
+ 	struct mem_section *mem_sect;
+@@ -336,7 +255,36 @@ static struct memory_block *lmb_to_memblock(struct of_drconf_cell *lmb)
+ 	return mem_block;
+ }
+ 
+-static int dlpar_change_lmb_state(struct of_drconf_cell *lmb, bool online)
++static int get_lmb_range(u32 drc_index, int n_lmbs,
++			 struct drmem_lmb **start_lmb,
++			 struct drmem_lmb **end_lmb)
++{
++	struct drmem_lmb *lmb, *start, *end;
++	struct drmem_lmb *last_lmb;
++
++	start = NULL;
 +	for_each_drmem_lmb(lmb) {
- 		/* skip this block if the reserved bit is set in flags (0x80)
- 		   or if the block is not assigned to this partition (0x8) */
--		if ((drmem.flags & DRCONF_MEM_RESERVED)
--		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
-+		if ((lmb->flags & DRCONF_MEM_RESERVED)
-+		    || !(lmb->flags & DRCONF_MEM_ASSIGNED))
- 			continue;
- 
--		base = drmem.base_addr;
--		size = lmb_size;
-+		base = lmb->base_addr;
-+		size = drmem_lmb_size();
- 		ranges = 1;
- 
- 		if (is_kexec_kdump) {
-@@ -711,7 +638,7 @@ static void __init parse_drconf_memory(struct device_node *memory)
- 				base = read_n_cells(n_mem_addr_cells, &usm);
- 				size = read_n_cells(n_mem_size_cells, &usm);
- 			}
--			nid = of_drconf_to_nid_single(&drmem, &aa);
-+			nid = of_drconf_to_nid_single(lmb, &aa);
- 			fake_numa_create_new_node(
- 				((base + size) >> PAGE_SHIFT),
- 					   &nid);
-@@ -816,8 +743,10 @@ static int __init parse_numa_properties(void)
- 	 * ibm,dynamic-reconfiguration-memory node.
- 	 */
- 	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
--	if (memory)
--		parse_drconf_memory(memory);
-+	if (memory) {
-+		numa_setup_drmem_lmbs(memory);
-+		of_node_put(memory);
++		if (lmb->drc_index == drc_index) {
++			start = lmb;
++			break;
++		}
 +	}
++
++	if (!start)
++		return -EINVAL;
++
++	end = &start[n_lmbs - 1];
++
++	last_lmb = &drmem_info->lmbs[drmem_info->n_lmbs - 1];
++	if (end > last_lmb)
++		return -EINVAL;
++
++	*start_lmb = start;
++	*end_lmb = end;
++	return 0;
++}
++
++static int dlpar_change_lmb_state(struct drmem_lmb *lmb, bool online)
+ {
+ 	struct memory_block *mem_block;
+ 	int rc;
+@@ -357,13 +305,13 @@ static int dlpar_change_lmb_state(struct of_drconf_cell *lmb, bool online)
+ 	return rc;
+ }
  
+-static int dlpar_online_lmb(struct of_drconf_cell *lmb)
++static int dlpar_online_lmb(struct drmem_lmb *lmb)
+ {
+ 	return dlpar_change_lmb_state(lmb, true);
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+-static int dlpar_offline_lmb(struct of_drconf_cell *lmb)
++static int dlpar_offline_lmb(struct drmem_lmb *lmb)
+ {
+ 	return dlpar_change_lmb_state(lmb, false);
+ }
+@@ -426,7 +374,7 @@ static int pseries_remove_mem_node(struct device_node *np)
  	return 0;
  }
-@@ -998,40 +927,30 @@ early_param("topology_updates", early_topology_updates);
- static int hot_add_drconf_scn_to_nid(struct device_node *memory,
- 				     unsigned long scn_addr)
+ 
+-static bool lmb_is_removable(struct of_drconf_cell *lmb)
++static bool lmb_is_removable(struct drmem_lmb *lmb)
  {
--	const __be32 *dm;
--	unsigned int drconf_cell_cnt, rc;
+ 	int i, scns_per_block;
+ 	int rc = 1;
+@@ -458,9 +406,9 @@ static bool lmb_is_removable(struct of_drconf_cell *lmb)
+ 	return rc ? true : false;
+ }
+ 
+-static int dlpar_add_lmb(struct of_drconf_cell *);
++static int dlpar_add_lmb(struct drmem_lmb *);
+ 
+-static int dlpar_remove_lmb(struct of_drconf_cell *lmb)
++static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+ {
+ 	unsigned long block_sz;
+ 	int nid, rc;
+@@ -484,28 +432,25 @@ static int dlpar_remove_lmb(struct of_drconf_cell *lmb)
+ 	return 0;
+ }
+ 
+-static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
+-					struct property *prop)
++static int dlpar_memory_remove_by_count(u32 lmbs_to_remove)
+ {
+-	struct of_drconf_cell *lmbs;
 +	struct drmem_lmb *lmb;
-+	unsigned int rc;
- 	unsigned long lmb_size;
- 	struct assoc_arrays aa;
- 	int nid = -1;
+ 	int lmbs_removed = 0;
+ 	int lmbs_available = 0;
+-	u32 num_lmbs, *p;
+-	int i, rc;
++	int rc;
  
--	drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
--	if (!drconf_cell_cnt)
--		return -1;
--
--	lmb_size = of_get_lmb_size(memory);
--	if (!lmb_size)
--		return -1;
-+	lmb_size = drmem_lmb_size();
+ 	pr_info("Attempting to hot-remove %d LMB(s)\n", lmbs_to_remove);
  
- 	rc = of_get_assoc_arrays(&aa);
- 	if (rc)
- 		return -1;
+ 	if (lmbs_to_remove == 0)
+ 		return -EINVAL;
  
--	for (; drconf_cell_cnt != 0; --drconf_cell_cnt) {
--		struct of_drconf_cell drmem;
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
 -
--		read_drconf_cell(&drmem, &dm);
--
+ 	/* Validate that there are enough LMBs to satisfy the request */
+-	for (i = 0; i < num_lmbs; i++) {
+-		if (lmb_is_removable(&lmbs[i]))
 +	for_each_drmem_lmb(lmb) {
- 		/* skip this block if it is reserved or not assigned to
- 		 * this partition */
--		if ((drmem.flags & DRCONF_MEM_RESERVED)
--		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
-+		if ((lmb->flags & DRCONF_MEM_RESERVED)
-+		    || !(lmb->flags & DRCONF_MEM_ASSIGNED))
++		if (lmb_is_removable(lmb))
+ 			lmbs_available++;
++
++		if (lmbs_available == lmbs_to_remove)
++			break;
+ 	}
+ 
+ 	if (lmbs_available < lmbs_to_remove) {
+@@ -514,45 +459,47 @@ static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
+ 		return -EINVAL;
+ 	}
+ 
+-	for (i = 0; i < num_lmbs && lmbs_removed < lmbs_to_remove; i++) {
+-		rc = dlpar_remove_lmb(&lmbs[i]);
++	for_each_drmem_lmb(lmb) {
++		rc = dlpar_remove_lmb(lmb);
+ 		if (rc)
  			continue;
  
--		if ((scn_addr < drmem.base_addr)
--		    || (scn_addr >= (drmem.base_addr + lmb_size)))
-+		if ((scn_addr < lmb->base_addr)
-+		    || (scn_addr >= (lmb->base_addr + lmb_size)))
+-		lmbs_removed++;
+-
+ 		/* Mark this lmb so we can add it later if all of the
+ 		 * requested LMBs cannot be removed.
+ 		 */
+-		lmbs[i].reserved = 1;
++		drmem_mark_lmb_reserved(lmb);
++
++		lmbs_removed++;
++		if (lmbs_removed == lmbs_to_remove)
++			break;
+ 	}
+ 
+ 	if (lmbs_removed != lmbs_to_remove) {
+ 		pr_err("Memory hot-remove failed, adding LMB's back\n");
+ 
+-		for (i = 0; i < num_lmbs; i++) {
+-			if (!lmbs[i].reserved)
++		for_each_drmem_lmb(lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+-			rc = dlpar_add_lmb(&lmbs[i]);
++			rc = dlpar_add_lmb(lmb);
+ 			if (rc)
+ 				pr_err("Failed to add LMB back, drc index %x\n",
+-				       lmbs[i].drc_index);
++				       lmb->drc_index);
+ 
+-			lmbs[i].reserved = 0;
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 
+ 		rc = -EINVAL;
+ 	} else {
+-		for (i = 0; i < num_lmbs; i++) {
+-			if (!lmbs[i].reserved)
++		for_each_drmem_lmb(lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+-			dlpar_release_drc(lmbs[i].drc_index);
++			dlpar_release_drc(lmb->drc_index);
+ 			pr_info("Memory at %llx was hot-removed\n",
+-				lmbs[i].base_addr);
++				lmb->base_addr);
+ 
+-			lmbs[i].reserved = 0;
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 		rc = 0;
+ 	}
+@@ -560,26 +507,21 @@ static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
+ 	return rc;
+ }
+ 
+-static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
++static int dlpar_memory_remove_by_index(u32 drc_index)
+ {
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
++	struct drmem_lmb *lmb;
+ 	int lmb_found;
+-	int i, rc;
++	int rc;
+ 
+ 	pr_info("Attempting to hot-remove LMB, drc index %x\n", drc_index);
+ 
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-
+ 	lmb_found = 0;
+-	for (i = 0; i < num_lmbs; i++) {
+-		if (lmbs[i].drc_index == drc_index) {
++	for_each_drmem_lmb(lmb) {
++		if (lmb->drc_index == drc_index) {
+ 			lmb_found = 1;
+-			rc = dlpar_remove_lmb(&lmbs[i]);
++			rc = dlpar_remove_lmb(lmb);
+ 			if (!rc)
+-				dlpar_release_drc(lmbs[i].drc_index);
++				dlpar_release_drc(lmb->drc_index);
+ 
+ 			break;
+ 		}
+@@ -590,35 +532,30 @@ static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
+ 
+ 	if (rc)
+ 		pr_info("Failed to hot-remove memory at %llx\n",
+-			lmbs[i].base_addr);
++			lmb->base_addr);
+ 	else
+-		pr_info("Memory at %llx was hot-removed\n", lmbs[i].base_addr);
++		pr_info("Memory at %llx was hot-removed\n", lmb->base_addr);
+ 
+ 	return rc;
+ }
+ 
+-static int dlpar_memory_readd_by_index(u32 drc_index, struct property *prop)
++static int dlpar_memory_readd_by_index(u32 drc_index)
+ {
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
++	struct drmem_lmb *lmb;
+ 	int lmb_found;
+-	int i, rc;
++	int rc;
+ 
+ 	pr_info("Attempting to update LMB, drc index %x\n", drc_index);
+ 
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-
+ 	lmb_found = 0;
+-	for (i = 0; i < num_lmbs; i++) {
+-		if (lmbs[i].drc_index == drc_index) {
++	for_each_drmem_lmb(lmb) {
++		if (lmb->drc_index == drc_index) {
+ 			lmb_found = 1;
+-			rc = dlpar_remove_lmb(&lmbs[i]);
++			rc = dlpar_remove_lmb(lmb);
+ 			if (!rc) {
+-				rc = dlpar_add_lmb(&lmbs[i]);
++				rc = dlpar_add_lmb(lmb);
+ 				if (rc)
+-					dlpar_release_drc(lmbs[i].drc_index);
++					dlpar_release_drc(lmb->drc_index);
+ 			}
+ 			break;
+ 		}
+@@ -629,20 +566,18 @@ static int dlpar_memory_readd_by_index(u32 drc_index, struct property *prop)
+ 
+ 	if (rc)
+ 		pr_info("Failed to update memory at %llx\n",
+-			lmbs[i].base_addr);
++			lmb->base_addr);
+ 	else
+-		pr_info("Memory at %llx was updated\n", lmbs[i].base_addr);
++		pr_info("Memory at %llx was updated\n", lmb->base_addr);
+ 
+ 	return rc;
+ }
+ 
+-static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index,
+-				     struct property *prop)
++static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ {
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
+-	int i, rc, start_lmb_found;
+-	int lmbs_available = 0, start_index = 0, end_index;
++	struct drmem_lmb *lmb, *start_lmb, *end_lmb;
++	int lmbs_available;
++	int rc;
+ 
+ 	pr_info("Attempting to hot-remove %u LMB(s) at %x\n",
+ 		lmbs_to_remove, drc_index);
+@@ -650,29 +585,13 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index,
+ 	if (lmbs_to_remove == 0)
+ 		return -EINVAL;
+ 
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-	start_lmb_found = 0;
+-
+-	/* Navigate to drc_index */
+-	while (start_index < num_lmbs) {
+-		if (lmbs[start_index].drc_index == drc_index) {
+-			start_lmb_found = 1;
+-			break;
+-		}
+-
+-		start_index++;
+-	}
+-
+-	if (!start_lmb_found)
++	rc = get_lmb_range(drc_index, lmbs_to_remove, &start_lmb, &end_lmb);
++	if (rc)
+ 		return -EINVAL;
+ 
+-	end_index = start_index + lmbs_to_remove;
+-
+ 	/* Validate that there are enough LMBs to satisfy the request */
+-	for (i = start_index; i < end_index; i++) {
+-		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
++	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++		if (lmb->flags & DRCONF_MEM_RESERVED)
+ 			break;
+ 
+ 		lmbs_available++;
+@@ -681,42 +600,43 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index,
+ 	if (lmbs_available < lmbs_to_remove)
+ 		return -EINVAL;
+ 
+-	for (i = start_index; i < end_index; i++) {
+-		if (!(lmbs[i].flags & DRCONF_MEM_ASSIGNED))
++	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++		if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
  			continue;
  
--		nid = of_drconf_to_nid_single(&drmem, &aa);
-+		nid = of_drconf_to_nid_single(lmb, &aa);
+-		rc = dlpar_remove_lmb(&lmbs[i]);
++		rc = dlpar_remove_lmb(lmb);
+ 		if (rc)
+ 			break;
+ 
+-		lmbs[i].reserved = 1;
++		drmem_mark_lmb_reserved(lmb);
+ 	}
+ 
+ 	if (rc) {
+ 		pr_err("Memory indexed-count-remove failed, adding any removed LMBs\n");
+ 
+-		for (i = start_index; i < end_index; i++) {
+-			if (!lmbs[i].reserved)
++
++		for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+-			rc = dlpar_add_lmb(&lmbs[i]);
++			rc = dlpar_add_lmb(lmb);
+ 			if (rc)
+ 				pr_err("Failed to add LMB, drc index %x\n",
+-				       be32_to_cpu(lmbs[i].drc_index));
++				       lmb->drc_index);
+ 
+-			lmbs[i].reserved = 0;
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 		rc = -EINVAL;
+ 	} else {
+-		for (i = start_index; i < end_index; i++) {
+-			if (!lmbs[i].reserved)
++		for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+-			dlpar_release_drc(lmbs[i].drc_index);
++			dlpar_release_drc(lmb->drc_index);
+ 			pr_info("Memory at %llx (drc index %x) was hot-removed\n",
+-				lmbs[i].base_addr, lmbs[i].drc_index);
++				lmb->base_addr, lmb->drc_index);
+ 
+-			lmbs[i].reserved = 0;
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 	}
+ 
+@@ -737,32 +657,30 @@ static inline int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
+ {
+ 	return -EOPNOTSUPP;
+ }
+-static int dlpar_remove_lmb(struct of_drconf_cell *lmb)
++static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+ {
+ 	return -EOPNOTSUPP;
+ }
+-static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
+-					struct property *prop)
++static int dlpar_memory_remove_by_count(u32 lmbs_to_remove)
+ {
+ 	return -EOPNOTSUPP;
+ }
+-static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
++static int dlpar_memory_remove_by_index(u32 drc_index)
+ {
+ 	return -EOPNOTSUPP;
+ }
+-static int dlpar_memory_readd_by_index(u32 drc_index, struct property *prop)
++static int dlpar_memory_readd_by_index(u32 drc_index)
+ {
+ 	return -EOPNOTSUPP;
+ }
+ 
+-static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index,
+-				     struct property *prop)
++static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ {
+ 	return -EOPNOTSUPP;
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
+ 
+-static int dlpar_add_lmb(struct of_drconf_cell *lmb)
++static int dlpar_add_lmb(struct drmem_lmb *lmb)
+ {
+ 	unsigned long block_sz;
+ 	int nid, rc;
+@@ -801,77 +719,79 @@ static int dlpar_add_lmb(struct of_drconf_cell *lmb)
+ 	return rc;
+ }
+ 
+-static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
++static int dlpar_memory_add_by_count(u32 lmbs_to_add)
+ {
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
++	struct drmem_lmb *lmb;
+ 	int lmbs_available = 0;
+ 	int lmbs_added = 0;
+-	int i, rc;
++	int rc;
+ 
+ 	pr_info("Attempting to hot-add %d LMB(s)\n", lmbs_to_add);
+ 
+ 	if (lmbs_to_add == 0)
+ 		return -EINVAL;
+ 
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-
+ 	/* Validate that there are enough LMBs to satisfy the request */
+-	for (i = 0; i < num_lmbs; i++) {
+-		if (!(lmbs[i].flags & DRCONF_MEM_ASSIGNED))
++	for_each_drmem_lmb(lmb) {
++		if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
+ 			lmbs_available++;
++
++		if (lmbs_available == lmbs_to_add)
++			break;
+ 	}
+ 
+ 	if (lmbs_available < lmbs_to_add)
+ 		return -EINVAL;
+ 
+-	for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
+-		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
++	for_each_drmem_lmb(lmb) {
++		if (lmb->flags & DRCONF_MEM_ASSIGNED)
+ 			continue;
+ 
+-		rc = dlpar_acquire_drc(lmbs[i].drc_index);
++		rc = dlpar_acquire_drc(lmb->drc_index);
+ 		if (rc)
+ 			continue;
+ 
+-		rc = dlpar_add_lmb(&lmbs[i]);
++		rc = dlpar_add_lmb(lmb);
+ 		if (rc) {
+-			dlpar_release_drc(lmbs[i].drc_index);
++			dlpar_release_drc(lmb->drc_index);
+ 			continue;
+ 		}
+ 
+-		lmbs_added++;
+-
+ 		/* Mark this lmb so we can remove it later if all of the
+ 		 * requested LMBs cannot be added.
+ 		 */
+-		lmbs[i].reserved = 1;
++		drmem_mark_lmb_reserved(lmb);
++
++		lmbs_added++;
++		if (lmbs_added == lmbs_to_add)
++			break;
+ 	}
+ 
+ 	if (lmbs_added != lmbs_to_add) {
+ 		pr_err("Memory hot-add failed, removing any added LMBs\n");
+ 
+-		for (i = 0; i < num_lmbs; i++) {
+-			if (!lmbs[i].reserved)
++		for_each_drmem_lmb(lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+-			rc = dlpar_remove_lmb(&lmbs[i]);
++			rc = dlpar_remove_lmb(lmb);
+ 			if (rc)
+ 				pr_err("Failed to remove LMB, drc index %x\n",
+-				       be32_to_cpu(lmbs[i].drc_index));
++				       lmb->drc_index);
+ 			else
+-				dlpar_release_drc(lmbs[i].drc_index);
++				dlpar_release_drc(lmb->drc_index);
++
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 		rc = -EINVAL;
+ 	} else {
+-		for (i = 0; i < num_lmbs; i++) {
+-			if (!lmbs[i].reserved)
++		for_each_drmem_lmb(lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+ 			pr_info("Memory at %llx (drc index %x) was hot-added\n",
+-				lmbs[i].base_addr, lmbs[i].drc_index);
+-			lmbs[i].reserved = 0;
++				lmb->base_addr, lmb->drc_index);
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 		rc = 0;
+ 	}
+@@ -879,28 +799,22 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
+ 	return rc;
+ }
+ 
+-static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
++static int dlpar_memory_add_by_index(u32 drc_index)
+ {
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
+-	int i, lmb_found;
+-	int rc;
++	struct drmem_lmb *lmb;
++	int rc, lmb_found;
+ 
+ 	pr_info("Attempting to hot-add LMB, drc index %x\n", drc_index);
+ 
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-
+ 	lmb_found = 0;
+-	for (i = 0; i < num_lmbs; i++) {
+-		if (lmbs[i].drc_index == drc_index) {
++	for_each_drmem_lmb(lmb) {
++		if (lmb->drc_index == drc_index) {
+ 			lmb_found = 1;
+-			rc = dlpar_acquire_drc(lmbs[i].drc_index);
++			rc = dlpar_acquire_drc(lmb->drc_index);
+ 			if (!rc) {
+-				rc = dlpar_add_lmb(&lmbs[i]);
++				rc = dlpar_add_lmb(lmb);
+ 				if (rc)
+-					dlpar_release_drc(lmbs[i].drc_index);
++					dlpar_release_drc(lmb->drc_index);
+ 			}
+ 
+ 			break;
+@@ -914,18 +828,16 @@ static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
+ 		pr_info("Failed to hot-add memory, drc index %x\n", drc_index);
+ 	else
+ 		pr_info("Memory at %llx (drc index %x) was hot-added\n",
+-			lmbs[i].base_addr, drc_index);
++			lmb->base_addr, drc_index);
+ 
+ 	return rc;
+ }
+ 
+-static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
+-				  struct property *prop)
++static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index)
+ {
+-	struct of_drconf_cell *lmbs;
+-	u32 num_lmbs, *p;
+-	int i, rc, start_lmb_found;
+-	int lmbs_available = 0, start_index = 0, end_index;
++	struct drmem_lmb *lmb, *start_lmb, *end_lmb;
++	int lmbs_available;
++	int rc;
+ 
+ 	pr_info("Attempting to hot-add %u LMB(s) at index %x\n",
+ 		lmbs_to_add, drc_index);
+@@ -933,29 +845,13 @@ static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
+ 	if (lmbs_to_add == 0)
+ 		return -EINVAL;
+ 
+-	p = prop->value;
+-	num_lmbs = *p++;
+-	lmbs = (struct of_drconf_cell *)p;
+-	start_lmb_found = 0;
+-
+-	/* Navigate to drc_index */
+-	while (start_index < num_lmbs) {
+-		if (lmbs[start_index].drc_index == drc_index) {
+-			start_lmb_found = 1;
+-			break;
+-		}
+-
+-		start_index++;
+-	}
+-
+-	if (!start_lmb_found)
++	rc = get_lmb_range(drc_index, lmbs_to_add, &start_lmb, &end_lmb);
++	if (rc)
+ 		return -EINVAL;
+ 
+-	end_index = start_index + lmbs_to_add;
+-
+ 	/* Validate that the LMBs in this range are not reserved */
+-	for (i = start_index; i < end_index; i++) {
+-		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
++	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++		if (lmb->flags & DRCONF_MEM_RESERVED)
+ 			break;
+ 
+ 		lmbs_available++;
+@@ -964,46 +860,48 @@ static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
+ 	if (lmbs_available < lmbs_to_add)
+ 		return -EINVAL;
+ 
+-	for (i = start_index; i < end_index; i++) {
+-		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
++	for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++		if (lmb->flags & DRCONF_MEM_ASSIGNED)
+ 			continue;
+ 
+-		rc = dlpar_acquire_drc(lmbs[i].drc_index);
++		rc = dlpar_acquire_drc(lmb->drc_index);
+ 		if (rc)
+ 			break;
+ 
+-		rc = dlpar_add_lmb(&lmbs[i]);
++		rc = dlpar_add_lmb(lmb);
+ 		if (rc) {
+-			dlpar_release_drc(lmbs[i].drc_index);
++			dlpar_release_drc(lmb->drc_index);
+ 			break;
+ 		}
+ 
+-		lmbs[i].reserved = 1;
++		drmem_mark_lmb_reserved(lmb);
+ 	}
+ 
+ 	if (rc) {
+ 		pr_err("Memory indexed-count-add failed, removing any added LMBs\n");
+ 
+-		for (i = start_index; i < end_index; i++) {
+-			if (!lmbs[i].reserved)
++		for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+-			rc = dlpar_remove_lmb(&lmbs[i]);
++			rc = dlpar_remove_lmb(lmb);
+ 			if (rc)
+ 				pr_err("Failed to remove LMB, drc index %x\n",
+-				       be32_to_cpu(lmbs[i].drc_index));
++				       lmb->drc_index);
+ 			else
+-				dlpar_release_drc(lmbs[i].drc_index);
++				dlpar_release_drc(lmb->drc_index);
++
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 		rc = -EINVAL;
+ 	} else {
+-		for (i = start_index; i < end_index; i++) {
+-			if (!lmbs[i].reserved)
++		for_each_drmem_lmb_in_range(lmb, start_lmb, end_lmb) {
++			if (!drmem_lmb_reserved(lmb))
+ 				continue;
+ 
+ 			pr_info("Memory at %llx (drc index %x) was hot-added\n",
+-				lmbs[i].base_addr, lmbs[i].drc_index);
+-			lmbs[i].reserved = 0;
++				lmb->base_addr, lmb->drc_index);
++			drmem_remove_lmb_reservation(lmb);
+ 		}
+ 	}
+ 
+@@ -1012,37 +910,23 @@ static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
+ 
+ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ {
+-	struct device_node *dn;
+-	struct property *prop;
+ 	u32 count, drc_index;
+ 	int rc;
+ 
+ 	lock_device_hotplug();
+ 
+-	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+-	if (!dn) {
+-		rc = -EINVAL;
+-		goto dlpar_memory_out;
+-	}
+-
+-	prop = dlpar_clone_drconf_property(dn);
+-	if (!prop) {
+-		rc = -EINVAL;
+-		goto dlpar_memory_out;
+-	}
+-
+ 	switch (hp_elog->action) {
+ 	case PSERIES_HP_ELOG_ACTION_ADD:
+ 		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+ 			count = hp_elog->_drc_u.drc_count;
+-			rc = dlpar_memory_add_by_count(count, prop);
++			rc = dlpar_memory_add_by_count(count);
+ 		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+ 			drc_index = hp_elog->_drc_u.drc_index;
+-			rc = dlpar_memory_add_by_index(drc_index, prop);
++			rc = dlpar_memory_add_by_index(drc_index);
+ 		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_IC) {
+ 			count = hp_elog->_drc_u.ic.count;
+ 			drc_index = hp_elog->_drc_u.ic.index;
+-			rc = dlpar_memory_add_by_ic(count, drc_index, prop);
++			rc = dlpar_memory_add_by_ic(count, drc_index);
+ 		} else {
+ 			rc = -EINVAL;
+ 		}
+@@ -1051,14 +935,14 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 	case PSERIES_HP_ELOG_ACTION_REMOVE:
+ 		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+ 			count = hp_elog->_drc_u.drc_count;
+-			rc = dlpar_memory_remove_by_count(count, prop);
++			rc = dlpar_memory_remove_by_count(count);
+ 		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+ 			drc_index = hp_elog->_drc_u.drc_index;
+-			rc = dlpar_memory_remove_by_index(drc_index, prop);
++			rc = dlpar_memory_remove_by_index(drc_index);
+ 		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_IC) {
+ 			count = hp_elog->_drc_u.ic.count;
+ 			drc_index = hp_elog->_drc_u.ic.index;
+-			rc = dlpar_memory_remove_by_ic(count, drc_index, prop);
++			rc = dlpar_memory_remove_by_ic(count, drc_index);
+ 		} else {
+ 			rc = -EINVAL;
+ 		}
+@@ -1066,7 +950,7 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 		break;
+ 	case PSERIES_HP_ELOG_ACTION_READD:
+ 		drc_index = hp_elog->_drc_u.drc_index;
+-		rc = dlpar_memory_readd_by_index(drc_index, prop);
++		rc = dlpar_memory_readd_by_index(drc_index);
+ 		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+@@ -1074,10 +958,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
  		break;
  	}
  
-@@ -1112,11 +1031,7 @@ static u64 hot_add_drconf_memory_max(void)
- {
- 	struct device_node *memory = NULL;
- 	struct device_node *dn = NULL;
--	unsigned int drconf_cell_cnt = 0;
--	u64 lmb_size = 0;
--	const __be32 *dm = NULL;
- 	const __be64 *lrdr = NULL;
--	struct of_drconf_cell drmem;
- 
- 	dn = of_find_node_by_path("/rtas");
- 	if (dn) {
-@@ -1128,14 +1043,8 @@ static u64 hot_add_drconf_memory_max(void)
- 
- 	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (memory) {
--		drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
--		lmb_size = of_get_lmb_size(memory);
+-	dlpar_free_property(prop);
 -
--		/* Advance to the last cell, each cell has 6 32 bit integers */
--		dm += (drconf_cell_cnt - 1) * 6;
--		read_drconf_cell(&drmem, &dm);
- 		of_node_put(memory);
--		return drmem.base_addr + lmb_size;
-+		return drmem_lmb_memory_max();
- 	}
- 	return 0;
+-dlpar_memory_out:
+-	of_node_put(dn);
+ 	unlock_device_hotplug();
+ 	return rc;
  }
