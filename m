@@ -1,22 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5xVN2d5nzDqpT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 22:23:24 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
-In-Reply-To: <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
-References: <20170923082656.27219-1-clg@kaod.org>
- <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
-Date: Tue, 03 Oct 2017 22:23:22 +1100
-Message-ID: <87poa4cw5x.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5xXG2S2QzDr0r
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 22:25:01 +1100 (AEDT)
+Subject: Re: [PATCH 07/11] powerpc: make dma_cache_sync a no-op
+To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
+Cc: Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-xtensa@linux-xtensa.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Robin Murphy <robin.murphy@arm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+References: <20171003104311.10058-1-hch@lst.de>
+ <20171003104311.10058-8-hch@lst.de>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <670a0571-1a36-51a3-db52-64bc61184c35@c-s.fr>
+Date: Tue, 3 Oct 2017 13:24:57 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20171003104311.10058-8-hch@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-C=C3=A9dric Le Goater <clg@kaod.org> writes:
 
-> On 09/23/2017 10:26 AM, C=C3=A9dric Le Goater wrote:
->> Hi,
->>=20
->> Here are a couple of small fixes to support CPU hot unplug. There are
->> still some issues to be investigated as, in some occasions, after a
->> couple of plug and unplug, the cpu which was removed receives a 'lost'
->> interrupt. This showed to be the decrementer under QEMU.
->
-> So this seems to be a QEMU issue only which can be solved by=20
-> removing the DEE bit from the LPCR on P9 processor when the CPU=20
-> is stopped in rtas. PECE3 bit on P8 processors.=20
->
-> I think these patches are valuable fixes for 4.14. The first=20
-> is trivial and the second touches the common xive part but it
-> is only called on the pseries platform.=20=20
->
-> Could you please take a look ?=20
 
-I can.
+Le 03/10/2017 à 12:43, Christoph Hellwig a écrit :
+> powerpc does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
+> doesn't make any sense to do any work in dma_cache_sync given that it
+> must be a no-op when dma_alloc_attrs returns coherent memory.
+What about arch/powerpc/mm/dma-noncoherent.c ?
 
-You didn't give me much indication in the change logs of what the
-failure mode is if I _don't_ have the fixes, which makes it hard for me
-to assess the severity. Can you flesh out the ".. or else" case in the
-change logs?
+Powerpc 8xx doesn't have coherent memory.
 
-And should both be tagged?
+Christophe
 
-  Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interr=
-upt controller")
-
-cheers
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   arch/powerpc/include/asm/dma-mapping.h | 2 --
+>   1 file changed, 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> index eaece3d3e225..320846442bfb 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -144,8 +144,6 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+>   static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+>   		enum dma_data_direction direction)
+>   {
+> -	BUG_ON(direction == DMA_NONE);
+> -	__dma_sync(vaddr, size, (int)direction);
+>   }
+>   
+>   #endif /* __KERNEL__ */
+> 
