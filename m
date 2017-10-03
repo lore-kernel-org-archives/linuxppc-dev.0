@@ -2,9 +2,10 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y62zh1CtlzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 02:30:39 +1100 (AEDT)
-Subject: Re: [PATCH v9 08/12] mm: zero reserved and unavailable struct pages
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y635D5TTqzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 02:35:28 +1100 (AEDT)
+Subject: Re: [PATCH v9 12/12] mm: stop zeroing memory during allocation in
+ vmemmap
 To: Michal Hocko <mhocko@kernel.org>
 Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -15,13 +16,13 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
 References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-9-pasha.tatashin@oracle.com>
- <20171003131817.omzbam3js67edp3s@dhcp22.suse.cz>
+ <20170920201714.19817-13-pasha.tatashin@oracle.com>
+ <20171003131952.aqq377pjug5me6go@dhcp22.suse.cz>
 From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <691dba28-718c-e9a9-d006-88505eb5cd7e@oracle.com>
-Date: Tue, 3 Oct 2017 11:29:16 -0400
+Message-ID: <c028f65a-b4a6-e56d-3a50-5d7ad9af50cb@oracle.com>
+Date: Tue, 3 Oct 2017 11:34:25 -0400
 MIME-Version: 1.0
-In-Reply-To: <20171003131817.omzbam3js67edp3s@dhcp22.suse.cz>
+In-Reply-To: <20171003131952.aqq377pjug5me6go@dhcp22.suse.cz>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,24 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/03/2017 09:18 AM, Michal Hocko wrote:
-> On Wed 20-09-17 16:17:10, Pavel Tatashin wrote:
->> Some memory is reserved but unavailable: not present in memblock.memory
->> (because not backed by physical pages), but present in memblock.reserved.
->> Such memory has backing struct pages, but they are not initialized by going
->> through __init_single_page().
+On 10/03/2017 09:19 AM, Michal Hocko wrote:
+> On Wed 20-09-17 16:17:14, Pavel Tatashin wrote:
+>> vmemmap_alloc_block() will no longer zero the block, so zero memory
+>> at its call sites for everything except struct pages.  Struct page memory
+>> is zero'd by struct page initialization.
+>>
+>> Replace allocators in sprase-vmemmap to use the non-zeroing version. So,
+>> we will get the performance improvement by zeroing the memory in parallel
+>> when struct pages are zeroed.
 > 
-> Could you be more specific where is such a memory reserved?
-> 
+> Is it possible to merge this patch with http://lkml.kernel.org/r/20170920201714.19817-7-pasha.tatashin@oracle.com
 
-I know of one example: trim_low_memory_range() unconditionally reserves 
-from pfn 0, but e820__memblock_setup() might provide the exiting memory 
-from pfn 1 (i.e. KVM).
-
-But, there could be more based on this comment from linux/page-flags.h:
-
-  19  * PG_reserved is set for special pages, which can never be swapped 
-out. Some
-  20  * of them might not even exist (eg empty_bad_page)...
+Yes, I will do that. It would also require re-arranging
+[PATCH v9 07/12] sparc64: optimized struct page zeroing
+optimization to come after this patch.
 
 Pasha
