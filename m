@@ -1,28 +1,25 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 8.mo4.mail-out.ovh.net (8.mo4.mail-out.ovh.net [188.165.33.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5zdX07XFzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 23:59:44 +1100 (AEDT)
-Date: Tue, 3 Oct 2017 14:59:40 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v9 04/12] sparc64: simplify vmemmap_populate
-Message-ID: <20171003125940.6d5fyhwx2lkzxn67@dhcp22.suse.cz>
-References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-5-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5zq675SrzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 00:08:02 +1100 (AEDT)
+Received: from player746.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 766AABD3C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 14:58:25 +0200 (CEST)
+Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>
+References: <20170923082656.27219-1-clg@kaod.org>
+ <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
+ <87poa4cw5x.fsf@concordia.ellerman.id.au>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <741baa16-163d-b269-b4ed-7218ef64a166@kaod.org>
+Date: Tue, 3 Oct 2017 14:58:19 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170920201714.19817-5-pasha.tatashin@oracle.com>
+In-Reply-To: <87poa4cw5x.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,66 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 20-09-17 16:17:06, Pavel Tatashin wrote:
-> Remove duplicating code by using common functions
-> vmemmap_pud_populate and vmemmap_pgd_populate.
+Hello Michael,
+
+On 10/03/2017 01:23 PM, Michael Ellerman wrote:
+> Cédric Le Goater <clg@kaod.org> writes:
 > 
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-> Reviewed-by: Bob Picco <bob.picco@oracle.com>
-> Acked-by: David S. Miller <davem@davemloft.net>
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-
-> ---
->  arch/sparc/mm/init_64.c | 23 ++++++-----------------
->  1 file changed, 6 insertions(+), 17 deletions(-)
+>> On 09/23/2017 10:26 AM, Cédric Le Goater wrote:
+>>> Hi,
+>>>
+>>> Here are a couple of small fixes to support CPU hot unplug. There are
+>>> still some issues to be investigated as, in some occasions, after a
+>>> couple of plug and unplug, the cpu which was removed receives a 'lost'
+>>> interrupt. This showed to be the decrementer under QEMU.
+>>
+>> So this seems to be a QEMU issue only which can be solved by 
+>> removing the DEE bit from the LPCR on P9 processor when the CPU 
+>> is stopped in rtas. PECE3 bit on P8 processors. 
+>>
+>> I think these patches are valuable fixes for 4.14. The first 
+>> is trivial and the second touches the common xive part but it
+>> is only called on the pseries platform.  
+>>
+>> Could you please take a look ? 
 > 
-> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-> index 310c6754bcaa..99aea4d15a5f 100644
-> --- a/arch/sparc/mm/init_64.c
-> +++ b/arch/sparc/mm/init_64.c
-> @@ -2651,30 +2651,19 @@ int __meminit vmemmap_populate(unsigned long vstart, unsigned long vend,
->  	vstart = vstart & PMD_MASK;
->  	vend = ALIGN(vend, PMD_SIZE);
->  	for (; vstart < vend; vstart += PMD_SIZE) {
-> -		pgd_t *pgd = pgd_offset_k(vstart);
-> +		pgd_t *pgd = vmemmap_pgd_populate(vstart, node);
->  		unsigned long pte;
->  		pud_t *pud;
->  		pmd_t *pmd;
->  
-> -		if (pgd_none(*pgd)) {
-> -			pud_t *new = vmemmap_alloc_block(PAGE_SIZE, node);
-> +		if (!pgd)
-> +			return -ENOMEM;
->  
-> -			if (!new)
-> -				return -ENOMEM;
-> -			pgd_populate(&init_mm, pgd, new);
-> -		}
-> -
-> -		pud = pud_offset(pgd, vstart);
-> -		if (pud_none(*pud)) {
-> -			pmd_t *new = vmemmap_alloc_block(PAGE_SIZE, node);
-> -
-> -			if (!new)
-> -				return -ENOMEM;
-> -			pud_populate(&init_mm, pud, new);
-> -		}
-> +		pud = vmemmap_pud_populate(pgd, vstart, node);
-> +		if (!pud)
-> +			return -ENOMEM;
->  
->  		pmd = pmd_offset(pud, vstart);
-> -
->  		pte = pmd_val(*pmd);
->  		if (!(pte & _PAGE_VALID)) {
->  			void *block = vmemmap_alloc_block(PMD_SIZE, node);
-> -- 
-> 2.14.1
+> I can.
+> 
+> You didn't give me much indication in the change logs of what the
+> failure mode is if I _don't_ have the fixes, which makes it hard for me
+> to assess the severity.
+Support for CPU removal came recently on PowerVM and was not
+tested when the patchset was sent. A couple of cleanups of the 
+XIVE internal structures are missing resulting in a kernel crash 
+when the CPU is released. 
 
--- 
-Michal Hocko
-SUSE Labs
+There are still some corner cases when stressing the lpar with 
+plug/unplug loops. Investigation in progress.  
+
+> Can you flesh out the ".. or else" case in the change logs?
+
+OK. I will improve patch 2 changelog.
+
+> And should both be tagged?
+> 
+>   Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
+yes I think so. These patches are too small to be tagged as 
+adding hotplug support.
+
+Thanks,
+
+C. 
