@@ -2,10 +2,10 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y635D5TTqzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 02:35:28 +1100 (AEDT)
-Subject: Re: [PATCH v9 12/12] mm: stop zeroing memory during allocation in
- vmemmap
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y63hb2ZZwzDqNm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 03:02:38 +1100 (AEDT)
+Subject: Re: [PATCH v9 03/12] mm: deferred_init_memmap improvements
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
 To: Michal Hocko <mhocko@kernel.org>
 Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -16,13 +16,13 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
 References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-13-pasha.tatashin@oracle.com>
- <20171003131952.aqq377pjug5me6go@dhcp22.suse.cz>
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <c028f65a-b4a6-e56d-3a50-5d7ad9af50cb@oracle.com>
-Date: Tue, 3 Oct 2017 11:34:25 -0400
+ <20170920201714.19817-4-pasha.tatashin@oracle.com>
+ <20171003125754.2kuqzkstywg7axhd@dhcp22.suse.cz>
+ <fc4ef789-d9a8-5dab-6508-f0fe8751b462@oracle.com>
+Message-ID: <d81baa49-b796-7130-4ace-0f14ed59be46@oracle.com>
+Date: Tue, 3 Oct 2017 12:01:08 -0400
 MIME-Version: 1.0
-In-Reply-To: <20171003131952.aqq377pjug5me6go@dhcp22.suse.cz>
+In-Reply-To: <fc4ef789-d9a8-5dab-6508-f0fe8751b462@oracle.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,20 +33,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/03/2017 09:19 AM, Michal Hocko wrote:
-> On Wed 20-09-17 16:17:14, Pavel Tatashin wrote:
->> vmemmap_alloc_block() will no longer zero the block, so zero memory
->> at its call sites for everything except struct pages.  Struct page memory
->> is zero'd by struct page initialization.
->>
->> Replace allocators in sprase-vmemmap to use the non-zeroing version. So,
->> we will get the performance improvement by zeroing the memory in parallel
->> when struct pages are zeroed.
-> 
-> Is it possible to merge this patch with http://lkml.kernel.org/r/20170920201714.19817-7-pasha.tatashin@oracle.com
+Hi Michal,
 
-Yes, I will do that. It would also require re-arranging
-[PATCH v9 07/12] sparc64: optimized struct page zeroing
-optimization to come after this patch.
+Are you OK, if I replace DEFERRED_FREE() macro with a function like this:
+
+/*
+  * Helper for deferred_init_range, free the given range, and reset the
+  * counters
+  */
+static inline unsigned long __def_free(unsigned long *nr_free,
+                                        unsigned long *free_base_pfn,
+                                        struct page **page)
+{
+         unsigned long nr = *nr_free;
+
+         deferred_free_range(*free_base_pfn, nr);
+         *free_base_pfn = 0;
+         *nr_free = 0;
+         *page = NULL;
+
+         return nr;
+}
+
+Since it is inline, and we operate with non-volatile counters, compiler 
+will be smart enough to remove all the unnecessary de-references. As a 
+plus, we won't be adding any new branches, and the code is still going 
+to stay compact.
 
 Pasha
+
+On 10/03/2017 11:15 AM, Pasha Tatashin wrote:
+> Hi Michal,
+> 
+>>
+>> Please be explicit that this is possible only because we discard
+>> memblock data later after 3010f876500f ("mm: discard memblock data
+>> later"). Also be more explicit how the new code works.
+> 
+> OK
+> 
+>>
+>> I like how the resulting code is more compact and smaller.
+> 
+> That was the goal :)
+> 
+>> for_each_free_mem_range also looks more appropriate but I really detest
+>> the DEFERRED_FREE thingy. Maybe we can handle all that in a single goto
+>> section. I know this is not an art but manipulating variables from
+>> macros is more error prone and much more ugly IMHO.
+> 
+> Sure, I can re-arrange to have a goto place. Function won't be as small, 
+> and if compiler is not smart enough we might end up with having more 
+> branches than what my current code has.
+> 
+>>
+>> please do not use macros. Btw. this deserves its own fix. I suspect that
+>> no CONFIG_HOLES_IN_ZONE arch enables DEFERRED_STRUCT_PAGE_INIT but
+>> purely from the review point of view it should be its own patch.
+> 
+> Sure, I will submit this patch separately from the rest of the project. 
+> In my opinion DEFERRED_STRUCT_PAGE_INIT is the way of the future, so we 
+> should make sure it is working with as many configs as possible.
+> 
+> Thank you,
+> Pasha
