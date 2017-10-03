@@ -1,25 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5sVL6JY3zDqhh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 19:23:06 +1100 (AEDT)
-Message-ID: <1507018960.25065.52.camel@kernel.crashing.org>
-Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>, =?ISO-8859-1?Q?C=E9dric?=
- Le Goater <clg@kaod.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- nikunj@linux.vnet.ibm.com
-Date: Tue, 03 Oct 2017 10:22:40 +0200
-In-Reply-To: <20171003065858.GL3260@umbus.fritz.box>
-References: <20170923082656.27219-1-clg@kaod.org>
- <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
- <20171003033615.GA3260@umbus.fritz.box>
- <7f2081f1-415a-85ca-29ed-3ab1467220a7@kaod.org>
- <20171003065858.GL3260@umbus.fritz.box>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5t1V1WMZzDqhh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 19:46:36 +1100 (AEDT)
+Subject: Re: [PATCH v3] powerpc: fix compile error on 64K pages on 40x, 44x
+To: Christian Lamparter <chunkeey@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>
+References: <20171001143303.15671-1-chunkeey@gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <d14b99bc-2e5c-03d8-ce51-c5c7862ccd55@c-s.fr>
+Date: Tue, 3 Oct 2017 10:46:31 +0200
+MIME-Version: 1.0
+In-Reply-To: <20171001143303.15671-1-chunkeey@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,14 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-10-03 at 17:58 +1100, David Gibson wrote:
+
+
+Le 01/10/2017 à 16:33, Christian Lamparter a écrit :
+> The mmu context on the 40x, 44x does not define pte_frag
+> entry. This causes gcc abort the compilation due to:
 > 
-> Ok.. why do you think this isn't of use?  I'm pretty sure this is
-> necessary for the TCG case, since MSR is checked in cpu_has_work(),
-> which could otherwise wake up the "dead" cpu.
+> setup-common.c: In function ‘setup_arch’:
+> setup-common.c:908: error: ‘mm_context_t’ has no ‘pte_frag’
+> 
+> This patch fixes the issue by removing the pte_frag
+> initialization in setup-common.c.
+> 
+> This is possible, because the compiler will do the
+> initialization, since the mm_context is a sub struct of
+> init_mm. init_mm is declared in mm_types.h as external linkage.
+> according to C99 6.2.4.3:
+> "An object whose identifier is declared with external linkage
+> [...] has static storage duration."
+> 
+> C99 defines in 6.7.8.10 that: "
+> If an object that has static storage duration is not
+> initialized explicitly, then:
+> - if it has pointer type, it is initialized to a null pointer
+> [...]
+> "
+> 
+> Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
 
-Ony if it's not in a PM state, in that case we check the corresponding
-LPCR:PECE* bit. At least on P7 and later.
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Cheers,
-Ben.
+> ---
+>   arch/powerpc/kernel/setup-common.c | 3 ---
+>   1 file changed, 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 0ac741fae90e..2e3bc16d02b2 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -904,9 +904,6 @@ void __init setup_arch(char **cmdline_p)
+>   #endif
+>   #endif
+>   
+> -#ifdef CONFIG_PPC_64K_PAGES
+> -	init_mm.context.pte_frag = NULL;
+> -#endif
+>   #ifdef CONFIG_SPAPR_TCE_IOMMU
+>   	mm_iommu_init(&init_mm);
+>   #endif
+> 
