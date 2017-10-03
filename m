@@ -1,44 +1,25 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5npH2kHszDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 16:36:39 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v935YWgD061646
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 01:36:34 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dc094vang-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2017 01:36:34 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 3 Oct 2017 15:36:31 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v935aTqo35061808
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 16:36:29 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v935aKgO024461
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 16:36:20 +1100
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
-Subject: [PATCH] kernel/module_64.c: Add REL24 relocation support of livepatch
- symbols
-Date: Tue,  3 Oct 2017 11:06:18 +0530
-Message-Id: <1507008978-10145-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+Return-Path: <clg@kaod.org>
+Received: from 6.mo2.mail-out.ovh.net (6.mo2.mail-out.ovh.net [87.98.165.38])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5qFg0CjwzDqhh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 17:41:57 +1100 (AEDT)
+Received: from player157.ha.ovh.net (b9.ovh.net [213.186.33.59])
+ by mo2.mail-out.ovh.net (Postfix) with ESMTP id 17C6BB1FB5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 08:24:14 +0200 (CEST)
+Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20170923082656.27219-1-clg@kaod.org>
+ <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
+ <20171003033615.GA3260@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <7f2081f1-415a-85ca-29ed-3ab1467220a7@kaod.org>
+Date: Tue, 3 Oct 2017 08:24:07 +0200
+MIME-Version: 1.0
+In-Reply-To: <20171003033615.GA3260@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,370 +29,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With commit 425595a7fc20 ("livepatch: reuse module loader code to
-write relocations") livepatch uses module loader to write relocations
-of livepatch symbols, instead of managing them by arch-dependent
-klp_write_module_reloc() function.
+On 10/03/2017 05:36 AM, David Gibson wrote:
+> On Mon, Oct 02, 2017 at 06:27:20PM +0200, Cédric Le Goater wrote:
+>> On 09/23/2017 10:26 AM, Cédric Le Goater wrote:
+>>> Hi,
+>>>
+>>> Here are a couple of small fixes to support CPU hot unplug. There are
+>>> still some issues to be investigated as, in some occasions, after a
+>>> couple of plug and unplug, the cpu which was removed receives a 'lost'
+>>> interrupt. This showed to be the decrementer under QEMU.
+>>
+>> So this seems to be a QEMU issue only which can be solved by 
+>> removing the DEE bit from the LPCR on P9 processor when the CPU 
+>> is stopped in rtas. PECE3 bit on P8 processors. 
+>>
+>> I think these patches are valuable fixes for 4.14. The first 
+>> is trivial and the second touches the common xive part but it
+>> is only called on the pseries platform.  
+>>
+>> Could you please take a look ?
+> 
+> Sorry, I think I've missed something here.
+> 
+> Is there a qemu bug involved in this?  Has there been a patch sent
+> that I didn't spot?
 
-livepatch module managed relocation entries are written to sections
-marked with SHF_RELA_LIVEPATCH flag and livepatch symbols within the
-section are marked with SHN_LIVEPATCH symbol section index. When the
-livepatching module is loaded, the livepatch symbols are resolved
-before calling apply_relocate_add() to apply the relocations.
 
-R_PPC64_REL24 relocation type resolves to a function address, those may
-be local to the livepatch module or available in kernel/other modules.
-For every such non-local function, apply_relocate_add() constructs a stub
-(a.k.a trampoline) to branch to a function. Stub code is responsible
-to save toc onto the stack, before calling the function via the global
-entry point. A NOP instruction is expected after every non local function
-branch, i.e. after the REL24 relocation. Which in-turn is replaced by
-toc restore instruction by apply_relocate_add().
+No, not yet, but I will today probably. something like below to stop
+the decrementer when a CPU is stopped:
 
-livepatch symbols with R_PPC64_REL24 relocation type, may not be
-reachable within current TOC range or might not have a NOP instruction
-following a branch. Latter symbols are the local symbols, whose became
-global to the livepatched function. As per ABIv2, local functions are
-accessed via local entry point, which is relative to current module's
-toc value.
+	--- qemu.git.orig/hw/ppc/spapr_rtas.c
+	+++ qemu.git/hw/ppc/spapr_rtas.c
+	@@ -174,6 +174,15 @@ static void rtas_start_cpu(PowerPCCPU *c
+	         kvm_cpu_synchronize_state(cs);
+	 
+	         env->msr = (1ULL << MSR_SF) | (1ULL << MSR_ME);
+	+
+	+        /* Enable DECR interrupt */
+	+        if (env->mmu_model == POWERPC_MMU_3_00) {
+	+            env->spr[SPR_LPCR] |= LPCR_DEE;
+	+        } else {
+	+            /* P7 and P8 both have same bit for DECR */
+	+            env->spr[SPR_LPCR] |= LPCR_P8_PECE3;
+	+        }
+	+
+	         env->nip = start;
+	         env->gpr[3] = r3;
+	         cs->halted = 0;
+	@@ -210,6 +219,13 @@ static void rtas_stop_self(PowerPCCPU *c
+	      * no need to bother with specific bits, we just clear it.
+	      */
+	     env->msr = 0;
+	+
+	+    if (env->mmu_model == POWERPC_MMU_3_00) {
+	+        env->spr[SPR_LPCR] &= ~LPCR_DEE;
+	+    } else {
+	+        /* P7 and P8 both have same bit for DECR */
+	+        env->spr[SPR_LPCR] &= ~LPCR_P8_PECE3;
+	+    }
+	 }
+	 
+	 static inline int sysparm_st(target_ulong addr, target_ulong len,
+	
+I haven't yet because I fail to understand why the decrementer is not 
+interrupting the dying CPU under xics as it is the case under XIVE.
 
-For example, consider the following livepatch relocations (the example is
-from livepatch module generated by kpatch tool):
+Also I am not sure this hack is of any use :
 
-Relocation section '.klp.rela.vmlinux..text.meminfo_proc_show' at offset 0x84530 contains 44 entries:
-    Offset             Info             Type      Symbol's Value   Symbol's Name + Addend
-0000000000000054  000000560000000a R_PPC64_REL24  0000000000000000 .klp.sym.vmlinux.si_swapinfo,0 + 0
-000000000000007c  000000570000000a R_PPC64_REL24  0000000000000000 .klp.sym.vmlinux.total_swapcache_pages,0 + 0
-00000000000000e8  000000580000000a R_PPC64_REL24  0000000000000000 .klp.sym.vmlinux.show_val_kb,1 + 0
-[...]
+    /*
+     * While stopping a CPU, the guest calls H_CPPR which
+     * effectively disables interrupts on XICS level.
+     * However decrementer interrupts in TCG can still
+     * wake the CPU up so here we disable interrupts in MSR
+     * as well.
+     * As rtas_start_cpu() resets the whole MSR anyway, there is
+     * no need to bother with specific bits, we just clear it.
+     */
+    env->msr = 0;
 
-1. .klp.sym.vmlinux.si_swapinfo and .klp.sym.vmlinux.total_swapcache_pages
-   are not available within the livepatch module TOC range.
+and the different CPU states are confusing. Nikunj already to a look
+at this when trying to fix the TCG reboot. Anyway, the QEMU patch 
+should (re)start a thread. This is not the place to discuss.
 
-2. .klp.sym.vmlinux.show_val_kb livepatch symbol was previously local
-   but now global to fs/proc/meminfo.c::meminfo_proc_show().
+Thanks,
 
-While the livepatch module is loaded the livepatch symbols mentioned in
-case 1 will fail with an error:
-[   74.485405] module_64: kpatch_meminfo_string: REL24 -1152921504751525976 out of range!
-
-and livepatch symbols mentioned in case 2 with fail with an error:
-[   24.568425] module_64: kpatch_meminfo_string: Expect noop after relocate, got 3d220000
-
-Both the failures with REL24 livepatch symbols relocation, can be resolved
-by constructing a new livepatch stub. The newly setup klp_stub mimics the
-functionality of entry_64.S::livepatch_handler introduced by commit
-85baa095497f ("powerpc/livepatch: Add live patching support on ppc64le").
-
-Which introduces a "livepatch stack" growing upwards from the base of
-the regular stack and is used to store/restore TOC/LR values, other than
-the stub setup and branch. The additional instructions sequences to handle
-klp_stub increases the stub size and current ppc64_stub_insn[] is not
-sufficient to hold them. This patch also introduces new
-ppc64le_klp_stub_entry[], along with the helpers to find/allocate
-livepatch stub.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: live-patching@vger.kernel.org
----
- arch/powerpc/include/asm/module.h              |   4 +
- arch/powerpc/kernel/module_64.c                | 119 ++++++++++++++++++++++++-
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  77 ++++++++++++++++
- 3 files changed, 197 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 6c0132c..46d5eb0 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -44,6 +44,10 @@ struct mod_arch_specific {
- 	unsigned long toc;
- 	unsigned long tramp;
- #endif
-+#ifdef CONFIG_LIVEPATCH
-+	unsigned long klp_relocs;       /* Count of kernel livepatch relocations */
-+#endif
-+
- 
- #else /* powerpc64 */
- 	/* Indices of PLT sections within module. */
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 0b0f896..08e75ff 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -140,6 +140,25 @@ static u32 ppc64_stub_insns[] = {
- 	0x4e800420			/* bctr */
- };
- 
-+#ifdef CONFIG_LIVEPATCH
-+extern u32 klp_stub_insn[];
-+extern u32 klp_stub_entry[];
-+extern u32 klp_stub_insn_end[];
-+
-+struct ppc64le_klp_stub_entry {
-+	/*
-+	 * Other than setting up the stub and livepatch stub also needs to
-+	 * allocate extra instructions to allocate livepatch stack,
-+	 * storing/restoring TOC/LR values on/from the livepatch stack.
-+	 */
-+	u32 jump[31];
-+	/* Used by ftrace to identify stubs */
-+	u32 magic;
-+	/* Data for the above code */
-+	func_desc_t funcdata;
-+};
-+#endif
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
- int module_trampoline_target(struct module *mod, unsigned long addr,
- 			     unsigned long *target)
-@@ -239,10 +258,13 @@ static void relaswap(void *_x, void *_y, int size)
- 
- /* Get size of potential trampolines required. */
- static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
--				    const Elf64_Shdr *sechdrs)
-+				    const Elf64_Shdr *sechdrs,
-+				    struct module *me)
- {
- 	/* One extra reloc so it's always 0-funcaddr terminated */
- 	unsigned long relocs = 1;
-+	unsigned long sec_relocs = 0;
-+	unsigned long klp_relocs = 0;
- 	unsigned i;
- 
- 	/* Every relocated section... */
-@@ -262,9 +284,20 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
- 			     sechdrs[i].sh_size / sizeof(Elf64_Rela),
- 			     sizeof(Elf64_Rela), relacmp, relaswap);
- 
--			relocs += count_relocs((void *)sechdrs[i].sh_addr,
-+			sec_relocs = count_relocs((void *)sechdrs[i].sh_addr,
- 					       sechdrs[i].sh_size
- 					       / sizeof(Elf64_Rela));
-+			/*
-+			 * size of livepatch stub is 28 instructions, whereas the
-+			 * non-livepatch stub requires 7 instructions. Account for
-+			 * different stub sizes and track the livepatch relocation
-+			 * count in me->arch.klp_relocs.
-+			 */
-+			relocs += sec_relocs;
-+#ifdef CONFIG_LIVEPATCH
-+			if (sechdrs[i].sh_flags & SHF_RELA_LIVEPATCH)
-+				klp_relocs += sec_relocs;
-+#endif
- 		}
- 	}
- 
-@@ -273,6 +306,15 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
- 	relocs++;
- #endif
- 
-+	relocs -= klp_relocs;
-+#ifdef CONFIG_LIVEPATCH
-+	me->arch.klp_relocs = klp_relocs;
-+
-+	pr_debug("Looks like a total of %lu stubs, (%lu) livepatch stubs, max\n",
-+				relocs, klp_relocs);
-+	return (relocs * sizeof(struct ppc64_stub_entry) +
-+		klp_relocs * sizeof(struct ppc64le_klp_stub_entry));
-+#endif
- 	pr_debug("Looks like a total of %lu stubs, max\n", relocs);
- 	return relocs * sizeof(struct ppc64_stub_entry);
- }
-@@ -369,7 +411,7 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
- 		me->arch.toc_section = me->arch.stubs_section;
- 
- 	/* Override the stubs size */
--	sechdrs[me->arch.stubs_section].sh_size = get_stubs_size(hdr, sechdrs);
-+	sechdrs[me->arch.stubs_section].sh_size = get_stubs_size(hdr, sechdrs, me);
- 	return 0;
- }
- 
-@@ -415,6 +457,39 @@ static inline int create_stub(const Elf64_Shdr *sechdrs,
- 	return 1;
- }
- 
-+#ifdef CONFIG_LIVEPATCH
-+/* Patch stub to reference function and correct r2 value. */
-+static inline int create_klp_stub(const Elf64_Shdr *sechdrs,
-+				  struct ppc64le_klp_stub_entry *entry,
-+				  unsigned long addr,
-+				  struct module *me)
-+{
-+	long reladdr;
-+	unsigned long klp_stub_size, klp_stub_entry_idx;
-+
-+	klp_stub_size = (klp_stub_insn_end - klp_stub_insn);
-+	klp_stub_entry_idx = (klp_stub_entry - klp_stub_insn);
-+
-+	memcpy(entry->jump, klp_stub_insn, sizeof(u32) * klp_stub_size);
-+
-+	/* Stub uses address relative to r2. */
-+	reladdr = (unsigned long)entry - my_r2(sechdrs, me);
-+	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
-+		pr_err("%s: Address %p of stub out of range of %p.\n",
-+				me->name, (void *)reladdr, (void *)my_r2);
-+		return 0;
-+	}
-+	pr_debug("Stub %p get data from reladdr %li\n", entry, reladdr);
-+
-+	entry->jump[klp_stub_entry_idx] |= PPC_HA(reladdr);
-+	entry->jump[klp_stub_entry_idx + 1] |= PPC_LO(reladdr);
-+	entry->funcdata = func_desc(addr);
-+	entry->magic = STUB_MAGIC;
-+
-+	return 1;
-+}
-+#endif
-+
- /* Create stub to jump to function described in this OPD/ptr: we need the
-    stub to set up the TOC ptr (r2) for the function. */
- static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
-@@ -441,6 +516,38 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
- 	return (unsigned long)&stubs[i];
- }
- 
-+#ifdef CONFIG_LIVEPATCH
-+static unsigned long klp_stub_for_addr(const Elf64_Shdr *sechdrs,
-+				       unsigned long addr,
-+				       struct module *me)
-+{
-+	struct ppc64le_klp_stub_entry *klp_stubs;
-+	unsigned int num_klp_stubs = me->arch.klp_relocs;
-+	unsigned int i, num_stubs;
-+
-+	num_stubs = (sechdrs[me->arch.stubs_section].sh_size -
-+		    (num_klp_stubs * sizeof(*klp_stubs))) /
-+				sizeof(struct ppc64_stub_entry);
-+
-+	/*
-+	 * Create livepatch stubs after the regular stubs.
-+	 */
-+	klp_stubs = (void *)sechdrs[me->arch.stubs_section].sh_addr +
-+		    (num_stubs * sizeof(struct ppc64_stub_entry));
-+	for (i = 0; stub_func_addr(klp_stubs[i].funcdata); i++) {
-+		BUG_ON(i >= num_klp_stubs);
-+
-+		if (stub_func_addr(klp_stubs[i].funcdata) == func_addr(addr))
-+			return (unsigned long)&klp_stubs[i];
-+	}
-+
-+	if (!create_klp_stub(sechdrs, &klp_stubs[i], addr, me))
-+		return 0;
-+
-+	return (unsigned long)&klp_stubs[i];
-+}
-+#endif
-+
- #ifdef CC_USING_MPROFILE_KERNEL
- static bool is_early_mcount_callsite(u32 *instruction)
- {
-@@ -622,6 +729,12 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 					return -ENOEXEC;
- 
- 				squash_toc_save_inst(strtab + sym->st_name, value);
-+#ifdef CONFIG_LIVEPATCH
-+			} else if (sym->st_shndx == SHN_LIVEPATCH) {
-+				value = klp_stub_for_addr(sechdrs, value, me);
-+				if (!value)
-+					return -ENOENT;
-+#endif
- 			} else
- 				value += local_entry_offset(sym);
- 
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index c98e90b..708a96d 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -249,6 +249,83 @@ livepatch_handler:
- 
- 	/* Return to original caller of live patched function */
- 	blr
-+
-+	/*
-+	 * This livepatch stub code, called from livepatch module to jump into
-+	 * kernel or other modules. It replicates the livepatch_handler code,
-+	 * with an expection of jumping to the trampoline instead of patched
-+	 * function.
-+	 */
-+	.global klp_stub_insn
-+klp_stub_insn:
-+	CURRENT_THREAD_INFO(r12, r1)
-+
-+	/* Allocate 3 x 8 bytes */
-+	ld      r11, TI_livepatch_sp(r12)
-+	addi    r11, r11, 24
-+	std     r11, TI_livepatch_sp(r12)
-+
-+	/* Save toc & real LR on livepatch stack */
-+	std     r2,  -24(r11)
-+	mflr    r12
-+	std     r12, -16(r11)
-+
-+	/* Store stack end marker */
-+	lis     r12, STACK_END_MAGIC@h
-+	ori     r12, r12, STACK_END_MAGIC@l
-+	std     r12, -8(r11)
-+
-+	/*
-+	 * Stub memory is allocated dynamically, during the module load.
-+	 * Load TOC relative address into r11. module_64.c::klp_stub_for_addr()
-+	 * identifies the available free stub slot and loads the address into
-+	 * r11 with two instructions.
-+	 *
-+	 * addis r11, r2, stub_address@ha
-+	 * addi  r11, r11, stub_address@l
-+	 */
-+	.global klp_stub_entry
-+klp_stub_entry:
-+	addis   r11, r2, 0
-+	addi    r11, r11, 0
-+
-+	/* Load the r12 with called function address from entry->funcdata */
-+	ld      r12, 128(r11)
-+
-+	/* Move r12 into ctr for global entry and branch there */
-+	mtctr   r12
-+	bctrl
-+
-+	/*
-+	 * Now we are returning to the patched function. We are free to
-+	 * use r11, r12 and we can use r2 until we restore it.
-+	 */
-+	CURRENT_THREAD_INFO(r12, r1)
-+
-+	ld      r11, TI_livepatch_sp(r12)
-+
-+	/* Check stack marker hasn't been trashed */
-+	lis     r2,  STACK_END_MAGIC@h
-+	ori     r2,  r2, STACK_END_MAGIC@l
-+	ld      r12, -8(r11)
-+2:	tdne    r12, r2
-+	EMIT_BUG_ENTRY 2b, __FILE__, __LINE__ - 1, 0
-+
-+	/* Restore LR & toc from livepatch stack */
-+	ld      r12, -16(r11)
-+	mtlr    r12
-+	ld      r2,  -24(r11)
-+
-+	/* Pop livepatch stack frame */
-+	CURRENT_THREAD_INFO(r12, r1)
-+	subi    r11, r11, 24
-+	std     r11, TI_livepatch_sp(r12)
-+
-+	/* Return to original caller of live patched function */
-+	blr
-+
-+	.global klp_stub_insn_end
-+klp_stub_insn_end:
- #endif /* CONFIG_LIVEPATCH */
- 
- #endif /* CONFIG_DYNAMIC_FTRACE */
--- 
-2.7.4
+C.  
