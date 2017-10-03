@@ -1,29 +1,31 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.181])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y63hb2ZZwzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 03:02:38 +1100 (AEDT)
-Subject: Re: [PATCH v9 03/12] mm: deferred_init_memmap improvements
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-4-pasha.tatashin@oracle.com>
- <20171003125754.2kuqzkstywg7axhd@dhcp22.suse.cz>
- <fc4ef789-d9a8-5dab-6508-f0fe8751b462@oracle.com>
-Message-ID: <d81baa49-b796-7130-4ace-0f14ed59be46@oracle.com>
-Date: Tue, 3 Oct 2017 12:01:08 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y63ht3QRDzDql7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 03:02:52 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Christoph Hellwig' <hch@lst.de>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>
+CC: Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, David Howells <dhowells@redhat.com>, "Max
+ Filippov" <jcmvbkbc@gmail.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>, "Robin
+ Murphy" <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH 02/11] x86: make dma_cache_sync a no-op
+Date: Tue, 3 Oct 2017 16:02:10 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD0088B73@AcuExch.aculab.com>
+References: <20171003104311.10058-1-hch@lst.de>
+ <20171003104311.10058-3-hch@lst.de>
+In-Reply-To: <20171003104311.10058-3-hch@lst.de>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <fc4ef789-d9a8-5dab-6508-f0fe8751b462@oracle.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,67 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
+From: Christoph Hellwig
+> Sent: 03 October 2017 11:43
+> x86 does not implement DMA_ATTR_NON_CONSISTENT allocations, so it doesn't
+> make any sense to do any work in dma_cache_sync given that it must be a
+> no-op when dma_alloc_attrs returns coherent memory.
 
-Are you OK, if I replace DEFERRED_FREE() macro with a function like this:
+I believe it is just about possible to require an explicit
+write flush on x86.
+ISTR this can happen with something like write combining.
 
-/*
-  * Helper for deferred_init_range, free the given range, and reset the
-  * counters
-  */
-static inline unsigned long __def_free(unsigned long *nr_free,
-                                        unsigned long *free_base_pfn,
-                                        struct page **page)
-{
-         unsigned long nr = *nr_free;
+Whether this can actually happen is the kernel is another matter.
 
-         deferred_free_range(*free_base_pfn, nr);
-         *free_base_pfn = 0;
-         *nr_free = 0;
-         *page = NULL;
-
-         return nr;
-}
-
-Since it is inline, and we operate with non-volatile counters, compiler 
-will be smart enough to remove all the unnecessary de-references. As a 
-plus, we won't be adding any new branches, and the code is still going 
-to stay compact.
-
-Pasha
-
-On 10/03/2017 11:15 AM, Pasha Tatashin wrote:
-> Hi Michal,
-> 
->>
->> Please be explicit that this is possible only because we discard
->> memblock data later after 3010f876500f ("mm: discard memblock data
->> later"). Also be more explicit how the new code works.
-> 
-> OK
-> 
->>
->> I like how the resulting code is more compact and smaller.
-> 
-> That was the goal :)
-> 
->> for_each_free_mem_range also looks more appropriate but I really detest
->> the DEFERRED_FREE thingy. Maybe we can handle all that in a single goto
->> section. I know this is not an art but manipulating variables from
->> macros is more error prone and much more ugly IMHO.
-> 
-> Sure, I can re-arrange to have a goto place. Function won't be as small, 
-> and if compiler is not smart enough we might end up with having more 
-> branches than what my current code has.
-> 
->>
->> please do not use macros. Btw. this deserves its own fix. I suspect that
->> no CONFIG_HOLES_IN_ZONE arch enables DEFERRED_STRUCT_PAGE_INIT but
->> purely from the review point of view it should be its own patch.
-> 
-> Sure, I will submit this patch separately from the rest of the project. 
-> In my opinion DEFERRED_STRUCT_PAGE_INIT is the way of the future, so we 
-> should make sure it is working with as many configs as possible.
-> 
-> Thank you,
-> Pasha
+	David
