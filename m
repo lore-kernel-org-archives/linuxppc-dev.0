@@ -2,8 +2,8 @@ Return-Path: <BATV+69bb01a06caa5cf26dd3+5154+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5wcP1806zDql4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 21:43:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5wcP16YzzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 21:43:29 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
@@ -13,9 +13,9 @@ Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
  x86@kernel.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
  linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 02/11] x86: make dma_cache_sync a no-op
-Date: Tue,  3 Oct 2017 12:43:02 +0200
-Message-Id: <20171003104311.10058-3-hch@lst.de>
+Subject: [PATCH 01/11] floppy: consolidate the dummy fd_cacheflush definition
+Date: Tue,  3 Oct 2017 12:43:01 +0200
+Message-Id: <20171003104311.10058-2-hch@lst.de>
 In-Reply-To: <20171003104311.10058-1-hch@lst.de>
 References: <20171003104311.10058-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,27 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-x86 does not implement DMA_ATTR_NON_CONSISTENT allocations, so it doesn't
-make any sense to do any work in dma_cache_sync given that it must be a
-no-op when dma_alloc_attrs returns coherent memory.
+Only mips defines this helper, so remove all the other arch definitions.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/include/asm/dma-mapping.h | 1 -
- 1 file changed, 1 deletion(-)
+ arch/alpha/include/asm/floppy.h    | 2 --
+ arch/powerpc/include/asm/floppy.h  | 2 --
+ arch/sparc/include/asm/floppy_32.h | 1 -
+ arch/sparc/include/asm/floppy_64.h | 1 -
+ drivers/block/floppy.c             | 4 ++++
+ 5 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 1387dafdba2d..c6d3367be916 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -71,7 +71,6 @@ static inline void
- dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 	enum dma_data_direction dir)
- {
--	flush_write_buffers();
- }
+diff --git a/arch/alpha/include/asm/floppy.h b/arch/alpha/include/asm/floppy.h
+index bae97eb19d26..942924756cf2 100644
+--- a/arch/alpha/include/asm/floppy.h
++++ b/arch/alpha/include/asm/floppy.h
+@@ -24,7 +24,6 @@
+ #define fd_set_dma_count(count) set_dma_count(FLOPPY_DMA,count)
+ #define fd_enable_irq()         enable_irq(FLOPPY_IRQ)
+ #define fd_disable_irq()        disable_irq(FLOPPY_IRQ)
+-#define fd_cacheflush(addr,size) /* nothing */
+ #define fd_request_irq()        request_irq(FLOPPY_IRQ, floppy_interrupt,\
+ 					    0, "floppy", NULL)
+ #define fd_free_irq()           free_irq(FLOPPY_IRQ, NULL)
+@@ -62,7 +61,6 @@ alpha_fd_dma_setup(char *addr, unsigned long size, int mode, int io)
+ 	prev_dir = dir;
  
- static inline unsigned long dma_alloc_coherent_mask(struct device *dev,
+ 	fd_clear_dma_ff();
+-	fd_cacheflush(addr, size);
+ 	fd_set_dma_mode(mode);
+ 	set_dma_addr(FLOPPY_DMA, bus_addr);
+ 	fd_set_dma_count(size);
+diff --git a/arch/powerpc/include/asm/floppy.h b/arch/powerpc/include/asm/floppy.h
+index 936a904ae78c..167c44b58848 100644
+--- a/arch/powerpc/include/asm/floppy.h
++++ b/arch/powerpc/include/asm/floppy.h
+@@ -25,7 +25,6 @@
+ #define fd_get_dma_residue()    fd_ops->_get_dma_residue(FLOPPY_DMA)
+ #define fd_enable_irq()         enable_irq(FLOPPY_IRQ)
+ #define fd_disable_irq()        disable_irq(FLOPPY_IRQ)
+-#define fd_cacheflush(addr,size) /* nothing */
+ #define fd_free_irq()           free_irq(FLOPPY_IRQ, NULL);
+ 
+ #include <linux/pci.h>
+@@ -152,7 +151,6 @@ static int hard_dma_setup(char *addr, unsigned long size, int mode, int io)
+ 	prev_dir = dir;
+ 
+ 	fd_clear_dma_ff();
+-	fd_cacheflush(addr, size);
+ 	fd_set_dma_mode(mode);
+ 	set_dma_addr(FLOPPY_DMA, bus_addr);
+ 	fd_set_dma_count(size);
+diff --git a/arch/sparc/include/asm/floppy_32.h b/arch/sparc/include/asm/floppy_32.h
+index 071b83e52f15..dab58525229e 100644
+--- a/arch/sparc/include/asm/floppy_32.h
++++ b/arch/sparc/include/asm/floppy_32.h
+@@ -70,7 +70,6 @@ static struct sun_floppy_ops sun_fdops;
+ #define fd_set_dma_count(count)   sun_fd_set_dma_count(count)
+ #define fd_enable_irq()           /* nothing... */
+ #define fd_disable_irq()          /* nothing... */
+-#define fd_cacheflush(addr, size) /* nothing... */
+ #define fd_request_irq()          sun_fd_request_irq()
+ #define fd_free_irq()             /* nothing... */
+ #if 0  /* P3: added by Alain, these cause a MMU corruption. 19960524 XXX */
+diff --git a/arch/sparc/include/asm/floppy_64.h b/arch/sparc/include/asm/floppy_64.h
+index 625756406a7e..a1db35a22c99 100644
+--- a/arch/sparc/include/asm/floppy_64.h
++++ b/arch/sparc/include/asm/floppy_64.h
+@@ -72,7 +72,6 @@ static struct sun_floppy_ops sun_fdops;
+ #define fd_set_dma_addr(addr)     sun_fdops.fd_set_dma_addr(addr)
+ #define fd_set_dma_count(count)   sun_fdops.fd_set_dma_count(count)
+ #define get_dma_residue(x)        sun_fdops.get_dma_residue()
+-#define fd_cacheflush(addr, size) /* nothing... */
+ #define fd_request_irq()          sun_fdops.fd_request_irq()
+ #define fd_free_irq()             sun_fdops.fd_free_irq()
+ #define fd_eject(drive)           sun_fdops.fd_eject(drive)
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index 60c086a53609..a54183935aa1 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -275,6 +275,10 @@ static int set_next_request(void);
+ #define fd_dma_mem_alloc(size) __get_dma_pages(GFP_KERNEL, get_order(size))
+ #endif
+ 
++#ifndef fd_cacheflush
++#define fd_cacheflush(addr, size) /* nothing... */
++#endif
++
+ static inline void fallback_on_nodma_alloc(char **addr, size_t l)
+ {
+ #ifdef FLOPPY_CAN_FALLBACK_ON_NODMA
 -- 
 2.14.1
