@@ -1,23 +1,39 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5gx42lhjzDql8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 12:12:08 +1100 (AEDT)
-Date: Tue, 3 Oct 2017 11:49:56 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Greg Kurz <groug@kaod.org>
-Cc: kvm-ppc@vger.kernel.org, qemu-ppc@nongnu.org,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] KVM: PPC: Book3S PR: only install valid SLBs during
- KVM_SET_SREGS
-Message-ID: <20171003004956.GC2755@umbus.fritz.box>
-References: <150693362232.15210.2878817650741484831.stgit@bahia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5hGQ6b3yzDqhh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 12:27:10 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, kirill@shutemov.name,
+ Andi Kleen <ak@linux.intel.com>, Michal Hocko <mhocko@kernel.org>,
+ dave@stgolabs.net, Jan Kara <jack@suse.cz>,
+ Matthew Wilcox <willy@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-mm <linux-mm@kvack.org>, haren@linux.vnet.ibm.com,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>, npiggin@gmail.com,
+ bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, "x86\@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH v3 00/20] Speculative page faults
+In-Reply-To: <64e9759b-a4fb-63d3-a811-3e35ae5a1028@linux.vnet.ibm.com>
+References: <CAADnVQLmSbLHwj9m33kpzAidJPvq3cbdnXjaew6oTLqHWrBbZQ@mail.gmail.com>
+ <20170925163443.260d6092160ec704e2b04653@linux-foundation.org>
+ <924a79af-6d7a-316a-1eee-3aebbfd4addf@linux.vnet.ibm.com>
+ <20170928133850.90c5bf2aac0f1a63e29c01a3@linux-foundation.org>
+ <64e9759b-a4fb-63d3-a811-3e35ae5a1028@linux.vnet.ibm.com>
+Date: Tue, 03 Oct 2017 12:27:10 +1100
+Message-ID: <873771dnrl.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="w7PDEPdKQumQfZlR"
-In-Reply-To: <150693362232.15210.2878817650741484831.stgit@bahia>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,93 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
 
---w7PDEPdKQumQfZlR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hi Andrew,
+>
+> On 28/09/2017 22:38, Andrew Morton wrote:
+>> On Thu, 28 Sep 2017 14:29:02 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+>> 
+>>>> Laurent's [0/n] provides some nice-looking performance benefits for
+>>>> workloads which are chosen to show performance benefits(!) but, alas,
+>>>> no quantitative testing results for workloads which we may suspect will
+>>>> be harmed by the changes(?).  Even things as simple as impact upon
+>>>> single-threaded pagefault-intensive workloads and its effect upon
+>>>> CONFIG_SMP=n .text size?
+>>>
+>>> I forgot to mention in my previous email the impact on the .text section.
+>>>
+>>> Here are the metrics I got :
+>>>
+>>> .text size	UP		SMP		Delta
+>>> 4.13-mmotm	8444201		8964137		6.16%
+>>> '' +spf		8452041		8971929		6.15%
+>>> 	Delta	0.09%		0.09%	
+>>>
+>>> No major impact as you could see.
+>> 
+>> 8k text increase seems rather a lot actually.  That's a lot more
+>> userspace cacheclines that get evicted during a fault...
+>> 
+>> Is the feature actually beneficial on uniprocessor?
+>
+> This is useless on uniprocessor, and I will disable it on x86 when !SMP 
+> by not defining __HAVE_ARCH_CALL_SPF.
+> So the speculative page fault handler will not be built but the vm 
+> sequence counter and the SCRU stuff will still be there. I may also make 
+> it disabled through macro when __HAVE_ARCH_CALL_SPF is not defined, but 
+> this may obfuscated the code a bit...
+>
+> On ppc64, as this feature requires book3s, it can't be built without SMP 
+> support.
 
-On Mon, Oct 02, 2017 at 10:40:22AM +0200, Greg Kurz wrote:
-> Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
-> some of which are valid (ie, SLB_ESID_V is set) and the rest are
-> likely all-zeroes (with QEMU at least).
->=20
-> Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
-> assumes to find the SLB index in the 3 lower bits of its rb argument.
-> When passed zeroed arguments, it happily overwrites the 0th SLB entry
-> with zeroes. This is exactly what happens while doing live migration
-> with QEMU when the destination pushes the incoming SLB descriptors to
-> KVM PR. When reloading the SLBs at the next synchronization, QEMU first
-> clears its SLB array and only restore valid ones, but the 0th one is
-> now gone and we cannot access the corresponding memory anymore:
->=20
-> (qemu) x/x $pc
-> c0000000000b742c: Cannot access memory
->=20
-> To avoid this, let's filter out non-valid SLB entries. While here, we
-> also force a full SLB flush before installing new entries.
->=20
-> Signed-off-by: Greg Kurz <groug@kaod.org>
+Book3S doesn't force SMP, eg. PMAC is Book3S but can be built with SMP=n.
 
-Seems sensible to me.
+It's true that POWERNV and PSERIES both force SMP, and those are the
+platforms used on modern Book3S CPUs.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-> ---
-> v2: - flush SLB before installing new entries
-> ---
->  arch/powerpc/kvm/book3s_pr.c |   10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index 3beb4ff469d1..7cce08d610ae 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -1327,9 +1327,15 @@ static int kvm_arch_vcpu_ioctl_set_sregs_pr(struct=
- kvm_vcpu *vcpu,
-> =20
->  	vcpu3s->sdr1 =3D sregs->u.s.sdr1;
->  	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
-> +		/* Flush all SLB entries */
-> +		vcpu->arch.mmu.slbmte(vcpu, 0, 0);
-> +		vcpu->arch.mmu.slbia(vcpu);
-> +
->  		for (i =3D 0; i < 64; i++) {
-> -			vcpu->arch.mmu.slbmte(vcpu, sregs->u.s.ppc64.slb[i].slbv,
-> -						    sregs->u.s.ppc64.slb[i].slbe);
-> +			u64 rb =3D sregs->u.s.ppc64.slb[i].slbe;
-> +			u64 rs =3D sregs->u.s.ppc64.slb[i].slbv;
-> +			if (rb & SLB_ESID_V)
-> +				vcpu->arch.mmu.slbmte(vcpu, rs, rb);
->  		}
->  	} else {
->  		for (i =3D 0; i < 16; i++) {
->=20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---w7PDEPdKQumQfZlR
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlnS3rIACgkQbDjKyiDZ
-s5JjExAA36LUfeYD7ZBM20mwMjsg2NPpIbIMtPprFVyDxgtZCVFrnPd8pHCNHKc8
-jZUM7JlnE+x4LpJM0BL6bCRQM2PdBy8VoXUp1b7qLz8KKTNTkzgCUAABe0g84n9N
-cSnPCblm3RkmvbY+t5y71xhkEFmn1O3pc3U6uWPEfyc9MDTIW55p4RKdBDdvE1cY
-fAZ2Vh14TvrXz23hJALDBiGxvr8srSgNLHJj8R6GKt1zIvzba4nFcJdeTTf/Fqzj
-SNrujmRGRzQBa6QY4dZzqV/Ne2oc5tk9wepTYOSmxh2Op6MT9G0kYJMWLcmnbDxm
-VR2tLIOHYJJQuPMq0fK21wLrOgBMPwXg46YPhfT4k3XAy806Bm2BQYWqC9ISJk/K
-IW2U2rsTAQ4nnQyDPdS9Bg8n4jTPCdcUX81Xj8je4esQTqmkdvNPeYD7b9L6Uec+
-LXRUgKFPSXDqbCB+fnmqBPx3Ka8+9/bamvD3k5QEdFRPJxRTwyRKu0/vsscjCxRx
-mePQMe3u6BIcoqoNatNvVjQ3oyWAh9reWvxpwqQhzN6UfaXqTZ/zqKbXHxa+XTc9
-1+XVPe4KQx1uwS6MM6+R7mrUa2kczVlLEUz1Uzt5LLmMFt7VWOEhtRmL0NIAaZpz
-pFF25z18GSxynOYdzz55ReS5kS9++bAFYyZ6ZLsklo2QSBtVihE=
-=UFO7
------END PGP SIGNATURE-----
-
---w7PDEPdKQumQfZlR--
+cheers
