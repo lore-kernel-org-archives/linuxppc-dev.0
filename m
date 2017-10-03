@@ -2,8 +2,8 @@ Return-Path: <BATV+69bb01a06caa5cf26dd3+5154+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5wcf6tXlzDqls
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 21:43:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5wck1rhqzDqlm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 21:43:50 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
@@ -13,9 +13,9 @@ Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
  x86@kernel.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
  linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 08/11] unicore32: make dma_cache_sync a no-op
-Date: Tue,  3 Oct 2017 12:43:08 +0200
-Message-Id: <20171003104311.10058-9-hch@lst.de>
+Subject: [PATCH 09/11] xtensa: make dma_cache_sync a no-op
+Date: Tue,  3 Oct 2017 12:43:09 +0200
+Message-Id: <20171003104311.10058-10-hch@lst.de>
 In-Reply-To: <20171003104311.10058-1-hch@lst.de>
 References: <20171003104311.10058-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,82 +27,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-unicore32 does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
+xtensa does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
 doesn't make any sense to do any work in dma_cache_sync given that it
 must be a no-op when dma_alloc_attrs returns coherent memory.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/unicore32/include/asm/cacheflush.h  |  9 ---------
- arch/unicore32/include/asm/dma-mapping.h | 17 -----------------
- arch/unicore32/mm/proc-syms.c            |  3 ---
- 3 files changed, 29 deletions(-)
+ arch/xtensa/include/asm/dma-mapping.h |  6 ++++--
+ arch/xtensa/kernel/pci-dma.c          | 23 -----------------------
+ 2 files changed, 4 insertions(+), 25 deletions(-)
 
-diff --git a/arch/unicore32/include/asm/cacheflush.h b/arch/unicore32/include/asm/cacheflush.h
-index c0301e6c8b81..a5e08e2d5d6d 100644
---- a/arch/unicore32/include/asm/cacheflush.h
-+++ b/arch/unicore32/include/asm/cacheflush.h
-@@ -101,15 +101,6 @@ extern void __cpuc_coherent_user_range(unsigned long, unsigned long);
- extern void __cpuc_flush_dcache_area(void *, size_t);
- extern void __cpuc_flush_kern_dcache_area(void *addr, size_t size);
- 
--/*
-- * These are private to the dma-mapping API.  Do not use directly.
-- * Their sole purpose is to ensure that data held in the cache
-- * is visible to DMA, or data written by DMA to system memory is
-- * visible to the CPU.
-- */
--extern void __cpuc_dma_clean_range(unsigned long, unsigned long);
--extern void __cpuc_dma_flush_range(unsigned long, unsigned long);
--
- /*
-  * Copy user data from/to a page which is mapped into a different
-  * processes address space.  Really, we want to allow our "user
-diff --git a/arch/unicore32/include/asm/dma-mapping.h b/arch/unicore32/include/asm/dma-mapping.h
-index 518ba5848dd6..e949855bb794 100644
---- a/arch/unicore32/include/asm/dma-mapping.h
-+++ b/arch/unicore32/include/asm/dma-mapping.h
-@@ -18,9 +18,6 @@
- #include <linux/scatterlist.h>
- #include <linux/swiotlb.h>
- 
--#include <asm/memory.h>
--#include <asm/cacheflush.h>
--
- extern const struct dma_map_ops swiotlb_dma_map_ops;
- 
- static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
-@@ -51,20 +48,6 @@ static inline void dma_mark_clean(void *addr, size_t size) {}
- static inline void dma_cache_sync(struct device *dev, void *vaddr,
- 		size_t size, enum dma_data_direction direction)
- {
--	unsigned long start = (unsigned long)vaddr;
--	unsigned long end   = start + size;
--
--	switch (direction) {
--	case DMA_NONE:
--		BUG();
--	case DMA_FROM_DEVICE:
--	case DMA_BIDIRECTIONAL:	/* writeback and invalidate */
--		__cpuc_dma_flush_range(start, end);
--		break;
--	case DMA_TO_DEVICE:		/* writeback only */
--		__cpuc_dma_clean_range(start, end);
--		break;
--	}
+diff --git a/arch/xtensa/include/asm/dma-mapping.h b/arch/xtensa/include/asm/dma-mapping.h
+index 269738dc9d1d..353e0314d6ba 100644
+--- a/arch/xtensa/include/asm/dma-mapping.h
++++ b/arch/xtensa/include/asm/dma-mapping.h
+@@ -23,8 +23,10 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+ 	return &xtensa_dma_map_ops;
  }
  
- #endif /* __KERNEL__ */
-diff --git a/arch/unicore32/mm/proc-syms.c b/arch/unicore32/mm/proc-syms.c
-index 21c00fc85c99..df215fd6d639 100644
---- a/arch/unicore32/mm/proc-syms.c
-+++ b/arch/unicore32/mm/proc-syms.c
-@@ -20,6 +20,3 @@ EXPORT_SYMBOL(cpu_dcache_clean_area);
- EXPORT_SYMBOL(cpu_set_pte);
+-void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+-		    enum dma_data_direction direction);
++static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
++		    enum dma_data_direction direction)
++{
++}
  
- EXPORT_SYMBOL(__cpuc_coherent_kern_range);
+ static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
+ {
+diff --git a/arch/xtensa/kernel/pci-dma.c b/arch/xtensa/kernel/pci-dma.c
+index cec86a1c2acc..623720a11143 100644
+--- a/arch/xtensa/kernel/pci-dma.c
++++ b/arch/xtensa/kernel/pci-dma.c
+@@ -26,29 +26,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/io.h>
+ 
+-void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+-		    enum dma_data_direction dir)
+-{
+-	switch (dir) {
+-	case DMA_BIDIRECTIONAL:
+-		__flush_invalidate_dcache_range((unsigned long)vaddr, size);
+-		break;
 -
--EXPORT_SYMBOL(__cpuc_dma_flush_range);
--EXPORT_SYMBOL(__cpuc_dma_clean_range);
+-	case DMA_FROM_DEVICE:
+-		__invalidate_dcache_range((unsigned long)vaddr, size);
+-		break;
+-
+-	case DMA_TO_DEVICE:
+-		__flush_dcache_range((unsigned long)vaddr, size);
+-		break;
+-
+-	case DMA_NONE:
+-		BUG();
+-		break;
+-	}
+-}
+-EXPORT_SYMBOL(dma_cache_sync);
+-
+ static void do_cache_op(dma_addr_t dma_handle, size_t size,
+ 			void (*fn)(unsigned long, unsigned long))
+ {
 -- 
 2.14.1
