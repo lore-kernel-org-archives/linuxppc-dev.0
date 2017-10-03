@@ -1,25 +1,28 @@
-Return-Path: <clg@kaod.org>
-Received: from 8.mo4.mail-out.ovh.net (8.mo4.mail-out.ovh.net [188.165.33.112])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5zq675SrzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 00:08:02 +1100 (AEDT)
-Received: from player746.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 766AABD3C5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 14:58:25 +0200 (CEST)
-Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>
-References: <20170923082656.27219-1-clg@kaod.org>
- <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
- <87poa4cw5x.fsf@concordia.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <741baa16-163d-b269-b4ed-7218ef64a166@kaod.org>
-Date: Tue, 3 Oct 2017 14:58:19 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5zrF3W9xzDqp5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 00:09:01 +1100 (AEDT)
+Date: Tue, 3 Oct 2017 15:08:57 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v9 06/12] mm: zero struct pages during initialization
+Message-ID: <20171003130857.vohli6lnqj4tdmhl@dhcp22.suse.cz>
+References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
+ <20170920201714.19817-7-pasha.tatashin@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <87poa4cw5x.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170920201714.19817-7-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Michael,
-
-On 10/03/2017 01:23 PM, Michael Ellerman wrote:
-> Cédric Le Goater <clg@kaod.org> writes:
+On Wed 20-09-17 16:17:08, Pavel Tatashin wrote:
+> Add struct page zeroing as a part of initialization of other fields in
+> __init_single_page().
 > 
->> On 09/23/2017 10:26 AM, Cédric Le Goater wrote:
->>> Hi,
->>>
->>> Here are a couple of small fixes to support CPU hot unplug. There are
->>> still some issues to be investigated as, in some occasions, after a
->>> couple of plug and unplug, the cpu which was removed receives a 'lost'
->>> interrupt. This showed to be the decrementer under QEMU.
->>
->> So this seems to be a QEMU issue only which can be solved by 
->> removing the DEE bit from the LPCR on P9 processor when the CPU 
->> is stopped in rtas. PECE3 bit on P8 processors. 
->>
->> I think these patches are valuable fixes for 4.14. The first 
->> is trivial and the second touches the common xive part but it
->> is only called on the pseries platform.  
->>
->> Could you please take a look ? 
+> This single thread performance collected on: Intel(R) Xeon(R) CPU E7-8895
+> v3 @ 2.60GHz with 1T of memory (268400646 pages in 8 nodes):
 > 
-> I can.
+>                         BASE            FIX
+> sparse_init     11.244671836s   0.007199623s
+> zone_sizes_init  4.879775891s   8.355182299s
+>                   --------------------------
+> Total           16.124447727s   8.362381922s
+
+Hmm, this is confusing. This assumes that sparse_init doesn't zero pages
+anymore, right? So these number depend on the last patch in the series?
+
+> sparse_init is where memory for struct pages is zeroed, and the zeroing
+> part is moved later in this patch into __init_single_page(), which is
+> called from zone_sizes_init().
 > 
-> You didn't give me much indication in the change logs of what the
-> failure mode is if I _don't_ have the fixes, which makes it hard for me
-> to assess the severity.
-Support for CPU removal came recently on PowerVM and was not
-tested when the patchset was sent. A couple of cleanups of the 
-XIVE internal structures are missing resulting in a kernel crash 
-when the CPU is released. 
-
-There are still some corner cases when stressing the lpar with 
-plug/unplug loops. Investigation in progress.  
-
-> Can you flesh out the ".. or else" case in the change logs?
-
-OK. I will improve patch 2 changelog.
-
-> And should both be tagged?
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+> Acked-by: Michal Hocko <mhocko@suse.com>
+> ---
+>  include/linux/mm.h | 9 +++++++++
+>  mm/page_alloc.c    | 1 +
+>  2 files changed, 10 insertions(+)
 > 
->   Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
-yes I think so. These patches are too small to be tagged as 
-adding hotplug support.
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index f8c10d336e42..50b74d628243 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -94,6 +94,15 @@ extern int mmap_rnd_compat_bits __read_mostly;
+>  #define mm_forbids_zeropage(X)	(0)
+>  #endif
+>  
+> +/*
+> + * On some architectures it is expensive to call memset() for small sizes.
+> + * Those architectures should provide their own implementation of "struct page"
+> + * zeroing by defining this macro in <asm/pgtable.h>.
+> + */
+> +#ifndef mm_zero_struct_page
+> +#define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
+> +#endif
+> +
+>  /*
+>   * Default maximum number of active map areas, this limits the number of vmas
+>   * per mm struct. Users can overwrite this number by sysctl but there is a
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index a8dbd405ed94..4b630ee91430 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1170,6 +1170,7 @@ static void free_one_page(struct zone *zone,
+>  static void __meminit __init_single_page(struct page *page, unsigned long pfn,
+>  				unsigned long zone, int nid)
+>  {
+> +	mm_zero_struct_page(page);
+>  	set_page_links(page, zone, nid, pfn);
+>  	init_page_count(page);
+>  	page_mapcount_reset(page);
+> -- 
+> 2.14.1
 
-Thanks,
-
-C. 
+-- 
+Michal Hocko
+SUSE Labs
