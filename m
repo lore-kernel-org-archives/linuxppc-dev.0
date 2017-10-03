@@ -2,9 +2,9 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y62Vr2FGszDqks
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 02:09:08 +1100 (AEDT)
-Subject: Re: [PATCH v9 01/12] x86/mm: setting fields in deferred pages
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y62Yt6GYpzDql4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 02:11:46 +1100 (AEDT)
+Subject: Re: [PATCH v9 02/12] sparc64/mm: setting fields in deferred pages
 To: Michal Hocko <mhocko@kernel.org>
 Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -15,13 +15,13 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
  steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
 References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-2-pasha.tatashin@oracle.com>
- <20171003122658.cv64pxnuavopjid6@dhcp22.suse.cz>
+ <20170920201714.19817-3-pasha.tatashin@oracle.com>
+ <20171003122823.mdzkhxs4xza7sb2w@dhcp22.suse.cz>
 From: Pasha Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <00978c7c-8d05-fbc3-eaba-9455b66ff02e@oracle.com>
-Date: Tue, 3 Oct 2017 11:07:54 -0400
+Message-ID: <3c410186-0af9-dae8-84eb-8f4d4651d355@oracle.com>
+Date: Tue, 3 Oct 2017 11:10:35 -0400
 MIME-Version: 1.0
-In-Reply-To: <20171003122658.cv64pxnuavopjid6@dhcp22.suse.cz>
+In-Reply-To: <20171003122823.mdzkhxs4xza7sb2w@dhcp22.suse.cz>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,41 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
-
 > 
-> I hope I haven't missed anything but it looks good to me.
+> As you separated x86 and sparc patches doing essentially the same I
+> assume David is going to take this patch?
+
+Correct, I noticed that usually platform specific changes are done in 
+separate patches even if they are small. Dave already Acked this patch. 
+So, I do not think it should be separated from the rest of the patches 
+when this projects goes into mm-tree.
+
 > 
 > Acked-by: Michal Hocko <mhocko@suse.com>
 
-Thank you for your review.
-
-> 
-> one nit below
->> ---
->>   arch/x86/mm/init_64.c | 9 +++++++--
->>   1 file changed, 7 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
->> index 5ea1c3c2636e..30fe22558720 100644
->> --- a/arch/x86/mm/init_64.c
->> +++ b/arch/x86/mm/init_64.c
->> @@ -1182,12 +1182,17 @@ void __init mem_init(void)
->>   
->>   	/* clear_bss() already clear the empty_zero_page */
->>   
->> -	register_page_bootmem_info();
->> -
->>   	/* this will put all memory onto the freelists */
->>   	free_all_bootmem();
->>   	after_bootmem = 1;
->>   
->> +	/* Must be done after boot memory is put on freelist, because here we
-> 
-> standard code style is to do
-> 	/*
-> 	 * text starts here
-
-OK, will change for both patch 1 and 2.
-
+Thank you,
 Pasha
