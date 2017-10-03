@@ -1,30 +1,31 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aarcange@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y69Zw6Hf2zDqlP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 07:28:08 +1100 (AEDT)
-Subject: Re: [PATCH v9 12/12] mm: stop zeroing memory during allocation in
- vmemmap
-From: Pasha Tatashin <pasha.tatashin@oracle.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-13-pasha.tatashin@oracle.com>
- <20171003131952.aqq377pjug5me6go@dhcp22.suse.cz>
- <c028f65a-b4a6-e56d-3a50-5d7ad9af50cb@oracle.com>
-Message-ID: <e5872937-b166-fd48-d46d-1921c738d4b1@oracle.com>
-Date: Tue, 3 Oct 2017 16:26:51 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Fv10XgMzDqlP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 10:42:20 +1100 (AEDT)
+Date: Wed, 4 Oct 2017 01:42:15 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: jglisse@redhat.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Nadav Amit <nadav.amit@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Joerg Roedel <jroedel@suse.de>,
+ Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-next@vger.kernel.org
+Subject: Re: [PATCH] mm/mmu_notifier: avoid double notification when it is
+ useless
+Message-ID: <20171003234215.GA5231@redhat.com>
+References: <20170901173011.10745-1-jglisse@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <c028f65a-b4a6-e56d-3a50-5d7ad9af50cb@oracle.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170901173011.10745-1-jglisse@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,45 +35,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
+Hello Jerome,
 
-I decided not to merge these two patches, because in addition to sparc 
-optimization move, we have this dependancies:
+On Fri, Sep 01, 2017 at 01:30:11PM -0400, Jerome Glisse wrote:
+> +Case A is obvious you do not want to take the risk for the device to write to
+> +a page that might now be use by some completely different task.
 
-mm: zero reserved and unavailable struct pages
+used
 
-must be before
+> +is true ven if the thread doing the page table update is preempted right after
 
-mm: stop zeroing memory during allocation in vmemmap.
+even
 
-Otherwise, we can end-up with struct pages that are not zeroed properly.
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index 90731e3b7e58..5706252b828a 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -1167,8 +1167,15 @@ static int do_huge_pmd_wp_page_fallback(struct vm_fault *vmf, pmd_t orig_pmd,
+>  		goto out_free_pages;
+>  	VM_BUG_ON_PAGE(!PageHead(page), page);
+>  
+> +	/*
+> +	 * Leave pmd empty until pte is filled note we must notify here as
+> +	 * concurrent CPU thread might write to new page before the call to
+> +	 * mmu_notifier_invalidate_range_end() happen which can lead to a
 
-However, the first patch depends on
-mm: zero struct pages during initialization
+happens
 
-As it uses mm_zero_struct_page().
+> +	 * device seeing memory write in different order than CPU.
+> +	 *
+> +	 * See Documentation/vm/mmu_notifier.txt
+> +	 */
+>  	pmdp_huge_clear_flush_notify(vma, haddr, vmf->pmd);
+> -	/* leave pmd empty until pte is filled */
+>  
 
-Pasha
+Here we can change the following mmu_notifier_invalidate_range_end to
+skip calling ->invalidate_range. It could be called
+mmu_notifier_invalidate_range_only_end, or other suggestions
+welcome. Otherwise we'll repeat the call for nothing.
 
+We need it inside the PT lock for the ordering issue, but we don't
+need to run it twice.
 
-On 10/03/2017 11:34 AM, Pasha Tatashin wrote:
-> On 10/03/2017 09:19 AM, Michal Hocko wrote:
->> On Wed 20-09-17 16:17:14, Pavel Tatashin wrote:
->>> vmemmap_alloc_block() will no longer zero the block, so zero memory
->>> at its call sites for everything except struct pages.  Struct page 
->>> memory
->>> is zero'd by struct page initialization.
->>>
->>> Replace allocators in sprase-vmemmap to use the non-zeroing version. So,
->>> we will get the performance improvement by zeroing the memory in 
->>> parallel
->>> when struct pages are zeroed.
->>
->> Is it possible to merge this patch with 
->> http://lkml.kernel.org/r/20170920201714.19817-7-pasha.tatashin@oracle.com
-> 
-> Yes, I will do that. It would also require re-arranging
-> [PATCH v9 07/12] sparc64: optimized struct page zeroing
-> optimization to come after this patch.
-> 
-> Pasha
+Same in do_huge_pmd_wp_page, wp_page_copy and
+migrate_vma_insert_page. Every time *clear_flush_notify is used
+mmu_notifier_invalidate_range_only_end should be called after it,
+instead of mmu_notifier_invalidate_range_end.
+
+I think optimizing that part too, fits in the context of this patchset
+(if not in the same patch), because the objective is still the same:
+to remove unnecessary ->invalidate_range calls.
+
+> +				 * No need to notify as we downgrading page
+
+are
+
+> +				 * table protection not changing it to point
+> +				 * to a new page.
+> +	 			 *
+
+> +		 * No need to notify as we downgrading page table to read only
+
+are
+
+> +	 * No need to notify as we replacing a read only page with another
+
+are
+
+> @@ -1510,13 +1515,43 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
+>  			if (pte_soft_dirty(pteval))
+>  				swp_pte = pte_swp_mksoft_dirty(swp_pte);
+>  			set_pte_at(mm, address, pvmw.pte, swp_pte);
+> -		} else
+> +		} else {
+> +			/*
+> +			 * We should not need to notify here as we reach this
+> +			 * case only from freeze_page() itself only call from
+> +			 * split_huge_page_to_list() so everything below must
+> +			 * be true:
+> +			 *   - page is not anonymous
+> +			 *   - page is locked
+> +			 *
+> +			 * So as it is a shared page and it is locked, it can
+> +			 * not be remove from the page cache and replace by
+> +			 * a new page before mmu_notifier_invalidate_range_end
+> +			 * so no concurrent thread might update its page table
+> +			 * to point at new page while a device still is using
+> +			 * this page.
+> +			 *
+> +			 * But we can not assume that new user of try_to_unmap
+> +			 * will have that in mind so just to be safe here call
+> +			 * mmu_notifier_invalidate_range()
+> +			 *
+> +			 * See Documentation/vm/mmu_notifier.txt
+> +			 */
+>  			dec_mm_counter(mm, mm_counter_file(page));
+> +			mmu_notifier_invalidate_range(mm, address,
+> +						      address + PAGE_SIZE);
+> +		}
+>  discard:
+> +		/*
+> +		 * No need to call mmu_notifier_invalidate_range() as we are
+> +		 * either replacing a present pte with non present one (either
+> +		 * a swap or special one). We handling the clearing pte case
+> +		 * above.
+> +		 *
+> +		 * See Documentation/vm/mmu_notifier.txt
+> +		 */
+>  		page_remove_rmap(subpage, PageHuge(page));
+>  		put_page(page);
+> -		mmu_notifier_invalidate_range(mm, address,
+> -					      address + PAGE_SIZE);
+>  	}
+>  
+>  	mmu_notifier_invalidate_range_end(vma->vm_mm, start, end);
+
+That is the path that unmaps filebacked pages (btw, not necessarily
+shared unlike comment says, they can be private but still filebacked).
+
+I'd like some more explanation about the inner working of "that new
+user" as per comment above.
+
+It would be enough to drop mmu_notifier_invalidate_range from above
+without adding it to the filebacked case. The above gives higher prio
+to the hypothetical and uncertain future case, than to the current
+real filebacked case that doesn't need ->invalidate_range inside the
+PT lock, or do you see something that might already need such
+->invalidate_range?
+
+I certainly like the patch. I expect ->invalidate_range users will
+like the slight higher complexity in order to eliminate unnecessary
+invalidates that are slowing them down unnecessarily. At the same time
+this is zero risk (because a noop) for all other MMU notifier users
+(those that don't share the primary MMU pagetables, like KVM).
+
+Thanks!
+Andrea
