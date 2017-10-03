@@ -1,47 +1,33 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5v0K5bQTzDqhh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 20:30:41 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v939SeNZ136726
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 05:30:39 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dc6sd3wj5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2017 05:30:38 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 3 Oct 2017 19:30:35 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v939UX3a49217678
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 20:30:33 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v939UXUI031732
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Oct 2017 20:30:33 +1100
-Date: Tue, 3 Oct 2017 15:00:29 +0530
-From: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH] kernel/module_64.c: Add REL24 relocation support of
- livepatch symbols
-References: <1507008978-10145-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5vhP6QBKzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 21:01:57 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id a7so8603848pfj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2017 03:01:57 -0700 (PDT)
+Date: Tue, 3 Oct 2017 20:01:26 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, LKML
+ <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter
+ Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>, Andrew
+ Morton <akpm@linux-foundation.org>, Sebastian Siewior
+ <bigeasy@linutronix.de>, Don Zickus <dzickus@redhat.com>, Chris Metcalf
+ <cmetcalf@mellanox.com>, Ulrich Obergfell <uobergfe@redhat.com>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch V2 22/29] lockup_detector: Make
+ watchdog_nmi_reconfigure() two stage
+Message-ID: <20171003200126.358155b7@roar.ozlabs.ibm.com>
+In-Reply-To: <alpine.DEB.2.20.1710030902310.2281@nanos>
+References: <20170912193654.321505854@linutronix.de>
+ <20170912194147.862865570@linutronix.de>
+ <87d165dqew.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.20.1710030848210.2281@nanos>
+ <alpine.DEB.2.20.1710030902310.2281@nanos>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1507008978-10145-1-git-send-email-kamalesh@linux.vnet.ibm.com>
-Message-Id: <20171003093029.x6hwls7qwyyjihkg@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,171 +37,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kamalesh,
+On Tue, 3 Oct 2017 09:04:03 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-On 2017/10/03 05:36AM, Kamalesh Babulal wrote:
-> With commit 425595a7fc20 ("livepatch: reuse module loader code to
-> write relocations") livepatch uses module loader to write relocations
-> of livepatch symbols, instead of managing them by arch-dependent
-> klp_write_module_reloc() function.
-> 
-> livepatch module managed relocation entries are written to sections
-> marked with SHF_RELA_LIVEPATCH flag and livepatch symbols within the
-> section are marked with SHN_LIVEPATCH symbol section index. When the
-> livepatching module is loaded, the livepatch symbols are resolved
-> before calling apply_relocate_add() to apply the relocations.
-> 
-> R_PPC64_REL24 relocation type resolves to a function address, those may
-> be local to the livepatch module or available in kernel/other modules.
-> For every such non-local function, apply_relocate_add() constructs a stub
-> (a.k.a trampoline) to branch to a function. Stub code is responsible
-> to save toc onto the stack, before calling the function via the global
-> entry point. A NOP instruction is expected after every non local function
-> branch, i.e. after the REL24 relocation. Which in-turn is replaced by
-> toc restore instruction by apply_relocate_add().
-> 
-> livepatch symbols with R_PPC64_REL24 relocation type, may not be
-> reachable within current TOC range or might not have a NOP instruction
-> following a branch. Latter symbols are the local symbols, whose became
-> global to the livepatched function. As per ABIv2, local functions are
-> accessed via local entry point, which is relative to current module's
-> toc value.
-> 
-> For example, consider the following livepatch relocations (the example is
-> from livepatch module generated by kpatch tool):
-> 
-> Relocation section '.klp.rela.vmlinux..text.meminfo_proc_show' at offset 0x84530 contains 44 entries:
->     Offset             Info             Type      Symbol's Value   Symbol's Name + Addend
-> 0000000000000054  000000560000000a R_PPC64_REL24  0000000000000000 .klp.sym.vmlinux.si_swapinfo,0 + 0
-> 000000000000007c  000000570000000a R_PPC64_REL24  0000000000000000 .klp.sym.vmlinux.total_swapcache_pages,0 + 0
-> 00000000000000e8  000000580000000a R_PPC64_REL24  0000000000000000 .klp.sym.vmlinux.show_val_kb,1 + 0
-> [...]
-> 
-> 1. .klp.sym.vmlinux.si_swapinfo and .klp.sym.vmlinux.total_swapcache_pages
->    are not available within the livepatch module TOC range.
-> 
-> 2. .klp.sym.vmlinux.show_val_kb livepatch symbol was previously local
->    but now global to fs/proc/meminfo.c::meminfo_proc_show().
-> 
-> While the livepatch module is loaded the livepatch symbols mentioned in
-> case 1 will fail with an error:
-> [   74.485405] module_64: kpatch_meminfo_string: REL24 -1152921504751525976 out of range!
-> 
-> and livepatch symbols mentioned in case 2 with fail with an error:
-> [   24.568425] module_64: kpatch_meminfo_string: Expect noop after relocate, got 3d220000
-> 
-> Both the failures with REL24 livepatch symbols relocation, can be resolved
-> by constructing a new livepatch stub. The newly setup klp_stub mimics the
-> functionality of entry_64.S::livepatch_handler introduced by commit
-> 85baa095497f ("powerpc/livepatch: Add live patching support on ppc64le").
-> 
-> Which introduces a "livepatch stack" growing upwards from the base of
-> the regular stack and is used to store/restore TOC/LR values, other than
-> the stub setup and branch. The additional instructions sequences to handle
-> klp_stub increases the stub size and current ppc64_stub_insn[] is not
-> sufficient to hold them. This patch also introduces new
-> ppc64le_klp_stub_entry[], along with the helpers to find/allocate
-> livepatch stub.
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-> Cc: Jessica Yu <jeyu@kernel.org>
-> Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-> Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: live-patching@vger.kernel.org
-> ---
->  arch/powerpc/include/asm/module.h              |   4 +
->  arch/powerpc/kernel/module_64.c                | 119 ++++++++++++++++++++++++-
->  arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  77 ++++++++++++++++
->  3 files changed, 197 insertions(+), 3 deletions(-)
-> 
- 
-[snip]
+> On Tue, 3 Oct 2017, Thomas Gleixner wrote:
+> > On Tue, 3 Oct 2017, Michael Ellerman wrote:  
+> > > Hi Thomas,
+> > > Unfortunately this is hitting the WARN_ON in start_wd_cpu() on powerpc
+> > > because we're calling it multiple times for the boot CPU.
+> > > 
+> > > The first call is via:
+> > > 
+> > >   start_wd_on_cpu+0x80/0x2f0
+> > >   watchdog_nmi_reconfigure+0x124/0x170
+> > >   softlockup_reconfigure_threads+0x110/0x130
+> > >   lockup_detector_init+0xbc/0xe0
+> > >   kernel_init_freeable+0x18c/0x37c
+> > >   kernel_init+0x2c/0x160
+> > >   ret_from_kernel_thread+0x5c/0xbc
+> > > 
+> > > And then again via the CPU hotplug registration:
+> > > 
+> > >   start_wd_on_cpu+0x80/0x2f0
+> > >   cpuhp_invoke_callback+0x194/0x620
+> > >   cpuhp_thread_fun+0x7c/0x1b0
+> > >   smpboot_thread_fn+0x290/0x2a0
+> > >   kthread+0x168/0x1b0
+> > >   ret_from_kernel_thread+0x5c/0xbc
+> > > 
+> > > 
+> > > The first call is new because previously watchdog_nmi_reconfigure()
+> > > wasn't called from softlockup_reconfigure_threads().  
+> > 
+> > Hmm, don't you have the same problem with CPU hotplug or do you just get
+> > lucky because the hotplug callback in your code is ordered vs. the
+> > softlockup thread hotplug callback in a way that this does not hit?
 
-A few small nits focusing on just the trampoline...
-
-> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> index c98e90b..708a96d 100644
-> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> @@ -249,6 +249,83 @@ livepatch_handler:
+I had the idea that it watchdog_nmi_reconfigure() being only called
+with get_online_cpus held would prevent hotplug callbacks running.
+  
 > 
->  	/* Return to original caller of live patched function */
->  	blr
-> +
-> +	/*
-> +	 * This livepatch stub code, called from livepatch module to jump into
-> +	 * kernel or other modules. It replicates the livepatch_handler code,
-> +	 * with an expection of jumping to the trampoline instead of patched
-> +	 * function.
-> +	 */
-> +	.global klp_stub_insn
-> +klp_stub_insn:
-> +	CURRENT_THREAD_INFO(r12, r1)
-> +
-> +	/* Allocate 3 x 8 bytes */
-> +	ld      r11, TI_livepatch_sp(r12)
-> +	addi    r11, r11, 24
-> +	std     r11, TI_livepatch_sp(r12)
-> +
-> +	/* Save toc & real LR on livepatch stack */
-> +	std     r2,  -24(r11)
-> +	mflr    r12
-> +	std     r12, -16(r11)
-> +
-> +	/* Store stack end marker */
-> +	lis     r12, STACK_END_MAGIC@h
-> +	ori     r12, r12, STACK_END_MAGIC@l
-> +	std     r12, -8(r11)
+> Which leads me to the question why you need the hotplug state at all if the
+> softlockup detector is enabled. Wouldn't it make more sense to only
+> register the state if softlockup detector is turned off in Kconfig and
+> actually move it to the core code?
 
-Seeing as this is the same as livepatch_handler() except for this part 
-in the middle, does it make sense to reuse livepatch_handler() with 
-appropriate labels added for your use?  You could patch in the below 5 
-instructions using the macros from ppc-opcode.h...
+I don't understand what you mean exactly, but it was done to avoid
+relying on the softlockup detector at all, because it wasn't needed
+for anything else (unlike the perf lockup detector).
 
-> +
-> +	/*
-> +	 * Stub memory is allocated dynamically, during the module load.
-> +	 * Load TOC relative address into r11. module_64.c::klp_stub_for_addr()
-> +	 * identifies the available free stub slot and loads the address into
-> +	 * r11 with two instructions.
-> +	 *
-> +	 * addis r11, r2, stub_address@ha
-> +	 * addi  r11, r11, stub_address@l
-> +	 */
-> +	.global klp_stub_entry
-> +klp_stub_entry:
-> +	addis   r11, r2, 0
-> +	addi    r11, r11, 0
-> +
-> +	/* Load the r12 with called function address from entry->funcdata */
-> +	ld      r12, 128(r11)
-> +
-> +	/* Move r12 into ctr for global entry and branch there */
-> +	mtctr   r12
-> +	bctrl
-> +
-> +	/*
-> +	 * Now we are returning to the patched function. We are free to
-> +	 * use r11, r12 and we can use r2 until we restore it.
-> +	 */
-> +	CURRENT_THREAD_INFO(r12, r1)
-> +
-> +	ld      r11, TI_livepatch_sp(r12)
-> +
-> +	/* Check stack marker hasn't been trashed */
-> +	lis     r2,  STACK_END_MAGIC@h
-> +	ori     r2,  r2, STACK_END_MAGIC@l
-> +	ld      r12, -8(r11)
-> +2:	tdne    r12, r2
-> +	EMIT_BUG_ENTRY 2b, __FILE__, __LINE__ - 1, 0
-
-If you plan to keep this trampoline separate from livepatch_handler(), 
-note that the above bug entry is not required since you copy only the 
-text of this trampoline elsewhere and you won't have an associated bug 
-entry for that new stub address.
-
-- Naveen
+Thanks,
+Nick
