@@ -1,26 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y5xXG2S2QzDr0r
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 22:25:01 +1100 (AEDT)
-Subject: Re: [PATCH 07/11] powerpc: make dma_cache_sync a no-op
-To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
-Cc: Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-xtensa@linux-xtensa.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Robin Murphy <robin.murphy@arm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-References: <20171003104311.10058-1-hch@lst.de>
- <20171003104311.10058-8-hch@lst.de>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <670a0571-1a36-51a3-db52-64bc61184c35@c-s.fr>
-Date: Tue, 3 Oct 2017 13:24:57 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y5xnk4Z8qzDql4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Oct 2017 22:36:42 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Sebastian Siewior <bigeasy@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>,
+ Don Zickus <dzickus@redhat.com>, Chris Metcalf <cmetcalf@mellanox.com>,
+ Ulrich Obergfell <uobergfe@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch V2 22/29] lockup_detector: Make watchdog_nmi_reconfigure()
+ two stage
+In-Reply-To: <alpine.DEB.2.20.1710030848210.2281@nanos>
+References: <20170912193654.321505854@linutronix.de>
+ <20170912194147.862865570@linutronix.de>
+ <87d165dqew.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.20.1710030848210.2281@nanos>
+Date: Tue, 03 Oct 2017 22:36:41 +1100
+Message-ID: <87o9pocvjq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20171003104311.10058-8-hch@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thomas Gleixner <tglx@linutronix.de> writes:
 
+> On Tue, 3 Oct 2017, Michael Ellerman wrote:
+>> Hi Thomas,
+>> Unfortunately this is hitting the WARN_ON in start_wd_cpu() on powerpc
+>> because we're calling it multiple times for the boot CPU.
+>> 
+>> The first call is via:
+>> 
+>>   start_wd_on_cpu+0x80/0x2f0
+>>   watchdog_nmi_reconfigure+0x124/0x170
+>>   softlockup_reconfigure_threads+0x110/0x130
+>>   lockup_detector_init+0xbc/0xe0
+>>   kernel_init_freeable+0x18c/0x37c
+>>   kernel_init+0x2c/0x160
+>>   ret_from_kernel_thread+0x5c/0xbc
+>> 
+>> And then again via the CPU hotplug registration:
+>> 
+>>   start_wd_on_cpu+0x80/0x2f0
+>>   cpuhp_invoke_callback+0x194/0x620
+>>   cpuhp_thread_fun+0x7c/0x1b0
+>>   smpboot_thread_fn+0x290/0x2a0
+>>   kthread+0x168/0x1b0
+>>   ret_from_kernel_thread+0x5c/0xbc
+>> 
+>> 
+>> The first call is new because previously watchdog_nmi_reconfigure()
+>> wasn't called from softlockup_reconfigure_threads().
+>
+> Hmm, don't you have the same problem with CPU hotplug or do you just get
+> lucky because the hotplug callback in your code is ordered vs. the
+> softlockup thread hotplug callback in a way that this does not hit?
 
-Le 03/10/2017 à 12:43, Christoph Hellwig a écrit :
-> powerpc does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
-> doesn't make any sense to do any work in dma_cache_sync given that it
-> must be a no-op when dma_alloc_attrs returns coherent memory.
-What about arch/powerpc/mm/dma-noncoherent.c ?
+I don't see it with CPU hotplug.
 
-Powerpc 8xx doesn't have coherent memory.
+AFAICS that's because softlockup_reconfigure_threads() isn't called for
+CPU hotplug. Unless there's a path I'm missing?
 
-Christophe
+>> I'm not sure what the easiest fix is. One option would be to just drop
+>> the WARN_ON, it's just there for paranoia AFAICS.
+>
+> The straight forward way is to make use of the new probe function. Patch
+> below.
 
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->   arch/powerpc/include/asm/dma-mapping.h | 2 --
->   1 file changed, 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index eaece3d3e225..320846442bfb 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -144,8 +144,6 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
->   static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
->   		enum dma_data_direction direction)
->   {
-> -	BUG_ON(direction == DMA_NONE);
-> -	__dma_sync(vaddr, size, (int)direction);
->   }
->   
->   #endif /* __KERNEL__ */
-> 
+Thanks.
+
+Hmm, I tried that patch, it makes the warning go away. But then I
+triggered a deliberate hard lockup and got nothing.
+
+Then I went back to the existing code (in linux-next), and I still get
+no warning from a deliberate hard lockup.
+
+So seems there may be some more gremlins. Will test more in the morning.
+
+cheers
