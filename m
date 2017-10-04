@@ -2,9 +2,9 @@ Return-Path: <pmladek@suse.com>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Z6L0CKgzDqpT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 22:53:13 +1100 (AEDT)
-Date: Wed, 4 Oct 2017 13:53:06 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6ZSQ564rzDqpt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 23:08:53 +1100 (AEDT)
+Date: Wed, 4 Oct 2017 14:08:47 +0200
 From: Petr Mladek <pmladek@suse.com>
 To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
@@ -15,15 +15,15 @@ Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
  linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 6/7] symbol lookup: use new kernel and module
- dereference functions
-Message-ID: <20171004115306.GH20084@pathway.suse.cz>
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Joe Perches <joe@perches.com>, Andy Whitcroft <apw@canonical.com>
+Subject: Re: [PATCHv3 7/7] checkpatch: add pF/pf deprecation warning
+Message-ID: <20171004120847.GI20084@pathway.suse.cz>
 References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-7-sergey.senozhatsky@gmail.com>
+ <20170930025319.987-8-sergey.senozhatsky@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170930025319.987-7-sergey.senozhatsky@gmail.com>
+In-Reply-To: <20170930025319.987-8-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,133 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat 2017-09-30 11:53:18, Sergey Senozhatsky wrote:
-> Call appropriate function descriptor dereference ARCH callbacks:
-> - dereference_kernel_function_descriptor() if the pointer is a
->   kernel symbol;
+On Sat 2017-09-30 11:53:19, Sergey Senozhatsky wrote:
+> We deprecated '%pF/%pf' printk specifiers, since '%pS/%ps' is now smart
+> enough to handle function pointer dereference on platforms where such
+> dereference is required.
 > 
-> - dereference_module_function_descriptor() if the pointer is a
->   module symbol.
+> checkpatch warning example:
 > 
-> This patch also removes dereference_function_descriptor() from
-> '%pF/%pf' vsprintf handler, because it has the same behavior with
-> '%pS/%ps' now.
-
-The description is pretty criptic. It should explain why
-the dereference was moved from vsprintf to the symbol lookup
-and if it is safe.
-
-Note that kallsyms_lookup() and module_address_lookup() is used
-in many other situations.
-
-Also I would not be afraid to repeat description of the big picture
-from the 2nd patch.
-
+> WARNING: Deprecated vsprintf pointer extension '%pF' - use %pS instead
+> 
 > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> Signed-off-by: Joe Perches <joe@perches.com>
+> Cc: Andy Whitcroft <apw@canonical.com>
 > Tested-by: Helge Deller <deller@gmx.de> # parisc64
 > Tested-by: Santosh Sivaraj <santosh@fossix.org> # powerpc64
 > Acked-by: Michael Ellerman <mpe@ellerman.id.au> # powerpc64
 > Tested-by: Tony Luck <tony.luck@intel.com> # ia64
-> ---
->  Documentation/printk-formats.txt | 20 ++++++++++----------
->  kernel/kallsyms.c                |  1 +
->  kernel/module.c                  |  1 +
->  lib/vsprintf.c                   |  5 +----
->  4 files changed, 13 insertions(+), 14 deletions(-)
-> 
-> diff --git a/Documentation/printk-formats.txt b/Documentation/printk-formats.txt
-> index 361789df51ec..3adbc4fdd482 100644
-> --- a/Documentation/printk-formats.txt
-> +++ b/Documentation/printk-formats.txt
-> @@ -50,26 +50,28 @@ Symbols/Function Pointers
->  
->  ::
->  
-> +	%pS	versatile_init+0x0/0x110
-> +	%ps	versatile_init
->  	%pF	versatile_init+0x0/0x110
->  	%pf	versatile_init
-> -	%pS	versatile_init+0x0/0x110
->  	%pSR	versatile_init+0x9/0x110
->  		(with __builtin_extract_return_addr() translation)
-> -	%ps	versatile_init
->  	%pB	prev_fn_of_versatile_init+0x88/0x88
->  
-> -The ``F`` and ``f`` specifiers are for printing function pointers,
-> -for example, f->func, &gettimeofday. They have the same result as
-> -``S`` and ``s`` specifiers. But they do an extra conversion on
-> -ia64, ppc64 and parisc64 architectures where the function pointers
-> -are actually function descriptors.
-> -
->  The ``S`` and ``s`` specifiers can be used for printing symbols
->  from direct addresses, for example, __builtin_return_address(0),
->  (void *)regs->ip. They result in the symbol name with (``S``) or
->  without (``s``) offsets. If KALLSYMS are disabled then the symbol
->  address is printed instead.
 
-This paragraph makes the feeling that ``S`` is still only for direct
-adresses. We should update it as well.
-
-
-> +Note, that the ``F`` and ``f`` specifiers are identical to ``S`` (``s``)
-> +and thus deprecated. We have ``F`` and ``f`` because on ia64, ppc64 and
-> +parisc64 function pointers are indirect and, in fact, are function
-> +descriptors, which require additional dereferencing before we can lookup
-> +the symbol. As of now, ``S`` and ``s`` perform dereferencing on those
-> +platforms (when needed), so ``F`` and ``f`` exist for compatibility
-> +reasons only.
-> +
->  The ``B`` specifier results in the symbol name with offsets and should be
->  used when printing stack backtraces. The specifier takes into
->  consideration the effect of compiler optimisations which may occur
-> @@ -77,8 +79,6 @@ when tail-call``s are used and marked with the noreturn GCC attribute.
->  
->  Examples::
->  
-> -	printk("Going to call: %pF\n", gettimeofday);
-> -	printk("Going to call: %pF\n", p->func);
->  	printk("%s: called from %pS\n", __func__, (void *)_RET_IP_);
->  	printk("%s: called from %pS\n", __func__,
->  				(void *)__builtin_return_address(0));
-
-We should either replace %pF with %pS or remove all examples.
-It is strange to keep only half of them.
-
-
-> diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-> index 127e7cfafa55..e2fc09ea9509 100644
-> --- a/kernel/kallsyms.c
-> +++ b/kernel/kallsyms.c
-> @@ -322,6 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
->  	if (is_ksym_addr(addr)) {
-
-is_ksym_addr() ignores the special .opd elf sections if
-CONFIG_KALLSYMS_ALL is disabled. We should dereference before
-this call.
-
->  		unsigned long pos;
->  
-> +		addr = dereference_kernel_function_descriptor(addr);
->  		pos = get_symbol_pos(addr, symbolsize, offset);
-
-I still wonder if doing the dereference in the widely used kallsyms
-might cause any regression.
-
-One possible problem is that this function returns "offset".
-One might expect that it is offset against "addr" but
-it is not if the dereference happens here.
-
-Also get_symbol_pos() is called in several other helpers
-but the dereference is done only here. It would be
-confusing if for example kallsyms_lookup_size_offset()
-and kallsyms_lookup() give different result.
-
-I would feel much more comfortable if we keep the derefenrece
-only in vsprintf.
-
-
-In each case, we need approval from Jessica for the
-change in module.c.
+Reviewed-by: Petr Mladek <pmladek@suse.com>
 
 Best Regards,
 Petr
