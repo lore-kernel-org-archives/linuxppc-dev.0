@@ -1,21 +1,23 @@
 Return-Path: <clg@kaod.org>
-Received: from 9.mo4.mail-out.ovh.net (9.mo4.mail-out.ovh.net [46.105.40.176])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Vn907sqzDqvQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 20:23:08 +1100 (AEDT)
+Received: from 10.mo4.mail-out.ovh.net (10.mo4.mail-out.ovh.net
+ [188.165.33.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6VnX0XSlzDqs9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 20:23:27 +1100 (AEDT)
 Received: from player746.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 4013DC45CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 11:15:22 +0200 (CEST)
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id BAC23C461B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 11:15:26 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  David Gibson <david@gibson.dropbear.id.au>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v2 1/2] powerpc/xive: fix IPI reset
-Date: Wed,  4 Oct 2017 11:15:04 +0200
-Message-Id: <20171004091505.16776-2-clg@kaod.org>
+Subject: [PATCH v2 2/2] powerpc/xive: clear XIVE internal structures when a
+ CPU is removed
+Date: Wed,  4 Oct 2017 11:15:05 +0200
+Message-Id: <20171004091505.16776-3-clg@kaod.org>
 In-Reply-To: <20171004091505.16776-1-clg@kaod.org>
 References: <20171004091505.16776-1-clg@kaod.org>
 MIME-Version: 1.0
@@ -29,28 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When resetting an IPI, hw_ipi should also be set to zero.
+Commit eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE
+interrupt controller") introduced support for the XIVE exploitation
+mode of the P9 interrupt controller on the pseries platform. 
+
+At that time, support for CPU removal was not complete on PowerVM and
+CPU hot unplug remained untested. It appears that some cleanups of the
+XIVE internal structures are required before releasing the CPU,
+without which the kernel crashes in a rtas call doing the CPU
+isolation.
+
+These changes fix the crash by deconfiguring the IPI interrupt source
+and clearing the event queues of the CPU when it is removed.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/spapr.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/sysdev/xive/common.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-index f24a70bc6855..d9c4c9366049 100644
---- a/arch/powerpc/sysdev/xive/spapr.c
-+++ b/arch/powerpc/sysdev/xive/spapr.c
-@@ -431,7 +431,11 @@ static int xive_spapr_get_ipi(unsigned int cpu, struct xive_cpu *xc)
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 1c087ed7427f..b9440ac7a3c1 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1398,6 +1398,14 @@ void xive_teardown_cpu(void)
  
- static void xive_spapr_put_ipi(unsigned int cpu, struct xive_cpu *xc)
- {
-+	if (!xc->hw_ipi)
-+		return;
+ 	if (xive_ops->teardown_cpu)
+ 		xive_ops->teardown_cpu(cpu, xc);
 +
- 	xive_irq_bitmap_free(xc->hw_ipi);
-+	xc->hw_ipi = 0;
++#ifdef CONFIG_SMP
++	/* Get rid of IPI */
++	xive_cleanup_cpu_ipi(cpu, xc);
++#endif
++
++	/* Disable and free the queues */
++	xive_cleanup_cpu_queues(cpu, xc);
  }
- #endif /* CONFIG_SMP */
  
+ void xive_kexec_teardown_cpu(int secondary)
 -- 
 2.13.5
