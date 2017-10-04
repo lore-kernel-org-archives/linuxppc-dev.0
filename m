@@ -1,35 +1,20 @@
-Return-Path: <jglisse@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6J482rZJzDqlC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 12:20:24 +1100 (AEDT)
-Date: Tue, 3 Oct 2017 21:20:16 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: Nadav Amit <nadav.amit@gmail.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
- "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Andrew Morton <akpm@linux-foundation.org>, Joerg Roedel <jroedel@suse.de>,
- Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
- David Woodhouse <dwmw2@infradead.org>,
- Alistair Popple <alistair@popple.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-next@vger.kernel.org
-Subject: Re: [PATCH] mm/mmu_notifier: avoid double notification when it is
- useless
-Message-ID: <20171004012016.GE20644@redhat.com>
-References: <20170901173011.10745-1-jglisse@redhat.com>
- <20171003234215.GA5231@redhat.com>
- <20171004001559.GD20644@redhat.com>
- <0D64494B-AB3D-4091-B75A-883EA37BE098@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <0D64494B-AB3D-4091-B75A-883EA37BE098@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6N7Z5SXrzDqlr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 15:23:38 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id i195so3624873pgd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2017 21:23:38 -0700 (PDT)
+Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Jeremy Kerr <jk@ozlabs.org>
+Subject: [PATCH v2] powerpc: configs: Add Skiroot defconfig
+Date: Wed,  4 Oct 2017 14:53:24 +1030
+Message-Id: <20171004042324.32129-1-joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,43 +24,257 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 03, 2017 at 05:43:47PM -0700, Nadav Amit wrote:
-> Jerome Glisse <jglisse@redhat.com> wrote:
-> 
-> > On Wed, Oct 04, 2017 at 01:42:15AM +0200, Andrea Arcangeli wrote:
-> > 
-> >> I'd like some more explanation about the inner working of "that new
-> >> user" as per comment above.
-> >> 
-> >> It would be enough to drop mmu_notifier_invalidate_range from above
-> >> without adding it to the filebacked case. The above gives higher prio
-> >> to the hypothetical and uncertain future case, than to the current
-> >> real filebacked case that doesn't need ->invalidate_range inside the
-> >> PT lock, or do you see something that might already need such
-> >> ->invalidate_range?
-> > 
-> > No i don't see any new user today that might need such invalidate but
-> > i was trying to be extra cautious as i have a tendency to assume that
-> > someone might do a patch that use try_to_unmap() without going through
-> > all the comments in the function and thus possibly using it in a an
-> > unexpected way from mmu_notifier callback point of view. I am fine
-> > with putting the burden on new user to get it right and adding an
-> > extra warning in the function description to try to warn people in a
-> > sensible way.
-> 
-> I must be missing something. After the PTE is changed, but before the
-> secondary TLB notification/invalidation - What prevents another thread from
-> changing the mappings (e.g., using munmap/mmap), and setting a new page
-> at that PTE?
-> 
-> Wouldn’t it end with the page being mapped without a secondary TLB flush in
-> between?
+This configuration is used by the OpenPower firmware for it's
+Linux-as-bootloader implementation. Also known as the Petitboot kernel,
+this configuration broke in 4.12 (CPU_HOTPLUG=n), so add it to the
+upstream tree in order to get better coverage.
 
-munmap would call mmu_notifier to invalidate the range too so secondary
-TLB would be properly flush before any new pte can be setup in for that
-particular virtual address range. Unlike CPU TLB flush, secondary TLB
-flush are un-conditional and thus current pte value does not play any
-role.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+v2:
+ - refresh for 4.13
 
-Cheers,
-Jérôme
+ arch/powerpc/configs/skiroot_defconfig | 232 +++++++++++++++++++++++++++++++++
+ 1 file changed, 232 insertions(+)
+ create mode 100644 arch/powerpc/configs/skiroot_defconfig
+
+diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+new file mode 100644
+index 000000000000..6bd5e7261335
+--- /dev/null
++++ b/arch/powerpc/configs/skiroot_defconfig
+@@ -0,0 +1,232 @@
++CONFIG_PPC64=y
++CONFIG_ALTIVEC=y
++CONFIG_VSX=y
++CONFIG_NR_CPUS=2048
++CONFIG_CPU_LITTLE_ENDIAN=y
++# CONFIG_SWAP is not set
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++# CONFIG_CROSS_MEMORY_ATTACH is not set
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_TASKSTATS=y
++CONFIG_TASK_DELAY_ACCT=y
++CONFIG_TASK_XACCT=y
++CONFIG_TASK_IO_ACCOUNTING=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=20
++CONFIG_RELAY=y
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_RD_GZIP is not set
++# CONFIG_RD_BZIP2 is not set
++# CONFIG_RD_LZMA is not set
++# CONFIG_RD_LZO is not set
++# CONFIG_RD_LZ4 is not set
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++CONFIG_PERF_EVENTS=y
++# CONFIG_COMPAT_BRK is not set
++CONFIG_JUMP_LABEL=y
++CONFIG_STRICT_KERNEL_RWX=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_SIG=y
++CONFIG_MODULE_SIG_FORCE=y
++CONFIG_MODULE_SIG_SHA512=y
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_IOSCHED_DEADLINE is not set
++# CONFIG_PPC_PSERIES is not set
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_CPU_IDLE=y
++CONFIG_HZ_100=y
++CONFIG_KEXEC=y
++CONFIG_IRQ_ALL_CPUS=y
++CONFIG_NUMA=y
++# CONFIG_COMPACTION is not set
++# CONFIG_MIGRATION is not set
++# CONFIG_BOUNCE is not set
++CONFIG_PPC_64K_PAGES=y
++CONFIG_SCHED_SMT=y
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=tty0 console=hvc0 powersave=off"
++# CONFIG_SECCOMP is not set
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_NET_IPIP=y
++CONFIG_SYN_COOKIES=y
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_BEET is not set
++# CONFIG_IPV6 is not set
++CONFIG_DNS_RESOLVER=y
++# CONFIG_WIRELESS is not set
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
++CONFIG_DEVTMPFS_MOUNT=y
++CONFIG_MTD=m
++CONFIG_MTD_POWERNV_FLASH=m
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZE=65536
++CONFIG_VIRTIO_BLK=m
++CONFIG_BLK_DEV_NVME=m
++CONFIG_EEPROM_AT24=y
++# CONFIG_CXL is not set
++CONFIG_BLK_DEV_SD=m
++CONFIG_BLK_DEV_SR=m
++CONFIG_BLK_DEV_SR_VENDOR=y
++CONFIG_CHR_DEV_SG=m
++CONFIG_SCSI_CONSTANTS=y
++CONFIG_SCSI_SCAN_ASYNC=y
++CONFIG_SCSI_FC_ATTRS=y
++CONFIG_SCSI_CXGB3_ISCSI=m
++CONFIG_SCSI_CXGB4_ISCSI=m
++CONFIG_SCSI_BNX2_ISCSI=m
++CONFIG_BE2ISCSI=m
++CONFIG_SCSI_AACRAID=m
++CONFIG_MEGARAID_NEWGEN=y
++CONFIG_MEGARAID_MM=m
++CONFIG_MEGARAID_MAILBOX=m
++CONFIG_MEGARAID_SAS=m
++CONFIG_SCSI_MPT2SAS=m
++CONFIG_SCSI_IPR=m
++# CONFIG_SCSI_IPR_TRACE is not set
++# CONFIG_SCSI_IPR_DUMP is not set
++CONFIG_SCSI_QLA_FC=m
++CONFIG_SCSI_QLA_ISCSI=m
++CONFIG_SCSI_LPFC=m
++CONFIG_SCSI_VIRTIO=m
++CONFIG_SCSI_DH=y
++CONFIG_SCSI_DH_ALUA=m
++CONFIG_ATA=y
++CONFIG_SATA_AHCI=y
++# CONFIG_ATA_SFF is not set
++CONFIG_MD=y
++CONFIG_BLK_DEV_MD=m
++CONFIG_MD_LINEAR=m
++CONFIG_MD_RAID0=m
++CONFIG_MD_RAID1=m
++CONFIG_MD_RAID10=m
++CONFIG_MD_RAID456=m
++CONFIG_MD_MULTIPATH=m
++CONFIG_MD_FAULTY=m
++CONFIG_BLK_DEV_DM=m
++CONFIG_DM_CRYPT=m
++CONFIG_DM_SNAPSHOT=m
++CONFIG_DM_MIRROR=m
++CONFIG_DM_ZERO=m
++CONFIG_DM_MULTIPATH=m
++CONFIG_ACENIC=m
++CONFIG_ACENIC_OMIT_TIGON_I=y
++CONFIG_TIGON3=y
++CONFIG_BNX2X=m
++CONFIG_CHELSIO_T1=y
++CONFIG_BE2NET=m
++CONFIG_S2IO=m
++CONFIG_E100=m
++CONFIG_E1000=m
++CONFIG_E1000E=m
++CONFIG_IXGB=m
++CONFIG_IXGBE=m
++CONFIG_MLX4_EN=m
++CONFIG_MLX5_CORE=m
++CONFIG_MLX5_CORE_EN=y
++CONFIG_MYRI10GE=m
++CONFIG_QLGE=m
++CONFIG_NETXEN_NIC=m
++CONFIG_SFC=m
++# CONFIG_USB_NET_DRIVERS is not set
++# CONFIG_WLAN is not set
++CONFIG_INPUT_EVDEV=y
++CONFIG_INPUT_MISC=y
++# CONFIG_SERIO_SERPORT is not set
++# CONFIG_DEVMEM is not set
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_IPMI_HANDLER=y
++CONFIG_IPMI_DEVICE_INTERFACE=y
++CONFIG_IPMI_POWERNV=y
++CONFIG_HW_RANDOM=y
++CONFIG_TCG_TIS_I2C_NUVOTON=y
++# CONFIG_I2C_COMPAT is not set
++CONFIG_I2C_CHARDEV=y
++# CONFIG_I2C_HELPER_AUTO is not set
++CONFIG_DRM=y
++CONFIG_DRM_RADEON=y
++CONFIG_DRM_AST=m
++CONFIG_FIRMWARE_EDID=y
++CONFIG_FB_MODE_HELPERS=y
++CONFIG_FB_OF=y
++CONFIG_FB_MATROX=y
++CONFIG_FB_MATROX_MILLENIUM=y
++CONFIG_FB_MATROX_MYSTIQUE=y
++CONFIG_FB_MATROX_G=y
++# CONFIG_LCD_CLASS_DEVICE is not set
++# CONFIG_BACKLIGHT_GENERIC is not set
++# CONFIG_VGA_CONSOLE is not set
++CONFIG_LOGO=y
++# CONFIG_LOGO_LINUX_MONO is not set
++# CONFIG_LOGO_LINUX_VGA16 is not set
++CONFIG_USB_HIDDEV=y
++CONFIG_USB=y
++CONFIG_USB_MON=y
++CONFIG_USB_XHCI_HCD=y
++CONFIG_USB_EHCI_HCD=y
++# CONFIG_USB_EHCI_HCD_PPC_OF is not set
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_STORAGE=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_GENERIC=m
++CONFIG_VIRT_DRIVERS=y
++CONFIG_VIRTIO_PCI=y
++# CONFIG_IOMMU_SUPPORT is not set
++CONFIG_EXT4_FS=m
++CONFIG_EXT4_FS_POSIX_ACL=y
++CONFIG_EXT4_FS_SECURITY=y
++CONFIG_XFS_FS=m
++CONFIG_XFS_POSIX_ACL=y
++CONFIG_BTRFS_FS=m
++CONFIG_BTRFS_FS_POSIX_ACL=y
++CONFIG_ISO9660_FS=m
++CONFIG_UDF_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=m
++CONFIG_PROC_KCORE=y
++CONFIG_TMPFS=y
++CONFIG_TMPFS_POSIX_ACL=y
++# CONFIG_MISC_FILESYSTEMS is not set
++# CONFIG_NETWORK_FILESYSTEMS is not set
++CONFIG_NLS_DEFAULT="utf8"
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_ASCII=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS_UTF8=y
++CONFIG_CRC16=y
++CONFIG_CRC_ITU_T=y
++CONFIG_LIBCRC32C=y
++CONFIG_PRINTK_TIME=y
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DEBUG_STACKOVERFLOW=y
++CONFIG_SOFTLOCKUP_DETECTOR=y
++CONFIG_HARDLOCKUP_DETECTOR=y
++CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
++CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
++CONFIG_WQ_WATCHDOG=y
++CONFIG_SCHEDSTATS=y
++# CONFIG_FTRACE is not set
++CONFIG_XMON=y
++CONFIG_XMON_DEFAULT=y
++CONFIG_SECURITY=y
++CONFIG_IMA=y
++CONFIG_EVM=y
++# CONFIG_CRYPTO_ECHAINIV is not set
++CONFIG_CRYPTO_ECB=y
++CONFIG_CRYPTO_CMAC=y
++CONFIG_CRYPTO_MD4=y
++CONFIG_CRYPTO_ARC4=y
++CONFIG_CRYPTO_DES=y
++# CONFIG_CRYPTO_HW is not set
+-- 
+2.14.1
