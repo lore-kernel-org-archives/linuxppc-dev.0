@@ -1,22 +1,25 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6fwr0hMbzDqtT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 02:30:19 +1100 (AEDT)
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH] mm: deferred_init_memmap improvements
-Date: Wed,  4 Oct 2017 11:29:02 -0400
-Message-Id: <20171004152902.17300-1-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6hXL29tszDqvT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 03:42:40 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id k4so22237048wmc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2017 09:42:40 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20171004125038.gkzaemlefrpfa2m2@mwanda>
+References: <20171004125038.gkzaemlefrpfa2m2@mwanda>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 4 Oct 2017 18:42:37 +0200
+Message-ID: <CAMuHMdUNvtDunWK-4oRFMqTVz_QKzXW_Fosg883jd7Wu7mp3_A@mail.gmail.com>
+Subject: Re: [bug report] out of bounds read parsing vmode commandline option
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,268 +29,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-deferred_init_memmap() is called when struct pages are initialized later
-in boot by slave CPUs. This patch simplifies and optimizes this function,
-and also fixes a couple issues (described below).
+Hi Dan,
 
-The main change is that now we are iterating through free memblock areas
-instead of all configured memory. Thus, we do not have to check if the
-struct page has already been initialized.
+On Wed, Oct 4, 2017 at 2:50 PM, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> This bug predates git but it looks like it might be simple to fix if the
+> right person looked at the code.
+>
+>         drivers/video/fbdev/controlfb.c:560 control_setup()
+>         error: buffer overflow 'control_mac_modes' 20 <= 21
+>
+> drivers/video/fbdev/controlfb.c
+>    549  static void __init control_setup(char *options)
+>    550  {
+>    551          char *this_opt;
+>    552
+>    553          if (!options || !*options)
+>    554                  return;
+>    555
+>    556          while ((this_opt = strsep(&options, ",")) != NULL) {
+>    557                  if (!strncmp(this_opt, "vmode:", 6)) {
+>    558                          int vmode = simple_strtoul(this_opt+6, NULL, 0);
+>                                     ^^^^^
+> We get vmode from the command line.
+>
+>    559                          if (vmode > 0 && vmode <= VMODE_MAX &&
+>                                                           ^^^^^^^^^
+> We check that it's <= 22.
+>
+>    560                              control_mac_modes[vmode - 1].m[1] >= 0)
+>                                     ^^^^^^^^^^^^^^^^^
+> But the problem is that control_mac_modes[] only has 20 elements so the
+> highest valid index is 19.  vmode - 1 can be up to 21.
 
-=====
-In deferred_init_memmap() where all deferred struct pages are initialized
-we have a check like this:
+Nice catch!
 
-if (page->flags) {
-	VM_BUG_ON(page_zone(page) != zone);
-	goto free_range;
-}
+The bug was introduced in v2.4.5.6, when 2 new modes were added to
+macmodes.h, but control_mac_modes[] wasn't updated:
 
-This way we are checking if the current deferred page has already been
-initialized. It works, because memory for struct pages has been zeroed, and
-the only way flags are not zero if it went through __init_single_page()
-before.  But, once we change the current behavior and won't zero the memory
-in memblock allocator, we cannot trust anything inside "struct page"es
-until they are initialized. This patch fixes this.
+https://kernel.opensuse.org/cgit/kernel/diff/include/video/macmodes.h?h=v2.5.2&id=29f279c764808560eaceb88fef36cbc35c529aad
 
-The deferred_init_memmap() is re-written to loop through only free memory
-ranges provided by memblock.
+A simple fix is to check against ARRAY_SIZE(control_mac_modes) instead.
 
-Note, this first issue is relevant only when the following change is merged:
+A better fix is to add the missing entries to control_mac_modes[], cfr. the
+(gmail-whitespace-damaged) patch below:
 
-	mm: stop zeroing memory during allocation in vmemmap
+--- a/drivers/video/fbdev/controlfb.h
++++ b/drivers/video/fbdev/controlfb.h
+@@ -141,5 +141,7 @@ static struct max_cmodes control_mac_modes[] = {
+        {{ 1, 2}},      /* 1152x870, 75Hz */
+        {{ 0, 1}},      /* 1280x960, 75Hz */
+        {{ 0, 1}},      /* 1280x1024, 75Hz */
++       {{ 1, 2}},      /* 1152x768, 60Hz */
++       {{ 0, 1}},      /* 1600x1024, 60Hz */
+ };
 
-=====
+(this array lists the maximum color mode (8, 16, or 32 bpp) for each
+ video mode given RAM restrictions (2 or 4 MiB)).
 
-This patch fixes another existing issue on systems that have holes in
-zones i.e CONFIG_HOLES_IN_ZONE is defined.
+The 1152x768 mode is probably OK. Given the 1600x1024 mode has a lower
+dotclock (112 MHz) than the supported 1280x960 mode, it's probably OK, too.
 
-In for_each_mem_pfn_range() we have code like this:
+platinum_reg_init[] and valkyrie_reg_init[] seem to be handled fine.
 
-if (!pfn_valid_within(pfn)
-	goto free_range;
+Gr{oetje,eeting}s,
 
-Note: 'page' is not set to NULL and is not incremented but 'pfn' advances.
-Thus means if deferred struct pages are enabled on systems with these kind
-of holes, linux would get memory corruptions. I have fixed this issue by
-defining a new macro that performs all the necessary operations when we
-free the current set of pages.
+                        Geert
 
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Reviewed-by: Bob Picco <bob.picco@oracle.com>
----
- mm/page_alloc.c | 168 ++++++++++++++++++++++++++++----------------------------
- 1 file changed, 85 insertions(+), 83 deletions(-)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index c841af88836a..dcfd657cfd4e 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1410,14 +1410,17 @@ void clear_zone_contiguous(struct zone *zone)
- }
- 
- #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
--static void __init deferred_free_range(struct page *page,
--					unsigned long pfn, int nr_pages)
-+static void __init deferred_free_range(unsigned long pfn,
-+				       unsigned long nr_pages)
- {
--	int i;
-+	struct page *page;
-+	unsigned long i;
- 
--	if (!page)
-+	if (!nr_pages)
- 		return;
- 
-+	page = pfn_to_page(pfn);
-+
- 	/* Free a large naturally-aligned chunk if possible */
- 	if (nr_pages == pageblock_nr_pages &&
- 	    (pfn & (pageblock_nr_pages - 1)) == 0) {
-@@ -1443,19 +1446,89 @@ static inline void __init pgdat_init_report_one_done(void)
- 		complete(&pgdat_init_all_done_comp);
- }
- 
-+/*
-+ * Helper for deferred_init_range, free the given range, reset the counters, and
-+ * return number of pages freed.
-+ */
-+static inline unsigned long __def_free(unsigned long *nr_free,
-+				       unsigned long *free_base_pfn,
-+				       struct page **page)
-+{
-+	unsigned long nr = *nr_free;
-+
-+	deferred_free_range(*free_base_pfn, nr);
-+	*free_base_pfn = 0;
-+	*nr_free = 0;
-+	*page = NULL;
-+
-+	return nr;
-+}
-+
-+static unsigned long deferred_init_range(int nid, int zid, unsigned long pfn,
-+					 unsigned long end_pfn)
-+{
-+	struct mminit_pfnnid_cache nid_init_state = { };
-+	unsigned long nr_pgmask = pageblock_nr_pages - 1;
-+	unsigned long free_base_pfn = 0;
-+	unsigned long nr_pages = 0;
-+	unsigned long nr_free = 0;
-+	struct page *page = NULL;
-+
-+	for (; pfn < end_pfn; pfn++) {
-+		/*
-+		 * First we check if pfn is valid on architectures where it is
-+		 * possible to have holes within pageblock_nr_pages. On systems
-+		 * where it is not possible, this function is optimized out.
-+		 *
-+		 * Then, we check if a current large page is valid by only
-+		 * checking the validity of the head pfn.
-+		 *
-+		 * meminit_pfn_in_nid is checked on systems where pfns can
-+		 * interleave within a node: a pfn is between start and end
-+		 * of a node, but does not belong to this memory node.
-+		 *
-+		 * Finally, we minimize pfn page lookups and scheduler checks by
-+		 * performing it only once every pageblock_nr_pages.
-+		 */
-+		if (!pfn_valid_within(pfn)) {
-+			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-+		} else if (!(pfn & nr_pgmask) && !pfn_valid(pfn)) {
-+			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-+		} else if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
-+			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-+		} else if (page && (pfn & nr_pgmask)) {
-+			page++;
-+			__init_single_page(page, pfn, zid, nid);
-+			nr_free++;
-+		} else {
-+			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-+			page = pfn_to_page(pfn);
-+			__init_single_page(page, pfn, zid, nid);
-+			free_base_pfn = pfn;
-+			nr_free = 1;
-+			cond_resched();
-+		}
-+	}
-+	/* Free the last block of pages to allocator */
-+	nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-+
-+	return nr_pages;
-+}
-+
- /* Initialise remaining memory on a node */
- static int __init deferred_init_memmap(void *data)
- {
- 	pg_data_t *pgdat = data;
- 	int nid = pgdat->node_id;
--	struct mminit_pfnnid_cache nid_init_state = { };
- 	unsigned long start = jiffies;
- 	unsigned long nr_pages = 0;
--	unsigned long walk_start, walk_end;
--	int i, zid;
-+	unsigned long spfn, epfn;
-+	phys_addr_t spa, epa;
-+	int zid;
- 	struct zone *zone;
- 	unsigned long first_init_pfn = pgdat->first_deferred_pfn;
- 	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
-+	u64 i;
- 
- 	if (first_init_pfn == ULONG_MAX) {
- 		pgdat_init_report_one_done();
-@@ -1477,83 +1550,12 @@ static int __init deferred_init_memmap(void *data)
- 		if (first_init_pfn < zone_end_pfn(zone))
- 			break;
- 	}
-+	first_init_pfn = max(zone->zone_start_pfn, first_init_pfn);
- 
--	for_each_mem_pfn_range(i, nid, &walk_start, &walk_end, NULL) {
--		unsigned long pfn, end_pfn;
--		struct page *page = NULL;
--		struct page *free_base_page = NULL;
--		unsigned long free_base_pfn = 0;
--		int nr_to_free = 0;
--
--		end_pfn = min(walk_end, zone_end_pfn(zone));
--		pfn = first_init_pfn;
--		if (pfn < walk_start)
--			pfn = walk_start;
--		if (pfn < zone->zone_start_pfn)
--			pfn = zone->zone_start_pfn;
--
--		for (; pfn < end_pfn; pfn++) {
--			if (!pfn_valid_within(pfn))
--				goto free_range;
--
--			/*
--			 * Ensure pfn_valid is checked every
--			 * pageblock_nr_pages for memory holes
--			 */
--			if ((pfn & (pageblock_nr_pages - 1)) == 0) {
--				if (!pfn_valid(pfn)) {
--					page = NULL;
--					goto free_range;
--				}
--			}
--
--			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
--				page = NULL;
--				goto free_range;
--			}
--
--			/* Minimise pfn page lookups and scheduler checks */
--			if (page && (pfn & (pageblock_nr_pages - 1)) != 0) {
--				page++;
--			} else {
--				nr_pages += nr_to_free;
--				deferred_free_range(free_base_page,
--						free_base_pfn, nr_to_free);
--				free_base_page = NULL;
--				free_base_pfn = nr_to_free = 0;
--
--				page = pfn_to_page(pfn);
--				cond_resched();
--			}
--
--			if (page->flags) {
--				VM_BUG_ON(page_zone(page) != zone);
--				goto free_range;
--			}
--
--			__init_single_page(page, pfn, zid, nid);
--			if (!free_base_page) {
--				free_base_page = page;
--				free_base_pfn = pfn;
--				nr_to_free = 0;
--			}
--			nr_to_free++;
--
--			/* Where possible, batch up pages for a single free */
--			continue;
--free_range:
--			/* Free the current block of pages to allocator */
--			nr_pages += nr_to_free;
--			deferred_free_range(free_base_page, free_base_pfn,
--								nr_to_free);
--			free_base_page = NULL;
--			free_base_pfn = nr_to_free = 0;
--		}
--		/* Free the last block of pages to allocator */
--		nr_pages += nr_to_free;
--		deferred_free_range(free_base_page, free_base_pfn, nr_to_free);
--
--		first_init_pfn = max(end_pfn, first_init_pfn);
-+	for_each_free_mem_range(i, nid, MEMBLOCK_NONE, &spa, &epa, NULL) {
-+		spfn = max_t(unsigned long, first_init_pfn, PFN_UP(spa));
-+		epfn = min_t(unsigned long, zone_end_pfn(zone), PFN_DOWN(epa));
-+		nr_pages += deferred_init_range(nid, zid, spfn, epfn);
- 	}
- 
- 	/* Sanity check that the next zone really is unpopulated */
--- 
-2.14.2
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
