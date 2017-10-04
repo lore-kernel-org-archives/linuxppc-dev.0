@@ -1,20 +1,34 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6N7Z5SXrzDqlr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 15:23:38 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id i195so3624873pgd.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Oct 2017 21:23:38 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
- Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH v2] powerpc: configs: Add Skiroot defconfig
-Date: Wed,  4 Oct 2017 14:53:24 +1030
-Message-Id: <20171004042324.32129-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Q7D4M8XzDqls
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 16:53:28 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Sebastian Siewior <bigeasy@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>,
+ Don Zickus <dzickus@redhat.com>, Chris Metcalf <cmetcalf@mellanox.com>,
+ Ulrich Obergfell <uobergfe@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch V2 22/29] lockup_detector: Make watchdog_nmi_reconfigure()
+ two stage
+In-Reply-To: <alpine.DEB.2.20.1710032124320.2278@nanos>
+References: <20170912193654.321505854@linutronix.de>
+ <20170912194147.862865570@linutronix.de>
+ <87d165dqew.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.20.1710030848210.2281@nanos>
+ <87o9pocvjq.fsf@concordia.ellerman.id.au>
+ <alpine.DEB.2.20.1710031411440.2281@nanos>
+ <alpine.DEB.2.20.1710031451590.2281@nanos>
+ <alpine.DEB.2.20.1710032124320.2278@nanos>
+Date: Wed, 04 Oct 2017 16:53:25 +1100
+Message-ID: <877ewbqx0q.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,257 +38,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This configuration is used by the OpenPower firmware for it's
-Linux-as-bootloader implementation. Also known as the Petitboot kernel,
-this configuration broke in 4.12 (CPU_HOTPLUG=n), so add it to the
-upstream tree in order to get better coverage.
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-v2:
- - refresh for 4.13
+> On Tue, 3 Oct 2017, Thomas Gleixner wrote:
+>> On Tue, 3 Oct 2017, Thomas Gleixner wrote:
+>> > On Tue, 3 Oct 2017, Michael Ellerman wrote:
+>> > > Hmm, I tried that patch, it makes the warning go away. But then I
+>> > > triggered a deliberate hard lockup and got nothing.
+>> > > 
+>> > > Then I went back to the existing code (in linux-next), and I still get
+>> > > no warning from a deliberate hard lockup.
+>> > > 
+>> > > So seems there may be some more gremlins. Will test more in the morning.
+>> > 
+>> > Hrm. That's weird. I'll have a look and send a proper patch series on top
+>> > of next.
+>> 
+>> The major difference is that the reworked code utilizes
+>> watchdog_nmi_reconfigure() for both init and the sysctl updates, but I
+>> can't for my life figure out why that doesn't work.
+>
+> I collected the changes which Linus requested along with the nmi_probe()
+> one and pushed them into:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git WIP.core/urgent
+>
+> That's based on 4.13 final so it neither contains 4.14 nor -next material.
 
- arch/powerpc/configs/skiroot_defconfig | 232 +++++++++++++++++++++++++++++++++
- 1 file changed, 232 insertions(+)
- create mode 100644 arch/powerpc/configs/skiroot_defconfig
+Thanks. I tested that here and it seems fine. The warning at boot is
+gone and it is correctly catching a hard lockup triggered via LKDTM, eg:
 
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-new file mode 100644
-index 000000000000..6bd5e7261335
---- /dev/null
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -0,0 +1,232 @@
-+CONFIG_PPC64=y
-+CONFIG_ALTIVEC=y
-+CONFIG_VSX=y
-+CONFIG_NR_CPUS=2048
-+CONFIG_CPU_LITTLE_ENDIAN=y
-+# CONFIG_SWAP is not set
-+CONFIG_SYSVIPC=y
-+CONFIG_POSIX_MQUEUE=y
-+# CONFIG_CROSS_MEMORY_ATTACH is not set
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_TASKSTATS=y
-+CONFIG_TASK_DELAY_ACCT=y
-+CONFIG_TASK_XACCT=y
-+CONFIG_TASK_IO_ACCOUNTING=y
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=20
-+CONFIG_RELAY=y
-+CONFIG_BLK_DEV_INITRD=y
-+# CONFIG_RD_GZIP is not set
-+# CONFIG_RD_BZIP2 is not set
-+# CONFIG_RD_LZMA is not set
-+# CONFIG_RD_LZO is not set
-+# CONFIG_RD_LZ4 is not set
-+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-+CONFIG_PERF_EVENTS=y
-+# CONFIG_COMPAT_BRK is not set
-+CONFIG_JUMP_LABEL=y
-+CONFIG_STRICT_KERNEL_RWX=y
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODULE_SIG=y
-+CONFIG_MODULE_SIG_FORCE=y
-+CONFIG_MODULE_SIG_SHA512=y
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_IOSCHED_DEADLINE is not set
-+# CONFIG_PPC_PSERIES is not set
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-+CONFIG_CPU_IDLE=y
-+CONFIG_HZ_100=y
-+CONFIG_KEXEC=y
-+CONFIG_IRQ_ALL_CPUS=y
-+CONFIG_NUMA=y
-+# CONFIG_COMPACTION is not set
-+# CONFIG_MIGRATION is not set
-+# CONFIG_BOUNCE is not set
-+CONFIG_PPC_64K_PAGES=y
-+CONFIG_SCHED_SMT=y
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE="console=tty0 console=hvc0 powersave=off"
-+# CONFIG_SECCOMP is not set
-+CONFIG_NET=y
-+CONFIG_PACKET=y
-+CONFIG_UNIX=y
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+CONFIG_NET_IPIP=y
-+CONFIG_SYN_COOKIES=y
-+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
-+# CONFIG_IPV6 is not set
-+CONFIG_DNS_RESOLVER=y
-+# CONFIG_WIRELESS is not set
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_DEVTMPFS=y
-+CONFIG_DEVTMPFS_MOUNT=y
-+CONFIG_MTD=m
-+CONFIG_MTD_POWERNV_FLASH=m
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_SIZE=65536
-+CONFIG_VIRTIO_BLK=m
-+CONFIG_BLK_DEV_NVME=m
-+CONFIG_EEPROM_AT24=y
-+# CONFIG_CXL is not set
-+CONFIG_BLK_DEV_SD=m
-+CONFIG_BLK_DEV_SR=m
-+CONFIG_BLK_DEV_SR_VENDOR=y
-+CONFIG_CHR_DEV_SG=m
-+CONFIG_SCSI_CONSTANTS=y
-+CONFIG_SCSI_SCAN_ASYNC=y
-+CONFIG_SCSI_FC_ATTRS=y
-+CONFIG_SCSI_CXGB3_ISCSI=m
-+CONFIG_SCSI_CXGB4_ISCSI=m
-+CONFIG_SCSI_BNX2_ISCSI=m
-+CONFIG_BE2ISCSI=m
-+CONFIG_SCSI_AACRAID=m
-+CONFIG_MEGARAID_NEWGEN=y
-+CONFIG_MEGARAID_MM=m
-+CONFIG_MEGARAID_MAILBOX=m
-+CONFIG_MEGARAID_SAS=m
-+CONFIG_SCSI_MPT2SAS=m
-+CONFIG_SCSI_IPR=m
-+# CONFIG_SCSI_IPR_TRACE is not set
-+# CONFIG_SCSI_IPR_DUMP is not set
-+CONFIG_SCSI_QLA_FC=m
-+CONFIG_SCSI_QLA_ISCSI=m
-+CONFIG_SCSI_LPFC=m
-+CONFIG_SCSI_VIRTIO=m
-+CONFIG_SCSI_DH=y
-+CONFIG_SCSI_DH_ALUA=m
-+CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
-+# CONFIG_ATA_SFF is not set
-+CONFIG_MD=y
-+CONFIG_BLK_DEV_MD=m
-+CONFIG_MD_LINEAR=m
-+CONFIG_MD_RAID0=m
-+CONFIG_MD_RAID1=m
-+CONFIG_MD_RAID10=m
-+CONFIG_MD_RAID456=m
-+CONFIG_MD_MULTIPATH=m
-+CONFIG_MD_FAULTY=m
-+CONFIG_BLK_DEV_DM=m
-+CONFIG_DM_CRYPT=m
-+CONFIG_DM_SNAPSHOT=m
-+CONFIG_DM_MIRROR=m
-+CONFIG_DM_ZERO=m
-+CONFIG_DM_MULTIPATH=m
-+CONFIG_ACENIC=m
-+CONFIG_ACENIC_OMIT_TIGON_I=y
-+CONFIG_TIGON3=y
-+CONFIG_BNX2X=m
-+CONFIG_CHELSIO_T1=y
-+CONFIG_BE2NET=m
-+CONFIG_S2IO=m
-+CONFIG_E100=m
-+CONFIG_E1000=m
-+CONFIG_E1000E=m
-+CONFIG_IXGB=m
-+CONFIG_IXGBE=m
-+CONFIG_MLX4_EN=m
-+CONFIG_MLX5_CORE=m
-+CONFIG_MLX5_CORE_EN=y
-+CONFIG_MYRI10GE=m
-+CONFIG_QLGE=m
-+CONFIG_NETXEN_NIC=m
-+CONFIG_SFC=m
-+# CONFIG_USB_NET_DRIVERS is not set
-+# CONFIG_WLAN is not set
-+CONFIG_INPUT_EVDEV=y
-+CONFIG_INPUT_MISC=y
-+# CONFIG_SERIO_SERPORT is not set
-+# CONFIG_DEVMEM is not set
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_IPMI_HANDLER=y
-+CONFIG_IPMI_DEVICE_INTERFACE=y
-+CONFIG_IPMI_POWERNV=y
-+CONFIG_HW_RANDOM=y
-+CONFIG_TCG_TIS_I2C_NUVOTON=y
-+# CONFIG_I2C_COMPAT is not set
-+CONFIG_I2C_CHARDEV=y
-+# CONFIG_I2C_HELPER_AUTO is not set
-+CONFIG_DRM=y
-+CONFIG_DRM_RADEON=y
-+CONFIG_DRM_AST=m
-+CONFIG_FIRMWARE_EDID=y
-+CONFIG_FB_MODE_HELPERS=y
-+CONFIG_FB_OF=y
-+CONFIG_FB_MATROX=y
-+CONFIG_FB_MATROX_MILLENIUM=y
-+CONFIG_FB_MATROX_MYSTIQUE=y
-+CONFIG_FB_MATROX_G=y
-+# CONFIG_LCD_CLASS_DEVICE is not set
-+# CONFIG_BACKLIGHT_GENERIC is not set
-+# CONFIG_VGA_CONSOLE is not set
-+CONFIG_LOGO=y
-+# CONFIG_LOGO_LINUX_MONO is not set
-+# CONFIG_LOGO_LINUX_VGA16 is not set
-+CONFIG_USB_HIDDEV=y
-+CONFIG_USB=y
-+CONFIG_USB_MON=y
-+CONFIG_USB_XHCI_HCD=y
-+CONFIG_USB_EHCI_HCD=y
-+# CONFIG_USB_EHCI_HCD_PPC_OF is not set
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_STORAGE=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_GENERIC=m
-+CONFIG_VIRT_DRIVERS=y
-+CONFIG_VIRTIO_PCI=y
-+# CONFIG_IOMMU_SUPPORT is not set
-+CONFIG_EXT4_FS=m
-+CONFIG_EXT4_FS_POSIX_ACL=y
-+CONFIG_EXT4_FS_SECURITY=y
-+CONFIG_XFS_FS=m
-+CONFIG_XFS_POSIX_ACL=y
-+CONFIG_BTRFS_FS=m
-+CONFIG_BTRFS_FS_POSIX_ACL=y
-+CONFIG_ISO9660_FS=m
-+CONFIG_UDF_FS=m
-+CONFIG_MSDOS_FS=m
-+CONFIG_VFAT_FS=m
-+CONFIG_PROC_KCORE=y
-+CONFIG_TMPFS=y
-+CONFIG_TMPFS_POSIX_ACL=y
-+# CONFIG_MISC_FILESYSTEMS is not set
-+# CONFIG_NETWORK_FILESYSTEMS is not set
-+CONFIG_NLS_DEFAULT="utf8"
-+CONFIG_NLS_CODEPAGE_437=y
-+CONFIG_NLS_ASCII=y
-+CONFIG_NLS_ISO8859_1=y
-+CONFIG_NLS_UTF8=y
-+CONFIG_CRC16=y
-+CONFIG_CRC_ITU_T=y
-+CONFIG_LIBCRC32C=y
-+CONFIG_PRINTK_TIME=y
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_DEBUG_KERNEL=y
-+CONFIG_DEBUG_STACKOVERFLOW=y
-+CONFIG_SOFTLOCKUP_DETECTOR=y
-+CONFIG_HARDLOCKUP_DETECTOR=y
-+CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_WQ_WATCHDOG=y
-+CONFIG_SCHEDSTATS=y
-+# CONFIG_FTRACE is not set
-+CONFIG_XMON=y
-+CONFIG_XMON_DEFAULT=y
-+CONFIG_SECURITY=y
-+CONFIG_IMA=y
-+CONFIG_EVM=y
-+# CONFIG_CRYPTO_ECHAINIV is not set
-+CONFIG_CRYPTO_ECB=y
-+CONFIG_CRYPTO_CMAC=y
-+CONFIG_CRYPTO_MD4=y
-+CONFIG_CRYPTO_ARC4=y
-+CONFIG_CRYPTO_DES=y
-+# CONFIG_CRYPTO_HW is not set
--- 
-2.14.1
+  # mount -t debugfs none /sys/kernel/debug
+  # echo HARDLOCKUP > /sys/kernel/debug/provoke-crash/DIRECT
+  lkdtm: Performing direct entry HARDLOCKUP
+  Watchdog CPU:0 Hard LOCKUP
+  Modules linked in:
+  CPU: 0 PID: 1215 Comm: sh Not tainted 4.13.0-gcc6-11846-g86be5ee #162
+  task: c0000000f1fc4c00 task.stack: c0000000ee3ac000
+  NIP:  c0000000007205a4 LR: c00000000071f950 CTR: c000000000720570
+  REGS: c00000003ffffd80 TRAP: 0900   Not tainted  (4.13.0-gcc6-11846-g86be5ee)
+  MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 28002228  XER: 00000000
+  CFAR: c0000000007205a8 SOFTE: 0 
+  GPR00: c00000000071f950 c0000000ee3afbb0 c00000000107cf00 c0000000010604f0 
+  GPR04: c0000000ffa05d90 c0000000ffa1c968 0000000000000000 0000000000000000 
+  GPR08: 0000000000000007 0000000000000001 0000000000000000 9000000030001003 
+  GPR12: c000000000720570 c00000000fd40000 0000000000000000 0000000000000000 
+  GPR16: 0000000000000000 0000000000000000 0000000000000000 00000000100b8fd0 
+  GPR20: 000001002f5a3485 00000000100b8f90 0000000000000000 0000000000000000 
+  GPR24: c000000001060778 c0000000ee3afe00 c0000000ee3afe00 c0000000010603b0 
+  GPR28: 000000000000000b c0000000f1fe0000 0000000000000140 c0000000010604f0 
+  NIP [c0000000007205a4] lkdtm_HARDLOCKUP+0x34/0x40
+  LR [c00000000071f950] lkdtm_do_action+0x50/0x70
+  Call Trace:
+  [c0000000ee3afbb0] [0000000000000140] 0x140 (unreliable)
+  [c0000000ee3afbd0] [c00000000071f950] lkdtm_do_action+0x50/0x70
+  [c0000000ee3afc00] [c00000000071fdc0] direct_entry+0x110/0x1b0
+  [c0000000ee3afc90] [c00000000050141c] full_proxy_write+0x9c/0x110
+  [c0000000ee3afcf0] [c000000000336a3c] __vfs_write+0x6c/0x210
+  [c0000000ee3afd90] [c000000000338960] vfs_write+0xd0/0x270
+  [c0000000ee3afde0] [c00000000033a93c] SyS_write+0x6c/0x110
+  [c0000000ee3afe30] [c00000000000b220] system_call+0x58/0x6c
+  Instruction dump:
+  3842c990 7c0802a6 f8010010 f821ffe1 60000000 60000000 39400000 892d027a 
+  994d027a 60000000 60420000 7c210b78 <7c421378> 4bfffff8 60420000 3c4c0096 
+  Kernel panic - not syncing: Hard LOCKUP
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
