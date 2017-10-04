@@ -1,28 +1,33 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6VNt1MHzzDqtT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 20:05:34 +1100 (AEDT)
-Date: Wed, 4 Oct 2017 11:05:26 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 3/7] ia64: Add .opd based function descriptor dereference
-Message-ID: <20171004090526.GE20084@pathway.suse.cz>
-References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-4-sergey.senozhatsky@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6VQ31b3FzDqmb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 20:06:34 +1100 (AEDT)
+Date: Wed, 4 Oct 2017 11:06:31 +0200
+From: 'Christoph Hellwig' <hch@lst.de>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: 'Christoph Hellwig' <hch@lst.de>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Robin Murphy <robin.murphy@arm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 04/11] ia64: make dma_cache_sync a no-op
+Message-ID: <20171004090631.GA23669@lst.de>
+References: <20171003104311.10058-1-hch@lst.de>
+ <20171003104311.10058-5-hch@lst.de>
+ <063D6719AE5E284EB5DD2968C1650D6DD0089626@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170930025319.987-4-sergey.senozhatsky@gmail.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD0089626@AcuExch.aculab.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +37,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat 2017-09-30 11:53:15, Sergey Senozhatsky wrote:
-> We are moving towards separate kernel and module function descriptor
-> dereference callbacks. This patch enables it for IA64.
-> 
-> For pointers that belong to the kernel
-> -  Added __start_opd and __end_opd pointers, to track the kernel
->    .opd section address range;
-> 
-> -  Added dereference_kernel_function_descriptor(). Now we
->    will dereference only function pointers that are within
->    [__start_opd, __end_opd];
-> 
-> For pointers that belong to a module
-> -  Added dereference_module_function_descriptor() to handle module
->    function descriptor dereference. Now we will dereference only
->    pointers that are within [module->opd.start, module->opd.end].
-> 
-> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> Tested-by: Helge Deller <deller@gmx.de> # parisc64
-> Tested-by: Santosh Sivaraj <santosh@fossix.org> # powerpc64
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> # powerpc64
-> Tested-by: Tony Luck <tony.luck@intel.com> # ia64
+On Wed, Oct 04, 2017 at 08:59:24AM +0000, David Laight wrote:
+> Are you sure about this one?
 
-Looks good to me.
-
-Reviewed-by: Petr Mladek <pmladek@suse.com>
-
-Best Regards,
-Petr
+Yes.  And if you are not you haven't read either of the cover letter,
+the DMA-API documentation, or the reply from Thomas to your mail
+yesterday.
