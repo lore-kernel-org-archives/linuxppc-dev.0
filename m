@@ -1,48 +1,29 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6TH63Y6HzDqm8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 19:15:30 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v948EYBY059230
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Oct 2017 04:15:27 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dcmvmbf6e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2017 04:15:27 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Wed, 4 Oct 2017 18:15:22 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v948FKvF51773448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Oct 2017 19:15:20 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v948FNqP013887
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Oct 2017 19:15:23 +1100
-Subject: Re: [PATCH] kernel/module_64.c: Add REL24 relocation support of
- livepatch symbols
-To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
-References: <1507008978-10145-1-git-send-email-kamalesh@linux.vnet.ibm.com>
- <20171003093029.x6hwls7qwyyjihkg@naverao1-tp.localdomain>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Wed, 4 Oct 2017 13:45:15 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6TTL0b9szDqm8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 19:24:20 +1100 (AEDT)
+Date: Wed, 4 Oct 2017 10:24:14 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv3 1/7] switch dereference_function_descriptor() to
+ `unsigned long'
+Message-ID: <20171004082414.GC20084@pathway.suse.cz>
+References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
+ <20170930025319.987-2-sergey.senozhatsky@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20171003093029.x6hwls7qwyyjihkg@naverao1-tp.localdomain>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <f9b11e6e-2785-7a6b-8d2d-41a702506e86@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170930025319.987-2-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,106 +33,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 03 October 2017 03:00 PM, Naveen N . Rao wrote:
-
-Hi Naveen,
-
-[snip]
+On Sat 2017-09-30 11:53:13, Sergey Senozhatsky wrote:
+> Convert dereference_function_descriptor() to accept and return
+> `unsigned long'. There will be two new ARCH function for kernel
+> and module function pointer dereference, which will work with
+> `unsigned long', so the patch unifies interfaces.
 > 
-> A few small nits focusing on just the trampoline...
+> Besides, dereference_function_descriptor() mostly work with
+> `unsigned long':
 > 
->> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
->> index c98e90b..708a96d 100644
->> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
->> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
->> @@ -249,6 +249,83 @@ livepatch_handler:
->>
->>  	/* Return to original caller of live patched function */
->>  	blr
->> +
->> +	/*
->> +	 * This livepatch stub code, called from livepatch module to jump into
->> +	 * kernel or other modules. It replicates the livepatch_handler code,
->> +	 * with an expection of jumping to the trampoline instead of patched
->> +	 * function.
->> +	 */
->> +	.global klp_stub_insn
->> +klp_stub_insn:
->> +	CURRENT_THREAD_INFO(r12, r1)
->> +
->> +	/* Allocate 3 x 8 bytes */
->> +	ld      r11, TI_livepatch_sp(r12)
->> +	addi    r11, r11, 24
->> +	std     r11, TI_livepatch_sp(r12)
->> +
->> +	/* Save toc & real LR on livepatch stack */
->> +	std     r2,  -24(r11)
->> +	mflr    r12
->> +	std     r12, -16(r11)
->> +
->> +	/* Store stack end marker */
->> +	lis     r12, STACK_END_MAGIC@h
->> +	ori     r12, r12, STACK_END_MAGIC@l
->> +	std     r12, -8(r11)
-> 
-> Seeing as this is the same as livepatch_handler() except for this part 
-> in the middle, does it make sense to reuse livepatch_handler() with 
-> appropriate labels added for your use?  You could patch in the below 5 
-> instructions using the macros from ppc-opcode.h...
+> Convert dereference_function_descriptor() users tree-wide.
 
-Thanks for the review. The current upstream livepatch_handler code
-is a bit different. I have posted a bug fix to 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-September/163824.html
-which alters the livepatch_handler to have similar code. It's
-a good idea to re-use the livepatch_handler code. I will re-spin
-v2 with based on top of bug fix posted earlier.
+I am not sure if this is a real win. If I count correctly,
+the net result is 6 additional casts in this patch. Many
+casts are still needed also in the other patches.
 
-> 
->> +
->> +	/*
->> +	 * Stub memory is allocated dynamically, during the module load.
->> +	 * Load TOC relative address into r11. module_64.c::klp_stub_for_addr()
->> +	 * identifies the available free stub slot and loads the address into
->> +	 * r11 with two instructions.
->> +	 *
->> +	 * addis r11, r2, stub_address@ha
->> +	 * addi  r11, r11, stub_address@l
->> +	 */
->> +	.global klp_stub_entry
->> +klp_stub_entry:
->> +	addis   r11, r2, 0
->> +	addi    r11, r11, 0
->> +
->> +	/* Load the r12 with called function address from entry->funcdata */
->> +	ld      r12, 128(r11)
->> +
->> +	/* Move r12 into ctr for global entry and branch there */
->> +	mtctr   r12
->> +	bctrl
->> +
->> +	/*
->> +	 * Now we are returning to the patched function. We are free to
->> +	 * use r11, r12 and we can use r2 until we restore it.
->> +	 */
->> +	CURRENT_THREAD_INFO(r12, r1)
->> +
->> +	ld      r11, TI_livepatch_sp(r12)
->> +
->> +	/* Check stack marker hasn't been trashed */
->> +	lis     r2,  STACK_END_MAGIC@h
->> +	ori     r2,  r2, STACK_END_MAGIC@l
->> +	ld      r12, -8(r11)
->> +2:	tdne    r12, r2
->> +	EMIT_BUG_ENTRY 2b, __FILE__, __LINE__ - 1, 0
-> 
-> If you plan to keep this trampoline separate from livepatch_handler(), 
-> note that the above bug entry is not required since you copy only the 
-> text of this trampoline elsewhere and you won't have an associated bug 
-> entry for that new stub address.
-> 
 
-Agree, klp_stub_entry trampoline will go away in v2. 
+> diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
+> index 2ab2003698ef..de6bfa1ef8fb 100644
+> --- a/arch/ia64/include/asm/sections.h
+> +++ b/arch/ia64/include/asm/sections.h
+> @@ -27,13 +27,13 @@ extern char __start_unwind[], __end_unwind[];
+>  extern char __start_ivt_text[], __end_ivt_text[];
+>  
+>  #undef dereference_function_descriptor
+> -static inline void *dereference_function_descriptor(void *ptr)
+> +static inline unsigned long dereference_function_descriptor(unsigned long ptr)
 
--- 
-cheers,
-Kamalesh.
+I would also expect that a function called "dereference*" would work with
+a pointer. The parameter is called ptr but it is unsigned long.
+
+>  {
+> -	struct fdesc *desc = ptr;
+> +	struct fdesc *desc = (struct fdesc *)ptr;
+>  	void *p;
+>  
+>  	if (!probe_kernel_address(&desc->ip, p))
+> -		ptr = p;
+> +		ptr = (unsigned long)p;
+>  	return ptr;
+>  }
+>  
+> diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
+> index 1ca9a2b4239f..06e1b79e2946 100644
+> --- a/arch/parisc/mm/init.c
+> +++ b/arch/parisc/mm/init.c
+> @@ -389,10 +389,10 @@ static void __init setup_bootmem(void)
+>  static int __init parisc_text_address(unsigned long vaddr)
+>  {
+>  	static unsigned long head_ptr __initdata;
+> +	unsigned long addr = (unsigned long)&parisc_kernel_start;
+>  
+>  	if (!head_ptr)
+> -		head_ptr = PAGE_MASK & (unsigned long)
+> -			dereference_function_descriptor(&parisc_kernel_start);
+> +		head_ptr = PAGE_MASK & dereference_function_descriptor(addr);
+
+IMHO, this is harder to read than the original. You need to
+search the definition of "addr" and check its manipulation
+to understand the meaning.
+
+>  
+>  	return core_kernel_text(vaddr) || vaddr == head_ptr;
+>  }
+
+
+To make it clear. All these comments are not a big deal and I do
+not want to invalidate all the acked-by and tested-by just because
+of them.
+
+But please, consider removing this change if we need to do
+another iteration of this patchset. IMHO, there is no real win
+and it would just pollute the git history.
+
+Best Regards,
+Petr
