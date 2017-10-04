@@ -1,29 +1,28 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6TTL0b9szDqm8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 19:24:20 +1100 (AEDT)
-Date: Wed, 4 Oct 2017 10:24:14 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 1/7] switch dereference_function_descriptor() to
- `unsigned long'
-Message-ID: <20171004082414.GC20084@pathway.suse.cz>
-References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-2-sergey.senozhatsky@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Tb54h7pzDql4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 19:29:20 +1100 (AEDT)
+Subject: Re: [PATCH 07/11] powerpc: make dma_cache_sync a no-op
+To: Christoph Hellwig <hch@lst.de>
+Cc: iommu@lists.linux-foundation.org, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Robin Murphy <robin.murphy@arm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+References: <20171003104311.10058-1-hch@lst.de>
+ <20171003104311.10058-8-hch@lst.de>
+ <670a0571-1a36-51a3-db52-64bc61184c35@c-s.fr> <20171003114330.GA24592@lst.de>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <fd0ccac1-51dc-1eff-f1ac-63f9df282de2@c-s.fr>
+Date: Wed, 4 Oct 2017 10:29:13 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170930025319.987-2-sergey.senozhatsky@gmail.com>
+In-Reply-To: <20171003114330.GA24592@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,78 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat 2017-09-30 11:53:13, Sergey Senozhatsky wrote:
-> Convert dereference_function_descriptor() to accept and return
-> `unsigned long'. There will be two new ARCH function for kernel
-> and module function pointer dereference, which will work with
-> `unsigned long', so the patch unifies interfaces.
+
+
+Le 03/10/2017 à 13:43, Christoph Hellwig a écrit :
+> On Tue, Oct 03, 2017 at 01:24:57PM +0200, Christophe LEROY wrote:
+>>> powerpc does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
+>>> doesn't make any sense to do any work in dma_cache_sync given that it
+>>> must be a no-op when dma_alloc_attrs returns coherent memory.
+>> What about arch/powerpc/mm/dma-noncoherent.c ?
+>>
+>> Powerpc 8xx doesn't have coherent memory.
 > 
-> Besides, dereference_function_descriptor() mostly work with
-> `unsigned long':
+> It doesn't implement the DMA_ATTR_NON_CONSISTENT interface either,
+> so if it really doesn't have a way to provide dma coherent allocation
+> (although the code in __dma_alloc_coherent suggests it does provide
+> dma coherent allocations) I have no idea how it could ever have
+> worked.
 > 
-> Convert dereference_function_descriptor() users tree-wide.
 
-I am not sure if this is a real win. If I count correctly,
-the net result is 6 additional casts in this patch. Many
-casts are still needed also in the other patches.
+Yes indeed it provides coherent memory by allocation non cached memory.
 
+And drivers aiming at using non coherent memory do it by using kmalloc() 
+with GFP_DMA then dma_map_single().
+Then they use dma_sync_single_for_xxx(), which calls __dma_sync() on the 
+8xx and is a nop on other powerpcs.
 
-> diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-> index 2ab2003698ef..de6bfa1ef8fb 100644
-> --- a/arch/ia64/include/asm/sections.h
-> +++ b/arch/ia64/include/asm/sections.h
-> @@ -27,13 +27,13 @@ extern char __start_unwind[], __end_unwind[];
->  extern char __start_ivt_text[], __end_ivt_text[];
->  
->  #undef dereference_function_descriptor
-> -static inline void *dereference_function_descriptor(void *ptr)
-> +static inline unsigned long dereference_function_descriptor(unsigned long ptr)
-
-I would also expect that a function called "dereference*" would work with
-a pointer. The parameter is called ptr but it is unsigned long.
-
->  {
-> -	struct fdesc *desc = ptr;
-> +	struct fdesc *desc = (struct fdesc *)ptr;
->  	void *p;
->  
->  	if (!probe_kernel_address(&desc->ip, p))
-> -		ptr = p;
-> +		ptr = (unsigned long)p;
->  	return ptr;
->  }
->  
-> diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-> index 1ca9a2b4239f..06e1b79e2946 100644
-> --- a/arch/parisc/mm/init.c
-> +++ b/arch/parisc/mm/init.c
-> @@ -389,10 +389,10 @@ static void __init setup_bootmem(void)
->  static int __init parisc_text_address(unsigned long vaddr)
->  {
->  	static unsigned long head_ptr __initdata;
-> +	unsigned long addr = (unsigned long)&parisc_kernel_start;
->  
->  	if (!head_ptr)
-> -		head_ptr = PAGE_MASK & (unsigned long)
-> -			dereference_function_descriptor(&parisc_kernel_start);
-> +		head_ptr = PAGE_MASK & dereference_function_descriptor(addr);
-
-IMHO, this is harder to read than the original. You need to
-search the definition of "addr" and check its manipulation
-to understand the meaning.
-
->  
->  	return core_kernel_text(vaddr) || vaddr == head_ptr;
->  }
-
-
-To make it clear. All these comments are not a big deal and I do
-not want to invalidate all the acked-by and tested-by just because
-of them.
-
-But please, consider removing this change if we need to do
-another iteration of this patchset. IMHO, there is no real win
-and it would just pollute the git history.
-
-Best Regards,
-Petr
+Christophe
