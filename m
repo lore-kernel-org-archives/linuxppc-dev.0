@@ -1,27 +1,29 @@
-Return-Path: <clg@kaod.org>
-Received: from 10.mo4.mail-out.ovh.net (10.mo4.mail-out.ovh.net
- [188.165.33.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6VnX0XSlzDqs9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 20:23:27 +1100 (AEDT)
-Received: from player746.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id BAC23C461B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 11:15:26 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6XVJ5MtFzDqpt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 21:40:22 +1100 (AEDT)
+Date: Wed, 4 Oct 2017 12:40:16 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v2 2/2] powerpc/xive: clear XIVE internal structures when a
- CPU is removed
-Date: Wed,  4 Oct 2017 11:15:05 +0200
-Message-Id: <20171004091505.16776-3-clg@kaod.org>
-In-Reply-To: <20171004091505.16776-1-clg@kaod.org>
-References: <20171004091505.16776-1-clg@kaod.org>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv3 5/7] parisc64: Add .opd based function descriptor
+ dereference
+Message-ID: <20171004104016.GG20084@pathway.suse.cz>
+References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
+ <20170930025319.987-6-sergey.senozhatsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170930025319.987-6-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +33,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE
-interrupt controller") introduced support for the XIVE exploitation
-mode of the P9 interrupt controller on the pseries platform. 
+On Sat 2017-09-30 11:53:17, Sergey Senozhatsky wrote:
+> We are moving towards separate kernel and module function descriptor
+> dereference callbacks. This patch enables it for parisc64.
+> 
+> For pointers that belong to the kernel
+> -  Added __start_opd and __end_opd pointers, to track the kernel
+>    .opd section address range;
+> 
+> -  Added dereference_kernel_function_descriptor(). Now we
+>    will dereference only function pointers that are within
+>    [__start_opd, __end_opd];
+> 
+> For pointers that belong to a module
+> -  Added dereference_module_function_descriptor() to handle module
+>    function descriptor dereference. Now we will dereference only
+>    pointers that are within [module->opd.start, module->opd.end].
 
-At that time, support for CPU removal was not complete on PowerVM and
-CPU hot unplug remained untested. It appears that some cleanups of the
-XIVE internal structures are required before releasing the CPU,
-without which the kernel crashes in a rtas call doing the CPU
-isolation.
+> diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
+> index f1a76935a314..28f89b3dcc11 100644
+> --- a/arch/parisc/kernel/module.c
+> +++ b/arch/parisc/kernel/module.c
+> @@ -954,3 +955,19 @@ void module_arch_cleanup(struct module *mod)
+>  {
+>  	deregister_unwind_table(mod);
+>  }
+> +
+> +#ifdef CONFIG_64BIT
+> +unsigned long dereference_module_function_descriptor(struct module *mod,
+> +						     unsigned long addr)
+> +{
+> +	unsigned long start_opd = (Elf64_Addr)mod->core_layout.base +
+> +				   mod->arch.fdesc_offset;
+> +	unsigned long end_opd = start_opd +
+> +				mod->arch.fdesc_count * sizeof(Elf64_Fdesc);
 
-These changes fix the crash by deconfiguring the IPI interrupt source
-and clearing the event queues of the CPU when it is removed.
+I know that this is used in rather slow paths. But it still might
+make sense to have these section borders pre-computed and
+stored in struct mod_arch_specific. I mean to do similar
+thing that we do on powerpc.
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/common.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Well, we could do this in a followup patch if parisc people
+wanted it.
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 1c087ed7427f..b9440ac7a3c1 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1398,6 +1398,14 @@ void xive_teardown_cpu(void)
- 
- 	if (xive_ops->teardown_cpu)
- 		xive_ops->teardown_cpu(cpu, xc);
-+
-+#ifdef CONFIG_SMP
-+	/* Get rid of IPI */
-+	xive_cleanup_cpu_ipi(cpu, xc);
-+#endif
-+
-+	/* Disable and free the queues */
-+	xive_cleanup_cpu_queues(cpu, xc);
- }
- 
- void xive_kexec_teardown_cpu(int secondary)
--- 
-2.13.5
+
+> +	if (addr < start_opd || addr >= end_opd)
+> +		return addr;
+> +
+> +	return dereference_function_descriptor(addr);
+> +}
+> +#endif
+
+Otherwise the patch looks fine to me.
+
+Reviewed-by: Petr Mladek <pmladek@suse.com>
+
+Best Regards,
+Petr
