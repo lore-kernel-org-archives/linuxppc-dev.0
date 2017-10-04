@@ -1,29 +1,30 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6ZSQ564rzDqpt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 23:08:53 +1100 (AEDT)
-Date: Wed, 4 Oct 2017 14:08:47 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Joe Perches <joe@perches.com>, Andy Whitcroft <apw@canonical.com>
-Subject: Re: [PATCHv3 7/7] checkpatch: add pF/pf deprecation warning
-Message-ID: <20171004120847.GI20084@pathway.suse.cz>
-References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-8-sergey.senozhatsky@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Ztn1XtlzDqqN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 23:28:16 +1100 (AEDT)
+Subject: Re: [PATCH v9 06/12] mm: zero struct pages during initialization
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, mark.rutland@arm.com, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
+ steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
+References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
+ <20170920201714.19817-7-pasha.tatashin@oracle.com>
+ <20171003130857.vohli6lnqj4tdmhl@dhcp22.suse.cz>
+ <73ea1215-7aa2-39e1-b820-30f58119183e@oracle.com>
+ <20171004084554.fhxpmywtovs5umnm@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <2fd7b718-c254-612b-e100-a457094e7c38@oracle.com>
+Date: Wed, 4 Oct 2017 08:26:57 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170930025319.987-8-sergey.senozhatsky@gmail.com>
+In-Reply-To: <20171004084554.fhxpmywtovs5umnm@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +34,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat 2017-09-30 11:53:19, Sergey Senozhatsky wrote:
-> We deprecated '%pF/%pf' printk specifiers, since '%pS/%ps' is now smart
-> enough to handle function pointer dereference on platforms where such
-> dereference is required.
+On 10/04/2017 04:45 AM, Michal Hocko wrote:
+> On Tue 03-10-17 11:22:35, Pasha Tatashin wrote:
+>>
+>>
+>> On 10/03/2017 09:08 AM, Michal Hocko wrote:
+>>> On Wed 20-09-17 16:17:08, Pavel Tatashin wrote:
+>>>> Add struct page zeroing as a part of initialization of other fields in
+>>>> __init_single_page().
+>>>>
+>>>> This single thread performance collected on: Intel(R) Xeon(R) CPU E7-8895
+>>>> v3 @ 2.60GHz with 1T of memory (268400646 pages in 8 nodes):
+>>>>
+>>>>                           BASE            FIX
+>>>> sparse_init     11.244671836s   0.007199623s
+>>>> zone_sizes_init  4.879775891s   8.355182299s
+>>>>                     --------------------------
+>>>> Total           16.124447727s   8.362381922s
+>>>
+>>> Hmm, this is confusing. This assumes that sparse_init doesn't zero pages
+>>> anymore, right? So these number depend on the last patch in the series?
+>>
+>> Correct, without the last patch sparse_init time won't change.
 > 
-> checkpatch warning example:
+> THen this is just misleading.
 > 
-> WARNING: Deprecated vsprintf pointer extension '%pF' - use %pS instead
-> 
-> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> Signed-off-by: Joe Perches <joe@perches.com>
-> Cc: Andy Whitcroft <apw@canonical.com>
-> Tested-by: Helge Deller <deller@gmx.de> # parisc64
-> Tested-by: Santosh Sivaraj <santosh@fossix.org> # powerpc64
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> # powerpc64
-> Tested-by: Tony Luck <tony.luck@intel.com> # ia64
 
-Reviewed-by: Petr Mladek <pmladek@suse.com>
+OK, I will re-arrange patches the way you suggested earlier.
 
-Best Regards,
-Petr
+Pasha
