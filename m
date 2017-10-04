@@ -1,28 +1,22 @@
-Return-Path: <clg@kaod.org>
-Received: from 10.mo178.mail-out.ovh.net (10.mo178.mail-out.ovh.net
- [46.105.76.150])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6ftD3Y12zDqtT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 02:28:03 +1100 (AEDT)
-Received: from player728.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id 1172C58CCF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 16:48:58 +0200 (CEST)
-Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, nikunj@linux.vnet.ibm.com
-References: <20170923082656.27219-1-clg@kaod.org>
- <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
- <20171003033615.GA3260@umbus.fritz.box>
- <7f2081f1-415a-85ca-29ed-3ab1467220a7@kaod.org>
- <20171003065858.GL3260@umbus.fritz.box>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <fa6c0a3f-d350-9ee6-4cb5-3c5996da391a@kaod.org>
-Date: Wed, 4 Oct 2017 16:48:51 +0200
-MIME-Version: 1.0
-In-Reply-To: <20171003065858.GL3260@umbus.fritz.box>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6fwr0hMbzDqtT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 02:30:19 +1100 (AEDT)
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: [PATCH] mm: deferred_init_memmap improvements
+Date: Wed,  4 Oct 2017 11:29:02 -0400
+Message-Id: <20171004152902.17300-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,129 +26,268 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/03/2017 08:58 AM, David Gibson wrote:
-> On Tue, Oct 03, 2017 at 08:24:07AM +0200, Cédric Le Goater wrote:
->> On 10/03/2017 05:36 AM, David Gibson wrote:
->>> On Mon, Oct 02, 2017 at 06:27:20PM +0200, Cédric Le Goater wrote:
->>>> On 09/23/2017 10:26 AM, Cédric Le Goater wrote:
->>>>> Hi,
->>>>>
->>>>> Here are a couple of small fixes to support CPU hot unplug. There are
->>>>> still some issues to be investigated as, in some occasions, after a
->>>>> couple of plug and unplug, the cpu which was removed receives a 'lost'
->>>>> interrupt. This showed to be the decrementer under QEMU.
->>>>
->>>> So this seems to be a QEMU issue only which can be solved by 
->>>> removing the DEE bit from the LPCR on P9 processor when the CPU 
->>>> is stopped in rtas. PECE3 bit on P8 processors. 
->>>>
->>>> I think these patches are valuable fixes for 4.14. The first 
->>>> is trivial and the second touches the common xive part but it
->>>> is only called on the pseries platform.  
->>>>
->>>> Could you please take a look ?
->>>
->>> Sorry, I think I've missed something here.
->>>
->>> Is there a qemu bug involved in this?  Has there been a patch sent
->>> that I didn't spot?
->>
->>
->> No, not yet, but I will today probably. something like below to stop
->> the decrementer when a CPU is stopped:
->>
->> 	--- qemu.git.orig/hw/ppc/spapr_rtas.c
->> 	+++ qemu.git/hw/ppc/spapr_rtas.c
->> 	@@ -174,6 +174,15 @@ static void rtas_start_cpu(PowerPCCPU *c
->> 	         kvm_cpu_synchronize_state(cs);
->> 	 
->> 	         env->msr = (1ULL << MSR_SF) | (1ULL << MSR_ME);
->> 	+
->> 	+        /* Enable DECR interrupt */
->> 	+        if (env->mmu_model == POWERPC_MMU_3_00) {
->> 	+            env->spr[SPR_LPCR] |= LPCR_DEE;
->> 	+        } else {
->> 	+            /* P7 and P8 both have same bit for DECR */
->> 	+            env->spr[SPR_LPCR] |= LPCR_P8_PECE3;
->> 	+        }
->> 	+
->> 	         env->nip = start;
->> 	         env->gpr[3] = r3;
->> 	         cs->halted = 0;
->> 	@@ -210,6 +219,13 @@ static void rtas_stop_self(PowerPCCPU *c
->> 	      * no need to bother with specific bits, we just clear it.
->> 	      */
->> 	     env->msr = 0;
->> 	+
->> 	+    if (env->mmu_model == POWERPC_MMU_3_00) {
->> 	+        env->spr[SPR_LPCR] &= ~LPCR_DEE;
->> 	+    } else {
->> 	+        /* P7 and P8 both have same bit for DECR */
->> 	+        env->spr[SPR_LPCR] &= ~LPCR_P8_PECE3;
->> 	+    }
->> 	 }
->> 	 
->> 	 static inline int sysparm_st(target_ulong addr, target_ulong len,
->> 	
->> I haven't yet because I fail to understand why the decrementer is not 
->> interrupting the dying CPU under xics as it is the case under XIVE.
-> 
-> Oh.. ok.  This sounds very similar to the problem Nikunj hit under TCG
-> with decrementer interrupts waking up a supposedly dead CPU.  He had a
-> couple of proposed fixes, but we got bogged down trying to work out
-> why  (with TCG at least) it only seemed to bite after a system_reset,
-> and not on initial boot up.
+deferred_init_memmap() is called when struct pages are initialized later
+in boot by slave CPUs. This patch simplifies and optimizes this function,
+and also fixes a couple issues (described below).
 
-yes. It would be nice to fix the reset under TCG though. May be this is
-related. 
+The main change is that now we are iterating through free memblock areas
+instead of all configured memory. Thus, we do not have to check if the
+struct page has already been initialized.
 
->> Also I am not sure this hack is of any use :
->>
->>     /*
->>      * While stopping a CPU, the guest calls H_CPPR which
->>      * effectively disables interrupts on XICS level.
->>      * However decrementer interrupts in TCG can still
->>      * wake the CPU up so here we disable interrupts in MSR
->>      * as well.
->>      * As rtas_start_cpu() resets the whole MSR anyway, there is
->>      * no need to bother with specific bits, we just clear it.
->>      */
->>     env->msr = 0;
-> 
-> Ok.. why do you think this isn't of use?  I'm pretty sure this is
-> necessary for the TCG case, since MSR is checked in cpu_has_work(),
-> which could otherwise wake up the "dead" cpu.
+=====
+In deferred_init_memmap() where all deferred struct pages are initialized
+we have a check like this:
 
-well, no, when the CPU is stopped with the 'stop-self' RTAS call, one of 
-the CPU states is switched to 1 (cs->halted=1). In cpu_has_work(), this 
-is a branch in which we don't check the MSR, only pending hardware 
-interrupts are checked with their LPCR enablement bit.
+if (page->flags) {
+	VM_BUG_ON(page_zone(page) != zone);
+	goto free_range;
+}
 
-So if the DECR timer fires after 'stop-self' is called (cs->halted=1) and 
-before it is really stopped (cs->stop=1), the nearly-dead CPU will have 
-some work to do and the guest will crash. This case happens very frequently 
-when the P9 XIVE exploitation mode is activated but it does not without, 
-when using the XICS mode. In XICS mode, the DECR is occasionally fired but 
-after cs->stop=1, so no work is to be done.
+This way we are checking if the current deferred page has already been
+initialized. It works, because memory for struct pages has been zeroed, and
+the only way flags are not zero if it went through __init_single_page()
+before.  But, once we change the current behavior and won't zero the memory
+in memblock allocator, we cannot trust anything inside "struct page"es
+until they are initialized. This patch fixes this.
+
+The deferred_init_memmap() is re-written to loop through only free memory
+ranges provided by memblock.
+
+Note, this first issue is relevant only when the following change is merged:
+
+	mm: stop zeroing memory during allocation in vmemmap
+
+=====
+
+This patch fixes another existing issue on systems that have holes in
+zones i.e CONFIG_HOLES_IN_ZONE is defined.
+
+In for_each_mem_pfn_range() we have code like this:
+
+if (!pfn_valid_within(pfn)
+	goto free_range;
+
+Note: 'page' is not set to NULL and is not incremented but 'pfn' advances.
+Thus means if deferred struct pages are enabled on systems with these kind
+of holes, linux would get memory corruptions. I have fixed this issue by
+defining a new macro that performs all the necessary operations when we
+free the current set of pages.
+
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Reviewed-by: Bob Picco <bob.picco@oracle.com>
+---
+ mm/page_alloc.c | 168 ++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 85 insertions(+), 83 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index c841af88836a..dcfd657cfd4e 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1410,14 +1410,17 @@ void clear_zone_contiguous(struct zone *zone)
+ }
  
-The patch above fixes the problem but I don't understand why this works 
-with XICS. My feeling is that there is a race somewhere and 
-
-	env->msr = 0;
-
-is just a useless workaround, in this case at least. 
-
-C.
-
-
-> 
->> and the different CPU states are confusing. Nikunj already to a look
->> at this when trying to fix the TCG reboot. Anyway, the QEMU patch 
->> should (re)start a thread. This is not the place to discuss.
->>
->> Thanks,
->>
->> C.  
->>
->>
-> 
+ #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
+-static void __init deferred_free_range(struct page *page,
+-					unsigned long pfn, int nr_pages)
++static void __init deferred_free_range(unsigned long pfn,
++				       unsigned long nr_pages)
+ {
+-	int i;
++	struct page *page;
++	unsigned long i;
+ 
+-	if (!page)
++	if (!nr_pages)
+ 		return;
+ 
++	page = pfn_to_page(pfn);
++
+ 	/* Free a large naturally-aligned chunk if possible */
+ 	if (nr_pages == pageblock_nr_pages &&
+ 	    (pfn & (pageblock_nr_pages - 1)) == 0) {
+@@ -1443,19 +1446,89 @@ static inline void __init pgdat_init_report_one_done(void)
+ 		complete(&pgdat_init_all_done_comp);
+ }
+ 
++/*
++ * Helper for deferred_init_range, free the given range, reset the counters, and
++ * return number of pages freed.
++ */
++static inline unsigned long __def_free(unsigned long *nr_free,
++				       unsigned long *free_base_pfn,
++				       struct page **page)
++{
++	unsigned long nr = *nr_free;
++
++	deferred_free_range(*free_base_pfn, nr);
++	*free_base_pfn = 0;
++	*nr_free = 0;
++	*page = NULL;
++
++	return nr;
++}
++
++static unsigned long deferred_init_range(int nid, int zid, unsigned long pfn,
++					 unsigned long end_pfn)
++{
++	struct mminit_pfnnid_cache nid_init_state = { };
++	unsigned long nr_pgmask = pageblock_nr_pages - 1;
++	unsigned long free_base_pfn = 0;
++	unsigned long nr_pages = 0;
++	unsigned long nr_free = 0;
++	struct page *page = NULL;
++
++	for (; pfn < end_pfn; pfn++) {
++		/*
++		 * First we check if pfn is valid on architectures where it is
++		 * possible to have holes within pageblock_nr_pages. On systems
++		 * where it is not possible, this function is optimized out.
++		 *
++		 * Then, we check if a current large page is valid by only
++		 * checking the validity of the head pfn.
++		 *
++		 * meminit_pfn_in_nid is checked on systems where pfns can
++		 * interleave within a node: a pfn is between start and end
++		 * of a node, but does not belong to this memory node.
++		 *
++		 * Finally, we minimize pfn page lookups and scheduler checks by
++		 * performing it only once every pageblock_nr_pages.
++		 */
++		if (!pfn_valid_within(pfn)) {
++			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
++		} else if (!(pfn & nr_pgmask) && !pfn_valid(pfn)) {
++			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
++		} else if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
++			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
++		} else if (page && (pfn & nr_pgmask)) {
++			page++;
++			__init_single_page(page, pfn, zid, nid);
++			nr_free++;
++		} else {
++			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
++			page = pfn_to_page(pfn);
++			__init_single_page(page, pfn, zid, nid);
++			free_base_pfn = pfn;
++			nr_free = 1;
++			cond_resched();
++		}
++	}
++	/* Free the last block of pages to allocator */
++	nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
++
++	return nr_pages;
++}
++
+ /* Initialise remaining memory on a node */
+ static int __init deferred_init_memmap(void *data)
+ {
+ 	pg_data_t *pgdat = data;
+ 	int nid = pgdat->node_id;
+-	struct mminit_pfnnid_cache nid_init_state = { };
+ 	unsigned long start = jiffies;
+ 	unsigned long nr_pages = 0;
+-	unsigned long walk_start, walk_end;
+-	int i, zid;
++	unsigned long spfn, epfn;
++	phys_addr_t spa, epa;
++	int zid;
+ 	struct zone *zone;
+ 	unsigned long first_init_pfn = pgdat->first_deferred_pfn;
+ 	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
++	u64 i;
+ 
+ 	if (first_init_pfn == ULONG_MAX) {
+ 		pgdat_init_report_one_done();
+@@ -1477,83 +1550,12 @@ static int __init deferred_init_memmap(void *data)
+ 		if (first_init_pfn < zone_end_pfn(zone))
+ 			break;
+ 	}
++	first_init_pfn = max(zone->zone_start_pfn, first_init_pfn);
+ 
+-	for_each_mem_pfn_range(i, nid, &walk_start, &walk_end, NULL) {
+-		unsigned long pfn, end_pfn;
+-		struct page *page = NULL;
+-		struct page *free_base_page = NULL;
+-		unsigned long free_base_pfn = 0;
+-		int nr_to_free = 0;
+-
+-		end_pfn = min(walk_end, zone_end_pfn(zone));
+-		pfn = first_init_pfn;
+-		if (pfn < walk_start)
+-			pfn = walk_start;
+-		if (pfn < zone->zone_start_pfn)
+-			pfn = zone->zone_start_pfn;
+-
+-		for (; pfn < end_pfn; pfn++) {
+-			if (!pfn_valid_within(pfn))
+-				goto free_range;
+-
+-			/*
+-			 * Ensure pfn_valid is checked every
+-			 * pageblock_nr_pages for memory holes
+-			 */
+-			if ((pfn & (pageblock_nr_pages - 1)) == 0) {
+-				if (!pfn_valid(pfn)) {
+-					page = NULL;
+-					goto free_range;
+-				}
+-			}
+-
+-			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
+-				page = NULL;
+-				goto free_range;
+-			}
+-
+-			/* Minimise pfn page lookups and scheduler checks */
+-			if (page && (pfn & (pageblock_nr_pages - 1)) != 0) {
+-				page++;
+-			} else {
+-				nr_pages += nr_to_free;
+-				deferred_free_range(free_base_page,
+-						free_base_pfn, nr_to_free);
+-				free_base_page = NULL;
+-				free_base_pfn = nr_to_free = 0;
+-
+-				page = pfn_to_page(pfn);
+-				cond_resched();
+-			}
+-
+-			if (page->flags) {
+-				VM_BUG_ON(page_zone(page) != zone);
+-				goto free_range;
+-			}
+-
+-			__init_single_page(page, pfn, zid, nid);
+-			if (!free_base_page) {
+-				free_base_page = page;
+-				free_base_pfn = pfn;
+-				nr_to_free = 0;
+-			}
+-			nr_to_free++;
+-
+-			/* Where possible, batch up pages for a single free */
+-			continue;
+-free_range:
+-			/* Free the current block of pages to allocator */
+-			nr_pages += nr_to_free;
+-			deferred_free_range(free_base_page, free_base_pfn,
+-								nr_to_free);
+-			free_base_page = NULL;
+-			free_base_pfn = nr_to_free = 0;
+-		}
+-		/* Free the last block of pages to allocator */
+-		nr_pages += nr_to_free;
+-		deferred_free_range(free_base_page, free_base_pfn, nr_to_free);
+-
+-		first_init_pfn = max(end_pfn, first_init_pfn);
++	for_each_free_mem_range(i, nid, MEMBLOCK_NONE, &spa, &epa, NULL) {
++		spfn = max_t(unsigned long, first_init_pfn, PFN_UP(spa));
++		epfn = min_t(unsigned long, zone_end_pfn(zone), PFN_DOWN(epa));
++		nr_pages += deferred_init_range(nid, zid, spfn, epfn);
+ 	}
+ 
+ 	/* Sanity check that the next zone really is unpopulated */
+-- 
+2.14.2
