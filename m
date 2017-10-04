@@ -1,28 +1,19 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6VHQ2ZwKzDqnn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 20:00:49 +1100 (AEDT)
-Date: Wed, 4 Oct 2017 11:00:43 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 2/7] sections: split dereference_function_descriptor()
-Message-ID: <20171004090043.GD20084@pathway.suse.cz>
-References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-3-sergey.senozhatsky@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6VN8623VzDqmb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 20:04:56 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/strict_rwx: quirks for STRICT_RWX patches
+In-Reply-To: <20170927095111.10626-1-bsingharora@gmail.com>
+References: <20170927095111.10626-1-bsingharora@gmail.com>
+Date: Wed, 04 Oct 2017 20:04:52 +1100
+Message-ID: <8760bvqo5n.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170930025319.987-3-sergey.senozhatsky@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,89 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat 2017-09-30 11:53:14, Sergey Senozhatsky wrote:
-> There are two format specifiers to print out a pointer in symbolic
-> format: '%pS/%ps' and '%pF/%pf'. On most architectures, the two
-> mean exactly the same thing, but some architectures (ia64, ppc64,
-> parisc64) use an indirect pointer for C function pointers, where
-> the function pointer points to a function descriptor (which in
-> turn contains the actual pointer to the code). The '%pF/%pf, when
-> used appropriately, automatically does the appropriate function
-> descriptor dereference on such architectures.
-> 
-> The "when used appropriately" part is tricky. Basically this is
-> a subtle ABI detail, specific to some platforms, that made it to
-> the API level and people can be unaware of it and miss the whole
-> "we need to dereference the function" business out. [1] proves
-> that point (note that it fixes only '%pF' and '%pS', there might
-> be '%pf' and '%ps' cases as well).
-> 
-> It appears that we can handle everything within the affected
-> arches and make '%pS/%ps' smart enough to retire '%pF/%pf'.
-> Function descriptors live in .opd elf section and all affected
-> arches (ia64, ppc64, parisc64) handle it properly for kernel
-> and modules. So we, technically, can decide if the dereference
-> is needed by simply looking at the pointer: if it belongs to
-> .opd section then we need to dereference it.
+Hi Balbir,
 
-Great catch. I really like this approach!
+Mainly I think we need to add a check in mark_initmem_nx() too don't we?
+Or should we put it somewhere common to both?
 
-> diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-> index e5da44eddd2f..387f22c41e0d 100644
-> --- a/include/asm-generic/sections.h
-> +++ b/include/asm-generic/sections.h
-> @@ -29,6 +29,7 @@
->   *	__ctors_start, __ctors_end
->   *	__irqentry_text_start, __irqentry_text_end
->   *	__softirqentry_text_start, __softirqentry_text_end
-> + *	__start_opd, __end_opd
->   */
->  extern char _text[], _stext[], _etext[];
->  extern char _data[], _sdata[], _edata[];
-> @@ -47,12 +48,15 @@ extern char __softirqentry_text_start[], __softirqentry_text_end[];
->  /* Start and end of .ctors section - used for constructor calls. */
->  extern char __ctors_start[], __ctors_end[];
+But seeing as I'm replying here are some more comments.
+
+> Subject: [PATCH 1/2] powerpc/strict_rwx: quirks for STRICT_RWX patches
+
+This misses three key things, 1) it's a bug fix 2) it's for Power9 DD1,
+and 3) it only applies to radix.
+
+So how about:
+
+powerpc/64s: Fix crashes on Power9 DD1 with radix MMU and STRICT_RWX
+
+
+Balbir Singh <bsingharora@gmail.com> writes:
+> This patch disables STRICT_RWX for power9 DD1 machines
+> where due to some limitations with the way we do tlb
+> updates, we clear the TLB entry of the text that's doing
+> the update to kernel text and that does lead to a
+> crash.
+
+This mostly describes the patch, but I would prefer more detail, eg:
+
+  When using the radix MMU on Power9 DD1, to work around a hardware
+  problem, radix__pte_update() is required to do a two stage update of
+  the PTE. First we write a zero value into the PTE, then we flush the
+  TLB, and then we write the new PTE value.
+  
+  In the normal case that works OK, but it does not work if we're
+  updating the PTE that maps the code we're executing, because the
+  mapping is removed by the TLB flush and we can no longer execute from
+  it. Unfortunately the STRICT_RWX code needs to do exactly that.
+  
+  The exact symptoms when we hit this case vary, sometimes we print an
+  oops and then get stuck after that, but I've also seen a machine just
+  get stuck continually page faulting with no oops printed. The variance
+  is presumably due to the exact layout of the text and the page size
+  used for the mappings. In all cases we are unable to boot to a shell.
+  
+  There are possible solutions such as creating a second mapping of the
+  TLB flush code, executing from that, and then jumping back to the
+  original. However we don't want to add that level of complexity for a
+  DD1 work around.
+  
+  So just detect that we're running on Power9 DD1 and refrain from
+  changing the permissions, effectively disabling STRICT_RWX on Power9
+  DD1.
+
+
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> index 39c252b..c2a2b46 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -169,6 +169,18 @@ void radix__mark_rodata_ro(void)
+>  {
+>  	unsigned long start, end;
 >  
-> +/* Start and end of .opd section - used for function descriptors. */
-> +extern char __start_opd[], __end_opd[];
-> +
->  extern __visible const void __nosave_begin, __nosave_end;
->  
-> -/* function descriptor handling (if any).  Override
-> - * in asm/sections.h */
-> +/* Function descriptor handling (if any).  Override in asm/sections.h */
->  #ifndef dereference_function_descriptor
->  #define dereference_function_descriptor(p) (p)
-> +#define dereference_kernel_function_descriptor(p) (p)
->  #endif
->  
->  /* random extra sections (if any).  Override
-> diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
-> index 4d0cb9bba93e..172904e9cded 100644
-> --- a/include/linux/moduleloader.h
-> +++ b/include/linux/moduleloader.h
-> @@ -85,6 +85,10 @@ void module_arch_cleanup(struct module *mod);
->  /* Any cleanup before freeing mod->module_init */
->  void module_arch_freeing_init(struct module *mod);
->  
-> +/* Dereference module function descriptor */
-> +unsigned long dereference_module_function_descriptor(struct module *mod,
-> +						     unsigned long addr);
-> +
+> +	/*
+> +	 * mark_rodata_ro() will mark itself as !writable at some point
+                                                                       ^
+                                                                       .
+> +	 * due to workaround in radix__pte_update(), we'll end up with
+           ^     ^
+           D     the DD1
+> +	 * an invalid pte and the system will crash quite severly.
 
-The function is used when the module is already loaded. IMHO,
-include/linux/module.h would be a better place.
+> +	 * The alternatives are quite cumbersome and leaving out
+> +	 * the page containing the flush code is not very nice.
 
-One advantage would be that we could use the same trick
-as in include/asm-generic/sections.h. I mean:
+Just drop the last sentence, it doesn't have enough detail to be useful
+and we chose not to implement those alternatives, so better not to
+confuse the reader by talking about them.
 
-#define dereference_module_function_descriptor(mod, addr) (addr)
+> +	 */
+> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> +		pr_warn("Warning: Unable to mark rodata read only on P9 DD1\n");
+> +		return;
+> +	}
 
-and redefine it in the three affected
-arch/<arch>/include/asm/module.h headers. Then it might be completely
-optimized out on all architectures.
+Don't we also need to do the check in radix__mark_initmem_nx() ?
 
-Anyway, we need to get ack from Jessica for this change.
-
-Best Regards,
-Petr
+cheers
