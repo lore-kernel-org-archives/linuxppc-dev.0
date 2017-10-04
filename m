@@ -1,28 +1,32 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Tb54h7pzDql4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 19:29:20 +1100 (AEDT)
-Subject: Re: [PATCH 07/11] powerpc: make dma_cache_sync a no-op
-To: Christoph Hellwig <hch@lst.de>
-Cc: iommu@lists.linux-foundation.org, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-xtensa@linux-xtensa.org,
- x86@kernel.org, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Robin Murphy <robin.murphy@arm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-References: <20171003104311.10058-1-hch@lst.de>
- <20171003104311.10058-8-hch@lst.de>
- <670a0571-1a36-51a3-db52-64bc61184c35@c-s.fr> <20171003114330.GA24592@lst.de>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <fd0ccac1-51dc-1eff-f1ac-63f9df282de2@c-s.fr>
-Date: Wed, 4 Oct 2017 10:29:13 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Txl35s2zDqmV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 19:45:30 +1100 (AEDT)
+Date: Wed, 4 Oct 2017 10:45:26 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pasha Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v9 12/12] mm: stop zeroing memory during allocation in
+ vmemmap
+Message-ID: <20171004084526.57uzy3t4ualwxdyt@dhcp22.suse.cz>
+References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
+ <20170920201714.19817-13-pasha.tatashin@oracle.com>
+ <20171003131952.aqq377pjug5me6go@dhcp22.suse.cz>
+ <c028f65a-b4a6-e56d-3a50-5d7ad9af50cb@oracle.com>
+ <e5872937-b166-fd48-d46d-1921c738d4b1@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <20171003114330.GA24592@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e5872937-b166-fd48-d46d-1921c738d4b1@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 03/10/2017 à 13:43, Christoph Hellwig a écrit :
-> On Tue, Oct 03, 2017 at 01:24:57PM +0200, Christophe LEROY wrote:
->>> powerpc does not implement DMA_ATTR_NON_CONSISTENT allocations, so it
->>> doesn't make any sense to do any work in dma_cache_sync given that it
->>> must be a no-op when dma_alloc_attrs returns coherent memory.
->> What about arch/powerpc/mm/dma-noncoherent.c ?
->>
->> Powerpc 8xx doesn't have coherent memory.
+On Tue 03-10-17 16:26:51, Pasha Tatashin wrote:
+> Hi Michal,
 > 
-> It doesn't implement the DMA_ATTR_NON_CONSISTENT interface either,
-> so if it really doesn't have a way to provide dma coherent allocation
-> (although the code in __dma_alloc_coherent suggests it does provide
-> dma coherent allocations) I have no idea how it could ever have
-> worked.
+> I decided not to merge these two patches, because in addition to sparc
+> optimization move, we have this dependancies:
+
+optimizations can and should go on top of the core patch.
+
+> mm: zero reserved and unavailable struct pages
 > 
+> must be before
+> 
+> mm: stop zeroing memory during allocation in vmemmap.
+> 
+> Otherwise, we can end-up with struct pages that are not zeroed properly.
 
-Yes indeed it provides coherent memory by allocation non cached memory.
+Right and you can deal with it easily. Just introduce the
+mm_zero_struct_page earlier along with its user in "stop zeroing ..."
 
-And drivers aiming at using non coherent memory do it by using kmalloc() 
-with GFP_DMA then dma_map_single().
-Then they use dma_sync_single_for_xxx(), which calls __dma_sync() on the 
-8xx and is a nop on other powerpcs.
-
-Christophe
+I think that moving the zeroying in one go is more reasonable than
+adding it to __init_single_page with misleading numbers and later
+dropping the zeroying from the memmap path.
+-- 
+Michal Hocko
+SUSE Labs
