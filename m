@@ -1,25 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6YlL1M44zDqp2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 22:36:46 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Segher Boessenkool
- <segher@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Cyril Bur <cyrilbur@gmail.com>,
- akshay.adiga@linux.vnet.ibm.com
-Subject: Re: [PATCH v2] powerpc: Blacklist GCC 5.4 6.1 and 6.2
-In-Reply-To: <20171003212903.2327154c@kitsune.suse.cz>
-References: <20170213033536.8908-1-cyrilbur@gmail.com>
- <20170213154437.GP21840@gate.crashing.org>
- <1487031943.9122.1.camel@gmail.com>
- <20170214014916.GR21840@gate.crashing.org>
- <20171003212903.2327154c@kitsune.suse.cz>
-Date: Wed, 04 Oct 2017 22:36:44 +1100
-Message-ID: <87lgkrp2k3.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Z6L0CKgzDqpT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 22:53:13 +1100 (AEDT)
+Date: Wed, 4 Oct 2017 13:53:06 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv3 6/7] symbol lookup: use new kernel and module
+ dereference functions
+Message-ID: <20171004115306.GH20084@pathway.suse.cz>
+References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
+ <20170930025319.987-7-sergey.senozhatsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170930025319.987-7-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +33,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+On Sat 2017-09-30 11:53:18, Sergey Senozhatsky wrote:
+> Call appropriate function descriptor dereference ARCH callbacks:
+> - dereference_kernel_function_descriptor() if the pointer is a
+>   kernel symbol;
+> 
+> - dereference_module_function_descriptor() if the pointer is a
+>   module symbol.
+> 
+> This patch also removes dereference_function_descriptor() from
+> '%pF/%pf' vsprintf handler, because it has the same behavior with
+> '%pS/%ps' now.
 
-> On Mon, 13 Feb 2017 19:49:16 -0600
-> Segher Boessenkool <segher@kernel.crashing.org> wrote:
->
->> On Tue, Feb 14, 2017 at 11:25:43AM +1100, Cyril Bur wrote:
->> > > > At the time of writing GCC 5.4 is the most recent and is
->> > > > affected. GCC 6.3 contains the backported fix, has been tested
->> > > > and appears safe to use.=20=20
->> > >=20
->> > > 6.3 is (of course) the newer release; 5.4 is a maintenance
->> > > release of a compiler that is a year older.=20=20
->> >=20
->> > Yes. I think the point I was trying to make is that since they
->> > backported the fix to 5.x and 6.x then I expect that 5.5 will have
->> > the fix but since it doesn't exist yet, I can't be sure. I'll add
->> > something to that effect.=20=20
->>=20
->> The patch has been backported to the GCC 5 branch; it will be part of
->> any future GCC 5 release (5.5 and later, if any later will happen; 5.5
->> will).
->>=20
->> Don't be so unsure about these things, we aren't *that*
->> incompetent ;-)
->
-> Nonetheless the message is factually correct.
->
->>=20
->> > > Please mention the GCC PR # somewhere in the code, too?=20=20
->> >=20
->> > Sure.=20=20
->
-> It seems this has never happened?
+The description is pretty criptic. It should explain why
+the dereference was moved from vsprintf to the symbol lookup
+and if it is safe.
 
->From memory we discovered that there were patched versions of the
-compilers in distros, which still reported those version numbers. ie.
-the patch would break working compilers.
+Note that kallsyms_lookup() and module_address_lookup() is used
+in many other situations.
 
-So Cyril was going to write a test that actually built some code and
-checked the generated asm. But I suspect he never got around to it.
+Also I would not be afraid to repeat description of the big picture
+from the 2nd patch.
 
-cheers
+> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> Tested-by: Helge Deller <deller@gmx.de> # parisc64
+> Tested-by: Santosh Sivaraj <santosh@fossix.org> # powerpc64
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> # powerpc64
+> Tested-by: Tony Luck <tony.luck@intel.com> # ia64
+> ---
+>  Documentation/printk-formats.txt | 20 ++++++++++----------
+>  kernel/kallsyms.c                |  1 +
+>  kernel/module.c                  |  1 +
+>  lib/vsprintf.c                   |  5 +----
+>  4 files changed, 13 insertions(+), 14 deletions(-)
+> 
+> diff --git a/Documentation/printk-formats.txt b/Documentation/printk-formats.txt
+> index 361789df51ec..3adbc4fdd482 100644
+> --- a/Documentation/printk-formats.txt
+> +++ b/Documentation/printk-formats.txt
+> @@ -50,26 +50,28 @@ Symbols/Function Pointers
+>  
+>  ::
+>  
+> +	%pS	versatile_init+0x0/0x110
+> +	%ps	versatile_init
+>  	%pF	versatile_init+0x0/0x110
+>  	%pf	versatile_init
+> -	%pS	versatile_init+0x0/0x110
+>  	%pSR	versatile_init+0x9/0x110
+>  		(with __builtin_extract_return_addr() translation)
+> -	%ps	versatile_init
+>  	%pB	prev_fn_of_versatile_init+0x88/0x88
+>  
+> -The ``F`` and ``f`` specifiers are for printing function pointers,
+> -for example, f->func, &gettimeofday. They have the same result as
+> -``S`` and ``s`` specifiers. But they do an extra conversion on
+> -ia64, ppc64 and parisc64 architectures where the function pointers
+> -are actually function descriptors.
+> -
+>  The ``S`` and ``s`` specifiers can be used for printing symbols
+>  from direct addresses, for example, __builtin_return_address(0),
+>  (void *)regs->ip. They result in the symbol name with (``S``) or
+>  without (``s``) offsets. If KALLSYMS are disabled then the symbol
+>  address is printed instead.
+
+This paragraph makes the feeling that ``S`` is still only for direct
+adresses. We should update it as well.
+
+
+> +Note, that the ``F`` and ``f`` specifiers are identical to ``S`` (``s``)
+> +and thus deprecated. We have ``F`` and ``f`` because on ia64, ppc64 and
+> +parisc64 function pointers are indirect and, in fact, are function
+> +descriptors, which require additional dereferencing before we can lookup
+> +the symbol. As of now, ``S`` and ``s`` perform dereferencing on those
+> +platforms (when needed), so ``F`` and ``f`` exist for compatibility
+> +reasons only.
+> +
+>  The ``B`` specifier results in the symbol name with offsets and should be
+>  used when printing stack backtraces. The specifier takes into
+>  consideration the effect of compiler optimisations which may occur
+> @@ -77,8 +79,6 @@ when tail-call``s are used and marked with the noreturn GCC attribute.
+>  
+>  Examples::
+>  
+> -	printk("Going to call: %pF\n", gettimeofday);
+> -	printk("Going to call: %pF\n", p->func);
+>  	printk("%s: called from %pS\n", __func__, (void *)_RET_IP_);
+>  	printk("%s: called from %pS\n", __func__,
+>  				(void *)__builtin_return_address(0));
+
+We should either replace %pF with %pS or remove all examples.
+It is strange to keep only half of them.
+
+
+> diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+> index 127e7cfafa55..e2fc09ea9509 100644
+> --- a/kernel/kallsyms.c
+> +++ b/kernel/kallsyms.c
+> @@ -322,6 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
+>  	if (is_ksym_addr(addr)) {
+
+is_ksym_addr() ignores the special .opd elf sections if
+CONFIG_KALLSYMS_ALL is disabled. We should dereference before
+this call.
+
+>  		unsigned long pos;
+>  
+> +		addr = dereference_kernel_function_descriptor(addr);
+>  		pos = get_symbol_pos(addr, symbolsize, offset);
+
+I still wonder if doing the dereference in the widely used kallsyms
+might cause any regression.
+
+One possible problem is that this function returns "offset".
+One might expect that it is offset against "addr" but
+it is not if the dereference happens here.
+
+Also get_symbol_pos() is called in several other helpers
+but the dereference is done only here. It would be
+confusing if for example kallsyms_lookup_size_offset()
+and kallsyms_lookup() give different result.
+
+I would feel much more comfortable if we keep the derefenrece
+only in vsprintf.
+
+
+In each case, we need approval from Jessica for the
+change in module.c.
+
+Best Regards,
+Petr
