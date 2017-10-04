@@ -1,12 +1,12 @@
-Return-Path: <aarcange@redhat.com>
+Return-Path: <jglisse@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Fv10XgMzDqlP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 10:42:20 +1100 (AEDT)
-Date: Wed, 4 Oct 2017 01:42:15 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: jglisse@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6Gdy0bzqzDqln
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 11:16:06 +1100 (AEDT)
+Date: Tue, 3 Oct 2017 20:15:59 -0400
+From: Jerome Glisse <jglisse@redhat.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  Nadav Amit <nadav.amit@gmail.com>,
  Linus Torvalds <torvalds@linux-foundation.org>,
@@ -21,11 +21,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-next@vger.kernel.org
 Subject: Re: [PATCH] mm/mmu_notifier: avoid double notification when it is
  useless
-Message-ID: <20171003234215.GA5231@redhat.com>
+Message-ID: <20171004001559.GD20644@redhat.com>
 References: <20170901173011.10745-1-jglisse@redhat.com>
+ <20171003234215.GA5231@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170901173011.10745-1-jglisse@redhat.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20171003234215.GA5231@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,140 +36,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Jerome,
+On Wed, Oct 04, 2017 at 01:42:15AM +0200, Andrea Arcangeli wrote:
+> Hello Jerome,
+> 
+> On Fri, Sep 01, 2017 at 01:30:11PM -0400, Jerome Glisse wrote:
+> > +Case A is obvious you do not want to take the risk for the device to write to
+> > +a page that might now be use by some completely different task.
+> 
+> used
+> 
+> > +is true ven if the thread doing the page table update is preempted right after
+> 
+> even
+> 
+> > diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> > index 90731e3b7e58..5706252b828a 100644
+> > --- a/mm/huge_memory.c
+> > +++ b/mm/huge_memory.c
+> > @@ -1167,8 +1167,15 @@ static int do_huge_pmd_wp_page_fallback(struct vm_fault *vmf, pmd_t orig_pmd,
+> >  		goto out_free_pages;
+> >  	VM_BUG_ON_PAGE(!PageHead(page), page);
+> >  
+> > +	/*
+> > +	 * Leave pmd empty until pte is filled note we must notify here as
+> > +	 * concurrent CPU thread might write to new page before the call to
+> > +	 * mmu_notifier_invalidate_range_end() happen which can lead to a
+> 
+> happens
+> 
+> > +	 * device seeing memory write in different order than CPU.
+> > +	 *
+> > +	 * See Documentation/vm/mmu_notifier.txt
+> > +	 */
+> >  	pmdp_huge_clear_flush_notify(vma, haddr, vmf->pmd);
+> > -	/* leave pmd empty until pte is filled */
+> >  
+> 
+> Here we can change the following mmu_notifier_invalidate_range_end to
+> skip calling ->invalidate_range. It could be called
+> mmu_notifier_invalidate_range_only_end, or other suggestions
+> welcome. Otherwise we'll repeat the call for nothing.
+> 
+> We need it inside the PT lock for the ordering issue, but we don't
+> need to run it twice.
+> 
+> Same in do_huge_pmd_wp_page, wp_page_copy and
+> migrate_vma_insert_page. Every time *clear_flush_notify is used
+> mmu_notifier_invalidate_range_only_end should be called after it,
+> instead of mmu_notifier_invalidate_range_end.
+> 
+> I think optimizing that part too, fits in the context of this patchset
+> (if not in the same patch), because the objective is still the same:
+> to remove unnecessary ->invalidate_range calls.
 
-On Fri, Sep 01, 2017 at 01:30:11PM -0400, Jerome Glisse wrote:
-> +Case A is obvious you do not want to take the risk for the device to write to
-> +a page that might now be use by some completely different task.
+Yes you are right, good idea, i will respin with that too (and with the
+various typo you noted thank you for that). I can do 2 patch or 1, i don't
+mind either way. I will probably do 2 as first and they can be folded into
+1 if people prefer just one.
 
-used
 
-> +is true ven if the thread doing the page table update is preempted right after
+> 
+> > +				 * No need to notify as we downgrading page
+> 
+> are
+> 
+> > +				 * table protection not changing it to point
+> > +				 * to a new page.
+> > +	 			 *
+> 
+> > +		 * No need to notify as we downgrading page table to read only
+> 
+> are
+> 
+> > +	 * No need to notify as we replacing a read only page with another
+> 
+> are
+> 
+> > @@ -1510,13 +1515,43 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
+> >  			if (pte_soft_dirty(pteval))
+> >  				swp_pte = pte_swp_mksoft_dirty(swp_pte);
+> >  			set_pte_at(mm, address, pvmw.pte, swp_pte);
+> > -		} else
+> > +		} else {
+> > +			/*
+> > +			 * We should not need to notify here as we reach this
+> > +			 * case only from freeze_page() itself only call from
+> > +			 * split_huge_page_to_list() so everything below must
+> > +			 * be true:
+> > +			 *   - page is not anonymous
+> > +			 *   - page is locked
+> > +			 *
+> > +			 * So as it is a shared page and it is locked, it can
+> > +			 * not be remove from the page cache and replace by
+> > +			 * a new page before mmu_notifier_invalidate_range_end
+> > +			 * so no concurrent thread might update its page table
+> > +			 * to point at new page while a device still is using
+> > +			 * this page.
+> > +			 *
+> > +			 * But we can not assume that new user of try_to_unmap
+> > +			 * will have that in mind so just to be safe here call
+> > +			 * mmu_notifier_invalidate_range()
+> > +			 *
+> > +			 * See Documentation/vm/mmu_notifier.txt
+> > +			 */
+> >  			dec_mm_counter(mm, mm_counter_file(page));
+> > +			mmu_notifier_invalidate_range(mm, address,
+> > +						      address + PAGE_SIZE);
+> > +		}
+> >  discard:
+> > +		/*
+> > +		 * No need to call mmu_notifier_invalidate_range() as we are
+> > +		 * either replacing a present pte with non present one (either
+> > +		 * a swap or special one). We handling the clearing pte case
+> > +		 * above.
+> > +		 *
+> > +		 * See Documentation/vm/mmu_notifier.txt
+> > +		 */
+> >  		page_remove_rmap(subpage, PageHuge(page));
+> >  		put_page(page);
+> > -		mmu_notifier_invalidate_range(mm, address,
+> > -					      address + PAGE_SIZE);
+> >  	}
+> >  
+> >  	mmu_notifier_invalidate_range_end(vma->vm_mm, start, end);
+> 
+> That is the path that unmaps filebacked pages (btw, not necessarily
+> shared unlike comment says, they can be private but still filebacked).
 
-even
+I was more refering to the fact that they are in page cache and thus
+given current condition they can not be migrated to a new page in our
+back. But yes it can be a private mapping, i will fix the comment.
 
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index 90731e3b7e58..5706252b828a 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -1167,8 +1167,15 @@ static int do_huge_pmd_wp_page_fallback(struct vm_fault *vmf, pmd_t orig_pmd,
->  		goto out_free_pages;
->  	VM_BUG_ON_PAGE(!PageHead(page), page);
->  
-> +	/*
-> +	 * Leave pmd empty until pte is filled note we must notify here as
-> +	 * concurrent CPU thread might write to new page before the call to
-> +	 * mmu_notifier_invalidate_range_end() happen which can lead to a
 
-happens
+> I'd like some more explanation about the inner working of "that new
+> user" as per comment above.
+> 
+> It would be enough to drop mmu_notifier_invalidate_range from above
+> without adding it to the filebacked case. The above gives higher prio
+> to the hypothetical and uncertain future case, than to the current
+> real filebacked case that doesn't need ->invalidate_range inside the
+> PT lock, or do you see something that might already need such
+> ->invalidate_range?
 
-> +	 * device seeing memory write in different order than CPU.
-> +	 *
-> +	 * See Documentation/vm/mmu_notifier.txt
-> +	 */
->  	pmdp_huge_clear_flush_notify(vma, haddr, vmf->pmd);
-> -	/* leave pmd empty until pte is filled */
->  
+No i don't see any new user today that might need such invalidate but
+i was trying to be extra cautious as i have a tendency to assume that
+someone might do a patch that use try_to_unmap() without going through
+all the comments in the function and thus possibly using it in a an
+unexpected way from mmu_notifier callback point of view. I am fine
+with putting the burden on new user to get it right and adding an
+extra warning in the function description to try to warn people in a
+sensible way.
 
-Here we can change the following mmu_notifier_invalidate_range_end to
-skip calling ->invalidate_range. It could be called
-mmu_notifier_invalidate_range_only_end, or other suggestions
-welcome. Otherwise we'll repeat the call for nothing.
 
-We need it inside the PT lock for the ordering issue, but we don't
-need to run it twice.
+> I certainly like the patch. I expect ->invalidate_range users will
+> like the slight higher complexity in order to eliminate unnecessary
+> invalidates that are slowing them down unnecessarily. At the same time
+> this is zero risk (because a noop) for all other MMU notifier users
+> (those that don't share the primary MMU pagetables, like KVM).
 
-Same in do_huge_pmd_wp_page, wp_page_copy and
-migrate_vma_insert_page. Every time *clear_flush_notify is used
-mmu_notifier_invalidate_range_only_end should be called after it,
-instead of mmu_notifier_invalidate_range_end.
+I have another patchset to restore the change_pte optimization for kvm
+i want to post too. I will need to do some benchmarking first to make
+sure it actualy helps even in a small way.
 
-I think optimizing that part too, fits in the context of this patchset
-(if not in the same patch), because the objective is still the same:
-to remove unnecessary ->invalidate_range calls.
+Thank you for looking into this patch, i will repost with your suggestions
+soon.
 
-> +				 * No need to notify as we downgrading page
-
-are
-
-> +				 * table protection not changing it to point
-> +				 * to a new page.
-> +	 			 *
-
-> +		 * No need to notify as we downgrading page table to read only
-
-are
-
-> +	 * No need to notify as we replacing a read only page with another
-
-are
-
-> @@ -1510,13 +1515,43 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
->  			if (pte_soft_dirty(pteval))
->  				swp_pte = pte_swp_mksoft_dirty(swp_pte);
->  			set_pte_at(mm, address, pvmw.pte, swp_pte);
-> -		} else
-> +		} else {
-> +			/*
-> +			 * We should not need to notify here as we reach this
-> +			 * case only from freeze_page() itself only call from
-> +			 * split_huge_page_to_list() so everything below must
-> +			 * be true:
-> +			 *   - page is not anonymous
-> +			 *   - page is locked
-> +			 *
-> +			 * So as it is a shared page and it is locked, it can
-> +			 * not be remove from the page cache and replace by
-> +			 * a new page before mmu_notifier_invalidate_range_end
-> +			 * so no concurrent thread might update its page table
-> +			 * to point at new page while a device still is using
-> +			 * this page.
-> +			 *
-> +			 * But we can not assume that new user of try_to_unmap
-> +			 * will have that in mind so just to be safe here call
-> +			 * mmu_notifier_invalidate_range()
-> +			 *
-> +			 * See Documentation/vm/mmu_notifier.txt
-> +			 */
->  			dec_mm_counter(mm, mm_counter_file(page));
-> +			mmu_notifier_invalidate_range(mm, address,
-> +						      address + PAGE_SIZE);
-> +		}
->  discard:
-> +		/*
-> +		 * No need to call mmu_notifier_invalidate_range() as we are
-> +		 * either replacing a present pte with non present one (either
-> +		 * a swap or special one). We handling the clearing pte case
-> +		 * above.
-> +		 *
-> +		 * See Documentation/vm/mmu_notifier.txt
-> +		 */
->  		page_remove_rmap(subpage, PageHuge(page));
->  		put_page(page);
-> -		mmu_notifier_invalidate_range(mm, address,
-> -					      address + PAGE_SIZE);
->  	}
->  
->  	mmu_notifier_invalidate_range_end(vma->vm_mm, start, end);
-
-That is the path that unmaps filebacked pages (btw, not necessarily
-shared unlike comment says, they can be private but still filebacked).
-
-I'd like some more explanation about the inner working of "that new
-user" as per comment above.
-
-It would be enough to drop mmu_notifier_invalidate_range from above
-without adding it to the filebacked case. The above gives higher prio
-to the hypothetical and uncertain future case, than to the current
-real filebacked case that doesn't need ->invalidate_range inside the
-PT lock, or do you see something that might already need such
-->invalidate_range?
-
-I certainly like the patch. I expect ->invalidate_range users will
-like the slight higher complexity in order to eliminate unnecessary
-invalidates that are slowing them down unnecessarily. At the same time
-this is zero risk (because a noop) for all other MMU notifier users
-(those that don't share the primary MMU pagetables, like KVM).
-
-Thanks!
-Andrea
+Jérôme
