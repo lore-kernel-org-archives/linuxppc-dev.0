@@ -1,39 +1,48 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6RPg3wqPzDqln
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6RPh0PTCzDqlt
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 17:51:03 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v946ndTb043384
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v946ndcB050421
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Oct 2017 02:51:01 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dckeru4qu-1
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dchuyg80q-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2017 02:51:00 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Wed, 4 Oct 2017 16:50:57 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v946ou9J37879822
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Oct 2017 17:50:56 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v946oltt014350
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Oct 2017 17:50:47 +1100
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/perf: Fix for core/nest imc call trace on cpuhotplug
-Date: Wed,  4 Oct 2017 12:20:52 +0530
-Message-Id: <1507099852-28004-1-git-send-email-anju@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 4 Oct 2017 07:50:59 +0100
+Subject: Re: [PATCH v3 00/20] Speculative page faults
+To: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>, kirill@shutemov.name,
+ Andi Kleen <ak@linux.intel.com>, Michal Hocko <mhocko@kernel.org>,
+ dave@stgolabs.net, Jan Kara <jack@suse.cz>,
+ Matthew Wilcox <willy@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-mm <linux-mm@kvack.org>, haren@linux.vnet.ibm.com,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>, npiggin@gmail.com,
+ bsingharora@gmail.com, Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, "x86@kernel.org" <x86@kernel.org>
+References: <CAADnVQLmSbLHwj9m33kpzAidJPvq3cbdnXjaew6oTLqHWrBbZQ@mail.gmail.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 4 Oct 2017 08:50:49 +0200
+MIME-Version: 1.0
+In-Reply-To: <CAADnVQLmSbLHwj9m33kpzAidJPvq3cbdnXjaew6oTLqHWrBbZQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <670c9a22-cf5b-3fab-b2f2-a72fbd4451c8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,76 +52,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nest/core pmu units are enabled only when it is used. A reference count is      
-maintained for the events which uses the nest/core pmu units. Currently in      
-*_imc_counters_release function a WARN() is used for notification of any        
-underflow of ref count.                                                         
-                                                                                
-The case where event ref count hit a negative value is, when perf session is    
-started, followed by offlining of all cpus in a given core.                     
-i.e. in cpuhotplug offline path ppc_core_imc_cpu_offline() function set the     
-ref->count to zero, if the current cpu which is about to offline is the last    
-cpu in a given core and make an OPAL call to disable the engine in that core.   
-And on perf session termination, perf->destroy (core_imc_counters_release) will 
-first decrement the ref->count for this core and based on the ref->count value  
-an opal call is made to disable the core-imc engine.                            
-Now, since cpuhotplug path already clears the ref->count for core and disabled  
-the engine, perf->destroy() decrementing again at event termination make it     
-negative which in turn fires the WARN_ON. The same happens for nest units.      
-                                                                                
-Add a check to see if the reference count is alreday zero, before decrementing  
-the count, so that the ref count will not hit a negative value.                 
-                                                                                
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>                
----
- arch/powerpc/perf/imc-pmu.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+On 25/09/2017 18:27, Alexei Starovoitov wrote:
+> On Mon, Sep 18, 2017 at 12:15 AM, Laurent Dufour
+> <ldufour@linux.vnet.ibm.com> wrote:
+>> Despite the unprovable lockdep warning raised by Sergey, I didn't get any
+>> feedback on this series.
+>>
+>> Is there a chance to get it moved upstream ?
+> 
+> what is the status ?
+> We're eagerly looking forward for this set to land,
+> since we have several use cases for tracing that
+> will build on top of this set as discussed at Plumbers.
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 9ccac86f3463..e3a1f65933b5 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -399,6 +399,20 @@ static void nest_imc_counters_release(struct perf_event *event)
- 
- 	/* Take the mutex lock for this node and then decrement the reference count */
- 	mutex_lock(&ref->lock);
-+	if (ref->refc == 0) {
-+		/*
-+		 * The scenario where this is true is, when perf session is
-+		 * started, followed by offlining of all cpus in a given node.
-+		 *
-+		 * In the cpuhotplug offline path, ppc_nest_imc_cpu_offline()
-+		 * function set the ref->count to zero, if the cpu which is
-+		 * about to offline is the last cpu in a given node and make
-+		 * an OPAL call to disable the engine in that node.
-+		 *
-+		 */
-+		mutex_unlock(&ref->lock);
-+		return;
-+	}
- 	ref->refc--;
- 	if (ref->refc == 0) {
- 		rc = opal_imc_counters_stop(OPAL_IMC_COUNTERS_NEST,
-@@ -646,6 +660,20 @@ static void core_imc_counters_release(struct perf_event *event)
- 		return;
- 
- 	mutex_lock(&ref->lock);
-+	if (ref->refc == 0) {
-+		/*
-+		 * The scenario where this is true is, when perf session is
-+		 * started, followed by offlining of all cpus in a given core.
-+		 *
-+		 * In the cpuhotplug offline path, ppc_core_imc_cpu_offline()
-+		 * function set the ref->count to zero, if the cpu which is
-+		 * about to offline is the last cpu in a given core and make
-+		 * an OPAL call to disable the engine in that core.
-+		 *
-+		 */
-+		mutex_unlock(&ref->lock);
-+		return;
-+	}
- 	ref->refc--;
- 	if (ref->refc == 0) {
- 		rc = opal_imc_counters_stop(OPAL_IMC_COUNTERS_CORE,
--- 
-2.14.1
+Hi Alexei,
+
+Based on Plumber's note [1], it sounds that the use case is tied to the BPF
+tracing where a call tp find_vma() call will be made on a process's context
+to fetch user space's symbols.
+
+Am I right ?
+Is the find_vma() call made in the context of the process owning the mm
+struct ?
+
+Thanks,
+Laurent.
+
+[1] https://etherpad.openstack.org/p/LPC2017_Tracing)
