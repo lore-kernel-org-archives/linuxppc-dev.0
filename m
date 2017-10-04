@@ -1,32 +1,32 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6bY0248hzDqrP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Oct 2017 23:57:55 +1100 (AEDT)
-Date: Wed, 4 Oct 2017 14:57:43 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Pasha Tatashin <pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6cGB06zszDqsg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 00:30:09 +1100 (AEDT)
+Subject: Re: [PATCH v9 08/12] mm: zero reserved and unavailable struct pages
+To: Michal Hocko <mhocko@kernel.org>
 Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v9 08/12] mm: zero reserved and unavailable struct pages
-Message-ID: <20171004125743.fm6mf2artbga76et@dhcp22.suse.cz>
+ ard.biesheuvel@linaro.org, mark.rutland@arm.com, will.deacon@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
+ steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
 References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
  <20170920201714.19817-9-pasha.tatashin@oracle.com>
  <20171003131817.omzbam3js67edp3s@dhcp22.suse.cz>
  <691dba28-718c-e9a9-d006-88505eb5cd7e@oracle.com>
  <20171004085636.w2rnwf5xxhahzuy7@dhcp22.suse.cz>
  <9198a33d-cd40-dd70-4823-7f70c57ef9a2@oracle.com>
+ <20171004125743.fm6mf2artbga76et@dhcp22.suse.cz>
+From: Pasha Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <d743668c-6b7e-1775-a5b8-d6e997537990@oracle.com>
+Date: Wed, 4 Oct 2017 09:28:55 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9198a33d-cd40-dd70-4823-7f70c57ef9a2@oracle.com>
+In-Reply-To: <20171004125743.fm6mf2artbga76et@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,66 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 04-10-17 08:40:11, Pasha Tatashin wrote:
-> > > > Could you be more specific where is such a memory reserved?
-> > > > 
-> > > 
-> > > I know of one example: trim_low_memory_range() unconditionally reserves from
-> > > pfn 0, but e820__memblock_setup() might provide the exiting memory from pfn
-> > > 1 (i.e. KVM).
-> > 
-> > Then just initialize struct pages for that mapping rigth there where a
-> > special API is used.
-> > 
-> > > But, there could be more based on this comment from linux/page-flags.h:
-> > > 
-> > >   19  * PG_reserved is set for special pages, which can never be swapped out.
-> > > Some
-> > >   20  * of them might not even exist (eg empty_bad_page)...
-> > 
-> > I have no idea wht empty_bad_page is but a quick grep shows that this is
-> > never used. I might be wrong here but if somebody is reserving a memory
-> > in a special way then we should handle the initialization right there.
-> > E.g. create an API for special memblock reservations.
-> > 
-> 
-> Hi Michal,
-> 
-> The reservations happen before struct pages are allocated and mapped. So, it
-> is not always possible to do it at call sites.
 
-OK, I didn't realize that.
- 
-> Previously, I have solved this problem like this:
-> 
-> https://patchwork.kernel.org/patch/9886163
-> 
-> But, I was not too happy with that approach, so I replaced it with the
-> current approach as it is more generic, and solves similar issues if they
-> happen in other places. Also, the comment in page-flags got me scared that
-> there are probably other places perhaps on other architectures that can have
-> the similar issue.
+> I am not really familiar with the trim_low_memory_range code path. I am
+> not even sure we have to care about it because nobody should be walking
+> pfns outside of any zone.
 
-I believe the comment is just stale. I have looked into empty_bad_page
-and it is just a relict. I plan to post a patch soon.
+According to commit comments first 4K belongs to BIOS, so I think the 
+memory exists but BIOS may or may not report it to Linux. So, reserve it 
+to make sure we never touch it.
 
-> In addition, I did not like my solution, I was simply shrinking the low
-> reservation from:
-> [0 - reserve_low) to [min_pfn - reserve_low), but if min_pfn > reserve_low
-> can we skip low reservation entirely? I was not sure.
+  I am worried that this patch adds a code which
+> is not really used and it will just stay that way for ever because
+> nobody will dare to change it as it is too obscure and not explained
+> very well.
+
+I could explain mine code better. Perhaps add more comments, and explain 
+when it can be removed?
+
+  trim_low_memory_range is a good example of this. Why do we
+> even reserve this range from the memory block allocator? The memory
+> shouldn't be backed by any real memory and thus not in the allocator in
+> the first place, no?
 > 
-> The current approach notifies us if there are such pages, and we can
-> fix/remove them in the future without crashing kernel in the meantime.
 
-I am not really familiar with the trim_low_memory_range code path. I am
-not even sure we have to care about it because nobody should be walking
-pfns outside of any zone. I am worried that this patch adds a code which
-is not really used and it will just stay that way for ever because
-nobody will dare to change it as it is too obscure and not explained
-very well. trim_low_memory_range is a good example of this. Why do we
-even reserve this range from the memory block allocator? The memory
-shouldn't be backed by any real memory and thus not in the allocator in
-the first place, no?
--- 
-Michal Hocko
-SUSE Labs
+Since it is not enforced in memblock that everything in reserved list 
+must be part of memory list, we can have it, and we need to make sure 
+kernel does not panic. Otherwise, it is very hard to detect such bugs.
