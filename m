@@ -1,16 +1,52 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y70nr4rdvzDr39
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:55:28 +1100 (AEDT)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, benh@kernel.crashing.org,
- cyrilbur@gmail.com
-Subject: [PATCH] powerpc/tm: P9 disabled suspend mode workaround
-Date: Thu,  5 Oct 2017 15:55:16 +1100
-Message-Id: <20171005045516.26145-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y71Ws15RkzDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 16:28:23 +1100 (AEDT)
+Date: Thu, 5 Oct 2017 07:28:28 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ John Stultz <john.stultz@linaro.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>,
+ Kalle Valo <kvalo@qca.qualcomm.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>,
+ Manish Chopra <manish.chopra@cavium.com>,
+ Mark Gross <mark.gross@intel.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Reed <mdr@sgi.com>,
+ netdev@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+ Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Ralf Baechle <ralf@linux-mips.org>, Sebastian Reichel <sre@kernel.org>,
+ Stefan Richter <stefanr@s5r6.in-berlin.de>,
+ Stephen Boyd <sboyd@codeaurora.org>,
+ Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ Tejun Heo <tj@kernel.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
+ linux1394-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/13] timer: Remove expires and data arguments from
+ DEFINE_TIMER
+Message-ID: <20171005052828.GA14470@kroah.com>
+References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
+ <1507159627-127660-11-git-send-email-keescook@chromium.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1507159627-127660-11-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,138 +56,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Each POWER9 core is made of two super slices. Each super slice can
-only have one thread at a time in TM suspend mode. The super slice
-restricts ever entering a state where both threads are in suspend by
-aborting transactions on tsuspend or exceptions into the kernel.
+On Wed, Oct 04, 2017 at 04:27:04PM -0700, Kees Cook wrote:
+> Drop the arguments from the macro and adjust all callers with the
+> following script:
+> 
+>   perl -pi -e 's/DEFINE_TIMER\((.*), 0, 0\);/DEFINE_TIMER($1);/g;' \
+>     $(git grep DEFINE_TIMER | cut -d: -f1 | sort -u | grep -v timer.h)
+> 
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # for m68k parts
+> ---
+>  arch/arm/mach-ixp4xx/dsmg600-setup.c      | 2 +-
+>  arch/arm/mach-ixp4xx/nas100d-setup.c      | 2 +-
+>  arch/m68k/amiga/amisound.c                | 2 +-
+>  arch/m68k/mac/macboing.c                  | 2 +-
+>  arch/mips/mti-malta/malta-display.c       | 2 +-
+>  arch/parisc/kernel/pdc_cons.c             | 2 +-
+>  arch/s390/mm/cmm.c                        | 2 +-
+>  drivers/atm/idt77105.c                    | 4 ++--
+>  drivers/atm/iphase.c                      | 2 +-
+>  drivers/block/ataflop.c                   | 8 ++++----
+>  drivers/char/dtlk.c                       | 2 +-
+>  drivers/char/hangcheck-timer.c            | 2 +-
+>  drivers/char/nwbutton.c                   | 2 +-
+>  drivers/char/rtc.c                        | 2 +-
+>  drivers/input/touchscreen/s3c2410_ts.c    | 2 +-
+>  drivers/net/cris/eth_v10.c                | 6 +++---
+>  drivers/net/hamradio/yam.c                | 2 +-
+>  drivers/net/wireless/atmel/at76c50x-usb.c | 2 +-
+>  drivers/staging/speakup/main.c            | 2 +-
+>  drivers/staging/speakup/synth.c           | 2 +-
+>  drivers/tty/cyclades.c                    | 2 +-
+>  drivers/tty/isicom.c                      | 2 +-
+>  drivers/tty/moxa.c                        | 2 +-
+>  drivers/tty/rocket.c                      | 2 +-
+>  drivers/tty/vt/keyboard.c                 | 2 +-
+>  drivers/tty/vt/vt.c                       | 2 +-
+>  drivers/watchdog/alim7101_wdt.c           | 2 +-
+>  drivers/watchdog/machzwd.c                | 2 +-
+>  drivers/watchdog/mixcomwd.c               | 2 +-
+>  drivers/watchdog/sbc60xxwdt.c             | 2 +-
+>  drivers/watchdog/sc520_wdt.c              | 2 +-
+>  drivers/watchdog/via_wdt.c                | 2 +-
+>  drivers/watchdog/w83877f_wdt.c            | 2 +-
+>  drivers/xen/grant-table.c                 | 2 +-
+>  fs/pstore/platform.c                      | 2 +-
+>  include/linux/timer.h                     | 4 ++--
+>  kernel/irq/spurious.c                     | 2 +-
+>  lib/random32.c                            | 2 +-
+>  net/atm/mpc.c                             | 2 +-
+>  net/decnet/dn_route.c                     | 2 +-
+>  net/ipv6/ip6_flowlabel.c                  | 2 +-
+>  net/netrom/nr_loopback.c                  | 2 +-
+>  security/keys/gc.c                        | 2 +-
+>  sound/oss/midibuf.c                       | 2 +-
+>  sound/oss/soundcard.c                     | 2 +-
+>  sound/oss/sys_timer.c                     | 2 +-
+>  sound/oss/uart6850.c                      | 2 +-
+>  47 files changed, 54 insertions(+), 54 deletions(-)
 
-Unfortunately for context switch we need trechkpt which forces suspend
-mode. If a thread is already in suspend and a second thread needs to
-be restored that was suspended, the trechkpt must be executed.
-Currently the trechkpt will hang in this case until the other thread
-exits suspend. This causes problems for Linux resulting in hang and
-RCU stall detectors going off.
-
-To workaround this, we disable suspend in the core. This is done via a
-firmware change which stops the hardware ever getting into suspend.
-The hardware will always rollback a transaction on any tsuspend or
-entry into the kernel.
-
-Unfortunately userspace can construct a sigcontext which enables
-suspend. Thus userspace can force Linux into a path where trechkpt is
-executed.
-
-This patch blocks this from happening on POWER9 but sanity checking
-sigcontexts passed in.
-
-ptrace doesn't have this problem as only MSR SE and BE can be changed
-via ptrace.
-
-This patch also adds a number of WARN_ON() in case we every enter
-suspend when we shouldn't. This should catch systems that don't have
-the firmware change and are running TM.
-
-A future firmware change will allow suspend mode on POWER9 but that is
-going to require additional Linux changes to support. In the interim,
-this allows TM to continue to (partially) work while stopping
-userspace from crashing Linux.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/include/asm/cputable.h | 1 +
- arch/powerpc/kernel/cputable.c      | 7 +++++++
- arch/powerpc/kernel/process.c       | 2 ++
- arch/powerpc/kernel/signal_32.c     | 4 ++++
- arch/powerpc/kernel/signal_64.c     | 5 +++++
- 5 files changed, 19 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index a9bf921f4e..477e00b6a7 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -123,6 +123,7 @@ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
- extern void identify_cpu_name(unsigned int pvr);
- extern void do_feature_fixups(unsigned long value, void *fixup_start,
- 			      void *fixup_end);
-+extern bool tm_suspend_supported(void);
- 
- extern const char *powerpc_base_platform;
- 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 7608729160..70252843ff 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2301,6 +2301,13 @@ void __init identify_cpu_name(unsigned int pvr)
- 	}
- }
- 
-+bool tm_suspend_supported(void)
-+{
-+	if (pvr_version_is(PVR_POWER9))
-+		return false;
-+	return true;
-+}
-+
- 
- #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
- struct static_key_true cpu_feature_keys[NUM_CPU_FTR_KEYS] = {
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a0c74bbf34..5b81673c50 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -903,6 +903,8 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
- 	if (!MSR_TM_ACTIVE(thr->regs->msr))
- 		goto out_and_saveregs;
- 
-+	WARN_ON(!tm_suspend_supported());
-+
- 	TM_DEBUG("--- tm_reclaim on pid %d (NIP=%lx, "
- 		 "ccr=%lx, msr=%lx, trap=%lx)\n",
- 		 tsk->pid, thr->regs->nip,
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 92fb1c8dbb..9eac0131c0 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -519,6 +519,8 @@ static int save_tm_user_regs(struct pt_regs *regs,
- {
- 	unsigned long msr = regs->msr;
- 
-+	WARN_ON(!tm_suspend_supported());
-+
- 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
- 	 * just indicates to userland that we were doing a transaction, but we
- 	 * don't want to return in transactional state.  This also ensures
-@@ -769,6 +771,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 	int i;
- #endif
- 
-+	if (!tm_suspend_supported())
-+		return 1;
- 	/*
- 	 * restore general registers but not including MSR or SOFTE. Also
- 	 * take care of keeping r2 (TLS) intact if not a signal.
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index c83c115858..6d28caf849 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -214,6 +214,8 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
- 
- 	BUG_ON(!MSR_TM_ACTIVE(regs->msr));
- 
-+	WARN_ON(!tm_suspend_supported());
-+
- 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
- 	 * just indicates to userland that we were doing a transaction, but we
- 	 * don't want to return in transactional state.  This also ensures
-@@ -430,6 +432,9 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
- 
- 	BUG_ON(tsk != current);
- 
-+	if (!tm_suspend_supported())
-+		return -EINVAL;
-+
- 	/* copy the GPRs */
- 	err |= __copy_from_user(regs->gpr, tm_sc->gp_regs, sizeof(regs->gpr));
- 	err |= __copy_from_user(&tsk->thread.ckpt_regs, sc->gp_regs,
--- 
-2.11.0
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
