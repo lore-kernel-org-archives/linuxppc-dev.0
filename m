@@ -1,34 +1,47 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y72yh2q9fzDr5C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 17:33:15 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v956TYYY015337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Oct 2017 02:33:13 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ddbpa31wj-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y73Tk5HR6zDr5H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 17:56:42 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v956reLc086563
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Oct 2017 02:56:39 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ddeebcayx-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 02:33:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 02:56:39 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Thu, 5 Oct 2017 00:33:12 -0600
-Subject: [linux-next][DLPAR CPU][Oops] Kernel crash with CPU hotunplug
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next <linux-next@vger.kernel.org>, linux-kernel
- <linux-kernel@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Rob
- Herring <robh@kernel.org>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- sachinp <sachinp@linux.vnet.ibm.com>
-Date: Thu, 05 Oct 2017 12:03:05 +0530
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1507185185.3792.12.camel@abdul.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 5 Oct 2017 16:56:36 +1000
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v956uZC537880046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Oct 2017 17:56:35 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v956uXJQ021860
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Oct 2017 17:56:34 +1100
+Date: Thu, 5 Oct 2017 12:26:29 +0530
+From: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v2] kernel/module_64.c: Add REL24 relocation support of
+ livepatch symbols
+References: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
+Message-Id: <20171005065629.3k2sp4po6qqwiyhf@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,125 +51,379 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 2017/10/04 03:25PM, Kamalesh Babulal wrote:
+> With commit 425595a7fc20 ("livepatch: reuse module loader code to
+> write relocations") livepatch uses module loader to write relocations
+> of livepatch symbols, instead of managing them by arch-dependent
+> klp_write_module_reloc() function.
+> 
+> livepatch module managed relocation entries are written to sections
+> marked with SHF_RELA_LIVEPATCH flag and livepatch symbols within the
+> section are marked with SHN_LIVEPATCH symbol section index. When the
+> livepatching module is loaded, the livepatch symbols are resolved
+> before calling apply_relocate_add() to apply the relocations.
+> 
+> R_PPC64_REL24 relocation type resolves to a function address, those may
+> be local to the livepatch module or available in kernel/other modules.
+> For every such non-local function, apply_relocate_add() constructs a
+> stub (a.k.a trampoline) to branch to a function. Stub code is
+> responsible to save toc onto the stack, before calling the function via
+> the global entry point. A NOP instruction is expected after every non
+> local function branch, i.e. after the REL24 relocation. Which in-turn
+> is replaced by toc restore instruction by apply_relocate_add().
+> 
+> Functions those were local to livepatched function previously, may have
+> become global now or they might be out of range with current TOC base.
+> During module load, apply_relocate_add() fails for such global
+> functions, as it expect's a nop after a branch. Which does't exist for a
+> non-local function accessed via local entry point.
+> 
+> For example, consider the following livepatch relocations (the example
+> is from livepatch module generated by kpatch tool):
+> 
+> Relocation section '.klp.rela.vmlinux..text.meminfo_proc_show' at offset
+> 0x84530 contains 44 entries:
+> 
+> Offset Info Type          Symbol's Value   Symbol's Name + Addend
+> ...    ...  R_PPC64_REL24 0x0 .klp.sym.vmlinux.si_swapinfo,0 + 0
+> ...    ...  R_PPC64_REL24 0x0 .klp.sym.vmlinux.total_swapcache_pages,0 + 0
+> ...    ...  R_PPC64_REL24 0x0 .klp.sym.vmlinux.show_val_kb,1 + 0
+> [...]
+> 
+> 1. .klp.sym.vmlinux.si_swapinfo and .klp.sym.vmlinux.total_swapcache_pages
+>    are not available within the livepatch module TOC range.
+> 
+> 2. .klp.sym.vmlinux.show_val_kb livepatch symbol was previously local
+>    but now global w.r.t module call fs/proc/meminfo.c::meminfo_proc_show()
+> 
+> While the livepatch module is loaded the livepatch symbols mentioned in
+> case 1 will fail with an error:
+> module_64: kpatch_meminfo: REL24 -1152921504751525976 out of range!
+> 
+> and livepatch symbols mentioned in case 2 with fail with an error:
+> module_64: kpatch_meminfo: Expect noop after relocate, got 3d220000
+> 
+> Both the failures with REL24 livepatch symbols relocation, can be
+> resolved by constructing a new livepatch stub. The newly setup klp_stub
+> mimics the functionality of entry_64.S::livepatch_handler introduced by
+> commit 85baa095497f ("powerpc/livepatch: Add live patching support on
+> ppc64le").
+> 
+> Which introduces a "livepatch stack" growing upwards from the base of
+> the regular stack and is used to store/restore TOC/LR values, other than
+> the stub setup and branch. The additional instructions sequences to
+> handle klp_stub increases the stub size and current ppc64_stub_insn[]
+> is not sufficient to hold them. This patch also introduces new
+> ppc64le_klp_stub_entry[], along with the helpers to find/allocate
+> livepatch stub.
+> 
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Cc: Josh Poimboeuf <jpoimboe@redhat.com>
+> Cc: Jessica Yu <jeyu@kernel.org>
+> Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+> Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: live-patching@vger.kernel.org
+> ---
+> This patch applies on top of livepatch_handler fix posted at
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-September/163824.html
+> 
+> v2:
+>  - Changed klp_stub construction to re-use livepatch_handler and
+>    additional patch code required for klp_stub, instead of duplicating it.
+>  - Minor comments and commit body edits.
+> 
+>  arch/powerpc/include/asm/module.h              |   4 +
+>  arch/powerpc/kernel/module_64.c                | 135 ++++++++++++++++++++++++-
+>  arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  31 ++++++
+>  3 files changed, 167 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+> index 6c0132c7212f..de22c4c7aebc 100644
+> --- a/arch/powerpc/include/asm/module.h
+> +++ b/arch/powerpc/include/asm/module.h
+> @@ -44,6 +44,10 @@ struct mod_arch_specific {
+>  	unsigned long toc;
+>  	unsigned long tramp;
+>  #endif
+> +#ifdef CONFIG_LIVEPATCH
+> +	/* Count of kernel livepatch relocations */
+> +	unsigned long klp_relocs;
+> +#endif
+> 
+>  #else /* powerpc64 */
+>  	/* Indices of PLT sections within module. */
+> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+> index 0b0f89685b67..5be955e59162 100644
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@ -140,6 +140,24 @@ static u32 ppc64_stub_insns[] = {
+>  	0x4e800420			/* bctr */
+>  };
+> 
+> +#ifdef CONFIG_LIVEPATCH
+> +extern u32 klp_stub_insn[], klp_stub_insn_end[];
+> +extern u32 livepatch_handler[], livepatch_handler_end[];
+> +
+> +struct ppc64le_klp_stub_entry {
+> +	/*
+> +	 * Other than setting up the stub and livepatch stub also needs to
+> +	 * allocate extra instructions to allocate livepatch stack,
+> +	 * storing/restoring TOC/LR values on/from the livepatch stack.
+> +	 */
+> +	u32 jump[31];
+> +	/* Used by ftrace to identify stubs */
+> +	u32 magic;
+> +	/* Data for the above code */
+> +	func_desc_t funcdata;
+> +};
+> +#endif
+> +
+>  #ifdef CONFIG_DYNAMIC_FTRACE
+>  int module_trampoline_target(struct module *mod, unsigned long addr,
+>  			     unsigned long *target)
+> @@ -239,10 +257,19 @@ static void relaswap(void *_x, void *_y, int size)
+> 
+>  /* Get size of potential trampolines required. */
+>  static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+> -				    const Elf64_Shdr *sechdrs)
+> +				    const Elf64_Shdr *sechdrs,
+> +				    struct module *me)
+>  {
+>  	/* One extra reloc so it's always 0-funcaddr terminated */
+>  	unsigned long relocs = 1;
+> +	/*
+> +	 * size of livepatch stub is 28 instructions, whereas the
+> +	 * non-livepatch stub requires 7 instructions. Account for
+> +	 * different stub sizes and track the livepatch relocation
+> +	 * count in me->arch.klp_relocs.
+> +	 */
+> +	unsigned long sec_relocs = 0;
+> +	unsigned long klp_relocs = 0;
+>  	unsigned i;
+> 
+>  	/* Every relocated section... */
+> @@ -262,9 +289,14 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+>  			     sechdrs[i].sh_size / sizeof(Elf64_Rela),
+>  			     sizeof(Elf64_Rela), relacmp, relaswap);
+> 
+> -			relocs += count_relocs((void *)sechdrs[i].sh_addr,
+> +			sec_relocs = count_relocs((void *)sechdrs[i].sh_addr,
+>  					       sechdrs[i].sh_size
+>  					       / sizeof(Elf64_Rela));
+> +			relocs += sec_relocs;
+> +#ifdef CONFIG_LIVEPATCH
+> +			if (sechdrs[i].sh_flags & SHF_RELA_LIVEPATCH)
+> +				klp_relocs += sec_relocs;
+> +#endif
+>  		}
+>  	}
+> 
+> @@ -273,6 +305,15 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+>  	relocs++;
+>  #endif
+> 
+> +	relocs -= klp_relocs;
+> +#ifdef CONFIG_LIVEPATCH
+> +	me->arch.klp_relocs = klp_relocs;
+> +
+> +	pr_debug("Looks like a total of %lu stubs, (%lu) livepatch stubs, max\n",
+> +				relocs, klp_relocs);
+> +	return (relocs * sizeof(struct ppc64_stub_entry) +
+> +		klp_relocs * sizeof(struct ppc64le_klp_stub_entry));
+> +#endif
+>  	pr_debug("Looks like a total of %lu stubs, max\n", relocs);
+>  	return relocs * sizeof(struct ppc64_stub_entry);
+>  }
+> @@ -369,7 +410,7 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+>  		me->arch.toc_section = me->arch.stubs_section;
+> 
+>  	/* Override the stubs size */
+> -	sechdrs[me->arch.stubs_section].sh_size = get_stubs_size(hdr, sechdrs);
+> +	sechdrs[me->arch.stubs_section].sh_size = get_stubs_size(hdr, sechdrs, me);
+>  	return 0;
+>  }
+> 
+> @@ -415,6 +456,56 @@ static inline int create_stub(const Elf64_Shdr *sechdrs,
+>  	return 1;
+>  }
+> 
+> +#ifdef CONFIG_LIVEPATCH
+> +/* Patch livepatch stub to reference function and correct r2 value. */
+> +static inline int create_klp_stub(const Elf64_Shdr *sechdrs,
+> +				  struct ppc64le_klp_stub_entry *entry,
+> +				  unsigned long addr,
+> +				  struct module *me)
+> +{
+> +	long reladdr;
+> +	unsigned long klp_stub_idx, klp_stub_idx_end;
+> +
+> +	klp_stub_idx = (klp_stub_insn - livepatch_handler);
+> +	klp_stub_idx_end = (livepatch_handler_end - klp_stub_insn_end);
+> +
+> +	/* Copy first half of livepatch_handler till klp_stub_insn */
+> +	memcpy(entry->jump, livepatch_handler, sizeof(u32) * klp_stub_idx);
+> +
+> +	/* Stub uses address relative to r2. */
+> +	reladdr = (unsigned long)entry - my_r2(sechdrs, me);
+> +	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
+> +		pr_err("%s: Address %p of stub out of range of %p.\n",
+> +				me->name, (void *)reladdr, (void *)my_r2);
+> +		return 0;
+> +	}
+> +	pr_debug("Stub %p get data from reladdr %li\n", entry, reladdr);
+> +
+> +	/*
+> +	 * Patch the code required to load the trampoline address into r11,
+> +	 * function global entry point into r12, ctr.
+> +	 */
+> +	entry->jump[klp_stub_idx++] = (PPC_INST_ADDIS | ___PPC_RT(11) |
+> +					___PPC_RA(2) | PPC_HA(reladdr));
+> +
+> +	entry->jump[klp_stub_idx++] = (PPC_INST_ADDI | ___PPC_RT(11) |
+> +					 ___PPC_RA(11) | PPC_LO(reladdr));
+> +
+> +	entry->jump[klp_stub_idx++] = (PPC_INST_LD | ___PPC_RT(12) |
+> +					 ___PPC_RA(11) | 128);
+							 ^^^
+Better to use offsetof().
 
-linux-next kernel panic while DLPAR CPU add/remove operation in a loop.
+Apart from that, the stub handling itself looks good to me.
 
-Test: CPU hot-unplug
-Machine Type: Power8 PowerVM LPAR
-kernel: 4.14.0-rc2-next-20170928
-gcc : 5.2.1
 
-trace logs
-----------
-cpu 10 (hwid 10) Ready to die...
-cpu 11 (hwid 11) Ready to die...
-cpu 12 (hwid 12) Ready to die...
-cpu 13 (hwid 13) Ready to die...
-cpu 14 (hwid 14) Ready to die...
-cpu 15 (hwid 15) Ready to die...
-Unable to handle kernel paging request for data at address 0xdead4ead00000030
-Faulting instruction address: 0xc000000001af38e4
-Oops: Kernel access of bad area, sig: 11 [#1]
-LE SMP NR_CPUS=2048 NUMA pSeries
-Modules linked in: rpadlpar_io rpaphp bridge stp llc xt_tcpudp ipt_REJECT nf_reject_ipv4 xt_conntrack nfnetlink iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_filter vmx_crypto pseries_rng rng_core binfmt_misc nfsd ip_tables x_tables autofs4
-CPU: 7 PID: 10657 Comm: systemd-udevd Not tainted 4.14.0-rc2-next-20170928-autotest #1
-task: c000000271b7cc00 task.stack: c00000026d504000
-NIP:  c000000001af38e4 LR: c000000001af3b48 CTR: c000000001af4270
-REGS: c00000026d5079e0 TRAP: 0380   Not tainted  (4.14.0-rc2-next-20170928-autotest)
-MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 22008882  XER: 20000000  
-CFAR: c000000001af3b44 SOFTE: 1 
-GPR00: c000000001af3b48 c00000026d507c60 c000000003572500 c00000026c0d4a80 
-GPR04: c00000026c0d4a80 c00000026b56b310 c0000000037d2500 dead4ead00000030 
-GPR08: 00000000000016f0 fffffffffffffff0 dead4ead00000000 c000000270b24420 
-GPR12: c000000001af4270 c00000000fdc1f80 00000000000029a3 000000000aba9500 
-GPR16: 000001000e4134f0 000000000aba9500 000000000000000f 0000000000000001 
-GPR20: 0000000120ff68d8 0000000120ff68d0 0000000120ff6a48 0000000120ff33f0 
-GPR24: 0000000120ff6550 c00000026b56b310 c00000027286d9b8 c0000000037d4d88 
-GPR28: c0000002727b17a0 c00000026c0d4a80 c00000027286da38 c00000026c0d4a80 
-NIP [c000000001af38e4] free_pipe_info+0x64/0x200
-LR [c000000001af3b48] put_pipe_info+0xc8/0x140
-Call Trace:
-[c00000026d507c60] [c00000027286da38] 0xc00000027286da38 (unreliable)
-[c00000026d507ca0] [c000000001af3b48] put_pipe_info+0xc8/0x140
-[c00000026d507ce0] [c000000001af43fc] pipe_release+0x18c/0x1e0
-[c00000026d507d20] [c000000001ae0efc] __fput+0x12c/0x4f0
-[c00000026d507d80] [c000000001ae12ec] ____fput+0x2c/0x50
-[c00000026d507da0] [c00000000178eb3c] task_work_run+0x17c/0x200
-[c00000026d507e00] [c00000000160adb8] do_notify_resume+0x1f8/0x220
-[c00000026d507e30] [c0000000015ebec4] ret_from_except_lite+0x70/0x74
-Instruction dump:
-81230070 e94300b0 39080001 7d2900d0 38ea0030 f9066d98 7c0004ac 3d020026 
-e9086da0 3cc20026 39080001 f9066da0 <7d0038a8> 7d094214 7d0039ad 40c2fff4 
----[ end trace 4dcb6f2341ddb370 ]---
+Thanks,
+Naveen
 
-Kernel panic - not syncing: Fatal exception
-Rebooting in 10 seconds..
 
-Test logs:
-----------
-DLPAR remove cpu operation
-Running 'drmgr -c cpu -d 5 -w 30 -r'
-
-########## Oct 04 03:09:22 2017 ##########
-drmgr: -c cpu -d 5 -w 30 -r
-Validating CPU DLPAR capability...yes.
-Expecting 20 threads...found 16.
-Found cpu PowerPC,POWER8@8
-Found cpu PowerPC,POWER8@0
-Start CPU List.
-10000008 : CPU 9
-    thread: 8: /sys/devices/system/cpu/cpu8
-    thread: 9: /sys/devices/system/cpu/cpu9
-    thread: 10: /sys/devices/system/cpu/cpu10
-    thread: 11: /sys/devices/system/cpu/cpu11
-    thread: 12: /sys/devices/system/cpu/cpu12
-    thread: 13: /sys/devices/system/cpu/cpu13
-    thread: 14: /sys/devices/system/cpu/cpu14
-    thread: 15: /sys/devices/system/cpu/cpu15
-10000000 : CPU 1
-    thread: 0: /sys/devices/system/cpu/cpu0
-    thread: 1: /sys/devices/system/cpu/cpu1
-    thread: 2: /sys/devices/system/cpu/cpu2
-    thread: 3: /sys/devices/system/cpu/cpu3
-    thread: 4: /sys/devices/system/cpu/cpu4
-    thread: 5: /sys/devices/system/cpu/cpu5
-    thread: 6: /sys/devices/system/cpu/cpu6
-    thread: 7: /sys/devices/system/cpu/cpu7
-Done.
-Number of CPUs = 2
-Releasing cpu "/cpus/PowerPC,POWER8@8"
-Removed 1 of 1 requested cpu(s)
-########## Oct 04 03:09:24 2017 ##########
-Command 'drmgr -c cpu -d 5 -w 30 -r' finished with 0 after
-2.20577907562s
-[stdout] CPU 9
-DLPAR add cpu operation
-Running 'drmgr -c cpu -d 5 -w 30 -a'
-
-########## Oct 04 03:09:24 2017 ##########
-drmgr: -c cpu -d 5 -w 30 -a
-Validating CPU DLPAR capability...yes.
-Expecting 20 threads...found 16.
-Found cpu PowerPC,POWER8@0
-Start CPU List.
-10000008 : CPU 9
-10000000 : CPU 1
-    thread: 0: /sys/devices/system/cpu/cpu0
-    thread: 1: /sys/devices/system/cpu/cpu1
-    thread: 2: /sys/devices/system/cpu/cpu2
-    thread: 3: /sys/devices/system/cpu/cpu3
-    thread: 4: /sys/devices/system/cpu/cpu4
-    thread: 5: /sys/devices/system/cpu/cpu5
-    thread: 6: /sys/devices/system/cpu/cpu6
-    thread: 7: /sys/devices/system/cpu/cpu7
-Done.
-Probing cpu 0x10000008
-
-Kernel panics after above operation.
-
--- 
-Regard's
-
-Abdul Haleem
-IBM Linux Technology Centre
+> +
+> +	entry->jump[klp_stub_idx++] = PPC_INST_MTCTR | ___PPC_RT(12);
+> +
+> +	/* Copy second half of livepatch_handler starting klp_stub_insn_end */
+> +	memcpy(entry->jump + klp_stub_idx, klp_stub_insn_end,
+> +				sizeof(u32) * klp_stub_idx_end);
+> +
+> +	entry->funcdata = func_desc(addr);
+> +	entry->magic = STUB_MAGIC;
+> +	return 1;
+> +}
+> +#endif
+> +
+>  /* Create stub to jump to function described in this OPD/ptr: we need the
+>     stub to set up the TOC ptr (r2) for the function. */
+>  static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
+> @@ -441,6 +532,38 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
+>  	return (unsigned long)&stubs[i];
+>  }
+> 
+> +#ifdef CONFIG_LIVEPATCH
+> +static unsigned long klp_stub_for_addr(const Elf64_Shdr *sechdrs,
+> +				       unsigned long addr,
+> +				       struct module *me)
+> +{
+> +	struct ppc64le_klp_stub_entry *klp_stubs;
+> +	unsigned int num_klp_stubs = me->arch.klp_relocs;
+> +	unsigned int i, num_stubs;
+> +
+> +	num_stubs = (sechdrs[me->arch.stubs_section].sh_size -
+> +		    (num_klp_stubs * sizeof(*klp_stubs))) /
+> +				sizeof(struct ppc64_stub_entry);
+> +
+> +	/*
+> +	 * Create livepatch stubs after the regular stubs.
+> +	 */
+> +	klp_stubs = (void *)sechdrs[me->arch.stubs_section].sh_addr +
+> +		    (num_stubs * sizeof(struct ppc64_stub_entry));
+> +	for (i = 0; stub_func_addr(klp_stubs[i].funcdata); i++) {
+> +		BUG_ON(i >= num_klp_stubs);
+> +
+> +		if (stub_func_addr(klp_stubs[i].funcdata) == func_addr(addr))
+> +			return (unsigned long)&klp_stubs[i];
+> +	}
+> +
+> +	if (!create_klp_stub(sechdrs, &klp_stubs[i], addr, me))
+> +		return 0;
+> +
+> +	return (unsigned long)&klp_stubs[i];
+> +}
+> +#endif
+> +
+>  #ifdef CC_USING_MPROFILE_KERNEL
+>  static bool is_early_mcount_callsite(u32 *instruction)
+>  {
+> @@ -622,6 +745,12 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+>  					return -ENOEXEC;
+> 
+>  				squash_toc_save_inst(strtab + sym->st_name, value);
+> +#ifdef CONFIG_LIVEPATCH
+> +			} else if (sym->st_shndx == SHN_LIVEPATCH) {
+> +				value = klp_stub_for_addr(sechdrs, value, me);
+> +				if (!value)
+> +					return -ENOENT;
+> +#endif
+>  			} else
+>  				value += local_entry_offset(sym);
+> 
+> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> index b4e2b7165f79..a4e97cb9da91 100644
+> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> @@ -183,7 +183,10 @@ _GLOBAL(ftrace_stub)
+>  	 *  - CTR holds the new NIP in C
+>  	 *  - r0, r11 & r12 are free
+>  	 */
+> +
+> +	.global livepatch_handler
+>  livepatch_handler:
+> +
+>  	CURRENT_THREAD_INFO(r12, r1)
+> 
+>  	/* Allocate 3 x 8 bytes */
+> @@ -201,8 +204,33 @@ livepatch_handler:
+>  	ori     r12, r12, STACK_END_MAGIC@l
+>  	std	r12, -8(r11)
+> 
+> +	/*
+> +	 * klp_stub_insn/klp_stub_insn_end marks the beginning/end of the
+> +	 * additional instructions, which gets patched by create_klp_stub()
+> +	 * for livepatch symbol relocation stub. The instructions are:
+> +	 *
+> +	 * Load TOC relative address into r11. module_64.c::klp_stub_for_addr()
+> +	 * identifies the available free stub slot and loads the address into
+> +	 * r11 with two instructions.
+> +	 *
+> +	 * addis r11, r2, stub_address@ha
+> +	 * addi  r11, r11, stub_address@l
+> +	 *
+> +	 * Load global entry into r12 from entry->funcdata offset
+> +	 * ld    r12, 128(r11)
+> +	 *
+> +	 * Put r12 into ctr and branch there
+> +	 * mtctr r12
+> +	 */
+> +
+> +	.global klp_stub_insn
+> +klp_stub_insn:
+> +
+>  	/* Put ctr in r12 for global entry and branch there */
+>  	mfctr	r12
+> +
+> +	.global klp_stub_insn_end
+> +klp_stub_insn_end:
+>  	bctrl
+> 
+>  	/*
+> @@ -234,6 +262,9 @@ livepatch_handler:
+> 
+>  	/* Return to original caller of live patched function */
+>  	blr
+> +
+> +	.global livepatch_handler_end
+> +livepatch_handler_end:
+>  #endif /* CONFIG_LIVEPATCH */
+> 
+>  #endif /* CONFIG_DYNAMIC_FTRACE */
+> -- 
+> 2.11.0
+> 
