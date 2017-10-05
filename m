@@ -1,59 +1,22 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.11])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7CyN0n2gzDr5L
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 00:18:35 +1100 (AEDT)
-Received: by mail-oi0-x242.google.com with SMTP id h200so2351237oib.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 06:18:35 -0700 (PDT)
-MIME-Version: 1.0
-Sender: rjwysocki@gmail.com
-In-Reply-To: <1507159627-127660-4-git-send-email-keescook@chromium.org>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-4-git-send-email-keescook@chromium.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 5 Oct 2017 15:18:32 +0200
-Message-ID: <CAJZ5v0iMxSDj0gR0n3YF+zRvR3e2XHpiMR9hKjjon_EXSbB89w@mail.gmail.com>
-Subject: Re: [PATCH 03/13] timer: Remove init_timer_on_stack() in favor of
- timer_setup_on_stack()
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>,
- Len Brown <len.brown@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Stefan Richter <stefanr@s5r6.in-berlin.de>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>,
- Ursula Braun <ubraun@linux.vnet.ibm.com>,
- Michael Reed <mdr@sgi.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Linux PM <linux-pm@vger.kernel.org>,
- linux1394-devel@lists.sourceforge.net, linux-s390@vger.kernel.org,
- "open list:TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7H6D0xM8zDr8K
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 02:40:35 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org, oprofile-list@lists.sf.net,
+ Al Viro <viro@zeniv.linux.org.uk>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>,
- John Stultz <john.stultz@linaro.org>, Kalle Valo <kvalo@qca.qualcomm.com>,
- Lai Jiangshan <jiangshanlai@gmail.com>,
- Manish Chopra <manish.chopra@cavium.com>,
- Mark Gross <mark.gross@intel.com>, Michael Ellerman <mpe@ellerman.id.au>,
- netdev@vger.kernel.org,
- Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Petr Mladek <pmladek@suse.com>,
- Ralf Baechle <ralf@linux-mips.org>, Sebastian Reichel <sre@kernel.org>,
- Stephen Boyd <sboyd@codeaurora.org>, Tejun Heo <tj@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
- MIPS Linux Kernel List <linux-mips@linux-mips.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>,
- "open list:NETWORKING DRIVERS (WIRELESS)" <linux-wireless@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Robert Richter <rric@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH 0/2] PowerPC-Cell OProfile: Adjustments for three function
+ implementations
+Message-ID: <596db1f4-5965-d6f8-af02-38b570b10d8a@users.sourceforge.net>
+Date: Thu, 5 Oct 2017 17:40:05 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,75 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 5, 2017 at 1:26 AM, Kees Cook <keescook@chromium.org> wrote:
-> Remove uses of init_timer_on_stack() with open-coded function and data
-> assignments that could be expressed using timer_setup_on_stack(). Several
-> were removed from the stack entirely since there was a one-to-one mapping
-> of parent structure to timer, those are switched to using timer_setup()
-> instead. All related callbacks were adjusted to use from_timer().
->
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Julian Wiedmann <jwi@linux.vnet.ibm.com>
-> Cc: Ursula Braun <ubraun@linux.vnet.ibm.com>
-> Cc: Michael Reed <mdr@sgi.com>
-> Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-> Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux1394-devel@lists.sourceforge.net
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-scsi@vger.kernel.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  drivers/base/power/main.c           |  8 +++-----
->  drivers/firewire/core-transaction.c | 10 +++++-----
->  drivers/parport/ieee1284.c          | 21 +++++++--------------
->  drivers/s390/char/tape.h            |  1 +
->  drivers/s390/char/tape_std.c        | 18 ++++++------------
->  drivers/s390/net/lcs.c              | 16 ++++++----------
->  drivers/s390/net/lcs.h              |  1 +
->  drivers/scsi/qla1280.c              | 14 +++++---------
->  drivers/scsi/qla1280.h              |  1 +
->  include/linux/parport.h             |  1 +
->  include/linux/timer.h               |  2 --
->  11 files changed, 36 insertions(+), 57 deletions(-)
->
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 770b1539a083..ae47b2ec84b4 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -478,9 +478,9 @@ struct dpm_watchdog {
->   * There's not much we can do here to recover so panic() to
->   * capture a crash-dump in pstore.
->   */
-> -static void dpm_watchdog_handler(unsigned long data)
-> +static void dpm_watchdog_handler(struct timer_list *t)
->  {
-> -       struct dpm_watchdog *wd = (void *)data;
-> +       struct dpm_watchdog *wd = from_timer(wd, t, timer);
->
->         dev_emerg(wd->dev, "**** DPM device timeout ****\n");
->         show_stack(wd->tsk, NULL);
-> @@ -500,11 +500,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
->         wd->dev = dev;
->         wd->tsk = current;
->
-> -       init_timer_on_stack(timer);
-> +       timer_setup_on_stack(timer, dpm_watchdog_handler, 0);
->         /* use same timeout value for both suspend and resume */
->         timer->expires = jiffies + HZ * CONFIG_DPM_WATCHDOG_TIMEOUT;
-> -       timer->function = dpm_watchdog_handler;
-> -       timer->data = (unsigned long)wd;
->         add_timer(timer);
->  }
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Thu, 5 Oct 2017 17:32:10 +0200
 
-For the above:
+Two update suggestions were taken into account
+from static source code analysis.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Markus Elfring (2):
+  Delete an error message for a failed memory allocation in three functions
+  Improve a size determination in two functions
+
+ arch/powerpc/oprofile/cell/spu_task_sync.c | 10 +---------
+ arch/powerpc/oprofile/cell/vma_map.c       |  6 ++----
+ 2 files changed, 3 insertions(+), 13 deletions(-)
+
+-- 
+2.14.2
