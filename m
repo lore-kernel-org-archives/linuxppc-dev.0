@@ -1,24 +1,22 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7MDn2bJ6zDrF3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 05:46:32 +1100 (AEDT)
-Date: Thu, 5 Oct 2017 20:46:26 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-cc: Daniel Black <daniel.black@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Drop lockdep_assert_cpus_held call from
- arch_update_cpu_topology
-In-Reply-To: <87o9pl5u4m.fsf@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1710052031590.2398@nanos>
-References: <20171005000430.8080-1-bauerman@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1710051435530.2083@nanos>
- <87o9pl5u4m.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7MTT5VpCzDrF3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 05:57:32 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc: Default to enabling STRICT_KERNEL_RWX
+To: Kees Cook <keescook@chromium.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <20171005034505.GA32157@beast>
+ <6e6bf9ba-d66c-0bcc-358e-fed97b2ca5cd@c-s.fr>
+ <CAGXu5jLx+eMYrehvrT7+3V3Joa6VDAbhkLLDndC5aYLxJGmhYA@mail.gmail.com>
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <e5dcb727-cd7a-0e19-cf9a-8d2e5dd5f258@c-s.fr>
+Date: Thu, 5 Oct 2017 20:57:24 +0200
 MIME-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323329-1223104522-1507229187=:2398"
+In-Reply-To: <CAGXu5jLx+eMYrehvrT7+3V3Joa6VDAbhkLLDndC5aYLxJGmhYA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,101 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323329-1223104522-1507229187=:2398
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
 
-Thiago,
-
-On Thu, 5 Oct 2017, Thiago Jung Bauermann wrote:
-> Thomas Gleixner <tglx@linutronix.de> writes:
-> It doesn't look like powerpc uses arch_update_cpu_topology differently
-> than other arches. Are you saying that all callers of the function
-> should be holding cpu_hotplug_lock?
-
-No. I didn't check as I was lazy and wanted you to do it. Which obviously
-worked :)
-
-> I came to the conclusion that this isn't the case because of two things:
-
-> 1. This comment in sched_init_smp:
+Le 05/10/2017 à 19:30, Kees Cook a écrit :
+> On Thu, Oct 5, 2017 at 12:49 AM, Christophe LEROY
+> <christophe.leroy@c-s.fr> wrote:
+>>
+>>
+>> Le 05/10/2017 à 05:45, Kees Cook a écrit :
+>>>
+>>> When available, CONFIG_KERNEL_RWX should be default-enabled.
+>>
+>>
+>> On PPC32, this option implies deactivating BATs and/or LTLB mapping of the
+>> linear kernel address space, hence a significant performance degradation.
+>>
+>> So at least on PPC32, it should remain unselected by default.
 > 
-> 	/*
-> 	 * There's no userspace yet to cause hotplug operations; hence all the
-> 	 * CPU masks are stable and all blatant races in the below code cannot
-> 	 * happen.
-> 	 */
-> 	mutex_lock(&sched_domains_mutex);
-> 	sched_init_domains(cpu_active_mask);
-> 	cpumask_andnot(non_isolated_cpus, cpu_possible_mask, cpu_isolated_map);
-> 	if (cpumask_empty(non_isolated_cpus))
-> 		cpumask_set_cpu(smp_processor_id(), non_isolated_cpus);
-> 	mutex_unlock(&sched_domains_mutex);
+> Alright, sounds fine to me. Would this be okay?
 > 
->    This is relevant for the following call trace:
+> +       select ARCH_OPTIONAL_KERNEL_RWX_DEFAULT if !PPC64
+
+You mean
+
+select ARCH_OPTIONAL_KERNEL_RWX_DEFAULT if PPC64
+
+Don't you ?
+
+Christophe
+
 > 
-> 	[c000003ff6107b50] [c00000000010ac70] lockdep_assert_cpus_held+0x50/0x70 (unreliable)
-> 	[c000003ff6107b70] [c0000000000802c0] arch_update_cpu_topology+0x20/0x40
-> 	[c000003ff6107b90] [c000000000182ec4] sched_init_domains+0x74/0x100
-> 	[c000003ff6107bd0] [c000000000ed5c78] sched_init_smp+0x58/0x168
-> 	[c000003ff6107d00] [c000000000eb460c] kernel_init_freeable+0x1fc/0x3ac
-> 	[c000003ff6107dc0] [c00000000000dc2c] kernel_init+0x2c/0x150
-> 	[c000003ff6107e30] [c00000000000bcec] ret_from_kernel_thread+0x5c/0x70
-
-Ok. That's safe.
-
-> 2. Your comment on patch "lockup_detector: Cleanup hotplug locking mess"¹:
+> -Kees
 > 
->     "All watchdog thread related functions are delegated to the smpboot thread
->      infrastructure, which handles serialization against CPU hotplug correctly."
+>>
+>> Christophe
+>>
+>>
+>>>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Paul Mackerras <paulus@samba.org>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>>> ---
+>>>    arch/powerpc/Kconfig | 1 +
+>>>    1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>> index 809c468edab1..9a549bbfc278 100644
+>>> --- a/arch/powerpc/Kconfig
+>>> +++ b/arch/powerpc/Kconfig
+>>> @@ -178,6 +178,7 @@ config PPC
+>>>          select HAVE_ARCH_TRACEHOOK
+>>>          select ARCH_HAS_STRICT_KERNEL_RWX       if ((PPC_BOOK3S_64 ||
+>>> PPC32) && !RELOCATABLE && !HIBERNATION)
+>>>          select ARCH_OPTIONAL_KERNEL_RWX         if
+>>> ARCH_HAS_STRICT_KERNEL_RWX
+>>> +       select ARCH_OPTIONAL_KERNEL_RWX_DEFAULT
+>>>          select HAVE_CBPF_JIT                    if !PPC64
+>>>          select HAVE_CONTEXT_TRACKING            if PPC64
+>>>          select HAVE_DEBUG_KMEMLEAK
+>>>
+>>
 > 
->    Though TBH I'm still grasping the smpboot thread infrastructure and
->    I'm not sure how it handles serialization against CPU hotplug.
+> 
+> 
 
-The thread infrastructur is simple:
-
-registration/unregistration is serialized internally against
-hotplug. Park/unpark happens from CPU hotplug context so that's serialized
-obviously as well.
-
->    This is relevant for the following call trace:
-
-Not really. The smpboot thread is just the context in which this
-happens. That thread is the hotplug thread of a CPU which goes down and it
-invokes one of the callbacks, which ends up in that assertion. These
-invocations are triggered from a different thread which holds cpu hotplug
-lock. But because its not the hotplug thread which holds the lock, lockdep
-cant know that there is an indirect protection. Would be cool to have that,
-but that's a different story.
-
-> 	[c000001ff257ba00] [c0000000000f8618] lockdep_assert_cpus_held+0x48/0x80 (unreliable)
-> 	[c000001ff257ba20] [c00000000007a848] arch_update_cpu_topology+0x18/0x30
-> 	[c000001ff257ba40] [c00000000016bd0c] partition_sched_domains+0x8c/0x4e0
-> 	[c000001ff257baf0] [c00000000020a914] cpuset_update_active_cpus+0x24/0x60
-> 	[c000001ff257bb10] [c0000000001449bc] sched_cpu_deactivate+0xfc/0x1a0
-> 	[c000001ff257bc20] [c0000000000f5a8c] cpuhp_invoke_callback+0x19c/0xe00
-> 	[c000001ff257bcb0] [c0000000000f6868] cpuhp_down_callbacks+0x78/0xf0
-> 	[c000001ff257bd00] [c0000000000f6c1c] cpuhp_thread_fun+0x1fc/0x210
-> 	[c000001ff257bd50] [c000000000132f4c] smpboot_thread_fn+0x2fc/0x370
-> 	[c000001ff257bdc0] [c00000000012ca24] kthread+0x1b4/0x1c0
-> 	[c000001ff257be30] [c00000000000bcec] ret_from_kernel_thread+0x5c/0x70
-
-So no, the lockdep assertion triggers in #1 and #2 because
-
-   #1 does definitely not hold it
-
-   #2 is indirectily protected, but we have no way to express that to lockdep
-
-So yes, it's safe for both cases to remove that assertion.
-
-If there are other call sites, then they need to be checked. If not, you're
-good.
-
-Thanks,
-
-	tglx
-
---8323329-1223104522-1507229187=:2398--
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
