@@ -2,12 +2,13 @@ Return-Path: <compudj@efficios.com>
 Received: from mail.efficios.com (mail.efficios.com [167.114.142.141])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7R8W0R9lzDqnr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 08:43:06 +1100 (AEDT)
-Date: Thu, 5 Oct 2017 21:44:32 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7Rwf5Bj6zDqhb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 09:17:54 +1100 (AEDT)
+Date: Thu, 5 Oct 2017 22:19:15 +0000 (UTC)
 From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+To: Andrea Parri <parri.andrea@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  linux-kernel <linux-kernel@vger.kernel.org>,
  Ingo Molnar <mingo@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>,
  dipankar <dipankar@in.ibm.com>,
@@ -28,13 +29,13 @@ Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Nicholas Piggin <npiggin@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  linux-arch <linux-arch@vger.kernel.org>
-Message-ID: <990593306.32305.1507239872255.JavaMail.zimbra@efficios.com>
-In-Reply-To: <20171005162101.ryhmtlc3sa72dmyr@hirez.programming.kicks-ass.net>
+Message-ID: <206890579.32344.1507241955010.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20171005220214.GA7140@andrea>
 References: <20171004213734.GA11463@linux.vnet.ibm.com>
  <1507153075-12345-1-git-send-email-paulmck@linux.vnet.ibm.com>
  <20171005121250.prr5ff5kf3lxq6hx@hirez.programming.kicks-ass.net>
  <312162.31738.1507219326334.JavaMail.zimbra@efficios.com>
- <20171005162101.ryhmtlc3sa72dmyr@hirez.programming.kicks-ass.net>
+ <20171005220214.GA7140@andrea>
 Subject: Re: [PATCH tip/core/rcu 1/3] membarrier: Provide register expedited
  private command
 MIME-Version: 1.0
@@ -48,7 +49,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------ On Oct 5, 2017, at 12:21 PM, Peter Zijlstra peterz@infradead.org wrote:
+----- On Oct 5, 2017, at 6:02 PM, Andrea Parri parri.andrea@gmail.com wrote:
 
 > On Thu, Oct 05, 2017 at 04:02:06PM +0000, Mathieu Desnoyers wrote:
 >> ----- On Oct 5, 2017, at 8:12 AM, Peter Zijlstra peterz@infradead.org wrote:
@@ -88,18 +89,69 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 >> CLONE_THREAD and not CLONE_THREAD flags.
 >> 
 >> What am I missing here ?
+>> 
+>> > 
+>> >> +	spin_unlock(&p->sighand->siglock);
+>> >> +	/*
+>> >> +	 * Ensure all future scheduler executions will observe the new
+>> >> +	 * thread flag state for this process.
+>> >> +	 */
+>> >> +	synchronize_sched();
+>> > 
+>> > This relies on the flag being read inside rq->lock, right?
+>> 
+>> Yes. The flag is read by membarrier_arch_switch_mm(), invoked
+>> within switch_mm_irqs_off(), called by context_switch() before
+>> finish_task_switch() releases the rq lock.
 > 
-> If you do CLONE_VM without CLONE_THREAD you'll end up sharing the mm but
-> you'll not be part of thread_head, so the for_each_thread() iteration
-> will not find the task.
+> I fail to grap the relation between this synchronize_sched() and rq->lock.
+> 
+> (Besides, we made no reference to rq->lock while discussing:
+> 
+>  https://github.com/paulmckrcu/litmus/commit/47039df324b60ace0cf7b2403299580be730119b
+>  replace membarrier_arch_sched_in with switch_mm_irqs_off )
+> 
+> Could you elaborate?
 
-Excellent point. Please see the follow up RFC patch I posted taking care of
-this matter.
+Hi Andrea,
+
+AFAIU the scheduler rq->lock is held while preemption is disabled.
+synchronize_sched() is used here to ensure that all pre-existing
+preempt-off critical sections have completed.
+
+So saying that we use synchronize_sched() to synchronize with rq->lock
+would be stretching the truth a bit. It's actually only true because the
+scheduler holding the rq->lock is surrounded by a preempt-off
+critical section.
 
 Thanks,
 
 Mathieu
 
+
+
+> 
+>  Andrea
+> 
+> 
+>> 
+>> Is the comment clear enough, or do you have suggestions for
+>> improvements ?
+> 
+> 
+> 
+>> 
+>> Thanks,
+>> 
+>> Mathieu
+>> 
+>> > 
+>> > > +}
+>> 
+>> --
+>> Mathieu Desnoyers
+>> EfficiOS Inc.
+> > http://www.efficios.com
 
 -- 
 Mathieu Desnoyers
