@@ -1,39 +1,24 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7Q926K44zDqqN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 07:58:30 +1100 (AEDT)
-Date: Thu, 5 Oct 2017 22:57:53 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Bjorn Helgaas <helgaas@kernel.org>
-cc: linux-pci@vger.kernel.org, linux-mips@linux-mips.org,
- Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Jesper Nilsson <jesper.nilsson@axis.com>,
- linux-am33-list@redhat.com, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, linux-xtensa@linux-xtensa.org,
- Mikael Starvik <starvik@axis.com>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
- linux-parisc@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 3/4] PCI: Remove unused declarations
-In-Reply-To: <20171005203856.18300.62381.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <alpine.DEB.2.20.1710052257350.2398@nanos>
-References: <20171005201939.18300.25690.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20171005203856.18300.62381.stgit@bhelgaas-glaptop.roam.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7QTS4WngzDqG2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 08:12:43 +1100 (AEDT)
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: [PATCH v10 01/10] x86/mm: setting fields in deferred pages
+Date: Thu,  5 Oct 2017 17:11:15 -0400
+Message-Id: <20171005211124.26524-2-pasha.tatashin@oracle.com>
+In-Reply-To: <20171005211124.26524-1-pasha.tatashin@oracle.com>
+References: <20171005211124.26524-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,17 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 5 Oct 2017, Bjorn Helgaas wrote:
+Without deferred struct page feature (CONFIG_DEFERRED_STRUCT_PAGE_INIT),
+flags and other fields in "struct page"es are never changed prior to first
+initializing struct pages by going through __init_single_page().
 
-> From: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> Remove these unused declarations:
-> 
->   pcibios_config_init()              # never defined anywhere
->   pcibios_scan_root()                # only defined by x86
->   pcibios_get_irq_routing_table()    # only defined by x86
->   pcibios_set_irq_routing()          # only defined by x86
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+With deferred struct page feature enabled, however, we set fields in
+register_page_bootmem_info that are subsequently clobbered right after in
+free_all_bootmem:
 
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+        mem_init() {
+                register_page_bootmem_info();
+                free_all_bootmem();
+                ...
+        }
+
+When register_page_bootmem_info() is called only non-deferred struct pages
+are initialized. But, this function goes through some reserved pages which
+might be part of the deferred, and thus are not yet initialized.
+
+  mem_init
+   register_page_bootmem_info
+    register_page_bootmem_info_node
+     get_page_bootmem
+      .. setting fields here ..
+      such as: page->freelist = (void *)type;
+
+  free_all_bootmem()
+   free_low_memory_core_early()
+    for_each_reserved_mem_region()
+     reserve_bootmem_region()
+      init_reserved_page() <- Only if this is deferred reserved page
+       __init_single_pfn()
+        __init_single_page()
+            memset(0) <-- Loose the set fields here
+
+We end-up with issue where, currently we do not observe problem as memory
+is explicitly zeroed. But, if flag asserts are changed we can start hitting
+issues.
+
+Also, because in this patch series we will stop zeroing struct page memory
+during allocation, we must make sure that struct pages are properly
+initialized prior to using them.
+
+The deferred-reserved pages are initialized in free_all_bootmem().
+Therefore, the fix is to switch the above calls.
+
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Reviewed-by: Bob Picco <bob.picco@oracle.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+---
+ arch/x86/mm/init_64.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 5ea1c3c2636e..8822523fdcd7 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1182,12 +1182,18 @@ void __init mem_init(void)
+ 
+ 	/* clear_bss() already clear the empty_zero_page */
+ 
+-	register_page_bootmem_info();
+-
+ 	/* this will put all memory onto the freelists */
+ 	free_all_bootmem();
+ 	after_bootmem = 1;
+ 
++	/*
++	 * Must be done after boot memory is put on freelist, because here we
++	 * might set fields in deferred struct pages that have not yet been
++	 * initialized, and free_all_bootmem() initializes all the reserved
++	 * deferred pages for us.
++	 */
++	register_page_bootmem_info();
++
+ 	/* Register memory areas for /proc/kcore */
+ 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR,
+ 			 PAGE_SIZE, KCORE_OTHER);
+-- 
+2.14.2
