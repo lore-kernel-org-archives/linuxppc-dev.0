@@ -1,36 +1,16 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y705j4vTszDrJH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:24:08 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id i195so6473537pgd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2017 21:24:08 -0700 (PDT)
-Date: Thu, 5 Oct 2017 14:23:46 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@kernel.org, jiangshanlai@gmail.com,
- dipankar@in.ibm.com, akpm@linux-foundation.org,
- mathieu.desnoyers@efficios.com, josh@joshtriplett.org, tglx@linutronix.de,
- peterz@infradead.org, rostedt@goodmis.org, dhowells@redhat.com,
- edumazet@google.com, fweisbec@gmail.com, oleg@redhat.com, Boqun Feng
- <boqun.feng@gmail.com>, Andrew Hunter <ahh@google.com>, Maged Michael
- <maged.michael@gmail.com>, gromer@google.com, Avi Kivity
- <avi@scylladb.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul
- Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Dave
- Watson <davejwatson@fb.com>, Alan Stern <stern@rowland.harvard.edu>, Will
- Deacon <will.deacon@arm.com>, Andy Lutomirski <luto@kernel.org>, Ingo
- Molnar <mingo@redhat.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
- linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH tip/core/rcu 1/3] membarrier: Provide register expedited
- private command
-Message-ID: <20171005142325.5a407f18@roar.ozlabs.ibm.com>
-In-Reply-To: <1507153075-12345-1-git-send-email-paulmck@linux.vnet.ibm.com>
-References: <20171004213734.GA11463@linux.vnet.ibm.com>
- <1507153075-12345-1-git-send-email-paulmck@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y70nr4rdvzDr39
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:55:28 +1100 (AEDT)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, benh@kernel.crashing.org,
+ cyrilbur@gmail.com
+Subject: [PATCH] powerpc/tm: P9 disabled suspend mode workaround
+Date: Thu,  5 Oct 2017 15:55:16 +1100
+Message-Id: <20171005045516.26145-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,81 +20,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  4 Oct 2017 14:37:53 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Each POWER9 core is made of two super slices. Each super slice can
+only have one thread at a time in TM suspend mode. The super slice
+restricts ever entering a state where both threads are in suspend by
+aborting transactions on tsuspend or exceptions into the kernel.
 
-> From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-> 
-> Provide a new command allowing processes to register their intent to use
-> the private expedited command.
-> 
-> This allows PowerPC to skip the full memory barrier in switch_mm(), and
-> only issue the barrier when scheduling into a task belonging to a
-> process that has registered to use expedited private.
-> 
-> Processes are now required to register before using
-> MEMBARRIER_CMD_PRIVATE_EXPEDITED, otherwise that command returns EPERM.
-> 
-> Changes since v1:
-> - Use test_ti_thread_flag(next, ...) instead of test_thread_flag() in
->   powerpc membarrier_arch_sched_in(), given that we want to specifically
->   check the next thread state.
-> - Add missing ARCH_HAS_MEMBARRIER_HOOKS in Kconfig.
-> - Use task_thread_info() to pass thread_info from task to
->   *_ti_thread_flag().
-> 
-> Changes since v2:
-> - Move membarrier_arch_sched_in() call to finish_task_switch().
-> - Check for NULL t->mm in membarrier_arch_fork().
-> - Use membarrier_sched_in() in generic code, which invokes the
->   arch-specific membarrier_arch_sched_in(). This fixes allnoconfig
->   build on PowerPC.
-> - Move asm/membarrier.h include under CONFIG_MEMBARRIER, fixing
->   allnoconfig build on PowerPC.
-> - Build and runtime tested on PowerPC.
-> 
-> Changes since v3:
-> - Simply rely on copy_mm() to copy the membarrier_private_expedited mm
->   field on fork.
-> - powerpc: test thread flag instead of reading
->   membarrier_private_expedited in membarrier_arch_fork().
-> - powerpc: skip memory barrier in membarrier_arch_sched_in() if coming
->   from kernel thread, since mmdrop() implies a full barrier.
-> - Set membarrier_private_expedited to 1 only after arch registration
->   code, thus eliminating a race where concurrent commands could succeed
->   when they should fail if issued concurrently with process
->   registration.
-> - Use READ_ONCE() for membarrier_private_expedited field access in
->   membarrier_private_expedited. Matches WRITE_ONCE() performed in
->   process registration.
-> 
-> Changes since v4:
-> - Move powerpc hook from sched_in() to switch_mm(), based on feedback
->   from Nicholas Piggin.
+Unfortunately for context switch we need trechkpt which forces suspend
+mode. If a thread is already in suspend and a second thread needs to
+be restored that was suspended, the trechkpt must be executed.
+Currently the trechkpt will hang in this case until the other thread
+exits suspend. This causes problems for Linux resulting in hang and
+RCU stall detectors going off.
 
-For now, the powerpc approach is okay by me. I plan to test
-others (e.g., taking runqueue locks) on larger systems, but that can
-be sent as an incremental patch at a later time.
+To workaround this, we disable suspend in the core. This is done via a
+firmware change which stops the hardware ever getting into suspend.
+The hardware will always rollback a transaction on any tsuspend or
+entry into the kernel.
 
-The main thing I would like is for people to review the userspace API.
+Unfortunately userspace can construct a sigcontext which enables
+suspend. Thus userspace can force Linux into a path where trechkpt is
+executed.
 
+This patch blocks this from happening on POWER9 but sanity checking
+sigcontexts passed in.
 
-> diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
-> index 3a19c253bdb1..4af1b719c65f 100644
-> --- a/include/linux/sched/mm.h
-> +++ b/include/linux/sched/mm.h
-> @@ -205,4 +205,54 @@ static inline void memalloc_noreclaim_restore(unsigned int flags)
->  	current->flags = (current->flags & ~PF_MEMALLOC) | flags;
->  }
->  
-> +#ifdef CONFIG_MEMBARRIER
-> +
-> +#ifdef CONFIG_ARCH_HAS_MEMBARRIER_HOOKS
-> +#include <asm/membarrier.h>
-> +#else
-> +static inline void membarrier_arch_switch_mm(struct mm_struct *prev,
-> +		struct mm_struct *next, struct task_struct *tsk)
-> +{
-> +}
+ptrace doesn't have this problem as only MSR SE and BE can be changed
+via ptrace.
 
-This is no longer required in architecture independent code, is it?
+This patch also adds a number of WARN_ON() in case we every enter
+suspend when we shouldn't. This should catch systems that don't have
+the firmware change and are running TM.
+
+A future firmware change will allow suspend mode on POWER9 but that is
+going to require additional Linux changes to support. In the interim,
+this allows TM to continue to (partially) work while stopping
+userspace from crashing Linux.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/include/asm/cputable.h | 1 +
+ arch/powerpc/kernel/cputable.c      | 7 +++++++
+ arch/powerpc/kernel/process.c       | 2 ++
+ arch/powerpc/kernel/signal_32.c     | 4 ++++
+ arch/powerpc/kernel/signal_64.c     | 5 +++++
+ 5 files changed, 19 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index a9bf921f4e..477e00b6a7 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -123,6 +123,7 @@ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
+ extern void identify_cpu_name(unsigned int pvr);
+ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ 			      void *fixup_end);
++extern bool tm_suspend_supported(void);
+ 
+ extern const char *powerpc_base_platform;
+ 
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 7608729160..70252843ff 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -2301,6 +2301,13 @@ void __init identify_cpu_name(unsigned int pvr)
+ 	}
+ }
+ 
++bool tm_suspend_supported(void)
++{
++	if (pvr_version_is(PVR_POWER9))
++		return false;
++	return true;
++}
++
+ 
+ #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
+ struct static_key_true cpu_feature_keys[NUM_CPU_FTR_KEYS] = {
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index a0c74bbf34..5b81673c50 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -903,6 +903,8 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
+ 	if (!MSR_TM_ACTIVE(thr->regs->msr))
+ 		goto out_and_saveregs;
+ 
++	WARN_ON(!tm_suspend_supported());
++
+ 	TM_DEBUG("--- tm_reclaim on pid %d (NIP=%lx, "
+ 		 "ccr=%lx, msr=%lx, trap=%lx)\n",
+ 		 tsk->pid, thr->regs->nip,
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 92fb1c8dbb..9eac0131c0 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -519,6 +519,8 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ {
+ 	unsigned long msr = regs->msr;
+ 
++	WARN_ON(!tm_suspend_supported());
++
+ 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
+ 	 * just indicates to userland that we were doing a transaction, but we
+ 	 * don't want to return in transactional state.  This also ensures
+@@ -769,6 +771,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	int i;
+ #endif
+ 
++	if (!tm_suspend_supported())
++		return 1;
+ 	/*
+ 	 * restore general registers but not including MSR or SOFTE. Also
+ 	 * take care of keeping r2 (TLS) intact if not a signal.
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index c83c115858..6d28caf849 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -214,6 +214,8 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 
+ 	BUG_ON(!MSR_TM_ACTIVE(regs->msr));
+ 
++	WARN_ON(!tm_suspend_supported());
++
+ 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
+ 	 * just indicates to userland that we were doing a transaction, but we
+ 	 * don't want to return in transactional state.  This also ensures
+@@ -430,6 +432,9 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+ 
+ 	BUG_ON(tsk != current);
+ 
++	if (!tm_suspend_supported())
++		return -EINVAL;
++
+ 	/* copy the GPRs */
+ 	err |= __copy_from_user(regs->gpr, tm_sc->gp_regs, sizeof(regs->gpr));
+ 	err |= __copy_from_user(&tsk->thread.ckpt_regs, sc->gp_regs,
+-- 
+2.11.0
