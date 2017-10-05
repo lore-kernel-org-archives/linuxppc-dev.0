@@ -2,8 +2,8 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7QTS4q2zzDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 08:12:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7QTW2t5gzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 08:12:47 +1100 (AEDT)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -14,9 +14,11 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
  mgorman@techsingularity.net, steven.sistare@oracle.com,
  daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v10 00/10] complete deferred page initialization
-Date: Thu,  5 Oct 2017 17:11:14 -0400
-Message-Id: <20171005211124.26524-1-pasha.tatashin@oracle.com>
+Subject: [PATCH v10 03/10] sparc64: simplify vmemmap_populate
+Date: Thu,  5 Oct 2017 17:11:17 -0400
+Message-Id: <20171005211124.26524-4-pasha.tatashin@oracle.com>
+In-Reply-To: <20171005211124.26524-1-pasha.tatashin@oracle.com>
+References: <20171005211124.26524-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,136 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changelog:
-v10 - v9
-- Addressed new comments from Michal Hocko.
-- Sent "mm: deferred_init_memmap improvements" as a separate patch as
-  it is also fixing existing problem.
-- Merged "mm: stop zeroing memory during allocation in vmemmap" with
-  "mm: zero struct pages during initialization".
-- Added more comments "mm: zero reserved and unavailable struct pages"
+Remove duplicating code by using common functions
+vmemmap_pud_populate and vmemmap_pgd_populate.
 
-v9 - v8
-- Addressed comments raised by Mark Rutland and Ard Biesheuvel: changed
-  kasan implementation. Added a new function: kasan_map_populate() that
-  zeroes the allocated and mapped memory
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Reviewed-by: Bob Picco <bob.picco@oracle.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Michal Hocko <mhocko@suse.com>
+---
+ arch/sparc/mm/init_64.c | 23 ++++++-----------------
+ 1 file changed, 6 insertions(+), 17 deletions(-)
 
-v8 - v7
-- Added Acked-by's from Dave Miller for SPARC changes
-- Fixed a minor compiling issue on tile architecture reported by kbuild
-
-v7 - v6
-- Addressed comments from Michal Hocko
-- memblock_discard() patch was removed from this series and integrated
-  separately
-- Fixed bug reported by kbuild test robot new patch:
-  mm: zero reserved and unavailable struct pages
-- Removed patch
-  x86/mm: reserve only exiting low pages
-  As, it is not needed anymore, because of the previous fix 
-- Re-wrote deferred_init_memmap(), found and fixed an existing bug, where
-  page variable is not reset when zone holes present.
-- Merged several patches together per Michal request
-- Added performance data including raw logs
-
-v6 - v5
-- Fixed ARM64 + kasan code, as reported by Ard Biesheuvel
-- Tested ARM64 code in qemu and found few more issues, that I fixed in this
-  iteration
-- Added page roundup/rounddown to x86 and arm zeroing routines to zero the
-  whole allocated range, instead of only provided address range.
-- Addressed SPARC related comment from Sam Ravnborg
-- Fixed section mismatch warnings related to memblock_discard().
-
-v5 - v4
-- Fixed build issues reported by kbuild on various configurations
-v4 - v3
-- Rewrote code to zero sturct pages in __init_single_page() as
-  suggested by Michal Hocko
-- Added code to handle issues related to accessing struct page
-  memory before they are initialized.
-
-v3 - v2
-- Addressed David Miller comments about one change per patch:
-    * Splited changes to platforms into 4 patches
-    * Made "do not zero vmemmap_buf" as a separate patch
-
-v2 - v1
-- Per request, added s390 to deferred "struct page" zeroing
-- Collected performance data on x86 which proofs the importance to
-  keep memset() as prefetch (see below).
-
-SMP machines can benefit from the DEFERRED_STRUCT_PAGE_INIT config option,
-which defers initializing struct pages until all cpus have been started so
-it can be done in parallel.
-
-However, this feature is sub-optimal, because the deferred page
-initialization code expects that the struct pages have already been zeroed,
-and the zeroing is done early in boot with a single thread only.  Also, we
-access that memory and set flags before struct pages are initialized. All
-of this is fixed in this patchset.
-
-In this work we do the following:
-- Never read access struct page until it was initialized
-- Never set any fields in struct pages before they are initialized
-- Zero struct page at the beginning of struct page initialization
-
-==========================================================================
-Performance improvements on x86 machine with 8 nodes:
-Intel(R) Xeon(R) CPU E7-8895 v3 @ 2.60GHz and 1T of memory:
-                        TIME          SPEED UP
-base no deferred:       95.796233s
-fix no deferred:        79.978956s    19.77%
-
-base deferred:          77.254713s
-fix deferred:           55.050509s    40.34%
-==========================================================================
-SPARC M6 3600 MHz with 15T of memory
-                        TIME          SPEED UP
-base no deferred:       358.335727s
-fix no deferred:        302.320936s   18.52%
-
-base deferred:          237.534603s
-fix deferred:           182.103003s   30.44%
-==========================================================================
-Raw dmesg output with timestamps:
-x86 base no deferred:    https://hastebin.com/ofunepurit.scala
-x86 base deferred:       https://hastebin.com/ifazegeyas.scala
-x86 fix no deferred:     https://hastebin.com/pegocohevo.scala
-x86 fix deferred:        https://hastebin.com/ofupevikuk.scala
-sparc base no deferred:  https://hastebin.com/ibobeteken.go
-sparc base deferred:     https://hastebin.com/fariqimiyu.go
-sparc fix no deferred:   https://hastebin.com/muhegoheyi.go
-sparc fix deferred:      https://hastebin.com/xadinobutu.go
-
-Pavel Tatashin (10):
-  x86/mm: setting fields in deferred pages
-  sparc64/mm: setting fields in deferred pages
-  sparc64: simplify vmemmap_populate
-  mm: defining memblock_virt_alloc_try_nid_raw
-  mm: zero reserved and unavailable struct pages
-  mm/kasan: kasan specific map populate function
-  x86/kasan: use kasan_map_populate()
-  arm64/kasan: use kasan_map_populate()
-  mm: stop zeroing memory during allocation in vmemmap
-  sparc64: optimized struct page zeroing
-
- arch/arm64/include/asm/pgtable.h    |  3 ++
- arch/arm64/mm/kasan_init.c          | 12 +++----
- arch/sparc/include/asm/pgtable_64.h | 30 +++++++++++++++++
- arch/sparc/mm/init_64.c             | 32 ++++++++----------
- arch/x86/mm/init_64.c               | 10 ++++--
- arch/x86/mm/kasan_init_64.c         |  8 ++---
- include/linux/bootmem.h             | 27 +++++++++++++++
- include/linux/kasan.h               |  2 ++
- include/linux/memblock.h            | 16 +++++++++
- include/linux/mm.h                  | 26 ++++++++++++++
- mm/kasan/kasan_init.c               | 67 +++++++++++++++++++++++++++++++++++++
- mm/memblock.c                       | 60 +++++++++++++++++++++++++++++----
- mm/page_alloc.c                     | 54 +++++++++++++++++++++++++-----
- mm/sparse-vmemmap.c                 | 15 ++++-----
- mm/sparse.c                         |  6 ++--
- 15 files changed, 312 insertions(+), 56 deletions(-)
-
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index caed495544e9..6839db3ffe1d 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -2652,30 +2652,19 @@ int __meminit vmemmap_populate(unsigned long vstart, unsigned long vend,
+ 	vstart = vstart & PMD_MASK;
+ 	vend = ALIGN(vend, PMD_SIZE);
+ 	for (; vstart < vend; vstart += PMD_SIZE) {
+-		pgd_t *pgd = pgd_offset_k(vstart);
++		pgd_t *pgd = vmemmap_pgd_populate(vstart, node);
+ 		unsigned long pte;
+ 		pud_t *pud;
+ 		pmd_t *pmd;
+ 
+-		if (pgd_none(*pgd)) {
+-			pud_t *new = vmemmap_alloc_block(PAGE_SIZE, node);
++		if (!pgd)
++			return -ENOMEM;
+ 
+-			if (!new)
+-				return -ENOMEM;
+-			pgd_populate(&init_mm, pgd, new);
+-		}
+-
+-		pud = pud_offset(pgd, vstart);
+-		if (pud_none(*pud)) {
+-			pmd_t *new = vmemmap_alloc_block(PAGE_SIZE, node);
+-
+-			if (!new)
+-				return -ENOMEM;
+-			pud_populate(&init_mm, pud, new);
+-		}
++		pud = vmemmap_pud_populate(pgd, vstart, node);
++		if (!pud)
++			return -ENOMEM;
+ 
+ 		pmd = pmd_offset(pud, vstart);
+-
+ 		pte = pmd_val(*pmd);
+ 		if (!(pte & _PAGE_VALID)) {
+ 			void *block = vmemmap_alloc_block(PMD_SIZE, node);
 -- 
 2.14.2
