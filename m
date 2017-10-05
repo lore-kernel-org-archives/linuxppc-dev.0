@@ -1,21 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y702s32NXzDr1l
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y702s5gmnzDr1T
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:21:41 +1100 (AEDT)
-In-Reply-To: <20170904084825.22172-1-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <1506080100-5660-2-git-send-email-allen.lkml@gmail.com>
+To: Allen Pais <allen.lkml@gmail.com>, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Alastair D'Silva <alastair@au1.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-Subject: Re: [v2] cxl: Set the valid bit in PE for dedicated mode
-Message-Id: <3y702s06cNz9t43@ozlabs.org>
-Date: Thu,  5 Oct 2017 15:21:40 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, Allen Pais <allen.lkml@gmail.com>
+Subject: Re: [1/3] powerpc: oprofile: use setup_timer() helper.
+Message-Id: <3y702s3dtbz9t44@ozlabs.org>
+Date: Thu,  5 Oct 2017 15:21:41 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-09-04 at 08:48:25 UTC, Vaibhav Jain wrote:
-> Make sure to set the valid-bit in software-state field of the
-> populated PE. This was earlier missing for dedicated mode AFUs, hence
-> was causing a PSL freeze when the AFU was activated.
+On Fri, 2017-09-22 at 11:34:58 UTC, Allen Pais wrote:
+> Use setup_timer function instead of initializing timer with the
+>    function and data fields.
 > 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8512bffd6226fea259f94fd23fc3b6
+https://git.kernel.org/powerpc/c/83ad1e6a1dc049dd04be4564125a7f
 
 cheers
