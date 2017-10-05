@@ -1,21 +1,17 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y79Q647q4zDr6B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 22:23:58 +1100 (AEDT)
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] KVM: PPC: Book3S HV: Delete an error message for a failed
- memory allocation in kvmppc_allocate_hpt()
-Message-ID: <124a92d4-7d49-0769-ae0e-c4ab007ae146@users.sourceforge.net>
-Date: Thu, 5 Oct 2017 13:23:30 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y79X55MnPzDr6B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 22:29:09 +1100 (AEDT)
+From: Michal Suchanek <msuchanek@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] bootwrapper: mspsc.c: fix pointer-to-int-cast warnings
+Date: Thu,  5 Oct 2017 13:28:54 +0200
+Message-Id: <20171005112854.28115-1-msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 5 Oct 2017 13:16:51 +0200
+I get these warnings:
 
-Omit an extra message for a memory allocation failure in this function.
+../arch/powerpc/boot/mpsc.c: In function 'mpsc_get_virtreg_of_phandle':
+../arch/powerpc/boot/mpsc.c:113:35: warning: cast from pointer to
+integer of different size [-Wpointer-to-int-cast]
 
-This issue was detected by using the Coccinelle software.
+../arch/powerpc/boot/mpsc.c: In function 'mpsc_console_init':
+../arch/powerpc/boot/mpsc.c:147:12: warning: cast from pointer to
+integer of different size [-Wpointer-to-int-cast]
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Presumably the patch below fixes these, and presumably the DT defines
+that pointes and integers have the same size in the DT so this is fine
+regardless of 32bit/64bit target. I have not found a DT definition for
+PowerPC, howewer. So any bugs in the property sizing and resulting
+failures to read the properties are left as before.
+
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/boot/mpsc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 7c62967d672c..7df89d58ee91 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -106,7 +106,6 @@ int kvmppc_allocate_hpt(struct kvm_hpt_info *info, u32 order)
- 	/* Allocate reverse map array */
- 	rev = vmalloc(sizeof(struct revmap_entry) * npte);
- 	if (!rev) {
--		pr_err("kvmppc_allocate_hpt: Couldn't alloc reverse map array\n");
- 		if (cma)
- 			kvm_free_hpt_cma(page, 1 << (order - PAGE_SHIFT));
- 		else
+diff --git a/arch/powerpc/boot/mpsc.c b/arch/powerpc/boot/mpsc.c
+index 425ad88cce8d..ea740493277a 100644
+--- a/arch/powerpc/boot/mpsc.c
++++ b/arch/powerpc/boot/mpsc.c
+@@ -110,7 +110,7 @@ static volatile char *mpsc_get_virtreg_of_phandle(void *devp, char *prop)
+ 	if (n != sizeof(v))
+ 		goto err_out;
+ 
+-	devp = find_node_by_linuxphandle((u32)v);
++	devp = find_node_by_linuxphandle((intptr_t)v);
+ 	if (devp == NULL)
+ 		goto err_out;
+ 
+@@ -144,7 +144,7 @@ int mpsc_console_init(void *devp, struct serial_console_data *scdp)
+ 	n = getprop(devp, "cell-index", &v, sizeof(v));
+ 	if (n != sizeof(v))
+ 		goto err_out;
+-	reg_set = (int)v;
++	reg_set = (intptr_t)v;
+ 
+ 	mpscintr_base += (reg_set == 0) ? 0x4 : 0xc;
+ 
 -- 
-2.14.2
+2.10.2
