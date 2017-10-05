@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y703c4jTfzDr71
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y703c5yZ9zDrBS
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:22:20 +1100 (AEDT)
-In-Reply-To: <1506274243-28540-1-git-send-email-linux@roeck-us.net>
-To: Guenter Roeck <linux@roeck-us.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1506488151-9825-1-git-send-email-jk@ozlabs.org>
+To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
-Subject: Re: powerpc/mm: Call flush_tlb_kernel_range with interrupts enabled
-Message-Id: <3y703c3dsnz9t3v@ozlabs.org>
+Cc: Meng YK Li <shlimeng@cn.ibm.com>, Jeremy Kerr <jk@ozlabs.org>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc: Fix action argument for cpufeatures-based TLB flush
+Message-Id: <3y703c5JmPz9t43@ozlabs.org>
 Date: Thu,  5 Oct 2017 15:22:20 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,43 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-09-24 at 17:30:43 UTC, Guenter Roeck wrote:
-> flush_tlb_kernel_range() may call smp_call_function_many() which expects
-> interrupts to be enabled. This results in a traceback.
+On Wed, 2017-09-27 at 04:55:51 UTC, Jeremy Kerr wrote:
+> Commit 41d0c2ecde introduced calls to __flush_tlb_power[89] from the
+> cpufeatures code, specifying the number of sets to flush.
 > 
-> WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 smp_call_function_many+0xcc/0x2fc
-> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.14.0-rc1-00009-g0666f56 #1
-> task: cf830000 task.stack: cf82e000
-> NIP:  c00a93c8 LR: c00a9634 CTR: 00000001
-> REGS: cf82fde0 TRAP: 0700   Not tainted  (4.14.0-rc1-00009-g0666f56)
-> MSR:  00021000 <CE,ME>  CR: 24000082  XER: 00000000
+> However, these functions take an action argument, not a number of sets.
+> This means we hit the BUG() in __flush_tlb_{206,300} when using
+> cpufeatures-style configuration.
 > 
-> GPR00: c00a9634 cf82fe90 cf830000 c050ad3c c0015a54 00000000 00000001 00000001
-> GPR08: 00000001 00000000 00000000 cf82e000 24000084 00000000 c0003150 00000000
-> GPR16: 00000000 00000000 00000000 00000000 00000000 00000001 00000000 c0510000
-> GPR24: 00000000 c0015a54 00000000 c050ad3c c051823c c050ad3c 00000025 00000000
-> NIP [c00a93c8] smp_call_function_many+0xcc/0x2fc
-> LR [c00a9634] smp_call_function+0x3c/0x50
-> Call Trace:
-> [cf82fe90] [00000010] 0x10 (unreliable)
-> [cf82fed0] [c00a9634] smp_call_function+0x3c/0x50
-> [cf82fee0] [c0015d2c] flush_tlb_kernel_range+0x20/0x38
-> [cf82fef0] [c001524c] mark_initmem_nx+0x154/0x16c
-> [cf82ff20] [c001484c] free_initmem+0x20/0x4c
-> [cf82ff30] [c000316c] kernel_init+0x1c/0x108
-> [cf82ff40] [c000f3a8] ret_from_kernel_thread+0x5c/0x64
-> Instruction dump:
-> 7c0803a6 7d808120 38210040 4e800020 3d20c052 812981a0 2f890000 40beffac
-> 3d20c051 8929ac64 2f890000 40beff9c <0fe00000> 4bffff94 7fc3f378 7f64db78
+> This change passes TLB_INVAL_SCOPE_GLOBAL instead.
 > 
-> Fixes: 3184cc4b6f6a ("powerpc/mm: Fix kernel RAM protection after freeing ...")
-> Fixes: e611939fc8ec ("powerpc/mm: Ensure change_page_attr() doesn't ...")
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> CC: Nicholas Piggin <npiggin@gmail.com>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/7c6a4f3b1641195119ddbb531200f4
+https://git.kernel.org/powerpc/c/3b7af5c0fd9631762d1c4d7b4cee76
 
 cheers
