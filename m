@@ -1,37 +1,21 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y77My2f5WzDr6L
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 20:51:57 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v959pc7N063604
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Oct 2017 05:51:55 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ddetvtyhe-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 05:51:55 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Thu, 5 Oct 2017 03:51:54 -0600
-Subject: Re: [PATCH] powerpc/perf: Fix for core/nest imc call trace on
- cpuhotplug
-To: Santosh Sivaraj <santosh@fossix.org>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com
-References: <1507099852-28004-1-git-send-email-anju@linux.vnet.ibm.com>
- <20171005095015.wr6spduebk4zqktk@santosiv.in.ibm.com>
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Thu, 5 Oct 2017 15:21:47 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y79Q647q4zDr6B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 22:23:58 +1100 (AEDT)
+To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] KVM: PPC: Book3S HV: Delete an error message for a failed
+ memory allocation in kvmppc_allocate_hpt()
+Message-ID: <124a92d4-7d49-0769-ae0e-c4ab007ae146@users.sourceforge.net>
+Date: Thu, 5 Oct 2017 13:23:30 +0200
 MIME-Version: 1.0
-In-Reply-To: <20171005095015.wr6spduebk4zqktk@santosiv.in.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <f4375873-192d-49b6-f51b-5aa320ebdb08@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,85 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Santosh,
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Thu, 5 Oct 2017 13:16:51 +0200
 
+Omit an extra message for a memory allocation failure in this function.
 
-On Thursday 05 October 2017 03:20 PM, Santosh Sivaraj wrote:
-> * Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote (on 2017-10-04 06:50:52 +0000):
->
->> Nest/core pmu units are enabled only when it is used. A reference count is
->> maintained for the events which uses the nest/core pmu units. Currently in
->> *_imc_counters_release function a WARN() is used for notification of any
->> underflow of ref count.
->>                                                                                  
->> The case where event ref count hit a negative value is, when perf session is
->> started, followed by offlining of all cpus in a given core.
->> i.e. in cpuhotplug offline path ppc_core_imc_cpu_offline() function set the
->> ref->count to zero, if the current cpu which is about to offline is the last
->> cpu in a given core and make an OPAL call to disable the engine in that core.
->> And on perf session termination, perf->destroy (core_imc_counters_release) will
->> first decrement the ref->count for this core and based on the ref->count value
->> an opal call is made to disable the core-imc engine.
->> Now, since cpuhotplug path already clears the ref->count for core and disabled
->> the engine, perf->destroy() decrementing again at event termination make it
->> negative which in turn fires the WARN_ON. The same happens for nest units.
->>                                                                                  
->> Add a check to see if the reference count is alreday zero, before decrementing
->> the count, so that the ref count will not hit a negative value.
->>                                                                                  
->> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Reviewed-by: Santosh Sivaraj <santosh@fossix.org>
+This issue was detected by using the Coccinelle software.
 
-Thanks for reviewing.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 -
+ 1 file changed, 1 deletion(-)
 
--Anju
->> ---
->>   arch/powerpc/perf/imc-pmu.c | 28 ++++++++++++++++++++++++++++
->>   1 file changed, 28 insertions(+)
->>
->> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
->> index 9ccac86f3463..e3a1f65933b5 100644
->> --- a/arch/powerpc/perf/imc-pmu.c
->> +++ b/arch/powerpc/perf/imc-pmu.c
->> @@ -399,6 +399,20 @@ static void nest_imc_counters_release(struct perf_event *event)
->>   
->>   	/* Take the mutex lock for this node and then decrement the reference count */
->>   	mutex_lock(&ref->lock);
->> +	if (ref->refc == 0) {
->> +		/*
->> +		 * The scenario where this is true is, when perf session is
->> +		 * started, followed by offlining of all cpus in a given node.
->> +		 *
->> +		 * In the cpuhotplug offline path, ppc_nest_imc_cpu_offline()
->> +		 * function set the ref->count to zero, if the cpu which is
->> +		 * about to offline is the last cpu in a given node and make
->> +		 * an OPAL call to disable the engine in that node.
->> +		 *
->> +		 */
->> +		mutex_unlock(&ref->lock);
->> +		return;
->> +	}
->>   	ref->refc--;
->>   	if (ref->refc == 0) {
->>   		rc = opal_imc_counters_stop(OPAL_IMC_COUNTERS_NEST,
->> @@ -646,6 +660,20 @@ static void core_imc_counters_release(struct perf_event *event)
->>   		return;
->>   
->>   	mutex_lock(&ref->lock);
->> +	if (ref->refc == 0) {
->> +		/*
->> +		 * The scenario where this is true is, when perf session is
->> +		 * started, followed by offlining of all cpus in a given core.
->> +		 *
->> +		 * In the cpuhotplug offline path, ppc_core_imc_cpu_offline()
->> +		 * function set the ref->count to zero, if the cpu which is
->> +		 * about to offline is the last cpu in a given core and make
->> +		 * an OPAL call to disable the engine in that core.
->> +		 *
->> +		 */
->> +		mutex_unlock(&ref->lock);
->> +		return;
->> +	}
->>   	ref->refc--;
->>   	if (ref->refc == 0) {
->>   		rc = opal_imc_counters_stop(OPAL_IMC_COUNTERS_CORE,
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 7c62967d672c..7df89d58ee91 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -106,7 +106,6 @@ int kvmppc_allocate_hpt(struct kvm_hpt_info *info, u32 order)
+ 	/* Allocate reverse map array */
+ 	rev = vmalloc(sizeof(struct revmap_entry) * npte);
+ 	if (!rev) {
+-		pr_err("kvmppc_allocate_hpt: Couldn't alloc reverse map array\n");
+ 		if (cma)
+ 			kvm_free_hpt_cma(page, 1 << (order - PAGE_SHIFT));
+ 		else
+-- 
+2.14.2
