@@ -1,57 +1,29 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <clg@kaod.org>
+Received: from 14.mo4.mail-out.ovh.net (14.mo4.mail-out.ovh.net [46.105.40.29])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y76C82nBVzDr5H
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 19:59:15 +1100 (AEDT)
-Received: by mail-oi0-x243.google.com with SMTP id f3so7747266oia.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 01:59:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y76X14d7TzDr5L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 20:13:52 +1100 (AEDT)
+Received: from player746.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 07616C3301
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 10:18:57 +0200 (CEST)
+Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
+To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20170923082656.27219-1-clg@kaod.org>
+ <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
+ <20171003033615.GA3260@umbus.fritz.box>
+ <7f2081f1-415a-85ca-29ed-3ab1467220a7@kaod.org>
+ <20171003065858.GL3260@umbus.fritz.box>
+ <87infui863.fsf@localhost.localdomain.i-did-not-set--mail-host-address--so-tickle-me>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <da27cec5-2b09-9fb6-6eee-41b5a57e5127@kaod.org>
+Date: Thu, 5 Oct 2017 10:18:51 +0200
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <1507159627-127660-11-git-send-email-keescook@chromium.org>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-11-git-send-email-keescook@chromium.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 5 Oct 2017 10:59:12 +0200
-Message-ID: <CAK8P3a2uio4L3BMedHGg0wVy2asJ_CD8xqxevSnqdNDKOy6Vqw@mail.gmail.com>
-Subject: Re: [PATCH 10/13] timer: Remove expires and data arguments from
- DEFINE_TIMER
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- John Stultz <john.stultz@linaro.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>, Kalle Valo <kvalo@qca.qualcomm.com>,
- Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>,
- Manish Chopra <manish.chopra@cavium.com>, Mark Gross <mark.gross@intel.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Reed <mdr@sgi.com>,
- Networking <netdev@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Pavel Machek <pavel@ucw.cz>,
- Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Ralf Baechle <ralf@linux-mips.org>,
- Sebastian Reichel <sre@kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
- Stephen Boyd <sboyd@codeaurora.org>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Tejun Heo <tj@kernel.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
- linux1394-devel@lists.sourceforge.net,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- linux-pm@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-scsi <linux-scsi@vger.kernel.org>, linux-watchdog@vger.kernel.org,
- linux-wireless <linux-wireless@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <87infui863.fsf@localhost.localdomain.i-did-not-set--mail-host-address--so-tickle-me>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,22 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 5, 2017 at 1:27 AM, Kees Cook <keescook@chromium.org> wrote:
-> Drop the arguments from the macro and adjust all callers with the
-> following script:
->
->   perl -pi -e 's/DEFINE_TIMER\((.*), 0, 0\);/DEFINE_TIMER($1);/g;' \
->     $(git grep DEFINE_TIMER | cut -d: -f1 | sort -u | grep -v timer.h)
->
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # for m68k parts
+>>> I haven't yet because I fail to understand why the decrementer is not 
+>>> interrupting the dying CPU under xics as it is the case under XIVE.
+>>
+>> Oh.. ok.  This sounds very similar to the problem Nikunj hit under TCG
+>> with decrementer interrupts waking up a supposedly dead CPU.  He had a
+>> couple of proposed fixes, but we got bogged down trying to work out
+>> why  (with TCG at least).
+> 
+> Yeah, I wasnt able to get to the exact reason for that.
 
-I was slightly worried about this large-scale rework, since it might conflict
-with new users of DEFINE_TIMER(), causing bisection problems.
+Yes. Tracking all the CPU states is a nightmare.
 
-However, a little research showed that we have only added two users
-in the past five years, so this is not a real concern.
+ * @running: #true if CPU is currently running (lockless).
+ * @has_waiter: #true if a CPU is currently waiting for the cpu_exec_end;
+ * valid under cpu_list_lock.
+ * @created: Indicates whether the CPU thread has been successfully created.
+ * @interrupt_request: Indicates a pending interrupt request.
+ * @halted: Nonzero if the CPU is in suspended state.
+ * @stop: Indicates a pending stop request.
+ * @stopped: Indicates the CPU has been artificially stopped.
+ * @unplug: Indicates a pending CPU unplug request.
 
-for arch/arm, drivers/char and overall:
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+I will spend some more time to understand why XICS is not behaving 
+the same. This is really time consuming ...
+
+C.
