@@ -1,24 +1,24 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
+ [IPv6:2a00:1450:4010:c07::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7QTq5gYCzDqmX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 08:13:03 +1100 (AEDT)
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v10 10/10] sparc64: optimized struct page zeroing
-Date: Thu,  5 Oct 2017 17:11:24 -0400
-Message-Id: <20171005211124.26524-11-pasha.tatashin@oracle.com>
-In-Reply-To: <20171005211124.26524-1-pasha.tatashin@oracle.com>
-References: <20171005211124.26524-1-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7R0Q01z9zDqG2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 08:36:05 +1100 (AEDT)
+Received: by mail-lf0-x242.google.com with SMTP id l23so11520131lfk.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 14:36:05 -0700 (PDT)
+MIME-Version: 1.0
+Sender: joel.stan@gmail.com
+In-Reply-To: <20171005045516.26145-1-mikey@neuling.org>
+References: <20171005045516.26145-1-mikey@neuling.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 6 Oct 2017 07:05:41 +0930
+Message-ID: <CACPK8XeBEp-vRpU9v9VXN5x47WEycZ=gObpUBaf9xAdYc3ezrg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/tm: P9 disabled suspend mode workaround
+To: Michael Neuling <mikey@neuling.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Cyril Bur <cyrilbur@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,75 +28,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add an optimized mm_zero_struct_page(), so struct page's are zeroed without
-calling memset(). We do eight to ten regular stores based on the size of
-struct page. Compiler optimizes out the conditions of switch() statement.
+On Thu, Oct 5, 2017 at 2:25 PM, Michael Neuling <mikey@neuling.org> wrote:
+> Each POWER9 core is made of two super slices. Each super slice can
+> only have one thread at a time in TM suspend mode. The super slice
+> restricts ever entering a state where both threads are in suspend by
+> aborting transactions on tsuspend or exceptions into the kernel.
+>
+> Unfortunately for context switch we need trechkpt which forces suspend
+> mode. If a thread is already in suspend and a second thread needs to
+> be restored that was suspended, the trechkpt must be executed.
+> Currently the trechkpt will hang in this case until the other thread
+> exits suspend. This causes problems for Linux resulting in hang and
+> RCU stall detectors going off.
+>
+> To workaround this, we disable suspend in the core. This is done via a
+> firmware change which stops the hardware ever getting into suspend.
+> The hardware will always rollback a transaction on any tsuspend or
+> entry into the kernel.
+>
+> Unfortunately userspace can construct a sigcontext which enables
+> suspend. Thus userspace can force Linux into a path where trechkpt is
+> executed.
+>
+> This patch blocks this from happening on POWER9 but sanity checking
+> sigcontexts passed in.
 
-SPARC-M6 with 15T of memory, single thread performance:
+Should 'but' say 'by'?
 
-                               BASE            FIX  OPTIMIZED_FIX
-        bootmem_init   28.440467985s   2.305674818s   2.305161615s
-free_area_init_nodes  202.845901673s 225.343084508s 172.556506560s
-                      --------------------------------------------
-Total                 231.286369658s 227.648759326s 174.861668175s
-
-BASE:  current linux
-FIX:   This patch series without "optimized struct page zeroing"
-OPTIMIZED_FIX: This patch series including the current patch.
-
-bootmem_init() is where memory for struct pages is zeroed during
-allocation. Note, about two seconds in this function is a fixed time: it
-does not increase as memory is increased.
-
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Reviewed-by: Bob Picco <bob.picco@oracle.com>
-Acked-by: David S. Miller <davem@davemloft.net>
----
- arch/sparc/include/asm/pgtable_64.h | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
-
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index 4fefe3762083..8ed478abc630 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -230,6 +230,36 @@ extern unsigned long _PAGE_ALL_SZ_BITS;
- extern struct page *mem_map_zero;
- #define ZERO_PAGE(vaddr)	(mem_map_zero)
- 
-+/* This macro must be updated when the size of struct page grows above 80
-+ * or reduces below 64.
-+ * The idea that compiler optimizes out switch() statement, and only
-+ * leaves clrx instructions
-+ */
-+#define	mm_zero_struct_page(pp) do {					\
-+	unsigned long *_pp = (void *)(pp);				\
-+									\
-+	 /* Check that struct page is either 64, 72, or 80 bytes */	\
-+	BUILD_BUG_ON(sizeof(struct page) & 7);				\
-+	BUILD_BUG_ON(sizeof(struct page) < 64);				\
-+	BUILD_BUG_ON(sizeof(struct page) > 80);				\
-+									\
-+	switch (sizeof(struct page)) {					\
-+	case 80:							\
-+		_pp[9] = 0;	/* fallthrough */			\
-+	case 72:							\
-+		_pp[8] = 0;	/* fallthrough */			\
-+	default:							\
-+		_pp[7] = 0;						\
-+		_pp[6] = 0;						\
-+		_pp[5] = 0;						\
-+		_pp[4] = 0;						\
-+		_pp[3] = 0;						\
-+		_pp[2] = 0;						\
-+		_pp[1] = 0;						\
-+		_pp[0] = 0;						\
-+	}								\
-+} while (0)
-+
- /* PFNs are real physical page numbers.  However, mem_map only begins to record
-  * per-page information starting at pfn_base.  This is to handle systems where
-  * the first physical page in the machine is at some huge physical address,
--- 
-2.14.2
+>
+> ptrace doesn't have this problem as only MSR SE and BE can be changed
+> via ptrace.
+>
+> This patch also adds a number of WARN_ON() in case we every enter
+> suspend when we shouldn't. This should catch systems that don't have
+> the firmware change and are running TM.
+>
+> A future firmware change will allow suspend mode on POWER9 but that is
+> going to require additional Linux changes to support. In the interim,
+> this allows TM to continue to (partially) work while stopping
+> userspace from crashing Linux.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  arch/powerpc/include/asm/cputable.h | 1 +
+>  arch/powerpc/kernel/cputable.c      | 7 +++++++
+>  arch/powerpc/kernel/process.c       | 2 ++
+>  arch/powerpc/kernel/signal_32.c     | 4 ++++
+>  arch/powerpc/kernel/signal_64.c     | 5 +++++
+>  5 files changed, 19 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index a9bf921f4e..477e00b6a7 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -123,6 +123,7 @@ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
+>  extern void identify_cpu_name(unsigned int pvr);
+>  extern void do_feature_fixups(unsigned long value, void *fixup_start,
+>                               void *fixup_end);
+> +extern bool tm_suspend_supported(void);
+>
+>  extern const char *powerpc_base_platform;
+>
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> index 7608729160..70252843ff 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -2301,6 +2301,13 @@ void __init identify_cpu_name(unsigned int pvr)
+>         }
+>  }
+>
+> +bool tm_suspend_supported(void)
+> +{
+> +       if (pvr_version_is(PVR_POWER9))
+> +               return false;
+> +       return true;
+> +}
+> +
+>
+>  #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
+>  struct static_key_true cpu_feature_keys[NUM_CPU_FTR_KEYS] = {
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index a0c74bbf34..5b81673c50 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -903,6 +903,8 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
+>         if (!MSR_TM_ACTIVE(thr->regs->msr))
+>                 goto out_and_saveregs;
+>
+> +       WARN_ON(!tm_suspend_supported());
+> +
+>         TM_DEBUG("--- tm_reclaim on pid %d (NIP=%lx, "
+>                  "ccr=%lx, msr=%lx, trap=%lx)\n",
+>                  tsk->pid, thr->regs->nip,
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> index 92fb1c8dbb..9eac0131c0 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -519,6 +519,8 @@ static int save_tm_user_regs(struct pt_regs *regs,
+>  {
+>         unsigned long msr = regs->msr;
+>
+> +       WARN_ON(!tm_suspend_supported());
+> +
+>         /* Remove TM bits from thread's MSR.  The MSR in the sigcontext
+>          * just indicates to userland that we were doing a transaction, but we
+>          * don't want to return in transactional state.  This also ensures
+> @@ -769,6 +771,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+>         int i;
+>  #endif
+>
+> +       if (!tm_suspend_supported())
+> +               return 1;
+>         /*
+>          * restore general registers but not including MSR or SOFTE. Also
+>          * take care of keeping r2 (TLS) intact if not a signal.
+> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+> index c83c115858..6d28caf849 100644
+> --- a/arch/powerpc/kernel/signal_64.c
+> +++ b/arch/powerpc/kernel/signal_64.c
+> @@ -214,6 +214,8 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+>
+>         BUG_ON(!MSR_TM_ACTIVE(regs->msr));
+>
+> +       WARN_ON(!tm_suspend_supported());
+> +
+>         /* Remove TM bits from thread's MSR.  The MSR in the sigcontext
+>          * just indicates to userland that we were doing a transaction, but we
+>          * don't want to return in transactional state.  This also ensures
+> @@ -430,6 +432,9 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+>
+>         BUG_ON(tsk != current);
+>
+> +       if (!tm_suspend_supported())
+> +               return -EINVAL;
+> +
+>         /* copy the GPRs */
+>         err |= __copy_from_user(regs->gpr, tm_sc->gp_regs, sizeof(regs->gpr));
+>         err |= __copy_from_user(&tsk->thread.ckpt_regs, sc->gp_regs,
+> --
+> 2.11.0
+>
