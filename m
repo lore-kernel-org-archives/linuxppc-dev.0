@@ -1,50 +1,47 @@
-Return-Path: <kvalo@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <parri.andrea@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y73RX3ptwzDr5H
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 17:54:48 +1100 (AEDT)
-From: Kalle Valo <kvalo@codeaurora.org>
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7RZn6qb6zDqhb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 09:02:25 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id i124so4445186wmf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 15:02:25 -0700 (PDT)
+Date: Fri, 6 Oct 2017 00:02:14 +0200
+From: Andrea Parri <parri.andrea@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>,
+ dipankar <dipankar@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Josh Triplett <josh@joshtriplett.org>,
+ Thomas Gleixner <tglx@linutronix.de>, rostedt <rostedt@goodmis.org>,
+ David Howells <dhowells@redhat.com>,
+ Eric Dumazet <edumazet@google.com>, fweisbec <fweisbec@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, Boqun Feng <boqun.feng@gmail.com>,
+ Andrew Hunter <ahh@google.com>,
+ maged michael <maged.michael@gmail.com>, gromer <gromer@google.com>,
+ Avi Kivity <avi@scylladb.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- John Stultz <john.stultz@linaro.org>, Julian Wiedmann <jwi@linux.vnet.ibm.com>,
- Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>,
- Manish Chopra <manish.chopra@cavium.com>, Mark Gross <mark.gross@intel.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Reed <mdr@sgi.com>,
- netdev@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@u
- cw.cz>, Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Ralf Baechle <ralf@linux-mips.org>, Sebastian Reichel <sre@kernel.org>,
- Stefan Richter <stefanr@s5r6.in-berlin.de>,
- Stephen Boyd <sboyd@codeaurora.org>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Tejun Heo <tj@kernel.org>,
- Ursula Braun <ubraun@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
- linux1394-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-watchdog@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/13] timer: Remove expires and data arguments from
- DEFINE_TIMER
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-11-git-send-email-keescook@chromium.org>
-Date: Thu, 05 Oct 2017 09:54:33 +0300
-In-Reply-To: <1507159627-127660-11-git-send-email-keescook@chromium.org> (Kees
- Cook's message of "Wed, 4 Oct 2017 16:27:04 -0700")
-Message-ID: <87d1625bkm.fsf@qca.qualcomm.com>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Dave Watson <davejwatson@fb.com>, Alan Stern <stern@rowland.harvard.edu>,
+ Will Deacon <will.deacon@arm.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH tip/core/rcu 1/3] membarrier: Provide register expedited
+ private command
+Message-ID: <20171005220214.GA7140@andrea>
+References: <20171004213734.GA11463@linux.vnet.ibm.com>
+ <1507153075-12345-1-git-send-email-paulmck@linux.vnet.ibm.com>
+ <20171005121250.prr5ff5kf3lxq6hx@hirez.programming.kicks-ass.net>
+ <312162.31738.1507219326334.JavaMail.zimbra@efficios.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <312162.31738.1507219326334.JavaMail.zimbra@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,24 +51,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
+On Thu, Oct 05, 2017 at 04:02:06PM +0000, Mathieu Desnoyers wrote:
+> ----- On Oct 5, 2017, at 8:12 AM, Peter Zijlstra peterz@infradead.org wrote:
+> 
+> > On Wed, Oct 04, 2017 at 02:37:53PM -0700, Paul E. McKenney wrote:
+> >> diff --git a/arch/powerpc/kernel/membarrier.c b/arch/powerpc/kernel/membarrier.c
+> >> new file mode 100644
+> >> index 000000000000..b0d79a5f5981
+> >> --- /dev/null
+> >> +++ b/arch/powerpc/kernel/membarrier.c
+> >> @@ -0,0 +1,45 @@
+> > 
+> >> +void membarrier_arch_register_private_expedited(struct task_struct *p)
+> >> +{
+> >> +	struct task_struct *t;
+> >> +
+> >> +	if (get_nr_threads(p) == 1) {
+> >> +		set_thread_flag(TIF_MEMBARRIER_PRIVATE_EXPEDITED);
+> >> +		return;
+> >> +	}
+> >> +	/*
+> >> +	 * Coherence of TIF_MEMBARRIER_PRIVATE_EXPEDITED against thread
+> >> +	 * fork is protected by siglock.
+> >> +	 */
+> >> +	spin_lock(&p->sighand->siglock);
+> >> +	for_each_thread(p, t)
+> >> +		set_ti_thread_flag(task_thread_info(t),
+> >> +				TIF_MEMBARRIER_PRIVATE_EXPEDITED);
+> > 
+> > I'm not sure this works correctly vs CLONE_VM without CLONE_THREAD.
+> 
+> The intent here is to hold the sighand siglock to provide mutual
+> exclusion against invocation of membarrier_fork(p, clone_flags)
+> by copy_process().
+> 
+> copy_process() grabs spin_lock(&current->sighand->siglock) for both
+> CLONE_THREAD and not CLONE_THREAD flags.
+> 
+> What am I missing here ?
+> 
+> > 
+> >> +	spin_unlock(&p->sighand->siglock);
+> >> +	/*
+> >> +	 * Ensure all future scheduler executions will observe the new
+> >> +	 * thread flag state for this process.
+> >> +	 */
+> >> +	synchronize_sched();
+> > 
+> > This relies on the flag being read inside rq->lock, right?
+> 
+> Yes. The flag is read by membarrier_arch_switch_mm(), invoked
+> within switch_mm_irqs_off(), called by context_switch() before
+> finish_task_switch() releases the rq lock.
 
-> Drop the arguments from the macro and adjust all callers with the
-> following script:
->
->   perl -pi -e 's/DEFINE_TIMER\((.*), 0, 0\);/DEFINE_TIMER($1);/g;' \
->     $(git grep DEFINE_TIMER | cut -d: -f1 | sort -u | grep -v timer.h)
->
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # for m68k parts
+I fail to graps the relation between this synchronize_sched() and rq->lock.
 
-[...]
+(Besides, we made no reference to rq->lock while discussing:
 
->  drivers/net/wireless/atmel/at76c50x-usb.c | 2 +-
+  https://github.com/paulmckrcu/litmus/commit/47039df324b60ace0cf7b2403299580be730119b
+  replace membarrier_arch_sched_in with switch_mm_irqs_off )
 
-For wireless:
+Could you elaborate?
 
-Acked-by: Kalle Valo <kvalo@codeaurora.org>
+  Andrea
 
--- 
-Kalle Valo
+
+> 
+> Is the comment clear enough, or do you have suggestions for
+> improvements ?
+
+
+
+> 
+> Thanks,
+> 
+> Mathieu
+> 
+> > 
+> > > +}
+> 
+> -- 
+> Mathieu Desnoyers
+> EfficiOS Inc.
+> http://www.efficios.com
