@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y703d0X1MzDrBS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y703d2DlWzDrCm
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:22:21 +1100 (AEDT)
-In-Reply-To: <20171001143303.15671-1-chunkeey@gmail.com>
-To: Christian Lamparter <chunkeey@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20171004091505.16776-2-clg@kaod.org>
+To: =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Subject: Re: [v3] powerpc: fix compile error on 64K pages on 40x, 44x
-Message-Id: <3y703c6y0Hz9t44@ozlabs.org>
-Date: Thu,  5 Oct 2017 15:22:20 +1100 (AEDT)
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+ =?utf-8?q?C=C3=A9dric_Le_G?= =?utf-8?q?oater?= <clg@kaod.org>
+Subject: Re: [v2,1/2] powerpc/xive: fix IPI reset
+Message-Id: <3y703d1WD4z9t4X@ozlabs.org>
+Date: Thu,  5 Oct 2017 15:22:21 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-10-01 at 14:33:03 UTC, Christian Lamparter wrote:
-> The mmu context on the 40x, 44x does not define pte_frag
-> entry. This causes gcc abort the compilation due to:
+On Wed, 2017-10-04 at 09:15:04 UTC, =?utf-8?q?C=C3=A9dric_Le_Goater?= wrote:
+> When resetting an IPI, hw_ipi should also be set to zero.
 > 
-> setup-common.c: In function ‘setup_arch’:
-> setup-common.c:908: error: ‘mm_context_t’ has no ‘pte_frag’
-> 
-> This patch fixes the issue by removing the pte_frag
-> initialization in setup-common.c.
-> 
-> This is possible, because the compiler will do the
-> initialization, since the mm_context is a sub struct of
-> init_mm. init_mm is declared in mm_types.h as external linkage.
-> according to C99 6.2.4.3:
-> "An object whose identifier is declared with external linkage
-> [...] has static storage duration."
-> 
-> C99 defines in 6.7.8.10 that: "
-> If an object that has static storage duration is not
-> initialized explicitly, then:
-> - if it has pointer type, it is initialized to a null pointer
-> [...]
-> "
-> 
-> Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
-> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
 
-Applied to powerpc fixes, thanks.
+Series applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/070e004912fed099263408bf2ff1bb
+https://git.kernel.org/powerpc/c/74f1282114acc7d67e25745efe200f
 
 cheers
