@@ -1,19 +1,57 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (unknown [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
+ [IPv6:2607:f8b0:4003:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y74ff6kRGzDr5H
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 18:49:30 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc: Default to enabling STRICT_KERNEL_RWX
-To: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-References: <20171005034505.GA32157@beast>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <6e6bf9ba-d66c-0bcc-358e-fed97b2ca5cd@c-s.fr>
-Date: Thu, 5 Oct 2017 09:49:06 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y76C82nBVzDr5H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 19:59:15 +1100 (AEDT)
+Received: by mail-oi0-x243.google.com with SMTP id f3so7747266oia.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 01:59:15 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20171005034505.GA32157@beast>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: arndbergmann@gmail.com
+In-Reply-To: <1507159627-127660-11-git-send-email-keescook@chromium.org>
+References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
+ <1507159627-127660-11-git-send-email-keescook@chromium.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 5 Oct 2017 10:59:12 +0200
+Message-ID: <CAK8P3a2uio4L3BMedHGg0wVy2asJ_CD8xqxevSnqdNDKOy6Vqw@mail.gmail.com>
+Subject: Re: [PATCH 10/13] timer: Remove expires and data arguments from
+ DEFINE_TIMER
+To: Kees Cook <keescook@chromium.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ John Stultz <john.stultz@linaro.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>, Kalle Valo <kvalo@qca.qualcomm.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>,
+ Manish Chopra <manish.chopra@cavium.com>, Mark Gross <mark.gross@intel.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Reed <mdr@sgi.com>,
+ Networking <netdev@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Pavel Machek <pavel@ucw.cz>,
+ Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Sebastian Reichel <sre@kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+ Stephen Boyd <sboyd@codeaurora.org>,
+ Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ Tejun Heo <tj@kernel.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
+ linux1394-devel@lists.sourceforge.net,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ linux-pm@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>, linux-watchdog@vger.kernel.org,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,39 +61,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 05/10/2017 à 05:45, Kees Cook a écrit :
-> When available, CONFIG_KERNEL_RWX should be default-enabled.
-
-On PPC32, this option implies deactivating BATs and/or LTLB mapping of 
-the linear kernel address space, hence a significant performance 
-degradation.
-
-So at least on PPC32, it should remain unselected by default.
-
-Christophe
-
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
+On Thu, Oct 5, 2017 at 1:27 AM, Kees Cook <keescook@chromium.org> wrote:
+> Drop the arguments from the macro and adjust all callers with the
+> following script:
+>
+>   perl -pi -e 's/DEFINE_TIMER\((.*), 0, 0\);/DEFINE_TIMER($1);/g;' \
+>     $(git grep DEFINE_TIMER | cut -d: -f1 | sort -u | grep -v timer.h)
+>
 > Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->   arch/powerpc/Kconfig | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 809c468edab1..9a549bbfc278 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -178,6 +178,7 @@ config PPC
->   	select HAVE_ARCH_TRACEHOOK
->   	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
->   	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
-> +	select ARCH_OPTIONAL_KERNEL_RWX_DEFAULT
->   	select HAVE_CBPF_JIT			if !PPC64
->   	select HAVE_CONTEXT_TRACKING		if PPC64
->   	select HAVE_DEBUG_KMEMLEAK
-> 
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # for m68k parts
+
+I was slightly worried about this large-scale rework, since it might conflict
+with new users of DEFINE_TIMER(), causing bisection problems.
+
+However, a little research showed that we have only added two users
+in the past five years, so this is not a real concern.
+
+for arch/arm, drivers/char and overall:
+
+Acked-by: Arnd Bergmann <arnd@arndb.de>
