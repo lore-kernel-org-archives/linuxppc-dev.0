@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y702v53DvzDr1T
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:21:43 +1100 (AEDT)
-In-Reply-To: <20171004042324.32129-1-joel@jms.id.au>
-To: Joel Stanley <joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y703c4jTfzDr71
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 15:22:20 +1100 (AEDT)
+In-Reply-To: <1506274243-28540-1-git-send-email-linux@roeck-us.net>
+To: Guenter Roeck <linux@roeck-us.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [v2] powerpc: configs: Add Skiroot defconfig
-Message-Id: <3y702t5l1Xz9t5n@ozlabs.org>
-Date: Thu,  5 Oct 2017 15:21:42 +1100 (AEDT)
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
+Subject: Re: powerpc/mm: Call flush_tlb_kernel_range with interrupts enabled
+Message-Id: <3y703c3dsnz9t3v@ozlabs.org>
+Date: Thu,  5 Oct 2017 15:22:20 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-10-04 at 04:23:24 UTC, Joel Stanley wrote:
-> This configuration is used by the OpenPower firmware for it's
-> Linux-as-bootloader implementation. Also known as the Petitboot kernel,
-> this configuration broke in 4.12 (CPU_HOTPLUG=n), so add it to the
-> upstream tree in order to get better coverage.
+On Sun, 2017-09-24 at 17:30:43 UTC, Guenter Roeck wrote:
+> flush_tlb_kernel_range() may call smp_call_function_many() which expects
+> interrupts to be enabled. This results in a traceback.
 > 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 smp_call_function_many+0xcc/0x2fc
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.14.0-rc1-00009-g0666f56 #1
+> task: cf830000 task.stack: cf82e000
+> NIP:  c00a93c8 LR: c00a9634 CTR: 00000001
+> REGS: cf82fde0 TRAP: 0700   Not tainted  (4.14.0-rc1-00009-g0666f56)
+> MSR:  00021000 <CE,ME>  CR: 24000082  XER: 00000000
+> 
+> GPR00: c00a9634 cf82fe90 cf830000 c050ad3c c0015a54 00000000 00000001 00000001
+> GPR08: 00000001 00000000 00000000 cf82e000 24000084 00000000 c0003150 00000000
+> GPR16: 00000000 00000000 00000000 00000000 00000000 00000001 00000000 c0510000
+> GPR24: 00000000 c0015a54 00000000 c050ad3c c051823c c050ad3c 00000025 00000000
+> NIP [c00a93c8] smp_call_function_many+0xcc/0x2fc
+> LR [c00a9634] smp_call_function+0x3c/0x50
+> Call Trace:
+> [cf82fe90] [00000010] 0x10 (unreliable)
+> [cf82fed0] [c00a9634] smp_call_function+0x3c/0x50
+> [cf82fee0] [c0015d2c] flush_tlb_kernel_range+0x20/0x38
+> [cf82fef0] [c001524c] mark_initmem_nx+0x154/0x16c
+> [cf82ff20] [c001484c] free_initmem+0x20/0x4c
+> [cf82ff30] [c000316c] kernel_init+0x1c/0x108
+> [cf82ff40] [c000f3a8] ret_from_kernel_thread+0x5c/0x64
+> Instruction dump:
+> 7c0803a6 7d808120 38210040 4e800020 3d20c052 812981a0 2f890000 40beffac
+> 3d20c051 8929ac64 2f890000 40beff9c <0fe00000> 4bffff94 7fc3f378 7f64db78
+> 
+> Fixes: 3184cc4b6f6a ("powerpc/mm: Fix kernel RAM protection after freeing ...")
+> Fixes: e611939fc8ec ("powerpc/mm: Ensure change_page_attr() doesn't ...")
+> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Applied to powerpc next, thanks.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/c3dda4b0db9cf5044010e4de88e5e5
+https://git.kernel.org/powerpc/c/7c6a4f3b1641195119ddbb531200f4
 
 cheers
