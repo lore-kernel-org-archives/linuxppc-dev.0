@@ -1,54 +1,47 @@
-Return-Path: <sre@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y6vcw1k1GzDr2D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 12:02:24 +1100 (AEDT)
-Date: Thu, 5 Oct 2017 03:02:18 +0200
-From: Sebastian Reichel <sre@kernel.org>
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Harish Patil <harish.patil@cavium.com>,
- Manish Chopra <manish.chopra@cavium.com>,
- Kalle Valo <kvalo@qca.qualcomm.com>, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Guenter Roeck <linux@roeck-us.net>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- John Stultz <john.stultz@linaro.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>,
- Lai Jiangshan <jiangshanlai@gmail.com>,
- Len Brown <len.brown@intel.com>, Mark Gross <mark.gross@intel.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Michael Reed <mdr@sgi.com>, Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Ralf Baechle <ralf@linux-mips.org>,
- Stefan Richter <stefanr@s5r6.in-berlin.de>,
- Stephen Boyd <sboyd@codeaurora.org>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Tejun Heo <tj@kernel.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
- linux1394-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
- linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-watchdog@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/13] timer: Remove init_timer_deferrable() in favor of
- timer_setup()
-Message-ID: <20171005010218.v3aw4d3y66jn3bbo@earth>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-6-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y6yv45NhSzDr3G
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Oct 2017 14:29:52 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v953TbL8064636
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Oct 2017 23:29:50 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dd5p72tae-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Oct 2017 23:29:50 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Thu, 5 Oct 2017 13:29:48 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v953TjBt42991834
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Oct 2017 14:29:45 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v953Ti6j030482
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Oct 2017 14:29:44 +1100
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>, =?utf-8?Q?C=C3=A9dric?= Le
+ Goater <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/2] powerpc/xive: fix CPU hot unplug
+In-Reply-To: <20171003065858.GL3260@umbus.fritz.box>
+References: <20170923082656.27219-1-clg@kaod.org>
+ <378a1945-6263-dca7-3912-b4a2c61794b8@kaod.org>
+ <20171003033615.GA3260@umbus.fritz.box>
+ <7f2081f1-415a-85ca-29ed-3ab1467220a7@kaod.org>
+ <20171003065858.GL3260@umbus.fritz.box>
+Date: Thu, 05 Oct 2017 08:59:40 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="ioctv6qfrc7mty7c"
-In-Reply-To: <1507159627-127660-6-git-send-email-keescook@chromium.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <87infui863.fsf@localhost.localdomain.i-did-not-set--mail-host-address--so-tickle-me>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,44 +51,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+David Gibson <david@gibson.dropbear.id.au> writes:
 
---ioctv6qfrc7mty7c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Tue, Oct 03, 2017 at 08:24:07AM +0200, C=C3=A9dric Le Goater wrote:
+>> On 10/03/2017 05:36 AM, David Gibson wrote:
+>> > On Mon, Oct 02, 2017 at 06:27:20PM +0200, C=C3=A9dric Le Goater wrote:
+>> >> On 09/23/2017 10:26 AM, C=C3=A9dric Le Goater wrote:
+>> >>> Hi,
+>> >>>
+>> >>> Here are a couple of small fixes to support CPU hot unplug. There are
+>> >>> still some issues to be investigated as, in some occasions, after a
+>> >>> couple of plug and unplug, the cpu which was removed receives a 'los=
+t'
+>> >>> interrupt. This showed to be the decrementer under QEMU.
+>> >>
+>> >> So this seems to be a QEMU issue only which can be solved by=20
+>> >> removing the DEE bit from the LPCR on P9 processor when the CPU=20
+>> >> is stopped in rtas. PECE3 bit on P8 processors.=20
+>> >>
+>> >> I think these patches are valuable fixes for 4.14. The first=20
+>> >> is trivial and the second touches the common xive part but it
+>> >> is only called on the pseries platform.=20=20
+>> >>
+>> >> Could you please take a look ?
+>> >=20
+>> > Sorry, I think I've missed something here.
+>> >=20
+>> > Is there a qemu bug involved in this?  Has there been a patch sent
+>> > that I didn't spot?
+>>=20
+>>=20
+>> No, not yet, but I will today probably. something like below to stop
+>> the decrementer when a CPU is stopped:
+>>=20
+>> 	--- qemu.git.orig/hw/ppc/spapr_rtas.c
+>> 	+++ qemu.git/hw/ppc/spapr_rtas.c
+>> 	@@ -174,6 +174,15 @@ static void rtas_start_cpu(PowerPCCPU *c
+>> 	         kvm_cpu_synchronize_state(cs);
+>>=20=09=20
+>> 	         env->msr =3D (1ULL << MSR_SF) | (1ULL << MSR_ME);
+>> 	+
+>> 	+        /* Enable DECR interrupt */
+>> 	+        if (env->mmu_model =3D=3D POWERPC_MMU_3_00) {
+>> 	+            env->spr[SPR_LPCR] |=3D LPCR_DEE;
+>> 	+        } else {
+>> 	+            /* P7 and P8 both have same bit for DECR */
+>> 	+            env->spr[SPR_LPCR] |=3D LPCR_P8_PECE3;
+>> 	+        }
+>> 	+
+>> 	         env->nip =3D start;
+>> 	         env->gpr[3] =3D r3;
+>> 	         cs->halted =3D 0;
+>> 	@@ -210,6 +219,13 @@ static void rtas_stop_self(PowerPCCPU *c
+>> 	      * no need to bother with specific bits, we just clear it.
+>> 	      */
+>> 	     env->msr =3D 0;
+>> 	+
+>> 	+    if (env->mmu_model =3D=3D POWERPC_MMU_3_00) {
+>> 	+        env->spr[SPR_LPCR] &=3D ~LPCR_DEE;
+>> 	+    } else {
+>> 	+        /* P7 and P8 both have same bit for DECR */
+>> 	+        env->spr[SPR_LPCR] &=3D ~LPCR_P8_PECE3;
+>> 	+    }
+>> 	 }
+>>=20=09=20
+>> 	 static inline int sysparm_st(target_ulong addr, target_ulong len,
+>>=20=09
+>> I haven't yet because I fail to understand why the decrementer is not=20
+>> interrupting the dying CPU under xics as it is the case under XIVE.
+>
+> Oh.. ok.  This sounds very similar to the problem Nikunj hit under TCG
+> with decrementer interrupts waking up a supposedly dead CPU.  He had a
+> couple of proposed fixes, but we got bogged down trying to work out
+> why  (with TCG at least).
 
-Hi,
+Yeah, I wasnt able to get to the exact reason for that.
 
-On Wed, Oct 04, 2017 at 04:26:59PM -0700, Kees Cook wrote:
-> This refactors the only users of init_timer_deferrable() to use
-> the new timer_setup() and from_timer(). Removes definition of
-> init_timer_deferrable().
-
-[...]
-
->  drivers/hsi/clients/ssi_protocol.c           | 32 ++++++++++++++++------------
-
-Acked-by: Sebastian Reichel <sre@kernel.org>
-
--- Sebastian
-
---ioctv6qfrc7mty7c
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlnVhJQACgkQ2O7X88g7
-+poqtw/+NVd8QRs2QuA6PAGWHUwxaYVABpFWmmT6auUlvyFDZ3dfZJID5IF3k1iT
-na5dX3a4nAKolDTmc7NOxWF7vEH/L/ONlRhfTt69PFg9oAk5KNjS1RdEx1bdxGRU
-rUBXQwOc2zi9LqxB2Hd8GQXOOhxbw0gICl4wrLCoUdkGNJs5fPpR6zVG8PGbntpq
-WWjDPDja6L+D6+pMhGADYfYj7Xtkfm0GWn3bycnHFKvFB61feCjknnH33QHR2Ayt
-O7gqcCR5aaYf6EadcVT4wR+ZRYl/7sZt102ziwKAsy2eztiOIsj4N8aRV2oR8riz
-CGwIx8ANBkrdn6OG8XFy6BfPzSZcBXqg6L/WreDPHJa2xZAzOds566XysTlDVnS2
-mmPZzXYhzdSJT5SgWxOwzPE3LH6wgG3id80kaCHFqive8gfGI6rh6Y8zQUk3umvg
-ksAklh+tTffWw6oBVT5P2GdyJUHx53Mbb3msk6NyH/G5DmGE0ikcWNcSHg8gcjVt
-KKArZaKBako7TLOE9Xklfx43wLM7GM5RtR6oDCeUfKKG8sF1PLaANmp0SnJeWP2X
-FjPA+SlOO9G/qT++PIkxsB2T6sFZrF/TNXi5exM7V6mYdTxvwJ8OVsKNMQKyxOKq
-rFI2Ntch9Trc5vcvXqlrW84i2bzA1b0jfzO1nkKoKm0XF8UHUKo=
-=6loN
------END PGP SIGNATURE-----
-
---ioctv6qfrc7mty7c--
+Regards
+Nikunj
