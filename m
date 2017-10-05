@@ -2,9 +2,10 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7PkF4YJwzDqnd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 07:38:45 +1100 (AEDT)
-Subject: [PATCH 1/4] PCI: Remove redundant pcibios_set_master() declarations
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7PkN6ZDBzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 07:38:52 +1100 (AEDT)
+Subject: [PATCH 2/4] PCI: Remove redundant pci_dev, pci_bus,
+ resource declarations
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: linux-pci@vger.kernel.org
 Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
@@ -24,8 +25,8 @@ Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
  linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
  Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
-Date: Thu, 05 Oct 2017 15:38:42 -0500
-Message-ID: <20171005203842.18300.67328.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Thu, 05 Oct 2017 15:38:49 -0500
+Message-ID: <20171005203849.18300.20999.stgit@bhelgaas-glaptop.roam.corp.google.com>
 In-Reply-To: <20171005201939.18300.25690.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <20171005201939.18300.25690.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
@@ -41,120 +42,173 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Bjorn Helgaas <bhelgaas@google.com>
 
-All users of pcibios_set_master() include <linux/pci.h>, which already has
-a declaration.  Remove the unnecessary declarations from the <asm/pci.h>
-files.
+<linux/pci.h> defines struct pci_bus and struct pci_dev and includes the
+struct resource definition before including <asm/pci.h>.  Nobody includes
+<asm/pci.h> directly, so they don't need their own declarations.
+
+Remove the redundant struct pci_dev, pci_bus, resource declarations.
 
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/alpha/include/asm/pci.h   |    2 --
- arch/cris/include/asm/pci.h    |    1 -
- arch/frv/include/asm/pci.h     |    2 --
- arch/mips/include/asm/pci.h    |    2 --
- arch/mn10300/include/asm/pci.h |    2 --
- arch/parisc/include/asm/pci.h  |    1 -
- arch/sh/include/asm/pci.h      |    2 --
- arch/x86/include/asm/pci.h     |    1 -
- 8 files changed, 13 deletions(-)
+ arch/alpha/include/asm/pci.h    |    3 ---
+ arch/cris/include/asm/pci.h     |    2 --
+ arch/frv/include/asm/pci.h      |    2 --
+ arch/ia64/include/asm/pci.h     |    2 --
+ arch/mips/include/asm/pci.h     |    2 --
+ arch/mn10300/include/asm/pci.h  |    2 --
+ arch/parisc/include/asm/pci.h   |    7 -------
+ arch/powerpc/include/asm/pci.h  |    2 --
+ arch/sh/include/asm/pci.h       |    2 --
+ arch/sparc/include/asm/pci_32.h |    2 --
+ arch/xtensa/include/asm/pci.h   |    2 --
+ 11 files changed, 28 deletions(-)
 
 diff --git a/arch/alpha/include/asm/pci.h b/arch/alpha/include/asm/pci.h
-index a06c24b3a2e1..777be3114fda 100644
+index 777be3114fda..0a10ff93b174 100644
 --- a/arch/alpha/include/asm/pci.h
 +++ b/arch/alpha/include/asm/pci.h
-@@ -56,8 +56,6 @@ struct pci_controller {
- #define PCIBIOS_MIN_IO		alpha_mv.min_io_address
- #define PCIBIOS_MIN_MEM		alpha_mv.min_mem_address
+@@ -12,9 +12,6 @@
+  * The following structure is used to manage multiple PCI busses.
+  */
  
--extern void pcibios_set_master(struct pci_dev *dev);
--
- /* IOMMU controls.  */
+-struct pci_dev;
+-struct pci_bus;
+-struct resource;
+ struct pci_iommu_arena;
+ struct page;
  
- /* The PCI address space does not equal the physical memory address space.
 diff --git a/arch/cris/include/asm/pci.h b/arch/cris/include/asm/pci.h
-index 6e505332b3e3..c6ac59d9f815 100644
+index c6ac59d9f815..8ea640560a46 100644
 --- a/arch/cris/include/asm/pci.h
 +++ b/arch/cris/include/asm/pci.h
-@@ -19,7 +19,6 @@
- void pcibios_config_init(void);
- struct pci_bus * pcibios_scan_root(int bus);
+@@ -32,8 +32,6 @@ int pcibios_set_irq_routing(struct pci_dev *dev, int pin, int irq);
+ #include <linux/string.h>
+ #include <asm/io.h>
  
--void pcibios_set_master(struct pci_dev *dev);
- struct irq_routing_table *pcibios_get_irq_routing_table(void);
- int pcibios_set_irq_routing(struct pci_dev *dev, int pin, int irq);
- 
+-struct pci_dev;
+-
+ /* The PCI address space does equal the physical memory
+  * address space.  The networking and block device layers use
+  * this boolean for bounce buffer decisions.
 diff --git a/arch/frv/include/asm/pci.h b/arch/frv/include/asm/pci.h
-index 809cfc6707ab..a6957014e74e 100644
+index a6957014e74e..895af9d558ba 100644
 --- a/arch/frv/include/asm/pci.h
 +++ b/arch/frv/include/asm/pci.h
-@@ -21,8 +21,6 @@ struct pci_dev;
+@@ -17,8 +17,6 @@
+ #include <linux/scatterlist.h>
+ #include <asm-generic/pci.h>
  
+-struct pci_dev;
+-
  #define pcibios_assign_all_busses()	0
  
--extern void pcibios_set_master(struct pci_dev *dev);
--
  #ifdef CONFIG_MMU
- extern void *consistent_alloc(gfp_t gfp, size_t size, dma_addr_t *dma_handle);
- extern void consistent_free(void *vaddr);
+diff --git a/arch/ia64/include/asm/pci.h b/arch/ia64/include/asm/pci.h
+index 6459f2d46200..8c4b37f6be3d 100644
+--- a/arch/ia64/include/asm/pci.h
++++ b/arch/ia64/include/asm/pci.h
+@@ -31,8 +31,6 @@ struct pci_vector_struct {
+ 
+ void pcibios_config_init(void);
+ 
+-struct pci_dev;
+-
+ /*
+  * PCI_DMA_BUS_IS_PHYS should be set to 1 if there is _necessarily_ a direct
+  * correspondence between device bus addresses and CPU physical addresses.
 diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
-index 52f551ee492d..0f8528c34753 100644
+index 0f8528c34753..2339f42f047a 100644
 --- a/arch/mips/include/asm/pci.h
 +++ b/arch/mips/include/asm/pci.h
-@@ -106,8 +106,6 @@ extern unsigned long PCIBIOS_MIN_MEM;
+@@ -121,8 +121,6 @@ extern unsigned long PCIBIOS_MIN_MEM;
+ #include <linux/string.h>
+ #include <asm/io.h>
  
- #define PCIBIOS_MIN_CARDBUS_IO	0x4000
- 
--extern void pcibios_set_master(struct pci_dev *dev);
+-struct pci_dev;
 -
- #define HAVE_PCI_MMAP
- #define ARCH_GENERIC_PCI_MMAP_RESOURCE
- #define HAVE_ARCH_PCI_RESOURCE_TO_USER
+ /*
+  * The PCI address space does equal the physical memory address space.
+  * The networking and block device layers use this boolean for bounce
 diff --git a/arch/mn10300/include/asm/pci.h b/arch/mn10300/include/asm/pci.h
-index d27654902f28..bdacb618d6af 100644
+index bdacb618d6af..5b75a1b2c4f6 100644
 --- a/arch/mn10300/include/asm/pci.h
 +++ b/arch/mn10300/include/asm/pci.h
-@@ -47,8 +47,6 @@ extern void unit_pci_init(void);
- #define PCIBIOS_MIN_IO		0xBE000004
- #define PCIBIOS_MIN_MEM		0xB8000000
+@@ -57,8 +57,6 @@ extern void unit_pci_init(void);
+ #include <linux/string.h>
+ #include <asm/io.h>
  
--void pcibios_set_master(struct pci_dev *dev);
+-struct pci_dev;
 -
- /* Dynamic DMA mapping stuff.
-  * i386 has everything mapped statically.
-  */
+ /* The PCI address space does equal the physical memory
+  * address space.  The networking and block device layers use
+  * this boolean for bounce buffer decisions.
 diff --git a/arch/parisc/include/asm/pci.h b/arch/parisc/include/asm/pci.h
-index 1de1a3f412ec..b5730f83b941 100644
+index b5730f83b941..8cc009e26a28 100644
 --- a/arch/parisc/include/asm/pci.h
 +++ b/arch/parisc/include/asm/pci.h
-@@ -161,7 +161,6 @@ extern struct pci_bios_ops *pci_bios;
+@@ -86,13 +86,6 @@ struct pci_hba_data {
+ #define PCI_F_EXTEND		0UL
+ #endif /* !CONFIG_64BIT */
  
- #ifdef CONFIG_PCI
- extern void pcibios_register_hba(struct pci_hba_data *);
--extern void pcibios_set_master(struct pci_dev *);
- #else
- static inline void pcibios_register_hba(struct pci_hba_data *x)
- {
+-/*
+-** KLUGE: linux/pci.h include asm/pci.h BEFORE declaring struct pci_bus
+-** (This eliminates some of the warnings).
+-*/
+-struct pci_bus;
+-struct pci_dev;
+-
+ /*
+  * If the PCI device's view of memory is the same as the CPU's view of memory,
+  * PCI_DMA_BUS_IS_PHYS is true.  The networking and block device layers use
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index c8975dac535f..8dc32eacc97c 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -28,8 +28,6 @@
+ #define PCIBIOS_MIN_IO		0x1000
+ #define PCIBIOS_MIN_MEM		0x10000000
+ 
+-struct pci_dev;
+-
+ /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
+ #define IOBASE_BRIDGE_NUMBER	0
+ #define IOBASE_MEMORY		1
 diff --git a/arch/sh/include/asm/pci.h b/arch/sh/include/asm/pci.h
-index 17fa69bc814d..063c8003b169 100644
+index 063c8003b169..6c2d68e08a57 100644
 --- a/arch/sh/include/asm/pci.h
 +++ b/arch/sh/include/asm/pci.h
-@@ -68,8 +68,6 @@ struct pci_dev;
+@@ -63,8 +63,6 @@ extern int pci_is_66mhz_capable(struct pci_channel *hose,
+ 
+ extern unsigned long PCIBIOS_MIN_IO, PCIBIOS_MIN_MEM;
+ 
+-struct pci_dev;
+-
  #define HAVE_PCI_MMAP
  #define ARCH_GENERIC_PCI_MMAP_RESOURCE
  
--extern void pcibios_set_master(struct pci_dev *dev);
--
- /* Dynamic DMA mapping stuff.
-  * SuperH has everything mapped statically like x86.
+diff --git a/arch/sparc/include/asm/pci_32.h b/arch/sparc/include/asm/pci_32.h
+index b7c092df3134..8b0e26232c78 100644
+--- a/arch/sparc/include/asm/pci_32.h
++++ b/arch/sparc/include/asm/pci_32.h
+@@ -20,8 +20,6 @@
   */
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index 473a7295ab10..645019085bb8 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -91,7 +91,6 @@ extern int pcibios_enabled;
- void pcibios_config_init(void);
- void pcibios_scan_root(int bus);
+ #define PCI_DMA_BUS_IS_PHYS	(0)
  
--void pcibios_set_master(struct pci_dev *dev);
- struct irq_routing_table *pcibios_get_irq_routing_table(void);
- int pcibios_set_irq_routing(struct pci_dev *dev, int pin, int irq);
+-struct pci_dev;
+-
+ #endif /* __KERNEL__ */
  
+ #ifndef CONFIG_LEON_PCI
+diff --git a/arch/xtensa/include/asm/pci.h b/arch/xtensa/include/asm/pci.h
+index e4f366a488d3..5c83798e3b2e 100644
+--- a/arch/xtensa/include/asm/pci.h
++++ b/arch/xtensa/include/asm/pci.h
+@@ -37,8 +37,6 @@ extern struct pci_controller* pcibios_alloc_controller(void);
+ #include <linux/string.h>
+ #include <asm/io.h>
+ 
+-struct pci_dev;
+-
+ /* The PCI address space does equal the physical memory address space.
+  * The networking and block device layers use this boolean for bounce buffer
+  * decisions.
