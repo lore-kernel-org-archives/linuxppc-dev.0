@@ -1,23 +1,49 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7fPx5yQZzDqlp
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 17:10:29 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id o1so16113399pga.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Oct 2017 23:10:29 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc: use NMI IPI for smp_send_stop
-Date: Fri,  6 Oct 2017 16:10:05 +1000
-Message-Id: <20171006061005.29891-4-npiggin@gmail.com>
-In-Reply-To: <20171006061005.29891-1-npiggin@gmail.com>
-References: <20171006061005.29891-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7gK3021vzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 17:51:18 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v966ovNg018145
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 02:51:16 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2de41cjp10-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Oct 2017 02:51:08 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 6 Oct 2017 07:49:15 +0100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v966nBWq15728794
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 06:49:13 GMT
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v966nBJh016894
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 17:49:12 +1100
+Subject: Re: [PATCH] mm: deferred_init_memmap improvements
+To: Pavel Tatashin <pasha.tatashin@oracle.com>, linux-kernel@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+References: <20171004152902.17300-1-pasha.tatashin@oracle.com>
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Fri, 6 Oct 2017 12:18:31 +0530
+MIME-Version: 1.0
+In-Reply-To: <20171004152902.17300-1-pasha.tatashin@oracle.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <071d574f-1d8c-5be9-ec92-6227db01bbd3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +53,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the NMI IPI rather than smp_call_function for smp_send_stop.
-Have stopped CPUs hard disable interrupts rather than just soft
-disable.
+On 10/04/2017 08:59 PM, Pavel Tatashin wrote:
+> This patch fixes another existing issue on systems that have holes in
+> zones i.e CONFIG_HOLES_IN_ZONE is defined.
+> 
+> In for_each_mem_pfn_range() we have code like this:
+> 
+> if (!pfn_valid_within(pfn)
+> 	goto free_range;
+> 
+> Note: 'page' is not set to NULL and is not incremented but 'pfn' advances.
 
-This function is used in crash/panic/shutdown paths to bring other
-CPUs down as quickly and reliably as possible, and minimizing their
-potential to cause trouble.
+page is initialized to NULL at the beginning of the function.
+PFN advances but we dont proceed unless pfn_valid_within(pfn)
+holds true which basically should have checked with arch call
+back if the PFN is valid in presence of memory holes as well.
+Is not this correct ?
 
-Avoiding the Linux smp_call_function infrastructure and (if supported)
-using true NMI IPIs makes this more robust.
+> Thus means if deferred struct pages are enabled on systems with these kind
+> of holes, linux would get memory corruptions. I have fixed this issue by
+> defining a new macro that performs all the necessary operations when we
+> free the current set of pages.
 
-Also use spin loop primitives in the stop callback, mainly to help
-processing speed of the active thread speed in the simulator.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/smp.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index e0a4c1f82e25..ce891030d925 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -547,19 +547,20 @@ void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
- }
- #endif
- 
--static void stop_this_cpu(void *dummy)
-+static void __noreturn stop_this_cpu(struct pt_regs *regs)
- {
- 	/* Remove this CPU */
- 	set_cpu_online(smp_processor_id(), false);
- 
--	local_irq_disable();
-+	hard_irq_disable();
-+	spin_begin();
- 	while (1)
--		;
-+		spin_cpu_relax();
- }
- 
- void smp_send_stop(void)
- {
--	smp_call_function(stop_this_cpu, NULL, 0);
-+	smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, stop_this_cpu, 1000000);
- }
- 
- struct thread_info *current_set[NR_CPUS];
--- 
-2.13.3
+If we bail out in case PFN is not valid, then how corruption
+can happen ?
