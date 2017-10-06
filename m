@@ -2,17 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7bxJ71XgzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 15:19:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7cXc4PC4zDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 15:46:08 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, benh@kernel.crashing.org,
- cyrilbur@gmail.com
-Subject: Re: [PATCH] powerpc/tm: P9 disabled suspend mode workaround
-In-Reply-To: <20171005045516.26145-1-mikey@neuling.org>
-References: <20171005045516.26145-1-mikey@neuling.org>
-Date: Fri, 06 Oct 2017 15:19:00 +1100
-Message-ID: <878tgozz63.fsf@concordia.ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: Possible LMB hot unplug bug in 4.13+ kernels
+In-Reply-To: <a3846937-53e4-e2be-fe82-3a5765647fa4@linux.vnet.ibm.com>
+References: <94618f16-b47f-b714-9cb5-4bbbf7fdccdf@linux.vnet.ibm.com>
+ <a3846937-53e4-e2be-fe82-3a5765647fa4@linux.vnet.ibm.com>
+Date: Fri, 06 Oct 2017 15:46:07 +1100
+Message-ID: <8760bszxww.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,42 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
-
-> Each POWER9 core is made of two super slices. Each super slice can
-> only have one thread at a time in TM suspend mode. The super slice
-> restricts ever entering a state where both threads are in suspend by
-> aborting transactions on tsuspend or exceptions into the kernel.
->
-> Unfortunately for context switch we need trechkpt which forces suspend
-> mode. If a thread is already in suspend and a second thread needs to
-> be restored that was suspended, the trechkpt must be executed.
-> Currently the trechkpt will hang in this case until the other thread
-> exits suspend. This causes problems for Linux resulting in hang and
-> RCU stall detectors going off.
->
-> To workaround this, we disable suspend in the core. This is done via a
-> firmware change which stops the hardware ever getting into suspend.
-> The hardware will always rollback a transaction on any tsuspend or
-> entry into the kernel.
+Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+> On 10/04/2017 03:21 PM, Daniel Henrique Barboza wrote:
 ...
-> A future firmware change will allow suspend mode on POWER9 but that is
-> going to require additional Linux changes to support. In the interim,
-> this allows TM to continue to (partially) work while stopping
-> userspace from crashing Linux.
+>> It appears that the hot unplug is failing because lmb_is_removable(lmb) is returning
+>> false inside dlpar_remove_lmb, triggering the hotplug of the LMBs again:
+...
+>> 
+>> I am not aware of anything that I can do from QEMU side to fix this. Can anyone take a look or provide
+>> guidance? Am I missing something in my tests?
+>> 
+>
+> I don't think you are missing anything in your tests and am not sure that this is a bug.
+> DLPAR memory remove operations are not guaranteed, memory remove requests fail quite often
+> because the LMBs we are trying to remove are not removable.
+>
+> From the added printks you put in this appears to be what is happening. When trying to
+> remove the range of LMBs, one of the memory sections in one of the LMBs is not removbable,
+> this is seen when lmb_is_removable() returns false.
 
-But in the absence of the firmware change it doesn't achieve that,
-userspace can still hang the machine.
+Yeah I agree.
 
-I don't want to knowingly leave the machine in a state where users can
-kill their box just by running TM enabled software.
-
-I also don't want the machine to boot into some completely novel and
-untested mode where suspend doesn't work, without the user opting into
-that.
-
-So as discussed offline, until we have the additional changes to enable
-suspend mode, we should default to TM off on P9, unless the user
-explicitly requests no-suspend mode.
+Unless you (Daniel) think there's some reason lmb_is_removable() is
+incorrectly returning false. But most likely it's correct and there's
+just an unmovable allocation in that range.
 
 cheers
