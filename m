@@ -1,29 +1,20 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0249.hostedemail.com
- [216.40.44.249])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7Xw11qfTzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 13:02:39 +1100 (AEDT)
-Message-ID: <1507255353.4434.54.camel@perches.com>
-Subject: Re: [PATCH 1/2] powerpc/platforms/cell: Delete an error message for
- a failed memory allocation in three functions
-From: Joe Perches <joe@perches.com>
-To: Michal =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>, Julia Lawall
- <julia.lawall@lip6.fr>
-Cc: Arnd Bergmann <arnd@arndb.de>, kernel-janitors@vger.kernel.org, LKML
- <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, Jeremy
- Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org, SF Markus Elfring
- <elfring@users.sourceforge.net>
-Date: Thu, 05 Oct 2017 19:02:33 -0700
-In-Reply-To: <20171005222949.3a288238@kitsune.suse.cz>
-References: <db9efaf4-f3d7-d5dc-b0b2-f20e418fa3c8@users.sourceforge.net>
- <62146108-5be0-c236-f404-4be122e162ac@users.sourceforge.net>
- <20171005220210.681f78e8@kitsune.suse.cz>
- <alpine.DEB.2.20.1710052205560.2626@hadrien>
- <20171005222949.3a288238@kitsune.suse.cz>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7bxJ71XgzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 15:19:00 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, benh@kernel.crashing.org,
+ cyrilbur@gmail.com
+Subject: Re: [PATCH] powerpc/tm: P9 disabled suspend mode workaround
+In-Reply-To: <20171005045516.26145-1-mikey@neuling.org>
+References: <20171005045516.26145-1-mikey@neuling.org>
+Date: Fri, 06 Oct 2017 15:19:00 +1100
+Message-ID: <878tgozz63.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,9 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-10-05 at 22:29 +0200, Michal Suchánek wrote:
-> I do not expect the kernel to generate a
-> stack trace every time memory allocation fails. With all the hooks in
-> the code it is hard to tell, though.
+Michael Neuling <mikey@neuling.org> writes:
 
-All [kv].alloc failures without __GFP_NOWARN call dump_stack()
+> Each POWER9 core is made of two super slices. Each super slice can
+> only have one thread at a time in TM suspend mode. The super slice
+> restricts ever entering a state where both threads are in suspend by
+> aborting transactions on tsuspend or exceptions into the kernel.
+>
+> Unfortunately for context switch we need trechkpt which forces suspend
+> mode. If a thread is already in suspend and a second thread needs to
+> be restored that was suspended, the trechkpt must be executed.
+> Currently the trechkpt will hang in this case until the other thread
+> exits suspend. This causes problems for Linux resulting in hang and
+> RCU stall detectors going off.
+>
+> To workaround this, we disable suspend in the core. This is done via a
+> firmware change which stops the hardware ever getting into suspend.
+> The hardware will always rollback a transaction on any tsuspend or
+> entry into the kernel.
+...
+> A future firmware change will allow suspend mode on POWER9 but that is
+> going to require additional Linux changes to support. In the interim,
+> this allows TM to continue to (partially) work while stopping
+> userspace from crashing Linux.
+
+But in the absence of the firmware change it doesn't achieve that,
+userspace can still hang the machine.
+
+I don't want to knowingly leave the machine in a state where users can
+kill their box just by running TM enabled software.
+
+I also don't want the machine to boot into some completely novel and
+untested mode where suspend doesn't work, without the user opting into
+that.
+
+So as discussed offline, until we have the additional changes to enable
+suspend mode, we should default to TM off on P9, unless the user
+explicitly requests no-suspend mode.
+
+cheers
