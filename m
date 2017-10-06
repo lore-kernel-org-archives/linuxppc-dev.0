@@ -1,21 +1,49 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7cXc4PC4zDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 15:46:08 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Possible LMB hot unplug bug in 4.13+ kernels
-In-Reply-To: <a3846937-53e4-e2be-fe82-3a5765647fa4@linux.vnet.ibm.com>
-References: <94618f16-b47f-b714-9cb5-4bbbf7fdccdf@linux.vnet.ibm.com>
- <a3846937-53e4-e2be-fe82-3a5765647fa4@linux.vnet.ibm.com>
-Date: Fri, 06 Oct 2017 15:46:07 +1100
-Message-ID: <8760bszxww.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7dpl17VVzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 16:43:26 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v965cuB7012718
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 01:43:24 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ddujwnsu5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Oct 2017 01:43:24 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Fri, 6 Oct 2017 15:43:19 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v965hFE237290112
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 16:43:15 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v965hICP019325
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 16:43:19 +1100
+Subject: Re: [PATCH v2] kernel/module_64.c: Add REL24 relocation support of
+ livepatch symbols
+To: Torsten Duwe <duwe@lst.de>
+References: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
+ <20171005124313.GA25100@lst.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Fri, 6 Oct 2017 11:13:09 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20171005124313.GA25100@lst.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <850854ec-966a-9cfc-0ee6-7f2432683cd4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +53,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
-> On 10/04/2017 03:21 PM, Daniel Henrique Barboza wrote:
-...
->> It appears that the hot unplug is failing because lmb_is_removable(lmb) is returning
->> false inside dlpar_remove_lmb, triggering the hotplug of the LMBs again:
-...
->> 
->> I am not aware of anything that I can do from QEMU side to fix this. Can anyone take a look or provide
->> guidance? Am I missing something in my tests?
->> 
+On Thursday 05 October 2017 06:13 PM, Torsten Duwe wrote:
+> On Wed, Oct 04, 2017 at 11:25:16AM -0400, Kamalesh Babulal wrote:
+>>
+>> Both the failures with REL24 livepatch symbols relocation, can be
+>> resolved by constructing a new livepatch stub. The newly setup klp_stub
+>> mimics the functionality of entry_64.S::livepatch_handler introduced by
+>> commit 85baa095497f ("powerpc/livepatch: Add live patching support on
+>> ppc64le").
 >
-> I don't think you are missing anything in your tests and am not sure that this is a bug.
-> DLPAR memory remove operations are not guaranteed, memory remove requests fail quite often
-> because the LMBs we are trying to remove are not removable.
+> So, do I get his right that this patch is based on your June 13 proposal
+> "powerpc/modules: Introduce new stub code for SHN_LIVEPATCH symbols" ?
+> I guess you lost many of us already at that point. What is the new, much
+> bigger stub code needed for? Stub code should do only the very bare minimum,
+> all common functionality is handled in the kernel main object.
 >
-> From the added printks you put in this appears to be what is happening. When trying to
-> remove the range of LMBs, one of the memory sections in one of the LMBs is not removbable,
-> this is seen when lmb_is_removable() returns false.
+> What exactly is the problem you're trying to solve, what is to be achieved?
 
-Yeah I agree.
+Thanks for the review.
 
-Unless you (Daniel) think there's some reason lmb_is_removable() is
-incorrectly returning false. But most likely it's correct and there's
-just an unmovable allocation in that range.
+With apply_relocate_add() writing out relocations for livepatch symbols 
+too. R_PPC_REL24: Doesn't handle SHN_LIVEPATCH symbols and ends up being 
+treated as local symbol and calls local_entry_offset(). Which triggers 
+an error:
 
-cheers
+module_64: kpatch_meminfo: REL24 -1152921504897399800 out of range!
+
+Whereas SHN_LIVEPATCH symbols are essentially SHN_UNDEF, should be 
+called via external stub. This issue can be fixed by handling both 
+SHN_UNDEF and SHN_LIVEPATCH via same external stub. It isn't a complete 
+fix, because it will fail with local calls becoming global.
+
+Consider the livepatch sequence[1]. Where function A calls B, B is the
+function which has been livepatched and the call to function B is 
+redirected to patched version P. P calls the function C in M2, whereas C 
+was local to the function B and have became SHN_UNDEF in function P. 
+Local call becoming global.
+
+   +--------+            +--------+    +--------+      +--------+
+   |        |   +--------+--------+--->|        |  +-->|        |
+   |  A     |   |        |  B     |    |  F     |  |   |  P     |
+   |        |   |        |        |    |        +--+   |        |
+   |        +---+        |        |    |        |<-+   |        |
+   |        |<--+   +----+   C    |    |        |  |   |        |
+   |        |   |   | +->|        |    |        |  |   |        |<---+
+   | K / M1 |   |   | |  | K / M2 |  +-+ Kernel |  +---+ Mod3   +--+ |
+   +--------+   |   | |  +--------+  | +--------+      +--------+  | |
+                |   | |              |                             | |
+                +---+-+--------------+                             | |
+                    | |                                            | |
+                    | +--------------------------------------------+ |
+                    +------------------------------------------------+
+
+Handling such call with regular stub, triggers another error:
+
+module_64: kpatch_meminfo: Expect noop after relocate, got 3d220000
+
+Every branch to SHN_UNDEF is followed by a nop instruction, that gets
+overwritten by an instruction to restore TOC with r2 value that get 
+stored onto the stack, before calling the function via global entry point.
+
+Given that C was local to function B, it does not store/restore TOC as 
+they are not expected to be clobbered for functions called via local 
+entry point.
+
+Current stub can be extended to re-store TOC and have a single stub for 
+both SHN_UNDEF/SHN_LIVEPATCH symbols. Constructing a single stub is an 
+overhead for non livepatch calla, as it adds extra instructions for TOC 
+restore.
+
+Idea was to create a new stub for SHN_LIVEPATCH symbols. Which would 
+also restore the TOC on the return to livepatched function, by 
+introducing an intermediate stack between function P and function C. 
+This was the earlier proposal made in June.
+
+It will work for most of the cases but will not work, when arguments to 
+C as passes through stack. This issue has been already solved by 
+introduction of livepatch_handler, which runs in _mcount context by 
+creating a livepatch stack to store/restore TOC/LR. It avoids the need 
+for an intermediate stack.
+
+Current approach, creates a hybrid stub. Which is a combination of 
+regular stub (stub setup code) +  livepatch_handler (stores/restores 
+TOC/LR with livepatch stack).
+
+>
+>> +
+>> +	/*
+>> +	 * Patch the code required to load the trampoline address into r11,
+>> +	 * function global entry point into r12, ctr.
+>> +	 */
+>> +	entry->jump[klp_stub_idx++] = (PPC_INST_ADDIS | ___PPC_RT(11) |
+>> +					___PPC_RA(2) | PPC_HA(reladdr));
+>> +
+>> +	entry->jump[klp_stub_idx++] = (PPC_INST_ADDI | ___PPC_RT(11) |
+>> +					 ___PPC_RA(11) | PPC_LO(reladdr));
+>> +
+>> +	entry->jump[klp_stub_idx++] = (PPC_INST_LD | ___PPC_RT(12) |
+>> +					 ___PPC_RA(11) | 128);
+> 							 ^^^
+> Also, I was a bit puzzled by this constant, BTW.
+> Can you #define a meaning to this, perhaps?
+
+Naveen too pointed it out. Will introduce a define for the offset.
+
+>
+>> @@ -201,8 +204,33 @@ livepatch_handler:
+>>  	ori     r12, r12, STACK_END_MAGIC@l
+>>  	std	r12, -8(r11)
+>>
+>> +	/*
+>> +	 * klp_stub_insn/klp_stub_insn_end marks the beginning/end of the
+>> +	 * additional instructions, which gets patched by create_klp_stub()
+>> +	 * for livepatch symbol relocation stub. The instructions are:
+>> +	 *
+>> +	 * Load TOC relative address into r11. module_64.c::klp_stub_for_addr()
+>> +	 * identifies the available free stub slot and loads the address into
+>> +	 * r11 with two instructions.
+>> +	 *
+>> +	 * addis r11, r2, stub_address@ha
+>> +	 * addi  r11, r11, stub_address@l
+>> +	 *
+>> +	 * Load global entry into r12 from entry->funcdata offset
+>> +	 * ld    r12, 128(r11)
+>
+> Is that the same 128 as above? Then it should definitely be a #define to
+> avoid inconsistencies.
+
+Yes, it's the same offset as above in the comments.
+
+[1] ASCII diagram adopted from:
+http://mpe.github.io/posts/2016/05/23/kernel-live-patching-for-ppc64le/
+
+-- 
+cheers,
+Kamalesh.
