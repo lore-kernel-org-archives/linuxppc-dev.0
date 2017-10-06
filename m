@@ -1,18 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y83RV6NsdzDqhb
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 08:58:14 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH0/8] Support for ibm, dynamic-memory-v2 device tree property
-In-Reply-To: <150705593139.7318.5934648279979743833.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-References: <150705593139.7318.5934648279979743833.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-Date: Sat, 07 Oct 2017 08:58:12 +1100
-Message-ID: <8760bsc51n.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y841j15L3zDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 09:24:25 +1100 (AEDT)
+Subject: [PATCH 0/2] vgaarb: Select fallback default VGA device
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ dri-devel@lists.freedesktop.org, Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Lukas Wunner <lukas@wunner.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Daniel Axtens <dja@axtens.net>
+Date: Fri, 06 Oct 2017 17:24:20 -0500
+Message-ID: <20171006221358.12211.42879.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
-> This patch set provides a set of updates to de-couple the LMB information
-> provided in the ibm,dynamic-memory device tree property from the device
-> tree property format. The goal is to provide a data set of LMB information
-> so that consumners of this data do not need to understand and provide
-> multiple parsing routines for the supported device tree property formats.
+These patches are supposed to fix a problem Daniel Axtens found on the
+HiSilicon D05 board.  The VGA device there is behind a bridge that doesn't
+support PCI_BRIDGE_CTL_VGA, so the arbiter never selects the device as the
+default.
 
-Couple of build problems in this series.
+The first patch extends the arbiter so that if it can't find an enabled VGA
+device with legacy resources, it selects the first enabled device *without*
+legacy resources (this is what fixes the D05).  If that fails, it selects
+the first device that isn't enabled.  The combination of both changes
+should make the current powerpc fixup_vga() quirk unnecessary.
 
-The non-pseries build dies with:
+N.B. It changes the powerpc behavior: if there are several enabled VGA
+devices, the current quirk selects the last one, while this patch selects
+the first one.  If this is a problem, I can drop that part of the patch and
+keep the quirk.
 
-  arch/powerpc/kernel/prom.c:541:4: error: implicit declaration of function 'early_init_dt_scan_drmem_lmbs' [-Werror=implicit-function-declaration]
+The second patch pulls out this fallback device detection (and the EFI
+override) from vga_arb_device_init() to make it easier to read.
 
-And pseries dies with:
+---
 
-  arch/powerpc/platforms/pseries/hotplug-memory.c:860:21: error: 'lmbs_available' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+Bjorn Helgaas (2):
+      vgaarb: Select a default VGA device even if there's no legacy VGA
+      vgaarb: Factor out EFI and fallback default device selection
 
-cheers
+
+ arch/powerpc/kernel/pci-common.c |   12 ------
+ drivers/gpu/vga/vgaarb.c         |   72 +++++++++++++++++++++++++++++---------
+ 2 files changed, 55 insertions(+), 29 deletions(-)
