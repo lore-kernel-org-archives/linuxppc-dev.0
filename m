@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7qc52yhrzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 00:04:53 +1100 (AEDT)
-Message-Id: <f86d81a0f791cf8b5696c6fe0f084f76aaec5a8d.1507284818.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7qc74m5czDqn0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 00:04:55 +1100 (AEDT)
+Message-Id: <b4dbdec1ba02c2829ebcbf479eca3bfeac09391b.1507284818.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1507284818.git.christophe.leroy@c-s.fr>
 References: <cover.1507284818.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 09/18] crypto: talitos - use devm_kmalloc()
+Subject: [PATCH 10/18] crypto: talitos - use of_property_read_u32()
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Fri,  6 Oct 2017 15:04:49 +0200 (CEST)
+Date: Fri,  6 Oct 2017 15:04:51 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,121 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace kmalloc() by devm_kmalloc()
+Use of_property_read_u32() to simplify DT read
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/crypto/talitos.c | 30 ++++++++++++------------------
- 1 file changed, 12 insertions(+), 18 deletions(-)
+ drivers/crypto/talitos.c | 21 +++++----------------
+ 1 file changed, 5 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index dd6b1fc90020..2a53d0f2a869 100644
+index 2a53d0f2a869..f139a0cef2e2 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -2993,17 +2993,11 @@ static int talitos_remove(struct platform_device *ofdev)
- 			break;
- 		}
- 		list_del(&t_alg->entry);
--		kfree(t_alg);
- 	}
- 
- 	if (hw_supports(dev, DESC_HDR_SEL0_RNG))
- 		talitos_unregister_rng(dev);
- 
--	for (i = 0; priv->chan && i < priv->num_channels; i++)
--		kfree(priv->chan[i].fifo);
--
--	kfree(priv->chan);
--
- 	for (i = 0; i < 2; i++)
- 		if (priv->irq[i]) {
- 			free_irq(priv->irq[i], dev);
-@@ -3016,8 +3010,6 @@ static int talitos_remove(struct platform_device *ofdev)
- 
- 	iounmap(priv->reg);
- 
--	kfree(priv);
--
- 	return 0;
- }
- 
-@@ -3029,7 +3021,8 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
- 	struct talitos_crypto_alg *t_alg;
- 	struct crypto_alg *alg;
- 
--	t_alg = kzalloc(sizeof(struct talitos_crypto_alg), GFP_KERNEL);
-+	t_alg = devm_kzalloc(dev, sizeof(struct talitos_crypto_alg),
-+			     GFP_KERNEL);
- 	if (!t_alg)
- 		return ERR_PTR(-ENOMEM);
- 
-@@ -3053,7 +3046,7 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
- 		t_alg->algt.alg.aead.decrypt = aead_decrypt;
- 		if (!(priv->features & TALITOS_FTR_SHA224_HWINIT) &&
- 		    !strncmp(alg->cra_name, "authenc(hmac(sha224)", 20)) {
--			kfree(t_alg);
-+			devm_kfree(dev, t_alg);
- 			return ERR_PTR(-ENOTSUPP);
- 		}
- 		break;
-@@ -3073,7 +3066,7 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
- 
- 		if (!(priv->features & TALITOS_FTR_HMAC_OK) &&
- 		    !strncmp(alg->cra_name, "hmac", 4)) {
--			kfree(t_alg);
-+			devm_kfree(dev, t_alg);
- 			return ERR_PTR(-ENOTSUPP);
- 		}
- 		if (!(priv->features & TALITOS_FTR_SHA224_HWINIT) &&
-@@ -3088,7 +3081,7 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
- 		break;
- 	default:
- 		dev_err(dev, "unknown algorithm type %d\n", t_alg->algt.type);
--		kfree(t_alg);
-+		devm_kfree(dev, t_alg);
- 		return ERR_PTR(-EINVAL);
- 	}
- 
-@@ -3169,7 +3162,7 @@ static int talitos_probe(struct platform_device *ofdev)
+@@ -3158,7 +3158,6 @@ static int talitos_probe(struct platform_device *ofdev)
+ 	struct device *dev = &ofdev->dev;
+ 	struct device_node *np = ofdev->dev.of_node;
+ 	struct talitos_private *priv;
+-	const unsigned int *prop;
  	int i, err;
  	int stride;
  
--	priv = kzalloc(sizeof(struct talitos_private), GFP_KERNEL);
-+	priv = devm_kzalloc(dev, sizeof(struct talitos_private), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
- 
-@@ -3267,8 +3260,8 @@ static int talitos_probe(struct platform_device *ofdev)
- 		}
+@@ -3182,21 +3181,11 @@ static int talitos_probe(struct platform_device *ofdev)
  	}
  
--	priv->chan = kzalloc(sizeof(struct talitos_channel) *
--			     priv->num_channels, GFP_KERNEL);
-+	priv->chan = devm_kzalloc(dev, sizeof(struct talitos_channel) *
-+				       priv->num_channels, GFP_KERNEL);
- 	if (!priv->chan) {
- 		dev_err(dev, "failed to allocate channel management space\n");
- 		err = -ENOMEM;
-@@ -3285,8 +3278,9 @@ static int talitos_probe(struct platform_device *ofdev)
- 		spin_lock_init(&priv->chan[i].head_lock);
- 		spin_lock_init(&priv->chan[i].tail_lock);
+ 	/* get SEC version capabilities from device tree */
+-	prop = of_get_property(np, "fsl,num-channels", NULL);
+-	if (prop)
+-		priv->num_channels = *prop;
+-
+-	prop = of_get_property(np, "fsl,channel-fifo-len", NULL);
+-	if (prop)
+-		priv->chfifo_len = *prop;
+-
+-	prop = of_get_property(np, "fsl,exec-units-mask", NULL);
+-	if (prop)
+-		priv->exec_units = *prop;
+-
+-	prop = of_get_property(np, "fsl,descriptor-types-mask", NULL);
+-	if (prop)
+-		priv->desc_types = *prop;
++	of_property_read_u32(np, "fsl,num-channels", &priv->num_channels);
++	of_property_read_u32(np, "fsl,channel-fifo-len", &priv->chfifo_len);
++	of_property_read_u32(np, "fsl,exec-units-mask", &priv->exec_units);
++	of_property_read_u32(np, "fsl,descriptor-types-mask",
++			     &priv->desc_types);
  
--		priv->chan[i].fifo = kzalloc(sizeof(struct talitos_request) *
--					     priv->fifo_len, GFP_KERNEL);
-+		priv->chan[i].fifo = devm_kzalloc(dev,
-+						sizeof(struct talitos_request) *
-+						priv->fifo_len, GFP_KERNEL);
- 		if (!priv->chan[i].fifo) {
- 			dev_err(dev, "failed to allocate request fifo %d\n", i);
- 			err = -ENOMEM;
-@@ -3352,7 +3346,7 @@ static int talitos_probe(struct platform_device *ofdev)
- 			if (err) {
- 				dev_err(dev, "%s alg registration failed\n",
- 					alg->cra_driver_name);
--				kfree(t_alg);
-+				devm_kfree(dev, t_alg);
- 			} else
- 				list_add_tail(&t_alg->entry, &priv->alg_list);
- 		}
+ 	if (!is_power_of_2(priv->num_channels) || !priv->chfifo_len ||
+ 	    !priv->exec_units || !priv->desc_types) {
 -- 
 2.13.3
