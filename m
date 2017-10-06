@@ -2,9 +2,9 @@ Return-Path: <jesper.nilsson@axis.com>
 Received: from bastet.se.axis.com (bastet.se.axis.com [195.60.68.11])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7hG9531YzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 18:33:53 +1100 (AEDT)
-Date: Fri, 6 Oct 2017 09:27:13 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7hNX3MXBzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 18:39:24 +1100 (AEDT)
+Date: Fri, 6 Oct 2017 09:28:27 +0200
 From: Jesper Nilsson <jesper.nilsson@axis.com>
 To: Bjorn Helgaas <helgaas@kernel.org>
 Cc: linux-pci@vger.kernel.org, linux-mips@linux-mips.org,
@@ -26,14 +26,14 @@ Cc: linux-pci@vger.kernel.org, linux-mips@linux-mips.org,
  linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
  Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 2/4] PCI: Remove redundant pci_dev, pci_bus, resource
+Subject: Re: [PATCH 1/4] PCI: Remove redundant pcibios_set_master()
  declarations
-Message-ID: <20171006072713.GP17578@axis.com>
+Message-ID: <20171006072827.GQ17578@axis.com>
 References: <20171005201939.18300.25690.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20171005203849.18300.20999.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171005203842.18300.67328.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171005203849.18300.20999.stgit@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: <20171005203842.18300.67328.stgit@bhelgaas-glaptop.roam.corp.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,34 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 05, 2017 at 03:38:49PM -0500, Bjorn Helgaas wrote:
+On Thu, Oct 05, 2017 at 03:38:42PM -0500, Bjorn Helgaas wrote:
 > From: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> <linux/pci.h> defines struct pci_bus and struct pci_dev and includes the
-> struct resource definition before including <asm/pci.h>.  Nobody includes
-> <asm/pci.h> directly, so they don't need their own declarations.
-> 
-> Remove the redundant struct pci_dev, pci_bus, resource declarations.
+> All users of pcibios_set_master() include <linux/pci.h>, which already has
+> a declaration.  Remove the unnecessary declarations from the <asm/pci.h>
+> files.
 > 
 > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > ---
->  arch/alpha/include/asm/pci.h    |    3 ---
->  arch/cris/include/asm/pci.h     |    2 --
+>  arch/alpha/include/asm/pci.h   |    2 --
+>  arch/cris/include/asm/pci.h    |    1 -
 
 For what it's worth, for the cris changes:
 
 Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
->  arch/frv/include/asm/pci.h      |    2 --
->  arch/ia64/include/asm/pci.h     |    2 --
->  arch/mips/include/asm/pci.h     |    2 --
->  arch/mn10300/include/asm/pci.h  |    2 --
->  arch/parisc/include/asm/pci.h   |    7 -------
->  arch/powerpc/include/asm/pci.h  |    2 --
->  arch/sh/include/asm/pci.h       |    2 --
->  arch/sparc/include/asm/pci_32.h |    2 --
->  arch/xtensa/include/asm/pci.h   |    2 --
->  11 files changed, 28 deletions(-)
+>  arch/frv/include/asm/pci.h     |    2 --
+>  arch/mips/include/asm/pci.h    |    2 --
+>  arch/mn10300/include/asm/pci.h |    2 --
+>  arch/parisc/include/asm/pci.h  |    1 -
+>  arch/sh/include/asm/pci.h      |    2 --
+>  arch/x86/include/asm/pci.h     |    1 -
+>  8 files changed, 13 deletions(-)
 
 /^JN - Jesper Nilsson
 -- 
