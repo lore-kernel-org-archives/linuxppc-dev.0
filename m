@@ -1,39 +1,35 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.182])
+Return-Path: <gromero@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7n5G1sLPzDqmf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 22:11:29 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Pavel Tatashin' <pasha.tatashin@oracle.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "x86@kernel.org" <x86@kernel.org>,
- "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>,
- "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
- "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- "davem@davemloft.net" <davem@davemloft.net>, "willy@infradead.org"
- <willy@infradead.org>, "mhocko@kernel.org" <mhocko@kernel.org>,
- "ard.biesheuvel@linaro.org" <ard.biesheuvel@linaro.org>,
- "mark.rutland@arm.com" <mark.rutland@arm.com>, "will.deacon@arm.com"
- <will.deacon@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "sam@ravnborg.org" <sam@ravnborg.org>, "mgorman@techsingularity.net"
- <mgorman@techsingularity.net>, "steven.sistare@oracle.com"
- <steven.sistare@oracle.com>, "daniel.m.jordan@oracle.com"
- <daniel.m.jordan@oracle.com>, "bob.picco@oracle.com" <bob.picco@oracle.com>
-Subject: RE: [PATCH v10 09/10] mm: stop zeroing memory during allocation in
- vmemmap
-Date: Fri, 6 Oct 2017 11:10:14 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD008BA85@AcuExch.aculab.com>
-References: <20171005211124.26524-1-pasha.tatashin@oracle.com>
- <20171005211124.26524-10-pasha.tatashin@oracle.com>
-In-Reply-To: <20171005211124.26524-10-pasha.tatashin@oracle.com>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7nBh5BlHzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 22:16:12 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v96BEADZ109758
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 07:16:09 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2de8as9d2f-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Oct 2017 07:16:09 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Fri, 6 Oct 2017 07:16:07 -0400
+Subject: Re: [PATCH 3/3] powerpc/tm: P9 disable transactionally suspended
+ sigcontexts
+To: Cyril Bur <cyrilbur@gmail.com>
+References: <20171006074643.25269-1-cyrilbur@gmail.com>
+ <20171006074643.25269-3-cyrilbur@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Date: Fri, 6 Oct 2017 08:16:02 -0300
 MIME-Version: 1.0
+In-Reply-To: <20171006074643.25269-3-cyrilbur@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <59D765F2.3090601@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,15 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Pavel Tatashin
-> Sent: 05 October 2017 22:11
-> vmemmap_alloc_block() will no longer zero the block, so zero memory
-> at its call sites for everything except struct pages.  Struct page memory
-> is zero'd by struct page initialization.
+Hi Cyril,
 
-It seems dangerous to change an allocator to stop zeroing memory.
-It is probably saver to add a new function that doesn't zero
-the memory and use that is the places where you don't want it
-to be zeroed.
+On 06-10-2017 04:46, Cyril Bur wrote:
+> From: Michael Neuling <mikey@neuling.org>
+> 
+> Unfortunately userspace can construct a sigcontext which enables
+> suspend. Thus userspace can force Linux into a path where trechkpt is
+> executed.
+> 
+> This patch blocks this from happening on POWER9 but sanity checking
+> sigcontexts passed in.
 
-	David
+I think "but" should say "by" as pointed out by Joel and acked by Mikey
+previously.
+
+Regards,
+Gustavo
