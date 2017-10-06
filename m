@@ -2,21 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7lpB0gywzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 21:13:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7m8M4HRwzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 21:29:07 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Santosh Sivaraj <santosh@fossix.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/vdso64: Coarse timer support preparatory patch
-In-Reply-To: <20171006090302.q4oquzdyytjkawuf@naverao1-tp.localdomain>
-References: <20170918092336.21912-1-santosh@fossix.org>
- <20171006090302.q4oquzdyytjkawuf@naverao1-tp.localdomain>
-Date: Fri, 06 Oct 2017 21:13:20 +1100
-Message-ID: <87tvzc4m9r.fsf@concordia.ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org
+Subject: Re: [PATCH 2/3] powerpc/tm: P9 disabled suspend mode workaround
+In-Reply-To: <1507277413.25065.145.camel@kernel.crashing.org>
+References: <20171006074643.25269-1-cyrilbur@gmail.com>
+ <20171006074643.25269-2-cyrilbur@gmail.com>
+ <1507277413.25065.145.camel@kernel.crashing.org>
+Date: Fri, 06 Oct 2017 21:29:06 +1100
+Message-ID: <87r2ug4ljh.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,43 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for reviewing Naveen.
-
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> On 2017/09/18 09:23AM, Santosh Sivaraj wrote:
->> diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
->> index 382021324883..a0b4943811db 100644
->> --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
->> +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
->> @@ -60,18 +60,20 @@ V_FUNCTION_END(__kernel_gettimeofday)
->>   */
->>  V_FUNCTION_BEGIN(__kernel_clock_gettime)
->>    .cfi_startproc
->> +	mr	r11,r4			/* r11 saves tp */
->> +	mflr	r12			/* r12 saves lr */
->> +	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
->> +	ori	r7,r7,NSEC_PER_SEC@l
->> +
->>  	/* Check for supported clock IDs */
->>  	cmpwi	cr0,r3,CLOCK_REALTIME
->>  	cmpwi	cr1,r3,CLOCK_MONOTONIC
->>  	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
->> -	bne	cr0,99f
->> +	beq	cr0,49f
->> 
->> -	mflr	r12			/* r12 saves lr */
->> +	b	99f		/* Fallback to syscall */
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> On Fri, 2017-10-06 at 18:46 +1100, Cyril Bur wrote:
+...
+>> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+>> index 760872916013..2cb01b48123a 100644
+>> --- a/arch/powerpc/kernel/cputable.c
+>> +++ b/arch/powerpc/kernel/cputable.c
+>> @@ -2301,6 +2302,17 @@ void __init identify_cpu_name(unsigned int pvr)
+>>  	}
+>>  }
+>>  
+>> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>> +bool tm_suspend_supported(void)
+>> +{
+>> +	if (cpu_has_feature(CPU_FTR_TM)) {
+>> +		if (pvr_version_is(PVR_POWER9) && ppc_tm_state != TM_STATE_NO_SUSPEND)
+>> +			return false;
+>> +		return true;
+>> +	}
 >
-> 'beq', followed by a 'b' looks weird without considering the next patch.  
-> I think this can be organized better to not have to update r7/r11/r12 if 
-> using the system call. See next patch for my comments.
->
->>    .cfi_register lr,r12
->
-> If you move the mflr, you should move the above line along with it.
+> Hrm... so if state is "NO SUSPEND" you return "true" ? Isn't this
+> backward ? Or I don't understand what this is about...
 
-s/should/must/.
+Yeah it's a bit confuzzled.
 
-It literally says "lr is saved in r12".
+I literally wrote it for you on a post-it Cyril! >:D
+
+tm_suspend_supported() should be called tm_no_suspend_mode(). Where "no
+suspend mode" is the new "mode" we're adding where suspend is not supported.
+
+Then tm_no_suspend_mode() should be:
+
++	if (pvr_version_is(PVR_POWER9) && ppc_tm_state == TM_STATE_NO_SUSPEND)
++			return true;
++	return false;
+  
+And then all the extra checks and warnings in patch 3 just use it like:
+
+	WARN_ON(tm_no_suspend_mode());
+
+Because they're in paths where we shouldn't get to if suspend is
+disabled.
+
+I don't think we need to check CPU_FTR_TM because it's only called from
+TM paths anyway. But we could add that to be paranoid. Or probably
+better, when TM is forced off (below) we set ppc_tm_state to off.
+
+>> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+>> index e37c26d2e54b..227ac600a1b7 100644
+>> --- a/arch/powerpc/kernel/setup_64.c
+>> +++ b/arch/powerpc/kernel/setup_64.c
+>> @@ -265,11 +267,13 @@ early_param("ppc_tm", parse_ppc_tm);
+>>  
+>>  static void check_disable_tm(void)
+>>  {
+>> -	if (cpu_has_feature(CPU_FTR_TM) && ppc_tm_state == TM_STATE_OFF) {
+>> -		printk(KERN_NOTICE "Disabling hardware transactional memory (HTM)\n");
+>> -		cur_cpu_spec->cpu_user_features2 &=
+>> -			~(PPC_FEATURE2_HTM_NOSC | PPC_FEATURE2_HTM);
+>> -		cur_cpu_spec->cpu_features &= ~CPU_FTR_TM;
+>> +	if (cpu_has_feature(CPU_FTR_TM)) {
+>> +		if (ppc_tm_state == TM_STATE_OFF || (!tm_suspend_supported())) {
+>> +			printk(KERN_NOTICE "Disabling hardware transactional memory (HTM)\n");
+>> +			cur_cpu_spec->cpu_user_features2 &=
+>> +				~(PPC_FEATURE2_HTM_NOSC | PPC_FEATURE2_HTM);
+>> +			cur_cpu_spec->cpu_features &= ~CPU_FTR_TM;
+>> +		}
+>
+> So that code translates to if TM is off or doesn't support suspend,
+> disable TM. Are we sure that's really what we meant here ?
+
+It should be:
+
++	if (!cpu_has_feature(CPU_FTR_TM))
++		return;
++
++	if (ppc_tm_state == TM_STATE_OFF || \
++	    (pvr_version_is(PVR_POWER9) && ppc_tm_state != TM_STATE_NO_SUSPEND)) {
++		printk(KERN_NOTICE "Disabling hardware transactional memory (HTM)\n");
++		cur_cpu_spec->cpu_user_features2 &= ~(PPC_FEATURE2_HTM_NOSC | PPC_FEATURE2_HTM);
++		cur_cpu_spec->cpu_features &= ~CPU_FTR_TM;
++	}
+
+And as I mentioned above perhaps we should also do:
++		ppc_tm_state = TM_STATE_OFF;
 
 cheers
