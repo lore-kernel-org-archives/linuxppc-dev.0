@@ -1,48 +1,43 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7nPd5pYmzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 22:25:41 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v96BNtei152230
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 07:25:39 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2de76gn96g-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Oct 2017 07:25:38 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 6 Oct 2017 21:25:36 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v96BPYKV42860784
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 22:25:34 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v96BPX41019473
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 22:25:34 +1100
-Date: Fri, 6 Oct 2017 16:55:28 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Santosh Sivaraj <santosh@fossix.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc/vdso64: Add support for
- CLOCK_{REALTIME/MONOTONIC}_COARSE
-References: <20170918092336.21912-1-santosh@fossix.org>
- <20170918092336.21912-2-santosh@fossix.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7ntw1NJfzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 22:47:35 +1100 (AEDT)
+Date: Fri, 6 Oct 2017 13:47:29 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: 'Pavel Tatashin' <pasha.tatashin@oracle.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>,
+ "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
+ "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "willy@infradead.org" <willy@infradead.org>,
+ "ard.biesheuvel@linaro.org" <ard.biesheuvel@linaro.org>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "will.deacon@arm.com" <will.deacon@arm.com>,
+ "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "sam@ravnborg.org" <sam@ravnborg.org>,
+ "mgorman@techsingularity.net" <mgorman@techsingularity.net>,
+ "steven.sistare@oracle.com" <steven.sistare@oracle.com>,
+ "daniel.m.jordan@oracle.com" <daniel.m.jordan@oracle.com>,
+ "bob.picco@oracle.com" <bob.picco@oracle.com>
+Subject: Re: [PATCH v10 09/10] mm: stop zeroing memory during allocation in
+ vmemmap
+Message-ID: <20171006114729.fexwklupkhyxdpt3@dhcp22.suse.cz>
+References: <20171005211124.26524-1-pasha.tatashin@oracle.com>
+ <20171005211124.26524-10-pasha.tatashin@oracle.com>
+ <063D6719AE5E284EB5DD2968C1650D6DD008BA85@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170918092336.21912-2-santosh@fossix.org>
-Message-Id: <20171006112528.zryd4l2yl2k6xk2h@naverao1-tp.localdomain>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD008BA85@AcuExch.aculab.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,139 +47,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/09/18 09:23AM, Santosh Sivaraj wrote:
-> Current vDSO64 implementation does not have support for coarse clocks
-> (CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
-> to system call, increasing the response time, vDSO implementation reduces
-> the cycle time. Below is a benchmark of the difference in execution time
-> with and without vDSO support.
+On Fri 06-10-17 11:10:14, David Laight wrote:
+> From: Pavel Tatashin
+> > Sent: 05 October 2017 22:11
+> > vmemmap_alloc_block() will no longer zero the block, so zero memory
+> > at its call sites for everything except struct pages.  Struct page memory
+> > is zero'd by struct page initialization.
 > 
-> (Non-coarse clocks are also included just for completion)
-> 
-> Without vDSO support:
-> --------------------
-> clock-gettime-realtime: syscall: 172 nsec/call
-> clock-gettime-realtime:    libc: 26 nsec/call
-> clock-gettime-realtime:    vdso: 21 nsec/call
-> clock-gettime-monotonic: syscall: 170 nsec/call
-> clock-gettime-monotonic:    libc: 30 nsec/call
-> clock-gettime-monotonic:    vdso: 24 nsec/call
-> clock-gettime-realtime-coarse: syscall: 153 nsec/call
-> clock-gettime-realtime-coarse:    libc: 15 nsec/call
-> clock-gettime-realtime-coarse:    vdso: 9 nsec/call
-> clock-gettime-monotonic-coarse: syscall: 167 nsec/call
-> clock-gettime-monotonic-coarse:    libc: 15 nsec/call
-> clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
-> 
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
-> ---
->  arch/powerpc/kernel/asm-offsets.c         |  2 ++
->  arch/powerpc/kernel/vdso64/gettimeofday.S | 56 +++++++++++++++++++++++++++++++
->  2 files changed, 58 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 8cfb20e38cfe..b55c68c54dc1 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -396,6 +396,8 @@ int main(void)
->  	/* Other bits used by the vdso */
->  	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
->  	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
-> +	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
-> +	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
->  	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
->  	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
-> 
-> diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> index a0b4943811db..bae197a81add 100644
-> --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-> +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> @@ -71,6 +71,11 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
->  	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
->  	beq	cr0,49f
-> 
-> +	cmpwi	cr0,r3,CLOCK_REALTIME_COARSE
-> +	cmpwi	cr1,r3,CLOCK_MONOTONIC_COARSE
-> +	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
-> +	beq	cr0,65f
-> +
->  	b	99f		/* Fallback to syscall */
->    .cfi_register lr,r12
->  49:	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-> @@ -112,6 +117,57 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
->  1:	bge	cr1,80f
->  	addi	r4,r4,-1
->  	add	r5,r5,r7
-> +	b	80f
-> +
-> +	/*
-> +	 * For coarse clocks we get data directly from the vdso data page, so
-> +	 * we don't need to call __do_get_tspec, but we still need to do the
-> +	 * counter trick.
-> +	 */
-> +65:	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-> +70:	ld	r8,CFG_TB_UPDATE_COUNT(r3)
-> +	andi.	r0,r8,1			/* pending update ? loop */
-> +	bne-	70b
-> +	xor	r0,r8,r8		/* create dependency */
-> +	add	r3,r3,r0
-> +
-> +	/*
-> +	 * CLOCK_REALTIME_COARSE, below values are needed for MONOTONIC_COARSE
-> +	 * too
-> +	 */
-> +	ld	r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
-> +	ld	r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
-> +	bne	cr1,78f
-> +
-> +	/* CLOCK_MONOTONIC_COARSE */
-> +	lwa	r6,WTOM_CLOCK_SEC(r3)
-> +	lwa	r9,WTOM_CLOCK_NSEC(r3)
-> +
-> +	/* check if counter has updated */
-> +78:	or	r0,r6,r9
-> +	xor	r0,r0,r0
-> +	add	r3,r3,r0
-> +	ld	r0,CFG_TB_UPDATE_COUNT(r3)
-> +	cmpld	cr0,r0,r8		/* check if updated */
-> +	bne-	70b
+> It seems dangerous to change an allocator to stop zeroing memory.
+> It is probably saver to add a new function that doesn't zero
+> the memory and use that is the places where you don't want it
+> to be zeroed.
 
-Don't you need a dependency on r4/r5 here for REALTIME_COARSE?
-Something like:
-
-	/* check if counter has updated */
-	or	r0,r6,r9
-78:	or	r0,r4,r5
-	xor	r0,r0,r0
-
-> +
-> +	/* Counter has not updated, so continue calculating proper values for
-> +	 * sec and nsec if monotonic coarse, or just return with the proper
-> +	 * values for realtime.
-> +	 */
-> +	bne	cr1,80f
-> +
-
-I think the below hunk can surely be shared across the _COARSE and 
-regular clocks, if not more.
-
-- Naveen
-
-> +	/* Add wall->monotonic offset and check for overflow or underflow */
-> +	add	r4,r4,r6
-> +	add	r5,r5,r9
-> +	cmpd	cr0,r5,r7
-> +	cmpdi	cr1,r5,0
-> +	blt	79f
-> +	subf	r5,r7,r5
-> +	addi	r4,r4,1
-> +79:	bge	cr1,80f
-> +	addi	r4,r4,-1
-> +	add	r5,r5,r7
-> 
->  80:	std	r4,TSPC64_TV_SEC(r11)
->  	std	r5,TSPC64_TV_NSEC(r11)
-> -- 
-> 2.13.5
-> 
+Not sure what you mean. memblock_virt_alloc_try_nid_raw is a new
+function which doesn't zero out...
+-- 
+Michal Hocko
+SUSE Labs
