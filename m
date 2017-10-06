@@ -1,40 +1,20 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7hYQ5PGhzDql4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 18:47:06 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v967i25W118501
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 03:47:04 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2de4r9jyd5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Oct 2017 03:47:04 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 6 Oct 2017 17:47:01 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v967kwc645482028
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 18:46:58 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v967l1dv017931
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Oct 2017 18:47:01 +1100
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, mikey@neuling.org
-Subject: [PATCH 3/3] powerpc/tm: P9 disable transactionally suspended
- sigcontexts
-Date: Fri,  6 Oct 2017 18:46:43 +1100
-In-Reply-To: <20171006074643.25269-1-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7j4H6K4vzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 19:10:23 +1100 (AEDT)
+Message-ID: <1507277413.25065.145.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] powerpc/tm: P9 disabled suspend mode workaround
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org
+Date: Fri, 06 Oct 2017 10:10:13 +0200
+In-Reply-To: <20171006074643.25269-2-cyrilbur@gmail.com>
 References: <20171006074643.25269-1-cyrilbur@gmail.com>
-Message-Id: <20171006074643.25269-3-cyrilbur@gmail.com>
+ <20171006074643.25269-2-cyrilbur@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,92 +24,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+On Fri, 2017-10-06 at 18:46 +1100, Cyril Bur wrote:
+> [from Michael Neulings original patch]
+> Each POWER9 core is made of two super slices. Each super slice can
+> only have one thread at a time in TM suspend mode. The super slice
+> restricts ever entering a state where both threads are in suspend by
+> aborting transactions on tsuspend or exceptions into the kernel.
+> 
+> Unfortunately for context switch we need trechkpt which forces suspend
+> mode. If a thread is already in suspend and a second thread needs to
+> be restored that was suspended, the trechkpt must be executed.
+> Currently the trechkpt will hang in this case until the other thread
+> exits suspend. This causes problems for Linux resulting in hang and
+> RCU stall detectors going off.
+> 
+> To workaround this, we disable suspend in the core. This is done via a
+> firmware change which stops the hardware ever getting into suspend.
+> The hardware will always rollback a transaction on any tsuspend or
+> entry into the kernel.
+> 
+> [added by Cyril Bur]
+> As the no-suspend firmware change is novel and untested using it should
+> be opt in by users. Furthumore, currently the kernel has no method to
+> know if the firmware has applied the no-suspend workaround. This patch
+> extends the ppc_tm commandline option to allow users to opt-in if they
+> are sure that their firmware has been updated and they understand the
+> risks involed.
 
-Unfortunately userspace can construct a sigcontext which enables
-suspend. Thus userspace can force Linux into a path where trechkpt is
-executed.
+Is this what the patch actually does ? ...
 
-This patch blocks this from happening on POWER9 but sanity checking
-sigcontexts passed in.
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> ---
+>  Documentation/admin-guide/kernel-parameters.txt |  7 +++++--
+>  arch/powerpc/include/asm/cputable.h             |  6 ++++++
+>  arch/powerpc/include/asm/tm.h                   |  6 ++++--
+>  arch/powerpc/kernel/cputable.c                  | 12 ++++++++++++
+>  arch/powerpc/kernel/setup_64.c                  | 16 ++++++++++------
+>  5 files changed, 37 insertions(+), 10 deletions(-)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 4e2b5d9078a0..a0f757f749cf 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -805,8 +805,11 @@
+>  			Disable RADIX MMU mode on POWER9
+>  
+>  	ppc_tm=		[PPC]
+> -			Format: {"off"}
+> -			Disable Hardware Transactional Memory
+> +			Format: {"off" | "no-suspend"}
+> +			"Off" Will disable Hardware Transactional Memory.
+> +			"no-suspend" Informs the kernel that the
+> +			hardware will not transition into the kernel
+> +			with a suspended transaction.
+>  
+>  	disable_cpu_apicid= [X86,APIC,SMP]
+>  			Format: <int>
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index a9bf921f4efc..e66101830af2 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -124,6 +124,12 @@ extern void identify_cpu_name(unsigned int pvr);
+>  extern void do_feature_fixups(unsigned long value, void *fixup_start,
+>  			      void *fixup_end);
+>  
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +extern bool tm_suspend_supported(void);
+> +#else
+> +static inline bool tm_suspend_supported(void) { return false; }
+> +#endif
+> +
+>  extern const char *powerpc_base_platform;
+>  
+>  #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
+> diff --git a/arch/powerpc/include/asm/tm.h b/arch/powerpc/include/asm/tm.h
+> index eca1c866ca97..1fd0b5f72861 100644
+> --- a/arch/powerpc/include/asm/tm.h
+> +++ b/arch/powerpc/include/asm/tm.h
+> @@ -9,9 +9,11 @@
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> -#define TM_STATE_ON	0
+> -#define TM_STATE_OFF	1
+> +#define TM_STATE_ON		0
+> +#define TM_STATE_OFF		1
+> +#define TM_STATE_NO_SUSPEND	2
+>  
+> +extern int ppc_tm_state;
+>  extern void tm_enable(void);
+>  extern void tm_reclaim(struct thread_struct *thread,
+>  		       unsigned long orig_msr, uint8_t cause);
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> index 760872916013..2cb01b48123a 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -22,6 +22,7 @@
+>  #include <asm/prom.h>		/* for PTRRELOC on ARCH=ppc */
+>  #include <asm/mmu.h>
+>  #include <asm/setup.h>
+> +#include <asm/tm.h>
+>  
+>  static struct cpu_spec the_cpu_spec __read_mostly;
+>  
+> @@ -2301,6 +2302,17 @@ void __init identify_cpu_name(unsigned int pvr)
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +bool tm_suspend_supported(void)
+> +{
+> +	if (cpu_has_feature(CPU_FTR_TM)) {
+> +		if (pvr_version_is(PVR_POWER9) && ppc_tm_state != TM_STATE_NO_SUSPEND)
+> +			return false;
+> +		return true;
+> +	}
 
-ptrace doesn't have this problem as only MSR SE and BE can be changed
-via ptrace.
+Hrm... so if state is "NO SUSPEND" you return "true" ? Isn't this
+backward ? Or I don't understand what this is about...
 
-This patch also adds a number of WARN_ON() in case we every enter
-suspend when we shouldn't. This should catch systems that don't have
-the firmware change and are running TM.
+> +	return false;
+> +}
+> +#endif
+>  
+>  #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
+>  struct static_key_true cpu_feature_keys[NUM_CPU_FTR_KEYS] = {
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index e37c26d2e54b..227ac600a1b7 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -251,12 +251,14 @@ static void cpu_ready_for_interrupts(void)
+>  	get_paca()->kernel_msr = MSR_KERNEL;
+>  }
+>  
+> +int ppc_tm_state;
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> -static int ppc_tm_state;
+>  static int __init parse_ppc_tm(char *p)
+>  {
+>  	if (strcmp(p, "off") == 0)
+>  		ppc_tm_state = TM_STATE_OFF;
+> +	else if (strcmp(p, "no-suspend") == 0)
+> +		ppc_tm_state = TM_STATE_NO_SUSPEND;
+>  	else
+>  		printk(KERN_NOTICE "Unknown value to cmdline ppc_tm '%s'\n", p);
+>  	return 0;
+> @@ -265,11 +267,13 @@ early_param("ppc_tm", parse_ppc_tm);
+>  
+>  static void check_disable_tm(void)
+>  {
+> -	if (cpu_has_feature(CPU_FTR_TM) && ppc_tm_state == TM_STATE_OFF) {
+> -		printk(KERN_NOTICE "Disabling hardware transactional memory (HTM)\n");
+> -		cur_cpu_spec->cpu_user_features2 &=
+> -			~(PPC_FEATURE2_HTM_NOSC | PPC_FEATURE2_HTM);
+> -		cur_cpu_spec->cpu_features &= ~CPU_FTR_TM;
+> +	if (cpu_has_feature(CPU_FTR_TM)) {
+> +		if (ppc_tm_state == TM_STATE_OFF || (!tm_suspend_supported())) {
+> +			printk(KERN_NOTICE "Disabling hardware transactional memory (HTM)\n");
+> +			cur_cpu_spec->cpu_user_features2 &=
+> +				~(PPC_FEATURE2_HTM_NOSC | PPC_FEATURE2_HTM);
+> +			cur_cpu_spec->cpu_features &= ~CPU_FTR_TM;
+> +		}
 
-A future firmware change will allow suspend mode on POWER9 but that is
-going to require additional Linux changes to support. In the interim,
-this allows TM to continue to (partially) work while stopping
-userspace from crashing Linux.
+So that code translates to if TM is off or doesn't support suspend,
+disable TM. Are we sure that's really what we meant here ?
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- arch/powerpc/kernel/process.c   | 2 ++
- arch/powerpc/kernel/signal_32.c | 4 ++++
- arch/powerpc/kernel/signal_64.c | 5 +++++
- 3 files changed, 11 insertions(+)
+I suspect this makes more sense if that function was called
+tm_supported() ...
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a0c74bbf3454..5b81673c5026 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -903,6 +903,8 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
- 	if (!MSR_TM_ACTIVE(thr->regs->msr))
- 		goto out_and_saveregs;
- 
-+	WARN_ON(!tm_suspend_supported());
-+
- 	TM_DEBUG("--- tm_reclaim on pid %d (NIP=%lx, "
- 		 "ccr=%lx, msr=%lx, trap=%lx)\n",
- 		 tsk->pid, thr->regs->nip,
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 92fb1c8dbbd8..9eac0131c080 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -519,6 +519,8 @@ static int save_tm_user_regs(struct pt_regs *regs,
- {
- 	unsigned long msr = regs->msr;
- 
-+	WARN_ON(!tm_suspend_supported());
-+
- 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
- 	 * just indicates to userland that we were doing a transaction, but we
- 	 * don't want to return in transactional state.  This also ensures
-@@ -769,6 +771,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 	int i;
- #endif
- 
-+	if (!tm_suspend_supported())
-+		return 1;
- 	/*
- 	 * restore general registers but not including MSR or SOFTE. Also
- 	 * take care of keeping r2 (TLS) intact if not a signal.
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index c83c115858c1..6d28caf8496f 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -214,6 +214,8 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
- 
- 	BUG_ON(!MSR_TM_ACTIVE(regs->msr));
- 
-+	WARN_ON(!tm_suspend_supported());
-+
- 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
- 	 * just indicates to userland that we were doing a transaction, but we
- 	 * don't want to return in transactional state.  This also ensures
-@@ -430,6 +432,9 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
- 
- 	BUG_ON(tsk != current);
- 
-+	if (!tm_suspend_supported())
-+		return -EINVAL;
-+
- 	/* copy the GPRs */
- 	err |= __copy_from_user(regs->gpr, tm_sc->gp_regs, sizeof(regs->gpr));
- 	err |= __copy_from_user(&tsk->thread.ckpt_regs, sc->gp_regs,
--- 
-2.14.2
+>  	}
+>  }
+>  #else
