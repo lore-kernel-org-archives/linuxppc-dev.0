@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7qbp6RnczDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 00:04:38 +1100 (AEDT)
-Message-Id: <1f771ee650fa46493b987b6892d9a61e97eb1d11.1507284818.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7qbz2WVnzDqmX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 00:04:47 +1100 (AEDT)
+Message-Id: <16521c1a371ace21d7829c21aaef03c547959905.1507284818.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1507284818.git.christophe.leroy@c-s.fr>
 References: <cover.1507284818.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 02/18] crypto: talitos - fix memory corruption on SEC2
+Subject: [PATCH 06/18] crypto: talitos - fix ctr-aes-talitos
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Fri,  6 Oct 2017 15:04:35 +0200 (CEST)
+Date: Fri,  6 Oct 2017 15:04:43 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,175 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On SEC2, when using the old descriptors type (hmac snoop no afeu)
-for doing IPsec, the CICV out pointeur points out of the allocated
-memory.
+ctr-aes-talitos test fails as follows on SEC2
 
-[    2.502554] =============================================================================
-[    2.510740] BUG dma-kmalloc-256 (Not tainted): Redzone overwritten
-[    2.516907] -----------------------------------------------------------------------------
-[    2.516907]
-[    2.526535] Disabling lock debugging due to kernel taint
-[    2.531845] INFO: 0xde858108-0xde85810b. First byte 0xf8 instead of 0xcc
-[    2.538549] INFO: Allocated in 0x806181a9 age=0 cpu=0 pid=58
-[    2.544229] 	__kmalloc+0x374/0x564
-[    2.547649] 	talitos_edesc_alloc+0x17c/0x48c
-[    2.551929] 	aead_edesc_alloc+0x80/0x154
-[    2.555863] 	aead_encrypt+0x30/0xe0
-[    2.559368] 	__test_aead+0x5a0/0x1f3c
-[    2.563042] 	test_aead+0x2c/0x110
-[    2.566371] 	alg_test_aead+0x5c/0xf4
-[    2.569958] 	alg_test+0x1dc/0x5a0
-[    2.573305] 	cryptomgr_test+0x50/0x70
-[    2.576984] 	kthread+0xd8/0x134
-[    2.580155] 	ret_from_kernel_thread+0x5c/0x64
-[    2.584534] INFO: Freed in ipsec_esp_encrypt_done+0x130/0x240 age=6 cpu=0 pid=0
-[    2.591839] 	ipsec_esp_encrypt_done+0x130/0x240
-[    2.596395] 	flush_channel+0x1dc/0x488
-[    2.600161] 	talitos2_done_4ch+0x30/0x200
-[    2.604185] 	tasklet_action+0xa0/0x13c
-[    2.607948] 	__do_softirq+0x148/0x6cc
-[    2.611623] 	irq_exit+0xc0/0x124
-[    2.614869] 	call_do_irq+0x24/0x3c
-[    2.618292] 	do_IRQ+0x78/0x108
-[    2.621369] 	ret_from_except+0x0/0x14
-[    2.625055] 	finish_task_switch+0x58/0x350
-[    2.629165] 	schedule+0x80/0x134
-[    2.632409] 	schedule_preempt_disabled+0x38/0xc8
-[    2.637042] 	cpu_startup_entry+0xe4/0x190
-[    2.641074] 	start_kernel+0x3f4/0x408
-[    2.644741] 	0x3438
-[    2.646857] INFO: Slab 0xdffbdb00 objects=9 used=1 fp=0xde8581c0 flags=0x0080
-[    2.653978] INFO: Object 0xde858008 @offset=8 fp=0xca4395df
-[    2.653978]
-[    2.661032] Redzone de858000: cc cc cc cc cc cc cc cc                          ........
-[    2.669029] Object de858008: 00 00 00 02 00 00 00 02 00 6b 6b 6b 1e 83 ea 28  .........kkk...(
-[    2.677628] Object de858018: 00 00 00 70 1e 85 80 64 ff 73 1d 21 6b 6b 6b 6b  ...p...d.s.!kkkk
-[    2.686228] Object de858028: 00 20 00 00 1e 84 17 24 00 10 00 00 1e 85 70 00  . .....$......p.
-[    2.694829] Object de858038: 00 18 00 00 1e 84 17 44 00 08 00 00 1e 83 ea 28  .......D.......(
-[    2.703430] Object de858048: 00 80 00 00 1e 84 f0 00 00 80 00 00 1e 85 70 10  ..............p.
-[    2.712030] Object de858058: 00 20 6b 00 1e 85 80 f4 6b 6b 6b 6b 00 80 02 00  . k.....kkkk....
-[    2.720629] Object de858068: 1e 84 f0 00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  ....kkkkkkkkkkkk
-[    2.729230] Object de858078: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
-[    2.737830] Object de858088: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
-[    2.746429] Object de858098: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
-[    2.755029] Object de8580a8: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
-[    2.763628] Object de8580b8: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
-[    2.772229] Object de8580c8: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
-[    2.780829] Object de8580d8: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
-[    2.789430] Object de8580e8: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 73 b0 ea 9f  kkkkkkkkkkkks...
-[    2.798030] Object de8580f8: e8 18 80 d6 56 38 44 c0 db e3 4f 71 f7 ce d1 d3  ....V8D...Oq....
-[    2.806629] Redzone de858108: f8 bd 3e 4f                                      ..>O
-[    2.814279] Padding de8581b0: 5a 5a 5a 5a 5a 5a 5a 5a                          ZZZZZZZZ
-[    2.822283] CPU: 0 PID: 0 Comm: swapper Tainted: G    B           4.9.50-g995be12679 #179
-[    2.831819] Call Trace:
-[    2.834301] [dffefd20] [c01aa9a8] check_bytes_and_report+0x100/0x194 (unreliable)
-[    2.841801] [dffefd50] [c01aac3c] check_object+0x200/0x530
-[    2.847306] [dffefd80] [c01ae584] free_debug_processing+0x290/0x690
-[    2.853585] [dffefde0] [c01aec8c] __slab_free+0x308/0x628
-[    2.859000] [dffefe80] [c05057f4] ipsec_esp_encrypt_done+0x130/0x240
-[    2.865378] [dffefeb0] [c05002c4] flush_channel+0x1dc/0x488
-[    2.870968] [dffeff10] [c05007a8] talitos2_done_4ch+0x30/0x200
-[    2.876814] [dffeff30] [c002fe38] tasklet_action+0xa0/0x13c
-[    2.882399] [dffeff60] [c002f118] __do_softirq+0x148/0x6cc
-[    2.887896] [dffeffd0] [c002f954] irq_exit+0xc0/0x124
-[    2.892968] [dffefff0] [c0013adc] call_do_irq+0x24/0x3c
-[    2.898213] [c0d4be00] [c000757c] do_IRQ+0x78/0x108
-[    2.903113] [c0d4be30] [c0015c08] ret_from_except+0x0/0x14
-[    2.908634] --- interrupt: 501 at finish_task_switch+0x70/0x350
-[    2.908634]     LR = finish_task_switch+0x58/0x350
-[    2.919327] [c0d4bf20] [c085e1d4] schedule+0x80/0x134
-[    2.924398] [c0d4bf50] [c085e2c0] schedule_preempt_disabled+0x38/0xc8
-[    2.930853] [c0d4bf60] [c007f064] cpu_startup_entry+0xe4/0x190
-[    2.936707] [c0d4bfb0] [c096c434] start_kernel+0x3f4/0x408
-[    2.942198] [c0d4bff0] [00003438] 0x3438
-[    2.946137] FIX dma-kmalloc-256: Restoring 0xde858108-0xde85810b=0xcc
-[    2.946137]
-[    2.954158] FIX dma-kmalloc-256: Object at 0xde858008 not freed
+[    0.837427] alg: skcipher: Test 1 failed (invalid result) on encryption for ctr-aes-talitos
+[    0.845763] 00000000: 16 36 d5 ee 34 f8 06 25 d7 7f 8e 56 ca 88 43 45
+[    0.852345] 00000010: f9 3f f7 17 2a b2 12 23 30 43 09 15 82 dd e1 97
+[    0.858940] 00000020: a7 f7 32 b5 eb 25 06 13 9a ec f5 29 25 f8 4d 66
+[    0.865366] 00000030: b0 03 5b 8e aa 9a 42 b6 19 33 8a e2 9d 65 96 95
 
-This patch reworks the handling of the CICV out in order
-to properly handle all cases.
+This patch fixes the descriptor type which is special for CTR AES
 
+Fixes: 5e75ae1b3cef6 ("crypto: talitos - add new crypto modes")
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/crypto/talitos.c | 42 ++++++++++++++++++++++++++++--------------
- 1 file changed, 28 insertions(+), 14 deletions(-)
+ drivers/crypto/talitos.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index cd8a37e60259..1e799886c57d 100644
+index cf5c9701b898..a19b5d0300a9 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -1247,14 +1247,15 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
- 			dma_map_sg(dev, areq->dst, sg_count, DMA_FROM_DEVICE);
- 	}
- 
--	sg_count = talitos_sg_map(dev, areq->dst, cryptlen, edesc,
--				  &desc->ptr[5], sg_count, areq->assoclen,
--				  tbl_off);
-+	ret = talitos_sg_map(dev, areq->dst, cryptlen, edesc, &desc->ptr[5],
-+			     sg_count, areq->assoclen, tbl_off);
- 
- 	if (desc->hdr & DESC_HDR_TYPE_IPSEC_ESP)
- 		to_talitos_ptr_ext_or(&desc->ptr[5], authsize, is_sec1);
- 
--	if (sg_count > 1) {
-+	/* ICV data */
-+	if (ret > 1) {
-+		tbl_off += ret;
- 		edesc->icv_ool = true;
- 		sync_needed = true;
- 
-@@ -1264,9 +1265,7 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
- 				     sizeof(struct talitos_ptr) + authsize;
- 
- 			/* Add an entry to the link table for ICV data */
--			tbl_ptr += sg_count - 1;
--			to_talitos_ptr_ext_set(tbl_ptr, 0, is_sec1);
--			tbl_ptr++;
-+			to_talitos_ptr_ext_set(tbl_ptr - 1, 0, is_sec1);
- 			to_talitos_ptr_ext_set(tbl_ptr, DESC_PTR_LNKTBL_RETURN,
- 					       is_sec1);
- 			to_talitos_ptr_len(tbl_ptr, authsize, is_sec1);
-@@ -1274,18 +1273,33 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
- 			/* icv data follows link tables */
- 			to_talitos_ptr(tbl_ptr, edesc->dma_link_tbl + offset,
- 				       is_sec1);
-+		} else {
-+			dma_addr_t addr = edesc->dma_link_tbl;
-+
-+			if (is_sec1)
-+				addr += areq->assoclen + cryptlen;
-+			else
-+				addr += sizeof(struct talitos_ptr) * tbl_off;
-+
-+			to_talitos_ptr(&desc->ptr[6], addr, is_sec1);
-+			to_talitos_ptr_len(&desc->ptr[6], authsize, is_sec1);
-+		}
-+	} else if (!(desc->hdr & DESC_HDR_TYPE_IPSEC_ESP)) {
-+		ret = talitos_sg_map(dev, areq->dst, authsize, edesc,
-+				     &desc->ptr[6], sg_count, areq->assoclen +
-+							      cryptlen,
-+				     tbl_off);
-+		if (ret > 1) {
-+			tbl_off += ret;
-+			edesc->icv_ool = true;
-+			sync_needed = true;
-+		} else {
-+			edesc->icv_ool = false;
- 		}
- 	} else {
- 		edesc->icv_ool = false;
- 	}
- 
--	/* ICV data */
--	if (!(desc->hdr & DESC_HDR_TYPE_IPSEC_ESP)) {
--		to_talitos_ptr_len(&desc->ptr[6], authsize, is_sec1);
--		to_talitos_ptr(&desc->ptr[6], edesc->dma_link_tbl +
--			       areq->assoclen + cryptlen, is_sec1);
--	}
--
- 	/* iv out */
- 	if (desc->hdr & DESC_HDR_TYPE_IPSEC_ESP)
- 		map_single_talitos_ptr(dev, &desc->ptr[6], ivsize, ctx->iv,
+@@ -2635,7 +2635,7 @@ static struct talitos_alg_template driver_algs[] = {
+ 				.ivsize = AES_BLOCK_SIZE,
+ 			}
+ 		},
+-		.desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
++		.desc_hdr_template = DESC_HDR_TYPE_AESU_CTR_NONSNOOP |
+ 				     DESC_HDR_SEL0_AESU |
+ 				     DESC_HDR_MODE0_AESU_CTR,
+ 	},
 -- 
 2.13.3
