@@ -2,16 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7qbm4pqbzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 00:04:35 +1100 (AEDT)
-Message-Id: <cover.1507284818.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y7qbn0qVXzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 00:04:37 +1100 (AEDT)
+Message-Id: <59a8a60ff7541b7dec8098546fce96a4002c1652.1507284818.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1507284818.git.christophe.leroy@c-s.fr>
+References: <cover.1507284818.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 00/18] crypto: talitos - fixes and performance improvement
+Subject: [PATCH 01/18] crypto: talitos - fix AEAD test failures
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Fri,  6 Oct 2017 15:04:31 +0200 (CEST)
+Date: Fri,  6 Oct 2017 15:04:33 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,40 +23,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This serie fixes and improves the talitos crypto driver.
+AEAD tests fail when destination SG list has more than 1 element.
 
-First 6 patchs are fixes of failures reported by the new tests in the
-kernel crypto test manager.
+[    2.058752] alg: aead: Test 1 failed on encryption for authenc-hmac-sha1-cbc-aes-talitos
+[    2.066965] 00000000: 53 69 6e 67 6c 65 20 62 6c 6f 63 6b 20 6d 73 67
+00000010: c0 43 ff 74 c0 43 ff e0 de 83 d1 20 de 84 8e 54
+00000020: de 83 d7 c4
+[    2.082138] alg: aead: Test 1 failed on encryption for authenc-hmac-sha1-cbc-aes-talitos
+[    2.090435] 00000000: 53 69 6e 67 6c 65 20 62 6c 6f 63 6b 20 6d 73 67
+00000010: de 84 ea 58 c0 93 1a 24 de 84 e8 59 de 84 f1 20
+00000020: 00 00 00 00
+[    2.105721] alg: aead: Test 1 failed on encryption for authenc-hmac-sha1-cbc-3des-talitos
+[    2.114259] 00000000: 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72 73 74
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+00000030: 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63
+00000040: 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65
+00000050: 65 72 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53
+00000060: 72 63 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20
+00000070: 63 65 65 72 73 74 54 20 6f 6f 4d 20 6e 61 0a 79
+00000080: c0 50 f1 ac c0 50 f3 38 c0 50 f3 94 c0 50 f5 30
+00000090: c0 99 74 3c
+[    2.166410] alg: aead: Test 1 failed on encryption for authenc-hmac-sha1-cbc-3des-talitos
+[    2.174794] 00000000: 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72 73 74
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+00000030: 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63
+00000040: 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65
+00000050: 65 72 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53
+00000060: 72 63 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20
+00000070: 63 65 65 72 73 74 54 20 6f 6f 4d 20 6e 61 0a 79
+00000080: c0 50 f1 ac c0 50 f3 38 c0 50 f3 94 c0 50 f5 30
+00000090: c0 99 74 3c
+[    2.226486] alg: No test for authenc(hmac(sha224),cbc(aes)) (authenc-hmac-sha224-cbc-aes-talitos)
+[    2.236459] alg: No test for authenc(hmac(sha224),cbc(aes)) (authenc-hmac-sha224-cbc-aes-talitos)
+[    2.247196] alg: aead: Test 1 failed on encryption for authenc-hmac-sha224-cbc-3des-talitos
+[    2.255555] 00000000: 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72 73 74
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+00000030: 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63
+00000040: 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65
+00000050: 65 72 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53
+00000060: 72 63 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20
+00000070: 63 65 65 72 73 74 54 20 6f 6f 4d 20 6e 61 0a 79
+00000080: c0 50 f1 ac c0 50 f3 38 c0 50 f3 94 c0 50 f5 30
+00000090: c0 99 74 3c c0 96 e5 b8
+[    2.309004] alg: aead: Test 1 failed on encryption for authenc-hmac-sha224-cbc-3des-talitos
+[    2.317562] 00000000: 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72 73 74
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+00000030: 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63
+00000040: 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65
+00000050: 65 72 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53
+00000060: 72 63 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20
+00000070: 63 65 65 72 73 74 54 20 6f 6f 4d 20 6e 61 0a 79
+00000080: c0 50 f1 ac c0 50 f3 38 c0 50 f3 94 c0 50 f5 30
+00000090: c0 99 74 3c c0 96 e5 b8
+[    2.370710] alg: aead: Test 1 failed on encryption for authenc-hmac-sha256-cbc-aes-talitos
+[    2.379177] 00000000: 53 69 6e 67 6c 65 20 62 6c 6f 63 6b 20 6d 73 67
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+[    2.397863] alg: aead: Test 1 failed on encryption for authenc-hmac-sha256-cbc-aes-talitos
+[    2.406134] 00000000: 53 69 6e 67 6c 65 20 62 6c 6f 63 6b 20 6d 73 67
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+[    2.424789] alg: aead: Test 1 failed on encryption for authenc-hmac-sha256-cbc-3des-talitos
+[    2.433491] 00000000: 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72 73 74
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+00000030: 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63
+00000040: 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65
+00000050: 65 72 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53
+00000060: 72 63 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20
+00000070: 63 65 65 72 73 74 54 20 6f 6f 4d 20 6e 61 0a 79
+00000080: c0 50 f1 ac c0 50 f3 38 c0 50 f3 94 c0 50 f5 30
+00000090: c0 99 74 3c c0 96 e5 b8 c0 96 e9 20 c0 00 3d dc
+[    2.488832] alg: aead: Test 1 failed on encryption for authenc-hmac-sha256-cbc-3des-talitos
+[    2.497387] 00000000: 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72 73 74
+00000010: 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63 74 65
+00000020: 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65 65 72
+00000030: 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53 72 63
+00000040: 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20 63 65
+00000050: 65 72 73 74 54 20 6f 6f 4d 20 6e 61 20 79 65 53
+00000060: 72 63 74 65 20 73 6f 54 20 6f 61 4d 79 6e 53 20
+00000070: 63 65 65 72 73 74 54 20 6f 6f 4d 20 6e 61 0a 79
+00000080: c0 50 f1 ac c0 50 f3 38 c0 50 f3 94 c0 50 f5 30
+00000090: c0 99 74 3c c0 96 e5 b8 c0 96 e9 20 c0 00 3d dc
 
-The 8 following patches are cleanups and simplifications.
+This patch fixes that.
 
-The last 4 ones are performance improvement. The main improvement is
-in the one before the last, it divides by 2 the time needed for a md5
-hash on the SEC1.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/crypto/talitos.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-Christophe Leroy (18):
-  crypto: talitos - fix AEAD test failures
-  crypto: talitos - fix memory corruption on SEC2
-  crypto: talitos - fix setkey to check key weakness
-  crypto: talitos - fix AEAD for sha224 on non sha224 capable chips
-  crypto: talitos - fix use of sg_link_tbl_len
-  crypto: talitos - fix ctr-aes-talitos
-  crypto: talitos - zeroize the descriptor with memset()
-  crypto: talitos - declare local functions static
-  crypto: talitos - use devm_kmalloc()
-  crypto: talitos - use of_property_read_u32()
-  crypto: talitos - use devm_ioremap()
-  crypto: talitos - don't check the number of channels at each interrupt
-  crypto: talitos - remove to_talitos_ptr_len()
-  crypto: talitos - simplify tests in ipsec_esp()
-  crypto: talitos - DMA map key in setkey()
-  crypto: talitos - do hw_context DMA mapping outside the requests
-  crypto: talitos - chain in buffered data for ahash on SEC1
-  crypto: talitos - avoid useless copy
-
- drivers/crypto/talitos.c | 544 ++++++++++++++++++++++++++++++-----------------
- drivers/crypto/talitos.h |   7 +-
- 2 files changed, 356 insertions(+), 195 deletions(-)
-
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index dff88838dce7..cd8a37e60259 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -1232,12 +1232,11 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
+ 			sg_link_tbl_len += authsize;
+ 	}
+ 
+-	sg_count = talitos_sg_map(dev, areq->src, cryptlen, edesc,
+-				  &desc->ptr[4], sg_count, areq->assoclen,
+-				  tbl_off);
++	ret = talitos_sg_map(dev, areq->src, cryptlen, edesc, &desc->ptr[4],
++			     sg_count, areq->assoclen, tbl_off);
+ 
+-	if (sg_count > 1) {
+-		tbl_off += sg_count;
++	if (ret > 1) {
++		tbl_off += ret;
+ 		sync_needed = true;
+ 	}
+ 
 -- 
 2.13.3
