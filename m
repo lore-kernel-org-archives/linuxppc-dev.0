@@ -2,40 +2,40 @@ Return-Path: <srs0=cc4y=bg=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y89Rc4JkJzDqn0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y89Rc5t3LzDqnQ
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:44 +1100 (AEDT)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89Rb63t6z8vjD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:43 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89Rc4CLTz8vDD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:44 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3y89RZ0W0cz9t7N
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:41 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v972SOvR014195
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:40 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dekp4mgeb-1
+ by ozlabs.org (Postfix) with ESMTPS id 3y89Rb1gDDz9t73
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:43 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v972RLAn025134
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:41 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dek7t59xd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:40 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 6 Oct 2017 20:28:39 -0600
+ Fri, 6 Oct 2017 20:28:40 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 07/18] powerpc/vas: Save configured window credits
-Date: Fri,  6 Oct 2017 19:28:07 -0700
+Subject: [PATCH v2 08/18] powerpc/vas: poll for return of window credits
+Date: Fri,  6 Oct 2017 19:28:08 -0700
 In-Reply-To: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1507343298-27496-8-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1507343298-27496-9-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,64 +45,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Save the configured max window credits for a window in the vas_window
-structure. We will need this when polling for return of window credits.
+Normally, the NX driver waits for the CRBs to be processed before closing
+the window. But it is better to ensure that the credits are returned before
+the window gets reassigned later.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/vas-window.c | 6 ++++--
- arch/powerpc/platforms/powernv/vas.h        | 1 +
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/vas-window.c | 45 +++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
 diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index 1422cdd..a59a187 100644
+index a59a187..23c13a7 100644
 --- a/arch/powerpc/platforms/powernv/vas-window.c
 +++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -674,7 +674,7 @@ static void init_winctx_for_rxwin(struct vas_window *rxwin,
+@@ -1063,6 +1063,49 @@ int vas_paste_crb(struct vas_window *txwin, int offset, bool re)
+ EXPORT_SYMBOL_GPL(vas_paste_crb);
  
- 	winctx->rx_fifo = rxattr->rx_fifo;
- 	winctx->rx_fifo_size = rxattr->rx_fifo_size;
--	winctx->wcreds_max = rxattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
-+	winctx->wcreds_max = rxwin->wcreds_max;
- 	winctx->pin_win = rxattr->pin_win;
+ /*
++ * If credit checking is enabled for this window, poll for the return
++ * of window credits (i.e for NX engines to process any outstanding CRBs).
++ * Since NX-842 waits for the CRBs to be processed before closing the
++ * window, we should not have to wait for too long.
++ *
++ * TODO: We retry in 10ms intervals now. We could/should probably peek at
++ *	the VAS_LRFIFO_PUSH_OFFSET register to get an estimate of pending
++ *	CRBs on the FIFO and compute the delay dynamically on each retry.
++ *	But that is not really needed until we support NX-GZIP access from
++ *	user space. (NX-842 driver waits for CSB and Fast thread-wakeup
++ *	doesn't use credit checking).
++ */
++static void poll_window_credits(struct vas_window *window)
++{
++	u64 val;
++	int creds, mode;
++
++	val = read_hvwc_reg(window, VREG(WINCTL));
++	if (window->tx_win)
++		mode = GET_FIELD(VAS_WINCTL_TX_WCRED_MODE, val);
++	else
++		mode = GET_FIELD(VAS_WINCTL_RX_WCRED_MODE, val);
++
++	if (!mode)
++		return;
++retry:
++	if (window->tx_win) {
++		val = read_hvwc_reg(window, VREG(TX_WCRED));
++		creds = GET_FIELD(VAS_TX_WCRED, val);
++	} else {
++		val = read_hvwc_reg(window, VREG(LRX_WCRED));
++		creds = GET_FIELD(VAS_LRX_WCRED, val);
++	}
++
++	if (creds < window->wcreds_max) {
++		val = 0;
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		schedule_timeout(msecs_to_jiffies(10));
++		goto retry;
++	}
++}
++
++/*
+  * Wait for the window to go to "not-busy" state. It should only take a
+  * short time to queue a CRB, so window should not be busy for too long.
+  * Trying 5ms intervals.
+@@ -1149,6 +1192,8 @@ int vas_win_close(struct vas_window *window)
  
- 	winctx->nx_win = rxattr->nx_win;
-@@ -844,6 +844,7 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
- 	rxwin->nx_win = rxattr->nx_win;
- 	rxwin->user_win = rxattr->user_win;
- 	rxwin->cop = cop;
-+	rxwin->wcreds_max = rxattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
- 	if (rxattr->user_win)
- 		rxwin->pid = task_pid_vnr(current);
+ 	unpin_close_window(window);
  
-@@ -893,7 +894,7 @@ static void init_winctx_for_txwin(struct vas_window *txwin,
- 	 */
- 	memset(winctx, 0, sizeof(struct vas_winctx));
++	poll_window_credits(window);
++
+ 	poll_window_castout(window);
  
--	winctx->wcreds_max = txattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
-+	winctx->wcreds_max = txwin->wcreds_max;
- 
- 	winctx->user_win = txattr->user_win;
- 	winctx->nx_win = txwin->rxwin->nx_win;
-@@ -978,6 +979,7 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
- 	txwin->nx_win = txwin->rxwin->nx_win;
- 	txwin->pid = attr->pid;
- 	txwin->user_win = attr->user_win;
-+	txwin->wcreds_max = attr->wcreds_max ?: VAS_WCREDS_DEFAULT;
- 
- 	init_winctx_for_txwin(txwin, attr, &winctx);
- 
-diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index 15d2dfa..ad906f6 100644
---- a/arch/powerpc/platforms/powernv/vas.h
-+++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -332,6 +332,7 @@ struct vas_window {
- 	void *hvwc_map;		/* HV window context */
- 	void *uwc_map;		/* OS/User window context */
- 	pid_t pid;		/* Linux process id of owner */
-+	int wcreds_max;		/* Window credits */
- 
- 	/* Fields applicable only to send windows */
- 	void *paste_kaddr;
+ 	/* if send window, drop reference to matching receive window */
 -- 
 2.7.4
