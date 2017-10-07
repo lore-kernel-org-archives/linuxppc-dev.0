@@ -2,40 +2,38 @@ Return-Path: <srs0=cc4y=bg=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y89RT468yzDqn0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y89RM3tSzzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:31 +1100 (AEDT)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89RS3V0Mz8vjD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:36 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89RM39D3z8t08
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:31 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3y89RR2blrz9t6f
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:35 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v972OY0I028195
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:33 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2deh4d97cv-1
+ by ozlabs.org (Postfix) with ESMTPS id 3y89RL60gPz9t3C
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:30 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v972OY2o108374
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:28 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2deexr76gc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:33 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:28 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 6 Oct 2017 20:28:32 -0600
+ Fri, 6 Oct 2017 20:28:27 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 03/18] powerpc/vas: Cleanup some debug code
-Date: Fri,  6 Oct 2017 19:28:03 -0700
-In-Reply-To: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1507343298-27496-4-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v2 00/18] powerpc/vas: Add support for FTW 
+Date: Fri,  6 Oct 2017 19:28:00 -0700
+Message-Id: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,125 +43,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Clean up vas.h and the debug code around ifdef vas_debug.
+The first 10 patches in this set were posted earlier[1] and don't have
+any significant changes since then. This set sanitizes cpu/chip id to
+VAS id mapping, improves vas_win_close() performance and adds a check
+for return of credits and cleans up some code.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/vas-window.c |  8 +++--
- arch/powerpc/platforms/powernv/vas.h        | 56 +++++++----------------------
- 2 files changed, 18 insertions(+), 46 deletions(-)
+Patch 11 adds debugfs support for the VAS window contexts.
 
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index a2fe120..67ffc5d 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -726,7 +726,10 @@ static void init_winctx_for_rxwin(struct vas_window *rxwin,
- static bool rx_win_args_valid(enum vas_cop_type cop,
- 			struct vas_rx_win_attr *attr)
- {
--	dump_rx_win_attr(attr);
-+	pr_debug("Rxattr: fault %d, notify %d, intr %d, early %d, fifo %d\n",
-+			attr->fault_win, attr->notify_disable,
-+			attr->intr_disable, attr->notify_early,
-+			attr->rx_fifo_size);
- 
- 	if (cop >= VAS_COP_TYPE_MAX)
- 		return false;
-@@ -1050,7 +1053,8 @@ int vas_paste_crb(struct vas_window *txwin, int offset, bool re)
- 	else
- 		rc = -EINVAL;
- 
--	print_fifo_msg_count(txwin);
-+	pr_debug("Txwin #%d: Msg count %llu\n", txwin->winid,
-+			read_hvwc_reg(txwin, VREG(LRFIFO_PUSH)));
- 
- 	return rc;
- }
-diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index fea0de4..15d2dfa 100644
---- a/arch/powerpc/platforms/powernv/vas.h
-+++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -259,6 +259,16 @@
- #define VAS_NX_UTIL_ADDER		PPC_BITMASK(32, 63)
- 
- /*
-+ * VREG(x):
-+ * Expand a register's short name (eg: LPID) into two parameters:
-+ *	- the register's short name in string form ("LPID"), and
-+ *	- the name of the macro (eg: VAS_LPID_OFFSET), defining the
-+ *	  register's offset in the window context
-+ */
-+#define VREG_SFX(n, s)	__stringify(n), VAS_##n##s
-+#define VREG(r)		VREG_SFX(r, _OFFSET)
-+
-+/*
-  * Local Notify Scope Control Register. (Receive windows only).
-  */
- enum vas_notify_scope {
-@@ -385,43 +395,15 @@ struct vas_winctx {
- 
- extern struct vas_instance *find_vas_instance(int vasid);
- 
--/*
-- * VREG(x):
-- * Expand a register's short name (eg: LPID) into two parameters:
-- *	- the register's short name in string form ("LPID"), and
-- *	- the name of the macro (eg: VAS_LPID_OFFSET), defining the
-- *	  register's offset in the window context
-- */
--#define VREG_SFX(n, s)	__stringify(n), VAS_##n##s
--#define VREG(r)		VREG_SFX(r, _OFFSET)
--
--#ifdef vas_debug
--static inline void dump_rx_win_attr(struct vas_rx_win_attr *attr)
--{
--	pr_err("fault %d, notify %d, intr %d early %d\n",
--			attr->fault_win, attr->notify_disable,
--			attr->intr_disable, attr->notify_early);
--
--	pr_err("rx_fifo_size %d, max value %d\n",
--				attr->rx_fifo_size, VAS_RX_FIFO_SIZE_MAX);
--}
--
- static inline void vas_log_write(struct vas_window *win, char *name,
- 			void *regptr, u64 val)
- {
--	if (val)
--		pr_err("%swin #%d: %s reg %p, val 0x%016llx\n",
-+	if (!val)
-+		pr_debug("%swin #%d: %s reg %p, val 0x%016llx\n",
- 				win->tx_win ? "Tx" : "Rx", win->winid, name,
- 				regptr, val);
- }
- 
--#else	/* vas_debug */
--
--#define vas_log_write(win, name, reg, val)
--#define dump_rx_win_attr(attr)
--
--#endif	/* vas_debug */
--
- static inline void write_uwc_reg(struct vas_window *win, char *name,
- 			s32 reg, u64 val)
- {
-@@ -450,18 +432,4 @@ static inline u64 read_hvwc_reg(struct vas_window *win,
- 	return in_be64(win->hvwc_map+reg);
- }
- 
--#ifdef vas_debug
--
--static void print_fifo_msg_count(struct vas_window *txwin)
--{
--	uint64_t read_hvwc_reg(struct vas_window *w, char *n, uint64_t o);
--	pr_devel("Winid %d, Msg count %llu\n", txwin->winid,
--			(uint64_t)read_hvwc_reg(txwin, VREG(LRFIFO_PUSH)));
--}
--#else	/* vas_debug */
--
--#define print_fifo_msg_count(window)
--
--#endif	/* vas_debug */
--
- #endif /* _VAS_H */
+Patches 11-18 add support for user space aka Fast thread-wakeup windows
+in VAS. These include a patch from Michael Neuling to support emulating
+the paste instruction.
+
+Michael Neuling (1):
+  powerpc: Emulate paste instruction
+
+Sukadev Bhattiprolu (17):
+  powerpc/vas: init missing fields from [rt]xattr
+  powerpc/vas: Validate window credits
+  powerpc/vas: Cleanup some debug code
+  powerpc/vas: Drop poll_window_cast_out().
+  powerpc/vas: Use helper to unpin/close window
+  powerpc/vas: Reduce polling interval for busy state
+  powerpc/vas: Save configured window credits
+  powerpc/vas: poll for return of window credits
+  powerpc/vas: Create cpu to vas id mapping
+  powerpc/vas, nx-842: Define and use chip_to_vas_id()
+  powerpc/vas: Export HVWC to debugfs
+  powerpc: have copy depend on CONFIG_BOOK3S_64
+  powerpc: Add support for setting SPRN_TIDR
+  powerpc: Define set_thread_used_vas()
+  powerpc/vas: Define vas_win_paste_addr()
+  powerpc/vas: Define vas_win_id()
+  powerpc/vas: Add support for user receive window
+
+ arch/powerpc/include/asm/emulated_ops.h     |   1 +
+ arch/powerpc/include/asm/ppc-opcode.h       |   1 +
+ arch/powerpc/include/asm/processor.h        |   3 +
+ arch/powerpc/include/asm/reg.h              |   2 +
+ arch/powerpc/include/asm/switch_to.h        |   5 +
+ arch/powerpc/include/asm/vas.h              |  21 +++
+ arch/powerpc/kernel/process.c               | 160 ++++++++++++++++--
+ arch/powerpc/kernel/traps.c                 |  64 ++++++++
+ arch/powerpc/platforms/powernv/Makefile     |   3 +-
+ arch/powerpc/platforms/powernv/vas-debug.c  | 209 ++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/vas-window.c | 245 +++++++++++++++++++++++-----
+ arch/powerpc/platforms/powernv/vas.c        |  31 +++-
+ arch/powerpc/platforms/powernv/vas.h        |  95 ++++++-----
+ drivers/crypto/nx/nx-842-powernv.c          |  18 +-
+ 14 files changed, 745 insertions(+), 113 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/vas-debug.c
+
 -- 
 2.7.4
