@@ -1,41 +1,41 @@
 Return-Path: <srs0=cc4y=bg=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y89RW2CDPzDqm0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y89RW4cD6zDqnd
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:39 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89RV6MZ7z8t08
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:38 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89RW1wqlz8vjD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:39 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3y89RT6ySZz9t7F
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:37 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3y89RV3JHTz9t7W
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:38 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v972Pnqc073161
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:35 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2demj8b09s-1
+ v972OYqT132510
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:36 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2deecrs5ry-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:35 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:36 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 6 Oct 2017 20:28:34 -0600
+ Fri, 6 Oct 2017 20:28:35 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 04/18] powerpc/vas: Drop poll_window_cast_out().
-Date: Fri,  6 Oct 2017 19:28:04 -0700
+Subject: [PATCH v2 05/18] powerpc/vas: Use helper to unpin/close window
+Date: Fri,  6 Oct 2017 19:28:05 -0700
 In-Reply-To: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1507343298-27496-5-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1507343298-27496-6-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,61 +45,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Polling for window cast out is listed in the spec, but turns out that
-it is not strictly necessary and slows down window close. Making it a
-stub for now.
+Use a helper to have the hardware unpin and mark a window closed.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/vas-window.c | 34 ++++++++++++++---------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ arch/powerpc/platforms/powernv/vas-window.c | 22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index 67ffc5d..8ab8a82 100644
+index 8ab8a82..95622a9 100644
 --- a/arch/powerpc/platforms/powernv/vas-window.c
 +++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -1079,25 +1079,25 @@ static void poll_window_busy_state(struct vas_window *window)
- 	}
- }
- 
-+/*
-+ * Have the hardware cast a window out of cache and wait for it to
-+ * be completed.
-+ *
-+ * NOTE: It can take a relatively long time to cast the window context
-+ *	out of the cache. It is not strictly necessary to cast out if:
-+ *
-+ *	- we clear the "Pin Window" bit (so hardware is free to evict)
-+ *
-+ *	- we re-initialize the window context when it is reassigned.
-+ *
-+ *	We do the former in vas_win_close() and latter in vas_win_open().
-+ *	So, ignoring the cast-out for now. We can add it as needed. If
-+ *	casting out becomes necessary we should consider offloading the
-+ *	job to a worker thread, so the window close can proceed quickly.
-+ */
- static void poll_window_castout(struct vas_window *window)
- {
--	int cached;
--	u64 val;
--
--	/* Cast window context out of the cache */
--retry:
--	val = read_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL));
--	cached = GET_FIELD(VAS_WIN_CACHE_STATUS, val);
--	if (cached) {
--		val = 0ULL;
--		val = SET_FIELD(VAS_CASTOUT_REQ, val, 1);
--		val = SET_FIELD(VAS_PUSH_TO_MEM, val, 0);
--		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), val);
--
--		set_current_state(TASK_UNINTERRUPTIBLE);
--		schedule_timeout(HZ);
--		goto retry;
--	}
-+	/* stub for now */
+@@ -1101,6 +1101,20 @@ static void poll_window_castout(struct vas_window *window)
  }
  
  /*
++ * Unpin and close a window so no new requests are accepted and the
++ * hardware can evict this window from cache if necessary.
++ */
++static void unpin_close_window(struct vas_window *window)
++{
++	u64 val;
++
++	val = read_hvwc_reg(window, VREG(WINCTL));
++	val = SET_FIELD(VAS_WINCTL_PIN, val, 0);
++	val = SET_FIELD(VAS_WINCTL_OPEN, val, 0);
++	write_hvwc_reg(window, VREG(WINCTL), val);
++}
++
++/*
+  * Close a window.
+  *
+  * See Section 1.12.1 of VAS workbook v1.05 for details on closing window:
+@@ -1114,8 +1128,6 @@ static void poll_window_castout(struct vas_window *window)
+  */
+ int vas_win_close(struct vas_window *window)
+ {
+-	u64 val;
+-
+ 	if (!window)
+ 		return 0;
+ 
+@@ -1131,11 +1143,7 @@ int vas_win_close(struct vas_window *window)
+ 
+ 	poll_window_busy_state(window);
+ 
+-	/* Unpin window from cache and close it */
+-	val = read_hvwc_reg(window, VREG(WINCTL));
+-	val = SET_FIELD(VAS_WINCTL_PIN, val, 0);
+-	val = SET_FIELD(VAS_WINCTL_OPEN, val, 0);
+-	write_hvwc_reg(window, VREG(WINCTL), val);
++	unpin_close_window(window);
+ 
+ 	poll_window_castout(window);
+ 
 -- 
 2.7.4
