@@ -1,29 +1,41 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=cc4y=bg=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y84202S88zDqp5
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 09:24:40 +1100 (AEDT)
-Subject: [PATCH 2/2] vgaarb: Factor out EFI and fallback default device
- selection
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- dri-devel@lists.freedesktop.org, Xinliang Liu <z.liuxinliang@hisilicon.com>,
- Alex Williamson <alex.williamson@redhat.com>, Lukas Wunner <lukas@wunner.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Daniel Axtens <dja@axtens.net>
-Date: Fri, 06 Oct 2017 17:24:35 -0500
-Message-ID: <20171006222435.12211.54547.stgit@bhelgaas-glaptop.roam.corp.google.com>
-In-Reply-To: <20171006221358.12211.42879.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171006221358.12211.42879.stgit@bhelgaas-glaptop.roam.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y89RQ6CvVzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:34 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89RQ4T3Zz8vjD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:34 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3y89RP42Bgz9t3C
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:33 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v972OZ0s003820
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:31 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2deewkym09-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:31 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 6 Oct 2017 20:28:30 -0600
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 02/18] powerpc/vas: Validate window credits
+Date: Fri,  6 Oct 2017 19:28:02 -0700
+In-Reply-To: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1507343298-27496-3-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,112 +45,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+NX-842, the only user of VAS, sets the window credits to default values
+but VAS should check the credits against the possible max values.
 
-The default VGA device is normally set in vga_arbiter_add_pci_device() when
-we call it for the first enabled device that can be accessed with the
-legacy VGA resources ([mem 0xa0000-0xbffff], etc.)
+The VAS_WCREDS_MIN is not needed and can be dropped.
 
-That default device can be overridden by an EFI device that owns the boot
-framebuffer.  As a fallback, we can also select a VGA device that can't be
-accessed via legacy VGA resources, or a VGA device that isn't even enabled.
-
-Factor out this EFI and fallback selection from vga_arb_device_init() into
-a separate vga_arb_select_default_device() function.  This doesn't change
-any behavior, but it untangles the "bridge control possible" checking and
-messages from the default device selection.
-
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- drivers/gpu/vga/vgaarb.c |   57 ++++++++++++++++++++++++++++------------------
- 1 file changed, 35 insertions(+), 22 deletions(-)
+ arch/powerpc/platforms/powernv/vas-window.c | 6 ++++++
+ arch/powerpc/platforms/powernv/vas.h        | 4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
-index aeb41f793ed4..7803e35a3702 100644
---- a/drivers/gpu/vga/vgaarb.c
-+++ b/drivers/gpu/vga/vgaarb.c
-@@ -1402,29 +1402,14 @@ static struct miscdevice vga_arb_device = {
- 	MISC_DYNAMIC_MINOR, "vga_arbiter", &vga_arb_device_fops
- };
+diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+index cec7ab7..a2fe120 100644
+--- a/arch/powerpc/platforms/powernv/vas-window.c
++++ b/arch/powerpc/platforms/powernv/vas-window.c
+@@ -738,6 +738,9 @@ static bool rx_win_args_valid(enum vas_cop_type cop,
+ 	if (attr->rx_fifo_size > VAS_RX_FIFO_SIZE_MAX)
+ 		return false;
  
--static int __init vga_arb_device_init(void)
-+static void __init vga_arb_select_default_device(void)
- {
--	int rc;
- 	struct pci_dev *pdev;
- 	struct vga_device *vgadev;
++	if (attr->wcreds_max > VAS_RX_WCREDS_MAX)
++		return false;
++
+ 	if (attr->nx_win) {
+ 		/* cannot be fault or user window if it is nx */
+ 		if (attr->fault_win || attr->user_win)
+@@ -927,6 +930,9 @@ static bool tx_win_args_valid(enum vas_cop_type cop,
+ 	if (cop > VAS_COP_TYPE_MAX)
+ 		return false;
  
--	rc = misc_register(&vga_arb_device);
--	if (rc < 0)
--		pr_err("error %d registering device\n", rc);
--
--	bus_register_notifier(&pci_bus_type, &pci_notifier);
--
--	/* We add all pci devices satisfying vga class in the arbiter by
--	 * default */
--	pdev = NULL;
--	while ((pdev =
--		pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
--			       PCI_ANY_ID, pdev)) != NULL)
--		vga_arbiter_add_pci_device(pdev);
--
-+#if defined(CONFIG_X86) || defined(CONFIG_IA64)
- 	list_for_each_entry(vgadev, &vga_list, list) {
- 		struct device *dev = &vgadev->pdev->dev;
--#if defined(CONFIG_X86) || defined(CONFIG_IA64)
- 		/*
- 		 * Override vga_arbiter_add_pci_device()'s I/O based detection
- 		 * as it may take the wrong device (e.g. on Apple system under
-@@ -1461,12 +1446,8 @@ static int __init vga_arb_device_init(void)
- 				vgaarb_info(dev, "overriding boot device\n");
- 			vga_set_default_device(vgadev->pdev);
- 		}
--#endif
--		if (vgadev->bridge_has_one_vga)
--			vgaarb_info(dev, "bridge control possible\n");
--		else
--			vgaarb_info(dev, "no bridge control possible\n");
- 	}
-+#endif
++	if (attr->wcreds_max > VAS_TX_WCREDS_MAX)
++		return false;
++
+ 	if (attr->user_win &&
+ 			(cop != VAS_COP_TYPE_FTW || attr->rsvd_txbuf_count))
+ 		return false;
+diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
+index 38dee5d..fea0de4 100644
+--- a/arch/powerpc/platforms/powernv/vas.h
++++ b/arch/powerpc/platforms/powernv/vas.h
+@@ -106,8 +106,8 @@
+  *
+  * TODO: Needs tuning for per-process credits
+  */
+-#define VAS_WCREDS_MIN			16
+-#define VAS_WCREDS_MAX			((64 << 10) - 1)
++#define VAS_RX_WCREDS_MAX		((64 << 10) - 1)
++#define VAS_TX_WCREDS_MAX		((4 << 10) - 1)
+ #define VAS_WCREDS_DEFAULT		(1 << 10)
  
- 	if (!vga_default_device()) {
- 		list_for_each_entry(vgadev, &vga_list, list) {
-@@ -1492,6 +1473,38 @@ static int __init vga_arb_device_init(void)
- 			vga_set_default_device(pdev);
- 		}
- 	}
-+}
-+
-+static int __init vga_arb_device_init(void)
-+{
-+	int rc;
-+	struct pci_dev *pdev;
-+	struct vga_device *vgadev;
-+
-+	rc = misc_register(&vga_arb_device);
-+	if (rc < 0)
-+		pr_err("error %d registering device\n", rc);
-+
-+	bus_register_notifier(&pci_bus_type, &pci_notifier);
-+
-+	/* We add all PCI devices satisfying VGA class in the arbiter by
-+	 * default */
-+	pdev = NULL;
-+	while ((pdev =
-+		pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-+			       PCI_ANY_ID, pdev)) != NULL)
-+		vga_arbiter_add_pci_device(pdev);
-+
-+	list_for_each_entry(vgadev, &vga_list, list) {
-+		struct device *dev = &vgadev->pdev->dev;
-+
-+		if (vgadev->bridge_has_one_vga)
-+			vgaarb_info(dev, "bridge control possible\n");
-+		else
-+			vgaarb_info(dev, "no bridge control possible\n");
-+	}
-+
-+	vga_arb_select_default_device();
- 
- 	pr_info("loaded\n");
- 	return rc;
+ /*
+-- 
+2.7.4
