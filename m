@@ -1,41 +1,41 @@
 Return-Path: <srs0=cc4y=bg=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y89Rr0Rc6zDqp6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y89Rt5VtGzDqnm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:58 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89Rq6GWrz8vjD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:55 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89Rt4YVlz8vjD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:58 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3y89Rq2mzpz9t3C
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:55 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3y89Rs59gtz9t7H
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:57 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v972QQFQ074668
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:53 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2demj8b0hr-1
+ v972OZDt108444
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:55 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2deexr76va-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:53 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:55 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 6 Oct 2017 20:28:52 -0600
+ Fri, 6 Oct 2017 20:28:54 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 15/18] powerpc: Emulate paste instruction
-Date: Fri,  6 Oct 2017 19:28:15 -0700
+Subject: [PATCH v2 16/18] powerpc/vas: Define vas_win_paste_addr()
+Date: Fri,  6 Oct 2017 19:28:16 -0700
 In-Reply-To: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1507343298-27496-16-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1507343298-27496-17-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,160 +45,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+Define an interface that the NX drivers can use to find the physical
+paste address of a send window. This interface is expected to be used
+with the mmap() operation of the NX driver's device. i.e the user space
+process can use driver's mmap() operation to map the send window's paste
+address into their address space and then use copy and paste instructions
+to submit the CRBs to the NX engine.
 
-On POWER9 DD2.1 and below there are issues when the paste instruction
-generates an error. If an error occurs when thread reconfiguration
-happens (ie another thread in the core goes into/out of powersave) the
-core may hang.
+Note that kernel drivers will use vas_paste_crb() directly and don't need
+this interface.
 
-To avoid this a special sequence is required which stops thread
-configuration so that the paste can be safely executed.
-
-This patch assumes paste executed in userspace are trapped into the
-illegal instruction exception at 0xe40.
-
-Here we re-execute the paste instruction but with the required
-sequence to ensure thread reconfiguration doesn't occur.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/vas.h              |  7 +++++++
+ arch/powerpc/platforms/powernv/vas-window.c | 10 ++++++++++
+ 2 files changed, 17 insertions(+)
 
-Edit by Sukadev: Use PPC_PASTE() rather than the paste instruction since
-	in older versions the instruction required a third parameter.
----
- arch/powerpc/include/asm/emulated_ops.h |  1 +
- arch/powerpc/include/asm/ppc-opcode.h   |  1 +
- arch/powerpc/include/asm/reg.h          |  2 ++
- arch/powerpc/kernel/traps.c             | 64 +++++++++++++++++++++++++++++++++
- 4 files changed, 68 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/emulated_ops.h b/arch/powerpc/include/asm/emulated_ops.h
-index f00e10e..9247af9 100644
---- a/arch/powerpc/include/asm/emulated_ops.h
-+++ b/arch/powerpc/include/asm/emulated_ops.h
-@@ -55,6 +55,7 @@ extern struct ppc_emulated {
- 	struct ppc_emulated_entry mfdscr;
- 	struct ppc_emulated_entry mtdscr;
- 	struct ppc_emulated_entry lq_stq;
-+	struct ppc_emulated_entry paste;
- #endif
- } ppc_emulated;
+diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+index 044748f..f98ade8 100644
+--- a/arch/powerpc/include/asm/vas.h
++++ b/arch/powerpc/include/asm/vas.h
+@@ -10,6 +10,8 @@
+ #ifndef _ASM_POWERPC_VAS_H
+ #define _ASM_POWERPC_VAS_H
  
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index ce0930d..a55d2ef 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -229,6 +229,7 @@
- #define PPC_INST_MTTMR			0x7c0003dc
- #define PPC_INST_NOP			0x60000000
- #define PPC_INST_PASTE			0x7c20070d
-+#define PPC_INST_PASTE_MASK		0xfc2007ff
- #define PPC_INST_POPCNTB		0x7c0000f4
- #define PPC_INST_POPCNTB_MASK		0xfc0007fe
- #define PPC_INST_POPCNTD		0x7c0003f4
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index f92eaf7..5cde1c4 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -468,6 +468,8 @@
- #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
- #define SPRN_PPR	0x380	/* SMT Thread status Register */
- #define SPRN_TSCR	0x399	/* Thread Switch Control Register */
-+#define SPRN_TRIG1	0x371	/* WAT Trigger 1 */
-+#define SPRN_TRIG2	0x372	/* WAT Trigger 2 */
++struct vas_window;
++
+ /*
+  * Min and max FIFO sizes are based on Version 1.05 Section 3.1.4.25
+  * (Local FIFO Size Register) of the VAS workbook.
+@@ -165,4 +167,9 @@ int vas_copy_crb(void *crb, int offset);
+  */
+ int vas_paste_crb(struct vas_window *win, int offset, bool re);
  
- #define SPRN_DEC	0x016		/* Decrement Register */
- #define SPRN_DER	0x095		/* Debug Enable Register */
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 13c9dcd..7e6b1fe 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -956,6 +956,65 @@ static inline bool tm_abort_check(struct pt_regs *regs, int reason)
++/*
++ * Return the power bus paste address associated with @win so the caller
++ * can map that address into their address space.
++ */
++extern u64 vas_win_paste_addr(struct vas_window *win);
+ #endif /* __ASM_POWERPC_VAS_H */
+diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+index 088ce56..e4a9c7b 100644
+--- a/arch/powerpc/platforms/powernv/vas-window.c
++++ b/arch/powerpc/platforms/powernv/vas-window.c
+@@ -40,6 +40,16 @@ static void compute_paste_address(struct vas_window *window, u64 *addr, int *len
+ 	pr_debug("Txwin #%d: Paste addr 0x%llx\n", winid, *addr);
  }
- #endif
  
-+static DEFINE_SPINLOCK(paste_emulation_lock);
-+
-+static inline int paste(void *i)
++u64 vas_win_paste_addr(struct vas_window *win)
 +{
-+	int cr;
-+	long retval = 0;
++	u64 addr;
 +
-+	/* Need per core lock to ensure trig1/2 writes don't race */
-+	spin_lock(&paste_emulation_lock);
-+	mtspr(SPRN_TRIG1, 0); /* data doesn't matter */
-+	mtspr(SPRN_TRIG1, 0); /* HW says do this twice */
-+	asm volatile(
-+		"1: " PPC_PASTE(0, %2) "\n"
-+		"2: mfcr %1\n"
-+		".section .fixup,\"ax\"\n"
-+		"3:	li %0,%3\n"
-+		"	li %2,0\n"
-+		"	b 2b\n"
-+		".previous\n"
-+		EX_TABLE(1b, 3b)
-+		: "=r" (retval), "=r" (cr)
-+		: "b" (i), "i" (-EFAULT), "0" (retval));
-+	mtspr(SPRN_TRIG2, 0);
-+	spin_unlock(&paste_emulation_lock);
-+	return cr;
++	compute_paste_address(win, &addr, NULL);
++
++	return addr;
 +}
++EXPORT_SYMBOL(vas_win_paste_addr);
 +
-+static int emulate_paste(struct pt_regs *regs, u32 instword)
-+{
-+	const void __user *addr;
-+	unsigned long ea;
-+	u8 ra, rb;
-+
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		return -EINVAL;
-+
-+	ra = (instword >> 16) & 0x1f;
-+	rb = (instword >> 11) & 0x1f;
-+
-+	ea = regs->gpr[rb] + (ra ? regs->gpr[ra] : 0ul);
-+	if (is_32bit_task())
-+		ea &= 0xfffffffful;
-+	addr = (__force const void __user *)ea;
-+
-+	if (!access_ok(VERIFY_WRITE, addr, 128)) // cacheline size == 128
-+		return -EFAULT;
-+
-+	hard_irq_disable(); /* FIXME: could we just soft disable ?? */
-+	pagefault_disable();
-+
-+	PPC_WARN_EMULATED(paste, regs);
-+	regs->ccr = paste((void *)addr);
-+
-+	pagefault_enable();
-+	may_hard_irq_enable();
-+
-+	return 0;
-+}
-+
- static int emulate_instruction(struct pt_regs *regs)
+ static inline void get_hvwc_mmio_bar(struct vas_window *window,
+ 			u64 *start, int *len)
  {
- 	u32 instword;
-@@ -968,6 +1027,10 @@ static int emulate_instruction(struct pt_regs *regs)
- 	if (get_user(instword, (u32 __user *)(regs->nip)))
- 		return -EFAULT;
- 
-+	/* Emulate the paste RA, RB. */
-+	if ((instword & PPC_INST_PASTE_MASK) == PPC_INST_PASTE)
-+		return emulate_paste(regs, instword);
-+
- 	/* Emulate the mfspr rD, PVR. */
- 	if ((instword & PPC_INST_MFSPR_PVR_MASK) == PPC_INST_MFSPR_PVR) {
- 		PPC_WARN_EMULATED(mfpvr, regs);
-@@ -1924,6 +1987,7 @@ struct ppc_emulated ppc_emulated = {
- 	WARN_EMULATED_SETUP(mfdscr),
- 	WARN_EMULATED_SETUP(mtdscr),
- 	WARN_EMULATED_SETUP(lq_stq),
-+	WARN_EMULATED_SETUP(paste),
- #endif
- };
- 
 -- 
 2.7.4
