@@ -1,49 +1,50 @@
-Return-Path: <mark.gross@intel.com>
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <parri.andrea@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y7SQG6X45zDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Oct 2017 09:39:56 +1100 (AEDT)
-From: "Gross, Mark" <mark.gross@intel.com>
-To: Kees Cook <keescook@chromium.org>, Thomas Gleixner <tglx@linutronix.de>
-CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Chris Metcalf
- <cmetcalf@mellanox.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Guenter
- Roeck" <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>, "Heiko
- Carstens" <heiko.carstens@de.ibm.com>, "James E.J. Bottomley"
- <jejb@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>, "Julian
- Wiedmann" <jwi@linux.vnet.ibm.com>, Kalle Valo <kvalo@qca.qualcomm.com>, Lai
- Jiangshan <jiangshanlai@gmail.com>, "Brown, Len" <len.brown@intel.com>,
- Manish Chopra <manish.chopra@cavium.com>, "Martin K. Petersen"
- <martin.petersen@oracle.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Reed <mdr@sgi.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Oleg Nesterov
- <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>, Pavel Machek
- <pavel@ucw.cz>, Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki"
- <rjw@rjwysocki.net>, Ralf Baechle <ralf@linux-mips.org>, Sebastian Reichel
- <sre@kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Stephen Boyd
- <sboyd@codeaurora.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, "Tejun
- Heo" <tj@kernel.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>, Viresh Kumar
- <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
- "linux1394-devel@lists.sourceforge.net"
- <linux1394-devel@lists.sourceforge.net>, "linux-mips@linux-mips.org"
- <linux-mips@linux-mips.org>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "linux-scsi@vger.kernel.org"
- <linux-scsi@vger.kernel.org>, "linux-watchdog@vger.kernel.org"
- <linux-watchdog@vger.kernel.org>, "linux-wireless@vger.kernel.org"
- <linux-wireless@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 07/13] timer: Remove last user of TIMER_INITIALIZER
-Date: Thu, 5 Oct 2017 22:39:51 +0000
-Message-ID: <BD75D217E5BAC84080F8EFB2582976379E85363A@ORSMSX112.amr.corp.intel.com>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-8-git-send-email-keescook@chromium.org>
-In-Reply-To: <1507159627-127660-8-git-send-email-keescook@chromium.org>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y8VLL2kkBzDqlx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Oct 2017 02:10:17 +1100 (AEDT)
+Received: by mail-wm0-x244.google.com with SMTP id u138so13912302wmu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Oct 2017 08:10:17 -0700 (PDT)
+Date: Sat, 7 Oct 2017 17:10:04 +0200
+From: Andrea Parri <parri.andrea@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>,
+ dipankar <dipankar@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Josh Triplett <josh@joshtriplett.org>,
+ Thomas Gleixner <tglx@linutronix.de>, rostedt <rostedt@goodmis.org>,
+ David Howells <dhowells@redhat.com>,
+ Eric Dumazet <edumazet@google.com>, fweisbec <fweisbec@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, Boqun Feng <boqun.feng@gmail.com>,
+ Andrew Hunter <ahh@google.com>,
+ maged michael <maged.michael@gmail.com>, gromer <gromer@google.com>,
+ Avi Kivity <avi@scylladb.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Dave Watson <davejwatson@fb.com>, Alan Stern <stern@rowland.harvard.edu>,
+ Will Deacon <will.deacon@arm.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH tip/core/rcu 1/3] membarrier: Provide register expedited
+ private command
+Message-ID: <20171007151004.GA3874@andrea>
+References: <20171004213734.GA11463@linux.vnet.ibm.com>
+ <1507153075-12345-1-git-send-email-paulmck@linux.vnet.ibm.com>
+ <20171005121250.prr5ff5kf3lxq6hx@hirez.programming.kicks-ass.net>
+ <312162.31738.1507219326334.JavaMail.zimbra@efficios.com>
+ <20171005220214.GA7140@andrea>
+ <206890579.32344.1507241955010.JavaMail.zimbra@efficios.com>
+ <20171006083219.asdpl5w4pl6hedcd@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171006083219.asdpl5w4pl6hedcd@hirez.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,117 +54,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: mark gross <mark.gross@intel.com>
+On Fri, Oct 06, 2017 at 10:32:19AM +0200, Peter Zijlstra wrote:
+> > AFAIU the scheduler rq->lock is held while preemption is disabled.
+> > synchronize_sched() is used here to ensure that all pre-existing
+> > preempt-off critical sections have completed.
+> > 
+> > So saying that we use synchronize_sched() to synchronize with rq->lock
+> > would be stretching the truth a bit. It's actually only true because the
+> > scheduler holding the rq->lock is surrounded by a preempt-off
+> > critical section.
+> 
+> No, rq->lock is sufficient, note that rq->lock is a raw_spinlock_t which
+> implies !preempt. Yes, we also surround the rq->lock usage with a
+> slightly larger preempt_disable() section but that's not in fact
+> required for this.
 
---mark
+That's what it is, according to the current sources: we seemed to agree that
+a preempt-off critical section is what we rely on here and that the start of
+this critical section is not marked by that raw_spin_lock.
 
-> -----Original Message-----
-> From: Kees Cook [mailto:keescook@chromium.org]
-> Sent: Wednesday, October 4, 2017 4:27 PM
-> To: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Kees Cook <keescook@chromium.org>; Arnd Bergmann <arnd@arndb.de>;
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org>; Gross, Mark
-> <mark.gross@intel.com>; Andrew Morton <akpm@linux-foundation.org>;
-> Benjamin Herrenschmidt <benh@kernel.crashing.org>; Chris Metcalf
-> <cmetcalf@mellanox.com>; Geert Uytterhoeven <geert@linux-m68k.org>;
-> Guenter Roeck <linux@roeck-us.net>; Harish Patil <harish.patil@cavium.com=
->;
-> Heiko Carstens <heiko.carstens@de.ibm.com>; James E.J. Bottomley
-> <jejb@linux.vnet.ibm.com>; John Stultz <john.stultz@linaro.org>; Julian
-> Wiedmann <jwi@linux.vnet.ibm.com>; Kalle Valo <kvalo@qca.qualcomm.com>;
-> Lai Jiangshan <jiangshanlai@gmail.com>; Brown, Len <len.brown@intel.com>;
-> Manish Chopra <manish.chopra@cavium.com>; Martin K. Petersen
-> <martin.petersen@oracle.com>; Martin Schwidefsky
-> <schwidefsky@de.ibm.com>; Michael Ellerman <mpe@ellerman.id.au>; Michael
-> Reed <mdr@sgi.com>; netdev@vger.kernel.org; Oleg Nesterov
-> <oleg@redhat.com>; Paul Mackerras <paulus@samba.org>; Pavel Machek
-> <pavel@ucw.cz>; Petr Mladek <pmladek@suse.com>; Rafael J. Wysocki
-> <rjw@rjwysocki.net>; Ralf Baechle <ralf@linux-mips.org>; Sebastian Reiche=
-l
-> <sre@kernel.org>; Stefan Richter <stefanr@s5r6.in-berlin.de>; Stephen Boy=
-d
-> <sboyd@codeaurora.org>; Sudip Mukherjee <sudipm.mukherjee@gmail.com>;
-> Tejun Heo <tj@kernel.org>; Ursula Braun <ubraun@linux.vnet.ibm.com>; Vire=
-sh
-> Kumar <viresh.kumar@linaro.org>; Wim Van Sebroeck <wim@iguana.be>;
-> linux1394-devel@lists.sourceforge.net; linux-mips@linux-mips.org; linux-
-> pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> s390@vger.kernel.org; linux-scsi@vger.kernel.org; linux-
-> watchdog@vger.kernel.org; linux-wireless@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Subject: [PATCH 07/13] timer: Remove last user of TIMER_INITIALIZER
->=20
-> Drops the last user of TIMER_INITIALIZER and adapts timer.h to use the in=
-ternal
-> version.
->=20
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Mark Gross <mark.gross@intel.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  drivers/char/tlclk.c  | 12 +++++-------  include/linux/timer.h |  2 +-
->  2 files changed, 6 insertions(+), 8 deletions(-)
->=20
-> diff --git a/drivers/char/tlclk.c b/drivers/char/tlclk.c index
-> 6210bff46341..8eeb4190207d 100644
-> --- a/drivers/char/tlclk.c
-> +++ b/drivers/char/tlclk.c
-> @@ -184,9 +184,8 @@ static unsigned int telclk_interrupt;
->  static int int_events;		/* Event that generate a interrupt */
->  static int got_event;		/* if events processing have been done */
->=20
-> -static void switchover_timeout(unsigned long data); -static struct timer=
-_list
-> switchover_timer =3D
-> -	TIMER_INITIALIZER(switchover_timeout , 0, 0);
-> +static void switchover_timeout(struct timer_list *t); static struct
-> +timer_list switchover_timer;
->  static unsigned long tlclk_timer_data;
->=20
->  static struct tlclk_alarms *alarm_events; @@ -805,7 +804,7 @@ static int
-> __init tlclk_init(void)
->  		goto out3;
->  	}
->=20
-> -	init_timer(&switchover_timer);
-> +	timer_setup(&switchover_timer, switchover_timeout, 0);
->=20
->  	ret =3D misc_register(&tlclk_miscdev);
->  	if (ret < 0) {
-> @@ -855,9 +854,9 @@ static void __exit tlclk_cleanup(void)
->=20
->  }
->=20
-> -static void switchover_timeout(unsigned long data)
-> +static void switchover_timeout(struct timer_list *unused)
->  {
-> -	unsigned long flags =3D *(unsigned long *) data;
-> +	unsigned long flags =3D tlclk_timer_data;
->=20
->  	if ((flags & 1)) {
->  		if ((inb(TLCLK_REG1) & 0x08) !=3D (flags & 0x08)) @@ -922,7
-> +921,6 @@ static irqreturn_t tlclk_interrupt(int irq, void *dev_id)
->  		/* TIMEOUT in ~10ms */
->  		switchover_timer.expires =3D jiffies + msecs_to_jiffies(10);
->  		tlclk_timer_data =3D inb(TLCLK_REG1);
-> -		switchover_timer.data =3D (unsigned long) &tlclk_timer_data;
->  		mod_timer(&switchover_timer, switchover_timer.expires);
->  	} else {
->  		got_event =3D 1;
-> diff --git a/include/linux/timer.h b/include/linux/timer.h index
-> 10cc45ca5803..4f7476e4a727 100644
-> --- a/include/linux/timer.h
-> +++ b/include/linux/timer.h
-> @@ -87,7 +87,7 @@ struct timer_list {
->=20
->  #define DEFINE_TIMER(_name, _function, _expires, _data)		\
->  	struct timer_list _name =3D				\
-> -		TIMER_INITIALIZER(_function, _expires, _data)
-> +		__TIMER_INITIALIZER(_function, _expires, _data, 0)
->=20
->  void init_timer_key(struct timer_list *timer, unsigned int flags,
->  		    const char *name, struct lock_class_key *key);
-> --
-> 2.7.4
+  Andrea
