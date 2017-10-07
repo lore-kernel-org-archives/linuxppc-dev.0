@@ -2,40 +2,40 @@ Return-Path: <srs0=cc4y=bg=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y89Rc5t3LzDqnQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y89Rd710HzDqp5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:45 +1100 (AEDT)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89Rc4CLTz8vDD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:44 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3y89Rd67bkz8vDD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Oct 2017 13:28:45 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3y89Rb1gDDz9t73
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:43 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3y89Rd1tsCz9t73
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2017 13:28:45 +1100 (AEDT)
 Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v972RLAn025134
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:41 -0400
+ v972OZEk020323
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2017 22:28:43 -0400
 Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dek7t59xd-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dek7t59y7-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:40 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Oct 2017 22:28:43 -0400
 Received: from localhost
  by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 6 Oct 2017 20:28:40 -0600
+ Fri, 6 Oct 2017 20:28:42 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 08/18] powerpc/vas: poll for return of window credits
-Date: Fri,  6 Oct 2017 19:28:08 -0700
+Subject: [PATCH v2 09/18] powerpc/vas: Create cpu to vas id mapping
+Date: Fri,  6 Oct 2017 19:28:09 -0700
 In-Reply-To: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1507343298-27496-9-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1507343298-27496-10-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,77 +45,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Normally, the NX driver waits for the CRBs to be processed before closing
-the window. But it is better to ensure that the credits are returned before
-the window gets reassigned later.
+Create a cpu to vasid mapping so callers can specify -1 instead of
+trying to find a VAS id.
+
+Changelog[v2]
+	[Michael Ellerman] Use per-cpu variables to simplify code.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/vas-window.c | 45 +++++++++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
+ arch/powerpc/platforms/powernv/vas.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index a59a187..23c13a7 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -1063,6 +1063,49 @@ int vas_paste_crb(struct vas_window *txwin, int offset, bool re)
- EXPORT_SYMBOL_GPL(vas_paste_crb);
+diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
+index 565a487..abb7090 100644
+--- a/arch/powerpc/platforms/powernv/vas.c
++++ b/arch/powerpc/platforms/powernv/vas.c
+@@ -18,15 +18,18 @@
+ #include <linux/of_platform.h>
+ #include <linux/of_address.h>
+ #include <linux/of.h>
++#include <asm/prom.h>
  
- /*
-+ * If credit checking is enabled for this window, poll for the return
-+ * of window credits (i.e for NX engines to process any outstanding CRBs).
-+ * Since NX-842 waits for the CRBs to be processed before closing the
-+ * window, we should not have to wait for too long.
-+ *
-+ * TODO: We retry in 10ms intervals now. We could/should probably peek at
-+ *	the VAS_LRFIFO_PUSH_OFFSET register to get an estimate of pending
-+ *	CRBs on the FIFO and compute the delay dynamically on each retry.
-+ *	But that is not really needed until we support NX-GZIP access from
-+ *	user space. (NX-842 driver waits for CSB and Fast thread-wakeup
-+ *	doesn't use credit checking).
-+ */
-+static void poll_window_credits(struct vas_window *window)
-+{
-+	u64 val;
-+	int creds, mode;
+ #include "vas.h"
+ 
+ static DEFINE_MUTEX(vas_mutex);
+ static LIST_HEAD(vas_instances);
+ 
++static DEFINE_PER_CPU(int, cpu_vas_id);
 +
-+	val = read_hvwc_reg(window, VREG(WINCTL));
-+	if (window->tx_win)
-+		mode = GET_FIELD(VAS_WINCTL_TX_WCRED_MODE, val);
-+	else
-+		mode = GET_FIELD(VAS_WINCTL_RX_WCRED_MODE, val);
-+
-+	if (!mode)
-+		return;
-+retry:
-+	if (window->tx_win) {
-+		val = read_hvwc_reg(window, VREG(TX_WCRED));
-+		creds = GET_FIELD(VAS_TX_WCRED, val);
-+	} else {
-+		val = read_hvwc_reg(window, VREG(LRX_WCRED));
-+		creds = GET_FIELD(VAS_LRX_WCRED, val);
+ static int init_vas_instance(struct platform_device *pdev)
+ {
+-	int rc, vasid;
++	int rc, cpu, vasid;
+ 	struct resource *res;
+ 	struct vas_instance *vinst;
+ 	struct device_node *dn = pdev->dev.of_node;
+@@ -74,6 +77,11 @@ static int init_vas_instance(struct platform_device *pdev)
+ 			"paste_win_id_shift 0x%llx\n", pdev->name, vasid,
+ 			vinst->paste_base_addr, vinst->paste_win_id_shift);
+ 
++	for_each_possible_cpu(cpu) {
++		if (cpu_to_chip_id(cpu) == of_get_ibm_chip_id(dn))
++			per_cpu(cpu_vas_id, cpu) = vasid;
 +	}
 +
-+	if (creds < window->wcreds_max) {
-+		val = 0;
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		schedule_timeout(msecs_to_jiffies(10));
-+		goto retry;
-+	}
-+}
+ 	mutex_lock(&vas_mutex);
+ 	list_add(&vinst->node, &vas_instances);
+ 	mutex_unlock(&vas_mutex);
+@@ -98,6 +106,10 @@ struct vas_instance *find_vas_instance(int vasid)
+ 	struct vas_instance *vinst;
+ 
+ 	mutex_lock(&vas_mutex);
 +
-+/*
-  * Wait for the window to go to "not-busy" state. It should only take a
-  * short time to queue a CRB, so window should not be busy for too long.
-  * Trying 5ms intervals.
-@@ -1149,6 +1192,8 @@ int vas_win_close(struct vas_window *window)
- 
- 	unpin_close_window(window);
- 
-+	poll_window_credits(window);
++	if (vasid == -1)
++		vasid = per_cpu(cpu_vas_id, smp_processor_id());
 +
- 	poll_window_castout(window);
- 
- 	/* if send window, drop reference to matching receive window */
+ 	list_for_each(ent, &vas_instances) {
+ 		vinst = list_entry(ent, struct vas_instance, node);
+ 		if (vinst->vas_id == vasid) {
 -- 
 2.7.4
