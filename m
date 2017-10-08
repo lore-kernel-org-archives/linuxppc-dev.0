@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y8xjd1lcTzDqG2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y8xjd5lTgzDqY1
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Oct 2017 19:43:33 +1100 (AEDT)
-In-Reply-To: <1504878731-28636-1-git-send-email-clombard@linux.vnet.ibm.com>
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+In-Reply-To: <20170918141658.27948-1-gpiccoli@linux.vnet.ibm.com>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [V3] cxl: Add support for POWER9 DD2
-Message-Id: <3y8xjc4G8kz9t4V@ozlabs.org>
-Date: Sun,  8 Oct 2017 19:43:32 +1100 (AEDT)
+Cc: muvic@linux.vnet.ibm.com, paulus@samba.org, gpiccoli@linux.vnet.ibm.com
+Subject: Re: powerpc/xmon: Add option to show uptime information
+Message-Id: <3y8xjd3XFqz9t5C@ozlabs.org>
+Date: Sun,  8 Oct 2017 19:43:33 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-09-08 at 13:52:11 UTC, Christophe Lombard wrote:
-> The PSL initialization sequence has been updated to DD2.
-> This patch adapts to the changes, retaining compatibility with DD1.
-> The patch includes some changes to DD1 fix-ups as well.
+On Mon, 2017-09-18 at 14:16:58 UTC, "Guilherme G. Piccoli" wrote:
+> It might be useful to quickly get the uptime of a running
+> system on xmon, without needing to grab data from memory and
+> doing math on struct addresses.
 > 
-> Tests performed on some of the old/new hardware.
+> For example, it'd be useful to check for how long after a crash
+> a system is on xmon shell or if some test was started after the
+> first test crashed (and this 2nd test crashed too into xmon).
 > 
-> The function is_page_fault(), for POWER9, lists the Translation Checkout
-> Responses where the page fault will be handled by copro_handle_mm_fault().
-> This list is too restrictive and not necessary.
+> This small patch adds the 'U' command, to accomplish this.
 > 
-> This patches removes this restriction and all page faults, whatever the
-> reason, will be handled. In this case, the interruption is always
-> acknowledged.
-> 
-> The following features will be added soon:
-> - phb reset when switching to capi mode.
-> - cxllib update to support new functions.
-> 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Suggested-by: Murilo Fossa Vicentini <muvic@linux.vnet.ibm.com>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5632874311dbf432c698fcbe0cf7a4
+https://git.kernel.org/powerpc/c/59d3391e8cf274097c42369866070c
 
 cheers
