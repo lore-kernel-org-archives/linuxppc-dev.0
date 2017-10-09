@@ -1,26 +1,37 @@
-Return-Path: <santosh@fossix.org>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9XwT6gQszDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 19:10:01 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id i23so25827372pfi.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 01:10:00 -0700 (PDT)
-From: Santosh Sivaraj <santosh@fossix.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v4] powerpc/vdso64: Add support for
- CLOCK_{REALTIME/MONOTONIC}_COARSE
-Date: Mon,  9 Oct 2017 13:39:49 +0530
-Message-Id: <20171009080949.25913-1-santosh@fossix.org>
-In-Reply-To: <20171006112528.zryd4l2yl2k6xk2h@naverao1-tp.localdomain>
-References: <20171006112528.zryd4l2yl2k6xk2h@naverao1-tp.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9ZbS68jJzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 20:25:24 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v999OQ8u053875
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 05:25:22 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dg2tq0hvg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 05:25:21 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 9 Oct 2017 10:25:20 +0100
+Subject: Re: [PATCH] cxl: Provide debugfs access to PSL_DEBUG/XSL_DEBUG
+ registers
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>
+References: <20170920062322.6582-1-vaibhav@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Mon, 9 Oct 2017 11:25:15 +0200
+MIME-Version: 1.0
+In-Reply-To: <20170920062322.6582-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <2d9098ee-5517-d083-d377-23c074c389c2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,139 +41,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current vDSO64 implementation does not have support for coarse clocks
-(CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
-to system call, increasing the response time, vDSO implementation reduces
-the cycle time. Below is a benchmark of the difference in execution times.
 
-(Non-coarse clocks are also included just for completion)
 
-clock-gettime-realtime: syscall: 172 nsec/call
-clock-gettime-realtime:    libc: 28 nsec/call
-clock-gettime-realtime:    vdso: 22 nsec/call
-clock-gettime-monotonic: syscall: 171 nsec/call
-clock-gettime-monotonic:    libc: 30 nsec/call
-clock-gettime-monotonic:    vdso: 25 nsec/call
-clock-gettime-realtime-coarse: syscall: 153 nsec/call
-clock-gettime-realtime-coarse:    libc: 16 nsec/call
-clock-gettime-realtime-coarse:    vdso: 10 nsec/call
-clock-gettime-monotonic-coarse: syscall: 167 nsec/call
-clock-gettime-monotonic-coarse:    libc: 17 nsec/call
-clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
+Le 20/09/2017 à 08:23, Vaibhav Jain a écrit :
+> Access to PSL/XSL_DEBUG registers on the adapter provides easy access
+> to the debug facilities provided by PSL/XSL. So this patch adds two
+> new files (debug, xsl-debug) to the cxl-adapter specific debugfs
+> folder located at /sys/kernel/debugfs/cxl/card<n>, which will provide
+> direct r/w access to corrosponding debug registers in the adapter
+> config-space.
+> 
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
 
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
----
- arch/powerpc/kernel/asm-offsets.c         |  2 +
- arch/powerpc/kernel/vdso64/gettimeofday.S | 67 ++++++++++++++++++++++++++-----
- 2 files changed, 58 insertions(+), 11 deletions(-)
+Thanks!
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 8cfb20e38cfe..b55c68c54dc1 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -396,6 +396,8 @@ int main(void)
- 	/* Other bits used by the vdso */
- 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
- 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
-+	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
-+	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
- 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
- 	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
- 
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index 382021324883..729dded195ce 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -64,6 +64,12 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	cmpwi	cr0,r3,CLOCK_REALTIME
- 	cmpwi	cr1,r3,CLOCK_MONOTONIC
- 	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
-+
-+	cmpwi	cr5,r3,CLOCK_REALTIME_COARSE
-+	cmpwi	cr6,r3,CLOCK_MONOTONIC_COARSE
-+	cror	cr5*4+eq,cr5*4+eq,cr6*4+eq
-+
-+	cror	cr0*4+eq,cr0*4+eq,cr5*4+eq
- 	bne	cr0,99f
- 
- 	mflr	r12			/* r12 saves lr */
-@@ -72,6 +78,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
- 	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
- 	ori	r7,r7,NSEC_PER_SEC@l
-+	beq	cr5,70f
- 50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
- 	bne	cr1,80f			/* if not monotonic, all done */
- 
-@@ -97,19 +104,57 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	ld	r0,CFG_TB_UPDATE_COUNT(r3)
-         cmpld   cr0,r0,r8		/* check if updated */
- 	bne-	50b
-+	b	78f
- 
--	/* Add wall->monotonic offset and check for overflow or underflow.
-+	/*
-+	 * For coarse clocks we get data directly from the vdso data page, so
-+	 * we don't need to call __do_get_tspec, but we still need to do the
-+	 * counter trick.
- 	 */
--	add	r4,r4,r6
--	add	r5,r5,r9
--	cmpd	cr0,r5,r7
--	cmpdi	cr1,r5,0
--	blt	1f
--	subf	r5,r7,r5
--	addi	r4,r4,1
--1:	bge	cr1,80f
--	addi	r4,r4,-1
--	add	r5,r5,r7
-+70:	ld      r8,CFG_TB_UPDATE_COUNT(r3)
-+	andi.   r0,r8,1                 /* pending update ? loop */
-+	bne-    70b
-+	xor     r0,r8,r8                /* create dependency */
-+	add     r3,r3,r0
-+
-+	/*
-+	 * CLOCK_REALTIME_COARSE, below values are needed for MONOTONIC_COARSE
-+	 * too
-+	 */
-+	ld      r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
-+	ld      r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
-+	bne     cr6,75f
-+
-+	/* CLOCK_MONOTONIC_COARSE */
-+	lwa     r6,WTOM_CLOCK_SEC(r3)
-+	lwa     r9,WTOM_CLOCK_NSEC(r3)
-+
-+	/* check if counter has updated */
-+75:	or      r0,r6,r9
-+	or	r0,r4,r5
-+	xor     r0,r0,r0
-+	add     r3,r3,r0
-+	ld      r0,CFG_TB_UPDATE_COUNT(r3)
-+	cmpld   cr0,r0,r8               /* check if updated */
-+	bne-    70b
-+
-+	/* Counter has not updated, so continue calculating proper values for
-+	 * sec and nsec if monotonic coarse, or just return with the proper
-+	 * values for realtime.
-+	*/
-+	bne     cr6,80f
-+
-+	/* Add wall->monotonic offset and check for overflow or underflow */
-+78:	add     r4,r4,r6
-+	add     r5,r5,r9
-+	cmpd    cr0,r5,r7
-+	cmpdi   cr1,r5,0
-+	blt     79f
-+	subf    r5,r7,r5
-+	addi    r4,r4,1
-+79:	bge     cr1,80f
-+	addi    r4,r4,-1
-+	add     r5,r5,r7
- 
- 80:	std	r4,TSPC64_TV_SEC(r11)
- 	std	r5,TSPC64_TV_NSEC(r11)
--- 
-2.13.6
+
+
+>   drivers/misc/cxl/cxl.h     | 1 +
+>   drivers/misc/cxl/debugfs.c | 4 ++++
+>   2 files changed, 5 insertions(+)
+> 
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index b1afeccbb97f..2c10b536427a 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -100,6 +100,7 @@ static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
+>   static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
+>   /* PSL registers - CAIA 2 */
+>   static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
+> +static const cxl_p1_reg_t CXL_XSL9_DBG      = {0x0130};
+>   static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
+>   static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
+>   static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
+> diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
+> index eae9d749f967..10ff569c1272 100644
+> --- a/drivers/misc/cxl/debugfs.c
+> +++ b/drivers/misc/cxl/debugfs.c
+> @@ -65,6 +65,10 @@ void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir)
+>   	debugfs_create_io_x64("fir2", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR2));
+>   	debugfs_create_io_x64("fir_cntl", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR_CNTL));
+>   	debugfs_create_io_x64("trace", S_IRUSR | S_IWUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_TRACECFG));
+> +	debugfs_create_io_x64("debug", 0600, dir,
+> +			      _cxl_p1_addr(adapter, CXL_PSL9_DEBUG));
+> +	debugfs_create_io_x64("xsl-debug", 0600, dir,
+> +			      _cxl_p1_addr(adapter, CXL_XSL9_DBG));
+>   }
+> 
+>   void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir)
+> 
