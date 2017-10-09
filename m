@@ -2,51 +2,23 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9rd34p4RzDqv8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 06:57:43 +1100 (AEDT)
-Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
- by aserp1040.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v99JveXv021182
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 19:57:40 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
- by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id v99JvdGk011135
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 19:57:39 GMT
-Received: from abhmp0004.oracle.com (abhmp0004.oracle.com [141.146.116.10])
- by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id v99JvdJ9010440
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 19:57:39 GMT
-Received: by mail-oi0-f48.google.com with SMTP id q4so24068736oic.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 12:57:38 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAOAebxvcg9r00bCWDJS4V_mmKk_dELVs_SfxqrxemDg7=uZx_g@mail.gmail.com>
-References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-10-pasha.tatashin@oracle.com>
- <20171003144845.GD4931@leverpostej>
- <20171009171337.GE30085@arm.com>
- <CAOAebxtHHFvYn4WysMASe1GqvgKYPVyjJ572UM3Sef5sP0hi9A@mail.gmail.com>
- <20171009182217.GC30828@arm.com>
- <CAOAebxu1310eCrk88EC=Oaw3n90-9RuHZ1KBhPvLu_DyXBNZFQ@mail.gmail.com>
- <20171009184834.GE30828@arm.com>
- <CAOAebxs5s3DKV8f+Zw+LFVB98PE6cs=RwcOH8qEiU_MPLM9RvQ@mail.gmail.com>
- <20171009190213.GF30828@arm.com>
- <CAOAebxvcg9r00bCWDJS4V_mmKk_dELVs_SfxqrxemDg7=uZx_g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9vpD3yjwzDqyw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 09:20:51 +1100 (AEDT)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Mon, 9 Oct 2017 15:57:38 -0400
-Message-ID: <CAOAebxvJDG0MasKMD-UovUgQyb+FP_4uXk5jV8Tsm9gopM_bUA@mail.gmail.com>
-Subject: Re: [PATCH v9 09/12] mm/kasan: kasan specific map populate function
-To: Will Deacon <will.deacon@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, catalin.marinas@arm.com,
- linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- sam@ravnborg.org, mgorman@techsingularity.net,
- Steve Sistare <steven.sistare@oracle.com>, daniel.m.jordan@oracle.com,
- bob.picco@oracle.com
-Content-Type: text/plain; charset="UTF-8"
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: [PATCH v11 1/9] x86/mm: setting fields in deferred pages
+Date: Mon,  9 Oct 2017 18:19:23 -0400
+Message-Id: <20171009221931.1481-2-pasha.tatashin@oracle.com>
+In-Reply-To: <20171009221931.1481-1-pasha.tatashin@oracle.com>
+References: <20171009221931.1481-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,14 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> I guess we could implement that on arm64 using our current vmemmap_populate
->> logic and an explicit memset.
+Without deferred struct page feature (CONFIG_DEFERRED_STRUCT_PAGE_INIT),
+flags and other fields in "struct page"es are never changed prior to first
+initializing struct pages by going through __init_single_page().
 
-Hi Will,
+With deferred struct page feature enabled, however, we set fields in
+register_page_bootmem_info that are subsequently clobbered right after in
+free_all_bootmem:
 
-I will send out a new patch series with x86/arm64  versions of
-kasan_map_populate(), so you could take a look if this is something
-that is acceptable.
+        mem_init() {
+                register_page_bootmem_info();
+                free_all_bootmem();
+                ...
+        }
 
-Thank you,
-Pavel
+When register_page_bootmem_info() is called only non-deferred struct pages
+are initialized. But, this function goes through some reserved pages which
+might be part of the deferred, and thus are not yet initialized.
+
+  mem_init
+   register_page_bootmem_info
+    register_page_bootmem_info_node
+     get_page_bootmem
+      .. setting fields here ..
+      such as: page->freelist = (void *)type;
+
+  free_all_bootmem()
+   free_low_memory_core_early()
+    for_each_reserved_mem_region()
+     reserve_bootmem_region()
+      init_reserved_page() <- Only if this is deferred reserved page
+       __init_single_pfn()
+        __init_single_page()
+            memset(0) <-- Loose the set fields here
+
+We end-up with issue where, currently we do not observe problem as memory
+is explicitly zeroed. But, if flag asserts are changed we can start hitting
+issues.
+
+Also, because in this patch series we will stop zeroing struct page memory
+during allocation, we must make sure that struct pages are properly
+initialized prior to using them.
+
+The deferred-reserved pages are initialized in free_all_bootmem().
+Therefore, the fix is to switch the above calls.
+
+Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Reviewed-by: Bob Picco <bob.picco@oracle.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+---
+ arch/x86/mm/init_64.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 5ea1c3c2636e..8822523fdcd7 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1182,12 +1182,18 @@ void __init mem_init(void)
+ 
+ 	/* clear_bss() already clear the empty_zero_page */
+ 
+-	register_page_bootmem_info();
+-
+ 	/* this will put all memory onto the freelists */
+ 	free_all_bootmem();
+ 	after_bootmem = 1;
+ 
++	/*
++	 * Must be done after boot memory is put on freelist, because here we
++	 * might set fields in deferred struct pages that have not yet been
++	 * initialized, and free_all_bootmem() initializes all the reserved
++	 * deferred pages for us.
++	 */
++	register_page_bootmem_info();
++
+ 	/* Register memory areas for /proc/kcore */
+ 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR,
+ 			 PAGE_SIZE, KCORE_OTHER);
+-- 
+2.14.2
