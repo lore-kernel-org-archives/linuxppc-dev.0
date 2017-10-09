@@ -1,45 +1,27 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9mNm13ZKzDqv8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 03:46:47 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v99GitUR012562
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 12:46:41 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dg9s8b5x1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 12:46:41 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Mon, 9 Oct 2017 17:46:39 +0100
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v99GkZNF23134250
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 16:46:36 GMT
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v99GkYQp019621
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 03:46:35 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: Re: [PATCH] cxl: Dump PSL_FIR1/2 registers on PSL9 error irq
-In-Reply-To: <20170907121346.22011-1-vaibhav@linux.vnet.ibm.com>
-References: <20170907121346.22011-1-vaibhav@linux.vnet.ibm.com>
-Date: Mon, 09 Oct 2017 22:16:30 +0530
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3y9mzl63SjzDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 04:13:38 +1100 (AEDT)
+Date: Mon, 9 Oct 2017 18:13:37 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Pavel Tatashin <pasha.tatashin@oracle.com>, catalin.marinas@arm.com,
+ linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v9 09/12] mm/kasan: kasan specific map populate function
+Message-ID: <20171009171337.GE30085@arm.com>
+References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
+ <20170920201714.19817-10-pasha.tatashin@oracle.com>
+ <20171003144845.GD4931@leverpostej>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87zi90mfq1.fsf@vajain21.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171003144845.GD4931@leverpostej>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,12 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fred just pointed out that there is no register named FIR2 on PSL9
-instead we have a FIR_MASK register in its place. So I will re-spin this
-patch with the correct register name.
+On Tue, Oct 03, 2017 at 03:48:46PM +0100, Mark Rutland wrote:
+> On Wed, Sep 20, 2017 at 04:17:11PM -0400, Pavel Tatashin wrote:
+> > During early boot, kasan uses vmemmap_populate() to establish its shadow
+> > memory. But, that interface is intended for struct pages use.
+> > 
+> > Because of the current project, vmemmap won't be zeroed during allocation,
+> > but kasan expects that memory to be zeroed. We are adding a new
+> > kasan_map_populate() function to resolve this difference.
+> 
+> Thanks for putting this together.
+> 
+> I've given this a spin on arm64, and can confirm that it works.
+> 
+> Given that this involes redundant walking of page tables, I still think
+> it'd be preferable to have some common *_populate() helper that took a
+> gfp argument, but I guess it's not the end of the world.
+> 
+> I'll leave it to Will and Catalin to say whether they're happy with the
+> page table walking and the new p{u,m}d_large() helpers added to arm64.
 
-Thanks everyone for the review and to Fred for pointing out the issue.
+To be honest, it just looks completely backwards to me; we're walking the
+page tables we created earlier on so that we can figure out what needs to
+be zeroed for KASAN. We already had that information before, hence my
+preference to allow propagation of GFP_FLAGs to vmemmap_alloc_block when
+it's needed. I know that's not popular for some reason, but is walking the
+page tables really better?
 
--- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+Will
