@@ -1,24 +1,22 @@
 Return-Path: <ralf@linux-mips.org>
 Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
- by lists.ozlabs.org (Postfix) with ESMTP id 3y9gt30cbczDqv8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 00:23:22 +1100 (AEDT)
-Received: from localhost.localdomain ([127.0.0.1]:55714 "EHLO linux-mips.org"
+ by lists.ozlabs.org (Postfix) with ESMTP id 3y9gyw2jZ4zDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 00:27:36 +1100 (AEDT)
+Received: from localhost.localdomain ([127.0.0.1]:56464 "EHLO linux-mips.org"
  rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
- id S23992936AbdJINXVMOCxD (ORCPT
+ id S23992400AbdJIN1eFsLdK (ORCPT
  <rfc822;linuxppc-dev@lists.ozlabs.org>);
- Mon, 9 Oct 2017 15:23:21 +0200
-Date: Mon, 9 Oct 2017 15:23:05 +0200
+ Mon, 9 Oct 2017 15:27:34 +0200
+Date: Mon, 9 Oct 2017 15:27:22 +0200
 From: Ralf Baechle <ralf@linux-mips.org>
 To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@iguana.be>,
- Guenter Roeck <linux@roeck-us.net>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-mips@linux-mips.org, linux-watchdog@vger.kernel.org,
+Cc: Thomas Gleixner <tglx@linutronix.de>,
  Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Chris Metcalf <cmetcalf@mellanox.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Harish Patil <harish.patil@cavium.com>,
+ Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
  John Stultz <john.stultz@linaro.org>,
@@ -39,19 +37,20 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@iguana.be>,
  Stephen Boyd <sboyd@codeaurora.org>,
  Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Tejun Heo <tj@kernel.org>,
  Ursula Braun <ubraun@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- linux1394-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-wireless@vger.kernel.org,
+ Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
+ linux1394-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux-wireless@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/13] timer: Remove users of expire and data arguments
- to DEFINE_TIMER
-Message-ID: <20171009132305.GH20977@linux-mips.org>
+Subject: Re: [PATCH 10/13] timer: Remove expires and data arguments from
+ DEFINE_TIMER
+Message-ID: <20171009132722.GI20977@linux-mips.org>
 References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-10-git-send-email-keescook@chromium.org>
+ <1507159627-127660-11-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1507159627-127660-10-git-send-email-keescook@chromium.org>
+In-Reply-To: <1507159627-127660-11-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,30 +60,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 04, 2017 at 04:27:03PM -0700, Kees Cook wrote:
+On Wed, Oct 04, 2017 at 04:27:04PM -0700, Kees Cook wrote:
 
-> Subject: [PATCH 09/13] timer: Remove users of expire and data arguments to
+> Subject: [PATCH 10/13] timer: Remove expires and data arguments from
 >  DEFINE_TIMER
 > 
-> The expire and data arguments of DEFINE_TIMER are only used in two places
-> and are ignored by the code (malta-display.c only uses mod_timer(),
-> never add_timer(), so the preset expires value is ignored). Set both
-> sets of arguments to zero.
+> Drop the arguments from the macro and adjust all callers with the
+> following script:
 > 
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Cc: Wim Van Sebroeck <wim@iguana.be>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: linux-mips@linux-mips.org
-> Cc: linux-watchdog@vger.kernel.org
+>   perl -pi -e 's/DEFINE_TIMER\((.*), 0, 0\);/DEFINE_TIMER($1);/g;' \
+>     $(git grep DEFINE_TIMER | cut -d: -f1 | sort -u | grep -v timer.h)
+> 
 > Signed-off-by: Kees Cook <keescook@chromium.org>
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # for m68k parts
 > ---
->  arch/mips/mti-malta/malta-display.c | 6 +++---
->  drivers/watchdog/alim7101_wdt.c     | 4 ++--
->  2 files changed, 5 insertions(+), 5 deletions(-)
-
-For malta-display:
+>  arch/arm/mach-ixp4xx/dsmg600-setup.c      | 2 +-
+>  arch/arm/mach-ixp4xx/nas100d-setup.c      | 2 +-
+>  arch/m68k/amiga/amisound.c                | 2 +-
+>  arch/m68k/mac/macboing.c                  | 2 +-
+>  arch/mips/mti-malta/malta-display.c       | 2 +-
+>  arch/parisc/kernel/pdc_cons.c             | 2 +-
+>  arch/s390/mm/cmm.c                        | 2 +-
+>  drivers/atm/idt77105.c                    | 4 ++--
+>  drivers/atm/iphase.c                      | 2 +-
+>  drivers/block/ataflop.c                   | 8 ++++----
+>  drivers/char/dtlk.c                       | 2 +-
+>  drivers/char/hangcheck-timer.c            | 2 +-
+>  drivers/char/nwbutton.c                   | 2 +-
+>  drivers/char/rtc.c                        | 2 +-
+>  drivers/input/touchscreen/s3c2410_ts.c    | 2 +-
+>  drivers/net/cris/eth_v10.c                | 6 +++---
+>  drivers/net/hamradio/yam.c                | 2 +-
+>  drivers/net/wireless/atmel/at76c50x-usb.c | 2 +-
+>  drivers/staging/speakup/main.c            | 2 +-
+>  drivers/staging/speakup/synth.c           | 2 +-
+>  drivers/tty/cyclades.c                    | 2 +-
+>  drivers/tty/isicom.c                      | 2 +-
+>  drivers/tty/moxa.c                        | 2 +-
+>  drivers/tty/rocket.c                      | 2 +-
+>  drivers/tty/vt/keyboard.c                 | 2 +-
+>  drivers/tty/vt/vt.c                       | 2 +-
+>  drivers/watchdog/alim7101_wdt.c           | 2 +-
+>  drivers/watchdog/machzwd.c                | 2 +-
+>  drivers/watchdog/mixcomwd.c               | 2 +-
+>  drivers/watchdog/sbc60xxwdt.c             | 2 +-
+>  drivers/watchdog/sc520_wdt.c              | 2 +-
+>  drivers/watchdog/via_wdt.c                | 2 +-
+>  drivers/watchdog/w83877f_wdt.c            | 2 +-
+>  drivers/xen/grant-table.c                 | 2 +-
+>  fs/pstore/platform.c                      | 2 +-
+>  include/linux/timer.h                     | 4 ++--
+>  kernel/irq/spurious.c                     | 2 +-
+>  lib/random32.c                            | 2 +-
+>  net/atm/mpc.c                             | 2 +-
+>  net/decnet/dn_route.c                     | 2 +-
+>  net/ipv6/ip6_flowlabel.c                  | 2 +-
+>  net/netrom/nr_loopback.c                  | 2 +-
+>  security/keys/gc.c                        | 2 +-
+>  sound/oss/midibuf.c                       | 2 +-
+>  sound/oss/soundcard.c                     | 2 +-
+>  sound/oss/sys_timer.c                     | 2 +-
+>  sound/oss/uart6850.c                      | 2 +-
+>  47 files changed, 54 insertions(+), 54 deletions(-)
 
 Acked-by: Ralf Baechle <ralf@linux-mips.org>
+
+Thanks,
 
   Ralf
