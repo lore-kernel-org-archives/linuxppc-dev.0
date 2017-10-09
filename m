@@ -1,39 +1,26 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <santosh@fossix.org>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9W4V0YZ7zDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 17:46:49 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v996i6P0056211
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 02:46:47 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dg3xe8drp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 02:46:47 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 9 Oct 2017 07:46:45 +0100
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v996kfKQ19726484
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 06:46:42 GMT
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v996keoL002214
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 17:46:41 +1100
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/powernv: Add kernel cmdline parameter to disable imc
-Date: Mon,  9 Oct 2017 12:16:37 +0530
-Message-Id: <1507531597-25947-1-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9XwT6gQszDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 19:10:01 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id i23so25827372pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 01:10:00 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v4] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+Date: Mon,  9 Oct 2017 13:39:49 +0530
+Message-Id: <20171009080949.25913-1-santosh@fossix.org>
+In-Reply-To: <20171006112528.zryd4l2yl2k6xk2h@naverao1-tp.localdomain>
+References: <20171006112528.zryd4l2yl2k6xk2h@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,99 +30,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a kernel command line parameter option to disable In-Memory Collection
-(IMC) counters and add documentation. This helps in debug.
- 
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Reviewed-By: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- Documentation/admin-guide/kernel-parameters.txt |  7 +++++
- arch/powerpc/platforms/powernv/opal-imc.c       | 35 +++++++++++++++++++++++++
- 2 files changed, 42 insertions(+)
+Current vDSO64 implementation does not have support for coarse clocks
+(CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
+to system call, increasing the response time, vDSO implementation reduces
+the cycle time. Below is a benchmark of the difference in execution times.
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 0549662..06a8da1 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -820,6 +820,13 @@
- 	disable_ipv6=	[IPV6]
- 			See Documentation/networking/ipv6.txt.
+(Non-coarse clocks are also included just for completion)
+
+clock-gettime-realtime: syscall: 172 nsec/call
+clock-gettime-realtime:    libc: 28 nsec/call
+clock-gettime-realtime:    vdso: 22 nsec/call
+clock-gettime-monotonic: syscall: 171 nsec/call
+clock-gettime-monotonic:    libc: 30 nsec/call
+clock-gettime-monotonic:    vdso: 25 nsec/call
+clock-gettime-realtime-coarse: syscall: 153 nsec/call
+clock-gettime-realtime-coarse:    libc: 16 nsec/call
+clock-gettime-realtime-coarse:    vdso: 10 nsec/call
+clock-gettime-monotonic-coarse: syscall: 167 nsec/call
+clock-gettime-monotonic-coarse:    libc: 17 nsec/call
+clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
+
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+---
+ arch/powerpc/kernel/asm-offsets.c         |  2 +
+ arch/powerpc/kernel/vdso64/gettimeofday.S | 67 ++++++++++++++++++++++++++-----
+ 2 files changed, 58 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 8cfb20e38cfe..b55c68c54dc1 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -396,6 +396,8 @@ int main(void)
+ 	/* Other bits used by the vdso */
+ 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+ 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
++	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
++	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
+ 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+ 	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
  
-+	disable_imc=	[PPC]
-+			Format {nest | core | all}
-+			Disable imc counters during boot.
-+			nest----- Disable nest-imc counters.
-+			core----- Disable core and thread imc counters.
-+			all------ Disable nest, core and thread imc counters.
+diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+index 382021324883..729dded195ce 100644
+--- a/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -64,6 +64,12 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	cmpwi	cr0,r3,CLOCK_REALTIME
+ 	cmpwi	cr1,r3,CLOCK_MONOTONIC
+ 	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
 +
- 	disable_mtrr_cleanup [X86]
- 			The kernel tries to adjust MTRR layout from continuous
- 			to discrete, to make X server driver able to add WB
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index 21f6531..e929f33 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -22,6 +22,28 @@
- #include <asm/imc-pmu.h>
- #include <asm/cputhreads.h>
++	cmpwi	cr5,r3,CLOCK_REALTIME_COARSE
++	cmpwi	cr6,r3,CLOCK_MONOTONIC_COARSE
++	cror	cr5*4+eq,cr5*4+eq,cr6*4+eq
++
++	cror	cr0*4+eq,cr0*4+eq,cr5*4+eq
+ 	bne	cr0,99f
  
-+static bool disable_nest_imc;
-+static bool disable_core_imc;
-+
-+/*
-+ * diasble_imc=nest: skip the registration of nest pmus.
-+ * disable_imc=core: skip the registration of core and thread pmus.
-+ * disable_imc=all : disables nest, core and thread.
-+ */
-+static int __init disable_imc_counters(char *p)
-+{
-+	if (strncmp(p, "nest", 4) == 0)
-+		disable_nest_imc = true;
-+	else if (strncmp(p, "core", 4) == 0)
-+		disable_core_imc = true;
-+	else if (strncmp(p, "all", 3) == 0) {
-+		disable_nest_imc = true;
-+		disable_core_imc = true;
-+	}
-+	return 0;
-+}
-+early_param("disable_imc", disable_imc_counters);
-+
- /*
-  * imc_get_mem_addr_nest: Function to get nest counter memory region
-  * for each chip
-@@ -169,6 +191,10 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
+ 	mflr	r12			/* r12 saves lr */
+@@ -72,6 +78,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+ 	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
+ 	ori	r7,r7,NSEC_PER_SEC@l
++	beq	cr5,70f
+ 50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
+ 	bne	cr1,80f			/* if not monotonic, all done */
  
-+	/* If kernel is booted with disable_imc parameters, then return */
-+	if (disable_nest_imc && disable_core_imc)
-+		return -ENODEV;
-+
- 	for_each_compatible_node(imc_dev, NULL, IMC_DTB_UNIT_COMPAT) {
- 		if (of_property_read_u32(imc_dev, "type", &type)) {
- 			pr_warn("IMC Device without type property\n");
-@@ -177,12 +203,21 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
+@@ -97,19 +104,57 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	ld	r0,CFG_TB_UPDATE_COUNT(r3)
+         cmpld   cr0,r0,r8		/* check if updated */
+ 	bne-	50b
++	b	78f
  
- 		switch (type) {
- 		case IMC_TYPE_CHIP:
-+			if (disable_nest_imc)
-+				continue;
+-	/* Add wall->monotonic offset and check for overflow or underflow.
++	/*
++	 * For coarse clocks we get data directly from the vdso data page, so
++	 * we don't need to call __do_get_tspec, but we still need to do the
++	 * counter trick.
+ 	 */
+-	add	r4,r4,r6
+-	add	r5,r5,r9
+-	cmpd	cr0,r5,r7
+-	cmpdi	cr1,r5,0
+-	blt	1f
+-	subf	r5,r7,r5
+-	addi	r4,r4,1
+-1:	bge	cr1,80f
+-	addi	r4,r4,-1
+-	add	r5,r5,r7
++70:	ld      r8,CFG_TB_UPDATE_COUNT(r3)
++	andi.   r0,r8,1                 /* pending update ? loop */
++	bne-    70b
++	xor     r0,r8,r8                /* create dependency */
++	add     r3,r3,r0
 +
- 			domain = IMC_DOMAIN_NEST;
- 			break;
- 		case IMC_TYPE_CORE:
-+			if (disable_core_imc)
-+				continue;
++	/*
++	 * CLOCK_REALTIME_COARSE, below values are needed for MONOTONIC_COARSE
++	 * too
++	 */
++	ld      r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
++	ld      r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
++	bne     cr6,75f
 +
- 			domain =IMC_DOMAIN_CORE;
- 			break;
- 		case IMC_TYPE_THREAD:
-+			if (disable_core_imc)
-+				continue;
++	/* CLOCK_MONOTONIC_COARSE */
++	lwa     r6,WTOM_CLOCK_SEC(r3)
++	lwa     r9,WTOM_CLOCK_NSEC(r3)
 +
- 			domain = IMC_DOMAIN_THREAD;
- 			break;
- 		default:
++	/* check if counter has updated */
++75:	or      r0,r6,r9
++	or	r0,r4,r5
++	xor     r0,r0,r0
++	add     r3,r3,r0
++	ld      r0,CFG_TB_UPDATE_COUNT(r3)
++	cmpld   cr0,r0,r8               /* check if updated */
++	bne-    70b
++
++	/* Counter has not updated, so continue calculating proper values for
++	 * sec and nsec if monotonic coarse, or just return with the proper
++	 * values for realtime.
++	*/
++	bne     cr6,80f
++
++	/* Add wall->monotonic offset and check for overflow or underflow */
++78:	add     r4,r4,r6
++	add     r5,r5,r9
++	cmpd    cr0,r5,r7
++	cmpdi   cr1,r5,0
++	blt     79f
++	subf    r5,r7,r5
++	addi    r4,r4,1
++79:	bge     cr1,80f
++	addi    r4,r4,-1
++	add     r5,r5,r7
+ 
+ 80:	std	r4,TSPC64_TV_SEC(r11)
+ 	std	r5,TSPC64_TV_NSEC(r11)
 -- 
-2.7.4
+2.13.6
