@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9bYt4nr6zDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 21:09:06 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v99A8tCJ059449
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 06:09:03 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dfwecbsad-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9bYv3SPszDr55
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 21:09:07 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v99A8ejD025090
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 06:09:04 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dg4cp72yx-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 06:09:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 06:09:04 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 9 Oct 2017 11:08:40 +0100
+ Mon, 9 Oct 2017 11:09:02 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -33,11 +33,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v4 11/20] mm: Introduce __maybe_mkwrite()
-Date: Mon,  9 Oct 2017 12:07:43 +0200
+Subject: [PATCH v4 19/20] x86/mm: Add speculative pagefault handling
+Date: Mon,  9 Oct 2017 12:07:51 +0200
 In-Reply-To: <1507543672-25821-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1507543672-25821-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1507543672-25821-12-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1507543672-25821-20-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,72 +47,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current maybe_mkwrite() is getting passed the pointer to the vma
-structure to fetch the vm_flags field.
+From: Peter Zijlstra <peterz@infradead.org>
 
-When dealing with the speculative page fault handler, it will be better to
-rely on the cached vm_flags value stored in the vm_fault structure.
+Try a speculative fault before acquiring mmap_sem, if it returns with
+VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
+traditional fault.
 
-This patch introduce a __maybe_mkwrite() service which can be called by
-passing the value of the vm_flags field.
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
-There is no change functional changes expected for the other callers of
-maybe_mkwrite().
-
+[Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
+ handle_speculative_fault()]
+[Retry with usual fault path in the case VM_ERROR is returned by
+ handle_speculative_fault(). This allows signal to be delivered]
+[Don't build SPF call if !__HAVE_ARCH_CALL_SPF]
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/mm.h | 9 +++++++--
- mm/memory.c        | 6 +++---
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ arch/x86/include/asm/pgtable_types.h |  7 +++++++
+ arch/x86/mm/fault.c                  | 21 +++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index ccb718e28ebe..cdccee815227 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -673,13 +673,18 @@ void free_compound_page(struct page *page);
-  * pte_mkwrite.  But get_user_pages can cause write faults for mappings
-  * that do not have writing enabled, when used by access_process_vm.
-  */
--static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
-+static inline pte_t __maybe_mkwrite(pte_t pte, unsigned long vma_flags)
- {
--	if (likely(vma->vm_flags & VM_WRITE))
-+	if (likely(vma_flags & VM_WRITE))
- 		pte = pte_mkwrite(pte);
- 	return pte;
- }
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index f1492473f10e..48c7e587eac4 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -257,6 +257,13 @@ enum page_cache_mode {
+ #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
+ #endif
  
-+static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
-+{
-+	return __maybe_mkwrite(pte, vma->vm_flags);
-+}
++/*
++ * Advertise that we call the Speculative Page Fault handler.
++ */
++#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
++#define __HAVE_ARCH_CALL_SPF
++#endif
 +
- int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
- 		struct page *page);
- int finish_fault(struct vm_fault *vmf);
-diff --git a/mm/memory.c b/mm/memory.c
-index 687d4395111f..d91418708845 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2451,7 +2451,7 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
+ #ifdef CONFIG_X86_32
+ # include <asm/pgtable_32_types.h>
+ #else
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index e2baeaa053a5..802dc7d914a2 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -1364,6 +1364,24 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 	if (error_code & PF_INSTR)
+ 		flags |= FAULT_FLAG_INSTRUCTION;
  
- 	flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
- 	entry = pte_mkyoung(vmf->orig_pte);
--	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+	entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
- 	if (ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1))
- 		update_mmu_cache(vma, vmf->address, vmf->pte);
- 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-@@ -2541,8 +2541,8 @@ static int wp_page_copy(struct vm_fault *vmf)
- 			inc_mm_counter_fast(mm, MM_ANONPAGES);
- 		}
- 		flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
--		entry = mk_pte(new_page, vma->vm_page_prot);
--		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+		entry = mk_pte(new_page, vmf->vma_page_prot);
-+		entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
- 		/*
- 		 * Clear the pte entry and flush it first, before updating the
- 		 * pte with the new entry. This will avoid a race condition
++#ifdef __HAVE_ARCH_CALL_SPF
++	if (error_code & PF_USER) {
++		fault = handle_speculative_fault(mm, address, flags);
++
++		/*
++		 * We also check against VM_FAULT_ERROR because we have to
++		 * raise a signal by calling later mm_fault_error() which
++		 * requires the vma pointer to be set. So in that case,
++		 * we fall through the normal path.
++		 */
++		if (!(fault & VM_FAULT_RETRY || fault & VM_FAULT_ERROR)) {
++			perf_sw_event(PERF_COUNT_SW_SPF, 1,
++				      regs, address);
++			goto done;
++		}
++	}
++#endif /* __HAVE_ARCH_CALL_SPF */
++
+ 	/*
+ 	 * When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in
+@@ -1474,6 +1492,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 		return;
+ 	}
+ 
++#ifdef __HAVE_ARCH_CALL_SPF
++done:
++#endif
+ 	/*
+ 	 * Major/minor page fault accounting. If any of the events
+ 	 * returned VM_FAULT_MAJOR, we account it as a major fault.
 -- 
 2.7.4
