@@ -1,41 +1,32 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9nzQ41c4zDr5w
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 04:58:26 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v99HsGA4027823
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 13:58:24 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dgd10u4gf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 13:58:24 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Mon, 9 Oct 2017 18:58:21 +0100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v99HwIQI11665614
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 17:58:19 GMT
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v99HwA5T024695
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 04:58:11 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: [PATCH] cxl: Dump PSL_FIR register on PSL9 error irq
-Date: Mon,  9 Oct 2017 23:28:11 +0530
-Message-Id: <20171009175811.5266-1-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9pLB0pdTzDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 05:14:40 +1100 (AEDT)
+Date: Mon, 9 Oct 2017 20:14:33 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>,
+ catalin.marinas@arm.com, linux-kernel@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, sam@ravnborg.org, mgorman@techsingularity.net,
+ Steve Sistare <steven.sistare@oracle.com>,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v9 09/12] mm/kasan: kasan specific map populate function
+Message-ID: <20171009181433.wevxa447d4g6kdsj@dhcp22.suse.cz>
+References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
+ <20170920201714.19817-10-pasha.tatashin@oracle.com>
+ <20171003144845.GD4931@leverpostej>
+ <20171009171337.GE30085@arm.com>
+ <CAOAebxtHHFvYn4WysMASe1GqvgKYPVyjJ572UM3Sef5sP0hi9A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOAebxtHHFvYn4WysMASe1GqvgKYPVyjJ572UM3Sef5sP0hi9A@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,60 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For PSL9 currently we aren't dumping the PSL FIR register when a
-PSL error interrupt is triggered. Contents of this register are useful
-in debugging AFU issues.
+On Mon 09-10-17 13:51:47, Pavel Tatashin wrote:
+> Hi Will,
+> 
+> I can go back to that approach, if Michal OK with it. But, that would
+> mean that I would need to touch every single architecture that
+> implements vmemmap_populate(), and also pass flags at least through
+> these functions on every architectures (some have more than one
+> decided by configs).:
+> 
+> vmemmap_populate()
+> vmemmap_populate_basepages()
+> vmemmap_populate_hugepages()
+> vmemmap_pte_populate()
+> __vmemmap_alloc_block_buf()
+> alloc_block_buf()
+> vmemmap_alloc_block()
+> 
+> IMO, while I understand that it looks strange that we must walk page
+> table after creating it, it is a better approach: more enclosed as it
+> effects kasan only, and more universal as it is in common code.
 
-This patch fixes issue by updating the cxl_native_err_irq_dump_regs()
-to dump the PSL_FIR registers on a PSL error interrupt thereby
-bringing the behavior in line with PSL on POWER-8.
-
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
- drivers/misc/cxl/native.c | 17 ++++++++++++++---
- drivers/misc/cxl/pci.c    |  1 +
- 2 files changed, 15 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 6cd57c756927..fa143bad9b55 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -1267,10 +1267,21 @@ void cxl_native_err_irq_dump_regs(struct cxl *adapter)
- {
- 	u64 fir1, fir2;
- 
--	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
--	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
-+	if (cxl_is_power8()) {
-+		fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
-+		fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
-+		dev_crit(&adapter->dev,
-+			 "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n",
-+			 fir1, fir2);
-+
-+	} else if (cxl_is_power9()) {
-+		fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
-+		dev_crit(&adapter->dev, "PSL_FIR: 0x%016llx\n", fir1);
-+
-+	} else {
-+		WARN_ON(1);
-+	}
- 
--	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
- }
- 
- static irqreturn_t native_irq_err(int irq, void *data)
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index b4ce9ea113a9..d9d6777fa853 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1763,6 +1763,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
- 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
- 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
- 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
-+	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
- 	.debugfs_stop_trace = cxl_stop_trace_psl9,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl9,
- 	.timebase_read = timebase_read_psl9,
+While I understand that gfp mask approach might look better at first
+sight this is by no means a general purpose API so I would rather be
+pragmatic and have a smaller code footprint than a more general
+interface. Kasan is pretty much a special case and doing a one time
+initialization 2 pass thing is imho acceptable. If this turns out to be
+impractical in future then let's fix it up but right now I would rather
+go a simpler path.
 -- 
-2.13.6
+Michal Hocko
+SUSE Labs
