@@ -1,44 +1,57 @@
 Return-Path: <ralf@linux-mips.org>
 Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
- by lists.ozlabs.org (Postfix) with ESMTP id 3y9gkP20BFzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 00:16:45 +1100 (AEDT)
-Received: from localhost.localdomain ([127.0.0.1]:53964 "EHLO linux-mips.org"
+ by lists.ozlabs.org (Postfix) with ESMTP id 3y9gt30cbczDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 00:23:22 +1100 (AEDT)
+Received: from localhost.localdomain ([127.0.0.1]:55714 "EHLO linux-mips.org"
  rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
- id S23992511AbdJINKacsi0Y (ORCPT
+ id S23992936AbdJINXVMOCxD (ORCPT
  <rfc822;linuxppc-dev@lists.ozlabs.org>);
- Mon, 9 Oct 2017 15:10:30 +0200
-Date: Mon, 9 Oct 2017 15:10:02 +0200
+ Mon, 9 Oct 2017 15:23:21 +0200
+Date: Mon, 9 Oct 2017 15:23:05 +0200
 From: Ralf Baechle <ralf@linux-mips.org>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-mips@linux-mips.org,
- Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org,
+To: Kees Cook <keescook@chromium.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@iguana.be>,
+ Guenter Roeck <linux@roeck-us.net>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-mips@linux-mips.org, linux-watchdog@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Jesper Nilsson <jesper.nilsson@axis.com>, linux-am33-list@redhat.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Harish Patil <harish.patil@cavium.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ John Stultz <john.stultz@linaro.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>,
+ Kalle Valo <kvalo@qca.qualcomm.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>,
+ Manish Chopra <manish.chopra@cavium.com>,
+ Mark Gross <mark.gross@intel.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- linux-xtensa@linux-xtensa.org, Mikael Starvik <starvik@axis.com>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>,
- Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
- linux-parisc@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/4] PCI: Remove redundant pcibios_set_master()
- declarations
-Message-ID: <20171009131002.GF20977@linux-mips.org>
-References: <20171005201939.18300.25690.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20171005203842.18300.67328.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ Michael Reed <mdr@sgi.com>, netdev@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+ Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Sebastian Reichel <sre@kernel.org>,
+ Stefan Richter <stefanr@s5r6.in-berlin.de>,
+ Stephen Boyd <sboyd@codeaurora.org>,
+ Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Tejun Heo <tj@kernel.org>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ linux1394-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/13] timer: Remove users of expire and data arguments
+ to DEFINE_TIMER
+Message-ID: <20171009132305.GH20977@linux-mips.org>
+References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
+ <1507159627-127660-10-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171005203842.18300.67328.stgit@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: <1507159627-127660-10-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,27 +61,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 05, 2017 at 03:38:42PM -0500, Bjorn Helgaas wrote:
+On Wed, Oct 04, 2017 at 04:27:03PM -0700, Kees Cook wrote:
 
-> From: Bjorn Helgaas <bhelgaas@google.com>
+> Subject: [PATCH 09/13] timer: Remove users of expire and data arguments to
+>  DEFINE_TIMER
 > 
-> All users of pcibios_set_master() include <linux/pci.h>, which already has
-> a declaration.  Remove the unnecessary declarations from the <asm/pci.h>
-> files.
+> The expire and data arguments of DEFINE_TIMER are only used in two places
+> and are ignored by the code (malta-display.c only uses mod_timer(),
+> never add_timer(), so the preset expires value is ignored). Set both
+> sets of arguments to zero.
 > 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Wim Van Sebroeck <wim@iguana.be>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: linux-watchdog@vger.kernel.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
->  arch/alpha/include/asm/pci.h   |    2 --
->  arch/cris/include/asm/pci.h    |    1 -
->  arch/frv/include/asm/pci.h     |    2 --
->  arch/mips/include/asm/pci.h    |    2 --
->  arch/mn10300/include/asm/pci.h |    2 --
->  arch/parisc/include/asm/pci.h  |    1 -
->  arch/sh/include/asm/pci.h      |    2 --
->  arch/x86/include/asm/pci.h     |    1 -
->  8 files changed, 13 deletions(-)
+>  arch/mips/mti-malta/malta-display.c | 6 +++---
+>  drivers/watchdog/alim7101_wdt.c     | 4 ++--
+>  2 files changed, 5 insertions(+), 5 deletions(-)
 
-For MIPS:
+For malta-display:
 
 Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
