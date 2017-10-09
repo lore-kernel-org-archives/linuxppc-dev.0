@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9cXM18RjzDrCR
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 21:52:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9cYv1n7nzDrJl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 21:54:11 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Cc: bauerman@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/perf/hv-24x7: Fix incorrect comparison in memord
-Date: Mon,  9 Oct 2017 21:52:44 +1100
-Message-Id: <1507546364-27628-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 1/2] powerpc/64s: Move the two FAST_ENDIAN macros next to each
+ other
+Date: Mon,  9 Oct 2017 21:54:04 +1100
+Message-Id: <1507546445-28089-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,34 +19,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the hv-24x7 code there is a function memord() which tries to
-implement a sort function return -1, 0, 1. However one of the
-conditions is incorrect, such that it can never be true, because we
-will have already returned.
+So we can #ifdef them in the next patch.
 
-I don't believe there is a bug in practice though, because the
-comparisons are an optimisation prior to calling memcmp().
-
-Fix it by swapping the second comparision, so it can be true.
-
-Reported-by: David Binderman <dcb314@hotmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/perf/hv-24x7.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/exceptions-64s.S | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 9c88b82f6229..72238eedc360 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -540,7 +540,7 @@ static int memord(const void *d1, size_t s1, const void *d2, size_t s2)
- {
- 	if (s1 < s2)
- 		return 1;
--	if (s2 > s1)
-+	if (s1 > s2)
- 		return -1;
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index b9925933b3e5..5bdad80dd9c2 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -865,12 +865,6 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
+ #define LOAD_SYSCALL_HANDLER(reg)					\
+ 	__LOAD_HANDLER(reg, system_call_common)
  
- 	return memcmp(d1, d2, s1);
+-#define SYSCALL_FASTENDIAN_TEST					\
+-BEGIN_FTR_SECTION						\
+-	cmpdi	r0,0x1ebe ; 					\
+-	beq-	1f ;						\
+-END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+-
+ /*
+  * After SYSCALL_KVMTEST, we reach here with PACA in r13, r13 in r9,
+  * and HMT_MEDIUM.
+@@ -885,6 +879,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	rfid ; 							\
+ 	b	. ;	/* prevent speculative execution */
+ 
++#define SYSCALL_FASTENDIAN_TEST					\
++BEGIN_FTR_SECTION						\
++	cmpdi	r0,0x1ebe ; 					\
++	beq-	1f ;						\
++END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
++
+ #define SYSCALL_FASTENDIAN					\
+ 	/* Fast LE/BE switch system call */			\
+ 1:	mfspr	r12,SPRN_SRR1 ;					\
 -- 
 2.7.4
