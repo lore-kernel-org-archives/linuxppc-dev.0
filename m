@@ -1,14 +1,38 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sandipan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9ch70MWgzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 21:59:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/xmon: Add kstack base to paca dump
-Date: Mon,  9 Oct 2017 21:59:32 +1100
-Message-Id: <1507546772-31932-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9csQ5BWnzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 22:07:38 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v99B7ZSk083711
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 07:07:35 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dg5xwpdc3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 07:07:35 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
+ Mon, 9 Oct 2017 12:07:33 +0100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v99B7TjQ29687984
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 11:07:31 GMT
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v99B7XA2022852
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 22:07:33 +1100
+From: Sandipan Das <sandipan@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org, anton@samba.org,
+ segher@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/lib/sstep: Fix count leading zeros instructions
+Date: Mon,  9 Oct 2017 16:37:26 +0530
+Message-Id: <20171009110726.28551-1-sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,32 +42,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When dumping the paca in xmon we currently show kstack. Although it's
-not hard it's a bit fiddly to work out what the bounds of the kernel
-stack should be based on the kstack value.
+According to the GCC documentation, the behaviour of __builtin_clz()
+and __builtin_clzl() is undefined if the value of the input argument
+is zero. Without handling this special case, these builtins have been
+used for emulating the following instructions:
+  * Count Leading Zeros Word (cntlzw[.])
+  * Count Leading Zeros Doubleword (cntlzd[.])
 
-To make life easier and "kstack_base" which is the base (lowest
-address) of the kernel stack, eg:
+This fixes the emulated behaviour of these instructions by adding an
+additional check for this special case.
 
- kstack               = 0xc0000000f1a7be30      (0x258)
- kstack_base          = 0xc0000000f1a78000
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 ---
- arch/powerpc/xmon/xmon.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/lib/sstep.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 429339df0e8e..b45741c50253 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2388,6 +2388,7 @@ static void dump_one_paca(int cpu)
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 0f7e41bd7e88..ebbc0b92650c 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1717,11 +1717,19 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+  * Logical instructions
+  */
+ 		case 26:	/* cntlzw */
+-			op->val = __builtin_clz((unsigned int) regs->gpr[rd]);
++			val = (unsigned int) regs->gpr[rd];
++			if (val == 0)
++				op->val = 32;
++			else
++				op->val = __builtin_clz(val);
+ 			goto logical_done;
+ #ifdef __powerpc64__
+ 		case 58:	/* cntlzd */
+-			op->val = __builtin_clzl(regs->gpr[rd]);
++			val = regs->gpr[rd];
++			if (val == 0)
++				op->val = 64;
++			else
++				op->val = __builtin_clzl(val);
+ 			goto logical_done;
  #endif
- 	DUMP(p, __current, "p");
- 	DUMP(p, kstack, "lx");
-+	printf(" kstack_base          = 0x%016lx\n", p->kstack & ~(THREAD_SIZE - 1));
- 	DUMP(p, stab_rr, "lx");
- 	DUMP(p, saved_r1, "lx");
- 	DUMP(p, trap_save, "x");
+ 		case 28:	/* and */
 -- 
-2.7.4
+2.13.6
