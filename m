@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9bYs2DVyzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 21:09:05 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v99A8l5O110379
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9bYt4nr6zDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 21:09:06 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v99A8tCJ059449
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 06:09:03 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dg5t8bpgj-1
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dfwecbsad-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 06:09:02 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 9 Oct 2017 11:09:00 +0100
+ Mon, 9 Oct 2017 11:08:40 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -33,11 +33,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v4 18/20] perf tools: Add support for the SPF perf event
-Date: Mon,  9 Oct 2017 12:07:50 +0200
+Subject: [PATCH v4 11/20] mm: Introduce __maybe_mkwrite()
+Date: Mon,  9 Oct 2017 12:07:43 +0200
 In-Reply-To: <1507543672-25821-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1507543672-25821-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1507543672-25821-19-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1507543672-25821-12-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,79 +47,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for the new speculative faults event.
+The current maybe_mkwrite() is getting passed the pointer to the vma
+structure to fetch the vm_flags field.
+
+When dealing with the speculative page fault handler, it will be better to
+rely on the cached vm_flags value stored in the vm_fault structure.
+
+This patch introduce a __maybe_mkwrite() service which can be called by
+passing the value of the vm_flags field.
+
+There is no change functional changes expected for the other callers of
+maybe_mkwrite().
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- tools/include/uapi/linux/perf_event.h | 1 +
- tools/perf/util/evsel.c               | 1 +
- tools/perf/util/parse-events.c        | 4 ++++
- tools/perf/util/parse-events.l        | 1 +
- tools/perf/util/python.c              | 1 +
- 5 files changed, 8 insertions(+)
+ include/linux/mm.h | 9 +++++++--
+ mm/memory.c        | 6 +++---
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/tools/include/uapi/linux/perf_event.h b/tools/include/uapi/linux/perf_event.h
-index 140ae638cfd6..101e509ee39b 100644
---- a/tools/include/uapi/linux/perf_event.h
-+++ b/tools/include/uapi/linux/perf_event.h
-@@ -111,6 +111,7 @@ enum perf_sw_ids {
- 	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
- 	PERF_COUNT_SW_DUMMY			= 9,
- 	PERF_COUNT_SW_BPF_OUTPUT		= 10,
-+	PERF_COUNT_SW_SPF			= 11,
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index ccb718e28ebe..cdccee815227 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -673,13 +673,18 @@ void free_compound_page(struct page *page);
+  * pte_mkwrite.  But get_user_pages can cause write faults for mappings
+  * that do not have writing enabled, when used by access_process_vm.
+  */
+-static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
++static inline pte_t __maybe_mkwrite(pte_t pte, unsigned long vma_flags)
+ {
+-	if (likely(vma->vm_flags & VM_WRITE))
++	if (likely(vma_flags & VM_WRITE))
+ 		pte = pte_mkwrite(pte);
+ 	return pte;
+ }
  
- 	PERF_COUNT_SW_MAX,			/* non-ABI */
- };
-diff --git a/tools/perf/util/evsel.c b/tools/perf/util/evsel.c
-index f894893c203d..5cff5936a9ac 100644
---- a/tools/perf/util/evsel.c
-+++ b/tools/perf/util/evsel.c
-@@ -437,6 +437,7 @@ const char *perf_evsel__sw_names[PERF_COUNT_SW_MAX] = {
- 	"alignment-faults",
- 	"emulation-faults",
- 	"dummy",
-+	"speculative-faults",
- };
++static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
++{
++	return __maybe_mkwrite(pte, vma->vm_flags);
++}
++
+ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
+ 		struct page *page);
+ int finish_fault(struct vm_fault *vmf);
+diff --git a/mm/memory.c b/mm/memory.c
+index 687d4395111f..d91418708845 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2451,7 +2451,7 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
  
- static const char *__perf_evsel__sw_name(u64 config)
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 9183913a6174..0914d3b94ae8 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -136,6 +136,10 @@ struct event_symbol event_symbols_sw[PERF_COUNT_SW_MAX] = {
- 		.symbol = "bpf-output",
- 		.alias  = "",
- 	},
-+	[PERF_COUNT_SW_SPF] = {
-+		.symbol = "speculative-faults",
-+		.alias	= "spf",
-+	},
- };
- 
- #define __PERF_EVENT_FIELD(config, name) \
-diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
-index ea2426daf7e8..67d2d9c79c28 100644
---- a/tools/perf/util/parse-events.l
-+++ b/tools/perf/util/parse-events.l
-@@ -290,6 +290,7 @@ emulation-faults				{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_EM
- dummy						{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_DUMMY); }
- duration_time					{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_DUMMY); }
- bpf-output					{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_BPF_OUTPUT); }
-+speculative-faults|spf				{ return sym(yyscanner, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_SPF); }
- 
- 	/*
- 	 * We have to handle the kernel PMU event cycles-ct/cycles-t/mem-loads/mem-stores separately.
-diff --git a/tools/perf/util/python.c b/tools/perf/util/python.c
-index c129e99114ae..12209adb7cb5 100644
---- a/tools/perf/util/python.c
-+++ b/tools/perf/util/python.c
-@@ -1141,6 +1141,7 @@ static struct {
- 	PERF_CONST(COUNT_SW_ALIGNMENT_FAULTS),
- 	PERF_CONST(COUNT_SW_EMULATION_FAULTS),
- 	PERF_CONST(COUNT_SW_DUMMY),
-+	PERF_CONST(COUNT_SW_SPF),
- 
- 	PERF_CONST(SAMPLE_IP),
- 	PERF_CONST(SAMPLE_TID),
+ 	flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
+ 	entry = pte_mkyoung(vmf->orig_pte);
+-	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
++	entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
+ 	if (ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1))
+ 		update_mmu_cache(vma, vmf->address, vmf->pte);
+ 	pte_unmap_unlock(vmf->pte, vmf->ptl);
+@@ -2541,8 +2541,8 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 			inc_mm_counter_fast(mm, MM_ANONPAGES);
+ 		}
+ 		flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
+-		entry = mk_pte(new_page, vma->vm_page_prot);
+-		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
++		entry = mk_pte(new_page, vmf->vma_page_prot);
++		entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
+ 		/*
+ 		 * Clear the pte entry and flush it first, before updating the
+ 		 * pte with the new entry. This will avoid a race condition
 -- 
 2.7.4
