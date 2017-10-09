@@ -3,11 +3,11 @@ Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
  [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9VZ7068HzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 17:23:58 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id z11so7864329pfk.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Oct 2017 23:23:58 -0700 (PDT)
-Date: Mon, 9 Oct 2017 11:53:53 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9Vdv3J9mzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 17:27:15 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id b85so4907944pfj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Oct 2017 23:27:15 -0700 (PDT)
+Date: Mon, 9 Oct 2017 11:57:10 +0530
 From: Santosh Sivaraj <santosh@fossix.org>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -18,13 +18,13 @@ Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] powerpc/vdso64: Add support for
  CLOCK_{REALTIME/MONOTONIC}_COARSE
-Message-ID: <20171009062353.5axbrfjw2lu4yjns@santosiv.in.ibm.com>
+Message-ID: <20171009062710.rqrvsrvef4kmswn2@santosiv.in.ibm.com>
 References: <20170918092336.21912-1-santosh@fossix.org>
  <20170918092336.21912-2-santosh@fossix.org>
- <20171006112528.zryd4l2yl2k6xk2h@naverao1-tp.localdomain>
+ <20171006092830.6rrkabakrlr6rl7g@naverao1-tp.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171006112528.zryd4l2yl2k6xk2h@naverao1-tp.localdomain>
+In-Reply-To: <20171006092830.6rrkabakrlr6rl7g@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,7 +34,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com> wrote (on 2017-10-06 11:25:28 +0000):
+* Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com> wrote (on 2017-10-06 09:28:30 +0000):
 
 > On 2017/09/18 09:23AM, Santosh Sivaraj wrote:
 > > Current vDSO64 implementation does not have support for coarse clocks
@@ -92,6 +92,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > > +	cmpwi	cr1,r3,CLOCK_MONOTONIC_COARSE
 > > +	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
 > > +	beq	cr0,65f
+> 
+> If you use cr5-7 here, you should be able to re-organize this to not 
+> have to update r4/r11/r12 if we're taking the syscall path. Not 
+> necessarily a huge win by itself, but can also help reuse some of the 
+> other code between the _COARSE and the regular variants.
+>
+
+If we are going to use cr5-7, then the first patch is no longer required, we
+don't have to do a re-org of the intial clock_id checks. I will send the
+updated patch.
+
+Thanks,
+Santosh
+> - Naveen
+> 
 > > +
 > >  	b	99f		/* Fallback to syscall */
 > >    .cfi_register lr,r12
@@ -133,17 +148,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > > +	ld	r0,CFG_TB_UPDATE_COUNT(r3)
 > > +	cmpld	cr0,r0,r8		/* check if updated */
 > > +	bne-	70b
-> 
-> Don't you need a dependency on r4/r5 here for REALTIME_COARSE?
-> Something like:
-> 
-> 	/* check if counter has updated */
-> 	or	r0,r6,r9
-> 78:	or	r0,r4,r5
-> 	xor	r0,r0,r0
->
-
-Yes, we would need it. Will update in v2.
 > > +
 > > +	/* Counter has not updated, so continue calculating proper values for
 > > +	 * sec and nsec if monotonic coarse, or just return with the proper
@@ -151,18 +155,6 @@ Yes, we would need it. Will update in v2.
 > > +	 */
 > > +	bne	cr1,80f
 > > +
-> 
-> I think the below hunk can surely be shared across the _COARSE and 
-> regular clocks, if not more.
-
-Yes, except for the label its the same for both monotonic and
-monotonic_coarse, will update in the next set.
-
-Thanks,
-Santosh
-> 
-> - Naveen
-> 
 > > +	/* Add wall->monotonic offset and check for overflow or underflow */
 > > +	add	r4,r4,r6
 > > +	add	r5,r5,r9
