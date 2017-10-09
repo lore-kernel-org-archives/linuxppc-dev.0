@@ -1,44 +1,41 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9nqv4qhdzDqv8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 04:51:54 +1100 (AEDT)
-Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
- by userp1040.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v99Hpn0D025544
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 17:51:49 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
- by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id v99HpmBZ006671
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 17:51:48 GMT
-Received: from abhmp0019.oracle.com (abhmp0019.oracle.com [141.146.116.25])
- by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id v99Hpmjf023190
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 17:51:48 GMT
-Received: by mail-oi0-f53.google.com with SMTP id v9so28912265oif.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 10:51:47 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20171009171337.GE30085@arm.com>
-References: <20170920201714.19817-1-pasha.tatashin@oracle.com>
- <20170920201714.19817-10-pasha.tatashin@oracle.com>
- <20171003144845.GD4931@leverpostej>
- <20171009171337.GE30085@arm.com>
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Mon, 9 Oct 2017 13:51:47 -0400
-Message-ID: <CAOAebxtHHFvYn4WysMASe1GqvgKYPVyjJ572UM3Sef5sP0hi9A@mail.gmail.com>
-Subject: Re: [PATCH v9 09/12] mm/kasan: kasan specific map populate function
-To: Will Deacon <will.deacon@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, catalin.marinas@arm.com,
- linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, sam@ravnborg.org,
- mgorman@techsingularity.net, Steve Sistare <steven.sistare@oracle.com>,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3y9nxk2tRTzDr3M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 04:56:57 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v99HskRH145081
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 13:56:55 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dg9k4fx3y-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 13:56:55 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Mon, 9 Oct 2017 18:56:54 +0100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v99HuoNd17956926
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 17:56:51 GMT
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v99HueGu004596
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 04:56:41 +1100
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: [PATCH] cxl: Rename register PSL9_FIR2 to PSL9_FIR_MASK
+Date: Mon,  9 Oct 2017 23:26:27 +0530
+Message-Id: <20171009175627.4829-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,62 +45,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Will,
+PSL9 doesn't have a FIR2 register as was the case with PSL8. However
+currently the register definitions in 'cxl.h' have a definition for
+PSL9_FIR2 that actually points to PSL9_FIR_MASK register in the P1
+area at offset 0x308.
 
-I can go back to that approach, if Michal OK with it. But, that would
-mean that I would need to touch every single architecture that
-implements vmemmap_populate(), and also pass flags at least through
-these functions on every architectures (some have more than one
-decided by configs).:
+So this patch renames the def PSL9_FIR2 to PSL9_FIR_MASK and updates
+the references in the code to point to the new identifier. It also
+removes the code to dump contents of FIR2 (FIR_MASK actually) in
+cxl_native_irq_dump_regs_psl9().
 
-vmemmap_populate()
-vmemmap_populate_basepages()
-vmemmap_populate_hugepages()
-vmemmap_pte_populate()
-__vmemmap_alloc_block_buf()
-alloc_block_buf()
-vmemmap_alloc_block()
+Fixes: f24be42aab37("cxl: Add psl9 specific code")
+Reported-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/cxl.h     | 2 +-
+ drivers/misc/cxl/debugfs.c | 3 ++-
+ drivers/misc/cxl/native.c  | 4 +---
+ 3 files changed, 4 insertions(+), 5 deletions(-)
 
-IMO, while I understand that it looks strange that we must walk page
-table after creating it, it is a better approach: more enclosed as it
-effects kasan only, and more universal as it is in common code. We are
-also somewhat late in the review process, means we will need again to
-get ACKs from the maintainers of other arches.
-
-Pavel
-
-On Mon, Oct 9, 2017 at 1:13 PM, Will Deacon <will.deacon@arm.com> wrote:
-> On Tue, Oct 03, 2017 at 03:48:46PM +0100, Mark Rutland wrote:
->> On Wed, Sep 20, 2017 at 04:17:11PM -0400, Pavel Tatashin wrote:
->> > During early boot, kasan uses vmemmap_populate() to establish its shadow
->> > memory. But, that interface is intended for struct pages use.
->> >
->> > Because of the current project, vmemmap won't be zeroed during allocation,
->> > but kasan expects that memory to be zeroed. We are adding a new
->> > kasan_map_populate() function to resolve this difference.
->>
->> Thanks for putting this together.
->>
->> I've given this a spin on arm64, and can confirm that it works.
->>
->> Given that this involes redundant walking of page tables, I still think
->> it'd be preferable to have some common *_populate() helper that took a
->> gfp argument, but I guess it's not the end of the world.
->>
->> I'll leave it to Will and Catalin to say whether they're happy with the
->> page table walking and the new p{u,m}d_large() helpers added to arm64.
->
-> To be honest, it just looks completely backwards to me; we're walking the
-> page tables we created earlier on so that we can figure out what needs to
-> be zeroed for KASAN. We already had that information before, hence my
-> preference to allow propagation of GFP_FLAGs to vmemmap_alloc_block when
-> it's needed. I know that's not popular for some reason, but is walking the
-> page tables really better?
->
-> Will
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 0167df81df62..252373c2b861 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -104,7 +104,7 @@ static const cxl_p1_reg_t CXL_XSL9_INV      = {0x0110};
+ static const cxl_p1_reg_t CXL_XSL9_DEF      = {0x0140};
+ static const cxl_p1_reg_t CXL_XSL9_DSNCTL   = {0x0168};
+ static const cxl_p1_reg_t CXL_PSL9_FIR1     = {0x0300};
+-static const cxl_p1_reg_t CXL_PSL9_FIR2     = {0x0308};
++static const cxl_p1_reg_t CXL_PSL9_FIR_MASK = {0x0308};
+ static const cxl_p1_reg_t CXL_PSL9_Timebase = {0x0310};
+ static const cxl_p1_reg_t CXL_PSL9_DEBUG    = {0x0320};
+ static const cxl_p1_reg_t CXL_PSL9_FIR_CNTL = {0x0348};
+diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
+index eae9d749f967..52e3d97db114 100644
+--- a/drivers/misc/cxl/debugfs.c
++++ b/drivers/misc/cxl/debugfs.c
+@@ -62,7 +62,8 @@ static struct dentry *debugfs_create_io_x64(const char *name, umode_t mode,
+ void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir)
+ {
+ 	debugfs_create_io_x64("fir1", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR1));
+-	debugfs_create_io_x64("fir2", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR2));
++	debugfs_create_io_x64("fir_mask", 0400, dir,
++			      _cxl_p1_addr(adapter, CXL_PSL9_FIR_MASK));
+ 	debugfs_create_io_x64("fir_cntl", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_FIR_CNTL));
+ 	debugfs_create_io_x64("trace", S_IRUSR | S_IWUSR, dir, _cxl_p1_addr(adapter, CXL_PSL9_TRACECFG));
+ }
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 75df74d59527..6cd57c756927 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -1085,13 +1085,11 @@ static int native_get_irq_info(struct cxl_afu *afu, struct cxl_irq_info *info)
+ 
+ void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx)
+ {
+-	u64 fir1, fir2, serr;
++	u64 fir1, serr;
+ 
+ 	fir1 = cxl_p1_read(ctx->afu->adapter, CXL_PSL9_FIR1);
+-	fir2 = cxl_p1_read(ctx->afu->adapter, CXL_PSL9_FIR2);
+ 
+ 	dev_crit(&ctx->afu->dev, "PSL_FIR1: 0x%016llx\n", fir1);
+-	dev_crit(&ctx->afu->dev, "PSL_FIR2: 0x%016llx\n", fir2);
+ 	if (ctx->afu->adapter->native->sl_ops->register_serr_irq) {
+ 		serr = cxl_p1n_read(ctx->afu, CXL_PSL_SERR_An);
+ 		cxl_afu_decode_psl_serr(ctx->afu, serr);
+-- 
+2.13.6
