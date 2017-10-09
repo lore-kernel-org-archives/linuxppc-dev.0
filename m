@@ -1,38 +1,44 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3y9dYY3cMyzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Oct 2017 22:38:57 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v99BciQ1040143
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Oct 2017 07:38:55 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dg3jd5nnk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Oct 2017 07:38:54 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 9 Oct 2017 05:38:54 -0600
-Subject: Re: linux-4.14-rc3/arch/powerpc/perf/imc-pmu.c:599: pointless test ?
-To: Michael Ellerman <mpe@ellerman.id.au>,
- David Binderman <dcb314@hotmail.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <HE1PR0802MB23316FCA14FD1F8E51FCAB059C710@HE1PR0802MB2331.eurprd08.prod.outlook.com>
- <87fuasewxv.fsf@concordia.ellerman.id.au>
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Mon, 9 Oct 2017 17:08:47 +0530
+Return-Path: <ralf@linux-mips.org>
+Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3y9gkM3TBMzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 00:16:43 +1100 (AEDT)
+Received: from localhost.localdomain ([127.0.0.1]:54524 "EHLO linux-mips.org"
+ rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+ id S23992675AbdJINMh7ZtxY (ORCPT
+ <rfc822;linuxppc-dev@lists.ozlabs.org>);
+ Mon, 9 Oct 2017 15:12:37 +0200
+Date: Mon, 9 Oct 2017 15:12:27 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, linux-mips@linux-mips.org,
+ Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Jesper Nilsson <jesper.nilsson@axis.com>, linux-am33-list@redhat.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ linux-xtensa@linux-xtensa.org, Mikael Starvik <starvik@axis.com>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>,
+ Chris Zankel <chris@zankel.net>,
+ Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
+ linux-parisc@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 2/4] PCI: Remove redundant pci_dev, pci_bus, resource
+ declarations
+Message-ID: <20171009131227.GG20977@linux-mips.org>
+References: <20171005201939.18300.25690.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171005203849.18300.20999.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
-In-Reply-To: <87fuasewxv.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <d6d7ee9b-9c8e-5d1c-d60e-c92457a4cd44@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171005203849.18300.20999.stgit@bhelgaas-glaptop.roam.corp.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,37 +48,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+On Thu, Oct 05, 2017 at 03:38:49PM -0500, Bjorn Helgaas wrote:
 
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> <linux/pci.h> defines struct pci_bus and struct pci_dev and includes the
+> struct resource definition before including <asm/pci.h>.  Nobody includes
+> <asm/pci.h> directly, so they don't need their own declarations.
+> 
+> Remove the redundant struct pci_dev, pci_bus, resource declarations.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-On Monday 09 October 2017 10:31 AM, Michael Ellerman wrote:
-> David Binderman <dcb314@hotmail.com> writes:
->> Hello there,
->>
->> linux-4.14-rc3/arch/powerpc/perf/imc-pmu.c:599]: (style) Unsigned variable 'ncpu' can't be negative so it is unnecessary to test it.
->>
->> Source code is
->>
->>      if (ncpu >= 0 && ncpu < nr_cpu_ids) {
->>
->> but
->>
->>      unsigned int ncpu, core_id;
->>
->> Suggest remove test.
+For MIPS:
 
-Nice catch. Thanks for mentioning this. I will fix this.
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-Thanks,
-Anju
-> Thanks.
->
-> Notifying the author would be more helpful:
->
-> $ git blame -L 599,599 arch/powerpc/perf/imc-pmu.c
-> 39a846db1d574 (Anju T Sudhakar 2017-07-19 03:06:35 +0530 599)   if (ncpu >= 0 && ncpu < nr_cpu_ids) {
-> $ git log -1 --format=%ae 39a846db1d574
-> anju@linux.vnet.ibm.com
->
-> cheers
->
+  Ralf
