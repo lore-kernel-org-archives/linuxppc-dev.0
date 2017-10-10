@@ -1,31 +1,25 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@chromium.org>
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBVV93krtzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:24:01 +1100 (AEDT)
-Date: Tue, 10 Oct 2017 14:23:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, kirill@shutemov.name,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com, Will Deacon
- <will.deacon@arm.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Alexei Starovoitov
- <alexei.starovoitov@gmail.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com, Tim Chen
- <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v4 19/20] x86/mm: Add speculative pagefault handling
-Message-Id: <20171010142356.b33f8a8fee3427fbdf0708e3@linux-foundation.org>
-In-Reply-To: <1507543672-25821-20-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1507543672-25821-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1507543672-25821-20-git-send-email-ldufour@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBWQk20SqzDqvT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:06:05 +1100 (AEDT)
+Received: by mail-pf0-x230.google.com with SMTP id b85so7510330pfj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 15:06:05 -0700 (PDT)
+Date: Tue, 10 Oct 2017 15:06:00 -0700
+From: Kees Cook <keescook@chromium.org>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: ibmvscsi: Convert timers to use timer_setup()
+Message-ID: <20171010220600.GA97572@beast>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +29,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon,  9 Oct 2017 12:07:51 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+In preparation for unconditionally passing the struct timer_list pointer to
+all timer callbacks, switch to using the new timer_setup() and from_timer()
+to pass the timer pointer explicitly.
 
-> +/*
-> + * Advertise that we call the Speculative Page Fault handler.
-> + */
-> +#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
-> +#define __HAVE_ARCH_CALL_SPF
-> +#endif
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+This requires commit 686fef928bba ("timer: Prepare to change timer
+callback argument type") in v4.14-rc3, but should be otherwise
+stand-alone.
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c   | 14 ++++++--------
+ drivers/scsi/ibmvscsi/ibmvscsi.c |  7 +++----
+ 2 files changed, 9 insertions(+), 12 deletions(-)
 
-Here's where I mess up your life ;)
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index b491af31a5f8..0d2f7eb3acb6 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -1393,8 +1393,9 @@ static int ibmvfc_map_sg_data(struct scsi_cmnd *scmd,
+  *
+  * Called when an internally generated command times out
+  **/
+-static void ibmvfc_timeout(struct ibmvfc_event *evt)
++static void ibmvfc_timeout(struct timer_list *t)
+ {
++	struct ibmvfc_event *evt = from_timer(evt, t, timer);
+ 	struct ibmvfc_host *vhost = evt->vhost;
+ 	dev_err(vhost->dev, "Command timed out (%p). Resetting connection\n", evt);
+ 	ibmvfc_reset_host(vhost);
+@@ -1424,12 +1425,10 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
+ 		BUG();
+ 
+ 	list_add_tail(&evt->queue, &vhost->sent);
+-	init_timer(&evt->timer);
++	timer_setup(&evt->timer, ibmvfc_timeout, 0);
+ 
+ 	if (timeout) {
+-		evt->timer.data = (unsigned long) evt;
+ 		evt->timer.expires = jiffies + (timeout * HZ);
+-		evt->timer.function = (void (*)(unsigned long))ibmvfc_timeout;
+ 		add_timer(&evt->timer);
+ 	}
+ 
+@@ -3692,8 +3691,9 @@ static void ibmvfc_tgt_adisc_cancel_done(struct ibmvfc_event *evt)
+  * out, reset the CRQ. When the ADISC comes back as cancelled,
+  * log back into the target.
+  **/
+-static void ibmvfc_adisc_timeout(struct ibmvfc_target *tgt)
++static void ibmvfc_adisc_timeout(struct timer_list *t)
+ {
++	struct ibmvfc_target *tgt = from_timer(tgt, t, timer);
+ 	struct ibmvfc_host *vhost = tgt->vhost;
+ 	struct ibmvfc_event *evt;
+ 	struct ibmvfc_tmf *tmf;
+@@ -3778,9 +3778,7 @@ static void ibmvfc_tgt_adisc(struct ibmvfc_target *tgt)
+ 	if (timer_pending(&tgt->timer))
+ 		mod_timer(&tgt->timer, jiffies + (IBMVFC_ADISC_TIMEOUT * HZ));
+ 	else {
+-		tgt->timer.data = (unsigned long) tgt;
+ 		tgt->timer.expires = jiffies + (IBMVFC_ADISC_TIMEOUT * HZ);
+-		tgt->timer.function = (void (*)(unsigned long))ibmvfc_adisc_timeout;
+ 		add_timer(&tgt->timer);
+ 	}
+ 
+@@ -3912,7 +3910,7 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost, u64 scsi_id)
+ 	tgt->vhost = vhost;
+ 	tgt->need_login = 1;
+ 	tgt->cancel_key = vhost->task_set++;
+-	init_timer(&tgt->timer);
++	timer_setup(&tgt->timer, ibmvfc_adisc_timeout, 0);
+ 	kref_init(&tgt->kref);
+ 	ibmvfc_init_tgt(tgt, ibmvfc_tgt_implicit_logout);
+ 	spin_lock_irqsave(vhost->host->host_lock, flags);
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 7d156b161482..17df76f0be3c 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -837,8 +837,9 @@ static void ibmvscsi_reset_host(struct ibmvscsi_host_data *hostdata)
+  *
+  * Called when an internally generated command times out
+ */
+-static void ibmvscsi_timeout(struct srp_event_struct *evt_struct)
++static void ibmvscsi_timeout(struct timer_list *t)
+ {
++	struct srp_event_struct *evt_struct = from_timer(evt_struct, t, timer);
+ 	struct ibmvscsi_host_data *hostdata = evt_struct->hostdata;
+ 
+ 	dev_err(hostdata->dev, "Command timed out (%x). Resetting connection\n",
+@@ -927,11 +928,9 @@ static int ibmvscsi_send_srp_event(struct srp_event_struct *evt_struct,
+ 	 */
+ 	list_add_tail(&evt_struct->list, &hostdata->sent);
+ 
+-	init_timer(&evt_struct->timer);
++	timer_setup(&evt_struct->timer, ibmvscsi_timeout, 0);
+ 	if (timeout) {
+-		evt_struct->timer.data = (unsigned long) evt_struct;
+ 		evt_struct->timer.expires = jiffies + (timeout * HZ);
+-		evt_struct->timer.function = (void (*)(unsigned long))ibmvscsi_timeout;
+ 		add_timer(&evt_struct->timer);
+ 	}
+ 
+-- 
+2.7.4
 
-It would be more idiomatic to define this in arch/XXX/Kconfig:
 
-config SPF
-	def_bool y if SMP
-
-then use CONFIG_SPF everywhere.
-
-Also, it would be better if CONFIG_SPF were defined at the start of the
-patch series rather than the end, so that as the patches add new code,
-that code is actually compilable.  For bisection purposes.  I can
-understand if this is too much work and effort - we can live with
-things the way they are now.
-
-This patchset is a ton of new code in very sensitive areas and seems to
-have received little review and test.  I can do a
-merge-and-see-what-happens but it would be quite a risk to send all
-this upstream based only on my sketchy review and linux-next runtime
-testing.  Can we bribe someone?
+-- 
+Kees Cook
+Pixel Security
