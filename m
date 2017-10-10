@@ -1,20 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBCY82xp7zDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 21:10:36 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: wei.guo.simon@gmail.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: Re: [PATCH] selftests/powerpc: fix build error in powerpc ptrace
- selftests.
-In-Reply-To: <1504232234-4161-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1504232234-4161-1-git-send-email-wei.guo.simon@gmail.com>
-Date: Tue, 10 Oct 2017 21:10:32 +1100
-Message-ID: <87lgkjwbxj.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBChQ2wK4zDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 21:16:53 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id z80so15969949pff.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 03:16:53 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/64s/radix: fix preempt imbalance in TLB flush
+Date: Tue, 10 Oct 2017 20:16:41 +1000
+Message-Id: <20171010101641.5714-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-wei.guo.simon@gmail.com writes:
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/mm/tlb-radix.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> From: Simon Guo <wei.guo.simon@gmail.com>
->
-> GCC 7 will take "r2" in clobber list as an error will it will get followi=
-ng
-> build errors for powerpc ptrace selftests even with -fno-pic option:
->   ptrace-tm-vsx.c: In function =E2=80=98tm_vsx=E2=80=99:
->   ptrace-tm-vsx.c:42:2: error: PIC register clobbered by =E2=80=98r2=E2=
-=80=99 in =E2=80=98asm=E2=80=99
->     asm __volatile__(
->     ^~~
->   make[1]: *** [ptrace-tm-vsx] Error 1
->   ptrace-tm-spd-vsx.c: In function =E2=80=98tm_spd_vsx=E2=80=99:
->   ptrace-tm-spd-vsx.c:55:2: error: PIC register clobbered by =E2=80=98r2=
-=E2=80=99 in =E2=80=98asm=E2=80=99
->     asm __volatile__(
->     ^~~
->   make[1]: *** [ptrace-tm-spd-vsx] Error 1
->   ptrace-tm-spr.c: In function =E2=80=98tm_spr=E2=80=99:
->   ptrace-tm-spr.c:46:2: error: PIC register clobbered by =E2=80=98r2=E2=
-=80=99 in =E2=80=98asm=E2=80=99
->     asm __volatile__(
->     ^~~
->
-> This patch fix the build error by removing "r2" out of clobber list.
-
-But do any of the blocks clobber r2? If so then it should be in the
-clobber list.
-
-cheers
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index b3e849c4886e..de414460287a 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -358,7 +358,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 	unsigned long ap = mmu_get_ap(mmu_virtual_psize);
+ 	unsigned long pid, end;
+ 
+-
++	preempt_disable();
+ 	pid = mm ? mm->context.id : 0;
+ 	if (unlikely(pid == MMU_NO_CONTEXT))
+ 		goto no_context;
+@@ -366,6 +366,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 	/* 4k page size, just blow the world */
+ 	if (PAGE_SIZE == 0x1000) {
+ 		radix__flush_all_mm(mm);
++		preempt_enable();
+ 		return;
+ 	}
+ 
+-- 
+2.13.3
