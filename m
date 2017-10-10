@@ -1,25 +1,26 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
+Return-Path: <santosh@fossix.org>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBWQk20SqzDqvT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:06:05 +1100 (AEDT)
-Received: by mail-pf0-x230.google.com with SMTP id b85so7510330pfj.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 15:06:05 -0700 (PDT)
-Date: Tue, 10 Oct 2017 15:06:00 -0700
-From: Kees Cook <keescook@chromium.org>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: ibmvscsi: Convert timers to use timer_setup()
-Message-ID: <20171010220600.GA97572@beast>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBXrq4fkRzDqvT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 10:10:18 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id i23so264297pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 16:10:18 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v6] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+Date: Wed, 11 Oct 2017 04:40:03 +0530
+Message-Id: <20171010231003.10325-1-santosh@fossix.org>
+In-Reply-To: <20171010093033.73x66lxl3xxi33qo@naverao1-tp.localdomain>
+References: <20171010093033.73x66lxl3xxi33qo@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,119 +30,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation for unconditionally passing the struct timer_list pointer to
-all timer callbacks, switch to using the new timer_setup() and from_timer()
-to pass the timer pointer explicitly.
+Current vDSO64 implementation does not have support for coarse clocks
+(CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
+to system call, increasing the response time, vDSO implementation reduces
+the cycle time. Below is a benchmark of the difference in execution times.
 
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
-This requires commit 686fef928bba ("timer: Prepare to change timer
-callback argument type") in v4.14-rc3, but should be otherwise
-stand-alone.
----
- drivers/scsi/ibmvscsi/ibmvfc.c   | 14 ++++++--------
- drivers/scsi/ibmvscsi/ibmvscsi.c |  7 +++----
- 2 files changed, 9 insertions(+), 12 deletions(-)
+(Non-coarse clocks are also included just for completion)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index b491af31a5f8..0d2f7eb3acb6 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -1393,8 +1393,9 @@ static int ibmvfc_map_sg_data(struct scsi_cmnd *scmd,
-  *
-  * Called when an internally generated command times out
-  **/
--static void ibmvfc_timeout(struct ibmvfc_event *evt)
-+static void ibmvfc_timeout(struct timer_list *t)
- {
-+	struct ibmvfc_event *evt = from_timer(evt, t, timer);
- 	struct ibmvfc_host *vhost = evt->vhost;
- 	dev_err(vhost->dev, "Command timed out (%p). Resetting connection\n", evt);
- 	ibmvfc_reset_host(vhost);
-@@ -1424,12 +1425,10 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 		BUG();
+clock-gettime-realtime: syscall: 172 nsec/call
+clock-gettime-realtime:    libc: 28 nsec/call
+clock-gettime-realtime:    vdso: 22 nsec/call
+clock-gettime-monotonic: syscall: 171 nsec/call
+clock-gettime-monotonic:    libc: 30 nsec/call
+clock-gettime-monotonic:    vdso: 25 nsec/call
+clock-gettime-realtime-coarse: syscall: 153 nsec/call
+clock-gettime-realtime-coarse:    libc: 16 nsec/call
+clock-gettime-realtime-coarse:    vdso: 10 nsec/call
+clock-gettime-monotonic-coarse: syscall: 167 nsec/call
+clock-gettime-monotonic-coarse:    libc: 17 nsec/call
+clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
+
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+---
+ arch/powerpc/kernel/asm-offsets.c         |  2 +
+ arch/powerpc/kernel/vdso64/gettimeofday.S | 67 ++++++++++++++++++++++++++-----
+ 2 files changed, 58 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 8cfb20e38cfe..b55c68c54dc1 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -396,6 +396,8 @@ int main(void)
+ 	/* Other bits used by the vdso */
+ 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+ 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
++	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
++	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
+ 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+ 	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
  
- 	list_add_tail(&evt->queue, &vhost->sent);
--	init_timer(&evt->timer);
-+	timer_setup(&evt->timer, ibmvfc_timeout, 0);
+diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+index 382021324883..b594f5c745fa 100644
+--- a/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -64,6 +64,12 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	cmpwi	cr0,r3,CLOCK_REALTIME
+ 	cmpwi	cr1,r3,CLOCK_MONOTONIC
+ 	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
++
++	cmpwi	cr5,r3,CLOCK_REALTIME_COARSE
++	cmpwi	cr6,r3,CLOCK_MONOTONIC_COARSE
++	cror	cr5*4+eq,cr5*4+eq,cr6*4+eq
++
++	cror	cr0*4+eq,cr0*4+eq,cr5*4+eq
+ 	bne	cr0,99f
  
- 	if (timeout) {
--		evt->timer.data = (unsigned long) evt;
- 		evt->timer.expires = jiffies + (timeout * HZ);
--		evt->timer.function = (void (*)(unsigned long))ibmvfc_timeout;
- 		add_timer(&evt->timer);
- 	}
+ 	mflr	r12			/* r12 saves lr */
+@@ -72,6 +78,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+ 	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
+ 	ori	r7,r7,NSEC_PER_SEC@l
++	beq	cr5,70f
+ 50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
+ 	bne	cr1,80f			/* if not monotonic, all done */
  
-@@ -3692,8 +3691,9 @@ static void ibmvfc_tgt_adisc_cancel_done(struct ibmvfc_event *evt)
-  * out, reset the CRQ. When the ADISC comes back as cancelled,
-  * log back into the target.
-  **/
--static void ibmvfc_adisc_timeout(struct ibmvfc_target *tgt)
-+static void ibmvfc_adisc_timeout(struct timer_list *t)
- {
-+	struct ibmvfc_target *tgt = from_timer(tgt, t, timer);
- 	struct ibmvfc_host *vhost = tgt->vhost;
- 	struct ibmvfc_event *evt;
- 	struct ibmvfc_tmf *tmf;
-@@ -3778,9 +3778,7 @@ static void ibmvfc_tgt_adisc(struct ibmvfc_target *tgt)
- 	if (timer_pending(&tgt->timer))
- 		mod_timer(&tgt->timer, jiffies + (IBMVFC_ADISC_TIMEOUT * HZ));
- 	else {
--		tgt->timer.data = (unsigned long) tgt;
- 		tgt->timer.expires = jiffies + (IBMVFC_ADISC_TIMEOUT * HZ);
--		tgt->timer.function = (void (*)(unsigned long))ibmvfc_adisc_timeout;
- 		add_timer(&tgt->timer);
- 	}
+@@ -97,19 +104,57 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	ld	r0,CFG_TB_UPDATE_COUNT(r3)
+         cmpld   cr0,r0,r8		/* check if updated */
+ 	bne-	50b
++	b	78f
  
-@@ -3912,7 +3910,7 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost, u64 scsi_id)
- 	tgt->vhost = vhost;
- 	tgt->need_login = 1;
- 	tgt->cancel_key = vhost->task_set++;
--	init_timer(&tgt->timer);
-+	timer_setup(&tgt->timer, ibmvfc_adisc_timeout, 0);
- 	kref_init(&tgt->kref);
- 	ibmvfc_init_tgt(tgt, ibmvfc_tgt_implicit_logout);
- 	spin_lock_irqsave(vhost->host->host_lock, flags);
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 7d156b161482..17df76f0be3c 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -837,8 +837,9 @@ static void ibmvscsi_reset_host(struct ibmvscsi_host_data *hostdata)
-  *
-  * Called when an internally generated command times out
- */
--static void ibmvscsi_timeout(struct srp_event_struct *evt_struct)
-+static void ibmvscsi_timeout(struct timer_list *t)
- {
-+	struct srp_event_struct *evt_struct = from_timer(evt_struct, t, timer);
- 	struct ibmvscsi_host_data *hostdata = evt_struct->hostdata;
- 
- 	dev_err(hostdata->dev, "Command timed out (%x). Resetting connection\n",
-@@ -927,11 +928,9 @@ static int ibmvscsi_send_srp_event(struct srp_event_struct *evt_struct,
+-	/* Add wall->monotonic offset and check for overflow or underflow.
++	/*
++	 * For coarse clocks we get data directly from the vdso data page, so
++	 * we don't need to call __do_get_tspec, but we still need to do the
++	 * counter trick.
  	 */
- 	list_add_tail(&evt_struct->list, &hostdata->sent);
+-	add	r4,r4,r6
+-	add	r5,r5,r9
+-	cmpd	cr0,r5,r7
+-	cmpdi	cr1,r5,0
+-	blt	1f
+-	subf	r5,r7,r5
+-	addi	r4,r4,1
+-1:	bge	cr1,80f
+-	addi	r4,r4,-1
+-	add	r5,r5,r7
++70:	ld      r8,CFG_TB_UPDATE_COUNT(r3)
++	andi.   r0,r8,1                 /* pending update ? loop */
++	bne-    70b
++	xor     r0,r8,r8                /* create dependency */
++	add     r3,r3,r0
++
++	/*
++	 * CLOCK_REALTIME_COARSE, below values are needed for MONOTONIC_COARSE
++	 * too
++	 */
++	ld      r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
++	ld      r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
++	bne     cr6,75f
++
++	/* CLOCK_MONOTONIC_COARSE */
++	lwa     r6,WTOM_CLOCK_SEC(r3)
++	lwa     r9,WTOM_CLOCK_NSEC(r3)
++
++	/* check if counter has updated */
++	or      r0,r6,r9
++75:	or	r0,r4,r5
++	xor     r0,r0,r0
++	add     r3,r3,r0
++	ld      r0,CFG_TB_UPDATE_COUNT(r3)
++	cmpld   cr0,r0,r8               /* check if updated */
++	bne-    70b
++
++	/* Counter has not updated, so continue calculating proper values for
++	 * sec and nsec if monotonic coarse, or just return with the proper
++	 * values for realtime.
++	 */
++	bne     cr6,80f
++
++	/* Add wall->monotonic offset and check for overflow or underflow */
++78:	add     r4,r4,r6
++	add     r5,r5,r9
++	cmpd    cr0,r5,r7
++	cmpdi   cr1,r5,0
++	blt     79f
++	subf    r5,r7,r5
++	addi    r4,r4,1
++79:	bge     cr1,80f
++	addi    r4,r4,-1
++	add     r5,r5,r7
  
--	init_timer(&evt_struct->timer);
-+	timer_setup(&evt_struct->timer, ibmvscsi_timeout, 0);
- 	if (timeout) {
--		evt_struct->timer.data = (unsigned long) evt_struct;
- 		evt_struct->timer.expires = jiffies + (timeout * HZ);
--		evt_struct->timer.function = (void (*)(unsigned long))ibmvscsi_timeout;
- 		add_timer(&evt_struct->timer);
- 	}
- 
+ 80:	std	r4,TSPC64_TV_SEC(r11)
+ 	std	r5,TSPC64_TV_NSEC(r11)
 -- 
-2.7.4
-
-
--- 
-Kees Cook
-Pixel Security
+2.13.6
