@@ -1,47 +1,29 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBPYQ2m1gzDr4W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 04:41:29 +1100 (AEDT)
-Received: from aserv0022.oracle.com (aserv0022.oracle.com [141.146.126.234])
- by aserp1040.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v9AHfQgn017015
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 17:41:27 GMT
-Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
- by aserv0022.oracle.com (8.14.4/8.14.4) with ESMTP id v9AHfQb7001515
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 17:41:26 GMT
-Received: from abhmp0009.oracle.com (abhmp0009.oracle.com [141.146.116.15])
- by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id v9AHfQ4e001278
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 17:41:26 GMT
-Received: by mail-oi0-f49.google.com with SMTP id w197so41885870oif.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 10:41:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBR7L5FnzzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 05:52:30 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id z80so19124828pff.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 11:52:30 -0700 (PDT)
+Date: Wed, 11 Oct 2017 04:52:16 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Vasant Hegde
+ <hegdevasant@linux.vnet.ibm.com>, Stewart Smith
+ <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc/powernv: Avoid the secondary hold spinloop
+ for OPAL boot
+Message-ID: <20171011045216.5108425b@roar.ozlabs.ibm.com>
+In-Reply-To: <20171011015828.03f4aacc@roar.ozlabs.ibm.com>
+References: <20171006061005.29891-1-npiggin@gmail.com>
+ <20171006061005.29891-2-npiggin@gmail.com>
+ <87efqbw93h.fsf@concordia.ellerman.id.au>
+ <20171010214357.2b6694fa@roar.ozlabs.ibm.com>
+ <20171011015828.03f4aacc@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20171010171047.GC2517@arm.com>
-References: <20171009221931.1481-1-pasha.tatashin@oracle.com>
- <20171009221931.1481-8-pasha.tatashin@oracle.com>
- <20171010155619.GA2517@arm.com>
- <CAOAebxv21+KtXPAk-xWz=+2fqWQDgp9SAFZz-N=XsuBxev=zcg@mail.gmail.com>
- <20171010171047.GC2517@arm.com>
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Tue, 10 Oct 2017 13:41:24 -0400
-Message-ID: <CAOAebxtrSthSP4NAa0obBbsCK1KZxO+x0w5xNrpY6m2y9UZFvQ@mail.gmail.com>
-Subject: Re: [PATCH v11 7/9] arm64/kasan: add and use kasan_map_populate()
-To: Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- Michal Hocko <mhocko@kernel.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Mark Rutland <mark.rutland@arm.com>, catalin.marinas@arm.com,
- sam@ravnborg.org, mgorman@techsingularity.net,
- Steve Sistare <steven.sistare@oracle.com>, daniel.m.jordan@oracle.com,
- bob.picco@oracle.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,22 +33,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Will,
+On Wed, 11 Oct 2017 01:58:28 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Ok, I will add your patch at the end of my series.
 
-Thank you,
-Pavel
+> Ahh okay, pseries is using the start-cpu RTAS call to enter at
+> generic_secondary_smp_init() as well. So we can take it out for
+> pseries as well.
 
->
-> I was thinking that you could just add my patch to the end of your series
-> and have the whole lot go up like that. If you want to merge it with your
-> patch, I'm fine with that too.
->
-> Will
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+This patch seems to do the trick for pseries guests too:
+
+powerpc/64s: Avoid waiting for secondary hold spinloop if it is not used
+
+OPAL and some RTAS boot does not insert secondaries at 0x60 to wait at
+the secondary hold spinloop. Instead they are started later, at
+generic_secondary_smp_init(), which is after the secondary hold
+spinloop.
+
+Avoid waiting on this spinloop when booting with OPAL firmware, or
+when the RTAS boot does not use this loop. This wait always times
+out in those cases.
+
+This saves 100ms boot time on bare metal (10s of seconds of real time
+when booting on the simulator in SMP), and 100ms on modern pseries
+guests.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/head_64.S  | 16 +++++++++++-----
+ arch/powerpc/kernel/setup_64.c | 12 +++++++++++-
+ 2 files changed, 22 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index c9e760ec7530..0deef350004f 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -55,12 +55,18 @@
+  *
+  *  For pSeries or server processors:
+  *   1. The MMU is off & open firmware is running in real mode.
+- *   2. The kernel is entered at __start
++ *   2. The primary CPU enters at __start.
++ *   3. If the RTAS supports "query-cpu-stopped-state", then secondary
++ *      CPUs will enter as directed by "start-cpu" RTAS call, which is
++ *      generic_secondary_smp_init, with PIR in r3.
++ *   4. Else the secondary CPUs will enter at secondary_hold (0x60) as
++ *      directed by the "start-cpu" RTS call, with PIR in r3.
+  * -or- For OPAL entry:
+- *   1. The MMU is off, processor in HV mode, primary CPU enters at 0
+- *      with device-tree in gpr3. We also get OPAL base in r8 and
+- *	entry in r9 for debugging purposes
+- *   2. Secondary processors enter at 0x60 with PIR in gpr3
++ *   1. The MMU is off, processor in HV mode.
++ *   2. The primary CPU enters at 0 with device-tree in r3, OPAL base
++ *      in r8, and entry in r9 for debugging purposes.
++ *   3. Secondary CPUs enter as directed by OPAL_START_CPU call, which
++ *      is at generic_secondary_smp_init, with PIR in r3.
+  *
+  *  For Book3E processors:
+  *   1. The MMU is on running in AS0 in a state defined in ePAPR
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 3f2453858f60..afa79e8d56a6 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -363,8 +363,18 @@ void early_setup_secondary(void)
+ #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC_CORE)
+ static bool use_spinloop(void)
+ {
+-	if (!IS_ENABLED(CONFIG_PPC_BOOK3E))
++	if (IS_ENABLED(CONFIG_PPC_BOOK3S)) {
++		/*
++		 * See comments in head_64.S -- not all platforms insert
++		 * secondaries at __secondary_hold and wait at the spin
++		 * loop.
++		 */
++		if (firmware_has_feature(FW_FEATURE_OPAL))
++			return false;
++		if (rtas_token("query-cpu-stopped-state") != RTAS_UNKNOWN_SERVICE)
++			return false;
+ 		return true;
++	}
+ 
+ 	/*
+ 	 * When book3e boots from kexec, the ePAPR spin table does
+-- 
+2.13.3
