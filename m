@@ -1,23 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBBwl28hDzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 20:42:30 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id b85so13967591pfj.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 02:42:30 -0700 (PDT)
-Date: Tue, 10 Oct 2017 19:42:14 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] powerpc/pseries/cpuidle: add polling idle for shared
- processor guests
-Message-ID: <20171010194140.5aec88d9@roar.ozlabs.ibm.com>
-In-Reply-To: <20171010071109.31207-1-npiggin@gmail.com>
-References: <20171010071109.31207-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBC3n4B4rzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 20:48:37 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thomas Gleixner <tglx@linutronix.de>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Daniel Black <daniel.black@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: Drop lockdep_assert_cpus_held call from
+ arch_update_cpu_topology
+In-Reply-To: <alpine.DEB.2.20.1710052031590.2398@nanos>
+References: <20171005000430.8080-1-bauerman@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710051435530.2083@nanos>
+ <87o9pl5u4m.fsf@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710052031590.2398@nanos>
+Date: Tue, 10 Oct 2017 20:48:36 +1100
+Message-ID: <87o9pfwcy3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Oct 2017 17:11:09 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+Thomas Gleixner <tglx@linutronix.de> writes:
+...
+>
+> So no, the lockdep assertion triggers in #1 and #2 because
+>
+>    #1 does definitely not hold it
+>
+>    #2 is indirectily protected, but we have no way to express that to lockdep
+>
+> So yes, it's safe for both cases to remove that assertion.
 
-> For shared processor guests (e.g., KVM), add an idle polling mode rather
-> than immediately returning to the hypervisor when the guest CPU goes
-> idle.
-> 
-> Test setup is a 2 socket POWER9 with 4 guests running, each with vCPUs
-> equal to 1/2 of real of CPUs. Saturated each guest with tbench. Using
-> polling idle gives about 1.4x throughput.
+Thanks for clarifying that.
 
-Actually it's even more noticeable when the host is not over subscribed
-by the looks. 2.5x-3x increase in throughput for just a single guest.
+> If there are other call sites, then they need to be checked. If not, you're
+> good.
 
-Thanks,
-Nick
+I also see a call in partition_sched_domains(). The comment there says
+"call with hotplug lock held" and I'm sure all callers do so ...
+
+But seriously I think the patch is good because we know there are at
+least two callers who are safe but can't hold the lock, so doing an
+assert there is definitely wrong.
+
+So I'll apply the patch with a slightly reworked commit message.
+
+cheers
