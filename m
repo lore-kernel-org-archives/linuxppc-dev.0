@@ -1,38 +1,31 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBTBq3fgVzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 07:25:38 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9AKNavq128403
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 16:25:36 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dgyvnb23e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 16:25:36 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 10 Oct 2017 16:25:34 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/powernv: Add kernel cmdline parameter to disable
- imc
-In-Reply-To: <87wp43wf2v.fsf@concordia.ellerman.id.au>
-References: <1507531597-25947-1-git-send-email-anju@linux.vnet.ibm.com>
- <87wp43wf2v.fsf@concordia.ellerman.id.au>
-Date: Wed, 11 Oct 2017 07:25:24 +1100
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87infmeonf.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBVV93krtzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:24:01 +1100 (AEDT)
+Date: Tue, 10 Oct 2017 14:23:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com, Will Deacon
+ <will.deacon@arm.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Alexei Starovoitov
+ <alexei.starovoitov@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com, Tim Chen
+ <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v4 19/20] x86/mm: Add speculative pagefault handling
+Message-Id: <20171010142356.b33f8a8fee3427fbdf0708e3@linux-foundation.org>
+In-Reply-To: <1507543672-25821-20-git-send-email-ldufour@linux.vnet.ibm.com>
+References: <1507543672-25821-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1507543672-25821-20-git-send-email-ldufour@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,28 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
->
->> Add a kernel command line parameter option to disable In-Memory Collection
->> (IMC) counters and add documentation. This helps in debug.
->
-> I'd really rather we didn't. Do we *really* need this?
->
-> We don't have command line parameters to disable any of the other ~20
-> PMUs, why is this one special?
+On Mon,  9 Oct 2017 12:07:51 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
 
-You could also do the same thing by editing the device tree before
-booting your kernel, we do have the facility to do that in petitboot.
+> +/*
+> + * Advertise that we call the Speculative Page Fault handler.
+> + */
+> +#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
+> +#define __HAVE_ARCH_CALL_SPF
+> +#endif
 
-A recent firmware patch: https://patchwork.ozlabs.org/patch/823249/
-would fix the firmware implementation where the counters were already
-running before the INIT/START calls, which are likely the cause of the
-problems that this patch is trying to work around.
+Here's where I mess up your life ;)
 
-I propose we have the firmware do the right thing and nothing special in
-kernel. i.e. not to merge this.
+It would be more idiomatic to define this in arch/XXX/Kconfig:
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+config SPF
+	def_bool y if SMP
+
+then use CONFIG_SPF everywhere.
+
+Also, it would be better if CONFIG_SPF were defined at the start of the
+patch series rather than the end, so that as the patches add new code,
+that code is actually compilable.  For bisection purposes.  I can
+understand if this is too much work and effort - we can live with
+things the way they are now.
+
+This patchset is a ton of new code in very sensitive areas and seems to
+have received little review and test.  I can do a
+merge-and-see-what-happens but it would be quite a risk to send all
+this upstream based only on my sketchy review and linux-next runtime
+testing.  Can we bribe someone?
