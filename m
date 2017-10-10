@@ -1,38 +1,26 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBKhy6XMzzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 01:47:46 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9AEj6MR113119
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 10:47:43 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dgy2fvfsg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 10:47:43 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 10 Oct 2017 15:47:41 +0100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9AElbdE15466608
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 14:47:38 GMT
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9AElRWI015802
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 01:47:28 +1100
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/modules: Use WARN_ON() in stub_for_addr()
-Date: Tue, 10 Oct 2017 20:17:32 +0530
-Message-Id: <1507646852-18642-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yBMDc58LjzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 02:56:21 +1100 (AEDT)
+Date: Tue, 10 Oct 2017 16:56:20 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v11 7/9] arm64/kasan: add and use kasan_map_populate()
+Message-ID: <20171010155619.GA2517@arm.com>
+References: <20171009221931.1481-1-pasha.tatashin@oracle.com>
+ <20171009221931.1481-8-pasha.tatashin@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171009221931.1481-8-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,27 +30,317 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use WARN_ON(), while running out of stubs in stub_for_addr()
-and abort loading of the module instead of BUG_ON().
+Hi Pavel,
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+On Mon, Oct 09, 2017 at 06:19:29PM -0400, Pavel Tatashin wrote:
+> During early boot, kasan uses vmemmap_populate() to establish its shadow
+> memory. But, that interface is intended for struct pages use.
+> 
+> Because of the current project, vmemmap won't be zeroed during allocation,
+> but kasan expects that memory to be zeroed. We are adding a new
+> kasan_map_populate() function to resolve this difference.
+> 
+> Therefore, we must use a new interface to allocate and map kasan shadow
+> memory, that also zeroes memory for us.
+> 
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> ---
+>  arch/arm64/mm/kasan_init.c | 72 ++++++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 66 insertions(+), 6 deletions(-)
+
+Thanks for doing this, although I still think we can do better and avoid the
+additional walking code altogether, as well as removing the dependence on
+vmemmap. Rather than keep messing you about here (sorry about that), I've
+written an arm64 patch for you to take on top of this series. Please take
+a look below.
+
+Cheers,
+
+Will
+
+--->8
+
+>From 36c6c7c06273d08348b47c1a182116b0a1df8363 Mon Sep 17 00:00:00 2001
+From: Will Deacon <will.deacon@arm.com>
+Date: Tue, 10 Oct 2017 15:49:43 +0100
+Subject: [PATCH] arm64: kasan: Avoid using vmemmap_populate to initialise
+ shadow
+
+The kasan shadow is currently mapped using vmemmap_populate since that
+provides a semi-convenient way to map pages into swapper. However, since
+that no longer zeroes the mapped pages, it is not suitable for kasan,
+which requires that the shadow is zeroed in order to avoid false
+positives.
+
+This patch removes our reliance on vmemmap_populate and reuses the
+existing kasan page table code, which is already required for creating
+the early shadow.
+
+Signed-off-by: Will Deacon <will.deacon@arm.com>
 ---
- arch/powerpc/kernel/module_64.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm64/Kconfig         |   2 +-
+ arch/arm64/mm/kasan_init.c | 176 +++++++++++++++++++--------------------------
+ 2 files changed, 74 insertions(+), 104 deletions(-)
 
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 0b0f896..759104b 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -429,7 +429,8 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
- 	/* Find this stub, or if that fails, the next avail. entry */
- 	stubs = (void *)sechdrs[me->arch.stubs_section].sh_addr;
- 	for (i = 0; stub_func_addr(stubs[i].funcdata); i++) {
--		BUG_ON(i >= num_stubs);
-+		if (WARN_ON(i >= num_stubs))
-+			return 0;
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 0df64a6a56d4..888580b9036e 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -68,7 +68,7 @@ config ARM64
+ 	select HAVE_ARCH_BITREVERSE
+ 	select HAVE_ARCH_HUGE_VMAP
+ 	select HAVE_ARCH_JUMP_LABEL
+-	select HAVE_ARCH_KASAN if SPARSEMEM_VMEMMAP && !(ARM64_16K_PAGES && ARM64_VA_BITS_48)
++	select HAVE_ARCH_KASAN if !(ARM64_16K_PAGES && ARM64_VA_BITS_48)
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_ARCH_MMAP_RND_BITS
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
+diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+index cb4af2951c90..b922826d9908 100644
+--- a/arch/arm64/mm/kasan_init.c
++++ b/arch/arm64/mm/kasan_init.c
+@@ -11,6 +11,7 @@
+  */
  
- 		if (stub_func_addr(stubs[i].funcdata) == func_addr(addr))
- 			return (unsigned long)&stubs[i];
+ #define pr_fmt(fmt) "kasan: " fmt
++#include <linux/bootmem.h>
+ #include <linux/kasan.h>
+ #include <linux/kernel.h>
+ #include <linux/sched/task.h>
+@@ -28,66 +29,6 @@
+ 
+ static pgd_t tmp_pg_dir[PTRS_PER_PGD] __initdata __aligned(PGD_SIZE);
+ 
+-/* Creates mappings for kasan during early boot. The mapped memory is zeroed */
+-static int __meminit kasan_map_populate(unsigned long start, unsigned long end,
+-					int node)
+-{
+-	unsigned long addr, pfn, next;
+-	unsigned long long size;
+-	pgd_t *pgd;
+-	pud_t *pud;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-	int ret;
+-
+-	ret = vmemmap_populate(start, end, node);
+-	/*
+-	 * We might have partially populated memory, so check for no entries,
+-	 * and zero only those that actually exist.
+-	 */
+-	for (addr = start; addr < end; addr = next) {
+-		pgd = pgd_offset_k(addr);
+-		if (pgd_none(*pgd)) {
+-			next = pgd_addr_end(addr, end);
+-			continue;
+-		}
+-
+-		pud = pud_offset(pgd, addr);
+-		if (pud_none(*pud)) {
+-			next = pud_addr_end(addr, end);
+-			continue;
+-		}
+-		if (pud_sect(*pud)) {
+-			/* This is PUD size page */
+-			next = pud_addr_end(addr, end);
+-			size = PUD_SIZE;
+-			pfn = pud_pfn(*pud);
+-		} else {
+-			pmd = pmd_offset(pud, addr);
+-			if (pmd_none(*pmd)) {
+-				next = pmd_addr_end(addr, end);
+-				continue;
+-			}
+-			if (pmd_sect(*pmd)) {
+-				/* This is PMD size page */
+-				next = pmd_addr_end(addr, end);
+-				size = PMD_SIZE;
+-				pfn = pmd_pfn(*pmd);
+-			} else {
+-				pte = pte_offset_kernel(pmd, addr);
+-				next = addr + PAGE_SIZE;
+-				if (pte_none(*pte))
+-					continue;
+-				/* This is base size page */
+-				size = PAGE_SIZE;
+-				pfn = pte_pfn(*pte);
+-			}
+-		}
+-		memset(phys_to_virt(PFN_PHYS(pfn)), 0, size);
+-	}
+-	return ret;
+-}
+-
+ /*
+  * The p*d_populate functions call virt_to_phys implicitly so they can't be used
+  * directly on kernel symbols (bm_p*d). All the early functions are called too
+@@ -95,77 +36,117 @@ static int __meminit kasan_map_populate(unsigned long start, unsigned long end,
+  * with the physical address from __pa_symbol.
+  */
+ 
+-static void __init kasan_early_pte_populate(pmd_t *pmd, unsigned long addr,
+-					unsigned long end)
++static phys_addr_t __init kasan_alloc_zeroed_page(int node)
+ {
+-	pte_t *pte;
+-	unsigned long next;
++	void *p = memblock_virt_alloc_try_nid(PAGE_SIZE, PAGE_SIZE,
++					      __pa(MAX_DMA_ADDRESS),
++					      MEMBLOCK_ALLOC_ACCESSIBLE, node);
++	return __pa(p);
++}
+ 
+-	if (pmd_none(*pmd))
+-		__pmd_populate(pmd, __pa_symbol(kasan_zero_pte), PMD_TYPE_TABLE);
++static pte_t *__init kasan_pte_offset(pmd_t *pmd, unsigned long addr, int node,
++				      bool early)
++{
++	if (pmd_none(*pmd)) {
++		phys_addr_t pte_phys = early ? __pa_symbol(kasan_zero_pte)
++					     : kasan_alloc_zeroed_page(node);
++		__pmd_populate(pmd, pte_phys, PMD_TYPE_TABLE);
++	}
++
++	return early ? pte_offset_kimg(pmd, addr)
++		     : pte_offset_kernel(pmd, addr);
++}
++
++static pmd_t *__init kasan_pmd_offset(pud_t *pud, unsigned long addr, int node,
++				      bool early)
++{
++	if (pud_none(*pud)) {
++		phys_addr_t pmd_phys = early ? __pa_symbol(kasan_zero_pmd)
++					     : kasan_alloc_zeroed_page(node);
++		__pud_populate(pud, pmd_phys, PMD_TYPE_TABLE);
++	}
++
++	return early ? pmd_offset_kimg(pud, addr) : pmd_offset(pud, addr);
++}
++
++static pud_t *__init kasan_pud_offset(pgd_t *pgd, unsigned long addr, int node,
++				      bool early)
++{
++	if (pgd_none(*pgd)) {
++		phys_addr_t pud_phys = early ? __pa_symbol(kasan_zero_pud)
++					     : kasan_alloc_zeroed_page(node);
++		__pgd_populate(pgd, pud_phys, PMD_TYPE_TABLE);
++	}
++
++	return early ? pud_offset_kimg(pgd, addr) : pud_offset(pgd, addr);
++}
++
++static void __init kasan_pte_populate(pmd_t *pmd, unsigned long addr,
++				      unsigned long end, int node, bool early)
++{
++	unsigned long next;
++	pte_t *pte = kasan_pte_offset(pmd, addr, node, early);
+ 
+-	pte = pte_offset_kimg(pmd, addr);
+ 	do {
++		phys_addr_t page_phys = early ? __pa_symbol(kasan_zero_page)
++					      : kasan_alloc_zeroed_page(node);
+ 		next = addr + PAGE_SIZE;
+-		set_pte(pte, pfn_pte(sym_to_pfn(kasan_zero_page),
+-					PAGE_KERNEL));
++		set_pte(pte, pfn_pte(__phys_to_pfn(page_phys), PAGE_KERNEL));
+ 	} while (pte++, addr = next, addr != end && pte_none(*pte));
+ }
+ 
+-static void __init kasan_early_pmd_populate(pud_t *pud,
+-					unsigned long addr,
+-					unsigned long end)
++static void __init kasan_pmd_populate(pud_t *pud, unsigned long addr,
++				      unsigned long end, int node, bool early)
+ {
+-	pmd_t *pmd;
+ 	unsigned long next;
++	pmd_t *pmd = kasan_pmd_offset(pud, addr, node, early);
+ 
+-	if (pud_none(*pud))
+-		__pud_populate(pud, __pa_symbol(kasan_zero_pmd), PMD_TYPE_TABLE);
+-
+-	pmd = pmd_offset_kimg(pud, addr);
+ 	do {
+ 		next = pmd_addr_end(addr, end);
+-		kasan_early_pte_populate(pmd, addr, next);
++		kasan_pte_populate(pmd, addr, next, node, early);
+ 	} while (pmd++, addr = next, addr != end && pmd_none(*pmd));
+ }
+ 
+-static void __init kasan_early_pud_populate(pgd_t *pgd,
+-					unsigned long addr,
+-					unsigned long end)
++static void __init kasan_pud_populate(pgd_t *pgd, unsigned long addr,
++				      unsigned long end, int node, bool early)
+ {
+-	pud_t *pud;
+ 	unsigned long next;
++	pud_t *pud = kasan_pud_offset(pgd, addr, node, early);
+ 
+-	if (pgd_none(*pgd))
+-		__pgd_populate(pgd, __pa_symbol(kasan_zero_pud), PUD_TYPE_TABLE);
+-
+-	pud = pud_offset_kimg(pgd, addr);
+ 	do {
+ 		next = pud_addr_end(addr, end);
+-		kasan_early_pmd_populate(pud, addr, next);
++		kasan_pmd_populate(pud, addr, next, node, early);
+ 	} while (pud++, addr = next, addr != end && pud_none(*pud));
+ }
+ 
+-static void __init kasan_map_early_shadow(void)
++static void __init kasan_pgd_populate(unsigned long addr, unsigned long end,
++				      int node, bool early)
+ {
+-	unsigned long addr = KASAN_SHADOW_START;
+-	unsigned long end = KASAN_SHADOW_END;
+ 	unsigned long next;
+ 	pgd_t *pgd;
+ 
+ 	pgd = pgd_offset_k(addr);
+ 	do {
+ 		next = pgd_addr_end(addr, end);
+-		kasan_early_pud_populate(pgd, addr, next);
++		kasan_pud_populate(pgd, addr, next, node, early);
+ 	} while (pgd++, addr = next, addr != end);
+ }
+ 
++/* The early shadow maps everything to a single page of zeroes */
+ asmlinkage void __init kasan_early_init(void)
+ {
+ 	BUILD_BUG_ON(KASAN_SHADOW_OFFSET != KASAN_SHADOW_END - (1UL << 61));
+ 	BUILD_BUG_ON(!IS_ALIGNED(KASAN_SHADOW_START, PGDIR_SIZE));
+ 	BUILD_BUG_ON(!IS_ALIGNED(KASAN_SHADOW_END, PGDIR_SIZE));
+-	kasan_map_early_shadow();
++	kasan_pgd_populate(KASAN_SHADOW_START, KASAN_SHADOW_END, NUMA_NO_NODE,
++			   true);
++}
++
++/* Set up full kasan mappings, ensuring that the mapped pages are zeroed */
++static void __init kasan_map_populate(unsigned long start, unsigned long end,
++				      int node)
++{
++	kasan_pgd_populate(start & PAGE_MASK, PAGE_ALIGN(end), node, false);
+ }
+ 
+ /*
+@@ -224,17 +205,6 @@ void __init kasan_init(void)
+ 	kasan_map_populate(kimg_shadow_start, kimg_shadow_end,
+ 			   pfn_to_nid(virt_to_pfn(lm_alias(_text))));
+ 
+-	/*
+-	 * kasan_map_populate() has populated the shadow region that covers the
+-	 * kernel image with SWAPPER_BLOCK_SIZE mappings, so we have to round
+-	 * the start and end addresses to SWAPPER_BLOCK_SIZE as well, to prevent
+-	 * kasan_populate_zero_shadow() from replacing the page table entries
+-	 * (PMD or PTE) at the edges of the shadow region for the kernel
+-	 * image.
+-	 */
+-	kimg_shadow_start = round_down(kimg_shadow_start, SWAPPER_BLOCK_SIZE);
+-	kimg_shadow_end = round_up(kimg_shadow_end, SWAPPER_BLOCK_SIZE);
+-
+ 	kasan_populate_zero_shadow((void *)KASAN_SHADOW_START,
+ 				   (void *)mod_shadow_start);
+ 	kasan_populate_zero_shadow((void *)kimg_shadow_end,
 -- 
-2.7.4
+2.1.4
