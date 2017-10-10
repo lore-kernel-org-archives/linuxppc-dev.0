@@ -1,25 +1,29 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBJs70QRNzDqlv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBJs70qgQzDr4W
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 01:09:46 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id z80so17416863pff.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 07:09:46 -0700 (PDT)
-Date: Wed, 11 Oct 2017 00:09:34 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneeshkumar.opensource@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64s/radix: fix preempt imbalance in TLB flush
-Message-ID: <20171011000934.013197aa@roar.ozlabs.ibm.com>
-In-Reply-To: <49391eb8-6f85-7c37-b779-5e8c6a5bd6b4@gmail.com>
-References: <20171010101641.5714-1-npiggin@gmail.com>
- <d243ba10-5e46-c86a-be89-64737257e903@linux.vnet.ibm.com>
- <20171010203256.3cb6701f@roar.ozlabs.ibm.com>
- <49391eb8-6f85-7c37-b779-5e8c6a5bd6b4@gmail.com>
+Date: Tue, 10 Oct 2017 16:09:42 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v11 5/9] mm: zero reserved and unavailable struct pages
+Message-ID: <20171010140942.qe4mlby5uizt56pz@dhcp22.suse.cz>
+References: <20171009221931.1481-1-pasha.tatashin@oracle.com>
+ <20171009221931.1481-6-pasha.tatashin@oracle.com>
+ <20171010134441.pjemi7ytaqcfm372@dhcp22.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171010134441.pjemi7ytaqcfm372@dhcp22.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,66 +33,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Oct 2017 19:09:54 +0530
-"Aneesh Kumar K.V" <aneeshkumar.opensource@gmail.com> wrote:
+On Tue 10-10-17 15:44:41, Michal Hocko wrote:
+> On Mon 09-10-17 18:19:27, Pavel Tatashin wrote:
+> > Some memory is reserved but unavailable: not present in memblock.memory
+> > (because not backed by physical pages), but present in memblock.reserved.
+> > Such memory has backing struct pages, but they are not initialized by going
+> > through __init_single_page().
+> > 
+> > In some cases these struct pages are accessed even if they do not contain
+> > any data. One example is page_to_pfn() might access page->flags if this is
+> > where section information is stored (CONFIG_SPARSEMEM,
+> > SECTION_IN_PAGE_FLAGS).
+> > 
+> > One example of such memory: trim_low_memory_range() unconditionally
+> > reserves from pfn 0, but e820__memblock_setup() might provide the exiting
+> > memory from pfn 1 (i.e. KVM).
 
+Btw. I would add your example from http://lkml.kernel.org/r/bcf24369-ac37-cedd-a264-3396fb5cf39e@oracle.com
+to do changelog
+ 
+> > Since, struct pages are zeroed in __init_single_page(), and not during
+> > allocation time, we must zero such struct pages explicitly.
+> > 
+> > The patch involves adding a new memblock iterator:
+> > 	for_each_resv_unavail_range(i, p_start, p_end)
+> > 
+> > Which iterates through reserved && !memory lists, and we zero struct pages
+> > explicitly by calling mm_zero_struct_page().
+> > 
+> > Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> > Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> > Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> > Reviewed-by: Bob Picco <bob.picco@oracle.com>
 > 
+> Acked-by: Michal Hocko <mhocko@suse.com>
 > 
-> On 10/10/2017 04:02 PM, Nicholas Piggin wrote:
-> > On Tue, 10 Oct 2017 15:52:02 +0530
-> > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> >
-> >> On 10/10/2017 03:46 PM, Nicholas Piggin wrote:
-> >>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >>> ---
-> >>>    arch/powerpc/mm/tlb-radix.c | 3 ++-
-> >>>    1 file changed, 2 insertions(+), 1 deletion(-)
-> >>>
-> >>> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> >>> index b3e849c4886e..de414460287a 100644
-> >>> --- a/arch/powerpc/mm/tlb-radix.c
-> >>> +++ b/arch/powerpc/mm/tlb-radix.c
-> >>> @@ -358,7 +358,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
-> >>>    	unsigned long ap = mmu_get_ap(mmu_virtual_psize);
-> >>>    	unsigned long pid, end;
-> >>>
-> >>> -
-> >>> +	preempt_disable();
-> >>>    	pid = mm ? mm->context.id : 0;
-> >>>    	if (unlikely(pid == MMU_NO_CONTEXT))
-> >>>    		goto no_context;
-> >>> @@ -366,6 +366,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
-> >>>    	/* 4k page size, just blow the world */
-> >>>    	if (PAGE_SIZE == 0x1000) {
-> >>>    		radix__flush_all_mm(mm);
-> >>> +		preempt_enable();
-> >>>    		return;
-> >>>    	}
-> >>>    
-> >> Can't we do a preempt_disable before the if (local) check?. That way we
-> >> don't need that prempt_enable in that PAGE_SIZE==0x1000 path.We already
-> >> do disable/enable correctly in radix__flush_all_mm(mm)
-> > Well this is just to fix the imbalance. Nested preempt doesn't matter
-> > much, and these are all no-ops for !preempt kernel, unless you turn on
-> > debugging.
+> > ---
+> >  include/linux/memblock.h | 16 ++++++++++++++++
+> >  include/linux/mm.h       | 15 +++++++++++++++
+> >  mm/page_alloc.c          | 38 ++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 69 insertions(+)
+> > 
+> > diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+> > index bae11c7e7bf3..ce8bfa5f3e9b 100644
+> > --- a/include/linux/memblock.h
+> > +++ b/include/linux/memblock.h
+> > @@ -237,6 +237,22 @@ unsigned long memblock_next_valid_pfn(unsigned long pfn, unsigned long max_pfn);
+> >  	for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved,	\
+> >  			       nid, flags, p_start, p_end, p_nid)
+> >  
+> > +/**
+> > + * for_each_resv_unavail_range - iterate through reserved and unavailable memory
+> > + * @i: u64 used as loop variable
+> > + * @flags: pick from blocks based on memory attributes
+> > + * @p_start: ptr to phys_addr_t for start address of the range, can be %NULL
+> > + * @p_end: ptr to phys_addr_t for end address of the range, can be %NULL
+> > + *
+> > + * Walks over unavailable but reserved (reserved && !memory) areas of memblock.
+> > + * Available as soon as memblock is initialized.
+> > + * Note: because this memory does not belong to any physical node, flags and
+> > + * nid arguments do not make sense and thus not exported as arguments.
+> > + */
+> > +#define for_each_resv_unavail_range(i, p_start, p_end)			\
+> > +	for_each_mem_range(i, &memblock.reserved, &memblock.memory,	\
+> > +			   NUMA_NO_NODE, MEMBLOCK_NONE, p_start, p_end, NULL)
+> > +
+> >  static inline void memblock_set_region_flags(struct memblock_region *r,
+> >  					     unsigned long flags)
+> >  {
+> > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > index 065d99deb847..04c8b2e5aff4 100644
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> > @@ -94,6 +94,15 @@ extern int mmap_rnd_compat_bits __read_mostly;
+> >  #define mm_forbids_zeropage(X)	(0)
+> >  #endif
+> >  
+> > +/*
+> > + * On some architectures it is expensive to call memset() for small sizes.
+> > + * Those architectures should provide their own implementation of "struct page"
+> > + * zeroing by defining this macro in <asm/pgtable.h>.
+> > + */
+> > +#ifndef mm_zero_struct_page
+> > +#define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
+> > +#endif
+> > +
+> >  /*
+> >   * Default maximum number of active map areas, this limits the number of vmas
+> >   * per mm struct. Users can overwrite this number by sysctl but there is a
+> > @@ -2001,6 +2010,12 @@ extern int __meminit __early_pfn_to_nid(unsigned long pfn,
+> >  					struct mminit_pfnnid_cache *state);
+> >  #endif
+> >  
+> > +#ifdef CONFIG_HAVE_MEMBLOCK
+> > +void zero_resv_unavail(void);
+> > +#else
+> > +static inline void zero_resv_unavail(void) {}
+> > +#endif
+> > +
+> >  extern void set_dma_reserve(unsigned long new_dma_reserve);
+> >  extern void memmap_init_zone(unsigned long, int, unsigned long,
+> >  				unsigned long, enum memmap_context);
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 20b0bace2235..5f0013bbbe9d 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -6209,6 +6209,42 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
+> >  	free_area_init_core(pgdat);
+> >  }
+> >  
+> > +#ifdef CONFIG_HAVE_MEMBLOCK
+> > +/*
+> > + * Only struct pages that are backed by physical memory are zeroed and
+> > + * initialized by going through __init_single_page(). But, there are some
+> > + * struct pages which are reserved in memblock allocator and their fields
+> > + * may be accessed (for example page_to_pfn() on some configuration accesses
+> > + * flags). We must explicitly zero those struct pages.
+> > + */
+> > +void __paginginit zero_resv_unavail(void)
+> > +{
+> > +	phys_addr_t start, end;
+> > +	unsigned long pfn;
+> > +	u64 i, pgcnt;
+> > +
+> > +	/* Loop through ranges that are reserved, but do not have reported
+> > +	 * physical memory backing.
+> > +	 */
+> > +	pgcnt = 0;
+> > +	for_each_resv_unavail_range(i, &start, &end) {
+> > +		for (pfn = PFN_DOWN(start); pfn < PFN_UP(end); pfn++) {
+> > +			mm_zero_struct_page(pfn_to_page(pfn));
+> > +			pgcnt++;
+> > +		}
+> > +	}
+> > +
+> > +	/*
+> > +	 * Struct pages that do not have backing memory. This could be because
+> > +	 * firmware is using some of this memory, or for some other reasons.
+> > +	 * Once memblock is changed so such behaviour is not allowed: i.e.
+> > +	 * list of "reserved" memory must be a subset of list of "memory", then
+> > +	 * this code can be removed.
+> > +	 */
+> > +	pr_info("Reserved but unavailable: %lld pages", pgcnt);
+> > +}
+> > +#endif /* CONFIG_HAVE_MEMBLOCK */
+> > +
+> >  #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
+> >  
+> >  #if MAX_NUMNODES > 1
+> > @@ -6632,6 +6668,7 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
+> >  			node_set_state(nid, N_MEMORY);
+> >  		check_for_memory(pgdat, nid);
+> >  	}
+> > +	zero_resv_unavail();
+> >  }
+> >  
+> >  static int __init cmdline_parse_core(char *p, unsigned long *core)
+> > @@ -6795,6 +6832,7 @@ void __init free_area_init(unsigned long *zones_size)
+> >  {
+> >  	free_area_init_node(0, zones_size,
+> >  			__pa(PAGE_OFFSET) >> PAGE_SHIFT, NULL);
+> > +	zero_resv_unavail();
+> >  }
+> >  
+> >  static int page_alloc_cpu_dead(unsigned int cpu)
+> > -- 
+> > 2.14.2
 > 
-> But this patch is still doing the mm_is_thread_local() test outside 
-> preempt_disable() right?
+> -- 
+> Michal Hocko
+> SUSE Labs
 
-Yes. As it does in some other place too. It's just a minimal fix for
-the imbalance issue as I said, because that's messing up debugging.
-
-> > I already proposed another patch to bring those local tests under
-> > preempt disable but no response yet
-> >
-> > https://patchwork.ozlabs.org/patch/811061/
-> >
-> 
-> That is a much better patch?
-
-I'm planning to repost the series but have been side-tracked hitting
-testing it due to hitting bugs (!preempt though, so this has not been
-top priority).
-
-Thanks,
-Nick
+-- 
+Michal Hocko
+SUSE Labs
