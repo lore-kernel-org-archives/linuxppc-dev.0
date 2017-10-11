@@ -1,41 +1,48 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBkH23Vw0zDr6N
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 17:15:10 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9B6Dwx6065434
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 02:15:07 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dhcwnjepn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBlNS59tMzDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 18:04:56 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9B73j6Z139686
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 03:04:54 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dhdr42c0j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 02:15:07 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 03:04:53 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 07:15:05 +0100
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 11 Oct 2017 08:04:52 +0100
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9B6F0qG24248490
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 06:15:02 GMT
+ v9B74lUI25624762
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 07:04:49 GMT
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9B6F4S4003880
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 17:15:04 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: [PATCH v2] cxl: Dump PSL_FIR register on PSL9 error irq
-Date: Wed, 11 Oct 2017 11:44:41 +0530
-Message-Id: <20171011061441.16795-1-vaibhav@linux.vnet.ibm.com>
+ v9B74ooE016004
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 18:04:51 +1100
+Date: Wed, 11 Oct 2017 12:34:43 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Santosh Sivaraj <santosh@fossix.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v6] powerpc/vdso64: Add support for
+ CLOCK_{REALTIME/MONOTONIC}_COARSE
+References: <20171010093033.73x66lxl3xxi33qo@naverao1-tp.localdomain>
+ <20171010231003.10325-1-santosh@fossix.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171010231003.10325-1-santosh@fossix.org>
+Message-Id: <20171011070443.5lupjenfs4ycwd5q@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,92 +52,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For PSL9 currently we aren't dumping the PSL FIR register when a
-PSL error interrupt is triggered. Contents of this register are useful
-in debugging AFU issues.
+Hi Santosh,
+This seems to have gone from v4 to v6 -- did I miss v5?
 
-This patch fixes issue by adding a new service_layer_ops callback
-cxl_native_err_irq_dump_regs_psl9() to dump the PSL_FIR registers on a
-PSL error interrupt thereby bringing the behavior in line with PSL on
-POWER-8. Also the existing service_layer_ops callback
-for PSL8 has been renamed to cxl_native_err_irq_dump_regs_psl8().
+On 2017/10/10 11:10PM, Santosh Sivaraj wrote:
+> Current vDSO64 implementation does not have support for coarse clocks
+> (CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
+> to system call, increasing the response time, vDSO implementation reduces
+> the cycle time. Below is a benchmark of the difference in execution times.
+> 
+> (Non-coarse clocks are also included just for completion)
+> 
+> clock-gettime-realtime: syscall: 172 nsec/call
+> clock-gettime-realtime:    libc: 28 nsec/call
+> clock-gettime-realtime:    vdso: 22 nsec/call
+> clock-gettime-monotonic: syscall: 171 nsec/call
+> clock-gettime-monotonic:    libc: 30 nsec/call
+> clock-gettime-monotonic:    vdso: 25 nsec/call
+> clock-gettime-realtime-coarse: syscall: 153 nsec/call
+> clock-gettime-realtime-coarse:    libc: 16 nsec/call
+> clock-gettime-realtime-coarse:    vdso: 10 nsec/call
+> clock-gettime-monotonic-coarse: syscall: 167 nsec/call
+> clock-gettime-monotonic-coarse:    libc: 17 nsec/call
+> clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
+> 
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+> ---
+>  arch/powerpc/kernel/asm-offsets.c         |  2 +
+>  arch/powerpc/kernel/vdso64/gettimeofday.S | 67 ++++++++++++++++++++++++++-----
+>  2 files changed, 58 insertions(+), 11 deletions(-)
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
-Changelog:
-[v2] -> As created a different function to dump the FIR register for PSL9 (Fred)
----
+... and no changes since the last rev?
 
- drivers/misc/cxl/cxl.h    |  3 ++-
- drivers/misc/cxl/native.c | 15 ++++++++++++---
- drivers/misc/cxl/pci.c    |  3 ++-
- 3 files changed, 16 insertions(+), 5 deletions(-)
+It is better to post new versions in a separate thread and to include 
+the changelog for easier review.
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 252373c2b861..111c689b1771 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -1072,7 +1072,8 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
- 
- void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
- void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
--void cxl_native_err_irq_dump_regs(struct cxl *adapter);
-+void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter);
-+void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter);
- int cxl_pci_vphb_add(struct cxl_afu *afu);
- void cxl_pci_vphb_remove(struct cxl_afu *afu);
- void cxl_release_mapping(struct cxl_context *ctx);
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 6cd57c756927..02b6b45b4c20 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -1263,14 +1263,23 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--void cxl_native_err_irq_dump_regs(struct cxl *adapter)
-+void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter)
-+{
-+	u64 fir1;
-+
-+	fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
-+	dev_crit(&adapter->dev, "PSL_FIR: 0x%016llx\n", fir1);
-+}
-+
-+void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter)
- {
- 	u64 fir1, fir2;
- 
- 	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
- 	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
--
--	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
-+	dev_crit(&adapter->dev,
-+		 "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n",
-+		 fir1, fir2);
- }
- 
- static irqreturn_t native_irq_err(int irq, void *data)
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index b4ce9ea113a9..d185b47eb536 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1763,6 +1763,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
- 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
- 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
- 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
-+	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
- 	.debugfs_stop_trace = cxl_stop_trace_psl9,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl9,
- 	.timebase_read = timebase_read_psl9,
-@@ -1786,7 +1787,7 @@ static const struct cxl_service_layer_ops psl8_ops = {
- 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
- 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
- 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
--	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
-+	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl8,
- 	.debugfs_stop_trace = cxl_stop_trace_psl8,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl8,
- 	.timebase_read = timebase_read_psl8,
--- 
-2.13.6
+
+- Naveen
