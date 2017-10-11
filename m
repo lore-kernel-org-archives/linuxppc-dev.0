@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBwS33Yy2zDr6L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 00:53:39 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBwS62g51zDr6r
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 00:53:42 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9BDrND4120598
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:53:37 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dhhdrw4w3-1
+ v9BDojUo052306
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:53:40 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dhj86hvej-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:53:37 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:53:40 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 14:53:34 +0100
+ Wed, 11 Oct 2017 14:53:37 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -33,11 +33,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v5 13/22] mm: Introduce __maybe_mkwrite()
-Date: Wed, 11 Oct 2017 15:52:37 +0200
+Subject: [PATCH v5 14/22] mm: Introduce __vm_normal_page()
+Date: Wed, 11 Oct 2017 15:52:38 +0200
 In-Reply-To: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1507729966-10660-14-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1507729966-10660-15-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,72 +47,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current maybe_mkwrite() is getting passed the pointer to the vma
-structure to fetch the vm_flags field.
+When dealing with the speculative fault path we should use the VMA's field
+cached value stored in the vm_fault structure.
 
-When dealing with the speculative page fault handler, it will be better to
-rely on the cached vm_flags value stored in the vm_fault structure.
+Currently vm_normal_page() is using the pointer to the VMA to fetch the
+vm_flags value. This patch provides a new __vm_normal_page() which is
+receiving the vm_flags flags value as parameter.
 
-This patch introduce a __maybe_mkwrite() service which can be called by
-passing the value of the vm_flags field.
-
-There is no change functional changes expected for the other callers of
-maybe_mkwrite().
+Note: The speculative path is turned on for architecture providing support
+for special PTE flag. So only the first block of vm_normal_page is used
+during the speculative path.
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/mm.h | 9 +++++++--
- mm/memory.c        | 6 +++---
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ include/linux/mm.h |  7 +++++--
+ mm/memory.c        | 18 ++++++++++--------
+ 2 files changed, 15 insertions(+), 10 deletions(-)
 
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index fa7d5d330014..9290d331a8dc 100644
+index 9290d331a8dc..6feff53f4775 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
-@@ -673,13 +673,18 @@ void free_compound_page(struct page *page);
-  * pte_mkwrite.  But get_user_pages can cause write faults for mappings
-  * that do not have writing enabled, when used by access_process_vm.
-  */
--static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
-+static inline pte_t __maybe_mkwrite(pte_t pte, unsigned long vma_flags)
- {
--	if (likely(vma->vm_flags & VM_WRITE))
-+	if (likely(vma_flags & VM_WRITE))
- 		pte = pte_mkwrite(pte);
- 	return pte;
- }
+@@ -1246,8 +1246,11 @@ struct zap_details {
+ 	pgoff_t last_index;			/* Highest page->index to unmap */
+ };
  
-+static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
-+{
-+	return __maybe_mkwrite(pte, vma->vm_flags);
-+}
-+
- int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
- 		struct page *page);
- int finish_fault(struct vm_fault *vmf);
+-struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+-			     pte_t pte, bool with_public_device);
++struct page *__vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
++			      pte_t pte, bool with_public_device,
++			      unsigned long vma_flags);
++#define _vm_normal_page(vma, addr, pte, with_public_device) \
++	__vm_normal_page(vma, addr, pte, with_public_device, (vma)->vm_flags)
+ #define vm_normal_page(vma, addr, pte) _vm_normal_page(vma, addr, pte, false)
+ 
+ struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
 diff --git a/mm/memory.c b/mm/memory.c
-index 5e5b8e3189f2..a940883013c3 100644
+index a940883013c3..4ad4f0a6f652 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -2451,7 +2451,7 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
+@@ -823,8 +823,9 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
+ #else
+ # define HAVE_PTE_SPECIAL 0
+ #endif
+-struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+-			     pte_t pte, bool with_public_device)
++struct page *__vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
++			      pte_t pte, bool with_public_device,
++			      unsigned long vma_flags)
+ {
+ 	unsigned long pfn = pte_pfn(pte);
  
- 	flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
- 	entry = pte_mkyoung(vmf->orig_pte);
--	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+	entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
- 	if (ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1))
- 		update_mmu_cache(vma, vmf->address, vmf->pte);
- 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-@@ -2541,8 +2541,8 @@ static int wp_page_copy(struct vm_fault *vmf)
- 			inc_mm_counter_fast(mm, MM_ANONPAGES);
+@@ -833,7 +834,7 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ 			goto check_pfn;
+ 		if (vma->vm_ops && vma->vm_ops->find_special_page)
+ 			return vma->vm_ops->find_special_page(vma, addr);
+-		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
++		if (vma_flags & (VM_PFNMAP | VM_MIXEDMAP))
+ 			return NULL;
+ 		if (pte_devmap(pte))
+ 			return NULL;
+@@ -867,8 +868,8 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ 
+ 	/* !HAVE_PTE_SPECIAL case follows: */
+ 
+-	if (unlikely(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
+-		if (vma->vm_flags & VM_MIXEDMAP) {
++	if (unlikely(vma_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
++		if (vma_flags & VM_MIXEDMAP) {
+ 			if (!pfn_valid(pfn))
+ 				return NULL;
+ 			goto out;
+@@ -877,7 +878,7 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ 			off = (addr - vma->vm_start) >> PAGE_SHIFT;
+ 			if (pfn == vma->vm_pgoff + off)
+ 				return NULL;
+-			if (!is_cow_mapping(vma->vm_flags))
++			if (!is_cow_mapping(vma_flags))
+ 				return NULL;
  		}
- 		flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
--		entry = mk_pte(new_page, vma->vm_page_prot);
--		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+		entry = mk_pte(new_page, vmf->vma_page_prot);
-+		entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
+ 	}
+@@ -2730,7 +2731,8 @@ static int do_wp_page(struct vm_fault *vmf)
+ {
+ 	struct vm_area_struct *vma = vmf->vma;
+ 
+-	vmf->page = vm_normal_page(vma, vmf->address, vmf->orig_pte);
++	vmf->page = __vm_normal_page(vma, vmf->address, vmf->orig_pte, false,
++				     vmf->vma_flags);
+ 	if (!vmf->page) {
  		/*
- 		 * Clear the pte entry and flush it first, before updating the
- 		 * pte with the new entry. This will avoid a race condition
+ 		 * VM_MIXEDMAP !pfn_valid() case, or VM_SOFTDIRTY clear on a
+@@ -3820,7 +3822,7 @@ static int do_numa_page(struct vm_fault *vmf)
+ 	ptep_modify_prot_commit(vma->vm_mm, vmf->address, vmf->pte, pte);
+ 	update_mmu_cache(vma, vmf->address, vmf->pte);
+ 
+-	page = vm_normal_page(vma, vmf->address, pte);
++	page = __vm_normal_page(vma, vmf->address, pte, false, vmf->vma_flags);
+ 	if (!page) {
+ 		pte_unmap_unlock(vmf->pte, vmf->ptl);
+ 		return 0;
 -- 
 2.7.4
