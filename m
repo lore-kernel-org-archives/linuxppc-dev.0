@@ -1,37 +1,36 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBnsK2nWTzDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 19:56:37 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9B8u4F1119382
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 04:56:35 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dhb71cafu-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBpKT569szDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 20:17:33 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9B99fHY090937
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 05:17:30 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dhcm1af2e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 04:56:34 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 05:17:30 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 04:56:33 -0400
-Subject: Re: [PATCH] powerpc/powernv: Add kernel cmdline parameter to disable
- imc
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com
-References: <1507531597-25947-1-git-send-email-anju@linux.vnet.ibm.com>
- <87wp43wf2v.fsf@concordia.ellerman.id.au> <87infmeonf.fsf@linux.vnet.ibm.com>
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Wed, 11 Oct 2017 14:26:27 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 11 Oct 2017 10:17:28 +0100
+Subject: Re: [PATCH v2] cxl: Dump PSL_FIR register on PSL9 error irq
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>
+References: <20171011061441.16795-1-vaibhav@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 11 Oct 2017 11:17:23 +0200
 MIME-Version: 1.0
-In-Reply-To: <87infmeonf.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20171011061441.16795-1-vaibhav@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <06fe39eb-d5fe-4472-56b4-f66390d7fad9@linux.vnet.ibm.com>
+Message-Id: <3f0f93c3-92b1-bf9b-0968-9ff3b22e02b1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +40,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi mpe, stewart,
 
 
-On Wednesday 11 October 2017 01:55 AM, Stewart Smith wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
->>
->>> Add a kernel command line parameter option to disable In-Memory Collection
->>> (IMC) counters and add documentation. This helps in debug.
->> I'd really rather we didn't. Do we *really* need this?
->>
->> We don't have command line parameters to disable any of the other ~20
->> PMUs, why is this one special?
+Le 11/10/2017 à 08:14, Vaibhav Jain a écrit :
+> For PSL9 currently we aren't dumping the PSL FIR register when a
+> PSL error interrupt is triggered. Contents of this register are useful
+> in debugging AFU issues.
+> 
+> This patch fixes issue by adding a new service_layer_ops callback
+> cxl_native_err_irq_dump_regs_psl9() to dump the PSL_FIR registers on a
+> PSL error interrupt thereby bringing the behavior in line with PSL on
+> POWER-8. Also the existing service_layer_ops callback
+> for PSL8 has been renamed to cxl_native_err_irq_dump_regs_psl8().
+> 
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+> Changelog:
+> [v2] -> As created a different function to dump the FIR register for PSL9 (Fred)
+> ---
 
-This one is really helpful in debugging, incase if we want to proceed 
-without nest counters  OR
-core counters . But if we have the facility to do the same from 
-petitboot, its fine.
-
-> You could also do the same thing by editing the device tree before
-> booting your kernel, we do have the facility to do that in petitboot.
->
-> A recent firmware patch: https://patchwork.ozlabs.org/patch/823249/
-> would fix the firmware implementation where the counters were already
-> running before the INIT/START calls, which are likely the cause of the
-> problems that this patch is trying to work around.
->
-> I propose we have the firmware do the right thing and nothing special in
-> kernel. i.e. not to merge this.
->
-
-Agreed.
+Thanks!
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 
-
-Thanks,
-Anju
+> 
+>   drivers/misc/cxl/cxl.h    |  3 ++-
+>   drivers/misc/cxl/native.c | 15 ++++++++++++---
+>   drivers/misc/cxl/pci.c    |  3 ++-
+>   3 files changed, 16 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index 252373c2b861..111c689b1771 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -1072,7 +1072,8 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+> 
+>   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+>   void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+> -void cxl_native_err_irq_dump_regs(struct cxl *adapter);
+> +void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter);
+> +void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter);
+>   int cxl_pci_vphb_add(struct cxl_afu *afu);
+>   void cxl_pci_vphb_remove(struct cxl_afu *afu);
+>   void cxl_release_mapping(struct cxl_context *ctx);
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 6cd57c756927..02b6b45b4c20 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -1263,14 +1263,23 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
+>   	return IRQ_HANDLED;
+>   }
+> 
+> -void cxl_native_err_irq_dump_regs(struct cxl *adapter)
+> +void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter)
+> +{
+> +	u64 fir1;
+> +
+> +	fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
+> +	dev_crit(&adapter->dev, "PSL_FIR: 0x%016llx\n", fir1);
+> +}
+> +
+> +void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter)
+>   {
+>   	u64 fir1, fir2;
+> 
+>   	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
+>   	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
+> -
+> -	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
+> +	dev_crit(&adapter->dev,
+> +		 "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n",
+> +		 fir1, fir2);
+>   }
+> 
+>   static irqreturn_t native_irq_err(int irq, void *data)
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index b4ce9ea113a9..d185b47eb536 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1763,6 +1763,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
+>   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
+>   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
+>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
+> +	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
+>   	.debugfs_stop_trace = cxl_stop_trace_psl9,
+>   	.write_timebase_ctrl = write_timebase_ctrl_psl9,
+>   	.timebase_read = timebase_read_psl9,
+> @@ -1786,7 +1787,7 @@ static const struct cxl_service_layer_ops psl8_ops = {
+>   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
+>   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
+>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
+> -	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
+> +	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl8,
+>   	.debugfs_stop_trace = cxl_stop_trace_psl8,
+>   	.write_timebase_ctrl = write_timebase_ctrl_psl8,
+>   	.timebase_read = timebase_read_psl8,
+> 
