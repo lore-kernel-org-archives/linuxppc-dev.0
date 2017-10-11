@@ -1,36 +1,48 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBpKT569szDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 20:17:33 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9B99fHY090937
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 05:17:30 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dhcm1af2e-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBpqf0k00zDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 20:40:13 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9B9dq6w097180
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 05:40:11 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dhekcp7bu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 05:17:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 05:40:10 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 10:17:28 +0100
-Subject: Re: [PATCH v2] cxl: Dump PSL_FIR register on PSL9 error irq
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>
-References: <20171011061441.16795-1-vaibhav@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Wed, 11 Oct 2017 11:17:23 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 11 Oct 2017 10:40:07 +0100
+Subject: Re: [PATCH v4 19/20] x86/mm: Add speculative pagefault handling
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1507543672-25821-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1507543672-25821-20-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20171010142356.b33f8a8fee3427fbdf0708e3@linux-foundation.org>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 11 Oct 2017 11:39:58 +0200
 MIME-Version: 1.0
-In-Reply-To: <20171011061441.16795-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <3f0f93c3-92b1-bf9b-0968-9ff3b22e02b1@linux.vnet.ibm.com>
+In-Reply-To: <20171010142356.b33f8a8fee3427fbdf0708e3@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6c58b73a-b089-237f-46df-95e7c6fbe7ba@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,99 +52,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 10/10/2017 23:23, Andrew Morton wrote:
+> On Mon,  9 Oct 2017 12:07:51 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+> 
+>> +/*
+>> + * Advertise that we call the Speculative Page Fault handler.
+>> + */
+>> +#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
+>> +#define __HAVE_ARCH_CALL_SPF
+>> +#endif
+> 
+> Here's where I mess up your life ;)
+
+That's ok... for this time ;)
+
+> It would be more idiomatic to define this in arch/XXX/Kconfig:
+> 
+> config SPF
+> 	def_bool y if SMP
+> 
+> then use CONFIG_SPF everywhere.
+
+That's far smarter ! Thanks for the tip, I'll change the series in this way.
+
+> Also, it would be better if CONFIG_SPF were defined at the start of the
+> patch series rather than the end, so that as the patches add new code,
+> that code is actually compilable.  For bisection purposes.  I can
+> understand if this is too much work and effort - we can live with
+> things the way they are now.
+
+I'll make the change and define CONFIG_SPF earlier, since until the patch
+enabling SPF page fault handler call in the arch part, the code is not
+triggered but the sequence count and the RCU stuff will be called this way.
 
 
-Le 11/10/2017 à 08:14, Vaibhav Jain a écrit :
-> For PSL9 currently we aren't dumping the PSL FIR register when a
-> PSL error interrupt is triggered. Contents of this register are useful
-> in debugging AFU issues.
-> 
-> This patch fixes issue by adding a new service_layer_ops callback
-> cxl_native_err_irq_dump_regs_psl9() to dump the PSL_FIR registers on a
-> PSL error interrupt thereby bringing the behavior in line with PSL on
-> POWER-8. Also the existing service_layer_ops callback
-> for PSL8 has been renamed to cxl_native_err_irq_dump_regs_psl8().
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
-> Changelog:
-> [v2] -> As created a different function to dump the FIR register for PSL9 (Fred)
-> ---
+> This patchset is a ton of new code in very sensitive areas and seems to
+> have received little review and test.  I can do a
+> merge-and-see-what-happens but it would be quite a risk to send all
+> this upstream based only on my sketchy review and linux-next runtime
+> testing.  Can we bribe someone?
 
-Thanks!
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-> 
->   drivers/misc/cxl/cxl.h    |  3 ++-
->   drivers/misc/cxl/native.c | 15 ++++++++++++---
->   drivers/misc/cxl/pci.c    |  3 ++-
->   3 files changed, 16 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 252373c2b861..111c689b1771 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -1072,7 +1072,8 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
-> 
->   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
->   void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
-> -void cxl_native_err_irq_dump_regs(struct cxl *adapter);
-> +void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter);
-> +void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter);
->   int cxl_pci_vphb_add(struct cxl_afu *afu);
->   void cxl_pci_vphb_remove(struct cxl_afu *afu);
->   void cxl_release_mapping(struct cxl_context *ctx);
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index 6cd57c756927..02b6b45b4c20 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -1263,14 +1263,23 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
->   	return IRQ_HANDLED;
->   }
-> 
-> -void cxl_native_err_irq_dump_regs(struct cxl *adapter)
-> +void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter)
-> +{
-> +	u64 fir1;
-> +
-> +	fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
-> +	dev_crit(&adapter->dev, "PSL_FIR: 0x%016llx\n", fir1);
-> +}
-> +
-> +void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter)
->   {
->   	u64 fir1, fir2;
-> 
->   	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
->   	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
-> -
-> -	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
-> +	dev_crit(&adapter->dev,
-> +		 "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n",
-> +		 fir1, fir2);
->   }
-> 
->   static irqreturn_t native_irq_err(int irq, void *data)
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index b4ce9ea113a9..d185b47eb536 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -1763,6 +1763,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
->   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
->   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
->   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
-> +	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
->   	.debugfs_stop_trace = cxl_stop_trace_psl9,
->   	.write_timebase_ctrl = write_timebase_ctrl_psl9,
->   	.timebase_read = timebase_read_psl9,
-> @@ -1786,7 +1787,7 @@ static const struct cxl_service_layer_ops psl8_ops = {
->   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
->   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
->   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
-> -	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
-> +	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl8,
->   	.debugfs_stop_trace = cxl_stop_trace_psl8,
->   	.write_timebase_ctrl = write_timebase_ctrl_psl8,
->   	.timebase_read = timebase_read_psl8,
-> 
+I'll do appreciate to get more review too. So please...
