@@ -1,21 +1,22 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rjw@rjwysocki.net>
+Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
+ [79.96.170.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yC4l44SKXzDrD0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 07:07:12 +1100 (AEDT)
-Date: Wed, 11 Oct 2017 15:07:09 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, seroyer@linux.vnet.ibm.com,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 0/2] Prepartion for SR-IOV PowerVM Enablement
-Message-ID: <20171011200709.GS25517@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCB831hSWzDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 11:10:42 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Linux 4.14: Reported regressions as of Sunday, 2017-10-08
+Date: Thu, 12 Oct 2017 01:54:30 +0200
+Message-ID: <3347223.tL9VK2VkP3@aspire.rjw.lan>
+In-Reply-To: <270748cf-5a97-f446-d572-9df05f8141fc@leemhuis.info>
+References: <270748cf-5a97-f446-d572-9df05f8141fc@leemhuis.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 22, 2017 at 09:19:26AM -0500, Bryant G. Ly wrote:
-> This patch series is to prepare for enabling SR-IOV
-> on pseries. It separates the calls to be machine dependent
-> and does not change any current functionality.
+On Sunday, October 8, 2017 2:37:41 PM CEST Thorsten Leemhuis wrote:
+> Hi! Find below my second regression report for Linux 4.14. It lists 8
+> regressions I'm currently aware of. One regression was fixed since last
+> weeks report. One was in there that shouldn't have been there.
 > 
-> The patch linked below which is currently in review is a dependency:
-> https://patchwork.kernel.org/patch/9882915/
+> As always: Are you aware of any other regressions? Then please let me
+> know by mail (a simple bounce in my direction is enough!). For details
+> see http://bit.ly/lnxregtrackid And please tell me if there is anything
+> in the report that shouldn't be there.
 > 
-> v1 - Initial patch
-> v2 - Addressed Bjorn's comment on creating a highly platform
->      dependent global exported symbol.
-> v3 - Based patch off linux-ppc/master
+> Ciao, Thorsten
 > 
-> Bryant G. Ly (2):
->   powerpc/kernel: Separate SR-IOV Calls
->   pseries/eeh: Add Pseries pcibios_bus_add_device
+> P.S.: Thx to Adam and Igor for pointing me at two regressions they face.
+> And thx to Yanko for pointing out a stupidity I did in last weeks report.
 > 
->  arch/powerpc/include/asm/machdep.h           |  7 ++++++
->  arch/powerpc/include/asm/pci-bridge.h        |  4 +---
->  arch/powerpc/kernel/eeh_driver.c             |  4 ++--
->  arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
->  arch/powerpc/kernel/pci_dn.c                 |  6 -----
->  arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--------------
->  arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
->  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++
->  8 files changed, 78 insertions(+), 29 deletions(-)
+> == Current regressions ==
+> 
+> "hangs when building e.g. perf" & "Random insta-reboots on AMD Phenom II"
+> Status: "Mr. Luto better revert the new lazy TLB flushing fun'n'games"
+> -> "Yeah, working on it.  It's not a straightforward revert."
+> Note: TWIMC: Workaround: wrmsr -a 0xc0010015 0x1000018
+> Reported: 2017-09-05
+> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1484723.html
+> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1501379.html
+> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1501570.html
+> Cause: 94b1b03b519b81c494900cb112aa00ed205cc2d9
+> 
+> New default s2idle does not work on Dell XPS 13 9360
+> Status: works fine on several other owners of this laptop; maybe
+> specific to the variant or the particular machine the reporter owns;
+> looks related to the storage device used
+> Reported: 2017-09-11
+> https://bugzilla.kernel.org/show_bug.cgi?id=196907
+> Cause: e870c6c87cf9484090d28f2a68aa29e008960c93 (assumed)
 
-I assume this will go via a powerpc tree, since it doesn't touch
-anything in drivers/pci or any PCI core interfaces.
+This actually turns out to be an s2idle regression on the reporter's machine
+that was introduced between 4.11-rc1 and 4.13 and appears to be related to NVMe
+(and specifically to the particular Hynix 512G NVMe SSD in that machine).
+
+Due to the lack of reproducibility, we need the reporter to bisect it to
+make progress (on his system it appears to be reproducible 100% of the time).
+
+Thanks,
+Rafael
