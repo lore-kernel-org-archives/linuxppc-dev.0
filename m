@@ -1,31 +1,31 @@
 Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBstj0YBBzDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 22:58:03 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBtcH1bPczDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:30:38 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9BBuN2W061915
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 07:58:01 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dhekcxct1-1
+ v9BCTBgi126907
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:30:34 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dhhqe7727-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 07:58:00 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:30:34 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 12:57:58 +0100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9BBvsFW24838212
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 11:57:55 GMT
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9BBvvLF013983
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 22:57:58 +1100
+ Wed, 11 Oct 2017 13:30:32 +0100
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9BCUSxe15466606
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 12:30:29 GMT
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9BCUR5w005973
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:30:27 +1100
 From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
@@ -33,9 +33,9 @@ Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
  Christophe Lombard <christophe_lombard@fr.ibm.com>,
  Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
  "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: [PATCH] cxl: Dump PSL_FIR register on PSL9 error irq
-Date: Wed, 11 Oct 2017 17:27:43 +0530
-Message-Id: <20171011115743.6159-1-vaibhav@linux.vnet.ibm.com>
+Subject: [PATCH] cxl: Rework the implementation of cxl_stop_trace_psl9()
+Date: Wed, 11 Oct 2017 18:00:20 +0530
+Message-Id: <20171011123020.17594-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,95 +45,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For PSL9 currently we aren't dumping the PSL FIR register when a
-PSL error interrupt is triggered. Contents of this register are useful
-in debugging AFU issues.
+Presently the PSL9 specific cxl_stop_trace_psl9() only stops the RX0
+traces on the CXL adapter when a PSL error irq is triggered. The patch
+updates the function to stop all the traces arrays and move them to
+the FIN state. The implementation issues the mmio to TRACECFG register
+to stop the trace array iff it already not in FIN state. This prevents
+the issue of trace data being reset in case of multiple stop mmio
+issued for a single trace array.
 
-This patch fixes issue by adding a new service_layer_ops callback
-cxl_native_err_irq_dump_regs_psl9() to dump the PSL_FIR registers on a
-PSL error interrupt thereby bringing the behavior in line with PSL on
-POWER-8. Also the existing service_layer_ops callback
-for PSL8 has been renamed to cxl_native_err_irq_dump_regs_psl8().
+Also the patch does some refactoring of existing cxl_stop_trace_psl9()
+and cxl_stop_trace_psl8() functions by moving them to 'pci.c' from
+'debugfs.c' file and marking them as static.
 
 Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 ---
-
-Notes:
-    Changelog:
-    [v2] -> As created a different function to dump the FIR register for
-         	PSL9 [Fred]
-    ---
-
- drivers/misc/cxl/cxl.h    |  3 ++-
- drivers/misc/cxl/native.c | 15 ++++++++++++---
- drivers/misc/cxl/pci.c    |  3 ++-
- 3 files changed, 16 insertions(+), 5 deletions(-)
+ drivers/misc/cxl/cxl.h     | 14 ++++----------
+ drivers/misc/cxl/debugfs.c | 22 ----------------------
+ drivers/misc/cxl/pci.c     | 38 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 252373c2b861..111c689b1771 100644
+index 111c689b1771..d064ec24cdca 100644
 --- a/drivers/misc/cxl/cxl.h
 +++ b/drivers/misc/cxl/cxl.h
-@@ -1072,7 +1072,8 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+@@ -114,6 +114,7 @@ static const cxl_p1_reg_t CXL_PSL9_TRACECFG = {0x0368};
+ static const cxl_p1_reg_t CXL_PSL9_APCDEDALLOC = {0x0378};
+ static const cxl_p1_reg_t CXL_PSL9_APCDEDTYPE = {0x0380};
+ static const cxl_p1_reg_t CXL_PSL9_TNR_ADDR = {0x0388};
++static const cxl_p1_reg_t CXL_PSL9_CTCCFG = {0x0390};
+ static const cxl_p1_reg_t CXL_PSL9_GP_CT = {0x0398};
+ static const cxl_p1_reg_t CXL_XSL9_IERAT = {0x0588};
+ static const cxl_p1_reg_t CXL_XSL9_ILPP  = {0x0590};
+@@ -416,6 +417,9 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+ #define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
+ #define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
  
- void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
- void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
--void cxl_native_err_irq_dump_regs(struct cxl *adapter);
-+void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter);
-+void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter);
- int cxl_pci_vphb_add(struct cxl_afu *afu);
- void cxl_pci_vphb_remove(struct cxl_afu *afu);
- void cxl_release_mapping(struct cxl_context *ctx);
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 6cd57c756927..02b6b45b4c20 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -1263,14 +1263,23 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--void cxl_native_err_irq_dump_regs(struct cxl *adapter)
-+void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter)
-+{
-+	u64 fir1;
++#define CXL_PSL9_TRACEID_MAX 0xAU
++#define CXL_PSL9_TRACESTATE_FIN 0x3U
 +
-+	fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
-+	dev_crit(&adapter->dev, "PSL_FIR: 0x%016llx\n", fir1);
-+}
-+
-+void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter)
+ enum cxl_context_status {
+ 	CLOSED,
+ 	OPENED,
+@@ -940,8 +944,6 @@ int cxl_debugfs_adapter_add(struct cxl *adapter);
+ void cxl_debugfs_adapter_remove(struct cxl *adapter);
+ int cxl_debugfs_afu_add(struct cxl_afu *afu);
+ void cxl_debugfs_afu_remove(struct cxl_afu *afu);
+-void cxl_stop_trace_psl9(struct cxl *cxl);
+-void cxl_stop_trace_psl8(struct cxl *cxl);
+ void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir);
+ void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir);
+ void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct dentry *dir);
+@@ -977,14 +979,6 @@ static inline void cxl_debugfs_afu_remove(struct cxl_afu *afu)
  {
- 	u64 fir1, fir2;
- 
- 	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
- 	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
--
--	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
-+	dev_crit(&adapter->dev,
-+		 "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n",
-+		 fir1, fir2);
  }
  
- static irqreturn_t native_irq_err(int irq, void *data)
+-static inline void cxl_stop_trace_psl9(struct cxl *cxl)
+-{
+-}
+-
+-static inline void cxl_stop_trace_psl8(struct cxl *cxl)
+-{
+-}
+-
+ static inline void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter,
+ 						    struct dentry *dir)
+ {
+diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
+index 52e3d97db114..cf4ee3114ab1 100644
+--- a/drivers/misc/cxl/debugfs.c
++++ b/drivers/misc/cxl/debugfs.c
+@@ -15,28 +15,6 @@
+ 
+ static struct dentry *cxl_debugfs;
+ 
+-void cxl_stop_trace_psl9(struct cxl *adapter)
+-{
+-	/* Stop the trace */
+-	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x4480000000000000ULL);
+-}
+-
+-void cxl_stop_trace_psl8(struct cxl *adapter)
+-{
+-	int slice;
+-
+-	/* Stop the trace */
+-	cxl_p1_write(adapter, CXL_PSL_TRACE, 0x8000000000000017LL);
+-
+-	/* Stop the slice traces */
+-	spin_lock(&adapter->afu_list_lock);
+-	for (slice = 0; slice < adapter->slices; slice++) {
+-		if (adapter->afu[slice])
+-			cxl_p1n_write(adapter->afu[slice], CXL_PSL_SLICE_TRACE, 0x8000000000000000LL);
+-	}
+-	spin_unlock(&adapter->afu_list_lock);
+-}
+-
+ /* Helpers to export CXL mmaped IO registers via debugfs */
+ static int debugfs_io_u64_get(void *data, u64 *val)
+ {
 diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index b4ce9ea113a9..d185b47eb536 100644
+index d185b47eb536..bb7fd3f4edab 100644
 --- a/drivers/misc/cxl/pci.c
 +++ b/drivers/misc/cxl/pci.c
-@@ -1763,6 +1763,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
- 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
- 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
- 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
-+	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
- 	.debugfs_stop_trace = cxl_stop_trace_psl9,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl9,
- 	.timebase_read = timebase_read_psl9,
-@@ -1786,7 +1787,7 @@ static const struct cxl_service_layer_ops psl8_ops = {
- 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
- 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
- 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
--	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
-+	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl8,
- 	.debugfs_stop_trace = cxl_stop_trace_psl8,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl8,
- 	.timebase_read = timebase_read_psl8,
+@@ -1747,6 +1747,44 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
+ 	pci_disable_device(pdev);
+ }
+ 
++static void cxl_stop_trace_psl9(struct cxl *adapter)
++{
++	int traceid;
++	u64 trace_state, trace_mask;
++	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
++
++	/* read each tracearray state and issue mmio to stop them is needed */
++	for (traceid = 0; traceid <= CXL_PSL9_TRACEID_MAX; ++traceid) {
++		trace_state = cxl_p1_read(adapter, CXL_PSL9_CTCCFG);
++		trace_mask = (0x3ULL << (62 - traceid * 2));
++		trace_state = (trace_state & trace_mask) >> (62 - traceid * 2);
++		dev_dbg(&dev->dev, "cxl: Traceid-%d trace_state=0x%0llX\n",
++			traceid, trace_state);
++
++		/* issue mmio if the trace array isn't in FIN state */
++		if (trace_state != CXL_PSL9_TRACESTATE_FIN)
++			cxl_p1_write(adapter, CXL_PSL9_TRACECFG,
++				     0x8400000000000000ULL | traceid);
++	}
++}
++
++static void cxl_stop_trace_psl8(struct cxl *adapter)
++{
++	int slice;
++
++	/* Stop the trace */
++	cxl_p1_write(adapter, CXL_PSL_TRACE, 0x8000000000000017LL);
++
++	/* Stop the slice traces */
++	spin_lock(&adapter->afu_list_lock);
++	for (slice = 0; slice < adapter->slices; slice++) {
++		if (adapter->afu[slice])
++			cxl_p1n_write(adapter->afu[slice], CXL_PSL_SLICE_TRACE,
++				      0x8000000000000000LL);
++	}
++	spin_unlock(&adapter->afu_list_lock);
++}
++
+ static const struct cxl_service_layer_ops psl9_ops = {
+ 	.adapter_regs_init = init_implementation_adapter_regs_psl9,
+ 	.invalidate_all = cxl_invalidate_all_psl9,
 -- 
 2.13.6
