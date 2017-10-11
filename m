@@ -1,27 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBsCK03JqzDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 22:27:25 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc/powernv: Avoid the secondary hold spinloop
- for OPAL boot
-In-Reply-To: <20171011045216.5108425b@roar.ozlabs.ibm.com>
-References: <20171006061005.29891-1-npiggin@gmail.com>
- <20171006061005.29891-2-npiggin@gmail.com>
- <87efqbw93h.fsf@concordia.ellerman.id.au>
- <20171010214357.2b6694fa@roar.ozlabs.ibm.com>
- <20171011015828.03f4aacc@roar.ozlabs.ibm.com>
- <20171011045216.5108425b@roar.ozlabs.ibm.com>
-Date: Wed, 11 Oct 2017 22:27:23 +1100
-Message-ID: <874lr5zzz8.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBstj0YBBzDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 22:58:03 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9BBuN2W061915
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 07:58:01 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dhekcxct1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 07:58:00 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Wed, 11 Oct 2017 12:57:58 +0100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9BBvsFW24838212
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 11:57:55 GMT
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9BBvvLF013983
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 22:57:58 +1100
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: [PATCH] cxl: Dump PSL_FIR register on PSL9 error irq
+Date: Wed, 11 Oct 2017 17:27:43 +0530
+Message-Id: <20171011115743.6159-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,111 +45,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+For PSL9 currently we aren't dumping the PSL FIR register when a
+PSL error interrupt is triggered. Contents of this register are useful
+in debugging AFU issues.
 
-> On Wed, 11 Oct 2017 01:58:28 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
->
->
->> Ahh okay, pseries is using the start-cpu RTAS call to enter at
->> generic_secondary_smp_init() as well. So we can take it out for
->> pseries as well.
->
-> This patch seems to do the trick for pseries guests too:
->
-> powerpc/64s: Avoid waiting for secondary hold spinloop if it is not used
->
-> OPAL and some RTAS boot does not insert secondaries at 0x60 to wait at
-> the secondary hold spinloop. Instead they are started later, at
-> generic_secondary_smp_init(), which is after the secondary hold
-> spinloop.
->
-> Avoid waiting on this spinloop when booting with OPAL firmware, or
-> when the RTAS boot does not use this loop. This wait always times
-> out in those cases.
->
-> This saves 100ms boot time on bare metal (10s of seconds of real time
-> when booting on the simulator in SMP), and 100ms on modern pseries
-> guests.
+This patch fixes issue by adding a new service_layer_ops callback
+cxl_native_err_irq_dump_regs_psl9() to dump the PSL_FIR registers on a
+PSL error interrupt thereby bringing the behavior in line with PSL on
+POWER-8. Also the existing service_layer_ops callback
+for PSL8 has been renamed to cxl_native_err_irq_dump_regs_psl8().
 
-My instinct was to say "huh, that's not how it works on pseries!".
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
 
-But then I see this was all changed in:
+Notes:
+    Changelog:
+    [v2] -> As created a different function to dump the FIR register for
+         	PSL9 [Fred]
+    ---
 
-  dbe78b401186 ("powerpc/pseries: Do not start secondaries in Open Firmware") (Sep 2013)
+ drivers/misc/cxl/cxl.h    |  3 ++-
+ drivers/misc/cxl/native.c | 15 ++++++++++++---
+ drivers/misc/cxl/pci.c    |  3 ++-
+ 3 files changed, 16 insertions(+), 5 deletions(-)
 
-
-So that is where my confusion comes from. Most of the code and comments
-still talk about secondaries coming in at 0x60, but that's really only
-on "legacy" machines.
-
-I guess I can merge this, but really this code needs a proper cleanup. I
-dislike all this platform specific knowledge ending up in setup_64.c.
-
-If we had an smp_ops->spinning_secondaries() that tells the spin
-loop how many secondaries to wait for, it could all go in platform code
-I think.
-
-The check for use_spinloop() would just become a short-circuit check of
-spinning_secondaries == 0.
-
-The other issue is kexec. IIRC when we kexec on pseries we don't return
-the CPUs to RTAS, so then they *are* spinning at 0x60. But maybe that's
-changed since I last looked at it too :)
-
-cheers
-
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> index c9e760ec7530..0deef350004f 100644
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -55,12 +55,18 @@
->   *
->   *  For pSeries or server processors:
->   *   1. The MMU is off & open firmware is running in real mode.
-> - *   2. The kernel is entered at __start
-> + *   2. The primary CPU enters at __start.
-> + *   3. If the RTAS supports "query-cpu-stopped-state", then secondary
-> + *      CPUs will enter as directed by "start-cpu" RTAS call, which is
-> + *      generic_secondary_smp_init, with PIR in r3.
-> + *   4. Else the secondary CPUs will enter at secondary_hold (0x60) as
-> + *      directed by the "start-cpu" RTS call, with PIR in r3.
->   * -or- For OPAL entry:
-> - *   1. The MMU is off, processor in HV mode, primary CPU enters at 0
-> - *      with device-tree in gpr3. We also get OPAL base in r8 and
-> - *	entry in r9 for debugging purposes
-> - *   2. Secondary processors enter at 0x60 with PIR in gpr3
-> + *   1. The MMU is off, processor in HV mode.
-> + *   2. The primary CPU enters at 0 with device-tree in r3, OPAL base
-> + *      in r8, and entry in r9 for debugging purposes.
-> + *   3. Secondary CPUs enter as directed by OPAL_START_CPU call, which
-> + *      is at generic_secondary_smp_init, with PIR in r3.
->   *
->   *  For Book3E processors:
->   *   1. The MMU is on running in AS0 in a state defined in ePAPR
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 3f2453858f60..afa79e8d56a6 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -363,8 +363,18 @@ void early_setup_secondary(void)
->  #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC_CORE)
->  static bool use_spinloop(void)
->  {
-> -	if (!IS_ENABLED(CONFIG_PPC_BOOK3E))
-> +	if (IS_ENABLED(CONFIG_PPC_BOOK3S)) {
-> +		/*
-> +		 * See comments in head_64.S -- not all platforms insert
-> +		 * secondaries at __secondary_hold and wait at the spin
-> +		 * loop.
-> +		 */
-> +		if (firmware_has_feature(FW_FEATURE_OPAL))
-> +			return false;
-> +		if (rtas_token("query-cpu-stopped-state") != RTAS_UNKNOWN_SERVICE)
-> +			return false;
->  		return true;
-> +	}
->  
->  	/*
->  	 * When book3e boots from kexec, the ePAPR spin table does
-> -- 
-> 2.13.3
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 252373c2b861..111c689b1771 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -1072,7 +1072,8 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+ 
+ void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+ void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+-void cxl_native_err_irq_dump_regs(struct cxl *adapter);
++void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter);
++void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter);
+ int cxl_pci_vphb_add(struct cxl_afu *afu);
+ void cxl_pci_vphb_remove(struct cxl_afu *afu);
+ void cxl_release_mapping(struct cxl_context *ctx);
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 6cd57c756927..02b6b45b4c20 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -1263,14 +1263,23 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
+-void cxl_native_err_irq_dump_regs(struct cxl *adapter)
++void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter)
++{
++	u64 fir1;
++
++	fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
++	dev_crit(&adapter->dev, "PSL_FIR: 0x%016llx\n", fir1);
++}
++
++void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter)
+ {
+ 	u64 fir1, fir2;
+ 
+ 	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
+ 	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
+-
+-	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
++	dev_crit(&adapter->dev,
++		 "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n",
++		 fir1, fir2);
+ }
+ 
+ static irqreturn_t native_irq_err(int irq, void *data)
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index b4ce9ea113a9..d185b47eb536 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1763,6 +1763,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
+ 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
+ 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
+ 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
++	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
+ 	.debugfs_stop_trace = cxl_stop_trace_psl9,
+ 	.write_timebase_ctrl = write_timebase_ctrl_psl9,
+ 	.timebase_read = timebase_read_psl9,
+@@ -1786,7 +1787,7 @@ static const struct cxl_service_layer_ops psl8_ops = {
+ 	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
+ 	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
+ 	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
+-	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
++	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl8,
+ 	.debugfs_stop_trace = cxl_stop_trace_psl8,
+ 	.write_timebase_ctrl = write_timebase_ctrl_psl8,
+ 	.timebase_read = timebase_read_psl8,
+-- 
+2.13.6
