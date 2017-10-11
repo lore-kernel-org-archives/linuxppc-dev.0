@@ -1,25 +1,21 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x231.google.com (mail-pg0-x231.google.com
- [IPv6:2607:f8b0:400e:c05::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBdk62HRWzDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 13:49:49 +1100 (AEDT)
-Received: by mail-pg0-x231.google.com with SMTP id j3so238097pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Oct 2017 19:49:49 -0700 (PDT)
-Date: Tue, 10 Oct 2017 04:18:47 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] selftests/powerpc: fix build error in powerpc ptrace
- selftests.
-Message-ID: <20171009201847.GA9571@simonLocalRHEL7.x64>
-References: <1504232234-4161-1-git-send-email-wei.guo.simon@gmail.com>
- <87lgkjwbxj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBgXw10txzDr5T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 15:12:00 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ maddy@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com, anju@linux.vnet.ibm.com,
+ ppaidipe@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/perf: Fix IMC initialization crash
+In-Reply-To: <1507654315-1620-1-git-send-email-anju@linux.vnet.ibm.com>
+References: <1507654315-1620-1-git-send-email-anju@linux.vnet.ibm.com>
+Date: Wed, 11 Oct 2017 15:11:57 +1100
+Message-ID: <87fuaqz5ki.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <87lgkjwbxj.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-On Tue, Oct 10, 2017 at 09:10:32PM +1100, Michael Ellerman wrote:
-> wei.guo.simon@gmail.com writes:
-> 
-> > From: Simon Guo <wei.guo.simon@gmail.com>
-> >
-> > GCC 7 will take "r2" in clobber list as an error will it will get following
-> > build errors for powerpc ptrace selftests even with -fno-pic option:
-> >   ptrace-tm-vsx.c: In function ‘tm_vsx’:
-> >   ptrace-tm-vsx.c:42:2: error: PIC register clobbered by ‘r2’ in ‘asm’
-> >     asm __volatile__(
-> >     ^~~
-> >   make[1]: *** [ptrace-tm-vsx] Error 1
-> >   ptrace-tm-spd-vsx.c: In function ‘tm_spd_vsx’:
-> >   ptrace-tm-spd-vsx.c:55:2: error: PIC register clobbered by ‘r2’ in ‘asm’
-> >     asm __volatile__(
-> >     ^~~
-> >   make[1]: *** [ptrace-tm-spd-vsx] Error 1
-> >   ptrace-tm-spr.c: In function ‘tm_spr’:
-> >   ptrace-tm-spr.c:46:2: error: PIC register clobbered by ‘r2’ in ‘asm’
-> >     asm __volatile__(
-> >     ^~~
-> >
-> > This patch fix the build error by removing "r2" out of clobber list.
-> 
-> But do any of the blocks clobber r2? If so then it should be in the
-> clobber list.
+Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
 
-I see none of them clobbers r2, and neither does those assembly
-functions which those blocks calls, like "loadvsx".
+> Call trace observed with latest firmware, and upstream kernel.
+>
+> [   14.499938] NIP [c0000000000f318c] init_imc_pmu+0x8c/0xcf0
+> [   14.499973] LR [c0000000000f33f8] init_imc_pmu+0x2f8/0xcf0
+> [   14.500007] Call Trace:
+> [   14.500027] [c000003fed18f710] [c0000000000f33c8] init_imc_pmu+0x2c8/0xcf0 (unreliable)
+> [   14.500080] [c000003fed18f800] [c0000000000b5ec0] opal_imc_counters_probe+0x300/0x400
+> [   14.500132] [c000003fed18f900] [c000000000807ef4] platform_drv_probe+0x64/0x110
+> [   14.500185] [c000003fed18f980] [c000000000804b58] driver_probe_device+0x3d8/0x580
+> [   14.500236] [c000003fed18fa10] [c000000000804e4c] __driver_attach+0x14c/0x1a0
+> [   14.500302] [c000003fed18fa90] [c00000000080156c] bus_for_each_dev+0x8c/0xf0
+> [   14.500353] [c000003fed18fae0] [c000000000803fa4] driver_attach+0x34/0x50
+> [   14.500397] [c000003fed18fb00] [c000000000803688] bus_add_driver+0x298/0x350
+> [   14.500449] [c000003fed18fb90] [c00000000080605c] driver_register+0x9c/0x180
+> [   14.500500] [c000003fed18fc00] [c000000000807dec] __platform_driver_register+0x5c/0x70
+> [   14.500552] [c000003fed18fc20] [c00000000101cee0] opal_imc_driver_init+0x2c/0x40
+> [   14.500603] [c000003fed18fc40] [c00000000000d084] do_one_initcall+0x64/0x1d0
+> [   14.500654] [c000003fed18fd00] [c00000000100434c] kernel_init_freeable+0x280/0x374
+> [   14.500705] [c000003fed18fdc0] [c00000000000d314] kernel_init+0x24/0x160
+> [   14.500750] [c000003fed18fe30] [c00000000000b4e8] ret_from_kernel_thread+0x5c/0x74
+> [   14.500799] Instruction dump:
+> [   14.500827] 4082024c 2f890002 419e054c 2e890003 41960094 2e890001 3ba0ffea 419602d8 
+> [   14.500884] 419e0290 2f890003 419e02a8 e93e0118 <e8690018> 2fa30000 419e0010 4827ba41 
+> [   14.500945] ---[ end trace 27b734ad26f1add4 ]---
+> [   15.908719] 
+> [   16.908869] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000007
+> [   16.908869] 
+> [   18.125813] ---[ end Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000007]
+>
+> While registering nest imc at init, cpu-hotplug callback `nest_pmu_cpumask_init()`
+> makes an opal call to stop the engine. And if the OPAL call fails, 
+> imc_common_cpuhp_mem_free() is invoked to cleanup memory and cpuhotplug setup.
+>
+> But when cleaning up the attribute group, we were dereferencing the attribute
+> element array without checking whether the backing element is not NULL. This
+> causes the kernel panic.
+>
+> Factor out the memory freeing part from imc_common_cpuhp_mem_free() to handle
+> the failing case gracefully.
+>
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/perf/imc-pmu.c | 23 ++++++++++++++++-------
+>  1 file changed, 16 insertions(+), 7 deletions(-)
 
-For the change on tools/testing/selftests/powerpc/ptrace/Makefile, it
-can be ignored since I noticed recent commit a3c01050584da3 "selftests/powerpc: 
-Force ptrace tests to build -fno-pie". Please let me know if you want
-a new v2 to remove that change on ptrace/Makefile.
+It's the week before rc5, so I'd really like just the absolute minimal
+fix. There's sufficient code movement here that I can't even immediately
+see where the bug fix is.
 
-Thanks,
-- Simon
+cheers
