@@ -1,41 +1,39 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
+Return-Path: <anju@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBtcH1bPczDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:30:38 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBvCj4x5nzDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:57:53 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9BCTBgi126907
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:30:34 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dhhqe7727-1
+ v9BCsYJg054305
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:57:50 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dhhahaev1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:30:34 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:57:50 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 13:30:32 +0100
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9BCUSxe15466606
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 12:30:29 GMT
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9BCUR5w005973
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:30:27 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: [PATCH] cxl: Rework the implementation of cxl_stop_trace_psl9()
-Date: Wed, 11 Oct 2017 18:00:20 +0530
-Message-Id: <20171011123020.17594-1-vaibhav@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Wed, 11 Oct 2017 13:57:48 +0100
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9BCvjvH23724244
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 12:57:46 GMT
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9BCviMS026013
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:57:45 +1100
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: anju@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/perf: Add ___GFP_NOWARN flag to alloc_pages_node()
+Date: Wed, 11 Oct 2017 18:27:39 +0530
+Message-Id: <1507726659-9524-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,152 +43,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Presently the PSL9 specific cxl_stop_trace_psl9() only stops the RX0
-traces on the CXL adapter when a PSL error irq is triggered. The patch
-updates the function to stop all the traces arrays and move them to
-the FIN state. The implementation issues the mmio to TRACECFG register
-to stop the trace array iff it already not in FIN state. This prevents
-the issue of trace data being reset in case of multiple stop mmio
-issued for a single trace array.
+Stack trace output during a stress test:
+ [    4.310049] Freeing initrd memory: 22592K
+[    4.310646] rtas_flash: no firmware flash support
+[    4.313341] cpuhp/64: page allocation failure: order:0, mode:0x14480c0(GFP_KERNEL|__GFP_ZERO|__GFP_THISNODE), nodemask=(null)
+[    4.313465] cpuhp/64 cpuset=/ mems_allowed=0
+[    4.313521] CPU: 64 PID: 392 Comm: cpuhp/64 Not tainted 4.11.0-39.el7a.ppc64le #1
+[    4.313588] Call Trace:
+[    4.313622] [c000000f1fb1b8e0] [c000000000c09388] dump_stack+0xb0/0xf0 (unreliable)
+[    4.313694] [c000000f1fb1b920] [c00000000030ef6c] warn_alloc+0x12c/0x1c0
+[    4.313753] [c000000f1fb1b9c0] [c00000000030ff68] __alloc_pages_nodemask+0xea8/0x1000
+[    4.313823] [c000000f1fb1bbb0] [c000000000113a8c] core_imc_mem_init+0xbc/0x1c0
+[    4.313892] [c000000f1fb1bc00] [c000000000113cdc] ppc_core_imc_cpu_online+0x14c/0x170
+[    4.313962] [c000000f1fb1bc90] [c000000000125758] cpuhp_invoke_callback+0x198/0x5d0
+[    4.314031] [c000000f1fb1bd00] [c00000000012782c] cpuhp_thread_fun+0x8c/0x3d0
+[    4.314101] [c000000f1fb1bd60] [c0000000001678d0] smpboot_thread_fn+0x290/0x2a0
+[    4.314169] [c000000f1fb1bdc0] [c00000000015ee78] kthread+0x168/0x1b0
+[    4.314229] [c000000f1fb1be30] [c00000000000b368] ret_from_kernel_thread+0x5c/0x74
+[    4.314313] Mem-Info:
+[    4.314356] active_anon:0 inactive_anon:0 isolated_anon:0
 
-Also the patch does some refactoring of existing cxl_stop_trace_psl9()
-and cxl_stop_trace_psl8() functions by moving them to 'pci.c' from
-'debugfs.c' file and marking them as static.
+core_imc_mem_init() at system boot use alloc_pages_node() to get memory
+and alloc_pages_node() throws this stack dump when tried to allocate
+memory from a node which has no memory behind it. Add a ___GFP_NOWARN
+flag in allocation request as a fix. 
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Reported-by: Venkat R.B <venkatb3@in.ibm.com>
 ---
- drivers/misc/cxl/cxl.h     | 14 ++++----------
- drivers/misc/cxl/debugfs.c | 22 ----------------------
- drivers/misc/cxl/pci.c     | 38 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 42 insertions(+), 32 deletions(-)
+ arch/powerpc/perf/imc-pmu.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 111c689b1771..d064ec24cdca 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -114,6 +114,7 @@ static const cxl_p1_reg_t CXL_PSL9_TRACECFG = {0x0368};
- static const cxl_p1_reg_t CXL_PSL9_APCDEDALLOC = {0x0378};
- static const cxl_p1_reg_t CXL_PSL9_APCDEDTYPE = {0x0380};
- static const cxl_p1_reg_t CXL_PSL9_TNR_ADDR = {0x0388};
-+static const cxl_p1_reg_t CXL_PSL9_CTCCFG = {0x0390};
- static const cxl_p1_reg_t CXL_PSL9_GP_CT = {0x0398};
- static const cxl_p1_reg_t CXL_XSL9_IERAT = {0x0588};
- static const cxl_p1_reg_t CXL_XSL9_ILPP  = {0x0590};
-@@ -416,6 +417,9 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
- #define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
- #define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index 9ccac86f3463..d99ea01a2028 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -523,8 +523,8 @@ static int core_imc_mem_init(int cpu, int size)
  
-+#define CXL_PSL9_TRACEID_MAX 0xAU
-+#define CXL_PSL9_TRACESTATE_FIN 0x3U
-+
- enum cxl_context_status {
- 	CLOSED,
- 	OPENED,
-@@ -940,8 +944,6 @@ int cxl_debugfs_adapter_add(struct cxl *adapter);
- void cxl_debugfs_adapter_remove(struct cxl *adapter);
- int cxl_debugfs_afu_add(struct cxl_afu *afu);
- void cxl_debugfs_afu_remove(struct cxl_afu *afu);
--void cxl_stop_trace_psl9(struct cxl *cxl);
--void cxl_stop_trace_psl8(struct cxl *cxl);
- void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir);
- void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir);
- void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct dentry *dir);
-@@ -977,14 +979,6 @@ static inline void cxl_debugfs_afu_remove(struct cxl_afu *afu)
- {
- }
+ 	/* We need only vbase for core counters */
+ 	mem_info->vbase = page_address(alloc_pages_node(phys_id,
+-					  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE,
+-					  get_order(size)));
++					  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE |
++					  __GFP_NOWARN, get_order(size)));
+ 	if (!mem_info->vbase)
+ 		return -ENOMEM;
  
--static inline void cxl_stop_trace_psl9(struct cxl *cxl)
--{
--}
--
--static inline void cxl_stop_trace_psl8(struct cxl *cxl)
--{
--}
--
- static inline void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter,
- 						    struct dentry *dir)
- {
-diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
-index 52e3d97db114..cf4ee3114ab1 100644
---- a/drivers/misc/cxl/debugfs.c
-+++ b/drivers/misc/cxl/debugfs.c
-@@ -15,28 +15,6 @@
+@@ -763,8 +763,8 @@ static int thread_imc_mem_alloc(int cpu_id, int size)
+ 		 * free the memory in cpu offline path.
+ 		 */
+ 		local_mem = page_address(alloc_pages_node(phys_id,
+-				  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE,
+-				  get_order(size)));
++				  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE |
++				  __GFP_NOWARN, get_order(size)));
+ 		if (!local_mem)
+ 			return -ENOMEM;
  
- static struct dentry *cxl_debugfs;
- 
--void cxl_stop_trace_psl9(struct cxl *adapter)
--{
--	/* Stop the trace */
--	cxl_p1_write(adapter, CXL_PSL9_TRACECFG, 0x4480000000000000ULL);
--}
--
--void cxl_stop_trace_psl8(struct cxl *adapter)
--{
--	int slice;
--
--	/* Stop the trace */
--	cxl_p1_write(adapter, CXL_PSL_TRACE, 0x8000000000000017LL);
--
--	/* Stop the slice traces */
--	spin_lock(&adapter->afu_list_lock);
--	for (slice = 0; slice < adapter->slices; slice++) {
--		if (adapter->afu[slice])
--			cxl_p1n_write(adapter->afu[slice], CXL_PSL_SLICE_TRACE, 0x8000000000000000LL);
--	}
--	spin_unlock(&adapter->afu_list_lock);
--}
--
- /* Helpers to export CXL mmaped IO registers via debugfs */
- static int debugfs_io_u64_get(void *data, u64 *val)
- {
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index d185b47eb536..bb7fd3f4edab 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1747,6 +1747,44 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
- 	pci_disable_device(pdev);
- }
- 
-+static void cxl_stop_trace_psl9(struct cxl *adapter)
-+{
-+	int traceid;
-+	u64 trace_state, trace_mask;
-+	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
-+
-+	/* read each tracearray state and issue mmio to stop them is needed */
-+	for (traceid = 0; traceid <= CXL_PSL9_TRACEID_MAX; ++traceid) {
-+		trace_state = cxl_p1_read(adapter, CXL_PSL9_CTCCFG);
-+		trace_mask = (0x3ULL << (62 - traceid * 2));
-+		trace_state = (trace_state & trace_mask) >> (62 - traceid * 2);
-+		dev_dbg(&dev->dev, "cxl: Traceid-%d trace_state=0x%0llX\n",
-+			traceid, trace_state);
-+
-+		/* issue mmio if the trace array isn't in FIN state */
-+		if (trace_state != CXL_PSL9_TRACESTATE_FIN)
-+			cxl_p1_write(adapter, CXL_PSL9_TRACECFG,
-+				     0x8400000000000000ULL | traceid);
-+	}
-+}
-+
-+static void cxl_stop_trace_psl8(struct cxl *adapter)
-+{
-+	int slice;
-+
-+	/* Stop the trace */
-+	cxl_p1_write(adapter, CXL_PSL_TRACE, 0x8000000000000017LL);
-+
-+	/* Stop the slice traces */
-+	spin_lock(&adapter->afu_list_lock);
-+	for (slice = 0; slice < adapter->slices; slice++) {
-+		if (adapter->afu[slice])
-+			cxl_p1n_write(adapter->afu[slice], CXL_PSL_SLICE_TRACE,
-+				      0x8000000000000000LL);
-+	}
-+	spin_unlock(&adapter->afu_list_lock);
-+}
-+
- static const struct cxl_service_layer_ops psl9_ops = {
- 	.adapter_regs_init = init_implementation_adapter_regs_psl9,
- 	.invalidate_all = cxl_invalidate_all_psl9,
 -- 
-2.13.6
+2.14.1
