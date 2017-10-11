@@ -1,39 +1,44 @@
-Return-Path: <anju@linux.vnet.ibm.com>
+Return-Path: <andrew.donnellan@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBvCj4x5nzDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:57:53 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9BCsYJg054305
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:57:50 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dhhahaev1-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBwFq2k5GzDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 00:44:47 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9BDhsc6092356
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:44:44 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dhhqbuk5d-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 08:57:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:44:43 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 13:57:48 +0100
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9BCvjvH23724244
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 12:57:46 GMT
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9BCviMS026013
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 23:57:45 +1100
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: anju@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/perf: Add ___GFP_NOWARN flag to alloc_pages_node()
-Date: Wed, 11 Oct 2017 18:27:39 +0530
-Message-Id: <1507726659-9524-1-git-send-email-anju@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 11 Oct 2017 14:44:42 +0100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9BDicV523462066
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 13:44:39 GMT
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9BDiV7Y003234
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 00:44:31 +1100
+Subject: Re: [PATCH v2] cxl: Dump PSL_FIR register on PSL9 error irq
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@au1.ibm.com>
+References: <20171011061441.16795-1-vaibhav@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 12 Oct 2017 00:44:34 +1100
+MIME-Version: 1.0
+In-Reply-To: <20171011061441.16795-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <6bae200a-8bc8-a6fa-d4c1-bffdff6073ea@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,63 +48,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stack trace output during a stress test:
- [    4.310049] Freeing initrd memory: 22592K
-[    4.310646] rtas_flash: no firmware flash support
-[    4.313341] cpuhp/64: page allocation failure: order:0, mode:0x14480c0(GFP_KERNEL|__GFP_ZERO|__GFP_THISNODE), nodemask=(null)
-[    4.313465] cpuhp/64 cpuset=/ mems_allowed=0
-[    4.313521] CPU: 64 PID: 392 Comm: cpuhp/64 Not tainted 4.11.0-39.el7a.ppc64le #1
-[    4.313588] Call Trace:
-[    4.313622] [c000000f1fb1b8e0] [c000000000c09388] dump_stack+0xb0/0xf0 (unreliable)
-[    4.313694] [c000000f1fb1b920] [c00000000030ef6c] warn_alloc+0x12c/0x1c0
-[    4.313753] [c000000f1fb1b9c0] [c00000000030ff68] __alloc_pages_nodemask+0xea8/0x1000
-[    4.313823] [c000000f1fb1bbb0] [c000000000113a8c] core_imc_mem_init+0xbc/0x1c0
-[    4.313892] [c000000f1fb1bc00] [c000000000113cdc] ppc_core_imc_cpu_online+0x14c/0x170
-[    4.313962] [c000000f1fb1bc90] [c000000000125758] cpuhp_invoke_callback+0x198/0x5d0
-[    4.314031] [c000000f1fb1bd00] [c00000000012782c] cpuhp_thread_fun+0x8c/0x3d0
-[    4.314101] [c000000f1fb1bd60] [c0000000001678d0] smpboot_thread_fn+0x290/0x2a0
-[    4.314169] [c000000f1fb1bdc0] [c00000000015ee78] kthread+0x168/0x1b0
-[    4.314229] [c000000f1fb1be30] [c00000000000b368] ret_from_kernel_thread+0x5c/0x74
-[    4.314313] Mem-Info:
-[    4.314356] active_anon:0 inactive_anon:0 isolated_anon:0
+On 11/10/17 17:14, Vaibhav Jain wrote:
+> For PSL9 currently we aren't dumping the PSL FIR register when a
+> PSL error interrupt is triggered. Contents of this register are useful
+> in debugging AFU issues.
+> 
+> This patch fixes issue by adding a new service_layer_ops callback
+> cxl_native_err_irq_dump_regs_psl9() to dump the PSL_FIR registers on a
+> PSL error interrupt thereby bringing the behavior in line with PSL on
+> POWER-8. Also the existing service_layer_ops callback
+> for PSL8 has been renamed to cxl_native_err_irq_dump_regs_psl8().
+> 
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 
-core_imc_mem_init() at system boot use alloc_pages_node() to get memory
-and alloc_pages_node() throws this stack dump when tried to allocate
-memory from a node which has no memory behind it. Add a ___GFP_NOWARN
-flag in allocation request as a fix. 
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Reported-by: Venkat R.B <venkatb3@in.ibm.com>
----
- arch/powerpc/perf/imc-pmu.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+> ---
+> Changelog:
+> [v2] -> As created a different function to dump the FIR register for PSL9 (Fred)
+> ---
+> 
+>   drivers/misc/cxl/cxl.h    |  3 ++-
+>   drivers/misc/cxl/native.c | 15 ++++++++++++---
+>   drivers/misc/cxl/pci.c    |  3 ++-
+>   3 files changed, 16 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index 252373c2b861..111c689b1771 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -1072,7 +1072,8 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+>   
+>   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+>   void cxl_native_irq_dump_regs_psl8(struct cxl_context *ctx);
+> -void cxl_native_err_irq_dump_regs(struct cxl *adapter);
+> +void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter);
+> +void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter);
+>   int cxl_pci_vphb_add(struct cxl_afu *afu);
+>   void cxl_pci_vphb_remove(struct cxl_afu *afu);
+>   void cxl_release_mapping(struct cxl_context *ctx);
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 6cd57c756927..02b6b45b4c20 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -1263,14 +1263,23 @@ static irqreturn_t native_slice_irq_err(int irq, void *data)
+>   	return IRQ_HANDLED;
+>   }
+>   
+> -void cxl_native_err_irq_dump_regs(struct cxl *adapter)
+> +void cxl_native_err_irq_dump_regs_psl9(struct cxl *adapter)
+> +{
+> +	u64 fir1;
+> +
+> +	fir1 = cxl_p1_read(adapter, CXL_PSL9_FIR1);
+> +	dev_crit(&adapter->dev, "PSL_FIR: 0x%016llx\n", fir1);
+> +}
+> +
+> +void cxl_native_err_irq_dump_regs_psl8(struct cxl *adapter)
+>   {
+>   	u64 fir1, fir2;
+>   
+>   	fir1 = cxl_p1_read(adapter, CXL_PSL_FIR1);
+>   	fir2 = cxl_p1_read(adapter, CXL_PSL_FIR2);
+> -
+> -	dev_crit(&adapter->dev, "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n", fir1, fir2);
+> +	dev_crit(&adapter->dev,
+> +		 "PSL_FIR1: 0x%016llx\nPSL_FIR2: 0x%016llx\n",
+> +		 fir1, fir2);
+>   }
+>   
+>   static irqreturn_t native_irq_err(int irq, void *data)
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index b4ce9ea113a9..d185b47eb536 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1763,6 +1763,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
+>   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl9,
+>   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
+>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
+> +	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
+>   	.debugfs_stop_trace = cxl_stop_trace_psl9,
+>   	.write_timebase_ctrl = write_timebase_ctrl_psl9,
+>   	.timebase_read = timebase_read_psl9,
+> @@ -1786,7 +1787,7 @@ static const struct cxl_service_layer_ops psl8_ops = {
+>   	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_psl8,
+>   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
+>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
+> -	.err_irq_dump_registers = cxl_native_err_irq_dump_regs,
+> +	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl8,
+>   	.debugfs_stop_trace = cxl_stop_trace_psl8,
+>   	.write_timebase_ctrl = write_timebase_ctrl_psl8,
+>   	.timebase_read = timebase_read_psl8,
+> 
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 9ccac86f3463..d99ea01a2028 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -523,8 +523,8 @@ static int core_imc_mem_init(int cpu, int size)
- 
- 	/* We need only vbase for core counters */
- 	mem_info->vbase = page_address(alloc_pages_node(phys_id,
--					  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE,
--					  get_order(size)));
-+					  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE |
-+					  __GFP_NOWARN, get_order(size)));
- 	if (!mem_info->vbase)
- 		return -ENOMEM;
- 
-@@ -763,8 +763,8 @@ static int thread_imc_mem_alloc(int cpu_id, int size)
- 		 * free the memory in cpu offline path.
- 		 */
- 		local_mem = page_address(alloc_pages_node(phys_id,
--				  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE,
--				  get_order(size)));
-+				  GFP_KERNEL | __GFP_ZERO | __GFP_THISNODE |
-+				  __GFP_NOWARN, get_order(size)));
- 		if (!local_mem)
- 			return -ENOMEM;
- 
 -- 
-2.14.1
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
