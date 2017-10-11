@@ -1,42 +1,14 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBhXj2VRvzDr69
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 15:56:52 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9B4s05l120413
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 00:56:50 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dhcm1087x-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 00:56:50 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 05:56:48 +0100
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9B4ujZ520709492
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 04:56:46 GMT
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9B4uiqx023966
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 15:56:44 +1100
-Subject: Re: [PATCH] powerpc/modules: Use WARN_ON() in stub_for_addr()
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1507646852-18642-1-git-send-email-kamalesh@linux.vnet.ibm.com>
- <87d15uz5j9.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, kamalesh@linux.vnet.ibm.com
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Wed, 11 Oct 2017 10:26:41 +0530
-MIME-Version: 1.0
-In-Reply-To: <87d15uz5j9.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <c2a00841-f514-ef8c-c1be-b053dd84d1b8@linux.vnet.ibm.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yBhdf4TyRzDr6D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 16:01:10 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
+Subject: [PATCH kernel] KVM: PPC: Protect kvmppc_gpa_to_ua() with srcu
+Date: Wed, 11 Oct 2017 16:00:34 +1100
+Message-Id: <20171011050034.37872-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,36 +18,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 11 October 2017 09:42 AM, Michael Ellerman wrote:
-> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
-> 
->> Use WARN_ON(), while running out of stubs in stub_for_addr()
->> and abort loading of the module instead of BUG_ON().
-> 
-> Thanks. This looks good in principle. Have you actually tested it to
-> make sure we do in fact gracefully fail the module load?
-> 
+kvmppc_gpa_to_ua() accesses KVM memory slot array via
+srcu_dereference_check() and this produces warnings from RCU like below.
 
-Thanks for the review. I tested with little hackish version of this patch:
+This extends the existing srcu_read_lock/unlock to cover that
+kvmppc_gpa_to_ua() as well.
 
-+       if (!strncmp(me->name, "live", 4))
-+               j = 100;
-+       for (i = 0; stub_func_addr(stubs[i].funcdata); i+=j) {
-+               if (WARN_ON(i >= num_stubs))
-+                       return 0;
+We did not hit this before as this lock is not needed for the realmode
+handlers and hash guests would use the realmode path all the time;
+however the radix guests are always redirected to the virtual mode
+handlers and hence the warning.
 
-and it fails gracefully.
+[   68.253798] ./include/linux/kvm_host.h:575 suspicious rcu_dereference_check() usage!
+[   68.253799]
+               other info that might help us debug this:
 
-# modprobe livepatch-sample
-modprobe: ERROR: could not insert 'livepatch_sample': Unknown symbol in module, or unknown parameter (see dmesg)
+[   68.253802]
+               rcu_scheduler_active = 2, debug_locks = 1
+[   68.253804] 1 lock held by qemu-system-ppc/6413:
+[   68.253806]  #0:  (&vcpu->mutex){+.+.}, at: [<c00800000e3c22f4>] vcpu_load+0x3c/0xc0 [kvm]
+[   68.253826]
+               stack backtrace:
+[   68.253830] CPU: 92 PID: 6413 Comm: qemu-system-ppc Tainted: G        W       4.14.0-rc3-00553-g432dcba58e9c-dirty #72
+[   68.253833] Call Trace:
+[   68.253839] [c000000fd3d9f790] [c000000000b7fcc8] dump_stack+0xe8/0x160 (unreliable)
+[   68.253845] [c000000fd3d9f7d0] [c0000000001924c0] lockdep_rcu_suspicious+0x110/0x180
+[   68.253851] [c000000fd3d9f850] [c0000000000e825c] kvmppc_gpa_to_ua+0x26c/0x2b0
+[   68.253858] [c000000fd3d9f8b0] [c00800000e3e1984] kvmppc_h_put_tce+0x12c/0x2a0 [kvm]
 
-# echo $?
-1
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
 
-# dmesg 
-------------[ cut here ]------------
-WARNING: CPU: 2 PID: 2836 at arch/powerpc/kernel/module_64.c:526 apply_relocate_add+0x71c/0xb00
-
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 8f2da8bba737..4dffa611376d 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -478,28 +478,30 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		return ret;
+ 
+ 	dir = iommu_tce_direction(tce);
++
++	idx = srcu_read_lock(&vcpu->kvm->srcu);
++
+ 	if ((dir != DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
+-			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL))
+-		return H_PARAMETER;
++			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL)) {
++		ret = H_PARAMETER;
++		goto unlock_exit;
++	}
+ 
+ 	entry = ioba >> stt->page_shift;
+ 
+ 	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+-		if (dir == DMA_NONE) {
++		if (dir == DMA_NONE)
+ 			ret = kvmppc_tce_iommu_unmap(vcpu->kvm,
+ 					stit->tbl, entry);
+-		} else {
+-			idx = srcu_read_lock(&vcpu->kvm->srcu);
++		else
+ 			ret = kvmppc_tce_iommu_map(vcpu->kvm, stit->tbl,
+ 					entry, ua, dir);
+-			srcu_read_unlock(&vcpu->kvm->srcu, idx);
+-		}
+ 
+ 		if (ret == H_SUCCESS)
+ 			continue;
+ 
+ 		if (ret == H_TOO_HARD)
+-			return ret;
++			goto unlock_exit;
+ 
+ 		WARN_ON_ONCE(1);
+ 		kvmppc_clear_tce(stit->tbl, entry);
+@@ -507,7 +509,10 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 
+ 	kvmppc_tce_put(stt, entry, tce);
+ 
+-	return H_SUCCESS;
++unlock_exit:
++	srcu_read_unlock(&vcpu->kvm->srcu, idx);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
+ 
 -- 
-cheers,
-Kamalesh.
+2.11.0
