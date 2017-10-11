@@ -1,43 +1,31 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBwSf6wgmzDr8K
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 00:54:10 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9BDmrFx089223
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:54:08 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dhk0hpnc6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:54:08 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 14:54:02 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: [PATCH v5 22/22] powerpc/mm: Add speculative page fault
-Date: Wed, 11 Oct 2017 15:52:46 +0200
-In-Reply-To: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1507729966-10660-23-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBwcB1MZkzDr69
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 01:00:42 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id b85so2453093pfj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 07:00:41 -0700 (PDT)
+Date: Thu, 12 Oct 2017 00:00:26 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Vasant Hegde
+ <hegdevasant@linux.vnet.ibm.com>, Stewart Smith
+ <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc/powernv: Avoid the secondary hold spinloop
+ for OPAL boot
+Message-ID: <20171012000026.044e5a9b@roar.ozlabs.ibm.com>
+In-Reply-To: <874lr5zzz8.fsf@concordia.ellerman.id.au>
+References: <20171006061005.29891-1-npiggin@gmail.com>
+ <20171006061005.29891-2-npiggin@gmail.com>
+ <87efqbw93h.fsf@concordia.ellerman.id.au>
+ <20171010214357.2b6694fa@roar.ozlabs.ibm.com>
+ <20171011015828.03f4aacc@roar.ozlabs.ibm.com>
+ <20171011045216.5108425b@roar.ozlabs.ibm.com>
+ <874lr5zzz8.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,54 +35,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enable the speculative page fault on the PowerPC
-architecture.
+On Wed, 11 Oct 2017 22:27:23 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-This will try a speculative page fault without holding the mmap_sem,
-if it returns with VM_FAULT_RETRY, the mmap_sem is acquired and the
-traditional page fault processing is done.
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > On Wed, 11 Oct 2017 01:58:28 +1000
+> > Nicholas Piggin <npiggin@gmail.com> wrote:
+> >
+> >  
+> >> Ahh okay, pseries is using the start-cpu RTAS call to enter at
+> >> generic_secondary_smp_init() as well. So we can take it out for
+> >> pseries as well.  
+> >
+> > This patch seems to do the trick for pseries guests too:
+> >
+> > powerpc/64s: Avoid waiting for secondary hold spinloop if it is not used
+> >
+> > OPAL and some RTAS boot does not insert secondaries at 0x60 to wait at
+> > the secondary hold spinloop. Instead they are started later, at
+> > generic_secondary_smp_init(), which is after the secondary hold
+> > spinloop.
+> >
+> > Avoid waiting on this spinloop when booting with OPAL firmware, or
+> > when the RTAS boot does not use this loop. This wait always times
+> > out in those cases.
+> >
+> > This saves 100ms boot time on bare metal (10s of seconds of real time
+> > when booting on the simulator in SMP), and 100ms on modern pseries
+> > guests.  
+> 
+> My instinct was to say "huh, that's not how it works on pseries!".
+> 
+> But then I see this was all changed in:
+> 
+>   dbe78b401186 ("powerpc/pseries: Do not start secondaries in Open Firmware") (Sep 2013)
+> 
+> 
+> So that is where my confusion comes from. Most of the code and comments
+> still talk about secondaries coming in at 0x60, but that's really only
+> on "legacy" machines.
+> 
+> I guess I can merge this, but really this code needs a proper cleanup. I
+> dislike all this platform specific knowledge ending up in setup_64.c.
+> 
+> If we had an smp_ops->spinning_secondaries() that tells the spin
+> loop how many secondaries to wait for, it could all go in platform code
+> I think.
 
-Build on if CONFIG_SPF is defined (currently for BOOK3S_64 && SMP).
+Yeah, not sure how best to do it. What I wanted to do was just increment
+spinning_secondaries in prom_init as we inserted them to 0x60 (or the
+0x100 for pmac or whatever). But prom_init doesn't like referencing outside
+variables so there goes that.
 
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- arch/powerpc/mm/fault.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+> 
+> The check for use_spinloop() would just become a short-circuit check of
+> spinning_secondaries == 0.
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 4797d08581ce..c018c2554cc8 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -442,6 +442,20 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	if (is_exec)
- 		flags |= FAULT_FLAG_INSTRUCTION;
- 
-+#ifdef CONFIG_SPF
-+	if (is_user) {
-+		/* let's try a speculative page fault without grabbing the
-+		 * mmap_sem.
-+		 */
-+		fault = handle_speculative_fault(mm, address, flags);
-+		if (!(fault & VM_FAULT_RETRY)) {
-+			perf_sw_event(PERF_COUNT_SW_SPF, 1,
-+				      regs, address);
-+			goto done;
-+		}
-+	}
-+#endif /* CONFIG_SPF */
-+
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-@@ -526,6 +540,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 
- 	up_read(&current->mm->mmap_sem);
- 
-+#ifdef CONFIG_SPF
-+done:
-+#endif
- 	if (unlikely(fault & VM_FAULT_ERROR))
- 		return mm_fault_error(regs, address, fault);
- 
--- 
-2.7.4
+Yeah maybe that would be enough. I don't know if half that setup_arch
+could be per-platformirized, including smp_release_cpus().
+
+> 
+> The other issue is kexec. IIRC when we kexec on pseries we don't return
+> the CPUs to RTAS, so then they *are* spinning at 0x60. But maybe that's
+> changed since I last looked at it too :)
+
+Oh I might have forgotten to test that on pseries, so I'll try that.
+
+Thanks,
+Nick
