@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBwSX1hYYzDr5T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 00:54:04 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBwSf6wgmzDr8K
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 00:54:10 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9BDopWu117723
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:54:02 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dhhqbv0ex-1
+ v9BDmrFx089223
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:54:08 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dhk0hpnc6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:54:01 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 09:54:08 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 11 Oct 2017 14:53:59 +0100
+ Wed, 11 Oct 2017 14:54:02 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -33,11 +33,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v5 21/22] x86/mm: Add speculative pagefault handling
-Date: Wed, 11 Oct 2017 15:52:45 +0200
+Subject: [PATCH v5 22/22] powerpc/mm: Add speculative page fault
+Date: Wed, 11 Oct 2017 15:52:46 +0200
 In-Reply-To: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1507729966-10660-22-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1507729966-10660-23-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,43 +47,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Peter Zijlstra <peterz@infradead.org>
+This patch enable the speculative page fault on the PowerPC
+architecture.
 
-Try a speculative fault before acquiring mmap_sem, if it returns with
-VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
-traditional fault.
+This will try a speculative page fault without holding the mmap_sem,
+if it returns with VM_FAULT_RETRY, the mmap_sem is acquired and the
+traditional page fault processing is done.
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Build on if CONFIG_SPF is defined (currently for BOOK3S_64 && SMP).
 
-[Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
- handle_speculative_fault()]
-[Retry with usual fault path in the case VM_ERROR is returned by
- handle_speculative_fault(). This allows signal to be delivered]
-[Don't build SPF call if !CONFIG_SPF]
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- arch/x86/mm/fault.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/powerpc/mm/fault.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index e2baeaa053a5..583e19d10b21 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -1364,6 +1364,24 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 	if (error_code & PF_INSTR)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 4797d08581ce..c018c2554cc8 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -442,6 +442,20 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	if (is_exec)
  		flags |= FAULT_FLAG_INSTRUCTION;
  
 +#ifdef CONFIG_SPF
-+	if (error_code & PF_USER) {
-+		fault = handle_speculative_fault(mm, address, flags);
-+
-+		/*
-+		 * We also check against VM_FAULT_ERROR because we have to
-+		 * raise a signal by calling later mm_fault_error() which
-+		 * requires the vma pointer to be set. So in that case,
-+		 * we fall through the normal path.
++	if (is_user) {
++		/* let's try a speculative page fault without grabbing the
++		 * mmap_sem.
 +		 */
-+		if (!(fault & VM_FAULT_RETRY || fault & VM_FAULT_ERROR)) {
++		fault = handle_speculative_fault(mm, address, flags);
++		if (!(fault & VM_FAULT_RETRY)) {
 +			perf_sw_event(PERF_COUNT_SW_SPF, 1,
 +				      regs, address);
 +			goto done;
@@ -91,18 +83,18 @@ index e2baeaa053a5..583e19d10b21 100644
 +	}
 +#endif /* CONFIG_SPF */
 +
- 	/*
- 	 * When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in
-@@ -1474,6 +1492,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 		return;
- 	}
+ 	/* When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in the
+ 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
+@@ -526,6 +540,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ 	up_read(&current->mm->mmap_sem);
  
 +#ifdef CONFIG_SPF
 +done:
 +#endif
- 	/*
- 	 * Major/minor page fault accounting. If any of the events
- 	 * returned VM_FAULT_MAJOR, we account it as a major fault.
+ 	if (unlikely(fault & VM_FAULT_ERROR))
+ 		return mm_fault_error(regs, address, fault);
+ 
 -- 
 2.7.4
