@@ -1,52 +1,26 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yBqkG2gzDzDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 21:20:38 +1100 (AEDT)
-Date: Wed, 11 Oct 2017 12:20:33 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- John Stultz <john.stultz@linaro.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>,
- Kalle Valo <kvalo@qca.qualcomm.com>,
- Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>,
- Manish Chopra <manish.chopra@cavium.com>,
- Mark Gross <mark.gross@intel.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Reed <mdr@sgi.com>,
- netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Ralf Baechle <ralf@linux-mips.org>, Sebastian Reichel <sre@kernel.org>,
- Stefan Richter <stefanr@s5r6.in-berlin.de>,
- Stephen Boyd <sboyd@codeaurora.org>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Ursula Braun <ubraun@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Wim Van Sebroeck <wim@iguana.be>,
- linux1394-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-watchdog@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/13] kthread: Convert callback to use from_timer()
-Message-ID: <20171011102033.GB2882@pathway.suse.cz>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-13-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yBrNF1tYtzDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 21:50:05 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
+Subject: Re: [PATCH] powerpc/memkey: feature applies to PPC_BOOK3S_64 archs
+ only
+In-Reply-To: <20171010162240.GA5362@ram.oc3035372033.ibm.com>
+References: <1507565506-17040-1-git-send-email-linuxram@us.ibm.com>
+ <87zi8zwf6c.fsf@concordia.ellerman.id.au>
+ <20171010161925.GB5334@ram.oc3035372033.ibm.com>
+ <20171010162240.GA5362@ram.oc3035372033.ibm.com>
+Date: Wed, 11 Oct 2017 21:50:03 +1100
+Message-ID: <877ew2yn50.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1507159627-127660-13-git-send-email-keescook@chromium.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,19 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 2017-10-04 16:27:06, Kees Cook wrote:
-> In preparation for unconditionally passing the struct timer_list pointer
-> to all timer callbacks, switch kthread to use from_timer() and pass the
-> timer pointer explicitly.
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Petr Mladek <pmladek@suse.com>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Oleg Nesterov <oleg@redhat.com>
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+Ram Pai <linuxram@us.ibm.com> writes:
 
-Reviewed-by: Petr Mladek <pmladek@suse.com>
+> Currently protection key feature is erroneously configured to
+> be enabled for any flavor of PPC64. This patch fixes it.
+>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 7dee449..4b2b055 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -868,7 +868,7 @@ config PPC64_MEMORY_PROTECTION_KEYS
+>  	prompt "PowerPC Memory Protection Keys"
+>  	def_bool y
+>  	# Note: only available in 64-bit mode
+> -	depends on PPC64
+> +	depends on PPC_BOOK3S_64
+>  	select ARCH_USES_HIGH_VMA_FLAGS
+>  	select ARCH_HAS_PKEYS
 
-Best Regards,
-Petr
+That didn't really help.
+
+I needed the patch below to get it building.
+
+cheers
+
+diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+index da0d5e64ffab..28fad534333d 100644
+--- a/arch/powerpc/include/asm/pkeys.h
++++ b/arch/powerpc/include/asm/pkeys.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_PPC64_PKEYS_H
+ #define _ASM_PPC64_PKEYS_H
+ 
++#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
++
+ #include <asm/firmware.h>
+ 
+ extern bool pkey_inited;
+@@ -247,4 +249,7 @@ extern void thread_pkey_regs_restore(struct thread_struct *new_thread,
+ 			struct thread_struct *old_thread);
+ extern void thread_pkey_regs_init(struct thread_struct *thread);
+ extern void pkey_initialize(void);
++
++#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
++
+ #endif /*_ASM_PPC64_PKEYS_H */
