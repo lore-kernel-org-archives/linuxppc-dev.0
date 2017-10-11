@@ -2,24 +2,22 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yC3BZ4hVbzDr5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 05:57:26 +1100 (AEDT)
-Date: Wed, 11 Oct 2017 13:57:19 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yC4j50c6ZzDr5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 07:05:29 +1100 (AEDT)
+Date: Wed, 11 Oct 2017 15:05:24 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
-To: Zhiqiang Hou <Zhiqiang.Hou@nxp.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, marc.zyngier@arm.com,
- robh+dt@kernel.org, mark.rutland@arm.com, bhelgaas@google.com,
- shawnguo@kernel.org, Mingkai.Hu@nxp.com, Minghuan.Lian@nxp.com,
- roy.zang@nxp.com, Thomas Gleixner <tglx@linutronix.de>,
- Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 0/5] arm64: add ls1012a and ls1046a pcie support
-Message-ID: <20171011185719.GL25517@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, seroyer@linux.vnet.ibm.com,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "Juan J . Alvarez" <jjalvare@us.ibm.com>
+Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
+Message-ID: <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+ <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
+In-Reply-To: <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +27,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 19, 2017 at 05:26:53PM +0800, Zhiqiang Hou wrote:
-> From: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+On Fri, Sep 22, 2017 at 09:19:28AM -0500, Bryant G. Ly wrote:
+> This patch adds the machine dependent call for
+> pcibios_bus_add_device, since the previous patch
+> separated the calls out between the PowerNV and PowerVM.
 > 
-> This patch set adds ls1012a MSI and PCIe support, including driver
-> and device tree nodes. The ls1046a's MSI support patch and PCIe
-> driver patch has been applied, so only adds the PCIe device tree
-> nodes.
+> The difference here is that for the PowerVM environment
+> we do not want match_driver set because in this environment
+> we do not want the VF device drivers to load immediately, due to
+> firmware loading the device node when VF device is assigned to the
+> logical partition.
 > 
-> Hou Zhiqiang (5):
->   irqchip/ls-scfg-msi: add LS1012a MSI support
->   arm64: dts: ls1012a: Add MSI controller DT node
->   PCI: layerscape: Add support for ls1012a
->   arm64: dts: ls1012a: Add PCIe controller DT node
->   arm64: dts: ls1046a: add PCIe controller DT nodes
+> This patch will depend on the patch linked below, which is under
+> review.
 > 
->  .../interrupt-controller/fsl,ls-scfg-msi.txt       |  1 +
->  .../devicetree/bindings/pci/layerscape-pci.txt     |  1 +
->  arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi     | 31 +++++++++
->  arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi     | 75 ++++++++++++++++++++++
->  drivers/irqchip/irq-ls-scfg-msi.c                  |  1 +
->  drivers/pci/dwc/pci-layerscape.c                   |  1 +
->  6 files changed, 110 insertions(+)
+> https://patchwork.kernel.org/patch/9882915/
+> 
+> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index 6b812ad990e4..45946ee90985 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
+>  static DEFINE_SPINLOCK(slot_errbuf_lock);
+>  static int eeh_error_buf_size;
+>  
+> +void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+> +{
+> +	struct pci_dn *pdn = pci_get_pdn(pdev);
+> +
+> +	if (!pdev->is_virtfn)
+> +		return;
+> +
+> +	pdn->device_id  =  pdev->device;
+> +	pdn->vendor_id  =  pdev->vendor;
+> +	pdn->class_code =  pdev->class;
+> +
+> +	/*
+> +	 * The following operations will fail if VF's sysfs files
+> +	 * aren't created or its resources aren't finalized.
+> +	 */
+> +	eeh_add_device_early(pdn);
+> +	eeh_add_device_late(pdev);
+> +	eeh_sysfs_add_device(pdev);
+> +	pdev->match_driver = -1;
 
-I'm not 100% sure who should take these.  They trivially touch PCI and
-I haven't seen anybody else respond, so I put them on
-pci/host-layerscape with Rob's acks.
+match_driver is a bool, which should be assigned "true" or "false".
 
-If somebody else wants to take them, just let me know and I'll drop
-them.
-
-They really should be acked by Minghuan or Mingkai, who are listed as
-the maintainers of drivers/pci/dwc/pci-layerscape.c and are presumably
-responsible for the related dtsi files, too.
-
-Thomas, Jason, and Marc are listed as maintainers of
-drivers/irqchip/irq-ls-scfg-msi.c.  It's a trivial change, but I added
-them to the cc list.
+> +}
+> +
+>  /**
+>   * pseries_eeh_init - EEH platform dependent initialization
+>   *
+> @@ -120,6 +141,9 @@ static int pseries_eeh_init(void)
+>  	/* Set EEH probe mode */
+>  	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
+>  
+> +	/* Set EEH machine dependent code */
+> +	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
+> +
+>  	return 0;
+>  }
+>  
+> -- 
+> 2.11.0 (Apple Git-81)
+> 
