@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCBLz67MzzDqv8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 11:20:11 +1100 (AEDT)
-In-Reply-To: <20171005000430.8080-1-bauerman@linux.vnet.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCBM01ZHLzDr67
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 11:20:12 +1100 (AEDT)
+In-Reply-To: <20171010064530.19276-1-sandipan@linux.vnet.ibm.com>
+To: Sandipan Das <sandipan@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Daniel Black <daniel.black@au1.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: Re: powerpc: Drop lockdep_assert_cpus_held call from
- arch_update_cpu_topology
-Message-Id: <3yCBLz4n8zz9t2Z@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, naveen.n.rao@linux.vnet.ibm.com,
+ paulus@samba.org, anton@samba.org
+Subject: Re: [v2] powerpc/lib/sstep: Fix count leading zeros instructions
+Message-Id: <3yCBLz6ndfz9t2c@ozlabs.org>
 Date: Thu, 12 Oct 2017 11:20:11 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,23 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-10-05 at 00:04:30 UTC, Thiago Jung Bauermann wrote:
-> It turns out that not all paths calling arch_update_cpu_topology hold
-> cpu_hotplug_lock, but that's ok because those paths aren't supposed to race
-> with any concurrent hotplug events.
+On Tue, 2017-10-10 at 06:45:30 UTC, Sandipan Das wrote:
+> According to the GCC documentation, the behaviour of __builtin_clz()
+> and __builtin_clzl() is undefined if the value of the input argument
+> is zero. Without handling this special case, these builtins have been
+> used for emulating the following instructions:
+>   * Count Leading Zeros Word (cntlzw[.])
+>   * Count Leading Zeros Doubleword (cntlzd[.])
 > 
-> Callers of arch_update_cpu_topology are expected to know what they are
-> doing when they call the function without holding the lock, so remove the
-> lockdep warning.
-...
+> This fixes the emulated behaviour of these instructions by adding an
+> additional check for this special case.
 > 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> Fixes: 3e401f7a2e51 ("powerpc: Only obtain cpu_hotplug_lock if called by rtasd")
-> Link: https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-September/163244.html
-> Link: https://github.com/linuxppc/linux/issues/106
+> Fixes: 3cdfcbfd32b9d ("powerpc: Change analyse_instr so it doesn't modify *regs")
+> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+> Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/6b2c08f989250c54f31b53dba9ace8
+https://git.kernel.org/powerpc/c/b0490a04e736356e427e227902b17f
 
 cheers
