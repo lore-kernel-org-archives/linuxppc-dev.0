@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCRc635HHzDr67
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 21:17:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCRc72PhLzDr4T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 21:17:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: mikey@neuling.org, benh@kernel.crashing.org, stewart@linux.vnet.ibm.com,
  cyrilbur@gmail.com
-Subject: [PATCH 2/4] powerpc: Add PPC_FEATURE2_HTM_NO_SUSPEND
-Date: Thu, 12 Oct 2017 21:17:17 +1100
-Message-Id: <1507803439-12862-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 3/4] powerpc/powernv: Enable TM without suspend if possible
+Date: Thu, 12 Oct 2017 21:17:18 +1100
+Message-Id: <1507803439-12862-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
 References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,32 +22,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some CPUs can operate in a mode where TM (Transactional Memory) is
-enabled but the suspended state of TM is disabled. In this mode
-tsuspend does not enter suspended state, instead the transaction is
-aborted. Similarly any other event that would lead to suspended state
-instead aborts the transaction.
-
-There is also an ABI change, in that in this mode processes are not
-allowed to sigreturn with an MSR that would lead to suspended state,
-Linux will instead return an error to the sigreturn syscall.
+Some Power9 revisions can run in a mode where TM operates without
+suspended state. If we find ourself on a CPU that might be in this
+mode, we query OPAL to check, and if so we reenable TM in CPU
+features, and enable a new user feature to signal to userspace that we
+are in this mode.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/uapi/asm/cputable.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/opal-api.h    |  2 ++
+ arch/powerpc/include/asm/powernv.h     |  4 ++++
+ arch/powerpc/include/asm/tm.h          |  2 ++
+ arch/powerpc/kernel/process.c          |  7 +++++++
+ arch/powerpc/kernel/prom.c             |  4 ++++
+ arch/powerpc/platforms/powernv/setup.c | 19 +++++++++++++++++++
+ 6 files changed, 38 insertions(+)
 
-diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
-index 4d877144f377..b3b64cba71ec 100644
---- a/arch/powerpc/include/uapi/asm/cputable.h
-+++ b/arch/powerpc/include/uapi/asm/cputable.h
-@@ -48,6 +48,7 @@
- #define PPC_FEATURE2_HAS_IEEE128	0x00400000 /* VSX IEEE Binary Float 128-bit */
- #define PPC_FEATURE2_DARN		0x00200000 /* darn random number insn */
- #define PPC_FEATURE2_SCV		0x00100000 /* scv syscall */
-+#define PPC_FEATURE2_HTM_NO_SUSPEND	0x00080000 /* TM w/out suspended state */
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 9d191ebea706..233c7504b1f2 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -896,6 +896,8 @@ enum {
+ 	 */
+ 	OPAL_REINIT_CPUS_MMU_HASH	= (1 << 2),
+ 	OPAL_REINIT_CPUS_MMU_RADIX	= (1 << 3),
++
++	OPAL_REINIT_CPUS_TM_SUSPEND_DISABLED = (1 << 4),
+ };
  
+ typedef struct oppanel_line {
+diff --git a/arch/powerpc/include/asm/powernv.h b/arch/powerpc/include/asm/powernv.h
+index f62797702300..dc5f6a5d4575 100644
+--- a/arch/powerpc/include/asm/powernv.h
++++ b/arch/powerpc/include/asm/powernv.h
+@@ -22,6 +22,8 @@ extern void pnv_npu2_destroy_context(struct npu_context *context,
+ extern int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ 				unsigned long *flags, unsigned long *status,
+ 				int count);
++
++void pnv_tm_init(void);
+ #else
+ static inline void powernv_set_nmmu_ptcr(unsigned long ptcr) { }
+ static inline struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+@@ -36,6 +38,8 @@ static inline int pnv_npu2_handle_fault(struct npu_context *context,
+ 					unsigned long *status, int count) {
+ 	return -ENODEV;
+ }
++
++static inline void pnv_tm_init(void) { }
+ #endif
+ 
+ #endif /* _ASM_POWERNV_H */
+diff --git a/arch/powerpc/include/asm/tm.h b/arch/powerpc/include/asm/tm.h
+index 82e06ca3a49b..ad19fe41931b 100644
+--- a/arch/powerpc/include/asm/tm.h
++++ b/arch/powerpc/include/asm/tm.h
+@@ -19,4 +19,6 @@ extern void tm_abort(uint8_t cause);
+ extern void tm_save_sprs(struct thread_struct *thread);
+ extern void tm_restore_sprs(struct thread_struct *thread);
+ 
++extern bool tm_suspend_disabled;
++
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 166145b18728..b02807ea54dc 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -77,6 +77,13 @@
+ extern unsigned long _get_SP(void);
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++/*
++ * Are we running in "Suspend disabled" mode? If so we have to block any
++ * sigreturn that would get us into suspended state, and we also warn in some
++ * other paths that we should never reach with suspend disabled.
++ */
++bool tm_suspend_disabled __ro_after_init = false;
++
+ static void check_if_tm_restore_required(struct task_struct *tsk)
+ {
+ 	/*
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index d9bd6555f980..101822be525a 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -47,6 +47,7 @@
+ #include <asm/mmu.h>
+ #include <asm/paca.h>
+ #include <asm/pgtable.h>
++#include <asm/powernv.h>
+ #include <asm/iommu.h>
+ #include <asm/btext.h>
+ #include <asm/sections.h>
+@@ -681,7 +682,10 @@ static void __init tm_init(void)
+ 		cur_cpu_spec->cpu_user_features2 &=
+ 			~(PPC_FEATURE2_HTM_NOSC | PPC_FEATURE2_HTM);
+ 		cur_cpu_spec->cpu_features &= ~CPU_FTR_TM;
++		return;
+ 	}
++
++	pnv_tm_init();
+ }
+ #else
+ static void tm_init(void) { }
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index cf52d53da460..8096c3352e2b 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -36,6 +36,7 @@
+ #include <asm/opal.h>
+ #include <asm/kexec.h>
+ #include <asm/smp.h>
++#include <asm/tm.h>
+ 
+ #include "powernv.h"
+ 
+@@ -304,6 +305,24 @@ static int __init pnv_probe(void)
+ 	return 1;
+ }
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++void __init pnv_tm_init(void)
++{
++	if (!firmware_has_feature(FW_FEATURE_OPAL) ||
++	    !pvr_version_is(PVR_POWER9) ||
++	    early_cpu_has_feature(CPU_FTR_TM))
++		return;
++
++	if (opal_reinit_cpus(OPAL_REINIT_CPUS_TM_SUSPEND_DISABLED) != OPAL_SUCCESS)
++		return;
++
++	pr_info("Enabling TM (Transactional Memory) with Suspend Disabled\n");
++	cur_cpu_spec->cpu_features |= CPU_FTR_TM;
++	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_HTM_NO_SUSPEND;
++	tm_suspend_disabled = true;
++}
++#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
++
  /*
-  * IMPORTANT!
+  * Returns the cpu frequency for 'cpu' in Hz. This is used by
+  * /proc/cpuinfo
 -- 
 2.7.4
