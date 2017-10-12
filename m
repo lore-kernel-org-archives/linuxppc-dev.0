@@ -1,45 +1,24 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCDyD2hXgzDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 13:17:23 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9C2DwOH129972
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 22:17:19 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dhs4apepv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Oct 2017 22:17:19 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 12 Oct 2017 03:17:17 +0100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9C2HCn827459688
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 02:17:14 GMT
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9C2H6bK030429
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 13:17:06 +1100
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- v9C2H65V030426
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 13:17:06 +1100
-Received: from intelligence.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4B6BCA026F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 13:17:12 +1100 (AEDT)
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/configs: Enable I2C_CHARDEV for pseries and powernv
-Date: Thu, 12 Oct 2017 13:16:59 +1100
-Message-Id: <20171012021659.30134-1-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCHS14rKbzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 15:09:53 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bjorn Helgaas <helgaas@kernel.org>,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
+ seroyer@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "Juan J . Alvarez" <jjalvare@us.ibm.com>
+Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
+In-Reply-To: <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+ <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
+ <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
+Date: Thu, 12 Oct 2017 15:09:53 +1100
+Message-ID: <87efq92ei6.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,41 +28,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-i2c-dev provides an interface for userspace programs to interact with I2C
-devices, and is very helpful for I2C-related debugging.
+Bjorn Helgaas <helgaas@kernel.org> writes:
 
-Enable it in pseries_defconfig and powernv_defconfig. It's already enabled
-in many other powerpc defconfigs.
+> On Fri, Sep 22, 2017 at 09:19:28AM -0500, Bryant G. Ly wrote:
+>> This patch adds the machine dependent call for
+>> pcibios_bus_add_device, since the previous patch
+>> separated the calls out between the PowerNV and PowerVM.
+>> 
+>> The difference here is that for the PowerVM environment
+>> we do not want match_driver set because in this environment
+>> we do not want the VF device drivers to load immediately, due to
+>> firmware loading the device node when VF device is assigned to the
+>> logical partition.
+>> 
+>> This patch will depend on the patch linked below, which is under
+>> review.
+>> 
+>> https://patchwork.kernel.org/patch/9882915/
+>> 
+>> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+>> Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
+>>  1 file changed, 24 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> index 6b812ad990e4..45946ee90985 100644
+>> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> @@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
+>>  static DEFINE_SPINLOCK(slot_errbuf_lock);
+>>  static int eeh_error_buf_size;
+>>  
+>> +void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+>> +{
+>> +	struct pci_dn *pdn = pci_get_pdn(pdev);
+>> +
+>> +	if (!pdev->is_virtfn)
+>> +		return;
+>> +
+>> +	pdn->device_id  =  pdev->device;
+>> +	pdn->vendor_id  =  pdev->vendor;
+>> +	pdn->class_code =  pdev->class;
+>> +
+>> +	/*
+>> +	 * The following operations will fail if VF's sysfs files
+>> +	 * aren't created or its resources aren't finalized.
+>> +	 */
+>> +	eeh_add_device_early(pdn);
+>> +	eeh_add_device_late(pdev);
+>> +	eeh_sysfs_add_device(pdev);
+>> +	pdev->match_driver = -1;
+>
+> match_driver is a bool, which should be assigned "true" or "false".
 
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- arch/powerpc/configs/powernv_defconfig | 1 +
- arch/powerpc/configs/pseries_defconfig | 1 +
- 2 files changed, 2 insertions(+)
+Above he mentioned a dependency on:
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index caee834760d2..e59ef6dd7798 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -192,6 +192,7 @@ CONFIG_IPMI_DEVICE_INTERFACE=y
- CONFIG_IPMI_POWERNV=y
- CONFIG_RAW_DRIVER=y
- CONFIG_MAX_RAW_DEVS=1024
-+CONFIG_I2C_CHARDEV=y
- CONFIG_DRM=y
- CONFIG_DRM_AST=y
- CONFIG_FIRMWARE_EDID=y
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 3d935969e5a2..bde2cd1005a2 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -193,6 +193,7 @@ CONFIG_VIRTIO_CONSOLE=m
- CONFIG_IBM_BSR=m
- CONFIG_RAW_DRIVER=y
- CONFIG_MAX_RAW_DEVS=1024
-+CONFIG_I2C_CHARDEV=y
- CONFIG_FB=y
- CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_OF=y
--- 
-2.11.0
+  [04/10] PCI: extend pci device match_driver state
+  https://patchwork.kernel.org/patch/9882915/
+
+
+Which makes it an int.
+
+Or has that patch been rejected or something?
+
+cheers
