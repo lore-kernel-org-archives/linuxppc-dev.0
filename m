@@ -1,25 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-qt0-x22d.google.com (mail-qt0-x22d.google.com
+ [IPv6:2607:f8b0:400d:c0d::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCmqp2z5szDrBX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 10:13:42 +1100 (AEDT)
-Date: Fri, 13 Oct 2017 09:20:23 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Greg Kurz <groug@kaod.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- stable@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Sam Bobroff <sam.bobroff@au1.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: fix oops when checking KVM_CAP_PPC_HTM
-Message-ID: <20171012222023.GC28032@umbus.fritz.box>
-References: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
- <87wp40txl1.fsf@concordia.ellerman.id.au>
- <20171012145157.1879b34f@bahia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCmtK05tSzDrBX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 10:15:52 +1100 (AEDT)
+Received: by mail-qt0-x22d.google.com with SMTP id k31so16578140qta.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 16:15:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="NU0Ex4SbNnrxsi6C"
-In-Reply-To: <20171012145157.1879b34f@bahia>
+In-Reply-To: <962487416.5821059.1507639866584@mail.yahoo.com>
+References: <962487416.5821059.1507639866584.ref@mail.yahoo.com>
+ <962487416.5821059.1507639866584@mail.yahoo.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 13 Oct 2017 10:15:49 +1100
+Message-ID: <CAKTCnznqZ5YgWeU+x61vJtrTQnmC3-i30V+m8G42hWojpM5k0A@mail.gmail.com>
+Subject: Re: KASan for powerpc
+To: KHUSHAL GUMGAONKAR <khushaluniversal@yahoo.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,95 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Oct 10, 2017 at 11:51 PM, KHUSHAL GUMGAONKAR
+<khushaluniversal@yahoo.com> wrote:
+>  Hi Aneesh,
+>
+> I am facing unknown error in printk  during boot and after that kernel Hangs
+> on powerpc with KASan changes.
+>
 
---NU0Ex4SbNnrxsi6C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is probably the worst way to reach out. The reason being
 
-On Thu, Oct 12, 2017 at 02:51:57PM +0200, Greg Kurz wrote:
-> On Thu, 12 Oct 2017 22:27:54 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->=20
-> > Greg Kurz <groug@kaod.org> writes:
-> > > The following program causes a kernel oops:
-> > >
-> > > #include <sys/types.h>
-> > > #include <sys/stat.h>
-> > > #include <fcntl.h>
-> > > #include <sys/ioctl.h>
-> > > #include <linux/kvm.h>
-> > >
-> > > main()
-> > > {
-> > >     int fd =3D open("/dev/kvm", O_RDWR);
-> > >     ioctl(fd, KVM_CHECK_EXTENSION, KVM_CAP_PPC_HTM);
-> > > }
-> > >
-> > > This happens because when using the global KVM fd with
-> > > KVM_CHECK_EXTENSION, kvm_vm_ioctl_check_extension() gets
-> > > called with a NULL kvm argument, which gets dereferenced
-> > > in is_kvmppc_hv_enabled(). Spotted while reading the code.
-> > >
-> > > Let's use the hv_enabled fallback variable, like everywhere
-> > > else in this function.
-> > >
-> > > Fixes: 23528bb21ee2 ("KVM: PPC: Introduce KVM_CAP_PPC_HTM")
-> > > Cc: stable@vger.kernel.org # v4.7+
-> > > Signed-off-by: Greg Kurz <groug@kaod.org>
-> > > ---
-> > >  arch/powerpc/kvm/powerpc.c |    3 +--
-> > >  1 file changed, 1 insertion(+), 2 deletions(-)
-> > >
-> > > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> > > index 3480faaf1ef8..ee279c7f4802 100644
-> > > --- a/arch/powerpc/kvm/powerpc.c
-> > > +++ b/arch/powerpc/kvm/powerpc.c
-> > > @@ -644,8 +644,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm,=
- long ext)
-> > >  		break;
-> > >  #endif
-> > >  	case KVM_CAP_PPC_HTM:
-> > > -		r =3D cpu_has_feature(CPU_FTR_TM_COMP) &&
-> > > -		    is_kvmppc_hv_enabled(kvm);
-> > > +		r =3D cpu_has_feature(CPU_FTR_TM_COMP) && hv_enabled;
-> > >  		break;
-> > >  	default:
-> > >  		r =3D 0; =20
-> >=20
-> > Did this go anywhere?
-> >=20
-> > cheers
->=20
-> I'm afraid not... and I haven't tried to ping Paul yet, since he's
-> supposed to be on vacation from what I've been told.
+You describe the crash your seeing, there is no description of
 
-He's back now.
+1. What machine you tried this on?
+2. What MMU mode?
+3. What kernel?
+4. What gcc version, flags for KASAN
+5. What was the KASAN design - how much shadow memory to real memory?
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Unless you can work out those details, this is just noise on the list.
+I posted an RFC for radix -
+http://linuxppc.10917.n7.nabble.com/RFC-PATCH-v1-powerpc-radix-kasan-KASAN-support-for-Radix-td125864.html
 
---NU0Ex4SbNnrxsi6C
-Content-Type: application/pgp-signature; name="signature.asc"
+It needs work, please read the implementations so far, discuss your
+design/understanding. Then we can discuss what issues you are running
+into, otherwise it's just noise without effort.
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlnf6qQACgkQbDjKyiDZ
-s5LEhw/+NUsKfqWdPjNvEyczlMLYPazDcP+EJMomMaxZ1ZOLaw0MvqTw8JBZTg7R
-hwxKfQHLSgy4bXCeHKLGeWe8mgmKtrpCnc2V/iLtzjAKD5jPVQfBS3vICgi27soT
-iXRonACNK1QUGxzlNWUguB9LUBqROuABdi9iem8HmMJU4WfowB6DtXfZl1LqkvG+
-ycJkzewJiRk69xMhxzZu9EgPrba3D560Sju3kGVjzOQnhIVjQy47rqMMXjBjoGP6
-2f8w6E2iXDMFITivXjoHr7gCTKiZVekZ109NttFhgysTEm55PPOuhvq9iDDuTxkJ
-gT7MBciM1NP/wEfgQosOpdPh9yBBKsy64HDmRk71adF8hAXopwtM+UmJUGfl5stn
-PAr5Wx0OjJKr00M6UqYdgV0CbDcVNduno98bi23bwHFzSAzK84YZKW98u75I+kWx
-dP7/LkiuCGM2DonVNkoW0HUaFesWVH0Q1GfQPEcB4yZoT7z80qPV25fYNyZgtuvS
-t/q2KxAISWoKFO+p1fD1a0NyH4HH+U36/FRfXL9bnnCc3uIwmPxgdg3P6XqiCLW7
-EE8B+2A+g7mFvBRhI6i0hj4pEB5ukSnM5QqRqgRt0JhuDvY8/8Fksg/YqdvxQkq7
-Os+wkppAOJvmgePBvqoDV4T1Kb7kQEvU/OVgyUQ8Us+mmdsOpGM=
-=W3VZ
------END PGP SIGNATURE-----
-
---NU0Ex4SbNnrxsi6C--
+Balbir Singh.
