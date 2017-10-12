@@ -2,21 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCHS14rKbzDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 15:09:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCHtV3s8QzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 15:29:22 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
- seroyer@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Juan J . Alvarez" <jjalvare@us.ibm.com>
-Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-In-Reply-To: <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
- <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
- <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
-Date: Thu, 12 Oct 2017 15:09:53 +1100
-Message-ID: <87efq92ei6.fsf@concordia.ellerman.id.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kamalesh@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/modules: Use WARN_ON() in stub_for_addr()
+In-Reply-To: <c2a00841-f514-ef8c-c1be-b053dd84d1b8@linux.vnet.ibm.com>
+References: <1507646852-18642-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ <87d15uz5j9.fsf@concordia.ellerman.id.au>
+ <c2a00841-f514-ef8c-c1be-b053dd84d1b8@linux.vnet.ibm.com>
+Date: Thu, 12 Oct 2017 15:29:22 +1100
+Message-ID: <87bmld2dlp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,68 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
 
-> On Fri, Sep 22, 2017 at 09:19:28AM -0500, Bryant G. Ly wrote:
->> This patch adds the machine dependent call for
->> pcibios_bus_add_device, since the previous patch
->> separated the calls out between the PowerNV and PowerVM.
+> On Wednesday 11 October 2017 09:42 AM, Michael Ellerman wrote:
+>> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
 >> 
->> The difference here is that for the PowerVM environment
->> we do not want match_driver set because in this environment
->> we do not want the VF device drivers to load immediately, due to
->> firmware loading the device node when VF device is assigned to the
->> logical partition.
+>>> Use WARN_ON(), while running out of stubs in stub_for_addr()
+>>> and abort loading of the module instead of BUG_ON().
 >> 
->> This patch will depend on the patch linked below, which is under
->> review.
+>> Thanks. This looks good in principle. Have you actually tested it to
+>> make sure we do in fact gracefully fail the module load?
 >> 
->> https://patchwork.kernel.org/patch/9882915/
->> 
->> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
->> Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
->>  1 file changed, 24 insertions(+)
->> 
->> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
->> index 6b812ad990e4..45946ee90985 100644
->> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
->> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
->> @@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
->>  static DEFINE_SPINLOCK(slot_errbuf_lock);
->>  static int eeh_error_buf_size;
->>  
->> +void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
->> +{
->> +	struct pci_dn *pdn = pci_get_pdn(pdev);
->> +
->> +	if (!pdev->is_virtfn)
->> +		return;
->> +
->> +	pdn->device_id  =  pdev->device;
->> +	pdn->vendor_id  =  pdev->vendor;
->> +	pdn->class_code =  pdev->class;
->> +
->> +	/*
->> +	 * The following operations will fail if VF's sysfs files
->> +	 * aren't created or its resources aren't finalized.
->> +	 */
->> +	eeh_add_device_early(pdn);
->> +	eeh_add_device_late(pdev);
->> +	eeh_sysfs_add_device(pdev);
->> +	pdev->match_driver = -1;
 >
-> match_driver is a bool, which should be assigned "true" or "false".
+> Thanks for the review. I tested with little hackish version of this patch:
+>
+> +       if (!strncmp(me->name, "live", 4))
+> +               j = 100;
+> +       for (i = 0; stub_func_addr(stubs[i].funcdata); i+=j) {
+> +               if (WARN_ON(i >= num_stubs))
+> +                       return 0;
+>
+> and it fails gracefully.
+>
+> # modprobe livepatch-sample
+> modprobe: ERROR: could not insert 'livepatch_sample': Unknown symbol in module, or unknown parameter (see dmesg)
+>
+> # echo $?
+> 1
+>
+> # dmesg 
+> ------------[ cut here ]------------
+> WARNING: CPU: 2 PID: 2836 at arch/powerpc/kernel/module_64.c:526 apply_relocate_add+0x71c/0xb00
 
-Above he mentioned a dependency on:
-
-  [04/10] PCI: extend pci device match_driver state
-  https://patchwork.kernel.org/patch/9882915/
-
-
-Which makes it an int.
-
-Or has that patch been rejected or something?
+Thanks.
 
 cheers
