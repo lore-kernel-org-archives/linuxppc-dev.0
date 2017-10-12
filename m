@@ -1,20 +1,25 @@
-Return-Path: <khushaluniversal@yahoo.com>
-Received: from sonic305-20.consmr.mail.sg3.yahoo.com
- (sonic305-20.consmr.mail.sg3.yahoo.com [106.10.241.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mathieu.desnoyers@efficios.com>
+Received: from mail.efficios.com (mail.efficios.com [167.114.142.141])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCXJr0Px2zDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 00:49:30 +1100 (AEDT)
-Date: Thu, 12 Oct 2017 13:48:55 +0000 (UTC)
-From: KHUSHAL GUMGAONKAR <khushaluniversal@yahoo.com>
-Reply-To: KHUSHAL GUMGAONKAR <khushaluniversal@yahoo.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Message-ID: <444507862.763398.1507816135396@mail.yahoo.com>
-Subject: Re: [PATCH V2 10/10] powerpc/mm: kasan: Add kasan support for ppc64
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----=_Part_763397_2008509355.1507816135393"
-References: <444507862.763398.1507816135396.ref@mail.yahoo.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCmcs3l3YzDr6N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 10:04:12 +1100 (AEDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Boqun Feng <boqun.feng@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ Paul Turner <pjt@google.com>, Andrew Hunter <ahh@google.com>,
+ Andy Lutomirski <luto@amacapital.net>, Dave Watson <davejwatson@fb.com>,
+ Josh Triplett <josh@joshtriplett.org>, Will Deacon <will.deacon@arm.com>
+Cc: linux-kernel@vger.kernel.org,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH for 4.15 11/14] cpu_opv: Wire up powerpc system call
+Date: Thu, 12 Oct 2017 19:03:23 -0400
+Message-Id: <20171012230326.19984-12-mathieu.desnoyers@efficios.com>
+In-Reply-To: <20171012230326.19984-1-mathieu.desnoyers@efficios.com>
+References: <20171012230326.19984-1-mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,84 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------=_Part_763397_2008509355.1507816135393
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Boqun Feng <boqun.feng@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-Hi Aneesh,
-I have gone through your KASan patch for ppc64 and ported the same changes =
-on my PPC platform but I am facing deadlock and terminal becomes unresponsi=
-ve.I saw some false printk recursion which you have mentioned in mail chain=
-. I followed all the points mentioned in your discussion and at the end bel=
-ow lines from you
-"I still haven't fully isolated all the .c files which should not be kasan =
-instrumented. That means in case of ppc64 i ended up calling kasan _load/_s=
-tore in real mode. That will result in failure w.r.t to the above spin_lock=
- code."can you please give me the list of .c files where I need to change t=
-o overcome this deadlock and false printk recursion.Please help me out as I=
- am totally stuck from last 10 days and really frustrated by now.Thanking y=
-ou in Advance.=C2=A0THANKS AND REGARDS,
-KHUSHAL K. GUMGAONKARIIT KHARAGPUR
-------=_Part_763397_2008509355.1507816135393
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<html><head></head><body><div style=3D"color:#000; background-color:#fff; f=
-ont-family:times new roman, new york, times, serif;font-size:13px"><div id=
-=3D"yui_3_16_0_ym19_1_1507815689128_2038"><span id=3D"yui_3_16_0_ym19_1_150=
-7815689128_5812"><font id=3D"yui_3_16_0_ym19_1_1507815689128_7521" size=3D"=
-3" face=3D"Courier New, courier, monaco, monospace, sans-serif">Hi Aneesh,<=
-/font></span></div><div id=3D"yui_3_16_0_ym19_1_1507815689128_2038"><span><=
-font size=3D"3" face=3D"Courier New, courier, monaco, monospace, sans-serif=
-"><br></font></span></div><div id=3D"yui_3_16_0_ym19_1_1507815689128_2038" =
-dir=3D"ltr"><span id=3D"yui_3_16_0_ym19_1_1507815689128_2582"><font id=3D"y=
-ui_3_16_0_ym19_1_1507815689128_7517" size=3D"3" face=3D"Courier New, courie=
-r, monaco, monospace, sans-serif">I have gone through your KASan patch for =
-ppc64 and ported the same changes on my PPC platform but I am facing deadlo=
-ck and terminal becomes unresponsive.</font></span></div><div id=3D"yui_3_1=
-6_0_ym19_1_1507815689128_2038" dir=3D"ltr"><span id=3D"yui_3_16_0_ym19_1_15=
-07815689128_2585"><font id=3D"yui_3_16_0_ym19_1_1507815689128_7515" size=3D=
-"3" face=3D"Courier New, courier, monaco, monospace, sans-serif">I saw some=
- false printk recursion which you have mentioned in mail chain. I followed =
-all the points mentioned in your discussion and at the end below lines from=
- you</font></span></div><div id=3D"yui_3_16_0_ym19_1_1507815689128_2038" di=
-r=3D"ltr"><span><font size=3D"3"><br></font></span></div><div id=3D"yui_3_1=
-6_0_ym19_1_1507815689128_2038" dir=3D"ltr"><font size=3D"3" id=3D"yui_3_16_=
-0_ym19_1_1507815689128_7518"><b id=3D"yui_3_16_0_ym19_1_1507815689128_7535"=
-><span id=3D"yui_3_16_0_ym19_1_1507815689128_7524">"</span><span style=3D"f=
-ont-family: &quot;Courier New&quot;; white-space: pre-wrap;" id=3D"yui_3_16=
-_0_ym19_1_1507815689128_2635">I still haven't fully isolated all the .c fil=
-es which should not be </span></b></font><b id=3D"yui_3_16_0_ym19_1_1507815=
-689128_7534" style=3D"font-size: medium; font-family: &quot;Courier New&quo=
-t;; white-space: pre-wrap;">kasan instrumented. That means in case of ppc64=
- i ended up calling </b><b id=3D"yui_3_16_0_ym19_1_1507815689128_7534" styl=
-e=3D"font-size: medium; font-family: &quot;Courier New&quot;; white-space: =
-pre-wrap;">kasan _load/_store in real mode. That will result in failure w.r=
-.t </b><b id=3D"yui_3_16_0_ym19_1_1507815689128_7534" style=3D"font-size: m=
-edium; font-family: &quot;Courier New&quot;; white-space: pre-wrap;">to the=
- above spin_lock code."</b></div><pre id=3D"yui_3_16_0_ym19_1_1507815689128=
-_2636"><font size=3D"3" id=3D"yui_3_16_0_ym19_1_1507815689128_7528">can you=
- please give me the list of .c files where I need to change to overcome thi=
-s deadlock and false printk recursion.</font></pre><pre id=3D"yui_3_16_0_ym=
-19_1_1507815689128_2636"><font size=3D"3" id=3D"yui_3_16_0_ym19_1_150781568=
-9128_7529">Please help me out as I am totally stuck from last 10 days and r=
-eally frustrated by now.</font></pre><pre id=3D"yui_3_16_0_ym19_1_150781568=
-9128_2636"><font size=3D"3" id=3D"yui_3_16_0_ym19_1_1507815689128_7523">Tha=
-nking you in Advance.</font></pre><div></div><div id=3D"yui_3_16_0_ym19_1_1=
-507815689128_2019">&nbsp;</div><div class=3D"signature" id=3D"yui_3_16_0_ym=
-19_1_1507815689128_2004"><div id=3D"yui_3_16_0_ym19_1_1507815689128_2003"><=
-span style=3D"font-size:16px;font-family:garamond, 'new york', times, serif=
-;font-weight:bold;color:rgb(0, 0, 255);" id=3D"yui_3_16_0_ym19_1_1507815689=
-128_2018">THANKS AND REGARDS,</span></div><div id=3D"yui_3_16_0_ym19_1_1507=
-815689128_2005"><span style=3D"font-size:medium;font-family:garamond, 'new =
-york', times, serif;font-weight:bold;color:rgb(0, 0, 255);"><br></span></di=
-v><div style=3D"background-color:transparent;font-style:normal;" id=3D"yui_=
-3_16_0_ym19_1_1507815689128_2007"><span style=3D"font-size:medium;font-fami=
-ly:garamond, 'new york', times, serif;font-weight:bold;color:rgb(0, 0, 255)=
-;" id=3D"yui_3_16_0_ym19_1_1507815689128_2006">KHUSHAL K. GUMGAONKAR</span>=
-</div><div style=3D"background-color:transparent;font-style:normal;" id=3D"=
-yui_3_16_0_ym19_1_1507815689128_2583"><span style=3D"font-size:16px;font-fa=
-mily:garamond, 'new york', times, serif;font-weight:bold;color:rgb(0, 0, 25=
-5);" id=3D"yui_3_16_0_ym19_1_1507815689128_2584">IIT KHARAGPUR</span></div>=
-</div></div></body></html>
-------=_Part_763397_2008509355.1507816135393--
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index a805a4d10d1c..2846dfded7fe 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -389,3 +389,4 @@ COMPAT_SYS_SPU(pwritev2)
+ SYSCALL(kexec_file_load)
+ SYSCALL(statx)
+ SYSCALL(rseq)
++SYSCALL(cpu_opv)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index e76bd5601ea4..48f80f452e31 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
+ 
+ 
+-#define NR_syscalls		385
++#define NR_syscalls		386
+ 
+ #define __NR__exit __NR_exit
+ 
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 854a8db4144e..c739299b5279 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -395,5 +395,6 @@
+ #define __NR_kexec_file_load	382
+ #define __NR_statx		383
+ #define __NR_rseq		384
++#define __NR_cpu_opv		385
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+-- 
+2.11.0
