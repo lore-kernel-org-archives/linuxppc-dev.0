@@ -2,7 +2,7 @@ Return-Path: <mathieu.desnoyers@efficios.com>
 Received: from mail.efficios.com (mail.efficios.com [167.114.142.141])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCmcs3l3YzDr6N
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCmcs3bB3zDr4T
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 10:04:12 +1100 (AEDT)
 From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
@@ -15,9 +15,10 @@ Cc: linux-kernel@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH for 4.15 11/14] cpu_opv: Wire up powerpc system call
-Date: Thu, 12 Oct 2017 19:03:23 -0400
-Message-Id: <20171012230326.19984-12-mathieu.desnoyers@efficios.com>
+Subject: [RFC PATCH for 4.15 07/14] Restartable sequences: powerpc
+ architecture support
+Date: Thu, 12 Oct 2017 19:03:19 -0400
+Message-Id: <20171012230326.19984-8-mathieu.desnoyers@efficios.com>
 In-Reply-To: <20171012230326.19984-1-mathieu.desnoyers@efficios.com>
 References: <20171012230326.19984-1-mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,52 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Boqun Feng <boqun.feng@gmail.com>
+
+Call the rseq_handle_notify_resume() function on return to userspace if
+TIF_NOTIFY_RESUME thread flag is set.
+
+Increment the event counter and perform fixup on the pre-signal when a
+signal is delivered on top of a restartable sequence critical section.
+
+Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 CC: Paul Mackerras <paulus@samba.org>
 CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Boqun Feng <boqun.feng@gmail.com>
 CC: Peter Zijlstra <peterz@infradead.org>
 CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 CC: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig         | 1 +
+ arch/powerpc/kernel/signal.c | 3 +++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index a805a4d10d1c..2846dfded7fe 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -389,3 +389,4 @@ COMPAT_SYS_SPU(pwritev2)
- SYSCALL(kexec_file_load)
- SYSCALL(statx)
- SYSCALL(rseq)
-+SYSCALL(cpu_opv)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index e76bd5601ea4..48f80f452e31 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 81b0031f909f..816590f4a2eb 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -207,6 +207,7 @@ config PPC
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HAVE_IRQ_TIME_ACCOUNTING
++	select HAVE_RSEQ
+ 	select IRQ_DOMAIN
+ 	select IRQ_FORCED_THREADING
+ 	select MODULES_USE_ELF_RELA
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index e9436c5e1e09..17a994b801b1 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -133,6 +133,8 @@ static void do_signal(struct task_struct *tsk)
+ 	/* Re-enable the breakpoints for the signal stack */
+ 	thread_change_pc(tsk, tsk->thread.regs);
  
++	rseq_signal_deliver(tsk->thread.regs);
++
+ 	if (is32) {
+         	if (ksig.ka.sa.sa_flags & SA_SIGINFO)
+ 			ret = handle_rt_signal32(&ksig, oldset, tsk);
+@@ -161,6 +163,7 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+ 	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
+ 		clear_thread_flag(TIF_NOTIFY_RESUME);
+ 		tracehook_notify_resume(regs);
++		rseq_handle_notify_resume(regs);
+ 	}
  
--#define NR_syscalls		385
-+#define NR_syscalls		386
- 
- #define __NR__exit __NR_exit
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 854a8db4144e..c739299b5279 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -395,5 +395,6 @@
- #define __NR_kexec_file_load	382
- #define __NR_statx		383
- #define __NR_rseq		384
-+#define __NR_cpu_opv		385
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+ 	if (thread_info_flags & _TIF_PATCH_PENDING)
 -- 
 2.11.0
