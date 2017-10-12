@@ -1,19 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCTsK5WBbzDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 22:59:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCTwD4knPzDr4T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 23:01:32 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org, benh@kernel.crashing.org, stewart@linux.vnet.ibm.com,
- cyrilbur@gmail.com, paulus@samba.org
-Subject: [PATCH 5/4] KVM: PPC: Tie KVM_CAP_PPC_HTM to the user-visible TM
- feature
-Date: Thu, 12 Oct 2017 22:58:54 +1100
-Message-Id: <1507809534-10721-1-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
-References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/3] powerpc/watchdog: Print the NIP in
+ soft_nmi_interrupt()
+In-Reply-To: <20171012181856.3d88a5d9@roar.ozlabs.ibm.com>
+References: <1507783474-28210-1-git-send-email-mpe@ellerman.id.au>
+ <1507783474-28210-3-git-send-email-mpe@ellerman.id.au>
+ <20171012181856.3d88a5d9@roar.ozlabs.ibm.com>
+Date: Thu, 12 Oct 2017 23:01:31 +1100
+Message-ID: <87tvz4tw10.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we use CPU_FTR_TM to decide if the CPU/kernel can support
-TM (Transactional Memory), and if it's true we advertise that to
-Qemu (or similar) via KVM_CAP_PPC_HTM.
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-PPC_FEATURE2_HTM is the user-visible feature bit, which indicates that
-the CPU and kernel can support TM. Currently CPU_FTR_TM and
-PPC_FEATURE2_HTM always have the same value, either true or false, so
-using the former for KVM_CAP_PPC_HTM is correct.
+> On Thu, 12 Oct 2017 15:44:34 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> When a CPU detects its locked up via soft_nmi_interrupt() we have
+>> pt_regs, so print the regs->nip, which points to where we took the
+>> soft-NMI.
+>> 
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  arch/powerpc/kernel/watchdog.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> 
+>> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+>> index 2494cbe34132..4594ba0979e4 100644
+>> --- a/arch/powerpc/kernel/watchdog.c
+>> +++ b/arch/powerpc/kernel/watchdog.c
+>> @@ -235,7 +235,7 @@ void soft_nmi_interrupt(struct pt_regs *regs)
+>>  		}
+>>  		set_cpu_stuck(cpu, tb);
+>>  
+>> -		pr_emerg("CPU %d self-detected hard LOCKUP\n", cpu);
+>> +		pr_emerg("CPU %d self-detected hard LOCKUP @ %pS\n", cpu, (void *)regs->nip);
+>>  		print_modules();
+>>  		print_irqtrace_events(current);
+>>  		show_regs(regs);
+>
+> These patches all look fine to me, but we should be printing nip
+> with show_regs, so why here too?
 
-However some Power9 CPUs can operate in a mode where TM is enabled but
-TM suspended state is disabled. In this mode CPU_FTR_TM is true, but
-PPC_FEATURE2_HTM is false. Instead a different PPC_FEATURE2 bit is
-set, to indicate that this different mode of TM is available.
+Because we can? :)
 
-It is not safe to let guests use TM as-is, when the CPU is in this
-mode. So to prevent that from happening, use PPC_FEATURE2_HTM to
-determine the value of KVM_CAP_PPC_HTM.
+But maybe it's overkill.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kvm/powerpc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+We also have issues with loglevels, where sometimes you don't see the
+regs, and just the EMERG lines, so it helps then.
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 3480faaf1ef8..a3746b98ec11 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -644,8 +644,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		break;
- #endif
- 	case KVM_CAP_PPC_HTM:
--		r = cpu_has_feature(CPU_FTR_TM_COMP) &&
--		    is_kvmppc_hv_enabled(kvm);
-+		r = is_kvmppc_hv_enabled(kvm) &&
-+		    (cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_HTM_COMP);
- 		break;
- 	default:
- 		r = 0;
--- 
-2.7.4
+But possibly we should fix that by making show_regs() EMERG, though
+other arches don't seem to.
+
+cheers
