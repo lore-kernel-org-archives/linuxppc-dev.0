@@ -1,31 +1,34 @@
-Return-Path: <minghuan.lian@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0050.outbound.protection.outlook.com [104.47.0.50])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <wangzhou.bry@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCGBM1bRHzDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 14:12:56 +1100 (AEDT)
-From: "M.h. Lian" <minghuan.lian@nxp.com>
-To: Bjorn Helgaas <helgaas@kernel.org>, "Z.q. Hou" <zhiqiang.hou@nxp.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "marc.zyngier@arm.com"
- <marc.zyngier@arm.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "mark.rutland@arm.com" <mark.rutland@arm.com>, "bhelgaas@google.com"
- <bhelgaas@google.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "Mingkai
- Hu" <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>, Thomas Gleixner
- <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>
-Subject: RE: [PATCH 0/5] arm64: add ls1012a and ls1046a pcie support
-Date: Thu, 12 Oct 2017 03:12:47 +0000
-Message-ID: <VI1PR04MB16157ABDE174A8DD1567173CE84B0@VI1PR04MB1615.eurprd04.prod.outlook.com>
-References: <20170919092658.22482-1-Zhiqiang.Hou@nxp.com>
- <20171011185719.GL25517@bhelgaas-glaptop.roam.corp.google.com>
-In-Reply-To: <20171011185719.GL25517@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCS14521jzDr4T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 21:35:36 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id z80so5429745pff.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 03:35:36 -0700 (PDT)
+Date: Thu, 12 Oct 2017 18:35:29 +0800
+From: Sherlock Wang <wangzhou.bry@gmail.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Daniel Vetter <daniel.vetter@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Lukas Wunner <lukas@wunner.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rongrong Zou <zourongrong@gmail.com>,
+ Dave Airlie <airlied@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH 0/2] vgaarb: Select fallback default VGA device
+Message-ID: <20171012103529.GA5378@T440>
+References: <20171006221358.12211.42879.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171006221358.12211.42879.stgit@bhelgaas-glaptop.roam.corp.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,61 +38,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Oct 06, 2017 at 05:24:20PM -0500, Bjorn Helgaas wrote:
+> These patches are supposed to fix a problem Daniel Axtens found on the
+> HiSilicon D05 board.  The VGA device there is behind a bridge that doesn't
+> support PCI_BRIDGE_CTL_VGA, so the arbiter never selects the device as the
+> default.
+> 
+> The first patch extends the arbiter so that if it can't find an enabled VGA
+> device with legacy resources, it selects the first enabled device *without*
+> legacy resources (this is what fixes the D05).  If that fails, it selects
+> the first device that isn't enabled.  The combination of both changes
+> should make the current powerpc fixup_vga() quirk unnecessary.
+> 
+> N.B. It changes the powerpc behavior: if there are several enabled VGA
+> devices, the current quirk selects the last one, while this patch selects
+> the first one.  If this is a problem, I can drop that part of the patch and
+> keep the quirk.
+> 
+> The second patch pulls out this fallback device detection (and the EFI
+> override) from vga_arb_device_init() to make it easier to read.
+
 Hi Bjorn,
 
-I greatly appreciate for your review and picking up them.
+I tested this series in:
 
-Acked-by: Minghuan Lian <minghuan.Lian@nxp.com>
+        D05 board based on HiSilicon SoC Hip07.
+        And HiSilicon SoC Hip08 based board.
 
+Both of these two SoCs' PCIe host bridge don't support PCI_BRIDGE_CTL_VGA. One
+VGA device which does not support legacy resources has been connected to these
+two PCIe host bridges to test. Default VGA device can be selected in above two
+systems.
 
-> -----Original Message-----
-> From: Bjorn Helgaas [mailto:helgaas@kernel.org]
-> Sent: Thursday, October 12, 2017 2:57 AM
-> To: Z.q. Hou <zhiqiang.hou@nxp.com>
-> Cc: linux-kernel@vger.kernel.org; devicetree@vger.kernel.org; linux-
-> pci@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linuxppc-
-> dev@lists.ozlabs.org; marc.zyngier@arm.com; robh+dt@kernel.org;
-> mark.rutland@arm.com; bhelgaas@google.com; shawnguo@kernel.org;
-> Mingkai Hu <mingkai.hu@nxp.com>; M.h. Lian <minghuan.lian@nxp.com>; Roy
-> Zang <roy.zang@nxp.com>; Thomas Gleixner <tglx@linutronix.de>; Jason
-> Cooper <jason@lakedaemon.net>
-> Subject: Re: [PATCH 0/5] arm64: add ls1012a and ls1046a pcie support
->=20
-> On Tue, Sep 19, 2017 at 05:26:53PM +0800, Zhiqiang Hou wrote:
-> > From: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
-> >
-> > This patch set adds ls1012a MSI and PCIe support, including driver and
-> > device tree nodes. The ls1046a's MSI support patch and PCIe driver
-> > patch has been applied, so only adds the PCIe device tree nodes.
-> >
-> > Hou Zhiqiang (5):
-> >   irqchip/ls-scfg-msi: add LS1012a MSI support
-> >   arm64: dts: ls1012a: Add MSI controller DT node
-> >   PCI: layerscape: Add support for ls1012a
-> >   arm64: dts: ls1012a: Add PCIe controller DT node
-> >   arm64: dts: ls1046a: add PCIe controller DT nodes
-> >
-> >  .../interrupt-controller/fsl,ls-scfg-msi.txt       |  1 +
-> >  .../devicetree/bindings/pci/layerscape-pci.txt     |  1 +
-> >  arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi     | 31 +++++++++
-> >  arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi     | 75
-> ++++++++++++++++++++++
-> >  drivers/irqchip/irq-ls-scfg-msi.c                  |  1 +
-> >  drivers/pci/dwc/pci-layerscape.c                   |  1 +
-> >  6 files changed, 110 insertions(+)
->=20
-> I'm not 100% sure who should take these.  They trivially touch PCI and I =
-haven't
-> seen anybody else respond, so I put them on pci/host-layerscape with Rob'=
-s acks.
->=20
-> If somebody else wants to take them, just let me know and I'll drop them.
->=20
-> They really should be acked by Minghuan or Mingkai, who are listed as the
-> maintainers of drivers/pci/dwc/pci-layerscape.c and are presumably respon=
-sible
-> for the related dtsi files, too.
->=20
-> Thomas, Jason, and Marc are listed as maintainers of drivers/irqchip/irq-=
-ls-scfg-
-> msi.c.  It's a trivial change, but I added them to the cc list.
+Tested-by: Zhou Wang <wangzhou1@hisilicon.com>
+(sorry for my HiSilicon E-mail box miss this serias, so here I have to use my
+gmail box)
+
+Thanks,
+Zhou
+
+> 
+> ---
+> 
+> Bjorn Helgaas (2):
+>       vgaarb: Select a default VGA device even if there's no legacy VGA
+>       vgaarb: Factor out EFI and fallback default device selection
+> 
+> 
+>  arch/powerpc/kernel/pci-common.c |   12 ------
+>  drivers/gpu/vga/vgaarb.c         |   72 +++++++++++++++++++++++++++++---------
+>  2 files changed, 55 insertions(+), 29 deletions(-)
