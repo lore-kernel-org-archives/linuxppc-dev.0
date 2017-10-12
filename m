@@ -1,20 +1,31 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCd6J5MdJzDr4T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 04:25:43 +1100 (AEDT)
+Received: from mail-qk0-f181.google.com (mail-qk0-f181.google.com
+ [209.85.220.181])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCZKq35NPzDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 02:20:30 +1100 (AEDT)
-Date: Thu, 12 Oct 2017 23:19:59 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/18] crypto: talitos - fixes and performance improvement
-Message-ID: <20171012151959.GI31122@gondor.apana.org.au>
-References: <cover.1507284818.git.christophe.leroy@c-s.fr>
+ by mail.kernel.org (Postfix) with ESMTPSA id 6B87D2190B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 17:25:40 +0000 (UTC)
+Received: by mail-qk0-f181.google.com with SMTP id y23so2065501qkb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 10:25:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1507284818.git.christophe.leroy@c-s.fr>
+In-Reply-To: <20170926084000.29105-1-stewart@linux.vnet.ibm.com>
+References: <CAL_JsqL29j59wJtmOAuD=N7Tccv2rxEMav90yxTyGTfhwHQUsw@mail.gmail.com>
+ <20170926084000.29105-1-stewart@linux.vnet.ibm.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 12 Oct 2017 12:25:19 -0500
+Message-ID: <CAL_JsqJCoc7AdRNZnR0wp6SB8f_w49ORpCe0g-rWPUwLHMYJZg@mail.gmail.com>
+Subject: Re: [PATCH] drivers: of: increase MAX_RESERVED_REGIONS to 32
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: obh+dt@kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 06, 2017 at 03:04:31PM +0200, Christophe Leroy wrote:
-> This serie fixes and improves the talitos crypto driver.
-> 
-> First 6 patchs are fixes of failures reported by the new tests in the
-> kernel crypto test manager.
-> 
-> The 8 following patches are cleanups and simplifications.
-> 
-> The last 4 ones are performance improvement. The main improvement is
-> in the one before the last, it divides by 2 the time needed for a md5
-> hash on the SEC1.
-> 
-> Christophe Leroy (18):
->   crypto: talitos - fix AEAD test failures
->   crypto: talitos - fix memory corruption on SEC2
->   crypto: talitos - fix setkey to check key weakness
->   crypto: talitos - fix AEAD for sha224 on non sha224 capable chips
->   crypto: talitos - fix use of sg_link_tbl_len
->   crypto: talitos - fix ctr-aes-talitos
->   crypto: talitos - zeroize the descriptor with memset()
->   crypto: talitos - declare local functions static
->   crypto: talitos - use devm_kmalloc()
->   crypto: talitos - use of_property_read_u32()
->   crypto: talitos - use devm_ioremap()
->   crypto: talitos - don't check the number of channels at each interrupt
->   crypto: talitos - remove to_talitos_ptr_len()
->   crypto: talitos - simplify tests in ipsec_esp()
->   crypto: talitos - DMA map key in setkey()
->   crypto: talitos - do hw_context DMA mapping outside the requests
->   crypto: talitos - chain in buffered data for ahash on SEC1
->   crypto: talitos - avoid useless copy
+On Tue, Sep 26, 2017 at 3:40 AM, Stewart Smith
+<stewart@linux.vnet.ibm.com> wrote:
+> There are two types of memory reservations firmware can ask the kernel
+> to make in the device tree: static and dynamic.
+> See Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+>
+> If you have greater than 16 entries in /reserved-memory (as we do on
+> POWER9 systems) you would get this scary looking error message:
+>  [    0.000000] OF: reserved mem: not enough space all defined regions.
+>
+> This is harmless if all your reservations are static (which with OPAL on
+> POWER9, they are).
+>
+> It is not harmless if you have any dynamic reservations after the 16th.
+>
+> In the first pass over the fdt to find reservations, the child nodes of
+> /reserved-memory are added to a static array in of_reserved_mem.c so that
+> memory can be reserved in a 2nd pass. The array has 16 entries. This is why,
+> on my dual socket POWER9 system, I get that error 4 times with 20 static
+> reservations.
+>
+> We don't have a problem on ppc though, as in arch/powerpc/kernel/prom.c
+> we look at the new style /reserved-ranges property to do reservations,
+> and this logic was introduced in 0962e8004e974 (well before any powernv
+> system shipped).
+>
+> A Google search shows up no occurances of that exact error message, so we're
+> probably safe in that no machine that people use has memory not being reserved
+> when it should be.
+>
+> The simple fix is to bump the length of the array to 32 which "should be
+> enough for everyone(TM)". The simple fix of not recording static allocations
+> in the array would cause problems for devices with "memory-region" properties.
+> A more future-proof fix is likely possible, although more invasive and this
+> simple fix is perfectly suitable in the meantime while a more future-proof
+> fix is developed.
+>
+> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> ---
+>  drivers/of/of_reserved_mem.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-All applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Applied.
+
+Rob
