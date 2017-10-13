@@ -1,34 +1,24 @@
-Return-Path: <julien.thierry@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3yCW7s6gWPzDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 23:56:41 +1100 (AEDT)
-Subject: Re: [PATCH 1/2] vgaarb: Select a default VGA device even if there's
- no legacy VGA
-To: =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW@KARO-electronics.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>,
- Daniel Vetter <daniel.vetter@intel.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org,
- Xinliang Liu <z.liuxinliang@hisilicon.com>,
- Alex Williamson <alex.williamson@redhat.com>, Lukas Wunner
- <lukas@wunner.de>, linux-pci@vger.kernel.org,
- Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Daniel Axtens <dja@axtens.net>
-References: <20171006221358.12211.42879.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20171006222428.12211.3635.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <b5373cbb-7d0d-a626-159b-dee0b82d32d0@arm.com>
- <20171012140548.10754506@karo-electronics.de>
-From: Julien Thierry <julien.thierry@arm.com>
-Message-ID: <4a93e8f1-8b87-ae58-17c8-06b36849dfaf@arm.com>
-Date: Thu, 12 Oct 2017 13:56:32 +0100
+Return-Path: <khushaluniversal@yahoo.com>
+Received: from sonic303-22.consmr.mail.sg3.yahoo.com
+ (sonic303-22.consmr.mail.sg3.yahoo.com [106.10.242.39])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCt7f5tT2zDrD0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 14:12:44 +1100 (AEDT)
+Date: Fri, 13 Oct 2017 03:12:28 +0000 (UTC)
+From: KHUSHAL GUMGAONKAR <khushaluniversal@yahoo.com>
+Reply-To: KHUSHAL GUMGAONKAR <khushaluniversal@yahoo.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Message-ID: <87114453.1013977.1507864348066@mail.yahoo.com>
+In-Reply-To: <CAKTCnznqZ5YgWeU+x61vJtrTQnmC3-i30V+m8G42hWojpM5k0A@mail.gmail.com>
+References: <962487416.5821059.1507639866584.ref@mail.yahoo.com>
+ <962487416.5821059.1507639866584@mail.yahoo.com>
+ <CAKTCnznqZ5YgWeU+x61vJtrTQnmC3-i30V+m8G42hWojpM5k0A@mail.gmail.com>
+Subject: Re: KASan for powerpc
 MIME-Version: 1.0
-In-Reply-To: <20171012140548.10754506@karo-electronics.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: multipart/alternative;
+ boundary="----=_Part_1013976_1037443293.1507864348064"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,140 +28,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+------=_Part_1013976_1037443293.1507864348064
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Balbir,sorry for not mentioning details.
+below are the details1. What machine you tried this on?=C2=A0 =C2=A0 - I am=
+ using PowerPC e500mc processor with and it's customised. Can't share much =
+details
+2. What MMU mode?=C2=A0 =C2=A0 -Not sure about this.
+3. What kernel?=C2=A0 =C2=A0 -kernel version is 4.1.35
+4. What gcc version, flags for KASAN=C2=A0 =C2=A0 -gcc version 4.9.2 and KA=
+SAN_MINIMAL FLAG=C2=A0
+5. What was the KASAN design - how much shadow memory to real memory?
+=C2=A0 =C2=A0 -we have continuous 2 GB=C2=A0 low memory and shadow size is =
+256 MB
 
 
-On 12/10/17 13:05, Lothar Waßmann wrote:
-> Hi,
-> 
-> On Thu, 12 Oct 2017 12:24:10 +0100 Julien Thierry wrote:
->> Hi Bjorn,
->>
->> On 06/10/17 23:24, Bjorn Helgaas wrote:
->>> From: Bjorn Helgaas <bhelgaas@google.com>
->>>
->>> Daniel Axtens reported that on the HiSilicon D05 board, the VGA device is
->>> behind a bridge that doesn't support PCI_BRIDGE_CTL_VGA, so the VGA arbiter
->>> never selects it as the default, which means Xorg auto-detection doesn't
->>> work.
->>>
->>> VGA is a legacy PCI feature: a VGA device can respond to addresses, e.g.,
->>> [mem 0xa0000-0xbffff], [io 0x3b0-0x3bb], [io 0x3c0-0x3df], etc., that are
->>> not configurable by BARs.  Consequently, multiple VGA devices can conflict
->>> with each other.  The VGA arbiter avoids conflicts by ensuring that those
->>> legacy resources are only routed to one VGA device at a time.
->>>
->>> The arbiter identifies the "default VGA" device, i.e., a legacy VGA device
->>> that was used by boot firmware.  It selects the first device that:
->>>
->>>     - is of PCI_CLASS_DISPLAY_VGA,
->>>     - has both PCI_COMMAND_IO and PCI_COMMAND_MEMORY enabled, and
->>>     - has PCI_BRIDGE_CTL_VGA set in all upstream bridges.
->>>
->>> Some systems don't have such a device.  For example, if a host bridge
->>> doesn't support I/O space, PCI_COMMAND_IO probably won't be enabled for any
->>> devices below it.  Or, as on the HiSilicon D05, the VGA device may be
->>> behind a bridge that doesn't support PCI_BRIDGE_CTL_VGA, so accesses to the
->>> legacy VGA resources will never reach the device.
->>>
->>> This patch extends the arbiter so that if it doesn't find a device that
->>> meets all the above criteria, it selects the first device that:
->>>
->>>     - is of PCI_CLASS_DISPLAY_VGA and
->>>     - has PCI_COMMAND_IO or PCI_COMMAND_MEMORY enabled
->>>
->>> If it doesn't find even that, it selects the first device that:
->>>
->>>     - is of class PCI_CLASS_DISPLAY_VGA.
->>>
->>> Such a device may not be able to use the legacy VGA resources, but most
->>> drivers can operate the device without those.  Setting it as the default
->>> device means its "boot_vga" sysfs file will contain "1", which Xorg (via
->>> libpciaccess) uses to help select its default output device.
->>>
->>> This fixes Xorg auto-detection on some arm64 systems (HiSilicon D05 in
->>> particular; see the link below).
->>>
->>> It also replaces the powerpc fixup_vga() quirk, albeit with slightly
->>> different semantics: the quirk selected the first VGA device we found, and
->>> overrode that selection with any enabled VGA device we found.  If there
->>> were several enabled VGA devices, the *last* one we found would become the
->>> default.
->>>
->>> The code here instead selects the *first* enabled VGA device we find, and
->>> if none are enabled, the first VGA device we find.
->>>
->>> Link: http://lkml.kernel.org/r/20170901072744.2409-1-dja@axtens.net
->>> Tested-by: Daniel Axtens <dja@axtens.net>    # arm64, ppc64-qemu-tcg
->>> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->>> ---
->>>    arch/powerpc/kernel/pci-common.c |   12 ------------
->>>    drivers/gpu/vga/vgaarb.c         |   25 +++++++++++++++++++++++++
->>>    2 files changed, 25 insertions(+), 12 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->>> index 02831a396419..0ac7aa346c69 100644
->>> --- a/arch/powerpc/kernel/pci-common.c
->>> +++ b/arch/powerpc/kernel/pci-common.c
->>> @@ -1740,15 +1740,3 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
->>>    }
->>>    DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
->>>    DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
->>> -
->>> -static void fixup_vga(struct pci_dev *pdev)
->>> -{
->>> -	u16 cmd;
->>> -
->>> -	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
->>> -	if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
->>> -		vga_set_default_device(pdev);
->>> -
->>> -}
->>> -DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
->>> -			      PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
->>> diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
->>> index 76875f6299b8..aeb41f793ed4 100644
->>> --- a/drivers/gpu/vga/vgaarb.c
->>> +++ b/drivers/gpu/vga/vgaarb.c
->>> @@ -1468,6 +1468,31 @@ static int __init vga_arb_device_init(void)
->>>    			vgaarb_info(dev, "no bridge control possible\n");
->>>    	}
->>>    
->>> +	if (!vga_default_device()) {
->>> +		list_for_each_entry(vgadev, &vga_list, list) {
->>> +			struct device *dev = &vgadev->pdev->dev;
->>> +			u16 cmd;
->>> +
->>> +			pdev = vgadev->pdev;
->>> +			pci_read_config_word(pdev, PCI_COMMAND, &cmd);
->>> +			if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
->>> +				vgaarb_info(dev, "setting as boot device (VGA legacy resources not available)\n");
->>> +				vga_set_default_device(pdev);
->>> +				break;
->>> +			}
->>> +		}
->>> +	}
->>> +
->>> +	if (!vga_default_device()) {
->>> +		vgadev = list_first_entry_or_null(&vga_list,
->>> +						  struct vga_device, list);
->>> +		if (vgadev) {
->>> +			struct device *dev = &vgadev->pdev->dev;
->>> +			vgaarb_info(dev, "setting as boot device (VGA legacy resources not available)\n");
->>> +			vga_set_default_device(pdev);
->>
->> Isn't 'pdev' NULL here? shouldn't it be vgadev->pdev instead?
->>
-> That cannot not happen, though it isn't quite obvious.
-> 'vgadev' will only be non-NULL, when the vga_list isn't empty and in
-> that case pdev has been set up in the list_for_each_entry() loop above.
-> 
+=C2=A0THANKS AND REGARDS,
+KHUSHAL K. GUMGAONKARM.TECH IN VISUAL INFORMATION AND EMBEDDED SYSTEM,IIT K=
+HARAGPUR=20
 
-Indeed, it can't be NULL. However, in that case we would be using the 
-pdev from the last vgadev in the list whereas this last case suggest we 
-are picking the first vgadev in the list. So I don't understand why 
-'pdev' is being used rather than 'vgadev-pdev'.
+    On Friday, 13 October 2017 4:45 AM, Balbir Singh <bsingharora@gmail.com=
+> wrote:
+=20
 
-Thanks,
+ On Tue, Oct 10, 2017 at 11:51 PM, KHUSHAL GUMGAONKAR
+<khushaluniversal@yahoo.com> wrote:
+>=C2=A0 Hi Aneesh,
+>
+> I am facing unknown error in printk=C2=A0 during boot and after that kern=
+el Hangs
+> on powerpc with KASan changes.
+>
 
--- 
-Julien Thierry
+This is probably the worst way to reach out. The reason being
+
+You describe the crash your seeing, there is no description of
+
+1. What machine you tried this on?
+2. What MMU mode?
+3. What kernel?
+4. What gcc version, flags for KASAN
+5. What was the KASAN design - how much shadow memory to real memory?
+
+Unless you can work out those details, this is just noise on the list.
+I posted an RFC for radix -
+http://linuxppc.10917.n7.nabble.com/RFC-PATCH-v1-powerpc-radix-kasan-KASAN-=
+support-for-Radix-td125864.html
+
+It needs work, please read the implementations so far, discuss your
+design/understanding. Then we can discuss what issues you are running
+into, otherwise it's just noise without effort.
+
+Balbir Singh.
+
+
+  =20
+------=_Part_1013976_1037443293.1507864348064
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head></head><body><div style=3D"color:#000; background-color:#fff; f=
+ont-family:times new roman, new york, times, serif;font-size:13px"><div id=
+=3D"yui_3_16_0_ym19_1_1507862290271_5948"><span>Hi Balbir,</span></div><div=
+ id=3D"yui_3_16_0_ym19_1_1507862290271_5948" dir=3D"ltr"><span id=3D"yui_3_=
+16_0_ym19_1_1507862290271_16317">sorry for not mentioning details.</span></=
+div><div id=3D"yui_3_16_0_ym19_1_1507862290271_5948"><span><br></span></div=
+><div id=3D"yui_3_16_0_ym19_1_1507862290271_5948">below are the details</di=
+v><div id=3D"yui_3_16_0_ym19_1_1507862290271_5948" dir=3D"ltr"><span style=
+=3D"font-family: &quot;Helvetica Neue&quot;, &quot;Segoe UI&quot;, Helvetic=
+a, Arial, &quot;Lucida Grande&quot;, sans-serif;" id=3D"yui_3_16_0_ym19_1_1=
+507862290271_6064">1. What machine you tried this on?</span></div><div id=
+=3D"yui_3_16_0_ym19_1_1507862290271_5948" dir=3D"ltr">&nbsp; &nbsp; - I am =
+using PowerPC e500mc processor with and it's customised. Can't share much d=
+etails<br clear=3D"none" style=3D"font-family: &quot;Helvetica Neue&quot;, =
+&quot;Segoe UI&quot;, Helvetica, Arial, &quot;Lucida Grande&quot;, sans-ser=
+if;" id=3D"yui_3_16_0_ym19_1_1507862290271_6065"><span style=3D"font-family=
+: &quot;Helvetica Neue&quot;, &quot;Segoe UI&quot;, Helvetica, Arial, &quot=
+;Lucida Grande&quot;, sans-serif;" id=3D"yui_3_16_0_ym19_1_1507862290271_60=
+66">2. What MMU mode?</span></div><div id=3D"yui_3_16_0_ym19_1_150786229027=
+1_5948" dir=3D"ltr">&nbsp; &nbsp; -Not sure about this.<br clear=3D"none" s=
+tyle=3D"font-family: &quot;Helvetica Neue&quot;, &quot;Segoe UI&quot;, Helv=
+etica, Arial, &quot;Lucida Grande&quot;, sans-serif;" id=3D"yui_3_16_0_ym19=
+_1_1507862290271_6067"><span style=3D"font-family: &quot;Helvetica Neue&quo=
+t;, &quot;Segoe UI&quot;, Helvetica, Arial, &quot;Lucida Grande&quot;, sans=
+-serif;" id=3D"yui_3_16_0_ym19_1_1507862290271_6068">3. What kernel?</span>=
+</div><div id=3D"yui_3_16_0_ym19_1_1507862290271_5948" dir=3D"ltr">&nbsp; &=
+nbsp; -kernel version is 4.1.35<br clear=3D"none" style=3D"font-family: &qu=
+ot;Helvetica Neue&quot;, &quot;Segoe UI&quot;, Helvetica, Arial, &quot;Luci=
+da Grande&quot;, sans-serif;" id=3D"yui_3_16_0_ym19_1_1507862290271_6069"><=
+span style=3D"font-family: &quot;Helvetica Neue&quot;, &quot;Segoe UI&quot;=
+, Helvetica, Arial, &quot;Lucida Grande&quot;, sans-serif;" id=3D"yui_3_16_=
+0_ym19_1_1507862290271_6070">4. What gcc version, flags for KASAN</span></d=
+iv><div id=3D"yui_3_16_0_ym19_1_1507862290271_5948" dir=3D"ltr">&nbsp; &nbs=
+p; -gcc version 4.9.2 and KASAN_MINIMAL FLAG&nbsp;<br clear=3D"none" style=
+=3D"font-family: &quot;Helvetica Neue&quot;, &quot;Segoe UI&quot;, Helvetic=
+a, Arial, &quot;Lucida Grande&quot;, sans-serif;" id=3D"yui_3_16_0_ym19_1_1=
+507862290271_6071"><span style=3D"font-family: &quot;Helvetica Neue&quot;, =
+&quot;Segoe UI&quot;, Helvetica, Arial, &quot;Lucida Grande&quot;, sans-ser=
+if;" id=3D"yui_3_16_0_ym19_1_1507862290271_6072">5. What was the KASAN desi=
+gn - how much shadow memory to real memory?</span><br></div><div id=3D"yui_=
+3_16_0_ym19_1_1507862290271_5948" dir=3D"ltr"><span style=3D"font-family: &=
+quot;Helvetica Neue&quot;, &quot;Segoe UI&quot;, Helvetica, Arial, &quot;Lu=
+cida Grande&quot;, sans-serif;" id=3D"yui_3_16_0_ym19_1_1507862290271_12802=
+">&nbsp; &nbsp; -we have continuous 2 GB&nbsp; low memory and shadow size i=
+s 256 MB<br></span></div><div id=3D"yui_3_16_0_ym19_1_1507862290271_5948" d=
+ir=3D"ltr"><span style=3D"font-family: &quot;Helvetica Neue&quot;, &quot;Se=
+goe UI&quot;, Helvetica, Arial, &quot;Lucida Grande&quot;, sans-serif;"><br=
+></span></div><div id=3D"yui_3_16_0_ym19_1_1507862290271_5948" dir=3D"ltr">=
+<span style=3D"font-family: &quot;Helvetica Neue&quot;, &quot;Segoe UI&quot=
+;, Helvetica, Arial, &quot;Lucida Grande&quot;, sans-serif;"><br></span></d=
+iv><div></div><div id=3D"yui_3_16_0_ym19_1_1507862290271_6014">&nbsp;</div>=
+<div class=3D"signature" id=3D"yui_3_16_0_ym19_1_1507862290271_6008"><div i=
+d=3D"yui_3_16_0_ym19_1_1507862290271_6007"><span style=3D"font-size:16px;fo=
+nt-family:garamond, 'new york', times, serif;font-weight:bold;color:rgb(0, =
+0, 255);" id=3D"yui_3_16_0_ym19_1_1507862290271_6006">THANKS AND REGARDS,</=
+span></div><div id=3D"yui_3_16_0_ym19_1_1507862290271_6013"><span style=3D"=
+font-size:medium;font-family:garamond, 'new york', times, serif;font-weight=
+:bold;color:rgb(0, 0, 255);"><br></span></div><div style=3D"background-colo=
+r:transparent;font-style:normal;" id=3D"yui_3_16_0_ym19_1_1507862290271_601=
+2"><span style=3D"font-size:medium;font-family:garamond, 'new york', times,=
+ serif;font-weight:bold;color:rgb(0, 0, 255);" id=3D"yui_3_16_0_ym19_1_1507=
+862290271_6011">KHUSHAL K. GUMGAONKAR</span></div><div style=3D"background-=
+color:transparent;font-style:normal;" id=3D"yui_3_16_0_ym19_1_1507862290271=
+_6010"><span style=3D"font-size:medium;font-family:garamond, 'new york', ti=
+mes, serif;font-weight:bold;color:rgb(0, 0, 255);" id=3D"yui_3_16_0_ym19_1_=
+1507862290271_6009">M.TECH IN VISUAL INFORMATION AND EMBEDDED SYSTEM,</span=
+></div><div style=3D"background-color:transparent;font-style:normal;" id=3D=
+"yui_3_16_0_ym19_1_1507862290271_14523"><span style=3D"font-size:16px;font-=
+family:garamond, 'new york', times, serif;font-weight:bold;color:rgb(0, 0, =
+255);" id=3D"yui_3_16_0_ym19_1_1507862290271_19665">IIT KHARAGPUR</span></d=
+iv></div> <div class=3D"qtdSeparateBR"><br><br></div><div class=3D"yahoo_qu=
+oted" style=3D"display: block;"> <div style=3D"font-family: times new roman=
+, new york, times, serif; font-size: 13px;"> <div style=3D"font-family: Hel=
+veticaNeue, Helvetica Neue, Helvetica, Arial, Lucida Grande, Sans-Serif; fo=
+nt-size: 16px;"> <div dir=3D"ltr"><font size=3D"2" face=3D"Arial"> On Frida=
+y, 13 October 2017 4:45 AM, Balbir Singh &lt;bsingharora@gmail.com&gt; wrot=
+e:<br></font></div>  <br><br> <div class=3D"y_msg_container"><div dir=3D"lt=
+r">On Tue, Oct 10, 2017 at 11:51 PM, KHUSHAL GUMGAONKAR<div class=3D"yqt202=
+6373896" id=3D"yqtfd59941"><br clear=3D"none">&lt;<a shape=3D"rect" ymailto=
+=3D"mailto:khushaluniversal@yahoo.com" href=3D"mailto:khushaluniversal@yaho=
+o.com">khushaluniversal@yahoo.com</a>&gt; wrote:<br clear=3D"none">&gt;&nbs=
+p; Hi Aneesh,<br clear=3D"none">&gt;<br clear=3D"none">&gt; I am facing unk=
+nown error in printk&nbsp; during boot and after that kernel Hangs<br clear=
+=3D"none">&gt; on powerpc with KASan changes.</div><br clear=3D"none">&gt;<=
+br clear=3D"none"><br clear=3D"none">This is probably the worst way to reac=
+h out. The reason being<br clear=3D"none"><br clear=3D"none">You describe t=
+he crash your seeing, there is no description of<br clear=3D"none"><br clea=
+r=3D"none">1. What machine you tried this on?<br clear=3D"none">2. What MMU=
+ mode?<br clear=3D"none">3. What kernel?<br clear=3D"none">4. What gcc vers=
+ion, flags for KASAN<br clear=3D"none">5. What was the KASAN design - how m=
+uch shadow memory to real memory?<br clear=3D"none"><br clear=3D"none">Unle=
+ss you can work out those details, this is just noise on the list.<br clear=
+=3D"none">I posted an RFC for radix -<br clear=3D"none"><a shape=3D"rect" h=
+ref=3D"http://linuxppc.10917.n7.nabble.com/RFC-PATCH-v1-powerpc-radix-kasan=
+-KASAN-support-for-Radix-td125864.html" target=3D"_blank">http://linuxppc.1=
+0917.n7.nabble.com/RFC-PATCH-v1-powerpc-radix-kasan-KASAN-support-for-Radix=
+-td125864.html</a><br clear=3D"none"><br clear=3D"none">It needs work, plea=
+se read the implementations so far, discuss your<br clear=3D"none">design/u=
+nderstanding. Then we can discuss what issues you are running<br clear=3D"n=
+one">into, otherwise it's just noise without effort.<br clear=3D"none"><br =
+clear=3D"none">Balbir Singh.<div class=3D"yqt2026373896" id=3D"yqtfd42643">=
+<br clear=3D"none"></div></div><br><br></div>  </div> </div>  </div></div><=
+/body></html>
+------=_Part_1013976_1037443293.1507864348064--
