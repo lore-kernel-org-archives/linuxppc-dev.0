@@ -1,20 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yD6WV1p8gzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 23:30:46 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: anju@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com,
- kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sandipan@linux.vnet.ibm.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.14-5 tag
-Date: Fri, 13 Oct 2017 23:30:44 +1100
-Message-ID: <878tgftekr.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yD6Yk2HBszDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 23:32:42 +1100 (AEDT)
+In-Reply-To: <1507099852-28004-1-git-send-email-anju@linux.vnet.ibm.com>
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: hemant@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ anju@linux.vnet.ibm.com
+Subject: Re: powerpc/perf: Fix for core/nest imc call trace on cpuhotplug
+Message-Id: <3yD6Yk1c3Tz9sPr@ozlabs.org>
+Date: Fri, 13 Oct 2017 23:32:42 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,76 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On Wed, 2017-10-04 at 06:50:52 UTC, Anju T Sudhakar wrote:
+> Nest/core pmu units are enabled only when it is used. A reference count is      
+> maintained for the events which uses the nest/core pmu units. Currently in      
+> *_imc_counters_release function a WARN() is used for notification of any        
+> underflow of ref count.                                                         
+>                                                                                 
+> The case where event ref count hit a negative value is, when perf session is    
+> started, followed by offlining of all cpus in a given core.                     
+> i.e. in cpuhotplug offline path ppc_core_imc_cpu_offline() function set the     
+> ref->count to zero, if the current cpu which is about to offline is the last    
+> cpu in a given core and make an OPAL call to disable the engine in that core.   
+> And on perf session termination, perf->destroy (core_imc_counters_release) will 
+> first decrement the ref->count for this core and based on the ref->count value  
+> an opal call is made to disable the core-imc engine.                            
+> Now, since cpuhotplug path already clears the ref->count for core and disabled  
+> the engine, perf->destroy() decrementing again at event termination make it     
+> negative which in turn fires the WARN_ON. The same happens for nest units.      
+>                                                                                 
+> Add a check to see if the reference count is alreday zero, before decrementing  
+> the count, so that the ref count will not hit a negative value.                 
+>                                                                                 
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Reviewed-by: Santosh Sivaraj <santosh@fossix.org>
 
-Hi Linus,
+Applied to powerpc fixes, thanks.
 
-Please pull a few more powerpc fixes for 4.14:
+https://git.kernel.org/powerpc/c/0d923820c6db1644c27c2d0a5af892
 
-The following changes since commit 53ecde0b9126ff140abe3aefd7f0ec64d6fa36b0:
-
-  powerpc/powernv: Increase memory block size to 1GB on radix (2017-10-06 15:50:45 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.14-5
-
-for you to fetch changes up to 0d8ba16278ec30a262d931875018abee332f926f:
-
-  powerpc/perf: Fix IMC initialization crash (2017-10-13 20:08:40 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.14 #5
-
-A fix for a bad bug (written by me) in our livepatch handler. Removal of an
-over-zealous lockdep_assert_cpus_held() in our topology code. A fix to the
-recently added emulation of cntlz[wd]. And three small fixes to the recently
-added IMC PMU driver.
-
-Thanks to:
-  Anju T Sudhakar, Balbir Singh, Kamalesh Babulal, Naveen N. Rao, Sandipan Das,
-  Santosh Sivaraj, Thiago Jung Bauermann.
-
-----------------------------------------------------------------
-Anju T Sudhakar (3):
-      powerpc/perf: Fix for core/nest imc call trace on cpuhotplug
-      powerpc/perf: Add ___GFP_NOWARN flag to alloc_pages_node()
-      powerpc/perf: Fix IMC initialization crash
-
-Kamalesh Babulal (1):
-      powerpc/livepatch: Fix livepatch stack access
-
-Sandipan Das (1):
-      powerpc/lib/sstep: Fix count leading zeros instructions
-
-Thiago Jung Bauermann (1):
-      powerpc: Don't call lockdep_assert_cpus_held() from arch_update_cpu_topology()
-
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 45 +++++++++-----------------
- arch/powerpc/lib/sstep.c                       |  6 ++--
- arch/powerpc/mm/numa.c                         |  1 -
- arch/powerpc/perf/imc-pmu.c                    | 39 +++++++++++++++++++---
- 4 files changed, 53 insertions(+), 38 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZ4LH0AAoJEFHr6jzI4aWAMa0P/1yr6ANq99DkJBQDofezW2/3
-Jq2uimm70+QWs5A2v+qQOmrzbRmXJ9T5qDtDN+3i/6cF4Qm7/JgoR5lbo6XdybZE
-AIEn+iYAMBJgxoSqTJ0Do9PlRz/8gFKA4fIr2I75UReKV6s3V1Wfx88kRSYHK9w2
-/oas+d2H0sEJ//0CTfpQLBqd6tze+VkEXXbp35zcOh3y6Ap6iNNWEOpB3S3jqx9M
-rN0gcX4Vlknpjhr4VBoCIjglr2mLB5inMYJizAJebPqGLZkZEDkvpOFB/8C9HcDF
-7PgucftFi7+k8iNne/zfLOc+AxT2zWJE7rdS5NsInmHr0HDhEyFa2O+2DUigzO5X
-s+2DlybqFTA/0gYpPKqrSUoTQq96lNnr8OP+oM9gjoWNQq8gNIIBfA4q3LGPMl+0
-WIjI+ajhDC40o9qMMifFrOTSinf6qMiUBFrmpHZ/a7eawaqehkuL5X0uwJiDgtFk
-7kEnmKdkR/9o0woPQvl62ZZSPqevjm0qvKTE2wHJ1lBSFP3WTC2fBAAABzJ1t4dw
-vJZrmNvkG8E1Wt1DiyTQvenqeidVx2VWo+LBoWACSg04GTdzFFAbNudo0hYfYH/6
-mmmi3fVyL7B3yFITEr4xMr9t/tVjr3NXvyeHFkLiSp8wCyG5liXDoXw/QlQdHzmF
-k9mqVv48pxZM1PVMhxno
-=YNsT
------END PGP SIGNATURE-----
---=-=-=--
+cheers
