@@ -1,29 +1,24 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCtvn2lT4zDrF5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 14:47:33 +1100 (AEDT)
-Subject: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default device
- selection
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- dri-devel@lists.freedesktop.org, Xinliang Liu <z.liuxinliang@hisilicon.com>,
- Alex Williamson <alex.williamson@redhat.com>, Lukas Wunner <lukas@wunner.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Daniel Axtens <dja@axtens.net>
-Date: Thu, 12 Oct 2017 22:47:29 -0500
-Message-ID: <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
-In-Reply-To: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCvsp5nFZzDrD7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 15:30:54 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id 17so8150188pfn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Oct 2017 21:30:54 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ David Laight <David.Laight@ACULAB.COM>,
+ Christophe LEROY <christophe.leroy@c-s.fr>, Cyril Bur <cyrilbur@gmail.com>,
+ Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH v3 0/3] powerpc/64: memcmp() optimization
+Date: Fri, 13 Oct 2017 12:29:57 +0800
+Message-Id: <1507869000-24336-1-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,111 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The default VGA device is normally set in vga_arbiter_add_pci_device() when
-we call it for the first enabled device that can be accessed with the
-legacy VGA resources ([mem 0xa0000-0xbffff], etc.)
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-That default device can be overridden by an EFI device that owns the boot
-framebuffer.  As a fallback, we can also select a VGA device that can't be
-accessed via legacy VGA resources, or a VGA device that isn't even enabled.
+There is some room to optimize memcmp() in powerpc 64 bits version for
+following 2 cases:
+(1) Even src/dst addresses are not aligned with 8 bytes at the beginning,
+memcmp() can align them and go with .Llong comparision mode without
+fallback to .Lshort comparision mode do compare buffer byte by byte.
+(2) VMX instructions can be used to speed up for large size comparision,
+currently the threshold is set for 4K bytes.
 
-Factor out this EFI and fallback selection from vga_arb_device_init() into
-a separate vga_arb_select_default_device() function.  This doesn't change
-any behavior, but it untangles the "bridge control possible" checking and
-messages from the default device selection.
+glibc commit dec4a7105e (powerpc: Improve memcmp performance for POWER8)
+did the similar. Thanks Cyril Bur's information.
+This patch set also updates memcmp selftest case to make it compiled and
+incorporate large size comparison case.
 
-Tested-by: Zhou Wang <wangzhou1@hisilicon.com>  # D05 Hisi Hip07, Hip08
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/gpu/vga/vgaarb.c |   57 ++++++++++++++++++++++++++++------------------
- 1 file changed, 35 insertions(+), 22 deletions(-)
+v2 -> v3:
+- add optimization for src/dst with different offset against 8 bytes
+boundary.
+- renamed some label names.
+- reworked some comments from Cyril Bur, such as fill the pipeline, 
+and use VMX when size == 4K.
+- fix a bug of enter/exit_vmx_ops pairness issue. And revised test 
+case to test whether enter/exit_vmx_ops are paired.
 
-diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
-index 8035e38d5110..d35d6d271f3f 100644
---- a/drivers/gpu/vga/vgaarb.c
-+++ b/drivers/gpu/vga/vgaarb.c
-@@ -1402,29 +1402,14 @@ static struct miscdevice vga_arb_device = {
- 	MISC_DYNAMIC_MINOR, "vga_arbiter", &vga_arb_device_fops
- };
- 
--static int __init vga_arb_device_init(void)
-+static void __init vga_arb_select_default_device(void)
- {
--	int rc;
- 	struct pci_dev *pdev;
- 	struct vga_device *vgadev;
- 
--	rc = misc_register(&vga_arb_device);
--	if (rc < 0)
--		pr_err("error %d registering device\n", rc);
--
--	bus_register_notifier(&pci_bus_type, &pci_notifier);
--
--	/* We add all pci devices satisfying vga class in the arbiter by
--	 * default */
--	pdev = NULL;
--	while ((pdev =
--		pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
--			       PCI_ANY_ID, pdev)) != NULL)
--		vga_arbiter_add_pci_device(pdev);
--
-+#if defined(CONFIG_X86) || defined(CONFIG_IA64)
- 	list_for_each_entry(vgadev, &vga_list, list) {
- 		struct device *dev = &vgadev->pdev->dev;
--#if defined(CONFIG_X86) || defined(CONFIG_IA64)
- 		/*
- 		 * Override vga_arbiter_add_pci_device()'s I/O based detection
- 		 * as it may take the wrong device (e.g. on Apple system under
-@@ -1461,12 +1446,8 @@ static int __init vga_arb_device_init(void)
- 				vgaarb_info(dev, "overriding boot device\n");
- 			vga_set_default_device(vgadev->pdev);
- 		}
--#endif
--		if (vgadev->bridge_has_one_vga)
--			vgaarb_info(dev, "bridge control possible\n");
--		else
--			vgaarb_info(dev, "no bridge control possible\n");
- 	}
-+#endif
- 
- 	if (!vga_default_device()) {
- 		list_for_each_entry(vgadev, &vga_list, list) {
-@@ -1492,6 +1473,38 @@ static int __init vga_arb_device_init(void)
- 			vga_set_default_device(vgadev->pdev);
- 		}
- 	}
-+}
-+
-+static int __init vga_arb_device_init(void)
-+{
-+	int rc;
-+	struct pci_dev *pdev;
-+	struct vga_device *vgadev;
-+
-+	rc = misc_register(&vga_arb_device);
-+	if (rc < 0)
-+		pr_err("error %d registering device\n", rc);
-+
-+	bus_register_notifier(&pci_bus_type, &pci_notifier);
-+
-+	/* We add all PCI devices satisfying VGA class in the arbiter by
-+	 * default */
-+	pdev = NULL;
-+	while ((pdev =
-+		pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-+			       PCI_ANY_ID, pdev)) != NULL)
-+		vga_arbiter_add_pci_device(pdev);
-+
-+	list_for_each_entry(vgadev, &vga_list, list) {
-+		struct device *dev = &vgadev->pdev->dev;
-+
-+		if (vgadev->bridge_has_one_vga)
-+			vgaarb_info(dev, "bridge control possible\n");
-+		else
-+			vgaarb_info(dev, "no bridge control possible\n");
-+	}
-+
-+	vga_arb_select_default_device();
- 
- 	pr_info("loaded\n");
- 	return rc;
+v1 -> v2:
+- update 8bytes unaligned bytes comparison method.
+- fix a VMX comparision bug.
+- enhanced the original memcmp() selftest.
+- add powerpc/64 to subject/commit message.
+
+
+Simon Guo (3):
+  powerpc/64: Align bytes before fall back to .Lshort in powerpc64
+    memcmp().
+  powerpc/64: enhance memcmp() with VMX instruction for long bytes
+    comparision
+  powerpc:selftest update memcmp_64 selftest for VMX implementation
+
+ arch/powerpc/include/asm/asm-prototypes.h          |   4 +-
+ arch/powerpc/lib/copypage_power7.S                 |   4 +-
+ arch/powerpc/lib/memcmp_64.S                       | 374 ++++++++++++++++++++-
+ arch/powerpc/lib/memcpy_power7.S                   |   6 +-
+ arch/powerpc/lib/vmx-helper.c                      |   4 +-
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      |   4 +-
+ .../selftests/powerpc/stringloops/asm/ppc_asm.h    |  22 ++
+ .../testing/selftests/powerpc/stringloops/memcmp.c |  98 ++++--
+ 8 files changed, 476 insertions(+), 40 deletions(-)
+
+-- 
+1.8.3.1
