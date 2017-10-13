@@ -2,29 +2,33 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCtdK490jzDrD0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 14:35:01 +1100 (AEDT)
-Date: Thu, 12 Oct 2017 22:34:56 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yCtqt4s6BzDrD0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 14:44:10 +1100 (AEDT)
+Date: Thu, 12 Oct 2017 22:44:06 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
- benh@kernel.crashing.org, paulus@samba.org,
- seroyer@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Juan J . Alvarez" <jjalvare@us.ibm.com>,
+To: Julien Thierry <julien.thierry@arm.com>
+Cc: Daniel Vetter <daniel.vetter@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ linux-pci@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
+ dri-devel@lists.freedesktop.org,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
  Alex Williamson <alex.williamson@redhat.com>,
- Bodong Wang <bodong@mellanox.com>, Eli Cohen <eli@mellanox.com>,
- Saeed Mahameed <saeedm@mellanox.com>
-Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-Message-ID: <20171013033456.GC25517@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
- <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
- <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
- <87efq92ei6.fsf@concordia.ellerman.id.au>
- <20171012182932.GA653@bhelgaas-glaptop.roam.corp.google.com>
- <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
+ Lukas Wunner <lukas@wunner.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Rongrong Zou <zourongrong@gmail.com>,
+ Dave Airlie <airlied@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH 1/2] vgaarb: Select a default VGA device even if there's
+ no legacy VGA
+Message-ID: <20171013034406.GD25517@bhelgaas-glaptop.roam.corp.google.com>
+References: <20171006221358.12211.42879.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171006222428.12211.3635.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <b5373cbb-7d0d-a626-159b-dee0b82d32d0@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
+In-Reply-To: <b5373cbb-7d0d-a626-159b-dee0b82d32d0@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,118 +38,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[+cc Alex, Bodong, Eli, Saeed]
-
-On Thu, Oct 12, 2017 at 02:59:23PM -0500, Bryant G. Ly wrote:
-> On 10/12/17 1:29 PM, Bjorn Helgaas wrote:
-> >On Thu, Oct 12, 2017 at 03:09:53PM +1100, Michael Ellerman wrote:
-> >>Bjorn Helgaas <helgaas@kernel.org> writes:
-> >>
-> >>>On Fri, Sep 22, 2017 at 09:19:28AM -0500, Bryant G. Ly wrote:
-> >>>>This patch adds the machine dependent call for
-> >>>>pcibios_bus_add_device, since the previous patch
-> >>>>separated the calls out between the PowerNV and PowerVM.
-> >>>>
-> >>>>The difference here is that for the PowerVM environment
-> >>>>we do not want match_driver set because in this environment
-> >>>>we do not want the VF device drivers to load immediately, due to
-> >>>>firmware loading the device node when VF device is assigned to the
-> >>>>logical partition.
-> >>>>
-> >>>>This patch will depend on the patch linked below, which is under
-> >>>>review.
-> >>>>
-> >>>>https://patchwork.kernel.org/patch/9882915/
-> >>>>
-> >>>>Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> >>>>Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
-> >>>>---
-> >>>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
-> >>>>  1 file changed, 24 insertions(+)
-> >>>>
-> >>>>diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> >>>>index 6b812ad990e4..45946ee90985 100644
-> >>>>--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-> >>>>+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> >>>>@@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
-> >>>>  static DEFINE_SPINLOCK(slot_errbuf_lock);
-> >>>>  static int eeh_error_buf_size;
-> >>>>+void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
-> >>>>+{
-> >>>>+	struct pci_dn *pdn = pci_get_pdn(pdev);
-> >>>>+
-> >>>>+	if (!pdev->is_virtfn)
-> >>>>+		return;
-> >>>>+
-> >>>>+	pdn->device_id  =  pdev->device;
-> >>>>+	pdn->vendor_id  =  pdev->vendor;
-> >>>>+	pdn->class_code =  pdev->class;
-> >>>>+
-> >>>>+	/*
-> >>>>+	 * The following operations will fail if VF's sysfs files
-> >>>>+	 * aren't created or its resources aren't finalized.
-> >>>>+	 */
-> >>>>+	eeh_add_device_early(pdn);
-> >>>>+	eeh_add_device_late(pdev);
-> >>>>+	eeh_sysfs_add_device(pdev);
-> >>>>+	pdev->match_driver = -1;
-> >>>match_driver is a bool, which should be assigned "true" or "false".
-> >>Above he mentioned a dependency on:
-> >>
-> >>   [04/10] PCI: extend pci device match_driver state
-> >>   https://patchwork.kernel.org/patch/9882915/
-> >>
-> >>
-> >>Which makes it an int.
-> >Oh, right, I missed that, thanks.
-> >
-> >>Or has that patch been rejected or something?
-> >I haven't *rejected* it, but it's low on my priority list, so you
-> >shouldn't depend on it unless it adds functionality you really need.
-> >If I did apply that particular patch, I would want some rework because
-> >it currently obfuscates the match_driver logic.  There's no clue when
-> >reading the code what -1/0/1 mean.
-> So do you prefer enum's? - If so I can make a change for that.
-> >Apparently here you *do* want the "-1 means the PCI core will never
-> >set match_driver to 1" functionality, so maybe you do depend on it.
-> We depend on the patch because we want that ability to never set
-> match_driver,
-> for SRIOV on PowerVM.
-
-Is this really new PowerVM-specific functionality?  ISTR recent discussions
-about inhibiting driver binding in a generic way, e.g.,
-http://lkml.kernel.org/r/1490022874-54718-1-git-send-email-bodong@mellanox.com
-
-> >If that's the case, how to you ever bind a driver to these VFs?  The
-> >changelog says you don't want VF drivers to load *immediately*, so I
-> >assume you do want them to load eventually.
-> >
-> The VF's that get dynamically created within the configure SR-IOV
-> call, on the Pseries Platform, wont be matched with a driver. - We
-> do not want it to match.
+On Thu, Oct 12, 2017 at 12:24:10PM +0100, Julien Thierry wrote:
+> Hi Bjorn,
 > 
-> The Power Hypervisor will load the VFs. The VF's will get
-> assigned(by the user) via the HMC or Novalink in this environment
-> which will then trigger PHYP to load the VF device node to the
-> device tree.
+> On 06/10/17 23:24, Bjorn Helgaas wrote:
+> >From: Bjorn Helgaas <bhelgaas@google.com>
+> >
+> >Daniel Axtens reported that on the HiSilicon D05 board, the VGA device is
+> >behind a bridge that doesn't support PCI_BRIDGE_CTL_VGA, so the VGA arbiter
+> >never selects it as the default, which means Xorg auto-detection doesn't
+> >work.
+> >
+> >VGA is a legacy PCI feature: a VGA device can respond to addresses, e.g.,
+> >[mem 0xa0000-0xbffff], [io 0x3b0-0x3bb], [io 0x3c0-0x3df], etc., that are
+> >not configurable by BARs.  Consequently, multiple VGA devices can conflict
+> >with each other.  The VGA arbiter avoids conflicts by ensuring that those
+> >legacy resources are only routed to one VGA device at a time.
+> >
+> >The arbiter identifies the "default VGA" device, i.e., a legacy VGA device
+> >that was used by boot firmware.  It selects the first device that:
+> >
+> >   - is of PCI_CLASS_DISPLAY_VGA,
+> >   - has both PCI_COMMAND_IO and PCI_COMMAND_MEMORY enabled, and
+> >   - has PCI_BRIDGE_CTL_VGA set in all upstream bridges.
+> >
+> >Some systems don't have such a device.  For example, if a host bridge
+> >doesn't support I/O space, PCI_COMMAND_IO probably won't be enabled for any
+> >devices below it.  Or, as on the HiSilicon D05, the VGA device may be
+> >behind a bridge that doesn't support PCI_BRIDGE_CTL_VGA, so accesses to the
+> >legacy VGA resources will never reach the device.
+> >
+> >This patch extends the arbiter so that if it doesn't find a device that
+> >meets all the above criteria, it selects the first device that:
+> >
+> >   - is of PCI_CLASS_DISPLAY_VGA and
+> >   - has PCI_COMMAND_IO or PCI_COMMAND_MEMORY enabled
+> >
+> >If it doesn't find even that, it selects the first device that:
+> >
+> >   - is of class PCI_CLASS_DISPLAY_VGA.
+> >
+> >Such a device may not be able to use the legacy VGA resources, but most
+> >drivers can operate the device without those.  Setting it as the default
+> >device means its "boot_vga" sysfs file will contain "1", which Xorg (via
+> >libpciaccess) uses to help select its default output device.
+> >
+> >This fixes Xorg auto-detection on some arm64 systems (HiSilicon D05 in
+> >particular; see the link below).
+> >
+> >It also replaces the powerpc fixup_vga() quirk, albeit with slightly
+> >different semantics: the quirk selected the first VGA device we found, and
+> >overrode that selection with any enabled VGA device we found.  If there
+> >were several enabled VGA devices, the *last* one we found would become the
+> >default.
+> >
+> >The code here instead selects the *first* enabled VGA device we find, and
+> >if none are enabled, the first VGA device we find.
+> >
+> >Link: http://lkml.kernel.org/r/20170901072744.2409-1-dja@axtens.net
+> >Tested-by: Daniel Axtens <dja@axtens.net>    # arm64, ppc64-qemu-tcg
+> >Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> >---
+> >  arch/powerpc/kernel/pci-common.c |   12 ------------
+> >  drivers/gpu/vga/vgaarb.c         |   25 +++++++++++++++++++++++++
+> >  2 files changed, 25 insertions(+), 12 deletions(-)
+> >
+> >diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> >index 02831a396419..0ac7aa346c69 100644
+> >--- a/arch/powerpc/kernel/pci-common.c
+> >+++ b/arch/powerpc/kernel/pci-common.c
+> >@@ -1740,15 +1740,3 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
+> >  }
+> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+> >-
+> >-static void fixup_vga(struct pci_dev *pdev)
+> >-{
+> >-	u16 cmd;
+> >-
+> >-	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
+> >-	if ((cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) || !vga_default_device())
+> >-		vga_set_default_device(pdev);
+> >-
+> >-}
+> >-DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_ANY_ID, PCI_ANY_ID,
+> >-			      PCI_CLASS_DISPLAY_VGA, 8, fixup_vga);
+> >diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
+> >index 76875f6299b8..aeb41f793ed4 100644
+> >--- a/drivers/gpu/vga/vgaarb.c
+> >+++ b/drivers/gpu/vga/vgaarb.c
+> >@@ -1468,6 +1468,31 @@ static int __init vga_arb_device_init(void)
+> >  			vgaarb_info(dev, "no bridge control possible\n");
+> >  	}
+> >+	if (!vga_default_device()) {
+> >+		list_for_each_entry(vgadev, &vga_list, list) {
+> >+			struct device *dev = &vgadev->pdev->dev;
+> >+			u16 cmd;
+> >+
+> >+			pdev = vgadev->pdev;
+> >+			pci_read_config_word(pdev, PCI_COMMAND, &cmd);
+> >+			if (cmd & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY)) {
+> >+				vgaarb_info(dev, "setting as boot device (VGA legacy resources not available)\n");
+> >+				vga_set_default_device(pdev);
+> >+				break;
+> >+			}
+> >+		}
+> >+	}
+> >+
+> >+	if (!vga_default_device()) {
+> >+		vgadev = list_first_entry_or_null(&vga_list,
+> >+						  struct vga_device, list);
+> >+		if (vgadev) {
+> >+			struct device *dev = &vgadev->pdev->dev;
+> >+			vgaarb_info(dev, "setting as boot device (VGA legacy resources not available)\n");
+> >+			vga_set_default_device(pdev);
+> 
+> Isn't 'pdev' NULL here? shouldn't it be vgadev->pdev instead?
 
-I don't know what it means for the Hypervisor to "load the VFs."  Can
-you explain that in PCI-speak?
-
-The things I know about are:
-
-  - we set PCI_SRIOV_CTRL_VFE in the PF, which enables VFs
-  - now the VFs respond to config accesses
-  - the PCI core enumerates the VFs by reading their config space
-  - the PCI core builds pci_dev structs for the VFs
-  - the PCI core adds these pci_devs to the bus
-  - we try to bind drivers to the VFs
-  - the VF driver probe function may read VF config space and VF BARs
-  - the VF may be assigned to a guest VM
-
-Where does "loading the VFs" fit in?  I don't know what HMC, Novalink,
-or PHYP are.  I don't *need* to know what they are, as long as you can
-explain what's happening in terms of the PCI concepts and generic Linux VMs
-and device assignment.
+Yes, vgadev->pdev is what I intended, thanks a lot for pointing that out!
 
 Bjorn
