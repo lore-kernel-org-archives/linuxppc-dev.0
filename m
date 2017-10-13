@@ -1,38 +1,25 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <groug@kaod.org>
+Received: from 6.mo5.mail-out.ovh.net (6.mo5.mail-out.ovh.net [178.32.119.138])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yCxyH6sR8zDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 17:04:54 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9D643vt096126
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 02:04:52 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2djg967j49-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 02:04:51 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Fri, 13 Oct 2017 06:59:49 +0100
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9D5xjGT25886862
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 05:59:46 GMT
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9D5xilp032064
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 16:59:44 +1100
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: maddy@linux.vnet.ibm.com, anju@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V2] powerpc/perf: Fix IMC initialization crash 
-Date: Fri, 13 Oct 2017 11:29:41 +0530
-Message-Id: <1507874381-11264-1-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yD0qx3xmRzDqvT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 19:14:35 +1100 (AEDT)
+Received: from player773.ha.ovh.net (b9.ovh.net [213.186.33.59])
+ by mo5.mail-out.ovh.net (Postfix) with ESMTP id 4323B13FBEE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 09:35:27 +0200 (CEST)
+Date: Fri, 13 Oct 2017 09:27:49 +0200
+From: Greg Kurz <groug@kaod.org>
+To: kvm-ppc@vger.kernel.org
+Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, Michael Ellerman <mpe@ellerman.id.au>, Paul
+ Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH v2] KVM: PPC: Book3S PR: only install valid SLBs during
+ KVM_SET_SREGS
+Message-ID: <20171013092216.00b14392@bahia.lab.toulouse-stg.fr.ibm.com>
+In-Reply-To: <150693362232.15210.2878817650741484831.stgit@bahia>
+References: <150693362232.15210.2878817650741484831.stgit@bahia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,65 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Call trace observed with latest firmware, and upstream kernel.
+Ping ?
 
-[   14.499938] NIP [c0000000000f318c] init_imc_pmu+0x8c/0xcf0
-[   14.499973] LR [c0000000000f33f8] init_imc_pmu+0x2f8/0xcf0
-[   14.500007] Call Trace:
-[   14.500027] [c000003fed18f710] [c0000000000f33c8] init_imc_pmu+0x2c8/0xcf0 (unreliable)
-[   14.500080] [c000003fed18f800] [c0000000000b5ec0] opal_imc_counters_probe+0x300/0x400
-[   14.500132] [c000003fed18f900] [c000000000807ef4] platform_drv_probe+0x64/0x110
-[   14.500185] [c000003fed18f980] [c000000000804b58] driver_probe_device+0x3d8/0x580
-[   14.500236] [c000003fed18fa10] [c000000000804e4c] __driver_attach+0x14c/0x1a0
-[   14.500302] [c000003fed18fa90] [c00000000080156c] bus_for_each_dev+0x8c/0xf0
-[   14.500353] [c000003fed18fae0] [c000000000803fa4] driver_attach+0x34/0x50
-[   14.500397] [c000003fed18fb00] [c000000000803688] bus_add_driver+0x298/0x350
-[   14.500449] [c000003fed18fb90] [c00000000080605c] driver_register+0x9c/0x180
-[   14.500500] [c000003fed18fc00] [c000000000807dec] __platform_driver_register+0x5c/0x70
-[   14.500552] [c000003fed18fc20] [c00000000101cee0] opal_imc_driver_init+0x2c/0x40
-[   14.500603] [c000003fed18fc40] [c00000000000d084] do_one_initcall+0x64/0x1d0
-[   14.500654] [c000003fed18fd00] [c00000000100434c] kernel_init_freeable+0x280/0x374
-[   14.500705] [c000003fed18fdc0] [c00000000000d314] kernel_init+0x24/0x160
-[   14.500750] [c000003fed18fe30] [c00000000000b4e8] ret_from_kernel_thread+0x5c/0x74
-[   14.500799] Instruction dump:
-[   14.500827] 4082024c 2f890002 419e054c 2e890003 41960094 2e890001 3ba0ffea 419602d8 
-[   14.500884] 419e0290 2f890003 419e02a8 e93e0118 <e8690018> 2fa30000 419e0010 4827ba41 
-[   14.500945] ---[ end trace 27b734ad26f1add4 ]---
-[   15.908719] 
-[   16.908869] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000007
-[   16.908869] 
-[   18.125813] ---[ end Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000007]
+On Mon, 02 Oct 2017 10:40:22 +0200
+Greg Kurz <groug@kaod.org> wrote:
 
-While registering nest imc at init, cpu-hotplug callback `nest_pmu_cpumask_init()`
-makes an opal call to stop the engine. And if the OPAL call fails, 
-imc_common_cpuhp_mem_free() is invoked to cleanup memory and cpuhotplug setup.
-
-But when cleaning up the attribute group, we were dereferencing the attribute
-element array without checking whether the backing element is not NULL. This
-causes the kernel panic.
-
-Add a check for the backing element prior to dereferencing the attribute element,
-to handle the failing case gracefully.
-
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
----
- arch/powerpc/perf/imc-pmu.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 9ccac86f3463..001504b0e800 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -1148,7 +1148,8 @@ static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
- 	}
- 
- 	/* Only free the attr_groups which are dynamically allocated  */
--	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
-+	if (pmu_ptr->attr_groups[IMC_EVENT_ATTR])
-+		kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
- 	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]);
- 	kfree(pmu_ptr);
- 	return;
--- 
-2.14.1
+> Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
+> some of which are valid (ie, SLB_ESID_V is set) and the rest are
+> likely all-zeroes (with QEMU at least).
+> 
+> Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
+> assumes to find the SLB index in the 3 lower bits of its rb argument.
+> When passed zeroed arguments, it happily overwrites the 0th SLB entry
+> with zeroes. This is exactly what happens while doing live migration
+> with QEMU when the destination pushes the incoming SLB descriptors to
+> KVM PR. When reloading the SLBs at the next synchronization, QEMU first
+> clears its SLB array and only restore valid ones, but the 0th one is
+> now gone and we cannot access the corresponding memory anymore:
+> 
+> (qemu) x/x $pc
+> c0000000000b742c: Cannot access memory
+> 
+> To avoid this, let's filter out non-valid SLB entries. While here, we
+> also force a full SLB flush before installing new entries.
+> 
+> Signed-off-by: Greg Kurz <groug@kaod.org>
+> ---
+> v2: - flush SLB before installing new entries
+> ---
+>  arch/powerpc/kvm/book3s_pr.c |   10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index 3beb4ff469d1..7cce08d610ae 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -1327,9 +1327,15 @@ static int kvm_arch_vcpu_ioctl_set_sregs_pr(struct kvm_vcpu *vcpu,
+>  
+>  	vcpu3s->sdr1 = sregs->u.s.sdr1;
+>  	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
+> +		/* Flush all SLB entries */
+> +		vcpu->arch.mmu.slbmte(vcpu, 0, 0);
+> +		vcpu->arch.mmu.slbia(vcpu);
+> +
+>  		for (i = 0; i < 64; i++) {
+> -			vcpu->arch.mmu.slbmte(vcpu, sregs->u.s.ppc64.slb[i].slbv,
+> -						    sregs->u.s.ppc64.slb[i].slbe);
+> +			u64 rb = sregs->u.s.ppc64.slb[i].slbe;
+> +			u64 rs = sregs->u.s.ppc64.slb[i].slbv;
+> +			if (rb & SLB_ESID_V)
+> +				vcpu->arch.mmu.slbmte(vcpu, rs, rb);
+>  		}
+>  	} else {
+>  		for (i = 0; i < 16; i++) {
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
