@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yD6Yk2HBszDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 23:32:42 +1100 (AEDT)
-In-Reply-To: <1507099852-28004-1-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yD6Yl2CJGzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 23:32:43 +1100 (AEDT)
+In-Reply-To: <1507726659-9524-1-git-send-email-anju@linux.vnet.ibm.com>
 To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: hemant@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+Cc: hemant@linux.vnet.ibm.com, anju@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- anju@linux.vnet.ibm.com
-Subject: Re: powerpc/perf: Fix for core/nest imc call trace on cpuhotplug
-Message-Id: <3yD6Yk1c3Tz9sPr@ozlabs.org>
+ maddy@linux.vnet.ibm.com
+Subject: Re: powerpc/perf: Add ___GFP_NOWARN flag to alloc_pages_node()
+Message-Id: <3yD6Yl0pcjz9sRW@ozlabs.org>
 Date: Fri, 13 Oct 2017 23:32:42 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,32 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-10-04 at 06:50:52 UTC, Anju T Sudhakar wrote:
-> Nest/core pmu units are enabled only when it is used. A reference count is      
-> maintained for the events which uses the nest/core pmu units. Currently in      
-> *_imc_counters_release function a WARN() is used for notification of any        
-> underflow of ref count.                                                         
->                                                                                 
-> The case where event ref count hit a negative value is, when perf session is    
-> started, followed by offlining of all cpus in a given core.                     
-> i.e. in cpuhotplug offline path ppc_core_imc_cpu_offline() function set the     
-> ref->count to zero, if the current cpu which is about to offline is the last    
-> cpu in a given core and make an OPAL call to disable the engine in that core.   
-> And on perf session termination, perf->destroy (core_imc_counters_release) will 
-> first decrement the ref->count for this core and based on the ref->count value  
-> an opal call is made to disable the core-imc engine.                            
-> Now, since cpuhotplug path already clears the ref->count for core and disabled  
-> the engine, perf->destroy() decrementing again at event termination make it     
-> negative which in turn fires the WARN_ON. The same happens for nest units.      
->                                                                                 
-> Add a check to see if the reference count is alreday zero, before decrementing  
-> the count, so that the ref count will not hit a negative value.                 
->                                                                                 
+On Wed, 2017-10-11 at 12:57:39 UTC, Anju T Sudhakar wrote:
+> Stack trace output during a stress test:
+>  [    4.310049] Freeing initrd memory: 22592K
+> [    4.310646] rtas_flash: no firmware flash support
+> [    4.313341] cpuhp/64: page allocation failure: order:0, mode:0x14480c0(GFP_KERNEL|__GFP_ZERO|__GFP_THISNODE), nodemask=(null)
+> [    4.313465] cpuhp/64 cpuset=/ mems_allowed=0
+> [    4.313521] CPU: 64 PID: 392 Comm: cpuhp/64 Not tainted 4.11.0-39.el7a.ppc64le #1
+> [    4.313588] Call Trace:
+> [    4.313622] [c000000f1fb1b8e0] [c000000000c09388] dump_stack+0xb0/0xf0 (unreliable)
+> [    4.313694] [c000000f1fb1b920] [c00000000030ef6c] warn_alloc+0x12c/0x1c0
+> [    4.313753] [c000000f1fb1b9c0] [c00000000030ff68] __alloc_pages_nodemask+0xea8/0x1000
+> [    4.313823] [c000000f1fb1bbb0] [c000000000113a8c] core_imc_mem_init+0xbc/0x1c0
+> [    4.313892] [c000000f1fb1bc00] [c000000000113cdc] ppc_core_imc_cpu_online+0x14c/0x170
+> [    4.313962] [c000000f1fb1bc90] [c000000000125758] cpuhp_invoke_callback+0x198/0x5d0
+> [    4.314031] [c000000f1fb1bd00] [c00000000012782c] cpuhp_thread_fun+0x8c/0x3d0
+> [    4.314101] [c000000f1fb1bd60] [c0000000001678d0] smpboot_thread_fn+0x290/0x2a0
+> [    4.314169] [c000000f1fb1bdc0] [c00000000015ee78] kthread+0x168/0x1b0
+> [    4.314229] [c000000f1fb1be30] [c00000000000b368] ret_from_kernel_thread+0x5c/0x74
+> [    4.314313] Mem-Info:
+> [    4.314356] active_anon:0 inactive_anon:0 isolated_anon:0
+> 
+> core_imc_mem_init() at system boot use alloc_pages_node() to get memory
+> and alloc_pages_node() throws this stack dump when tried to allocate
+> memory from a node which has no memory behind it. Add a ___GFP_NOWARN
+> flag in allocation request as a fix. 
+> 
 > Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Reviewed-by: Santosh Sivaraj <santosh@fossix.org>
+> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reported-by: Venkat R.B <venkatb3@in.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/0d923820c6db1644c27c2d0a5af892
+https://git.kernel.org/powerpc/c/cd4f2b30e5ef7d4bde61eb515372d9
 
 cheers
