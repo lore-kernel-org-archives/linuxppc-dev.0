@@ -1,24 +1,32 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yDFFG2f9czDrCp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 04:33:53 +1100 (AEDT)
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, akpm@linux-foundation.org,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v12 10/11] sparc64: optimized struct page zeroing
-Date: Fri, 13 Oct 2017 13:32:13 -0400
-Message-Id: <20171013173214.27300-11-pasha.tatashin@oracle.com>
-In-Reply-To: <20171013173214.27300-1-pasha.tatashin@oracle.com>
-References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yDFyL2dxrzDrCm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 05:06:02 +1100 (AEDT)
+Date: Fri, 13 Oct 2017 12:05:58 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Steven Royer <seroyer@linux.vnet.ibm.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, "Bryant G. Ly"
+ <bryantly@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "Juan J .
+ Alvarez" <jjalvare@us.ibm.com>, Bodong Wang <bodong@mellanox.com>, Eli
+ Cohen <eli@mellanox.com>, Saeed Mahameed <saeedm@mellanox.com>
+Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
+Message-ID: <20171013120558.1a129183@t450s.home>
+In-Reply-To: <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
+References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
+ <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
+ <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
+ <87efq92ei6.fsf@concordia.ellerman.id.au>
+ <20171012182932.GA653@bhelgaas-glaptop.roam.corp.google.com>
+ <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
+ <20171013033456.GC25517@bhelgaas-glaptop.roam.corp.google.com>
+ <88eab212351a662dda330071d9afe9dc@linux.vnet.ibm.com>
+ <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,75 +36,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add an optimized mm_zero_struct_page(), so struct page's are zeroed without
-calling memset(). We do eight to ten regular stores based on the size of
-struct page. Compiler optimizes out the conditions of switch() statement.
+On Fri, 13 Oct 2017 07:01:48 -0500
+Steven Royer <seroyer@linux.vnet.ibm.com> wrote:
 
-SPARC-M6 with 15T of memory, single thread performance:
+> On 2017-10-13 06:53, Steven Royer wrote:
+> > On 2017-10-12 22:34, Bjorn Helgaas wrote:  
+> >> [+cc Alex, Bodong, Eli, Saeed]
+> >> 
+> >> On Thu, Oct 12, 2017 at 02:59:23PM -0500, Bryant G. Ly wrote:  
+> >>> On 10/12/17 1:29 PM, Bjorn Helgaas wrote:  
+> >>> >On Thu, Oct 12, 2017 at 03:09:53PM +1100, Michael Ellerman wrote:  
+> >>> >>Bjorn Helgaas <helgaas@kernel.org> writes:
+> >>> >>  
+> >>> >>>On Fri, Sep 22, 2017 at 09:19:28AM -0500, Bryant G. Ly wrote:  
+> >>> >>>>This patch adds the machine dependent call for
+> >>> >>>>pcibios_bus_add_device, since the previous patch
+> >>> >>>>separated the calls out between the PowerNV and PowerVM.
+> >>> >>>>
+> >>> >>>>The difference here is that for the PowerVM environment
+> >>> >>>>we do not want match_driver set because in this environment
+> >>> >>>>we do not want the VF device drivers to load immediately, due to
+> >>> >>>>firmware loading the device node when VF device is assigned to the
+> >>> >>>>logical partition.
+> >>> >>>>
+> >>> >>>>This patch will depend on the patch linked below, which is under
+> >>> >>>>review.
+> >>> >>>>
+> >>> >>>>https://patchwork.kernel.org/patch/9882915/
+> >>> >>>>
+> >>> >>>>Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> >>> >>>>Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
+> >>> >>>>---
+> >>> >>>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++++++
+> >>> >>>>  1 file changed, 24 insertions(+)
+> >>> >>>>
+> >>> >>>>diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> >>> >>>>index 6b812ad990e4..45946ee90985 100644
+> >>> >>>>--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> >>> >>>>+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> >>> >>>>@@ -64,6 +64,27 @@ static unsigned char slot_errbuf[RTAS_ERROR_LOG_MAX];
+> >>> >>>>  static DEFINE_SPINLOCK(slot_errbuf_lock);
+> >>> >>>>  static int eeh_error_buf_size;
+> >>> >>>>+void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+> >>> >>>>+{
+> >>> >>>>+	struct pci_dn *pdn = pci_get_pdn(pdev);
+> >>> >>>>+
+> >>> >>>>+	if (!pdev->is_virtfn)
+> >>> >>>>+		return;
+> >>> >>>>+
+> >>> >>>>+	pdn->device_id  =  pdev->device;
+> >>> >>>>+	pdn->vendor_id  =  pdev->vendor;
+> >>> >>>>+	pdn->class_code =  pdev->class;
+> >>> >>>>+
+> >>> >>>>+	/*
+> >>> >>>>+	 * The following operations will fail if VF's sysfs files
+> >>> >>>>+	 * aren't created or its resources aren't finalized.
+> >>> >>>>+	 */
+> >>> >>>>+	eeh_add_device_early(pdn);
+> >>> >>>>+	eeh_add_device_late(pdev);
+> >>> >>>>+	eeh_sysfs_add_device(pdev);
+> >>> >>>>+	pdev->match_driver = -1;  
+> >>> >>>match_driver is a bool, which should be assigned "true" or "false".  
+> >>> >>Above he mentioned a dependency on:
+> >>> >>
+> >>> >>   [04/10] PCI: extend pci device match_driver state
+> >>> >>   https://patchwork.kernel.org/patch/9882915/
+> >>> >>
+> >>> >>
+> >>> >>Which makes it an int.  
+> >>> >Oh, right, I missed that, thanks.
+> >>> >  
+> >>> >>Or has that patch been rejected or something?  
+> >>> >I haven't *rejected* it, but it's low on my priority list, so you
+> >>> >shouldn't depend on it unless it adds functionality you really need.
+> >>> >If I did apply that particular patch, I would want some rework because
+> >>> >it currently obfuscates the match_driver logic.  There's no clue when
+> >>> >reading the code what -1/0/1 mean.  
+> >>> So do you prefer enum's? - If so I can make a change for that.  
+> >>> >Apparently here you *do* want the "-1 means the PCI core will never
+> >>> >set match_driver to 1" functionality, so maybe you do depend on it.  
+> >>> We depend on the patch because we want that ability to never set
+> >>> match_driver,
+> >>> for SRIOV on PowerVM.  
+> >> 
+> >> Is this really new PowerVM-specific functionality?  ISTR recent 
+> >> discussions
+> >> about inhibiting driver binding in a generic way, e.g.,
+> >> http://lkml.kernel.org/r/1490022874-54718-1-git-send-email-bodong@mellanox.com
+> >>   
+> >>> >If that's the case, how to you ever bind a driver to these VFs?  The
+> >>> >changelog says you don't want VF drivers to load *immediately*, so I
+> >>> >assume you do want them to load eventually.
+> >>> >  
+> >>> The VF's that get dynamically created within the configure SR-IOV
+> >>> call, on the Pseries Platform, wont be matched with a driver. - We
+> >>> do not want it to match.
+> >>> 
+> >>> The Power Hypervisor will load the VFs. The VF's will get
+> >>> assigned(by the user) via the HMC or Novalink in this environment
+> >>> which will then trigger PHYP to load the VF device node to the
+> >>> device tree.  
+> >> 
+> >> I don't know what it means for the Hypervisor to "load the VFs."  Can
+> >> you explain that in PCI-speak?
+> >> 
+> >> The things I know about are:
+> >> 
+> >>   - we set PCI_SRIOV_CTRL_VFE in the PF, which enables VFs
+> >>   - now the VFs respond to config accesses
+> >>   - the PCI core enumerates the VFs by reading their config space
+> >>   - the PCI core builds pci_dev structs for the VFs
+> >>   - the PCI core adds these pci_devs to the bus
+> >>   - we try to bind drivers to the VFs
+> >>   - the VF driver probe function may read VF config space and VF BARs
+> >>   - the VF may be assigned to a guest VM
+> >> 
+> >> Where does "loading the VFs" fit in?  I don't know what HMC, Novalink,
+> >> or PHYP are.  I don't *need* to know what they are, as long as you can
+> >> explain what's happening in terms of the PCI concepts and generic 
+> >> Linux VMs
+> >> and device assignment.
+> >> 
+> >> Bjorn  
+> > 
+> > The VFs will be hotplugged into the VM separately from the enable
+> > SR-IOV, so the driver will load as part of the hotplug operation.
+> > 
+> > Steve  
+> 
+> One more point of clarification: when the hotplug happens, the VF will 
+> show up on a virtual PCI bus that is not directly correlated to the real 
+> PCI bus that the PF is on.  On that virtual PCI bus, the driver will 
+> match because it won't be set to -1.
 
-                               BASE            FIX  OPTIMIZED_FIX
-        bootmem_init   28.440467985s   2.305674818s   2.305161615s
-free_area_init_nodes  202.845901673s 225.343084508s 172.556506560s
-                      --------------------------------------------
-Total                 231.286369658s 227.648759326s 174.861668175s
+I'm pretty lost too, but I think what's being said is that the
+paravirtualized SR-IOV enable creates VFs according to the SR-IOV
+offset and stride capabilities of the PF, but we're supposed to ignore
+those (why are we even creating pci_devs for them?) and the hypervisor
+will actually hotplug the VFs somewhere else.  How's that still
+SR-IOV?  Why wouldn't the hypervisor just add the real VFs that we're
+supposed to use at the offset and stride indicated by the PF SR-IOV
+capability and mask the VFs that we're not supposed to see?  Thanks,
 
-BASE:  current linux
-FIX:   This patch series without "optimized struct page zeroing"
-OPTIMIZED_FIX: This patch series including the current patch.
-
-bootmem_init() is where memory for struct pages is zeroed during
-allocation. Note, about two seconds in this function is a fixed time: it
-does not increase as memory is increased.
-
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Reviewed-by: Bob Picco <bob.picco@oracle.com>
-Acked-by: David S. Miller <davem@davemloft.net>
----
- arch/sparc/include/asm/pgtable_64.h | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
-
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index 4fefe3762083..8ed478abc630 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -230,6 +230,36 @@ extern unsigned long _PAGE_ALL_SZ_BITS;
- extern struct page *mem_map_zero;
- #define ZERO_PAGE(vaddr)	(mem_map_zero)
- 
-+/* This macro must be updated when the size of struct page grows above 80
-+ * or reduces below 64.
-+ * The idea that compiler optimizes out switch() statement, and only
-+ * leaves clrx instructions
-+ */
-+#define	mm_zero_struct_page(pp) do {					\
-+	unsigned long *_pp = (void *)(pp);				\
-+									\
-+	 /* Check that struct page is either 64, 72, or 80 bytes */	\
-+	BUILD_BUG_ON(sizeof(struct page) & 7);				\
-+	BUILD_BUG_ON(sizeof(struct page) < 64);				\
-+	BUILD_BUG_ON(sizeof(struct page) > 80);				\
-+									\
-+	switch (sizeof(struct page)) {					\
-+	case 80:							\
-+		_pp[9] = 0;	/* fallthrough */			\
-+	case 72:							\
-+		_pp[8] = 0;	/* fallthrough */			\
-+	default:							\
-+		_pp[7] = 0;						\
-+		_pp[6] = 0;						\
-+		_pp[5] = 0;						\
-+		_pp[4] = 0;						\
-+		_pp[3] = 0;						\
-+		_pp[2] = 0;						\
-+		_pp[1] = 0;						\
-+		_pp[0] = 0;						\
-+	}								\
-+} while (0)
-+
- /* PFNs are real physical page numbers.  However, mem_map only begins to record
-  * per-page information starting at pfn_base.  This is to handle systems where
-  * the first physical page in the machine is at some huge physical address,
--- 
-2.14.2
+Alex
