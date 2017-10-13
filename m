@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yD6Yl2CJGzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 23:32:43 +1100 (AEDT)
-In-Reply-To: <1507726659-9524-1-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yD6Ym1S7SzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 23:32:44 +1100 (AEDT)
+In-Reply-To: <1507874381-11264-1-git-send-email-anju@linux.vnet.ibm.com>
 To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: hemant@linux.vnet.ibm.com, anju@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com
-Subject: Re: powerpc/perf: Add ___GFP_NOWARN flag to alloc_pages_node()
-Message-Id: <3yD6Yl0pcjz9sRW@ozlabs.org>
-Date: Fri, 13 Oct 2017 23:32:42 +1100 (AEDT)
+Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ anju@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [V2] powerpc/perf: Fix IMC initialization crash
+Message-Id: <3yD6Yl6n8hz9sRm@ozlabs.org>
+Date: Fri, 13 Oct 2017 23:32:43 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-10-11 at 12:57:39 UTC, Anju T Sudhakar wrote:
-> Stack trace output during a stress test:
->  [    4.310049] Freeing initrd memory: 22592K
-> [    4.310646] rtas_flash: no firmware flash support
-> [    4.313341] cpuhp/64: page allocation failure: order:0, mode:0x14480c0(GFP_KERNEL|__GFP_ZERO|__GFP_THISNODE), nodemask=(null)
-> [    4.313465] cpuhp/64 cpuset=/ mems_allowed=0
-> [    4.313521] CPU: 64 PID: 392 Comm: cpuhp/64 Not tainted 4.11.0-39.el7a.ppc64le #1
-> [    4.313588] Call Trace:
-> [    4.313622] [c000000f1fb1b8e0] [c000000000c09388] dump_stack+0xb0/0xf0 (unreliable)
-> [    4.313694] [c000000f1fb1b920] [c00000000030ef6c] warn_alloc+0x12c/0x1c0
-> [    4.313753] [c000000f1fb1b9c0] [c00000000030ff68] __alloc_pages_nodemask+0xea8/0x1000
-> [    4.313823] [c000000f1fb1bbb0] [c000000000113a8c] core_imc_mem_init+0xbc/0x1c0
-> [    4.313892] [c000000f1fb1bc00] [c000000000113cdc] ppc_core_imc_cpu_online+0x14c/0x170
-> [    4.313962] [c000000f1fb1bc90] [c000000000125758] cpuhp_invoke_callback+0x198/0x5d0
-> [    4.314031] [c000000f1fb1bd00] [c00000000012782c] cpuhp_thread_fun+0x8c/0x3d0
-> [    4.314101] [c000000f1fb1bd60] [c0000000001678d0] smpboot_thread_fn+0x290/0x2a0
-> [    4.314169] [c000000f1fb1bdc0] [c00000000015ee78] kthread+0x168/0x1b0
-> [    4.314229] [c000000f1fb1be30] [c00000000000b368] ret_from_kernel_thread+0x5c/0x74
-> [    4.314313] Mem-Info:
-> [    4.314356] active_anon:0 inactive_anon:0 isolated_anon:0
+On Fri, 2017-10-13 at 05:59:41 UTC, Anju T Sudhakar wrote:
+> Call trace observed with latest firmware, and upstream kernel.
 > 
-> core_imc_mem_init() at system boot use alloc_pages_node() to get memory
-> and alloc_pages_node() throws this stack dump when tried to allocate
-> memory from a node which has no memory behind it. Add a ___GFP_NOWARN
-> flag in allocation request as a fix. 
+> [   14.499938] NIP [c0000000000f318c] init_imc_pmu+0x8c/0xcf0
+> [   14.499973] LR [c0000000000f33f8] init_imc_pmu+0x2f8/0xcf0
+> [   14.500007] Call Trace:
+> [   14.500027] [c000003fed18f710] [c0000000000f33c8] init_imc_pmu+0x2c8/0xcf0 (unreliable)
+> [   14.500080] [c000003fed18f800] [c0000000000b5ec0] opal_imc_counters_probe+0x300/0x400
+> [   14.500132] [c000003fed18f900] [c000000000807ef4] platform_drv_probe+0x64/0x110
+> [   14.500185] [c000003fed18f980] [c000000000804b58] driver_probe_device+0x3d8/0x580
+> [   14.500236] [c000003fed18fa10] [c000000000804e4c] __driver_attach+0x14c/0x1a0
+> [   14.500302] [c000003fed18fa90] [c00000000080156c] bus_for_each_dev+0x8c/0xf0
+> [   14.500353] [c000003fed18fae0] [c000000000803fa4] driver_attach+0x34/0x50
+> [   14.500397] [c000003fed18fb00] [c000000000803688] bus_add_driver+0x298/0x350
+> [   14.500449] [c000003fed18fb90] [c00000000080605c] driver_register+0x9c/0x180
+> [   14.500500] [c000003fed18fc00] [c000000000807dec] __platform_driver_register+0x5c/0x70
+> [   14.500552] [c000003fed18fc20] [c00000000101cee0] opal_imc_driver_init+0x2c/0x40
+> [   14.500603] [c000003fed18fc40] [c00000000000d084] do_one_initcall+0x64/0x1d0
+> [   14.500654] [c000003fed18fd00] [c00000000100434c] kernel_init_freeable+0x280/0x374
+> [   14.500705] [c000003fed18fdc0] [c00000000000d314] kernel_init+0x24/0x160
+> [   14.500750] [c000003fed18fe30] [c00000000000b4e8] ret_from_kernel_thread+0x5c/0x74
+> [   14.500799] Instruction dump:
+> [   14.500827] 4082024c 2f890002 419e054c 2e890003 41960094 2e890001 3ba0ffea 419602d8 
+> [   14.500884] 419e0290 2f890003 419e02a8 e93e0118 <e8690018> 2fa30000 419e0010 4827ba41 
+> [   14.500945] ---[ end trace 27b734ad26f1add4 ]---
+> [   15.908719] 
+> [   16.908869] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000007
+> [   16.908869] 
+> [   18.125813] ---[ end Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000007]
+> 
+> While registering nest imc at init, cpu-hotplug callback `nest_pmu_cpumask_init()`
+> makes an opal call to stop the engine. And if the OPAL call fails, 
+> imc_common_cpuhp_mem_free() is invoked to cleanup memory and cpuhotplug setup.
+> 
+> But when cleaning up the attribute group, we were dereferencing the attribute
+> element array without checking whether the backing element is not NULL. This
+> causes the kernel panic.
+> 
+> Add a check for the backing element prior to dereferencing the attribute element,
+> to handle the failing case gracefully.
 > 
 > Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reported-by: Venkat R.B <venkatb3@in.ibm.com>
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/cd4f2b30e5ef7d4bde61eb515372d9
+https://git.kernel.org/powerpc/c/0d8ba16278ec30a262d931875018ab
 
 cheers
