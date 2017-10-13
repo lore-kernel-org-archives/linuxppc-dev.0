@@ -1,36 +1,17 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3yDCYs0zsmzDr4T
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 03:18:08 +1100 (AEDT)
-Date: Fri, 13 Oct 2017 17:18:09 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- Michal Hocko <mhocko@kernel.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Mark Rutland <mark.rutland@arm.com>, catalin.marinas@arm.com,
- sam@ravnborg.org, mgorman@techsingularity.net,
- Steve Sistare <steven.sistare@oracle.com>,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v11 7/9] arm64/kasan: add and use kasan_map_populate()
-Message-ID: <20171013161809.GE4746@arm.com>
-References: <20171010155619.GA2517@arm.com>
- <CAOAebxv21+KtXPAk-xWz=+2fqWQDgp9SAFZz-N=XsuBxev=zcg@mail.gmail.com>
- <20171010171047.GC2517@arm.com>
- <CAOAebxtrSthSP4NAa0obBbsCK1KZxO+x0w5xNrpY6m2y9UZFvQ@mail.gmail.com>
- <CAOAebxu5WL-FQLgfCxNcWy36V6zsTO1v3LLqXv5rM1Pp9R-=YA@mail.gmail.com>
- <20171013144319.GB4746@arm.com>
- <CAOAebxv4h+8ej6JA_DZbXaNV5JsAk4MbcCLf1+2RvwKGF2+MxQ@mail.gmail.com>
- <20171013154426.GC4746@arm.com>
- <CAOAebxspETEqFXL1Ez_4TK9CAwwk+uhHbYOmZk2QR8b=GO80cQ@mail.gmail.com>
- <CAOAebxv=u4cKS=_Bvyqs7pDA=5Oi0HNWvC4zRmhCiaEUMgQu3w@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAOAebxv=u4cKS=_Bvyqs7pDA=5Oi0HNWvC4zRmhCiaEUMgQu3w@mail.gmail.com>
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yDDL54L2XzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 03:53:00 +1100 (AEDT)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1] powerpc/pci: convert to use for_each_pci_bridge() helper
+Date: Fri, 13 Oct 2017 19:52:50 +0300
+Message-Id: <20171013165250.25370-1-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,15 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 13, 2017 at 12:00:27PM -0400, Pavel Tatashin wrote:
-> BTW, don't we need the same aligments inside for_each_memblock() loop?
+...which makes code slightly cleaner.
 
-Hmm, yes actually, given that we shift them right for the shadow address.
+Requires: d43f59ce6c50 ("PCI: Add for_each_pci_bridge() helper")
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ arch/powerpc/kernel/pci-hotplug.c | 7 ++-----
+ arch/powerpc/kernel/pci_of_scan.c | 7 ++-----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
 
-> How about change kasan_map_populate() to accept regular VA start, end
-> address, and convert them internally after aligning to PAGE_SIZE?
-
-That's what my original patch did, but it doesn't help on its own because
-kasan_populate_zero_shadow would need the same change.
-
-Will
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index 2d71269e7dc1..741f47295188 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -134,11 +134,8 @@ void pci_hp_add_devices(struct pci_bus *bus)
+ 		pcibios_setup_bus_devices(bus);
+ 		max = bus->busn_res.start;
+ 		for (pass = 0; pass < 2; pass++) {
+-			list_for_each_entry(dev, &bus->devices, bus_list) {
+-				if (pci_is_bridge(dev))
+-					max = pci_scan_bridge(bus, dev,
+-							      max, pass);
+-			}
++			for_each_pci_bridge(dev, bus)
++				max = pci_scan_bridge(bus, dev, max, pass);
+ 		}
+ 	}
+ 	pcibios_finish_adding_to_bus(bus);
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 0d790f8432d2..8bdaa2a6fa62 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -369,11 +369,8 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
+ 	pcibios_setup_bus_devices(bus);
+ 
+ 	/* Now scan child busses */
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		if (pci_is_bridge(dev)) {
+-			of_scan_pci_bridge(dev);
+-		}
+-	}
++	for_each_pci_bridge(dev, bus)
++		of_scan_pci_bridge(dev);
+ }
+ 
+ /**
+-- 
+2.14.2
