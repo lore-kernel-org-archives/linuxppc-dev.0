@@ -2,8 +2,8 @@ Return-Path: <pasha.tatashin@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yDFDz2W1BzDrCV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 04:33:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yDFF420tGzDrCl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 04:33:43 +1100 (AEDT)
 From: Pavel Tatashin <pasha.tatashin@oracle.com>
 To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
@@ -14,9 +14,9 @@ To: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
  mgorman@techsingularity.net, akpm@linux-foundation.org,
  steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: [PATCH v12 08/11] arm64/kasan: add and use kasan_map_populate()
-Date: Fri, 13 Oct 2017 13:32:11 -0400
-Message-Id: <20171013173214.27300-9-pasha.tatashin@oracle.com>
+Subject: [PATCH v12 02/11] x86/mm: setting fields in deferred pages
+Date: Fri, 13 Oct 2017 13:32:05 -0400
+Message-Id: <20171013173214.27300-3-pasha.tatashin@oracle.com>
 In-Reply-To: <20171013173214.27300-1-pasha.tatashin@oracle.com>
 References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,119 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During early boot, kasan uses vmemmap_populate() to establish its shadow
-memory. But, that interface is intended for struct pages use.
+Without deferred struct page feature (CONFIG_DEFERRED_STRUCT_PAGE_INIT),
+flags and other fields in "struct page"es are never changed prior to first
+initializing struct pages by going through __init_single_page().
 
-Because of the current project, vmemmap won't be zeroed during allocation,
-but kasan expects that memory to be zeroed. We are adding a new
-kasan_map_populate() function to resolve this difference.
+With deferred struct page feature enabled, however, we set fields in
+register_page_bootmem_info that are subsequently clobbered right after in
+free_all_bootmem:
 
-Therefore, we must use a new interface to allocate and map kasan shadow
-memory, that also zeroes memory for us.
+        mem_init() {
+                register_page_bootmem_info();
+                free_all_bootmem();
+                ...
+        }
+
+When register_page_bootmem_info() is called only non-deferred struct pages
+are initialized. But, this function goes through some reserved pages which
+might be part of the deferred, and thus are not yet initialized.
+
+  mem_init
+   register_page_bootmem_info
+    register_page_bootmem_info_node
+     get_page_bootmem
+      .. setting fields here ..
+      such as: page->freelist = (void *)type;
+
+  free_all_bootmem()
+   free_low_memory_core_early()
+    for_each_reserved_mem_region()
+     reserve_bootmem_region()
+      init_reserved_page() <- Only if this is deferred reserved page
+       __init_single_pfn()
+        __init_single_page()
+            memset(0) <-- Loose the set fields here
+
+We end-up with issue where, currently we do not observe problem as memory
+is explicitly zeroed. But, if flag asserts are changed we can start hitting
+issues.
+
+Also, because in this patch series we will stop zeroing struct page memory
+during allocation, we must make sure that struct pages are properly
+initialized prior to using them.
+
+The deferred-reserved pages are initialized in free_all_bootmem().
+Therefore, the fix is to switch the above calls.
 
 Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Reviewed-by: Bob Picco <bob.picco@oracle.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- arch/arm64/mm/kasan_init.c | 72 ++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 66 insertions(+), 6 deletions(-)
+ arch/x86/mm/init_64.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
-index 81f03959a4ab..cb4af2951c90 100644
---- a/arch/arm64/mm/kasan_init.c
-+++ b/arch/arm64/mm/kasan_init.c
-@@ -28,6 +28,66 @@
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 5ea1c3c2636e..8822523fdcd7 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1182,12 +1182,18 @@ void __init mem_init(void)
  
- static pgd_t tmp_pg_dir[PTRS_PER_PGD] __initdata __aligned(PGD_SIZE);
+ 	/* clear_bss() already clear the empty_zero_page */
  
-+/* Creates mappings for kasan during early boot. The mapped memory is zeroed */
-+static int __meminit kasan_map_populate(unsigned long start, unsigned long end,
-+					int node)
-+{
-+	unsigned long addr, pfn, next;
-+	unsigned long long size;
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	int ret;
-+
-+	ret = vmemmap_populate(start, end, node);
+-	register_page_bootmem_info();
+-
+ 	/* this will put all memory onto the freelists */
+ 	free_all_bootmem();
+ 	after_bootmem = 1;
+ 
 +	/*
-+	 * We might have partially populated memory, so check for no entries,
-+	 * and zero only those that actually exist.
++	 * Must be done after boot memory is put on freelist, because here we
++	 * might set fields in deferred struct pages that have not yet been
++	 * initialized, and free_all_bootmem() initializes all the reserved
++	 * deferred pages for us.
 +	 */
-+	for (addr = start; addr < end; addr = next) {
-+		pgd = pgd_offset_k(addr);
-+		if (pgd_none(*pgd)) {
-+			next = pgd_addr_end(addr, end);
-+			continue;
-+		}
++	register_page_bootmem_info();
 +
-+		pud = pud_offset(pgd, addr);
-+		if (pud_none(*pud)) {
-+			next = pud_addr_end(addr, end);
-+			continue;
-+		}
-+		if (pud_sect(*pud)) {
-+			/* This is PUD size page */
-+			next = pud_addr_end(addr, end);
-+			size = PUD_SIZE;
-+			pfn = pud_pfn(*pud);
-+		} else {
-+			pmd = pmd_offset(pud, addr);
-+			if (pmd_none(*pmd)) {
-+				next = pmd_addr_end(addr, end);
-+				continue;
-+			}
-+			if (pmd_sect(*pmd)) {
-+				/* This is PMD size page */
-+				next = pmd_addr_end(addr, end);
-+				size = PMD_SIZE;
-+				pfn = pmd_pfn(*pmd);
-+			} else {
-+				pte = pte_offset_kernel(pmd, addr);
-+				next = addr + PAGE_SIZE;
-+				if (pte_none(*pte))
-+					continue;
-+				/* This is base size page */
-+				size = PAGE_SIZE;
-+				pfn = pte_pfn(*pte);
-+			}
-+		}
-+		memset(phys_to_virt(PFN_PHYS(pfn)), 0, size);
-+	}
-+	return ret;
-+}
-+
- /*
-  * The p*d_populate functions call virt_to_phys implicitly so they can't be used
-  * directly on kernel symbols (bm_p*d). All the early functions are called too
-@@ -161,11 +221,11 @@ void __init kasan_init(void)
- 
- 	clear_pgds(KASAN_SHADOW_START, KASAN_SHADOW_END);
- 
--	vmemmap_populate(kimg_shadow_start, kimg_shadow_end,
--			 pfn_to_nid(virt_to_pfn(lm_alias(_text))));
-+	kasan_map_populate(kimg_shadow_start, kimg_shadow_end,
-+			   pfn_to_nid(virt_to_pfn(lm_alias(_text))));
- 
- 	/*
--	 * vmemmap_populate() has populated the shadow region that covers the
-+	 * kasan_map_populate() has populated the shadow region that covers the
- 	 * kernel image with SWAPPER_BLOCK_SIZE mappings, so we have to round
- 	 * the start and end addresses to SWAPPER_BLOCK_SIZE as well, to prevent
- 	 * kasan_populate_zero_shadow() from replacing the page table entries
-@@ -191,9 +251,9 @@ void __init kasan_init(void)
- 		if (start >= end)
- 			break;
- 
--		vmemmap_populate((unsigned long)kasan_mem_to_shadow(start),
--				(unsigned long)kasan_mem_to_shadow(end),
--				pfn_to_nid(virt_to_pfn(start)));
-+		kasan_map_populate((unsigned long)kasan_mem_to_shadow(start),
-+				   (unsigned long)kasan_mem_to_shadow(end),
-+				   pfn_to_nid(virt_to_pfn(start)));
- 	}
- 
- 	/*
+ 	/* Register memory areas for /proc/kcore */
+ 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR,
+ 			 PAGE_SIZE, KCORE_OTHER);
 -- 
 2.14.2
