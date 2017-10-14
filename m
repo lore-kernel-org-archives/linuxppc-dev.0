@@ -1,23 +1,19 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yDRgl2dmbzDrD7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 12:24:03 +1100 (AEDT)
-Date: Sat, 14 Oct 2017 12:23:37 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yDRjH0YmYzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 12:25:23 +1100 (AEDT)
+Date: Sat, 14 Oct 2017 12:24:48 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Greg Kurz <groug@kaod.org>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>,
- Sam Bobroff <sam.bobroff@au1.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: fix oops when checking KVM_CAP_PPC_HTM
-Message-ID: <20171014012337.GB26120@fergus.ozlabs.ibm.com>
-References: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: POWER9 more doorbell fixes
+Message-ID: <20171014012448.GD26120@fergus.ozlabs.ibm.com>
+References: <20171010101828.5950-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <150542618501.6859.11512107352972110416.stgit@bahia.lan>
+In-Reply-To: <20171010101828.5950-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 14, 2017 at 11:56:25PM +0200, Greg Kurz wrote:
-> The following program causes a kernel oops:
+On Tue, Oct 10, 2017 at 08:18:28PM +1000, Nicholas Piggin wrote:
+> - Add another case where msgsync is required.
+> - Required barrier sequence for global doorbells is msgsync ; lwsync
+> - POWER9 DD1 has a different barrier sequence that we don't implement,
+>   so remove
 > 
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <sys/ioctl.h>
-> #include <linux/kvm.h>
+> When msgsnd is used for IPIs to other cores, msgsync must be executed by
+> the target to order stores performed on the source before its msgsnd
+> (provided the source executes the appropriate sync).
 > 
-> main()
-> {
->     int fd = open("/dev/kvm", O_RDWR);
->     ioctl(fd, KVM_CHECK_EXTENSION, KVM_CAP_PPC_HTM);
-> }
-> 
-> This happens because when using the global KVM fd with
-> KVM_CHECK_EXTENSION, kvm_vm_ioctl_check_extension() gets
-> called with a NULL kvm argument, which gets dereferenced
-> in is_kvmppc_hv_enabled(). Spotted while reading the code.
-> 
-> Let's use the hv_enabled fallback variable, like everywhere
-> else in this function.
-> 
-> Fixes: 23528bb21ee2 ("KVM: PPC: Introduce KVM_CAP_PPC_HTM")
-> Cc: stable@vger.kernel.org # v4.7+
-> Signed-off-by: Greg Kurz <groug@kaod.org>
+> Fixes: 1704a81ccebc ("KVM: PPC: Book3S HV: Use msgsnd for IPIs to other cores on POWER9")
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Thanks, applied to my kvm-ppc-fixes branch.
+Thanks, applied to my kvm-ppc-fixes branch (minus the comment about DD1).
 
 Paul.
