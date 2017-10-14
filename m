@@ -1,22 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yDTZ456BDzDqv8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 13:49:16 +1100 (AEDT)
-Date: Sat, 14 Oct 2017 13:49:08 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Greg Kurz <groug@kaod.org>
-Cc: kvm-ppc@vger.kernel.org, qemu-ppc@nongnu.org,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] KVM: PPC: Book3S PR: only install valid SLBs during
- KVM_SET_SREGS
-Message-ID: <20171014024908.GG26120@fergus.ozlabs.ibm.com>
-References: <150693362232.15210.2878817650741484831.stgit@bahia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yDW1t2pY6zDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Oct 2017 14:54:58 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id m18so2654603pgd.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Oct 2017 20:54:57 -0700 (PDT)
+Date: Sat, 14 Oct 2017 13:54:44 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2 7/9] powerpc/64s: do not allocate lppaca if we are
+ not virtualized
+Message-ID: <20171014135444.45a8405f@roar.ozlabs.ibm.com>
+In-Reply-To: <20171013224759.GA26120@fergus.ozlabs.ibm.com>
+References: <20170812113416.15978-1-npiggin@gmail.com>
+ <20170813013346.14002-7-npiggin@gmail.com>
+ <20171013224759.GA26120@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <150693362232.15210.2878817650741484831.stgit@bahia>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 02, 2017 at 10:40:22AM +0200, Greg Kurz wrote:
-> Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
-> some of which are valid (ie, SLB_ESID_V is set) and the rest are
-> likely all-zeroes (with QEMU at least).
-> 
-> Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
-> assumes to find the SLB index in the 3 lower bits of its rb argument.
-> When passed zeroed arguments, it happily overwrites the 0th SLB entry
-> with zeroes. This is exactly what happens while doing live migration
-> with QEMU when the destination pushes the incoming SLB descriptors to
-> KVM PR. When reloading the SLBs at the next synchronization, QEMU first
-> clears its SLB array and only restore valid ones, but the 0th one is
-> now gone and we cannot access the corresponding memory anymore:
-> 
-> (qemu) x/x $pc
-> c0000000000b742c: Cannot access memory
-> 
-> To avoid this, let's filter out non-valid SLB entries. While here, we
-> also force a full SLB flush before installing new entries.
+On Sat, 14 Oct 2017 09:47:59 +1100
+Paul Mackerras <paulus@ozlabs.org> wrote:
 
-With this, a 32-bit powermac config with PR KVM enabled fails to build:
+> On Sun, Aug 13, 2017 at 11:33:44AM +1000, Nicholas Piggin wrote:
+> > The "lppaca" is a structure registered with the hypervisor. This
+> > is unnecessary when running on non-virtualised platforms. One field
+> > from the lppaca (pmcregs_in_use) is also used by the host, so move
+> > the host part out into the paca (lppaca field is still updated in
+> > guest mode).  
+> 
+> There is an error in the patch, see below...
+> 
+> > diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > index c52184a8efdf..b838348e3a2b 100644
+> > --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > @@ -99,8 +99,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+> >  	mtspr	SPRN_SPRG_VDSO_WRITE,r3
+> >  
+> >  	/* Reload the host's PMU registers */
+> > -	ld	r3, PACALPPACAPTR(r13)	/* is the host using the PMU? */
+> > -	lbz	r4, LPPACA_PMCINUSE(r3)
+> > +	lbz	r4, PACA_PMCINUSE(r13) /* is the host using the PMU? */
+> >  	cmpwi	r4, 0
+> >  	beq	23f			/* skip if not */
+> >  BEGIN_FTR_SECTION
+> > @@ -1671,7 +1670,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+> >  	mtspr	SPRN_MMCRA, r7
+> >  	isync
+> >  	beq	21f			/* if no VPA, save PMU stuff anyway */
+> > -	lbz	r7, LPPACA_PMCINUSE(r8)
+> > +	lbz	r7, PACA_PMCINUSE(r13)  
+> 
+> We really do need to check the guest's flag not the host's here, since
+> we're deciding whether to save the PMU state to the vcpu struct.
 
-  CC [M]  arch/powerpc/kvm/book3s_pr.o
-/home/paulus/kernel/kvm/arch/powerpc/kvm/book3s_pr.c: In function ‘kvm_arch_vcpu_ioctl_set_sregs_pr’:
-/home/paulus/kernel/kvm/arch/powerpc/kvm/book3s_pr.c:1337:13: error: ‘SLB_ESID_V’ undeclared (first use in this function)
-    if (rb & SLB_ESID_V)
-             ^
-/home/paulus/kernel/kvm/arch/powerpc/kvm/book3s_pr.c:1337:13: note: each undeclared identifier is reported only once for each function it appears in
-/home/paulus/kernel/kvm/scripts/Makefile.build:313: recipe for target 'arch/powerpc/kvm/book3s_pr.o' failed
-make[3]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
+Okay I'll fix that up.
 
-Paul.
+Thanks,
+Nick
