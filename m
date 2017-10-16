@@ -1,20 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x22c.google.com (mail-vk0-x22c.google.com
+ [IPv6:2607:f8b0:400c:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFn9Z3kDyzDrFv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:36:02 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4 3/5] powerpc/mce: Hookup derror (load/store) UE errors
-In-Reply-To: <20170929042655.14570-4-bsingharora@gmail.com>
-References: <20170929042655.14570-1-bsingharora@gmail.com>
- <20170929042655.14570-4-bsingharora@gmail.com>
-Date: Mon, 16 Oct 2017 16:36:02 +1100
-Message-ID: <87lgkblkn1.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yFnBP29SLzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:36:45 +1100 (AEDT)
+Received: by mail-vk0-x22c.google.com with SMTP id c76so6934777vkd.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2017 22:36:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87po9nllfu.fsf@concordia.ellerman.id.au>
+References: <20170929042655.14570-1-bsingharora@gmail.com>
+ <20170929042655.14570-3-bsingharora@gmail.com>
+ <87po9nllfu.fsf@concordia.ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 16 Oct 2017 16:36:42 +1100
+Message-ID: <CAKTCnzncKCZiRXZtVehhnoPXgLE59Oq0qsmGLBEg=6Zvts5f6g@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] powerpc/mce: align the print of physical address
+ better
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+On Mon, Oct 16, 2017 at 4:18 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
+>
+>> Use the same alignment as Effective address
+>> and rename phyiscal address to Page Frame Number
+>
+> You didn't do the 2nd part AFAICS?
+>
+> Will fix it up.
 
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index b76ca19..0e584d5 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -27,6 +27,36 @@
->  #include <asm/mmu.h>
->  #include <asm/mce.h>
->  #include <asm/machdep.h>
-> +#include <asm/pgtable.h>
-> +#include <asm/pte-walk.h>
-> +#include <asm/sstep.h>
-> +#include <asm/exception-64s.h>
-> +
-> +/*
-> + * Convert an address related to an mm to a PFN. NOTE: we are in real
-> + * mode, we could potentially race with page table updates.
-> + */
+Sorry the changelog is buggy :( Nick asked me to keep the physical address.
+I should have removed the changes when I reverted the changes
 
-That will blow some serious chunks if we're on pseries.
-
-It seems it can't be triggered on pseries at the moment, but only
-because of the feature section around the call to
-machine_check_handle_early().
-
-We should maybe move the powernv only code in here inside an #ifdef
-POWERNV, just for documentation purposes. But we can do that later.
-
-> +static unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr)
-> +{
-> +	pte_t *ptep;
-> +	unsigned long flags;
-> +	struct mm_struct *mm;
-> +
-> +	if (user_mode(regs))
-> +		mm = current->mm;
-> +	else
-> +		mm = &init_mm;
-> +
-> +	local_irq_save(flags);
-> +	if (mm == current->mm)
-> +		ptep = find_current_mm_pte(mm->pgd, addr, NULL, NULL);
-> +	else
-> +		ptep = find_init_mm_pte(addr, NULL);
-> +	local_irq_restore(flags);
-> +	if (!ptep || pte_special(*ptep))
-> +		return ULONG_MAX;
-> +	return pte_pfn(*ptep);
-> +}
-
-cheers
+Balbir
