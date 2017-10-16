@@ -1,24 +1,31 @@
-Return-Path: <groug@kaod.org>
-Received: from 12.mo4.mail-out.ovh.net (12.mo4.mail-out.ovh.net
- [178.33.104.253])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFvhj6WPZzDrFy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 21:29:56 +1100 (AEDT)
-Received: from player159.ha.ovh.net (b9.ovh.net [213.186.33.59])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 48D1AE8263
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 12:29:53 +0200 (CEST)
-Subject: [PATCH v3] KVM: PPC: Book3S PR: only install valid SLBs during
- KVM_SET_SREGS
-From: Greg Kurz <groug@kaod.org>
-To: kvm-ppc@vger.kernel.org
-Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Date: Mon, 16 Oct 2017 12:29:44 +0200
-Message-ID: <150814978410.4979.16857563162569877345.stgit@bahia.lan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yFwXt2G5vzDrFy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 22:08:11 +1100 (AEDT)
+Received: by mail-it0-x242.google.com with SMTP id 72so718111itl.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 04:08:11 -0700 (PDT)
+Subject: Re: [PATCH kernel] RFC: prom_init: Fetch flatten device tree from the
+ system firmware
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: David Gibson <david@gibson.dropbear.id.au>, Thomas Huth
+ <thuth@redhat.com>, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ Greg Kurz <groug@kaod.org>, slof@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+References: <20171016054917.21577-1-aik@ozlabs.ru>
+ <20171016061125.GD2776@umbus.fritz.box>
+ <00ec0e99-45dd-dbe0-d75f-4413253e8093@ozlabs.ru>
+ <20171016064633.GE2776@umbus.fritz.box>
+ <f849afda-4384-f72e-c8cf-15ba5d170f2c@ozlabs.ru>
+ <20171016102058.GH4406@gate.crashing.org>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <8e15464a-50e0-e49c-2df1-c692eca9fde4@ozlabs.ru>
+Date: Mon, 16 Oct 2017 22:08:02 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20171016102058.GH4406@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +35,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Userland passes an array of 64 SLB descriptors to KVM_SET_SREGS,
-some of which are valid (ie, SLB_ESID_V is set) and the rest are
-likely all-zeroes (with QEMU at least).
+On 16/10/17 21:20, Segher Boessenkool wrote:
+> On Mon, Oct 16, 2017 at 06:07:06PM +1100, Alexey Kardashevskiy wrote:
+>> On 16/10/17 17:46, David Gibson wrote:
+> 
+>>>>>> +		/* Fixup the boot cpuid */
+>>>>>> +		hdr->boot_cpuid_phys = cpu_to_be32(prom.cpu);
+>>>>>
+>>>>> If SLOF is generating a tree it really should get this header field
+>>>>> right as well.
+>>>>
+>>>>
+>>>> Ah, I did not realize it is just a phandle from /chosen/cpu. Will
+>>>> fix.
+>>>
+>>> It's not a phandle.  It's just the "address" (i.e. reg value) of the
+>>> boot cpu.
+>>
+>> Well, it is "reg" of a CPU with phandle==/chosen/cpu so my fdt code needs
+>> to look there to pick the right "reg" rather than just plain 0. I'll fix
+>> this but in general can it possibly be not a zero in QEMU/SLOF?
+> 
+> /chosen/cpu is an ihandle, not a phandle. 
 
-Each of them is then passed to kvmppc_mmu_book3s_64_slbmte(), which
-assumes to find the SLB index in the 3 lower bits of its rb argument.
-When passed zeroed arguments, it happily overwrites the 0th SLB entry
-with zeroes. This is exactly what happens while doing live migration
-with QEMU when the destination pushes the incoming SLB descriptors to
-KVM PR. When reloading the SLBs at the next synchronization, QEMU first
-clears its SLB array and only restore valid ones, but the 0th one is
-now gone and we cannot access the corresponding memory anymore:
+Sure, that is what my proposed fdt-boot-cpu  does already.
 
-(qemu) x/x $pc
-c0000000000b742c: Cannot access memory
+> Most (if not all) references
+> in /chosen are.
 
-To avoid this, let's filter out non-valid SLB entries. While here, we
-also force a full SLB flush before installing new entries. Since SLB
-is for 64-bit only, we now build this path conditionally to avoid a
-build break on 32-bit, which doesn't define SLB_ESID_V.
 
-Signed-off-by: Greg Kurz <groug@kaod.org>
----
-v3: - build SLB path for 64-bit only [*]
-    - add blank line after declaration of rb and rs to silence checkpatch
 
-v2: - flush SLB before installing new entries
 
-[*] I'm wondering if other users of BOOK3S_HFLAG_SLB in this file
-    shouldn't be conditionally built as well, for consistency.
----
- arch/powerpc/kvm/book3s_pr.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 3beb4ff469d1..68c1f8bc17c4 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1326,12 +1326,22 @@ static int kvm_arch_vcpu_ioctl_set_sregs_pr(struct kvm_vcpu *vcpu,
- 	kvmppc_set_pvr_pr(vcpu, sregs->pvr);
- 
- 	vcpu3s->sdr1 = sregs->u.s.sdr1;
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
-+		/* Flush all SLB entries */
-+		vcpu->arch.mmu.slbmte(vcpu, 0, 0);
-+		vcpu->arch.mmu.slbia(vcpu);
-+
- 		for (i = 0; i < 64; i++) {
--			vcpu->arch.mmu.slbmte(vcpu, sregs->u.s.ppc64.slb[i].slbv,
--						    sregs->u.s.ppc64.slb[i].slbe);
-+			u64 rb = sregs->u.s.ppc64.slb[i].slbe;
-+			u64 rs = sregs->u.s.ppc64.slb[i].slbv;
-+
-+			if (rb & SLB_ESID_V)
-+				vcpu->arch.mmu.slbmte(vcpu, rs, rb);
- 		}
--	} else {
-+	} else
-+#endif
-+	{
- 		for (i = 0; i < 16; i++) {
- 			vcpu->arch.mmu.mtsrin(vcpu, i, sregs->u.s.ppc32.sr[i]);
- 		}
+-- 
+Alexey
