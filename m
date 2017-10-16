@@ -1,25 +1,20 @@
-Return-Path: <santosh@fossix.org>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFnT15TP5zDrFx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:49:25 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id b6so6613890pfh.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2017 22:49:25 -0700 (PDT)
-From: Santosh Sivaraj <santosh@fossix.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v6] powerpc/vdso64: Add support for
- CLOCK_{REALTIME/MONOTONIC}_COARSE
-Date: Mon, 16 Oct 2017 11:19:14 +0530
-Message-Id: <20171016054914.24832-1-santosh@fossix.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 16 Oct 2017 17:11:25 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Greg Kurz <groug@kaod.org>,
+ Balbir Singh <bsingharora@gmail.com>, Thomas Huth <thuth@redhat.com>,
+ Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, slof@lists.ozlabs.org
+Subject: Re: [PATCH kernel] RFC: prom_init: Fetch flatten device tree from
+ the system firmware
+Message-ID: <20171016061125.GD2776@umbus.fritz.box>
+References: <20171016054917.21577-1-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="orO6xySwJI16pVnm"
+In-Reply-To: <20171016054917.21577-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,161 +24,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current vDSO64 implementation does not have support for coarse clocks
-(CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
-to system call, increasing the response time, vDSO implementation reduces
-the cycle time. Below is a benchmark of the difference in execution times.
 
-(Non-coarse clocks are also included just for completion)
+--orO6xySwJI16pVnm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-clock-gettime-realtime: syscall: 172 nsec/call
-clock-gettime-realtime:    libc: 28 nsec/call
-clock-gettime-realtime:    vdso: 22 nsec/call
-clock-gettime-monotonic: syscall: 171 nsec/call
-clock-gettime-monotonic:    libc: 30 nsec/call
-clock-gettime-monotonic:    vdso: 25 nsec/call
-clock-gettime-realtime-coarse: syscall: 153 nsec/call
-clock-gettime-realtime-coarse:    libc: 16 nsec/call
-clock-gettime-realtime-coarse:    vdso: 10 nsec/call
-clock-gettime-monotonic-coarse: syscall: 167 nsec/call
-clock-gettime-monotonic-coarse:    libc: 17 nsec/call
-clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
+On Mon, Oct 16, 2017 at 04:49:17PM +1100, Alexey Kardashevskiy wrote:
+> At the moment, on 256CPU + 256 PCI devices guest, it takes the guest
+> about 8.5sec to read the entire device tree. Some explanation can be
+> found here: https://patchwork.ozlabs.org/patch/826124/ but mostly it is
+> because the kernel traverses the tree twice and it calls "getprop" for
+> each properly which is really SLOF as it searches from the linked list
+> beginning every time.
+>=20
+> Since SLOF has just learned to build FDT and this takes less than 0.5sec
+> for such a big guest, this makes use of the proposed client interface
+> method - "fdt-fetch".
+>=20
+> If "fdt-fetch" is not available, the old method is used.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
----
- arch/powerpc/kernel/asm-offsets.c         |  2 +
- arch/powerpc/kernel/vdso64/gettimeofday.S | 67 ++++++++++++++++++++++++++-----
- 2 files changed, 58 insertions(+), 11 deletions(-)
+I like the concept, few details though..
 
-Changelog:
-v1:
-- gettimeofday was moved from asm to C
-- Coarse timer support addition
-v2:
-- Moved Syscall fallback from inline assembly back to its original place in
-  __kernel_clock_gettime
-v3:
-- Based on Ben's input, coarse timer support was added in assembly itself
-- Dropped idea of conversion to C due to the vdso update_count variable
-  being optimized out in C
-v4:
-- Based on Naveen's comments restructured code to avoid a duplicate code
-  block
-v5:
-- Skip creating dependency for registers that are not used for
-  CLOCK_REALTIME_COARSE (Naveen)
-- Reorder instructions to get proper dependency setup (Naveen)
-v6:
-- Remove extra xor, r0 is already dependent on r8 and is 0 (Segher)
+> ---
+>  arch/powerpc/kernel/prom_init.c | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>=20
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_i=
+nit.c
+> index 02190e90c7ae..daa50a153737 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2498,6 +2498,31 @@ static void __init flatten_device_tree(void)
+>  		prom_panic("Can't allocate initial device-tree chunk\n");
+>  	mem_end =3D mem_start + room;
+> =20
+> +	if (!call_prom_ret("fdt-fetch", 2, 1, NULL, mem_start,
+> +			   room - sizeof(mem_reserve_map))) {
+> +		u32 size;
+> +
+> +		hdr =3D (void *) mem_start;
+> +
+> +		/* Fixup the boot cpuid */
+> +		hdr->boot_cpuid_phys =3D cpu_to_be32(prom.cpu);
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 8cfb20e38cfe..b55c68c54dc1 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -396,6 +396,8 @@ int main(void)
- 	/* Other bits used by the vdso */
- 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
- 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
-+	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
-+	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
- 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
- 	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
- 
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index 382021324883..c002adcc694c 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -64,6 +64,12 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	cmpwi	cr0,r3,CLOCK_REALTIME
- 	cmpwi	cr1,r3,CLOCK_MONOTONIC
- 	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
-+
-+	cmpwi	cr5,r3,CLOCK_REALTIME_COARSE
-+	cmpwi	cr6,r3,CLOCK_MONOTONIC_COARSE
-+	cror	cr5*4+eq,cr5*4+eq,cr6*4+eq
-+
-+	cror	cr0*4+eq,cr0*4+eq,cr5*4+eq
- 	bne	cr0,99f
- 
- 	mflr	r12			/* r12 saves lr */
-@@ -72,6 +78,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
- 	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
- 	ori	r7,r7,NSEC_PER_SEC@l
-+	beq	cr5,70f
- 50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
- 	bne	cr1,80f			/* if not monotonic, all done */
- 
-@@ -97,19 +104,57 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	ld	r0,CFG_TB_UPDATE_COUNT(r3)
-         cmpld   cr0,r0,r8		/* check if updated */
- 	bne-	50b
-+	b	78f
- 
--	/* Add wall->monotonic offset and check for overflow or underflow.
-+	/*
-+	 * For coarse clocks we get data directly from the vdso data page, so
-+	 * we don't need to call __do_get_tspec, but we still need to do the
-+	 * counter trick.
- 	 */
--	add	r4,r4,r6
--	add	r5,r5,r9
--	cmpd	cr0,r5,r7
--	cmpdi	cr1,r5,0
--	blt	1f
--	subf	r5,r7,r5
--	addi	r4,r4,1
--1:	bge	cr1,80f
--	addi	r4,r4,-1
--	add	r5,r5,r7
-+70:	ld      r8,CFG_TB_UPDATE_COUNT(r3)
-+	andi.   r0,r8,1                 /* pending update ? loop */
-+	bne-    70b
-+	add     r3,r3,r0		/* r0 is already 0 */
-+
-+	/*
-+	 * CLOCK_REALTIME_COARSE, below values are needed for MONOTONIC_COARSE
-+	 * too
-+	 */
-+	ld      r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
-+	ld      r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
-+	bne     cr6,75f
-+
-+	/* CLOCK_MONOTONIC_COARSE */
-+	lwa     r6,WTOM_CLOCK_SEC(r3)
-+	lwa     r9,WTOM_CLOCK_NSEC(r3)
-+
-+	/* check if counter has updated */
-+	or      r0,r6,r9
-+75:	or	r0,r0,r4
-+	or	r0,r0,r5
-+	xor     r0,r0,r0
-+	add     r3,r3,r0
-+	ld      r0,CFG_TB_UPDATE_COUNT(r3)
-+	cmpld   cr0,r0,r8               /* check if updated */
-+	bne-    70b
-+
-+	/* Counter has not updated, so continue calculating proper values for
-+	 * sec and nsec if monotonic coarse, or just return with the proper
-+	 * values for realtime.
-+	 */
-+	bne     cr6,80f
-+
-+	/* Add wall->monotonic offset and check for overflow or underflow */
-+78:	add     r4,r4,r6
-+	add     r5,r5,r9
-+	cmpd    cr0,r5,r7
-+	cmpdi   cr1,r5,0
-+	blt     79f
-+	subf    r5,r7,r5
-+	addi    r4,r4,1
-+79:	bge     cr1,80f
-+	addi    r4,r4,-1
-+	add     r5,r5,r7
- 
- 80:	std	r4,TSPC64_TV_SEC(r11)
- 	std	r5,TSPC64_TV_NSEC(r11)
--- 
-2.13.6
+If SLOF is generating a tree it really should get this header field
+right as well.
+
+> +		/* Append the reserved map to the end of the blob */
+> +		hdr->off_mem_rsvmap =3D hdr->totalsize;
+> +		size =3D be32_to_cpu(hdr->totalsize);
+> +		rsvmap =3D (void *) hdr + size;
+> +		hdr->totalsize =3D cpu_to_be32(size + sizeof(mem_reserve_map));
+> +		memcpy(rsvmap, mem_reserve_map, sizeof(mem_reserve_map));
+
+=2E. and the reserve map for that matter.  I don't really understand
+what you're doing here.  Note also that the reserve map is required to
+be 8-byte aligned, which totalsize might not be.
+
+> +		/* Store the DT address */
+> +		dt_header_start =3D mem_start;
+> +
+> +#ifdef DEBUG_PROM
+> +		prom_printf("Fetched DTB: %d bytes to @%x\n", size, mem_start);
+> +#endif
+> +		goto print_exit;
+> +	}
+> +
+>  	/* Get root of tree */
+>  	root =3D call_prom("peer", 1, 1, (phandle)0);
+>  	if (root =3D=3D (phandle)0)
+> @@ -2548,6 +2573,7 @@ static void __init flatten_device_tree(void)
+>  	/* Copy the reserve map in */
+>  	memcpy(rsvmap, mem_reserve_map, sizeof(mem_reserve_map));
+> =20
+> +print_exit:
+>  #ifdef DEBUG_PROM
+>  	{
+>  		int i;
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--orO6xySwJI16pVnm
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlnkTYkACgkQbDjKyiDZ
+s5I+zxAAoTT4Zpy+gAU3hZqDZP3Q0un1WWfUVDXpWmZ71Xz1smuSEJrboRStAWuB
+vNrK1hhNIADaNjcCoT2i6gJKotyQpFBXuIQemA5hmdeZ8ZCsWHGMv2nbDMwQX+Md
+I4LkWyaXzBAaT3wQ2ZJm3X2dDy7JQH3jYNcgRZNE4xtGeVZ6xqgjMJfxVvmddHTi
+sg/MmlYeI20+ypLFmhjiYWlY4uNBsjxCuFNnPdp0vIPUgSnfC0VzDbz0ims/2cV7
+71N1uLCDCFHgIuwm5sU1UZIDSkq21nCllpYWwC+d1xmDffk5NqQbUIjERelYBiUS
+P3j3e8mlkrR+fAK2Lggz8reyB1LNDcO5wsPk70CEEPFsGlimy7Pu9CveyKowE2DZ
+RdxPv6WUfhrT6mX8Q3W4vss9klP+rFyuhVLZswCDow/ogeH6x9N4Z8im2XNEIjR7
+MgvRcEMuQWNqABwRpHRORBm+6TPvYTLMe4jFbKFcz9WW17aWi4XoWOJQI1LTYgzl
+Rt/gYi4UEHeTuYA1I4NI1igtL0AGOEejNuF+Q23bOo+3er1G+n86X5J1TEq3mUq1
+vQmC+SkPGO+QYt8oIXqw5sli73l1T7aHEUu6ZRjqbDyUrG3ktvJdl67ibw6cs3Av
+e2QvDMFGbVHaQL8z7sAA9TK0HLc+MM9lDZPUAnkmXP+rnLX9Yqs=
+=Awx7
+-----END PGP SIGNATURE-----
+
+--orO6xySwJI16pVnm--
