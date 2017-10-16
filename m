@@ -1,37 +1,32 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=gx01=bp=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFmVV5d81zDrFt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:05:38 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9G55aRC094609
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 01:05:36 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dmnuj8u44-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 01:05:35 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 16 Oct 2017 06:04:16 +0100
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9G54Cxn27852850
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 05:04:13 GMT
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9G54Cki024876
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:04:12 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mikey@neuling.org
-Subject: [PATCH] selftests/powerpc: Add alignment handler selftest
-Date: Mon, 16 Oct 2017 16:04:02 +1100
-Message-Id: <20171016050402.9455-1-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yFmgB38xRzDrFt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:13:10 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yFmgB1MXJz8tMZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:13:10 +1100 (AEDT)
+Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
+ [IPv6:2607:f8b0:400c:c08::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3yFmg851d2z9t2c
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2017 16:13:08 +1100 (AEDT)
+Received: by mail-ua0-x241.google.com with SMTP id i35so8870858uah.9
+ for <linuxppc-dev@ozlabs.org>; Sun, 15 Oct 2017 22:13:07 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <87o9p7hijp.fsf@linux.vnet.ibm.com>
+References: <1507546335-27120-1-git-send-email-mpe@ellerman.id.au>
+ <87o9p7hijp.fsf@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 16 Oct 2017 16:13:04 +1100
+Message-ID: <CAKTCnzmRfNQNWt-basO+N8A6c=H2XJ=J1H4Z9fftRArgXWkmOw@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc/xmon: Support dumping software pagetables
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,520 +36,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a selftest to exercise the powerpc alignment fault handler.
+On Mon, Oct 16, 2017 at 2:34 PM, Aneesh Kumar K.V
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>
+>> From: Balbir Singh <bsingharora@gmail.com>
+>>
+>> It would be nice to be able to dump page tables in a particular
+>> context.
+>>
+>> eg: dumping vmalloc space:
+>>
+>>   0:mon> dv 0xd00037fffff00000
+>>   pgd  @ 0xc0000000017c0000
+>>   pgdp @ 0xc0000000017c00d8 = 0x00000000f10b1000
+>>   pudp @ 0xc0000000f10b13f8 = 0x00000000f10d0000
+>>   pmdp @ 0xc0000000f10d1ff8 = 0x00000000f1102000
+>>   ptep @ 0xc0000000f1102780 = 0xc0000000f1ba018e
+>>   Maps physical address = 0x00000000f1ba0000
+>>   Flags = Accessed Dirty Read Write
+>>
+>> This patch does not replicate the complex code of dump_pagetable and
+>> has no support for bolted linear mapping, thats why I've it's called
+>> dump virtual page table support. The format of the PTE can be expanded
+>> even further to add more useful information about the flags in the PTE
+>> if required.
+>>
+>> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+>> [mpe: Bike shed the output format, show the pgdir]
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  arch/powerpc/xmon/xmon.c | 111 +++++++++++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 111 insertions(+)
+>>
+>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>> index a41392dec822..d84bead0ac28 100644
+>> --- a/arch/powerpc/xmon/xmon.c
+>> +++ b/arch/powerpc/xmon/xmon.c
+>> @@ -127,6 +127,7 @@ static void byterev(unsigned char *, int);
+>>  static void memex(void);
+>>  static int bsesc(void);
+>>  static void dump(void);
+>> +static void show_pte(unsigned long);
+>>  static void prdump(unsigned long, long);
+>>  static int ppc_inst_dump(unsigned long, long, int);
+>>  static void dump_log_buf(void);
+>> @@ -234,6 +235,7 @@ Commands:\n\
+>>  #endif
+>>    "\
+>>    dr dump stream of raw bytes\n\
+>> +  dv dump virtual address translation \n\
+>>    dt dump the tracing buffers (uses printk)\n\
+>>    dtc        dump the tracing buffers for current CPU (uses printk)\n\
+>>  "
+>> @@ -2639,6 +2641,9 @@ dump(void)
+>>               dump_log_buf();
+>>       } else if (c == 'o') {
+>>               dump_opal_msglog();
+>> +     } else if (c == 'v') {
+>> +             /* dump virtual to physical translation */
+>> +             show_pte(adrs);
+>>       } else if (c == 'r') {
+>>               scanhex(&ndump);
+>>               if (ndump == 0)
+>> @@ -2972,6 +2977,112 @@ static void show_task(struct task_struct *tsk)
+>>               tsk->comm);
+>>  }
+>>
+>> +void format_pte(void *ptep, unsigned long pte)
+>> +{
+>> +     printf("ptep @ 0x%016lx = 0x%016lx\n", (unsigned long)ptep, pte);;
+>> +     printf("Maps physical address = 0x%016lx\n", pte & PTE_RPN_MASK);
+>> +
+>> +     printf("Flags = %s%s%s%s%s\n",
+>> +            (pte & _PAGE_ACCESSED) ? "Accessed " : "",
+>> +            (pte & _PAGE_DIRTY)    ? "Dirty " : "",
+>> +            (pte & _PAGE_READ)     ? "Read " : "",
+>> +            (pte & _PAGE_WRITE)    ? "Write " : "",
+>> +            (pte & _PAGE_EXEC)     ? "Exec " : "");
+>> +}
+>> +
+>> +static void show_pte(unsigned long addr)
+>> +{
+>> +     unsigned long tskv = 0;
+>> +     struct task_struct *tsk = NULL;
+>> +     struct mm_struct *mm;
+>> +     pgd_t *pgdp, *pgdir;
+>> +     pud_t *pudp;
+>> +     pmd_t *pmdp;
+>> +     pte_t *ptep;
+>> +
+>> +     if (!scanhex(&tskv))
+>> +             mm = &init_mm;
+>> +     else
+>> +             tsk = (struct task_struct *)tskv;
+>> +
+>> +     if (tsk == NULL)
+>> +             mm = &init_mm;
+>> +     else
+>> +             mm = tsk->active_mm;
+>> +
+>> +     if (setjmp(bus_error_jmp) != 0) {
+>> +             catch_memory_errors = 0;
+>> +             printf("*** Error dumping pte for task %p\n", tsk);
+>> +             return;
+>> +     }
+>> +
+>> +     catch_memory_errors = 1;
+>> +     sync();
+>> +
+>> +     if (mm == &init_mm) {
+>> +             pgdp = pgd_offset_k(addr);
+>> +             pgdir = pgd_offset_k(0);
+>> +     } else {
+>> +             pgdp = pgd_offset(mm, addr);
+>> +             pgdir = pgd_offset(mm, 0);
+>> +     }
+>> +
+>> +     if (pgd_none(*pgdp)) {
+>> +             printf("no linux page table for address\n");
+>> +             return;
+>> +     }
+>> +
+>> +     printf("pgd  @ 0x%016lx\n", pgdir);
+>> +
+>> +     if (pgd_huge(*pgdp)) {
+>> +             format_pte(pgdp, pgd_val(*pgdp));
+>> +             return;
+>> +     }
+>> +     printf("pgdp @ 0x%016lx = 0x%016lx\n", pgdp, pgd_val(*pgdp));
+>> +
+>> +     pudp = pud_offset(pgdp, addr);
+>> +
+>> +     if (pud_none(*pudp)) {
+>> +             printf("No valid PUD\n");
+>> +             return;
+>> +     }
+>> +
+>> +#ifdef CONFIG_HUGETLB_PAGE
+>> +     if (pud_huge(*pudp)) {
+>> +             format_pte(pudp, pud_val(*pudp));
+>> +             return;
+>> +     }
+>> +#endif
+>
+> For page table walking code we don't need to put #ifdef here.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- tools/testing/selftests/powerpc/alignment/Makefile |   3 +-
- .../powerpc/alignment/alignment_handler.c          | 488 +++++++++++++++++++++
- 2 files changed, 490 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/alignment/alignment_handler.c
+OK.. I designed this for both, I'll take the #ifdef out for kernel page tables.
 
-diff --git a/tools/testing/selftests/powerpc/alignment/Makefile b/tools/testing/selftests/powerpc/alignment/Makefile
-index 16b22004e75f..083a48a008b4 100644
---- a/tools/testing/selftests/powerpc/alignment/Makefile
-+++ b/tools/testing/selftests/powerpc/alignment/Makefile
-@@ -1,4 +1,5 @@
--TEST_GEN_PROGS := copy_unaligned copy_first_unaligned paste_unaligned paste_last_unaligned
-+TEST_GEN_PROGS := copy_unaligned copy_first_unaligned paste_unaligned \
-+	paste_last_unaligned alignment_handler
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/alignment/alignment_handler.c b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-new file mode 100644
-index 000000000000..c63f1e677e54
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-@@ -0,0 +1,488 @@
-+/*
-+ * Test the powerpc alignment handler on POWER8/POWER9
-+ *
-+ * Copyright (C) 2017 IBM Corporation (Michael Neuling, Andrew Donnellan)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+/*
-+ * This selftest exercises the powerpc alignment fault handler.
-+ *
-+ * We create two sets of source and destination buffers, one in regular memory,
-+ * the other cache-inhibited (we use /dev/fb0 for this).
-+ *
-+ * We initialise the source buffers, then use whichever set of load/store
-+ * instructions is under test to copy bytes from the source buffers to the
-+ * destination buffers. For the regular buffers, these instructions will
-+ * execute normally. For the cache-inhibited buffers, these instructions
-+ * will trap and cause an alignment fault, and the alignment fault handler
-+ * will emulate the particular instruction under test. We then compare the
-+ * destination buffers to ensure that the native and emulated cases give the
-+ * same result.
-+ *
-+ * TODO:
-+ *   - Any FIXMEs below
-+ *   - Support 32bit (signal handler needs to be fixed)
-+ *   - Test VSX regs < 32 and > 32
-+ *   - Test all loads and stores
-+ *   - Check update forms do update register
-+ *   - Test alignment faults over page boundary
-+ *
-+ * Some old binutils may not support all the instructions.
-+ */
-+
-+
-+#include <sys/mman.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+#include <unistd.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <assert.h>
-+#include <getopt.h>
-+#include <setjmp.h>
-+#include <signal.h>
-+
-+#include "utils.h"
-+
-+int bufsize;
-+int debug;
-+int testing;
-+volatile int gotsig;
-+
-+void sighandler(int sig, siginfo_t *info, void *ctx)
-+{
-+	struct ucontext *ucp = ctx;
-+
-+	if (!testing) {
-+		signal(sig, SIG_DFL);
-+		kill(0, sig);
-+	}
-+	gotsig = sig;
-+	ucp->uc_mcontext.gp_regs[PT_NIP] += 4;
-+}
-+
-+#define XFORM(reg, n)  " " #reg " ,%"#n",%2 ;"
-+#define DFORM(reg, n)  " " #reg " ,0(%"#n") ;"
-+
-+#define TEST(name, ld_op, st_op, form, ld_reg, st_reg)		\
-+	void test_##name(char *s, char *d)			\
-+	{							\
-+		asm volatile(					\
-+			#ld_op form(ld_reg, 0)			\
-+			#st_op form(st_reg, 1)			\
-+			:: "r"(s), "r"(d), "r"(0)		\
-+			: "memory", "vs0", "vs32", "r31");	\
-+	}							\
-+	rc |= do_test(#name, test_##name)
-+
-+#define LOAD_VSX_XFORM_TEST(op) TEST(op, op, stxvd2x, XFORM, 32, 32)
-+#define STORE_VSX_XFORM_TEST(op) TEST(op, lxvd2x, op, XFORM, 32, 32)
-+#define LOAD_VSX_DFORM_TEST(op) TEST(op, op, stxv, DFORM, 32, 32)
-+#define STORE_VSX_DFORM_TEST(op) TEST(op, lxv, op, DFORM, 32, 32)
-+#define LOAD_VMX_XFORM_TEST(op) TEST(op, op, stxvd2x, XFORM, 0, 32)
-+#define STORE_VMX_XFORM_TEST(op) TEST(op, lxvd2x, op, XFORM, 32, 0)
-+#define LOAD_VMX_DFORM_TEST(op) TEST(op, op, stxv, DFORM, 0, 32)
-+#define STORE_VMX_DFORM_TEST(op) TEST(op, lxv, op, DFORM, 32, 0)
-+
-+#define LOAD_XFORM_TEST(op) TEST(op, op, stdx, XFORM, 31, 31)
-+#define STORE_XFORM_TEST(op) TEST(op, ldx, op, XFORM, 31, 31)
-+#define LOAD_DFORM_TEST(op) TEST(op, op, std, DFORM, 31, 31)
-+#define STORE_DFORM_TEST(op) TEST(op, ld, op, DFORM, 31, 31)
-+
-+#define LOAD_FLOAT_DFORM_TEST(op)  TEST(op, op, stfd, DFORM, 0, 0)
-+#define STORE_FLOAT_DFORM_TEST(op) TEST(op, lfd, op, DFORM, 0, 0)
-+#define LOAD_FLOAT_XFORM_TEST(op)  TEST(op, op, stfdx, XFORM, 0, 0)
-+#define STORE_FLOAT_XFORM_TEST(op) TEST(op, lfdx, op, XFORM, 0, 0)
-+
-+
-+/* FIXME: Unimplemented tests: */
-+// STORE_DFORM_TEST(stq)   /* FIXME: need two registers for quad */
-+// STORE_DFORM_TEST(stswi) /* FIXME: string instruction */
-+
-+// STORE_XFORM_TEST(stwat) /* AMO can't emulate or run on CI */
-+// STORE_XFORM_TEST(stdat) /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
-+
-+
-+/* preload byte by byte */
-+void preload_data(void *dst, int offset, int width)
-+{
-+	char *c = dst;
-+	int i;
-+
-+	c += offset;
-+
-+	for (i = 0 ; i < width ; i++)
-+		c[i] = i;
-+}
-+
-+int test_memcpy(void *dst, void *src, int size, int offset,
-+		void (*test_func)(char *, char *))
-+{
-+	char *s, *d;
-+
-+	s = src;
-+	s += offset;
-+	d = dst;
-+	d += offset;
-+
-+	assert(size == 16);
-+	gotsig = 0;
-+	testing = 1;
-+
-+	test_func(s, d); /* run the actual test */
-+
-+	testing = 0;
-+	if (gotsig) {
-+		if (debug)
-+			printf("  Got signal %i\n", gotsig);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+void dumpdata(char *s1, char *s2, int n, char *test_name)
-+{
-+	int i;
-+
-+	printf("  %s: unexpected result:\n", test_name);
-+	printf("    mem:");
-+	for (i = 0; i < n; i++)
-+		printf(" %02x", s1[i]);
-+	printf("\n");
-+	printf("    ci: ");
-+	for (i = 0; i < n; i++)
-+		printf(" %02x", s2[i]);
-+	printf("\n");
-+}
-+
-+int test_memcmp(void *s1, void *s2, int n, int offset, char *test_name)
-+{
-+	char *s1c, *s2c;
-+
-+	s1c = s1;
-+	s1c += offset;
-+	s2c = s2;
-+	s2c += offset;
-+
-+	if (memcmp(s1c, s2c, n)) {
-+		if (debug) {
-+			printf("\n  Compare failed. Offset:%i length:%i\n",
-+			       offset, n);
-+			dumpdata(s1c, s2c, n, test_name);
-+		}
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+/*
-+ * Do two memcpy tests using the same instructions. One cachable
-+ * memory and the other doesn't.
-+ */
-+int do_test(char *test_name, void (*test_func)(char *, char *))
-+{
-+	int offset, width, fd, rc = 0, r;
-+	void *mem0, *mem1, *ci0, *ci1;
-+
-+	printf("\tDoing %s:\t", test_name);
-+
-+	fd = open("/dev/fb0", O_RDWR);
-+	if (fd < 0) {
-+		printf("\n");
-+		perror("Can't open /dev/fb0");
-+		SKIP_IF(1);
-+	}
-+
-+	ci0 = mmap(NULL, bufsize, PROT_WRITE, MAP_SHARED,
-+		   fd, 0x0);
-+	ci1 = mmap(NULL, bufsize, PROT_WRITE, MAP_SHARED,
-+		   fd, bufsize);
-+	if ((ci0 == MAP_FAILED) || (ci1 == MAP_FAILED)) {
-+		printf("\n");
-+		perror("mmap failed");
-+		SKIP_IF(1);
-+	}
-+
-+	rc = posix_memalign(&mem0, bufsize, bufsize);
-+	if (rc) {
-+		printf("\n");
-+		return rc;
-+	}
-+
-+	rc = posix_memalign(&mem1, bufsize, bufsize);
-+	if (rc) {
-+		printf("\n");
-+		free(mem0);
-+		return rc;
-+	}
-+
-+	/* offset = 0 no alignment fault, so skip */
-+	for (offset = 1; offset < 16; offset++) {
-+		width = 16; /* vsx == 16 bytes */
-+		r = 0;
-+
-+		/* load pattern into memory byte by byte */
-+		preload_data(ci0, offset, width);
-+		preload_data(mem0, offset, width); // FIXME: remove??
-+		memcpy(ci0, mem0, bufsize);
-+		memcpy(ci1, mem1, bufsize); /* initialise output to the same */
-+
-+		/* sanity check */
-+		test_memcmp(mem0, ci0, width, offset, test_name);
-+
-+		r |= test_memcpy(ci1,  ci0,  width, offset, test_func);
-+		r |= test_memcpy(mem1, mem0, width, offset, test_func);
-+		if (r && !debug) {
-+			printf("FAILED: Got signal");
-+			break;
-+		}
-+
-+		r |= test_memcmp(mem1, ci1, width, offset, test_name);
-+		rc |= r;
-+		if (r && !debug) {
-+			printf("FAILED: Wrong Data");
-+			break;
-+		}
-+	}
-+	if (!r)
-+		printf("PASSED");
-+	printf("\n");
-+
-+	munmap(ci0, bufsize);
-+	munmap(ci1, bufsize);
-+	free(mem0);
-+	free(mem1);
-+
-+	return rc;
-+}
-+
-+int test_alignment_handler_vsx_206(void)
-+{
-+	int rc = 0;
-+
-+	printf("VSX: 2.06B\n");
-+	LOAD_VSX_XFORM_TEST(lxvd2x);
-+	LOAD_VSX_XFORM_TEST(lxvw4x);
-+	LOAD_VSX_XFORM_TEST(lxsdx);
-+	LOAD_VSX_XFORM_TEST(lxvdsx);
-+	STORE_VSX_XFORM_TEST(stxvd2x);
-+	STORE_VSX_XFORM_TEST(stxvw4x);
-+	STORE_VSX_XFORM_TEST(stxsdx);
-+	return rc;
-+}
-+
-+int test_alignment_handler_vsx_207(void)
-+{
-+	int rc = 0;
-+
-+	printf("VSX: 2.07B\n");
-+	LOAD_VSX_XFORM_TEST(lxsspx);
-+	LOAD_VSX_XFORM_TEST(lxsiwax);
-+	LOAD_VSX_XFORM_TEST(lxsiwzx);
-+	STORE_VSX_XFORM_TEST(stxsspx);
-+	STORE_VSX_XFORM_TEST(stxsiwx);
-+	return rc;
-+}
-+
-+int test_alignment_handler_vsx_300(void)
-+{
-+	int rc = 0;
-+
-+	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
-+	printf("VSX: 3.00B\n");
-+	LOAD_VMX_DFORM_TEST(lxsd);
-+	LOAD_VSX_XFORM_TEST(lxsibzx);
-+	LOAD_VSX_XFORM_TEST(lxsihzx);
-+	LOAD_VMX_DFORM_TEST(lxssp);
-+	LOAD_VSX_DFORM_TEST(lxv);
-+	LOAD_VSX_XFORM_TEST(lxvb16x);
-+	LOAD_VSX_XFORM_TEST(lxvh8x);
-+	LOAD_VSX_XFORM_TEST(lxvx);
-+	LOAD_VSX_XFORM_TEST(lxvwsx);
-+	LOAD_VSX_XFORM_TEST(lxvl);
-+	LOAD_VSX_XFORM_TEST(lxvll);
-+	STORE_VMX_DFORM_TEST(stxsd);
-+	STORE_VSX_XFORM_TEST(stxsibx);
-+	STORE_VSX_XFORM_TEST(stxsihx);
-+	STORE_VMX_DFORM_TEST(stxssp);
-+	STORE_VSX_DFORM_TEST(stxv);
-+	STORE_VSX_XFORM_TEST(stxvb16x);
-+	STORE_VSX_XFORM_TEST(stxvh8x);
-+	STORE_VSX_XFORM_TEST(stxvx);
-+	STORE_VSX_XFORM_TEST(stxvl);
-+	STORE_VSX_XFORM_TEST(stxvll);
-+	return rc;
-+}
-+
-+int test_alignment_handler_integer(void)
-+{
-+	int rc = 0;
-+
-+	printf("Integer\n");
-+	LOAD_DFORM_TEST(lbz);
-+	LOAD_DFORM_TEST(lbzu);
-+	LOAD_XFORM_TEST(lbzx);
-+	LOAD_XFORM_TEST(lbzux);
-+	LOAD_DFORM_TEST(lhz);
-+	LOAD_DFORM_TEST(lhzu);
-+	LOAD_XFORM_TEST(lhzx);
-+	LOAD_XFORM_TEST(lhzux);
-+	LOAD_DFORM_TEST(lha);
-+	LOAD_DFORM_TEST(lhau);
-+	LOAD_XFORM_TEST(lhax);
-+	LOAD_XFORM_TEST(lhaux);
-+	LOAD_XFORM_TEST(lhbrx);
-+	LOAD_DFORM_TEST(lwz);
-+	LOAD_DFORM_TEST(lwzu);
-+	LOAD_XFORM_TEST(lwzx);
-+	LOAD_XFORM_TEST(lwzux);
-+	LOAD_DFORM_TEST(lwa);
-+	LOAD_XFORM_TEST(lwax);
-+	LOAD_XFORM_TEST(lwaux);
-+	LOAD_XFORM_TEST(lwbrx);
-+	LOAD_DFORM_TEST(ld);
-+	LOAD_DFORM_TEST(ldu);
-+	LOAD_XFORM_TEST(ldx);
-+	LOAD_XFORM_TEST(ldux);
-+	LOAD_XFORM_TEST(ldbrx);
-+	LOAD_DFORM_TEST(lmw);
-+	STORE_DFORM_TEST(stb);
-+	STORE_XFORM_TEST(stbx);
-+	STORE_DFORM_TEST(stbu);
-+	STORE_XFORM_TEST(stbux);
-+	STORE_DFORM_TEST(sth);
-+	STORE_XFORM_TEST(sthx);
-+	STORE_DFORM_TEST(sthu);
-+	STORE_XFORM_TEST(sthux);
-+	STORE_XFORM_TEST(sthbrx);
-+	STORE_DFORM_TEST(stw);
-+	STORE_XFORM_TEST(stwx);
-+	STORE_DFORM_TEST(stwu);
-+	STORE_XFORM_TEST(stwux);
-+	STORE_XFORM_TEST(stwbrx);
-+	STORE_DFORM_TEST(std);
-+	STORE_XFORM_TEST(stdx);
-+	STORE_DFORM_TEST(stdu);
-+	STORE_XFORM_TEST(stdux);
-+	STORE_XFORM_TEST(stdbrx);
-+	STORE_DFORM_TEST(stmw);
-+	return rc;
-+}
-+
-+int test_alignment_handler_vmx(void)
-+{
-+	int rc = 0;
-+
-+	printf("VMX\n");
-+	LOAD_VMX_XFORM_TEST(lvx);
-+
-+	/*
-+	 * FIXME: These loads only load part of the register, so our
-+	 * testing method doesn't work. Also they don't take alignment
-+	 * faults, so it's kinda pointless anyway
-+	 *
-+	 LOAD_VMX_XFORM_TEST(lvebx)
-+	 LOAD_VMX_XFORM_TEST(lvehx)
-+	 LOAD_VMX_XFORM_TEST(lvewx)
-+	 LOAD_VMX_XFORM_TEST(lvxl)
-+	*/
-+	STORE_VMX_XFORM_TEST(stvx);
-+	STORE_VMX_XFORM_TEST(stvebx);
-+	STORE_VMX_XFORM_TEST(stvehx);
-+	STORE_VMX_XFORM_TEST(stvewx);
-+	STORE_VMX_XFORM_TEST(stvxl);
-+	return rc;
-+}
-+
-+int test_alignment_handler_fp(void)
-+{
-+	int rc = 0;
-+
-+	printf("Floating point\n");
-+	LOAD_FLOAT_DFORM_TEST(lfd);
-+	LOAD_FLOAT_XFORM_TEST(lfdx);
-+	LOAD_FLOAT_DFORM_TEST(lfdp);
-+	LOAD_FLOAT_XFORM_TEST(lfdpx);
-+	LOAD_FLOAT_DFORM_TEST(lfdu);
-+	LOAD_FLOAT_XFORM_TEST(lfdux);
-+	LOAD_FLOAT_DFORM_TEST(lfs);
-+	LOAD_FLOAT_XFORM_TEST(lfsx);
-+	LOAD_FLOAT_DFORM_TEST(lfsu);
-+	LOAD_FLOAT_XFORM_TEST(lfsux);
-+	LOAD_FLOAT_XFORM_TEST(lfiwzx);
-+	LOAD_FLOAT_XFORM_TEST(lfiwax);
-+	STORE_FLOAT_DFORM_TEST(stfd);
-+	STORE_FLOAT_XFORM_TEST(stfdx);
-+	STORE_FLOAT_DFORM_TEST(stfdp);
-+	STORE_FLOAT_XFORM_TEST(stfdpx);
-+	STORE_FLOAT_DFORM_TEST(stfdu);
-+	STORE_FLOAT_XFORM_TEST(stfdux);
-+	STORE_FLOAT_DFORM_TEST(stfs);
-+	STORE_FLOAT_XFORM_TEST(stfsx);
-+	STORE_FLOAT_DFORM_TEST(stfsu);
-+	STORE_FLOAT_XFORM_TEST(stfsux);
-+	STORE_FLOAT_XFORM_TEST(stfiwx);
-+
-+	return rc;
-+}
-+
-+void usage(char *prog)
-+{
-+	printf("Usage: %s [options]\n", prog);
-+	printf("  -d	Enable debug error output\n");
-+	printf("\n");
-+	printf("This test requires a POWER8 or POWER9 CPU and a usable ");
-+	printf("framebuffer at /dev/fb0.\n");
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+
-+	struct sigaction sa;
-+	int rc = 0;
-+	int option = 0;
-+
-+	while ((option = getopt(argc, argv, "d")) != -1) {
-+		switch (option) {
-+		case 'd':
-+			debug++;
-+			break;
-+		default:
-+			usage(argv[0]);
-+			exit(1);
-+		}
-+	}
-+
-+	bufsize = getpagesize();
-+
-+	sa.sa_sigaction = sighandler;
-+	sigemptyset(&sa.sa_mask);
-+	sa.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGSEGV, &sa, NULL) == -1
-+	    || sigaction(SIGBUS, &sa, NULL) == -1
-+	    || sigaction(SIGILL, &sa, NULL) == -1) {
-+		perror("sigaction");
-+		exit(1);
-+	}
-+
-+	rc |= test_harness(test_alignment_handler_vsx_206,
-+			   "test_alignment_handler_vsx_206");
-+	rc |= test_harness(test_alignment_handler_vsx_207,
-+			   "test_alignment_handler_vsx_207");
-+	rc |= test_harness(test_alignment_handler_vsx_300,
-+			   "test_alignment_handler_vsx_300");
-+	rc |= test_harness(test_alignment_handler_integer,
-+			   "test_alignment_handler_integer");
-+	rc |= test_harness(test_alignment_handler_vmx,
-+			   "test_alignment_handler_vmx");
-+	rc |= test_harness(test_alignment_handler_fp,
-+			   "test_alignment_handler_fp");
-+	return rc;
-+}
--- 
-2.11.0
+ Also how
+> should we handle address that we map at pmd level even if hugetlb page
+> is disabled ? (kernel linear mapping). Also where do we handle THP
+> mapping ? You may want to look at __find_linux_pte() to write a page
+> table walking code. or better use the helper.
+
+I wanted to avoid using __find_linux_pte in xmon(), it needs irq's disabled.
+I found the interface a bit cumbersome. If I fix the #ifdef's and make the
+walking code 64 bit only I think we should be OK? Do you agree?
+
+Balbir Singh.
+
+>
+> -aneesh
+>
