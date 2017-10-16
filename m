@@ -1,32 +1,30 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFqBs0x53zDrFw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 18:07:16 +1100 (AEDT)
-Received: by mail-it0-x243.google.com with SMTP id n195so17960898itg.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 00:07:15 -0700 (PDT)
-Subject: Re: [PATCH kernel] RFC: prom_init: Fetch flatten device tree from the
- system firmware
-To: David Gibson <david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yFqHM71RMzDrFw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 18:11:11 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9G6x11O028312
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 03:11:09 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dm79ud4y9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 03:11:09 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 16 Oct 2017 03:11:08 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Greg Kurz <groug@kaod.org>,
- Balbir Singh <bsingharora@gmail.com>, Thomas Huth <thuth@redhat.com>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, slof@lists.ozlabs.org
-References: <20171016054917.21577-1-aik@ozlabs.ru>
- <20171016061125.GD2776@umbus.fritz.box>
- <00ec0e99-45dd-dbe0-d75f-4413253e8093@ozlabs.ru>
- <20171016064633.GE2776@umbus.fritz.box>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <f849afda-4384-f72e-c8cf-15ba5d170f2c@ozlabs.ru>
-Date: Mon, 16 Oct 2017 18:07:06 +1100
-MIME-Version: 1.0
-In-Reply-To: <20171016064633.GE2776@umbus.fritz.box>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="GGcrg1xI9Lemg1BMBrjxCBxcE3SH3t1DQ"
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm/radix: Drop unneeded NULL check
+Date: Mon, 16 Oct 2017 12:41:00 +0530
+Message-Id: <20171016071100.8497-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,199 +34,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---GGcrg1xI9Lemg1BMBrjxCBxcE3SH3t1DQ
-Content-Type: multipart/mixed; boundary="7d5OK4cuMaH5RrDnJJA7Uh66R5TtdJIiV";
- protected-headers="v1"
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Greg Kurz <groug@kaod.org>,
- Balbir Singh <bsingharora@gmail.com>, Thomas Huth <thuth@redhat.com>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, slof@lists.ozlabs.org
-Message-ID: <f849afda-4384-f72e-c8cf-15ba5d170f2c@ozlabs.ru>
-Subject: Re: [PATCH kernel] RFC: prom_init: Fetch flatten device tree from the
- system firmware
-References: <20171016054917.21577-1-aik@ozlabs.ru>
- <20171016061125.GD2776@umbus.fritz.box>
- <00ec0e99-45dd-dbe0-d75f-4413253e8093@ozlabs.ru>
- <20171016064633.GE2776@umbus.fritz.box>
-In-Reply-To: <20171016064633.GE2776@umbus.fritz.box>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
---7d5OK4cuMaH5RrDnJJA7Uh66R5TtdJIiV
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-AU
-Content-Transfer-Encoding: quoted-printable
+We call these functions with non-NULL mm or vma. Hence we can skip the NULL
+check in these functions. We also remove now unused function
+__local_flush_hugetlb_page().
 
-On 16/10/17 17:46, David Gibson wrote:
-> On Mon, Oct 16, 2017 at 05:22:55PM +1100, Alexey Kardashevskiy wrote:
->> On 16/10/17 17:11, David Gibson wrote:
->>> On Mon, Oct 16, 2017 at 04:49:17PM +1100, Alexey Kardashevskiy wrote:=
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/hugetlb.h |  6 ------
+ arch/powerpc/mm/tlb-radix.c        | 18 ++++++++----------
+ 2 files changed, 8 insertions(+), 16 deletions(-)
 
->>>> At the moment, on 256CPU + 256 PCI devices guest, it takes the guest=
-
->>>> about 8.5sec to read the entire device tree. Some explanation can be=
-
->>>> found here: https://patchwork.ozlabs.org/patch/826124/ but mostly it=
- is
->>>> because the kernel traverses the tree twice and it calls "getprop" f=
-or
->>>> each properly which is really SLOF as it searches from the linked li=
-st
->>>> beginning every time.
->>>>
->>>> Since SLOF has just learned to build FDT and this takes less than 0.=
-5sec
->>>> for such a big guest, this makes use of the proposed client interfac=
-e
->>>> method - "fdt-fetch".
->>>>
->>>> If "fdt-fetch" is not available, the old method is used.
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>
->>> I like the concept, few details though..
->>>
->>>> ---
->>>>  arch/powerpc/kernel/prom_init.c | 26 ++++++++++++++++++++++++++
->>>>  1 file changed, 26 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/p=
-rom_init.c
->>>> index 02190e90c7ae..daa50a153737 100644
->>>> --- a/arch/powerpc/kernel/prom_init.c
->>>> +++ b/arch/powerpc/kernel/prom_init.c
->>>> @@ -2498,6 +2498,31 @@ static void __init flatten_device_tree(void)
->>>>  		prom_panic("Can't allocate initial device-tree chunk\n");
->>>>  	mem_end =3D mem_start + room;
->>>> =20
->>>> +	if (!call_prom_ret("fdt-fetch", 2, 1, NULL, mem_start,
->>>> +			   room - sizeof(mem_reserve_map))) {
->>>> +		u32 size;
->>>> +
->>>> +		hdr =3D (void *) mem_start;
->>>> +
->>>> +		/* Fixup the boot cpuid */
->>>> +		hdr->boot_cpuid_phys =3D cpu_to_be32(prom.cpu);
->>>
->>> If SLOF is generating a tree it really should get this header field
->>> right as well.
->>
->>
->> Ah, I did not realize it is just a phandle from /chosen/cpu. Will
->> fix.
->=20
-> It's not a phandle.  It's just the "address" (i.e. reg value) of the
-> boot cpu.
-
-
-Well, it is "reg" of a CPU with phandle=3D=3D/chosen/cpu so my fdt code n=
-eeds
-to look there to pick the right "reg" rather than just plain 0. I'll fix
-this but in general can it possibly be not a zero in QEMU/SLOF?
-
-
->=20
->>>> +		/* Append the reserved map to the end of the blob */
->>>> +		hdr->off_mem_rsvmap =3D hdr->totalsize;
->>>> +		size =3D be32_to_cpu(hdr->totalsize);
->>>> +		rsvmap =3D (void *) hdr + size;
->>>> +		hdr->totalsize =3D cpu_to_be32(size + sizeof(mem_reserve_map));
->>>> +		memcpy(rsvmap, mem_reserve_map, sizeof(mem_reserve_map));
->>>
->>> .. and the reserve map for that matter.  I don't really understand
->>> what you're doing here.=20
->>
->> ? Get the blob, increase the FDT size by sizeof(mem_reserve_map), fix =
-up
->> totalsize and off_mem_rsvmap, copy mem_reserve_map to the end of the b=
-lob
->> (the actual order is slightly different, may be a bit confusing).
->=20
-> Right.. but where is mem_reserve_map coming from, if it hasn't come
-> from an FDT?
->=20
->> Asking SLOF to reserve the space seems to be unnecessary complication =
-of
->> the interface - SLOF does not provide any reserved memory records.
->=20
-> Ah.. right, the reservations are coming from the pre-prom kernel, not
-> from the firmware itself.  Yeah, that makes sense.  Ok, this makes
-> sense then...
-
-
-Right, the reservations are added via reserve_mem() in
-arch/powerpc/kernel/prom_init.c
-
->=20
->>> Note also that the reserve map is required to
->>> be 8-byte aligned, which totalsize might not be.
->>
->> Ah, good point.
->=20
-> ..at least with that fixed and maybe some comments to make what's
-> gonig on clearer.
-
->>
->>
->>>
->>>> +		/* Store the DT address */
->>>> +		dt_header_start =3D mem_start;
->>>> +
->>>> +#ifdef DEBUG_PROM
->>>> +		prom_printf("Fetched DTB: %d bytes to @%x\n", size, mem_start);
->>>> +#endif
->>>> +		goto print_exit;
->>>> +	}
->>>> +
->>>>  	/* Get root of tree */
->>>>  	root =3D call_prom("peer", 1, 1, (phandle)0);
->>>>  	if (root =3D=3D (phandle)0)
->>>> @@ -2548,6 +2573,7 @@ static void __init flatten_device_tree(void)
->>>>  	/* Copy the reserve map in */
->>>>  	memcpy(rsvmap, mem_reserve_map, sizeof(mem_reserve_map));
->>>> =20
->>>> +print_exit:
->>>>  #ifdef DEBUG_PROM
->>>>  	{
->>>>  		int i;
->>>
->>
->>
->=20
->=20
->=20
->=20
-
-
---=20
-Alexey
-
-
---7d5OK4cuMaH5RrDnJJA7Uh66R5TtdJIiV--
-
---GGcrg1xI9Lemg1BMBrjxCBxcE3SH3t1DQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIrBAEBCAAVBQJZ5FqbDhxhaWtAb3psYWJzLnJ1AAoJEIYTPdgrwSC5lGMP/j0Y
-CVFK5B7MK6XZgTb2Z3OR2Q/bReth9lDWEMcdoYT65IKs4vbQjuf6CbQwnxymHGQw
-r99EgSyHWR4rOU61VsaVpcM55FaANJG9RKEEgyxmG488tn0J3bpa8uWmanccXfHk
-rrC45OnGhVLIowNkHeXowOdkNTjLPes84agyAkc+rCDE+MH+ga9XnLCNIMuEw1Br
-GplncA9pU5E1OIJAfb0jVjB16C0rMMXyB5tZrO0DZgByQLY/ECS9pN53JJAopktG
-U3oa9IW4phhqEJ+BJbaTUBqJA/eb+YHgYf0dfqS/RWo+nZg6pfjwX88ccEqdDEJV
-mEzQvawvJ2iQGA8oe1BivGUZIoUwuOThbj66qBjv9LRvvpBuVW0ZSB7o/vW3u6/j
-mc+09ypTVuvRYEqonIC0CfYt8fXQqQKEqXidS8+B+oo6dJkPlaeDmqYBTSmeg76D
-kvIt/+sym5VVVlob058uFNa9EeC7Qm8L22gAxBh2pj8tR/OWqV58HxDlLSj8zAJ2
-Sqhnc9oTaQoUG1Ny6ntf5jvngB8u8I3TVVUjSnU3ySm4cRVeEk6ry++HzPaCSnzf
-cRM8AH/2F1ewe+XKbaDJ3HGOy8uhgzQ1xcLbTPuHSVG2YEkHqQqj439AcPYmxFyO
-7OU3dIPcUC2+5NAcFliT3Ck82/35KTTgjoElzcH8
-=AzMQ
------END PGP SIGNATURE-----
-
---GGcrg1xI9Lemg1BMBrjxCBxcE3SH3t1DQ--
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index b8a0fb442c64..795d825c2edd 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -40,12 +40,6 @@ static inline void flush_hugetlb_page(struct vm_area_struct *vma,
+ 		return radix__flush_hugetlb_page(vma, vmaddr);
+ }
+ 
+-static inline void __local_flush_hugetlb_page(struct vm_area_struct *vma,
+-					      unsigned long vmaddr)
+-{
+-	if (radix_enabled())
+-		return radix__local_flush_hugetlb_page(vma, vmaddr);
+-}
+ #else
+ 
+ static inline pte_t *hugepd_page(hugepd_t hpd)
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 191cc5abc940..98fdf2243d35 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -164,7 +164,7 @@ void radix__local_flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmadd
+ 	unsigned long ap = mmu_get_ap(psize);
+ 
+ 	preempt_disable();
+-	pid = mm ? mm->context.id : 0;
++	pid = mm->context.id;
+ 	if (pid != MMU_NO_CONTEXT)
+ 		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
+ 	preempt_enable();
+@@ -175,10 +175,9 @@ void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmadd
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	/* need the return fix for nohash.c */
+ 	if (vma && is_vm_hugetlb_page(vma))
+-		return __local_flush_hugetlb_page(vma, vmaddr);
++		return radix__local_flush_hugetlb_page(vma, vmaddr);
+ #endif
+-	radix__local_flush_tlb_page_psize(vma ? vma->vm_mm : NULL, vmaddr,
+-					  mmu_virtual_psize);
++	radix__local_flush_tlb_page_psize(vma->vm_mm, vmaddr, mmu_virtual_psize);
+ }
+ EXPORT_SYMBOL(radix__local_flush_tlb_page);
+ 
+@@ -232,7 +231,7 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
+ 	unsigned long ap = mmu_get_ap(psize);
+ 
+ 	preempt_disable();
+-	pid = mm ? mm->context.id : 0;
++	pid = mm->context.id;
+ 	if (unlikely(pid == MMU_NO_CONTEXT))
+ 		goto bail;
+ 	if (!mm_is_thread_local(mm))
+@@ -247,10 +246,9 @@ void radix__flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+ {
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	if (vma && is_vm_hugetlb_page(vma))
+-		return flush_hugetlb_page(vma, vmaddr);
++		return radix__flush_hugetlb_page(vma, vmaddr);
+ #endif
+-	radix__flush_tlb_page_psize(vma ? vma->vm_mm : NULL, vmaddr,
+-				    mmu_virtual_psize);
++	radix__flush_tlb_page_psize(vma->vm_mm, vmaddr, mmu_virtual_psize);
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_page);
+ 
+@@ -330,7 +328,7 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+ 
+ 
+ 	preempt_disable();
+-	pid = mm ? mm->context.id : 0;
++	pid = mm->context.id;
+ 	if (unlikely(pid == MMU_NO_CONTEXT))
+ 		goto err_out;
+ 
+@@ -361,7 +359,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 	unsigned long pid, end;
+ 
+ 
+-	pid = mm ? mm->context.id : 0;
++	pid = mm->context.id;
+ 	if (unlikely(pid == MMU_NO_CONTEXT))
+ 		goto no_context;
+ 
+-- 
+2.13.6
