@@ -1,22 +1,22 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x236.google.com (mail-pg0-x236.google.com
- [IPv6:2607:f8b0:400e:c05::236])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFg765SBgzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 12:03:30 +1100 (AEDT)
-Received: by mail-pg0-x236.google.com with SMTP id v78so5477692pgb.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2017 18:03:30 -0700 (PDT)
-Date: Mon, 16 Oct 2017 12:03:20 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yFhpQ2RgRzDrF8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 13:19:09 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id x7so14703339pfa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2017 19:19:09 -0700 (PDT)
+Date: Mon, 16 Oct 2017 13:18:58 +1100
 From: Balbir Singh <bsingharora@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc/strict_rwx: fixup region splitting
-Message-ID: <20171016120320.0527c15a@firefly.ozlabs.ibm.com>
-In-Reply-To: <87o9pnp3li.fsf@concordia.ellerman.id.au>
-References: <20170927095111.10626-1-bsingharora@gmail.com>
- <20170927095111.10626-2-bsingharora@gmail.com>
- <87o9pnp3li.fsf@concordia.ellerman.id.au>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc/perf/imc: use NUMA_NO_NODE for
+ alloc_pages_node
+Message-ID: <20171016131858.73b37570@firefly.ozlabs.ibm.com>
+In-Reply-To: <1508093022-11496-2-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1508093022-11496-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1508093022-11496-2-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,24 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 04 Oct 2017 22:14:17 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Mon, 16 Oct 2017 00:13:42 +0530
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
-> Balbir Singh <bsingharora@gmail.com> writes:
-> 
-> > We were aggressive with splitting regions and missed the case
-> > when _stext and __init_begin completely overlap addr and addr+mapping.
-> >
-> > This patch fixes that case and allows us to keep the largest possible
-> > mapping through the overlap. The patch also simplies the check
-> > into a function  
-> 
-> Please do the fix in one patch, which we can backport if necessary, and
-> then move it into a function in a separate patch.
-> 
+> alloc_pages_node() when passed NUMA_NO_NODE for the
+> node_id, could get memory from closest node. Cleanup
+> core imc and thread imc memory init functions to use
+> NUMA_NO_NODE.
 
-I've tried for a while now, although this looks like its touching more
-code, this is more elegant. Anything else involves changing the two
-if conditions almost identically.
+
+The changelog is not clear, alloc_pages_node() takes a
+preferred node id and creates a node zonelist from it.
+How is NUMA_NO_NODE better? 
 
 Balbir Singh.
