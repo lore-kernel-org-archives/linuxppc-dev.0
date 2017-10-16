@@ -1,21 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFxrt0GvKzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 23:07:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yFyQl1zD7zDrG1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 23:33:03 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v4 5/5] powerpc/mce: hookup memory_failure for UE errors
-In-Reply-To: <CAKTCnzkH=5i23F9v2t-VLZET2HV86NP8u=rx9gEswG5COTJ1kw@mail.gmail.com>
-References: <20170929042655.14570-1-bsingharora@gmail.com>
- <20170929042655.14570-6-bsingharora@gmail.com>
- <87infflkjm.fsf@concordia.ellerman.id.au>
- <CAKTCnzkH=5i23F9v2t-VLZET2HV86NP8u=rx9gEswG5COTJ1kw@mail.gmail.com>
-Date: Mon, 16 Oct 2017 23:07:08 +1100
-Message-ID: <874lqzl2j7.fsf@concordia.ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/nodes: Ensure enough nodes avail for
+ operations
+In-Reply-To: <d62dd6c7-7676-5fe0-4f63-baada9213908@linux.vnet.ibm.com>
+References: <d62dd6c7-7676-5fe0-4f63-baada9213908@linux.vnet.ibm.com>
+Date: Mon, 16 Oct 2017 23:33:02 +1100
+Message-ID: <871sm3l1c1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,43 +27,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
 
-> On Mon, Oct 16, 2017 at 4:38 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Balbir Singh <bsingharora@gmail.com> writes:
->>
->>> If we are in user space and hit a UE error, we now have the
->>> basic infrastructure to walk the page tables and find out
->>> the effective address that was accessed, since the DAR
->>> is not valid.
->>>
->>> We use a work_queue content to hookup the bad pfn, any
->>> other context causes problems, since memory_failure itself
->>> can call into schedule() via lru_drain_ bits.
->>>
->>> We could probably poison the struct page to avoid a race
->>> between detection and taking corrective action.
->>>
->>> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
->>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
->>> ---
->>>  arch/powerpc/kernel/mce.c | 70 +++++++++++++++++++++++++++++++++++++++++++++--
->>>  1 file changed, 67 insertions(+), 3 deletions(-)
->>
->> I'm not sure why this is in mce.c but the rest was in mce_power.c ?
+> powerpc/nodes: On systems like PowerPC which allow 'hot-add' of CPU
+
+This is a powerpc-only patch, so saying "systems like PowerPC" is
+confusing. What you should be saying is "On pseries systems".
+
+> or memory resources, it may occur that the new resources are to be
+> inserted into nodes that were not used for these resources at bootup.
+> In the kernel, any node that is used must be defined and initialized
+> at boot.
 >
-> The way the code is organized is that save_mce_event is implemented here
-> and called from mce_power.c. save_mce_event() does the processing
-> of the event.
+> This patch extracts the value of the lowest domain level (number of
+> allocable resources) from the "rtas" device tree property
+> "ibm,current-associativity-domains" or the device tree property
 
-save_mce_event() is only called from mce_power.c :/
+What is current associativity domains? I've not heard of it, where is it
+documented, and what does it mean.
 
-I'd be happy if it was mce_real_mode.c and mce.c, that would be a good
-distinction to make.
+Why would use the "current" set vs the "max"? I thought the whole point
+was to discover the maximum possible set of nodes that could be
+hotplugged.
 
-Though even then, most of the code is Book3s64 specific I think so maybe
-it shouldn't be in just mce.c.
+> "ibm,max-associativity-domains" to use as the maximum number of nodes
+> to setup as possibly available in the system.  This new setting will
+> override the instruction,
+>
+>     nodes_and(node_possible_map, node_possible_map, node_online_map);
+>
+> presently seen in the function arch/powerpc/mm/numa.c:initmem_init().
+>
+> If the property is not present at boot, no operation will be performed
+> to define or enable additional nodes.
+>
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/numa.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 47 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index ec098b3..b385cd0 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -892,6 +892,51 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+>  	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
+>  }
+>  
+> +static void __init node_associativity_setup(void)
 
-Anyway I'll merge this and we can improve things later.
+This should really be called "find_possible_nodes()" or something more
+descriptive.
+
+> +{
+> +	struct device_node *rtas;
+> +
+> +	rtas = of_find_node_by_path("/rtas");
+> +	if (rtas) {
+
+If you just short-circuit that return the whole function body can be
+deintented, making it significantly more readable.
+
+ie:
++	rtas = of_find_node_by_path("/rtas");
++	if (!rtas)
++		return;
+
+> +		const __be32 *prop;
+> +		u32 len, entries, numnodes, i;
+> +
+> +		prop = of_get_property(rtas,
+> +					"ibm,current-associativity-domains", &len);
+
+Please don't use of_get_property() in new code, we have much better
+accessors these days, which do better error checking and handle the
+endian conversions for you.
+
+In this case you'd use eg:
+
+	u32 entries;
+	rc = of_property_read_u32(rtas, "ibm,current-associativity-domains", &entries);
+
+> +		if (!prop || len < sizeof(unsigned int)) {
+> +			prop = of_get_property(rtas,
+> +					"ibm,max-associativity-domains", &len);
+> +			goto endit;
+> +		}
+> +
+> +		entries = of_read_number(prop++, 1);
+> +
+> +		if (len < (entries * sizeof(unsigned int)))
+> +			goto endit;
+> +
+> +		if ((0 <= min_common_depth) && (min_common_depth <= (entries-1)))
+> +			entries = min_common_depth;
+> +		else
+> +			entries -= 1;
+			^
+                        You can't just guess that will be the right entry.
+
+If min_common_depth is < 0 the function should have just returned
+immediately at the top.
+
+If min_common_depth is outside the range of the property that's a buggy
+device tree, you should print a warning and return.
+
+> +		numnodes = of_read_number(&prop[entries], 1);
+
+	u32 num_nodes;
+	rc = of_property_read_u32_index(rtas, "ibm,current-associativity-domains", min_common_depth, &num_nodes);
+> +
+> +		printk(KERN_INFO "numa: Nodes = %d (mcd = %d)\n", numnodes,
+> +			min_common_depth);
+> +
+> +		for (i = 0; i < numnodes; i++) {
+> +			if (!node_possible(i)) {
+> +				setup_node_data(i, 0, 0);
+
+Do we actually need to setup the NODE_DATA() yet? Doing it now ensures
+it will not be allocated node local, which sucks.
+
+> +				node_set(i, node_possible_map);
+> +			}
+> +		}
+> +	}
+> +
+> +endit:
+
+"out" would be the normal name.
+
+> +	if (rtas)
+> +		of_node_put(rtas);
+> +}
+> +
+>  void __init initmem_init(void)
+>  {
+>  	int nid, cpu;
+> @@ -911,6 +956,8 @@ void __init initmem_init(void)
+>  	 */
+
+You need to update the comment above here which is contradicted by the
+new function you're adding.
+
+>  	nodes_and(node_possible_map, node_possible_map, node_online_map);
+>  
+> +	node_associativity_setup();
+> +
+>  	for_each_online_node(nid) {
+>  		unsigned long start_pfn, end_pfn;
+>  
 
 cheers
