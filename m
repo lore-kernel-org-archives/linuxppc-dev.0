@@ -1,31 +1,19 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFwXt2G5vzDrFy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 22:08:11 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id 72so718111itl.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 04:08:11 -0700 (PDT)
+Return-Path: <mpe@ellerman.id.au>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Huth <thuth@redhat.com>,
+ Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Greg Kurz <groug@kaod.org>,
+ slof@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ David Gibson <david@gibson.dropbear.id.au>
 Subject: Re: [PATCH kernel] RFC: prom_init: Fetch flatten device tree from the
  system firmware
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>, Thomas Huth
- <thuth@redhat.com>, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
- Greg Kurz <groug@kaod.org>, slof@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20171016054917.21577-1-aik@ozlabs.ru>
 References: <20171016054917.21577-1-aik@ozlabs.ru>
- <20171016061125.GD2776@umbus.fritz.box>
- <00ec0e99-45dd-dbe0-d75f-4413253e8093@ozlabs.ru>
- <20171016064633.GE2776@umbus.fritz.box>
- <f849afda-4384-f72e-c8cf-15ba5d170f2c@ozlabs.ru>
- <20171016102058.GH4406@gate.crashing.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <8e15464a-50e0-e49c-2df1-c692eca9fde4@ozlabs.ru>
-Date: Mon, 16 Oct 2017 22:08:02 +1100
+Date: Mon, 16 Oct 2017 22:59:04 +1100
+Message-ID: <877evvl2wn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20171016102058.GH4406@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +23,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/10/17 21:20, Segher Boessenkool wrote:
-> On Mon, Oct 16, 2017 at 06:07:06PM +1100, Alexey Kardashevskiy wrote:
->> On 16/10/17 17:46, David Gibson wrote:
-> 
->>>>>> +		/* Fixup the boot cpuid */
->>>>>> +		hdr->boot_cpuid_phys = cpu_to_be32(prom.cpu);
->>>>>
->>>>> If SLOF is generating a tree it really should get this header field
->>>>> right as well.
->>>>
->>>>
->>>> Ah, I did not realize it is just a phandle from /chosen/cpu. Will
->>>> fix.
->>>
->>> It's not a phandle.  It's just the "address" (i.e. reg value) of the
->>> boot cpu.
->>
->> Well, it is "reg" of a CPU with phandle==/chosen/cpu so my fdt code needs
->> to look there to pick the right "reg" rather than just plain 0. I'll fix
->> this but in general can it possibly be not a zero in QEMU/SLOF?
-> 
-> /chosen/cpu is an ihandle, not a phandle. 
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-Sure, that is what my proposed fdt-boot-cpu  does already.
+> At the moment, on 256CPU + 256 PCI devices guest, it takes the guest
+> about 8.5sec to read the entire device tree. Some explanation can be
+> found here: https://patchwork.ozlabs.org/patch/826124/ but mostly it is
+> because the kernel traverses the tree twice and it calls "getprop" for
+> each properly which is really SLOF as it searches from the linked list
+> beginning every time.
+>
+> Since SLOF has just learned to build FDT and this takes less than 0.5sec
+> for such a big guest, this makes use of the proposed client interface
+> method - "fdt-fetch".
 
-> Most (if not all) references
-> in /chosen are.
+It's a pity doing it the normal way is so slow, but this seems like a
+reasonable idea anyway.
 
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 02190e90c7ae..daa50a153737 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2498,6 +2498,31 @@ static void __init flatten_device_tree(void)
+>  		prom_panic("Can't allocate initial device-tree chunk\n");
+>  	mem_end = mem_start + room;
+  
+I'd prefer you didn't munge it inside flatten_device_tree(), rather
+create a wrapper that does ~=:
 
+void get_flat_devicetree(void)
+{
+	if (!fetch_flat_devicetree())
+        	flatten_device_tree();
 
+	printf(...)
+}
 
+> +	if (!call_prom_ret("fdt-fetch", 2, 1, NULL, mem_start,
+> +			   room - sizeof(mem_reserve_map))) {
+> +		u32 size;
+> +
+> +		hdr = (void *) mem_start;
+> +
+> +		/* Fixup the boot cpuid */
+> +		hdr->boot_cpuid_phys = cpu_to_be32(prom.cpu);
+> +
+> +		/* Append the reserved map to the end of the blob */
+> +		hdr->off_mem_rsvmap = hdr->totalsize;
+> +		size = be32_to_cpu(hdr->totalsize);
+> +		rsvmap = (void *) hdr + size;
+> +		hdr->totalsize = cpu_to_be32(size + sizeof(mem_reserve_map));
+> +		memcpy(rsvmap, mem_reserve_map, sizeof(mem_reserve_map));
+> +
+> +		/* Store the DT address */
+> +		dt_header_start = mem_start;
+> +
+> +#ifdef DEBUG_PROM
+> +		prom_printf("Fetched DTB: %d bytes to @%x\n", size, mem_start);
+> +#endif
 
--- 
-Alexey
+I think that should actually not be under DEBUG_PROM. The origin of the
+FDT is fairly crucial information, so I think we can tolerate an extra
+line of output to know that.
+
+> +		goto print_exit;
+
+This was the clue that it should be in a separate function :)
+
+cheers
+
+> +	}
+> +
+>  	/* Get root of tree */
+>  	root = call_prom("peer", 1, 1, (phandle)0);
+>  	if (root == (phandle)0)
+> @@ -2548,6 +2573,7 @@ static void __init flatten_device_tree(void)
+>  	/* Copy the reserve map in */
+>  	memcpy(rsvmap, mem_reserve_map, sizeof(mem_reserve_map));
+>  
+> +print_exit:
+>  #ifdef DEBUG_PROM
+>  	{
+>  		int i;
+> -- 
+> 2.11.0
