@@ -1,19 +1,26 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
+Received: from mail-vk0-x22a.google.com (mail-vk0-x22a.google.com
+ [IPv6:2607:f8b0:400c:c05::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yFms44snbzDrFt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:21:44 +1100 (AEDT)
-Received: by mail-pf0-x230.google.com with SMTP id p87so14977414pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2017 22:21:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yFmvR5TLbzDrFt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:23:47 +1100 (AEDT)
+Received: by mail-vk0-x22a.google.com with SMTP id q80so6959528vka.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Oct 2017 22:23:47 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <87shejlloi.fsf@concordia.ellerman.id.au>
+References: <20170929042655.14570-1-bsingharora@gmail.com>
+ <20170929042655.14570-2-bsingharora@gmail.com>
+ <87shejlloi.fsf@concordia.ellerman.id.au>
 From: Balbir Singh <bsingharora@gmail.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/64s: Fix crashes on Power9 DD1 with radix MMU and
- STRICT_RWX
-Date: Mon, 16 Oct 2017 16:21:35 +1100
-Message-Id: <20171016052135.24738-1-bsingharora@gmail.com>
+Date: Mon, 16 Oct 2017 16:23:44 +1100
+Message-ID: <CAKTCnznV+NE=M_6Fovnjf9O+G985tVgm57F_xDc2UZksSnWhyA@mail.gmail.com>
+Subject: Re: [PATCH v4 1/5] powerpc/mce.c: Remove unused function
+ get_mce_fault_addr()
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,66 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using the radix MMU on Power9 DD1, to work around a hardware
-problem, radix__pte_update() is required to do a two stage update of
-the PTE. First we write a zero value into the PTE, then we flush the
-TLB, and then we write the new PTE value.
+On Mon, Oct 16, 2017 at 4:13 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
+>
+>> There are no users of get_mce_fault_addr()
+>>
+>> Fixes: b63a0ff ("powerpc/powernv: Machine check exception handling.")
+>
+> That fixes line is wrong, get_mce_fault_addr() was used in that commit.
+>
+> The last usage was removed in:
+>
+>   1363875bdb63 ("powerpc/64s: fix handling of non-synchronous machine checks")
+>
+> So that's what the fixes tag should point at if anything, I'll update it
+> here.
 
-In the normal case that works OK, but it does not work if we're
-updating the PTE that maps the code we're executing, because the
-mapping is removed by the TLB flush and we can no longer execute from
-it. Unfortunately the STRICT_RWX code needs to do exactly that.
+Sorry, my git search was really awe-full! Thanks for fixing it.
 
-The exact symptoms when we hit this case vary, sometimes we print an
-oops and then get stuck after that, but I've also seen a machine just
-get stuck continually page faulting with no oops printed. The variance
-is presumably due to the exact layout of the text and the page size
-used for the mappings. In all cases we are unable to boot to a shell.
-
-There are possible solutions such as creating a second mapping of the
-TLB flush code, executing from that, and then jumping back to the
-original. However we don't want to add that level of complexity for a
-DD1 work around.
-
-So just detect that we're running on Power9 DD1 and refrain from
-changing the permissions, effectively disabling STRICT_RWX on Power9
-DD1.
-
-Fixes: 7614ff3 ("powerpc/mm/radix: Implement STRICT_RWX/mark_rodata_ro() for Radix")
-
-Cc: stable@vger.kernel.org
-
-Reported-by: Andrew Jeffery <andrew@aj.id.au>
-[Changelog as suggested by Michael Ellerman <mpe@ellerman.id.au>]
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
-
- Changelog v2
- - Rephrase the comments and changelog as suggested by mpe
-
- arch/powerpc/mm/pgtable-radix.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 39c252b54d16..cfbbee941a76 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -169,6 +169,16 @@ void radix__mark_rodata_ro(void)
- {
- 	unsigned long start, end;
- 
-+	/*
-+	 * mark_rodata_ro() will mark itself as !writable at some point.
-+	 * Due to DD1 workaround in radix__pte_update(), we'll end up with
-+	 * an invalid pte and the system will crash quite severly.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-+		pr_warn("Warning: Unable to mark rodata read only on P9 DD1\n");
-+		return;
-+	}
-+
- 	start = (unsigned long)_stext;
- 	end = (unsigned long)__init_begin;
- 
--- 
-2.13.6
+Balbir Singh
