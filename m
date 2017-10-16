@@ -1,44 +1,28 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [217.72.192.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yG3Dc26tlzDrG1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 03:09:35 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9GG59pF014966
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 12:09:33 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dmvwtk14q-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 12:09:33 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 16 Oct 2017 17:09:30 +0100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9GG9Of020054070
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:09:26 GMT
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9GG9HF3027016
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 03:09:18 +1100
-Subject: Re: [PATCH 2/2] powerpc/perf/imc: use NUMA_NO_NODE for
- alloc_pages_node
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-References: <1508093022-11496-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1508093022-11496-2-git-send-email-maddy@linux.vnet.ibm.com>
- <20171016131858.73b37570@firefly.ozlabs.ibm.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Mon, 16 Oct 2017 21:39:20 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yG52v6mgKzDrFv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 04:31:19 +1100 (AEDT)
+To: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
+ <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Message-ID: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+Date: Mon, 16 Oct 2017 19:30:13 +0200
 MIME-Version: 1.0
-In-Reply-To: <20171016131858.73b37570@firefly.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <ad7d35e7-565f-642a-1cb5-ef89b2f81414@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,31 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 16 Oct 2017 19:12:34 +0200
 
+A few update suggestions were taken into account
+from static source code analysis.
 
-On Monday 16 October 2017 07:48 AM, Balbir Singh wrote:
-> On Mon, 16 Oct 2017 00:13:42 +0530
-> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
->
->> alloc_pages_node() when passed NUMA_NO_NODE for the
->> node_id, could get memory from closest node. Cleanup
->> core imc and thread imc memory init functions to use
->> NUMA_NO_NODE.
->
-> The changelog is not clear, alloc_pages_node() takes a
-> preferred node id and creates a node zonelist from it.
-> How is NUMA_NO_NODE better?
+Markus Elfring (4):
+  Delete an error message for a failed memory allocation
+    in tpm_ascii_bios_measurements_show()
+  Delete an error message for a failed memory allocation in tpm_ibmvtpm_probe()
+  Improve a size determination in nine functions
+  Less checks in tpm_ibmvtpm_probe() after error detection
 
-IIUC with NUMA_NO_NODE we could remove the __GFP_NOWARN
-for alloc_pages_node(). That said, one must be careful to make
-sure we dont end up allocating memory from the boot cpu.
-And incase of In Memory Collection (IMC) counters, it is handled
-in the cpu online path.
+ drivers/char/tpm/st33zp24/i2c.c      |  3 +--
+ drivers/char/tpm/st33zp24/spi.c      |  3 +--
+ drivers/char/tpm/st33zp24/st33zp24.c |  3 +--
+ drivers/char/tpm/tpm1_eventlog.c     |  5 +----
+ drivers/char/tpm/tpm_crb.c           |  2 +-
+ drivers/char/tpm/tpm_i2c_atmel.c     |  2 +-
+ drivers/char/tpm/tpm_i2c_nuvoton.c   |  2 +-
+ drivers/char/tpm/tpm_ibmvtpm.c       | 23 +++++++++--------------
+ drivers/char/tpm/tpm_tis.c           |  2 +-
+ drivers/char/tpm/tpm_tis_spi.c       |  3 +--
+ 10 files changed, 18 insertions(+), 30 deletions(-)
 
-Will send a v2 with __GFP_NOWARN removed which
-I missed in this :)  .
-
-Maddy
-
-> Balbir Singh.
->
+-- 
+2.14.2
