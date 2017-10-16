@@ -1,35 +1,23 @@
-Return-Path: <pfsmorigo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@chromium.org>
+Received: from mail-pg0-x236.google.com (mail-pg0-x236.google.com
+ [IPv6:2607:f8b0:400e:c05::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGDDf66ljzDrF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 09:55:14 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9GMsKgF076087
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 18:55:11 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dn151c2dw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 18:55:11 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
- Mon, 16 Oct 2017 16:55:11 -0600
-From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] crypto: vmx - Use skcipher for ctr fallback
-Date: Mon, 16 Oct 2017 20:54:19 -0200
-Message-Id: <20171016225420.31081-1-pfsmorigo@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGFNg4kjczDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 10:47:14 +1100 (AEDT)
+Received: by mail-pg0-x236.google.com with SMTP id l24so8025821pgu.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:47:14 -0700 (PDT)
+Date: Mon, 16 Oct 2017 16:47:10 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/watchdog: Convert timers to use timer_setup()
+Message-ID: <20171016234710.GA102273@beast>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,97 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
----
- drivers/crypto/vmx/aes_ctr.c | 33 +++++++++++++++++----------------
- 1 file changed, 17 insertions(+), 16 deletions(-)
+In preparation for unconditionally passing the struct timer_list pointer to
+all timer callbacks, switch to using the new timer_setup() and from_timer()
+to pass the timer pointer explicitly.
 
-diff --git a/drivers/crypto/vmx/aes_ctr.c b/drivers/crypto/vmx/aes_ctr.c
-index 17d8421..fc60d00 100644
---- a/drivers/crypto/vmx/aes_ctr.c
-+++ b/drivers/crypto/vmx/aes_ctr.c
-@@ -27,21 +27,23 @@
- #include <asm/switch_to.h>
- #include <crypto/aes.h>
- #include <crypto/scatterwalk.h>
-+#include <crypto/skcipher.h>
-+
- #include "aesp8-ppc.h"
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ arch/powerpc/kernel/watchdog.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index 15e209a37c2d..50797528b5e1 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -263,9 +263,8 @@ static void wd_timer_reset(unsigned int cpu, struct timer_list *t)
+ 	add_timer_on(t, cpu);
+ }
  
- struct p8_aes_ctr_ctx {
--	struct crypto_blkcipher *fallback;
-+	struct crypto_skcipher *fallback;
- 	struct aes_key enc_key;
- };
- 
- static int p8_aes_ctr_init(struct crypto_tfm *tfm)
+-static void wd_timer_fn(unsigned long data)
++static void wd_timer_fn(struct timer_list *t)
  {
- 	const char *alg = crypto_tfm_alg_name(tfm);
--	struct crypto_blkcipher *fallback;
-+	struct crypto_skcipher *fallback;
- 	struct p8_aes_ctr_ctx *ctx = crypto_tfm_ctx(tfm);
+-	struct timer_list *t = this_cpu_ptr(&wd_timer);
+ 	int cpu = smp_processor_id();
  
--	fallback =
--	    crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
-+	fallback = crypto_alloc_skcipher(alg, 0,
-+			CRYPTO_ALG_ASYNC | CRYPTO_ALG_NEED_FALLBACK);
- 	if (IS_ERR(fallback)) {
- 		printk(KERN_ERR
- 		       "Failed to allocate transformation for '%s': %ld\n",
-@@ -49,11 +51,11 @@ static int p8_aes_ctr_init(struct crypto_tfm *tfm)
- 		return PTR_ERR(fallback);
- 	}
- 	printk(KERN_INFO "Using '%s' as fallback implementation.\n",
--	       crypto_tfm_alg_driver_name((struct crypto_tfm *) fallback));
-+		crypto_skcipher_driver_name(fallback));
+ 	watchdog_timer_interrupt(cpu);
+@@ -292,7 +291,7 @@ static void start_watchdog_timer_on(unsigned int cpu)
  
--	crypto_blkcipher_set_flags(
-+	crypto_skcipher_set_flags(
- 		fallback,
--		crypto_blkcipher_get_flags((struct crypto_blkcipher *)tfm));
-+		crypto_skcipher_get_flags((struct crypto_skcipher *)tfm));
- 	ctx->fallback = fallback;
+ 	per_cpu(wd_timer_tb, cpu) = get_tb();
  
- 	return 0;
-@@ -64,7 +66,7 @@ static void p8_aes_ctr_exit(struct crypto_tfm *tfm)
- 	struct p8_aes_ctr_ctx *ctx = crypto_tfm_ctx(tfm);
- 
- 	if (ctx->fallback) {
--		crypto_free_blkcipher(ctx->fallback);
-+		crypto_free_skcipher(ctx->fallback);
- 		ctx->fallback = NULL;
- 	}
- }
-@@ -83,7 +85,7 @@ static int p8_aes_ctr_setkey(struct crypto_tfm *tfm, const u8 *key,
- 	pagefault_enable();
- 	preempt_enable();
- 
--	ret += crypto_blkcipher_setkey(ctx->fallback, key, keylen);
-+	ret += crypto_skcipher_setkey(ctx->fallback, key, keylen);
- 	return ret;
+-	setup_pinned_timer(t, wd_timer_fn, 0);
++	timer_setup(t, wd_timer_fn, TIMER_PINNED);
+ 	wd_timer_reset(cpu, t);
  }
  
-@@ -117,15 +119,14 @@ static int p8_aes_ctr_crypt(struct blkcipher_desc *desc,
- 	struct blkcipher_walk walk;
- 	struct p8_aes_ctr_ctx *ctx =
- 		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
--	struct blkcipher_desc fallback_desc = {
--		.tfm = ctx->fallback,
--		.info = desc->info,
--		.flags = desc->flags
--	};
- 
- 	if (in_interrupt()) {
--		ret = crypto_blkcipher_encrypt(&fallback_desc, dst, src,
--					       nbytes);
-+		SKCIPHER_REQUEST_ON_STACK(req, ctx->fallback);
-+		skcipher_request_set_tfm(req, ctx->fallback);
-+		skcipher_request_set_callback(req, desc->flags, NULL, NULL);
-+		skcipher_request_set_crypt(req, src, dst, nbytes, desc->info);
-+		ret = crypto_skcipher_encrypt(req);
-+		skcipher_request_zero(req);
- 	} else {
- 		blkcipher_walk_init(&walk, dst, src, nbytes);
- 		ret = blkcipher_walk_virt_block(desc, &walk, AES_BLOCK_SIZE);
 -- 
-2.9.4
+2.7.4
+
+
+-- 
+Kees Cook
+Pixel Security
