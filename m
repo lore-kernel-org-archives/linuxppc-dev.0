@@ -1,24 +1,33 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x22c.google.com (mail-pg0-x22c.google.com
- [IPv6:2607:f8b0:400e:c05::22c])
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGGkH4ncMzDrF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 11:47:34 +1100 (AEDT)
-Received: by mail-pg0-x22c.google.com with SMTP id s75so83492pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 17:47:34 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Kees Cook <keescook@chromium.org>,
- Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 55/58] net: fs_enet: Remove unused timer
-Date: Mon, 16 Oct 2017 17:29:39 -0700
-Message-Id: <1508200182-104605-56-git-send-email-keescook@chromium.org>
-In-Reply-To: <1508200182-104605-1-git-send-email-keescook@chromium.org>
-References: <1508200182-104605-1-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGJQM3cGhzDrD6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 13:03:54 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id k7so208651pga.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 19:03:54 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Bjorn Helgaas <bhelgaas@google.com>,
+ Daniel Vetter <daniel.vetter@intel.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
+ Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Lukas Wunner <lukas@wunner.de>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default device
+ selection
+In-Reply-To: <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
+References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Tue, 17 Oct 2017 13:03:46 +1100
+Message-ID: <871sm2y1h9.fsf@linkitivity.dja.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +37,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Removes unused timer and its old initialization call.
+Bjorn Helgaas <bhelgaas@google.com> writes:
 
-Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-Cc: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: netdev@vger.kernel.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 2 --
- drivers/net/ethernet/freescale/fs_enet/fs_enet.h      | 1 -
- 2 files changed, 3 deletions(-)
+> The default VGA device is normally set in vga_arbiter_add_pci_device() when
+> we call it for the first enabled device that can be accessed with the
+> legacy VGA resources ([mem 0xa0000-0xbffff], etc.)
+>
+> That default device can be overridden by an EFI device that owns the boot
+> framebuffer.  As a fallback, we can also select a VGA device that can't be
+> accessed via legacy VGA resources, or a VGA device that isn't even enabled.
+>
+> Factor out this EFI and fallback selection from vga_arb_device_init() into
+> a separate vga_arb_select_default_device() function.  This doesn't change
+> any behavior, but it untangles the "bridge control possible" checking and
+> messages from the default device selection.
+>
+> Tested-by: Zhou Wang <wangzhou1@hisilicon.com>  # D05 Hisi Hip07, Hip08
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  drivers/gpu/vga/vgaarb.c |   57 ++++++++++++++++++++++++++++------------------
+>  1 file changed, 35 insertions(+), 22 deletions(-)
+>
+> diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
+> index 8035e38d5110..d35d6d271f3f 100644
+> --- a/drivers/gpu/vga/vgaarb.c
+> +++ b/drivers/gpu/vga/vgaarb.c
+> @@ -1402,29 +1402,14 @@ static struct miscdevice vga_arb_device = {
+>  	MISC_DYNAMIC_MINOR, "vga_arbiter", &vga_arb_device_fops
+>  };
+>  
+> -static int __init vga_arb_device_init(void)
+> +static void __init vga_arb_select_default_device(void)
+>  {
+> -	int rc;
+>  	struct pci_dev *pdev;
+>  	struct vga_device *vgadev;
+>  
+> -	rc = misc_register(&vga_arb_device);
+> -	if (rc < 0)
+> -		pr_err("error %d registering device\n", rc);
+> -
+> -	bus_register_notifier(&pci_bus_type, &pci_notifier);
+> -
+> -	/* We add all pci devices satisfying vga class in the arbiter by
+> -	 * default */
+> -	pdev = NULL;
+> -	while ((pdev =
+> -		pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+> -			       PCI_ANY_ID, pdev)) != NULL)
+> -		vga_arbiter_add_pci_device(pdev);
+> -
+> +#if defined(CONFIG_X86) || defined(CONFIG_IA64)
+>  	list_for_each_entry(vgadev, &vga_list, list) {
+>  		struct device *dev = &vgadev->pdev->dev;
+> -#if defined(CONFIG_X86) || defined(CONFIG_IA64)
+>  		/*
+>  		 * Override vga_arbiter_add_pci_device()'s I/O based detection
+>  		 * as it may take the wrong device (e.g. on Apple system under
+> @@ -1461,12 +1446,8 @@ static int __init vga_arb_device_init(void)
+>  				vgaarb_info(dev, "overriding boot device\n");
+>  			vga_set_default_device(vgadev->pdev);
+>  		}
+> -#endif
+> -		if (vgadev->bridge_has_one_vga)
+> -			vgaarb_info(dev, "bridge control possible\n");
+> -		else
+> -			vgaarb_info(dev, "no bridge control possible\n");
+>  	}
+> +#endif
+>  
+>  	if (!vga_default_device()) {
+>  		list_for_each_entry(vgadev, &vga_list, list) {
+> @@ -1492,6 +1473,38 @@ static int __init vga_arb_device_init(void)
+>  			vga_set_default_device(vgadev->pdev);
+>  		}
+>  	}
+> +}
+> +
+> +static int __init vga_arb_device_init(void)
+> +{
+> +	int rc;
+> +	struct pci_dev *pdev;
+> +	struct vga_device *vgadev;
+> +
+> +	rc = misc_register(&vga_arb_device);
+> +	if (rc < 0)
+> +		pr_err("error %d registering device\n", rc);
+> +
+> +	bus_register_notifier(&pci_bus_type, &pci_notifier);
+> +
+> +	/* We add all PCI devices satisfying VGA class in the arbiter by
+> +	 * default */
+> +	pdev = NULL;
+> +	while ((pdev =
+> +		pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+> +			       PCI_ANY_ID, pdev)) != NULL)
+> +		vga_arbiter_add_pci_device(pdev);
+> +
+> +	list_for_each_entry(vgadev, &vga_list, list) {
+> +		struct device *dev = &vgadev->pdev->dev;
+> +
+> +		if (vgadev->bridge_has_one_vga)
+> +			vgaarb_info(dev, "bridge control possible\n");
+> +		else
+> +			vgaarb_info(dev, "no bridge control possible\n");
+> +	}
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 753259091b22..7892f2f0c6b5 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -1023,8 +1023,6 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 
- 	ndev->ethtool_ops = &fs_ethtool_ops;
- 
--	init_timer(&fep->phy_timer_list);
--
- 	netif_carrier_off(ndev);
- 
- 	ndev->features |= NETIF_F_SG;
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-index 5ce516c8a62a..dd306deb7cf1 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-@@ -137,7 +137,6 @@ struct fs_enet_private {
- 	cbd_t __iomem *cur_rx;
- 	cbd_t __iomem *cur_tx;
- 	int tx_free;
--	struct timer_list phy_timer_list;
- 	const struct phy_info *phy;
- 	u32 msg_enable;
- 	struct mii_if_info mii_if;
--- 
-2.7.4
+Initially I wondered if this info printk could be moved into
+vga_arbiter_check_bridge_sharing(), but it's been separated out since
+3448a19da479b ("vgaarb: use bridges to control VGA routing where
+possible."), and upon closer examination, it seems you can't be sure a
+device doesn't share a bridge until the end of the process, so this is
+indeed correct.
+
+Everything else also looks good to me.
+
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+
+Regards,
+Daniel
+
+> +
+> +	vga_arb_select_default_device();
+>  
+>  	pr_info("loaded\n");
+>  	return rc;
