@@ -1,18 +1,23 @@
-Return-Path: <sbates@raithlin.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0097.outbound.protection.outlook.com [104.47.37.97])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x243.google.com (mail-vk0-x243.google.com
+ [IPv6:2607:f8b0:400c:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGn9615N1zDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 07:39:04 +1100 (AEDT)
-From: "Stephen  Bates" <sbates@raithlin.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: Logan Gunthorpe <logang@deltatee.com>
-Subject: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
-Date: Tue, 17 Oct 2017 20:38:59 +0000
-Message-ID: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGpHk1MZhzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 08:29:53 +1100 (AEDT)
+Received: by mail-vk0-x243.google.com with SMTP id q13so2071246vkb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 14:29:53 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
+References: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 18 Oct 2017 08:29:49 +1100
+Message-ID: <CAKTCnz=6ab=TCWFOknvAq2QxoXbTMhDfQMt5wOFzzUoYJRnUMA@mail.gmail.com>
+Subject: Re: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
+To: Stephen Bates <sbates@raithlin.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Logan Gunthorpe <logang@deltatee.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgQWxsDQoNCkkgYW0gaG9waW5nIHNvbWVvbmUgY2FuIGhlbHAgc2hlZCBzb21lIGxpZ2h0IG9u
-IGFuIGlzc3VlIEkgYW0gc2VlaW5nIHdpdGggbXkgYXR0ZW1wdCB0byBhZGQgcDJwbWVtIFsxXSB0
-byB0aGUgcHBjNjRlbCBrZXJuZWwuIHAycG1lbSBpcyBhIChjdXJyZW50bHkpIG91dC1vZi10cmVl
-IHBhdGNoc2V0IHRoYXQgYWxsb3dzIG9uZSB0byBhZGQgZGV2aWNlIG1lbW9yeSB3aXRoIHN0cnVj
-dCBwYWdlIGJhY2tpbmcgaW50byB0aGUgTGludXgga2VybmVsLiBJdCBsZXZlcmFnZXMgTUVNT1JZ
-X0hPVFBMVUcgYW5kIFpPTkVfREVWSUNFIHdoaWNoIHdlcmUgYWRkZWQgdG8gcHBjNjQgaW4gNC4x
-NCBzbyBJIHRob3VnaHQgaXQgd291bGQgYmUgZnVuIHRvIHRyeSBpdCBvdXQuDQoNCldlIGNvbnN0
-cnVjdGVkIGEgcGF0Y2hzZXQgYmFzZWQgb2ZmIDQuMTQtcmMxIFsxXSBhbmQgYnVpbGQgYSBrZXJu
-ZWwgYmFzZWQgb2ZmIHRoZSBwc2VyaWVzIGRlZmNvbmZpZyBhbmQgcmFuIHRoaXMgb24gdXBzdHJl
-YW0gcWVtdS1zeXN0ZW0tcHBjNjQuIFRoZSBleGFjdCBjb21tYW5kIHRvIHJ1biBRRU1VIHdhczoN
-Cg0KcWVtdS1zeXN0ZW0tcHBjNjQgXA0KICAgIC1tYWNoaW5lIHBzZXJpZXMgXA0KICAgIC1jcHUg
-cG93ZXI4IFwNCiAgICAtc21wIDEgLW0gMjA0OCBcDQogICAgLWtlcm5lbCB+L2tlcm5lbC9saW51
-eC1wcGM2NGVsL3ZtbGludXggXA0KICAgIC1hcHBlbmQgIm52bWUudXNlX2NtYj0yNCBjb25zb2xl
-PWh2YyByb290PS9kZXYvc2RhIHJvb3R3YWl0IHJ3IiBcDQogICAgLXNlcmlhbCBtb246c3RkaW8g
-LWRyaXZlIGZpbGU9aW1hZ2UtcHBjNjRlbC5pbWcsaWY9c2NzaSxmb3JtYXQ9cmF3LGluZGV4PTAg
-XA0KICAgIC1ub2dyYXBoaWMgXA0KICAgIC1kcml2ZSBmaWxlPS4uL2ltYWdlcy9udm1lLnFjb3cy
-LGlmPW5vbmUsaWQ9bnZtZTEsc25hcHNob3Q9b24gXA0KICAgIC1kZXZpY2UgbnZtZSxkcml2ZT1u
-dm1lMSxzZXJpYWw9bnZtZTEgXA0KICAgIC1kcml2ZSBmaWxlPS4uL2ltYWdlcy9udm1lMi5xY293
-MixpZj1ub25lLGlkPW52bWUyLHNuYXBzaG90PW9uIFwNCiAgICAtZGV2aWNlIG52bWUsZHJpdmU9
-bnZtZTIsc2VyaWFsPW52bWUyLGNtYl9zaXplX21iPTY0DQoNClRoaXMgcmVzdWx0ZWQgaW4gdGhl
-IGZvbGxvd2luZyBleHRyYWN0IGZyb20gZG1lc2cgd2hlbiByZWdpc3RlcmluZyB0aGUgcDJwbWVt
-IGFzc29jaWF0ZWQgd2l0aCBvbmUgb2YgdGhlIE5WTWUgU1NEcy4NCg0KWyAgICAzLjUwODQ5N10g
-bnZtZSAwMDAwOjAwOjAzLjA6IGVuYWJsaW5nIGRldmljZSAoMDEwMCAtPiAwMTAyKQ0KWyAgICAz
-LjUxMDc0M10gbnZtZSAwMDAwOjAwOjAzLjA6IFVzaW5nIDY0LWJpdCBkaXJlY3QgRE1BIGF0IG9m
-ZnNldCA4MDAwMDAwMDAwMDAwMDANClsgICAgMy41MzU3MDZdIHAycG1lbSBwMnBtZW0wOiByZWdp
-c3RlcmVkDQpbICAgIDMuNTM3NzgwXSBscGFyOiBBdHRlbXB0aW5nIHRvIHJlc2l6ZSBIUFQgdG8g
-c2hpZnQgMjENClsgICAgMy41MzkyNTFdIFVuYWJsZSB0byByZXNpemUgaGFzaCBwYWdlIHRhYmxl
-IHRvIHRhcmdldCBvcmRlciAyMTogLTENClsgICAgMy41NDEwNzldIFVuYWJsZSB0byBjcmVhdGUg
-bWFwcGluZyBmb3IgaG90IGFkZGVkIG1lbW9yeSAweGMwMDAyMTAwMDAwMDAwMDAuLjB4YzAwMDIx
-MDAwNDAwMDAwMDogLTINClsgICAgMy41NTA0MDddIHAycG1lbSBwMnBtZW0wOiB1bnJlZ2lzdGVy
-ZWQNCg0KSSBhbSBub3QgdGhhdCBmYW1pbGlhciB3aXRoIHRoZSBwc2VyaWVzIGFyY2hpdGVjdHVy
-ZSBzbyBJIHdhcyBob3BpbmcgZm9yIHNvbWUgZ3VpZGFuY2UgY29uY2VybmluZyB0aGUgbHBhciBl
-cnJvciBtZXNzYWdlLiBJZiBhbnkgcHBjNjQgY29kZXJzIGZhbmN5IGhhdmluZyBhIGdvIGF0IHRo
-aXMgdGhlIGtlcm5lbCBjb2RlIGlzIGF0IFsxXSBhbmQgSeKAmWQgYmUgaGFwcHkgdG8gcHJvdmlk
-ZSB0aGUgLmNvbmZpZyB1c2VkIGlmIG5lZWRlZC4gSnVzdCBsZXQgbWUga25vdy4NCg0KQ2hlZXJz
-DQogDQpTdGVwaGVuDQoNClsxXSBodHRwczovL2dpdGh1Yi5jb20vc2JhdGVzMTMwMjcyL2xpbnV4
-LXAycG1lbQ0KDQoNCg==
+On Wed, Oct 18, 2017 at 7:38 AM, Stephen  Bates <sbates@raithlin.com> wrote=
+:
+> Hi All
+>
+> I am hoping someone can help shed some light on an issue I am seeing with=
+ my attempt to add p2pmem [1] to the ppc64el kernel. p2pmem is a (currently=
+) out-of-tree patchset that allows one to add device memory with struct pag=
+e backing into the Linux kernel. It leverages MEMORY_HOTPLUG and ZONE_DEVIC=
+E which were added to ppc64 in 4.14 so I thought it would be fun to try it =
+out.
+>
+> We constructed a patchset based off 4.14-rc1 [1] and build a kernel based=
+ off the pseries defconfig and ran this on upstream qemu-system-ppc64. The =
+exact command to run QEMU was:
+>
+> qemu-system-ppc64 \
+>     -machine pseries \
+>     -cpu power8 \
+>     -smp 1 -m 2048 \
+>     -kernel ~/kernel/linux-ppc64el/vmlinux \
+>     -append "nvme.use_cmb=3D24 console=3Dhvc root=3D/dev/sda rootwait rw"=
+ \
+>     -serial mon:stdio -drive file=3Dimage-ppc64el.img,if=3Dscsi,format=3D=
+raw,index=3D0 \
+>     -nographic \
+>     -drive file=3D../images/nvme.qcow2,if=3Dnone,id=3Dnvme1,snapshot=3Don=
+ \
+>     -device nvme,drive=3Dnvme1,serial=3Dnvme1 \
+>     -drive file=3D../images/nvme2.qcow2,if=3Dnone,id=3Dnvme2,snapshot=3Do=
+n \
+>     -device nvme,drive=3Dnvme2,serial=3Dnvme2,cmb_size_mb=3D64
+>
+> This resulted in the following extract from dmesg when registering the p2=
+pmem associated with one of the NVMe SSDs.
+>
+> [    3.508497] nvme 0000:00:03.0: enabling device (0100 -> 0102)
+> [    3.510743] nvme 0000:00:03.0: Using 64-bit direct DMA at offset 80000=
+0000000000
+> [    3.535706] p2pmem p2pmem0: registered
+> [    3.537780] lpar: Attempting to resize HPT to shift 21
+> [    3.539251] Unable to resize hash page table to target order 21: -1
+
+I am guessing that the hotplug of ZONE_DEVICE memory was done
+incorrectly as it lead to HPT resizing (the system thinking this is
+normal memory). Ideally one would expect that the driver would online
+ZONE_DEVICE memory and not go through the HOTPLUG path. Are you using
+devm_memremap_pages() path to add these pages?
+
+Balbir Singh.
