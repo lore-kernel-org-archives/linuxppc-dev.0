@@ -1,22 +1,33 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x243.google.com (mail-vk0-x243.google.com
- [IPv6:2607:f8b0:400c:c05::243])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGpgH3JCMzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 08:46:51 +1100 (AEDT)
+Received: from mail-wm0-f47.google.com (mail-wm0-f47.google.com [74.125.82.47])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGpHk1MZhzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 08:29:53 +1100 (AEDT)
-Received: by mail-vk0-x243.google.com with SMTP id q13so2071246vkb.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 14:29:53 -0700 (PDT)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6E16E2191B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 21:46:49 +0000 (UTC)
+Received: by mail-wm0-f47.google.com with SMTP id m72so10457170wmc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 14:46:49 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
-References: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 18 Oct 2017 08:29:49 +1100
-Message-ID: <CAKTCnz=6ab=TCWFOknvAq2QxoXbTMhDfQMt5wOFzzUoYJRnUMA@mail.gmail.com>
-Subject: Re: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
-To: Stephen Bates <sbates@raithlin.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Logan Gunthorpe <logang@deltatee.com>
+In-Reply-To: <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
+References: <20170821151651.25096-1-robh@kernel.org>
+ <20170821151651.25096-6-robh@kernel.org>
+ <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 17 Oct 2017 16:46:27 -0500
+Message-ID: <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
+Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
+ full_name
+To: Alan Tull <atull@kernel.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,52 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 7:38 AM, Stephen  Bates <sbates@raithlin.com> wrote=
-:
-> Hi All
+On Tue, Oct 17, 2017 at 4:32 PM, Alan Tull <atull@kernel.org> wrote:
+> On Mon, Aug 21, 2017 at 10:16 AM, Rob Herring <robh@kernel.org> wrote:
 >
-> I am hoping someone can help shed some light on an issue I am seeing with=
- my attempt to add p2pmem [1] to the ppc64el kernel. p2pmem is a (currently=
-) out-of-tree patchset that allows one to add device memory with struct pag=
-e backing into the Linux kernel. It leverages MEMORY_HOTPLUG and ZONE_DEVIC=
-E which were added to ppc64 in 4.14 so I thought it would be fun to try it =
-out.
+> Hi Rob,
 >
-> We constructed a patchset based off 4.14-rc1 [1] and build a kernel based=
- off the pseries defconfig and ran this on upstream qemu-system-ppc64. The =
-exact command to run QEMU was:
+>> With dependencies on a statically allocated full path name converted to
+>> use %pOF format specifier, we can store just the basename of node, and
+>> the unflattening of the FDT can be simplified.
+>>
+>> This commit will affect the remaining users of full_name. After
+>> analyzing these users, the remaining cases should only change some print
+>> messages. The main users of full_name are providing a name for struct
+>> resource. The resource names shouldn't be important other than providing
+>> /proc/iomem names.
+>>
+>> We no longer distinguish between pre and post 0x10 dtb formats as either
+>> a full path or basename will work. However, less than 0x10 formats have
+>> been broken since the conversion to use libfdt (and no one has cared).
+>> The conversion of the unflattening code to be non-recursive also broke
+>> pre 0x10 formats as the populate_node function would return 0 in that
+>> case.
+>>
+>> Signed-off-by: Rob Herring <robh@kernel.org>
+>> ---
+>> v2:
+>> - rebase to linux-next
+>>
+>>  drivers/of/fdt.c | 69 +++++++++-----------------------------------------------
+>>  1 file changed, 11 insertions(+), 58 deletions(-)
 >
-> qemu-system-ppc64 \
->     -machine pseries \
->     -cpu power8 \
->     -smp 1 -m 2048 \
->     -kernel ~/kernel/linux-ppc64el/vmlinux \
->     -append "nvme.use_cmb=3D24 console=3Dhvc root=3D/dev/sda rootwait rw"=
- \
->     -serial mon:stdio -drive file=3Dimage-ppc64el.img,if=3Dscsi,format=3D=
-raw,index=3D0 \
->     -nographic \
->     -drive file=3D../images/nvme.qcow2,if=3Dnone,id=3Dnvme1,snapshot=3Don=
- \
->     -device nvme,drive=3Dnvme1,serial=3Dnvme1 \
->     -drive file=3D../images/nvme2.qcow2,if=3Dnone,id=3Dnvme2,snapshot=3Do=
-n \
->     -device nvme,drive=3Dnvme2,serial=3Dnvme2,cmb_size_mb=3D64
+> I've just updated to the latest next branch and am finding problems
+> applying overlays.   Reverting this commit alleviates things.  The
+> errors I get are:
 >
-> This resulted in the following extract from dmesg when registering the p2=
-pmem associated with one of the NVMe SSDs.
->
-> [    3.508497] nvme 0000:00:03.0: enabling device (0100 -> 0102)
-> [    3.510743] nvme 0000:00:03.0: Using 64-bit direct DMA at offset 80000=
-0000000000
-> [    3.535706] p2pmem p2pmem0: registered
-> [    3.537780] lpar: Attempting to resize HPT to shift 21
-> [    3.539251] Unable to resize hash page table to target order 21: -1
+> [   88.498704] OF: overlay: Failed to apply prop @/__symbols__/clk_0
+> [   88.513447] OF: overlay: apply failed '/__symbols__'
+> [   88.518423] create_overlay: Failed to create overlay (err=-12)
 
-I am guessing that the hotplug of ZONE_DEVICE memory was done
-incorrectly as it lead to HPT resizing (the system thinking this is
-normal memory). Ideally one would expect that the driver would online
-ZONE_DEVICE memory and not go through the HOTPLUG path. Are you using
-devm_memremap_pages() path to add these pages?
+Frank's series with overlay updates should fix this.
 
-Balbir Singh.
+Rob
