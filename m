@@ -1,30 +1,28 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGXWh4j6qzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 22:09:15 +1100 (AEDT)
-Message-ID: <1508238182.16112.475.camel@linux.intel.com>
-Subject: Re: [PATCH 3/4] char/tpm: Improve a size determination in nine
- functions
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Corentin Labbe
- <clabbe.montjoie@gmail.com>, Jarkko Sakkinen
- <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
- <jgunthorpe@obsidianresearch.com>, Jerry Snitselaar <jsnitsel@redhat.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, Peter =?ISO-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Date: Tue, 17 Oct 2017 14:03:02 +0300
-In-Reply-To: <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGYCh3J7CzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 22:40:31 +1100 (AEDT)
+Date: Tue, 17 Oct 2017 13:40:28 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, akpm@linux-foundation.org,
+ steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
+Subject: Re: [PATCH v12 01/11] mm: deferred_init_memmap improvements
+Message-ID: <20171017114028.uyt63277md5tuc4j@dhcp22.suse.cz>
+References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
+ <20171013173214.27300-2-pasha.tatashin@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171013173214.27300-2-pasha.tatashin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,186 +32,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-10-16 at 19:33 +0200, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Mon, 16 Oct 2017 18:28:17 +0200
+On Fri 13-10-17 13:32:04, Pavel Tatashin wrote:
+> deferred_init_memmap() is called when struct pages are initialized later
+> in boot by slave CPUs. This patch simplifies and optimizes this function,
+> and also fixes a couple issues (described below).
 > 
-> Replace the specification of data structures by pointer dereferences
-> as the parameter for the operator "sizeof" to make the corresponding
-> size
-> determination a bit safer according to the Linux coding style
-> convention.
-
-
-This patch does one style in favor of the other.
-
-At the end it's Jarkko's call, though I would NAK this as I think some
-one already told this to you for some other similar patch(es).
-
-
-I even would suggest to stop doing this noisy stuff, which keeps people
-busy for nothing.
-
+> The main change is that now we are iterating through free memblock areas
+> instead of all configured memory. Thus, we do not have to check if the
+> struct page has already been initialized.
 > 
-> This issue was detected by using the Coccinelle software.
+> =====
+> In deferred_init_memmap() where all deferred struct pages are initialized
+> we have a check like this:
 > 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> if (page->flags) {
+> 	VM_BUG_ON(page_zone(page) != zone);
+> 	goto free_range;
+> }
+> 
+> This way we are checking if the current deferred page has already been
+> initialized. It works, because memory for struct pages has been zeroed, and
+> the only way flags are not zero if it went through __init_single_page()
+> before.  But, once we change the current behavior and won't zero the memory
+> in memblock allocator, we cannot trust anything inside "struct page"es
+> until they are initialized. This patch fixes this.
+> 
+> The deferred_init_memmap() is re-written to loop through only free memory
+> ranges provided by memblock.
+> 
+> Note, this first issue is relevant only when the following change is
+> merged:
+> 
+> =====
+> This patch fixes another existing issue on systems that have holes in
+> zones i.e CONFIG_HOLES_IN_ZONE is defined.
+> 
+> In for_each_mem_pfn_range() we have code like this:
+> 
+> if (!pfn_valid_within(pfn)
+> 	goto free_range;
+> 
+> Note: 'page' is not set to NULL and is not incremented but 'pfn' advances.
+> Thus means if deferred struct pages are enabled on systems with these kind
+> of holes, linux would get memory corruptions. I have fixed this issue by
+> defining a new macro that performs all the necessary operations when we
+> free the current set of pages.
+
+This really begs to have two patches... I will not insist though. I also
+suspect the code can be further simplified but again this is nothing to
+block this to go.
+ 
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
+> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+
+I do not see any obvious issues in the patch
+
+Acked-by: Michal Hocko <mhocko@suse.com>
+
 > ---
->  drivers/char/tpm/st33zp24/i2c.c      | 3 +--
->  drivers/char/tpm/st33zp24/spi.c      | 3 +--
->  drivers/char/tpm/st33zp24/st33zp24.c | 3 +--
->  drivers/char/tpm/tpm_crb.c           | 2 +-
->  drivers/char/tpm/tpm_i2c_atmel.c     | 2 +-
->  drivers/char/tpm/tpm_i2c_nuvoton.c   | 2 +-
->  drivers/char/tpm/tpm_ibmvtpm.c       | 2 +-
->  drivers/char/tpm/tpm_tis.c           | 2 +-
->  drivers/char/tpm/tpm_tis_spi.c       | 3 +--
->  9 files changed, 9 insertions(+), 13 deletions(-)
+>  mm/page_alloc.c | 168 ++++++++++++++++++++++++++++----------------------------
+>  1 file changed, 85 insertions(+), 83 deletions(-)
 > 
-> diff --git a/drivers/char/tpm/st33zp24/i2c.c
-> b/drivers/char/tpm/st33zp24/i2c.c
-> index be5d1abd3e8e..d0cb25688485 100644
-> --- a/drivers/char/tpm/st33zp24/i2c.c
-> +++ b/drivers/char/tpm/st33zp24/i2c.c
-> @@ -245,8 +245,7 @@ static int st33zp24_i2c_probe(struct i2c_client
-> *client,
->  		return -ENODEV;
->  	}
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 77e4d3c5c57b..cdbd14829fd3 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1410,14 +1410,17 @@ void clear_zone_contiguous(struct zone *zone)
+>  }
 >  
-> -	phy = devm_kzalloc(&client->dev, sizeof(struct
-> st33zp24_i2c_phy),
-> -			   GFP_KERNEL);
-> +	phy = devm_kzalloc(&client->dev, sizeof(*phy), GFP_KERNEL);
->  	if (!phy)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/char/tpm/st33zp24/spi.c
-> b/drivers/char/tpm/st33zp24/spi.c
-> index 0fc4f20b5f83..c952df9244c8 100644
-> --- a/drivers/char/tpm/st33zp24/spi.c
-> +++ b/drivers/char/tpm/st33zp24/spi.c
-> @@ -358,8 +358,7 @@ static int st33zp24_spi_probe(struct spi_device
-> *dev)
->  		return -ENODEV;
->  	}
->  
-> -	phy = devm_kzalloc(&dev->dev, sizeof(struct
-> st33zp24_spi_phy),
-> -			   GFP_KERNEL);
-> +	phy = devm_kzalloc(&dev->dev, sizeof(*phy), GFP_KERNEL);
->  	if (!phy)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/char/tpm/st33zp24/st33zp24.c
-> b/drivers/char/tpm/st33zp24/st33zp24.c
-> index 4d1dc8b46877..0686a129268c 100644
-> --- a/drivers/char/tpm/st33zp24/st33zp24.c
-> +++ b/drivers/char/tpm/st33zp24/st33zp24.c
-> @@ -533,8 +533,7 @@ int st33zp24_probe(void *phy_id, const struct
-> st33zp24_phy_ops *ops,
->  	if (IS_ERR(chip))
->  		return PTR_ERR(chip);
->  
-> -	tpm_dev = devm_kzalloc(dev, sizeof(struct st33zp24_dev),
-> -			       GFP_KERNEL);
-> +	tpm_dev = devm_kzalloc(dev, sizeof(*tpm_dev), GFP_KERNEL);
->  	if (!tpm_dev)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/char/tpm/tpm_crb.c b/drivers/char/tpm/tpm_crb.c
-> index 7b3c2a8aa9de..343c46e8560f 100644
-> --- a/drivers/char/tpm/tpm_crb.c
-> +++ b/drivers/char/tpm/tpm_crb.c
-> @@ -557,7 +557,7 @@ static int crb_acpi_add(struct acpi_device
-> *device)
->  	if (sm == ACPI_TPM2_MEMORY_MAPPED)
->  		return -ENODEV;
->  
-> -	priv = devm_kzalloc(dev, sizeof(struct crb_priv),
-> GFP_KERNEL);
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->  	if (!priv)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/char/tpm/tpm_i2c_atmel.c
-> b/drivers/char/tpm/tpm_i2c_atmel.c
-> index 95ce2e9ccdc6..2d0df930a76d 100644
-> --- a/drivers/char/tpm/tpm_i2c_atmel.c
-> +++ b/drivers/char/tpm/tpm_i2c_atmel.c
-> @@ -165,7 +165,7 @@ static int i2c_atmel_probe(struct i2c_client
-> *client,
->  	if (IS_ERR(chip))
->  		return PTR_ERR(chip);
->  
-> -	priv = devm_kzalloc(dev, sizeof(struct priv_data),
-> GFP_KERNEL);
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->  	if (!priv)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/char/tpm/tpm_i2c_nuvoton.c
-> b/drivers/char/tpm/tpm_i2c_nuvoton.c
-> index c6428771841f..5983d52eb6d9 100644
-> --- a/drivers/char/tpm/tpm_i2c_nuvoton.c
-> +++ b/drivers/char/tpm/tpm_i2c_nuvoton.c
-> @@ -551,7 +551,7 @@ static int i2c_nuvoton_probe(struct i2c_client
-> *client,
->  	if (IS_ERR(chip))
->  		return PTR_ERR(chip);
->  
-> -	priv = devm_kzalloc(dev, sizeof(struct priv_data),
-> GFP_KERNEL);
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->  	if (!priv)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c
-> b/drivers/char/tpm/tpm_ibmvtpm.c
-> index b18148ef2612..a4b462a77b99 100644
-> --- a/drivers/char/tpm/tpm_ibmvtpm.c
-> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
-> @@ -608,7 +608,7 @@ static int tpm_ibmvtpm_probe(struct vio_dev
-> *vio_dev,
->  	if (IS_ERR(chip))
->  		return PTR_ERR(chip);
->  
-> -	ibmvtpm = kzalloc(sizeof(struct ibmvtpm_dev), GFP_KERNEL);
-> +	ibmvtpm = kzalloc(sizeof(*ibmvtpm), GFP_KERNEL);
->  	if (!ibmvtpm)
->  		goto cleanup;
->  
-> diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-> index ebd0e75a3e4d..0a3af60bab2a 100644
-> --- a/drivers/char/tpm/tpm_tis.c
-> +++ b/drivers/char/tpm/tpm_tis.c
-> @@ -294,7 +294,7 @@ static int tpm_tis_init(struct device *dev, struct
-> tpm_info *tpm_info)
->  	if (rc)
->  		return rc;
->  
-> -	phy = devm_kzalloc(dev, sizeof(struct tpm_tis_tcg_phy),
-> GFP_KERNEL);
-> +	phy = devm_kzalloc(dev, sizeof(*phy), GFP_KERNEL);
->  	if (phy == NULL)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/char/tpm/tpm_tis_spi.c
-> b/drivers/char/tpm/tpm_tis_spi.c
-> index 424ff2fde1f2..7cabb12d0b3a 100644
-> --- a/drivers/char/tpm/tpm_tis_spi.c
-> +++ b/drivers/char/tpm/tpm_tis_spi.c
-> @@ -200,8 +200,7 @@ static int tpm_tis_spi_probe(struct spi_device
-> *dev)
+>  #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
+> -static void __init deferred_free_range(struct page *page,
+> -					unsigned long pfn, int nr_pages)
+> +static void __init deferred_free_range(unsigned long pfn,
+> +				       unsigned long nr_pages)
 >  {
->  	struct tpm_tis_spi_phy *phy;
+> -	int i;
+> +	struct page *page;
+> +	unsigned long i;
 >  
-> -	phy = devm_kzalloc(&dev->dev, sizeof(struct tpm_tis_spi_phy),
-> -			   GFP_KERNEL);
-> +	phy = devm_kzalloc(&dev->dev, sizeof(*phy), GFP_KERNEL);
->  	if (!phy)
->  		return -ENOMEM;
+> -	if (!page)
+> +	if (!nr_pages)
+>  		return;
 >  
+> +	page = pfn_to_page(pfn);
+> +
+>  	/* Free a large naturally-aligned chunk if possible */
+>  	if (nr_pages == pageblock_nr_pages &&
+>  	    (pfn & (pageblock_nr_pages - 1)) == 0) {
+> @@ -1443,19 +1446,89 @@ static inline void __init pgdat_init_report_one_done(void)
+>  		complete(&pgdat_init_all_done_comp);
+>  }
+>  
+> +/*
+> + * Helper for deferred_init_range, free the given range, reset the counters, and
+> + * return number of pages freed.
+> + */
+> +static inline unsigned long __def_free(unsigned long *nr_free,
+> +				       unsigned long *free_base_pfn,
+> +				       struct page **page)
+> +{
+> +	unsigned long nr = *nr_free;
+> +
+> +	deferred_free_range(*free_base_pfn, nr);
+> +	*free_base_pfn = 0;
+> +	*nr_free = 0;
+> +	*page = NULL;
+> +
+> +	return nr;
+> +}
+> +
+> +static unsigned long deferred_init_range(int nid, int zid, unsigned long pfn,
+> +					 unsigned long end_pfn)
+> +{
+> +	struct mminit_pfnnid_cache nid_init_state = { };
+> +	unsigned long nr_pgmask = pageblock_nr_pages - 1;
+> +	unsigned long free_base_pfn = 0;
+> +	unsigned long nr_pages = 0;
+> +	unsigned long nr_free = 0;
+> +	struct page *page = NULL;
+> +
+> +	for (; pfn < end_pfn; pfn++) {
+> +		/*
+> +		 * First we check if pfn is valid on architectures where it is
+> +		 * possible to have holes within pageblock_nr_pages. On systems
+> +		 * where it is not possible, this function is optimized out.
+> +		 *
+> +		 * Then, we check if a current large page is valid by only
+> +		 * checking the validity of the head pfn.
+> +		 *
+> +		 * meminit_pfn_in_nid is checked on systems where pfns can
+> +		 * interleave within a node: a pfn is between start and end
+> +		 * of a node, but does not belong to this memory node.
+> +		 *
+> +		 * Finally, we minimize pfn page lookups and scheduler checks by
+> +		 * performing it only once every pageblock_nr_pages.
+> +		 */
+> +		if (!pfn_valid_within(pfn)) {
+> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
+> +		} else if (!(pfn & nr_pgmask) && !pfn_valid(pfn)) {
+> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
+> +		} else if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
+> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
+> +		} else if (page && (pfn & nr_pgmask)) {
+> +			page++;
+> +			__init_single_page(page, pfn, zid, nid);
+> +			nr_free++;
+> +		} else {
+> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
+> +			page = pfn_to_page(pfn);
+> +			__init_single_page(page, pfn, zid, nid);
+> +			free_base_pfn = pfn;
+> +			nr_free = 1;
+> +			cond_resched();
+> +		}
+> +	}
+> +	/* Free the last block of pages to allocator */
+> +	nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
+> +
+> +	return nr_pages;
+> +}
+> +
+>  /* Initialise remaining memory on a node */
+>  static int __init deferred_init_memmap(void *data)
+>  {
+>  	pg_data_t *pgdat = data;
+>  	int nid = pgdat->node_id;
+> -	struct mminit_pfnnid_cache nid_init_state = { };
+>  	unsigned long start = jiffies;
+>  	unsigned long nr_pages = 0;
+> -	unsigned long walk_start, walk_end;
+> -	int i, zid;
+> +	unsigned long spfn, epfn;
+> +	phys_addr_t spa, epa;
+> +	int zid;
+>  	struct zone *zone;
+>  	unsigned long first_init_pfn = pgdat->first_deferred_pfn;
+>  	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
+> +	u64 i;
+>  
+>  	if (first_init_pfn == ULONG_MAX) {
+>  		pgdat_init_report_one_done();
+> @@ -1477,83 +1550,12 @@ static int __init deferred_init_memmap(void *data)
+>  		if (first_init_pfn < zone_end_pfn(zone))
+>  			break;
+>  	}
+> +	first_init_pfn = max(zone->zone_start_pfn, first_init_pfn);
+>  
+> -	for_each_mem_pfn_range(i, nid, &walk_start, &walk_end, NULL) {
+> -		unsigned long pfn, end_pfn;
+> -		struct page *page = NULL;
+> -		struct page *free_base_page = NULL;
+> -		unsigned long free_base_pfn = 0;
+> -		int nr_to_free = 0;
+> -
+> -		end_pfn = min(walk_end, zone_end_pfn(zone));
+> -		pfn = first_init_pfn;
+> -		if (pfn < walk_start)
+> -			pfn = walk_start;
+> -		if (pfn < zone->zone_start_pfn)
+> -			pfn = zone->zone_start_pfn;
+> -
+> -		for (; pfn < end_pfn; pfn++) {
+> -			if (!pfn_valid_within(pfn))
+> -				goto free_range;
+> -
+> -			/*
+> -			 * Ensure pfn_valid is checked every
+> -			 * pageblock_nr_pages for memory holes
+> -			 */
+> -			if ((pfn & (pageblock_nr_pages - 1)) == 0) {
+> -				if (!pfn_valid(pfn)) {
+> -					page = NULL;
+> -					goto free_range;
+> -				}
+> -			}
+> -
+> -			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
+> -				page = NULL;
+> -				goto free_range;
+> -			}
+> -
+> -			/* Minimise pfn page lookups and scheduler checks */
+> -			if (page && (pfn & (pageblock_nr_pages - 1)) != 0) {
+> -				page++;
+> -			} else {
+> -				nr_pages += nr_to_free;
+> -				deferred_free_range(free_base_page,
+> -						free_base_pfn, nr_to_free);
+> -				free_base_page = NULL;
+> -				free_base_pfn = nr_to_free = 0;
+> -
+> -				page = pfn_to_page(pfn);
+> -				cond_resched();
+> -			}
+> -
+> -			if (page->flags) {
+> -				VM_BUG_ON(page_zone(page) != zone);
+> -				goto free_range;
+> -			}
+> -
+> -			__init_single_page(page, pfn, zid, nid);
+> -			if (!free_base_page) {
+> -				free_base_page = page;
+> -				free_base_pfn = pfn;
+> -				nr_to_free = 0;
+> -			}
+> -			nr_to_free++;
+> -
+> -			/* Where possible, batch up pages for a single free */
+> -			continue;
+> -free_range:
+> -			/* Free the current block of pages to allocator */
+> -			nr_pages += nr_to_free;
+> -			deferred_free_range(free_base_page, free_base_pfn,
+> -								nr_to_free);
+> -			free_base_page = NULL;
+> -			free_base_pfn = nr_to_free = 0;
+> -		}
+> -		/* Free the last block of pages to allocator */
+> -		nr_pages += nr_to_free;
+> -		deferred_free_range(free_base_page, free_base_pfn, nr_to_free);
+> -
+> -		first_init_pfn = max(end_pfn, first_init_pfn);
+> +	for_each_free_mem_range(i, nid, MEMBLOCK_NONE, &spa, &epa, NULL) {
+> +		spfn = max_t(unsigned long, first_init_pfn, PFN_UP(spa));
+> +		epfn = min_t(unsigned long, zone_end_pfn(zone), PFN_DOWN(epa));
+> +		nr_pages += deferred_init_range(nid, zid, spfn, epfn);
+>  	}
+>  
+>  	/* Sanity check that the next zone really is unpopulated */
+> -- 
+> 2.14.2
 
 -- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Michal Hocko
+SUSE Labs
