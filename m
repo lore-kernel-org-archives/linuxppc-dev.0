@@ -1,23 +1,24 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x236.google.com (mail-pg0-x236.google.com
- [IPv6:2607:f8b0:400e:c05::236])
+Received: from mail-pg0-x22c.google.com (mail-pg0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c05::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGFNg4kjczDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 10:47:14 +1100 (AEDT)
-Received: by mail-pg0-x236.google.com with SMTP id l24so8025821pgu.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 16:47:14 -0700 (PDT)
-Date: Mon, 16 Oct 2017 16:47:10 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGGkH4ncMzDrF7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 11:47:34 +1100 (AEDT)
+Received: by mail-pg0-x22c.google.com with SMTP id s75so83492pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 17:47:34 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Kees Cook <keescook@chromium.org>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/watchdog: Convert timers to use timer_setup()
-Message-ID: <20171016234710.GA102273@beast>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 55/58] net: fs_enet: Remove unused timer
+Date: Mon, 16 Oct 2017 17:29:39 -0700
+Message-Id: <1508200182-104605-56-git-send-email-keescook@chromium.org>
+In-Reply-To: <1508200182-104605-1-git-send-email-keescook@chromium.org>
+References: <1508200182-104605-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation for unconditionally passing the struct timer_list pointer to
-all timer callbacks, switch to using the new timer_setup() and from_timer()
-to pass the timer pointer explicitly.
+Removes unused timer and its old initialization call.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+Cc: Vitaly Bordug <vbordug@ru.mvista.com>
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/kernel/watchdog.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 2 --
+ drivers/net/ethernet/freescale/fs_enet/fs_enet.h      | 1 -
+ 2 files changed, 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 15e209a37c2d..50797528b5e1 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -263,9 +263,8 @@ static void wd_timer_reset(unsigned int cpu, struct timer_list *t)
- 	add_timer_on(t, cpu);
- }
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+index 753259091b22..7892f2f0c6b5 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+@@ -1023,8 +1023,6 @@ static int fs_enet_probe(struct platform_device *ofdev)
  
--static void wd_timer_fn(unsigned long data)
-+static void wd_timer_fn(struct timer_list *t)
- {
--	struct timer_list *t = this_cpu_ptr(&wd_timer);
- 	int cpu = smp_processor_id();
+ 	ndev->ethtool_ops = &fs_ethtool_ops;
  
- 	watchdog_timer_interrupt(cpu);
-@@ -292,7 +291,7 @@ static void start_watchdog_timer_on(unsigned int cpu)
+-	init_timer(&fep->phy_timer_list);
+-
+ 	netif_carrier_off(ndev);
  
- 	per_cpu(wd_timer_tb, cpu) = get_tb();
- 
--	setup_pinned_timer(t, wd_timer_fn, 0);
-+	timer_setup(t, wd_timer_fn, TIMER_PINNED);
- 	wd_timer_reset(cpu, t);
- }
- 
+ 	ndev->features |= NETIF_F_SG;
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+index 5ce516c8a62a..dd306deb7cf1 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+@@ -137,7 +137,6 @@ struct fs_enet_private {
+ 	cbd_t __iomem *cur_rx;
+ 	cbd_t __iomem *cur_tx;
+ 	int tx_free;
+-	struct timer_list phy_timer_list;
+ 	const struct phy_info *phy;
+ 	u32 msg_enable;
+ 	struct mii_if_info mii_if;
 -- 
 2.7.4
-
-
--- 
-Kees Cook
-Pixel Security
