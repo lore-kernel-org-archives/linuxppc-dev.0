@@ -1,29 +1,55 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGdyr6v8fzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:14:44 +1100 (AEDT)
-Subject: Re: [PATCH v12 01/11] mm: deferred_init_memmap improvements
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com, will.deacon@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
- akpm@linux-foundation.org, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
- <20171013173214.27300-2-pasha.tatashin@oracle.com>
- <20171017114028.uyt63277md5tuc4j@dhcp22.suse.cz>
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <dc43ac9d-8dff-d655-afd5-cb035a9f1a1a@oracle.com>
-Date: Tue, 17 Oct 2017 11:13:19 -0400
-MIME-Version: 1.0
-In-Reply-To: <20171017114028.uyt63277md5tuc4j@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGf2S4Sn1zDqF9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:17:52 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9HFFcGx145955
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 11:17:50 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dnk4w4rx2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 11:17:49 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Tue, 17 Oct 2017 16:17:47 +0100
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9HFHgfD27066592
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 15:17:44 GMT
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9HFHfgl029583
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:17:42 +1100
+Subject: Re: [PATCH 3/4] char/tpm: Improve a size determination in nine
+ functions
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Alexander.Steffen@infineon.com, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org, andriy.shevchenko@linux.intel.com,
+ elfring@users.sourceforge.net, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ clabbe.montjoie@gmail.com, jarkko.sakkinen@linux.intel.com,
+ jgunthorpe@obsidianresearch.com, jsnitsel@redhat.com,
+ kgold@linux.vnet.ibm.com, mpe@ellerman.id.au, nayna@linux.vnet.ibm.com,
+ paulus@samba.org, PeterHuewe@gmx.de, Stefan Berger
+ <stefanb@linux.vnet.ibm.com>
+Date: Tue, 17 Oct 2017 11:17:33 -0400
+In-Reply-To: <alpine.DEB.2.20.1710171456360.5035@hadrien>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
+ <1508238182.16112.475.camel@linux.intel.com>
+ <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+ <1508244757.4234.60.camel@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710171456360.5035@hadrien>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1508253453.4234.81.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,240 +59,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> This really begs to have two patches... I will not insist though. I also
-> suspect the code can be further simplified but again this is nothing to
-> block this to go.
-
-Perhaps "page" can be avoided in deferred_init_range(), as pfn is 
-converted to page in deferred_free_range, but I have not studied it.
-
->   
->> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
->> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
->> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
->> Reviewed-by: Bob Picco <bob.picco@oracle.com>
+On Tue, 2017-10-17 at 14:58 +0200, Julia Lawall wrote:
 > 
-> I do not see any obvious issues in the patch
+> On Tue, 17 Oct 2017, Mimi Zohar wrote:
 > 
-> Acked-by: Michal Hocko <mhocko@suse.com>
-
-Thank you very much!
-
-Pavel
-
+> > On Tue, 2017-10-17 at 11:50 +0000, Alexander.Steffen@infineon.com
+> > wrote:
+> > > > > Replace the specification of data structures by pointer dereferences
+> > > > > as the parameter for the operator "sizeof" to make the corresponding
+> > > > > size
+> > > > > determination a bit safer according to the Linux coding style
+> > > > > convention.
+> > > >
+> > > >
+> > > > This patch does one style in favor of the other.
+> > >
+> > > I actually prefer that style, so I'd welcome this change :)
+> >
+> > Style changes should be reviewed and documented, like any other code
+> > change, and added to Documentation/process/coding-style.rst or an
+> > equivalent file.
 > 
->> ---
->>   mm/page_alloc.c | 168 ++++++++++++++++++++++++++++----------------------------
->>   1 file changed, 85 insertions(+), 83 deletions(-)
->>
->> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> index 77e4d3c5c57b..cdbd14829fd3 100644
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -1410,14 +1410,17 @@ void clear_zone_contiguous(struct zone *zone)
->>   }
->>   
->>   #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
->> -static void __init deferred_free_range(struct page *page,
->> -					unsigned long pfn, int nr_pages)
->> +static void __init deferred_free_range(unsigned long pfn,
->> +				       unsigned long nr_pages)
->>   {
->> -	int i;
->> +	struct page *page;
->> +	unsigned long i;
->>   
->> -	if (!page)
->> +	if (!nr_pages)
->>   		return;
->>   
->> +	page = pfn_to_page(pfn);
->> +
->>   	/* Free a large naturally-aligned chunk if possible */
->>   	if (nr_pages == pageblock_nr_pages &&
->>   	    (pfn & (pageblock_nr_pages - 1)) == 0) {
->> @@ -1443,19 +1446,89 @@ static inline void __init pgdat_init_report_one_done(void)
->>   		complete(&pgdat_init_all_done_comp);
->>   }
->>   
->> +/*
->> + * Helper for deferred_init_range, free the given range, reset the counters, and
->> + * return number of pages freed.
->> + */
->> +static inline unsigned long __def_free(unsigned long *nr_free,
->> +				       unsigned long *free_base_pfn,
->> +				       struct page **page)
->> +{
->> +	unsigned long nr = *nr_free;
->> +
->> +	deferred_free_range(*free_base_pfn, nr);
->> +	*free_base_pfn = 0;
->> +	*nr_free = 0;
->> +	*page = NULL;
->> +
->> +	return nr;
->> +}
->> +
->> +static unsigned long deferred_init_range(int nid, int zid, unsigned long pfn,
->> +					 unsigned long end_pfn)
->> +{
->> +	struct mminit_pfnnid_cache nid_init_state = { };
->> +	unsigned long nr_pgmask = pageblock_nr_pages - 1;
->> +	unsigned long free_base_pfn = 0;
->> +	unsigned long nr_pages = 0;
->> +	unsigned long nr_free = 0;
->> +	struct page *page = NULL;
->> +
->> +	for (; pfn < end_pfn; pfn++) {
->> +		/*
->> +		 * First we check if pfn is valid on architectures where it is
->> +		 * possible to have holes within pageblock_nr_pages. On systems
->> +		 * where it is not possible, this function is optimized out.
->> +		 *
->> +		 * Then, we check if a current large page is valid by only
->> +		 * checking the validity of the head pfn.
->> +		 *
->> +		 * meminit_pfn_in_nid is checked on systems where pfns can
->> +		 * interleave within a node: a pfn is between start and end
->> +		 * of a node, but does not belong to this memory node.
->> +		 *
->> +		 * Finally, we minimize pfn page lookups and scheduler checks by
->> +		 * performing it only once every pageblock_nr_pages.
->> +		 */
->> +		if (!pfn_valid_within(pfn)) {
->> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
->> +		} else if (!(pfn & nr_pgmask) && !pfn_valid(pfn)) {
->> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
->> +		} else if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
->> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
->> +		} else if (page && (pfn & nr_pgmask)) {
->> +			page++;
->> +			__init_single_page(page, pfn, zid, nid);
->> +			nr_free++;
->> +		} else {
->> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
->> +			page = pfn_to_page(pfn);
->> +			__init_single_page(page, pfn, zid, nid);
->> +			free_base_pfn = pfn;
->> +			nr_free = 1;
->> +			cond_resched();
->> +		}
->> +	}
->> +	/* Free the last block of pages to allocator */
->> +	nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
->> +
->> +	return nr_pages;
->> +}
->> +
->>   /* Initialise remaining memory on a node */
->>   static int __init deferred_init_memmap(void *data)
->>   {
->>   	pg_data_t *pgdat = data;
->>   	int nid = pgdat->node_id;
->> -	struct mminit_pfnnid_cache nid_init_state = { };
->>   	unsigned long start = jiffies;
->>   	unsigned long nr_pages = 0;
->> -	unsigned long walk_start, walk_end;
->> -	int i, zid;
->> +	unsigned long spfn, epfn;
->> +	phys_addr_t spa, epa;
->> +	int zid;
->>   	struct zone *zone;
->>   	unsigned long first_init_pfn = pgdat->first_deferred_pfn;
->>   	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
->> +	u64 i;
->>   
->>   	if (first_init_pfn == ULONG_MAX) {
->>   		pgdat_init_report_one_done();
->> @@ -1477,83 +1550,12 @@ static int __init deferred_init_memmap(void *data)
->>   		if (first_init_pfn < zone_end_pfn(zone))
->>   			break;
->>   	}
->> +	first_init_pfn = max(zone->zone_start_pfn, first_init_pfn);
->>   
->> -	for_each_mem_pfn_range(i, nid, &walk_start, &walk_end, NULL) {
->> -		unsigned long pfn, end_pfn;
->> -		struct page *page = NULL;
->> -		struct page *free_base_page = NULL;
->> -		unsigned long free_base_pfn = 0;
->> -		int nr_to_free = 0;
->> -
->> -		end_pfn = min(walk_end, zone_end_pfn(zone));
->> -		pfn = first_init_pfn;
->> -		if (pfn < walk_start)
->> -			pfn = walk_start;
->> -		if (pfn < zone->zone_start_pfn)
->> -			pfn = zone->zone_start_pfn;
->> -
->> -		for (; pfn < end_pfn; pfn++) {
->> -			if (!pfn_valid_within(pfn))
->> -				goto free_range;
->> -
->> -			/*
->> -			 * Ensure pfn_valid is checked every
->> -			 * pageblock_nr_pages for memory holes
->> -			 */
->> -			if ((pfn & (pageblock_nr_pages - 1)) == 0) {
->> -				if (!pfn_valid(pfn)) {
->> -					page = NULL;
->> -					goto free_range;
->> -				}
->> -			}
->> -
->> -			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
->> -				page = NULL;
->> -				goto free_range;
->> -			}
->> -
->> -			/* Minimise pfn page lookups and scheduler checks */
->> -			if (page && (pfn & (pageblock_nr_pages - 1)) != 0) {
->> -				page++;
->> -			} else {
->> -				nr_pages += nr_to_free;
->> -				deferred_free_range(free_base_page,
->> -						free_base_pfn, nr_to_free);
->> -				free_base_page = NULL;
->> -				free_base_pfn = nr_to_free = 0;
->> -
->> -				page = pfn_to_page(pfn);
->> -				cond_resched();
->> -			}
->> -
->> -			if (page->flags) {
->> -				VM_BUG_ON(page_zone(page) != zone);
->> -				goto free_range;
->> -			}
->> -
->> -			__init_single_page(page, pfn, zid, nid);
->> -			if (!free_base_page) {
->> -				free_base_page = page;
->> -				free_base_pfn = pfn;
->> -				nr_to_free = 0;
->> -			}
->> -			nr_to_free++;
->> -
->> -			/* Where possible, batch up pages for a single free */
->> -			continue;
->> -free_range:
->> -			/* Free the current block of pages to allocator */
->> -			nr_pages += nr_to_free;
->> -			deferred_free_range(free_base_page, free_base_pfn,
->> -								nr_to_free);
->> -			free_base_page = NULL;
->> -			free_base_pfn = nr_to_free = 0;
->> -		}
->> -		/* Free the last block of pages to allocator */
->> -		nr_pages += nr_to_free;
->> -		deferred_free_range(free_base_page, free_base_pfn, nr_to_free);
->> -
->> -		first_init_pfn = max(end_pfn, first_init_pfn);
->> +	for_each_free_mem_range(i, nid, MEMBLOCK_NONE, &spa, &epa, NULL) {
->> +		spfn = max_t(unsigned long, first_init_pfn, PFN_UP(spa));
->> +		epfn = min_t(unsigned long, zone_end_pfn(zone), PFN_DOWN(epa));
->> +		nr_pages += deferred_init_range(nid, zid, spfn, epfn);
->>   	}
->>   
->>   	/* Sanity check that the next zone really is unpopulated */
->> -- 
->> 2.14.2
+> Actually, it has been there for many years:
 > 
+> 14) Allocating memory
+> ---------------------
+> ...
+> The preferred form for passing a size of a struct is the following:
+> 
+> .. code-block:: c
+> 
+> 	p = kmalloc(sizeof(*p), ...);
+> 
+> The alternative form where struct name is spelled out hurts readability and
+> introduces an opportunity for a bug when the pointer variable type is changed
+> but the corresponding sizeof that is passed to a memory allocator is not.
+
+True, thanks for the reminder.  Is this common in new code?  Is there
+a script/ or some other automated way of catching this usage before
+patches are upstreamed?
+
+Just as you're doing here, the patch description should reference this
+in the patch description.
+
+Mimi
