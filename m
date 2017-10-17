@@ -1,34 +1,36 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-io0-x22f.google.com (mail-io0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c06::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGYyv4lMszDrGD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 23:14:31 +1100 (AEDT)
-Subject: [PATCH 3/3] powerpc-opal: Fix a typo in a comment line of two file
- headers
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-To: linuxppc-dev@lists.ozlabs.org, Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bhumika Goyal <bhumirks@gmail.com>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Rob Herring <robh@kernel.org>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <5fb4f314-cd23-c439-ab13-96b8188070e0@users.sourceforge.net>
-Message-ID: <57c47bff-63a2-62c1-2708-c351c2182304@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 14:14:00 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGZ7J2f0rzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 23:21:47 +1100 (AEDT)
+Received: by mail-io0-x22f.google.com with SMTP id 134so2039148ioo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 05:21:47 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <5fb4f314-cd23-c439-ab13-96b8188070e0@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
+References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <871sm2y1h9.fsf@linkitivity.dja.id.au>
+ <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Tue, 17 Oct 2017 13:21:44 +0100
+Message-ID: <CAKv+Gu-JW6nd3fNZAvJcsyLVp4xBZS4-V_f2N195G7KN_9mfuQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default device
+ selection
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Daniel Axtens <dja@axtens.net>, Bjorn Helgaas <bhelgaas@google.com>,
+ Daniel Vetter <daniel.vetter@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ linux-pci <linux-pci@vger.kernel.org>,
+ Will Deacon <will.deacon@arm.com>, dri-devel <dri-devel@lists.freedesktop.org>,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Rongrong Zou <zourongrong@gmail.com>,
+ Dave Airlie <airlied@redhat.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,38 +40,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 13:31:42 +0200
+On 17 October 2017 at 13:05, Daniel Vetter <daniel@ffwll.ch> wrote:
+> On Tue, Oct 17, 2017 at 01:03:46PM +1100, Daniel Axtens wrote:
+>> Bjorn Helgaas <bhelgaas@google.com> writes:
+>>
+>> > The default VGA device is normally set in vga_arbiter_add_pci_device() when
+>> > we call it for the first enabled device that can be accessed with the
+>> > legacy VGA resources ([mem 0xa0000-0xbffff], etc.)
+>> >
+>> > That default device can be overridden by an EFI device that owns the boot
+>> > framebuffer.  As a fallback, we can also select a VGA device that can't be
+>> > accessed via legacy VGA resources, or a VGA device that isn't even enabled.
+>> >
+>> > Factor out this EFI and fallback selection from vga_arb_device_init() into
+>> > a separate vga_arb_select_default_device() function.  This doesn't change
+>> > any behavior, but it untangles the "bridge control possible" checking and
+>> > messages from the default device selection.
+>> >
+>> > Tested-by: Zhou Wang <wangzhou1@hisilicon.com>  # D05 Hisi Hip07, Hip08
+>> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+>> > ---
+>> >  drivers/gpu/vga/vgaarb.c |   57 ++++++++++++++++++++++++++++------------------
+>> >  1 file changed, 35 insertions(+), 22 deletions(-)
+>> >
+>> > diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
+>> > index 8035e38d5110..d35d6d271f3f 100644
+>> > --- a/drivers/gpu/vga/vgaarb.c
+>> > +++ b/drivers/gpu/vga/vgaarb.c
+>> > @@ -1402,29 +1402,14 @@ static struct miscdevice vga_arb_device = {
+>> >     MISC_DYNAMIC_MINOR, "vga_arbiter", &vga_arb_device_fops
+>> >  };
+>> >
+>> > -static int __init vga_arb_device_init(void)
+>> > +static void __init vga_arb_select_default_device(void)
+>> >  {
+>> > -   int rc;
+>> >     struct pci_dev *pdev;
+>> >     struct vga_device *vgadev;
+>> >
+>> > -   rc = misc_register(&vga_arb_device);
+>> > -   if (rc < 0)
+>> > -           pr_err("error %d registering device\n", rc);
+>> > -
+>> > -   bus_register_notifier(&pci_bus_type, &pci_notifier);
+>> > -
+>> > -   /* We add all pci devices satisfying vga class in the arbiter by
+>> > -    * default */
+>> > -   pdev = NULL;
+>> > -   while ((pdev =
+>> > -           pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+>> > -                          PCI_ANY_ID, pdev)) != NULL)
+>> > -           vga_arbiter_add_pci_device(pdev);
+>> > -
+>> > +#if defined(CONFIG_X86) || defined(CONFIG_IA64)
+>> >     list_for_each_entry(vgadev, &vga_list, list) {
+>> >             struct device *dev = &vgadev->pdev->dev;
+>> > -#if defined(CONFIG_X86) || defined(CONFIG_IA64)
+>> >             /*
+>> >              * Override vga_arbiter_add_pci_device()'s I/O based detection
+>> >              * as it may take the wrong device (e.g. on Apple system under
+>> > @@ -1461,12 +1446,8 @@ static int __init vga_arb_device_init(void)
+>> >                             vgaarb_info(dev, "overriding boot device\n");
+>> >                     vga_set_default_device(vgadev->pdev);
+>> >             }
+>> > -#endif
+>> > -           if (vgadev->bridge_has_one_vga)
+>> > -                   vgaarb_info(dev, "bridge control possible\n");
+>> > -           else
+>> > -                   vgaarb_info(dev, "no bridge control possible\n");
+>> >     }
+>> > +#endif
+>> >
+>> >     if (!vga_default_device()) {
+>> >             list_for_each_entry(vgadev, &vga_list, list) {
+>> > @@ -1492,6 +1473,38 @@ static int __init vga_arb_device_init(void)
+>> >                     vga_set_default_device(vgadev->pdev);
+>> >             }
+>> >     }
+>> > +}
+>> > +
+>> > +static int __init vga_arb_device_init(void)
+>> > +{
+>> > +   int rc;
+>> > +   struct pci_dev *pdev;
+>> > +   struct vga_device *vgadev;
+>> > +
+>> > +   rc = misc_register(&vga_arb_device);
+>> > +   if (rc < 0)
+>> > +           pr_err("error %d registering device\n", rc);
+>> > +
+>> > +   bus_register_notifier(&pci_bus_type, &pci_notifier);
+>> > +
+>> > +   /* We add all PCI devices satisfying VGA class in the arbiter by
+>> > +    * default */
+>> > +   pdev = NULL;
+>> > +   while ((pdev =
+>> > +           pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+>> > +                          PCI_ANY_ID, pdev)) != NULL)
+>> > +           vga_arbiter_add_pci_device(pdev);
+>> > +
+>> > +   list_for_each_entry(vgadev, &vga_list, list) {
+>> > +           struct device *dev = &vgadev->pdev->dev;
+>> > +
+>> > +           if (vgadev->bridge_has_one_vga)
+>> > +                   vgaarb_info(dev, "bridge control possible\n");
+>> > +           else
+>> > +                   vgaarb_info(dev, "no bridge control possible\n");
+>> > +   }
+>>
+>> Initially I wondered if this info printk could be moved into
+>> vga_arbiter_check_bridge_sharing(), but it's been separated out since
+>> 3448a19da479b ("vgaarb: use bridges to control VGA routing where
+>> possible."), and upon closer examination, it seems you can't be sure a
+>> device doesn't share a bridge until the end of the process, so this is
+>> indeed correct.
+>>
+>> Everything else also looks good to me.
+>>
+>> Reviewed-by: Daniel Axtens <dja@axtens.net>
+>
+> R-b for both patches? And ok with everyone if I pull this into drm-misc
+> for 4.15 (deadline is end of this week for feature-y stuff)?
+>
 
-Fix a word in these descriptions.
+For both patches
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/platforms/powernv/opal-hmi.c           | 2 +-
- arch/powerpc/platforms/powernv/opal-memory-errors.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index 92b1e12a7eed..481a004b1b6d 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -1,5 +1,5 @@
- /*
-- * OPAL hypervisor Maintenance interrupt handling support in PowreNV.
-+ * OPAL hypervisor Maintenance interrupt handling support in PowerNV.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-diff --git a/arch/powerpc/platforms/powernv/opal-memory-errors.c b/arch/powerpc/platforms/powernv/opal-memory-errors.c
-index 875e80ab96d9..fd500b379560 100644
---- a/arch/powerpc/platforms/powernv/opal-memory-errors.c
-+++ b/arch/powerpc/platforms/powernv/opal-memory-errors.c
-@@ -1,5 +1,5 @@
- /*
-- * OPAL asynchronus Memory error handling support in PowreNV.
-+ * OPAL asynchronus Memory error handling support in PowerNV.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
--- 
-2.14.2
+Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
