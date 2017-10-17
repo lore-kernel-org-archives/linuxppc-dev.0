@@ -1,39 +1,26 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGhMp5pW4zDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 04:03:01 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9HGxKT3103872
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 13:02:59 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dnk980jwf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 13:02:58 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 17 Oct 2017 11:02:58 -0600
-Subject: Re: [PATCH 1/2] powerpc/nodes: Ensure enough nodes avail for
- operations
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: John Allen <jallen@linux.vnet.ibm.com>,
- Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
-References: <d62dd6c7-7676-5fe0-4f63-baada9213908@linux.vnet.ibm.com>
- <871sm3l1c1.fsf@concordia.ellerman.id.au>
- <a915cc6d-09fc-8a64-21c2-5bd89123d2e4@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 17 Oct 2017 12:02:54 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGhTT10twzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 04:07:57 +1100 (AEDT)
+Date: Tue, 17 Oct 2017 12:07:54 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ Yongji Xie <elohimes@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Russell Currey <ruscur@russell.cc>, linux-pci@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH kernel v2] powerpc/powernv: Reserve a hole which appears
+ after enabling IOV
+Message-ID: <20171017170754.GD5641@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170927065231.20382-1-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <a915cc6d-09fc-8a64-21c2-5bd89123d2e4@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <94ac2dd9-625c-d453-adf5-32703efaebcc@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170927065231.20382-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,191 +30,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/17/2017 11:14 AM, Michael Bringmann wrote:
-> See below.
+On Wed, Sep 27, 2017 at 04:52:31PM +1000, Alexey Kardashevskiy wrote:
+> In order to make generic IOV code work, the physical function IOV BAR
+> should start from offset of the first VF. Since M64 segments share
+> PE number space across PHB, and some PEs may be in use at the time
+> when IOV is enabled, the existing code shifts the IOV BAR to the index
+> of the first PE/VF. This creates a hole in IOMEM space which can be
+> potentially taken by some other device.
 > 
-> On 10/16/2017 07:33 AM, Michael Ellerman wrote:
->> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
->>
->>> powerpc/nodes: On systems like PowerPC which allow 'hot-add' of CPU
->>
->> This is a powerpc-only patch, so saying "systems like PowerPC" is
->> confusing. What you should be saying is "On pseries systems".
->>
->>> or memory resources, it may occur that the new resources are to be
->>> inserted into nodes that were not used for these resources at bootup.
->>> In the kernel, any node that is used must be defined and initialized
->>> at boot.
->>>
->>> This patch extracts the value of the lowest domain level (number of
->>> allocable resources) from the "rtas" device tree property
->>> "ibm,current-associativity-domains" or the device tree property
->>
->> What is current associativity domains? I've not heard of it, where is it
->> documented, and what does it mean.
->>
->> Why would use the "current" set vs the "max"? I thought the whole point
->> was to discover the maximum possible set of nodes that could be
->> hotplugged.
->>
->>> "ibm,max-associativity-domains" to use as the maximum number of nodes
->>> to setup as possibly available in the system.  This new setting will
->>> override the instruction,
->>>
->>>     nodes_and(node_possible_map, node_possible_map, node_online_map);
->>>
->>> presently seen in the function arch/powerpc/mm/numa.c:initmem_init().
->>>
->>> If the property is not present at boot, no operation will be performed
->>> to define or enable additional nodes.
->>>
->>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->>> ---
->>>  arch/powerpc/mm/numa.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
->>>  1 file changed, 47 insertions(+)
->>>
->>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->>> index ec098b3..b385cd0 100644
->>> --- a/arch/powerpc/mm/numa.c
->>> +++ b/arch/powerpc/mm/numa.c
->>> @@ -892,6 +892,51 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
->>>  	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
->>>  }
->>>  
->>> +static void __init node_associativity_setup(void)
->>
->> This should really be called "find_possible_nodes()" or something more
->> descriptive.
+> This reserves a temporary hole on a parent and releases it when IOV is
+> disabled; the temporary resources are stored in pci_dn to avoid
+> kmalloc/free.
 > 
-> Okay.
->>
->>> +{
->>> +	struct device_node *rtas;
->>> +
->>> +	rtas = of_find_node_by_path("/rtas");
->>> +	if (rtas) {
->>
->> If you just short-circuit that return the whole function body can be
->> deintented, making it significantly more readable.
->>
->> ie:
->> +	rtas = of_find_node_by_path("/rtas");
->> +	if (!rtas)
->> +		return;
-> 
-> Okay.
-> 
->>
->>> +		const __be32 *prop;
->>> +		u32 len, entries, numnodes, i;
->>> +
->>> +		prop = of_get_property(rtas,
->>> +					"ibm,current-associativity-domains", &len);
->>
->> Please don't use of_get_property() in new code, we have much better
->> accessors these days, which do better error checking and handle the
->> endian conversions for you.
->>
->> In this case you'd use eg:
->>
->> 	u32 entries;
->> 	rc = of_property_read_u32(rtas, "ibm,current-associativity-domains", &entries);
-> 
-> The property 'ibm,current-associativity-domains' has the same format as the property
-> 'ibm,max-associativity-domains' i.e. it is an integer array.  The accessor of_property_read_32,
-> however, expects it to be an integer singleton value.  Instead, it needs:
+> Cc: linux-pci@vger.kernel.org
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-I think for this case where the property is an array of values you could use
-of_property_count_elems_of_size() to get the number of elements in the array
-and then use of_property_read_u32_array() to read the array.
+Looks good to me.
 
--Nathan
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
+I assume this will be merged via the powerpc branch.
+
+> ---
 > 
->>
->>> +		if (!prop || len < sizeof(unsigned int)) {
->>> +			prop = of_get_property(rtas,
->>> +					"ibm,max-associativity-domains", &len);
->                         if (!prop || len < sizeof(unsigned int))
->>> +				goto endit;
->>> +		}
->>> +
->>> +		entries = of_read_number(prop++, 1);
->>> +
->>> +		if (len < (entries * sizeof(unsigned int)))
->>> +			goto endit;
->>> +
->>> +		if ((0 <= min_common_depth) && (min_common_depth <= (entries-1)))
->>> +			entries = min_common_depth;
->>> +		else
->>> +			entries -= 1;
->> 			^
->>                         You can't just guess that will be the right entry.
->>
->> If min_common_depth is < 0 the function should have just returned
->> immediately at the top.
+> I assume this goes to powerpc next branch but before this I'd like to
+> get Bjorn's opinion as he continously commented on this bit.
 > 
-> Okay.
+> This is the diff in /proc/iomem:
 > 
->>
->> If min_common_depth is outside the range of the property that's a buggy
->> device tree, you should print a warning and return.
->>
->>> +		numnodes = of_read_number(&prop[entries], 1);
->>
->> 	u32 num_nodes;
->> 	rc = of_property_read_u32_index(rtas, "ibm,current-associativity-domains", min_common_depth, &num_nodes);
->>> +
->>> +		printk(KERN_INFO "numa: Nodes = %d (mcd = %d)\n", numnodes,
->>> +			min_common_depth);
->>> +
->>> +		for (i = 0; i < numnodes; i++) {
->>> +			if (!node_possible(i)) {
->>> +				setup_node_data(i, 0, 0);
->>
->> Do we actually need to setup the NODE_DATA() yet? Doing it now ensures
->> it will not be allocated node local, which sucks.
+> @@ -11,6 +11,7 @@
+>          200800000000-200bffffffff : 0000:04:00.0
+>  210000000000-21fdffffffff : /pciex@3fffe40100000
+>    210000000000-21fdfff0ffff : PCI Bus 0001:01
+> +    210000000000-210009ffffff : pnv_iov_reserved
+>      21000a000000-2101ffffffff : 0001:01:00.0
+>        21000a000000-21000bffffff : 0001:01:00.2
+>          21000a000000-21000bffffff : mlx5_core
 > 
-> Okay.
+> ---
+> Changes:
+> v2:
+> * changed order - now devm_release_resource() is called before
+> pci_update_resource(). Strangely the opposite did not produce a warning
+> but still
+> ---
+>  arch/powerpc/include/asm/pci-bridge.h     |  1 +
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 24 +++++++++++++++++++++---
+>  2 files changed, 22 insertions(+), 3 deletions(-)
 > 
->>
->>> +				node_set(i, node_possible_map);
->>> +			}
->>> +		}
->>> +	}
->>> +
->>> +endit:
->>
->> "out" would be the normal name.
-> 
-> Okay.
-> 
->>
->>> +	if (rtas)
->>> +		of_node_put(rtas);
->>> +}
->>> +
->>>  void __init initmem_init(void)
->>>  {
->>>  	int nid, cpu;
->>> @@ -911,6 +956,8 @@ void __init initmem_init(void)
->>>  	 */
->>
->> You need to update the comment above here which is contradicted by the
->> new function you're adding.
-> 
-> Okay.
-> 
->>
->>>  	nodes_and(node_possible_map, node_possible_map, node_online_map);
->>>  
->>> +	node_associativity_setup();
->>> +
->>>  	for_each_online_node(nid) {
->>>  		unsigned long start_pfn, end_pfn;
->>>  
->>
->> cheers
->>
->>
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index 0b8aa1fe2d5f..62ed83db04ae 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -218,6 +218,7 @@ struct pci_dn {
+>  #endif
+>  	struct list_head child_list;
+>  	struct list_head list;
+> +	struct resource holes[PCI_SRIOV_NUM_BARS];
+>  };
+>  
+>  /* Get the pointer to a device_node's pci_dn */
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 57f9e55f4352..d66a758b8efb 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1002,9 +1002,12 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>  	}
+>  
+>  	/*
+> -	 * After doing so, there would be a "hole" in the /proc/iomem when
+> -	 * offset is a positive value. It looks like the device return some
+> -	 * mmio back to the system, which actually no one could use it.
+> +	 * Since M64 BAR shares segments among all possible 256 PEs,
+> +	 * we have to shift the beginning of PF IOV BAR to make it start from
+> +	 * the segment which belongs to the PE number assigned to the first VF.
+> +	 * This creates a "hole" in the /proc/iomem which could be used for
+> +	 * allocating other resources so we reserve this area below and
+> +	 * release when IOV is released.
+>  	 */
+>  	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>  		res = &dev->resource[i + PCI_IOV_RESOURCES];
+> @@ -1018,7 +1021,22 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>  		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (%sabling %d VFs shifted by %d)\n",
+>  			 i, &res2, res, (offset > 0) ? "En" : "Dis",
+>  			 num_vfs, offset);
+> +
+> +		if (offset < 0) {
+> +			devm_release_resource(&dev->dev, &pdn->holes[i]);
+> +			memset(&pdn->holes[i], 0, sizeof(pdn->holes[i]));
+> +		}
+> +
+>  		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
+> +
+> +		if (offset > 0) {
+> +			pdn->holes[i].start = res2.start;
+> +			pdn->holes[i].end = res2.start + size * offset - 1;
+> +			pdn->holes[i].flags = IORESOURCE_BUS;
+> +			pdn->holes[i].name = "pnv_iov_reserved";
+> +			devm_request_resource(&dev->dev, res->parent,
+> +					&pdn->holes[i]);
+> +		}
+>  	}
+>  	return 0;
+>  }
+> -- 
+> 2.11.0
 > 
