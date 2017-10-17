@@ -1,28 +1,58 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGYCh3J7CzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 22:40:31 +1100 (AEDT)
-Date: Tue, 17 Oct 2017 13:40:28 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, akpm@linux-foundation.org,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v12 01/11] mm: deferred_init_memmap improvements
-Message-ID: <20171017114028.uyt63277md5tuc4j@dhcp22.suse.cz>
-References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
- <20171013173214.27300-2-pasha.tatashin@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171013173214.27300-2-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGYTn5WKDzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 22:52:45 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9HBpJq1115140
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 07:52:43 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dngndt453-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 07:52:42 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Tue, 17 Oct 2017 12:52:40 +0100
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9HBqZcr26804330
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 11:52:37 GMT
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9HBqY0I024465
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 22:52:35 +1100
+Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Julia Lawall <julia.lawall@lip6.fr>, Dan Carpenter
+ <dan.carpenter@oracle.com>
+Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, SF Markus Elfring
+ <elfring@users.sourceforge.net>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, Jerry Snitselaar
+ <jsnitsel@redhat.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nayna Jain <nayna@linux.vnet.ibm.com>, Paul
+ Mackerras <paulus@samba.org>, Peter =?ISO-8859-1?Q?H=FCwe?=
+ <PeterHuewe@gmx.de>, Stefan Berger <stefanb@linux.vnet.ibm.com>, LKML
+ <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Date: Tue, 17 Oct 2017 07:52:26 -0400
+In-Reply-To: <alpine.DEB.2.20.1710171211210.5035@hadrien>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <alpine.DEB.2.20.1710171055100.5035@hadrien>
+ <20171017094434.csarc5fw5d32u64w@mwanda>
+ <alpine.DEB.2.20.1710171211210.5035@hadrien>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1508241146.4234.16.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,280 +62,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 13-10-17 13:32:04, Pavel Tatashin wrote:
-> deferred_init_memmap() is called when struct pages are initialized later
-> in boot by slave CPUs. This patch simplifies and optimizes this function,
-> and also fixes a couple issues (described below).
-> 
-> The main change is that now we are iterating through free memblock areas
-> instead of all configured memory. Thus, we do not have to check if the
-> struct page has already been initialized.
-> 
-> =====
-> In deferred_init_memmap() where all deferred struct pages are initialized
-> we have a check like this:
-> 
-> if (page->flags) {
-> 	VM_BUG_ON(page_zone(page) != zone);
-> 	goto free_range;
-> }
-> 
-> This way we are checking if the current deferred page has already been
-> initialized. It works, because memory for struct pages has been zeroed, and
-> the only way flags are not zero if it went through __init_single_page()
-> before.  But, once we change the current behavior and won't zero the memory
-> in memblock allocator, we cannot trust anything inside "struct page"es
-> until they are initialized. This patch fixes this.
-> 
-> The deferred_init_memmap() is re-written to loop through only free memory
-> ranges provided by memblock.
-> 
-> Note, this first issue is relevant only when the following change is
-> merged:
-> 
-> =====
-> This patch fixes another existing issue on systems that have holes in
-> zones i.e CONFIG_HOLES_IN_ZONE is defined.
-> 
-> In for_each_mem_pfn_range() we have code like this:
-> 
-> if (!pfn_valid_within(pfn)
-> 	goto free_range;
-> 
-> Note: 'page' is not set to NULL and is not incremented but 'pfn' advances.
-> Thus means if deferred struct pages are enabled on systems with these kind
-> of holes, linux would get memory corruptions. I have fixed this issue by
-> defining a new macro that performs all the necessary operations when we
-> free the current set of pages.
+Hi Julia,
 
-This really begs to have two patches... I will not insist though. I also
-suspect the code can be further simplified but again this is nothing to
-block this to go.
- 
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Reviewed-by: Steven Sistare <steven.sistare@oracle.com>
-> Reviewed-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-> Reviewed-by: Bob Picco <bob.picco@oracle.com>
-
-I do not see any obvious issues in the patch
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-
-> ---
->  mm/page_alloc.c | 168 ++++++++++++++++++++++++++++----------------------------
->  1 file changed, 85 insertions(+), 83 deletions(-)
+On Tue, 2017-10-17 at 12:11 +0200, Julia Lawall wrote:
 > 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 77e4d3c5c57b..cdbd14829fd3 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1410,14 +1410,17 @@ void clear_zone_contiguous(struct zone *zone)
->  }
->  
->  #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-> -static void __init deferred_free_range(struct page *page,
-> -					unsigned long pfn, int nr_pages)
-> +static void __init deferred_free_range(unsigned long pfn,
-> +				       unsigned long nr_pages)
->  {
-> -	int i;
-> +	struct page *page;
-> +	unsigned long i;
->  
-> -	if (!page)
-> +	if (!nr_pages)
->  		return;
->  
-> +	page = pfn_to_page(pfn);
-> +
->  	/* Free a large naturally-aligned chunk if possible */
->  	if (nr_pages == pageblock_nr_pages &&
->  	    (pfn & (pageblock_nr_pages - 1)) == 0) {
-> @@ -1443,19 +1446,89 @@ static inline void __init pgdat_init_report_one_done(void)
->  		complete(&pgdat_init_all_done_comp);
->  }
->  
-> +/*
-> + * Helper for deferred_init_range, free the given range, reset the counters, and
-> + * return number of pages freed.
-> + */
-> +static inline unsigned long __def_free(unsigned long *nr_free,
-> +				       unsigned long *free_base_pfn,
-> +				       struct page **page)
-> +{
-> +	unsigned long nr = *nr_free;
-> +
-> +	deferred_free_range(*free_base_pfn, nr);
-> +	*free_base_pfn = 0;
-> +	*nr_free = 0;
-> +	*page = NULL;
-> +
-> +	return nr;
-> +}
-> +
-> +static unsigned long deferred_init_range(int nid, int zid, unsigned long pfn,
-> +					 unsigned long end_pfn)
-> +{
-> +	struct mminit_pfnnid_cache nid_init_state = { };
-> +	unsigned long nr_pgmask = pageblock_nr_pages - 1;
-> +	unsigned long free_base_pfn = 0;
-> +	unsigned long nr_pages = 0;
-> +	unsigned long nr_free = 0;
-> +	struct page *page = NULL;
-> +
-> +	for (; pfn < end_pfn; pfn++) {
-> +		/*
-> +		 * First we check if pfn is valid on architectures where it is
-> +		 * possible to have holes within pageblock_nr_pages. On systems
-> +		 * where it is not possible, this function is optimized out.
-> +		 *
-> +		 * Then, we check if a current large page is valid by only
-> +		 * checking the validity of the head pfn.
-> +		 *
-> +		 * meminit_pfn_in_nid is checked on systems where pfns can
-> +		 * interleave within a node: a pfn is between start and end
-> +		 * of a node, but does not belong to this memory node.
-> +		 *
-> +		 * Finally, we minimize pfn page lookups and scheduler checks by
-> +		 * performing it only once every pageblock_nr_pages.
-> +		 */
-> +		if (!pfn_valid_within(pfn)) {
-> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-> +		} else if (!(pfn & nr_pgmask) && !pfn_valid(pfn)) {
-> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-> +		} else if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
-> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-> +		} else if (page && (pfn & nr_pgmask)) {
-> +			page++;
-> +			__init_single_page(page, pfn, zid, nid);
-> +			nr_free++;
-> +		} else {
-> +			nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-> +			page = pfn_to_page(pfn);
-> +			__init_single_page(page, pfn, zid, nid);
-> +			free_base_pfn = pfn;
-> +			nr_free = 1;
-> +			cond_resched();
-> +		}
-> +	}
-> +	/* Free the last block of pages to allocator */
-> +	nr_pages += __def_free(&nr_free, &free_base_pfn, &page);
-> +
-> +	return nr_pages;
-> +}
-> +
->  /* Initialise remaining memory on a node */
->  static int __init deferred_init_memmap(void *data)
->  {
->  	pg_data_t *pgdat = data;
->  	int nid = pgdat->node_id;
-> -	struct mminit_pfnnid_cache nid_init_state = { };
->  	unsigned long start = jiffies;
->  	unsigned long nr_pages = 0;
-> -	unsigned long walk_start, walk_end;
-> -	int i, zid;
-> +	unsigned long spfn, epfn;
-> +	phys_addr_t spa, epa;
-> +	int zid;
->  	struct zone *zone;
->  	unsigned long first_init_pfn = pgdat->first_deferred_pfn;
->  	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
-> +	u64 i;
->  
->  	if (first_init_pfn == ULONG_MAX) {
->  		pgdat_init_report_one_done();
-> @@ -1477,83 +1550,12 @@ static int __init deferred_init_memmap(void *data)
->  		if (first_init_pfn < zone_end_pfn(zone))
->  			break;
->  	}
-> +	first_init_pfn = max(zone->zone_start_pfn, first_init_pfn);
->  
-> -	for_each_mem_pfn_range(i, nid, &walk_start, &walk_end, NULL) {
-> -		unsigned long pfn, end_pfn;
-> -		struct page *page = NULL;
-> -		struct page *free_base_page = NULL;
-> -		unsigned long free_base_pfn = 0;
-> -		int nr_to_free = 0;
-> -
-> -		end_pfn = min(walk_end, zone_end_pfn(zone));
-> -		pfn = first_init_pfn;
-> -		if (pfn < walk_start)
-> -			pfn = walk_start;
-> -		if (pfn < zone->zone_start_pfn)
-> -			pfn = zone->zone_start_pfn;
-> -
-> -		for (; pfn < end_pfn; pfn++) {
-> -			if (!pfn_valid_within(pfn))
-> -				goto free_range;
-> -
-> -			/*
-> -			 * Ensure pfn_valid is checked every
-> -			 * pageblock_nr_pages for memory holes
-> -			 */
-> -			if ((pfn & (pageblock_nr_pages - 1)) == 0) {
-> -				if (!pfn_valid(pfn)) {
-> -					page = NULL;
-> -					goto free_range;
-> -				}
-> -			}
-> -
-> -			if (!meminit_pfn_in_nid(pfn, nid, &nid_init_state)) {
-> -				page = NULL;
-> -				goto free_range;
-> -			}
-> -
-> -			/* Minimise pfn page lookups and scheduler checks */
-> -			if (page && (pfn & (pageblock_nr_pages - 1)) != 0) {
-> -				page++;
-> -			} else {
-> -				nr_pages += nr_to_free;
-> -				deferred_free_range(free_base_page,
-> -						free_base_pfn, nr_to_free);
-> -				free_base_page = NULL;
-> -				free_base_pfn = nr_to_free = 0;
-> -
-> -				page = pfn_to_page(pfn);
-> -				cond_resched();
-> -			}
-> -
-> -			if (page->flags) {
-> -				VM_BUG_ON(page_zone(page) != zone);
-> -				goto free_range;
-> -			}
-> -
-> -			__init_single_page(page, pfn, zid, nid);
-> -			if (!free_base_page) {
-> -				free_base_page = page;
-> -				free_base_pfn = pfn;
-> -				nr_to_free = 0;
-> -			}
-> -			nr_to_free++;
-> -
-> -			/* Where possible, batch up pages for a single free */
-> -			continue;
-> -free_range:
-> -			/* Free the current block of pages to allocator */
-> -			nr_pages += nr_to_free;
-> -			deferred_free_range(free_base_page, free_base_pfn,
-> -								nr_to_free);
-> -			free_base_page = NULL;
-> -			free_base_pfn = nr_to_free = 0;
-> -		}
-> -		/* Free the last block of pages to allocator */
-> -		nr_pages += nr_to_free;
-> -		deferred_free_range(free_base_page, free_base_pfn, nr_to_free);
-> -
-> -		first_init_pfn = max(end_pfn, first_init_pfn);
-> +	for_each_free_mem_range(i, nid, MEMBLOCK_NONE, &spa, &epa, NULL) {
-> +		spfn = max_t(unsigned long, first_init_pfn, PFN_UP(spa));
-> +		epfn = min_t(unsigned long, zone_end_pfn(zone), PFN_DOWN(epa));
-> +		nr_pages += deferred_init_range(nid, zid, spfn, epfn);
->  	}
->  
->  	/* Sanity check that the next zone really is unpopulated */
-> -- 
-> 2.14.2
+> On Tue, 17 Oct 2017, Dan Carpenter wrote:
+> 
+> > On Tue, Oct 17, 2017 at 10:56:42AM +0200, Julia Lawall wrote:
+> > >
+> > >
+> > > On Tue, 17 Oct 2017, Dan Carpenter wrote:
+> > >
+> > > > On Mon, Oct 16, 2017 at 09:35:12PM +0300, Jarkko Sakkinen wrote:
+> > > > >
+> > > > > A minor complaint: all commits are missing "Fixes:" tag.
+> > > > >
+> > > >
+> > > > Fixes is only for bug fixes.  These don't fix any bugs.
+> > >
+> > > 0-day seems to put Fixes for everything.  Should they be removed when the
+> > > old code is undesirable but doesn't actually cause a crash, eg out of date
+> > > API.
+> >
+> > Yeah, I feel like Fixes tags don't belong for API updates and cleanups.
+> 
+> OK, I will remove them from the patches that go through me where they
+> don't seem appropriate.
 
--- 
-Michal Hocko
-SUSE Labs
+The "Fixes" tag is an indication that the patch should be backported.
+The requirements for what should be backported are pretty stringent. 
+
+Mimi
