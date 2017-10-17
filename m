@@ -1,32 +1,50 @@
-Return-Path: <alexander.steffen@infineon.com>
-Received: from smtp2.infineon.com (smtp2.infineon.com
- [IPv6:2a00:18f0:1e00:4::4])
+Return-Path: <jjalvare@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGf7l5kq0zDqF9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:22:26 +1100 (AEDT)
-From: <Alexander.Steffen@infineon.com>
-To: <zohar@linux.vnet.ibm.com>
-CC: <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>,
- <andriy.shevchenko@linux.intel.com>, <elfring@users.sourceforge.net>,
- <linux-integrity@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <benh@kernel.crashing.org>, <clabbe.montjoie@gmail.com>,
- <jarkko.sakkinen@linux.intel.com>, <jgunthorpe@obsidianresearch.com>,
- <jsnitsel@redhat.com>, <kgold@linux.vnet.ibm.com>, <mpe@ellerman.id.au>,
- <nayna@linux.vnet.ibm.com>, <paulus@samba.org>, <PeterHuewe@gmx.de>,
- <stefanb@linux.vnet.ibm.com>
-Subject: RE: [PATCH 3/4] char/tpm: Improve a size determination in nine
- functions
-Date: Tue, 17 Oct 2017 15:22:22 +0000
-Message-ID: <b22e3c64fde74876acacdee701a46223@infineon.com>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
- <1508238182.16112.475.camel@linux.intel.com>
- <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
- <1508244757.4234.60.camel@linux.vnet.ibm.com>
-In-Reply-To: <1508244757.4234.60.camel@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGhq35gx0zDrJ6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 04:23:11 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9HHJnRs024528
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 13:23:08 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dnk899map-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 13:23:08 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jjalvare@linux.vnet.ibm.com>;
+ Tue, 17 Oct 2017 13:23:08 -0400
+Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Steven Royer <seroyer@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
+ benh@kernel.crashing.org, paulus@samba.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "Juan J . Alvarez" <jjalvare@us.ibm.com>,
+ Bodong Wang <bodong@mellanox.com>, Eli Cohen <eli@mellanox.com>,
+ Saeed Mahameed <saeedm@mellanox.com>
+References: <87efq92ei6.fsf@concordia.ellerman.id.au>
+ <20171012182932.GA653@bhelgaas-glaptop.roam.corp.google.com>
+ <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
+ <20171013033456.GC25517@bhelgaas-glaptop.roam.corp.google.com>
+ <88eab212351a662dda330071d9afe9dc@linux.vnet.ibm.com>
+ <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
+ <20171013120558.1a129183@t450s.home>
+ <24fdec01-8df4-f027-0b3c-0472a2d73946@linux.vnet.ibm.com>
+ <20171017135123.GA5641@bhelgaas-glaptop.roam.corp.google.com>
+ <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
+ <20171017162621.GB5641@bhelgaas-glaptop.roam.corp.google.com>
+From: Juan Alvarez <jjalvare@linux.vnet.ibm.com>
+Date: Tue, 17 Oct 2017 12:23:01 -0500
 MIME-Version: 1.0
+In-Reply-To: <20171017162621.GB5641@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f8fbbd56-f165-0a17-a24a-2b021f7fa238@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,49 +54,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBPbiBUdWUsIDIwMTctMTAtMTcgYXQgMTE6NTAgKzAwMDAsIEFsZXhhbmRlci5TdGVmZmVuQGlu
-ZmluZW9uLmNvbQ0KPiB3cm90ZToNCj4gPiA+ID4gUmVwbGFjZSB0aGUgc3BlY2lmaWNhdGlvbiBv
-ZiBkYXRhIHN0cnVjdHVyZXMgYnkgcG9pbnRlciBkZXJlZmVyZW5jZXMNCj4gPiA+ID4gYXMgdGhl
-IHBhcmFtZXRlciBmb3IgdGhlIG9wZXJhdG9yICJzaXplb2YiIHRvIG1ha2UgdGhlIGNvcnJlc3Bv
-bmRpbmcNCj4gPiA+ID4gc2l6ZQ0KPiA+ID4gPiBkZXRlcm1pbmF0aW9uIGEgYml0IHNhZmVyIGFj
-Y29yZGluZyB0byB0aGUgTGludXggY29kaW5nIHN0eWxlDQo+ID4gPiA+IGNvbnZlbnRpb24uDQo+
-ID4gPg0KPiA+ID4NCj4gPiA+IFRoaXMgcGF0Y2ggZG9lcyBvbmUgc3R5bGUgaW4gZmF2b3Igb2Yg
-dGhlIG90aGVyLg0KPiA+DQo+ID4gSSBhY3R1YWxseSBwcmVmZXIgdGhhdCBzdHlsZSwgc28gSSdk
-IHdlbGNvbWUgdGhpcyBjaGFuZ2UgOikNCj4gDQo+IFN0eWxlIGNoYW5nZXMgc2hvdWxkIGJlIHJl
-dmlld2VkIGFuZCBkb2N1bWVudGVkLCBsaWtlIGFueSBvdGhlciBjb2RlDQo+IGNoYW5nZSwgYW5k
-IGFkZGVkIHRvIERvY3VtZW50YXRpb24vcHJvY2Vzcy9jb2Rpbmctc3R5bGUucnN0IG9yIGFuDQo+
-IGVxdWl2YWxlbnQgZmlsZS4NCj4gDQo+ID4gPiBBdCB0aGUgZW5kIGl0J3MgSmFya2tvJ3MgY2Fs
-bCwgdGhvdWdoIEkgd291bGQgTkFLIHRoaXMgYXMgSSB0aGluayBzb21lDQo+ID4gPiBvbmUgYWxy
-ZWFkeSB0b2xkIHRoaXMgdG8geW91IGZvciBzb21lIG90aGVyIHNpbWlsYXIgcGF0Y2goZXMpLg0K
-PiA+ID4NCj4gPiA+DQo+ID4gPiBJIGV2ZW4gd291bGQgc3VnZ2VzdCB0byBzdG9wIGRvaW5nIHRo
-aXMgbm9pc3kgc3R1ZmYsIHdoaWNoIGtlZXBzIHBlb3BsZQ0KPiA+ID4gYnVzeSBmb3Igbm90aGlu
-Zy4NCj4gPg0KPiA+IENsZWFuaW5nIHVwIG9sZCBjb2RlIGlzIGFsc28gd29ydGggc29tZXRoaW5n
-LCBldmVuIGlmIGRvZXMgbm90DQo+ID4gY2hhbmdlIG9uZSBiaXQgaW4gdGhlIGFzc2VtYmx5IG91
-dHB1dCBpbiB0aGUgZW5kLi4uDQo+IA0KPiBXb3csIHlvdSdyZSBvcGVuaW5nIHRoZSBkb29yIHJl
-YWxseSB3aWRlIGZvciBhbGwgc29ydHMgb2YgdHJpdmlhbA0KPiBjaGFuZ2VzISDCoEhvcGUgeW91
-IGhhdmUgdGhlIHRpbWUgYW5kIGluY2xpbmF0aW9uIHRvIHJldmlldyBhbmQgY29tbWVudA0KPiBv
-biBhbGwgb2YgdGhlbS4gwqBJIGNlcnRhaW5seSBkb24ndC4NCg0KV2VsbCwgaXNuJ3QgdGhlIHBv
-aW50IG9mIHRyaXZpYWwgY2hhbmdlcyB0aGF0IHRoZXkgYXJlIHRyaXZpYWwgdG8gcmV2aWV3PyA6
-KSBGb3IgdGhpbmdzIGxpa2UgdGhhdCB0aGVyZSBpcyBwcm9iYWJseSBub3QgZXZlbiBhIG5lZWQg
-dG8gcnVuIGEgdGVzdCwgdGhvdWdoIHdpdGggc3VmZmljaWVudCBhdXRvbWF0aW9uIHRoYXQgc2hv
-dWxkIG5vdCBiZSBhIHByb2JsZW0gZWl0aGVyLg0KDQo+IFRoZXJlIGlzIGEgbWFqb3IgZGlmZmVy
-ZW5jZSBiZXR3ZWVuIGFkZGluZyB0aGVzZSBzb3J0cyBvZiBjaGVja3MgdG8NCj4gdGhlIHRvb2xz
-IGluIHRoZSBzY3JpcHRzIGRpcmVjdG9yeSBvciBldmVuIHRvIHRoZSB6ZXJvIGRheSBib3RzIHRo
-YXQNCj4gY2F0Y2ggZGlmZmVyZW50IHNvcnRzIG9mIGVycm9ycywgQkVGT1JFIGNvZGUgaXMgdXBz
-dHJlYW1lZCwgYW5kDQo+IHBhdGNoZXMgbGlrZSB0aGVzZSwgYWZ0ZXIgdGhlIGZhY3QuDQoNCkNh
-dGNoaW5nIHRob3NlIHRoaW5ncyBlYXJseSBpbiB0aGUgcHJvY2VzcyBpcyBjZXJ0YWlubHkgcHJl
-ZmVyYWJsZS4gQnV0IGF0IHNvbWUgcG9pbnQgeW91IG5lZWQgdG8gZml4IHRoZSBleGlzdGluZyBj
-b2RlLCBvciB5b3UnbGwgZW5kIHVwIHdpdGggYSBtYXNodXAgb2YgZGlmZmVyZW50IHN0eWxlcywg
-anVzdCBiZWNhdXNlIHlvdSBkaWQgbm90IHdhbnQgdG8gdG91Y2ggb2xkIGNvZGUuDQoNCj4gQWZ0
-ZXIgdGhlIGNvZGUgaGFzIGJlZW4gdXBzdHJlYW1lZCwgaXQgaXMgYSBsb3QgbW9yZSBkaWZmaWN1
-bHQgdG8NCj4ganVzdGlmeSBjaGFuZ2VzIGxpa2UgdGhpcy7CoMKgSXQgaW1wYWN0cyBib3RoIGNv
-ZGUgdGhhdCBpcyBiZWluZw0KPiBkZXZlbG9wZWQgQU5EIGJhY2twb3J0aW5nIGJ1ZyBmaXhlcy4N
-Cg0KQmFja3BvcnRpbmcgY291bGQgYmUgYW4gYXJndW1lbnQsIGJ1dCBldmVuIHRoYXQgc2hvdWxk
-IG5vdCBiZSBhbGxvd2VkIHRvIGJsb2NrIGltcHJvdmVtZW50cyBpbmRlZmluaXRlbHkuIEknZCBw
-cmVmZXIgYSB3b3JsZCBpbiB3aGljaCB0aGUgY3VycmVudCBjb2RlIGlzIG5pY2UgYW5kIGNsZWFu
-IGFuZCBlYXN5IHRvIG1haW50YWluLCB0byBhIHdvcmxkIHdoZXJlIHdlIG5ldmVyIHRvdWNoIG9s
-ZCBjb2RlIHVubGVzcyBpdCBpcyBwcm92ZW4gdG8gYmUgd3JvbmcuDQoNCkJ1dCBsb29raW5nIGF0
-IHRoZSBjb2RlIGluIHF1ZXN0aW9uLCBJIGNhbm5vdCBzZWUgaG93IHRoaXMgc2hvdWxkIGV2ZXIg
-YmUgYSBzZXJpb3VzIHByb2JsZW0uIEV2ZW4gd2hlbiBiYWNrcG9ydGluZyBhIGNoYW5nZSB0YWtl
-cyBub3cgdGVuIG1pbnV0ZXMgaW5zdGVhZCBvZiBmaXZlLCB3aGljaCBtZWFucyBpdCBpcyB0d2lj
-ZSBhcyBoYXJkLCBpdCBpcyBzdGlsbCBub3QgZGlmZmljdWx0Lg0KDQpBbGV4YW5kZXINCg==
+On 10/17/17 11:26 AM, Bjorn Helgaas wrote:
+> To pop back up to the top of the stack, I think the main point of this
+> patch is to keep from binding a driver to the VFs in the kernel that
+> set PCI_SRIOV_CTRL_VFE.  This patch does that by setting
+> pdev->match_driver to -1 in powerpc-specific code.
+Correct, to add to your comment, we will only add to the PSeries platform
+ (in PowerPC)  configure SR-IOV path.
+> I think all systems, not just powerpc, want to prevent this VF driver
+> binding, so I hope there's a generic solution that everybody can use.
+The patch that we made this change dependent on:
+
+https://patchwork.kernel.org/patch/9882915/
+
+Is a generic form of not binding a pci device to a device driver
+and can be used in another environment if needed.
+>
+>>>> So like existing way of enabling SRIOV we still rely on the PF driver to
+>>>> enable VFs - but in this case the attachment phase is done via a user
+>>>> action via a management console in our case (novalink or hmc) triggered
+>>>> event that will essentially act like a hotplug.
+>>>>
+>>>> So in the fine details of that user triggered action the system
+>>>> firmware will bind the VFs, allowing resources to be allocated to
+>>>> the VF.  - Which essentially does all the attaching as we know it
+>>>> today but is managed by PHYP not by the kernel.
+>>> What exactly does "firmware binding the VFs" mean?  I guess this must
+>>> mean assigning a VF to a partition, injecting a hotplug add event to
+>>> that partition, and making the VF visible in config space?
+>> Firmware basically adds a device node to the device tree as defined
+>> in the (PAPR) Power Architecture Platform Requirements document.
+> From the point of view of the kernel that consumes this device tree
+> and owns the VF, I guess this looks like a hot-add.  
+Correct, this is intended. We want to minimize change and only focus
+on configure SR-IOV path in the PF on PSeries platform.
+> It would be nice
+> if this could be exposed to that kernel by having the firmware inject
+> a normal PCIe hotplug interrupt, but I'm guessing it's not that
+> simple.
+I don't understand entirely your suggestion. However, in the case of
+interrupts PHYP owns all the resources and will be associated accordingly
+with a partitionable endpoint (PE).
+> But if I understand correctly, this patch series isn't concerned with
+> that kernel; it's concerned with the kernel that owns the PF and sets
+> PCI_SRIOV_CTRL_VFE.
+Correct, we will enable SR-IOV in the PF through the Linux kernel and map system resources
+for the new VFs in powerpc platform specific kernel code. Furthermore, not binding
+the device drivers for the VFs that get mapped within the configure SR-IOV path
+is a requirement for this PSeries SR-IOV environment.
+
+Juan J. Alvarez
