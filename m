@@ -1,31 +1,24 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <b.zolnierkie@samsung.com>
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGb2M4bZZzDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 00:02:35 +1100 (AEDT)
-Message-ID: <1508245325.16112.478.camel@linux.intel.com>
-Subject: Re: [PATCH 3/4] char/tpm: Improve a size determination in nine
- functions
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>, Alexander.Steffen@infineon.com
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
- elfring@users.sourceforge.net, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
- clabbe.montjoie@gmail.com, jarkko.sakkinen@linux.intel.com,
- jgunthorpe@obsidianresearch.com, jsnitsel@redhat.com,
- kgold@linux.vnet.ibm.com,  mpe@ellerman.id.au, nayna@linux.vnet.ibm.com,
- paulus@samba.org, PeterHuewe@gmx.de,  Stefan Berger
- <stefanb@linux.vnet.ibm.com>
-Date: Tue, 17 Oct 2017 16:02:05 +0300
-In-Reply-To: <1508244757.4234.60.camel@linux.vnet.ibm.com>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
- <1508238182.16112.475.camel@linux.intel.com>
- <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
- <1508244757.4234.60.camel@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGbzp6bXczDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 00:45:25 +1100 (AEDT)
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>, Linux Fbdev development list
+ <linux-fbdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: Re: [bug report] out of bounds read parsing vmode commandline option
+Date: Tue, 17 Oct 2017 15:37:20 +0200
+Message-id: <5014119.cNFvECyesu@amdc3058>
+In-reply-to: <CAMuHMdUNvtDunWK-4oRFMqTVz_QKzXW_Fosg883jd7Wu7mp3_A@mail.gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; charset="us-ascii"
+References: <20171004125038.gkzaemlefrpfa2m2@mwanda>
+ <CAMuHMdUNvtDunWK-4oRFMqTVz_QKzXW_Fosg883jd7Wu7mp3_A@mail.gmail.com>
+ <CGME20171017133722epcas2p1361446d57dfad4ef9a9bc2a0a247e70a@epcas2p1.samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,58 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-10-17 at 08:52 -0400, Mimi Zohar wrote:
-> On Tue, 2017-10-17 at 11:50 +0000, Alexander.Steffen@infineon.com
-> wrote:
-> > > > Replace the specification of data structures by pointer
-> > > > dereferences
-> > > > as the parameter for the operator "sizeof" to make the
-> > > > corresponding
-> > > > size
-> > > > determination a bit safer according to the Linux coding style
-> > > > convention.
-> > > 
-> > > 
-> > > This patch does one style in favor of the other.
-> > 
-> > I actually prefer that style, so I'd welcome this change :)
+
+Hi,
+
+On Wednesday, October 04, 2017 06:42:37 PM Geert Uytterhoeven wrote:
+> Hi Dan,
 > 
-> Style changes should be reviewed and documented, like any other code
-> change, and added to Documentation/process/coding-style.rst or an
-> equivalent file.
-
-+1.
-
-> > > At the end it's Jarkko's call, though I would NAK this as I think
-> > > some
-> > > one already told this to you for some other similar patch(es).
-> > > 
-> > > 
-> > > I even would suggest to stop doing this noisy stuff, which keeps
-> > > people
-> > > busy for nothing.
-> > 
-> > Cleaning up old code is also worth something, even if does not
-> > change one bit in the assembly output in the end...
+> On Wed, Oct 4, 2017 at 2:50 PM, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> > This bug predates git but it looks like it might be simple to fix if the
+> > right person looked at the code.
+> >
+> >         drivers/video/fbdev/controlfb.c:560 control_setup()
+> >         error: buffer overflow 'control_mac_modes' 20 <= 21
+> >
+> > drivers/video/fbdev/controlfb.c
+> >    549  static void __init control_setup(char *options)
+> >    550  {
+> >    551          char *this_opt;
+> >    552
+> >    553          if (!options || !*options)
+> >    554                  return;
+> >    555
+> >    556          while ((this_opt = strsep(&options, ",")) != NULL) {
+> >    557                  if (!strncmp(this_opt, "vmode:", 6)) {
+> >    558                          int vmode = simple_strtoul(this_opt+6, NULL, 0);
+> >                                     ^^^^^
+> > We get vmode from the command line.
+> >
+> >    559                          if (vmode > 0 && vmode <= VMODE_MAX &&
+> >                                                           ^^^^^^^^^
+> > We check that it's <= 22.
+> >
+> >    560                              control_mac_modes[vmode - 1].m[1] >= 0)
+> >                                     ^^^^^^^^^^^^^^^^^
+> > But the problem is that control_mac_modes[] only has 20 elements so the
+> > highest valid index is 19.  vmode - 1 can be up to 21.
 > 
-> Wow, you're opening the door really wide for all sorts of trivial
-> changes!  Hope you have the time and inclination to review and comment
-> on all of them.  I certainly don't.
+> Nice catch!
+> 
+> The bug was introduced in v2.4.5.6, when 2 new modes were added to
+> macmodes.h, but control_mac_modes[] wasn't updated:
+> 
+> https://kernel.opensuse.org/cgit/kernel/diff/include/video/macmodes.h?h=v2.5.2&id=29f279c764808560eaceb88fef36cbc35c529aad
+> 
+> A simple fix is to check against ARRAY_SIZE(control_mac_modes) instead.
+> 
+> A better fix is to add the missing entries to control_mac_modes[], cfr. the
+> (gmail-whitespace-damaged) patch below:
+> 
+> --- a/drivers/video/fbdev/controlfb.h
+> +++ b/drivers/video/fbdev/controlfb.h
+> @@ -141,5 +141,7 @@ static struct max_cmodes control_mac_modes[] = {
+>         {{ 1, 2}},      /* 1152x870, 75Hz */
+>         {{ 0, 1}},      /* 1280x960, 75Hz */
+>         {{ 0, 1}},      /* 1280x1024, 75Hz */
+> +       {{ 1, 2}},      /* 1152x768, 60Hz */
+> +       {{ 0, 1}},      /* 1600x1024, 60Hz */
+>  };
+> 
+> (this array lists the maximum color mode (8, 16, or 32 bpp) for each
+>  video mode given RAM restrictions (2 or 4 MiB)).
+> 
+> The 1152x768 mode is probably OK. Given the 1600x1024 mode has a lower
+> dotclock (112 MHz) than the supported 1280x960 mode, it's probably OK, too.
 
-Moreover and not so obvious is an open door for making back port of
-*real* fixes much harder!
+Looks fine to me, could you please submit it as a normal patch?
 
-> There is a major difference between adding these sorts of checks to
-> the tools in the scripts directory or even to the zero day bots that
-> catch different sorts of errors, BEFORE code is upstreamed, and
-> patches like these, after the fact.
-
-+1.
-
-> After the code has been upstreamed, it is a lot more difficult to
-> justify changes like this.  It impacts both code that is being
-> developed AND backporting bug fixes.
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
