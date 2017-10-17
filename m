@@ -1,38 +1,36 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGgK241SSzDqF9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 03:15:34 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9HGFM4b146827
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 12:15:30 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dnk97y0r9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 12:15:25 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 17 Oct 2017 10:14:57 -0600
-Subject: Re: [PATCH 1/2] powerpc/nodes: Ensure enough nodes avail for
- operations
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: John Allen <jallen@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann from Kernel Team <mbringm@us.ibm.com>
-References: <d62dd6c7-7676-5fe0-4f63-baada9213908@linux.vnet.ibm.com>
- <871sm3l1c1.fsf@concordia.ellerman.id.au>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Tue, 17 Oct 2017 11:14:47 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGgYZ3Nn7zDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 03:26:26 +1100 (AEDT)
+Date: Tue, 17 Oct 2017 11:26:21 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Juan Alvarez <jjalvare@linux.vnet.ibm.com>
+Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Steven Royer <seroyer@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
+ benh@kernel.crashing.org, paulus@samba.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "Juan J . Alvarez" <jjalvare@us.ibm.com>,
+ Bodong Wang <bodong@mellanox.com>, Eli Cohen <eli@mellanox.com>,
+ Saeed Mahameed <saeedm@mellanox.com>
+Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
+Message-ID: <20171017162621.GB5641@bhelgaas-glaptop.roam.corp.google.com>
+References: <87efq92ei6.fsf@concordia.ellerman.id.au>
+ <20171012182932.GA653@bhelgaas-glaptop.roam.corp.google.com>
+ <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
+ <20171013033456.GC25517@bhelgaas-glaptop.roam.corp.google.com>
+ <88eab212351a662dda330071d9afe9dc@linux.vnet.ibm.com>
+ <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
+ <20171013120558.1a129183@t450s.home>
+ <24fdec01-8df4-f027-0b3c-0472a2d73946@linux.vnet.ibm.com>
+ <20171017135123.GA5641@bhelgaas-glaptop.roam.corp.google.com>
+ <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <871sm3l1c1.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <a915cc6d-09fc-8a64-21c2-5bd89123d2e4@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,191 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-See below.
+On Tue, Oct 17, 2017 at 09:33:34AM -0500, Juan Alvarez wrote:
+> On 10/17/17 8:51 AM, Bjorn Helgaas wrote:
+> > This is where I get confused.  I guess the Linux that sets
+> > PCI_SRIOV_CTRL_VFE to enable the VFs can also perform config accesses
+> > to the VFs, since it can enumerate them and build pci_dev structs for
+> > them, right?
+> 
+> Correct, we are not changing anything related to how the VF gets initialized
+> in the kernel.
+> >
+> > And the Linux in the "Hosting Partition" is a guest that cannot see a
+> > VF until a management console attaches the VF to the Hosting
+> > Partition?  
+> 
+> Correct, this is how PHYP does normal adapter assignment.
+> 
+> > I'm not a VFIO or KVM expert but that sounds vaguely like
+> > what they would do when assigning a VF to a guest.
+>
+> I do not know the specifics on VFIO and KVM. However, in this
+> case there is no KVM running on the Linux LPAR. PHYP owns all
+> the system resources.
 
-On 10/16/2017 07:33 AM, Michael Ellerman wrote:
-> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
-> 
->> powerpc/nodes: On systems like PowerPC which allow 'hot-add' of CPU
-> 
-> This is a powerpc-only patch, so saying "systems like PowerPC" is
-> confusing. What you should be saying is "On pseries systems".
-> 
->> or memory resources, it may occur that the new resources are to be
->> inserted into nodes that were not used for these resources at bootup.
->> In the kernel, any node that is used must be defined and initialized
->> at boot.
->>
->> This patch extracts the value of the lowest domain level (number of
->> allocable resources) from the "rtas" device tree property
->> "ibm,current-associativity-domains" or the device tree property
-> 
-> What is current associativity domains? I've not heard of it, where is it
-> documented, and what does it mean.
-> 
-> Why would use the "current" set vs the "max"? I thought the whole point
-> was to discover the maximum possible set of nodes that could be
-> hotplugged.
-> 
->> "ibm,max-associativity-domains" to use as the maximum number of nodes
->> to setup as possibly available in the system.  This new setting will
->> override the instruction,
->>
->>     nodes_and(node_possible_map, node_possible_map, node_online_map);
->>
->> presently seen in the function arch/powerpc/mm/numa.c:initmem_init().
->>
->> If the property is not present at boot, no operation will be performed
->> to define or enable additional nodes.
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/numa.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
->>  1 file changed, 47 insertions(+)
->>
->> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->> index ec098b3..b385cd0 100644
->> --- a/arch/powerpc/mm/numa.c
->> +++ b/arch/powerpc/mm/numa.c
->> @@ -892,6 +892,51 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
->>  	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
->>  }
->>  
->> +static void __init node_associativity_setup(void)
-> 
-> This should really be called "find_possible_nodes()" or something more
-> descriptive.
+To pop back up to the top of the stack, I think the main point of this
+patch is to keep from binding a driver to the VFs in the kernel that
+set PCI_SRIOV_CTRL_VFE.  This patch does that by setting
+pdev->match_driver to -1 in powerpc-specific code.
 
-Okay.
-> 
->> +{
->> +	struct device_node *rtas;
->> +
->> +	rtas = of_find_node_by_path("/rtas");
->> +	if (rtas) {
-> 
-> If you just short-circuit that return the whole function body can be
-> deintented, making it significantly more readable.
-> 
-> ie:
-> +	rtas = of_find_node_by_path("/rtas");
-> +	if (!rtas)
-> +		return;
+I think all systems, not just powerpc, want to prevent this VF driver
+binding, so I hope there's a generic solution that everybody can use.
 
-Okay.
+> >> So like existing way of enabling SRIOV we still rely on the PF driver to
+> >> enable VFs - but in this case the attachment phase is done via a user
+> >> action via a management console in our case (novalink or hmc) triggered
+> >> event that will essentially act like a hotplug.
+> >>
+> >> So in the fine details of that user triggered action the system
+> >> firmware will bind the VFs, allowing resources to be allocated to
+> >> the VF.  - Which essentially does all the attaching as we know it
+> >> today but is managed by PHYP not by the kernel.
+> >
+> > What exactly does "firmware binding the VFs" mean?  I guess this must
+> > mean assigning a VF to a partition, injecting a hotplug add event to
+> > that partition, and making the VF visible in config space?
+>
+> Firmware basically adds a device node to the device tree as defined
+> in the (PAPR) Power Architecture Platform Requirements document.
 
-> 
->> +		const __be32 *prop;
->> +		u32 len, entries, numnodes, i;
->> +
->> +		prop = of_get_property(rtas,
->> +					"ibm,current-associativity-domains", &len);
-> 
-> Please don't use of_get_property() in new code, we have much better
-> accessors these days, which do better error checking and handle the
-> endian conversions for you.
-> 
-> In this case you'd use eg:
-> 
-> 	u32 entries;
-> 	rc = of_property_read_u32(rtas, "ibm,current-associativity-domains", &entries);
+>From the point of view of the kernel that consumes this device tree
+and owns the VF, I guess this looks like a hot-add.  It would be nice
+if this could be exposed to that kernel by having the firmware inject
+a normal PCIe hotplug interrupt, but I'm guessing it's not that
+simple.
 
-The property 'ibm,current-associativity-domains' has the same format as the property
-'ibm,max-associativity-domains' i.e. it is an integer array.  The accessor of_property_read_32,
-however, expects it to be an integer singleton value.  Instead, it needs:
+But if I understand correctly, this patch series isn't concerned with
+that kernel; it's concerned with the kernel that owns the PF and sets
+PCI_SRIOV_CTRL_VFE.
 
-> 
->> +		if (!prop || len < sizeof(unsigned int)) {
->> +			prop = of_get_property(rtas,
->> +					"ibm,max-associativity-domains", &len);
-                        if (!prop || len < sizeof(unsigned int))
->> +				goto endit;
->> +		}
->> +
->> +		entries = of_read_number(prop++, 1);
->> +
->> +		if (len < (entries * sizeof(unsigned int)))
->> +			goto endit;
->> +
->> +		if ((0 <= min_common_depth) && (min_common_depth <= (entries-1)))
->> +			entries = min_common_depth;
->> +		else
->> +			entries -= 1;
-> 			^
->                         You can't just guess that will be the right entry.
-> 
-> If min_common_depth is < 0 the function should have just returned
-> immediately at the top.
-
-Okay.
-
-> 
-> If min_common_depth is outside the range of the property that's a buggy
-> device tree, you should print a warning and return.
-> 
->> +		numnodes = of_read_number(&prop[entries], 1);
-> 
-> 	u32 num_nodes;
-> 	rc = of_property_read_u32_index(rtas, "ibm,current-associativity-domains", min_common_depth, &num_nodes);
->> +
->> +		printk(KERN_INFO "numa: Nodes = %d (mcd = %d)\n", numnodes,
->> +			min_common_depth);
->> +
->> +		for (i = 0; i < numnodes; i++) {
->> +			if (!node_possible(i)) {
->> +				setup_node_data(i, 0, 0);
-> 
-> Do we actually need to setup the NODE_DATA() yet? Doing it now ensures
-> it will not be allocated node local, which sucks.
-
-Okay.
-
-> 
->> +				node_set(i, node_possible_map);
->> +			}
->> +		}
->> +	}
->> +
->> +endit:
-> 
-> "out" would be the normal name.
-
-Okay.
-
-> 
->> +	if (rtas)
->> +		of_node_put(rtas);
->> +}
->> +
->>  void __init initmem_init(void)
->>  {
->>  	int nid, cpu;
->> @@ -911,6 +956,8 @@ void __init initmem_init(void)
->>  	 */
-> 
-> You need to update the comment above here which is contradicted by the
-> new function you're adding.
-
-Okay.
-
-> 
->>  	nodes_and(node_possible_map, node_possible_map, node_online_map);
->>  
->> +	node_associativity_setup();
->> +
->>  	for_each_online_node(nid) {
->>  		unsigned long start_pfn, end_pfn;
->>  
-> 
-> cheers
-> 
-> 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+Bjorn
