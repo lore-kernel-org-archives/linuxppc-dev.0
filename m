@@ -1,29 +1,35 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x22a.google.com (mail-io0-x22a.google.com
- [IPv6:2607:f8b0:4001:c06::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <julia.lawall@lip6.fr>
+Received: from mail3-relais-sop.national.inria.fr
+ (mail3-relais-sop.national.inria.fr [192.134.164.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGf9S6XS9zDqF9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:23:56 +1100 (AEDT)
-Received: by mail-io0-x22a.google.com with SMTP id e89so2657329ioi.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 08:23:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGfHw16BBzDqF9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:29:27 +1100 (AEDT)
+Date: Tue, 17 Oct 2017 17:29:20 +0200 (CEST)
+From: Julia Lawall <julia.lawall@lip6.fr>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: Julia Lawall <julia.lawall@lip6.fr>, Alexander.Steffen@infineon.com,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ andriy.shevchenko@linux.intel.com, elfring@users.sourceforge.net,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, clabbe.montjoie@gmail.com,
+ jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com,
+ jsnitsel@redhat.com, kgold@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ nayna@linux.vnet.ibm.com, paulus@samba.org, PeterHuewe@gmx.de,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] char/tpm: Improve a size determination in nine
+ functions
+In-Reply-To: <1508253453.4234.81.camel@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1710171725080.5035@hadrien>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
+ <1508238182.16112.475.camel@linux.intel.com>
+ <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+ <1508244757.4234.60.camel@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710171456360.5035@hadrien>
+ <1508253453.4234.81.camel@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <87r2u2hs9t.fsf@concordia.ellerman.id.au>
-References: <20171016234710.GA102273@beast>
- <20171017125204.728b3a95@roar.ozlabs.ibm.com>
- <87r2u2hs9t.fsf@concordia.ellerman.id.au>
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 17 Oct 2017 08:23:53 -0700
-Message-ID: <CAGXu5jKt6pypVhxMEv9LYsYvF_P=u3SOK=Yc268wS+oYOHiH=g@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/watchdog: Convert timers to use timer_setup()
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/mixed; BOUNDARY="8323329-103149562-1508254160=:5035"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +39,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 17, 2017 at 5:29 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Nicholas Piggin <npiggin@gmail.com> writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323329-103149562-1508254160=:5035
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+
+
+On Tue, 17 Oct 2017, Mimi Zohar wrote:
+
+> On Tue, 2017-10-17 at 14:58 +0200, Julia Lawall wrote:
+> >
+> > On Tue, 17 Oct 2017, Mimi Zohar wrote:
+> >
+> > > On Tue, 2017-10-17 at 11:50 +0000, Alexander.Steffen@infineon.com
+> > > wrote:
+> > > > > > Replace the specification of data structures by pointer dereferences
+> > > > > > as the parameter for the operator "sizeof" to make the corresponding
+> > > > > > size
+> > > > > > determination a bit safer according to the Linux coding style
+> > > > > > convention.
+> > > > >
+> > > > >
+> > > > > This patch does one style in favor of the other.
+> > > >
+> > > > I actually prefer that style, so I'd welcome this change :)
+> > >
+> > > Style changes should be reviewed and documented, like any other code
+> > > change, and added to Documentation/process/coding-style.rst or an
+> > > equivalent file.
+> >
+> > Actually, it has been there for many years:
+> >
+> > 14) Allocating memory
+> > ---------------------
+> > ...
+> > The preferred form for passing a size of a struct is the following:
+> >
+> > .. code-block:: c
+> >
+> > 	p = kmalloc(sizeof(*p), ...);
+> >
+> > The alternative form where struct name is spelled out hurts readability and
+> > introduces an opportunity for a bug when the pointer variable type is changed
+> > but the corresponding sizeof that is passed to a memory allocator is not.
 >
->> On Mon, 16 Oct 2017 16:47:10 -0700
->> Kees Cook <keescook@chromium.org> wrote:
->>
->>> In preparation for unconditionally passing the struct timer_list pointer to
->>> all timer callbacks, switch to using the new timer_setup() and from_timer()
->>> to pass the timer pointer explicitly.
->>>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: Michael Ellerman <mpe@ellerman.id.au>
->>> Cc: Nicholas Piggin <npiggin@gmail.com>
->>> Cc: linuxppc-dev@lists.ozlabs.org
->>> Signed-off-by: Kees Cook <keescook@chromium.org>
->>
->> Looks fine to me. Is this intended to be merged via the powerpc tree
->> in the next merge window?
+> True, thanks for the reminder.  Is this common in new code?  Is there
+> a script/ or some other automated way of catching this usage before
+> patches are upstreamed?
 >
-> It relies on the new timer_setup(), which is in one of tglx's trees (I
-> think). So I expect it to go via that tree.
+> Just as you're doing here, the patch description should reference this
+> in the patch description.
 
-It's in -rc3, but the timer tree can carry it if you want. Which do you prefer?
+The comment in the documentation seems have been there since Linux 2.6.14,
+ie 2005.  The fact that a lot of code still doesn't use that style, 12
+years later, suggests that actually it is not preferred, or not preferred
+by everyone.  Perhaps the paragraph in coding style should just be
+dropped.
 
--Kees
-
--- 
-Kees Cook
-Pixel Security
+julia
+--8323329-103149562-1508254160=:5035--
