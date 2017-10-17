@@ -1,36 +1,30 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0102.hostedemail.com
- [216.40.44.102])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGqwq1QBFzDrFp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 09:43:39 +1100 (AEDT)
-Message-ID: <1508280210.6530.32.camel@perches.com>
-Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
-From: Joe Perches <joe@perches.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>, SF Markus
- Elfring <elfring@users.sourceforge.net>, Dan Carpenter
- <dan.carpenter@oracle.com>,  linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, Jerry Snitselaar
- <jsnitsel@redhat.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>, Michael
- Ellerman <mpe@ellerman.id.au>, Nayna Jain <nayna@linux.vnet.ibm.com>, Paul
- Mackerras <paulus@samba.org>, Peter =?ISO-8859-1?Q?H=FCwe?=
- <PeterHuewe@gmx.de>, Stefan Berger <stefanb@linux.vnet.ibm.com>, LKML
- <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Date: Tue, 17 Oct 2017 15:43:30 -0700
-In-Reply-To: <1508255833.3129.33.camel@HansenPartnership.com>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
- <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
- <20171017085124.pkrjzghcf5wmcydc@mwanda>
- <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
- <1508255833.3129.33.camel@HansenPartnership.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGsRH27q7zDrFp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 10:51:39 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id 17so2522287pfn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 16:51:39 -0700 (PDT)
+Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
+ full_name
+To: Rob Herring <robh@kernel.org>, Alan Tull <atull@kernel.org>
+References: <20170821151651.25096-1-robh@kernel.org>
+ <20170821151651.25096-6-robh@kernel.org>
+ <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
+ <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <59E69786.2030406@gmail.com>
+Date: Tue, 17 Oct 2017 16:51:34 -0700
+MIME-Version: 1.0
+In-Reply-To: <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,28 +34,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-10-17 at 08:57 -0700, James Bottomley wrote:
-> On Tue, 2017-10-17 at 11:25 +0200, SF Markus Elfring wrote:
-> > > 
-> > > Fixes is only for bug fixes.  These don't fix any bugs.
-> > 
-> > How do you distinguish these in questionable source code
-> > from other error categories or software weaknesses?
+On 10/17/17 14:46, Rob Herring wrote:
+> On Tue, Oct 17, 2017 at 4:32 PM, Alan Tull <atull@kernel.org> wrote:
+>> On Mon, Aug 21, 2017 at 10:16 AM, Rob Herring <robh@kernel.org> wrote:
+>>
+>> Hi Rob,
+>>
+>>> With dependencies on a statically allocated full path name converted to
+>>> use %pOF format specifier, we can store just the basename of node, and
+>>> the unflattening of the FDT can be simplified.
+>>>
+>>> This commit will affect the remaining users of full_name. After
+>>> analyzing these users, the remaining cases should only change some print
+>>> messages. The main users of full_name are providing a name for struct
+>>> resource. The resource names shouldn't be important other than providing
+>>> /proc/iomem names.
+>>>
+>>> We no longer distinguish between pre and post 0x10 dtb formats as either
+>>> a full path or basename will work. However, less than 0x10 formats have
+>>> been broken since the conversion to use libfdt (and no one has cared).
+>>> The conversion of the unflattening code to be non-recursive also broke
+>>> pre 0x10 formats as the populate_node function would return 0 in that
+>>> case.
+>>>
+>>> Signed-off-by: Rob Herring <robh@kernel.org>
+>>> ---
+>>> v2:
+>>> - rebase to linux-next
+>>>
+>>>  drivers/of/fdt.c | 69 +++++++++-----------------------------------------------
+>>>  1 file changed, 11 insertions(+), 58 deletions(-)
+>>
+>> I've just updated to the latest next branch and am finding problems
+>> applying overlays.   Reverting this commit alleviates things.  The
+>> errors I get are:
+>>
+>> [   88.498704] OF: overlay: Failed to apply prop @/__symbols__/clk_0
+>> [   88.513447] OF: overlay: apply failed '/__symbols__'
+>> [   88.518423] create_overlay: Failed to create overlay (err=-12)
 > 
-> A style change is one that doesn't change the effect of the execution.
->  These don't actually even change the assembly, so there's programmatic
-> proof they're not fixing anything.
+> Frank's series with overlay updates should fix this.
 
-The printk removals do change the objects.
+Yes, it does:
 
-The value of that type of change is only for
-resource limited systems.
+  [PATCH v3 11/12] of: overlay: remove a dependency on device node full_name
 
-printk type changes should generally not be
-considered fixes.
-
-> Bug means potentially user visible fault.  In any bug fix commit you
-> should document the fault and its effects on users so those backporting
-> can decide if they care or not.
-
-Markus' changelogs leave much to be desired.
+-Frank
