@@ -1,33 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGZF50LK9zDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 23:26:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGZHz0BdwzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 23:29:19 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dan Carpenter <dan.carpenter@oracle.com>,
- Julia Lawall <julia.lawall@lip6.fr>
-Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, SF Markus Elfring
- <elfring@users.sourceforge.net>, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, Jerry Snitselaar
- <jsnitsel@redhat.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>, Nayna
- Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>, Peter
- =?utf-8?Q?H=C3=BCwe?= <PeterHuewe@gmx.de>, Stefan Berger
- <stefanb@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
-In-Reply-To: <20171017094434.csarc5fw5d32u64w@mwanda>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
- <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
- <20171017085124.pkrjzghcf5wmcydc@mwanda>
- <alpine.DEB.2.20.1710171055100.5035@hadrien>
- <20171017094434.csarc5fw5d32u64w@mwanda>
-Date: Tue, 17 Oct 2017 23:26:47 +1100
-Message-ID: <87tvyyhse0.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Kees Cook <keescook@chromium.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/watchdog: Convert timers to use timer_setup()
+In-Reply-To: <20171017125204.728b3a95@roar.ozlabs.ibm.com>
+References: <20171016234710.GA102273@beast>
+ <20171017125204.728b3a95@roar.ozlabs.ibm.com>
+Date: Tue, 17 Oct 2017 23:29:18 +1100
+Message-ID: <87r2u2hs9t.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,36 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan Carpenter <dan.carpenter@oracle.com> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Tue, Oct 17, 2017 at 10:56:42AM +0200, Julia Lawall wrote:
->> 
->> 
->> On Tue, 17 Oct 2017, Dan Carpenter wrote:
->> 
->> > On Mon, Oct 16, 2017 at 09:35:12PM +0300, Jarkko Sakkinen wrote:
->> > >
->> > > A minor complaint: all commits are missing "Fixes:" tag.
->> > >
->> >
->> > Fixes is only for bug fixes.  These don't fix any bugs.
->> 
->> 0-day seems to put Fixes for everything.  Should they be removed when the
->> old code is undesirable but doesn't actually cause a crash, eg out of date
->> API.
+> On Mon, 16 Oct 2017 16:47:10 -0700
+> Kees Cook <keescook@chromium.org> wrote:
 >
-> Yeah, I feel like Fixes tags don't belong for API updates and cleanups.
+>> In preparation for unconditionally passing the struct timer_list pointer to
+>> all timer callbacks, switch to using the new timer_setup() and from_timer()
+>> to pass the timer pointer explicitly.
+>> 
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Nicholas Piggin <npiggin@gmail.com>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>
+> Looks fine to me. Is this intended to be merged via the powerpc tree
+> in the next merge window?
 
-I try to use the criteria of "if someone had backported commit A, would
-they also want commit B" (where B Fixes: A).
-
-So it's a bit broader than just "A had a *bug*" and this is the fix.
-
-That's obviously still a bit of a slippery slope, but somewhat helpful I
-think. eg, pretty much no one is interested in backporting spelling
-fixes, so those aren't Fixes.
-
-And generally people aren't interested in backporting commits like these
-ones that just update coding style.
+It relies on the new timer_setup(), which is in one of tglx's trees (I
+think). So I expect it to go via that tree.
 
 cheers
