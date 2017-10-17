@@ -1,36 +1,37 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGgYZ3Nn7zDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 03:26:26 +1100 (AEDT)
-Date: Tue, 17 Oct 2017 11:26:21 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Juan Alvarez <jjalvare@linux.vnet.ibm.com>
-Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Steven Royer <seroyer@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
- benh@kernel.crashing.org, paulus@samba.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "Juan J . Alvarez" <jjalvare@us.ibm.com>,
- Bodong Wang <bodong@mellanox.com>, Eli Cohen <eli@mellanox.com>,
- Saeed Mahameed <saeedm@mellanox.com>
-Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-Message-ID: <20171017162621.GB5641@bhelgaas-glaptop.roam.corp.google.com>
-References: <87efq92ei6.fsf@concordia.ellerman.id.au>
- <20171012182932.GA653@bhelgaas-glaptop.roam.corp.google.com>
- <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
- <20171013033456.GC25517@bhelgaas-glaptop.roam.corp.google.com>
- <88eab212351a662dda330071d9afe9dc@linux.vnet.ibm.com>
- <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
- <20171013120558.1a129183@t450s.home>
- <24fdec01-8df4-f027-0b3c-0472a2d73946@linux.vnet.ibm.com>
- <20171017135123.GA5641@bhelgaas-glaptop.roam.corp.google.com>
- <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGgjC5mQlzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 03:33:03 +1100 (AEDT)
+Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Dan Carpenter <dan.carpenter@oracle.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
+ <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+ <1508255833.3129.33.camel@HansenPartnership.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <5cf54c5a-778f-3f00-8772-547785c22009@users.sourceforge.net>
+Date: Tue, 17 Oct 2017 18:32:16 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
+In-Reply-To: <1508255833.3129.33.camel@HansenPartnership.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,62 +41,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 17, 2017 at 09:33:34AM -0500, Juan Alvarez wrote:
-> On 10/17/17 8:51 AM, Bjorn Helgaas wrote:
-> > This is where I get confused.  I guess the Linux that sets
-> > PCI_SRIOV_CTRL_VFE to enable the VFs can also perform config accesses
-> > to the VFs, since it can enumerate them and build pci_dev structs for
-> > them, right?
+>>> Fixes is only for bug fixes.  These don't fix any bugs.
+>>
+>> How do you distinguish these in questionable source code
+>> from other error categories or software weaknesses?
 > 
-> Correct, we are not changing anything related to how the VF gets initialized
-> in the kernel.
-> >
-> > And the Linux in the "Hosting Partition" is a guest that cannot see a
-> > VF until a management console attaches the VF to the Hosting
-> > Partition?  
-> 
-> Correct, this is how PHYP does normal adapter assignment.
-> 
-> > I'm not a VFIO or KVM expert but that sounds vaguely like
-> > what they would do when assigning a VF to a guest.
->
-> I do not know the specifics on VFIO and KVM. However, in this
-> case there is no KVM running on the Linux LPAR. PHYP owns all
-> the system resources.
+> A style change is one that doesn't change the effect of the execution.
 
-To pop back up to the top of the stack, I think the main point of this
-patch is to keep from binding a driver to the VFs in the kernel that
-set PCI_SRIOV_CTRL_VFE.  This patch does that by setting
-pdev->match_driver to -1 in powerpc-specific code.
+This can occasionally be fine, can't it?
 
-I think all systems, not just powerpc, want to prevent this VF driver
-binding, so I hope there's a generic solution that everybody can use.
 
-> >> So like existing way of enabling SRIOV we still rely on the PF driver to
-> >> enable VFs - but in this case the attachment phase is done via a user
-> >> action via a management console in our case (novalink or hmc) triggered
-> >> event that will essentially act like a hotplug.
-> >>
-> >> So in the fine details of that user triggered action the system
-> >> firmware will bind the VFs, allowing resources to be allocated to
-> >> the VF.  - Which essentially does all the attaching as we know it
-> >> today but is managed by PHYP not by the kernel.
-> >
-> > What exactly does "firmware binding the VFs" mean?  I guess this must
-> > mean assigning a VF to a partition, injecting a hotplug add event to
-> > that partition, and making the VF visible in config space?
->
-> Firmware basically adds a device node to the device tree as defined
-> in the (PAPR) Power Architecture Platform Requirements document.
+>  These don't actually even change the assembly,
 
->From the point of view of the kernel that consumes this device tree
-and owns the VF, I guess this looks like a hot-add.  It would be nice
-if this could be exposed to that kernel by having the firmware inject
-a normal PCIe hotplug interrupt, but I'm guessing it's not that
-simple.
+How did you check it?
 
-But if I understand correctly, this patch series isn't concerned with
-that kernel; it's concerned with the kernel that owns the PF and sets
-PCI_SRIOV_CTRL_VFE.
+I would expect that there are useful run time effects to consider
+for three proposed update steps (in this patch series).
 
-Bjorn
+
+> so there's programmatic proof they're not fixing anything.
+
+I find that the software refactoring “Improve a size determination in nine functions”
+should fit to this observation (while the source code can become a bit better).
+
+
+> Bug means potentially user visible fault.
+
+Thanks for your constructive feedback.
+
+Regards,
+Markus
