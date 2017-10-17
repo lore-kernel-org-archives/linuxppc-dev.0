@@ -1,29 +1,39 @@
-Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGk5B0DY0zDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 05:20:29 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9HIJLbJ145306
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 14:20:26 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dnkpm29ba-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 14:20:26 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Tue, 17 Oct 2017 12:20:25 -0600
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Breno Leitao <leitao@debian.org>
-Subject: [PATCH] powerpc/xmon: check before calling xive functions
-Date: Tue, 17 Oct 2017 16:20:18 -0200
-Message-Id: <1508264418-13448-1-git-send-email-leitao@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGkYj6lmDzDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 05:41:45 +1100 (AEDT)
+Subject: Re: char/tpm: Improve a size determination in nine functions
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>,
+ Alexander Steffen <Alexander.Steffen@infineon.com>,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
+ <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
+ <1508238182.16112.475.camel@linux.intel.com>
+ <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+ <1508244757.4234.60.camel@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710171456360.5035@hadrien>
+ <1508253453.4234.81.camel@linux.vnet.ibm.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
+Date: Tue, 17 Oct 2017 20:41:04 +0200
+MIME-Version: 1.0
+In-Reply-To: <1508253453.4234.81.camel@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently xmon could call XIVE functions from OPAL even if the XIVE is
-disabled or does not exist in the system, as in POWER8 machines.  This
-causes the following exception:
+>> 	p = kmalloc(sizeof(*p), ...);
+>>
+>> The alternative form where struct name is spelled out hurts readability and
+>> introduces an opportunity for a bug when the pointer variable type is changed
+>> but the corresponding sizeof that is passed to a memory allocator is not.
+> 
+> True, thanks for the reminder.
 
- 1:mon> dx
- cpu 0x1: Vector: 700 (Program Check) at [c000000423c93450]
-     pc: c00000000009cfa4: opal_xive_dump+0x50/0x68
-     lr: c0000000000997b8: opal_return+0x0/0x50
+Will it trigger further software development considerations (besides my contributions)?
 
-This patch simply checks if XIVE is enabled before calling XIVE
-functions.
 
-Suggested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Signed-off-by: Breno Leitao <leitao@debian.org>
----
- arch/powerpc/xmon/xmon.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+> Is this common in new code?
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 4679aeb84767..b34976c4a6ba 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2508,6 +2508,12 @@ static void dump_xives(void)
- 	unsigned long num;
- 	int c;
- 
-+	if (!xive_enabled()) {
-+		printf("Xive disabled on this system\n");
-+
-+		return;
-+	}
-+
- 	c = inchar();
- 	if (c == 'a') {
- 		dump_all_xives();
--- 
-2.14.2
+Do you start an official survey here?
+
+
+> Is there a script/ or some other automated way of catching this usage
+
+Yes. - I am using an approach for the semantic patch language.   ;-)
+
+
+> before patches are upstreamed?
+
+I imagine that a corresponding source code analysis variant could be applied
+in more cases if sufficient acceptance could be achieved.
+
+
+> Just as you're doing here, the patch description should reference this
+> in the patch description.
+
+Do you find my wording “This issue was detected by using the Coccinelle software.” insufficient?
+
+Regards,
+Markus
