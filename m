@@ -2,10 +2,9 @@ Return-Path: <elfring@users.sourceforge.net>
 Received: from mout.web.de (mout.web.de [212.227.15.4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGktQ717QzDrJj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 05:56:14 +1100 (AEDT)
-Subject: [PATCH 1/2] powerpc-ps3: Delete an error message for a failed memory
- allocation in update_flash_db()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGkvx1zmBzDrKC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 05:57:32 +1100 (AEDT)
+Subject: [PATCH 2/2] powerpc-ps3: Improve a size determination in two functions
 From: SF Markus Elfring <elfring@users.sourceforge.net>
 To: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -13,8 +12,8 @@ To: linuxppc-dev@lists.ozlabs.org,
  Paul Mackerras <paulus@samba.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 References: <36a8ba41-7f1e-31f8-5d32-19e04393b181@users.sourceforge.net>
-Message-ID: <e16c8b7d-de3a-6c96-9af4-dd0551cca805@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 20:55:34 +0200
+Message-ID: <caf62593-9a36-e73c-2224-9f61338f694d@users.sourceforge.net>
+Date: Tue, 17 Oct 2017 20:56:53 +0200
 MIME-Version: 1.0
 In-Reply-To: <36a8ba41-7f1e-31f8-5d32-19e04393b181@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -28,32 +27,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 20:00:31 +0200
+Date: Tue, 17 Oct 2017 20:15:17 +0200
 
-Omit an extra message for a memory allocation failure in this function.
+Replace the specification of data structures by pointer dereferences
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
 
 This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/platforms/ps3/os-area.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/platforms/ps3/mm.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platforms/ps3/os-area.c
-index 3db53e8aff92..f2a8875e25d1 100644
---- a/arch/powerpc/platforms/ps3/os-area.c
-+++ b/arch/powerpc/platforms/ps3/os-area.c
-@@ -625,10 +625,8 @@ static int update_flash_db(void)
- 	/* Read in header and db from flash. */
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index b0f34663b1ae..257de451e324 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -524,8 +524,7 @@ static int dma_sb_map_pages(struct ps3_dma_region *r, unsigned long phys_addr,
+ 	int result;
+ 	struct dma_chunk *c;
  
- 	header = kmalloc(buf_len, GFP_KERNEL);
--	if (!header) {
--		pr_debug("%s: kmalloc failed\n", __func__);
-+	if (!header)
- 		return -ENOMEM;
--	}
+-	c = kzalloc(sizeof(struct dma_chunk), GFP_ATOMIC);
+-
++	c = kzalloc(sizeof(*c), GFP_ATOMIC);
+ 	if (!c) {
+ 		result = -ENOMEM;
+ 		goto fail_alloc;
+@@ -570,8 +569,7 @@ static int dma_ioc0_map_pages(struct ps3_dma_region *r, unsigned long phys_addr,
  
- 	count = os_area_flash_read(header, buf_len, 0);
- 	if (count < 0) {
+ 	DBG(KERN_ERR "%s: phy=%#lx, lpar%#lx, len=%#lx\n", __func__,
+ 	    phys_addr, ps3_mm_phys_to_lpar(phys_addr), len);
+-	c = kzalloc(sizeof(struct dma_chunk), GFP_ATOMIC);
+-
++	c = kzalloc(sizeof(*c), GFP_ATOMIC);
+ 	if (!c) {
+ 		result = -ENOMEM;
+ 		goto fail_alloc;
 -- 
 2.14.2
