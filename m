@@ -1,10 +1,11 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Received: from mout.web.de (mout.web.de [212.227.15.4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGfWg2klgzDrJ6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:39:43 +1100 (AEDT)
-Subject: [PATCH 2/3] powernv/pci: Use common code in pnv_ioda_pick_m64_pe()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGfXv049hzDrKf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:40:46 +1100 (AEDT)
+Subject: [PATCH 3/3] powernv/pci: Improve a size determination in
+ pnv_pci_init_ioda_phb()
 From: SF Markus Elfring <elfring@users.sourceforge.net>
 To: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Alistair Popple <alistair@popple.id.au>,
@@ -15,8 +16,8 @@ To: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Rob Herring <robh@kernel.org>, Russell Currey <ruscur@russell.cc>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 References: <549d0b6b-f875-c524-d867-742745117c1e@users.sourceforge.net>
-Message-ID: <84df26ea-74a3-14e5-9f13-a35486e9a95d@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 17:39:12 +0200
+Message-ID: <03b68902-629e-65ab-a5e8-d90a3613f596@users.sourceforge.net>
+Date: Tue, 17 Oct 2017 17:40:17 +0200
 MIME-Version: 1.0
 In-Reply-To: <549d0b6b-f875-c524-d867-742745117c1e@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -30,53 +31,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 17:07:54 +0200
+Date: Tue, 17 Oct 2017 17:18:10 +0200
 
-Add a jump target so that a bit of code can be better reused
-at the end of this function.
+Replace the specification of a data structure by a pointer dereference
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
+
+This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 17c0330bb059..98d9435240f4 100644
+index 98d9435240f4..2febdf06a237 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -364,21 +364,20 @@ static struct pnv_ioda_pe *pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
- 	/* Figure out reserved PE numbers by the PE */
- 	pnv_ioda_reserve_m64_pe(bus, pe_alloc, all);
+@@ -3802,7 +3802,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	phb_id = be64_to_cpup(prop64);
+ 	pr_debug("  PHB-ID  : 0x%016llx\n", phb_id);
  
-+	master_pe = NULL;
-+
- 	/*
- 	 * the current bus might not own M64 window and that's all
- 	 * contributed by its child buses. For the case, we needn't
- 	 * pick M64 dependent PE#.
- 	 */
--	if (bitmap_empty(pe_alloc, phb->ioda.total_pe_num)) {
--		kfree(pe_alloc);
--		return NULL;
--	}
-+	if (bitmap_empty(pe_alloc, phb->ioda.total_pe_num))
-+		goto free_pe;
+-	phb = memblock_virt_alloc(sizeof(struct pnv_phb), 0);
++	phb = memblock_virt_alloc(sizeof(*phb), 0);
  
- 	/*
- 	 * Figure out the master PE and put all slave PEs to master
- 	 * PE's list to form compound PE.
- 	 */
--	master_pe = NULL;
- 	i = -1;
- 	while ((i = find_next_bit(pe_alloc, phb->ioda.total_pe_num, i + 1)) <
- 		phb->ioda.total_pe_num) {
-@@ -416,6 +415,7 @@ static struct pnv_ioda_pe *pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
- 		}
- 	}
- 
-+free_pe:
- 	kfree(pe_alloc);
- 	return master_pe;
- }
+ 	/* Allocate PCI controller */
+ 	phb->hose = hose = pcibios_alloc_controller(np);
 -- 
 2.14.2
