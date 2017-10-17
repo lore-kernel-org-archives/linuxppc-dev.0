@@ -1,40 +1,18 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sbates@raithlin.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0097.outbound.protection.outlook.com [104.47.37.97])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGmrj1y7szDqlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 07:24:52 +1100 (AEDT)
-Subject: Re: char/tpm: Improve a size determination in nine functions
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall
- <julia.lawall@lip6.fr>, Alexander Steffen <Alexander.Steffen@infineon.com>,
- linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Jerry Snitselaar <jsnitsel@redhat.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
- <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
- <1508238182.16112.475.camel@linux.intel.com>
- <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
- <1508244757.4234.60.camel@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1710171456360.5035@hadrien>
- <1508253453.4234.81.camel@linux.vnet.ibm.com>
- <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
- <1508269017.16112.492.camel@linux.intel.com>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <24454301-011a-bd60-ffce-5c14b1c76f48@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 22:24:10 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGn9615N1zDqlv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 07:39:04 +1100 (AEDT)
+From: "Stephen  Bates" <sbates@raithlin.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: Logan Gunthorpe <logang@deltatee.com>
+Subject: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
+Date: Tue, 17 Oct 2017 20:38:59 +0000
+Message-ID: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1508269017.16112.492.camel@linux.intel.com>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,31 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> I imagine that a corresponding source code analysis variant could be applied
->> in more cases if sufficient acceptance could be achieved.
-> 
-> So, then instead of still keeping people busy with this noise you better
-> start doing something like CI integration with that for *new* code?
-
-There are various software development challenges to consider.
-
-
-> I'm pretty sure you may also exercise your achievements on
-> drivers/staging where it would be honored.
-
-I am waiting for several improvements also for software components
-in this area for a while. Would you like to take another look
-at these change possibilities?
-
-
-> Have you talked to Fengguang (0-day LKP)?
-
-Not directly for this topic so far.
-
-
-> Have you talked to Arnd (I think he is related to kernel-ci)?
-
-I am curious on how he will respond to remaining open issues.
-
-Regards,
-Markus
+SGkgQWxsDQoNCkkgYW0gaG9waW5nIHNvbWVvbmUgY2FuIGhlbHAgc2hlZCBzb21lIGxpZ2h0IG9u
+IGFuIGlzc3VlIEkgYW0gc2VlaW5nIHdpdGggbXkgYXR0ZW1wdCB0byBhZGQgcDJwbWVtIFsxXSB0
+byB0aGUgcHBjNjRlbCBrZXJuZWwuIHAycG1lbSBpcyBhIChjdXJyZW50bHkpIG91dC1vZi10cmVl
+IHBhdGNoc2V0IHRoYXQgYWxsb3dzIG9uZSB0byBhZGQgZGV2aWNlIG1lbW9yeSB3aXRoIHN0cnVj
+dCBwYWdlIGJhY2tpbmcgaW50byB0aGUgTGludXgga2VybmVsLiBJdCBsZXZlcmFnZXMgTUVNT1JZ
+X0hPVFBMVUcgYW5kIFpPTkVfREVWSUNFIHdoaWNoIHdlcmUgYWRkZWQgdG8gcHBjNjQgaW4gNC4x
+NCBzbyBJIHRob3VnaHQgaXQgd291bGQgYmUgZnVuIHRvIHRyeSBpdCBvdXQuDQoNCldlIGNvbnN0
+cnVjdGVkIGEgcGF0Y2hzZXQgYmFzZWQgb2ZmIDQuMTQtcmMxIFsxXSBhbmQgYnVpbGQgYSBrZXJu
+ZWwgYmFzZWQgb2ZmIHRoZSBwc2VyaWVzIGRlZmNvbmZpZyBhbmQgcmFuIHRoaXMgb24gdXBzdHJl
+YW0gcWVtdS1zeXN0ZW0tcHBjNjQuIFRoZSBleGFjdCBjb21tYW5kIHRvIHJ1biBRRU1VIHdhczoN
+Cg0KcWVtdS1zeXN0ZW0tcHBjNjQgXA0KICAgIC1tYWNoaW5lIHBzZXJpZXMgXA0KICAgIC1jcHUg
+cG93ZXI4IFwNCiAgICAtc21wIDEgLW0gMjA0OCBcDQogICAgLWtlcm5lbCB+L2tlcm5lbC9saW51
+eC1wcGM2NGVsL3ZtbGludXggXA0KICAgIC1hcHBlbmQgIm52bWUudXNlX2NtYj0yNCBjb25zb2xl
+PWh2YyByb290PS9kZXYvc2RhIHJvb3R3YWl0IHJ3IiBcDQogICAgLXNlcmlhbCBtb246c3RkaW8g
+LWRyaXZlIGZpbGU9aW1hZ2UtcHBjNjRlbC5pbWcsaWY9c2NzaSxmb3JtYXQ9cmF3LGluZGV4PTAg
+XA0KICAgIC1ub2dyYXBoaWMgXA0KICAgIC1kcml2ZSBmaWxlPS4uL2ltYWdlcy9udm1lLnFjb3cy
+LGlmPW5vbmUsaWQ9bnZtZTEsc25hcHNob3Q9b24gXA0KICAgIC1kZXZpY2UgbnZtZSxkcml2ZT1u
+dm1lMSxzZXJpYWw9bnZtZTEgXA0KICAgIC1kcml2ZSBmaWxlPS4uL2ltYWdlcy9udm1lMi5xY293
+MixpZj1ub25lLGlkPW52bWUyLHNuYXBzaG90PW9uIFwNCiAgICAtZGV2aWNlIG52bWUsZHJpdmU9
+bnZtZTIsc2VyaWFsPW52bWUyLGNtYl9zaXplX21iPTY0DQoNClRoaXMgcmVzdWx0ZWQgaW4gdGhl
+IGZvbGxvd2luZyBleHRyYWN0IGZyb20gZG1lc2cgd2hlbiByZWdpc3RlcmluZyB0aGUgcDJwbWVt
+IGFzc29jaWF0ZWQgd2l0aCBvbmUgb2YgdGhlIE5WTWUgU1NEcy4NCg0KWyAgICAzLjUwODQ5N10g
+bnZtZSAwMDAwOjAwOjAzLjA6IGVuYWJsaW5nIGRldmljZSAoMDEwMCAtPiAwMTAyKQ0KWyAgICAz
+LjUxMDc0M10gbnZtZSAwMDAwOjAwOjAzLjA6IFVzaW5nIDY0LWJpdCBkaXJlY3QgRE1BIGF0IG9m
+ZnNldCA4MDAwMDAwMDAwMDAwMDANClsgICAgMy41MzU3MDZdIHAycG1lbSBwMnBtZW0wOiByZWdp
+c3RlcmVkDQpbICAgIDMuNTM3NzgwXSBscGFyOiBBdHRlbXB0aW5nIHRvIHJlc2l6ZSBIUFQgdG8g
+c2hpZnQgMjENClsgICAgMy41MzkyNTFdIFVuYWJsZSB0byByZXNpemUgaGFzaCBwYWdlIHRhYmxl
+IHRvIHRhcmdldCBvcmRlciAyMTogLTENClsgICAgMy41NDEwNzldIFVuYWJsZSB0byBjcmVhdGUg
+bWFwcGluZyBmb3IgaG90IGFkZGVkIG1lbW9yeSAweGMwMDAyMTAwMDAwMDAwMDAuLjB4YzAwMDIx
+MDAwNDAwMDAwMDogLTINClsgICAgMy41NTA0MDddIHAycG1lbSBwMnBtZW0wOiB1bnJlZ2lzdGVy
+ZWQNCg0KSSBhbSBub3QgdGhhdCBmYW1pbGlhciB3aXRoIHRoZSBwc2VyaWVzIGFyY2hpdGVjdHVy
+ZSBzbyBJIHdhcyBob3BpbmcgZm9yIHNvbWUgZ3VpZGFuY2UgY29uY2VybmluZyB0aGUgbHBhciBl
+cnJvciBtZXNzYWdlLiBJZiBhbnkgcHBjNjQgY29kZXJzIGZhbmN5IGhhdmluZyBhIGdvIGF0IHRo
+aXMgdGhlIGtlcm5lbCBjb2RlIGlzIGF0IFsxXSBhbmQgSeKAmWQgYmUgaGFwcHkgdG8gcHJvdmlk
+ZSB0aGUgLmNvbmZpZyB1c2VkIGlmIG5lZWRlZC4gSnVzdCBsZXQgbWUga25vdy4NCg0KQ2hlZXJz
+DQogDQpTdGVwaGVuDQoNClsxXSBodHRwczovL2dpdGh1Yi5jb20vc2JhdGVzMTMwMjcyL2xpbnV4
+LXAycG1lbQ0KDQoNCg==
