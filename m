@@ -1,26 +1,34 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
+ [66.63.167.143])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGfXv049hzDrKf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 02:40:46 +1100 (AEDT)
-Subject: [PATCH 3/3] powernv/pci: Improve a size determination in
- pnv_pci_init_ioda_phb()
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-To: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Rob Herring <robh@kernel.org>, Russell Currey <ruscur@russell.cc>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <549d0b6b-f875-c524-d867-742745117c1e@users.sourceforge.net>
-Message-ID: <03b68902-629e-65ab-a5e8-d90a3613f596@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 17:40:17 +0200
-MIME-Version: 1.0
-In-Reply-To: <549d0b6b-f875-c524-d867-742745117c1e@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGg3M5wJWzDqF9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 03:03:43 +1100 (AEDT)
+Message-ID: <1508255833.3129.33.camel@HansenPartnership.com>
+Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>, Dan Carpenter
+ <dan.carpenter@oracle.com>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Andy Shevchenko
+ <andriy.shevchenko@linux.intel.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, Jerry Snitselaar
+ <jsnitsel@redhat.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nayna Jain <nayna@linux.vnet.ibm.com>, Paul
+ Mackerras <paulus@samba.org>, Peter =?ISO-8859-1?Q?H=FCwe?=
+ <PeterHuewe@gmx.de>, Stefan Berger <stefanb@linux.vnet.ibm.com>, LKML
+ <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Date: Tue, 17 Oct 2017 08:57:13 -0700
+In-Reply-To: <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 17 Oct 2017 17:18:10 +0200
+On Tue, 2017-10-17 at 11:25 +0200, SF Markus Elfring wrote:
+> > 
+> > Fixes is only for bug fixes.  These don't fix any bugs.
+> 
+> How do you distinguish these in questionable source code
+> from other error categories or software weaknesses?
 
-Replace the specification of a data structure by a pointer dereference
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
+A style change is one that doesn't change the effect of the execution.
+ These don't actually even change the assembly, so there's programmatic
+proof they're not fixing anything.
 
-This issue was detected by using the Coccinelle software.
+Bug means potentially user visible fault.  In any bug fix commit you
+should document the fault and its effects on users so those backporting
+can decide if they care or not.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 98d9435240f4..2febdf06a237 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3802,7 +3802,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	phb_id = be64_to_cpup(prop64);
- 	pr_debug("  PHB-ID  : 0x%016llx\n", phb_id);
- 
--	phb = memblock_virt_alloc(sizeof(struct pnv_phb), 0);
-+	phb = memblock_virt_alloc(sizeof(*phb), 0);
- 
- 	/* Allocate PCI controller */
- 	phb->hose = hose = pcibios_alloc_controller(np);
--- 
-2.14.2
+James
