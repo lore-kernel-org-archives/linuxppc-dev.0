@@ -1,24 +1,28 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jglisse@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGKVG01xPzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 13:52:21 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id s75so299253pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Oct 2017 19:52:20 -0700 (PDT)
-Date: Tue, 17 Oct 2017 12:52:04 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Kees Cook <keescook@chromium.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/watchdog: Convert timers to use timer_setup()
-Message-ID: <20171017125204.728b3a95@roar.ozlabs.ibm.com>
-In-Reply-To: <20171016234710.GA102273@beast>
-References: <20171016234710.GA102273@beast>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGKtw57rVzDrD6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 14:10:16 +1100 (AEDT)
+From: jglisse@redhat.com
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Joerg Roedel <jroedel@suse.de>,
+ Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] Optimize mmu_notifier->invalidate_range callback
+Date: Mon, 16 Oct 2017 23:10:01 -0400
+Message-Id: <20171017031003.7481-1-jglisse@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 16 Oct 2017 16:47:10 -0700
-Kees Cook <keescook@chromium.org> wrote:
+From: Jérôme Glisse <jglisse@redhat.com>
 
-> In preparation for unconditionally passing the struct timer_list pointer to
-> all timer callbacks, switch to using the new timer_setup() and from_timer()
-> to pass the timer pointer explicitly.
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+(Andrew you already have v1 in your queue of patch 1, patch 2 is new,
+ i think you can drop it patch 1 v1 for v2, v2 is bit more conservative
+ and i fixed typos)
 
-Looks fine to me. Is this intended to be merged via the powerpc tree
-in the next merge window?
+All this only affect user of invalidate_range callback (at this time
+CAPI arch/powerpc/platforms/powernv/npu-dma.c, IOMMU ATS/PASID in
+drivers/iommu/amd_iommu_v2.c|intel-svm.c)
 
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
+This patchset remove useless double call to mmu_notifier->invalidate_range
+callback wherever it is safe to do so. The first patch just remove useless
+call and add documentation explaining why it is safe to do so. The second
+patch go further by introducing mmu_notifier_invalidate_range_only_end()
+which skip callback to invalidate_range this can be done when clearing a
+pte, pmd or pud with notification which call invalidate_range right after
+clearing under the page table lock.
 
-> ---
->  arch/powerpc/kernel/watchdog.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-> index 15e209a37c2d..50797528b5e1 100644
-> --- a/arch/powerpc/kernel/watchdog.c
-> +++ b/arch/powerpc/kernel/watchdog.c
-> @@ -263,9 +263,8 @@ static void wd_timer_reset(unsigned int cpu, struct timer_list *t)
->  	add_timer_on(t, cpu);
->  }
->  
-> -static void wd_timer_fn(unsigned long data)
-> +static void wd_timer_fn(struct timer_list *t)
->  {
-> -	struct timer_list *t = this_cpu_ptr(&wd_timer);
->  	int cpu = smp_processor_id();
->  
->  	watchdog_timer_interrupt(cpu);
-> @@ -292,7 +291,7 @@ static void start_watchdog_timer_on(unsigned int cpu)
->  
->  	per_cpu(wd_timer_tb, cpu) = get_tb();
->  
-> -	setup_pinned_timer(t, wd_timer_fn, 0);
-> +	timer_setup(t, wd_timer_fn, TIMER_PINNED);
->  	wd_timer_reset(cpu, t);
->  }
->  
+It should improve performances but i am lacking hardware and benchmarks
+which might show an improvement. Maybe folks in cc can help here.
+
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joerg Roedel <jroedel@suse.de>
+Cc: Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Alistair Popple <alistair@popple.id.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: iommu@lists.linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org
+
+Jérôme Glisse (2):
+  mm/mmu_notifier: avoid double notification when it is useless v2
+  mm/mmu_notifier: avoid call to invalidate_range() in range_end()
+
+ Documentation/vm/mmu_notifier.txt | 93 +++++++++++++++++++++++++++++++++++++++
+ fs/dax.c                          |  9 +++-
+ include/linux/mmu_notifier.h      | 20 +++++++--
+ mm/huge_memory.c                  | 66 ++++++++++++++++++++++++---
+ mm/hugetlb.c                      | 16 +++++--
+ mm/ksm.c                          | 15 ++++++-
+ mm/memory.c                       |  6 ++-
+ mm/migrate.c                      | 15 +++++--
+ mm/mmu_notifier.c                 | 11 ++++-
+ mm/rmap.c                         | 59 ++++++++++++++++++++++---
+ 10 files changed, 281 insertions(+), 29 deletions(-)
+ create mode 100644 Documentation/vm/mmu_notifier.txt
+
+-- 
+2.13.6
