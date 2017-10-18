@@ -1,40 +1,30 @@
-Return-Path: <alexander.steffen@infineon.com>
-Received: from smtp11.infineon.com (smtp11.infineon.com
- [IPv6:2a00:18f0:1e00:4::5])
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yH8RJ1NQ7zDrLC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 22:07:39 +1100 (AEDT)
-From: <Alexander.Steffen@infineon.com>
-To: <joe@perches.com>, <julia.lawall@lip6.fr>
-CC: <elfring@users.sourceforge.net>, <linux-integrity@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <James.Bottomley@HansenPartnership.com>,
- <dan.carpenter@oracle.com>, <jarkko.sakkinen@linux.intel.com>,
- <andriy.shevchenko@linux.intel.com>, <benh@kernel.crashing.org>,
- <clabbe.montjoie@gmail.com>, <jgunthorpe@obsidianresearch.com>,
- <jsnitsel@redhat.com>, <kgold@linux.vnet.ibm.com>, <mpe@ellerman.id.au>,
- <nayna@linux.vnet.ibm.com>, <paulus@samba.org>, <PeterHuewe@gmx.de>,
- <stefanb@linux.vnet.ibm.com>, <linux-kernel@vger.kernel.org>,
- <kernel-janitors@vger.kernel.org>
-Subject: RE: char-TPM: Adjustments for ten function implementations
-Date: Wed, 18 Oct 2017 11:07:35 +0000
-Message-ID: <65f6b172844a47c9b0b5ca1bb7ce2ad8@infineon.com>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
- <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
- <20171017085124.pkrjzghcf5wmcydc@mwanda>
- <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
- <1508255833.3129.33.camel@HansenPartnership.com>
- <1508280210.6530.32.camel@perches.com>
- <bf7fc26c-bdc9-c752-72c7-f44c22f4a328@users.sourceforge.net>
- <1508318326.6806.1.camel@perches.com>
- <026d582729b849b780fbaa06fb8bc79e@infineon.com>
- <alpine.DEB.2.20.1710181154390.3524@hadrien>
- <b2772ac342ca4cb19149dd2c91f26087@infineon.com>
- <1508323753.6806.5.camel@perches.com>
-In-Reply-To: <1508323753.6806.5.camel@perches.com>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yH92c2F9zzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 22:34:47 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9IBY9b7051853
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 07:34:45 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dp5fm3cqr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 07:34:45 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Wed, 18 Oct 2017 07:34:44 -0400
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: gpiccoli@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, brking@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/xmon: Always enable xmon sysrq trigger
+Date: Wed, 18 Oct 2017 09:34:36 -0200
+Message-Id: <20171018113436.16112-1-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,30 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Wed, 2017-10-18 at 10:44 +0000, Alexander.Steffen@infineon.com wrote:
-> > > For instance, nothing about
-> > > > > 	sizeof(type)
-> > > > > vs
-> > > > > 	sizeof(*ptr)
-> > > > > makes it easier for a human to read the code.
-> > > >
-> > > > If it does not make it easier to read the code for you, then maybe =
-you
-> > > > should consider that this might not be true for all humans. For me,=
- it
-> > > > makes it much easier to see at a glance, that code like
-> > > > ptr=3Dmalloc(sizeof(*ptr)) is correct.
-> > >
-> > > I don't think there is a perfect solution.
-> >
-> > Maybe. But for the second variant the correctness is easier to check,
->=20
-> How often should
-> 	ptr =3D alloc(sizeof(*ptr))
-> be
-> 	ptr =3D alloc(sizeof(**ptr))
+Distros vary the way they enable SysRq by default - mostly they seem
+to enable some mask and then majority of the SysRq functions are
+disabled. For instance, xmon does not even have a mask, and unsless
+SysRq are completely enabled ( == 1), xmon trigger keeps disabled.
 
-Never? Because in that case it probably should be *ptr=3Dalloc(sizeof(**ptr=
-)), unless you are doing something horrible ;-)
+Countless times while investigating hangs we needed xmon and it was
+disabled - machine just got hung and while in serial console, we just
+couldn't drop to xmon, forcing to a new attempt to reproduce the issue
+with SysRq fully enabled.
 
-Alexander
+This patch "fixes" this by having xmon enabled in all possible masks
+of SysRq. In other words, xmon trigger will only be disabled if SysRq
+is 0 (completely disabled). So, while debugging a hung, when one tries
+to drop to xmon this patch prevents the frustrating message:
+"This sysrq operation is disabled".
+
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+---
+Patch built and tested against powerpc/next.
+
+ arch/powerpc/xmon/xmon.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 4679aeb84767..780d708472a2 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3514,6 +3514,7 @@ static struct sysrq_key_op sysrq_xmon_op = {
+ 	.handler =	sysrq_handle_xmon,
+ 	.help_msg =	"xmon(x)",
+ 	.action_msg =	"Entering xmon",
++	.enable_mask =	0xFFFF,
+ };
+ 
+ static int __init setup_xmon_sysrq(void)
+-- 
+2.14.2
