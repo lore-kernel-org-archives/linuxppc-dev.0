@@ -1,24 +1,24 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGzHq05DpzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 15:15:34 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id v78so3205174pgb.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 21:15:34 -0700 (PDT)
-Date: Wed, 18 Oct 2017 15:15:22 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGzYt0Bn8zDrD6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 15:27:45 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id e64so2988880pfk.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 21:27:45 -0700 (PDT)
+Date: Wed, 18 Oct 2017 15:27:33 +1100
 From: Balbir Singh <bsingharora@gmail.com>
 To: Ram Pai <linuxram@us.ibm.com>
 Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
  benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
  aneesh.kumar@linux.vnet.ibm.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 11/25] powerpc: introduce execute-only pkey
-Message-ID: <20171018151522.4123fe34@firefly.ozlabs.ibm.com>
-In-Reply-To: <1504910713-7094-20-git-send-email-linuxram@us.ibm.com>
+Subject: Re: [PATCH 12/25] powerpc: ability to associate pkey to a vma
+Message-ID: <20171018152733.7f2702af@firefly.ozlabs.ibm.com>
+In-Reply-To: <1504910713-7094-21-git-send-email-linuxram@us.ibm.com>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-20-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-21-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,134 +30,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  8 Sep 2017 15:44:59 -0700
+On Fri,  8 Sep 2017 15:45:00 -0700
 Ram Pai <linuxram@us.ibm.com> wrote:
 
-> This patch provides the implementation of execute-only pkey.
-> The architecture-independent layer expects the arch-dependent
-> layer, to support the ability to create and enable a special
-> key which has execute-only permission.
+> arch-independent code expects the arch to  map
+> a  pkey  into the vma's protection bit setting.
+> The patch provides that ability.
 > 
 > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 > ---
->  arch/powerpc/include/asm/book3s/64/mmu.h |    1 +
->  arch/powerpc/include/asm/pkeys.h         |    9 ++++-
->  arch/powerpc/mm/pkeys.c                  |   57 ++++++++++++++++++++++++++++++
->  3 files changed, 66 insertions(+), 1 deletions(-)
+>  arch/powerpc/include/asm/mman.h  |    8 +++++++-
+>  arch/powerpc/include/asm/pkeys.h |   18 ++++++++++++++++++
+>  2 files changed, 25 insertions(+), 1 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index 55950f4..ee18ba0 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -115,6 +115,7 @@ struct patb_entry {
->  	 * bit unset -> key available for allocation
->  	 */
->  	u32 pkey_allocation_map;
-> +	s16 execute_only_pkey; /* key holding execute-only protection */
->  #endif
->  } mm_context_t;
+> diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+> index 30922f6..067eec2 100644
+> --- a/arch/powerpc/include/asm/mman.h
+> +++ b/arch/powerpc/include/asm/mman.h
+> @@ -13,6 +13,7 @@
+>  
+>  #include <asm/cputable.h>
+>  #include <linux/mm.h>
+> +#include <linux/pkeys.h>
+>  #include <asm/cpu_has_feature.h>
+>  
+>  /*
+> @@ -22,7 +23,12 @@
+>  static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
+>  		unsigned long pkey)
+>  {
+> -	return (prot & PROT_SAO) ? VM_SAO : 0;
+> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> +	return (((prot & PROT_SAO) ? VM_SAO : 0) |
+> +			pkey_to_vmflag_bits(pkey));
+> +#else
+> +	return ((prot & PROT_SAO) ? VM_SAO : 0);
+> +#endif
+>  }
+>  #define arch_calc_vm_prot_bits(prot, pkey) arch_calc_vm_prot_bits(prot, pkey)
 >  
 > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> index 78c5362..0cf115f 100644
+> index 0cf115f..f13e913 100644
 > --- a/arch/powerpc/include/asm/pkeys.h
 > +++ b/arch/powerpc/include/asm/pkeys.h
-> @@ -115,11 +115,16 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
->   * Try to dedicate one of the protection keys to be used as an
->   * execute-only protection key.
->   */
-> +extern int __execute_only_pkey(struct mm_struct *mm);
->  static inline int execute_only_pkey(struct mm_struct *mm)
->  {
-> -	return 0;
-> +	if (!pkey_inited || !pkey_execute_disable_support)
-> +		return -1;
-> +
-> +	return __execute_only_pkey(mm);
->  }
+> @@ -23,6 +23,24 @@
+>  #define VM_PKEY_BIT4	VM_HIGH_ARCH_4
+>  #endif
 >  
+> +/* override any generic PKEY Permission defines */
+> +#define PKEY_DISABLE_EXECUTE   0x4
+> +#define PKEY_ACCESS_MASK       (PKEY_DISABLE_ACCESS |\
+> +				PKEY_DISABLE_WRITE  |\
+> +				PKEY_DISABLE_EXECUTE)
 > +
->  static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
->  		int prot, int pkey)
->  {
-> @@ -141,6 +146,8 @@ static inline void pkey_mm_init(struct mm_struct *mm)
->  	if (!pkey_inited)
->  		return;
->  	mm_pkey_allocation_map(mm) = initial_allocation_mask;
-> +	/* -1 means unallocated or invalid */
-> +	mm->context.execute_only_pkey = -1;
->  }
->  
->  extern void thread_pkey_regs_save(struct thread_struct *thread);
-> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> index 7cd1be4..8a24983 100644
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -188,3 +188,60 @@ void thread_pkey_regs_init(struct thread_struct *thread)
->  	write_iamr(0x0ul);
->  	write_uamor(0x0ul);
->  }
-> +
-> +static inline bool pkey_allows_readwrite(int pkey)
+> +static inline u64 pkey_to_vmflag_bits(u16 pkey)
 > +{
-> +	int pkey_shift = pkeyshift(pkey);
+> +	if (!pkey_inited)
+> +		return 0x0UL;
 > +
-> +	if (!(read_uamor() & (0x3UL << pkey_shift)))
-> +		return true;
-
-If uamor for key 0 is 0x10 for example or 0x01 it's a bug.
-The above check might miss it.
-
-> +
-> +	return !(read_amr() & ((AMR_RD_BIT|AMR_WR_BIT) << pkey_shift));
-> +}
-> +
-> +int __execute_only_pkey(struct mm_struct *mm)
-> +{
-> +	bool need_to_set_mm_pkey = false;
-> +	int execute_only_pkey = mm->context.execute_only_pkey;
-> +	int ret;
-> +
-> +	/* Do we need to assign a pkey for mm's execute-only maps? */
-> +	if (execute_only_pkey == -1) {
-> +		/* Go allocate one to use, which might fail */
-> +		execute_only_pkey = mm_pkey_alloc(mm);
-> +		if (execute_only_pkey < 0)
-> +			return -1;
-> +		need_to_set_mm_pkey = true;
-> +	}
-> +
-> +	/*
-> +	 * We do not want to go through the relatively costly
-> +	 * dance to set AMR if we do not need to.  Check it
-> +	 * first and assume that if the execute-only pkey is
-> +	 * readwrite-disabled than we do not have to set it
-> +	 * ourselves.
-> +	 */
-> +	if (!need_to_set_mm_pkey &&
-> +	    !pkey_allows_readwrite(execute_only_pkey))
-> +		return execute_only_pkey;
-> +
-> +	/*
-> +	 * Set up AMR so that it denies access for everything
-> +	 * other than execution.
-> +	 */
-> +	ret = __arch_set_user_pkey_access(current, execute_only_pkey,
-> +			(PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
-> +	/*
-> +	 * If the AMR-set operation failed somehow, just return
-> +	 * 0 and effectively disable execute-only support.
-> +	 */
-> +	if (ret) {
-> +		mm_set_pkey_free(mm, execute_only_pkey);
-> +		return -1;
-> +	}
-> +
-> +	/* We got one, store it and use it from here on out */
-> +	if (need_to_set_mm_pkey)
-> +		mm->context.execute_only_pkey = execute_only_pkey;
-> +	return execute_only_pkey;
+> +	return (((pkey & 0x1UL) ? VM_PKEY_BIT0 : 0x0UL) |
+> +		((pkey & 0x2UL) ? VM_PKEY_BIT1 : 0x0UL) |
+> +		((pkey & 0x4UL) ? VM_PKEY_BIT2 : 0x0UL) |
+> +		((pkey & 0x8UL) ? VM_PKEY_BIT3 : 0x0UL) |
+> +		((pkey & 0x10UL) ? VM_PKEY_BIT4 : 0x0UL));
 > +}
 
-Looks good otherwise
+Assuming that there is a linear order between VM_PKEY_BIT4 to
+VM_PKEY_BIT0, the conditional checks can be removed
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+(pkey & 0x1fUL) << VM_PKEY_BIT0?
+
+
+Balbir Singh
