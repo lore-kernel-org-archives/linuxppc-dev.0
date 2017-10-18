@@ -1,36 +1,28 @@
-Return-Path: <julia.lawall@lip6.fr>
-Received: from mail2-relais-roc.national.inria.fr
- (mail2-relais-roc.national.inria.fr [192.134.164.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [217.72.192.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHCf448JLzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 00:32:07 +1100 (AEDT)
-Date: Wed, 18 Oct 2017 15:32:00 +0200 (CEST)
-From: Julia Lawall <julia.lawall@lip6.fr>
-To: David Laight <David.Laight@ACULAB.COM>
-cc: 'SF Markus Elfring' <elfring@users.sourceforge.net>,
- Joe Perches <joe@perches.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHD3k3Nx4zDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 00:50:56 +1100 (AEDT)
+Subject: Re: Adjusting further size determinations?
+To: Julia Lawall <julia.lawall@lip6.fr>,
  "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: David Laight <David.Laight@ACULAB.COM>, Joe Perches <joe@perches.com>,
  Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
  "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
  Stefan Berger <stefanb@linux.vnet.ibm.com>,
  Alexander Steffen <Alexander.Steffen@infineon.com>,
- Nayna Jain <nayna@linux.vnet.ibm.com>,
- Jerry Snitselaar <jsnitsel@redhat.com>,
+ Nayna Jain <nayna@linux.vnet.ibm.com>, Jerry Snitselaar
+ <jsnitsel@redhat.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
- Julia Lawall <julia.lawall@lip6.fr>,
  Corentin Labbe <clabbe.montjoie@gmail.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- =?ISO-8859-15?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@samba.org>, =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Dan Carpenter <dan.carpenter@oracle.com>
-Subject: RE: Adjusting further size determinations?
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD009ACE3@AcuExch.aculab.com>
-Message-ID: <alpine.DEB.2.20.1710181531130.15834@hadrien>
 References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
  <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
  <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
@@ -47,8 +39,13 @@ References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
  <1508327383.6806.7.camel@perches.com>
  <0fc1f522-8772-d859-a9b0-cb3b6931c862@users.sourceforge.net>
  <063D6719AE5E284EB5DD2968C1650D6DD009ACE3@AcuExch.aculab.com>
+ <alpine.DEB.2.20.1710181531130.15834@hadrien>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <d9315154-ce60-2cdb-eb27-ac7e89916f30@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 15:50:04 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <alpine.DEB.2.20.1710181531130.15834@hadrien>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,33 +55,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>> If you want 'security' for kmalloc() then:
+>>
+>> #define KMALLOC_TYPE(flags) (type *)kmalloc(sizeof (type), flags)
+>> #define KMALLOC(ptr, flags) *(ptr) = KMALLOC_TYPE(typeof *(ptr), flags)
+
+Such an approach might help.
 
 
-On Wed, 18 Oct 2017, David Laight wrote:
+>> and change:
+>> 	ptr = kmalloc(sizeof *ptr, flags);
+>> to:
+>> 	KMALLOC(&ptr, flags);
+>>
+>> But it is all churn for churn's sake.
+> 
+> Please don't.
 
-> From: SF Markus Elfring
-> > >>>> Unpleasant consequences are possible in both cases.
-> > >> How much do you care to reduce the failure probability further?
-> > >
-> > > Zero.
-> >
-> > I am interested to improve the software situation a bit more here.
->
-> There are probably better places to spend your time!
->
-> If you want 'security' for kmalloc() then:
->
-> #define KMALLOC_TYPE(flags) (type *)kmalloc(sizeof (type), flags)
-> #define KMALLOC(ptr, flags) *(ptr) = KMALLOC_TYPE(typeof *(ptr), flags)
->
-> and change:
-> 	ptr = kmalloc(sizeof *ptr, flags);
-> to:
-> 	KMALLOC(&ptr, flags);
->
-> But it is all churn for churn's sake.
+Interesting …
 
-Please don't.  Coccinelle won't find real problems with kmalloc any more
-if this is done.
 
-julia
+> Coccinelle won't find real problems with kmalloc any more if this is done.
+
+The corresponding source code analysis will become different
+(or more challenging) then. Are you still looking for related solutions?
+
+Regards,
+Markus
