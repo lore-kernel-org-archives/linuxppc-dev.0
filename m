@@ -1,10 +1,11 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3yHJPj6tLjzDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:06:49 +1100 (AEDT)
-Date: Wed, 18 Oct 2017 18:06:51 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJSg3WY0zDrJT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:09:22 +1100 (AEDT)
+Subject: Re: [PATCH v12 08/11] arm64/kasan: add and use kasan_map_populate()
+To: Will Deacon <will.deacon@arm.com>
 Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-kernel@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
@@ -12,18 +13,20 @@ Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-kernel@vger.kernel.org,
  kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
  heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
  mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, akpm@linux-foundation.org,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v12 08/11] arm64/kasan: add and use kasan_map_populate()
-Message-ID: <20171018170651.GG21820@arm.com>
+ catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
+ akpm@linux-foundation.org, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, bob.picco@oracle.com
 References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
  <20171013173214.27300-9-pasha.tatashin@oracle.com>
  <0ae84532-8dcb-10aa-9d69-79d7025b089e@virtuozzo.com>
  <ad8c5715-dc4f-1fa7-c25b-e08df68643d0@oracle.com>
+ <20171018170651.GG21820@arm.com>
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <e32c677e-62ac-8977-2f9d-7fe7bda4b547@oracle.com>
+Date: Wed, 18 Oct 2017 13:08:17 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ad8c5715-dc4f-1fa7-c25b-e08df68643d0@oracle.com>
+In-Reply-To: <20171018170651.GG21820@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,21 +36,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 01:03:10PM -0400, Pavel Tatashin wrote:
-> I asked Will, about it, and he preferred to have this patched added to the
-> end of my series instead of replacing "arm64/kasan: add and use
-> kasan_map_populate()".
+> 
+> As I said, I'm fine either way, I just didn't want to cause extra work
+> or rebasing:
+> 
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2017-October/535703.html
 
-As I said, I'm fine either way, I just didn't want to cause extra work
-or rebasing:
+Makes sense. I am also fine either way, I can submit a new patch merging 
+together the two if needed.
 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2017-October/535703.html
-
-> In addition, Will's patch stops using large pages for kasan memory, and thus
-> might add some regression in which case it is easier to revert just that
-> patch instead of the whole series. It is unlikely that regression is going
-> to be detectable, because kasan by itself makes system quiet slow already.
-
-If it causes problems, I'll just fix them. No need to revert.
-
-Will
+Pavel
