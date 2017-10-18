@@ -1,41 +1,26 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGyYW4RLNzDrG1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 14:42:23 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9I3dB4l142399
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 23:42:21 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dnrw2ejrx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 23:42:20 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Tue, 17 Oct 2017 23:42:20 -0400
-Date: Tue, 17 Oct 2017 20:42:13 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGyZN6cWNzDrTd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 14:43:08 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id a192so3138568pge.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:43:08 -0700 (PDT)
+Date: Wed, 18 Oct 2017 14:42:56 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Ram Pai <linuxram@us.ibm.com>
 Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- ebiederm@xmission.com
-Subject: Re: [PATCH 04/25] powerpc: helper function to read,write
- AMR,IAMR,UAMOR registers
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+ benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
+Subject: Re: [PATCH 09/25] powerpc: ability to create execute-disabled pkeys
+Message-ID: <20171018144256.72bdd785@firefly.ozlabs.ibm.com>
+In-Reply-To: <1504910713-7094-18-git-send-email-linuxram@us.ibm.com>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-13-git-send-email-linuxram@us.ibm.com>
- <20171018141735.60198cf3@firefly.ozlabs.ibm.com>
+ <1504910713-7094-18-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171018141735.60198cf3@firefly.ozlabs.ibm.com>
-Message-Id: <20171018034213.GC5617@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,80 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 02:17:35PM +1100, Balbir Singh wrote:
-> On Fri,  8 Sep 2017 15:44:52 -0700
-> Ram Pai <linuxram@us.ibm.com> wrote:
+On Fri,  8 Sep 2017 15:44:57 -0700
+Ram Pai <linuxram@us.ibm.com> wrote:
+
+> powerpc has hardware support to disable execute on a pkey.
+> This patch enables the ability to create execute-disabled
+> keys.
 > 
-> > Implements helper functions to read and write the key related
-> > registers; AMR, IAMR, UAMOR.
-> > 
-> > AMR register tracks the read,write permission of a key
-> > IAMR register tracks the execute permission of a key
-> > UAMOR register enables and disables a key
-> > 
-> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/book3s/64/pgtable.h |   31 ++++++++++++++++++++++++++
-> >  1 files changed, 31 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> > index b9aff51..73ed52c 100644
-> > --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> > @@ -438,6 +438,37 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
-> >  		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 1);
-> >  }
-> >  
-> > +#include <asm/reg.h>
-> > +static inline u64 read_amr(void)
-> > +{
-> > +	return mfspr(SPRN_AMR);
-> > +}
-> > +static inline void write_amr(u64 value)
-> > +{
-> > +	mtspr(SPRN_AMR, value);
-> > +}
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/include/uapi/asm/mman.h |    6 ++++++
+>  arch/powerpc/mm/pkeys.c              |   16 ++++++++++++++++
+>  2 files changed, 22 insertions(+), 0 deletions(-)
 > 
-> Do we care to validate values or is that in
-> the caller
+> diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
+> index ab45cc2..f272b09 100644
+> --- a/arch/powerpc/include/uapi/asm/mman.h
+> +++ b/arch/powerpc/include/uapi/asm/mman.h
+> @@ -45,4 +45,10 @@
+>  #define MAP_HUGE_1GB	(30 << MAP_HUGE_SHIFT)	/* 1GB   HugeTLB Page */
+>  #define MAP_HUGE_16GB	(34 << MAP_HUGE_SHIFT)	/* 16GB  HugeTLB Page */
+>  
+> +/* override any generic PKEY Permission defines */
+> +#define PKEY_DISABLE_EXECUTE   0x4
+> +#undef PKEY_ACCESS_MASK
+> +#define PKEY_ACCESS_MASK       (PKEY_DISABLE_ACCESS |\
+> +				PKEY_DISABLE_WRITE  |\
+> +				PKEY_DISABLE_EXECUTE)
+>  #endif /* _UAPI_ASM_POWERPC_MMAN_H */
+> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> index cc5be6a..2282864 100644
+> --- a/arch/powerpc/mm/pkeys.c
+> +++ b/arch/powerpc/mm/pkeys.c
+> @@ -24,6 +24,14 @@ void __init pkey_initialize(void)
+>  {
+>  	int os_reserved, i;
+>  
+> +	/*
+> +	 * we define PKEY_DISABLE_EXECUTE in addition to the arch-neutral
+> +	 * generic defines for PKEY_DISABLE_ACCESS and PKEY_DISABLE_WRITE.
+> +	 * Ensure that the bits a distinct.
+> +	 */
+> +	BUILD_BUG_ON(PKEY_DISABLE_EXECUTE &
+> +		     (PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
 
+Will these values every change? It's good to have I guess.
 
-No. Caller is expected to validate the values.
+> +
+>  	/* disable the pkey system till everything
+>  	 * is in place. A patch further down the
+>  	 * line will enable it.
+> @@ -120,10 +128,18 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+>  		unsigned long init_val)
+>  {
+>  	u64 new_amr_bits = 0x0ul;
+> +	u64 new_iamr_bits = 0x0ul;
+>  
+>  	if (!is_pkey_enabled(pkey))
+>  		return -EINVAL;
+>  
+> +	if ((init_val & PKEY_DISABLE_EXECUTE)) {
+> +		if (!pkey_execute_disable_support)
+> +			return -EINVAL;
+> +		new_iamr_bits |= IAMR_EX_BIT;
+> +	}
+> +	init_iamr(pkey, new_iamr_bits);
+> +
 
-> 
-> > +extern bool pkey_execute_disable_support;
-> > +static inline u64 read_iamr(void)
-> > +{
-> > +	if (pkey_execute_disable_support)
-> > +		return mfspr(SPRN_IAMR);
-> > +	else
-> > +		return 0x0UL;
-> > +}
-> > +static inline void write_iamr(u64 value)
-> > +{
-> > +	if (pkey_execute_disable_support)
-> > +		mtspr(SPRN_IAMR, value);
-> > +}
-> > +static inline u64 read_uamor(void)
-> > +{
-> > +	return mfspr(SPRN_UAMOR);
-> > +}
-> > +static inline void write_uamor(u64 value)
-> > +{
-> > +	mtspr(SPRN_UAMOR, value);
-> > +}
-> > +
-> >  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
-> >  static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
-> >  				       unsigned long addr, pte_t *ptep)
-> 
-> Looks reasonable otherwise
+Where do we check the reserved keys?
 
-Thanks!
-RP
-
-
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-
--- 
-Ram Pai
+Balbir Singh.
