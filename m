@@ -1,41 +1,34 @@
-Return-Path: <jarkko.sakkinen@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJlc1BVPzDrJT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:22:19 +1100 (AEDT)
-Date: Wed, 18 Oct 2017 20:22:09 +0300
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall <julia.lawall@lip6.fr>,
- Alexander Steffen <Alexander.Steffen@infineon.com>,
- linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Jerry Snitselaar <jsnitsel@redhat.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Peter =?iso-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>
-Subject: Re: char/tpm: Improve a size determination in nine functions
-Message-ID: <20171018172209.dn3jwl3juzsvkn7c@linux.intel.com>
-References: <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
- <1508244757.4234.60.camel@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1710171456360.5035@hadrien>
- <1508253453.4234.81.camel@linux.vnet.ibm.com>
- <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
- <20171018145735.lpzwakatsty7emlw@linux.intel.com>
- <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
- <20171018155946.e7ga7jyex6eia252@linux.intel.com>
- <55d76224-3019-6614-70ce-ba260bbcd54f@users.sourceforge.net>
- <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJp662pxzDrLC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:24:30 +1100 (AEDT)
+Subject: Re: [PATCH v12 08/11] arm64/kasan: add and use kasan_map_populate()
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Will Deacon <will.deacon@arm.com>, mhocko@kernel.org,
+ akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
+ steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
+References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
+ <20171013173214.27300-9-pasha.tatashin@oracle.com>
+ <0ae84532-8dcb-10aa-9d69-79d7025b089e@virtuozzo.com>
+ <ad8c5715-dc4f-1fa7-c25b-e08df68643d0@oracle.com>
+ <20171018170651.GG21820@arm.com>
+ <e32c677e-62ac-8977-2f9d-7fe7bda4b547@oracle.com>
+ <f1cb8d18-4d0f-1f88-c3c5-0add8c6c077a@virtuozzo.com>
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <a587687a-5d90-c03d-f3d2-1ea9cab1b0c4@oracle.com>
+Date: Wed, 18 Oct 2017 13:23:22 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+In-Reply-To: <f1cb8d18-4d0f-1f88-c3c5-0add8c6c077a@virtuozzo.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,33 +38,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 08:18:58PM +0300, Jarkko Sakkinen wrote:
-> On Wed, Oct 18, 2017 at 06:43:10PM +0200, SF Markus Elfring wrote:
-> > > Commit message should just describe in plain text what you are doing
-> > 
-> > Did other contributors find the wording “Replace …”
-> > 
-> > 
-> > > and why.
-> > 
-> > and “… a bit safer according to the Linux coding style convention.”
-> > sufficient often enough already?
-> > 
-> > Which description would you find more appropriate for this change pattern?
-> > 
-> > Regards,
-> > Markus
-> 
-> For 1/4 and 2/4: explain why the message can be omitted. Remove sentence
-> about Coccinelle. That's all.
-> 3/4: definitive NAK, too much noise compared to value.
-> 4/4: this a good commit message. Requires a Tested-by before can be
-> accepted, which I'm not able to give.
-> 
-> Hope this helps.
-> 
-> /Jarkko
+Hi Andrew and Michal,
 
-One more word of advice: send the three as separate patches. My guess is
-that it takes a factor longer time to apply 4/4 than other patches
-because there's more limited crowd who can test it.
+There are a few changes I need to do to my series:
+
+1. Replace these two patches:
+
+arm64/kasan: add and use kasan_map_populate()
+x86/kasan: add and use kasan_map_populate()
+
+With:
+
+x86/mm/kasan: don't use vmemmap_populate() to initialize
+  shadow
+arm64/mm/kasan: don't use vmemmap_populate() to initialize
+  shadow
+
+2. Fix a kbuild warning about section mismatch in
+mm: deferred_init_memmap improvements
+
+How should I proceed to get these replaced in mm-tree? Send three new 
+patches, or send a new series?
+
+Thank you,
+Pavel
+
+On 10/18/2017 01:18 PM, Andrey Ryabinin wrote:
+> On 10/18/2017 08:08 PM, Pavel Tatashin wrote:
+>>>
+>>> As I said, I'm fine either way, I just didn't want to cause extra work
+>>> or rebasing:
+>>>
+>>> http://lists.infradead.org/pipermail/linux-arm-kernel/2017-October/535703.html
+>>
+>> Makes sense. I am also fine either way, I can submit a new patch merging together the two if needed.
+>>
+> 
+> Please, do this. Single patch makes more sense
+> 
+> 
+>> Pavel
