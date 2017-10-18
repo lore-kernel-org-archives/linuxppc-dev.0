@@ -1,45 +1,38 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.11])
+Return-Path: <dja@axtens.net>
+Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c00::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yH8J85SPmzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 22:01:28 +1100 (AEDT)
-Subject: Re: Adjusting further size determinations?
-To: Joe Perches <joe@perches.com>, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: Julia Lawall <julia.lawall@lip6.fr>, Alexander.Steffen@infineon.com,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- Dan Carpenter <dan.carpenter@oracle.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Jerry Snitselaar <jsnitsel@redhat.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
- <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
- <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
- <20171017085124.pkrjzghcf5wmcydc@mwanda>
- <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
- <1508255833.3129.33.camel@HansenPartnership.com>
- <1508280210.6530.32.camel@perches.com>
- <bf7fc26c-bdc9-c752-72c7-f44c22f4a328@users.sourceforge.net>
- <1508318326.6806.1.camel@perches.com>
- <026d582729b849b780fbaa06fb8bc79e@infineon.com>
- <alpine.DEB.2.20.1710181154390.3524@hadrien>
- <1508322510.6806.3.camel@perches.com>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <ab5730c4-fb69-4791-a2a6-c726493d4564@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 13:00:33 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yH8PT6LzpzDrD6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 22:06:05 +1100 (AEDT)
+Received: by mail-pf0-x22e.google.com with SMTP id e64so3701274pfk.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 04:06:05 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Daniel Vetter <daniel@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>,
+ Daniel Vetter <daniel.vetter@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
+ Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default device
+ selection
+In-Reply-To: <20171018081822.pqmkj2xfgg6kb6xa@phenom.ffwll.local>
+References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <871sm2y1h9.fsf@linkitivity.dja.id.au>
+ <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
+ <878tg9i9pw.fsf@linkitivity.dja.id.au>
+ <20171018081822.pqmkj2xfgg6kb6xa@phenom.ffwll.local>
+Date: Wed, 18 Oct 2017 22:05:57 +1100
+Message-ID: <8760bciulm.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1508322510.6806.3.camel@perches.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,24 +42,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Ugly grep follows:
-> 
-> $ grep -rohP --include=*.[ch] "\w+\s*=\s*[kv].alloc\s*\(\s*sizeof.*," * | \
->   sed -r -e 's/(\w+)\s*=\s*[kv].alloc\s*\(\s*sizeof\s*\(\s*\*\s*\1\s*\)/foo = k.alloc(sizeof(*foo))/' \
->          -e 's/(\w+)\s*=\s*[kv].alloc\s*\(\s*sizeof\s*\(\s*struct\s+\w+\s*\)/foo = k.alloc(sizeof(struct foo))/' | \
->   sort | uniq -c | sort -rn | head -2
->    6123 foo = k.alloc(sizeof(*foo)),
->    3060 foo = k.alloc(sizeof(struct foo)),
+Daniel Vetter <daniel@ffwll.ch> writes:
 
-Would you like to get this ratio changed in any ways?
+> On Wed, Oct 18, 2017 at 11:24:43AM +1100, Daniel Axtens wrote:
+>> Hi Daniel,
+>> 
+>> >> Initially I wondered if this info printk could be moved into
+>> >> vga_arbiter_check_bridge_sharing(), but it's been separated out since
+>> >> 3448a19da479b ("vgaarb: use bridges to control VGA routing where
+>> >> possible."), and upon closer examination, it seems you can't be sure a
+>> >> device doesn't share a bridge until the end of the process, so this is
+>> >> indeed correct.
+>> >> 
+>> >> Everything else also looks good to me.
+>> >> 
+>> >> Reviewed-by: Daniel Axtens <dja@axtens.net>
+>> >
+>> > R-b for both patches? And ok with everyone if I pull this into drm-misc
+>> > for 4.15 (deadline is end of this week for feature-y stuff)?
+>> 
+>> I had only intended it for patch 2, but I've now read over patch 1 to my
+>> satisfaction, so it too is:
+>> 
+>> Reviewed-by: Daniel Axtens <dja@axtens.net>
+>
+> Both applied for 4.15, thanks.
 
-Available development tools could help to improve the software situation
-in a desired direction, couldn't they?
+Cool - thanks!
 
-
->> Unpleasant consequences are possible in both cases.
-
-How much do you care to reduce the failure probability further?
+A special thanks to Bjorn for persisting with this and coming up with a
+nice simple solution :)
 
 Regards,
-Markus
+Daniel
+
+> -Daniel
+> -- 
+> Daniel Vetter
+> Software Engineer, Intel Corporation
+> http://blog.ffwll.ch
