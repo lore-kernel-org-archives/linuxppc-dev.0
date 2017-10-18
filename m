@@ -1,39 +1,29 @@
-Return-Path: <jarkko.sakkinen@linux.intel.com>
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJYK6XjqzDrJZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:13:24 +1100 (AEDT)
-Date: Wed, 18 Oct 2017 20:13:09 +0300
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
- Dan Carpenter <dan.carpenter@oracle.com>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Jerry Snitselaar <jsnitsel@redhat.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Peter =?iso-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
-Message-ID: <20171018171309.f7idf76ccvofpnpk@linux.intel.com>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
- <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
- <20171017085124.pkrjzghcf5wmcydc@mwanda>
- <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
- <1508255833.3129.33.camel@HansenPartnership.com>
- <20171018151010.r4ojcpzs5l7rpt6r@linux.intel.com>
- <1508342988.3958.5.camel@HansenPartnership.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJbX40XKzDrPk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:15:19 +1100 (AEDT)
+Subject: Re: [PATCH v12 07/11] x86/kasan: add and use kasan_map_populate()
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-kernel@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
+ will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
+ mgorman@techsingularity.net, akpm@linux-foundation.org,
+ steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
+References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
+ <20171013173214.27300-8-pasha.tatashin@oracle.com>
+ <f4540f92-2229-53f5-ee74-fe160bedc873@virtuozzo.com>
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+Message-ID: <6fd8291b-b3f5-46c1-2650-98a775e37fa0@oracle.com>
+Date: Wed, 18 Oct 2017 13:14:11 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1508342988.3958.5.camel@HansenPartnership.com>
+In-Reply-To: <f4540f92-2229-53f5-ee74-fe160bedc873@virtuozzo.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,51 +33,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 09:09:48AM -0700, James Bottomley wrote:
-> On Wed, 2017-10-18 at 18:10 +0300, Jarkko Sakkinen wrote:
-> > On Tue, Oct 17, 2017 at 08:57:13AM -0700, James Bottomley wrote:
-> > > 
-> > > On Tue, 2017-10-17 at 11:25 +0200, SF Markus Elfring wrote:
-> > > > 
-> > > > > 
-> > > > > 
-> > > > > Fixes is only for bug fixes.  These don't fix any bugs.
-> > > > 
-> > > > How do you distinguish these in questionable source code
-> > > > from other error categories or software weaknesses?
-> > > 
-> > > A style change is one that doesn't change the effect of the
-> > > execution.
-> > >  These don't actually even change the assembly, so there's
-> > > programmatic
-> > > proof they're not fixing anything.
-> > > 
-> > > Bug means potentially user visible fault.  In any bug fix commit
-> > > you
-> > > should document the fault and its effects on users so those
-> > > backporting
-> > > can decide if they care or not.
-> > > 
-> > > James
-> > 
-> > OK, I'll adjust my definition of a bug :-)
-> 
-> Subsystems are free to define bugs in any reasonable way.  However,
-> there are two things to note here:
-> 
->    1. The style guide is just that, a guide; it's not hard and fast rules.
->        That means that violations aren't bugs in the usual sense.
->        However, new code should mostly follow it and if it doesn't, there
->       should be a good reason to go against the guide which should be
->       explained in the change log.
->    2. The coding style evolves, so older drivers usually don't conform.
->        Classifying coding style issues as bugs leads to tons of patches
->       "fixing" older drivers, some of which actually end up breaking the
->       drivers in subtle ways which take ages to be found (at least that's
->       what we've seen in SCSI).
-> 
-> James
+Thank you Andrey, I will test this patch. Should it go on top or replace 
+the existing patch in mm-tree? ARM and x86 should be done the same 
+either both as follow-ups or both replace.
 
-Makes sense. Thanks for verbose explanation.
-
-/Jarkko
+Pavel
