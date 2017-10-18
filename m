@@ -1,30 +1,42 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jsnitsel@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHYC92gCZzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 13:43:33 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id t188so5414711pfd.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 19:43:33 -0700 (PDT)
-Date: Thu, 19 Oct 2017 13:43:19 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: jglisse@redhat.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, Andrea Arcangeli
- <aarcange@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Joerg
- Roedel <jroedel@suse.de>, Suravee Suthikulpanit
- <suravee.suthikulpanit@amd.com>, David Woodhouse <dwmw2@infradead.org>,
- Alistair Popple <alistair@popple.id.au>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Donnellan
- <andrew.donnellan@au1.ibm.com>, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] Optimize mmu_notifier->invalidate_range callback
-Message-ID: <20171019134319.1b856091@MiWiFi-R3-srv>
-In-Reply-To: <20171017031003.7481-1-jglisse@redhat.com>
-References: <20171017031003.7481-1-jglisse@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHKSR2z2xzDrJg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:54:15 +1100 (AEDT)
+Date: Wed, 18 Oct 2017 10:54:12 -0700
+From: Jerry Snitselaar <jsnitsel@redhat.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall <julia.lawall@lip6.fr>,
+ Alexander Steffen <Alexander.Steffen@infineon.com>,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Peter =?iso-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+Subject: Re: char/tpm: Improve a size determination in nine functions
+Message-ID: <20171018175412.mlj2yvyjmvmfdxzd@rhwork>
+Reply-To: Jerry Snitselaar <jsnitsel@redhat.com>
+References: <1508244757.4234.60.camel@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710171456360.5035@hadrien>
+ <1508253453.4234.81.camel@linux.vnet.ibm.com>
+ <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
+ <20171018145735.lpzwakatsty7emlw@linux.intel.com>
+ <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
+ <20171018155946.e7ga7jyex6eia252@linux.intel.com>
+ <55d76224-3019-6614-70ce-ba260bbcd54f@users.sourceforge.net>
+ <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+ <e9638486-7e59-1c5a-87ae-ca0f1fbbd021@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <e9638486-7e59-1c5a-87ae-ca0f1fbbd021@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +46,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 16 Oct 2017 23:10:01 -0400
-jglisse@redhat.com wrote:
-
-> From: J=C3=A9r=C3=B4me Glisse <jglisse@redhat.com>
->=20
-> (Andrew you already have v1 in your queue of patch 1, patch 2 is new,
->  i think you can drop it patch 1 v1 for v2, v2 is bit more conservative
->  and i fixed typos)
->=20
-> All this only affect user of invalidate_range callback (at this time
-> CAPI arch/powerpc/platforms/powernv/npu-dma.c, IOMMU ATS/PASID in
-> drivers/iommu/amd_iommu_v2.c|intel-svm.c)
->=20
-> This patchset remove useless double call to mmu_notifier->invalidate_range
-> callback wherever it is safe to do so. The first patch just remove useless
-> call
-
-As in an extra call? Where does that come from?
-
-> and add documentation explaining why it is safe to do so. The second
-> patch go further by introducing mmu_notifier_invalidate_range_only_end()
-> which skip callback to invalidate_range this can be done when clearing a
-> pte, pmd or pud with notification which call invalidate_range right after
-> clearing under the page table lock.
+On Wed Oct 18 17, SF Markus Elfring wrote:
+>> For 1/4 and 2/4: explain why the message can be omitted.
+>
+>Why did you not reply directly with this request for the update steps
+>with the subject “Delete an error message for a failed memory allocation
+>in tpm_…()”?
+>
+>https://patchwork.kernel.org/patch/10009405/
+>https://patchwork.kernel.org/patch/10009415/
+>
+>I find that there can be difficulty to show an appropriate information
+>source for the reasonable explanation of this change pattern.
 >
 
-Balbir Singh.
+Shouldn't this information source for the explanation be the
+submitter? I'd hope they understand what it is they are submitting.
+
+>
+>> Remove sentence about Coccinelle.
+>
+>I got the impression that there is a bit of value in such
+>a kind of attribution.
+>
+>
+>> That's all.
+>
+>I assume that there might be also some communication challenges involved.
+>
+>
+>> 3/4: definitive NAK, too much noise compared to value.
+>
+>I tried to reduce deviations from the Linux coding style again.
+>You do not like such an attempt for this software area so far.
+>
+>
+>> 4/4: this a good commit message.
+>
+>Why did you not reply directly with this feedback for the update step
+>“[PATCH 4/4] char/tpm: Less checks in tpm_ibmvtpm_probe() after error detection”?
+>
+>https://patchwork.kernel.org/patch/10009429/
+>https://lkml.kernel.org/r/<09a2c3a1-1b10-507d-a866-258b570f6da1@users.sourceforge.net>
+>
+>
+>> Requires a Tested-by before can be accepted, which I'm not able to give.
+>
+>I am curious on how this detail will evolve.
+>
+>Regards,
+>Markus
