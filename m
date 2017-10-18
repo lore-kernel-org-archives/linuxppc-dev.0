@@ -1,27 +1,37 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGy182j72zDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 14:17:48 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id g6so3101278pgn.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:17:47 -0700 (PDT)
-Date: Wed, 18 Oct 2017 14:17:35 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 04/25] powerpc: helper function to read,write
- AMR,IAMR,UAMOR registers
-Message-ID: <20171018141735.60198cf3@firefly.ozlabs.ibm.com>
-In-Reply-To: <1504910713-7094-13-git-send-email-linuxram@us.ibm.com>
-References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-13-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGy2X4BglzDrJw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 14:19:00 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall <julia.lawall@lip6.fr>,
+ Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, SF Markus Elfring
+ <elfring@users.sourceforge.net>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Andy Shevchenko
+ <andriy.shevchenko@linux.intel.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, Jerry Snitselaar
+ <jsnitsel@redhat.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>, Nayna
+ Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>, Peter
+ =?utf-8?Q?H=C3=BCwe?= <PeterHuewe@gmx.de>, Stefan Berger
+ <stefanb@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+ kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
+In-Reply-To: <1508241146.4234.16.camel@linux.vnet.ibm.com>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <alpine.DEB.2.20.1710171055100.5035@hadrien>
+ <20171017094434.csarc5fw5d32u64w@mwanda>
+ <alpine.DEB.2.20.1710171211210.5035@hadrien>
+ <1508241146.4234.16.camel@linux.vnet.ibm.com>
+Date: Wed, 18 Oct 2017 14:18:57 +1100
+Message-ID: <87lgk9i1ni.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,68 +41,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  8 Sep 2017 15:44:52 -0700
-Ram Pai <linuxram@us.ibm.com> wrote:
+Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+> On Tue, 2017-10-17 at 12:11 +0200, Julia Lawall wrote:
+>> On Tue, 17 Oct 2017, Dan Carpenter wrote:
+>> > On Tue, Oct 17, 2017 at 10:56:42AM +0200, Julia Lawall wrote:
+>> > > On Tue, 17 Oct 2017, Dan Carpenter wrote:
+>> > > > On Mon, Oct 16, 2017 at 09:35:12PM +0300, Jarkko Sakkinen wrote:
+>> > > > >
+>> > > > > A minor complaint: all commits are missing "Fixes:" tag.
+>> > > > >
+>> > > >
+>> > > > Fixes is only for bug fixes.  These don't fix any bugs.
+>> > >
+>> > > 0-day seems to put Fixes for everything.  Should they be removed when the
+>> > > old code is undesirable but doesn't actually cause a crash, eg out of date
+>> > > API.
+>> >
+>> > Yeah, I feel like Fixes tags don't belong for API updates and cleanups.
+>> 
+>> OK, I will remove them from the patches that go through me where they
+>> don't seem appropriate.
+>
+> The "Fixes" tag is an indication that the patch should be backported.
 
-> Implements helper functions to read and write the key related
-> registers; AMR, IAMR, UAMOR.
-> 
-> AMR register tracks the read,write permission of a key
-> IAMR register tracks the execute permission of a key
-> UAMOR register enables and disables a key
-> 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/pgtable.h |   31 ++++++++++++++++++++++++++
->  1 files changed, 31 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index b9aff51..73ed52c 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -438,6 +438,37 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
->  		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 1);
->  }
->  
-> +#include <asm/reg.h>
-> +static inline u64 read_amr(void)
-> +{
-> +	return mfspr(SPRN_AMR);
-> +}
-> +static inline void write_amr(u64 value)
-> +{
-> +	mtspr(SPRN_AMR, value);
-> +}
+No it's not that strong. It's an indication that the patch fixes another
+commit, which may or may not mean it should be backported depending on
+the preferences of the backporter. If it *does* need backporting then
+the Fixes tag helps identify where it should go.
 
-Do we care to validate values or is that in
-the caller
+The doco is actually pretty well worded IMO:
 
-> +extern bool pkey_execute_disable_support;
-> +static inline u64 read_iamr(void)
-> +{
-> +	if (pkey_execute_disable_support)
-> +		return mfspr(SPRN_IAMR);
-> +	else
-> +		return 0x0UL;
-> +}
-> +static inline void write_iamr(u64 value)
-> +{
-> +	if (pkey_execute_disable_support)
-> +		mtspr(SPRN_IAMR, value);
-> +}
-> +static inline u64 read_uamor(void)
-> +{
-> +	return mfspr(SPRN_UAMOR);
-> +}
-> +static inline void write_uamor(u64 value)
-> +{
-> +	mtspr(SPRN_UAMOR, value);
-> +}
-> +
->  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
->  static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
->  				       unsigned long addr, pte_t *ptep)
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst#n183
 
-Looks reasonable otherwise
+  If your patch fixes a bug in a specific commit, e.g. you found an issue using
+  ``git bisect``, please use the 'Fixes:' tag with the first 12 characters of
+  the SHA-1 ID, and the one line summary.
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+and:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst#n602
+
+  A Fixes: tag indicates that the patch fixes an issue in a previous commit. It
+  is used to make it easy to determine where a bug originated, which can help
+  review a bug fix. This tag also assists the stable kernel team in determining
+  which stable kernel versions should receive your fix. This is the preferred
+  method for indicating a bug fixed by the patch. See :ref:`describe_changes`
+  for more details.
+
+
+cheers
