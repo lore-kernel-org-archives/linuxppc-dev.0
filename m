@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHNS35x4tzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 07:09:07 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9IK5mJX087045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:09:05 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dpbse6mvc-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHNSG2NLqzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 07:09:18 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9IK4XW6081019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:09:15 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dpbx4wwbe-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:09:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:09:15 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 18 Oct 2017 16:09:04 -0400
+ Wed, 18 Oct 2017 16:09:15 -0400
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>,
@@ -27,12 +27,11 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 In-Reply-To: <cd1c9d3f-c828-2477-ff31-fb6277a8a2aa@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V2 2/3] pseries/findnodes: Find nodes with memory for
- memoryless nodes
-Date: Wed, 18 Oct 2017 15:09:01 -0500
+Subject: [PATCH V2 3/3] pseries/initnodes: Ensure nodes initialized for hotplug
+Date: Wed, 18 Oct 2017 15:09:10 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <bcccffb8-8472-463d-cca5-698db5cbc8e1@linux.vnet.ibm.com>
+Message-Id: <b24385eb-10ed-b934-8658-b55cece61146@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,48 +41,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-pseries/findnodes: On pseries systems which allow 'hot-add' of
-resources, we may boot configurations that have CPUs, but no memory
-associated to a node by the affinity calculations.  Previously, the
-software took a shortcut to collapse initialization and references
-to such memoryless nodes with other nodes that did have memory
-associated with them at boot.  This patch is based on fixes that
-allow the proper initialization and distinguishment of memoryless
-and memory-plus nodes after NUMA initialization.  It extends the
-use of the 'node_to_mem_node()' API from 'topology.h' to modules
-that are allocating node-specific memory at boot, and allows such
-references to find available memory in another node.
+pseries/nodes: On pseries systems which allow 'hot-add' of CPU,
+it may occur that the new resources are to be inserted into nodes
+that were not used for memory resources at bootup.  Many different
+configurations of PowerPC resources may need to be supported depending
+upon the environment.  This patch fixes some problems encountered at
+runtime with configurations that support memory-less nodes, or that
+hot-add resources during system execution after boot.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- block/blk-mq-cpumap.c |    3 ++-
- mm/page_alloc.c       |    1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/numa.c |   27 ++++++++++++++++++++++++---
+ 1 file changed, 24 insertions(+), 3 deletions(-)
 
-diff --git a/block/blk-mq-cpumap.c b/block/blk-mq-cpumap.c
-index 9f8cffc..a27a31f 100644
---- a/block/blk-mq-cpumap.c
-+++ b/block/blk-mq-cpumap.c
-@@ -73,7 +73,8 @@ int blk_mq_hw_queue_to_node(unsigned int *mq_map, unsigned int index)
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index f885ab7..2be6363 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -551,7 +551,7 @@ static int numa_setup_cpu(unsigned long lcpu)
+ 	nid = of_node_to_nid_single(cpu);
  
- 	for_each_possible_cpu(i) {
- 		if (index == mq_map[i])
--			return local_memory_node(cpu_to_node(i));
-+			return local_memory_node(
-+					node_to_mem_node(cpu_to_node(i)));
+ out_present:
+-	if (nid < 0 || !node_online(nid))
++	if (nid < 0 || !node_possible(nid))
+ 		nid = first_online_node;
+ 
+ 	map_cpu_to_node(lcpu, nid);
+@@ -1311,6 +1311,25 @@ static long vphn_get_associativity(unsigned long cpu,
+ 	return rc;
+ }
+ 
++static int verify_node_preparation(int nid)
++{
++	/*
++	 * Need to allocate/initialize NODE_DATA from a node with
++	 * memory (see memblock_alloc_try_nid).  Code executed after
++	 * boot (like local_memory_node) often does not know enough
++	 * to recover fully for memoryless nodes. 
++	 */
++	if (NODE_DATA(nid) == NULL) 
++		setup_node_data(nid, 0, 0);
++
++	if (NODE_DATA(nid)->node_spanned_pages == 0) {
++		if (try_online_node(nid))
++			return first_online_node;
++	}
++
++	return nid;
++}
++
+ /*
+  * Update the CPU maps and sysfs entries for a single CPU when its NUMA
+  * characteristics change. This function doesn't perform any locking and is
+@@ -1334,7 +1353,7 @@ static int update_cpu_topology(void *data)
+ 		unmap_cpu_from_node(cpu);
+ 		map_cpu_to_node(cpu, new_nid);
+ 		set_cpu_numa_node(cpu, new_nid);
+-		set_cpu_numa_mem(cpu, local_memory_node(new_nid));
++		set_cpu_numa_mem(cpu, local_memory_node(node_to_mem_node(new_nid)));
+ 		vdso_getcpu_init();
  	}
  
- 	return NUMA_NO_NODE;
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 77e4d3c..e7aaa2a 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -4188,6 +4188,7 @@ struct page *
+@@ -1419,9 +1438,11 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 		/* Use associativity from first thread for all siblings */
+ 		vphn_get_associativity(cpu, associativity);
+ 		new_nid = associativity_to_nid(associativity);
+-		if (new_nid < 0 || !node_online(new_nid))
++		if (new_nid < 0 || !node_possible(new_nid))
+ 			new_nid = first_online_node;
  
- 	gfp_mask &= gfp_allowed_mask;
- 	alloc_mask = gfp_mask;
-+	preferred_nid = node_to_mem_node(preferred_nid);
- 	if (!prepare_alloc_pages(gfp_mask, order, preferred_nid, nodemask, &ac, &alloc_mask, &alloc_flags))
- 		return NULL;
- 
++		new_nid = verify_node_preparation(new_nid);
++
+ 		if (new_nid == numa_cpu_lookup_table[cpu]) {
+ 			cpumask_andnot(&cpu_associativity_changes_mask,
+ 					&cpu_associativity_changes_mask,
