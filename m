@@ -1,34 +1,41 @@
-Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jarkko.sakkinen@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJdw6s1lzDrG1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:17:24 +1100 (AEDT)
-Received: by mail-lf0-x243.google.com with SMTP id r129so6650243lff.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 10:17:24 -0700 (PDT)
-Subject: Re: [PATCH v12 07/11] x86/kasan: add and use kasan_map_populate()
-To: Pavel Tatashin <pasha.tatashin@oracle.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-kernel@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, x86@kernel.org,
- kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, akpm@linux-foundation.org,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
- <20171013173214.27300-8-pasha.tatashin@oracle.com>
- <f4540f92-2229-53f5-ee74-fe160bedc873@virtuozzo.com>
- <6fd8291b-b3f5-46c1-2650-98a775e37fa0@oracle.com>
-From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-Message-ID: <56120ddc-e03e-dbac-50c4-adb2287ec407@gmail.com>
-Date: Wed, 18 Oct 2017 20:20:27 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJgw6JvVzDrJm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:19:08 +1100 (AEDT)
+Date: Wed, 18 Oct 2017 20:18:58 +0300
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall <julia.lawall@lip6.fr>,
+ Alexander Steffen <Alexander.Steffen@infineon.com>,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Peter =?iso-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+Subject: Re: char/tpm: Improve a size determination in nine functions
+Message-ID: <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+References: <1508238182.16112.475.camel@linux.intel.com>
+ <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+ <1508244757.4234.60.camel@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710171456360.5035@hadrien>
+ <1508253453.4234.81.camel@linux.vnet.ibm.com>
+ <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
+ <20171018145735.lpzwakatsty7emlw@linux.intel.com>
+ <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
+ <20171018155946.e7ga7jyex6eia252@linux.intel.com>
+ <55d76224-3019-6614-70ce-ba260bbcd54f@users.sourceforge.net>
 MIME-Version: 1.0
-In-Reply-To: <6fd8291b-b3f5-46c1-2650-98a775e37fa0@oracle.com>
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <55d76224-3019-6614-70ce-ba260bbcd54f@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,17 +45,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/18/2017 08:14 PM, Pavel Tatashin wrote:
-> Thank you Andrey, I will test this patch. Should it go on top or replace the existing patch in mm-tree? ARM and x86 should be done the same either both as follow-ups or both replace.
+On Wed, Oct 18, 2017 at 06:43:10PM +0200, SF Markus Elfring wrote:
+> > Commit message should just describe in plain text what you are doing
 > 
-
- It's a replacement of your patch.
-
-
-> Pavel
+> Did other contributors find the wording “Replace …”
 > 
-> -- 
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+> > and why.
+> 
+> and “… a bit safer according to the Linux coding style convention.”
+> sufficient often enough already?
+> 
+> Which description would you find more appropriate for this change pattern?
+> 
+> Regards,
+> Markus
+
+For 1/4 and 2/4: explain why the message can be omitted. Remove sentence
+about Coccinelle. That's all.
+3/4: definitive NAK, too much noise compared to value.
+4/4: this a good commit message. Requires a Tested-by before can be
+accepted, which I'm not able to give.
+
+Hope this helps.
+
+/Jarkko
