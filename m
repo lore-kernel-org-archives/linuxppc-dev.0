@@ -2,10 +2,10 @@ Return-Path: <elfring@users.sourceforge.net>
 Received: from mout.web.de (mout.web.de [217.72.192.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHMT85KZjzDrS9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 06:24:59 +1100 (AEDT)
-Subject: [PATCH 3/5] powerpc-pseries: Delete an unnecessary variable
- initialisation in iommu_pseries_alloc_group()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHMWC0lnVzDqGj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 06:26:46 +1100 (AEDT)
+Subject: [PATCH 4/5] powerpc-pseries: Return directly after a failed
+ kzalloc_node() in iommu_pseries_alloc_group()
 From: SF Markus Elfring <elfring@users.sourceforge.net>
 To: linuxppc-dev@lists.ozlabs.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -25,8 +25,8 @@ To: linuxppc-dev@lists.ozlabs.org,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 References: <0d221be4-1402-0499-d95e-afa4a30e1f33@users.sourceforge.net>
-Message-ID: <9c71e3e0-8998-fd02-e3a3-ef219d82ee32@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 21:24:25 +0200
+Message-ID: <a824fe65-1708-16ba-68d6-df0f73e0f49a@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 21:26:10 +0200
 MIME-Version: 1.0
 In-Reply-To: <0d221be4-1402-0499-d95e-afa4a30e1f33@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -40,10 +40,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 19:14:39 +0200
+Date: Wed, 18 Oct 2017 20:15:32 +0200
 
-The variable "table_group" will be set to an appropriate pointer.
-Thus omit the explicit initialisation at the beginning.
+Return directly after a call of the function "kzalloc_node" failed
+at the beginning.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
@@ -51,17 +51,17 @@ Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index b37d4fb20d1c..b6c12b8e3ace 100644
+index b6c12b8e3ace..207ff8351af1 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -55,7 +55,7 @@
+@@ -61,7 +61,7 @@ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
  
- static struct iommu_table_group *iommu_pseries_alloc_group(int node)
- {
--	struct iommu_table_group *table_group = NULL;
-+	struct iommu_table_group *table_group;
- 	struct iommu_table *tbl = NULL;
- 	struct iommu_table_group_link *tgl = NULL;
+ 	table_group = kzalloc_node(sizeof(*table_group), GFP_KERNEL, node);
+ 	if (!table_group)
+-		goto fail_exit;
++		return NULL;
  
+ 	tbl = kzalloc_node(sizeof(*tbl), GFP_KERNEL, node);
+ 	if (!tbl)
 -- 
 2.14.2
