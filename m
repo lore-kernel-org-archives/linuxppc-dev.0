@@ -1,37 +1,40 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <daniel@ffwll.ch>
+Received: from mail-wm0-x22d.google.com (mail-wm0-x22d.google.com
+ [IPv6:2a00:1450:400c:c09::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yH34Z0m85zDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 18:06:04 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9I74awl032844
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 03:06:01 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dnyf9xdp3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 03:06:01 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Wed, 18 Oct 2017 08:05:57 +0100
-Subject: Re: [PATCH] cxl: Rework the implementation of cxl_stop_trace_psl9()
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-References: <20171011123020.17594-1-vaibhav@linux.vnet.ibm.com>
-From: christophe lombard <clombard@linux.vnet.ibm.com>
-Date: Wed, 18 Oct 2017 09:05:51 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yH4h84grhzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 19:18:28 +1100 (AEDT)
+Received: by mail-wm0-x22d.google.com with SMTP id m72so8356454wmc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 01:18:28 -0700 (PDT)
+Sender: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 18 Oct 2017 10:18:22 +0200
+From: Daniel Vetter <daniel@ffwll.ch>
+To: Daniel Axtens <dja@axtens.net>
+Cc: Daniel Vetter <daniel@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>,
+ Daniel Vetter <daniel.vetter@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ linux-pci@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
+ dri-devel@lists.freedesktop.org,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Rongrong Zou <zourongrong@gmail.com>,
+ Dave Airlie <airlied@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default
+ device selection
+Message-ID: <20171018081822.pqmkj2xfgg6kb6xa@phenom.ffwll.local>
+References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <871sm2y1h9.fsf@linkitivity.dja.id.au>
+ <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
+ <878tg9i9pw.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20171011123020.17594-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <89d1d44f-b5d2-429a-8544-e6e23510ab64@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <878tg9i9pw.fsf@linkitivity.dja.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +44,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 11/10/2017 à 14:30, Vaibhav Jain a écrit :
+On Wed, Oct 18, 2017 at 11:24:43AM +1100, Daniel Axtens wrote:
+> Hi Daniel,
+> 
+> >> Initially I wondered if this info printk could be moved into
+> >> vga_arbiter_check_bridge_sharing(), but it's been separated out since
+> >> 3448a19da479b ("vgaarb: use bridges to control VGA routing where
+> >> possible."), and upon closer examination, it seems you can't be sure a
+> >> device doesn't share a bridge until the end of the process, so this is
+> >> indeed correct.
+> >> 
+> >> Everything else also looks good to me.
+> >> 
+> >> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> >
+> > R-b for both patches? And ok with everyone if I pull this into drm-misc
+> > for 4.15 (deadline is end of this week for feature-y stuff)?
+> 
+> I had only intended it for patch 2, but I've now read over patch 1 to my
+> satisfaction, so it too is:
+> 
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
 
-> Presently the PSL9 specific cxl_stop_trace_psl9() only stops the RX0
-> traces on the CXL adapter when a PSL error irq is triggered. The patch
-> updates the function to stop all the traces arrays and move them to
-> the FIN state. The implementation issues the mmio to TRACECFG register
-> to stop the trace array iff it already not in FIN state. This prevents
-> the issue of trace data being reset in case of multiple stop mmio
-> issued for a single trace array.
->
-> Also the patch does some refactoring of existing cxl_stop_trace_psl9()
-> and cxl_stop_trace_psl8() functions by moving them to 'pci.c' from
-> 'debugfs.c' file and marking them as static.
-
-agree.
-
-
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
->   drivers/misc/cxl/cxl.h     | 14 ++++----------
->   drivers/misc/cxl/debugfs.c | 22 ----------------------
->   drivers/misc/cxl/pci.c     | 38 ++++++++++++++++++++++++++++++++++++++
->   3 files changed, 42 insertions(+), 32 deletions(-)
-
-Thanks
-
-Acked-by:  Christophe Lombard<clombard@linux.vnet.ibm.com>
+Both applied for 4.15, thanks.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch
