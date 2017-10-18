@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGtqd02pxzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 11:54:20 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9I0rbf9048427
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:54:18 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dnsgff6n5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGtqk0yL6zDrFp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 11:54:25 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9I0rUDJ029274
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:54:23 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dnr5a2cm8-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:54:18 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:54:23 -0400
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 17 Oct 2017 20:54:17 -0400
+ Tue, 17 Oct 2017 20:54:22 -0400
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linux-integrity@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
@@ -32,11 +32,11 @@ Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  "AKASHI, Takahiro" <takahiro.akashi@linaro.org>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v5 04/18] evm, ima: Remove more superfluous parentheses
-Date: Tue, 17 Oct 2017 22:53:17 -0200
+Subject: [PATCH v5 05/18] ima: Simplify ima_eventsig_init
+Date: Tue, 17 Oct 2017 22:53:18 -0200
 In-Reply-To: <20171018005331.2688-1-bauerman@linux.vnet.ibm.com>
 References: <20171018005331.2688-1-bauerman@linux.vnet.ibm.com>
-Message-Id: <20171018005331.2688-5-bauerman@linux.vnet.ibm.com>
+Message-Id: <20171018005331.2688-6-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,101 +46,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch removes unnecessary parentheses from all EVM and IMA files
-not yet cleaned up by the previous patches.
+The "goto out" statement doesn't have any purpose since there's no cleanup
+to be done when returning early, so remove it. This also makes the rc
+variable unnecessary so remove it as well.
 
-It is separate from the previous one so that it can be easily dropped if
-the churn and conflict potential is deemed not worth it.
-
-Confirmed that the patch is correct by comparing the object files from
-before and after the patch. They are identical.
+Also, the xattr_len and fmt variables are redundant so remove them as well.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- security/integrity/evm/evm_posix_acl.c | 8 ++++----
- security/integrity/ima/ima_fs.c        | 6 +++---
- security/integrity/ima/ima_queue.c     | 6 +++---
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ security/integrity/ima/ima_template_lib.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/security/integrity/evm/evm_posix_acl.c b/security/integrity/evm/evm_posix_acl.c
-index 46408b9e62e8..0a32798cfc96 100644
---- a/security/integrity/evm/evm_posix_acl.c
-+++ b/security/integrity/evm/evm_posix_acl.c
-@@ -17,11 +17,11 @@ int posix_xattr_acl(const char *xattr)
+diff --git a/security/integrity/ima/ima_template_lib.c b/security/integrity/ima/ima_template_lib.c
+index d941260e979f..e8ec783b6a8d 100644
+--- a/security/integrity/ima/ima_template_lib.c
++++ b/security/integrity/ima/ima_template_lib.c
+@@ -378,16 +378,11 @@ int ima_eventname_ng_init(struct ima_event_data *event_data,
+ int ima_eventsig_init(struct ima_event_data *event_data,
+ 		      struct ima_field_data *field_data)
  {
- 	int xattr_len = strlen(xattr);
+-	enum data_formats fmt = DATA_FMT_HEX;
+ 	struct evm_ima_xattr_data *xattr_value = event_data->xattr_value;
+-	int xattr_len = event_data->xattr_len;
+-	int rc = 0;
  
--	if ((strlen(XATTR_NAME_POSIX_ACL_ACCESS) == xattr_len)
--	     && (strncmp(XATTR_NAME_POSIX_ACL_ACCESS, xattr, xattr_len) == 0))
-+	if (strlen(XATTR_NAME_POSIX_ACL_ACCESS) == xattr_len
-+	    && strncmp(XATTR_NAME_POSIX_ACL_ACCESS, xattr, xattr_len) == 0)
- 		return 1;
--	if ((strlen(XATTR_NAME_POSIX_ACL_DEFAULT) == xattr_len)
--	     && (strncmp(XATTR_NAME_POSIX_ACL_DEFAULT, xattr, xattr_len) == 0))
-+	if (strlen(XATTR_NAME_POSIX_ACL_DEFAULT) == xattr_len
-+	    && strncmp(XATTR_NAME_POSIX_ACL_DEFAULT, xattr, xattr_len) == 0)
- 		return 1;
- 	return 0;
+ 	if (!xattr_value || xattr_value->type != EVM_IMA_XATTR_DIGSIG)
+-		goto out;
++		return 0;
+ 
+-	rc = ima_write_template_field_data(xattr_value, xattr_len, fmt,
+-					   field_data);
+-out:
+-	return rc;
++	return ima_write_template_field_data(xattr_value, event_data->xattr_len,
++					     DATA_FMT_HEX, field_data);
  }
-diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
-index 4d50b982b453..552f79fc4291 100644
---- a/security/integrity/ima/ima_fs.c
-+++ b/security/integrity/ima/ima_fs.c
-@@ -105,7 +105,7 @@ static void *ima_measurements_next(struct seq_file *m, void *v, loff_t *pos)
- 	rcu_read_unlock();
- 	(*pos)++;
- 
--	return (&qe->later == &ima_measurements) ? NULL : qe;
-+	return &qe->later == &ima_measurements ? NULL : qe;
- }
- 
- static void ima_measurements_stop(struct seq_file *m, void *v)
-@@ -141,7 +141,7 @@ int ima_measurements_show(struct seq_file *m, void *v)
- 	if (e == NULL)
- 		return -1;
- 
--	template_name = (e->template_desc->name[0] != '\0') ?
-+	template_name = e->template_desc->name[0] != '\0' ?
- 	    e->template_desc->name : e->template_desc->fmt;
- 
- 	/*
-@@ -228,7 +228,7 @@ static int ima_ascii_measurements_show(struct seq_file *m, void *v)
- 	if (e == NULL)
- 		return -1;
- 
--	template_name = (e->template_desc->name[0] != '\0') ?
-+	template_name = e->template_desc->name[0] != '\0' ?
- 	    e->template_desc->name : e->template_desc->fmt;
- 
- 	/* 1st: PCR used (config option) */
-diff --git a/security/integrity/ima/ima_queue.c b/security/integrity/ima/ima_queue.c
-index a02a86d51102..2ef7d33ba1fc 100644
---- a/security/integrity/ima/ima_queue.c
-+++ b/security/integrity/ima/ima_queue.c
-@@ -60,7 +60,7 @@ static struct ima_queue_entry *ima_lookup_digest_entry(u8 *digest_value,
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(qe, &ima_htable.queue[key], hnext) {
- 		rc = memcmp(qe->entry->digest, digest_value, TPM_DIGEST_SIZE);
--		if ((rc == 0) && (qe->entry->pcr == pcr)) {
-+		if (rc == 0 && qe->entry->pcr == pcr) {
- 			ret = qe;
- 			break;
- 		}
-@@ -119,7 +119,7 @@ static int ima_add_digest_entry(struct ima_template_entry *entry,
- 		int size;
- 
- 		size = get_binary_runtime_size(entry);
--		binary_runtime_size = (binary_runtime_size < ULONG_MAX - size) ?
-+		binary_runtime_size = binary_runtime_size < ULONG_MAX - size ?
- 		     binary_runtime_size + size : ULONG_MAX;
- 	}
- 	return 0;
-@@ -132,7 +132,7 @@ static int ima_add_digest_entry(struct ima_template_entry *entry,
-  */
- unsigned long ima_get_binary_runtime_size(void)
- {
--	if (binary_runtime_size >= (ULONG_MAX - sizeof(struct ima_kexec_hdr)))
-+	if (binary_runtime_size >= ULONG_MAX - sizeof(struct ima_kexec_hdr))
- 		return ULONG_MAX;
- 	else
- 		return binary_runtime_size + sizeof(struct ima_kexec_hdr);
