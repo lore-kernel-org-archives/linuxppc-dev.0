@@ -1,50 +1,40 @@
-Return-Path: <jjalvare@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGrbY4F7ZzDrFp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 10:13:45 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9HNCocX035915
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 19:13:43 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dnswk38pn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGtqG3FH7zDrFp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 11:54:02 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9I0rUmj051261
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:53:59 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dnnwh8sh4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 19:13:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 20:53:59 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jjalvare@linux.vnet.ibm.com>;
- Tue, 17 Oct 2017 19:13:41 -0400
-Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Steven Royer <seroyer@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
- benh@kernel.crashing.org, paulus@samba.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Juan J . Alvarez" <jjalvare@us.ibm.com>,
- Bodong Wang <bodong@mellanox.com>, Eli Cohen <eli@mellanox.com>,
- Saeed Mahameed <saeedm@mellanox.com>
-References: <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
- <20171013033456.GC25517@bhelgaas-glaptop.roam.corp.google.com>
- <88eab212351a662dda330071d9afe9dc@linux.vnet.ibm.com>
- <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
- <20171013120558.1a129183@t450s.home>
- <24fdec01-8df4-f027-0b3c-0472a2d73946@linux.vnet.ibm.com>
- <20171017135123.GA5641@bhelgaas-glaptop.roam.corp.google.com>
- <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
- <20171017162621.GB5641@bhelgaas-glaptop.roam.corp.google.com>
- <f8fbbd56-f165-0a17-a24a-2b021f7fa238@linux.vnet.ibm.com>
- <20171017185242.GG5641@bhelgaas-glaptop.roam.corp.google.com>
-From: Juan Alvarez <jjalvare@linux.vnet.ibm.com>
-Date: Tue, 17 Oct 2017 18:13:35 -0500
-MIME-Version: 1.0
-In-Reply-To: <20171017185242.GG5641@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <eb1ac136-a054-ea2b-2368-af740e0c23d4@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Tue, 17 Oct 2017 20:53:58 -0400
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: linux-integrity@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, David Howells <dhowells@redhat.com>,
+ David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ "AKASHI, Takahiro" <takahiro.akashi@linaro.org>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: [PATCH v5 00/18] Appended signatures support for IMA appraisal
+Date: Tue, 17 Oct 2017 22:53:13 -0200
+Message-Id: <20171018005331.2688-1-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,75 +44,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-On 10/17/17 1:52 PM, Bjorn Helgaas wrote:
-> Right.  But that patch isn't really on the path to inclusion (mainly
-> because it's test framework and doesn't fix a bug or add support for
-> new hardware or features).
-I was not aware of this decision and this will cause changes to this patch.
->
-> I'm suggesting that maybe there should be a generic way to prevent
-> binding to VF devices that works for everybody and doesn't require any
-> arch-specific code at all.
+The main highlight in this version is that it fixes a bug where the modsig
+wasn't being included in the measurement list if the appraised file was
+already measured by another rule. The fix is in the last patch.
 
-The patch that you have suggested in kernel 4.12 is also a generic way.
+Another change is that the last patch in the v4 series ("ima: Support
+module-style appended signatures for appraisal") has been broken up into
+smaller patches. I may have overdone it...
 
-https://marc.info/?l=linux-kernel&m=149002335105804&w=2
+Finally, I have added some patches removing superfluous parentheses from
+expressions. IMO these patches make it easier (and more pleasant) to read
+the code, and thus easier to understand it. Since I'm not sure how welcome
+the changes are, I split them in 3 "levels" in increasing potential for
+conflict with patches from other people (they can be squashed together when
+applied):
 
-Perhaps we can use the same constructs that this patch uses at our level. Nonetheless,
-that will take a rework to this patch and possibly an export of a function to set drivers_autoprobe
-globally. I know that was frowned upon on first email thread. Let me know if this is an
-acceptable solution.
->>>>>> So like existing way of enabling SRIOV we still rely on the PF driver to
->>>>>> enable VFs - but in this case the attachment phase is done via a user
->>>>>> action via a management console in our case (novalink or hmc) triggered
->>>>>> event that will essentially act like a hotplug.
->>>>>>
->>>>>> So in the fine details of that user triggered action the system
->>>>>> firmware will bind the VFs, allowing resources to be allocated to
->>>>>> the VF.  - Which essentially does all the attaching as we know it
->>>>>> today but is managed by PHYP not by the kernel.
->>>>> What exactly does "firmware binding the VFs" mean?  I guess this must
->>>>> mean assigning a VF to a partition, injecting a hotplug add event to
->>>>> that partition, and making the VF visible in config space?
->>>> Firmware basically adds a device node to the device tree as defined
->>>> in the (PAPR) Power Architecture Platform Requirements document.
->>> From the point of view of the kernel that consumes this device tree
->>> and owns the VF, I guess this looks like a hot-add.  
->> Correct, this is intended. We want to minimize change and only focus
->> on configure SR-IOV path in the PF on PSeries platform.
->>> It would be nice
->>> if this could be exposed to that kernel by having the firmware inject
->>> a normal PCIe hotplug interrupt, but I'm guessing it's not that
->>> simple.
->> I don't understand entirely your suggestion. However, in the case of
->> interrupts PHYP owns all the resources and will be associated accordingly
->> with a partitionable endpoint (PE).
-> Assume you have a Linux kernel, and PHYP assigns a VF to it.  What
-> happens in that Linux kernel? 
+1. patch 2 contains the bare minimum, changing only lines that are also
+   touched by other patches in the series;
 
-When  kernel boots it goes through the lists of buses in the device tree. For each (physical,virtual)
-bus the kernel reads the list of devices. After resources are read and assigned it will probe the devices.
+2. patch 3 cleans up all the files that are touched by this patch series;
 
-If the kernel is up and running then this will start its flow through the dlpar add bus code.
-Which then will read the device node and same operation as boot will entail of going
-through the list of devices under the bus.
+3. patch 4 cleans up all other EVM and IMA files that weren't already fixed
+   by the previous patches.
 
-One should note that dynamically created VFs in configure SR-IOV path will have is_virtfn
-set and others do not, therefore pcibios_bus_add_device will only be exercised in certain
-cases.
->  How does it discover this new device?
-This is treated as a normal hot plug operation for the Operating System that
-the device gets assigned which can be  IBMi, AIX or Linux in this environment.
->
-> I'm suggesting that it would be cool if that kernel received a hotplug
-> interrupt from the Downstream Port leading to the new VF, and the
-> pciehp driver could read the Slot Status register and see that
-> "Presence Detect Changed" was set.  If that happened, the pciehp
-> driver should automatically enumerate the new device and there
-> wouldn't be much if any powerpc-specific code in the path.
-To re-state Steve's earlier comment, PHYP will enumerate the virtual pci bus and is not
-directly correlated to the real PCI bus that the PF is on. We have no control of the pci
-bus enumeration for the device node added to the device tree.
+If unwanted, patches 3 and 4 can be simply skipped without affecting the
+rest of the patches. I have already rebased them from v4.13-rc2 to
+v4.14-rc3 and now to linux-integrity/next with very few easy to resolve
+conflicts, so I think they are worth keeping.
 
-Juan J. Alvarez
+These patches apply on top of today's linux-integrity/next.
+
+Original cover letter:
+
+On the OpenPOWER platform, secure boot and trusted boot are being
+implemented using IMA for taking measurements and verifying signatures.
+Since the kernel image on Power servers is an ELF binary, kernels are
+signed using the scripts/sign-file tool and thus use the same signature
+format as signed kernel modules.
+
+This patch series adds support in IMA for verifying those signatures.
+It adds flexibility to OpenPOWER secure boot, because it allows it to boot
+kernels with the signature appended to them as well as kernels where the
+signature is stored in the IMA extended attribute.
+
+Since modsig is only supported on some specific hooks which don't get
+called often (cf. ima_hook_supports_modsig), it's possible to always check
+for the presence of an appended modsig before looking for the xattr sig. In
+that case, the policy doesn't need to be changed to support the modsig
+keyword. Is that preferable than requiring the policy to explicitly allow a
+modsig like this code does?
+
+I tested these patches with EVM and I believe they don't break it and
+things work as expected, but I'm not really familiar with EVM and its use
+cases so this should be taken with a grain of salt.
+
+I also verified that the code correctly recalculates the file hash if the
+modsig verification fails and the file also has an xattr signature which
+uses a different hash algorithm.
+
+Changes since v4:
+- Patch "ima: Remove redundant conditional operator"
+  - New patch.
+
+- Patch "ima: Remove some superfluous parentheses"
+  - New patch.
+
+- Patch "evm, ima: Remove superfluous parentheses"
+  - New patch.
+
+- Patch "evm, ima: Remove more superfluous parentheses"
+  - New patch.
+
+- Patch "ima: Simplify ima_eventsig_init"
+  - New patch.
+
+- Patch "ima: Improvements in ima_appraise_measurement"
+  - New patch.
+
+- Patch "ima: Don't pass xattr value to EVM xattr verification."
+  - New patch.
+
+- Patch "ima: Export func_tokens"
+  - Split from patch "ima: Support module-style appended signatures for
+    appraisal".
+
+- Patch "ima: Add modsig appraise_type option for module-style appended
+         signatures"
+  - Split from patch "ima: Support module-style appended signatures for
+    appraisal".
+  - Mention modsig option in Documentation/ABI/testing/ima_policy
+    (suggested by Mimi Zohar).
+
+- Patch "ima: Add functions to read and verify a modsig signature"
+  - Split from patch "ima: Support module-style appended signatures for
+    appraisal".
+
+- Patch "ima: Implement support for module-style appended signatures"
+  - Split from patch "ima: Support module-style appended signatures for
+    appraisal".
+  - In ima_appraise_measurement, change the logic of dealing with xattr
+    errors in case the modsig verification fails. With this,
+    process_xattr_error isn't needed anymore.
+
+- Patch "ima: Write modsig to the measurement list"
+  - Split from patch "ima: Support module-style appended signatures for
+    appraisal".
+  - Added ima_current_template_has_sig function.
+  - Removed hdr parameter from ima_modsig_serialize_data.
+  - In ima_store_measurement, continue processing even if the given PCR
+    is already measured if it's for a modsig.
+  - In process_measurement, add exception to store measurement even if
+    IMA_MEASURE is not set when appraising a modsig (suggested by
+    Mimi Zohar).
+  - Call is_ima_sig in ima_eventsig_init.
+
+Changes since v3:
+- Patch "integrity: Introduce struct evm_hmac_xattr"
+  - Renamed new struct to evm_xattr.
+  - Define struct evm_xattr using struct evm_ima_xattr_data, and moved it
+    from evm.h to integrity.h (suggested by Mimi Zohar).
+- Patch "PKCS#7: Introduce verify_pkcs7_message_sig"
+  - Also introduce pkcs7_get_message_sig.
+- Patch "ima: Support appended signatures for appraisal"
+  - Moved check for buffer presence and size from ima_appraise_measurement
+    to ima_read_modsig (suggested by Mimi Zohar).
+  - Factored out handling of ima_read_xattr return value into
+    process_xattr_error in ima_appraise_measurement so that it can be used
+    if the modsig verification fails.
+  - Pass NULL xattr_value to evm_verifyxattr even in the case of xattr
+    signature in ima_appraise_measurement (suggested by Mimi Zohar).
+  - Use switch statement provided by Mimi Zohar to check result of
+    evm_verifyxattr.
+  - If the modsig verification succeeds, copy the hash calculated during
+    the verification to the iint cache (suggested by Mimi Zohar).
+  - Substitute recursion in ima_appraise_measurement by a goto statement
+    back to the main switch statement (suggested by Mimi Zohar).
+
+Thiago Jung Bauermann (18):
+  ima: Remove redundant conditional operator
+  ima: Remove some superfluous parentheses
+  evm, ima: Remove superfluous parentheses
+  evm, ima: Remove more superfluous parentheses
+  ima: Simplify ima_eventsig_init
+  ima: Improvements in ima_appraise_measurement
+  integrity: Introduce struct evm_xattr
+  integrity: Select CONFIG_KEYS instead of depending on it
+  ima: Don't pass xattr value to EVM xattr verification.
+  ima: Store measurement after appraisal
+  ima: Export func_tokens
+  MODSIGN: Export module signature definitions
+  PKCS#7: Introduce pkcs7_get_message_sig and verify_pkcs7_message_sig
+  integrity: Introduce integrity_keyring_from_id
+  ima: Add modsig appraise_type option for module-style appended
+    signatures
+  ima: Add functions to read and verify a modsig signature
+  ima: Implement support for module-style appended signatures
+  ima: Write modsig to the measurement list
+
+ Documentation/ABI/testing/ima_policy      |   6 +-
+ certs/system_keyring.c                    |  60 +++++++---
+ crypto/asymmetric_keys/pkcs7_parser.c     |  12 ++
+ include/crypto/pkcs7.h                    |   2 +
+ include/linux/module.h                    |   3 -
+ include/linux/module_signature.h          |  47 ++++++++
+ include/linux/verification.h              |  10 ++
+ init/Kconfig                              |   6 +-
+ kernel/Makefile                           |   2 +-
+ kernel/module.c                           |   1 +
+ kernel/module_signing.c                   |  74 ++++++-------
+ security/integrity/Kconfig                |   2 +-
+ security/integrity/digsig.c               |  28 +++--
+ security/integrity/evm/evm_crypto.c       |   6 +-
+ security/integrity/evm/evm_main.c         |  23 ++--
+ security/integrity/evm/evm_posix_acl.c    |   8 +-
+ security/integrity/ima/Kconfig            |  13 +++
+ security/integrity/ima/Makefile           |   1 +
+ security/integrity/ima/ima.h              |  75 ++++++++++++-
+ security/integrity/ima/ima_api.c          |  10 +-
+ security/integrity/ima/ima_appraise.c     | 166 +++++++++++++++++++++++-----
+ security/integrity/ima/ima_fs.c           |   6 +-
+ security/integrity/ima/ima_main.c         |  50 +++++++--
+ security/integrity/ima/ima_modsig.c       | 176 ++++++++++++++++++++++++++++++
+ security/integrity/ima/ima_policy.c       |  65 ++++++-----
+ security/integrity/ima/ima_queue.c        |   6 +-
+ security/integrity/ima/ima_template.c     |  37 ++++---
+ security/integrity/ima/ima_template_lib.c |  30 +++--
+ security/integrity/integrity.h            |  10 +-
+ 29 files changed, 739 insertions(+), 196 deletions(-)
+ create mode 100644 include/linux/module_signature.h
+ create mode 100644 security/integrity/ima/ima_modsig.c
