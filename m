@@ -1,37 +1,41 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
+Return-Path: <linuxram@us.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHNSG2NLqzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 07:09:18 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9IK4XW6081019
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:09:15 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHP6M528RzDq8c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 07:38:51 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9IKYjc4013563
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:38:48 -0400
 Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dpbx4wwbe-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dpdgvj4ms-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:09:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:38:48 -0400
 Received: from localhost
  by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 18 Oct 2017 16:09:15 -0400
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-In-Reply-To: <cd1c9d3f-c828-2477-ff31-fb6277a8a2aa@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V2 3/3] pseries/initnodes: Ensure nodes initialized for hotplug
-Date: Wed, 18 Oct 2017 15:09:10 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Wed, 18 Oct 2017 16:38:47 -0400
+Date: Wed, 18 Oct 2017 13:38:39 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ ebiederm@xmission.com
+Subject: Re: [PATCH 05/25] powerpc: helper functions to initialize AMR, IAMR
+ and UAMOR registers
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-14-git-send-email-linuxram@us.ibm.com>
+ <20171018142403.653436bb@firefly.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <b24385eb-10ed-b934-8658-b55cece61146@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171018142403.653436bb@firefly.ozlabs.ibm.com>
+Message-Id: <20171018203839.GE5617@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,77 +45,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pseries/nodes: On pseries systems which allow 'hot-add' of CPU,
-it may occur that the new resources are to be inserted into nodes
-that were not used for memory resources at bootup.  Many different
-configurations of PowerPC resources may need to be supported depending
-upon the environment.  This patch fixes some problems encountered at
-runtime with configurations that support memory-less nodes, or that
-hot-add resources during system execution after boot.
+On Wed, Oct 18, 2017 at 02:24:03PM +1100, Balbir Singh wrote:
+> On Fri,  8 Sep 2017 15:44:53 -0700
+> Ram Pai <linuxram@us.ibm.com> wrote:
+> 
+> > Introduce  helper functions that can initialize the bits in the AMR,
+> > IAMR and UAMOR register; the bits that correspond to the given pkey.
+> > 
+> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/pkeys.h |    1 +
+> >  arch/powerpc/mm/pkeys.c          |   46 ++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 47 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> > index 133f8c4..5a83ed7 100644
+> > --- a/arch/powerpc/include/asm/pkeys.h
+> > +++ b/arch/powerpc/include/asm/pkeys.h
+> > @@ -26,6 +26,7 @@
+> >  #define arch_max_pkey()  pkeys_total
+> >  #define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | \
+> >  				VM_PKEY_BIT3 | VM_PKEY_BIT4)
+> > +#define AMR_BITS_PER_PKEY 2
+> >  
+> >  #define pkey_alloc_mask(pkey) (0x1 << pkey)
+> >  
+> > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> > index ebc9e84..178aa33 100644
+> > --- a/arch/powerpc/mm/pkeys.c
+> > +++ b/arch/powerpc/mm/pkeys.c
+> > @@ -59,3 +59,49 @@ void __init pkey_initialize(void)
+> >  	for (i = 2; i < (pkeys_total - os_reserved); i++)
+> >  		initial_allocation_mask &= ~(0x1<<i);
+> >  }
+> > +
+> > +#define PKEY_REG_BITS (sizeof(u64)*8)
+> > +#define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
+> > +
+> > +static inline void init_amr(int pkey, u8 init_bits)
+> > +{
+> > +	u64 new_amr_bits = (((u64)init_bits & 0x3UL) << pkeyshift(pkey));
+> > +	u64 old_amr = read_amr() & ~((u64)(0x3ul) << pkeyshift(pkey));
+> > +
+> 
+> Do we need to check for reserved keys or that is at a layer above?
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |   27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
+These routines blindly trust the caller. The assumption is the
+system calls which are the gate-keepers for the keys validate
+the keys before calling any lower level functions.
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index f885ab7..2be6363 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -551,7 +551,7 @@ static int numa_setup_cpu(unsigned long lcpu)
- 	nid = of_node_to_nid_single(cpu);
- 
- out_present:
--	if (nid < 0 || !node_online(nid))
-+	if (nid < 0 || !node_possible(nid))
- 		nid = first_online_node;
- 
- 	map_cpu_to_node(lcpu, nid);
-@@ -1311,6 +1311,25 @@ static long vphn_get_associativity(unsigned long cpu,
- 	return rc;
- }
- 
-+static int verify_node_preparation(int nid)
-+{
-+	/*
-+	 * Need to allocate/initialize NODE_DATA from a node with
-+	 * memory (see memblock_alloc_try_nid).  Code executed after
-+	 * boot (like local_memory_node) often does not know enough
-+	 * to recover fully for memoryless nodes. 
-+	 */
-+	if (NODE_DATA(nid) == NULL) 
-+		setup_node_data(nid, 0, 0);
-+
-+	if (NODE_DATA(nid)->node_spanned_pages == 0) {
-+		if (try_online_node(nid))
-+			return first_online_node;
-+	}
-+
-+	return nid;
-+}
-+
- /*
-  * Update the CPU maps and sysfs entries for a single CPU when its NUMA
-  * characteristics change. This function doesn't perform any locking and is
-@@ -1334,7 +1353,7 @@ static int update_cpu_topology(void *data)
- 		unmap_cpu_from_node(cpu);
- 		map_cpu_to_node(cpu, new_nid);
- 		set_cpu_numa_node(cpu, new_nid);
--		set_cpu_numa_mem(cpu, local_memory_node(new_nid));
-+		set_cpu_numa_mem(cpu, local_memory_node(node_to_mem_node(new_nid)));
- 		vdso_getcpu_init();
- 	}
- 
-@@ -1419,9 +1438,11 @@ int numa_update_cpu_topology(bool cpus_locked)
- 		/* Use associativity from first thread for all siblings */
- 		vphn_get_associativity(cpu, associativity);
- 		new_nid = associativity_to_nid(associativity);
--		if (new_nid < 0 || !node_online(new_nid))
-+		if (new_nid < 0 || !node_possible(new_nid))
- 			new_nid = first_online_node;
- 
-+		new_nid = verify_node_preparation(new_nid);
-+
- 		if (new_nid == numa_cpu_lookup_table[cpu]) {
- 			cpumask_andnot(&cpu_associativity_changes_mask,
- 					&cpu_associativity_changes_mask,
+> 
+> > +	write_amr(old_amr | new_amr_bits);
+> > +}
+> > +
+> > +static inline void init_iamr(int pkey, u8 init_bits)
+> > +{
+> > +	u64 new_iamr_bits = (((u64)init_bits & 0x3UL) << pkeyshift(pkey));
+> > +	u64 old_iamr = read_iamr() & ~((u64)(0x3ul) << pkeyshift(pkey));
+> > +
+> > +	write_iamr(old_iamr | new_iamr_bits);
+> 
+> Do we need to check for reserved keys here?
+> 
+
+ditto..
+
+> > +}
+> > +
+> > +static void pkey_status_change(int pkey, bool enable)
+> > +{
+> > +	u64 old_uamor;
+> > +
+> > +	/* reset the AMR and IAMR bits for this key */
+> > +	init_amr(pkey, 0x0);
+> > +	init_iamr(pkey, 0x0);
+> > +
+> > +	/* enable/disable key */
+> > +	old_uamor = read_uamor();
+> > +	if (enable)
+> > +		old_uamor |= (0x3ul << pkeyshift(pkey));
+> > +	else
+> > +		old_uamor &= ~(0x3ul << pkeyshift(pkey));
+> > +	write_uamor(old_uamor);
+> > +}
+> > +
+> > +void __arch_activate_pkey(int pkey)
+> > +{
+> > +	pkey_status_change(pkey, true);
+> > +}
+> > +
+> > +void __arch_deactivate_pkey(int pkey)
+> > +{
+> > +	pkey_status_change(pkey, false);
+> > +}
+> 
+> 
+> Balbir Singh.
+
+-- 
+Ram Pai
