@@ -1,34 +1,41 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [217.72.192.78])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHGbL01HTzDrJw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 02:45:01 +1100 (AEDT)
+Received: from mail-qk0-f175.google.com (mail-qk0-f175.google.com
+ [209.85.220.175])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHGZ30KMWzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 02:43:54 +1100 (AEDT)
-Subject: Re: char-TPM: Adjustments for ten function implementations
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Jerry Snitselaar <jsnitsel@redhat.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
- <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
- <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
- <2e5e24b4-ea4d-e43b-22b2-e6b65e7203d2@users.sourceforge.net>
- <20171018150436.j2uhzxsu4ebjoz3c@linux.intel.com>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <d429115f-a54f-4307-0ee1-31058041b721@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 17:43:17 +0200
+ by mail.kernel.org (Postfix) with ESMTPSA id D311C21879
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 15:44:59 +0000 (UTC)
+Received: by mail-qk0-f175.google.com with SMTP id y23so6754630qkb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 08:44:59 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20171018150436.j2uhzxsu4ebjoz3c@linux.intel.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CANk1AXStoiNtJfU0iNug1wKASurqH6OrNoaN=UtSh6xxSB088Q@mail.gmail.com>
+References: <20170821151651.25096-1-robh@kernel.org>
+ <20170821151651.25096-6-robh@kernel.org>
+ <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
+ <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
+ <59E69786.2030406@gmail.com>
+ <CANk1AXStoiNtJfU0iNug1wKASurqH6OrNoaN=UtSh6xxSB088Q@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 18 Oct 2017 10:44:38 -0500
+Message-ID: <CAL_JsqKR3Jg+tgZr4xGPtcWnZW7ng741YjuyUFaS2SXKXbxGtg@mail.gmail.com>
+Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
+ full_name
+To: Alan Tull <atull@kernel.org>
+Cc: Frank Rowand <frowand.list@gmail.com>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ David Laight <David.Laight@aculab.com>, linux-fpga@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,42 +45,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> A minor complaint: all commits are missing "Fixes:" tag.
+On Wed, Oct 18, 2017 at 10:12 AM, Alan Tull <atull@kernel.org> wrote:
+> On Tue, Oct 17, 2017 at 6:51 PM, Frank Rowand <frowand.list@gmail.com> wrote:
+>> On 10/17/17 14:46, Rob Herring wrote:
+>>> On Tue, Oct 17, 2017 at 4:32 PM, Alan Tull <atull@kernel.org> wrote:
+>>>> On Mon, Aug 21, 2017 at 10:16 AM, Rob Herring <robh@kernel.org> wrote:
+>>>>
+>>>> Hi Rob,
+>>>>
+>>>>> With dependencies on a statically allocated full path name converted to
+>>>>> use %pOF format specifier, we can store just the basename of node, and
+>>>>> the unflattening of the FDT can be simplified.
+>>>>>
+>>>>> This commit will affect the remaining users of full_name. After
+>>>>> analyzing these users, the remaining cases should only change some print
+>>>>> messages. The main users of full_name are providing a name for struct
+>>>>> resource. The resource names shouldn't be important other than providing
+>>>>> /proc/iomem names.
+>>>>>
+>>>>> We no longer distinguish between pre and post 0x10 dtb formats as either
+>>>>> a full path or basename will work. However, less than 0x10 formats have
+>>>>> been broken since the conversion to use libfdt (and no one has cared).
+>>>>> The conversion of the unflattening code to be non-recursive also broke
+>>>>> pre 0x10 formats as the populate_node function would return 0 in that
+>>>>> case.
+>>>>>
+>>>>> Signed-off-by: Rob Herring <robh@kernel.org>
+>>>>> ---
+>>>>> v2:
+>>>>> - rebase to linux-next
+>>>>>
+>>>>>  drivers/of/fdt.c | 69 +++++++++-----------------------------------------------
+>>>>>  1 file changed, 11 insertions(+), 58 deletions(-)
+>>>>
+>>>> I've just updated to the latest next branch and am finding problems
+>>>> applying overlays.   Reverting this commit alleviates things.  The
+>>>> errors I get are:
+>>>>
+>>>> [   88.498704] OF: overlay: Failed to apply prop @/__symbols__/clk_0
+>>>> [   88.513447] OF: overlay: apply failed '/__symbols__'
+>>>> [   88.518423] create_overlay: Failed to create overlay (err=-12)
+>>>
+>>> Frank's series with overlay updates should fix this.
 >>
->> * Do you require it to be added to the commit messages?
-> 
-> I don't require it. It's part of the development process:
-> 
-> https://www.kernel.org/doc/html/v4.12/process/submitting-patches.html
+>> Yes, it does:
+>>
+>>   [PATCH v3 11/12] of: overlay: remove a dependency on device node full_name
+>
+> Thanks for the fast response.  I fetched the dt/next branch to test
+> this but there are sufficient changes that Pantelis' "OF: DT-Overlay
+> configfs interface (v7)" is broken now.  I've been adding that
+> downstream since 4.4.  We're using it as an interface for applying
+> overlays to program FPGAs.  If we fix it again, is there any chance
+> that can go upstream now?
 
-Yes. - But other contributors pointed the detail out again
-that not every change is qualified for using this tag.
+With a drive-by posting once every few years, no.
 
+The issue remains that the kernel is not really setup to deal with any
+random property or node to be changed at any point in run-time. I
+think there needs to be some restrictions around what the overlays can
+touch. We can't have it be wide open and then lock things down later
+and break users. One example of what you could do is you can only add
+sub-trees to whitelisted nodes. That's probably acceptable for your
+usecase.
 
->> * Would you like to get a finer patch granularity then?
-> 
-> I don't understand what you are asking.
-
-If you would insist on the addition of this tag to all my commits
-for the discussed patch series, I imagine that I would need to split
-the update step “Improve a size determination in nine functions”
-into smaller parts.
-
-
->> * Do you find any more information missing?
-> 
-> I think I already answered to this in my earlier responses
-> (commit messages).
-
-Partly.
-
-
-> I probably won't take "sizeof(*foo)" type of change even if it
-> is a recommended style if that is the only useful thing that the
-> commit does.
-
-How much do you care for the section “14) Allocating memory”
-in the document “coding-style.rst” then?
-
-Regards,
-Markus
+Rob
