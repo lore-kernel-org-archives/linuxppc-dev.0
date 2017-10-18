@@ -1,16 +1,13 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Received: from mout.web.de (mout.web.de [217.72.192.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHG5v2nc1zDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 02:22:58 +1100 (AEDT)
-Subject: Re: char/tpm: Improve a size determination in nine functions
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHGZ30KMWzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 02:43:54 +1100 (AEDT)
+Subject: Re: char-TPM: Adjustments for ten function implementations
 To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
  linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall
- <julia.lawall@lip6.fr>, Alexander Steffen <Alexander.Steffen@infineon.com>,
- linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Corentin Labbe <clabbe.montjoie@gmail.com>,
  Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
@@ -19,21 +16,18 @@ Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall
  Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
  <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
  =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>
+ Stefan Berger <stefanb@linux.vnet.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
- <1508238182.16112.475.camel@linux.intel.com>
- <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
- <1508244757.4234.60.camel@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1710171456360.5035@hadrien>
- <1508253453.4234.81.camel@linux.vnet.ibm.com>
- <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
- <20171018145735.lpzwakatsty7emlw@linux.intel.com>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <2e5e24b4-ea4d-e43b-22b2-e6b65e7203d2@users.sourceforge.net>
+ <20171018150436.j2uhzxsu4ebjoz3c@linux.intel.com>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 17:22:19 +0200
+Message-ID: <d429115f-a54f-4307-0ee1-31058041b721@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 17:43:17 +0200
 MIME-Version: 1.0
-In-Reply-To: <20171018145735.lpzwakatsty7emlw@linux.intel.com>
+In-Reply-To: <20171018150436.j2uhzxsu4ebjoz3c@linux.intel.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,48 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Do you find my wording “This issue was detected by using the
->> Coccinelle software.” insufficient?
+>>> A minor complaint: all commits are missing "Fixes:" tag.
+>>
+>> * Do you require it to be added to the commit messages?
 > 
-> This is fine for cover letter, not for the commits.
+> I don't require it. It's part of the development process:
+> 
+> https://www.kernel.org/doc/html/v4.12/process/submitting-patches.html
 
-I guess that there are more opinions available by other contributors
-for this aspect.
-
-
-> After your analysis software finds an issue you should manually analyze
-> what is wrong
-
-This view is generally fine.
+Yes. - But other contributors pointed the detail out again
+that not every change is qualified for using this tag.
 
 
-> and document that to the commit message.
+>> * Would you like to get a finer patch granularity then?
+> 
+> I don't understand what you are asking.
 
-I tried it in a single paragraph so far (besides the reference
-for the tool).
-
-
-> This applies to sparse, coccinelle or any other tool.
-
-I find that further possibilities can be considered.
-
-
-> Tool-based commit messages are bad for commit history
-
-I disagree to this view.
+If you would insist on the addition of this tag to all my commits
+for the discussed patch series, I imagine that I would need to split
+the update step “Improve a size determination in nine functions”
+into smaller parts.
 
 
-> where as clean description gives idea what was done
-> (if you have to maintain a GIT tree).
+>> * Do you find any more information missing?
+> 
+> I think I already answered to this in my earlier responses
+> (commit messages).
 
-How do you think about to offer any wording for an alternative
-which you would find better?
+Partly.
 
 
-> In my opinion tool is doing all the work but the part
-> that you should do is absent.
+> I probably won't take "sizeof(*foo)" type of change even if it
+> is a recommended style if that is the only useful thing that the
+> commit does.
 
-Really?
+How much do you care for the section “14) Allocating memory”
+in the document “coding-style.rst” then?
 
 Regards,
 Markus
