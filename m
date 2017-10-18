@@ -1,14 +1,14 @@
 Return-Path: <jarkko.sakkinen@linux.intel.com>
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHFmp3dlnzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 02:08:10 +1100 (AEDT)
-Date: Wed, 18 Oct 2017 18:07:54 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHFqL20cMzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 02:10:21 +1100 (AEDT)
+Date: Wed, 18 Oct 2017 18:10:10 +0300
 From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Julia Lawall <julia.lawall@lip6.fr>,
- SF Markus Elfring <elfring@users.sourceforge.net>,
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
  linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -22,16 +22,16 @@ Cc: Julia Lawall <julia.lawall@lip6.fr>,
  Stefan Berger <stefanb@linux.vnet.ibm.com>,
  LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
-Message-ID: <20171018150754.irqyypvbfh5vt4kv@linux.intel.com>
+Message-ID: <20171018151010.r4ojcpzs5l7rpt6r@linux.intel.com>
 References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
  <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
  <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
  <20171017085124.pkrjzghcf5wmcydc@mwanda>
- <alpine.DEB.2.20.1710171055100.5035@hadrien>
- <20171017094434.csarc5fw5d32u64w@mwanda>
+ <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+ <1508255833.3129.33.camel@HansenPartnership.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171017094434.csarc5fw5d32u64w@mwanda>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1508255833.3129.33.camel@HansenPartnership.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,28 +41,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 17, 2017 at 12:44:34PM +0300, Dan Carpenter wrote:
-> On Tue, Oct 17, 2017 at 10:56:42AM +0200, Julia Lawall wrote:
+On Tue, Oct 17, 2017 at 08:57:13AM -0700, James Bottomley wrote:
+> On Tue, 2017-10-17 at 11:25 +0200, SF Markus Elfring wrote:
+> > > 
+> > > Fixes is only for bug fixes.  These don't fix any bugs.
 > > 
-> > 
-> > On Tue, 17 Oct 2017, Dan Carpenter wrote:
-> > 
-> > > On Mon, Oct 16, 2017 at 09:35:12PM +0300, Jarkko Sakkinen wrote:
-> > > >
-> > > > A minor complaint: all commits are missing "Fixes:" tag.
-> > > >
-> > >
-> > > Fixes is only for bug fixes.  These don't fix any bugs.
-> > 
-> > 0-day seems to put Fixes for everything.  Should they be removed when the
-> > old code is undesirable but doesn't actually cause a crash, eg out of date
-> > API.
+> > How do you distinguish these in questionable source code
+> > from other error categories or software weaknesses?
 > 
-> Yeah, I feel like Fixes tags don't belong for API updates and cleanups.
+> A style change is one that doesn't change the effect of the execution.
+>  These don't actually even change the assembly, so there's programmatic
+> proof they're not fixing anything.
 > 
-> regards,
-> dan carpenter
+> Bug means potentially user visible fault.  In any bug fix commit you
+> should document the fault and its effects on users so those backporting
+> can decide if they care or not.
+> 
+> James
 
-So breaking a rule documented in the style guide is not a bug? :-)
+OK, I'll adjust my definition of a bug :-)
 
 /Jarkko
