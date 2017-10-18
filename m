@@ -1,11 +1,11 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [217.72.192.78])
+Received: from mout.web.de (mout.web.de [212.227.17.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHMWC0lnVzDqGj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 06:26:46 +1100 (AEDT)
-Subject: [PATCH 4/5] powerpc-pseries: Return directly after a failed
- kzalloc_node() in iommu_pseries_alloc_group()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHMYG12glzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 06:28:33 +1100 (AEDT)
+Subject: [PATCH 5/5] powerpc-pseries: Less function calls in
+ iommu_pseries_alloc_group() after error detection
 From: SF Markus Elfring <elfring@users.sourceforge.net>
 To: linuxppc-dev@lists.ozlabs.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -25,8 +25,8 @@ To: linuxppc-dev@lists.ozlabs.org,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 References: <0d221be4-1402-0499-d95e-afa4a30e1f33@users.sourceforge.net>
-Message-ID: <a824fe65-1708-16ba-68d6-df0f73e0f49a@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 21:26:10 +0200
+Message-ID: <45cdde43-075d-10c0-ab34-1ce1aa4dfa17@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 21:27:57 +0200
 MIME-Version: 1.0
 In-Reply-To: <0d221be4-1402-0499-d95e-afa4a30e1f33@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -40,28 +40,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 20:15:32 +0200
+Date: Wed, 18 Oct 2017 20:48:52 +0200
 
-Return directly after a call of the function "kzalloc_node" failed
-at the beginning.
+The kfree() function was called in up to two cases by the
+iommu_pseries_alloc_group() function during error handling
+even if the passed variable contained a null pointer.
+
+* Adjust jump targets according to the Linux coding style convention.
+
+* Delete initialisations for the variables "tbl" and "tgl"
+  which became unnecessary with this refactoring.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/iommu.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index b6c12b8e3ace..207ff8351af1 100644
+index 207ff8351af1..13b424f34039 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -61,7 +61,7 @@ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
+@@ -56,8 +56,8 @@
+ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
+ {
+ 	struct iommu_table_group *table_group;
+-	struct iommu_table *tbl = NULL;
+-	struct iommu_table_group_link *tgl = NULL;
++	struct iommu_table *tbl;
++	struct iommu_table_group_link *tgl;
  
  	table_group = kzalloc_node(sizeof(*table_group), GFP_KERNEL, node);
  	if (!table_group)
--		goto fail_exit;
-+		return NULL;
+@@ -65,11 +65,11 @@ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
  
  	tbl = kzalloc_node(sizeof(*tbl), GFP_KERNEL, node);
  	if (!tbl)
+-		goto fail_exit;
++		goto free_group;
+ 
+ 	tgl = kzalloc_node(sizeof(*tgl), GFP_KERNEL, node);
+ 	if (!tgl)
+-		goto fail_exit;
++		goto free_table;
+ 
+ 	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
+ 	kref_init(&tbl->it_kref);
+@@ -80,11 +80,10 @@ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
+ 
+ 	return table_group;
+ 
+-fail_exit:
+-	kfree(tgl);
+-	kfree(table_group);
++free_table:
+ 	kfree(tbl);
+-
++free_group:
++	kfree(table_group);
+ 	return NULL;
+ }
+ 
 -- 
 2.14.2
