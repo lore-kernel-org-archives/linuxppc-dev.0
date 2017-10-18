@@ -1,43 +1,38 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [217.72.192.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHKsy3PDjzDrJm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 05:12:53 +1100 (AEDT)
-Subject: =?UTF-8?Q?Re:_char/tpm:_Delete_an_error_message_for_a_failed_memory?=
- =?UTF-8?B?IGFsbG9jYXRpb24gaW4gdHBtX+KApigp?=
-To: Jerry Snitselaar <jsnitsel@redhat.com>, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <1508244757.4234.60.camel@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1710171456360.5035@hadrien>
- <1508253453.4234.81.camel@linux.vnet.ibm.com>
- <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
- <20171018145735.lpzwakatsty7emlw@linux.intel.com>
- <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
- <20171018155946.e7ga7jyex6eia252@linux.intel.com>
- <55d76224-3019-6614-70ce-ba260bbcd54f@users.sourceforge.net>
- <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
- <e9638486-7e59-1c5a-87ae-ca0f1fbbd021@users.sourceforge.net>
- <20171018175412.mlj2yvyjmvmfdxzd@rhwork>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall
- <julia.lawall@lip6.fr>, Alexander Steffen <Alexander.Steffen@infineon.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
- <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <61fa394e-05d1-5081-f8bb-3e7dcbd6ccf9@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 20:11:28 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHLCF25KczDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 05:27:52 +1100 (AEDT)
+Date: Wed, 18 Oct 2017 20:27:45 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Joe Perches <joe@perches.com>
+Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org, Stefan Berger
+ <stefanb@linux.vnet.ibm.com>, Nayna Jain <nayna@linux.vnet.ibm.com>, Jerry
+ Snitselaar <jsnitsel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
+ <jgunthorpe@obsidianresearch.com>, Corentin Labbe
+ <clabbe.montjoie@gmail.com>, James Bottomley
+ <James.Bottomley@HansenPartnership.comg>, Paul Mackerras
+ <paulus@samba.org>, Peter =?UTF-8?B?SMO8d2U=?= <PeterHuewe@gmx.de>, Andy
+ Shevchenko <andriy.shevchenko@linux.intel.com>, Dan Carpenter
+ <dan.carpenter@oracle.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>
+Subject: Re: char-TPM: Adjustments for ten function implementations
+Message-ID: <20171018202745.383724bc@kitsune.suse.cz>
+In-Reply-To: <1508318326.6806.1.camel@perches.com>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+ <1508255833.3129.33.camel@HansenPartnership.com>
+ <1508280210.6530.32.camel@perches.com>
+ <bf7fc26c-bdc9-c752-72c7-f44c22f4a328@users.sourceforge.net>
+ <1508318326.6806.1.camel@perches.com>
 MIME-Version: 1.0
-In-Reply-To: <20171018175412.mlj2yvyjmvmfdxzd@rhwork>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,30 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Why did you not reply directly with this request for the update steps
->> with the subject “Delete an error message for a failed memory allocation
->> in tpm_…()”?
->>
->> https://patchwork.kernel.org/patch/10009405/
->> https://patchwork.kernel.org/patch/10009415/
->>
->> I find that there can be difficulty to show an appropriate information
->> source for the reasonable explanation of this change pattern.
->>
+On Wed, 18 Oct 2017 02:18:46 -0700
+Joe Perches <joe@perches.com> wrote:
+
+> On Wed, 2017-10-18 at 11:00 +0200, SF Markus Elfring wrote:
+> > > The printk removals do change the objects.
+> > > 
+> > > The value of that type of change is only for resource limited
+> > > systems.  
+> > 
+> > I imagine that such small code adjustments are also useful for
+> > other systems.  
 > 
-> Shouldn't this information source for the explanation be the submitter?
+> Your imagination and mine differ.
+> Where do you _think_ it matters?
+> 
+> For instance, nothing about
+> 
+> 	sizeof(type)
+> vs
+> 	sizeof(*ptr)
+> 
+> makes it easier for a human to read the code.
+> 
 
-I offered a bit of information. I agree that it could become better eventually.
+However, it makes it less error-prone to modify the code.
 
+If you do ptr = malloc(sizeof(*ptr)) and later you change the type of
+the pointer the code is still correct whereas ptr = malloc(sizeof(some
+type) no longer is.
 
-> I'd hope they understand what it is they are submitting.
+That is the reason the source analysis tool warns about this usage and
+you do not really need any more explanation for *this* change.
 
-I do this to some degree.   ;-)
+The others are not so clear.
 
-But I would appreciate if I could refer to a single Linux document
-for this change pattern around questionable error messages.
-Would a corresponding link for an accepted explanation in the documentation
-be nice in this case?
+Thanks
 
-Regards,
-Markus
+Michal
