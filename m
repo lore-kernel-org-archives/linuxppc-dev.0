@@ -1,9 +1,9 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Received: from mout.web.de (mout.web.de [212.227.17.11])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHKLF6RljzDrJg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:48:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHKTx5p8czDrJg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:55:33 +1100 (AEDT)
 Subject: Re: char/tpm: Improve a size determination in nine functions
 To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
  linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -20,8 +20,7 @@ Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall
  <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
  =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
  Stefan Berger <stefanb@linux.vnet.ibm.com>
-References: <1508238182.16112.475.camel@linux.intel.com>
- <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+References: <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
  <1508244757.4234.60.camel@linux.vnet.ibm.com>
  <alpine.DEB.2.20.1710171456360.5035@hadrien>
  <1508253453.4234.81.camel@linux.vnet.ibm.com>
@@ -31,11 +30,12 @@ References: <1508238182.16112.475.camel@linux.intel.com>
  <20171018155946.e7ga7jyex6eia252@linux.intel.com>
  <55d76224-3019-6614-70ce-ba260bbcd54f@users.sourceforge.net>
  <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+ <20171018172209.dn3jwl3juzsvkn7c@linux.intel.com>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <e9638486-7e59-1c5a-87ae-ca0f1fbbd021@users.sourceforge.net>
-Date: Wed, 18 Oct 2017 19:48:06 +0200
+Message-ID: <05fbc8e6-3743-f51b-21fe-73d6d1af32f7@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 19:54:58 +0200
 MIME-Version: 1.0
-In-Reply-To: <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+In-Reply-To: <20171018172209.dn3jwl3juzsvkn7c@linux.intel.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,48 +46,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> For 1/4 and 2/4: explain why the message can be omitted.
+> One more word of advice: send the three as separate patches.
 
-Why did you not reply directly with this request for the update steps
-with the subject “Delete an error message for a failed memory allocation
-in tpm_…()”?
-
-https://patchwork.kernel.org/patch/10009405/
-https://patchwork.kernel.org/patch/10009415/
-
-I find that there can be difficulty to show an appropriate information
-source for the reasonable explanation of this change pattern.
+I do not see a need for an immediate resend at the moment.
 
 
-> Remove sentence about Coccinelle.
+> My guess is that it takes a factor longer time to apply 4/4
+> than other patches because there's more limited crowd who can test it.
 
-I got the impression that there is a bit of value in such
-a kind of attribution.
-
-
-> That's all.
-
-I assume that there might be also some communication challenges involved.
+This is fine for me if somebody would like to integrate
+this update suggestion at all.
 
 
-> 3/4: definitive NAK, too much noise compared to value.
-
-I tried to reduce deviations from the Linux coding style again.
-You do not like such an attempt for this software area so far.
-
-
-> 4/4: this a good commit message.
-
-Why did you not reply directly with this feedback for the update step
-“[PATCH 4/4] char/tpm: Less checks in tpm_ibmvtpm_probe() after error detection”?
-
-https://patchwork.kernel.org/patch/10009429/
-https://lkml.kernel.org/r/<09a2c3a1-1b10-507d-a866-258b570f6da1@users.sourceforge.net>
-
-
-> Requires a Tested-by before can be accepted, which I'm not able to give.
-
-I am curious on how this detail will evolve.
+How do you think about to separate replies better between affected
+update steps?
 
 Regards,
 Markus
