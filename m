@@ -1,34 +1,42 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHJp662pxzDrLC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:24:30 +1100 (AEDT)
-Subject: Re: [PATCH v12 08/11] arm64/kasan: add and use kasan_map_populate()
-To: Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Will Deacon <will.deacon@arm.com>, mhocko@kernel.org,
- akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
- <20171013173214.27300-9-pasha.tatashin@oracle.com>
- <0ae84532-8dcb-10aa-9d69-79d7025b089e@virtuozzo.com>
- <ad8c5715-dc4f-1fa7-c25b-e08df68643d0@oracle.com>
- <20171018170651.GG21820@arm.com>
- <e32c677e-62ac-8977-2f9d-7fe7bda4b547@oracle.com>
- <f1cb8d18-4d0f-1f88-c3c5-0add8c6c077a@virtuozzo.com>
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <a587687a-5d90-c03d-f3d2-1ea9cab1b0c4@oracle.com>
-Date: Wed, 18 Oct 2017 13:23:22 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHKLF6RljzDrJg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 04:48:52 +1100 (AEDT)
+Subject: Re: char/tpm: Improve a size determination in nine functions
+To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall
+ <julia.lawall@lip6.fr>, Alexander Steffen <Alexander.Steffen@infineon.com>,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
+ <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+References: <1508238182.16112.475.camel@linux.intel.com>
+ <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+ <1508244757.4234.60.camel@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710171456360.5035@hadrien>
+ <1508253453.4234.81.camel@linux.vnet.ibm.com>
+ <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
+ <20171018145735.lpzwakatsty7emlw@linux.intel.com>
+ <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
+ <20171018155946.e7ga7jyex6eia252@linux.intel.com>
+ <55d76224-3019-6614-70ce-ba260bbcd54f@users.sourceforge.net>
+ <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <e9638486-7e59-1c5a-87ae-ca0f1fbbd021@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 19:48:06 +0200
 MIME-Version: 1.0
-In-Reply-To: <f1cb8d18-4d0f-1f88-c3c5-0add8c6c077a@virtuozzo.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20171018171858.3lcfr2kcp53fngwv@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,43 +46,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew and Michal,
+> For 1/4 and 2/4: explain why the message can be omitted.
 
-There are a few changes I need to do to my series:
+Why did you not reply directly with this request for the update steps
+with the subject “Delete an error message for a failed memory allocation
+in tpm_…()”?
 
-1. Replace these two patches:
+https://patchwork.kernel.org/patch/10009405/
+https://patchwork.kernel.org/patch/10009415/
 
-arm64/kasan: add and use kasan_map_populate()
-x86/kasan: add and use kasan_map_populate()
+I find that there can be difficulty to show an appropriate information
+source for the reasonable explanation of this change pattern.
 
-With:
 
-x86/mm/kasan: don't use vmemmap_populate() to initialize
-  shadow
-arm64/mm/kasan: don't use vmemmap_populate() to initialize
-  shadow
+> Remove sentence about Coccinelle.
 
-2. Fix a kbuild warning about section mismatch in
-mm: deferred_init_memmap improvements
+I got the impression that there is a bit of value in such
+a kind of attribution.
 
-How should I proceed to get these replaced in mm-tree? Send three new 
-patches, or send a new series?
 
-Thank you,
-Pavel
+> That's all.
 
-On 10/18/2017 01:18 PM, Andrey Ryabinin wrote:
-> On 10/18/2017 08:08 PM, Pavel Tatashin wrote:
->>>
->>> As I said, I'm fine either way, I just didn't want to cause extra work
->>> or rebasing:
->>>
->>> http://lists.infradead.org/pipermail/linux-arm-kernel/2017-October/535703.html
->>
->> Makes sense. I am also fine either way, I can submit a new patch merging together the two if needed.
->>
-> 
-> Please, do this. Single patch makes more sense
-> 
-> 
->> Pavel
+I assume that there might be also some communication challenges involved.
+
+
+> 3/4: definitive NAK, too much noise compared to value.
+
+I tried to reduce deviations from the Linux coding style again.
+You do not like such an attempt for this software area so far.
+
+
+> 4/4: this a good commit message.
+
+Why did you not reply directly with this feedback for the update step
+“[PATCH 4/4] char/tpm: Less checks in tpm_ibmvtpm_probe() after error detection”?
+
+https://patchwork.kernel.org/patch/10009429/
+https://lkml.kernel.org/r/<09a2c3a1-1b10-507d-a866-258b570f6da1@users.sourceforge.net>
+
+
+> Requires a Tested-by before can be accepted, which I'm not able to give.
+
+I am curious on how this detail will evolve.
+
+Regards,
+Markus
