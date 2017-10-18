@@ -1,38 +1,40 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
- [IPv6:2607:f8b0:400e:c00::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alexander.steffen@infineon.com>
+Received: from smtp11.infineon.com (smtp11.infineon.com
+ [IPv6:2a00:18f0:1e00:4::5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yH8PT6LzpzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 22:06:05 +1100 (AEDT)
-Received: by mail-pf0-x22e.google.com with SMTP id e64so3701274pfk.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 04:06:05 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Daniel Vetter <daniel@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>,
- Daniel Vetter <daniel.vetter@intel.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
- Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org,
- Xinliang Liu <z.liuxinliang@hisilicon.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default device
- selection
-In-Reply-To: <20171018081822.pqmkj2xfgg6kb6xa@phenom.ffwll.local>
-References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <871sm2y1h9.fsf@linkitivity.dja.id.au>
- <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
- <878tg9i9pw.fsf@linkitivity.dja.id.au>
- <20171018081822.pqmkj2xfgg6kb6xa@phenom.ffwll.local>
-Date: Wed, 18 Oct 2017 22:05:57 +1100
-Message-ID: <8760bciulm.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yH8RJ1NQ7zDrLC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 22:07:39 +1100 (AEDT)
+From: <Alexander.Steffen@infineon.com>
+To: <joe@perches.com>, <julia.lawall@lip6.fr>
+CC: <elfring@users.sourceforge.net>, <linux-integrity@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <James.Bottomley@HansenPartnership.com>,
+ <dan.carpenter@oracle.com>, <jarkko.sakkinen@linux.intel.com>,
+ <andriy.shevchenko@linux.intel.com>, <benh@kernel.crashing.org>,
+ <clabbe.montjoie@gmail.com>, <jgunthorpe@obsidianresearch.com>,
+ <jsnitsel@redhat.com>, <kgold@linux.vnet.ibm.com>, <mpe@ellerman.id.au>,
+ <nayna@linux.vnet.ibm.com>, <paulus@samba.org>, <PeterHuewe@gmx.de>,
+ <stefanb@linux.vnet.ibm.com>, <linux-kernel@vger.kernel.org>,
+ <kernel-janitors@vger.kernel.org>
+Subject: RE: char-TPM: Adjustments for ten function implementations
+Date: Wed, 18 Oct 2017 11:07:35 +0000
+Message-ID: <65f6b172844a47c9b0b5ca1bb7ce2ad8@infineon.com>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+ <1508255833.3129.33.camel@HansenPartnership.com>
+ <1508280210.6530.32.camel@perches.com>
+ <bf7fc26c-bdc9-c752-72c7-f44c22f4a328@users.sourceforge.net>
+ <1508318326.6806.1.camel@perches.com>
+ <026d582729b849b780fbaa06fb8bc79e@infineon.com>
+ <alpine.DEB.2.20.1710181154390.3524@hadrien>
+ <b2772ac342ca4cb19149dd2c91f26087@infineon.com>
+ <1508323753.6806.5.camel@perches.com>
+In-Reply-To: <1508323753.6806.5.camel@perches.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,42 +44,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Vetter <daniel@ffwll.ch> writes:
+> On Wed, 2017-10-18 at 10:44 +0000, Alexander.Steffen@infineon.com wrote:
+> > > For instance, nothing about
+> > > > > 	sizeof(type)
+> > > > > vs
+> > > > > 	sizeof(*ptr)
+> > > > > makes it easier for a human to read the code.
+> > > >
+> > > > If it does not make it easier to read the code for you, then maybe =
+you
+> > > > should consider that this might not be true for all humans. For me,=
+ it
+> > > > makes it much easier to see at a glance, that code like
+> > > > ptr=3Dmalloc(sizeof(*ptr)) is correct.
+> > >
+> > > I don't think there is a perfect solution.
+> >
+> > Maybe. But for the second variant the correctness is easier to check,
+>=20
+> How often should
+> 	ptr =3D alloc(sizeof(*ptr))
+> be
+> 	ptr =3D alloc(sizeof(**ptr))
 
-> On Wed, Oct 18, 2017 at 11:24:43AM +1100, Daniel Axtens wrote:
->> Hi Daniel,
->> 
->> >> Initially I wondered if this info printk could be moved into
->> >> vga_arbiter_check_bridge_sharing(), but it's been separated out since
->> >> 3448a19da479b ("vgaarb: use bridges to control VGA routing where
->> >> possible."), and upon closer examination, it seems you can't be sure a
->> >> device doesn't share a bridge until the end of the process, so this is
->> >> indeed correct.
->> >> 
->> >> Everything else also looks good to me.
->> >> 
->> >> Reviewed-by: Daniel Axtens <dja@axtens.net>
->> >
->> > R-b for both patches? And ok with everyone if I pull this into drm-misc
->> > for 4.15 (deadline is end of this week for feature-y stuff)?
->> 
->> I had only intended it for patch 2, but I've now read over patch 1 to my
->> satisfaction, so it too is:
->> 
->> Reviewed-by: Daniel Axtens <dja@axtens.net>
->
-> Both applied for 4.15, thanks.
+Never? Because in that case it probably should be *ptr=3Dalloc(sizeof(**ptr=
+)), unless you are doing something horrible ;-)
 
-Cool - thanks!
-
-A special thanks to Bjorn for persisting with this and coming up with a
-nice simple solution :)
-
-Regards,
-Daniel
-
-> -Daniel
-> -- 
-> Daniel Vetter
-> Software Engineer, Intel Corporation
-> http://blog.ffwll.ch
+Alexander
