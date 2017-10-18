@@ -1,25 +1,27 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0164.hostedemail.com
- [216.40.44.164])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yH82C2YWgzDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 21:49:22 +1100 (AEDT)
-Message-ID: <1508323753.6806.5.camel@perches.com>
-Subject: Re: char-TPM: Adjustments for ten function implementations
-From: Joe Perches <joe@perches.com>
-To: Alexander.Steffen@infineon.com, julia.lawall@lip6.fr
-Cc: elfring@users.sourceforge.net, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, James.Bottomley@HansenPartnership.com,
- dan.carpenter@oracle.com, jarkko.sakkinen@linux.intel.com,
- andriy.shevchenko@linux.intel.com, benh@kernel.crashing.org,
- clabbe.montjoie@gmail.com, jgunthorpe@obsidianresearch.com,
- jsnitsel@redhat.com,  kgold@linux.vnet.ibm.com, mpe@ellerman.id.au,
- nayna@linux.vnet.ibm.com,  paulus@samba.org, PeterHuewe@gmx.de,
- stefanb@linux.vnet.ibm.com,  linux-kernel@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yH8J85SPmzDrD6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 22:01:28 +1100 (AEDT)
+Subject: Re: Adjusting further size determinations?
+To: Joe Perches <joe@perches.com>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>, Alexander.Steffen@infineon.com,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
+ <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  kernel-janitors@vger.kernel.org
-Date: Wed, 18 Oct 2017 03:49:13 -0700
-In-Reply-To: <b2772ac342ca4cb19149dd2c91f26087@infineon.com>
 References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
  <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
  <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
@@ -31,9 +33,13 @@ References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
  <1508318326.6806.1.camel@perches.com>
  <026d582729b849b780fbaa06fb8bc79e@infineon.com>
  <alpine.DEB.2.20.1710181154390.3524@hadrien>
- <b2772ac342ca4cb19149dd2c91f26087@infineon.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ <1508322510.6806.3.camel@perches.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <ab5730c4-fb69-4791-a2a6-c726493d4564@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 13:00:33 +0200
+MIME-Version: 1.0
+In-Reply-To: <1508322510.6806.3.camel@perches.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,27 +49,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-10-18 at 10:44 +0000, Alexander.Steffen@infineon.com wrote:
-> > For instance, nothing about
-> > > > 	sizeof(type)
-> > > > vs
-> > > > 	sizeof(*ptr)
-> > > > makes it easier for a human to read the code.
-> > > 
-> > > If it does not make it easier to read the code for you, then maybe you
-> > > should consider that this might not be true for all humans. For me, it
-> > > makes it much easier to see at a glance, that code like
-> > > ptr=malloc(sizeof(*ptr)) is correct.
-> > 
-> > I don't think there is a perfect solution.
+> Ugly grep follows:
 > 
-> Maybe. But for the second variant the correctness is easier to check,
+> $ grep -rohP --include=*.[ch] "\w+\s*=\s*[kv].alloc\s*\(\s*sizeof.*," * | \
+>   sed -r -e 's/(\w+)\s*=\s*[kv].alloc\s*\(\s*sizeof\s*\(\s*\*\s*\1\s*\)/foo = k.alloc(sizeof(*foo))/' \
+>          -e 's/(\w+)\s*=\s*[kv].alloc\s*\(\s*sizeof\s*\(\s*struct\s+\w+\s*\)/foo = k.alloc(sizeof(struct foo))/' | \
+>   sort | uniq -c | sort -rn | head -2
+>    6123 foo = k.alloc(sizeof(*foo)),
+>    3060 foo = k.alloc(sizeof(struct foo)),
 
-How often should
-	ptr = alloc(sizeof(*ptr))
-be
-	ptr = alloc(sizeof(**ptr))
+Would you like to get this ratio changed in any ways?
 
->  both mentally and programmatically, because there is no need for any context (the type of ptr does not matter).
+Available development tools could help to improve the software situation
+in a desired direction, couldn't they?
 
-Context matters.
+
+>> Unpleasant consequences are possible in both cases.
+
+How much do you care to reduce the failure probability further?
+
+Regards,
+Markus
