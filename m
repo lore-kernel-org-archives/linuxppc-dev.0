@@ -1,30 +1,36 @@
-Return-Path: <frowand.list@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <dja@axtens.net>
+Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c00::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yGsRH27q7zDrFp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 10:51:39 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id 17so2522287pfn.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 16:51:39 -0700 (PDT)
-Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
- full_name
-To: Rob Herring <robh@kernel.org>, Alan Tull <atull@kernel.org>
-References: <20170821151651.25096-1-robh@kernel.org>
- <20170821151651.25096-6-robh@kernel.org>
- <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
- <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>
-From: Frank Rowand <frowand.list@gmail.com>
-Message-ID: <59E69786.2030406@gmail.com>
-Date: Tue, 17 Oct 2017 16:51:34 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yGt9Z5k4CzDrFp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 11:24:50 +1100 (AEDT)
+Received: by mail-pf0-x22e.google.com with SMTP id 17so2576316pfn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Oct 2017 17:24:50 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+ Daniel Vetter <daniel.vetter@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Gabriele Paoloni <gabriele.paoloni@huawei.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-pci@vger.kernel.org,
+ Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org,
+ Xinliang Liu <z.liuxinliang@hisilicon.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Rongrong Zou <zourongrong@gmail.com>, Dave Airlie <airlied@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default device
+ selection
+In-Reply-To: <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
+References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <871sm2y1h9.fsf@linkitivity.dja.id.au>
+ <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
+Date: Wed, 18 Oct 2017 11:24:43 +1100
+Message-ID: <878tg9i9pw.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-In-Reply-To: <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,49 +40,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/17/17 14:46, Rob Herring wrote:
-> On Tue, Oct 17, 2017 at 4:32 PM, Alan Tull <atull@kernel.org> wrote:
->> On Mon, Aug 21, 2017 at 10:16 AM, Rob Herring <robh@kernel.org> wrote:
->>
->> Hi Rob,
->>
->>> With dependencies on a statically allocated full path name converted to
->>> use %pOF format specifier, we can store just the basename of node, and
->>> the unflattening of the FDT can be simplified.
->>>
->>> This commit will affect the remaining users of full_name. After
->>> analyzing these users, the remaining cases should only change some print
->>> messages. The main users of full_name are providing a name for struct
->>> resource. The resource names shouldn't be important other than providing
->>> /proc/iomem names.
->>>
->>> We no longer distinguish between pre and post 0x10 dtb formats as either
->>> a full path or basename will work. However, less than 0x10 formats have
->>> been broken since the conversion to use libfdt (and no one has cared).
->>> The conversion of the unflattening code to be non-recursive also broke
->>> pre 0x10 formats as the populate_node function would return 0 in that
->>> case.
->>>
->>> Signed-off-by: Rob Herring <robh@kernel.org>
->>> ---
->>> v2:
->>> - rebase to linux-next
->>>
->>>  drivers/of/fdt.c | 69 +++++++++-----------------------------------------------
->>>  1 file changed, 11 insertions(+), 58 deletions(-)
->>
->> I've just updated to the latest next branch and am finding problems
->> applying overlays.   Reverting this commit alleviates things.  The
->> errors I get are:
->>
->> [   88.498704] OF: overlay: Failed to apply prop @/__symbols__/clk_0
->> [   88.513447] OF: overlay: apply failed '/__symbols__'
->> [   88.518423] create_overlay: Failed to create overlay (err=-12)
-> 
-> Frank's series with overlay updates should fix this.
+Hi Daniel,
 
-Yes, it does:
+>> Initially I wondered if this info printk could be moved into
+>> vga_arbiter_check_bridge_sharing(), but it's been separated out since
+>> 3448a19da479b ("vgaarb: use bridges to control VGA routing where
+>> possible."), and upon closer examination, it seems you can't be sure a
+>> device doesn't share a bridge until the end of the process, so this is
+>> indeed correct.
+>> 
+>> Everything else also looks good to me.
+>> 
+>> Reviewed-by: Daniel Axtens <dja@axtens.net>
+>
+> R-b for both patches? And ok with everyone if I pull this into drm-misc
+> for 4.15 (deadline is end of this week for feature-y stuff)?
 
-  [PATCH v3 11/12] of: overlay: remove a dependency on device node full_name
+I had only intended it for patch 2, but I've now read over patch 1 to my
+satisfaction, so it too is:
 
--Frank
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+
+Thanks!
+
+Regards,
+Daniel
+
+>
+> Thanks, Daniel
+> -- 
+> Daniel Vetter
+> Software Engineer, Intel Corporation
+> http://blog.ffwll.ch
