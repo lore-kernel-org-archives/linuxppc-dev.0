@@ -1,36 +1,41 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <jarkko.sakkinen@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHGtr2yLxzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 02:58:28 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9IFulB5096750
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 11:58:26 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dp6x8uxfw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 11:58:25 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 18 Oct 2017 16:58:22 +0100
-Subject: Re: [RFC v7 12/25] powerpc: implementation for
- arch_override_mprotect_pkey()
-To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: mhocko@kernel.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
- bauerman@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-13-git-send-email-linuxram@us.ibm.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 18 Oct 2017 17:58:18 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHGxm6rw7zDrG1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 03:00:13 +1100 (AEDT)
+Date: Wed, 18 Oct 2017 18:59:46 +0300
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>, Julia Lawall <julia.lawall@lip6.fr>,
+ Alexander Steffen <Alexander.Steffen@infineon.com>,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Peter =?iso-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+Subject: Re: char/tpm: Improve a size determination in nine functions
+Message-ID: <20171018155946.e7ga7jyex6eia252@linux.intel.com>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
+ <1508238182.16112.475.camel@linux.intel.com>
+ <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+ <1508244757.4234.60.camel@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1710171456360.5035@hadrien>
+ <1508253453.4234.81.camel@linux.vnet.ibm.com>
+ <9689f036-ba9f-d23b-cf89-c289bc308771@users.sourceforge.net>
+ <20171018145735.lpzwakatsty7emlw@linux.intel.com>
+ <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
 MIME-Version: 1.0
-In-Reply-To: <1501459946-11619-13-git-send-email-linuxram@us.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <94ca6bc3-14da-e171-1ab6-5bea5fb71650@linux.vnet.ibm.com>
+In-Reply-To: <351cf78a-14f6-c6e7-2902-048e7dc57a14@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,132 +45,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ram,
+On Wed, Oct 18, 2017 at 05:22:19PM +0200, SF Markus Elfring wrote:
+> >> Do you find my wording “This issue was detected by using the
+> >> Coccinelle software.” insufficient?
+> > 
+> > This is fine for cover letter, not for the commits.
+> 
+> I guess that there are more opinions available by other contributors
+> for this aspect.
+> 
+> 
+> > After your analysis software finds an issue you should manually analyze
+> > what is wrong
+> 
+> This view is generally fine.
+> 
+> 
+> > and document that to the commit message.
+> 
+> I tried it in a single paragraph so far (besides the reference
+> for the tool).
+> 
+> 
+> > This applies to sparse, coccinelle or any other tool.
+> 
+> I find that further possibilities can be considered.
+> 
+> 
+> > Tool-based commit messages are bad for commit history
+> 
+> I disagree to this view.
+> 
+> 
+> > where as clean description gives idea what was done
+> > (if you have to maintain a GIT tree).
+> 
+> How do you think about to offer any wording for an alternative
+> which you would find better?
+> 
+> 
+> > In my opinion tool is doing all the work but the part
+> > that you should do is absent.
+> 
+> Really?
+> 
+> Regards,
+> Markus
 
-On 31/07/2017 02:12, Ram Pai wrote:
-> arch independent code calls arch_override_mprotect_pkey()
-> to return a pkey that best matches the requested protection.
-> 
-> This patch provides the implementation.
-> 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  arch/powerpc/include/asm/mmu_context.h |    5 +++
->  arch/powerpc/include/asm/pkeys.h       |   17 ++++++++++-
->  arch/powerpc/mm/pkeys.c                |   47 ++++++++++++++++++++++++++++++++
->  3 files changed, 67 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> index 4705dab..7232484 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -185,6 +185,11 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
->  #ifndef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
->  #define pkey_initialize()
->  #define pkey_mm_init(mm)
-> +
-> +static inline int vma_pkey(struct vm_area_struct *vma)
-> +{
-> +	return 0;
-> +}
->  #endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> 
->  #endif /* __KERNEL__ */
-> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> index a715a08..03f7ea2 100644
-> --- a/arch/powerpc/include/asm/pkeys.h
-> +++ b/arch/powerpc/include/asm/pkeys.h
-> @@ -46,6 +46,16 @@ static inline u64 pkey_to_vmflag_bits(u16 pkey)
->  		((pkey & 0x10UL) ? VM_PKEY_BIT4 : 0x0UL));
->  }
-> 
-> +#define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | \
-> +				VM_PKEY_BIT3 | VM_PKEY_BIT4)
-> +
-> +static inline int vma_pkey(struct vm_area_struct *vma)
-> +{
-> +	if (!pkey_inited)
-> +		return 0;
-> +	return (vma->vm_flags & ARCH_VM_PKEY_FLAGS) >> VM_PKEY_SHIFT;
-> +}
-> +
->  #define arch_max_pkey()  pkeys_total
->  #define AMR_RD_BIT 0x1UL
->  #define AMR_WR_BIT 0x2UL
-> @@ -146,11 +156,14 @@ static inline int execute_only_pkey(struct mm_struct *mm)
->  	return __execute_only_pkey(mm);
->  }
-> 
-> -
-> +extern int __arch_override_mprotect_pkey(struct vm_area_struct *vma,
-> +		int prot, int pkey);
->  static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
->  		int prot, int pkey)
->  {
-> -	return 0;
-> +	if (!pkey_inited)
-> +		return 0;
-> +	return __arch_override_mprotect_pkey(vma, prot, pkey);
->  }
-> 
->  extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> index 25749bf..edcbf48 100644
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -154,3 +154,50 @@ int __execute_only_pkey(struct mm_struct *mm)
->  		mm->context.execute_only_pkey = execute_only_pkey;
->  	return execute_only_pkey;
->  }
-> +
-> +static inline bool vma_is_pkey_exec_only(struct vm_area_struct *vma)
-> +{
-> +	/* Do this check first since the vm_flags should be hot */
-> +	if ((vma->vm_flags & (VM_READ | VM_WRITE | VM_EXEC)) != VM_EXEC)
-> +		return false;
-> +
-> +	return (vma_pkey(vma) == vma->vm_mm->context.execute_only_pkey);
-> +}
-> +
-> +/*
-> + * This should only be called for *plain* mprotect calls.
-> + */
-> +int __arch_override_mprotect_pkey(struct vm_area_struct *vma, int prot,
-> +		int pkey)
-> +{
-> +	/*
-> +	 * Is this an mprotect_pkey() call?  If so, never
-> +	 * override the value that came from the user.
-> +	 */
-> +	if (pkey != -1)
-> +		return pkey;
+Commit message should just describe in plain text what you are doing
+and why.
 
-This check should be moved in arch_override_mprotect_pkey() in
-arch/powerpc/include/asm/pkeys.h
-
-> +
-> +	/*
-> +	 * If the currently associated pkey is execute-only,
-> +	 * but the requested protection requires read or write,
-> +	 * move it back to the default pkey.
-> +	 */
-> +	if (vma_is_pkey_exec_only(vma) &&
-> +	    (prot & (PROT_READ|PROT_WRITE)))
-> +		return 0;
-> +
-> +	/*
-> +	 * the requested protection is execute-only. Hence
-> +	 * lets use a execute-only pkey.
-> +	 */
-> +	if (prot == PROT_EXEC) {
-> +		pkey = execute_only_pkey(vma->vm_mm);
-> +		if (pkey > 0)
-> +			return pkey;
-> +	}
-> +
-> +	/*
-> +	 * nothing to override.
-> +	 */
-> +	return vma_pkey(vma);
-> +}
-> 
+/Jarkko
