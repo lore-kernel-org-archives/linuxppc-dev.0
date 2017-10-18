@@ -1,38 +1,29 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHRBH0bLmzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 09:12:22 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9IM9F4M093253
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 18:12:20 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dp9p6b2kt-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 18:12:19 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Wed, 18 Oct 2017 18:12:18 -0400
-Date: Wed, 18 Oct 2017 15:12:12 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mhocko@kernel.org, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com
-Subject: Re: [RFC v7 15/25] powerpc: Program HPTE key protection bits
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
- <1501459946-11619-16-git-send-email-linuxram@us.ibm.com>
- <24a039cb-526c-6baa-15b8-906963ae62b7@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHSGF4nrszDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 10:00:52 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id 17so5045460pfn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 16:00:52 -0700 (PDT)
+Date: Thu, 19 Oct 2017 10:00:38 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
+Subject: Re: [PATCH 10/25] powerpc: store and restore the pkey state across
+ context switches
+Message-ID: <20171019100038.57ecebc2@MiWiFi-R3-srv>
+In-Reply-To: <20171018204705.GF5617@ram.oc3035372033.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-19-git-send-email-linuxram@us.ibm.com>
+ <20171018144914.6252f52a@firefly.ozlabs.ibm.com>
+ <20171018204705.GF5617@ram.oc3035372033.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <24a039cb-526c-6baa-15b8-906963ae62b7@linux.vnet.ibm.com>
-Message-Id: <20171018221212.GP5617@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,84 +33,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 06:15:40PM +0200, Laurent Dufour wrote:
-> 
-> 
-> On 31/07/2017 02:12, Ram Pai wrote:
-> > Map the PTE protection key bits to the HPTE key protection bits,
-> > while creating HPTE  entries.
-> > 
-> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    5 +++++
-> >  arch/powerpc/include/asm/mmu_context.h        |    6 ++++++
-> >  arch/powerpc/include/asm/pkeys.h              |   13 +++++++++++++
-> >  arch/powerpc/mm/hash_utils_64.c               |    1 +
-> >  4 files changed, 25 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> > index 6981a52..f7a6ed3 100644
-> > --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> > +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> > @@ -90,6 +90,8 @@
-> >  #define HPTE_R_PP0		ASM_CONST(0x8000000000000000)
-> >  #define HPTE_R_TS		ASM_CONST(0x4000000000000000)
-> >  #define HPTE_R_KEY_HI		ASM_CONST(0x3000000000000000)
-> > +#define HPTE_R_KEY_BIT0		ASM_CONST(0x2000000000000000)
-> > +#define HPTE_R_KEY_BIT1		ASM_CONST(0x1000000000000000)
-> >  #define HPTE_R_RPN_SHIFT	12
-> >  #define HPTE_R_RPN		ASM_CONST(0x0ffffffffffff000)
-> >  #define HPTE_R_RPN_3_0		ASM_CONST(0x01fffffffffff000)
-> > @@ -104,6 +106,9 @@
-> >  #define HPTE_R_C		ASM_CONST(0x0000000000000080)
-> >  #define HPTE_R_R		ASM_CONST(0x0000000000000100)
-> >  #define HPTE_R_KEY_LO		ASM_CONST(0x0000000000000e00)
-> > +#define HPTE_R_KEY_BIT2		ASM_CONST(0x0000000000000800)
-> > +#define HPTE_R_KEY_BIT3		ASM_CONST(0x0000000000000400)
-> > +#define HPTE_R_KEY_BIT4		ASM_CONST(0x0000000000000200)
-> > 
-> >  #define HPTE_V_1TB_SEG		ASM_CONST(0x4000000000000000)
-> >  #define HPTE_V_VRMA_MASK	ASM_CONST(0x4001ffffff000000)
-> > diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> > index 7232484..2eb7f80 100644
-> > --- a/arch/powerpc/include/asm/mmu_context.h
-> > +++ b/arch/powerpc/include/asm/mmu_context.h
-> > @@ -190,6 +190,12 @@ static inline int vma_pkey(struct vm_area_struct *vma)
-> >  {
-> >  	return 0;
-> >  }
-> > +
-> > +static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
-> > +{
-> > +	return 0x0UL;
-> > +}
-> > +
-> >  #endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-> > 
-> >  #endif /* __KERNEL__ */
-> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> > index 1ded6df..4b7e3f4 100644
-> > --- a/arch/powerpc/include/asm/pkeys.h
-> > +++ b/arch/powerpc/include/asm/pkeys.h
-> > @@ -72,6 +72,19 @@ static inline int vma_pkey(struct vm_area_struct *vma)
-> >  #define AMR_RD_BIT 0x1UL
-> >  #define AMR_WR_BIT 0x2UL
-> >  #define IAMR_EX_BIT 0x1UL
-> > +
-> > +static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
-> > +{
-> > +	if (!pkey_inited)
-> > +		return 0x0UL;
-> 
-> Why making such a check here, is it to avoid the following check during the
-> boot process only ?
-> IIUC, there is no way to get H_PAGE_PKEY_BIT* set when pkey_inited is false.
+On Wed, 18 Oct 2017 13:47:05 -0700
+Ram Pai <linuxram@us.ibm.com> wrote:
 
-I know its a little paronia. Trying to avoid a case where the
-uninitialized pkey bits in the pte are erroneously interpreted as valid
-by this function. Remember that the caller of this function will use the
-return value to program the hpte. Nothing really bad should happen
-since none of the keys are enabled. But ... just playing it safe.
+> On Wed, Oct 18, 2017 at 02:49:14PM +1100, Balbir Singh wrote:
+> > On Fri,  8 Sep 2017 15:44:58 -0700
+> > Ram Pai <linuxram@us.ibm.com> wrote:
+> >   
+> > > Store and restore the AMR, IAMR and UAMOR register state of the task
+> > > before scheduling out and after scheduling in, respectively.
+> > > 
+> > > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> > > ---
+> > >  arch/powerpc/include/asm/pkeys.h     |    4 +++
+> > >  arch/powerpc/include/asm/processor.h |    5 ++++
+> > >  arch/powerpc/kernel/process.c        |   10 ++++++++
+> > >  arch/powerpc/mm/pkeys.c              |   39 ++++++++++++++++++++++++++++++++++
+> > >  4 files changed, 58 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> > > index 7fd48a4..78c5362 100644
+> > > --- a/arch/powerpc/include/asm/pkeys.h
+> > > +++ b/arch/powerpc/include/asm/pkeys.h
+> > > @@ -143,5 +143,9 @@ static inline void pkey_mm_init(struct mm_struct *mm)
+> > >  	mm_pkey_allocation_map(mm) = initial_allocation_mask;
+> > >  }
+> > >  
+> > > +extern void thread_pkey_regs_save(struct thread_struct *thread);
+> > > +extern void thread_pkey_regs_restore(struct thread_struct *new_thread,
+> > > +			struct thread_struct *old_thread);
+> > > +extern void thread_pkey_regs_init(struct thread_struct *thread);
+> > >  extern void pkey_initialize(void);
+> > >  #endif /*_ASM_PPC64_PKEYS_H */
+> > > diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+> > > index fab7ff8..de9d9ba 100644
+> > > --- a/arch/powerpc/include/asm/processor.h
+> > > +++ b/arch/powerpc/include/asm/processor.h
+> > > @@ -309,6 +309,11 @@ struct thread_struct {
+> > >  	struct thread_vr_state ckvr_state; /* Checkpointed VR state */
+> > >  	unsigned long	ckvrsave; /* Checkpointed VRSAVE */
+> > >  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+> > > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> > > +	unsigned long	amr;
+> > > +	unsigned long	iamr;
+> > > +	unsigned long	uamor;
+> > > +#endif
+> > >  #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
+> > >  	void*		kvm_shadow_vcpu; /* KVM internal data */
+> > >  #endif /* CONFIG_KVM_BOOK3S_32_HANDLER */
+> > > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> > > index a0c74bb..ba80002 100644
+> > > --- a/arch/powerpc/kernel/process.c
+> > > +++ b/arch/powerpc/kernel/process.c
+> > > @@ -42,6 +42,7 @@
+> > >  #include <linux/hw_breakpoint.h>
+> > >  #include <linux/uaccess.h>
+> > >  #include <linux/elf-randomize.h>
+> > > +#include <linux/pkeys.h>
+> > >  
+> > >  #include <asm/pgtable.h>
+> > >  #include <asm/io.h>
+> > > @@ -1085,6 +1086,9 @@ static inline void save_sprs(struct thread_struct *t)
+> > >  		t->tar = mfspr(SPRN_TAR);
+> > >  	}
+> > >  #endif
+> > > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> > > +	thread_pkey_regs_save(t);
+> > > +#endif  
+> > 
+> > Just define two variants of thread_pkey_regs_save() based on
+> > CONFIG_PPC64_MEMORY_PROTECTION_KEYS and remove the #ifdefs from process.c
+> > Ditto for the lines below  
+> 
+> ok.
+> 
+> >   
+> > >  }
+> > >  
+> > >  static inline void restore_sprs(struct thread_struct *old_thread,
+> > > @@ -1120,6 +1124,9 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+> > >  			mtspr(SPRN_TAR, new_thread->tar);
+> > >  	}
+> > >  #endif
+> > > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> > > +	thread_pkey_regs_restore(new_thread, old_thread);
+> > > +#endif  
+> 
+> ok.
+> 
+> > >  }
+> > >  
+> > >  #ifdef CONFIG_PPC_BOOK3S_64
+> > > @@ -1705,6 +1712,9 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+> > >  	current->thread.tm_tfiar = 0;
+> > >  	current->thread.load_tm = 0;
+> > >  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+> > > +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> > > +	thread_pkey_regs_init(&current->thread);
+> > > +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+> > >  }
+> > >  EXPORT_SYMBOL(start_thread);
+> > >  
+> > > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> > > index 2282864..7cd1be4 100644
+> > > --- a/arch/powerpc/mm/pkeys.c
+> > > +++ b/arch/powerpc/mm/pkeys.c
+> > > @@ -149,3 +149,42 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+> > >  	init_amr(pkey, new_amr_bits);
+> > >  	return 0;
+> > >  }
+> > > +
+> > > +void thread_pkey_regs_save(struct thread_struct *thread)
+> > > +{
+> > > +	if (!pkey_inited)
+> > > +		return;
+> > > +
+> > > +	/* @TODO skip saving any registers if the thread
+> > > +	 * has not used any keys yet.
+> > > +	 */  
+> > 
+> > Comment style is broken  
+> 
+> ok. this time i will fix them. It misses by radar screen because
+> checkpatch.pl does not complain. 
+>
 
-thanks,
-RP
+Yep, there is an lkml thread on this style of coding. It's
+best avoided.
+
+> >   
+> > > +
+> > > +	thread->amr = read_amr();
+> > > +	thread->iamr = read_iamr();
+> > > +	thread->uamor = read_uamor();
+> > > +}
+> > > +
+> > > +void thread_pkey_regs_restore(struct thread_struct *new_thread,
+> > > +			struct thread_struct *old_thread)
+> > > +{
+> > > +	if (!pkey_inited)
+> > > +		return;
+> > > +
+> > > +	/* @TODO just reset uamor to zero if the new_thread
+> > > +	 * has not used any keys yet.
+> > > +	 */  
+> > 
+> > Comment style is broken.
+> >   
+> > > +
+> > > +	if (old_thread->amr != new_thread->amr)
+> > > +		write_amr(new_thread->amr);
+> > > +	if (old_thread->iamr != new_thread->iamr)
+> > > +		write_iamr(new_thread->iamr);
+> > > +	if (old_thread->uamor != new_thread->uamor)
+> > > +		write_uamor(new_thread->uamor);  
+> > 
+> > Is this order correct? Ideally, You want to write the uamor first
+> > but since we are in supervisor state, I think we can get away
+> > with this order.   
+> 
+> we could be in hypervisor state too, as is the case when we run
+> a powernv kernel.
+> 
+> But..does it matter in which order they are written? if
+> the thread is in the kernel, it cannot execute any instructions
+> in userspace. So it wont see a intermediate state. right?
+> or am i getting this wrong?
+
+You are right, since uamor + amor control what can and
+cannot be set, there is a subtle dependency, but it does
+not apply to the kernel doing the context switch. AMR has
+two SPR values, 13 and 29. I presume we are using SPR #29
+here?
+
+> 
+> > Do we want to expose the uamor to user space
+> > for it to modify the AMR directly?  
+> 
+> sorry I did not understand the comment. UAMOR cannot
+> be accessed from usespace. and there are no system calls
+> currently to help userspace to program the UAMOR on its
+> behalf.
+> 
+
+I was just wondering how two threads can share a key if
+they decide to. They would need uamor to give them permissions
+to the same set of keys and then reuse the key via
+pkey_mprotect(.., pkey). I am missing the bit about how
+uamor's across these threads would be synchronized.
+
+
+> >   
+> > > +}
+> > > +
+> > > +void thread_pkey_regs_init(struct thread_struct *thread)
+> > > +{
+> > > +	write_amr(0x0ul);
+> > > +	write_iamr(0x0ul);
+> > > +	write_uamor(0x0ul);  
+> > 
+> > This is not correct, reserved keys should not be set to 0's  
+> 
+> ok. makes sense. best to not touch reserved key bits here.
+
+Also this implies that at init time, the thread has access to all
+keys, but it can't modify any of the keys in the AMR/IAMR.
+
+> 
+> > 
+> > Balbir Singh.  
+> 
