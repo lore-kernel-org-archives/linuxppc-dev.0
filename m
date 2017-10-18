@@ -1,40 +1,39 @@
-Return-Path: <daniel@ffwll.ch>
-Received: from mail-wm0-x22d.google.com (mail-wm0-x22d.google.com
- [IPv6:2a00:1450:400c:c09::22d])
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yH4h84grhzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 19:18:28 +1100 (AEDT)
-Received: by mail-wm0-x22d.google.com with SMTP id m72so8356454wmc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 01:18:28 -0700 (PDT)
-Sender: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 18 Oct 2017 10:18:22 +0200
-From: Daniel Vetter <daniel@ffwll.ch>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Daniel Vetter <daniel@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>,
- Daniel Vetter <daniel.vetter@intel.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Gabriele Paoloni <gabriele.paoloni@huawei.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- linux-pci@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
- dri-devel@lists.freedesktop.org,
- Xinliang Liu <z.liuxinliang@hisilicon.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Rongrong Zou <zourongrong@gmail.com>,
- Dave Airlie <airlied@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 2/2] vgaarb: Factor out EFI and fallback default
- device selection
-Message-ID: <20171018081822.pqmkj2xfgg6kb6xa@phenom.ffwll.local>
-References: <20171013034338.14630.4766.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20171013034729.14630.30419.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <871sm2y1h9.fsf@linkitivity.dja.id.au>
- <20171017120506.ervbnyjue55zn67b@phenom.ffwll.local>
- <878tg9i9pw.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yH5gn2QkHzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 20:03:16 +1100 (AEDT)
+Subject: Re: char-TPM: Adjustments for ten function implementations
+To: Joe Perches <joe@perches.com>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nayna Jain
+ <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?Q?Peter_H=c3=bcwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+ <1508255833.3129.33.camel@HansenPartnership.com>
+ <1508280210.6530.32.camel@perches.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <bf7fc26c-bdc9-c752-72c7-f44c22f4a328@users.sourceforge.net>
+Date: Wed, 18 Oct 2017 11:00:14 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <878tg9i9pw.fsf@linkitivity.dja.id.au>
+In-Reply-To: <1508280210.6530.32.camel@perches.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,31 +43,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 11:24:43AM +1100, Daniel Axtens wrote:
-> Hi Daniel,
+> The printk removals do change the objects.
 > 
-> >> Initially I wondered if this info printk could be moved into
-> >> vga_arbiter_check_bridge_sharing(), but it's been separated out since
-> >> 3448a19da479b ("vgaarb: use bridges to control VGA routing where
-> >> possible."), and upon closer examination, it seems you can't be sure a
-> >> device doesn't share a bridge until the end of the process, so this is
-> >> indeed correct.
-> >> 
-> >> Everything else also looks good to me.
-> >> 
-> >> Reviewed-by: Daniel Axtens <dja@axtens.net>
-> >
-> > R-b for both patches? And ok with everyone if I pull this into drm-misc
-> > for 4.15 (deadline is end of this week for feature-y stuff)?
-> 
-> I had only intended it for patch 2, but I've now read over patch 1 to my
-> satisfaction, so it too is:
-> 
-> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> The value of that type of change is only for resource limited systems.
 
-Both applied for 4.15, thanks.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+I imagine that such small code adjustments are also useful for other systems.
+
+
+> Markus' changelogs leave much to be desired.
+
+Would you like to help more to improve the provided information
+for the shown change patterns?
+
+Regards,
+Markus
