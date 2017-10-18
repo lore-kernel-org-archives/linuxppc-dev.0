@@ -1,46 +1,54 @@
-Return-Path: <jjalvare@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <julia.lawall@lip6.fr>
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHCNk4MLWzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 00:20:38 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9IDJbpr008534
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 09:20:35 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dp6s4vjfn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 09:20:35 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jjalvare@linux.vnet.ibm.com>;
- Wed, 18 Oct 2017 07:20:34 -0600
-Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-To: Alexey Kardashevskiy <aik@ozlabs.ru>,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Bjorn Helgaas <helgaas@kernel.org>
-Cc: bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
- seroyer@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Juan J . Alvarez" <jjalvare@us.ibm.com>
-References: <20170922141928.49141-1-bryantly@linux.vnet.ibm.com>
- <20170922141928.49141-3-bryantly@linux.vnet.ibm.com>
- <20171011200524.GR25517@bhelgaas-glaptop.roam.corp.google.com>
- <87efq92ei6.fsf@concordia.ellerman.id.au>
- <20171012182932.GA653@bhelgaas-glaptop.roam.corp.google.com>
- <e77da565-e9e1-75e1-55ee-cfc9a8bf1424@linux.vnet.ibm.com>
- <87r2u2jvfb.fsf@concordia.ellerman.id.au>
- <3507ee2e-00ee-7bd0-36a3-292af5112734@linux.vnet.ibm.com>
- <e5bc893a-03f7-4ca7-4e46-938421dfc1c5@ozlabs.ru>
- <5b7b8e8f-2d16-875f-ef53-ccf593064a53@ozlabs.ru>
-From: Juan Alvarez <jjalvare@linux.vnet.ibm.com>
-Date: Wed, 18 Oct 2017 08:20:29 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHCf448JLzDrG0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 00:32:07 +1100 (AEDT)
+Date: Wed, 18 Oct 2017 15:32:00 +0200 (CEST)
+From: Julia Lawall <julia.lawall@lip6.fr>
+To: David Laight <David.Laight@ACULAB.COM>
+cc: 'SF Markus Elfring' <elfring@users.sourceforge.net>,
+ Joe Perches <joe@perches.com>,
+ "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>,
+ Alexander Steffen <Alexander.Steffen@infineon.com>,
+ Nayna Jain <nayna@linux.vnet.ibm.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ Julia Lawall <julia.lawall@lip6.fr>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ =?ISO-8859-15?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Dan Carpenter <dan.carpenter@oracle.com>
+Subject: RE: Adjusting further size determinations?
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD009ACE3@AcuExch.aculab.com>
+Message-ID: <alpine.DEB.2.20.1710181531130.15834@hadrien>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <f9b35a67-bd7f-b140-bdc1-cb4886a6b1ea@users.sourceforge.net>
+ <1508255833.3129.33.camel@HansenPartnership.com>
+ <1508280210.6530.32.camel@perches.com>
+ <bf7fc26c-bdc9-c752-72c7-f44c22f4a328@users.sourceforge.net>
+ <1508318326.6806.1.camel@perches.com>
+ <026d582729b849b780fbaa06fb8bc79e@infineon.com>
+ <alpine.DEB.2.20.1710181154390.3524@hadrien>
+ <1508322510.6806.3.camel@perches.com>
+ <ab5730c4-fb69-4791-a2a6-c726493d4564@users.sourceforge.net>
+ <1508327383.6806.7.camel@perches.com>
+ <0fc1f522-8772-d859-a9b0-cb3b6931c862@users.sourceforge.net>
+ <063D6719AE5E284EB5DD2968C1650D6DD009ACE3@AcuExch.aculab.com>
 MIME-Version: 1.0
-In-Reply-To: <5b7b8e8f-2d16-875f-ef53-ccf593064a53@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <9893e011-d524-06b6-b041-3f1b24e5f03d@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,34 +58,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/17/17 8:36 PM, Alexey Kardashevskiy wrote:
-> PowerNV KVM guest is a pseries machine so this code will execute there.
->
-The configure sriov path will fail and not enable sriov if resources are
-not met. I.e. the IOV Bar is not set in PF IOV Resources, which in this
-case gets assigned by firmware.
 
-We have separated the calls to put PowerNV and PSeries as machine dependent
-calls. Furthermore, we are adding device node properties in the device tree to identify if
-this is an SR-IOV slot on Phyp Pseries platform. Verification will be in place to
-distinguish between platforms that support SR-IOV in PSeries.
->> Which is the reason for
->> the separation of calls to the machine dependent stuff.
->>> We also use the pseries platform when running under KVM.
->>>
->>> cheers
->>>
->> If anyone plans to enable SR-IOV on Pseries platform, firmware must provide the
->> resources to enable the VFs and map them with system resources.
-> This is what the PowerNV platform does.
-Again, we have separated the machine dependent calls to different platforms. In our
-case we don't use opal and our dependent on phyp to associate resources.
->
->> A new version
->> of the PAPR Document will be added to document these system resources.
-> The guest simply gets yet another PCI device, how is IOV different here?
->
-> In regard of EEH, the API does not change afaik, it is up to the hypervisor
-> (KVM+QEMU) to handle IOV case correctly.
 
-I don't understand your question entirely, can you rephrase?
+On Wed, 18 Oct 2017, David Laight wrote:
+
+> From: SF Markus Elfring
+> > >>>> Unpleasant consequences are possible in both cases.
+> > >> How much do you care to reduce the failure probability further?
+> > >
+> > > Zero.
+> >
+> > I am interested to improve the software situation a bit more here.
+>
+> There are probably better places to spend your time!
+>
+> If you want 'security' for kmalloc() then:
+>
+> #define KMALLOC_TYPE(flags) (type *)kmalloc(sizeof (type), flags)
+> #define KMALLOC(ptr, flags) *(ptr) = KMALLOC_TYPE(typeof *(ptr), flags)
+>
+> and change:
+> 	ptr = kmalloc(sizeof *ptr, flags);
+> to:
+> 	KMALLOC(&ptr, flags);
+>
+> But it is all churn for churn's sake.
+
+Please don't.  Coccinelle won't find real problems with kmalloc any more
+if this is done.
+
+julia
