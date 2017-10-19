@@ -1,13 +1,13 @@
 Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfW64d2HzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:42:42 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id s75so6304812pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:42:42 -0700 (PDT)
-Date: Thu, 19 Oct 2017 15:42:35 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfYC50jNzDqFv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:44:31 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id e64so5799381pfk.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:44:31 -0700 (PDT)
+Date: Thu, 19 Oct 2017 15:44:25 +0900
 From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
 To: Petr Mladek <pmladek@suse.com>
 Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -20,15 +20,15 @@ Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
  linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 6/7] symbol lookup: use new kernel and module
- dereference functions
-Message-ID: <20171019064235.GB449@jagdpanzerIV>
+Subject: Re: [PATCHv3 5/7] parisc64: Add .opd based function descriptor
+ dereference
+Message-ID: <20171019064425.GC449@jagdpanzerIV>
 References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-7-sergey.senozhatsky@gmail.com>
- <20171004115306.GH20084@pathway.suse.cz>
+ <20170930025319.987-6-sergey.senozhatsky@gmail.com>
+ <20171004104016.GG20084@pathway.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171004115306.GH20084@pathway.suse.cz>
+In-Reply-To: <20171004104016.GG20084@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,65 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry for the delay and thanks for taking a look.
-
-I'll try to re-spin the patch set by the end of this week/early next
-week.
-
-
-On (10/04/17 13:53), Petr Mladek wrote:
-[..]
-> Note that kallsyms_lookup() and module_address_lookup() is used
-> in many other situations.
-
-we dereference only things that can be dereferenced.
-so calling it on already dereferenced address, or address
-that does need to be dereferenced is OK.
-
-besides, not all of those "other" places are available on
-ppc64, ia64, parisc.
-
-[..]
-> > diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-> > index 127e7cfafa55..e2fc09ea9509 100644
-> > --- a/kernel/kallsyms.c
-> > +++ b/kernel/kallsyms.c
-> > @@ -322,6 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
-> >  	if (is_ksym_addr(addr)) {
+On (10/04/17 12:40), Petr Mladek wrote:
+> > +unsigned long dereference_module_function_descriptor(struct module *mod,
+> > +						     unsigned long addr)
+> > +{
+> > +	unsigned long start_opd = (Elf64_Addr)mod->core_layout.base +
+> > +				   mod->arch.fdesc_offset;
+> > +	unsigned long end_opd = start_opd +
+> > +				mod->arch.fdesc_count * sizeof(Elf64_Fdesc);
 > 
-> is_ksym_addr() ignores the special .opd elf sections if
-> CONFIG_KALLSYMS_ALL is disabled. We should dereference before
-> this call.
-
-I'll move it.
-
-> >  		unsigned long pos;
-> >  
-> > +		addr = dereference_kernel_function_descriptor(addr);
-> >  		pos = get_symbol_pos(addr, symbolsize, offset);
+> I know that this is used in rather slow paths. But it still might
+> make sense to have these section borders pre-computed and
+> stored in struct mod_arch_specific. I mean to do similar
+> thing that we do on powerpc.
 > 
-> I still wonder if doing the dereference in the widely used kallsyms
-> might cause any regression.
+> Well, we could do this in a followup patch if parisc people
+> wanted it.
+> 
+> 
+> > +	if (addr < start_opd || addr >= end_opd)
+> > +		return addr;
+> > +
+> > +	return dereference_function_descriptor(addr);
+> > +}
+> > +#endif
+> 
+> Otherwise the patch looks fine to me.
+> 
+> Reviewed-by: Petr Mladek <pmladek@suse.com>
 
-more testing wouldn't hurt, yes.
-
-> Also get_symbol_pos() is called in several other helpers
-> but the dereference is done only here. It would be
-> confusing if for example kallsyms_lookup_size_offset()
-> and kallsyms_lookup() give different result.
-
-hm, so there is no change in this regard, right? there was no
-deference before, there is no dereference now. what am I missing?
-
-
-I'm touching the pf/pF part in this patch set. if there are cases
-of missing dereferences anywhere else then we need to address it
-in a separate patch set, I think.
-
-> I would feel much more comfortable if we keep the derefenrece
-> only in vsprintf.
-
-at a price of extra module lookup, because we need `struct module *'
-for module address dereference.
+let's do it later, if need be.
 
 	-ss
