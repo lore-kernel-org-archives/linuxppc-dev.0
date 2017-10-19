@@ -1,35 +1,25 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHqjw2pKHzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 00:37:40 +1100 (AEDT)
-Date: Thu, 19 Oct 2017 16:36:46 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Corentin Labbe <clabbe.montjoie@gmail.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Jerry Snitselaar <jsnitsel@redhat.com>,
- Kenneth Goldman <kgold@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Peter =?iso-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
- Stefan Berger <stefanb@linux.vnet.ibm.com>,
- kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/4] char/tpm: Less checks in tpm_ibmvtpm_probe() after
- error detection
-Message-ID: <20171019133646.gu7qv2tywfk4tcxj@mwanda>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <09a2c3a1-1b10-507d-a866-258b570f6da1@users.sourceforge.net>
- <20171019135632.4af42743@kitsune.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHr1c4s0FzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 00:51:16 +1100 (AEDT)
+Date: Thu, 19 Oct 2017 15:51:11 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, SF
+ Markus Elfring <elfring@users.sourceforge.net>, LKML
+ <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/5] powerpc-pseries: Delete an unnecessary variable
+ initialisation in iommu_pseries_alloc_group()
+Message-ID: <20171019155111.1f1ac1d6@kitsune.suse.cz>
+In-Reply-To: <20171019125558.itidc4ejr6goadci@mwanda>
+References: <0d221be4-1402-0499-d95e-afa4a30e1f33@users.sourceforge.net>
+ <9c71e3e0-8998-fd02-e3a3-ef219d82ee32@users.sourceforge.net>
+ <20171019133718.5bdab33c@kitsune.suse.cz>
+ <20171019125558.itidc4ejr6goadci@mwanda>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20171019135632.4af42743@kitsune.suse.cz>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,93 +29,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 19, 2017 at 01:56:32PM +0200, Michal Suchánek wrote:
-> 
-> I think a single cleanup section is better than many labels that just
-> avoid a single null check.
->
+On Thu, 19 Oct 2017 15:55:59 +0300
+Dan Carpenter <dan.carpenter@oracle.com> wrote:
 
-I am not a big advocate of churn, but one err style error handling is
-really bug prone.
+> On Thu, Oct 19, 2017 at 01:37:18PM +0200, Michal Such=C3=A1nek wrote:
+> > Hello,
+> >=20
+> > On Wed, 18 Oct 2017 21:24:25 +0200
+> > SF Markus Elfring <elfring@users.sourceforge.net> wrote:
+> >  =20
+> > > From: Markus Elfring <elfring@users.sourceforge.net>
+> > > Date: Wed, 18 Oct 2017 19:14:39 +0200
+> > >=20
+> > > The variable "table_group" will be set to an appropriate pointer.
+> > > Thus omit the explicit initialisation at the beginning.
+> > >=20
+> > > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> > > ---
+> > >  arch/powerpc/platforms/pseries/iommu.c | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >=20
+> > > diff --git a/arch/powerpc/platforms/pseries/iommu.c
+> > > b/arch/powerpc/platforms/pseries/iommu.c index
+> > > b37d4fb20d1c..b6c12b8e3ace 100644 ---
+> > > a/arch/powerpc/platforms/pseries/iommu.c +++
+> > > b/arch/powerpc/platforms/pseries/iommu.c @@ -55,7 +55,7 @@
+> > > =20
+> > >  static struct iommu_table_group *iommu_pseries_alloc_group(int
+> > > node) {
+> > > -	struct iommu_table_group *table_group =3D NULL;
+> > > +	struct iommu_table_group *table_group;
+> > >  	struct iommu_table *tbl =3D NULL;
+> > >  	struct iommu_table_group_link *tgl =3D NULL;
+> > >   =20
+> >=20
+> > I think initializing pointers to NULL is generally a good idea.
+> >=20
+> > If there is no use of the variable before it is reinitialized by
+> > allocation gcc is free to optimize out the variable and its initial
+> > value.
+> >=20
+> > On the other hand, if the code is changed later and use of the
+> > variable becomes possible you may crash (and get a gcc warning,
+> > too). =20
+>=20
+> No, it's the opposite. GCC doesn't warn about potential NULL
+> dereferences,=20
 
-I'm dealing with static analysis so most of the bugs I see are error
-handling bugs.  That's because error handling is hard to test but easy
-for static analysis.  One err style error handling is the worst because
-you get things like:
+However, kernel produces runtime errors on actual NULL dereference. So
+you will learn about the issue quite fast.
 
-fail:
-	kfree(foo->bar);
-	kfree(foo);
+> it warns about uninitialized variables.  By initializing
+> it to a bogus value, you're deliberately disabling static analysis.
+> We do see bugs where, if only people didn't initialize stuff to bogus
+> values, then the bug would have been caught before it was merged.
 
-Oops, foo->bar is a NULL dereference.  And generally, it's a bad thing
-to free things that haven't been allocated so, for example, I see
-refcounting bugs in error handling paths as well where we decrement
-something that wasn't incremented.  Freeing everything is more
-complicated than just freeing one specific thing the way standard kernel
-error handling works.
+There are recently merged changes that cause new warnings as well.
 
-> As long as you can tell easily which resources were already allocated
-> and need to be freed it is saner to keep only one cleanup section.
-> 
+How that can be? Perhaps #ifdefs depending on kernel configuration and
+0-day not testing all possible combinations? Perhaps the compiler
+getting confused by the code and only later compiler update finding the
+issue?
 
-Sure, if the function is simple and short then the error handling is
-normally simple and short.  This is true for any style of error
-handling.
+Whatever the reason you cannot rely on compiler warnings to correct
+your code. They may help you to point out issues but writing the code
+in such a way that the issues are less likely to happen in the first
+place is better than fixing warnings after the fact.
 
-> If the code doing the allocation is changed in the future the single
-> cleanup can stay whereas multiple labels have to be rewritten again.
+>=20
+> You might imagine that static analysis tools would catch NULL
+> dereferences but it's actually really really hard.  We used to have
+> an __uninitialized_var() macro which was used to silence GCC false
+> positives, but now we initialize the pointers to NULL instead.  So
+> most of the code that you're dealing with is stuff that was marked as
+> too hard for GCC to understand.  It's tricky.
+>=20
 
-No, they don't unless you choose bad label names.  Perhaps numbered
-labels?  We don't get a lot of those in the kernel any more.  Label
-name should be based on what the label does.  Often I see bad label
-names like generic labels:
+Then it should be made easy to understand and maintain for humans since
+the compilers have failed at maintaining it for us.
 
-	foo = kmalloc();
-	if (!foo)
-		goto out;
+Thanks
 
-What is out going to do?  Another common anti-pattern is come-from
-labels:
-
-	foo = kmalloc();
-	if (!foo)
-		goto kmalloc_failed;
-
-Obviously, we can see from the if statement that the alloc failed and
-you *just* know the next line is going to be is going to be:
-
-	if (invalid)
-		goto kmalloc_failed;
-
-Which is wrong because kmalloc didn't fail...  But if the label name is
-based on what it does then, when you add or a remove an allocation, you
-just have to edit the one thing.  It's very simple:
-
-+	foo = new_alloc();
-+	if (!foo)
-+		return -ENOMEM;
-+
- 	bar = old_alloc();
--	if (!bar)
--		return -ENOMEM;
-+	if (!bar) {
-+		ret -ENOMEM;
-+		goto free_foo;
-
-[ snip ]
-
- free_whatever:
- 	free(whatever);
-+free_foo:
-+	free(foo);
-
- return ret;
-
-> 
-> Also just changing this just for the sake of code style does not seem
-> worth it whatever style you prefer.
-
-True.
-
-regards,
-dan carpenter
+Michal
