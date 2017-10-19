@@ -1,41 +1,25 @@
-Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHrSx5NVtzDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 01:11:29 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id r25so7317667pgn.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 07:11:29 -0700 (PDT)
-Date: Thu, 19 Oct 2017 23:11:24 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- "Luck, Tony" <tony.luck@intel.com>, Santosh Sivaraj <santosh@fossix.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- "Yu, Fenghua" <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, James Bottomley <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Petr Mladek <pmladek@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH v2 0/7] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-Message-ID: <20171019141124.GB498@tigerII.localdomain>
-References: <20170920162910.32053-1-sergey.senozhatsky@gmail.com>
- <20170922053404.3zpfpwetabjut2er@santosiv.in.ibm.com>
- <20170922080023.GA599@jagdpanzerIV.localdomain>
- <3908561D78D1C84285E8C5FCA982C28F61381992@ORSMSX114.amr.corp.intel.com>
- <20170925070542.GA387@jagdpanzerIV.localdomain>
- <871smsg2fc.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHrZx6H3bzDqDF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 01:16:41 +1100 (AEDT)
+Date: Thu, 19 Oct 2017 16:16:37 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4] char/tpm: Less checks in tpm_ibmvtpm_probe() after
+ error detection
+Message-ID: <20171019161637.7eaba6e4@kitsune.suse.cz>
+In-Reply-To: <20171019133646.gu7qv2tywfk4tcxj@mwanda>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <09a2c3a1-1b10-507d-a866-258b570f6da1@users.sourceforge.net>
+ <20171019135632.4af42743@kitsune.suse.cz>
+ <20171019133646.gu7qv2tywfk4tcxj@mwanda>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <871smsg2fc.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,60 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael,
+On Thu, 19 Oct 2017 16:36:46 +0300
+Dan Carpenter <dan.carpenter@oracle.com> wrote:
 
-On (09/27/17 15:01), Michael Ellerman wrote:
-> Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com> writes:
-> 
-> > On (09/22/17 16:48), Luck, Tony wrote:
-> > [..]
-> >> Tested patch series on ia64 successfully.
-> >> 
-> >> Tested-by: Tony Luck <tony.luck@intel.com>
-> >
-> > thanks!
-> >
-> >> After this goes upstream, you should submit a patch to get rid of
-> >> all uses of %pF (70 instances in 35 files) and %pf (63 in 34)
-> >> 
-> >> Perhaps break the patch by top-level directory (e.g. get all the %pF
-> >> and %pF in the 17 files under drivers/ in one patch).
-> >
-> > frankly, I was going to have some sort of a lazy deprecation process:
-> > didn't plan to send out a patch set that would hunt down all pf/pF-s.
-> > hm...
-> 
-> That never works though, we have lots of cruft left over from times when
-> that's happened and the conversion never quite got finished.
+> On Thu, Oct 19, 2017 at 01:56:32PM +0200, Michal Such=C3=A1nek wrote:
+> >=20
+> > I think a single cleanup section is better than many labels that
+> > just avoid a single null check.
+> > =20
+>=20
+> I am not a big advocate of churn, but one err style error handling is
+> really bug prone.
+>=20
+> I'm dealing with static analysis so most of the bugs I see are error
+> handling bugs. =20
 
-this time around it's different, I promise! :)
+But it looks like you do not deal much with actual code development
+because then you would know that some of the changes proposed by the
+static analysis lead to errors later when the code dynamically changes.
 
+> That's because error handling is hard to test but easy
+> for static analysis.  One err style error handling is the worst
+> because you get things like:
+>=20
+> fail:
+> 	kfree(foo->bar);
+> 	kfree(foo);
+>=20
+> Oops, foo->bar is a NULL dereference.  And generally, it's a bad thing
+> to free things that haven't been allocated so, for example, I see
+> refcounting bugs in error handling paths as well where we decrement
+> something that wasn't incremented.  Freeing everything is more
+> complicated than just freeing one specific thing the way standard
+> kernel error handling works.
 
-well...
-I guess I can send out a tree wide pf/pF removal patch set. later.
-when we will see that .opd based dereference does not make anyone
-unhappy.
+It depends on the function in question. If it only allocates memory
+which is not reference-counted and kfree() checks for the null in most
+cases it is easier to do just one big cleanup.=20
 
-and I think we can't remove pf/pF from the kernel completely. it
-will stay in vscnprintf() for some time. old habits die hard, I suppose,
-there might be people using it for debugging/etc.
+If it is more complex more labels are preferable.
 
+>=20
+> > As long as you can tell easily which resources were already
+> > allocated and need to be freed it is saner to keep only one cleanup
+> > section.=20
+>=20
+> Sure, if the function is simple and short then the error handling is
+> normally simple and short.  This is true for any style of error
+> handling.
+>=20
+> > If the code doing the allocation is changed in the future the single
+> > cleanup can stay whereas multiple labels have to be rewritten
+> > again. =20
+>=20
+> No, they don't unless you choose bad label names. =20
 
-> At least if you send out the patches to do the removal they might
-> eventually get merged.
-> 
-> > speaking of upstream, any objections if this patch set will go through
-> > the printk tree, in one piece?
-> 
-> Do you mind putting it in a topic branch (based on rc2) and then merge
-> that into the printk tree? That way I can merge the topic branch iff
-> there are conflicts later down the line towards 4.15.
+You obviously miss the fact that resource allocation is not always
+added at the end of the function.
 
-ok, let me re-spin the series. there are some changes here
-and there, so I'll drop Tested-by/Reviewed-by tags and will
-ask platforms' maintainers to re-test the patch set :(
+You may need to reorder the code and hence the order of allocation or
+add allocation at the start. Both of these cases break multiple labels
+and special cases but work with one big cleanup just fine.
 
-if everything goes OK, then we can ask Petr to do the topic
-branch (I don't have a kernel.org account).
+Thanks
 
-	-ss
+Michal
