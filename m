@@ -1,20 +1,39 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <pantelis.antoniou@konsulko.com>
+Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
+ [IPv6:2a00:1450:400c:c0c::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHgCT4dQYzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 18:14:13 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id p87so5873134pfj.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 00:14:13 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 2/2] powerpc/lib: Implement UACCESS_FLUSHCACHE API
-Date: Thu, 19 Oct 2017 18:13:55 +1100
-Message-Id: <20171019071355.15324-2-oohall@gmail.com>
-In-Reply-To: <20171019071355.15324-1-oohall@gmail.com>
-References: <20171019071355.15324-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHj833CZYzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 19:41:22 +1100 (AEDT)
+Received: by mail-wr0-x244.google.com with SMTP id z99so4996104wrc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 01:41:22 -0700 (PDT)
+Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 10.3 \(3273\))
+Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
+ full_name
+From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
+In-Reply-To: <59E7CBAF.9080501@gmail.com>
+Date: Thu, 19 Oct 2017 11:41:16 +0300
+Cc: Rob Herring <robh@kernel.org>, Alan Tull <atull@kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>,
+ linux-fpga@vger.kernel.org
+Message-Id: <B33ABF00-5967-4137-BDD3-E6D3E2B2EC57@konsulko.com>
+References: <20170821151651.25096-1-robh@kernel.org>
+ <20170821151651.25096-6-robh@kernel.org>
+ <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
+ <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
+ <59E69786.2030406@gmail.com>
+ <CANk1AXStoiNtJfU0iNug1wKASurqH6OrNoaN=UtSh6xxSB088Q@mail.gmail.com>
+ <CAL_JsqKR3Jg+tgZr4xGPtcWnZW7ng741YjuyUFaS2SXKXbxGtg@mail.gmail.com>
+ <1508341985.25643.12.camel@hp800z>
+ <CAL_JsqKJ74y3qHVqbRph5C8=0Ggb+n=JT3TZybu2+mENyZ1VZA@mail.gmail.com>
+ <59E7CBAF.9080501@gmail.com>
+To: Frank Rowand <frowand.list@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,113 +43,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement the architecture specific portitions of the UACCESS_FLUSHCACHE
-API. This provides functions for the copy_user_flushcache iterator that
-ensure that when the copy is finished the destination buffer contains
-a copy of the original and that the destination buffer is clean in the
-processor caches.
+Hi Frank,
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/Kconfig               |  1 +
- arch/powerpc/include/asm/string.h  |  2 ++
- arch/powerpc/include/asm/uaccess.h |  5 +++++
- arch/powerpc/lib/pmem.c            | 33 +++++++++++++++++++++++++++++++++
- 4 files changed, 41 insertions(+)
+> On Oct 19, 2017, at 00:46 , Frank Rowand <frowand.list@gmail.com> =
+wrote:
+>=20
+> On 10/18/17 11:30, Rob Herring wrote:
+>> On Wed, Oct 18, 2017 at 10:53 AM, Pantelis Antoniou
+>> <pantelis.antoniou@konsulko.com> wrote:
+>>> On Wed, 2017-10-18 at 10:44 -0500, Rob Herring wrote:
+>>>> On Wed, Oct 18, 2017 at 10:12 AM, Alan Tull <atull@kernel.org> =
+wrote:
+>>>>> On Tue, Oct 17, 2017 at 6:51 PM, Frank Rowand =
+<frowand.list@gmail.com> wrote:
+>>>>>> On 10/17/17 14:46, Rob Herring wrote:
+>>>>>>> On Tue, Oct 17, 2017 at 4:32 PM, Alan Tull <atull@kernel.org> =
+wrote:
+>>>>>>>> On Mon, Aug 21, 2017 at 10:16 AM, Rob Herring <robh@kernel.org> =
+wrote:
+>>>>>>>>=20
+>>>>>>>> Hi Rob,
+>>>>>>>>=20
+>>>>>>>>> With dependencies on a statically allocated full path name =
+converted to
+>>>>>>>>> use %pOF format specifier, we can store just the basename of =
+node, and
+>>>>>>>>> the unflattening of the FDT can be simplified.
+>>>>>>>>>=20
+>>>>>>>>> This commit will affect the remaining users of full_name. =
+After
+>>>>>>>>> analyzing these users, the remaining cases should only change =
+some print
+>>>>>>>>> messages. The main users of full_name are providing a name for =
+struct
+>>>>>>>>> resource. The resource names shouldn't be important other than =
+providing
+>>>>>>>>> /proc/iomem names.
+>>>>>>>>>=20
+>>>>>>>>> We no longer distinguish between pre and post 0x10 dtb formats =
+as either
+>>>>>>>>> a full path or basename will work. However, less than 0x10 =
+formats have
+>>>>>>>>> been broken since the conversion to use libfdt (and no one has =
+cared).
+>>>>>>>>> The conversion of the unflattening code to be non-recursive =
+also broke
+>>>>>>>>> pre 0x10 formats as the populate_node function would return 0 =
+in that
+>>>>>>>>> case.
+>>>>>>>>>=20
+>>>>>>>>> Signed-off-by: Rob Herring <robh@kernel.org>
+>>>>>>>>> ---
+>>>>>>>>> v2:
+>>>>>>>>> - rebase to linux-next
+>>>>>>>>>=20
+>>>>>>>>> drivers/of/fdt.c | 69 =
++++++++++-----------------------------------------------
+>>>>>>>>> 1 file changed, 11 insertions(+), 58 deletions(-)
+>>>>>>>>=20
+>>>>>>>> I've just updated to the latest next branch and am finding =
+problems
+>>>>>>>> applying overlays.   Reverting this commit alleviates things.  =
+The
+>>>>>>>> errors I get are:
+>>>>>>>>=20
+>>>>>>>> [   88.498704] OF: overlay: Failed to apply prop =
+@/__symbols__/clk_0
+>>>>>>>> [   88.513447] OF: overlay: apply failed '/__symbols__'
+>>>>>>>> [   88.518423] create_overlay: Failed to create overlay =
+(err=3D-12)
+>>>>>>>=20
+>>>>>>> Frank's series with overlay updates should fix this.
+>>>>>>=20
+>>>>>> Yes, it does:
+>>>>>>=20
+>>>>>>  [PATCH v3 11/12] of: overlay: remove a dependency on device node =
+full_name
+>>>>>=20
+>>>>> Thanks for the fast response.  I fetched the dt/next branch to =
+test
+>>>>> this but there are sufficient changes that Pantelis' "OF: =
+DT-Overlay
+>>>>> configfs interface (v7)" is broken now.  I've been adding that
+>>>>> downstream since 4.4.  We're using it as an interface for applying
+>>>>> overlays to program FPGAs.  If we fix it again, is there any =
+chance
+>>>>> that can go upstream now?
+>>>>=20
+>>>> With a drive-by posting once every few years, no.
+>>>>=20
+>>>=20
+>>> I take offense to that. There's nothing changed in the patch for =
+years.
+>>> Reposting the same patch without changes would achieve nothing.
+>>=20
+>> Are you still expecting review comments on it or something?
+>> Furthermore, If something is posted infrequently, then I'm not
+>> inclined to comment or care if the next posting is going to be after =
+I
+>> forget what I previously said (which is not very long).
+>>=20
+>> I'm just saying, don't expect to forward port, post and it will be
+>> accepted. Below is minimally one of the issues that needs to be
+>> addressed.
+>>=20
+>=20
+>=20
+>>>> The issue remains that the kernel is not really setup to deal with =
+any
+>>>> random property or node to be changed at any point in run-time. I
+>>>> think there needs to be some restrictions around what the overlays =
+can
+>>>> touch. We can't have it be wide open and then lock things down =
+later
+>>>> and break users.
+>=20
+> That paragraph is key to any discussion of accepting code to apply =
+overlays.
+> Solving that issue has been stated to be a gating factor for such code =
+from
+> the beginning of overlay development.
+>=20
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0996add8a572..09a207468f8b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -142,6 +142,7 @@ config PPC
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE
- 	select ARCH_HAS_SG_CHAIN
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
-+	select ARCH_HAS_UACCESS_FLUSHCACHE	if PPC64
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
- 	select ARCH_HAS_ZONE_DEVICE		if PPC_BOOK3S_64
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
-diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-index cc9addefb51c..2796eda17d92 100644
---- a/arch/powerpc/include/asm/string.h
-+++ b/arch/powerpc/include/asm/string.h
-@@ -11,6 +11,7 @@
- #define __HAVE_ARCH_MEMCMP
- #define __HAVE_ARCH_MEMCHR
- #define __HAVE_ARCH_MEMSET16
-+#define __HAVE_ARCH_MEMCPY_FLUSHCACHE
- 
- extern char * strcpy(char *,const char *);
- extern char * strncpy(char *,const char *, __kernel_size_t);
-@@ -23,6 +24,7 @@ extern void * memcpy(void *,const void *,__kernel_size_t);
- extern void * memmove(void *,const void *,__kernel_size_t);
- extern int memcmp(const void *,const void *,__kernel_size_t);
- extern void * memchr(const void *,int,__kernel_size_t);
-+extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
- 
- #ifdef CONFIG_PPC64
- #define __HAVE_ARCH_MEMSET32
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 9c0e60ca1666..e9c88b72584f 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -339,4 +339,9 @@ static inline unsigned long clear_user(void __user *addr, unsigned long size)
- extern long strncpy_from_user(char *dst, const char __user *src, long count);
- extern __must_check long strnlen_user(const char __user *str, long n);
- 
-+extern long __copy_from_user_flushcache(void *dst, const void __user *src,
-+		unsigned size);
-+extern void memcpy_page_flushcache(char *to, struct page *page, size_t offset,
-+			   size_t len);
-+
- #endif	/* _ARCH_POWERPC_UACCESS_H */
-diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
-index 0fa09262ca13..53c018762e1c 100644
---- a/arch/powerpc/lib/pmem.c
-+++ b/arch/powerpc/lib/pmem.c
-@@ -13,6 +13,7 @@
- 
- #include <linux/string.h>
- #include <linux/export.h>
-+#include <linux/uaccess.h>
- 
- #include <asm/cacheflush.h>
- 
-@@ -32,3 +33,35 @@ void arch_invalidate_pmem(void *addr, size_t size)
- 	flush_inval_dcache_range(start, start + size);
- }
- EXPORT_SYMBOL(arch_invalidate_pmem);
-+
-+/*
-+ * CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE symbols
-+ */
-+long __copy_from_user_flushcache(void *dest, const void __user *src,
-+		unsigned size)
-+{
-+	unsigned long copied, start = (unsigned long) dest;
-+
-+	copied = __copy_from_user(dest, src, size);
-+	flush_inval_dcache_range(start, start + size);
-+
-+	return copied;
-+}
-+
-+void *memcpy_flushcache(void *dest, const void *src, size_t size)
-+{
-+	unsigned long start = (unsigned long) dest;
-+
-+	memcpy(dest, src, size);
-+	flush_inval_dcache_range(start, start + size);
-+
-+	return dest;
-+}
-+EXPORT_SYMBOL(memcpy_flushcache);
-+
-+void memcpy_page_flushcache(char *to, struct page *page, size_t offset,
-+	size_t len)
-+{
-+	memcpy_flushcache(to, page_to_virt(page) + offset, len);
-+}
-+EXPORT_SYMBOL(memcpy_page_flushcache);
--- 
-2.9.5
+Overlays are not only used only for cases where you have external =
+expansion boards, or
+FPGAs where every change is contained under a few designated nodes, so =
+that=E2=80=99s why I=E2=80=99m
+pushing for a in-kernel validator that=E2=80=99s more flexible than a =
+single whitelist.
+
+An eBPF validator would handle a whitelist trivially easy, and would be =
+flexible enough
+for any other more complicated use case.
+
+>=20
+>>>> One example of what you could do is you can only add
+>>>> sub-trees to whitelisted nodes. That's probably acceptable for your
+>>>> usecase.
+>>>>=20
+>>>=20
+>>> Defining what can and what cannot be changed is not as trivial as a
+>>> list of white-listed nodes.
+>>=20
+>> No, but we have to start somewhere and we are not starting with any
+>> change allowed anywhere at anytime. If that is what people want, then
+>> they are going to get to maintain that out of tree.
+>>=20
+>>> In some cases there is a whole node hierarchy being inserted (like =
+in
+>>> a FPGA).
+>>=20
+>> Yes, so you'd have a target fpga region. That sounds fine to me. =
+Maybe
+>> its not a static whitelist, but drivers have to register target
+>> nodes/paths.
+>>=20
+>>> In others, it's merely changing a status property to "okay" and
+>>> a few device parameters.
+>>=20
+>> That seems fine too. Disabled nodes could be allowed. But what if you
+>> add/change properties on a node that is not disabled? Once a node is
+>> enabled, who is responsible for registering the device?
+>>=20
+>> What about changing a node from enabled to disabled? The kernel would
+>> need to handle that or not allow it.
+>>=20
+>>> The real issue is that the kernel has no way to verify that a given
+>>> device tree, either at boot time or at overlay application time, is
+>>> correct.
+>>>=20
+>>> When the tree is wrong at boot-time you'll hang (if you're lucky).
+>>> If the tree is wrong at run-time you'll get some into some =
+unidentified
+>>> funky state.
+>>=20
+>> Or have some security hole or a mechanism for userspace to crash the =
+system.
+>>=20
+>>> Finally what is, and what is not 'correct' is not for the kernel to
+>>> decide arbitrarily, it's a matter of policy, different for each
+>>> use-case.
+>>=20
+>> It is if the kernel will break doing so.
+>>=20
+>> Rob
+>>=20
+>=20
