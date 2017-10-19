@@ -1,13 +1,13 @@
 Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfYy4BpkzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:45:10 +1100 (AEDT)
-Received: by mail-pf0-x234.google.com with SMTP id i5so5807159pfe.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:45:10 -0700 (PDT)
-Date: Thu, 19 Oct 2017 15:45:04 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfZk20ZWzDqXn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:45:50 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id r25so6309700pgn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:45:50 -0700 (PDT)
+Date: Thu, 19 Oct 2017 15:45:44 +0900
 From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
 To: Petr Mladek <pmladek@suse.com>
 Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -20,15 +20,14 @@ Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
  linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 4/7] powerpc64: Add .opd based function descriptor
- dereference
-Message-ID: <20171019064504.GD449@jagdpanzerIV>
+Subject: Re: [PATCHv3 2/7] sections: split dereference_function_descriptor()
+Message-ID: <20171019064544.GE449@jagdpanzerIV>
 References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-5-sergey.senozhatsky@gmail.com>
- <20171004092108.GF20084@pathway.suse.cz>
+ <20170930025319.987-3-sergey.senozhatsky@gmail.com>
+ <20171004090043.GD20084@pathway.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171004092108.GF20084@pathway.suse.cz>
+In-Reply-To: <20171004090043.GD20084@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,27 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (10/04/17 11:21), Petr Mladek wrote:
+On (10/04/17 11:00), Petr Mladek wrote:
 [..]
-> > +#ifdef PPC64_ELF_ABI_v1
+> >  /* random extra sections (if any).  Override
+> > diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
+> > index 4d0cb9bba93e..172904e9cded 100644
+> > --- a/include/linux/moduleloader.h
+> > +++ b/include/linux/moduleloader.h
+> > @@ -85,6 +85,10 @@ void module_arch_cleanup(struct module *mod);
+> >  /* Any cleanup before freeing mod->module_init */
+> >  void module_arch_freeing_init(struct module *mod);
+> >  
+> > +/* Dereference module function descriptor */
 > > +unsigned long dereference_module_function_descriptor(struct module *mod,
-> > +						     unsigned long addr)
-> > +{
-> > +	if (addr < mod->arch.start_opd || addr >= mod->arch.end_opd)
-> > +		return addr;
+> > +						     unsigned long addr);
 > > +
-> > +	return dereference_function_descriptor(addr);
-> > +}
-> > +#endif /* PPC64_ELF_ABI_v1 */
 > 
-> I would personally move this up in the source file. It is related to
-> the definition of func_desc() and other functions that are
-> also PPC_ELF_ABI-specific.
+> The function is used when the module is already loaded. IMHO,
+> include/linux/module.h would be a better place.
 > 
-> Otherwise, it looks good to me.
+> One advantage would be that we could use the same trick
+> as in include/asm-generic/sections.h. I mean:
 > 
-> Reviewed-by: Petr Mladek <pmladek@suse.com>
+> #define dereference_module_function_descriptor(mod, addr) (addr)
+> 
+> and redefine it in the three affected
+> arch/<arch>/include/asm/module.h headers. Then it might be completely
+> optimized out on all architectures.
 
-OK, will move.
+will take a look.
 
 	-ss
