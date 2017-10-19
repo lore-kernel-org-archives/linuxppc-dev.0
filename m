@@ -1,44 +1,18 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHg7s19cczDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 18:11:04 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9J7A0kZ119869
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 03:11:03 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dppfx2ubp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 03:11:02 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Thu, 19 Oct 2017 08:11:00 +0100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9J7Au1D28966940
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 07:10:57 GMT
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9J7An02026126
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 18:10:49 +1100
-Subject: Re: [PATCH] powerpc/xmon: check before calling xive functions
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Michael Ellerman <mpe@ellerman.id.au>, Breno Leitao <leitao@debian.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-Date: Thu, 19 Oct 2017 09:10:46 +0200
-In-Reply-To: <87vajchamw.fsf@concordia.ellerman.id.au>
-References: <1508264418-13448-1-git-send-email-leitao@debian.org>
- <87vajchamw.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1508397046.25065.313.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHgCR29YzzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 18:14:10 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id d28so5881471pfe.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 00:14:10 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH 1/2] powerpc/lib: Implement PMEM API
+Date: Thu, 19 Oct 2017 18:13:54 +1100
+Message-Id: <20171019071355.15324-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,57 +22,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-10-19 at 00:02 +1100, Michael Ellerman wrote:
-> Breno Leitao <leitao@debian.org> writes:
-> 
-> > Currently xmon could call XIVE functions from OPAL even if the XIVE is
-> > disabled or does not exist in the system, as in POWER8 machines.  This
-> > causes the following exception:
-> > 
-> >  1:mon> dx
-> >  cpu 0x1: Vector: 700 (Program Check) at [c000000423c93450]
-> >      pc: c00000000009cfa4: opal_xive_dump+0x50/0x68
-> >      lr: c0000000000997b8: opal_return+0x0/0x50
-> > 
-> > This patch simply checks if XIVE is enabled before calling XIVE
-> > functions.
-> 
-> Thanks. I'll merge this.
-> 
-> But we should also fix it in skiboot.
+Implement the architecture specific cache maintence functions that make
+up the "PMEM API". Currently the writeback and invalidate functions
+are the same since the function of the DCBST (data cache block store)
+instruction is typically interpreted as "writeback to the point of
+coherency" rather than to memory. As a result implementing the API
+requires a full cache flush rather than just a cache write back. This
+will probably change in the not-too-distant future.
 
-No that's wrong. xive_enabled() is only set if Linux is using native
-xive mode but some of those xmon functions dump the emulated state.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/Kconfig      |  1 +
+ arch/powerpc/lib/Makefile |  2 +-
+ arch/powerpc/lib/pmem.c   | 34 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 36 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/lib/pmem.c
 
-We should fix the actual cause of the crash.
-
-Cheers,
-Ben.
-
-> cheers
-> 
-> > Suggested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-> > Signed-off-by: Breno Leitao <leitao@debian.org>
-> > ---
-> >  arch/powerpc/xmon/xmon.c | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> > index 4679aeb84767..b34976c4a6ba 100644
-> > --- a/arch/powerpc/xmon/xmon.c
-> > +++ b/arch/powerpc/xmon/xmon.c
-> > @@ -2508,6 +2508,12 @@ static void dump_xives(void)
-> >  	unsigned long num;
-> >  	int c;
-> >  
-> > +	if (!xive_enabled()) {
-> > +		printf("Xive disabled on this system\n");
-> > +
-> > +		return;
-> > +	}
-> > +
-> >  	c = inchar();
-> >  	if (c == 'a') {
-> >  		dump_all_xives();
-> > -- 
-> > 2.14.2
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 809c468edab1..0996add8a572 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -138,6 +138,7 @@ config PPC
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
++	select ARCH_HAS_PMEM_API                if PPC64
+ 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE
+ 	select ARCH_HAS_SG_CHAIN
+ 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 50d5bf954cff..7aa237d10546 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -23,7 +23,7 @@ endif
+ 
+ obj64-y	+= copypage_64.o copyuser_64.o mem_64.o hweight_64.o \
+ 	   copyuser_power7.o string_64.o copypage_power7.o memcpy_power7.o \
+-	   memcpy_64.o memcmp_64.o
++	   memcpy_64.o memcmp_64.o pmem.o
+ 
+ obj64-$(CONFIG_SMP)	+= locks.o
+ obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
+diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
+new file mode 100644
+index 000000000000..0fa09262ca13
+--- /dev/null
++++ b/arch/powerpc/lib/pmem.c
+@@ -0,0 +1,34 @@
++/*
++ * Copyright(c) 2017 IBM Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ */
++
++#include <linux/string.h>
++#include <linux/export.h>
++
++#include <asm/cacheflush.h>
++
++/*
++ * CONFIG_ARCH_HAS_PMEM_API symbols
++ */
++void arch_wb_cache_pmem(void *addr, size_t size)
++{
++	unsigned long start = (unsigned long) addr;
++	flush_inval_dcache_range(start, start + size);
++}
++EXPORT_SYMBOL(arch_wb_cache_pmem);
++
++void arch_invalidate_pmem(void *addr, size_t size)
++{
++	unsigned long start = (unsigned long) addr;
++	flush_inval_dcache_range(start, start + size);
++}
++EXPORT_SYMBOL(arch_invalidate_pmem);
+-- 
+2.9.5
