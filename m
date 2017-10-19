@@ -1,40 +1,39 @@
 Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHwG66Fw5zDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 04:02:22 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9JH1pwr019278
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 13:02:20 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dpvu3pdjt-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHwSj08fNzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 04:11:31 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9JH5o70127233
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 13:11:27 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dpykxsxku-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 13:02:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 13:11:26 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 19 Oct 2017 13:02:18 -0400
-Date: Thu, 19 Oct 2017 10:02:11 -0700
+ Thu, 19 Oct 2017 11:11:26 -0600
+Date: Thu, 19 Oct 2017 10:11:17 -0700
 From: Ram Pai <linuxram@us.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 3/7] powerpc: Free up four 64K PTE bits in 4K backed HPTE
- pages
+Subject: Re: [PATCH 01/25] powerpc: initial pkey plumbing
 Reply-To: Ram Pai <linuxram@us.ibm.com>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-4-git-send-email-linuxram@us.ibm.com>
- <87o9p3kedg.fsf@concordia.ellerman.id.au>
+ <1504910713-7094-10-git-send-email-linuxram@us.ibm.com>
+ <87lgk7kbu3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87o9p3kedg.fsf@concordia.ellerman.id.au>
-Message-Id: <20171019170211.GW5617@ram.oc3035372033.ibm.com>
+In-Reply-To: <87lgk7kbu3.fsf@concordia.ellerman.id.au>
+Message-Id: <20171019171117.GX5617@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,75 +43,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 19, 2017 at 02:25:47PM +1100, Michael Ellerman wrote:
+On Thu, Oct 19, 2017 at 03:20:36PM +1100, Michael Ellerman wrote:
 > Ram Pai <linuxram@us.ibm.com> writes:
 > 
-> > diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-> > index 1a68cb1..c6c5559 100644
-> > --- a/arch/powerpc/mm/hash64_64k.c
-> > +++ b/arch/powerpc/mm/hash64_64k.c
-> > @@ -126,18 +113,13 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
-> >  	if (__rpte_sub_valid(rpte, subpg_index)) {
-> >  		int ret;
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index 9fc3c0b..a4cd210 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -864,6 +864,22 @@ config SECCOMP
 > >  
-> > -		hash = hpt_hash(vpn, shift, ssize);
-> > -		hidx = __rpte_to_hidx(rpte, subpg_index);
-> > -		if (hidx & _PTEIDX_SECONDARY)
-> > -			hash = ~hash;
-> > -		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-> > -		slot += hidx & _PTEIDX_GROUP_IX;
-> > +		gslot = pte_get_hash_gslot(vpn, shift, ssize, rpte,
-> > +					subpg_index);
-> > +		ret = mmu_hash_ops.hpte_updatepp(gslot, rflags, vpn,
-> > +			MMU_PAGE_4K, MMU_PAGE_4K, ssize, flags);
-> 
-> This was formatted correctly before:
->   
-> > -		ret = mmu_hash_ops.hpte_updatepp(slot, rflags, vpn,
-> > -						 MMU_PAGE_4K, MMU_PAGE_4K,
-> > -						 ssize, flags);
-> >  		/*
-> > -		 *if we failed because typically the HPTE wasn't really here
-> > +		 * if we failed because typically the HPTE wasn't really here
-> 
-> If you're fixing it up please make it "If ...".
-> 
-> >  		 * we try an insertion.
-> >  		 */
-> >  		if (ret == -1)
-> > @@ -148,6 +130,15 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
-> >  	}
+> >  	  If unsure, say Y. Only embedded should say N here.
 > >  
-> >  htab_insert_hpte:
-> > +
-> > +	/*
-> > +	 * initialize all hidx entries to invalid value,
-> > +	 * the first time the PTE is about to allocate
-> > +	 * a 4K hpte
-> > +	 */
+> > +config PPC64_MEMORY_PROTECTION_KEYS
 > 
-> Should be:
+> That's pretty wordy, can we make it CONFIG_PPC_MEM_KEYS ?
+> 
+> I think you're a sufficient vim wizard to search and replace all
+> usages at once,
+
+I take that as a compliment for now ;)
+
+> if not I can do it before I apply the series.
+
+Will change it...just that I was trying to keep it similar to what intel
+has X86_INTEL_MEMORY_PROTECTION_KEYS
+
+> 
+> > +	prompt "PowerPC Memory Protection Keys"
+> > +	def_bool y
+> > +	# Note: only available in 64-bit mode
+> 
+> We don't need the note, that's exactly what the next line says:
+> > +	depends on PPC64
+> 
+> But shouldn't it be BOOK3S_64 ?
+> 
+> I don't think it works on BookE does it?
+> 
+> > +	select ARCH_USES_HIGH_VMA_FLAGS
+> > +	select ARCH_HAS_PKEYS
+> > +	---help---
+> 
+> I prefer just "help".
+
+ok.
+
+> 
+> > diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+> > index 3095925..7badf29 100644
+> > --- a/arch/powerpc/include/asm/mmu_context.h
+> > +++ b/arch/powerpc/include/asm/mmu_context.h
+> > @@ -141,5 +141,10 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
 > 	/*
-> 	 * Initialize all hidx entries to invalid value, the first time
->          * the PTE is about to allocate a 4K HPTE.
+
+  ....snip...
+
+>          * Disable the pkey system till everything is in place. A patch
+>          * further down the line will enable it.
 > 	 */
 > 
-> > +	if (!(old_pte & H_PAGE_COMBO))
-> > +		rpte.hidx = ~0x0UL;
-> > +
-> 
-> Paul had the idea that if we biased the slot number by 1, we could make
-> the "invalid" value be == 0.
-> 
-> That would avoid needing to that above, and also mean the value is
-> correctly invalid from the get-go, which would be good IMO.
-> 
-> I think now that you've added the slot accessors it would be pretty easy
-> to do.
+> I'm going to stop commenting on every badly formatted comment :)
 
-I did attempt to do so, and was not getting it right. The machine went
-unstable. So left it with an accessor, to be revisited at a
-later point in time. That time has come... I suppose.  Shall I make it a
-separate patch instead of baking it into this patch?
+did not realize I had acquired a habit for badly formatted
+comments. :-( Sorry for causing the pain. Will fix it.
+
 
 RP
