@@ -2,18 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHcMY4nHBzDqfh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 16:06:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHcVm3mZqzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 16:12:16 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: ipic - fix status get and status clear
-In-Reply-To: <20171018091647.B9E9F6872C@po15668-vm-win7.idsi0.si.c-s.fr>
-References: <20171018091647.B9E9F6872C@po15668-vm-win7.idsi0.si.c-s.fr>
-Date: Thu, 19 Oct 2017 16:06:01 +1100
-Message-ID: <8760bbn2va.fsf@concordia.ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>, Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: mhocko@kernel.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
+ bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ khandual@linux.vnet.ibm.com
+Subject: Re: [RFC v7 15/25] powerpc: Program HPTE key protection bits
+In-Reply-To: <20171018221212.GP5617@ram.oc3035372033.ibm.com>
+References: <1501459946-11619-1-git-send-email-linuxram@us.ibm.com>
+ <1501459946-11619-16-git-send-email-linuxram@us.ibm.com>
+ <24a039cb-526c-6baa-15b8-906963ae62b7@linux.vnet.ibm.com>
+ <20171018221212.GP5617@ram.oc3035372033.ibm.com>
+Date: Thu, 19 Oct 2017 16:12:15 +1100
+Message-ID: <87376fn2kw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,34 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+Ram Pai <linuxram@us.ibm.com> writes:
+> On Wed, Oct 18, 2017 at 06:15:40PM +0200, Laurent Dufour wrote:
+>> On 31/07/2017 02:12, Ram Pai wrote:
+>> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+>> > index 1ded6df..4b7e3f4 100644
+>> > --- a/arch/powerpc/include/asm/pkeys.h
+>> > +++ b/arch/powerpc/include/asm/pkeys.h
+>> > @@ -72,6 +72,19 @@ static inline int vma_pkey(struct vm_area_struct *vma)
+>> >  #define AMR_RD_BIT 0x1UL
+>> >  #define AMR_WR_BIT 0x2UL
+>> >  #define IAMR_EX_BIT 0x1UL
+>> > +
+>> > +static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
+>> > +{
+>> > +	if (!pkey_inited)
+>> > +		return 0x0UL;
+>> 
+>> Why making such a check here, is it to avoid the following check during the
+>> boot process only ?
+>> IIUC, there is no way to get H_PAGE_PKEY_BIT* set when pkey_inited is false.
+>
+> I know its a little paronia. Trying to avoid a case where the
+> uninitialized pkey bits in the pte are erroneously interpreted as valid
+> by this function. Remember that the caller of this function will use the
+> return value to program the hpte. Nothing really bad should happen
+> since none of the keys are enabled. But ... just playing it safe.
 
-> IPIC Status is provided by register IPIC_SERSR and not by IPIC_SERMR
-> which is the mask register.
-
-This seems like it would be a bad bug. But I guess it hasn't mattered
-for some reason?
+I think that's probably over-paranoid. It's not like it adds much
+overhead, but it is a hot path, so no need to make it slower than it
+needs to be.
 
 cheers
-
-> diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-> index 16f1edd78c40..535cf1f6941c 100644
-> --- a/arch/powerpc/sysdev/ipic.c
-> +++ b/arch/powerpc/sysdev/ipic.c
-> @@ -846,12 +846,12 @@ void ipic_disable_mcp(enum ipic_mcp_irq mcp_irq)
->  
->  u32 ipic_get_mcp_status(void)
->  {
-> -	return ipic_read(primary_ipic->regs, IPIC_SERMR);
-> +	return ipic_read(primary_ipic->regs, IPIC_SERSR);
->  }
->  
->  void ipic_clear_mcp_status(u32 mask)
->  {
-> -	ipic_write(primary_ipic->regs, IPIC_SERMR, mask);
-> +	ipic_write(primary_ipic->regs, IPIC_SERSR, mask);
->  }
->  
->  /* Return an interrupt vector or 0 if no interrupt is pending. */
-> -- 
-> 2.13.3
