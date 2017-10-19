@@ -1,31 +1,31 @@
-Return-Path: <srs0=n81q=bs=redhat.com=fweimer@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHpZ12SSCzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 23:45:45 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3yHpZ11fknz8tBH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 23:45:45 +1100 (AEDT)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3yHpZ06VCKz9t48
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2017 23:45:44 +1100 (AEDT)
-Subject: Re: [PATCH 3/4] powerpc/powernv: Enable TM without suspend if possible
-To: Tulio Magno Quites Machado Filho <tuliom@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: stewart@linux.vnet.ibm.com, mikey@neuling.org, cyrilbur@gmail.com
-References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
- <1507803439-12862-3-git-send-email-mpe@ellerman.id.au>
- <920a68e7-1bb5-3ace-2aaf-1594d8845721@redhat.com>
- <87efpzbay3.fsf@linux.vnet.ibm.com>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <65150714-f3ac-22c8-9b85-c9dc9c225cd8@redhat.com>
-Date: Thu, 19 Oct 2017 14:45:40 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHpbR2QD8zDr26
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 23:46:59 +1100 (AEDT)
+Date: Thu, 19 Oct 2017 14:46:55 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org, Stefan Berger
+ <stefanb@linux.vnet.ibm.com>, Nayna Jain <nayna@linux.vnet.ibm.com>, Jerry
+ Snitselaar <jsnitsel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
+ <jgunthorpe@obsidianresearch.com>, Corentin Labbe
+ <clabbe.montjoie@gmail.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Peter =?UTF-8?B?SMO8d2U=?=
+ <PeterHuewe@gmx.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH 4/4] char/tpm: Less checks in tpm_ibmvtpm_probe() after
+ error detection
+Message-ID: <20171019144655.7d06111c@kitsune.suse.cz>
+In-Reply-To: <9327cc83-448e-8404-af00-73f6409e269e@users.sourceforge.net>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <09a2c3a1-1b10-507d-a866-258b570f6da1@users.sourceforge.net>
+ <20171019135632.4af42743@kitsune.suse.cz>
+ <9327cc83-448e-8404-af00-73f6409e269e@users.sourceforge.net>
 MIME-Version: 1.0
-In-Reply-To: <87efpzbay3.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/19/2017 02:04 PM, Tulio Magno Quites Machado Filho wrote:
-> Florian Weimer <fweimer@redhat.com> writes:
-> 
->> On 10/12/2017 12:17 PM, Michael Ellerman wrote:
->>> +	pr_info("Enabling TM (Transactional Memory) with Suspend Disabled\n");
->>> +	cur_cpu_spec->cpu_features |= CPU_FTR_TM;
->>> +	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_HTM_NO_SUSPEND;
->>> +	tm_suspend_disabled = true;
->>
->> This doesn't look right because if suspend is not available, you need to
->> clear the original PPC_FEATURE2_HTM flag because the semantics are not
->> right, so that applications can use fallback code.  Otherwise,
->> applications may incorrectly select the HTM code and break if running on
->> a system which supports HTM, but without the suspend state.
-> 
-> Just clarifying: it won't break an application, but abort the transaction,
-> which can cause a performance hit.
+On Thu, 19 Oct 2017 14:36:09 +0200
+SF Markus Elfring <elfring@users.sourceforge.net> wrote:
 
-And in this case, it is better not HTM at all.
-
->> The new flag should say that HTM is supported, but without the suspend
->> state, and it should be always set if PPC_FEATURE2_HTM is set.
+> >> @@ -683,13 +683,10 @@ static int tpm_ibmvtpm_probe(struct vio_dev
+> >> *vio_dev, reg_crq_cleanup:
+> >>  	dma_unmap_single(dev, ibmvtpm->crq_dma_handle,
+> >> CRQ_RES_BUF_SIZE, DMA_BIDIRECTIONAL);
+> >> -cleanup:
+> >> -	if (ibmvtpm) {
+> >> -		if (crq_q->crq_addr)
+> >> -			free_page((unsigned long)crq_q->crq_addr);
+> >> -		kfree(ibmvtpm);
+> >> -	}
+> >> -  
+> > 
+> > I think a single cleanup section is better than many labels that
+> > just avoid a single null check.  
 > 
-> If we change the semantics of this bit, old applications that don't suspend
-> transactions won't run on these processors, even if they're safe to run.
+> I proposed to delete two unnecessary condition checks together with
+> an adjustment of jump targets.
 > 
-> If we adopt the current semantics, only applications that enter in suspend
-> state will have to be modified in order to not get a performance regression.
 
-In this light, the trade-off implied by the posted patch seems to be the 
-right one.  But the other discussion of an ABI change still makes me a 
-bit nervous.
+They are necessary to ensure the code works with single jump target.
 
-Thanks,
-Florian
+The compiler is free to optimize them away and create the new jump
+target implicitly. Do not do the optimization in place of the compiler.
+It can do it automatically, in most cases better, and automatically
+adapt it to code changes.
+
+Thanks
+
+Michal
