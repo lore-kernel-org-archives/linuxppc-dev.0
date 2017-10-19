@@ -1,44 +1,60 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHppX2gWfzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 23:56:36 +1100 (AEDT)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v9JCuWTV008353
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 12:56:33 GMT
-Date: Thu, 19 Oct 2017 15:55:59 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
- linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Andrew Morton <akpm@linux-foundation.org>,
- Bart Van Assche <bart.vanassche@sandisk.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Doug Ledford <dledford@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Johan Hovold <johan@kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh@kernel.org>,
- Sahil Mehta <sahilmehta17@gmail.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/5] powerpc-pseries: Delete an unnecessary variable
- initialisation in iommu_pseries_alloc_group()
-Message-ID: <20171019125558.itidc4ejr6goadci@mwanda>
-References: <0d221be4-1402-0499-d95e-afa4a30e1f33@users.sourceforge.net>
- <9c71e3e0-8998-fd02-e3a3-ef219d82ee32@users.sourceforge.net>
- <20171019133718.5bdab33c@kitsune.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20171019133718.5bdab33c@kitsune.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHqFT5tJtzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 00:16:29 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9JDFJNZ082099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 09:16:27 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dpvps0fuv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 09:16:27 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Thu, 19 Oct 2017 14:16:24 +0100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9JDGKBm24838144
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 13:16:22 GMT
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9JDGKRK023305
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 00:16:21 +1100
+Subject: Re: [PATCH 0/4] char-TPM: Adjustments for ten function implementations
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Julia Lawall <julia.lawall@lip6.fr>,
+ Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, SF Markus Elfring
+ <elfring@users.sourceforge.net>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, Jerry Snitselaar
+ <jsnitsel@redhat.com>, Kenneth Goldman <kgold@linux.vnet.ibm.com>, Nayna
+ Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>, Peter
+ =?ISO-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>, Stefan Berger
+ <stefanb@linux.vnet.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Date: Thu, 19 Oct 2017 09:16:11 -0400
+In-Reply-To: <87lgk9i1ni.fsf@concordia.ellerman.id.au>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <20171016183139.otyh3m5c5yurtmow@linux.intel.com>
+ <20171016183512.3bz6x4b6lbhpbkje@linux.intel.com>
+ <20171017085124.pkrjzghcf5wmcydc@mwanda>
+ <alpine.DEB.2.20.1710171055100.5035@hadrien>
+ <20171017094434.csarc5fw5d32u64w@mwanda>
+ <alpine.DEB.2.20.1710171211210.5035@hadrien>
+ <1508241146.4234.16.camel@linux.vnet.ibm.com>
+ <87lgk9i1ni.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1508418971.4510.134.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,58 +64,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 19, 2017 at 01:37:18PM +0200, Michal Suchánek wrote:
-> Hello,
+On Wed, 2017-10-18 at 14:18 +1100, Michael Ellerman wrote:
+> Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+> > On Tue, 2017-10-17 at 12:11 +0200, Julia Lawall wrote:
+> >> On Tue, 17 Oct 2017, Dan Carpenter wrote:
+> >> > On Tue, Oct 17, 2017 at 10:56:42AM +0200, Julia Lawall wrote:
+> >> > > On Tue, 17 Oct 2017, Dan Carpenter wrote:
+> >> > > > On Mon, Oct 16, 2017 at 09:35:12PM +0300, Jarkko Sakkinen wrote:
+> >> > > > >
+> >> > > > > A minor complaint: all commits are missing "Fixes:" tag.
+> >> > > > >
+> >> > > >
+> >> > > > Fixes is only for bug fixes.  These don't fix any bugs.
+> >> > >
+> >> > > 0-day seems to put Fixes for everything.  Should they be removed when the
+> >> > > old code is undesirable but doesn't actually cause a crash, eg out of date
+> >> > > API.
+> >> >
+> >> > Yeah, I feel like Fixes tags don't belong for API updates and cleanups.
+> >> 
+> >> OK, I will remove them from the patches that go through me where they
+> >> don't seem appropriate.
+> >
+> > The "Fixes" tag is an indication that the patch should be backported.
 > 
-> On Wed, 18 Oct 2017 21:24:25 +0200
-> SF Markus Elfring <elfring@users.sourceforge.net> wrote:
-> 
-> > From: Markus Elfring <elfring@users.sourceforge.net>
-> > Date: Wed, 18 Oct 2017 19:14:39 +0200
-> > 
-> > The variable "table_group" will be set to an appropriate pointer.
-> > Thus omit the explicit initialisation at the beginning.
-> > 
-> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> > ---
-> >  arch/powerpc/platforms/pseries/iommu.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/pseries/iommu.c
-> > b/arch/powerpc/platforms/pseries/iommu.c index
-> > b37d4fb20d1c..b6c12b8e3ace 100644 ---
-> > a/arch/powerpc/platforms/pseries/iommu.c +++
-> > b/arch/powerpc/platforms/pseries/iommu.c @@ -55,7 +55,7 @@
-> >  
-> >  static struct iommu_table_group *iommu_pseries_alloc_group(int node)
-> >  {
-> > -	struct iommu_table_group *table_group = NULL;
-> > +	struct iommu_table_group *table_group;
-> >  	struct iommu_table *tbl = NULL;
-> >  	struct iommu_table_group_link *tgl = NULL;
-> >  
-> 
-> I think initializing pointers to NULL is generally a good idea.
-> 
-> If there is no use of the variable before it is reinitialized by
-> allocation gcc is free to optimize out the variable and its initial
-> value.
-> 
-> On the other hand, if the code is changed later and use of the variable
-> becomes possible you may crash (and get a gcc warning, too).
+> No it's not that strong. It's an indication that the patch fixes another
+> commit, which may or may not mean it should be backported depending on
+> the preferences of the backporter. If it *does* need backporting then
+> the Fixes tag helps identify where it should go.
 
-No, it's the opposite. GCC doesn't warn about potential NULL
-dereferences, it warns about uninitialized variables.  By initializing
-it to a bogus value, you're deliberately disabling static analysis.
-We do see bugs where, if only people didn't initialize stuff to bogus
-values, then the bug would have been caught before it was merged.
+Thank you for setting the record straight.
 
-You might imagine that static analysis tools would catch NULL
-dereferences but it's actually really really hard.  We used to have
-an __uninitialized_var() macro which was used to silence GCC false
-positives, but now we initialize the pointers to NULL instead.  So
-most of the code that you're dealing with is stuff that was marked as
-too hard for GCC to understand.  It's tricky.
-
-regards,
-dan carpenter
+> The doco is actually pretty well worded IMO:
+> 
+>   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst#n183
+> 
+>   If your patch fixes a bug in a specific commit, e.g. you found an issue using
+>   ``git bisect``, please use the 'Fixes:' tag with the first 12 characters of
+>   the SHA-1 ID, and the one line summary.
+> 
+> and:
+> 
+>   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst#n602
+> 
+>   A Fixes: tag indicates that the patch fixes an issue in a previous commit. It
+>   is used to make it easy to determine where a bug originated, which can help
+>   review a bug fix. This tag also assists the stable kernel team in determining
+>   which stable kernel versions should receive your fix. This is the preferred
+>   method for indicating a bug fixed by the patch. See :ref:`describe_changes`
+>   for more details.
+> 
+> 
+> cheers
+> 
