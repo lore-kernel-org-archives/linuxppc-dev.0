@@ -1,45 +1,38 @@
-Return-Path: <srs0=6tmr=bs=linux.vnet.ibm.com=tuliom@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHnfn1117zDqhj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 23:04:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3yHnfm6jvqz8t9Z
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 23:04:48 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3yHnfl2pNmz9sNV
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2017 23:04:47 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9JBxZsk037047
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2017 08:04:45 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dptma438y-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2017 08:04:44 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <tuliom@linux.vnet.ibm.com>;
- Thu, 19 Oct 2017 08:04:42 -0400
-From: "Tulio Magno Quites Machado Filho" <tuliom@linux.vnet.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@ozlabs.org
-Cc: stewart@linux.vnet.ibm.com, mikey@neuling.org, cyrilbur@gmail.com
-Cc: 
-Subject: Re: [PATCH 3/4] powerpc/powernv: Enable TM without suspend if possible
-In-Reply-To: <920a68e7-1bb5-3ace-2aaf-1594d8845721@redhat.com>
-References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
- <1507803439-12862-3-git-send-email-mpe@ellerman.id.au>
- <920a68e7-1bb5-3ace-2aaf-1594d8845721@redhat.com>
-Date: Thu, 19 Oct 2017 10:04:36 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHngR23XlzDqXx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 23:05:22 +1100 (AEDT)
+Subject: Re: [PATCH 4/5] powerpc-pseries: Return directly after a failed
+ kzalloc_node() in iommu_pseries_alloc_group()
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Alex Williamson <alex.williamson@redhat.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bart Van Assche <bart.vanassche@sandisk.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Doug Ledford <dledford@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Johan Hovold <johan@kernel.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@samba.org>, Rob Herring <robh@kernel.org>,
+ Sahil Mehta <sahilmehta17@gmail.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
+References: <0d221be4-1402-0499-d95e-afa4a30e1f33@users.sourceforge.net>
+ <a824fe65-1708-16ba-68d6-df0f73e0f49a@users.sourceforge.net>
+ <20171019134148.52b890b4@kitsune.suse.cz>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <2f1e61bd-9d79-1b9f-e686-f9d13a6f0afc@users.sourceforge.net>
+Date: Thu, 19 Oct 2017 14:04:43 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87efpzbay3.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20171019134148.52b890b4@kitsune.suse.cz>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,31 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Florian Weimer <fweimer@redhat.com> writes:
+>> @@ -61,7 +61,7 @@ static struct iommu_table_group *iommu_pseries_alloc_group(int node) 
+>>  	table_group = kzalloc_node(sizeof(*table_group), GFP_KERNEL,
+>> node); if (!table_group)
+>> -		goto fail_exit;
+>> +		return NULL;
+>>  
+>>  	tbl = kzalloc_node(sizeof(*tbl), GFP_KERNEL, node);
+>>  	if (!tbl)
+> 
+> I have seen quite a few fixes that do inverse of this patch after a
+> piece of code allocating some extra piece of memory was added before
+> code that just returns on fail because it is the first allocation in
+> the function.
+> 
+> This is not useful.
 
-> On 10/12/2017 12:17 PM, Michael Ellerman wrote:
->> +	pr_info("Enabling TM (Transactional Memory) with Suspend Disabled\n");
->> +	cur_cpu_spec->cpu_features |= CPU_FTR_TM;
->> +	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_HTM_NO_SUSPEND;
->> +	tm_suspend_disabled = true;
->
-> This doesn't look right because if suspend is not available, you need to 
-> clear the original PPC_FEATURE2_HTM flag because the semantics are not 
-> right, so that applications can use fallback code.  Otherwise, 
-> applications may incorrectly select the HTM code and break if running on 
-> a system which supports HTM, but without the suspend state.
+How do you think about an information from the section “7) Centralized exiting
+of functions” in the document “coding-style.rst” then?
 
-Just clarifying: it won't break an application, but abort the transaction,
-which can cause a performance hit.
+“…
+If there is no cleanup needed then just return directly.
+…”
 
-> The new flag should say that HTM is supported, but without the suspend 
-> state, and it should be always set if PPC_FEATURE2_HTM is set.
 
-If we change the semantics of this bit, old applications that don't suspend
-transactions won't run on these processors, even if they're safe to run.
+> A final fail_exit that frees everything that could have been allocated
+> is much better.
 
-If we adopt the current semantics, only applications that enter in suspend
-state will have to be modified in order to not get a performance regression.
+I got an other software development opinion for such use cases.
+I prefer only required function calls there.
 
--- 
-Tulio Magno
+Regards,
+Markus
