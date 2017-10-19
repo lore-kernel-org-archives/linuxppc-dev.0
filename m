@@ -1,13 +1,13 @@
 Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfZk20ZWzDqXn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:45:50 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id r25so6309700pgn.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:45:50 -0700 (PDT)
-Date: Thu, 19 Oct 2017 15:45:44 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfgk4bcjzDqY1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:50:10 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id g6so6320084pgn.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:50:10 -0700 (PDT)
+Date: Thu, 19 Oct 2017 15:50:04 +0900
 From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
 To: Petr Mladek <pmladek@suse.com>
 Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -20,14 +20,15 @@ Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
  linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 2/7] sections: split dereference_function_descriptor()
-Message-ID: <20171019064544.GE449@jagdpanzerIV>
+Subject: Re: [PATCHv3 1/7] switch dereference_function_descriptor() to
+ `unsigned long'
+Message-ID: <20171019065004.GF449@jagdpanzerIV>
 References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-3-sergey.senozhatsky@gmail.com>
- <20171004090043.GD20084@pathway.suse.cz>
+ <20170930025319.987-2-sergey.senozhatsky@gmail.com>
+ <20171004082414.GC20084@pathway.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171004090043.GD20084@pathway.suse.cz>
+In-Reply-To: <20171004082414.GC20084@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,34 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (10/04/17 11:00), Petr Mladek wrote:
+On (10/04/17 10:24), Petr Mladek wrote:
 [..]
-> >  /* random extra sections (if any).  Override
-> > diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
-> > index 4d0cb9bba93e..172904e9cded 100644
-> > --- a/include/linux/moduleloader.h
-> > +++ b/include/linux/moduleloader.h
-> > @@ -85,6 +85,10 @@ void module_arch_cleanup(struct module *mod);
-> >  /* Any cleanup before freeing mod->module_init */
-> >  void module_arch_freeing_init(struct module *mod);
-> >  
-> > +/* Dereference module function descriptor */
-> > +unsigned long dereference_module_function_descriptor(struct module *mod,
-> > +						     unsigned long addr);
-> > +
-> 
-> The function is used when the module is already loaded. IMHO,
-> include/linux/module.h would be a better place.
-> 
-> One advantage would be that we could use the same trick
-> as in include/asm-generic/sections.h. I mean:
-> 
-> #define dereference_module_function_descriptor(mod, addr) (addr)
-> 
-> and redefine it in the three affected
-> arch/<arch>/include/asm/module.h headers. Then it might be completely
-> optimized out on all architectures.
+> To make it clear. All these comments are not a big deal and I do
+> not want to invalidate all the acked-by and tested-by just because
+> of them.
+>
+> But please, consider removing this change if we need to do
+> another iteration of this patchset. IMHO, there is no real win
+> and it would just pollute the git history.
 
-will take a look.
+I tend to rather keep it. would that cause any problems on your side?
+it saves a ton of ugly casts later in the patch set and lets us to drop
+some casts from the modules code/etc. the patch is here because otherwise
+I had to add a bunch of new casts.
 
 	-ss
