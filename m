@@ -1,13 +1,13 @@
 Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
+ [IPv6:2607:f8b0:400e:c00::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfYC50jNzDqFv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:44:31 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id e64so5799381pfk.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:44:31 -0700 (PDT)
-Date: Thu, 19 Oct 2017 15:44:25 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHfYy4BpkzDqMY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 17:45:10 +1100 (AEDT)
+Received: by mail-pf0-x234.google.com with SMTP id i5so5807159pfe.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Oct 2017 23:45:10 -0700 (PDT)
+Date: Thu, 19 Oct 2017 15:45:04 +0900
 From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
 To: Petr Mladek <pmladek@suse.com>
 Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -20,15 +20,15 @@ Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
  linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 5/7] parisc64: Add .opd based function descriptor
+Subject: Re: [PATCHv3 4/7] powerpc64: Add .opd based function descriptor
  dereference
-Message-ID: <20171019064425.GC449@jagdpanzerIV>
+Message-ID: <20171019064504.GD449@jagdpanzerIV>
 References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-6-sergey.senozhatsky@gmail.com>
- <20171004104016.GG20084@pathway.suse.cz>
+ <20170930025319.987-5-sergey.senozhatsky@gmail.com>
+ <20171004092108.GF20084@pathway.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171004104016.GG20084@pathway.suse.cz>
+In-Reply-To: <20171004092108.GF20084@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +38,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (10/04/17 12:40), Petr Mladek wrote:
+On (10/04/17 11:21), Petr Mladek wrote:
+[..]
+> > +#ifdef PPC64_ELF_ABI_v1
 > > +unsigned long dereference_module_function_descriptor(struct module *mod,
 > > +						     unsigned long addr)
 > > +{
-> > +	unsigned long start_opd = (Elf64_Addr)mod->core_layout.base +
-> > +				   mod->arch.fdesc_offset;
-> > +	unsigned long end_opd = start_opd +
-> > +				mod->arch.fdesc_count * sizeof(Elf64_Fdesc);
-> 
-> I know that this is used in rather slow paths. But it still might
-> make sense to have these section borders pre-computed and
-> stored in struct mod_arch_specific. I mean to do similar
-> thing that we do on powerpc.
-> 
-> Well, we could do this in a followup patch if parisc people
-> wanted it.
-> 
-> 
-> > +	if (addr < start_opd || addr >= end_opd)
+> > +	if (addr < mod->arch.start_opd || addr >= mod->arch.end_opd)
 > > +		return addr;
 > > +
 > > +	return dereference_function_descriptor(addr);
 > > +}
-> > +#endif
+> > +#endif /* PPC64_ELF_ABI_v1 */
 > 
-> Otherwise the patch looks fine to me.
+> I would personally move this up in the source file. It is related to
+> the definition of func_desc() and other functions that are
+> also PPC_ELF_ABI-specific.
+> 
+> Otherwise, it looks good to me.
 > 
 > Reviewed-by: Petr Mladek <pmladek@suse.com>
 
-let's do it later, if need be.
+OK, will move.
 
 	-ss
