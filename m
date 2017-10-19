@@ -1,15 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHb5V4p78zDqG3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 15:08:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHbMD0hXJzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 15:20:40 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/64s: Replace CONFIG_PPC_STD_MMU_64 with
- CONFIG_PPC_BOOK3S_64
-Date: Thu, 19 Oct 2017 15:08:43 +1100
-Message-Id: <1508386123-2726-1-git-send-email-mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
+ linuxram@us.ibm.com
+Subject: Re: [PATCH 01/25] powerpc: initial pkey plumbing
+In-Reply-To: <1504910713-7094-10-git-send-email-linuxram@us.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-10-git-send-email-linuxram@us.ibm.com>
+Date: Thu, 19 Oct 2017 15:20:36 +1100
+Message-ID: <87lgk7kbu3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,743 +27,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_PPC_STD_MMU_64 indicates support for the "standard" powerpc MMU
-on 64-bit CPUs. The "standard" MMU refers to the hash page table MMU
-found in "server" processors, from IBM mainly.
+Ram Pai <linuxram@us.ibm.com> writes:
 
-Currently CONFIG_PPC_STD_MMU_64 is == CONFIG_PPC_BOOK3S_64. While it's
-annoying to have two symbols that always have the same value, it's not
-quite annoying enough to bother removing one.
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 9fc3c0b..a4cd210 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -864,6 +864,22 @@ config SECCOMP
+>  
+>  	  If unsure, say Y. Only embedded should say N here.
+>  
+> +config PPC64_MEMORY_PROTECTION_KEYS
 
-However with the arrival of Power9, we now have the situation where
-CONFIG_PPC_STD_MMU_64 is enabled, but the kernel is running using the
-Radix MMU - *not* the "standard" MMU. So it is now actively confusing
-to use it, because it implies that code is disabled or inactive when
-the Radix MMU is in use, however that is not necessarily true.
+That's pretty wordy, can we make it CONFIG_PPC_MEM_KEYS ?
 
-So s/CONFIG_PPC_STD_MMU_64/CONFIG_PPC_BOOK3S_64/, and do some minor
-formatting updates of some of the affected lines.
+I think you're a sufficient vim wizard to search and replace all
+usages at once, if not I can do it before I apply the series.
 
-This will be a pain for backports, but c'est la vie.
+> +	prompt "PowerPC Memory Protection Keys"
+> +	def_bool y
+> +	# Note: only available in 64-bit mode
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Kconfig                         |  6 +++---
- arch/powerpc/include/asm/nohash/64/pgtable.h |  2 +-
- arch/powerpc/include/asm/paca.h              | 10 +++++-----
- arch/powerpc/include/asm/page_64.h           |  6 +++---
- arch/powerpc/include/asm/pgtable-be-types.h  |  2 +-
- arch/powerpc/include/asm/pgtable-types.h     |  4 ++--
- arch/powerpc/include/asm/tlbflush.h          |  2 +-
- arch/powerpc/kernel/asm-offsets.c            |  4 ++--
- arch/powerpc/kernel/entry_64.S               |  4 ++--
- arch/powerpc/kernel/exceptions-64s.S         |  8 ++++----
- arch/powerpc/kernel/machine_kexec_64.c       |  4 ++--
- arch/powerpc/kernel/mce_power.c              |  4 ++--
- arch/powerpc/kernel/paca.c                   | 12 ++++++------
- arch/powerpc/kernel/pci_64.c                 |  4 ++--
- arch/powerpc/kernel/process.c                | 12 ++++++------
- arch/powerpc/kernel/prom.c                   |  2 +-
- arch/powerpc/kernel/setup-common.c           |  4 ++--
- arch/powerpc/mm/Makefile                     |  6 +++---
- arch/powerpc/mm/dump_hashpagetable.c         |  2 +-
- arch/powerpc/mm/dump_linuxpagetables.c       | 10 +++++-----
- arch/powerpc/mm/init_64.c                    |  8 ++++----
- arch/powerpc/mm/pgtable_64.c                 |  2 +-
- arch/powerpc/platforms/Kconfig.cputype       |  6 +-----
- arch/powerpc/platforms/pseries/lpar.c        |  8 ++++----
- arch/powerpc/platforms/pseries/lparcfg.c     |  2 +-
- arch/powerpc/xmon/xmon.c                     |  6 +++---
- 26 files changed, 68 insertions(+), 72 deletions(-)
+We don't need the note, that's exactly what the next line says:
+> +	depends on PPC64
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 809c468edab1..b8b75b423316 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -334,7 +334,7 @@ config PPC_OF_PLATFORM_PCI
- 	default n
- 
- config ARCH_SUPPORTS_DEBUG_PAGEALLOC
--	depends on PPC32 || PPC_STD_MMU_64
-+	depends on PPC32 || PPC_BOOK3S_64
- 	def_bool y
- 
- config ARCH_SUPPORTS_UPROBES
-@@ -721,7 +721,7 @@ config PPC_16K_PAGES
- 
- config PPC_64K_PAGES
- 	bool "64k page size"
--	depends on !PPC_FSL_BOOK3E && (44x || PPC_STD_MMU_64 || PPC_BOOK3E_64)
-+	depends on !PPC_FSL_BOOK3E && (44x || PPC_BOOK3S_64 || PPC_BOOK3E_64)
- 	select HAVE_ARCH_SOFT_DIRTY if PPC_BOOK3S_64
- 
- config PPC_256K_PAGES
-@@ -780,7 +780,7 @@ config FORCE_MAX_ZONEORDER
- 
- config PPC_SUBPAGE_PROT
- 	bool "Support setting protections for 4k subpages"
--	depends on PPC_STD_MMU_64 && PPC_64K_PAGES
-+	depends on PPC_BOOK3S_64 && PPC_64K_PAGES
- 	help
- 	  This option adds support for a system call to allow user programs
- 	  to set access permissions (read/write, readonly, or no access)
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index f0ff384d4ca5..b1c42ac54d96 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -203,7 +203,7 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 	if (!huge)
- 		assert_pte_locked(mm, addr);
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	if (old & _PAGE_HASHPTE)
- 		hpte_need_flush(mm, addr, ptep, old, huge);
- #endif
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index cfc2a10b9064..d2804f143c99 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -91,14 +91,14 @@ struct paca_struct {
- 	u8 cpu_start;			/* At startup, processor spins until */
- 					/* this becomes non-zero. */
- 	u8 kexec_state;		/* set when kexec down has irqs off */
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	struct slb_shadow *slb_shadow_ptr;
- 	struct dtl_entry *dispatch_log;
- 	struct dtl_entry *dispatch_log_end;
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif
- 	u64 dscr_default;		/* per-CPU default DSCR */
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/*
- 	 * Now, starting in cacheline 2, the exception save areas
- 	 */
-@@ -110,7 +110,7 @@ struct paca_struct {
- 	u16 vmalloc_sllp;
- 	u16 slb_cache_ptr;
- 	u32 slb_cache[SLB_CACHE_ENTRIES];
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- #ifdef CONFIG_PPC_BOOK3E
- 	u64 exgen[8] __aligned(0x40);
-@@ -192,7 +192,7 @@ struct paca_struct {
- 	struct stop_sprs stop_sprs;
- #endif
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/* Non-maskable exceptions that are not performance critical */
- 	u64 exnmi[EX_SIZE];	/* used for system reset (nmi) */
- 	u64 exmc[EX_SIZE];	/* used for machine checks */
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index c4d9654bd637..56234c6fcd61 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -117,21 +117,21 @@ extern void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
- #endif /* __ASSEMBLY__ */
- #else
- #define slice_init()
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- #define get_slice_psize(mm, addr)	((mm)->context.user_psize)
- #define slice_set_user_psize(mm, psize)		\
- do {						\
- 	(mm)->context.user_psize = (psize);	\
- 	(mm)->context.sllp = SLB_VSID_USER | mmu_psize_defs[(psize)].sllp; \
- } while (0)
--#else /* CONFIG_PPC_STD_MMU_64 */
-+#else /* !CONFIG_PPC_BOOK3S_64 */
- #ifdef CONFIG_PPC_64K_PAGES
- #define get_slice_psize(mm, addr)	MMU_PAGE_64K
- #else /* CONFIG_PPC_64K_PAGES */
- #define get_slice_psize(mm, addr)	MMU_PAGE_4K
- #endif /* !CONFIG_PPC_64K_PAGES */
- #define slice_set_user_psize(mm, psize)	do { BUG(); } while(0)
--#endif /* !CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- #define slice_set_range_psize(mm, start, len, psize)	\
- 	slice_set_user_psize((mm), (psize))
-diff --git a/arch/powerpc/include/asm/pgtable-be-types.h b/arch/powerpc/include/asm/pgtable-be-types.h
-index 67e7e3d990f4..03ab638593e1 100644
---- a/arch/powerpc/include/asm/pgtable-be-types.h
-+++ b/arch/powerpc/include/asm/pgtable-be-types.h
-@@ -76,7 +76,7 @@ typedef struct { unsigned long pgprot; } pgprot_t;
-  * With hash config 64k pages additionally define a bigger "real PTE" type that
-  * gathers the "second half" part of the PTE for pseudo 64k pages
-  */
--#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
-+#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_BOOK3S_64)
- typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
- #else
- typedef struct { pte_t pte; } real_pte_t;
-diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
-index 369a164b545c..5d2c38d26396 100644
---- a/arch/powerpc/include/asm/pgtable-types.h
-+++ b/arch/powerpc/include/asm/pgtable-types.h
-@@ -49,13 +49,13 @@ typedef struct { unsigned long pgprot; } pgprot_t;
-  * With hash config 64k pages additionally define a bigger "real PTE" type that
-  * gathers the "second half" part of the PTE for pseudo 64k pages
-  */
--#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
-+#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_BOOK3S_64)
- typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
- #else
- typedef struct { pte_t pte; } real_pte_t;
- #endif
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- #include <asm/cmpxchg.h>
- 
- static inline bool pte_xchg(pte_t *ptep, pte_t old, pte_t new)
-diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
-index 13dbcd41885e..7d5a157c7832 100644
---- a/arch/powerpc/include/asm/tlbflush.h
-+++ b/arch/powerpc/include/asm/tlbflush.h
-@@ -77,7 +77,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
- 	flush_tlb_mm(mm);
- }
- 
--#elif defined(CONFIG_PPC_STD_MMU_64)
-+#elif defined(CONFIG_PPC_BOOK3S_64)
- #include <asm/book3s/64/tlbflush.h>
- #else
- #error Unsupported MMU type
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 8cfb20e38cfe..200623e71474 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -208,7 +208,7 @@ int main(void)
- 	OFFSET(TCD_ESEL_FIRST, tlb_core_data, esel_first);
- #endif /* CONFIG_PPC_BOOK3E */
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	OFFSET(PACASLBCACHE, paca_struct, slb_cache);
- 	OFFSET(PACASLBCACHEPTR, paca_struct, slb_cache_ptr);
- 	OFFSET(PACAVMALLOCSLLP, paca_struct, vmalloc_sllp);
-@@ -230,7 +230,7 @@ int main(void)
- 	OFFSET(LPPACA_DTLIDX, lppaca, dtl_idx);
- 	OFFSET(LPPACA_YIELDCOUNT, lppaca, yield_count);
- 	OFFSET(PACA_DTL_RIDX, paca_struct, dtl_ridx);
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 	OFFSET(PACAEMERGSP, paca_struct, emergency_sp);
- #ifdef CONFIG_PPC_BOOK3S_64
- 	OFFSET(PACAMCEMERGSP, paca_struct, mc_emergency_sp);
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 4a0fd4f40245..3320bcac7192 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -539,7 +539,7 @@ _GLOBAL(_switch)
- 	std	r6,PACACURRENT(r13)	/* Set new 'current' */
- 
- 	ld	r8,KSP(r4)	/* new stack pointer */
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- BEGIN_MMU_FTR_SECTION
- 	b	2f
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
-@@ -588,7 +588,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	slbmte	r7,r0
- 	isync
- 2:
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- 	CURRENT_THREAD_INFO(r7, r8)  /* base of new stack */
- 	/* Note: this uses SWITCH_FRAME_SIZE rather than INT_FRAME_SIZE
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index fa7f8d42cf2c..a76343ece58d 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -605,7 +605,7 @@ EXC_COMMON_BEGIN(slb_miss_common)
- 	cmpdi	cr5,r11,MSR_RI
- 
- 	crset	4*cr0+eq
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- BEGIN_MMU_FTR_SECTION
- 	bl	slb_allocate
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
-@@ -1496,7 +1496,7 @@ USE_TEXT_SECTION()
-  */
- 	.balign	IFETCH_ALIGN_BYTES
- do_hash_page:
--	#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	lis	r0,DSISR_BAD_FAULT_64S@h
- 	ori	r0,r0,DSISR_BAD_FAULT_64S@l
- 	and.	r0,r4,r0		/* weird error? */
-@@ -1527,7 +1527,7 @@ do_hash_page:
- 
- 	/* Reload DSISR into r4 for the DABR check below */
- 	ld      r4,_DSISR(r1)
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- /* Here we have a page fault that hash_page can't handle. */
- handle_page_fault:
-@@ -1556,7 +1556,7 @@ handle_dabr_fault:
- 12:	b       ret_from_except_lite
- 
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- /* We have a page fault that hash_page could handle but HV refused
-  * the PTE insertion
-  */
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 5c12e21d0d1a..49d34d7271e7 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -360,7 +360,7 @@ void default_machine_kexec(struct kimage *image)
- 	/* NOTREACHED */
- }
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- /* Values we need to export to the second kernel via the device tree. */
- static unsigned long htab_base;
- static unsigned long htab_size;
-@@ -402,4 +402,4 @@ static int __init export_htab_values(void)
- 	return 0;
- }
- late_initcall(export_htab_values);
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index 214de26aaae8..6fd095c766b5 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -138,7 +138,7 @@ void __flush_tlb_power9(unsigned int action)
- 
- 
- /* flush SLBs and reload */
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- static void flush_and_reload_slb(void)
- {
- 	struct slb_shadow *slb;
-@@ -185,7 +185,7 @@ static void flush_erat(void)
- 
- static int mce_flush(int what)
- {
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	if (what == MCE_FLUSH_SLB) {
- 		flush_and_reload_slb();
- 		return 1;
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 2ff2b8a19f71..5d38d5ea9a24 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -90,7 +90,7 @@ static inline void free_lppacas(void) { }
- 
- #endif /* CONFIG_PPC_BOOK3S */
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 
- /*
-  * 3 persistent SLBs are registered here.  The buffer will be zero
-@@ -135,11 +135,11 @@ static struct slb_shadow * __init init_slb_shadow(int cpu)
- 	return s;
- }
- 
--#else /* CONFIG_PPC_STD_MMU_64 */
-+#else /* !CONFIG_PPC_BOOK3S_64 */
- 
- static void __init allocate_slb_shadows(int nr_cpus, int limit) { }
- 
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- /* The Paca is an array with one entry per processor.  Each contains an
-  * lppaca, which contains the information shared between the
-@@ -170,9 +170,9 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
- 	new_paca->kexec_state = KEXEC_STATE_NONE;
- 	new_paca->__current = &init_task;
- 	new_paca->data_offset = 0xfeeeeeeeeeeeeeeeULL;
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	new_paca->slb_shadow_ptr = init_slb_shadow(cpu);
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif
- 
- #ifdef CONFIG_PPC_BOOK3E
- 	/* For now -- if we have threads this will be adjusted later */
-@@ -271,7 +271,7 @@ void copy_mm_to_paca(struct mm_struct *mm)
- 	get_paca()->mm_ctx_user_psize = context->user_psize;
- 	get_paca()->mm_ctx_sllp = context->sllp;
- #endif
--#else /* CONFIG_PPC_BOOK3S */
-+#else /* !CONFIG_PPC_BOOK3S */
- 	return;
- #endif
- }
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 932b9741aa8f..15ce0306b092 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -90,14 +90,14 @@ int pcibios_unmap_io_space(struct pci_bus *bus)
- 	 * to do an appropriate TLB flush here too
- 	 */
- 	if (bus->self) {
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 		struct resource *res = bus->resource[0];
- #endif
- 
- 		pr_debug("IO unmapping for PCI-PCI bridge %s\n",
- 			 pci_name(bus->self));
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 		__flush_hash_table_range(&init_mm, res->start + _IO_BASE,
- 					 res->end + _IO_BASE + 1);
- #endif
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 166145b18728..c45cd753c32d 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1155,7 +1155,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	}
- #endif /* CONFIG_PPC64 */
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	batch = this_cpu_ptr(&ppc64_tlb_batch);
- 	if (batch->active) {
- 		current_thread_info()->local_flags |= _TLF_LAZY_MMU;
-@@ -1163,7 +1163,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 			__flush_tlb_pending(batch);
- 		batch->active = 0;
- 	}
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	switch_booke_debug_regs(&new->thread.debug);
-@@ -1209,7 +1209,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 
- 	last = _switch(old_thread, new_thread);
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	if (current_thread_info()->local_flags & _TLF_LAZY_MMU) {
- 		current_thread_info()->local_flags &= ~_TLF_LAZY_MMU;
- 		batch = this_cpu_ptr(&ppc64_tlb_batch);
-@@ -1238,7 +1238,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 					: : "r"(dummy_copy_buffer), "r"(0));
- 		}
- 	}
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- 	return last;
- }
-@@ -1467,7 +1467,7 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
- 
- static void setup_ksp_vsid(struct task_struct *p, unsigned long sp)
- {
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	unsigned long sp_vsid;
- 	unsigned long llp = mmu_psize_defs[mmu_linear_psize].sllp;
- 
-@@ -2047,7 +2047,7 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
- 	unsigned long base = mm->brk;
- 	unsigned long ret;
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/*
- 	 * If we are using 1TB segments and we are allowed to randomise
- 	 * the heap, we can put it above 1TB so it is backed by a 1TB
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index f83056297441..54ede1b635df 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -228,7 +228,7 @@ static void __init check_cpu_pa_features(unsigned long node)
- 		      ibm_pa_features, ARRAY_SIZE(ibm_pa_features));
- }
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- static void __init init_mmu_slb_size(unsigned long node)
- {
- 	const __be32 *slb_size_ptr;
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 2e3bc16d02b2..fa661ed616f5 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -773,7 +773,7 @@ void arch_setup_pdev_archdata(struct platform_device *pdev)
- static __init void print_system_info(void)
- {
- 	pr_info("-----------------------------------------------------\n");
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
- #endif
- #ifdef CONFIG_PPC_STD_MMU_32
-@@ -800,7 +800,7 @@ static __init void print_system_info(void)
- 	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
- #endif
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	if (htab_address)
- 		pr_info("htab_address      = 0x%p\n", htab_address);
- 	if (htab_hash_mask)
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index fb844d2f266e..915178423c3a 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -14,11 +14,11 @@ obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
- obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(BITS)e.o
- hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
- obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
--obj-$(CONFIG_PPC_STD_MMU_64)	+= pgtable-hash64.o hash_utils_64.o slb_low.o slb.o $(hash64-y) mmu_context_book3s64.o pgtable-book3s64.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= pgtable-hash64.o hash_utils_64.o slb_low.o slb.o $(hash64-y) mmu_context_book3s64.o pgtable-book3s64.o
- obj-$(CONFIG_PPC_RADIX_MMU)	+= pgtable-radix.o tlb-radix.o
- obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o mmu_context_hash32.o
- obj-$(CONFIG_PPC_STD_MMU)	+= tlb_hash$(BITS).o
--ifeq ($(CONFIG_PPC_STD_MMU_64),y)
-+ifeq ($(CONFIG_PPC_BOOK3S_64),y)
- obj-$(CONFIG_PPC_4K_PAGES)	+= hash64_4k.o
- obj-$(CONFIG_PPC_64K_PAGES)	+= hash64_64k.o
- endif
-@@ -31,7 +31,7 @@ obj-$(CONFIG_PPC_SPLPAR)	+= vphn.o
- obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
- obj-y				+= hugetlbpage.o
- ifeq ($(CONFIG_HUGETLB_PAGE),y)
--obj-$(CONFIG_PPC_STD_MMU_64)	+= hugetlbpage-hash64.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= hugetlbpage-hash64.o
- obj-$(CONFIG_PPC_RADIX_MMU)	+= hugetlbpage-radix.o
- obj-$(CONFIG_PPC_BOOK3E_MMU)	+= hugetlbpage-book3e.o
- endif
-diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
-index 5c4c93dcff19..14cfb11b09d0 100644
---- a/arch/powerpc/mm/dump_hashpagetable.c
-+++ b/arch/powerpc/mm/dump_hashpagetable.c
-@@ -500,7 +500,7 @@ static void populate_markers(void)
- 	address_markers[6].start_address = PHB_IO_END;
- 	address_markers[7].start_address = IOREMAP_BASE;
- 	address_markers[8].start_address = IOREMAP_END;
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	address_markers[9].start_address =  H_VMEMMAP_BASE;
- #else
- 	address_markers[9].start_address =  VMEMMAP_BASE;
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index c9282d27b203..c2e7dea59490 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -112,7 +112,7 @@ struct flag_info {
- 
- static const struct flag_info flag_array[] = {
- 	{
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 		.mask	= _PAGE_PRIVILEGED,
- 		.val	= 0,
- #else
-@@ -147,7 +147,7 @@ static const struct flag_info flag_array[] = {
- 		.set	= "present",
- 		.clear	= "       ",
- 	}, {
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 		.mask	= H_PAGE_HASHPTE,
- 		.val	= H_PAGE_HASHPTE,
- #else
-@@ -157,7 +157,7 @@ static const struct flag_info flag_array[] = {
- 		.set	= "hpte",
- 		.clear	= "    ",
- 	}, {
--#ifndef CONFIG_PPC_STD_MMU_64
-+#ifndef CONFIG_PPC_BOOK3S_64
- 		.mask	= _PAGE_GUARDED,
- 		.val	= _PAGE_GUARDED,
- 		.set	= "guarded",
-@@ -174,7 +174,7 @@ static const struct flag_info flag_array[] = {
- 		.set	= "accessed",
- 		.clear	= "        ",
- 	}, {
--#ifndef CONFIG_PPC_STD_MMU_64
-+#ifndef CONFIG_PPC_BOOK3S_64
- 		.mask	= _PAGE_WRITETHRU,
- 		.val	= _PAGE_WRITETHRU,
- 		.set	= "write through",
-@@ -450,7 +450,7 @@ static void populate_markers(void)
- 	address_markers[i++].start_address = PHB_IO_END;
- 	address_markers[i++].start_address = IOREMAP_BASE;
- 	address_markers[i++].start_address = IOREMAP_END;
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	address_markers[i++].start_address =  H_VMEMMAP_BASE;
- #else
- 	address_markers[i++].start_address =  VMEMMAP_BASE;
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 588a521966ec..12b3025fadac 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -68,11 +68,11 @@
- 
- #include "mmu_decl.h"
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- #if H_PGTABLE_RANGE > USER_VSID_RANGE
- #warning Limited user VSID range means pagetable space is wasted
- #endif
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- phys_addr_t memstart_addr = ~0;
- EXPORT_SYMBOL_GPL(memstart_addr);
-@@ -367,7 +367,7 @@ EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
- 
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- static bool disable_radix;
- static int __init parse_disable_radix(char *p)
- {
-@@ -444,4 +444,4 @@ void __init mmu_early_init_devtree(void)
- 	else
- 		hash__early_init_devtree();
- }
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index ac0717a90ca6..2851282edcd4 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -57,7 +57,7 @@
- 
- #include "mmu_decl.h"
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- #if TASK_SIZE_USER64 > (1UL << (ESID_BITS + SID_SHIFT))
- #error TASK_SIZE_USER64 exceeds user VSID range
- #endif
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 13663efc1d31..f8928ee85f6b 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -294,10 +294,6 @@ config PPC_STD_MMU_32
- 	def_bool y
- 	depends on PPC_STD_MMU && PPC32
- 
--config PPC_STD_MMU_64
--	def_bool y
--	depends on PPC_STD_MMU && PPC64
--
- config PPC_RADIX_MMU
- 	bool "Radix MMU Support"
- 	depends on PPC_BOOK3S_64
-@@ -323,7 +319,7 @@ config PPC_BOOK3E_MMU
- 
- config PPC_MM_SLICES
- 	bool
--	default y if PPC_STD_MMU_64
-+	default y if PPC_BOOK3S_64
- 	default n
- 
- config PPC_HAVE_PMU_SUPPORT
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 495ba4e7336d..0ee4a469a4ae 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -93,7 +93,7 @@ void vpa_init(int cpu)
- 		return;
- 	}
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/*
- 	 * PAPR says this feature is SLB-Buffer but firmware never
- 	 * reports that.  All SPLPAR support SLB shadow buffer.
-@@ -106,7 +106,7 @@ void vpa_init(int cpu)
- 			       "cpu %d (hw %d) of area %lx failed with %ld\n",
- 			       cpu, hwcpu, addr, ret);
- 	}
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- 	/*
- 	 * Register dispatch trace log, if one has been allocated.
-@@ -129,7 +129,7 @@ void vpa_init(int cpu)
- 	}
- }
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 
- static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 				     unsigned long vpn, unsigned long pa,
-@@ -824,7 +824,7 @@ void arch_free_page(struct page *page, int order)
- EXPORT_SYMBOL(arch_free_page);
- 
- #endif /* CONFIG_PPC_SMLPAR */
--#endif /* CONFIG_PPC_STD_MMU_64 */
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- 
- #ifdef CONFIG_TRACEPOINTS
- #ifdef HAVE_JUMP_LABEL
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index 779fc2a1c8f7..b2706c483067 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -485,7 +485,7 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 	seq_printf(m, "shared_processor_mode=%d\n",
- 		   lppaca_shared_proc(get_lppaca()));
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
- #endif
- 	parse_em_data(m);
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index fb0a00c637b6..2cb15010d753 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2319,7 +2319,7 @@ static void dump_tracing(void)
- static void dump_one_paca(int cpu)
- {
- 	struct paca_struct *p;
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	int i = 0;
- #endif
- 
-@@ -2360,7 +2360,7 @@ static void dump_one_paca(int cpu)
- 	DUMP(p, hw_cpu_id, "x");
- 	DUMP(p, cpu_start, "x");
- 	DUMP(p, kexec_state, "x");
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	for (i = 0; i < SLB_NUM_BOLTED; i++) {
- 		u64 esid, vsid;
- 
-@@ -3409,7 +3409,7 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
- 	printf("%s", after);
- }
- 
--#ifdef CONFIG_PPC_STD_MMU_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- void dump_segments(void)
- {
- 	int i;
--- 
-2.7.4
+But shouldn't it be BOOK3S_64 ?
+
+I don't think it works on BookE does it?
+
+> +	select ARCH_USES_HIGH_VMA_FLAGS
+> +	select ARCH_HAS_PKEYS
+> +	---help---
+
+I prefer just "help".
+
+> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+> index 3095925..7badf29 100644
+> --- a/arch/powerpc/include/asm/mmu_context.h
+> +++ b/arch/powerpc/include/asm/mmu_context.h
+> @@ -141,5 +141,10 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
+>  	/* by default, allow everything */
+>  	return true;
+>  }
+> +
+> +#ifndef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> +#define pkey_initialize()
+> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+
+You don't need ifdefs around that. But you also don't need it (see below).
+
+> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> new file mode 100644
+> index 0000000..c02305a
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/pkeys.h
+> @@ -0,0 +1,45 @@
+> +#ifndef _ASM_PPC64_PKEYS_H
+> +#define _ASM_PPC64_PKEYS_H
+
+_ASM_POWERPC_KEYS_H
+
+Missing copyright header here.
+
+> +
+> +extern bool pkey_inited;
+> +extern bool pkey_execute_disable_support;
+> +#define ARCH_VM_PKEY_FLAGS 0
+> +
+> +static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+> +{
+> +	return (pkey == 0);
+
+That means pkey 1 is not allocated and pkey 0 is?
+
+Surely this should just return false for now?
+
+> +}
+> +
+> +static inline int mm_pkey_alloc(struct mm_struct *mm)
+> +{
+> +	return -1;
+> +}
+> +
+> +static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
+> +{
+> +	return -EINVAL;
+> +}
+> +
+> +/*
+> + * Try to dedicate one of the protection keys to be used as an
+> + * execute-only protection key.
+> + */
+> +static inline int execute_only_pkey(struct mm_struct *mm)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
+> +		int prot, int pkey)
+
+static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
+					      int prot, int pkey)
+
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index b89c6aa..3b67014 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -316,6 +317,9 @@ void __init early_setup(unsigned long dt_ptr)
+>  	/* Initialize the hash table or TLB handling */
+>  	early_init_mmu();
+>  
+> +	/* initialize the key subsystem */
+> +	pkey_initialize();
+> +
+
+I'm not sure we need to initialise this that early, but if we do, it
+should be done in early_init_mmu(), not here.
+
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index 0dff57b..67f62b5 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -35,6 +35,7 @@
+>  #include <linux/memblock.h>
+>  #include <linux/context_tracking.h>
+>  #include <linux/libfdt.h>
+> +#include <linux/pkeys.h>
+
+This should go in a later patch when it's needed.
+
+> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> new file mode 100644
+> index 0000000..418a05b
+> --- /dev/null
+> +++ b/arch/powerpc/mm/pkeys.c
+> @@ -0,0 +1,33 @@
+> +/*
+> + * PowerPC Memory Protection Keys management
+> + * Copyright (c) 2015, Intel Corporation.
+
+Is any of it really copyright Intel?
+
+> + * Copyright (c) 2017, IBM Corporation.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+
+We're meant to use "or later" on new code.
+
+> + *
+> + * This program is distributed in the hope it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+
+But not this part.
+
+> + */
+
+Blank line.
+
+> +#include <linux/pkeys.h>                /* PKEY_*                       */
+
+Comment is wrong and unnecessary.
+
+> +bool pkey_inited;
+> +bool pkey_execute_disable_support;
+> +
+> +void __init pkey_initialize(void)
+> +{
+> +	/* disable the pkey system till everything
+> +	 * is in place. A patch further down the
+> +	 * line will enable it.
+> +	 */
+
+	/*
+         * Disable the pkey system till everything is in place. A patch
+         * further down the line will enable it.
+	 */
+
+I'm going to stop commenting on every badly formatted comment :)
+
+
+> +	pkey_inited = false;
+> +
+> +	/*
+> +	 * disable execute_disable support for now.
+> +	 * A patch further down will enable it.
+> +	 */
+> +	pkey_execute_disable_support = false;
+
+Those are both false anyway, so I'm not sure we really needed to
+initialise them to false again, but I don't feel that strongly about it.
+
+cheers
