@@ -1,24 +1,19 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHZfz2NJkzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 14:49:15 +1100 (AEDT)
-Date: Thu, 19 Oct 2017 14:48:14 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHZfy6blzzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 14:49:14 +1100 (AEDT)
+Date: Thu, 19 Oct 2017 14:48:41 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, LKML <linux-kernel@vger.kernel.org>,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Delete an error message for a
- failed memory allocation in kvmppc_allocate_hpt()
-Message-ID: <20171019034814.GD3492@fergus.ozlabs.ibm.com>
-References: <124a92d4-7d49-0769-ae0e-c4ab007ae146@users.sourceforge.net>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH kernel] KVM: PPC: Enable in-kernel TCE handlers for PR KVM
+Message-ID: <20171019034841.GE3492@fergus.ozlabs.ibm.com>
+References: <20171011050108.37980-1-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <124a92d4-7d49-0769-ae0e-c4ab007ae146@users.sourceforge.net>
+In-Reply-To: <20171011050108.37980-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 05, 2017 at 01:23:30PM +0200, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Thu, 5 Oct 2017 13:16:51 +0200
+On Wed, Oct 11, 2017 at 04:01:08PM +1100, Alexey Kardashevskiy wrote:
+> The handlers support PR KVM from the day one; however the PR KVM's
+> enable/disable hcalls handler missed these ones.
 > 
-> Omit an extra message for a memory allocation failure in this function.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Thanks, applied to my kvm-ppc-next branch.
 
