@@ -1,45 +1,35 @@
-Return-Path: <srs0=6tmr=bs=linux.vnet.ibm.com=tuliom@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHqhF5ZzFzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 00:36:13 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3yHqhF4zvNz8tBH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 00:36:13 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <dan.carpenter@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3yHqhF1y4zz9t42
- for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2017 00:36:13 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9JDaB88048381
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2017 09:36:11 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dpu637j4t-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2017 09:36:07 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <tuliom@linux.vnet.ibm.com>;
- Thu, 19 Oct 2017 07:34:15 -0600
-From: "Tulio Magno Quites Machado Filho" <tuliom@linux.vnet.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@ozlabs.org, Adhemerval Zanella <adhemerval.zanella@linaro.org>
-Cc: stewart@linux.vnet.ibm.com, mikey@neuling.org, cyrilbur@gmail.com
-Cc: 
-Subject: Re: [PATCH 3/4] powerpc/powernv: Enable TM without suspend if possible
-In-Reply-To: <920a68e7-1bb5-3ace-2aaf-1594d8845721@redhat.com>
-References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
- <1507803439-12862-3-git-send-email-mpe@ellerman.id.au>
- <920a68e7-1bb5-3ace-2aaf-1594d8845721@redhat.com>
-Date: Thu, 19 Oct 2017 11:34:09 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHqjw2pKHzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 00:37:40 +1100 (AEDT)
+Date: Thu, 19 Oct 2017 16:36:46 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Jerry Snitselaar <jsnitsel@redhat.com>,
+ Kenneth Goldman <kgold@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nayna Jain <nayna@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Peter =?iso-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>,
+ kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4] char/tpm: Less checks in tpm_ibmvtpm_probe() after
+ error detection
+Message-ID: <20171019133646.gu7qv2tywfk4tcxj@mwanda>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <09a2c3a1-1b10-507d-a866-258b570f6da1@users.sourceforge.net>
+ <20171019135632.4af42743@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <8760bbb6su.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20171019135632.4af42743@kitsune.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,39 +39,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Forwarding some comments from Adhemerval sent to libc-alpha [1]...
-
-Adhemerval Zanella <adhemerval.zanella@linaro.org> writes:
->Florian Weimer <fweimer@redhat.com> writes:
+On Thu, Oct 19, 2017 at 01:56:32PM +0200, Michal Suchánek wrote:
+> 
+> I think a single cleanup section is better than many labels that just
+> avoid a single null check.
 >
->> On 10/12/2017 12:17 PM, Michael Ellerman wrote:
->>> +	pr_info("Enabling TM (Transactional Memory) with Suspend Disabled\n");
->>> +	cur_cpu_spec->cpu_features |= CPU_FTR_TM;
->>> +	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_HTM_NO_SUSPEND;
->>> +	tm_suspend_disabled = true;
->>
->> This doesn't look right because if suspend is not available, you need to 
->> clear the original PPC_FEATURE2_HTM flag because the semantics are not 
->> right, so that applications can use fallback code.  Otherwise, 
->> applications may incorrectly select the HTM code and break if running on 
->> a system which supports HTM, but without the suspend state.
->>
->> The new flag should say that HTM is supported, but without the suspend 
->> state, and it should be always set if PPC_FEATURE2_HTM is set.
->
-> Will it also change TEXARS with the abort information?
 
-It should, with a permanent error cause so that old applications entering
-suspended state can adopt another technique.
-Michael, could you clarify if this is indeed happening, please?
+I am not a big advocate of churn, but one err style error handling is
+really bug prone.
 
-> I completely agree with Florian here, this is as *ABI* change
-> and the kernel need to advertise a different TM ABI instead
-> of as an extension.
+I'm dealing with static analysis so most of the bugs I see are error
+handling bugs.  That's because error handling is hard to test but easy
+for static analysis.  One err style error handling is the worst because
+you get things like:
 
-Adhemerval, could you elaborate which problems you're foreseeing, please?
+fail:
+	kfree(foo->bar);
+	kfree(foo);
 
--- 
-Tulio Magno
+Oops, foo->bar is a NULL dereference.  And generally, it's a bad thing
+to free things that haven't been allocated so, for example, I see
+refcounting bugs in error handling paths as well where we decrement
+something that wasn't incremented.  Freeing everything is more
+complicated than just freeing one specific thing the way standard kernel
+error handling works.
 
-[1] https://sourceware.org/ml/libc-alpha/2017-10/msg00893.html
+> As long as you can tell easily which resources were already allocated
+> and need to be freed it is saner to keep only one cleanup section.
+> 
+
+Sure, if the function is simple and short then the error handling is
+normally simple and short.  This is true for any style of error
+handling.
+
+> If the code doing the allocation is changed in the future the single
+> cleanup can stay whereas multiple labels have to be rewritten again.
+
+No, they don't unless you choose bad label names.  Perhaps numbered
+labels?  We don't get a lot of those in the kernel any more.  Label
+name should be based on what the label does.  Often I see bad label
+names like generic labels:
+
+	foo = kmalloc();
+	if (!foo)
+		goto out;
+
+What is out going to do?  Another common anti-pattern is come-from
+labels:
+
+	foo = kmalloc();
+	if (!foo)
+		goto kmalloc_failed;
+
+Obviously, we can see from the if statement that the alloc failed and
+you *just* know the next line is going to be is going to be:
+
+	if (invalid)
+		goto kmalloc_failed;
+
+Which is wrong because kmalloc didn't fail...  But if the label name is
+based on what it does then, when you add or a remove an allocation, you
+just have to edit the one thing.  It's very simple:
+
++	foo = new_alloc();
++	if (!foo)
++		return -ENOMEM;
++
+ 	bar = old_alloc();
+-	if (!bar)
+-		return -ENOMEM;
++	if (!bar) {
++		ret -ENOMEM;
++		goto free_foo;
+
+[ snip ]
+
+ free_whatever:
+ 	free(whatever);
++free_foo:
++	free(foo);
+
+ return ret;
+
+> 
+> Also just changing this just for the sake of code style does not seem
+> worth it whatever style you prefer.
+
+True.
+
+regards,
+dan carpenter
