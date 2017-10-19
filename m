@@ -2,16 +2,20 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHbzD1bN1zDqBd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHbzD5vZvzDqBd
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 15:48:24 +1100 (AEDT)
-In-Reply-To: <20170929042655.14570-2-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
+In-Reply-To: <20171009175627.4829-1-vaibhav@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v4,
- 1/5] powerpc/mce.c: Remove unused function get_mce_fault_addr()
-Message-Id: <3yHbzC6vsTz9tX4@ozlabs.org>
-Date: Thu, 19 Oct 2017 15:48:23 +1100 (AEDT)
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Alastair D'Silva <alastair@au1.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: cxl: Rename register PSL9_FIR2 to PSL9_FIR_MASK
+Message-Id: <3yHbzD3Mygz9tXK@ozlabs.org>
+Date: Thu, 19 Oct 2017 15:48:24 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-09-29 at 04:26:51 UTC, Balbir Singh wrote:
-> There are no users of get_mce_fault_addr()
+On Mon, 2017-10-09 at 17:56:27 UTC, Vaibhav Jain wrote:
+> PSL9 doesn't have a FIR2 register as was the case with PSL8. However
+> currently the register definitions in 'cxl.h' have a definition for
+> PSL9_FIR2 that actually points to PSL9_FIR_MASK register in the P1
+> area at offset 0x308.
 > 
-> Fixes: b63a0ff ("powerpc/powernv: Machine check exception handling.")
+> So this patch renames the def PSL9_FIR2 to PSL9_FIR_MASK and updates
+> the references in the code to point to the new identifier. It also
+> removes the code to dump contents of FIR2 (FIR_MASK actually) in
+> cxl_native_irq_dump_regs_psl9().
 > 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> Fixes: f24be42aab37("cxl: Add psl9 specific code")
+> Reported-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/73e341eb6bea01fde706d10d7edba9
+https://git.kernel.org/powerpc/c/8f6a90421c7637984fb352da079fb1
 
 cheers
