@@ -1,38 +1,25 @@
-Return-Path: <pantelis.antoniou@konsulko.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHjN26VHWzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 19:51:46 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id f4so14863755wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 01:51:46 -0700 (PDT)
-Content-Type: text/plain; charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 10.3 \(3273\))
-Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
- full_name
-From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-In-Reply-To: <CAL_JsqKJ74y3qHVqbRph5C8=0Ggb+n=JT3TZybu2+mENyZ1VZA@mail.gmail.com>
-Date: Thu, 19 Oct 2017 11:51:40 +0300
-Cc: Alan Tull <atull@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>,
- linux-fpga@vger.kernel.org
-Message-Id: <4393AFA4-620F-4C21-995D-A9806DAE1990@konsulko.com>
-References: <20170821151651.25096-1-robh@kernel.org>
- <20170821151651.25096-6-robh@kernel.org>
- <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
- <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
- <59E69786.2030406@gmail.com>
- <CANk1AXStoiNtJfU0iNug1wKASurqH6OrNoaN=UtSh6xxSB088Q@mail.gmail.com>
- <CAL_JsqKR3Jg+tgZr4xGPtcWnZW7ng741YjuyUFaS2SXKXbxGtg@mail.gmail.com>
- <1508341985.25643.12.camel@hp800z>
- <CAL_JsqKJ74y3qHVqbRph5C8=0Ggb+n=JT3TZybu2+mENyZ1VZA@mail.gmail.com>
-To: Rob Herring <robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHjV63rrmzDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 19:57:02 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 2/3] pseries/findnodes: Find nodes with memory for
+ memoryless nodes
+In-Reply-To: <bcccffb8-8472-463d-cca5-698db5cbc8e1@linux.vnet.ibm.com>
+References: <bcccffb8-8472-463d-cca5-698db5cbc8e1@linux.vnet.ibm.com>
+Date: Thu, 19 Oct 2017 19:56:59 +1100
+Message-ID: <87vajbldlw.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,192 +29,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Rob,
+Hi Michael,
 
-> On Oct 18, 2017, at 21:30 , Rob Herring <robh@kernel.org> wrote:
->=20
-> On Wed, Oct 18, 2017 at 10:53 AM, Pantelis Antoniou
-> <pantelis.antoniou@konsulko.com> wrote:
->> On Wed, 2017-10-18 at 10:44 -0500, Rob Herring wrote:
->>> On Wed, Oct 18, 2017 at 10:12 AM, Alan Tull <atull@kernel.org> =
-wrote:
->>>> On Tue, Oct 17, 2017 at 6:51 PM, Frank Rowand =
-<frowand.list@gmail.com> wrote:
->>>>> On 10/17/17 14:46, Rob Herring wrote:
->>>>>> On Tue, Oct 17, 2017 at 4:32 PM, Alan Tull <atull@kernel.org> =
-wrote:
->>>>>>> On Mon, Aug 21, 2017 at 10:16 AM, Rob Herring <robh@kernel.org> =
-wrote:
->>>>>>>=20
->>>>>>> Hi Rob,
->>>>>>>=20
->>>>>>>> With dependencies on a statically allocated full path name =
-converted to
->>>>>>>> use %pOF format specifier, we can store just the basename of =
-node, and
->>>>>>>> the unflattening of the FDT can be simplified.
->>>>>>>>=20
->>>>>>>> This commit will affect the remaining users of full_name. After
->>>>>>>> analyzing these users, the remaining cases should only change =
-some print
->>>>>>>> messages. The main users of full_name are providing a name for =
-struct
->>>>>>>> resource. The resource names shouldn't be important other than =
-providing
->>>>>>>> /proc/iomem names.
->>>>>>>>=20
->>>>>>>> We no longer distinguish between pre and post 0x10 dtb formats =
-as either
->>>>>>>> a full path or basename will work. However, less than 0x10 =
-formats have
->>>>>>>> been broken since the conversion to use libfdt (and no one has =
-cared).
->>>>>>>> The conversion of the unflattening code to be non-recursive =
-also broke
->>>>>>>> pre 0x10 formats as the populate_node function would return 0 =
-in that
->>>>>>>> case.
->>>>>>>>=20
->>>>>>>> Signed-off-by: Rob Herring <robh@kernel.org>
->>>>>>>> ---
->>>>>>>> v2:
->>>>>>>> - rebase to linux-next
->>>>>>>>=20
->>>>>>>> drivers/of/fdt.c | 69 =
-+++++++++-----------------------------------------------
->>>>>>>> 1 file changed, 11 insertions(+), 58 deletions(-)
->>>>>>>=20
->>>>>>> I've just updated to the latest next branch and am finding =
-problems
->>>>>>> applying overlays.   Reverting this commit alleviates things.  =
-The
->>>>>>> errors I get are:
->>>>>>>=20
->>>>>>> [   88.498704] OF: overlay: Failed to apply prop =
-@/__symbols__/clk_0
->>>>>>> [   88.513447] OF: overlay: apply failed '/__symbols__'
->>>>>>> [   88.518423] create_overlay: Failed to create overlay =
-(err=3D-12)
->>>>>>=20
->>>>>> Frank's series with overlay updates should fix this.
->>>>>=20
->>>>> Yes, it does:
->>>>>=20
->>>>>  [PATCH v3 11/12] of: overlay: remove a dependency on device node =
-full_name
->>>>=20
->>>> Thanks for the fast response.  I fetched the dt/next branch to test
->>>> this but there are sufficient changes that Pantelis' "OF: =
-DT-Overlay
->>>> configfs interface (v7)" is broken now.  I've been adding that
->>>> downstream since 4.4.  We're using it as an interface for applying
->>>> overlays to program FPGAs.  If we fix it again, is there any chance
->>>> that can go upstream now?
->>>=20
->>> With a drive-by posting once every few years, no.
->>>=20
->>=20
->> I take offense to that. There's nothing changed in the patch for =
-years.
->> Reposting the same patch without changes would achieve nothing.
->=20
-> Are you still expecting review comments on it or something?
-> Furthermore, If something is posted infrequently, then I'm not
-> inclined to comment or care if the next posting is going to be after I
-> forget what I previously said (which is not very long).
->=20
-> I'm just saying, don't expect to forward port, post and it will be
-> accepted. Below is minimally one of the issues that needs to be
-> addressed.
->=20
->>> The issue remains that the kernel is not really setup to deal with =
-any
->>> random property or node to be changed at any point in run-time. I
->>> think there needs to be some restrictions around what the overlays =
-can
->>> touch. We can't have it be wide open and then lock things down later
->>> and break users. One example of what you could do is you can only =
-add
->>> sub-trees to whitelisted nodes. That's probably acceptable for your
->>> usecase.
->>>=20
->>=20
->> Defining what can and what cannot be changed is not as trivial as a
->> list of white-listed nodes.
->=20
-> No, but we have to start somewhere and we are not starting with any
-> change allowed anywhere at anytime. If that is what people want, then
-> they are going to get to maintain that out of tree.
->=20
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+> pseries/findnodes: On pseries systems which allow 'hot-add' of
 
-I am still not sold on this =E2=80=98dangerous=E2=80=99 idea. No-one is =
-crazy enough to
-suggest overlays to be loadable by an unprivileged user. It=E2=80=99s =
-exactly the
-same =E2=80=98danger=E2=80=99 as loading a kernel module, while is sure =
-capable of much
-greater mischief.
+This isn't a powerpc or pseries patch, so the subject/prefix is wrong.
 
->> In some cases there is a whole node hierarchy being inserted (like in
->> a FPGA).
->=20
-> Yes, so you'd have a target fpga region. That sounds fine to me. Maybe
-> its not a static whitelist, but drivers have to register target
-> nodes/paths.
->=20
->> In others, it's merely changing a status property to "okay" and
->> a few device parameters.
->=20
-> That seems fine too. Disabled nodes could be allowed. But what if you
-> add/change properties on a node that is not disabled? Once a node is
-> enabled, who is responsible for registering the device?
->=20
-> What about changing a node from enabled to disabled? The kernel would
-> need to handle that or not allow it.
->=20
+Also because you're changing generic code you need to provide an
+explanation that makes sense in general, across all architectures, not
+just in terms of what the pseries platform does.
 
-So it seems a simple whitelist won=E2=80=99t cut it. We=E2=80=99re =
-already talking about
-special casing for this or that property.
+> resources, we may boot configurations that have CPUs, but no memory
+> associated to a node by the affinity calculations.
 
-My argument is that this kind of validation is not part of the =
-core-device tree,
-but instead is a policy decision different for each board.
-=20
->> The real issue is that the kernel has no way to verify that a given
->> device tree, either at boot time or at overlay application time, is
->> correct.
->>=20
->> When the tree is wrong at boot-time you'll hang (if you're lucky).
->> If the tree is wrong at run-time you'll get some into some =
-unidentified
->> funky state.
->=20
-> Or have some security hole or a mechanism for userspace to crash the =
-system.
->=20
+This is called a "memory-less node" and is understood by the generic
+code.
 
-User-space as in regular users should never have enough privileges to =
-apply an
-overlay, same as in loading a kernel module.
+> Previously, the
+> software took a shortcut to collapse initialization and references
 
->> Finally what is, and what is not 'correct' is not for the kernel to
->> decide arbitrarily, it's a matter of policy, different for each
->> use-case.
->=20
-> It is if the kernel will break doing so.
->=20
+What software? What shortcut?
 
-I still haven=E2=80=99t seen a real example of the kernel breaking.
+> to such memoryless nodes with other nodes that did have memory
+> associated with them at boot.  This patch is based on fixes that
 
-I have seen a lot of cases where the kernel is crashing due to the =
-device
-removal path being broken, but those are kernel bugs to fix, not =
-something
-to use to hold back functionality that people want to use.
+What fixes?
 
-> Rob
+> allow the proper initialization and distinguishment of memoryless
+> and memory-plus nodes after NUMA initialization.
 
-Regards
+What exactly is unproper about the current code?
 
-=E2=80=94 Pantelis
+> It extends the 
+> use of the 'node_to_mem_node()' API from 'topology.h' to modules
+
+The term "modules" has a specific meaning in Linux which is not correct
+here. We would just say "in two functions" or "in two files".
+
+> that are allocating node-specific memory at boot, and allows such
+> references to find available memory in another node.
+
+
+> diff --git a/block/blk-mq-cpumap.c b/block/blk-mq-cpumap.c
+> index 9f8cffc..a27a31f 100644
+> --- a/block/blk-mq-cpumap.c
+> +++ b/block/blk-mq-cpumap.c
+> @@ -73,7 +73,8 @@ int blk_mq_hw_queue_to_node(unsigned int *mq_map, unsigned int index)
+>  
+>  	for_each_possible_cpu(i) {
+>  		if (index == mq_map[i])
+> -			return local_memory_node(cpu_to_node(i));
+> +			return local_memory_node(
+> +					node_to_mem_node(cpu_to_node(i)));
+
+What is this trying to do?
+
+local_memory_node() is supposed to return a "local" node for nodes with
+no memory.
+
+And in fact the comment says:
+
+  * Used for initializing percpu 'numa_mem'
+
+Which is what we do:
+
+	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
+
+And is what's returned by node_to_mem_node():
+
+  static inline void set_numa_mem(int node)
+  {
+  	this_cpu_write(_numa_mem_, node);
+  	_node_numa_mem_[numa_node_id()] = node;
+  }
+  
+  static inline int node_to_mem_node(int node)
+  {
+  	return _node_numa_mem_[node];
+  }
+
+So your change effectively ends up doing:
+
+	return local_memory_node(local_memory_node(cpu_to_node(i)));
+
+Which doesn't look right.
+
+
+cheers
