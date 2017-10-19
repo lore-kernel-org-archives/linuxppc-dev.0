@@ -1,30 +1,24 @@
-Return-Path: <jglisse@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yHYlm10qwzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 14:08:19 +1100 (AEDT)
-Date: Wed, 18 Oct 2017 23:08:12 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Andrea Arcangeli <aarcange@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, Joerg Roedel <jroedel@suse.de>,
- Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
- David Woodhouse <dwmw2@infradead.org>,
- Alistair Popple <alistair@popple.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] Optimize mmu_notifier->invalidate_range callback
-Message-ID: <20171019030812.GB5246@redhat.com>
-References: <20171017031003.7481-1-jglisse@redhat.com>
- <20171019134319.1b856091@MiWiFi-R3-srv>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yHZ7w0ZW2zDqBd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 14:25:48 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
+ linuxram@us.ibm.com
+Subject: Re: [PATCH 3/7] powerpc: Free up four 64K PTE bits in 4K backed HPTE
+ pages
+In-Reply-To: <1504910713-7094-4-git-send-email-linuxram@us.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-4-git-send-email-linuxram@us.ibm.com>
+Date: Thu, 19 Oct 2017 14:25:47 +1100
+Message-ID: <87o9p3kedg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20171019134319.1b856091@MiWiFi-R3-srv>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,59 +28,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 19, 2017 at 01:43:19PM +1100, Balbir Singh wrote:
-> On Mon, 16 Oct 2017 23:10:01 -0400
-> jglisse@redhat.com wrote:
-> 
-> > From: Jérôme Glisse <jglisse@redhat.com>
-> > 
-> > (Andrew you already have v1 in your queue of patch 1, patch 2 is new,
-> >  i think you can drop it patch 1 v1 for v2, v2 is bit more conservative
-> >  and i fixed typos)
-> > 
-> > All this only affect user of invalidate_range callback (at this time
-> > CAPI arch/powerpc/platforms/powernv/npu-dma.c, IOMMU ATS/PASID in
-> > drivers/iommu/amd_iommu_v2.c|intel-svm.c)
-> > 
-> > This patchset remove useless double call to mmu_notifier->invalidate_range
-> > callback wherever it is safe to do so. The first patch just remove useless
-> > call
-> 
-> As in an extra call? Where does that come from?
+Ram Pai <linuxram@us.ibm.com> writes:
 
-Before this patch you had the following pattern:
-  mmu_notifier_invalidate_range_start();
-  take_page_table_lock()
-  ...
-  update_page_table()
-  mmu_notifier_invalidate_range()
-  ...
-  drop_page_table_lock()
-  mmu_notifier_invalidate_range_end();
+> diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+> index 1a68cb1..c6c5559 100644
+> --- a/arch/powerpc/mm/hash64_64k.c
+> +++ b/arch/powerpc/mm/hash64_64k.c
+> @@ -126,18 +113,13 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>  	if (__rpte_sub_valid(rpte, subpg_index)) {
+>  		int ret;
+>  
+> -		hash = hpt_hash(vpn, shift, ssize);
+> -		hidx = __rpte_to_hidx(rpte, subpg_index);
+> -		if (hidx & _PTEIDX_SECONDARY)
+> -			hash = ~hash;
+> -		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+> -		slot += hidx & _PTEIDX_GROUP_IX;
+> +		gslot = pte_get_hash_gslot(vpn, shift, ssize, rpte,
+> +					subpg_index);
+> +		ret = mmu_hash_ops.hpte_updatepp(gslot, rflags, vpn,
+> +			MMU_PAGE_4K, MMU_PAGE_4K, ssize, flags);
 
-It happens that mmu_notifier_invalidate_range_end() also make an
-unconditional call to mmu_notifier_invalidate_range() so in the
-above scenario you had 2 calls to mmu_notifier_invalidate_range()
+This was formatted correctly before:
+  
+> -		ret = mmu_hash_ops.hpte_updatepp(slot, rflags, vpn,
+> -						 MMU_PAGE_4K, MMU_PAGE_4K,
+> -						 ssize, flags);
+>  		/*
+> -		 *if we failed because typically the HPTE wasn't really here
+> +		 * if we failed because typically the HPTE wasn't really here
 
-Obviously one of the 2 call is useless. In some case you can drop
-the first call (under the page table lock) this is what patch 1
-does.
+If you're fixing it up please make it "If ...".
 
-In other cases you can drop the second call that happen inside
-mmu_notifier_invalidate_range_end() that is what patch 2 does.
+>  		 * we try an insertion.
+>  		 */
+>  		if (ret == -1)
+> @@ -148,6 +130,15 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>  	}
+>  
+>  htab_insert_hpte:
+> +
+> +	/*
+> +	 * initialize all hidx entries to invalid value,
+> +	 * the first time the PTE is about to allocate
+> +	 * a 4K hpte
+> +	 */
 
-Hence why i am referring to useless double call. I have added
-more documentation to explain all this in the code and also under
-Documentation/vm/mmu_notifier.txt
+Should be:
+	/*
+	 * Initialize all hidx entries to invalid value, the first time
+         * the PTE is about to allocate a 4K HPTE.
+	 */
+
+> +	if (!(old_pte & H_PAGE_COMBO))
+> +		rpte.hidx = ~0x0UL;
+> +
+
+Paul had the idea that if we biased the slot number by 1, we could make
+the "invalid" value be == 0.
+
+That would avoid needing to that above, and also mean the value is
+correctly invalid from the get-go, which would be good IMO.
+
+I think now that you've added the slot accessors it would be pretty easy
+to do.
 
 
-> 
-> > and add documentation explaining why it is safe to do so. The second
-> > patch go further by introducing mmu_notifier_invalidate_range_only_end()
-> > which skip callback to invalidate_range this can be done when clearing a
-> > pte, pmd or pud with notification which call invalidate_range right after
-> > clearing under the page table lock.
-> >
-> 
-> Balbir Singh.
-> 
+>  	/*
+>  	 * handle H_PAGE_4K_PFN case
+>  	 */
+> @@ -172,15 +163,41 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>  	 * Primary is full, try the secondary
+>  	 */
+>  	if (unlikely(slot == -1)) {
+> +		bool soft_invalid;
+> +
+>  		hpte_group = ((~hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
+>  		slot = mmu_hash_ops.hpte_insert(hpte_group, vpn, pa,
+>  						rflags, HPTE_V_SECONDARY,
+>  						MMU_PAGE_4K, MMU_PAGE_4K,
+>  						ssize);
+> -		if (slot == -1) {
+> -			if (mftb() & 0x1)
+> +
+> +		soft_invalid = hpte_soft_invalid(slot);
+> +		if (unlikely(soft_invalid)) {
+
+
+> +			/*
+> +			 * we got a valid slot from a hardware point of view.
+> +			 * but we cannot use it, because we use this special
+> +			 * value; as     defined   by    hpte_soft_invalid(),
+> +			 * to  track    invalid  slots.  We  cannot  use  it.
+> +			 * So invalidate it.
+> +			 */
+> +			gslot = slot & _PTEIDX_GROUP_IX;
+> +			mmu_hash_ops.hpte_invalidate(hpte_group+gslot, vpn,
+> +				MMU_PAGE_4K, MMU_PAGE_4K,
+> +				ssize, 0);
+
+Please:
+			mmu_hash_ops.hpte_invalidate(hpte_group+gslot, vpn,
+                        			     MMU_PAGE_4K, MMU_PAGE_4K,
+						     ssize, 0);
+
+> +		}
+> +
+> +		if (unlikely(slot == -1 || soft_invalid)) {
+> +			/*
+> +			 * for soft invalid slot, lets   ensure that we
+
+For .. let's
+
+
+cheers
