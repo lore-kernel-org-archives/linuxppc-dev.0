@@ -1,43 +1,28 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <brijesh.singh@amd.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0089.outbound.protection.outlook.com [104.47.41.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJRfy4kmCzDqYv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 00:37:14 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9KDYdQM011519
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:37:12 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dqj2s8bh5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:37:11 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 20 Oct 2017 09:37:11 -0400
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9KDb8Cp59048070
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 13:37:08 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1B4232803D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:37:01 -0400 (EDT)
-Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id E585A2803E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:37:00 -0400 (EDT)
-Subject: [PATCH v2 8/8] powerpc: Enable support of ibm,dynamic-memory-v2
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 20 Oct 2017 08:22:36 -0500
-In-Reply-To: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-References: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJSsc0XcwzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 01:31:31 +1100 (AEDT)
+From: Brijesh Singh <brijesh.singh@amd.com>
+To: x86@kernel.org,
+	kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Borislav Petkov <bp@alien8.de>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Brijesh Singh <brijesh.singh@amd.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [Part1 PATCH v7 09/17] resource: Provide resource struct in resource
+ walk callback
+Date: Fri, 20 Oct 2017 09:30:51 -0500
+Message-Id: <20171020143059.3291-10-brijesh.singh@amd.com>
+In-Reply-To: <20171020143059.3291-1-brijesh.singh@amd.com>
+References: <20171020143059.3291-1-brijesh.singh@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <150850575593.9118.5303285365862355406.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,71 +32,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add required bits to the architecture vector to enable support
-of the ibm,dynamic-memory-v2 device tree property.
+From: Tom Lendacky <thomas.lendacky@amd.com>
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+In prep for a new function that will need additional resource information
+during the resource walk, update the resource walk callback to pass the
+resource structure.  Since the current callback start and end arguments
+are pulled from the resource structure, the callback functions can obtain
+them from the resource structure directly.
+
+Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Borislav Petkov <bp@suse.de>
+Tested-by: Borislav Petkov <bp@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/firmware.h       |    3 ++-
- arch/powerpc/include/asm/prom.h           |    1 +
- arch/powerpc/kernel/prom_init.c           |    1 +
- arch/powerpc/platforms/pseries/firmware.c |    1 +
- 4 files changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/machine_kexec_file_64.c | 12 +++++++++---
+ arch/x86/kernel/crash.c                     | 18 +++++++++---------
+ arch/x86/kernel/pmem.c                      |  2 +-
+ include/linux/ioport.h                      |  4 ++--
+ include/linux/kexec.h                       |  2 +-
+ kernel/kexec_file.c                         |  5 +++--
+ kernel/resource.c                           |  9 +++++----
+ 7 files changed, 30 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 8645897472b1..832df61f30ef 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -51,6 +51,7 @@
- #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
- #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
- #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
-+#define FW_FEATURE_DRMEM_V2	ASM_CONST(0x0000000400000000)
+diff --git a/arch/powerpc/kernel/machine_kexec_file_64.c b/arch/powerpc/kernel/machine_kexec_file_64.c
+index 992c0d258e5d..e4395f937d63 100644
+--- a/arch/powerpc/kernel/machine_kexec_file_64.c
++++ b/arch/powerpc/kernel/machine_kexec_file_64.c
+@@ -91,11 +91,13 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
+  * and that value will be returned. If all free regions are visited without
+  * func returning non-zero, then zero will be returned.
+  */
+-int arch_kexec_walk_mem(struct kexec_buf *kbuf, int (*func)(u64, u64, void *))
++int arch_kexec_walk_mem(struct kexec_buf *kbuf,
++			int (*func)(struct resource *, void *))
+ {
+ 	int ret = 0;
+ 	u64 i;
+ 	phys_addr_t mstart, mend;
++	struct resource res = { };
  
- #ifndef __ASSEMBLY__
+ 	if (kbuf->top_down) {
+ 		for_each_free_mem_range_reverse(i, NUMA_NO_NODE, 0,
+@@ -105,7 +107,9 @@ int arch_kexec_walk_mem(struct kexec_buf *kbuf, int (*func)(u64, u64, void *))
+ 			 * range while in kexec, end points to the last byte
+ 			 * in the range.
+ 			 */
+-			ret = func(mstart, mend - 1, kbuf);
++			res.start = mstart;
++			res.end = mend - 1;
++			ret = func(&res, kbuf);
+ 			if (ret)
+ 				break;
+ 		}
+@@ -117,7 +121,9 @@ int arch_kexec_walk_mem(struct kexec_buf *kbuf, int (*func)(u64, u64, void *))
+ 			 * range while in kexec, end points to the last byte
+ 			 * in the range.
+ 			 */
+-			ret = func(mstart, mend - 1, kbuf);
++			res.start = mstart;
++			res.end = mend - 1;
++			ret = func(&res, kbuf);
+ 			if (ret)
+ 				break;
+ 		}
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 44404e2307bb..815008c9ca18 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -209,7 +209,7 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
+ }
  
-@@ -67,7 +68,7 @@ enum {
- 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
- 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
- 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
--		FW_FEATURE_HPT_RESIZE,
-+		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index f0a30a003bd8..9f27866e3126 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -143,6 +143,7 @@ extern int of_get_ibm_chip_id(struct device_node *np);
- #define OV5_PFO_HW_842		0x1140	/* PFO Compression Accelerator */
- #define OV5_PFO_HW_ENCR		0x1120	/* PFO Encryption Accelerator */
- #define OV5_SUB_PROCESSORS	0x1501	/* 1,2,or 4 Sub-Processors supported */
-+#define OV5_DRMEM_V2		0x1680	/* ibm,dynamic-reconfiguration-v2 */
- #define OV5_XIVE_SUPPORT	0x17C0	/* XIVE Exploitation Support Mask */
- #define OV5_XIVE_LEGACY		0x1700	/* XIVE legacy mode Only */
- #define OV5_XIVE_EXPLOIT	0x1740	/* XIVE exploitation mode Only */
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 02190e90c7ae..acf4b2e0530c 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -869,6 +869,7 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
- 		.reserved2 = 0,
- 		.reserved3 = 0,
- 		.subprocessors = 1,
-+		.byte22 = OV5_FEAT(OV5_DRMEM_V2),
- 		.intarch = 0,
- 		.mmu = 0,
- 		.hash_ext = 0,
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 63cc82ad58ac..aac3ea2911b2 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -114,6 +114,7 @@ static __initdata struct vec5_fw_feature
- vec5_fw_features_table[] = {
- 	{FW_FEATURE_TYPE1_AFFINITY,	OV5_TYPE1_AFFINITY},
- 	{FW_FEATURE_PRRN,		OV5_PRRN},
-+	{FW_FEATURE_DRMEM_V2,		OV5_DRMEM_V2},
+ #ifdef CONFIG_KEXEC_FILE
+-static int get_nr_ram_ranges_callback(u64 start, u64 end, void *arg)
++static int get_nr_ram_ranges_callback(struct resource *res, void *arg)
+ {
+ 	unsigned int *nr_ranges = arg;
+ 
+@@ -342,7 +342,7 @@ static int elf_header_exclude_ranges(struct crash_elf_data *ced,
+ 	return ret;
+ }
+ 
+-static int prepare_elf64_ram_headers_callback(u64 start, u64 end, void *arg)
++static int prepare_elf64_ram_headers_callback(struct resource *res, void *arg)
+ {
+ 	struct crash_elf_data *ced = arg;
+ 	Elf64_Ehdr *ehdr;
+@@ -355,7 +355,7 @@ static int prepare_elf64_ram_headers_callback(u64 start, u64 end, void *arg)
+ 	ehdr = ced->ehdr;
+ 
+ 	/* Exclude unwanted mem ranges */
+-	ret = elf_header_exclude_ranges(ced, start, end);
++	ret = elf_header_exclude_ranges(ced, res->start, res->end);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -518,14 +518,14 @@ static int add_e820_entry(struct boot_params *params, struct e820_entry *entry)
+ 	return 0;
+ }
+ 
+-static int memmap_entry_callback(u64 start, u64 end, void *arg)
++static int memmap_entry_callback(struct resource *res, void *arg)
+ {
+ 	struct crash_memmap_data *cmd = arg;
+ 	struct boot_params *params = cmd->params;
+ 	struct e820_entry ei;
+ 
+-	ei.addr = start;
+-	ei.size = end - start + 1;
++	ei.addr = res->start;
++	ei.size = res->end - res->start + 1;
+ 	ei.type = cmd->type;
+ 	add_e820_entry(params, &ei);
+ 
+@@ -619,12 +619,12 @@ int crash_setup_memmap_entries(struct kimage *image, struct boot_params *params)
+ 	return ret;
+ }
+ 
+-static int determine_backup_region(u64 start, u64 end, void *arg)
++static int determine_backup_region(struct resource *res, void *arg)
+ {
+ 	struct kimage *image = arg;
+ 
+-	image->arch.backup_src_start = start;
+-	image->arch.backup_src_sz = end - start + 1;
++	image->arch.backup_src_start = res->start;
++	image->arch.backup_src_sz = res->end - res->start + 1;
+ 
+ 	/* Expecting only one range for backup region */
+ 	return 1;
+diff --git a/arch/x86/kernel/pmem.c b/arch/x86/kernel/pmem.c
+index 0c5315d322c8..297bb71f10c5 100644
+--- a/arch/x86/kernel/pmem.c
++++ b/arch/x86/kernel/pmem.c
+@@ -6,7 +6,7 @@
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+ 
+-static int found(u64 start, u64 end, void *data)
++static int found(struct resource *res, void *data)
+ {
+ 	return 1;
+ }
+diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+index f5cf32e80041..617d8a2aac67 100644
+--- a/include/linux/ioport.h
++++ b/include/linux/ioport.h
+@@ -271,10 +271,10 @@ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+ 		void *arg, int (*func)(unsigned long, unsigned long, void *));
+ extern int
+ walk_system_ram_res(u64 start, u64 end, void *arg,
+-		    int (*func)(u64, u64, void *));
++		    int (*func)(struct resource *, void *));
+ extern int
+ walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start, u64 end,
+-		    void *arg, int (*func)(u64, u64, void *));
++		    void *arg, int (*func)(struct resource *, void *));
+ 
+ /* True if any part of r1 overlaps r2 */
+ static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 2b7590f5483a..d672f955100a 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -159,7 +159,7 @@ struct kexec_buf {
  };
  
- static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
+ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
+-			       int (*func)(u64, u64, void *));
++			       int (*func)(struct resource *, void *));
+ extern int kexec_add_buffer(struct kexec_buf *kbuf);
+ int kexec_locate_mem_hole(struct kexec_buf *kbuf);
+ #endif /* CONFIG_KEXEC_FILE */
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index 9f48f4412297..e5bcd94c1efb 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -406,9 +406,10 @@ static int locate_mem_hole_bottom_up(unsigned long start, unsigned long end,
+ 	return 1;
+ }
+ 
+-static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
++static int locate_mem_hole_callback(struct resource *res, void *arg)
+ {
+ 	struct kexec_buf *kbuf = (struct kexec_buf *)arg;
++	u64 start = res->start, end = res->end;
+ 	unsigned long sz = end - start + 1;
+ 
+ 	/* Returning 0 will take to next memory range */
+@@ -437,7 +438,7 @@ static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
+  * func returning non-zero, then zero will be returned.
+  */
+ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
+-			       int (*func)(u64, u64, void *))
++			       int (*func)(struct resource *, void *))
+ {
+ 	if (kbuf->image->type == KEXEC_TYPE_CRASH)
+ 		return walk_iomem_res_desc(crashk_res.desc,
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 7323c1b636cd..8430042fa77b 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -402,14 +402,15 @@ static int find_next_iomem_res(struct resource *res, unsigned long desc,
+ 
+ static int __walk_iomem_res_desc(struct resource *res, unsigned long desc,
+ 				 bool first_level_children_only,
+-				 void *arg, int (*func)(u64, u64, void *))
++				 void *arg,
++				 int (*func)(struct resource *, void *))
+ {
+ 	u64 orig_end = res->end;
+ 	int ret = -1;
+ 
+ 	while ((res->start < res->end) &&
+ 	       !find_next_iomem_res(res, desc, first_level_children_only)) {
+-		ret = (*func)(res->start, res->end, arg);
++		ret = (*func)(res, arg);
+ 		if (ret)
+ 			break;
+ 
+@@ -435,7 +436,7 @@ static int __walk_iomem_res_desc(struct resource *res, unsigned long desc,
+  * <linux/ioport.h> and set it in 'desc' of a target resource entry.
+  */
+ int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
+-		u64 end, void *arg, int (*func)(u64, u64, void *))
++		u64 end, void *arg, int (*func)(struct resource *, void *))
+ {
+ 	struct resource res;
+ 
+@@ -454,7 +455,7 @@ int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
+  * ranges.
+  */
+ int walk_system_ram_res(u64 start, u64 end, void *arg,
+-				int (*func)(u64, u64, void *))
++				int (*func)(struct resource *, void *))
+ {
+ 	struct resource res;
+ 
+-- 
+2.9.5
