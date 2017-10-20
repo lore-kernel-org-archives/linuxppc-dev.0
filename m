@@ -1,30 +1,48 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJ5WM1skxzDqJ6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 10:59:26 +1100 (AEDT)
-Date: Thu, 19 Oct 2017 16:59:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- x86@kernel.org, kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- mhocko@kernel.org, ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- will.deacon@arm.com, catalin.marinas@arm.com, sam@ravnborg.org,
- mgorman@techsingularity.net, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, bob.picco@oracle.com
-Subject: Re: [PATCH v12 09/11] mm: stop zeroing memory during allocation in
- vmemmap
-Message-Id: <20171019165921.de4224c8e627b1477cfb50de@linux-foundation.org>
-In-Reply-To: <20171013173214.27300-10-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJ78j5TygzDqBc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 12:13:25 +1100 (AEDT)
+Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
+ by aserp1040.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ v9K1DMPi022020
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 01:13:22 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+ by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id v9K1DJ0Q031085
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 01:13:20 GMT
+Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
+ by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id v9K1DJ5a028065
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 01:13:19 GMT
+Received: by mail-oi0-f46.google.com with SMTP id c77so17851530oig.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 18:13:19 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20171019165921.de4224c8e627b1477cfb50de@linux-foundation.org>
 References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
  <20171013173214.27300-10-pasha.tatashin@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <20171019165921.de4224c8e627b1477cfb50de@linux-foundation.org>
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+Date: Thu, 19 Oct 2017 21:13:18 -0400
+Message-ID: <CAOAebxswpsLEtvZXwj0Qk62=5KC6Xh2ewaHrWJVbo_O=9Hye9Q@mail.gmail.com>
+Subject: Re: [PATCH v12 09/11] mm: stop zeroing memory during allocation in
+ vmemmap
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
+ heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
+ Michal Hocko <mhocko@kernel.org>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Mark Rutland <mark.rutland@arm.com>, Will Deacon <will.deacon@arm.com>,
+ catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
+ Steve Sistare <steven.sistare@oracle.com>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>,
+ Bob Picco <bob.picco@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,87 +52,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 13 Oct 2017 13:32:12 -0400 Pavel Tatashin <pasha.tatashin@oracle.com> wrote:
+This looks good to me, thank you Andrew.
 
-> vmemmap_alloc_block() will no longer zero the block, so zero memory
-> at its call sites for everything except struct pages.  Struct page memory
-> is zero'd by struct page initialization.
-> 
-> Replace allocators in sprase-vmemmap to use the non-zeroing version. So,
-> we will get the performance improvement by zeroing the memory in parallel
-> when struct pages are zeroed.
-> 
-> Add struct page zeroing as a part of initialization of other fields in
-> __init_single_page().
-> 
-> This single thread performance collected on: Intel(R) Xeon(R) CPU E7-8895
-> v3 @ 2.60GHz with 1T of memory (268400646 pages in 8 nodes):
-> 
->                          BASE            FIX
-> sparse_init     11.244671836s   0.007199623s
-> zone_sizes_init  4.879775891s   8.355182299s
->                   --------------------------
-> Total           16.124447727s   8.362381922s
-> 
-> sparse_init is where memory for struct pages is zeroed, and the zeroing
-> part is moved later in this patch into __init_single_page(), which is
-> called from zone_sizes_init().
-
-x86_64 allmodconfig:
-
-WARNING: vmlinux.o(.text+0x29d099): Section mismatch in reference from the function T.1331() to the function .meminit.text:vmemmap_alloc_block()
-The function T.1331() references
-the function __meminit vmemmap_alloc_block().
-This is often because T.1331 lacks a __meminit 
-annotation or the annotation of vmemmap_alloc_block is wrong.
-
->From a quick scan it's unclear to me why this is happening.  Maybe
-gcc-4.4.4 decided to create an out-of-line version of
-vmemmap_alloc_block_zero() for some reason.
-
-Anyway.  I see no reason to publish vmemmap_alloc_block_zero() to the
-whole world when it's only used in sparse-vmemmap.c.  The below fixes
-the section mismatch:
-
-
---- a/include/linux/mm.h~mm-stop-zeroing-memory-during-allocation-in-vmemmap-fix
-+++ a/include/linux/mm.h
-@@ -2529,17 +2529,6 @@ static inline void *vmemmap_alloc_block_
- 	return __vmemmap_alloc_block_buf(size, node, NULL);
- }
- 
--static inline void *vmemmap_alloc_block_zero(unsigned long size, int node)
--{
--	void *p = vmemmap_alloc_block(size, node);
--
--	if (!p)
--		return NULL;
--	memset(p, 0, size);
--
--	return p;
--}
--
- void vmemmap_verify(pte_t *, int, unsigned long, unsigned long);
- int vmemmap_populate_basepages(unsigned long start, unsigned long end,
- 			       int node);
---- a/mm/sparse-vmemmap.c~mm-stop-zeroing-memory-during-allocation-in-vmemmap-fix
-+++ a/mm/sparse-vmemmap.c
-@@ -178,6 +178,17 @@ pte_t * __meminit vmemmap_pte_populate(p
- 	return pte;
- }
- 
-+static void * __meminit vmemmap_alloc_block_zero(unsigned long size, int node)
-+{
-+	void *p = vmemmap_alloc_block(size, node);
-+
-+	if (!p)
-+		return NULL;
-+	memset(p, 0, size);
-+
-+	return p;
-+}
-+
- pmd_t * __meminit vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node)
- {
- 	pmd_t *pmd = pmd_offset(pud, addr);
-_
+Pavel
