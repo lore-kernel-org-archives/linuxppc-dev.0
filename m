@@ -1,30 +1,32 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJPgf4tN7zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 23:07:42 +1100 (AEDT)
-Date: Fri, 20 Oct 2017 14:07:39 +0200
-From: Torsten Duwe <duwe@lst.de>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH v2] kernel/module_64.c: Add REL24 relocation support of
- livepatch symbols
-Message-ID: <20171020120739.GA20306@lst.de>
-References: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
- <20171005124313.GA25100@lst.de>
- <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
- <20171017144733.GB2136@lst.de>
- <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJR2H0pYxzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 00:08:53 +1100 (AEDT)
+Date: Fri, 20 Oct 2017 15:08:48 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv3 6/7] symbol lookup: use new kernel and module
+ dereference functions
+Message-ID: <20171020130848.GC22070@pathway.suse.cz>
+References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
+ <20170930025319.987-7-sergey.senozhatsky@gmail.com>
+ <20171004115306.GH20084@pathway.suse.cz>
+ <20171019064235.GB449@jagdpanzerIV>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
+In-Reply-To: <20171019064235.GB449@jagdpanzerIV>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +36,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 18, 2017 at 11:47:35AM +0530, Kamalesh Babulal wrote:
+On Thu 2017-10-19 15:42:35, Sergey Senozhatsky wrote:
+> Sorry for the delay and thanks for taking a look.
 > 
-> Consider a trivial patch, supplied to kpatch tool for generating a
-> livepatch module:
+> I'll try to re-spin the patch set by the end of this week/early next
+> week.
 > 
-> --- a/fs/proc/meminfo.c
-> +++ b/fs/proc/meminfo.c
-> @@ -132,7 +132,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
->         seq_printf(m, "VmallocTotal:   %8lu kB\n",
->                    (unsigned long)VMALLOC_TOTAL >> 10);
->         show_val_kb(m, "VmallocUsed:    ", 0ul);
-> -       show_val_kb(m, "VmallocChunk:   ", 0ul);
-> +       show_val_kb(m, "VMALLOCCHUNK:   ", 0ul);
 > 
+> On (10/04/17 13:53), Petr Mladek wrote:
+> [..]
+> > Note that kallsyms_lookup() and module_address_lookup() is used
+> > in many other situations.
+> 
+> we dereference only things that can be dereferenced.
+> so calling it on already dereferenced address, or address
+> that does need to be dereferenced is OK.
 
-Am I assuming correctly that "kpatch tool" simply recompiles all code the
-way it would get compiled in a regular kernel build? My understanding is
-that live patching modules need to be carefully prepared, which involves
-source code reorganisation and recompilation. In that process, you can
-easily declare show_val_kb() extern, and get the suitable instruction sequence
-for the call.
+My concern is that it changes the behavior. It will suddenly return
+another information for addresses that were not dereference before.
 
-You have CC'ed live-patching. A discussion about how to automate this very
-process is currently going on there. May I suggest you subscribe to that if
-you are interested.
+> [..]
+> > > diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+> > > index 127e7cfafa55..e2fc09ea9509 100644
+> > > --- a/kernel/kallsyms.c
+> > > +++ b/kernel/kallsyms.c
+> > > @@ -322,6 +322,7 @@ const char *kallsyms_lookup(unsigned long addr,
+> > >  	if (is_ksym_addr(addr)) {
+> > 
+> > is_ksym_addr() ignores the special .opd elf sections if
+> > CONFIG_KALLSYMS_ALL is disabled. We should dereference before
+> > this call.
+> 
+> I'll move it.
+> 
+> > >  		unsigned long pos;
+> > >  
+> > > +		addr = dereference_kernel_function_descriptor(addr);
+> > >  		pos = get_symbol_pos(addr, symbolsize, offset);
+> > 
+> > I still wonder if doing the dereference in the widely used kallsyms
+> > might cause any regression.
+> 
+> more testing wouldn't hurt, yes.
+> 
+> > Also get_symbol_pos() is called in several other helpers
+> > but the dereference is done only here. It would be
+> > confusing if for example kallsyms_lookup_size_offset()
+> > and kallsyms_lookup() give different result.
+> 
+> hm, so there is no change in this regard, right? there was no
+> deference before, there is no dereference now. what am I missing?
 
-	Torsten
+But there was no dereference in kallsyms_lookup() before
+and there is dereference now.
+
+I mean that both kallsyms_lookup_size_offset() and kallsyms_lookup()
+always returned the same @symbolsize and @offset before this patch.
+But they might give different results now because kallsyms_lookup()
+might be newly working with dereferenced value.
+
+It is non-consistent, unexpected behavior and might cause problems.
+
+> I'm touching the pf/pF part in this patch set. if there are cases
+> of missing dereferences anywhere else then we need to address it
+> in a separate patch set, I think.
+
+You are changing the behavior of kallsyms_lookup() and introduce
+a possible inconsistency in this patchset.
+
+It might be innocent if kallsyms are used only to display
+debug messages. But there are even functional dependencies,
+for example kallsyms_lookup() is called in ftrace_match_record().
+
+> > I would feel much more comfortable if we keep the derefenrece
+> > only in vsprintf.
+> 
+> at a price of extra module lookup, because we need `struct module *'
+> for module address dereference.
+
+It would be more code but it should not be slower. The module lookup
+is just hidden in the kallsyms call now.
+
+Another solution would be to add another helper function into kallsyms
+that does the dereference and keep the current one as is.
+
+I think that the dereference might make sense even in the kallsyms
+code. But we need to make sure that it is safe and consistent.
+This complicates review of this patchset.
+
+Best Regards,
+Petr
