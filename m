@@ -1,42 +1,32 @@
-Return-Path: <pantelis.antoniou@konsulko.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jarkko.sakkinen@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJJKN33p2zDqBc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 19:06:31 +1100 (AEDT)
-Received: by mail-wr0-x241.google.com with SMTP id q42so10600849wrb.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 01:06:31 -0700 (PDT)
-Content-Type: text/plain; charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 10.3 \(3273\))
-Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
- full_name
-From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-In-Reply-To: <59E91D4D.8000200@gmail.com>
-Date: Fri, 20 Oct 2017 11:06:23 +0300
-Cc: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh@kernel.org>,
- Alan Tull <atull@kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>,
- linux-fpga@vger.kernel.org
-Message-Id: <331B5EB4-9C97-4B2C-9B54-BF648F309A50@konsulko.com>
-References: <20170821151651.25096-1-robh@kernel.org>
- <20170821151651.25096-6-robh@kernel.org>
- <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
- <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
- <59E69786.2030406@gmail.com>
- <CANk1AXStoiNtJfU0iNug1wKASurqH6OrNoaN=UtSh6xxSB088Q@mail.gmail.com>
- <CAL_JsqKR3Jg+tgZr4xGPtcWnZW7ng741YjuyUFaS2SXKXbxGtg@mail.gmail.com>
- <1508341985.25643.12.camel@hp800z>
- <CAL_JsqKJ74y3qHVqbRph5C8=0Ggb+n=JT3TZybu2+mENyZ1VZA@mail.gmail.com>
- <4393AFA4-620F-4C21-995D-A9806DAE1990@konsulko.com>
- <20171019200615.GA10743@tyrael.ni.corp.natinst.com>
- <59E91D4D.8000200@gmail.com>
-To: Frank Rowand <frowand.list@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJKY96DLzzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 20:01:49 +1100 (AEDT)
+Date: Fri, 20 Oct 2017 12:01:39 +0300
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+To: Alexander.Steffen@infineon.com
+Cc: andriy.shevchenko@linux.intel.com, elfring@users.sourceforge.net,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, clabbe.montjoie@gmail.com,
+ jgunthorpe@obsidianresearch.com, jsnitsel@redhat.com,
+ kgold@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ nayna@linux.vnet.ibm.com, paulus@samba.org, PeterHuewe@gmx.de,
+ stefanb@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] char/tpm: Improve a size determination in nine
+ functions
+Message-ID: <20171020090139.l4igyucqxqmgrq7l@linux.intel.com>
+References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
+ <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
+ <1508238182.16112.475.camel@linux.intel.com>
+ <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
+ <20171018144811.klfmzikibuux77pf@linux.intel.com>
+ <8afa2fb8d8704aff804cd8da15e931da@infineon.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8afa2fb8d8704aff804cd8da15e931da@infineon.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,75 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Frank,
+On Thu, Oct 19, 2017 at 04:58:23PM +0000, Alexander.Steffen@infineon.com wrote:
+> > On Tue, Oct 17, 2017 at 11:50:05AM +0000, Alexander.Steffen@infineon.com
+> > wrote:
+> > > > > Replace the specification of data structures by pointer dereferences
+> > > > > as the parameter for the operator "sizeof" to make the corresponding
+> > > > > size
+> > > > > determination a bit safer according to the Linux coding style
+> > > > > convention.
+> > > >
+> > > >
+> > > > This patch does one style in favor of the other.
+> > >
+> > > I actually prefer that style, so I'd welcome this change :)
+> > >
+> > > > At the end it's Jarkko's call, though I would NAK this as I think some
+> > > > one already told this to you for some other similar patch(es).
+> > > >
+> > > >
+> > > > I even would suggest to stop doing this noisy stuff, which keeps people
+> > > > busy for nothing.
+> > >
+> > > Cleaning up old code is also worth something, even if does not change
+> > > one bit in the assembly output in the end...
+> > >
+> > > Alexander
+> > 
+> > Quite insignificant clean up it is that does more harm that gives any
+> > benefit as any new change adds debt to backporting.
+> > 
+> > Anyway, this has been a useful patch set for me in the sense that I have
+> > clearer picture now on discarding/accepting commits.
+> 
+> Indeed. I have now a better understanding for why some code looks as
+> ugly as it does.
+> 
+> > One line minor
+> > clean up will be from now on automatic NAK unless it causes a compiler
+> > warning or some other visible side-effect.
+> 
+> Not a nice policy, but at least a policy. I have deleted the tasks
+> that I had still planned for other cleanup activities.
+> 
+> Alexander
 
-> On Oct 20, 2017, at 00:46 , Frank Rowand <frowand.list@gmail.com> =
-wrote:
->=20
-> On 10/19/17 13:06, Moritz Fischer wrote:
->=20
-> < snip >
->=20
->> We also have plenty of code that is just not aware of overlays, and
->> assumes certain parts of the tree to stay static.
->=20
-> I would state that somewhat differently.  :-)  There is very little
-> code that is aware of overlays, and most code assumes the device tree
-> does not change after early boot.
->=20
-> This is one of the areas where the creation of overlays needs to be
-> done with care.
->=20
+1/4 and 2/4 are sensible clean ups as long as the commit message is
+refined.
 
-Correct. But this is not breaking the kernel.
+Moving more functions to use tpm_buf instead of nasty tpm_cmd_t are
+also welcome changes.
 
-In general we have the following case where we load overlays (at least
-well formed overlays that are not doing stupid things).
+Documenting functions (exported mainly) is also welcome. Or refining
+documentation.
 
-1. Activation of a new device. Usually this works since is something =
-that=E2=80=99s
-normally done at boot.
+It's really case by case. The important thing in small clean ups is
+a clearly written commit message that explains rationale.
 
-2. Deactivation of a device. This might break because the removal paths
-of platform device especially are not well tested (or never executed for =
-that
-matter).
-
-3. Modification of properties in an already activated device. If the =
-device driver
-has not installed a device tree modification hook (as in almost 99% of =
-the devices)
-it will do absolutely nothing, since the device tree is parsed only at =
-probe time.
-I can argue that for these cases we could have a catch-all hook that =
-displays a
-message that nothing happened.
-
-4. Modification of some part of the tree that=E2=80=99s not part of a =
-device driver, perhaps
-the aliases or chosen node. This may potentially be harmful or harmless =
-depending on
-what has been modified. For instance modifying an already existing alias =
-might cause
-internal inconsistency about device naming, while adding a new aliases =
-should be harmless.
-This is a matter of policy per board, whether to allow or not.
-
-Are there other cases that are potentially more harmful?
-
->=20
->> I ran into that issue when I tried to add thermal zones via an =
-overlay,
->> I've been investigating how to fix the thermal framework to work with
->> overlays since then and have some partially working code.
->> Currently the thermal framework parses the thermal-zones node at =
-boot,
->> and assumes this stays static. This breaks with overlays.
->>=20
->> I agree we eventually need to fix the parts that break when we use
->> overlays.
->=20
-
-Regards
-
-=E2=80=94 Pantelis
+/Jarkko
