@@ -1,32 +1,41 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJRPp2ZpnzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 00:25:49 +1100 (AEDT)
-Date: Fri, 20 Oct 2017 15:25:44 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 1/7] switch dereference_function_descriptor() to
- `unsigned long'
-Message-ID: <20171020132544.GA13783@pathway.suse.cz>
-References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-2-sergey.senozhatsky@gmail.com>
- <20171004082414.GC20084@pathway.suse.cz>
- <20171019065004.GF449@jagdpanzerIV>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJRf31jFVzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 00:36:26 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9KDYd1r065123
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:36:24 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dqgug3tj2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:36:23 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Fri, 20 Oct 2017 09:36:23 -0400
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9KDaLxs53477604
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 13:36:21 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2A74F28041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:36:14 -0400 (EDT)
+Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id 0121F2803D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 09:36:13 -0400 (EDT)
+Subject: [PATCH v2 0/8] powerpc: Support ibm,dynamic-memory-v2 property
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 20 Oct 2017 08:21:49 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171019065004.GF449@jagdpanzerIV>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,23 +45,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2017-10-19 15:50:04, Sergey Senozhatsky wrote:
-> On (10/04/17 10:24), Petr Mladek wrote:
-> [..]
-> > To make it clear. All these comments are not a big deal and I do
-> > not want to invalidate all the acked-by and tested-by just because
-> > of them.
-> >
-> > But please, consider removing this change if we need to do
-> > another iteration of this patchset. IMHO, there is no real win
-> > and it would just pollute the git history.
-> 
-> I tend to rather keep it. would that cause any problems on your side?
-> it saves a ton of ugly casts later in the patch set and lets us to drop
-> some casts from the modules code/etc. the patch is here because otherwise
-> I had to add a bunch of new casts.
+This patch set provides a set of updates to de-couple the LMB information
+provided in the ibm,dynamic-memory device tree property from the device
+tree property format. A part of this patch series introduces a new
+device tree property format for dynamic memory, ibm-dynamic-meory-v2.
+By separating the device tree format from the information provided by
+the device tree property consumers of this information need not know
+what format is currently being used and provide multiple parsing routines
+for the information.
 
-OK, let's keep it.
+The first two patches update the of_get_assoc_arrays() and
+of_get_usable_memory() routines to look up the device node for the
+properties they parse. This is needed because the calling routines for
+these two functions will not have the device node to pass in in
+subsequent patches.
 
-Best Regards,
-Petr
+The third patch adds a new kernel structure, struct drmem_lmb, that
+is used to represent each of the possible LMBs specified in the
+ibm,dynamic-memory* device tree properties. The patch adds code
+to parse the property and build the LMB array data, and updates prom.c
+to use this new data structure instead of parsing the device tree directly.
+
+The fourth and fifth patches update the numa and pseries hotplug code
+respectively to use the new LMB array data instead of parsing the
+device tree directly.
+
+The sixth patch moves the of_drconf_cell struct to drmem.h where it
+fits better than prom.h
+
+The seventh patch introduces support for the ibm,dynamic-memory-v2
+property format by updating the new drmem.c code to be able to parse
+and create this new device tree format.
+
+The last patch in the series updates the architecture vector to indicate
+support for ibm,dynamic-memory-v2.
+
+-Nathan
+
+Updates for V2: 
+Patch 3/7: Correct build break for non-pseries builds.
+Patch 4/7: Remove unused paramter to updated routines.
+Patch 5/7: Correct unitiailized variable warnings
+
+---
+
+Nathan Fontenot (8):
+      powerpc/numa: Look up device node in of_get_assoc_arrays()
+      powerpc/numa: Look up device node in of_get_usable_memory()
+      powerpc/mm: Separate ibm,dynamic-memory data from DT format
+      powerpc/numa: Update numa code use drmem LMB array
+      powerpc/pseries: Update memory hotplug code to use drmem LMB array
+      powerpc: Move of_drconf_cell struct to asm/drmem.h
+      powerpc/pseries: Add support for ibm,dynamic-memory-v2 property
+      powerpc: Enable support of ibm,dynamic-memory-v2
+
+
+ arch/powerpc/include/asm/drmem.h                |   94 ++++
+ arch/powerpc/include/asm/firmware.h             |    3 
+ arch/powerpc/include/asm/prom.h                 |   17 -
+ arch/powerpc/kernel/prom.c                      |  128 +++---
+ arch/powerpc/kernel/prom_init.c                 |    1 
+ arch/powerpc/mm/Makefile                        |    2 
+ arch/powerpc/mm/drmem.c                         |  324 ++++++++++++++
+ arch/powerpc/mm/numa.c                          |  188 ++------
+ arch/powerpc/platforms/pseries/firmware.c       |    1 
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  522 +++++++++--------------
+ 10 files changed, 746 insertions(+), 534 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/drmem.h
+ create mode 100644 arch/powerpc/mm/drmem.c
