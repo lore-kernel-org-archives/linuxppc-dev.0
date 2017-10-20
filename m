@@ -1,28 +1,31 @@
-Return-Path: <brijesh.singh@amd.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0089.outbound.protection.outlook.com [104.47.41.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJSsc0XcwzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 01:31:31 +1100 (AEDT)
-From: Brijesh Singh <brijesh.singh@amd.com>
-To: x86@kernel.org,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Borislav Petkov <bp@alien8.de>, Tom Lendacky <thomas.lendacky@amd.com>,
- Brijesh Singh <brijesh.singh@amd.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [Part1 PATCH v7 09/17] resource: Provide resource struct in resource
- walk callback
-Date: Fri, 20 Oct 2017 09:30:51 -0500
-Message-Id: <20171020143059.3291-10-brijesh.singh@amd.com>
-In-Reply-To: <20171020143059.3291-1-brijesh.singh@amd.com>
-References: <20171020143059.3291-1-brijesh.singh@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJX7m4BpMzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 03:59:00 +1100 (AEDT)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ v9KGwwiJ019167
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 16:58:58 GMT
+From: Khalid Aziz <khalid.aziz@oracle.com>
+To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, davem@davemloft.net, dave.hansen@linux.intel.com
+Cc: Khalid Aziz <khalid.aziz@oracle.com>, bsingharora@gmail.com,
+ nborisov@suse.com, aarcange@redhat.com, tj@kernel.org, mgorman@suse.de,
+ vbabka@suse.cz, nadav.amit@gmail.com, aneesh.kumar@linux.vnet.ibm.com,
+ kirill.shutemov@linux.intel.com, heiko.carstens@de.ibm.com,
+ ak@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, Khalid Aziz <khalid@gonehiking.org>
+Subject: [PATCH v9 07/10] mm: Add address parameter to arch_validate_prot()
+Date: Fri, 20 Oct 2017 10:58:00 -0600
+Message-Id: <24966e414aa0e3e6b6b1b8df6d680f32736b86d5.1508364660.git.khalid.aziz@oracle.com>
+In-Reply-To: <cover.1508364660.git.khalid.aziz@oracle.com>
+References: <cover.1508364660.git.khalid.aziz@oracle.com>
+In-Reply-To: <cover.1508364660.git.khalid.aziz@oracle.com>
+References: <cover.1508364660.git.khalid.aziz@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,249 +35,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tom Lendacky <thomas.lendacky@amd.com>
+A protection flag may not be valid across entire address space and
+hence arch_validate_prot() might need the address a protection bit is
+being set on to ensure it is a valid protection flag. For example, sparc
+processors support memory corruption detection (as part of ADI feature)
+flag on memory addresses mapped on to physical RAM but not on PFN mapped
+pages or addresses mapped on to devices. This patch adds address to the
+parameters being passed to arch_validate_prot() so protection bits can
+be validated in the relevant context.
 
-In prep for a new function that will need additional resource information
-during the resource walk, update the resource walk callback to pass the
-resource structure.  Since the current callback start and end arguments
-are pulled from the resource structure, the callback functions can obtain
-them from the resource structure directly.
-
-Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Brijesh Singh <brijesh.singh@amd.com>
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Reviewed-by: Borislav Petkov <bp@suse.de>
-Tested-by: Borislav Petkov <bp@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
+Cc: Khalid Aziz <khalid@gonehiking.org>
 ---
- arch/powerpc/kernel/machine_kexec_file_64.c | 12 +++++++++---
- arch/x86/kernel/crash.c                     | 18 +++++++++---------
- arch/x86/kernel/pmem.c                      |  2 +-
- include/linux/ioport.h                      |  4 ++--
- include/linux/kexec.h                       |  2 +-
- kernel/kexec_file.c                         |  5 +++--
- kernel/resource.c                           |  9 +++++----
- 7 files changed, 30 insertions(+), 22 deletions(-)
+v8:
+	- Added addr parameter to powerpc arch_validate_prot() (suggested
+	  by Michael Ellerman)
+v7:
+	- new patch
 
-diff --git a/arch/powerpc/kernel/machine_kexec_file_64.c b/arch/powerpc/kernel/machine_kexec_file_64.c
-index 992c0d258e5d..e4395f937d63 100644
---- a/arch/powerpc/kernel/machine_kexec_file_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_file_64.c
-@@ -91,11 +91,13 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
-  * and that value will be returned. If all free regions are visited without
-  * func returning non-zero, then zero will be returned.
+ arch/powerpc/include/asm/mman.h | 4 ++--
+ arch/powerpc/kernel/syscalls.c  | 2 +-
+ include/linux/mman.h            | 2 +-
+ mm/mprotect.c                   | 2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index 30922f699341..1d129f4521ac 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -32,7 +32,7 @@ static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
+ }
+ #define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
+ 
+-static inline bool arch_validate_prot(unsigned long prot)
++static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
+ {
+ 	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
+ 		return false;
+@@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
+ 		return false;
+ 	return true;
+ }
+-#define arch_validate_prot(prot) arch_validate_prot(prot)
++#define arch_validate_prot arch_validate_prot
+ 
+ #endif /* CONFIG_PPC64 */
+ #endif	/* _ASM_POWERPC_MMAN_H */
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index a877bf8269fe..6d90ddbd2d11 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -48,7 +48,7 @@ static inline long do_mmap2(unsigned long addr, size_t len,
+ {
+ 	long ret = -EINVAL;
+ 
+-	if (!arch_validate_prot(prot))
++	if (!arch_validate_prot(prot, addr))
+ 		goto out;
+ 
+ 	if (shift) {
+diff --git a/include/linux/mman.h b/include/linux/mman.h
+index c8367041fafd..b42ad5c9d6a2 100644
+--- a/include/linux/mman.h
++++ b/include/linux/mman.h
+@@ -49,7 +49,7 @@ static inline void vm_unacct_memory(long pages)
+  *
+  * Returns true if the prot flags are valid
   */
--int arch_kexec_walk_mem(struct kexec_buf *kbuf, int (*func)(u64, u64, void *))
-+int arch_kexec_walk_mem(struct kexec_buf *kbuf,
-+			int (*func)(struct resource *, void *))
+-static inline bool arch_validate_prot(unsigned long prot)
++static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
  {
- 	int ret = 0;
- 	u64 i;
- 	phys_addr_t mstart, mend;
-+	struct resource res = { };
- 
- 	if (kbuf->top_down) {
- 		for_each_free_mem_range_reverse(i, NUMA_NO_NODE, 0,
-@@ -105,7 +107,9 @@ int arch_kexec_walk_mem(struct kexec_buf *kbuf, int (*func)(u64, u64, void *))
- 			 * range while in kexec, end points to the last byte
- 			 * in the range.
- 			 */
--			ret = func(mstart, mend - 1, kbuf);
-+			res.start = mstart;
-+			res.end = mend - 1;
-+			ret = func(&res, kbuf);
- 			if (ret)
- 				break;
- 		}
-@@ -117,7 +121,9 @@ int arch_kexec_walk_mem(struct kexec_buf *kbuf, int (*func)(u64, u64, void *))
- 			 * range while in kexec, end points to the last byte
- 			 * in the range.
- 			 */
--			ret = func(mstart, mend - 1, kbuf);
-+			res.start = mstart;
-+			res.end = mend - 1;
-+			ret = func(&res, kbuf);
- 			if (ret)
- 				break;
- 		}
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 44404e2307bb..815008c9ca18 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -209,7 +209,7 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
+ 	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
  }
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index bd0f409922cb..4f0e46bb1797 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -395,7 +395,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
+ 	end = start + len;
+ 	if (end <= start)
+ 		return -ENOMEM;
+-	if (!arch_validate_prot(prot))
++	if (!arch_validate_prot(prot, start))
+ 		return -EINVAL;
  
- #ifdef CONFIG_KEXEC_FILE
--static int get_nr_ram_ranges_callback(u64 start, u64 end, void *arg)
-+static int get_nr_ram_ranges_callback(struct resource *res, void *arg)
- {
- 	unsigned int *nr_ranges = arg;
- 
-@@ -342,7 +342,7 @@ static int elf_header_exclude_ranges(struct crash_elf_data *ced,
- 	return ret;
- }
- 
--static int prepare_elf64_ram_headers_callback(u64 start, u64 end, void *arg)
-+static int prepare_elf64_ram_headers_callback(struct resource *res, void *arg)
- {
- 	struct crash_elf_data *ced = arg;
- 	Elf64_Ehdr *ehdr;
-@@ -355,7 +355,7 @@ static int prepare_elf64_ram_headers_callback(u64 start, u64 end, void *arg)
- 	ehdr = ced->ehdr;
- 
- 	/* Exclude unwanted mem ranges */
--	ret = elf_header_exclude_ranges(ced, start, end);
-+	ret = elf_header_exclude_ranges(ced, res->start, res->end);
- 	if (ret)
- 		return ret;
- 
-@@ -518,14 +518,14 @@ static int add_e820_entry(struct boot_params *params, struct e820_entry *entry)
- 	return 0;
- }
- 
--static int memmap_entry_callback(u64 start, u64 end, void *arg)
-+static int memmap_entry_callback(struct resource *res, void *arg)
- {
- 	struct crash_memmap_data *cmd = arg;
- 	struct boot_params *params = cmd->params;
- 	struct e820_entry ei;
- 
--	ei.addr = start;
--	ei.size = end - start + 1;
-+	ei.addr = res->start;
-+	ei.size = res->end - res->start + 1;
- 	ei.type = cmd->type;
- 	add_e820_entry(params, &ei);
- 
-@@ -619,12 +619,12 @@ int crash_setup_memmap_entries(struct kimage *image, struct boot_params *params)
- 	return ret;
- }
- 
--static int determine_backup_region(u64 start, u64 end, void *arg)
-+static int determine_backup_region(struct resource *res, void *arg)
- {
- 	struct kimage *image = arg;
- 
--	image->arch.backup_src_start = start;
--	image->arch.backup_src_sz = end - start + 1;
-+	image->arch.backup_src_start = res->start;
-+	image->arch.backup_src_sz = res->end - res->start + 1;
- 
- 	/* Expecting only one range for backup region */
- 	return 1;
-diff --git a/arch/x86/kernel/pmem.c b/arch/x86/kernel/pmem.c
-index 0c5315d322c8..297bb71f10c5 100644
---- a/arch/x86/kernel/pmem.c
-+++ b/arch/x86/kernel/pmem.c
-@@ -6,7 +6,7 @@
- #include <linux/init.h>
- #include <linux/ioport.h>
- 
--static int found(u64 start, u64 end, void *data)
-+static int found(struct resource *res, void *data)
- {
- 	return 1;
- }
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index f5cf32e80041..617d8a2aac67 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -271,10 +271,10 @@ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- 		void *arg, int (*func)(unsigned long, unsigned long, void *));
- extern int
- walk_system_ram_res(u64 start, u64 end, void *arg,
--		    int (*func)(u64, u64, void *));
-+		    int (*func)(struct resource *, void *));
- extern int
- walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start, u64 end,
--		    void *arg, int (*func)(u64, u64, void *));
-+		    void *arg, int (*func)(struct resource *, void *));
- 
- /* True if any part of r1 overlaps r2 */
- static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 2b7590f5483a..d672f955100a 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -159,7 +159,7 @@ struct kexec_buf {
- };
- 
- int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
--			       int (*func)(u64, u64, void *));
-+			       int (*func)(struct resource *, void *));
- extern int kexec_add_buffer(struct kexec_buf *kbuf);
- int kexec_locate_mem_hole(struct kexec_buf *kbuf);
- #endif /* CONFIG_KEXEC_FILE */
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 9f48f4412297..e5bcd94c1efb 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -406,9 +406,10 @@ static int locate_mem_hole_bottom_up(unsigned long start, unsigned long end,
- 	return 1;
- }
- 
--static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
-+static int locate_mem_hole_callback(struct resource *res, void *arg)
- {
- 	struct kexec_buf *kbuf = (struct kexec_buf *)arg;
-+	u64 start = res->start, end = res->end;
- 	unsigned long sz = end - start + 1;
- 
- 	/* Returning 0 will take to next memory range */
-@@ -437,7 +438,7 @@ static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
-  * func returning non-zero, then zero will be returned.
-  */
- int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
--			       int (*func)(u64, u64, void *))
-+			       int (*func)(struct resource *, void *))
- {
- 	if (kbuf->image->type == KEXEC_TYPE_CRASH)
- 		return walk_iomem_res_desc(crashk_res.desc,
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 7323c1b636cd..8430042fa77b 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -402,14 +402,15 @@ static int find_next_iomem_res(struct resource *res, unsigned long desc,
- 
- static int __walk_iomem_res_desc(struct resource *res, unsigned long desc,
- 				 bool first_level_children_only,
--				 void *arg, int (*func)(u64, u64, void *))
-+				 void *arg,
-+				 int (*func)(struct resource *, void *))
- {
- 	u64 orig_end = res->end;
- 	int ret = -1;
- 
- 	while ((res->start < res->end) &&
- 	       !find_next_iomem_res(res, desc, first_level_children_only)) {
--		ret = (*func)(res->start, res->end, arg);
-+		ret = (*func)(res, arg);
- 		if (ret)
- 			break;
- 
-@@ -435,7 +436,7 @@ static int __walk_iomem_res_desc(struct resource *res, unsigned long desc,
-  * <linux/ioport.h> and set it in 'desc' of a target resource entry.
-  */
- int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
--		u64 end, void *arg, int (*func)(u64, u64, void *))
-+		u64 end, void *arg, int (*func)(struct resource *, void *))
- {
- 	struct resource res;
- 
-@@ -454,7 +455,7 @@ int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
-  * ranges.
-  */
- int walk_system_ram_res(u64 start, u64 end, void *arg,
--				int (*func)(u64, u64, void *))
-+				int (*func)(struct resource *, void *))
- {
- 	struct resource res;
- 
+ 	reqprot = prot;
 -- 
-2.9.5
+2.11.0
