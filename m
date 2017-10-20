@@ -1,22 +1,42 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <pantelis.antoniou@konsulko.com>
+Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
+ [IPv6:2a00:1450:400c:c0c::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJD4R00MJzDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 15:55:02 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id b85so9301577pfj.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Oct 2017 21:55:02 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/64s: idle skip POWER9 DD1 and DD2.0 specific
- workarounds on DD2.1
-Date: Fri, 20 Oct 2017 14:54:44 +1000
-Message-Id: <20171020045444.4539-3-npiggin@gmail.com>
-In-Reply-To: <20171020045444.4539-1-npiggin@gmail.com>
-References: <20171020045444.4539-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJJKN33p2zDqBc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 19:06:31 +1100 (AEDT)
+Received: by mail-wr0-x241.google.com with SMTP id q42so10600849wrb.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 01:06:31 -0700 (PDT)
+Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 10.3 \(3273\))
+Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
+ full_name
+From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
+In-Reply-To: <59E91D4D.8000200@gmail.com>
+Date: Fri, 20 Oct 2017 11:06:23 +0300
+Cc: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh@kernel.org>,
+ Alan Tull <atull@kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>,
+ linux-fpga@vger.kernel.org
+Message-Id: <331B5EB4-9C97-4B2C-9B54-BF648F309A50@konsulko.com>
+References: <20170821151651.25096-1-robh@kernel.org>
+ <20170821151651.25096-6-robh@kernel.org>
+ <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
+ <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
+ <59E69786.2030406@gmail.com>
+ <CANk1AXStoiNtJfU0iNug1wKASurqH6OrNoaN=UtSh6xxSB088Q@mail.gmail.com>
+ <CAL_JsqKR3Jg+tgZr4xGPtcWnZW7ng741YjuyUFaS2SXKXbxGtg@mail.gmail.com>
+ <1508341985.25643.12.camel@hp800z>
+ <CAL_JsqKJ74y3qHVqbRph5C8=0Ggb+n=JT3TZybu2+mENyZ1VZA@mail.gmail.com>
+ <4393AFA4-620F-4C21-995D-A9806DAE1990@konsulko.com>
+ <20171019200615.GA10743@tyrael.ni.corp.natinst.com>
+ <59E91D4D.8000200@gmail.com>
+To: Frank Rowand <frowand.list@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,108 +46,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DD2.1 does not have to flush the ERAT after a state-loss idle. It also
-does not have to save and restore MMCR0.
+Hi Frank,
 
-Performance testing was done on a DD2.1 using only the stop0 idle state
-(the shallowest state which supports state loss), using context_switch
-selftest configured to ping-poing between two threads on the same core
-and two different cores.
+> On Oct 20, 2017, at 00:46 , Frank Rowand <frowand.list@gmail.com> =
+wrote:
+>=20
+> On 10/19/17 13:06, Moritz Fischer wrote:
+>=20
+> < snip >
+>=20
+>> We also have plenty of code that is just not aware of overlays, and
+>> assumes certain parts of the tree to stay static.
+>=20
+> I would state that somewhat differently.  :-)  There is very little
+> code that is aware of overlays, and most code assumes the device tree
+> does not change after early boot.
+>=20
+> This is one of the areas where the creation of overlays needs to be
+> done with care.
+>=20
 
-Performance improvement for same core is 7.0%, different cores is 14.8%.
+Correct. But this is not breaking the kernel.
 
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/idle_book3s.S | 39 ++++++++++++++++++++++++++++-----------
- 1 file changed, 28 insertions(+), 11 deletions(-)
+In general we have the following case where we load overlays (at least
+well formed overlays that are not doing stupid things).
 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 1125c9be9e06..3531a3e727d2 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -112,12 +112,14 @@ power9_save_additional_sprs:
- 	std	r4, STOP_HFSCR(r13)
- 
- 	mfspr	r3, SPRN_MMCRA
--	mfspr	r4, SPRN_MMCR1
-+	mfspr	r4, SPRN_MMCR0
- 	std	r3, STOP_MMCRA(r13)
--	std	r4, STOP_MMCR1(r13)
-+	std	r4, _MMCR0(r1)
- 
--	mfspr	r3, SPRN_MMCR2
--	std	r3, STOP_MMCR2(r13)
-+	mfspr	r3, SPRN_MMCR1
-+	mfspr	r4, SPRN_MMCR2
-+	std	r3, STOP_MMCR1(r13)
-+	std	r4, STOP_MMCR2(r13)
- 	blr
- 
- power9_restore_additional_sprs:
-@@ -135,11 +137,14 @@ power9_restore_additional_sprs:
- 	ld	r4, STOP_MMCRA(r13)
- 	mtspr	SPRN_HFSCR, r3
- 	mtspr	SPRN_MMCRA, r4
--	/* We have already restored PACA_MMCR0 */
--	ld	r3, STOP_MMCR1(r13)
--	ld	r4, STOP_MMCR2(r13)
--	mtspr	SPRN_MMCR1, r3
--	mtspr	SPRN_MMCR2, r4
-+
-+	ld	r3, _MMCR0(r1)
-+	ld	r4, STOP_MMCR1(r13)
-+	mtspr	SPRN_MMCR0, r3
-+	mtspr	SPRN_MMCR1, r4
-+
-+	ld	r3, STOP_MMCR2(r13)
-+	mtspr	SPRN_MMCR2, r3
- 	blr
- 
- /*
-@@ -357,6 +362,7 @@ power_enter_stop:
- 	b 	pnv_wakeup_noloss
- 
- .Lhandle_esl_ec_set:
-+BEGIN_FTR_SECTION
- 	/*
- 	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
- 	 * state-loss idle. Saving and restoring MMCR0 over idle is a
-@@ -364,6 +370,10 @@ power_enter_stop:
- 	 */
- 	mfspr	r4,SPRN_MMCR0
- 	std	r4,_MMCR0(r1)
-+FTR_SECTION_ELSE
-+	nop
-+	nop
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
- 
- /*
-  * Check if the requested state is a deep idle state.
-@@ -555,15 +565,22 @@ pnv_restore_hyp_resource_arch300:
- 	 * then clear bit 60 in MMCRA to ensure the PMU starts running.
- 	 */
- 	blt	cr3,1f
-+BEGIN_FTR_SECTION
-+	nop
-+	nop
-+	nop
-+	nop
-+FTR_SECTION_ELSE
- 	PPC_INVALIDATE_ERAT
- 	ld	r1,PACAR1(r13)
-+	ld	r4,_MMCR0(r1)
-+	mtspr	SPRN_MMCR0,r4
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
- 	mfspr	r4,SPRN_MMCRA
- 	ori	r4,r4,(1 << (63-60))
- 	mtspr	SPRN_MMCRA,r4
- 	xori	r4,r4,(1 << (63-60))
- 	mtspr	SPRN_MMCRA,r4
--	ld	r4,_MMCR0(r1)
--	mtspr	SPRN_MMCR0,r4
- 1:
- 	/*
- 	 * POWER ISA 3. Use PSSCR to determine if we
--- 
-2.13.3
+1. Activation of a new device. Usually this works since is something =
+that=E2=80=99s
+normally done at boot.
+
+2. Deactivation of a device. This might break because the removal paths
+of platform device especially are not well tested (or never executed for =
+that
+matter).
+
+3. Modification of properties in an already activated device. If the =
+device driver
+has not installed a device tree modification hook (as in almost 99% of =
+the devices)
+it will do absolutely nothing, since the device tree is parsed only at =
+probe time.
+I can argue that for these cases we could have a catch-all hook that =
+displays a
+message that nothing happened.
+
+4. Modification of some part of the tree that=E2=80=99s not part of a =
+device driver, perhaps
+the aliases or chosen node. This may potentially be harmful or harmless =
+depending on
+what has been modified. For instance modifying an already existing alias =
+might cause
+internal inconsistency about device naming, while adding a new aliases =
+should be harmless.
+This is a matter of policy per board, whether to allow or not.
+
+Are there other cases that are potentially more harmful?
+
+>=20
+>> I ran into that issue when I tried to add thermal zones via an =
+overlay,
+>> I've been investigating how to fix the thermal framework to work with
+>> overlays since then and have some partially working code.
+>> Currently the thermal framework parses the thermal-zones node at =
+boot,
+>> and assumes this stays static. This breaks with overlays.
+>>=20
+>> I agree we eventually need to fix the parts that break when we use
+>> overlays.
+>=20
+
+Regards
+
+=E2=80=94 Pantelis
