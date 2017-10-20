@@ -1,47 +1,44 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJNFh6FKszDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 22:03:36 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9KAx4ku040445
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 07:03:33 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dq9mgm2c6-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJNR73w0fzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 22:11:47 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9KBAfSt095554
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 07:11:44 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dqg1m8248-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 07:03:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 07:11:44 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 20 Oct 2017 12:03:30 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9KB3TrJ27525366
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:03:29 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4C625AE04D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:57:33 +0100 (BST)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 065D7AE045
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:57:33 +0100 (BST)
-Received: from [9.164.183.169] (unknown [9.164.183.169])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:57:32 +0100 (BST)
-Subject: Re: [PATCH v2 13/18] powerpc: Add support for setting SPRN_TIDR
-To: linuxppc-dev@lists.ozlabs.org
-References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1507343298-27496-14-git-send-email-sukadev@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 20 Oct 2017 13:03:28 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Fri, 20 Oct 2017 12:11:42 +0100
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9KBBcvX23330954
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:11:39 GMT
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9KBBb1q002863
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 22:11:37 +1100
+Date: Fri, 20 Oct 2017 16:41:33 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc/64s: idle skip POWER9 DD1 and DD2.0 specific
+ workarounds on DD2.1
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20171020045444.4539-1-npiggin@gmail.com>
+ <20171020045444.4539-3-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1507343298-27496-14-git-send-email-sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <a444854c-c140-f60d-f63a-912c939f938d@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20171020045444.4539-3-npiggin@gmail.com>
+Message-Id: <20171020111133.GA5688@drishya.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,222 +48,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Nicholas Piggin <npiggin@gmail.com> [2017-10-20 14:54:44]:
+
+> DD2.1 does not have to flush the ERAT after a state-loss idle. It also
+> does not have to save and restore MMCR0.
+> 
+> Performance testing was done on a DD2.1 using only the stop0 idle state
+> (the shallowest state which supports state loss), using context_switch
+> selftest configured to ping-poing between two threads on the same core
+                                ^pong
+> and two different cores.
+> 
+> Performance improvement for same core is 7.0%, different cores is 14.8%.
+
+Good improvement as we remove unnecessary code and workarounds. 
+ 
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
 
-Le 07/10/2017 à 04:28, Sukadev Bhattiprolu a écrit :
-> We need the SPRN_TIDR to be set for use with fast thread-wakeup (core-
-> to-core wakeup) and also with CAPI.
-> 
-> Each thread in a process needs to have a unique id within the process.
-> But as explained below, for now, we assign globally unique thread ids
-> to all threads in the system.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 > ---
-
-FWIW
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-> Changelog[v3]
-> 	- Merge changes with and address comments to Christophe's patch.
-> 	  (i.e drop CONFIG_PPC_VAS; use CONFIG_PPC64; check CPU_ARCH_300
-> 	  before setting TIDR). Defer following to separate patches:
-> 	  	- emulation parts of Christophe's patch,
-> 		- setting TIDR for tasks other than 'current'
-> 		- setting feature bit in AT_HWCAP2
+>  arch/powerpc/kernel/idle_book3s.S | 39 ++++++++++++++++++++++++++++-----------
+>  1 file changed, 28 insertions(+), 11 deletions(-)
 > 
-> Changelog[v2]
-> 	- Michael Ellerman: Use an interface to assign TIDR so it is
-> 	    assigned to only threads that need it; move assignment to
-> 	    restore_sprs(). Drop lint from rebase;
-> ---
->   arch/powerpc/include/asm/processor.h |   1 +
->   arch/powerpc/include/asm/switch_to.h |   3 +
->   arch/powerpc/kernel/process.c        | 122 +++++++++++++++++++++++++++++++++++
->   3 files changed, 126 insertions(+)
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 1125c9be9e06..3531a3e727d2 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -112,12 +112,14 @@ power9_save_additional_sprs:
+>  	std	r4, STOP_HFSCR(r13)
 > 
-> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-> index fab7ff8..58cc212 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -329,6 +329,7 @@ struct thread_struct {
->   	 */
->   	int		dscr_inherit;
->   	unsigned long	ppr;	/* used to save/restore SMT priority */
-> +	unsigned long	tidr;
->   #endif
->   #ifdef CONFIG_PPC_BOOK3S_64
->   	unsigned long	tar;
-> diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-> index 17c8380..f5da32f 100644
-> --- a/arch/powerpc/include/asm/switch_to.h
-> +++ b/arch/powerpc/include/asm/switch_to.h
-> @@ -91,4 +91,7 @@ static inline void clear_task_ebb(struct task_struct *t)
->   #endif
->   }
+>  	mfspr	r3, SPRN_MMCRA
+> -	mfspr	r4, SPRN_MMCR1
+> +	mfspr	r4, SPRN_MMCR0
+>  	std	r3, STOP_MMCRA(r13)
+> -	std	r4, STOP_MMCR1(r13)
+> +	std	r4, _MMCR0(r1)
 > 
-> +extern int set_thread_tidr(struct task_struct *t);
-> +extern void clear_thread_tidr(struct task_struct *t);
-> +
->   #endif /* _ASM_POWERPC_SWITCH_TO_H */
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 37ed60b..d861fcd 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1120,6 +1120,13 @@ static inline void restore_sprs(struct thread_struct *old_thread,
->   			mtspr(SPRN_TAR, new_thread->tar);
->   	}
->   #endif
-> +#ifdef CONFIG_PPC64
-> +	if (old_thread->tidr != new_thread->tidr) {
-> +		/* TIDR should be non-zero only with ISA3.0. */
-> +		WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_ARCH_300));
-> +		mtspr(SPRN_TIDR, new_thread->tidr);
-> +	}
-> +#endif
->   }
+> -	mfspr	r3, SPRN_MMCR2
+> -	std	r3, STOP_MMCR2(r13)
+> +	mfspr	r3, SPRN_MMCR1
+> +	mfspr	r4, SPRN_MMCR2
+> +	std	r3, STOP_MMCR1(r13)
+> +	std	r4, STOP_MMCR2(r13)
+>  	blr
 > 
->   #ifdef CONFIG_PPC_BOOK3S_64
-> @@ -1438,9 +1445,117 @@ void flush_thread(void)
->   #endif /* CONFIG_HAVE_HW_BREAKPOINT */
->   }
+>  power9_restore_additional_sprs:
+> @@ -135,11 +137,14 @@ power9_restore_additional_sprs:
+>  	ld	r4, STOP_MMCRA(r13)
+>  	mtspr	SPRN_HFSCR, r3
+>  	mtspr	SPRN_MMCRA, r4
+> -	/* We have already restored PACA_MMCR0 */
+> -	ld	r3, STOP_MMCR1(r13)
+> -	ld	r4, STOP_MMCR2(r13)
+> -	mtspr	SPRN_MMCR1, r3
+> -	mtspr	SPRN_MMCR2, r4
+> +
+> +	ld	r3, _MMCR0(r1)
+> +	ld	r4, STOP_MMCR1(r13)
+> +	mtspr	SPRN_MMCR0, r3
+> +	mtspr	SPRN_MMCR1, r4
+> +
+> +	ld	r3, STOP_MMCR2(r13)
+> +	mtspr	SPRN_MMCR2, r3
+>  	blr
 > 
-> +#ifdef CONFIG_PPC64
-> +static DEFINE_SPINLOCK(vas_thread_id_lock);
-> +static DEFINE_IDA(vas_thread_ida);
-> +
-> +/*
-> + * We need to assign a unique thread id to each thread in a process.
-> + *
-> + * This thread id, referred to as TIDR, and separate from the Linux's tgid,
-> + * is intended to be used to direct an ASB_Notify from the hardware to the
-> + * thread, when a suitable event occurs in the system.
-> + *
-> + * One such event is a "paste" instruction in the context of Fast Thread
-> + * Wakeup (aka Core-to-core wake up in the Virtual Accelerator Switchboard
-> + * (VAS) in POWER9.
-> + *
-> + * To get a unique TIDR per process we could simply reuse task_pid_nr() but
-> + * the problem is that task_pid_nr() is not yet available copy_thread() is
-> + * called. Fixing that would require changing more intrusive arch-neutral
-> + * code in code path in copy_process()?.
-> + *
-> + * Further, to assign unique TIDRs within each process, we need an atomic
-> + * field (or an IDR) in task_struct, which again intrudes into the arch-
-> + * neutral code. So try to assign globally unique TIDRs for now.
-> + *
-> + * NOTE: TIDR 0 indicates that the thread does not need a TIDR value.
-> + *	 For now, only threads that expect to be notified by the VAS
-> + *	 hardware need a TIDR value and we assign values > 0 for those.
-> + */
-> +#define MAX_THREAD_CONTEXT	((1 << 16) - 1)
-> +static int assign_thread_tidr(void)
-> +{
-> +	int index;
-> +	int err;
-> +
-> +again:
-> +	if (!ida_pre_get(&vas_thread_ida, GFP_KERNEL))
-> +		return -ENOMEM;
-> +
-> +	spin_lock(&vas_thread_id_lock);
-> +	err = ida_get_new_above(&vas_thread_ida, 1, &index);
-> +	spin_unlock(&vas_thread_id_lock);
-> +
-> +	if (err == -EAGAIN)
-> +		goto again;
-> +	else if (err)
-> +		return err;
-> +
-> +	if (index > MAX_THREAD_CONTEXT) {
-> +		spin_lock(&vas_thread_id_lock);
-> +		ida_remove(&vas_thread_ida, index);
-> +		spin_unlock(&vas_thread_id_lock);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	return index;
-> +}
-> +
-> +static void free_thread_tidr(int id)
-> +{
-> +	spin_lock(&vas_thread_id_lock);
-> +	ida_remove(&vas_thread_ida, id);
-> +	spin_unlock(&vas_thread_id_lock);
-> +}
-> +
-> +/*
-> + * Clear any TIDR value assigned to this thread.
-> + */
-> +void clear_thread_tidr(struct task_struct *t)
-> +{
-> +	if (!t->thread.tidr)
-> +		return;
-> +
-> +	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +		WARN_ON_ONCE(1);
-> +		return;
-> +	}
-> +
-> +	mtspr(SPRN_TIDR, 0);
-> +	free_thread_tidr(t->thread.tidr);
-> +	t->thread.tidr = 0;
-> +}
-> +
-> +/*
-> + * Assign a unique TIDR (thread id) for task @t and set it in the thread
-> + * structure. For now, we only support setting TIDR for 'current' task.
-> + */
-> +int set_thread_tidr(struct task_struct *t)
-> +{
-> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +		return -EINVAL;
-> +
-> +	if (t != current)
-> +		return -EINVAL;
-> +
-> +	t->thread.tidr = assign_thread_tidr();
-> +	if (t->thread.tidr < 0)
-> +		return t->thread.tidr;
-> +
-> +	mtspr(SPRN_TIDR, t->thread.tidr);
-> +
-> +	return 0;
-> +}
-> +
-> +#endif /* CONFIG_PPC64 */
-> +
->   void
->   release_thread(struct task_struct *t)
->   {
-> +#ifdef CONFIG_PPC64
-> +	clear_thread_tidr(t);
-> +#endif
->   }
+>  /*
+> @@ -357,6 +362,7 @@ power_enter_stop:
+>  	b 	pnv_wakeup_noloss
 > 
->   /*
-> @@ -1466,6 +1581,10 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
+>  .Lhandle_esl_ec_set:
+> +BEGIN_FTR_SECTION
+>  	/*
+>  	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
+>  	 * state-loss idle. Saving and restoring MMCR0 over idle is a
+> @@ -364,6 +370,10 @@ power_enter_stop:
+>  	 */
+>  	mfspr	r4,SPRN_MMCR0
+>  	std	r4,_MMCR0(r1)
+> +FTR_SECTION_ELSE
+> +	nop
+> +	nop
+> +ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
 > 
->   	clear_task_ebb(dst);
-> 
-> +#ifdef CONFIG_PPC64
-> +	dst->thread.tidr = 0;
-> +#endif
-> +
->   	return 0;
->   }
-> 
-> @@ -1576,6 +1695,9 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
->   #endif
-> 
->   	setup_ksp_vsid(p, sp);
-> +#ifdef CONFIG_PPC64
-> +	p->thread.tidr = 0;
-> +#endif
-> 
->   #ifdef CONFIG_PPC64
->   	if (cpu_has_feature(CPU_FTR_DSCR)) {
+>  /*
+>   * Check if the requested state is a deep idle state.
+> @@ -555,15 +565,22 @@ pnv_restore_hyp_resource_arch300:
+>  	 * then clear bit 60 in MMCRA to ensure the PMU starts running.
+>  	 */
+>  	blt	cr3,1f
+> +BEGIN_FTR_SECTION
+> +	nop
+> +	nop
+> +	nop
+> +	nop
+> +FTR_SECTION_ELSE
+>  	PPC_INVALIDATE_ERAT
+>  	ld	r1,PACAR1(r13)
+> +	ld	r4,_MMCR0(r1)
+> +	mtspr	SPRN_MMCR0,r4
+> +ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
+>  	mfspr	r4,SPRN_MMCRA
+>  	ori	r4,r4,(1 << (63-60))
+>  	mtspr	SPRN_MMCRA,r4
+>  	xori	r4,r4,(1 << (63-60))
+>  	mtspr	SPRN_MMCRA,r4
+> -	ld	r4,_MMCR0(r1)
+> -	mtspr	SPRN_MMCR0,r4
+>  1:
+>  	/*
+>  	 * POWER ISA 3. Use PSSCR to determine if we
+> -- 
+> 2.13.3
 > 
