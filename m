@@ -1,33 +1,47 @@
-Return-Path: <jarkko.sakkinen@linux.intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJMN166cYzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 21:24:01 +1100 (AEDT)
-Date: Fri, 20 Oct 2017 13:23:51 +0300
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: Alexander.Steffen@infineon.com
-Cc: andriy.shevchenko@linux.intel.com, elfring@users.sourceforge.net,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, clabbe.montjoie@gmail.com,
- jgunthorpe@obsidianresearch.com, jsnitsel@redhat.com,
- kgold@linux.vnet.ibm.com, mpe@ellerman.id.au,
- nayna@linux.vnet.ibm.com, paulus@samba.org, PeterHuewe@gmx.de,
- stefanb@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/4] char/tpm: Improve a size determination in nine
- functions
-Message-ID: <20171020102351.bfz7s2ihwce7q2iz@linux.intel.com>
-References: <1d3516a2-a8e6-9e95-d438-f115fac84c7f@users.sourceforge.net>
- <83a166af-aecc-649d-dfe3-a72245345209@users.sourceforge.net>
- <1508238182.16112.475.camel@linux.intel.com>
- <c8d37c0407a949c1abb35cfd79c17f58@infineon.com>
- <20171018144811.klfmzikibuux77pf@linux.intel.com>
- <8afa2fb8d8704aff804cd8da15e931da@infineon.com>
- <20171020090139.l4igyucqxqmgrq7l@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJNFh6FKszDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 22:03:36 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9KAx4ku040445
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 07:03:33 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dq9mgm2c6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 07:03:33 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Fri, 20 Oct 2017 12:03:30 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9KB3TrJ27525366
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:03:29 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4C625AE04D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:57:33 +0100 (BST)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 065D7AE045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:57:33 +0100 (BST)
+Received: from [9.164.183.169] (unknown [9.164.183.169])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 11:57:32 +0100 (BST)
+Subject: Re: [PATCH v2 13/18] powerpc: Add support for setting SPRN_TIDR
+To: linuxppc-dev@lists.ozlabs.org
+References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1507343298-27496-14-git-send-email-sukadev@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Fri, 20 Oct 2017 13:03:28 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171020090139.l4igyucqxqmgrq7l@linux.intel.com>
+In-Reply-To: <1507343298-27496-14-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <a444854c-c140-f60d-f63a-912c939f938d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,71 +51,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 20, 2017 at 12:01:39PM +0300, Jarkko Sakkinen wrote:
-> On Thu, Oct 19, 2017 at 04:58:23PM +0000, Alexander.Steffen@infineon.com wrote:
-> > > On Tue, Oct 17, 2017 at 11:50:05AM +0000, Alexander.Steffen@infineon.com
-> > > wrote:
-> > > > > > Replace the specification of data structures by pointer dereferences
-> > > > > > as the parameter for the operator "sizeof" to make the corresponding
-> > > > > > size
-> > > > > > determination a bit safer according to the Linux coding style
-> > > > > > convention.
-> > > > >
-> > > > >
-> > > > > This patch does one style in favor of the other.
-> > > >
-> > > > I actually prefer that style, so I'd welcome this change :)
-> > > >
-> > > > > At the end it's Jarkko's call, though I would NAK this as I think some
-> > > > > one already told this to you for some other similar patch(es).
-> > > > >
-> > > > >
-> > > > > I even would suggest to stop doing this noisy stuff, which keeps people
-> > > > > busy for nothing.
-> > > >
-> > > > Cleaning up old code is also worth something, even if does not change
-> > > > one bit in the assembly output in the end...
-> > > >
-> > > > Alexander
-> > > 
-> > > Quite insignificant clean up it is that does more harm that gives any
-> > > benefit as any new change adds debt to backporting.
-> > > 
-> > > Anyway, this has been a useful patch set for me in the sense that I have
-> > > clearer picture now on discarding/accepting commits.
-> > 
-> > Indeed. I have now a better understanding for why some code looks as
-> > ugly as it does.
-> > 
-> > > One line minor
-> > > clean up will be from now on automatic NAK unless it causes a compiler
-> > > warning or some other visible side-effect.
-> > 
-> > Not a nice policy, but at least a policy. I have deleted the tasks
-> > that I had still planned for other cleanup activities.
-> > 
-> > Alexander
-> 
-> 1/4 and 2/4 are sensible clean ups as long as the commit message is
-> refined.
-> 
-> Moving more functions to use tpm_buf instead of nasty tpm_cmd_t are
-> also welcome changes.
-> 
-> Documenting functions (exported mainly) is also welcome. Or refining
-> documentation.
-> 
-> It's really case by case. The important thing in small clean ups is
-> a clearly written commit message that explains rationale.
-> 
-> /Jarkko
 
-It's easy to say in retroperpective that code is "ugly". I would use
-strong consideration before using that adjective for mainline code.
-Rarely when you do something new first the form will be polished.
 
-I was too steep with the policy above. It's not exactly like that in the
-strict sense. It's always case by case like for any commit. However, it
-is good to remember that "ugliness" does not cause regressions.
+Le 07/10/2017 à 04:28, Sukadev Bhattiprolu a écrit :
+> We need the SPRN_TIDR to be set for use with fast thread-wakeup (core-
+> to-core wakeup) and also with CAPI.
+> 
+> Each thread in a process needs to have a unique id within the process.
+> But as explained below, for now, we assign globally unique thread ids
+> to all threads in the system.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> ---
 
-/Jarkko
+FWIW
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+
+> Changelog[v3]
+> 	- Merge changes with and address comments to Christophe's patch.
+> 	  (i.e drop CONFIG_PPC_VAS; use CONFIG_PPC64; check CPU_ARCH_300
+> 	  before setting TIDR). Defer following to separate patches:
+> 	  	- emulation parts of Christophe's patch,
+> 		- setting TIDR for tasks other than 'current'
+> 		- setting feature bit in AT_HWCAP2
+> 
+> Changelog[v2]
+> 	- Michael Ellerman: Use an interface to assign TIDR so it is
+> 	    assigned to only threads that need it; move assignment to
+> 	    restore_sprs(). Drop lint from rebase;
+> ---
+>   arch/powerpc/include/asm/processor.h |   1 +
+>   arch/powerpc/include/asm/switch_to.h |   3 +
+>   arch/powerpc/kernel/process.c        | 122 +++++++++++++++++++++++++++++++++++
+>   3 files changed, 126 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+> index fab7ff8..58cc212 100644
+> --- a/arch/powerpc/include/asm/processor.h
+> +++ b/arch/powerpc/include/asm/processor.h
+> @@ -329,6 +329,7 @@ struct thread_struct {
+>   	 */
+>   	int		dscr_inherit;
+>   	unsigned long	ppr;	/* used to save/restore SMT priority */
+> +	unsigned long	tidr;
+>   #endif
+>   #ifdef CONFIG_PPC_BOOK3S_64
+>   	unsigned long	tar;
+> diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+> index 17c8380..f5da32f 100644
+> --- a/arch/powerpc/include/asm/switch_to.h
+> +++ b/arch/powerpc/include/asm/switch_to.h
+> @@ -91,4 +91,7 @@ static inline void clear_task_ebb(struct task_struct *t)
+>   #endif
+>   }
+> 
+> +extern int set_thread_tidr(struct task_struct *t);
+> +extern void clear_thread_tidr(struct task_struct *t);
+> +
+>   #endif /* _ASM_POWERPC_SWITCH_TO_H */
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 37ed60b..d861fcd 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1120,6 +1120,13 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+>   			mtspr(SPRN_TAR, new_thread->tar);
+>   	}
+>   #endif
+> +#ifdef CONFIG_PPC64
+> +	if (old_thread->tidr != new_thread->tidr) {
+> +		/* TIDR should be non-zero only with ISA3.0. */
+> +		WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_ARCH_300));
+> +		mtspr(SPRN_TIDR, new_thread->tidr);
+> +	}
+> +#endif
+>   }
+> 
+>   #ifdef CONFIG_PPC_BOOK3S_64
+> @@ -1438,9 +1445,117 @@ void flush_thread(void)
+>   #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+>   }
+> 
+> +#ifdef CONFIG_PPC64
+> +static DEFINE_SPINLOCK(vas_thread_id_lock);
+> +static DEFINE_IDA(vas_thread_ida);
+> +
+> +/*
+> + * We need to assign a unique thread id to each thread in a process.
+> + *
+> + * This thread id, referred to as TIDR, and separate from the Linux's tgid,
+> + * is intended to be used to direct an ASB_Notify from the hardware to the
+> + * thread, when a suitable event occurs in the system.
+> + *
+> + * One such event is a "paste" instruction in the context of Fast Thread
+> + * Wakeup (aka Core-to-core wake up in the Virtual Accelerator Switchboard
+> + * (VAS) in POWER9.
+> + *
+> + * To get a unique TIDR per process we could simply reuse task_pid_nr() but
+> + * the problem is that task_pid_nr() is not yet available copy_thread() is
+> + * called. Fixing that would require changing more intrusive arch-neutral
+> + * code in code path in copy_process()?.
+> + *
+> + * Further, to assign unique TIDRs within each process, we need an atomic
+> + * field (or an IDR) in task_struct, which again intrudes into the arch-
+> + * neutral code. So try to assign globally unique TIDRs for now.
+> + *
+> + * NOTE: TIDR 0 indicates that the thread does not need a TIDR value.
+> + *	 For now, only threads that expect to be notified by the VAS
+> + *	 hardware need a TIDR value and we assign values > 0 for those.
+> + */
+> +#define MAX_THREAD_CONTEXT	((1 << 16) - 1)
+> +static int assign_thread_tidr(void)
+> +{
+> +	int index;
+> +	int err;
+> +
+> +again:
+> +	if (!ida_pre_get(&vas_thread_ida, GFP_KERNEL))
+> +		return -ENOMEM;
+> +
+> +	spin_lock(&vas_thread_id_lock);
+> +	err = ida_get_new_above(&vas_thread_ida, 1, &index);
+> +	spin_unlock(&vas_thread_id_lock);
+> +
+> +	if (err == -EAGAIN)
+> +		goto again;
+> +	else if (err)
+> +		return err;
+> +
+> +	if (index > MAX_THREAD_CONTEXT) {
+> +		spin_lock(&vas_thread_id_lock);
+> +		ida_remove(&vas_thread_ida, index);
+> +		spin_unlock(&vas_thread_id_lock);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	return index;
+> +}
+> +
+> +static void free_thread_tidr(int id)
+> +{
+> +	spin_lock(&vas_thread_id_lock);
+> +	ida_remove(&vas_thread_ida, id);
+> +	spin_unlock(&vas_thread_id_lock);
+> +}
+> +
+> +/*
+> + * Clear any TIDR value assigned to this thread.
+> + */
+> +void clear_thread_tidr(struct task_struct *t)
+> +{
+> +	if (!t->thread.tidr)
+> +		return;
+> +
+> +	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
+> +		WARN_ON_ONCE(1);
+> +		return;
+> +	}
+> +
+> +	mtspr(SPRN_TIDR, 0);
+> +	free_thread_tidr(t->thread.tidr);
+> +	t->thread.tidr = 0;
+> +}
+> +
+> +/*
+> + * Assign a unique TIDR (thread id) for task @t and set it in the thread
+> + * structure. For now, we only support setting TIDR for 'current' task.
+> + */
+> +int set_thread_tidr(struct task_struct *t)
+> +{
+> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+> +		return -EINVAL;
+> +
+> +	if (t != current)
+> +		return -EINVAL;
+> +
+> +	t->thread.tidr = assign_thread_tidr();
+> +	if (t->thread.tidr < 0)
+> +		return t->thread.tidr;
+> +
+> +	mtspr(SPRN_TIDR, t->thread.tidr);
+> +
+> +	return 0;
+> +}
+> +
+> +#endif /* CONFIG_PPC64 */
+> +
+>   void
+>   release_thread(struct task_struct *t)
+>   {
+> +#ifdef CONFIG_PPC64
+> +	clear_thread_tidr(t);
+> +#endif
+>   }
+> 
+>   /*
+> @@ -1466,6 +1581,10 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
+> 
+>   	clear_task_ebb(dst);
+> 
+> +#ifdef CONFIG_PPC64
+> +	dst->thread.tidr = 0;
+> +#endif
+> +
+>   	return 0;
+>   }
+> 
+> @@ -1576,6 +1695,9 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+>   #endif
+> 
+>   	setup_ksp_vsid(p, sp);
+> +#ifdef CONFIG_PPC64
+> +	p->thread.tidr = 0;
+> +#endif
+> 
+>   #ifdef CONFIG_PPC64
+>   	if (cpu_has_feature(CPU_FTR_DSCR)) {
+> 
