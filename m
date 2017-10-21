@@ -1,31 +1,21 @@
-Return-Path: <khalid.aziz@oracle.com>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yJX7m4BpMzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 03:59:00 +1100 (AEDT)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- v9KGwwiJ019167
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Oct 2017 16:58:58 GMT
-From: Khalid Aziz <khalid.aziz@oracle.com>
-To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, davem@davemloft.net, dave.hansen@linux.intel.com
-Cc: Khalid Aziz <khalid.aziz@oracle.com>, bsingharora@gmail.com,
- nborisov@suse.com, aarcange@redhat.com, tj@kernel.org, mgorman@suse.de,
- vbabka@suse.cz, nadav.amit@gmail.com, aneesh.kumar@linux.vnet.ibm.com,
- kirill.shutemov@linux.intel.com, heiko.carstens@de.ibm.com,
- ak@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, Khalid Aziz <khalid@gonehiking.org>
-Subject: [PATCH v9 07/10] mm: Add address parameter to arch_validate_prot()
-Date: Fri, 20 Oct 2017 10:58:00 -0600
-Message-Id: <24966e414aa0e3e6b6b1b8df6d680f32736b86d5.1508364660.git.khalid.aziz@oracle.com>
-In-Reply-To: <cover.1508364660.git.khalid.aziz@oracle.com>
-References: <cover.1508364660.git.khalid.aziz@oracle.com>
-In-Reply-To: <cover.1508364660.git.khalid.aziz@oracle.com>
-References: <cover.1508364660.git.khalid.aziz@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yJknN2Y78zDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Oct 2017 11:58:48 +1100 (AEDT)
+Message-ID: <1508547527.23934.4.camel@neuling.org>
+Subject: Re: [PATCH 1/4] powerpc/tm: Add commandline option to disable
+ hardware transactional memory
+From: Michael Neuling <mikey@neuling.org>
+To: Breno Leitao <leitao@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, stewart@linux.vnet.ibm.com, cyrilbur@gmail.com
+Date: Sat, 21 Oct 2017 11:58:47 +1100
+In-Reply-To: <20171020114539.piyh4wmby5gz7qnb@gmail.com>
+References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
+ <20171020114539.piyh4wmby5gz7qnb@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,90 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A protection flag may not be valid across entire address space and
-hence arch_validate_prot() might need the address a protection bit is
-being set on to ensure it is a valid protection flag. For example, sparc
-processors support memory corruption detection (as part of ADI feature)
-flag on memory addresses mapped on to physical RAM but not on PFN mapped
-pages or addresses mapped on to devices. This patch adds address to the
-parameters being passed to arch_validate_prot() so protection bits can
-be validated in the relevant context.
+On Fri, 2017-10-20 at 09:45 -0200, Breno Leitao wrote:
+> Mikey, Cyril,
+>=20
+> On Thu, Oct 12, 2017 at 09:17:16PM +1100, Michael Ellerman wrote:
+> > From: Cyril Bur <cyrilbur@gmail.com>
+> >=20
+> > Currently the kernel relies on firmware to inform it whether or not the
+> > CPU supports HTM and as long as the kernel was built with
+> > CONFIG_PPC_TRANSACTIONAL_MEM=3Dy then it will allow userspace to make
+> > use of the facility.
+> >=20
+> > There may be situations where it would be advantageous for the kernel
+> > to not allow userspace to use HTM, currently the only way to achieve
+> > this is to recompile the kernel with CONFIG_PPC_TRANSACTIONAL_MEM=3Dn.
+> >=20
+> > This patch adds a simple commandline option so that HTM can be
+> > disabled at boot time.
+> >=20
+> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> > [mpe: Simplify to a bool, move to prom.c, put doco in the right place.
+> > =C2=A0Always disable, regardless of initial state, to avoid user confus=
+ion.]
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > ---
+> > =C2=A0Documentation/admin-guide/kernel-parameters.txt |=C2=A0=C2=A04 ++=
+++
+> > =C2=A0arch/powerpc/kernel/prom.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0| 31
+> > +++++++++++++++++++++++++
+> > =C2=A02 files changed, 35 insertions(+)
+> >=20
+> > diff --git a/Documentation/admin-guide/kernel-parameters.txt
+> > b/Documentation/admin-guide/kernel-parameters.txt
+> > index 05496622b4ef..ef03e6e16bdb 100644
+> > --- a/Documentation/admin-guide/kernel-parameters.txt
+> > +++ b/Documentation/admin-guide/kernel-parameters.txt
+> > @@ -3185,6 +3185,10 @@
+> > =C2=A0			allowed (eg
+> > kernel_enable_fpu()/kernel_disable_fpu()).
+> > =C2=A0			There is some performance impact when enabling
+> > this.
+> > =C2=A0
+> > +	ppc_tm=3D		[PPC]
+> > +			Format: {"off"}
+> > +			Disable Hardware Transactional Memory
+> > +
+> > =C2=A0	print-fatal-signals=3D
+> > =C2=A0			[KNL] debug: print fatal signals
+> > =C2=A0
+> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> > index f83056297441..d9bd6555f980 100644
+> > --- a/arch/powerpc/kernel/prom.c
+> > +++ b/arch/powerpc/kernel/prom.c
+> > @@ -658,6 +658,35 @@ static void __init early_reserve_mem(void)
+> > =C2=A0#endif
+> > =C2=A0}
+> > =C2=A0
+> > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > +static bool tm_disabled __initdata;
+>=20
+> I think the name 'tm_disabled' might cause more confusion on the TM
+> code. Mainly because we already have tm_enable() and tm_enabled()
+> functions which are related to the MSR register and TM bit, and, with
+> your new variable, tm_enabled() and tm_disabled are not going to be
+> exclusionary. Neither tm_enable() with be able to toggle the tm_disabled
+> value.
 
-Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
-Cc: Khalid Aziz <khalid@gonehiking.org>
----
-v8:
-	- Added addr parameter to powerpc arch_validate_prot() (suggested
-	  by Michael Ellerman)
-v7:
-	- new patch
+Got a proposal for better names?
 
- arch/powerpc/include/asm/mman.h | 4 ++--
- arch/powerpc/kernel/syscalls.c  | 2 +-
- include/linux/mman.h            | 2 +-
- mm/mprotect.c                   | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
-index 30922f699341..1d129f4521ac 100644
---- a/arch/powerpc/include/asm/mman.h
-+++ b/arch/powerpc/include/asm/mman.h
-@@ -32,7 +32,7 @@ static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
- }
- #define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
- 
--static inline bool arch_validate_prot(unsigned long prot)
-+static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
- {
- 	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
- 		return false;
-@@ -40,7 +40,7 @@ static inline bool arch_validate_prot(unsigned long prot)
- 		return false;
- 	return true;
- }
--#define arch_validate_prot(prot) arch_validate_prot(prot)
-+#define arch_validate_prot arch_validate_prot
- 
- #endif /* CONFIG_PPC64 */
- #endif	/* _ASM_POWERPC_MMAN_H */
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index a877bf8269fe..6d90ddbd2d11 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -48,7 +48,7 @@ static inline long do_mmap2(unsigned long addr, size_t len,
- {
- 	long ret = -EINVAL;
- 
--	if (!arch_validate_prot(prot))
-+	if (!arch_validate_prot(prot, addr))
- 		goto out;
- 
- 	if (shift) {
-diff --git a/include/linux/mman.h b/include/linux/mman.h
-index c8367041fafd..b42ad5c9d6a2 100644
---- a/include/linux/mman.h
-+++ b/include/linux/mman.h
-@@ -49,7 +49,7 @@ static inline void vm_unacct_memory(long pages)
-  *
-  * Returns true if the prot flags are valid
-  */
--static inline bool arch_validate_prot(unsigned long prot)
-+static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
- {
- 	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
- }
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index bd0f409922cb..4f0e46bb1797 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -395,7 +395,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
- 	end = start + len;
- 	if (end <= start)
- 		return -ENOMEM;
--	if (!arch_validate_prot(prot))
-+	if (!arch_validate_prot(prot, start))
- 		return -EINVAL;
- 
- 	reqprot = prot;
--- 
-2.11.0
+Mikey
