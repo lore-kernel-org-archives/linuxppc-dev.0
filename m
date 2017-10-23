@@ -1,47 +1,47 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLCm15pYwzDqkj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 21:47:45 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9NAiQlD137792
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 06:47:42 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dsa7nkved-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLCmD0kxnzDqyr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 21:47:55 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9NAl9tS055990
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 06:47:52 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dse3ttde8-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 06:47:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 06:47:52 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 23 Oct 2017 11:47:41 +0100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ Mon, 23 Oct 2017 11:47:50 +0100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v9NAlaiJ28180732
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 10:47:37 GMT
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v9NAlQA4019111
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 21:47:27 +1100
+ v9NAljUD24772756
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 10:47:47 GMT
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v9NAlcZx009174
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 21:47:39 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>, Ram Pai <linuxram@us.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 06/25] powerpc: cleaup AMR,
- iAMR when a key is allocated or freed
-In-Reply-To: <20171018143414.125b6e0f@firefly.ozlabs.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Ram Pai <linuxram@us.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com
+Subject: Re: [PATCH 3/7] powerpc: Free up four 64K PTE bits in 4K backed HPTE
+ pages
+In-Reply-To: <87o9p3kedg.fsf@concordia.ellerman.id.au>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-15-git-send-email-linuxram@us.ibm.com>
- <20171018143414.125b6e0f@firefly.ozlabs.ibm.com>
-Date: Mon, 23 Oct 2017 15:13:45 +0530
+ <1504910713-7094-4-git-send-email-linuxram@us.ibm.com>
+ <87o9p3kedg.fsf@concordia.ellerman.id.au>
+Date: Mon, 23 Oct 2017 14:17:39 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87k1zm8ai6.fsf@linux.vnet.ibm.com>
+Message-Id: <871slu9ro4.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,63 +51,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> On Fri,  8 Sep 2017 15:44:54 -0700
-> Ram Pai <linuxram@us.ibm.com> wrote:
+> Ram Pai <linuxram@us.ibm.com> writes:
 >
->> cleanup the bits corresponding to a key in the AMR, and IAMR
->> register, when the key is newly allocated/activated or is freed.
->> We dont want some residual bits cause the hardware enforce
->> unintended behavior when the key is activated or freed.
->> 
->> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
->> ---
->>  arch/powerpc/include/asm/pkeys.h |   12 ++++++++++++
->>  1 files changed, 12 insertions(+), 0 deletions(-)
->> 
->> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
->> index 5a83ed7..53bf13b 100644
->> --- a/arch/powerpc/include/asm/pkeys.h
->> +++ b/arch/powerpc/include/asm/pkeys.h
->> @@ -54,6 +54,8 @@ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
->>  		mm_set_pkey_is_allocated(mm, pkey));
->>  }
+>> diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+>> index 1a68cb1..c6c5559 100644
+>> --- a/arch/powerpc/mm/hash64_64k.c
+>> +++ b/arch/powerpc/mm/hash64_64k.c
+>> @@ -126,18 +113,13 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>>  	if (__rpte_sub_valid(rpte, subpg_index)) {
+>>  		int ret;
 >>  
->> +extern void __arch_activate_pkey(int pkey);
->> +extern void __arch_deactivate_pkey(int pkey);
->>  /*
->>   * Returns a positive, 5-bit key on success, or -1 on failure.
->>   */
->> @@ -80,6 +82,12 @@ static inline int mm_pkey_alloc(struct mm_struct *mm)
+>> -		hash = hpt_hash(vpn, shift, ssize);
+>> -		hidx = __rpte_to_hidx(rpte, subpg_index);
+>> -		if (hidx & _PTEIDX_SECONDARY)
+>> -			hash = ~hash;
+>> -		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+>> -		slot += hidx & _PTEIDX_GROUP_IX;
+>> +		gslot = pte_get_hash_gslot(vpn, shift, ssize, rpte,
+>> +					subpg_index);
+>> +		ret = mmu_hash_ops.hpte_updatepp(gslot, rflags, vpn,
+>> +			MMU_PAGE_4K, MMU_PAGE_4K, ssize, flags);
+>
+> This was formatted correctly before:
+>   
+>> -		ret = mmu_hash_ops.hpte_updatepp(slot, rflags, vpn,
+>> -						 MMU_PAGE_4K, MMU_PAGE_4K,
+>> -						 ssize, flags);
+>>  		/*
+>> -		 *if we failed because typically the HPTE wasn't really here
+>> +		 * if we failed because typically the HPTE wasn't really here
+>
+> If you're fixing it up please make it "If ...".
+>
+>>  		 * we try an insertion.
+>>  		 */
+>>  		if (ret == -1)
+>> @@ -148,6 +130,15 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+>>  	}
 >>  
->>  	ret = ffz((u32)mm_pkey_allocation_map(mm));
->>  	mm_set_pkey_allocated(mm, ret);
+>>  htab_insert_hpte:
 >> +
 >> +	/*
->> +	 * enable the key in the hardware
+>> +	 * initialize all hidx entries to invalid value,
+>> +	 * the first time the PTE is about to allocate
+>> +	 * a 4K hpte
 >> +	 */
->> +	if (ret > 0)
->> +		__arch_activate_pkey(ret);
->>  	return ret;
->>  }
->>  
->> @@ -91,6 +99,10 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
->>  	if (!mm_pkey_is_allocated(mm, pkey))
->>  		return -EINVAL;
->>  
->> +	/*
->> +	 * Disable the key in the hardware
->> +	 */
->> +	__arch_deactivate_pkey(pkey);
->>  	mm_set_pkey_free(mm, pkey);
->>  
->>  	return 0;
 >
-> I think some of these patches can be merged, too much fine granularity
-> is hurting my ability to see the larger function/implementation.
+> Should be:
+> 	/*
+> 	 * Initialize all hidx entries to invalid value, the first time
+>          * the PTE is about to allocate a 4K HPTE.
+> 	 */
+>
+>> +	if (!(old_pte & H_PAGE_COMBO))
+>> +		rpte.hidx = ~0x0UL;
+>> +
+>
+> Paul had the idea that if we biased the slot number by 1, we could make
+> the "invalid" value be == 0.
+>
+> That would avoid needing to that above, and also mean the value is
+> correctly invalid from the get-go, which would be good IMO.
+>
+> I think now that you've added the slot accessors it would be pretty easy
+> to do.
 
-
-Completely agree
+That would be imply, we loose one slot in primary group, which means we
+will do extra work in some case because our primary now has only 7
+slots. And in case of pseries, the hypervisor will always return the
+least available slot, which implie we will do extra hcalls in case of an
+hpte insert to an empty group?
 
 -aneesh
