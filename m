@@ -1,37 +1,29 @@
-Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=puwa=bw=aculab.com=david.laight@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yL8tV70gLzDqYv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 19:38:10 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id u138so7903621wmu.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 01:38:10 -0700 (PDT)
-Date: Mon, 23 Oct 2017 17:38:04 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 6/7] symbol lookup: use new kernel and module
- dereference functions
-Message-ID: <20171023083804.GA32339@tigerII.localdomain>
-References: <20170930025319.987-1-sergey.senozhatsky@gmail.com>
- <20170930025319.987-7-sergey.senozhatsky@gmail.com>
- <20171004115306.GH20084@pathway.suse.cz>
- <20171019064235.GB449@jagdpanzerIV>
- <20171020130848.GC22070@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yL9bM6ZYTzDqfw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 20:10:07 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yL9bM62cRz8vl6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 20:10:07 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Michael Neuling' <mikey@neuling.org>, 'Breno Leitao' <leitao@debian.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+CC: "stewart@linux.vnet.ibm.com" <stewart@linux.vnet.ibm.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "cyrilbur@gmail.com"
+ <cyrilbur@gmail.com>
+Subject: RE: [PATCH 1/4] powerpc/tm: Add commandline option to disable
+ hardware transactional memory
+Date: Mon, 23 Oct 2017 09:01:18 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD009F052@AcuExch.aculab.com>
+References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
+ <20171020114539.piyh4wmby5gz7qnb@gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6DD009D7D7@AcuExch.aculab.com>
+ <1508547615.23934.6.camel@neuling.org>
+In-Reply-To: <1508547615.23934.6.camel@neuling.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171020130848.GC22070@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,29 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (10/20/17 15:08), Petr Mladek wrote:
-> On Thu 2017-10-19 15:42:35, Sergey Senozhatsky wrote:
-> > Sorry for the delay and thanks for taking a look.
-> > 
-> > I'll try to re-spin the patch set by the end of this week/early next
-> > week.
-> > 
-> > 
-> > On (10/04/17 13:53), Petr Mladek wrote:
-> > [..]
-> > > Note that kallsyms_lookup() and module_address_lookup() is used
-> > > in many other situations.
-> > 
-> > we dereference only things that can be dereferenced.
-> > so calling it on already dereferenced address, or address
-> > that does need to be dereferenced is OK.
-> 
-> My concern is that it changes the behavior. It will suddenly return
-> another information for addresses that were not dereference before.
-
-OK. I'd be really-really surprised to find out that anyone did
-kallsyms_lookup()/module_address_lookup() on func descriptors,
-but I understand your concerns. I'll try to keep everything
-within vsprintf().
-
-	-ss
+RnJvbTogTWljaGFlbCBOZXVsaW5nDQo+IFNlbnQ6IDIxIE9jdG9iZXIgMjAxNyAwMjowMA0KPiBU
+bzogRGF2aWQgTGFpZ2h0OyAnQnJlbm8gTGVpdGFvJzsgTWljaGFlbCBFbGxlcm1hbg0KPiBDYzog
+c3Rld2FydEBsaW51eC52bmV0LmlibS5jb207IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyBjeXJp
+bGJ1ckBnbWFpbC5jb20NCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzRdIHBvd2VycGMvdG06IEFk
+ZCBjb21tYW5kbGluZSBvcHRpb24gdG8gZGlzYWJsZSBoYXJkd2FyZSB0cmFuc2FjdGlvbmFsIG1l
+bW9yeQ0KPiANCj4gT24gRnJpLCAyMDE3LTEwLTIwIGF0IDEyOjU4ICswMDAwLCBEYXZpZCBMYWln
+aHQgd3JvdGU6DQo+ID4gPiA+IFRoaXMgcGF0Y2ggYWRkcyBhIHNpbXBsZSBjb21tYW5kbGluZSBv
+cHRpb24gc28gdGhhdCBIVE0gY2FuIGJlDQo+ID4gPiA+IGRpc2FibGVkIGF0IGJvb3QgdGltZS4N
+Cj4gPg0KPiA+IElTVE0gdGhhdCBiZWluZyBhYmxlIHRvIGRpc2FibGUgaXQgYWZ0ZXIgYm9vdCB3
+b3VsZCBiZSBtb3JlIHVzZWZ1bC4NCj4gPiAoaWUgaW4gYSBzdGFydHVwIHNjcmlwdCkNCj4gDQo+
+IEkgYWdyZWUgYnVnIHVuZm9ydHVuYXRlbHkgdGhhdCdzIGltcG9zc2libGUuDQo+IA0KPiBJZiBh
+IHByb2Nlc3MgaXMgYWxyZWFkeSBydW5uaW5nIGluIHRtIHN1c3BlbmQsIHRoZXJlIGlzIG5vIHdh
+eSB0byBzdG9wIGl0IG90aGVyDQo+IHRoYW4ga2lsbGluZyB0aGUgcHJvY2Vzcy4gIEF0IHRoYXQg
+cG9pbnQgeW91IG1heSBhcyB3ZWxsIGtleGVjIHdpdGggYSBuZXcNCj4gY21kbGluZSBvcHRpb24N
+Cg0KSXNuJ3QgdGhhdCB1bmxpa2VseSB3aGVuIHRoZSBmaXJzdCByYyBzY3JpcHRzIGFyZSBiZWlu
+ZyBydW4/DQpTZXR0aW5nIGFuIGVhcmx5IHJjIHNjcmlwdCBpcyBnZW5lcmFsbHkgZWFzaWVyIHRo
+YW4gYWRkaW5nIGEgY29tbWFuZCBsaW5lDQpwYXJhbWV0ZXIuDQoNCkkgZG9uJ3Qga25vdyBhYm91
+dCBwcGMsIGJ1dCBncnViIG9uIHg4NiBtYWtlcyBpdCBwYWluZnVsbHkgYWxtb3N0DQppbXBvc3Np
+YmxlIHRvIGhhdmUgdHdvIGJvb3QgZW50cmllcyB0aGF0IGhhdmUgZGlmZmVyZW50IGNvbW1hbmQg
+bGluZQ0Kb3B0aW9ucy4NCg0KCURhdmlkDQoNCg==
