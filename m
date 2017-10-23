@@ -1,21 +1,16 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yL88m4DHBzDqkl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 19:05:28 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id p9so11158412pgc.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 01:05:28 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yL8Bk1SlXzDql4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 19:07:09 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 3/3] powerpc/powernv: Avoid waiting for secondary hold
- spinloop with OPAL
-Date: Mon, 23 Oct 2017 18:05:07 +1000
-Message-Id: <20171023080507.21974-4-npiggin@gmail.com>
-In-Reply-To: <20171023080507.21974-1-npiggin@gmail.com>
-References: <20171023080507.21974-1-npiggin@gmail.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Russell Currey <ruscur@russell.cc>
+Subject: [PATCH kernel] powerpc/powernv/idoa: Remove unnecessary pcidev from
+ pci_dn
+Date: Mon, 23 Oct 2017 19:07:02 +1100
+Message-Id: <20171023080702.23479-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +20,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OPAL boot does not insert secondaries at 0x60 to wait at the secondary
-hold spinloop. Instead they are started later, and inserted at
-generic_secondary_smp_init(), which is after the secondary hold
-spinloop.
+The pcidev value stored in pci_dn is only used for NPU/NPU2
+initialization. We can easily drop the cached pointer and
+use an ancient helper - pci_get_domain_bus_and_slot() instead in order
+to reduce complexity.
 
-Avoid waiting on this spinloop when booting with OPAL firmware. This
-wait always times out that case.
-
-This saves 100ms boot time on powernv, and 10s of seconds of real time
-when booting on the simulator in SMP.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kernel/head_64.S  | 16 +++++++++++-----
- arch/powerpc/kernel/setup_64.c | 10 +++++++++-
- 2 files changed, 20 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h     | 2 --
+ arch/powerpc/platforms/powernv/npu-dma.c  | 5 ++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c | 3 ---
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index c9e760ec7530..0deef350004f 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -55,12 +55,18 @@
-  *
-  *  For pSeries or server processors:
-  *   1. The MMU is off & open firmware is running in real mode.
-- *   2. The kernel is entered at __start
-+ *   2. The primary CPU enters at __start.
-+ *   3. If the RTAS supports "query-cpu-stopped-state", then secondary
-+ *      CPUs will enter as directed by "start-cpu" RTAS call, which is
-+ *      generic_secondary_smp_init, with PIR in r3.
-+ *   4. Else the secondary CPUs will enter at secondary_hold (0x60) as
-+ *      directed by the "start-cpu" RTS call, with PIR in r3.
-  * -or- For OPAL entry:
-- *   1. The MMU is off, processor in HV mode, primary CPU enters at 0
-- *      with device-tree in gpr3. We also get OPAL base in r8 and
-- *	entry in r9 for debugging purposes
-- *   2. Secondary processors enter at 0x60 with PIR in gpr3
-+ *   1. The MMU is off, processor in HV mode.
-+ *   2. The primary CPU enters at 0 with device-tree in r3, OPAL base
-+ *      in r8, and entry in r9 for debugging purposes.
-+ *   3. Secondary CPUs enter as directed by OPAL_START_CPU call, which
-+ *      is at generic_secondary_smp_init, with PIR in r3.
-  *
-  *  For Book3E processors:
-  *   1. The MMU is on running in AS0 in a state defined in ePAPR
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 3f2453858f60..ecaab70e4b78 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -363,8 +363,16 @@ void early_setup_secondary(void)
- #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC_CORE)
- static bool use_spinloop(void)
- {
--	if (!IS_ENABLED(CONFIG_PPC_BOOK3E))
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3S)) {
-+		/*
-+		 * See comments in head_64.S -- not all platforms insert
-+		 * secondaries at __secondary_hold and wait at the spin
-+		 * loop.
-+		 */
-+		if (firmware_has_feature(FW_FEATURE_OPAL))
-+			return false;
- 		return true;
-+	}
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 0b8aa1fe2d5f..752718a2949d 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -197,8 +197,6 @@ struct pci_dn {
+ 	struct	iommu_table_group *table_group;	/* for phb's or bridges */
  
- 	/*
- 	 * When book3e boots from kexec, the ePAPR spin table does
+ 	int	pci_ext_config_space;	/* for pci devices */
+-
+-	struct	pci_dev *pcidev;	/* back-pointer to the pci device */
+ #ifdef CONFIG_EEH
+ 	struct eeh_dev *edev;		/* eeh device */
+ #endif
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 2cb6cbea4b3b..b5844a950852 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -39,7 +39,10 @@
+  */
+ static struct pci_dev *get_pci_dev(struct device_node *dn)
+ {
+-	return PCI_DN(dn)->pcidev;
++	struct pci_dn *pdn = PCI_DN(dn);
++
++	return pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
++					   pdn->busno, pdn->devfn);
+ }
+ 
+ /* Given a NPU device get the associated PCI device. */
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index bc60faa9f6c2..269f119e4b3c 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1047,7 +1047,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
+ 	 * At some point we want to remove the PDN completely anyways
+ 	 */
+ 	pci_dev_get(dev);
+-	pdn->pcidev = dev;
+ 	pdn->pe_number = pe->pe_number;
+ 	pe->flags = PNV_IODA_PE_DEV;
+ 	pe->pdev = dev;
+@@ -1094,7 +1093,6 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ 			continue;
+ 
+ 		pe->device_count++;
+-		pdn->pcidev = dev;
+ 		pdn->pe_number = pe->pe_number;
+ 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+ 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
+@@ -1209,7 +1207,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_npu_PE(struct pci_dev *npu_pdev)
+ 			pci_dev_get(npu_pdev);
+ 			npu_pdn = pci_get_pdn(npu_pdev);
+ 			rid = npu_pdev->bus->number << 8 | npu_pdn->devfn;
+-			npu_pdn->pcidev = npu_pdev;
+ 			npu_pdn->pe_number = pe_num;
+ 			phb->ioda.pe_rmap[rid] = pe->pe_number;
+ 
 -- 
-2.13.3
+2.11.0
