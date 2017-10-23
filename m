@@ -1,25 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x234.google.com (mail-pg0-x234.google.com
+ [IPv6:2607:f8b0:400e:c05::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yKZkN4dGCzDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Oct 2017 20:59:08 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Adhemerval Zanella <adhemerval.zanella@linaro.org>,
- Tulio Magno Quites Machado Filho <tuliom@linux.vnet.ibm.com>,
- Florian Weimer <fweimer@redhat.com>, linuxppc-dev@ozlabs.org
-Cc: stewart@linux.vnet.ibm.com, mikey@neuling.org, cyrilbur@gmail.com
-Subject: Re: [PATCH 3/4] powerpc/powernv: Enable TM without suspend if possible
-In-Reply-To: <238022cd-ee1a-54a7-2da8-8327030ea593@linaro.org>
-References: <1507803439-12862-1-git-send-email-mpe@ellerman.id.au>
- <1507803439-12862-3-git-send-email-mpe@ellerman.id.au>
- <920a68e7-1bb5-3ace-2aaf-1594d8845721@redhat.com>
- <8760bbb6su.fsf@linux.vnet.ibm.com>
- <238022cd-ee1a-54a7-2da8-8327030ea593@linaro.org>
-Date: Sun, 22 Oct 2017 20:59:01 +1100
-Message-ID: <87vaj7mrkq.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yL1FC35FRzDqXj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 13:53:51 +1100 (AEDT)
+Received: by mail-pg0-x234.google.com with SMTP id l24so10647870pgu.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Oct 2017 19:53:50 -0700 (PDT)
+Date: Mon, 23 Oct 2017 13:53:38 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: "Stephen  Bates" <sbates@raithlin.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Logan
+ Gunthorpe" <logang@deltatee.com>
+Subject: Re: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
+Message-ID: <20171023135338.58d0ab31@MiWiFi-R3-srv>
+In-Reply-To: <AF0CC512-DC7D-45EB-B1AB-7132B48C38E1@raithlin.com>
+References: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
+ <CAKTCnz=6ab=TCWFOknvAq2QxoXbTMhDfQMt5wOFzzUoYJRnUMA@mail.gmail.com>
+ <AF0CC512-DC7D-45EB-B1AB-7132B48C38E1@raithlin.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,66 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adhemerval Zanella <adhemerval.zanella@linaro.org> writes:
+On Sat, 21 Oct 2017 15:03:29 +0000
+"Stephen  Bates" <sbates@raithlin.com> wrote:
 
-> On 19/10/2017 11:34, Tulio Magno Quites Machado Filho wrote:
->> Forwarding some comments from Adhemerval sent to libc-alpha [1]...
->> 
->> Adhemerval Zanella <adhemerval.zanella@linaro.org> writes:
->>> Florian Weimer <fweimer@redhat.com> writes:
->>>
->>>> On 10/12/2017 12:17 PM, Michael Ellerman wrote:
->>>>> +	pr_info("Enabling TM (Transactional Memory) with Suspend Disabled\n");
->>>>> +	cur_cpu_spec->cpu_features |= CPU_FTR_TM;
->>>>> +	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_HTM_NO_SUSPEND;
->>>>> +	tm_suspend_disabled = true;
->>>>
->>>> This doesn't look right because if suspend is not available, you need to 
->>>> clear the original PPC_FEATURE2_HTM flag because the semantics are not 
->>>> right, so that applications can use fallback code.  Otherwise, 
->>>> applications may incorrectly select the HTM code and break if running on 
->>>> a system which supports HTM, but without the suspend state.
->>>>
->>>> The new flag should say that HTM is supported, but without the suspend 
->>>> state, and it should be always set if PPC_FEATURE2_HTM is set.
->>>
->>> Will it also change TEXARS with the abort information?
->> 
->> It should, with a permanent error cause so that old applications entering
->> suspended state can adopt another technique.
->> Michael, could you clarify if this is indeed happening, please?
->> 
->>> I completely agree with Florian here, this is as *ABI* change
->>> and the kernel need to advertise a different TM ABI instead
->>> of as an extension.
->> 
->> Adhemerval, could you elaborate which problems you're foreseeing, please?
->> 
->
-> Pretty much the same Florian already stated: an application can not any
-> more assume for instance:
->
->         tsr. 	0
->         mfcr	r9,128
->         andis. 	r10,r9,0x4000
->         be 	cr0,L(suspend)
-> 	andis.	r10,r9,0x2000
-> 	be	cr0,L(transactional)
->
-> However thinking more about it I am not sure if this should be really a
-> problem: on default HTM mode the program must handle self-induced failures
-> as the tbegin. failure path and I assume trying to suspend/resume in this
-> case will trigger this.
+> > I am guessing that the hotplug of ZONE_DEVICE memory was done
+> > incorrectly as it lead to HPT resizing (the system thinking this is
+> > normal memory). Ideally one would expect that the driver would online
+> > ZONE_DEVICE memory and not go through the HOTPLUG path. Are you using
+> > devm_memremap_pages() path to add these pages?
+> >  
+> 
+> Thanks for the response Balbir. Yes we use devm_memremap_pages() to add these pages and it does call arch_add_memory(). We do have an alternate set of patches which still calls devm_memremap_pages() but can take a flag to indicate the memory being added is io memory and uses io_remap() rather than arch_add_memory() for that type of memory [1]. Would that be a better approach for this arch? I can try and apply this patch but __add_pages() has gone through some changes recently so it will take me a few days to get to that. 
 
-You're right, it *probably* shouldn't be a problem for most code that is
-written well and doesn't use suspend mode for anything except
-trace/debug etc.
+I just double checked, for pmem you do need to come in via arch_add_memory(). I was confused
+by what we do for HMM, which is call __add_pages(), but we do need a section mapping so
+the interface is correct.
 
-But that's not a strong enough guarantee to just make the two modes
-equivalent and punt the problems to userspace.
+The following
 
-Disabling suspend changes the programming model in ways that are not
-clearly documented, and which have not been widely tested, so it has to
-be controlled by a new feature bit.
+[    3.537780] lpar: Attempting to resize HPT to shift 21
+[    3.539251] Unable to resize hash page table to target order 21: -1
+[    3.541079] Unable to create mapping for hot added memory 0xc000210000000000..0xc000210004000000: -2
 
-cheers
+Needs to be debugged further. For #1 above please check if your qemu supports
+H_RESIZE_HPT_* hcalls? For create mapping failures, the rc is -ENOENT. Can
+you help debug this further? We could do hcall tracing or enable debugging.
+
+Balbir Singh.
