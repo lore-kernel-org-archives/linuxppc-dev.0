@@ -1,41 +1,31 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLMLg0gBZzDqhf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 03:29:46 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9NGOJap120926
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 12:29:44 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dsjcfvt4j-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLMX3680ZzDqY9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 03:37:55 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9NGbP2j020301
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 12:37:53 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dsjy2ud7c-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 12:29:44 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Oct 2017 12:37:52 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 23 Oct 2017 10:29:43 -0600
-Date: Mon, 23 Oct 2017 09:29:34 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 3/7] powerpc: Free up four 64K PTE bits in 4K backed HPTE
- pages
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-4-git-send-email-linuxram@us.ibm.com>
- <87o9p3kedg.fsf@concordia.ellerman.id.au>
- <871slu9ro4.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <871slu9ro4.fsf@linux.vnet.ibm.com>
-Message-Id: <20171023162934.GA5454@ram.oc3035372033.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 23 Oct 2017 17:37:50 +0100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+Subject: [PATCH 1/4] powerpc/kprobes: Disable preemption before invoking probe
+ handler for optprobes
+Date: Mon, 23 Oct 2017 22:07:38 +0530
+Message-Id: <2a4b854c7fc11db576e3b7ff6dcfda94c64d2842.1508776485.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,88 +35,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 23, 2017 at 02:17:39PM +0530, Aneesh Kumar K.V wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
-> > Ram Pai <linuxram@us.ibm.com> writes:
-> >
-> >> diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-> >> index 1a68cb1..c6c5559 100644
-> >> --- a/arch/powerpc/mm/hash64_64k.c
-> >> +++ b/arch/powerpc/mm/hash64_64k.c
-> >> @@ -126,18 +113,13 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
-> >>  	if (__rpte_sub_valid(rpte, subpg_index)) {
-> >>  		int ret;
-> >>  
-> >> -		hash = hpt_hash(vpn, shift, ssize);
-> >> -		hidx = __rpte_to_hidx(rpte, subpg_index);
-> >> -		if (hidx & _PTEIDX_SECONDARY)
-> >> -			hash = ~hash;
-> >> -		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-> >> -		slot += hidx & _PTEIDX_GROUP_IX;
-> >> +		gslot = pte_get_hash_gslot(vpn, shift, ssize, rpte,
-> >> +					subpg_index);
-> >> +		ret = mmu_hash_ops.hpte_updatepp(gslot, rflags, vpn,
-> >> +			MMU_PAGE_4K, MMU_PAGE_4K, ssize, flags);
-> >
-> > This was formatted correctly before:
-> >   
-> >> -		ret = mmu_hash_ops.hpte_updatepp(slot, rflags, vpn,
-> >> -						 MMU_PAGE_4K, MMU_PAGE_4K,
-> >> -						 ssize, flags);
-> >>  		/*
-> >> -		 *if we failed because typically the HPTE wasn't really here
-> >> +		 * if we failed because typically the HPTE wasn't really here
-> >
-> > If you're fixing it up please make it "If ...".
-> >
-> >>  		 * we try an insertion.
-> >>  		 */
-> >>  		if (ret == -1)
-> >> @@ -148,6 +130,15 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
-> >>  	}
-> >>  
-> >>  htab_insert_hpte:
-> >> +
-> >> +	/*
-> >> +	 * initialize all hidx entries to invalid value,
-> >> +	 * the first time the PTE is about to allocate
-> >> +	 * a 4K hpte
-> >> +	 */
-> >
-> > Should be:
-> > 	/*
-> > 	 * Initialize all hidx entries to invalid value, the first time
-> >          * the PTE is about to allocate a 4K HPTE.
-> > 	 */
-> >
-> >> +	if (!(old_pte & H_PAGE_COMBO))
-> >> +		rpte.hidx = ~0x0UL;
-> >> +
-> >
-> > Paul had the idea that if we biased the slot number by 1, we could make
-> > the "invalid" value be == 0.
-> >
-> > That would avoid needing to that above, and also mean the value is
-> > correctly invalid from the get-go, which would be good IMO.
-> >
-> > I think now that you've added the slot accessors it would be pretty easy
-> > to do.
-> 
-> That would be imply, we loose one slot in primary group, which means we
-> will do extra work in some case because our primary now has only 7
-> slots. And in case of pseries, the hypervisor will always return the
-> least available slot, which implie we will do extra hcalls in case of an
-> hpte insert to an empty group?
+Per Documentation/kprobes.txt, probe handlers need to be invoked with
+preemption disabled. Update optimized_callback() to do so. Also move
+get_kprobe_ctlblk() invocation post preemption disable, since it
+accesses pre-cpu data.
 
+This was not an issue so far since optprobes wasn't selected if
+CONFIG_PREEMPT was enabled. Commit a30b85df7d599f ("kprobes: Use
+synchronize_rcu_tasks() for optprobe with CONFIG_PREEMPT=y") changes
+this.
 
-No. that is not the idea.  The idea is that slot 'F' in the seconday
-will continue to be a invalid slot, but will be represented as
-offset-by-one in the PTE.  In other words, 0 will be repesented as 1,
-1 as 2....   and  n as (n+1)%32
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/optprobes.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-The idea seems feasible.  It has the advantage -- where 0 in the PTE
-means invalid slot. But it can be confusing to the casual code-
-reader. Will need to put in a big-huge comment to explain that.
-
-RP
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+index 91e037ab20a1..60ba7f1370a8 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -115,7 +115,6 @@ static unsigned long can_optimize(struct kprobe *p)
+ static void optimized_callback(struct optimized_kprobe *op,
+ 			       struct pt_regs *regs)
+ {
+-	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+ 	unsigned long flags;
+ 
+ 	/* This is possible if op is under delayed unoptimizing */
+@@ -124,13 +123,14 @@ static void optimized_callback(struct optimized_kprobe *op,
+ 
+ 	local_irq_save(flags);
+ 	hard_irq_disable();
++	preempt_disable();
+ 
+ 	if (kprobe_running()) {
+ 		kprobes_inc_nmissed_count(&op->kp);
+ 	} else {
+ 		__this_cpu_write(current_kprobe, &op->kp);
+ 		regs->nip = (unsigned long)op->kp.addr;
+-		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
++		get_kprobe_ctlblk()->kprobe_status = KPROBE_HIT_ACTIVE;
+ 		opt_pre_handler(&op->kp, regs);
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
+@@ -140,6 +140,7 @@ static void optimized_callback(struct optimized_kprobe *op,
+ 	 * local_irq_restore() will re-enable interrupts,
+ 	 * if they were hard disabled.
+ 	 */
++	preempt_enable_no_resched();
+ 	local_irq_restore(flags);
+ }
+ NOKPROBE_SYMBOL(optimized_callback);
+-- 
+2.14.2
