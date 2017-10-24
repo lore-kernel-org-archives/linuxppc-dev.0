@@ -1,20 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLtpY5S9wzDqlC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 00:07:17 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id r25so14476995pgn.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 06:07:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLtpf0BptzDqkj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 00:07:21 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id 15so9789925pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 06:07:21 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 2/3] powerpc/64s/radix: tlbie improve preempt handling
-Date: Tue, 24 Oct 2017 23:06:53 +1000
-Message-Id: <20171024130654.1223-3-npiggin@gmail.com>
+Subject: [PATCH v2 3/3] powerpc/64s/radix: Fix process table entry cache
+ invalidation
+Date: Tue, 24 Oct 2017 23:06:54 +1000
+Message-Id: <20171024130654.1223-4-npiggin@gmail.com>
 In-Reply-To: <20171024130654.1223-1-npiggin@gmail.com>
 References: <20171024130654.1223-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,155 +27,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Preempt should be consistently disabled for mm_is_thread_local tests,
-so bring the rest of these under preempt_disable().
+According to the architecture, the process table entry cache must be
+flushed with tlbie RIC=2.
 
-Preempt does not need to be disabled for the mm->context.id tests,
-which allows simplification and removal of gotos.
+Currently the process table entry is set to invalid right before the
+PID is returned to the allocator, with no invalidation. This works on
+existing implementations that are known to not cache the process table
+entry for any except the current PIDR.
+
+It is architecturally correct and cleaner to invalidate with RIC=2
+after clearing the process table entry and before the PID is returned
+to the allocator. This can be done in arch_exit_mmap that runs before
+the final flush, and to ensure the final flush (fullmm) is always a
+RIC=2 variant.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/tlb-radix.c | 48 +++++++++++++++++++++------------------------
- 1 file changed, 22 insertions(+), 26 deletions(-)
+ arch/powerpc/include/asm/mmu_context.h |  4 ++++
+ arch/powerpc/mm/mmu_context_book3s64.c | 25 ++++++++++++++++++++-----
+ arch/powerpc/mm/tlb-radix.c            |  6 +++++-
+ 3 files changed, 29 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index a0d7145d6cd2..20eae6f76247 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -164,9 +164,13 @@ static inline void arch_dup_mmap(struct mm_struct *oldmm,
+ {
+ }
+ 
++#ifndef CONFIG_PPC_BOOK3S_64
+ static inline void arch_exit_mmap(struct mm_struct *mm)
+ {
+ }
++#else
++extern void arch_exit_mmap(struct mm_struct *mm);
++#endif
+ 
+ static inline void arch_unmap(struct mm_struct *mm,
+ 			      struct vm_area_struct *vma,
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index 05e15386d4cb..6d724dab27c2 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -216,19 +216,34 @@ void destroy_context(struct mm_struct *mm)
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ 	WARN_ON_ONCE(!list_empty(&mm->context.iommu_group_mem_list));
+ #endif
++	if (radix_enabled())
++		WARN_ON(process_tb[mm->context.id].prtb0 != 0);
++	else
++		subpage_prot_free(mm);
++	destroy_pagetable_page(mm);
++	__destroy_context(mm->context.id);
++	mm->context.id = MMU_NO_CONTEXT;
++}
++
++void arch_exit_mmap(struct mm_struct *mm)
++{
+ 	if (radix_enabled()) {
+ 		/*
+ 		 * Radix doesn't have a valid bit in the process table
+ 		 * entries. However we know that at least P9 implementation
+ 		 * will avoid caching an entry with an invalid RTS field,
+ 		 * and 0 is invalid. So this will do.
++		 *
++		 * This runs before the "fullmm" tlb flush in exit_mmap,
++		 * which does a RIC=2 tlbie to clear the process table
++		 * entry. See the "fullmm" comments in tlb-radix.c.
++		 *
++		 * No barrier required here after the store because
++		 * this process will do the invalidate, which starts with
++		 * ptesync.
+ 		 */
+ 		process_tb[mm->context.id].prtb0 = 0;
+-	} else
+-		subpage_prot_free(mm);
+-	destroy_pagetable_page(mm);
+-	__destroy_context(mm->context.id);
+-	mm->context.id = MMU_NO_CONTEXT;
++	}
+ }
+ 
+ #ifdef CONFIG_PPC_RADIX_MMU
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 892544ebc2d2..18170dc264aa 100644
+index 18170dc264aa..0c8464653aa3 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -186,16 +186,15 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
- 
--	preempt_disable();
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto no_context;
-+		return;
- 
-+	preempt_disable();
- 	if (!mm_is_thread_local(mm))
- 		_tlbie_pid(pid, RIC_FLUSH_TLB);
- 	else
- 		_tlbiel_pid(pid, RIC_FLUSH_TLB);
--no_context:
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__flush_tlb_mm);
-@@ -204,16 +203,15 @@ void radix__flush_all_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
- 
--	preempt_disable();
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto no_context;
-+		return;
- 
-+	preempt_disable();
- 	if (!mm_is_thread_local(mm))
- 		_tlbie_pid(pid, RIC_FLUSH_ALL);
- 	else
- 		_tlbiel_pid(pid, RIC_FLUSH_ALL);
--no_context:
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__flush_all_mm);
-@@ -230,15 +228,14 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 	unsigned long pid;
- 	unsigned long ap = mmu_get_ap(psize);
- 
--	preempt_disable();
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto bail;
-+		return;
-+	preempt_disable();
- 	if (!mm_is_thread_local(mm))
- 		_tlbie_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
- 	else
- 		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
--bail:
- 	preempt_enable();
- }
- 
-@@ -322,54 +319,53 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
- {
- 	unsigned long pid;
- 	unsigned long addr;
--	int local = mm_is_thread_local(mm);
-+	bool local;
- 	unsigned long ap = mmu_get_ap(psize);
- 	unsigned long page_size = 1UL << mmu_psize_defs[psize].shift;
- 
--
--	preempt_disable();
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto err_out;
-+		return;
- 
-+	preempt_disable();
-+	local = mm_is_thread_local(mm);
- 	if (end == TLB_FLUSH_ALL ||
- 	    (end - start) > tlb_single_page_flush_ceiling * page_size) {
- 		if (local)
- 			_tlbiel_pid(pid, RIC_FLUSH_TLB);
- 		else
- 			_tlbie_pid(pid, RIC_FLUSH_TLB);
--		goto err_out;
--	}
--	for (addr = start; addr < end; addr += page_size) {
-+	} else {
-+		for (addr = start; addr < end; addr += page_size) {
- 
--		if (local)
--			_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
--		else
--			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
-+			if (local)
-+				_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
-+			else
-+				_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
-+		}
- 	}
--err_out:
- 	preempt_enable();
- }
- 
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- {
--	int local = mm_is_thread_local(mm);
- 	unsigned long ap = mmu_get_ap(mmu_virtual_psize);
- 	unsigned long pid, end;
-+	bool local;
- 
--	preempt_disable();
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
--		goto no_context;
-+		return;
- 
- 	/* 4k page size, just blow the world */
- 	if (PAGE_SIZE == 0x1000) {
+@@ -297,10 +297,14 @@ void radix__tlb_flush(struct mmu_gather *tlb)
+ 	psize = radix_get_mmu_psize(page_size);
+ 	/*
+ 	 * if page size is not something we understand, do a full mm flush
++	 *
++	 * A "fullmm" flush must always do a flush_all_mm (RIC=2) flush
++	 * that flushes the process table entry cache upon process teardown.
++	 * See the comment for radix in arch_exit_mmap().
+ 	 */
+ 	if (psize != -1 && !tlb->fullmm && !tlb->need_flush_all)
+ 		radix__flush_tlb_range_psize(mm, tlb->start, tlb->end, psize);
+-	else if (tlb->need_flush_all) {
++	else if (tlb->fullmm || tlb->need_flush_all) {
+ 		tlb->need_flush_all = 0;
  		radix__flush_all_mm(mm);
--		preempt_enable();
- 		return;
- 	}
- 
-+	preempt_disable();
-+	local = mm_is_thread_local(mm);
- 	/* Otherwise first do the PWC */
- 	if (local)
- 		_tlbiel_pid(pid, RIC_FLUSH_PWC);
-@@ -384,7 +380,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 		else
- 			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
- 	}
--no_context:
-+
- 	preempt_enable();
- }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 	} else
 -- 
 2.13.3
