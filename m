@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLm9h4ryJzDqmc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 19:08:24 +1100 (AEDT)
-In-Reply-To: <1507546772-31932-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLm9r2dWvzDqmj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 19:08:32 +1100 (AEDT)
+In-Reply-To: <20171012021659.30134-1-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/xmon: Add kstack base to paca dump
-Message-Id: <3yLm9h3Qmhz9s9Y@ozlabs.org>
-Date: Tue, 24 Oct 2017 19:08:23 +1100 (AEDT)
+Subject: Re: powerpc/configs: Enable I2C_CHARDEV for pseries and powernv
+Message-Id: <3yLm9r1rCMz9s76@ozlabs.org>
+Date: Tue, 24 Oct 2017 19:08:31 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,21 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-10-09 at 10:59:32 UTC, Michael Ellerman wrote:
-> When dumping the paca in xmon we currently show kstack. Although it's
-> not hard it's a bit fiddly to work out what the bounds of the kernel
-> stack should be based on the kstack value.
+On Thu, 2017-10-12 at 02:16:59 UTC, Andrew Donnellan wrote:
+> i2c-dev provides an interface for userspace programs to interact with I2C
+> devices, and is very helpful for I2C-related debugging.
 > 
-> To make life easier and "kstack_base" which is the base (lowest
-> address) of the kernel stack, eg:
+> Enable it in pseries_defconfig and powernv_defconfig. It's already enabled
+> in many other powerpc defconfigs.
 > 
->  kstack               = 0xc0000000f1a7be30      (0x258)
->  kstack_base          = 0xc0000000f1a78000
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/90d6473747b289739b435d5fa6ae8e
+https://git.kernel.org/powerpc/c/deed2ec5a786f037b00136792e0840
 
 cheers
