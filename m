@@ -1,17 +1,21 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@chromium.org>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLnmh60j0zDqZ3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 20:20:20 +1100 (AEDT)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, benh@kernel.crashing.org,
- anton@ozlabs.org, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Subject: [PATCH] powernv: Avoid checkstop on HMI and MCE
-Date: Tue, 24 Oct 2017 20:20:05 +1100
-Message-Id: <20171024092005.3861-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLq4L6lgWzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 21:18:57 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id j3so14144381pga.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 03:18:57 -0700 (PDT)
+Date: Tue, 24 Oct 2017 03:18:53 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] drivers/macintosh: Convert timers to use timer_setup()
+Message-ID: <20171024101853.GA69439@beast>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,66 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On an unrecoverable HMI or MCE only generate an checkstop (via
-PLATFORM ERROR opal reboot call) when panic_on_oops is set.
+In preparation for unconditionally passing the struct timer_list pointer to
+all timer callbacks, switch to using the new timer_setup() and from_timer()
+to pass the timer pointer explicitly.
 
-We currently generate an checkstop as an attempt for the FSP to grab a
-dump and then reboot us. Unfortunately this never works and no one
-I've talked to has ever seen a resulting dump, let alone got useful
-information from it.
-
-Even worse, the checkstop gets in the way of debugging real
-problems. If we hit a software bug that results in this, we get no
-opportunity to debug it live. Similarly if the bug is due to hardware
-that is not in the dump (say PCI or NVLINK GPU), we get no information
-in the dump about that hardware.
-
-So let's remove it unless someone sets panic_on_oops.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/platforms/powernv/opal-hmi.c | 6 ++++++
- arch/powerpc/platforms/powernv/opal.c     | 4 ++++
- 2 files changed, 10 insertions(+)
+ drivers/macintosh/smu.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index c9e1a4ff29..23780970d0 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -29,6 +29,7 @@
- #include <asm/opal.h>
- #include <asm/cputable.h>
- #include <asm/machdep.h>
-+#include <asm/bug.h>
+diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+index ea9bdc85a21d..899ec1f4c833 100644
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -103,7 +103,7 @@ static DEFINE_MUTEX(smu_part_access);
+ static int smu_irq_inited;
+ static unsigned long smu_cmdbuf_abs;
  
- #include "powernv.h"
+-static void smu_i2c_retry(unsigned long data);
++static void smu_i2c_retry(struct timer_list *t);
  
-@@ -284,6 +285,11 @@ static void hmi_event_handler(struct work_struct *work)
- 			print_hmi_event_info(hmi_evt);
+ /*
+  * SMU driver low level stuff
+@@ -582,9 +582,7 @@ static int smu_late_init(void)
+ 	if (!smu)
+ 		return 0;
+ 
+-	init_timer(&smu->i2c_timer);
+-	smu->i2c_timer.function = smu_i2c_retry;
+-	smu->i2c_timer.data = (unsigned long)smu;
++	timer_setup(&smu->i2c_timer, smu_i2c_retry, 0);
+ 
+ 	if (smu->db_node) {
+ 		smu->db_irq = irq_of_parse_and_map(smu->db_node, 0);
+@@ -755,7 +753,7 @@ static void smu_i2c_complete_command(struct smu_i2c_cmd *cmd, int fail)
+ }
+ 
+ 
+-static void smu_i2c_retry(unsigned long data)
++static void smu_i2c_retry(struct timer_list *unused)
+ {
+ 	struct smu_i2c_cmd	*cmd = smu->cmd_i2c_cur;
+ 
+@@ -795,7 +793,7 @@ static void smu_i2c_low_completion(struct smu_cmd *scmd, void *misc)
+ 		BUG_ON(cmd != smu->cmd_i2c_cur);
+ 		if (!smu_irq_inited) {
+ 			mdelay(5);
+-			smu_i2c_retry(0);
++			smu_i2c_retry(NULL);
+ 			return;
  		}
- 
-+		if (!panic_on_oops) {
-+			die("Unrecoverable HMI exception", NULL, SIGBUS);
-+			return;
-+		}
-+
- 		pnv_platform_error_reboot(NULL, "Unrecoverable HMI exception");
- 	}
- }
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 65c79ecf5a..f208f222e4 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -523,6 +523,10 @@ int opal_machine_check(struct pt_regs *regs)
- 	if (opal_recover_mce(regs, &evt))
- 		return 1;
- 
-+	if (!panic_on_oops) {
-+		die("Unrecoverable Machine check", regs, SIGBUS);
-+		return 0;
-+	}
- 	pnv_platform_error_reboot(regs, "Unrecoverable Machine Check exception");
- }
- 
+ 		mod_timer(&smu->i2c_timer, jiffies + msecs_to_jiffies(5));
 -- 
-2.14.1
+2.7.4
+
+
+-- 
+Kees Cook
+Pixel Security
