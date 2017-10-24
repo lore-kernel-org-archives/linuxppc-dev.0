@@ -1,35 +1,23 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yM4jK1lrSzDql4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 07:33:24 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9OKW77F050042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 16:33:22 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dtc3225yf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 16:33:22 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 24 Oct 2017 16:33:21 -0400
-Subject: Re: [PATCH v2 3/8] powerpc/mm: Separate ibm, dynamic-memory data from
- DT format
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <150850572658.9118.9227271506499547385.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <87po9d3wof.fsf@concordia.ellerman.id.au>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 24 Oct 2017 15:33:16 -0500
-MIME-Version: 1.0
-In-Reply-To: <87po9d3wof.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <4c265064-1584-a162-743f-be77d3a67c69@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yM7VX0NNMzDqkr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 09:39:15 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id s75so15688825pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 15:39:15 -0700 (PDT)
+Message-ID: <1508884747.4272.4.camel@gmail.com>
+Subject: Re: [PATCH] powerpc/tm: Set ckpt_regs.msr before using it.
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <breno.leitao@debian.org>, Gustavo Romero
+ <gusbromero@gmail.com>, Michael Neuling <mikey@neuling.org>
+Date: Wed, 25 Oct 2017 09:39:07 +1100
+In-Reply-To: <1508865185-11492-1-git-send-email-leitao@debian.org>
+References: <1508865185-11492-1-git-send-email-leitao@debian.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,78 +27,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/24/2017 01:08 AM, Michael Ellerman wrote:
-> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+On Tue, 2017-10-24 at 15:13 -0200, Breno Leitao wrote:
+> From: Breno Leitao <breno.leitao@debian.org>
 > 
->> diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
->> new file mode 100644
->> index 000000000000..8ad7cf36b2c4
->> --- /dev/null
->> +++ b/arch/powerpc/mm/drmem.c
->> @@ -0,0 +1,84 @@
->> +/*
->> + * Dynamic reconfiguration memory support
->> + *
->> + * Copyright 2017 IBM Corporation
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the License, or (at your option) any later version.
->> + */
->> +
->> +#define pr_fmt(fmt) "drmem: " fmt
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/of.h>
->> +#include <linux/of_fdt.h>
->> +#include <linux/bootmem.h>
->> +#include <asm/prom.h>
->> +#include <asm/drmem.h>
->> +
->> +static struct drmem_lmb_info __drmem_info;
->> +struct drmem_lmb_info *drmem_info = &__drmem_info;
->> +
->> +int __init init_drmem_lmbs(unsigned long node)
->> +{
+> On commit commit f48e91e87e67 ("powerpc/tm: Fix FP and VMX register
+> corruption"), we check ckpt_regs.msr to see if a feature (as VEC, VSX
+> and FP) is disabled (thus the hot registers might be bogus during the
+> reclaim), and then copy the previously saved thread registers, with the
+> non-bogus values, into the checkpoint area for a later trecheckpoint.
+> This mechanism is used to recheckpoints the proper register values when
+> a transaction started using the bogus registers, and these values were
+> sent to the memory checkpoint area.
 > 
-> Something in here is blowing up for me.
+> I see a problem on this code that ckpt_regs.msr is not properly set when
+> using it, as for example, when there is a vsx_unavailable_tm() in a code
+> like the following, the ckpt_regs.msg[FP] is 0;
 > 
-> This is a p8 LPAR, which uses petitboot so we kexec into the kernel,
-> gives me:
+>  1: sleep_until_{fp,vec,vsx} = 0
+>  2: fadd
+>  3: tbegin.
+>  4: beq
+>  5: xxmrghd
+>  6: tend.
 > 
->   [   29.020618] kexec_core: Starting new kernel
->   [    0.000000] bootconsole [udbg0] enabled
->    -> early_setup(), dt_ptr: 0x1ec60000
->   [    0.000000] bootmem alloc of 3024 bytes failed!
->   [    0.000000] Kernel panic - not syncing: Out of memory
->   [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 4.14.0-rc2-gcc6-gf7212f8 #1
->   [    0.000000] Call Trace:
->   [    0.000000] [c000000000f57b80] [c000000000a2bae0] dump_stack+0xb0/0xf0 (unreliable)
->   [    0.000000] [c000000000f57bc0] [c0000000000fcdb0] panic+0x148/0x338
->   [    0.000000] [c000000000f57c60] [c000000000d4bb08] ___alloc_bootmem.part.1+0x3c/0x40
->   [    0.000000] [c000000000f57cc0] [c000000000d4bf18] __alloc_bootmem+0x3c/0x50
->   [    0.000000] [c000000000f57cf0] [c000000000d226c4] init_drmem_lmbs+0xf8/0x31c
->   [    0.000000] [c000000000f57d70] [c000000000d1a05c] early_init_dt_scan_memory_ppc+0x88/0x25c
->   [    0.000000] [c000000000f57e10] [0000000000d78e78] 0xd78e78
->   [    0.000000] [c000000000f57e70] [0000000000d1a92c] 0xd1a92c
->   [    0.000000] [c000000000f57f10] [0000000000d1be3c] 0xd1be3c
->   [    0.000000] [c000000000f57f90] [000000000000b13c] 0xb13c
->   [    0.000000] Rebooting in 180 seconds..
->   [    0.000000] System Halted, OK to turn off power
+> In this case, line 5 will raise an vsx_unavailable_tm() exception, and
+> the ckpt_regs.msr[FP] will be zero before memcpy() block, executing the
+> memcpy even with the the FP registers hot. That is not correct because
+> we executed a float point instruction on line 2, and MSR[FP] was set to
+> 1.
 > 
-> 
+> Fortunately this does not cause a big problem as I can see, other than
+> this extra memcpy() because treclaim() will later overwrite this wrong
+> copied value, since it relies on the correct MSR value, which was
+> updated by giveup_all->check_if_tm_restore_required. There might be a
+> problem when laziness is being turned on, but I was not able to
+> reproduce it.
 
-Looks like we're out of memory when trying to allocate the LMB array, not sure why.
-I'll try to re-create this  on one of my systems.
+I believe this analysis is correct, I have come to the same conclusion
+in the past. I've also done a bunch of testing with variants of this
+patch and haven't seen a difference, however, I do believe the code is
+more correct with this patch.
 
-I found a patch where you tried to remove traces of bootmem from a couple of
-yearts ago. Not sure if it make a difference but should I be using
-memblock_virt_alloc() instead of alloc_bootmem()?
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 
--Nathan
+Having said all that, nothing rules out that our tests simply aren't
+good enough ;)
 
-> I'm at kernel summit so haven't had time to look any further sorry.
+ 
 > 
-> cheers
+> The solution I am proposing is updating ckpt_regs.msr before using it.
 > 
+> Signed-off-by: Breno Leitao <leitao@debian.org>
+> Signed-off-by: Gustavo Romero <gusbromero@gmail.com>
+> CC: Cyril Bur <cyrilbur@gmail.com>
+> CC: Michael Neuling <mikey@neuling.org>
+> ---
+>  arch/powerpc/kernel/process.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index c051dc2b42ad..773e9c5594e7 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -860,6 +860,9 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+>  	if (!MSR_TM_SUSPENDED(mfmsr()))
+>  		return;
+>  
+> +	/* Give up all the registers and set ckpt_regs.msr */
+> +	giveup_all(container_of(thr, struct task_struct, thread));
+> +
+>  	/*
+>  	 * If we are in a transaction and FP is off then we can't have
+>  	 * used FP inside that transaction. Hence the checkpointed
+> @@ -879,8 +882,6 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+>  		memcpy(&thr->ckvr_state, &thr->vr_state,
+>  		       sizeof(struct thread_vr_state));
+>  
+> -	giveup_all(container_of(thr, struct task_struct, thread));
+> -
+>  	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
+>  }
+>  
