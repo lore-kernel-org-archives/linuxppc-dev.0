@@ -1,21 +1,18 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLq4L6lgWzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 21:18:57 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id j3so14144381pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 03:18:57 -0700 (PDT)
-Date: Tue, 24 Oct 2017 03:18:53 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] drivers/macintosh: Convert timers to use timer_setup()
-Message-ID: <20171024101853.GA69439@beast>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLrzY0g81zDqYv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 22:44:56 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id i5so19483124pfe.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 04:44:56 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc/64: set DSCR default initially from SPR
+Date: Tue, 24 Oct 2017 21:44:44 +1000
+Message-Id: <20171024114444.13933-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +22,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation for unconditionally passing the struct timer_list pointer to
-all timer callbacks, switch to using the new timer_setup() and from_timer()
-to pass the timer pointer explicitly.
+Take the DSCR value set by firmware as the dscr_default value,
+rather than zero.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
+POWER9 recommends DSCR default to a non-zero value.
+
+From: Nicholas Piggin <npiggin@gmail.com>
 ---
- drivers/macintosh/smu.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+This has a problem that OS which set the DSCR to non-default
+then kexec to Linux will be used as our default. I send a
+corresponding patch to skiboot which resets SPRs in opal_reinit_cpus
+which will make this do the right thing in that case.
 
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index ea9bdc85a21d..899ec1f4c833 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -103,7 +103,7 @@ static DEFINE_MUTEX(smu_part_access);
- static int smu_irq_inited;
- static unsigned long smu_cmdbuf_abs;
+ arch/powerpc/kernel/setup.h    |  6 ++++++
+ arch/powerpc/kernel/setup_64.c |  9 +++++++++
+ arch/powerpc/kernel/sysfs.c    | 11 +++++++++++
+ 3 files changed, 26 insertions(+)
+
+diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
+index cfba134b3024..21c18071d9d5 100644
+--- a/arch/powerpc/kernel/setup.h
++++ b/arch/powerpc/kernel/setup.h
+@@ -45,6 +45,12 @@ void emergency_stack_init(void);
+ static inline void emergency_stack_init(void) { };
+ #endif
  
--static void smu_i2c_retry(unsigned long data);
-+static void smu_i2c_retry(struct timer_list *t);
- 
++#ifdef CONFIG_PPC64
++void record_spr_defaults(void);
++#else
++static inline void record_spr_defaults(void) { };
++#endif
++
  /*
-  * SMU driver low level stuff
-@@ -582,9 +582,7 @@ static int smu_late_init(void)
- 	if (!smu)
- 		return 0;
+  * Having this in kvm_ppc.h makes include dependencies too
+  * tricky to solve for setup-common.c so have it here.
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index b89c6aac48c9..911c4d606453 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -69,6 +69,8 @@
+ #include <asm/opal.h>
+ #include <asm/cputhreads.h>
  
--	init_timer(&smu->i2c_timer);
--	smu->i2c_timer.function = smu_i2c_retry;
--	smu->i2c_timer.data = (unsigned long)smu;
-+	timer_setup(&smu->i2c_timer, smu_i2c_retry, 0);
++#include "setup.h"
++
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+ #else
+@@ -317,6 +319,13 @@ void __init early_setup(unsigned long dt_ptr)
+ 	early_init_mmu();
  
- 	if (smu->db_node) {
- 		smu->db_irq = irq_of_parse_and_map(smu->db_node, 0);
-@@ -755,7 +753,7 @@ static void smu_i2c_complete_command(struct smu_i2c_cmd *cmd, int fail)
+ 	/*
++	 * After firmware and early platform setup code has set things up,
++	 * we note the SPR values for configurable control/performance
++	 * registers, and use those as initial defaults.
++	 */
++	record_spr_defaults();
++
++	/*
+ 	 * At this point, we can let interrupts switch to virtual mode
+ 	 * (the MMU has been setup), so adjust the MSR in the PACA to
+ 	 * have IR and DR set and enable AIL if it exists
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 4437c70c7c2b..d60f6f5c7b0c 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -590,6 +590,17 @@ static void sysfs_create_dscr_default(void)
+ 	if (cpu_has_feature(CPU_FTR_DSCR))
+ 		err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
  }
++
++void record_spr_defaults(void)
++{
++	int cpu;
++
++	if (cpu_has_feature(CPU_FTR_DSCR)) {
++		dscr_default = mfspr(SPRN_DSCR);
++		for (cpu = 0; cpu < nr_cpu_ids; cpu++)
++			paca[cpu].dscr_default = dscr_default;
++	}
++}
+ #endif /* CONFIG_PPC64 */
  
- 
--static void smu_i2c_retry(unsigned long data)
-+static void smu_i2c_retry(struct timer_list *unused)
- {
- 	struct smu_i2c_cmd	*cmd = smu->cmd_i2c_cur;
- 
-@@ -795,7 +793,7 @@ static void smu_i2c_low_completion(struct smu_cmd *scmd, void *misc)
- 		BUG_ON(cmd != smu->cmd_i2c_cur);
- 		if (!smu_irq_inited) {
- 			mdelay(5);
--			smu_i2c_retry(0);
-+			smu_i2c_retry(NULL);
- 			return;
- 		}
- 		mod_timer(&smu->i2c_timer, jiffies + msecs_to_jiffies(5));
+ #ifdef HAS_PPC_PMC_PA6T
 -- 
-2.7.4
-
-
--- 
-Kees Cook
-Pixel Security
+2.13.3
