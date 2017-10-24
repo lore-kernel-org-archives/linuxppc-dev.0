@@ -1,16 +1,31 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <leitao@debian.org>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLyP763CfzDr5J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 02:48:59 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org
-Subject: [PATCH] powerpc/mm: Add a CONFIG option to choose if radix is used by
- default
-Date: Tue, 24 Oct 2017 17:48:49 +0200
-Message-Id: <1508860129-28365-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yM0Gs4bJyzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 04:13:40 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9OHDM7a060095
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 13:13:36 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dt8a2exv7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 13:13:34 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Tue, 24 Oct 2017 11:13:30 -0600
+From: Breno Leitao <leitao@debian.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <breno.leitao@debian.org>, Breno Leitao <leitao@debian.org>,
+ Gustavo Romero <gusbromero@gmail.com>, Cyril Bur <cyrilbur@gmail.com>,
+ Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc/tm: Set ckpt_regs.msr before using it.
+Date: Tue, 24 Oct 2017 15:13:05 -0200
+Message-Id: <1508865185-11492-1-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,72 +35,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently if the hardware supports the radix MMU we will use
-it, *unless* "disable_radix" is passed on the kernel command line.
+From: Breno Leitao <breno.leitao@debian.org>
 
-However some users would like the reverse semantics. ie. The kernel
-uses the hash MMU by default, unless radix is explicitly requested on
-the command line.
+On commit commit f48e91e87e67 ("powerpc/tm: Fix FP and VMX register
+corruption"), we check ckpt_regs.msr to see if a feature (as VEC, VSX
+and FP) is disabled (thus the hot registers might be bogus during the
+reclaim), and then copy the previously saved thread registers, with the
+non-bogus values, into the checkpoint area for a later trecheckpoint.
+This mechanism is used to recheckpoints the proper register values when
+a transaction started using the bogus registers, and these values were
+sent to the memory checkpoint area.
 
-So add a CONFIG option to choose whether we use radix by default or
-not, and expand the disable_radix command line option to allow
-"disable_radix=no" which *enables* radix.
+I see a problem on this code that ckpt_regs.msr is not properly set when
+using it, as for example, when there is a vsx_unavailable_tm() in a code
+like the following, the ckpt_regs.msg[FP] is 0;
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+ 1: sleep_until_{fp,vec,vsx} = 0
+ 2: fadd
+ 3: tbegin.
+ 4: beq
+ 5: xxmrghd
+ 6: tend.
+
+In this case, line 5 will raise an vsx_unavailable_tm() exception, and
+the ckpt_regs.msr[FP] will be zero before memcpy() block, executing the
+memcpy even with the the FP registers hot. That is not correct because
+we executed a float point instruction on line 2, and MSR[FP] was set to
+1.
+
+Fortunately this does not cause a big problem as I can see, other than
+this extra memcpy() because treclaim() will later overwrite this wrong
+copied value, since it relies on the correct MSR value, which was
+updated by giveup_all->check_if_tm_restore_required. There might be a
+problem when laziness is being turned on, but I was not able to
+reproduce it.
+
+The solution I am proposing is updating ckpt_regs.msr before using it.
+
+Signed-off-by: Breno Leitao <leitao@debian.org>
+Signed-off-by: Gustavo Romero <gusbromero@gmail.com>
+CC: Cyril Bur <cyrilbur@gmail.com>
+CC: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/mm/init_64.c              | 13 +++++++++++--
- arch/powerpc/platforms/Kconfig.cputype | 13 +++++++++++++
- 2 files changed, 24 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/process.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 12b3025fadac..a07722531b32 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -368,10 +368,19 @@ EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index c051dc2b42ad..773e9c5594e7 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -860,6 +860,9 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ 	if (!MSR_TM_SUSPENDED(mfmsr()))
+ 		return;
  
- #ifdef CONFIG_PPC_BOOK3S_64
--static bool disable_radix;
-+static bool disable_radix = !IS_ENABLED(CONFIG_PPC_RADIX_MMU_DEFAULT);
++	/* Give up all the registers and set ckpt_regs.msr */
++	giveup_all(container_of(thr, struct task_struct, thread));
 +
- static int __init parse_disable_radix(char *p)
- {
--	disable_radix = true;
-+	bool val;
-+
-+	if (strlen(p) == 0)
-+		val = true;
-+	else if (kstrtobool(p, &val))
-+		return -EINVAL;
-+
-+	disable_radix = val;
-+
- 	return 0;
+ 	/*
+ 	 * If we are in a transaction and FP is off then we can't have
+ 	 * used FP inside that transaction. Hence the checkpointed
+@@ -879,8 +882,6 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ 		memcpy(&thr->ckvr_state, &thr->vr_state,
+ 		       sizeof(struct thread_vr_state));
+ 
+-	giveup_all(container_of(thr, struct task_struct, thread));
+-
+ 	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
  }
- early_param("disable_radix", parse_disable_radix);
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f8928ee85f6b..596bd9091478 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -304,6 +304,19 @@ config PPC_RADIX_MMU
- 	  is only implemented by IBM Power9 CPUs, if you don't have one of them
- 	  you can probably disable this.
  
-+config PPC_RADIX_MMU_DEFAULT
-+	bool "Default to using the Radix MMU when possible"
-+	depends on PPC_RADIX_MMU
-+	default y
-+	help
-+	  When the hardware supports the Radix MMU, default to using it unless
-+	  "disable_radix[=yes]" is specified on the kernel command line.
-+
-+	  If this option is disabled, the Hash MMU will be used by default,
-+	  unless "disable_radix=no" is specified on the kernel command line.
-+
-+	  If you're unsure, say Y.
-+
- config ARCH_ENABLE_HUGEPAGE_MIGRATION
- 	def_bool y
- 	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
 -- 
-2.7.4
+2.14.2
