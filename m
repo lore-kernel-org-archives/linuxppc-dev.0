@@ -1,23 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLtpf0BptzDqkj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 00:07:21 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id 15so9789925pgc.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 06:07:21 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 3/3] powerpc/64s/radix: Fix process table entry cache
- invalidation
-Date: Tue, 24 Oct 2017 23:06:54 +1000
-Message-Id: <20171024130654.1223-4-npiggin@gmail.com>
-In-Reply-To: <20171024130654.1223-1-npiggin@gmail.com>
-References: <20171024130654.1223-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLyLg2JGnzDqfh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 02:46:51 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
+ linuxram@us.ibm.com
+Subject: Re: [PATCH 23/25] powerpc: Deliver SEGV signal on pkey violation
+In-Reply-To: <1504910713-7094-32-git-send-email-linuxram@us.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-32-git-send-email-linuxram@us.ibm.com>
+Date: Tue, 24 Oct 2017 17:46:38 +0200
+Message-ID: <877evk4kgx.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,108 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to the architecture, the process table entry cache must be
-flushed with tlbie RIC=2.
+Ram Pai <linuxram@us.ibm.com> writes:
 
-Currently the process table entry is set to invalid right before the
-PID is returned to the allocator, with no invalidation. This works on
-existing implementations that are known to not cache the process table
-entry for any except the current PIDR.
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index ec74e20..f2a310d 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -265,6 +266,15 @@ void user_single_step_siginfo(struct task_struct *tsk,
+>  	info->si_addr = (void __user *)regs->nip;
+>  }
+>  
+> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> +static void fill_sig_info_pkey(int si_code, siginfo_t *info, unsigned long addr)
+> +{
+> +	if (info->si_signo != SIGSEGV || si_code != SEGV_PKUERR)
 
-It is architecturally correct and cleaner to invalidate with RIC=2
-after clearing the process table entry and before the PID is returned
-to the allocator. This can be done in arch_exit_mmap that runs before
-the final flush, and to ensure the final flush (fullmm) is always a
-RIC=2 variant.
+Just checking si_code is sufficient there I think.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/mmu_context.h |  4 ++++
- arch/powerpc/mm/mmu_context_book3s64.c | 25 ++++++++++++++++++++-----
- arch/powerpc/mm/tlb-radix.c            |  6 +++++-
- 3 files changed, 29 insertions(+), 6 deletions(-)
+> +		return;
+> +	info->si_pkey = get_paca()->paca_pkey;
+> +}
+> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index a0d7145d6cd2..20eae6f76247 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -164,9 +164,13 @@ static inline void arch_dup_mmap(struct mm_struct *oldmm,
- {
- }
- 
-+#ifndef CONFIG_PPC_BOOK3S_64
- static inline void arch_exit_mmap(struct mm_struct *mm)
- {
- }
-+#else
-+extern void arch_exit_mmap(struct mm_struct *mm);
-+#endif
- 
- static inline void arch_unmap(struct mm_struct *mm,
- 			      struct vm_area_struct *vma,
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index 05e15386d4cb..6d724dab27c2 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -216,19 +216,34 @@ void destroy_context(struct mm_struct *mm)
- #ifdef CONFIG_SPAPR_TCE_IOMMU
- 	WARN_ON_ONCE(!list_empty(&mm->context.iommu_group_mem_list));
- #endif
-+	if (radix_enabled())
-+		WARN_ON(process_tb[mm->context.id].prtb0 != 0);
-+	else
-+		subpage_prot_free(mm);
-+	destroy_pagetable_page(mm);
-+	__destroy_context(mm->context.id);
-+	mm->context.id = MMU_NO_CONTEXT;
-+}
-+
-+void arch_exit_mmap(struct mm_struct *mm)
-+{
- 	if (radix_enabled()) {
- 		/*
- 		 * Radix doesn't have a valid bit in the process table
- 		 * entries. However we know that at least P9 implementation
- 		 * will avoid caching an entry with an invalid RTS field,
- 		 * and 0 is invalid. So this will do.
-+		 *
-+		 * This runs before the "fullmm" tlb flush in exit_mmap,
-+		 * which does a RIC=2 tlbie to clear the process table
-+		 * entry. See the "fullmm" comments in tlb-radix.c.
-+		 *
-+		 * No barrier required here after the store because
-+		 * this process will do the invalidate, which starts with
-+		 * ptesync.
- 		 */
- 		process_tb[mm->context.id].prtb0 = 0;
--	} else
--		subpage_prot_free(mm);
--	destroy_pagetable_page(mm);
--	__destroy_context(mm->context.id);
--	mm->context.id = MMU_NO_CONTEXT;
-+	}
- }
- 
- #ifdef CONFIG_PPC_RADIX_MMU
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 18170dc264aa..0c8464653aa3 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -297,10 +297,14 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	psize = radix_get_mmu_psize(page_size);
- 	/*
- 	 * if page size is not something we understand, do a full mm flush
-+	 *
-+	 * A "fullmm" flush must always do a flush_all_mm (RIC=2) flush
-+	 * that flushes the process table entry cache upon process teardown.
-+	 * See the comment for radix in arch_exit_mmap().
- 	 */
- 	if (psize != -1 && !tlb->fullmm && !tlb->need_flush_all)
- 		radix__flush_tlb_range_psize(mm, tlb->start, tlb->end, psize);
--	else if (tlb->need_flush_all) {
-+	else if (tlb->fullmm || tlb->need_flush_all) {
- 		tlb->need_flush_all = 0;
- 		radix__flush_all_mm(mm);
- 	} else
--- 
-2.13.3
+This should define an empty version in the #else case, so we don't need
+the ifdef below.
+
+> @@ -292,6 +302,18 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+>  	info.si_signo = signr;
+>  	info.si_code = code;
+>  	info.si_addr = (void __user *) addr;
+> +
+> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> +	/*
+> +	 * update the thread's pkey related fields.
+> +	 * core-dump handlers and other sub-systems
+> +	 * depend on those values.
+> +	 */
+> +	thread_pkey_regs_save(&current->thread);
+
+You shouldn't need to do this.
+
+We're not putting any of the pkey regs in the signal frame, so you don't
+need to save before we do that. [And if you did the right place to do it
+would be in setup_sigcontext() (or the TM version).]
+
+For ptrace and coredumps it should happen in pkey_get(), see eg.
+fpr_get() which does flush_fp_to_thread() as an example.
+
+> +	/* update the violated-key value */
+> +	fill_sig_info_pkey(code, &info, addr);
+> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+
+> +
+>  	force_sig_info(signr, &info, current);
+>  }
+
+cheers
