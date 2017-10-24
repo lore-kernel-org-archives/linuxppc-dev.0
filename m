@@ -2,30 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLmBS2GJXzDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 19:09:04 +1100 (AEDT)
-In-Reply-To: <57c47bff-63a2-62c1-2708-c351c2182304@users.sourceforge.net>
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- linuxppc-dev@lists.ozlabs.org, Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bhumika Goyal <bhumirks@gmail.com>, Corentin Labbe <clabbe.montjoie@gmail.com>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Rob Herring <robh@kernel.org>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLmBc1HxRzDqmQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 19:09:12 +1100 (AEDT)
+In-Reply-To: <1508264418-13448-1-git-send-email-leitao@debian.org>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [3/3] powerpc-opal: Fix a typo in a comment line of two file
- headers
-Message-Id: <3yLmBS1WHnz9s9Y@ozlabs.org>
-Date: Tue, 24 Oct 2017 19:09:03 +1100 (AEDT)
+Cc: Breno Leitao <leitao@debian.org>
+Subject: Re: powerpc/xmon: check before calling xive functions
+Message-Id: <3yLmBc0g0lz9sDB@ozlabs.org>
+Date: Tue, 24 Oct 2017 19:09:11 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,16 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-10-17 at 12:14:00 UTC, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Tue, 17 Oct 2017 13:31:42 +0200
+On Tue, 2017-10-17 at 18:20:18 UTC, Breno Leitao wrote:
+> Currently xmon could call XIVE functions from OPAL even if the XIVE is
+> disabled or does not exist in the system, as in POWER8 machines.  This
+> causes the following exception:
 > 
-> Fix a word in these descriptions.
+>  1:mon> dx
+>  cpu 0x1: Vector: 700 (Program Check) at [c000000423c93450]
+>      pc: c00000000009cfa4: opal_xive_dump+0x50/0x68
+>      lr: c0000000000997b8: opal_return+0x0/0x50
 > 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> This patch simply checks if XIVE is enabled before calling XIVE
+> functions.
+> 
+> Suggested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c28237f1d4ed2c9022f9eed656ecf3
+https://git.kernel.org/powerpc/c/402e172a2ce76210f2fe921cf419d1
 
 cheers
