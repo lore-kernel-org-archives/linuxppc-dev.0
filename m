@@ -1,21 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLyLg2JGnzDqfh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 02:46:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yLyLv27HRzDqlH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 02:47:03 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
  linuxram@us.ibm.com
-Subject: Re: [PATCH 23/25] powerpc: Deliver SEGV signal on pkey violation
-In-Reply-To: <1504910713-7094-32-git-send-email-linuxram@us.ibm.com>
+Subject: Re: [PATCH 22/25] powerpc: capture the violated protection key on
+ fault
+In-Reply-To: <1504910713-7094-31-git-send-email-linuxram@us.ibm.com>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-32-git-send-email-linuxram@us.ibm.com>
-Date: Tue, 24 Oct 2017 17:46:38 +0200
-Message-ID: <877evk4kgx.fsf@concordia.ellerman.id.au>
+ <1504910713-7094-31-git-send-email-linuxram@us.ibm.com>
+Date: Tue, 24 Oct 2017 17:46:55 +0200
+Message-ID: <8760b44kgg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,57 +30,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Ram Pai <linuxram@us.ibm.com> writes:
 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index ec74e20..f2a310d 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -265,6 +266,15 @@ void user_single_step_siginfo(struct task_struct *tsk,
->  	info->si_addr = (void __user *)regs->nip;
->  }
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> index 04b60af..51c89c1 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -97,6 +97,9 @@ struct paca_struct {
+>  	struct dtl_entry *dispatch_log_end;
+>  #endif /* CONFIG_PPC_STD_MMU_64 */
+>  	u64 dscr_default;		/* per-CPU default DSCR */
+> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+> +	u16 paca_pkey;                  /* exception causing pkey */
+> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+
+I can't see any reason why this should be in the paca.
+
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index a16bc43..ad31f6e 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -153,6 +153,7 @@ static int bad_page_fault_exception(struct pt_regs *regs, unsigned long address,
 >  
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +static void fill_sig_info_pkey(int si_code, siginfo_t *info, unsigned long addr)
-> +{
-> +	if (info->si_signo != SIGSEGV || si_code != SEGV_PKUERR)
+>  #ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
+>  	if (si_code & DSISR_KEYFAULT) {
+> +		get_paca()->paca_pkey = get_pte_pkey(current->mm, address);
 
-Just checking si_code is sufficient there I think.
+You seem to be using the paca as a temporary stash so that you don't
+have to pass it to _exception().
 
-> +		return;
-> +	info->si_pkey = get_paca()->paca_pkey;
-> +}
-> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
+But that's not what the paca is for, the paca is for per-cpu data not
+per-thread data, and (preferably) only for things that need to be
+accessed in low-level code where proper per_cpu() variables don't work.
 
-This should define an empty version in the #else case, so we don't need
-the ifdef below.
+Updating _exception() to take the key would be a mess, because there are
+so many callers who don't care about the key. For now we can probably
+just do something ~=:
 
-> @@ -292,6 +302,18 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
->  	info.si_signo = signr;
->  	info.si_code = code;
->  	info.si_addr = (void __user *) addr;
-> +
-> +#ifdef CONFIG_PPC64_MEMORY_PROTECTION_KEYS
-> +	/*
-> +	 * update the thread's pkey related fields.
-> +	 * core-dump handlers and other sub-systems
-> +	 * depend on those values.
-> +	 */
-> +	thread_pkey_regs_save(&current->thread);
+void _exception_pkey(int signr, struct pt_regs *regs, int code, unsigned long addr, int key)
+{
+	< current body of _exception >
 
-You shouldn't need to do this.
+	+ pkey bits
+}
 
-We're not putting any of the pkey regs in the signal frame, so you don't
-need to save before we do that. [And if you did the right place to do it
-would be in setup_sigcontext() (or the TM version).]
+void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+{
+	_exception_pkey(..., 0);
+}
 
-For ptrace and coredumps it should happen in pkey_get(), see eg.
-fpr_get() which does flush_fp_to_thread() as an example.
-
-> +	/* update the violated-key value */
-> +	fill_sig_info_pkey(code, &info, addr);
-> +#endif /* CONFIG_PPC64_MEMORY_PROTECTION_KEYS */
-
-> +
->  	force_sig_info(signr, &info, current);
->  }
 
 cheers
