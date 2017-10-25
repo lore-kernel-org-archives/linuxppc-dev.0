@@ -1,28 +1,19 @@
-Return-Path: <xiaowei.bao@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0055.outbound.protection.outlook.com [104.47.36.55])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yLn501tF3zDqZ3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Oct 2017 19:49:23 +1100 (AEDT)
-From: Bao Xiaowei <xiaowei.bao@nxp.com>
-To: <robh+dt@kernel.org>, <mark.rutland@arm.com>, <catalin.marinas@arm.com>,
- <will.deacon@arm.com>, <bhelgaas@google.com>, <shawnguo@kernel.org>,
- <madalin.bucur@nxp.com>, <sumit.garg@nxp.com>, <yangbo.lu@nxp.com>,
- <hongtao.jia@nxp.com>, <Yuantian.Tang@nxp.com>, <leoyang.li@nxp.com>,
- <kishon@ti.com>, <jingoohan1@gmail.com>, <pbrobinson@gmail.com>,
- <songxiaowei@hisilicon.com>, <devicetree@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <Zhiqiang.Hou@nxp.com>, <mingkai.hu@nxp.com>, <Minghuan.Lian@nxp.com>
-CC: Bao Xiaowei <xiaowei.bao@nxp.com>
-Subject: [PATCH 3/3] ARMv8: pcie: make the DWC EP driver support for layerscape
-Date: Tue, 24 Oct 2017 16:30:45 +0800
-Message-ID: <20171024083045.31135-4-xiaowei.bao@nxp.com>
-In-Reply-To: <20171024083045.31135-1-xiaowei.bao@nxp.com>
-References: <20171024083045.31135-1-xiaowei.bao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yMLYT35QqzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 17:57:33 +1100 (AEDT)
+Date: Wed, 25 Oct 2017 17:57:26 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Matthew Wilcox <mawilcox@microsoft.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, lkml@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-s390@vger.kernel.org
+Subject: [PATCH] bitmap: Fix optimization of bitmap_set/clear for big-endian
+ machines
+Message-ID: <20171025065726.GA25140@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Layerscape pcie controllers support RC or EP mode, Add the EP mode
-support in Kconfig, the driver will support both RC and EP mode, and
-the driver is able to judge the pcie controllers work on RC or EP mode.
+Commit 2a98dc028f91 ("include/linux/bitmap.h: turn bitmap_set and
+bitmap_clear into memset when possible", 2017-07-10) added an
+optimization which effectively assumes that a contiguous set of
+bits in a bitmap will be stored in a contiguous set of bytes of
+the bitmap, in the case where the starting bit number and number of
+bits are multiples of 8.  This is true for a little-endian
+representation, but not for a big-endian representation, because we
+number the bits of a long from right to left for both little-endian
+and big-endian representations.
 
-Signed-off-by: Bao Xiaowei <xiaowei.bao@nxp.com>
+The optimization can still be done for big-endian platforms, but
+only if the starting bit number and number of bits are multiples
+of BITS_PER_LONG.  This adjusts the code to use 8 for little-endian
+and BITS_PER_LONG for big-endian platforms.
+
+Cc: stable@vger.kernel.org # v4.13
+Fixes: 2a98dc028f91 ("include/linux/bitmap.h: turn bitmap_set and bitmap_clear into memset when possible")
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- drivers/pci/dwc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+This was found by inspection.
 
-diff --git a/drivers/pci/dwc/Kconfig b/drivers/pci/dwc/Kconfig
-index 22ec82fcdea2..b5f507795779 100644
---- a/drivers/pci/dwc/Kconfig
-+++ b/drivers/pci/dwc/Kconfig
-@@ -108,6 +108,7 @@ config PCI_LAYERSCAPE
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select MFD_SYSCON
- 	select PCIE_DW_HOST
-+	select PCIE_DW_EP
- 	help
- 	  Say Y here if you want PCIe controller support on Layerscape SoCs.
- 
+I'm pretty sure commit 2c6deb01525a is wrong as well on big-endian
+machines.
+
+ include/linux/bitmap.h | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
+index 700cf5f..44e2eb4 100644
+--- a/include/linux/bitmap.h
++++ b/include/linux/bitmap.h
+@@ -174,8 +174,10 @@ extern unsigned int bitmap_to_u32array(u32 *buf,
+ 				       unsigned int nbits);
+ #ifdef __BIG_ENDIAN
+ extern void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int nbits);
++#define BITMAP_MIN_UNIT	BITS_PER_LONG	/* have to access as longs */
+ #else
+ #define bitmap_copy_le bitmap_copy
++#define BITMAP_MIN_UNIT	8		/* can access as bytes if desired */
+ #endif
+ extern unsigned int bitmap_ord_to_pos(const unsigned long *bitmap, unsigned int ord, unsigned int nbits);
+ extern int bitmap_print_to_pagebuf(bool list, char *buf,
+@@ -317,8 +319,10 @@ static __always_inline void bitmap_set(unsigned long *map, unsigned int start,
+ {
+ 	if (__builtin_constant_p(nbits) && nbits == 1)
+ 		__set_bit(start, map);
+-	else if (__builtin_constant_p(start & 7) && IS_ALIGNED(start, 8) &&
+-		 __builtin_constant_p(nbits & 7) && IS_ALIGNED(nbits, 8))
++	else if (__builtin_constant_p(start & (BITMAP_MIN_UNIT-1)) &&
++		 IS_ALIGNED(start, BITMAP_MIN_UNIT) &&
++		 __builtin_constant_p(nbits & (BITMAP_MIN_UNIT-1)) &&
++		 IS_ALIGNED(nbits, BITMAP_MIN_UNIT))
+ 		memset((char *)map + start / 8, 0xff, nbits / 8);
+ 	else
+ 		__bitmap_set(map, start, nbits);
+@@ -329,8 +333,10 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
+ {
+ 	if (__builtin_constant_p(nbits) && nbits == 1)
+ 		__clear_bit(start, map);
+-	else if (__builtin_constant_p(start & 7) && IS_ALIGNED(start, 8) &&
+-		 __builtin_constant_p(nbits & 7) && IS_ALIGNED(nbits, 8))
++	else if (__builtin_constant_p(start & (BITMAP_MIN_UNIT-1)) &&
++		 IS_ALIGNED(start, BITMAP_MIN_UNIT) &&
++		 __builtin_constant_p(nbits & (BITMAP_MIN_UNIT-1)) &&
++		 IS_ALIGNED(nbits, BITMAP_MIN_UNIT))
+ 		memset((char *)map + start / 8, 0, nbits / 8);
+ 	else
+ 		__bitmap_clear(map, start, nbits);
 -- 
-2.14.1
+2.7.4
