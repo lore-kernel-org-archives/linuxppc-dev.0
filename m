@@ -1,26 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <srs0=ts6k=by=microsoft.com=mawilcox@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yMPsw1fLFzDqkp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 20:27:00 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH 08/25] powerpc: sys_pkey_alloc() and sys_pkey_free()
- system calls
-In-Reply-To: <20171024183450.GL5454@ram.oc3035372033.ibm.com>
-References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-17-git-send-email-linuxram@us.ibm.com>
- <871sls4ke8.fsf@concordia.ellerman.id.au>
- <20171024183450.GL5454@ram.oc3035372033.ibm.com>
-Date: Wed, 25 Oct 2017 11:26:50 +0200
-Message-ID: <87a80f1sth.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yMMVK50QGzDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 18:39:53 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yMMVK40mxz8t2C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 18:39:53 +1100 (AEDT)
+From: Matthew Wilcox <mawilcox@microsoft.com>
+To: Paul Mackerras <paulus@ozlabs.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, "lkml@vger.kernel.org"
+ <lkml@vger.kernel.org>
+CC: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>
+Subject: RE: [PATCH] bitmap: Fix optimization of bitmap_set/clear for
+ big-endian machines
+Date: Wed, 25 Oct 2017 07:39:48 +0000
+Message-ID: <MWHPR21MB08455F1374F717DBA20B7798CB440@MWHPR21MB0845.namprd21.prod.outlook.com>
+References: <20171025065726.GA25140@fergus.ozlabs.ibm.com>
+In-Reply-To: <20171025065726.GA25140@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
-
-> On Tue, Oct 24, 2017 at 05:48:15PM +0200, Michael Ellerman wrote:
->> Ram Pai <linuxram@us.ibm.com> writes:
->> 
->> > Finally this patch provides the ability for a process to
->> > allocate and free a protection key.
->> 
->> This must be the last patch in the series.
->> 
->> We don't want to expose a half working interface to userspace.
->
-> The way the patch series is organized -- this patch; even-though
-> introduces the syscall, the syscall will fail because the pkey subsystem
-> is enabled only by the last patch. Till than the code exists , but does
-> a great job of failing with an appropriate return code.
-
-See my previous mail :)
-
-Please don't add the syscall until it can work.
-
-cheers
+SGFuZyBvbiwgZG9uJ3QgdGVsbCBtZSB5b3UgZm91bmQgdGhpcyBieSBpbnNwZWN0aW9uLiAgQXJl
+IHlvdSBub3QgcnVubmluZyB0aGUgYml0bWFwIHRlc3RjYXNlLCBlbmFibGVkIGJ5IENPTkZJR19U
+RVNUX0JJVE1BUD8gIEVpdGhlciB0aGF0IHNob3VsZCBiZSBwcm9kdWNpbmcgYW4gZXJyb3IsIG9y
+IHRoZXJlJ3MgYSBtaXNzaW5nIHRlc3QgY2FzZSwgb3IgeW91ciBpbnNwZWN0aW9uIGlzIHdyb25n
+IC4uLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFBhdWwgTWFja2Vy
+cmFzIFttYWlsdG86cGF1bHVzQG96bGFicy5vcmddDQo+IFNlbnQ6IFdlZG5lc2RheSwgT2N0b2Jl
+ciAyNSwgMjAxNyAyOjU3IEFNDQo+IFRvOiBNYXR0aGV3IFdpbGNveCA8bWF3aWxjb3hAbWljcm9z
+b2Z0LmNvbT47IExpbnVzIFRvcnZhbGRzDQo+IDx0b3J2YWxkc0BsaW51eC1mb3VuZGF0aW9uLm9y
+Zz47IGxrbWxAdmdlci5rZXJuZWwub3JnDQo+IENjOiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsg
+bGludXgtczM5MEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogW1BBVENIXSBiaXRtYXA6IEZp
+eCBvcHRpbWl6YXRpb24gb2YgYml0bWFwX3NldC9jbGVhciBmb3IgYmlnLWVuZGlhbg0KPiBtYWNo
+aW5lcw0KPiANCj4gQ29tbWl0IDJhOThkYzAyOGY5MSAoImluY2x1ZGUvbGludXgvYml0bWFwLmg6
+IHR1cm4gYml0bWFwX3NldCBhbmQNCj4gYml0bWFwX2NsZWFyIGludG8gbWVtc2V0IHdoZW4gcG9z
+c2libGUiLCAyMDE3LTA3LTEwKSBhZGRlZCBhbg0KPiBvcHRpbWl6YXRpb24gd2hpY2ggZWZmZWN0
+aXZlbHkgYXNzdW1lcyB0aGF0IGEgY29udGlndW91cyBzZXQgb2YNCj4gYml0cyBpbiBhIGJpdG1h
+cCB3aWxsIGJlIHN0b3JlZCBpbiBhIGNvbnRpZ3VvdXMgc2V0IG9mIGJ5dGVzIG9mDQo+IHRoZSBi
+aXRtYXAsIGluIHRoZSBjYXNlIHdoZXJlIHRoZSBzdGFydGluZyBiaXQgbnVtYmVyIGFuZCBudW1i
+ZXIgb2YNCj4gYml0cyBhcmUgbXVsdGlwbGVzIG9mIDguICBUaGlzIGlzIHRydWUgZm9yIGEgbGl0
+dGxlLWVuZGlhbg0KPiByZXByZXNlbnRhdGlvbiwgYnV0IG5vdCBmb3IgYSBiaWctZW5kaWFuIHJl
+cHJlc2VudGF0aW9uLCBiZWNhdXNlIHdlDQo+IG51bWJlciB0aGUgYml0cyBvZiBhIGxvbmcgZnJv
+bSByaWdodCB0byBsZWZ0IGZvciBib3RoIGxpdHRsZS1lbmRpYW4NCj4gYW5kIGJpZy1lbmRpYW4g
+cmVwcmVzZW50YXRpb25zLg0KPiANCj4gVGhlIG9wdGltaXphdGlvbiBjYW4gc3RpbGwgYmUgZG9u
+ZSBmb3IgYmlnLWVuZGlhbiBwbGF0Zm9ybXMsIGJ1dA0KPiBvbmx5IGlmIHRoZSBzdGFydGluZyBi
+aXQgbnVtYmVyIGFuZCBudW1iZXIgb2YgYml0cyBhcmUgbXVsdGlwbGVzDQo+IG9mIEJJVFNfUEVS
+X0xPTkcuICBUaGlzIGFkanVzdHMgdGhlIGNvZGUgdG8gdXNlIDggZm9yIGxpdHRsZS1lbmRpYW4N
+Cj4gYW5kIEJJVFNfUEVSX0xPTkcgZm9yIGJpZy1lbmRpYW4gcGxhdGZvcm1zLg0KPiANCj4gQ2M6
+IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcgIyB2NC4xMw0KPiBGaXhlczogMmE5OGRjMDI4ZjkxICgi
+aW5jbHVkZS9saW51eC9iaXRtYXAuaDogdHVybiBiaXRtYXBfc2V0IGFuZA0KPiBiaXRtYXBfY2xl
+YXIgaW50byBtZW1zZXQgd2hlbiBwb3NzaWJsZSIpDQo+IFNpZ25lZC1vZmYtYnk6IFBhdWwgTWFj
+a2VycmFzIDxwYXVsdXNAb3psYWJzLm9yZz4NCj4gLS0tDQo+IFRoaXMgd2FzIGZvdW5kIGJ5IGlu
+c3BlY3Rpb24uDQo+IA0KPiBJJ20gcHJldHR5IHN1cmUgY29tbWl0IDJjNmRlYjAxNTI1YSBpcyB3
+cm9uZyBhcyB3ZWxsIG9uIGJpZy1lbmRpYW4NCj4gbWFjaGluZXMuDQo+IA0KPiAgaW5jbHVkZS9s
+aW51eC9iaXRtYXAuaCB8IDE0ICsrKysrKysrKystLS0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgMTAg
+aW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9pbmNsdWRl
+L2xpbnV4L2JpdG1hcC5oIGIvaW5jbHVkZS9saW51eC9iaXRtYXAuaA0KPiBpbmRleCA3MDBjZjVm
+Li40NGUyZWI0IDEwMDY0NA0KPiAtLS0gYS9pbmNsdWRlL2xpbnV4L2JpdG1hcC5oDQo+ICsrKyBi
+L2luY2x1ZGUvbGludXgvYml0bWFwLmgNCj4gQEAgLTE3NCw4ICsxNzQsMTAgQEAgZXh0ZXJuIHVu
+c2lnbmVkIGludCBiaXRtYXBfdG9fdTMyYXJyYXkodTMyICpidWYsDQo+ICAJCQkJICAgICAgIHVu
+c2lnbmVkIGludCBuYml0cyk7DQo+ICAjaWZkZWYgX19CSUdfRU5ESUFODQo+ICBleHRlcm4gdm9p
+ZCBiaXRtYXBfY29weV9sZSh1bnNpZ25lZCBsb25nICpkc3QsIGNvbnN0IHVuc2lnbmVkIGxvbmcg
+KnNyYywNCj4gdW5zaWduZWQgaW50IG5iaXRzKTsNCj4gKyNkZWZpbmUgQklUTUFQX01JTl9VTklU
+CUJJVFNfUEVSX0xPTkcJLyogaGF2ZSB0byBhY2Nlc3MgYXMNCj4gbG9uZ3MgKi8NCj4gICNlbHNl
+DQo+ICAjZGVmaW5lIGJpdG1hcF9jb3B5X2xlIGJpdG1hcF9jb3B5DQo+ICsjZGVmaW5lIEJJVE1B
+UF9NSU5fVU5JVAk4CQkvKiBjYW4gYWNjZXNzIGFzIGJ5dGVzIGlmDQo+IGRlc2lyZWQgKi8NCj4g
+ICNlbmRpZg0KPiAgZXh0ZXJuIHVuc2lnbmVkIGludCBiaXRtYXBfb3JkX3RvX3Bvcyhjb25zdCB1
+bnNpZ25lZCBsb25nICpiaXRtYXAsDQo+IHVuc2lnbmVkIGludCBvcmQsIHVuc2lnbmVkIGludCBu
+Yml0cyk7DQo+ICBleHRlcm4gaW50IGJpdG1hcF9wcmludF90b19wYWdlYnVmKGJvb2wgbGlzdCwg
+Y2hhciAqYnVmLA0KPiBAQCAtMzE3LDggKzMxOSwxMCBAQCBzdGF0aWMgX19hbHdheXNfaW5saW5l
+IHZvaWQgYml0bWFwX3NldCh1bnNpZ25lZCBsb25nDQo+ICptYXAsIHVuc2lnbmVkIGludCBzdGFy
+dCwNCj4gIHsNCj4gIAlpZiAoX19idWlsdGluX2NvbnN0YW50X3AobmJpdHMpICYmIG5iaXRzID09
+IDEpDQo+ICAJCV9fc2V0X2JpdChzdGFydCwgbWFwKTsNCj4gLQllbHNlIGlmIChfX2J1aWx0aW5f
+Y29uc3RhbnRfcChzdGFydCAmIDcpICYmIElTX0FMSUdORUQoc3RhcnQsIDgpICYmDQo+IC0JCSBf
+X2J1aWx0aW5fY29uc3RhbnRfcChuYml0cyAmIDcpICYmIElTX0FMSUdORUQobmJpdHMsIDgpKQ0K
+PiArCWVsc2UgaWYgKF9fYnVpbHRpbl9jb25zdGFudF9wKHN0YXJ0ICYgKEJJVE1BUF9NSU5fVU5J
+VC0xKSkgJiYNCj4gKwkJIElTX0FMSUdORUQoc3RhcnQsIEJJVE1BUF9NSU5fVU5JVCkgJiYNCj4g
+KwkJIF9fYnVpbHRpbl9jb25zdGFudF9wKG5iaXRzICYgKEJJVE1BUF9NSU5fVU5JVC0xKSkgJiYN
+Cj4gKwkJIElTX0FMSUdORUQobmJpdHMsIEJJVE1BUF9NSU5fVU5JVCkpDQo+ICAJCW1lbXNldCgo
+Y2hhciAqKW1hcCArIHN0YXJ0IC8gOCwgMHhmZiwgbmJpdHMgLyA4KTsNCj4gIAllbHNlDQo+ICAJ
+CV9fYml0bWFwX3NldChtYXAsIHN0YXJ0LCBuYml0cyk7DQo+IEBAIC0zMjksOCArMzMzLDEwIEBA
+IHN0YXRpYyBfX2Fsd2F5c19pbmxpbmUgdm9pZCBiaXRtYXBfY2xlYXIodW5zaWduZWQNCj4gbG9u
+ZyAqbWFwLCB1bnNpZ25lZCBpbnQgc3RhcnQsDQo+ICB7DQo+ICAJaWYgKF9fYnVpbHRpbl9jb25z
+dGFudF9wKG5iaXRzKSAmJiBuYml0cyA9PSAxKQ0KPiAgCQlfX2NsZWFyX2JpdChzdGFydCwgbWFw
+KTsNCj4gLQllbHNlIGlmIChfX2J1aWx0aW5fY29uc3RhbnRfcChzdGFydCAmIDcpICYmIElTX0FM
+SUdORUQoc3RhcnQsIDgpICYmDQo+IC0JCSBfX2J1aWx0aW5fY29uc3RhbnRfcChuYml0cyAmIDcp
+ICYmIElTX0FMSUdORUQobmJpdHMsIDgpKQ0KPiArCWVsc2UgaWYgKF9fYnVpbHRpbl9jb25zdGFu
+dF9wKHN0YXJ0ICYgKEJJVE1BUF9NSU5fVU5JVC0xKSkgJiYNCj4gKwkJIElTX0FMSUdORUQoc3Rh
+cnQsIEJJVE1BUF9NSU5fVU5JVCkgJiYNCj4gKwkJIF9fYnVpbHRpbl9jb25zdGFudF9wKG5iaXRz
+ICYgKEJJVE1BUF9NSU5fVU5JVC0xKSkgJiYNCj4gKwkJIElTX0FMSUdORUQobmJpdHMsIEJJVE1B
+UF9NSU5fVU5JVCkpDQo+ICAJCW1lbXNldCgoY2hhciAqKW1hcCArIHN0YXJ0IC8gOCwgMCwgbmJp
+dHMgLyA4KTsNCj4gIAllbHNlDQo+ICAJCV9fYml0bWFwX2NsZWFyKG1hcCwgc3RhcnQsIG5iaXRz
+KTsNCj4gLS0NCj4gMi43LjQNCg0K
