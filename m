@@ -1,25 +1,21 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yMQl81yPXzDr6B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 21:06:11 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id s2so16912862pge.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 03:06:11 -0700 (PDT)
-Date: Wed, 25 Oct 2017 03:06:07 -0700
-From: Kees Cook <keescook@chromium.org>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: ibmvscsi: Convert timers to use timer_setup()
-Message-ID: <20171025100607.GA145026@beast>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yMQzD0QK5zDqkp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Oct 2017 21:16:40 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, benh@kernel.crashing.org,
+ anton@ozlabs.org, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powernv: Avoid checkstop on HMI and MCE
+In-Reply-To: <20171024092005.3861-1-mikey@neuling.org>
+References: <20171024092005.3861-1-mikey@neuling.org>
+Date: Wed, 25 Oct 2017 12:16:30 +0200
+Message-ID: <871slr1qip.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,115 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation for unconditionally passing the struct timer_list pointer to
-all timer callbacks, switch to using the new timer_setup() and from_timer()
-to pass the timer pointer explicitly.
+Michael Neuling <mikey@neuling.org> writes:
 
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- drivers/scsi/ibmvscsi/ibmvfc.c   | 14 ++++++--------
- drivers/scsi/ibmvscsi/ibmvscsi.c |  7 +++----
- 2 files changed, 9 insertions(+), 12 deletions(-)
+> On an unrecoverable HMI or MCE only generate an checkstop (via
+> PLATFORM ERROR opal reboot call) when panic_on_oops is set.
+>
+> We currently generate an checkstop as an attempt for the FSP to grab a
+> dump and then reboot us. Unfortunately this never works and no one
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index b491af31a5f8..0d2f7eb3acb6 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -1393,8 +1393,9 @@ static int ibmvfc_map_sg_data(struct scsi_cmnd *scmd,
-  *
-  * Called when an internally generated command times out
-  **/
--static void ibmvfc_timeout(struct ibmvfc_event *evt)
-+static void ibmvfc_timeout(struct timer_list *t)
- {
-+	struct ibmvfc_event *evt = from_timer(evt, t, timer);
- 	struct ibmvfc_host *vhost = evt->vhost;
- 	dev_err(vhost->dev, "Command timed out (%p). Resetting connection\n", evt);
- 	ibmvfc_reset_host(vhost);
-@@ -1424,12 +1425,10 @@ static int ibmvfc_send_event(struct ibmvfc_event *evt,
- 		BUG();
- 
- 	list_add_tail(&evt->queue, &vhost->sent);
--	init_timer(&evt->timer);
-+	timer_setup(&evt->timer, ibmvfc_timeout, 0);
- 
- 	if (timeout) {
--		evt->timer.data = (unsigned long) evt;
- 		evt->timer.expires = jiffies + (timeout * HZ);
--		evt->timer.function = (void (*)(unsigned long))ibmvfc_timeout;
- 		add_timer(&evt->timer);
- 	}
- 
-@@ -3692,8 +3691,9 @@ static void ibmvfc_tgt_adisc_cancel_done(struct ibmvfc_event *evt)
-  * out, reset the CRQ. When the ADISC comes back as cancelled,
-  * log back into the target.
-  **/
--static void ibmvfc_adisc_timeout(struct ibmvfc_target *tgt)
-+static void ibmvfc_adisc_timeout(struct timer_list *t)
- {
-+	struct ibmvfc_target *tgt = from_timer(tgt, t, timer);
- 	struct ibmvfc_host *vhost = tgt->vhost;
- 	struct ibmvfc_event *evt;
- 	struct ibmvfc_tmf *tmf;
-@@ -3778,9 +3778,7 @@ static void ibmvfc_tgt_adisc(struct ibmvfc_target *tgt)
- 	if (timer_pending(&tgt->timer))
- 		mod_timer(&tgt->timer, jiffies + (IBMVFC_ADISC_TIMEOUT * HZ));
- 	else {
--		tgt->timer.data = (unsigned long) tgt;
- 		tgt->timer.expires = jiffies + (IBMVFC_ADISC_TIMEOUT * HZ);
--		tgt->timer.function = (void (*)(unsigned long))ibmvfc_adisc_timeout;
- 		add_timer(&tgt->timer);
- 	}
- 
-@@ -3912,7 +3910,7 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost, u64 scsi_id)
- 	tgt->vhost = vhost;
- 	tgt->need_login = 1;
- 	tgt->cancel_key = vhost->task_set++;
--	init_timer(&tgt->timer);
-+	timer_setup(&tgt->timer, ibmvfc_adisc_timeout, 0);
- 	kref_init(&tgt->kref);
- 	ibmvfc_init_tgt(tgt, ibmvfc_tgt_implicit_logout);
- 	spin_lock_irqsave(vhost->host->host_lock, flags);
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 7d156b161482..17df76f0be3c 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -837,8 +837,9 @@ static void ibmvscsi_reset_host(struct ibmvscsi_host_data *hostdata)
-  *
-  * Called when an internally generated command times out
- */
--static void ibmvscsi_timeout(struct srp_event_struct *evt_struct)
-+static void ibmvscsi_timeout(struct timer_list *t)
- {
-+	struct srp_event_struct *evt_struct = from_timer(evt_struct, t, timer);
- 	struct ibmvscsi_host_data *hostdata = evt_struct->hostdata;
- 
- 	dev_err(hostdata->dev, "Command timed out (%x). Resetting connection\n",
-@@ -927,11 +928,9 @@ static int ibmvscsi_send_srp_event(struct srp_event_struct *evt_struct,
- 	 */
- 	list_add_tail(&evt_struct->list, &hostdata->sent);
- 
--	init_timer(&evt_struct->timer);
-+	timer_setup(&evt_struct->timer, ibmvscsi_timeout, 0);
- 	if (timeout) {
--		evt_struct->timer.data = (unsigned long) evt_struct;
- 		evt_struct->timer.expires = jiffies + (timeout * HZ);
--		evt_struct->timer.function = (void (*)(unsigned long))ibmvscsi_timeout;
- 		add_timer(&evt_struct->timer);
- 	}
- 
--- 
-2.7.4
+Never? WT#.
 
+> I've talked to has ever seen a resulting dump, let alone got useful
+> information from it.
+>
+> Even worse, the checkstop gets in the way of debugging real
+> problems. If we hit a software bug that results in this, we get no
+> opportunity to debug it live. Similarly if the bug is due to hardware
+> that is not in the dump (say PCI or NVLINK GPU), we get no information
+> in the dump about that hardware.
+>
+> So let's remove it unless someone sets panic_on_oops.
 
--- 
-Kees Cook
-Pixel Security
+Nick just rewrote pnv_platform_error_reboot(), so please talk to him to
+make sure you're not stepping on each other.
+
+> diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
+> index c9e1a4ff29..23780970d0 100644
+> --- a/arch/powerpc/platforms/powernv/opal-hmi.c
+> +++ b/arch/powerpc/platforms/powernv/opal-hmi.c
+> @@ -284,6 +285,11 @@ static void hmi_event_handler(struct work_struct *work)
+>  			print_hmi_event_info(hmi_evt);
+>  		}
+>  
+> +		if (!panic_on_oops) {
+> +			die("Unrecoverable HMI exception", NULL, SIGBUS);
+> +			return;
+
+I don't think we should return.
+
+Otherwise we risk persisting corrupt data to disk and so on.
+
+If we're getting unrecoverable HMI/MCEs that are not actually indicative
+of something bad happening then we need to filter those out somewhere.
+
+cheers
