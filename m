@@ -1,45 +1,44 @@
-Return-Path: <srs0=i7yv=bz=au1.ibm.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yMwKy5G2QzDqln
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:19:34 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3yMwKy4bMHz8t1T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:19:34 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3yMwKx6KrLz9sPm
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2017 16:19:33 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9Q5IowY032020
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2017 01:19:31 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2du8b9trde-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yMxQb4MB2zDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 17:08:38 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9Q64mo6044995
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 02:08:36 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2du49xe4jk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2017 01:19:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 02:08:35 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <npiggin@au1.ibm.com>;
- Thu, 26 Oct 2017 06:19:29 +0100
-Date: Thu, 26 Oct 2017 15:19:20 +1000
-From: Nicholas Piggin <npiggin@au1.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- Markus Trippelsdorf <markus@trippelsdorf.de>
-Subject: Re: [PATCH] powerpc: Fix check for copy/paste instructions in
- alignment handler
-In-Reply-To: <OFE75272CA.7B26179F-ON002581C4.007CAB23@notes.na.collabserv.com>
-References: <OFF18C8ACF.135B0A8D-ON002581C4.002803F5@notes.na.collabserv.com>
- <20171026012237.0320e540@roar.ozlabs.ibm.com>
- <OFE75272CA.7B26179F-ON002581C4.007CAB23@notes.na.collabserv.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Thu, 26 Oct 2017 00:08:34 -0600
+Date: Wed, 25 Oct 2017 23:08:26 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ paulus@samba.org, khandual@linux.vnet.ibm.com, bsingharora@gmail.com,
+ hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ ebiederm@xmission.com
+Subject: Re: [PATCH 3/7] powerpc: Free up four 64K PTE bits in 4K backed HPTE
+ pages
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
+ <1504910713-7094-4-git-send-email-linuxram@us.ibm.com>
+ <87o9p3kedg.fsf@concordia.ellerman.id.au>
+ <871slu9ro4.fsf@linux.vnet.ibm.com>
+ <20171023162934.GA5454@ram.oc3035372033.ibm.com>
+ <87d15b1t6u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20171026151920.748762d8@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87d15b1t6u.fsf@concordia.ellerman.id.au>
+Message-Id: <20171026060826.GB5485@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,33 +48,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 26 Oct 2017 09:41:32 +1100
-Paul Mackerras <paulus@ozlabs.org> wrote:
-
-> On Thu, Oct 26, 2017 at 01:22:37AM +1000, Nicholas Piggin wrote:
-> > On Wed, 25 Oct 2017 18:16:53 +1100
-> > Paul Mackerras <paulus@ozlabs.org> wrote:
-> >   
-> > > Commit 07d2a628bc00 ("powerpc/64s: Avoid cpabort in context switch
-> > > when possible", 2017-06-09) changed the definition of PPC_INST_COPY
-> > > and in so doing inadvertently broke the check for copy/paste
-> > > instructions in the alignment fault handler.  The check currently
-> > > matches no instructions.
-> > > 
-> > > This fixes it by ANDing both sides of the comparison with the mask.  
-> > 
-> > Thanks for fixing it. Any reason not to change the mask to 0xfc2006fe
-> > to include the 'last' bit that is now mandatory?  
+On Wed, Oct 25, 2017 at 11:18:49AM +0200, Michael Ellerman wrote:
+> Ram Pai <linuxram@us.ibm.com> writes:
+> > On Mon, Oct 23, 2017 at 02:17:39PM +0530, Aneesh Kumar K.V wrote:
+> >> Michael Ellerman <mpe@ellerman.id.au> writes:
+> >> > Ram Pai <linuxram@us.ibm.com> writes:
+> ...
+> >> > Should be:
+> >> > 	/*
+> >> > 	 * Initialize all hidx entries to invalid value, the first time
+> >> >          * the PTE is about to allocate a 4K HPTE.
+> >> > 	 */
+> >> >
+> >> >> +	if (!(old_pte & H_PAGE_COMBO))
+> >> >> +		rpte.hidx = ~0x0UL;
+> >> >> +
+> >> >
+> >> > Paul had the idea that if we biased the slot number by 1, we could make
+> >> > the "invalid" value be == 0.
+> >> >
+> >> > That would avoid needing to that above, and also mean the value is
+> >> > correctly invalid from the get-go, which would be good IMO.
+> >> >
+> >> > I think now that you've added the slot accessors it would be pretty easy
+> >> > to do.
+> >> 
+> >> That would be imply, we loose one slot in primary group, which means we
+> >> will do extra work in some case because our primary now has only 7
+> >> slots. And in case of pseries, the hypervisor will always return the
+> >> least available slot, which implie we will do extra hcalls in case of an
+> >> hpte insert to an empty group?
+> >
+> > No. that is not the idea.  The idea is that slot 'F' in the seconday
+> > will continue to be a invalid slot, but will be represented as
+> > offset-by-one in the PTE.  In other words, 0 will be repesented as 1,
+> > 1 as 2....   and  n as (n+1)%32
 > 
-> What does real hardware do if you execute the instruction without that
-> bit set?  Does it take the alignment interrupt, or does it take an
-> illegal instruction interrupt (i.e. HEAI)?  We need to catch all the
-> variants that take an alignment interrupt.  If P9 hardware takes a
-> HEAI when that bit isn't set, then I'm fine with changing the mask.
+> Right.
+> 
+> > The idea seems feasible.  It has the advantage -- where 0 in the PTE
+> > means invalid slot. But it can be confusing to the casual code-
+> > reader. Will need to put in a big-huge comment to explain that.
+> 
+> This code is already confusing to *any* reader, so I don't think it's a
+> worry. :)
 
-Just tested. Copy without the bit results in an illegal instruction.
-Even the valid paste variant causes a sigill because it's set to use
-HEA to avoid the thread reconfig problem.
+I just got it coded and working.  But I see no advantage implementing
+the shifted-value. The hidx in the secondary-part of the pte, still
+needs to be initialzed to all-zeros. Because it could contain the value of
+the hidx corresponding the 64k-backed hpte, which needs to be cleared.
 
-Thanks,
-Nick
+I will send the patch anyway.  But we should not apply it
+for I see no apparent gain.
+
+RP
+
+> 
+> cheers
+
+-- 
+Ram Pai
