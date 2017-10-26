@@ -1,37 +1,37 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNJhN4DQSzDqyM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 07:36:52 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9QKTujV136891
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:36:50 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dumpue4t8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNJhf5hmLzDr28
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 07:37:06 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9QKb3Nm030956
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:37:05 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dujhrcecw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:36:48 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:37:04 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 26 Oct 2017 16:36:48 -0400
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ Thu, 26 Oct 2017 16:36:53 -0400
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@us.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V5 1/2] pseries/nodes: Ensure enough nodes avail for operations
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V5 2/2] pseries/initnodes: Ensure nodes initialized for hotplug
 In-Reply-To: <237b5727-7329-5608-5fa1-0cd465415db2@linux.vnet.ibm.com>
-Date: Thu, 26 Oct 2017 15:36:45 -0500
+Date: Thu, 26 Oct 2017 15:36:50 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <ee398909-7270-49c8-c561-78e4bc114501@linux.vnet.ibm.com>
+Message-Id: <51cdbb88-4ead-7bf7-6e18-297d9b7e1e75@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,90 +41,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pseries/nodes: On pseries systems which allow 'hot-add' of CPU or
-memory resources, it may occur that the new resources are to be
-inserted into nodes that were not used for these resources at bootup.
-In the kernel, any node that is used must be defined and initialized.
-This patch ensures that sufficient nodes are defined to support
-configuration requirements after boot, as well as at boot.
-
-This patch extracts the value of the lowest domain level (number
-of allocable resources) from the device tree property
-"ibm,max-associativity-domains" to use as the maximum number of nodes
-to setup as possibly available in the system.  This new setting will
-override the instruction,
-
-    nodes_and(node_possible_map, node_possible_map, node_online_map);
-
-presently seen in the function arch/powerpc/mm/numa.c:initmem_init().
-
-If the property is not present at boot, no operation will be performed
-to define or enable additional nodes.
+pseries/nodes: On pseries systems which allow 'hot-add' of CPU,
+it may occur that the new resources are to be inserted into nodes
+that were not used for memory resources at bootup.  Many different
+configurations of PowerPC resources may need to be supported depending
+upon the environment.  This patch fixes some problems encountered at
+runtime with configurations that support memory-less nodes, or that
+hot-add resources during system execution after boot.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
 Changes in V5:
-  -- Remove unnecessary error check
+  -- Reorganize code used to associatively map CPUs to nodes and
+     ensure initialization of nodes at runtime.
 ---
- arch/powerpc/mm/numa.c |   38 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 35 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/numa.c |   45 +++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 37 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index eb604b3..18fc40d 100644
+index 18fc40d..4d615a4 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -892,6 +892,35 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
- 	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
+@@ -551,7 +551,7 @@ static int numa_setup_cpu(unsigned long lcpu)
+ 	nid = of_node_to_nid_single(cpu);
+ 
+ out_present:
+-	if (nid < 0 || !node_online(nid))
++	if (nid < 0 || !node_possible(nid))
+ 		nid = first_online_node;
+ 
+ 	map_cpu_to_node(lcpu, nid);
+@@ -867,7 +867,7 @@ void __init dump_numa_cpu_topology(void)
  }
  
-+static void __init find_possible_nodes(void)
+ /* Initialize NODE_DATA for a node on the local memory */
+-static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
++static void setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+ {
+ 	u64 spanned_pages = end_pfn - start_pfn;
+ 	const size_t nd_size = roundup(sizeof(pg_data_t), SMP_CACHE_BYTES);
+@@ -1310,6 +1310,40 @@ static long vphn_get_associativity(unsigned long cpu,
+ 	return rc;
+ }
+ 
++static inline int find_cpu_nid(int cpu)
 +{
-+	struct device_node *rtas;
-+	u32 numnodes, i;
++	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
++	int new_nid;
 +
-+	if (min_common_depth <= 0)
-+		return;
++	/* Use associativity from first thread for all siblings */
++	vphn_get_associativity(cpu, associativity);
++	new_nid = associativity_to_nid(associativity);
++	if (new_nid < 0 || !node_possible(new_nid))
++		new_nid = first_online_node;
 +
-+	rtas = of_find_node_by_path("/rtas");
-+	if (!rtas)
-+		return;
++	/*
++	 * Need to ensure that NODE_DATA is allocated/initialized for
++	 * a node from available memory (see memblock_alloc_try_nid).
++	 * Code executed after boot (like local_memory_node) may not
++	 * know enough to recover fully for memoryless nodes. 
++	 */
++	if (NODE_DATA(new_nid) == NULL) {
++		setup_node_data(new_nid, 0, 0);
++		try_online_node(new_nid);
 +
-+	if (of_property_read_u32_index(rtas,
-+				"ibm,max-associativity-domains",
-+				min_common_depth, &numnodes))
-+		goto out;
-+
-+	pr_info("numa: Nodes = %d (mcd = %d)\n", numnodes,
-+		min_common_depth);
-+
-+	for (i = 0; i < numnodes; i++) {
-+		if (!node_possible(i))
-+			node_set(i, node_possible_map);
++		/*
++		 * Node structures successfully initialized, but
++		 * we still need the memoryliess node to be offline.
++		 */
++		node_set_offline(new_nid);
 +	}
 +
-+out:
-+	of_node_put(rtas);
++	if (NODE_DATA(new_nid)->node_spanned_pages == 0)
++		return first_online_node;
++
++	return new_nid;
 +}
 +
- void __init initmem_init(void)
+ /*
+  * Update the CPU maps and sysfs entries for a single CPU when its NUMA
+  * characteristics change. This function doesn't perform any locking and is
+@@ -1377,7 +1411,6 @@ int numa_update_cpu_topology(bool cpus_locked)
  {
- 	int nid, cpu;
-@@ -905,12 +934,15 @@ void __init initmem_init(void)
- 	memblock_dump_all();
+ 	unsigned int cpu, sibling, changed = 0;
+ 	struct topology_update_data *updates, *ud;
+-	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
+ 	cpumask_t updated_cpus;
+ 	struct device *dev;
+ 	int weight, new_nid, i = 0;
+@@ -1415,11 +1448,7 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 			continue;
+ 		}
  
- 	/*
--	 * Reduce the possible NUMA nodes to the online NUMA nodes,
--	 * since we do not support node hotplug. This ensures that  we
--	 * lower the maximum NUMA node ID to what is actually present.
-+	 * Modify the set of possible NUMA nodes to reflect information
-+	 * available about the set of online nodes, and the set of nodes
-+	 * that we expect to make use of for this platform's affinity
-+	 * calculations.
- 	 */
- 	nodes_and(node_possible_map, node_possible_map, node_online_map);
+-		/* Use associativity from first thread for all siblings */
+-		vphn_get_associativity(cpu, associativity);
+-		new_nid = associativity_to_nid(associativity);
+-		if (new_nid < 0 || !node_online(new_nid))
+-			new_nid = first_online_node;
++		new_nid = find_cpu_nid(cpu);
  
-+	find_possible_nodes();
-+
- 	for_each_online_node(nid) {
- 		unsigned long start_pfn, end_pfn;
- 
+ 		if (new_nid == numa_cpu_lookup_table[cpu]) {
+ 			cpumask_andnot(&cpu_associativity_changes_mask,
