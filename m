@@ -1,42 +1,45 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNK3M3JmTzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 07:53:18 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9QKqa9A073698
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:53:16 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dukya953v-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNLbL5k95zDqlH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 09:02:37 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9QLxZoI063186
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 18:02:35 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dumpuh6mc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 16:53:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 18:02:35 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Thu, 26 Oct 2017 21:53:13 +0100
-Subject: Re: [PATCH v5 00/18] Appended signatures support for IMA appraisal
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-integrity@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- James Morris <james.l.morris@oracle.com>, "Serge E. Hallyn"
- <serge@hallyn.com>, David Howells <dhowells@redhat.com>, David Woodhouse
- <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>, Rusty Russell
- <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David
- S. Miller" <davem@davemloft.net>, "AKASHI, Takahiro"
- <takahiro.akashi@linaro.org>
-Date: Thu, 26 Oct 2017 16:53:04 -0400
-In-Reply-To: <20171018005331.2688-1-bauerman@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 26 Oct 2017 18:02:34 -0400
 References: <20171018005331.2688-1-bauerman@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1509051184.5886.139.camel@linux.vnet.ibm.com>
+ <20171018005331.2688-19-bauerman@linux.vnet.ibm.com>
+ <1509048454.5886.108.camel@linux.vnet.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
+ keyrings@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <james.l.morris@oracle.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, David Howells <dhowells@redhat.com>,
+ David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@redhat.com>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ "AKASHI\, Takahiro" <takahiro.akashi@linaro.org>
+Subject: Re: [PATCH v5 18/18] ima: Write modsig to the measurement list
+In-reply-to: <1509048454.5886.108.camel@linux.vnet.ibm.com>
+Date: Thu, 26 Oct 2017 20:02:23 -0200
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87r2tpwosw.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,45 +49,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-10-17 at 22:53 -0200, Thiago Jung Bauermann wrote:
-> Hello,
-> 
-> The main highlight in this version is that it fixes a bug where the modsig
-> wasn't being included in the measurement list if the appraised file was
-> already measured by another rule. The fix is in the last patch.
-> 
-> Another change is that the last patch in the v4 series ("ima: Support
-> module-style appended signatures for appraisal") has been broken up into
-> smaller patches. I may have overdone it...
-> 
-> Finally, I have added some patches removing superfluous parentheses from
-> expressions. IMO these patches make it easier (and more pleasant) to read
-> the code, and thus easier to understand it. Since I'm not sure how welcome
-> the changes are, I split them in 3 "levels" in increasing potential for
-> conflict with patches from other people (they can be squashed together when
-> applied):
-> 
-> 1. patch 2 contains the bare minimum, changing only lines that are also
->    touched by other patches in the series;
-> 
-> 2. patch 3 cleans up all the files that are touched by this patch series;
-> 
-> 3. patch 4 cleans up all other EVM and IMA files that weren't already fixed
->    by the previous patches.
-> 
-> If unwanted, patches 3 and 4 can be simply skipped without affecting the
-> rest of the patches. I have already rebased them from v4.13-rc2 to
-> v4.14-rc3 and now to linux-integrity/next with very few easy to resolve
-> conflicts, so I think they are worth keeping.
-> 
-> These patches apply on top of today's linux-integrity/next.
 
-This cover letter and the patch descriptions are well written,
-explaining what and why you're making this change.  The problem is
-that I don't agree that fewer parentheses makes the code more
-readable.  When you repost the patches (for other reasons), please
-don't include these changes.
+Hello Mimi,
 
-thanks,
+Thanks for your review.
 
-Mimi
+Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+
+> On Tue, 2017-10-17 at 22:53 -0200, Thiago Jung Bauermann wrote:
+>
+>> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+>> index 6a2d960fbd92..0d3390de7432 100644
+>> --- a/security/integrity/ima/ima_main.c
+>> +++ b/security/integrity/ima/ima_main.c
+>> @@ -246,7 +246,35 @@ static int process_measurement(struct file *file, char *buf, loff_t size,
+>>  		rc = ima_appraise_measurement(func, iint, file, buf, size,
+>>  					      pathname, &xattr_value,
+>>  					      &xattr_len, opened);
+>> -	if (action & IMA_MEASURE)
+>> +
+>> +	/*
+>> +	 * MODSIG has one corner case we need to deal with here:
+>> +	 *
+>> +	 * Suppose the policy has one measure rule for one hook and an appraise
+>> +	 * rule for a different hook. Suppose also that the template requires
+>> +	 * the signature to be stored in the measurement list.
+>> +	 *
+>> +	 * If a file containing a MODSIG is measured by the first hook before
+>> +	 * being appraised by the second one, the corresponding entry in the
+>> +	 * measurement list will not contain the MODSIG because we only fetch it
+>> +	 * for IMA_APPRAISAL. We don't fetch it earlier because if the file has
+>> +	 * both a DIGSIG and a MODSIG it's not possible to know which one will
+>> +	 * be valid without actually doing the appraisal.
+>> +	 *
+>> +	 * Therefore, after appraisal of a MODSIG signature we need to store the
+>> +	 * measurement again if the current template requires storing the
+>> +	 * signature.
+>
+> Yes, all true, but this long comment doesn't belong here in the middle
+> of process_measurement().
+>
+>> +	 * With the opposite ordering (the appraise rule triggering before the
+>> +	 * measurement rule) there is the same problem but it's not possible to
+>> +	 * do anything about it because at the time we are appraising the
+>> +	 * signature it's impossible to know whether a measurement will ever
+>> +	 * need to be stored for this file.
+>> +	 */
+>
+> With the template format "ima-sig", the verified file signature needs
+> to be included in the measurement list. Based on this file signature,
+> the attestation server can validate the signature.
+>
+> In this case, where the appraisal comes first followed by the
+> measurement, the appraised file signature is included in the
+> measurement list. I don't see the problem here.
+
+I think I forgot that during appraisal the modsig is copied into the
+iint cache and that it will be used when the measure rule is trigerred.
+I'll drop that last paragraph.
+
+>
+>> +	if ((action & IMA_MEASURE) || ((iint->flags & IMA_MEASURE) &&
+>> +				       xattr_value &&
+>> +				       xattr_value->type == IMA_MODSIG &&
+>> +				       ima_current_template_has_sig()))
+>
+> Like the clean up you did elsewhere, this new set of tests should be
+> made into a function. The comment could placed along with the new
+> function.
+
+Ok. I didn't create a function because these tests are only done here,
+but I agree that it will make the code clearer, and be a better place
+for the big comment as well. Will do in the next version.
+
+-- 
+Thiago Jung Bauermann
+IBM Linux Technology Center
