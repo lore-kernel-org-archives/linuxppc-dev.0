@@ -1,34 +1,12 @@
-Return-Path: <aarcange@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yN2z45GpxzDqkH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Oct 2017 21:18:39 +1100 (AEDT)
-Date: Thu, 26 Oct 2017 12:18:33 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v5 07/22] mm: Protect VMA modifications using VMA
- sequence count
-Message-ID: <20171026101833.GF563@redhat.com>
-References: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1507729966-10660-8-git-send-email-ldufour@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1507729966-10660-8-git-send-email-ldufour@linux.vnet.ibm.com>
+Return-Path: <npiggin@gmail.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	skiboot@lists.ozlabs.org
+Subject: [RFC PATCH] powerpc/powernv: OPAL do not process events from hard
+ interrupt context
+Date: Thu, 26 Oct 2017 23:06:49 +1000
+Message-Id: <20171026130649.593-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,73 +16,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Laurent,
+Using irq_work for processing OPAL events can cause latency spikes and
+is not really required. OPAL events are not performance critical, and
+we already have kopald to poll and run events, so have kopald run them
+all. Rather than scheduling them as irq_work, just run them directly
+from kopald. Enable and disable interrupts between processing each
+event.
 
-Message-ID: <7ca80231-fe02-a3a7-84bc-ce81690ea051@intel.com> shows
-significant slowdown even for brk/malloc ops both single and
-multi threaded.
+Event handlers themselves should continue to use threaded handlers,
+workqueues, etc. as appropriate to avoid high interrupts-off
+latencies.
 
-The single threaded case I think is the most important because it has
-zero chance of getting back any benefit later during page faults.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+Is there any reason for processing OPAL events right after the OPAL
+interrupt? Or for using irq_work the poller? I can't see why. This
+patch should reduce the maximum irqs-off time.
 
-Could you check if:
+ arch/powerpc/platforms/powernv/opal-irqchip.c | 85 ++++++++++++---------------
+ arch/powerpc/platforms/powernv/opal.c         | 23 ++++----
+ arch/powerpc/platforms/powernv/powernv.h      |  3 +-
+ 3 files changed, 51 insertions(+), 60 deletions(-)
 
-1. it's possible change vm_write_begin to be a noop if mm->mm_count is
-   <= 1? Hint: clone() will run single threaded so there's no way it can run
-   in the middle of a being/end critical section (clone could set an
-   MMF flag to possibly keep the sequence counter activated if a child
-   thread exits and mm_count drops to 1 while the other cpu is in the
-   middle of a critical section in the other thread).
-
-2. Same thing with RCU freeing of vmas. Wouldn't it be nicer if RCU
-   freeing happened only once a MMF flag is set? That will at least
-   reduce the risk of temporary memory waste until the next RCU grace
-   period. The read of the MMF will scale fine. Of course to allow
-   point 1 and 2 then the page fault should also take the mmap_sem
-   until the MMF flag is set.
-
-Could you also investigate a much bigger change: I wonder if it's
-possible to drop the sequence number entirely from the vma and stop
-using sequence numbers entirely (which is likely the source of the
-single threaded regression in point 1 that may explain the report in
-the above message-id), and just call the vma rbtree lookup once again
-and check that everything is still the same in the vma and the PT lock
-obtained is still a match to finish the anon page fault and fill the
-pte?
-
-Then of course we also need to add a method to the read-write
-semaphore so it tells us if there's already one user holding the read
-mmap_sem and we're the second one.  If we're the second one (or more
-than second) only then we should skip taking the down_read mmap_sem.
-Even a multithreaded app won't ever skip taking the mmap_sem until
-there's sign of runtime contention, and it won't have to run the way
-more expensive sequence number-less revalidation during page faults,
-unless we get an immediate scalability payoff because we already know
-the mmap_sem is already contended and there are multiple nested
-threads in the page fault handler of the same mm.
-
-Perhaps we'd need something more advanced than a
-down_read_trylock_if_not_hold() (which has to guaranteed not to write
-to any cacheline) and we'll have to count the per-thread exponential
-backoff of mmap_sem frequency, but starting with
-down_read_trylock_if_not_hold() would be good I think.
-
-This is not how the current patch works, the current patch uses a
-sequence number because it pretends to go lockless always and in turn
-has to slow down all vma updates fast paths or the revalidation
-slowsdown performance for page fault too much (as it always
-revalidates).
-
-I think it would be much better to go speculative only when there's
-"detected" runtime contention on the mmap_sem with
-down_read_trylock_if_not_hold() and that will make the revalidation
-cost not an issue to worry about because normally we won't have to
-revalidate the vma at all during page fault. In turn by making the
-revalidation more expensive by starting a vma rbtree lookup from
-scratch, we can drop the sequence number entirely and that should
-simplify the patch tremendously because all vm_write_begin/end would
-disappear from the patch and in turn the mmap/brk slowdown measured by
-the message-id above, should disappear as well.
-   
-Thanks,
-Andrea
+diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+index 9d1b8c0aaf93..646bfac8e3f5 100644
+--- a/arch/powerpc/platforms/powernv/opal-irqchip.c
++++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+@@ -22,7 +22,6 @@
+ #include <linux/kthread.h>
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+-#include <linux/irq_work.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/opal.h>
+@@ -38,37 +37,47 @@ struct opal_event_irqchip {
+ 	unsigned long mask;
+ };
+ static struct opal_event_irqchip opal_event_irqchip;
+-
++static u64 last_outstanding_events;
+ static unsigned int opal_irq_count;
+ static unsigned int *opal_irqs;
+ 
+-static void opal_handle_irq_work(struct irq_work *work);
+-static u64 last_outstanding_events;
+-static struct irq_work opal_event_irq_work = {
+-	.func = opal_handle_irq_work,
+-};
+-
+-void opal_handle_events(uint64_t events)
++void opal_handle_events(void)
+ {
+-	int virq, hwirq = 0;
+-	u64 mask = opal_event_irqchip.mask;
++	__be64 events = 0;
++	u64 e;
++
++	e = last_outstanding_events & opal_event_irqchip.mask;
++again:
++	while (e) {
++		int virq, hwirq;
++
++		hwirq = fls64(e) - 1;
++		e &= ~BIT_ULL(hwirq);
++
++		local_irq_disable();
++		virq = irq_find_mapping(opal_event_irqchip.domain, hwirq);
++		if (virq) {
++			irq_enter();
++			generic_handle_irq(virq);
++			irq_exit();
++		}
++		local_irq_enable();
+ 
+-	if (!in_irq() && (events & mask)) {
+-		last_outstanding_events = events;
+-		irq_work_queue(&opal_event_irq_work);
+-		return;
++		cond_resched();
+ 	}
++	last_outstanding_events = 0;
++	if (opal_poll_events(&events) != OPAL_SUCCESS)
++		return;
++	e = be64_to_cpu(events) & opal_event_irqchip.mask;
++	if (e)
++		goto again;
++}
+ 
+-	while (events & mask) {
+-		hwirq = fls64(events) - 1;
+-		if (BIT_ULL(hwirq) & mask) {
+-			virq = irq_find_mapping(opal_event_irqchip.domain,
+-						hwirq);
+-			if (virq)
+-				generic_handle_irq(virq);
+-		}
+-		events &= ~BIT_ULL(hwirq);
+-	}
++bool opal_recheck_events(void)
++{
++	if (last_outstanding_events & opal_event_irqchip.mask)
++		return true;
++	return false;
+ }
+ 
+ static void opal_event_mask(struct irq_data *d)
+@@ -78,24 +87,9 @@ static void opal_event_mask(struct irq_data *d)
+ 
+ static void opal_event_unmask(struct irq_data *d)
+ {
+-	__be64 events;
+-
+ 	set_bit(d->hwirq, &opal_event_irqchip.mask);
+-
+-	opal_poll_events(&events);
+-	last_outstanding_events = be64_to_cpu(events);
+-
+-	/*
+-	 * We can't just handle the events now with opal_handle_events().
+-	 * If we did we would deadlock when opal_event_unmask() is called from
+-	 * handle_level_irq() with the irq descriptor lock held, because
+-	 * calling opal_handle_events() would call generic_handle_irq() and
+-	 * then handle_level_irq() which would try to take the descriptor lock
+-	 * again. Instead queue the events for later.
+-	 */
+ 	if (last_outstanding_events & opal_event_irqchip.mask)
+-		/* Need to retrigger the interrupt */
+-		irq_work_queue(&opal_event_irq_work);
++		opal_wake_poller();
+ }
+ 
+ static int opal_event_set_type(struct irq_data *d, unsigned int flow_type)
+@@ -136,16 +130,13 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+ 	__be64 events;
+ 
+ 	opal_handle_interrupt(virq_to_hw(irq), &events);
+-	opal_handle_events(be64_to_cpu(events));
++	last_outstanding_events = be64_to_cpu(events);
++	if (last_outstanding_events & opal_event_irqchip.mask)
++		opal_wake_poller();
+ 
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void opal_handle_irq_work(struct irq_work *work)
+-{
+-	opal_handle_events(last_outstanding_events);
+-}
+-
+ static int opal_event_match(struct irq_domain *h, struct device_node *node,
+ 			    enum irq_domain_bus_token bus_token)
+ {
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 65c79ecf5a4d..d834d8348000 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -547,21 +547,15 @@ int opal_hmi_exception_early(struct pt_regs *regs)
+ /* HMI exception handler called in virtual mode during check_irq_replay. */
+ int opal_handle_hmi_exception(struct pt_regs *regs)
+ {
+-	s64 rc;
+-	__be64 evt = 0;
+-
+ 	/*
+ 	 * Check if HMI event is available.
+-	 * if Yes, then call opal_poll_events to pull opal messages and
+-	 * process them.
++	 * if Yes, then call opal_handle_events to process them.
+ 	 */
+ 	if (!local_paca->hmi_event_available)
+ 		return 0;
+ 
+ 	local_paca->hmi_event_available = 0;
+-	rc = opal_poll_events(&evt);
+-	if (rc == OPAL_SUCCESS && evt)
+-		opal_handle_events(be64_to_cpu(evt));
++	opal_wake_poller();
+ 
+ 	return 1;
+ }
+@@ -764,14 +758,19 @@ static void __init opal_imc_init_dev(void)
+ static int kopald(void *unused)
+ {
+ 	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
+-	__be64 events;
+ 
+ 	set_freezable();
+ 	do {
+ 		try_to_freeze();
+-		opal_poll_events(&events);
+-		opal_handle_events(be64_to_cpu(events));
+-		schedule_timeout_interruptible(timeout);
++
++		opal_handle_events();
++
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (opal_recheck_events())
++			__set_current_state(TASK_RUNNING);
++		else
++			schedule_timeout(timeout);
++
+ 	} while (!kthread_should_stop());
+ 
+ 	return 0;
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index a159d48573d7..d34deff0be81 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -23,7 +23,8 @@ extern u32 pnv_get_supported_cpuidle_states(void);
+ 
+ extern void pnv_lpc_init(void);
+ 
+-extern void opal_handle_events(uint64_t events);
++extern void opal_handle_events(void);
++extern bool opal_recheck_events(void);
+ extern void opal_event_shutdown(void);
+ 
+ bool cpu_core_split_required(void);
+-- 
+2.13.3
