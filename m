@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVlX6q7zzDrcf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:10:16 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9R492IH036380
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:14 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVlm5p9jzDrcY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:10:28 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9R4ALVf141497
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:26 -0400
 Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2duuqmvm58-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2duusgmegd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:20 -0400
 Received: from localhost
  by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 26 Oct 2017 22:10:13 -0600
+ Thu, 26 Oct 2017 22:10:04 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 16/16] powerpc/mm/pseries: Use HASH_BULK_REMOVE hcall in guest
-Date: Fri, 27 Oct 2017 09:38:33 +0530
+Subject: [PATCH 14/16] powerpc/mm/pseries: Use HASH_REMOVE hcall in guest
+Date: Fri, 27 Oct 2017 09:38:31 +0530
 In-Reply-To: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20171027040833.3644-17-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20171027040833.3644-15-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,64 +38,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/lpar.c | 40 ++++++++++++++++++++++++++++-------
- 1 file changed, 32 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/pseries/lpar.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 4ea9224cbeb6..6dffdf654a28 100644
+index cd5cf5bd53f1..41512aaa8c8e 100644
 --- a/arch/powerpc/platforms/pseries/lpar.c
 +++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -684,19 +684,43 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
- 	for (i = 0; i < number; i++) {
- 		vpn = batch->vpn[i];
- 		pte_iterate_hashed_subpages(vpn, psize, index, shift) {
--			long slot;
--
--			slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
--			if (slot < 0)
--				continue;
--			pix = plpar_bluk_remove(param, pix, slot, vpn,
--						psize, ssize, local);
-+			if (!firmware_has_feature(FW_FEATURE_HASH_API)) {
-+				long slot;
+@@ -454,6 +454,27 @@ static void pSeries_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
+ 	BUG_ON(lpar_rc != H_SUCCESS);
+ }
+ 
++static void __pseries_lpar_hash_invalidate(unsigned long hash, unsigned long vpn,
++					   int psize, int apsize,
++					   int ssize, int local)
++{
++	unsigned long want_v;
++	unsigned long lpar_rc;
++	unsigned long dummy1, dummy2;
 +
-+				slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
-+				if (slot < 0)
-+					continue;
-+				pix = plpar_bluk_remove(param, pix, slot, vpn,
-+							  psize, ssize, local);
-+			} else {
-+				unsigned long hash;
-+				hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
-+				/* trim the top bits, we overload them below */
-+				hash &= MAX_HTAB_MASK;
-+				param[pix] = HBR_REQUEST | HBR_AVPN | hash;
-+				param[pix+1] = hpte_encode_avpn(vpn, psize, ssize);
-+				pix += 2;
-+				if (pix == 8) {
-+					rc = plpar_hcall9(H_HASH_BULK_REMOVE, param,
-+							  param[0], param[1], param[2],
-+							  param[3], param[4], param[5],
-+							  param[6], param[7]);
-+					BUG_ON(rc != H_SUCCESS);
-+					pix = 0;
-+				}
-+			}
- 		} pte_iterate_hashed_end();
- 	}
- 	if (pix) {
-+		unsigned long hcall;
++	pr_devel("    inval : hash=%lx, vpn=%016lx, psize: %d, local: %d\n",
++		 hash, vpn, psize, local);
 +
- 		/* We have a flush pending */
- 		param[pix] = HBR_END;
--		rc = plpar_hcall9(H_BULK_REMOVE, param, param[0], param[1],
-+		if (!firmware_has_feature(FW_FEATURE_HASH_API))
-+			hcall = H_BULK_REMOVE;
-+		else
-+			hcall = H_HASH_BULK_REMOVE;
-+		rc = plpar_hcall9(hcall, param, param[0], param[1],
- 				  param[2], param[3], param[4], param[5],
- 				  param[6], param[7]);
- 		BUG_ON(rc != H_SUCCESS);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
++	lpar_rc = plpar_pte_hash_remove(H_AVPN, hash, want_v, &dummy1, &dummy2);
++	if (lpar_rc == H_NOT_FOUND)
++		return;
++
++	BUG_ON(lpar_rc != H_SUCCESS);
++
++}
++
++
+ static void pSeries_lpar_hash_invalidate(unsigned long hash, unsigned long vpn,
+ 					 int psize, int apsize,
+ 					 int ssize, int local)
+@@ -466,6 +487,9 @@ static void pSeries_lpar_hash_invalidate(unsigned long hash, unsigned long vpn,
+ 	pr_devel("    inval : hash=%lx, vpn=%016lx, psize: %d, local: %d\n",
+ 		 hash, vpn, psize, local);
+ 
++	if (firmware_has_feature(FW_FEATURE_HASH_API))
++		return __pseries_lpar_hash_invalidate(hash, vpn, psize,
++						      apsize, ssize, local);
+ 	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 	slot = __pSeries_lpar_hpte_find(hash, want_v);
+ 	if (slot < 0)
 -- 
 2.13.6
