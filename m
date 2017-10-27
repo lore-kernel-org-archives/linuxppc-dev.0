@@ -3,30 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVkY5YvLzDrcQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:09:25 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVkg1tcpzDrcQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:09:31 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9R499r6092047
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:09:23 -0400
+ v9R492qV141755
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:09:28 -0400
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2duwge02xe-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dustahpt4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:09:22 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:09:28 -0400
 Received: from localhost
  by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 26 Oct 2017 22:09:21 -0600
+ Thu, 26 Oct 2017 22:09:27 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 06/16] powerpc/mm: Switch flush_hash_range to not use slot
-Date: Fri, 27 Oct 2017 09:38:23 +0530
+Subject: [PATCH 07/16] powerpc/mm: Add hash updatepp callback
+Date: Fri, 27 Oct 2017 09:38:24 +0530
 In-Reply-To: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20171027040833.3644-7-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20171027040833.3644-8-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,98 +36,271 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add hash based updatepp callback and use that during hash pte fault.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_native_64.c      | 28 ++++++++--------------------
- arch/powerpc/platforms/pseries/lpar.c | 17 ++++++++---------
- 2 files changed, 16 insertions(+), 29 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  6 +++++
+ arch/powerpc/mm/hash64_4k.c                   |  7 +----
+ arch/powerpc/mm/hash64_64k.c                  | 19 +++-----------
+ arch/powerpc/mm/hash_native_64.c              | 37 +++++++++++++++++++++++++++
+ arch/powerpc/mm/hugetlbpage-hash64.c          |  9 ++-----
+ arch/powerpc/platforms/ps3/htab.c             | 29 +++++++++++++++++++++
+ arch/powerpc/platforms/pseries/lpar.c         | 31 ++++++++++++++++++++++
+ 7 files changed, 110 insertions(+), 28 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 79f141e721ee..8b1d924a2f85 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -145,6 +145,12 @@ struct mmu_hash_ops {
+ 					 unsigned long vpn,
+ 					 int bpsize, int apsize,
+ 					 int ssize, unsigned long flags);
++	long		(*hash_updatepp)(unsigned long hash,
++					 unsigned long newpp,
++					 unsigned long vpn,
++					 int bpsize, int apsize,
++					 int ssize, unsigned long flags);
++
+ 	void            (*hpte_updateboltedpp)(unsigned long newpp,
+ 					       unsigned long ea,
+ 					       int psize, int ssize);
+diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+index 975793de0914..afb79100f0ce 100644
+--- a/arch/powerpc/mm/hash64_4k.c
++++ b/arch/powerpc/mm/hash64_4k.c
+@@ -65,12 +65,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		 * There MIGHT be an HPTE for this pte
+ 		 */
+ 		hash = hpt_hash(vpn, shift, ssize);
+-		if (old_pte & H_PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
+-
+-		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_4K,
++		if (mmu_hash_ops.hash_updatepp(hash, rflags, vpn, MMU_PAGE_4K,
+ 					       MMU_PAGE_4K, ssize, flags) == -1)
+ 			old_pte &= ~_PAGE_HPTEFLAGS;
+ 	}
+diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+index f1eb538721fc..096fdfaf6f1c 100644
+--- a/arch/powerpc/mm/hash64_64k.c
++++ b/arch/powerpc/mm/hash64_64k.c
+@@ -53,7 +53,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	unsigned long *hidxp;
+ 	unsigned long hpte_group;
+ 	unsigned int subpg_index;
+-	unsigned long rflags, pa, hidx;
++	unsigned long rflags, pa;
+ 	unsigned long old_pte, new_pte, subpg_pte;
+ 	unsigned long vpn, hash, slot;
+ 	unsigned long shift = mmu_psize_defs[MMU_PAGE_4K].shift;
+@@ -127,17 +127,11 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		int ret;
+ 
+ 		hash = hpt_hash(vpn, shift, ssize);
+-		hidx = __rpte_to_hidx(rpte, subpg_index);
+-		if (hidx & _PTEIDX_SECONDARY)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += hidx & _PTEIDX_GROUP_IX;
+-
+-		ret = mmu_hash_ops.hpte_updatepp(slot, rflags, vpn,
++		ret = mmu_hash_ops.hash_updatepp(hash, rflags, vpn,
+ 						 MMU_PAGE_4K, MMU_PAGE_4K,
+ 						 ssize, flags);
+ 		/*
+-		 *if we failed because typically the HPTE wasn't really here
++		 * if we failed because typically the HPTE wasn't really here
+ 		 * we try an insertion.
+ 		 */
+ 		if (ret == -1)
+@@ -268,12 +262,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 		 * There MIGHT be an HPTE for this pte
+ 		 */
+ 		hash = hpt_hash(vpn, shift, ssize);
+-		if (old_pte & H_PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
+-
+-		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_64K,
++		if (mmu_hash_ops.hash_updatepp(hash, rflags, vpn, MMU_PAGE_64K,
+ 					       MMU_PAGE_64K, ssize,
+ 					       flags) == -1)
+ 			old_pte &= ~_PAGE_HPTEFLAGS;
 diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index f473a78baab7..8e2e6b92aa27 100644
+index 8e2e6b92aa27..3b061844929c 100644
 --- a/arch/powerpc/mm/hash_native_64.c
 +++ b/arch/powerpc/mm/hash_native_64.c
-@@ -707,10 +707,8 @@ static void native_hpte_clear(void)
- static void native_flush_hash_range(unsigned long number, int local)
- {
- 	unsigned long vpn;
--	unsigned long hash, index, hidx, shift, slot;
-+	unsigned long hash, index, shift;
- 	struct hash_pte *hptep;
--	unsigned long hpte_v;
--	unsigned long want_v;
- 	unsigned long flags;
- 	real_pte_t pte;
- 	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
-@@ -730,23 +728,13 @@ static void native_flush_hash_range(unsigned long number, int local)
+@@ -396,6 +396,42 @@ struct hash_pte *native_hpte_find(unsigned long hash, unsigned long vpn,
+ 	return NULL;
+ }
  
- 		pte_iterate_hashed_subpages(pte, psize, vpn, index, shift) {
- 			hash = hpt_hash(vpn, shift, ssize);
--			hidx = __rpte_to_hidx(pte, index);
--			if (hidx & _PTEIDX_SECONDARY)
--				hash = ~hash;
--			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--			slot += hidx & _PTEIDX_GROUP_IX;
--			hptep = htab_address + slot;
--			want_v = hpte_encode_avpn(vpn, psize, ssize);
--			native_lock_hpte(hptep);
--			hpte_v = be64_to_cpu(hptep->v);
--			if (cpu_has_feature(CPU_FTR_ARCH_300))
--				hpte_v = hpte_new_to_old_v(hpte_v,
--						be64_to_cpu(hptep->r));
--			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
--			    !(hpte_v & HPTE_V_VALID))
--				native_unlock_hpte(hptep);
--			else
--				hptep->v = 0;
-+			hptep = native_hpte_find(hash, vpn, psize, ssize);
-+			if (!hptep)
-+				continue;
-+			/*
-+			 * Invalidate the hpte. NOTE: this also unlocks it
-+			 */
-+			hptep->v = 0;
- 		} pte_iterate_hashed_end();
++static long native_hash_updatepp(unsigned long hash, unsigned long newpp,
++				 unsigned long vpn, int bpsize,
++				 int apsize, int ssize, unsigned long flags)
++{
++	int ret = 0;
++	struct hash_pte *hptep;
++	int local = 0;
++
++
++	DBG_LOW("    update(vpn=%016lx, newpp=%lx)", vpn, newpp);
++
++	hptep = native_hpte_find(hash, vpn, bpsize, ssize);
++	if (hptep) {
++		DBG_LOW(" -> hit\n");
++		/* Update the HPTE */
++		hptep->r = cpu_to_be64((be64_to_cpu(hptep->r) &
++					~(HPTE_R_PPP | HPTE_R_N)) |
++				       (newpp & (HPTE_R_PPP | HPTE_R_N |
++						 HPTE_R_C)));
++		native_unlock_hpte(hptep);
++	} else {
++		DBG_LOW(" -> miss\n");
++		ret = -1;
++	}
++	/*
++	 * Ensure it is out of the tlb too if it is not a nohpte fault
++	 */
++	if (!(flags & HPTE_NOHPTE_UPDATE)) {
++		if (flags & HPTE_LOCAL_UPDATE)
++			local = 1;
++		tlbie(vpn, bpsize, apsize, ssize, local);
++	}
++	return ret;
++}
++
++
+ /*
+  * Update the page protection bits. Intended to be used to create
+  * guard pages for kernel data structures on pages which are bolted
+@@ -792,6 +828,7 @@ void __init hpte_init_native(void)
+ 	mmu_hash_ops.hpte_invalidate	= native_hpte_invalidate;
+ 	mmu_hash_ops.hash_invalidate	= native_hash_invalidate;
+ 	mmu_hash_ops.hpte_updatepp	= native_hpte_updatepp;
++	mmu_hash_ops.hash_updatepp	= native_hash_updatepp;
+ 	mmu_hash_ops.hpte_updateboltedpp = native_hpte_updateboltedpp;
+ 	mmu_hash_ops.hpte_removebolted = native_hpte_removebolted;
+ 	mmu_hash_ops.hpte_insert	= native_hpte_insert;
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index a84bb44497f9..4eb8c9d2f452 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -71,15 +71,10 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	/* Check if pte already has an hpte (case 2) */
+ 	if (unlikely(old_pte & H_PAGE_HASHPTE)) {
+ 		/* There MIGHT be an HPTE for this pte */
+-		unsigned long hash, slot;
++		unsigned long hash;
+ 
+ 		hash = hpt_hash(vpn, shift, ssize);
+-		if (old_pte & H_PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
+-
+-		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, mmu_psize,
++		if (mmu_hash_ops.hash_updatepp(hash, rflags, vpn, mmu_psize,
+ 					       mmu_psize, ssize, flags) == -1)
+ 			old_pte &= ~_PAGE_HPTEFLAGS;
  	}
+diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+index 813c2f77f75d..4e82f7cbd124 100644
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -251,11 +251,40 @@ static void ps3_hash_invalidate(unsigned long hash, unsigned long vpn,
+ 	return;
+ }
  
++static long ps3_hash_updatepp(unsigned long hash,
++			      unsigned long newpp, unsigned long vpn,
++			      int psize, int apsize, int ssize,
++			      unsigned long inv_flags)
++{
++	long slot;
++	unsigned long flags;
++	unsigned long want_v;
++
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
++	spin_lock_irqsave(&ps3_htab_lock, flags);
++
++	slot = ps3_hpte_find(hash, want_v);
++	if (slot < 0)
++		goto err_out;
++	/*
++	 * entry found, just invalidate it
++	 */
++	lv1_write_htab_entry(PS3_LPAR_VAS_ID_CURRENT, slot, 0, 0);
++	/*
++	 * We just invalidate instead of updating pp. Hence
++	 * return -1;
++	 */
++err_out:
++	spin_unlock_irqrestore(&ps3_htab_lock, flags);
++	return -1;
++}
++
+ void __init ps3_hpte_init(unsigned long htab_size)
+ {
+ 	mmu_hash_ops.hpte_invalidate = ps3_hpte_invalidate;
+ 	mmu_hash_ops.hash_invalidate = ps3_hash_invalidate;
+ 	mmu_hash_ops.hpte_updatepp = ps3_hpte_updatepp;
++	mmu_hash_ops.hash_updatepp = ps3_hash_updatepp;
+ 	mmu_hash_ops.hpte_updateboltedpp = ps3_hpte_updateboltedpp;
+ 	mmu_hash_ops.hpte_insert = ps3_hpte_insert;
+ 	mmu_hash_ops.hpte_remove = ps3_hpte_remove;
 diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index e366252e0e93..d32469e40bbc 100644
+index d32469e40bbc..511a2e9ed9a0 100644
 --- a/arch/powerpc/platforms/pseries/lpar.c
 +++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -580,14 +580,14 @@ static int pSeries_lpar_hpte_removebolted(unsigned long ea,
- static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
- {
- 	unsigned long vpn;
--	unsigned long i, pix, rc;
-+	unsigned long i, rc;
- 	unsigned long flags = 0;
- 	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
- 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
- 	unsigned long param[PLPAR_HCALL9_BUFSIZE];
--	unsigned long hash, index, shift, hidx, slot;
-+	unsigned long index, shift;
- 	real_pte_t pte;
--	int psize, ssize;
-+	int psize, ssize, pix;
+@@ -376,6 +376,36 @@ static long pSeries_lpar_hpte_find(unsigned long vpn, int psize, int ssize)
+ 	return slot;
+ }
  
- 	if (lock_tlbie)
- 		spin_lock_irqsave(&pSeries_lpar_tlbie_lock, flags);
-@@ -599,12 +599,11 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
- 		vpn = batch->vpn[i];
- 		pte = batch->pte[i];
- 		pte_iterate_hashed_subpages(pte, psize, vpn, index, shift) {
--			hash = hpt_hash(vpn, shift, ssize);
--			hidx = __rpte_to_hidx(pte, index);
--			if (hidx & _PTEIDX_SECONDARY)
--				hash = ~hash;
--			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--			slot += hidx & _PTEIDX_GROUP_IX;
-+			long slot;
++static long pSeries_lpar_hash_updatepp(unsigned long hash,
++				       unsigned long newpp,
++				       unsigned long vpn,
++				       int psize, int apsize,
++				       int ssize, unsigned long inv_flags)
++{
++	long slot;
++	unsigned long lpar_rc;
++	unsigned long flags = (newpp & 7) | H_AVPN;
++	unsigned long want_v;
 +
-+			slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
-+			if (slot < 0)
-+				continue;
- 			if (!firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
- 				/*
- 				 * lpar doesn't use the passed actual page size
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
++
++	pr_devel("    update: avpnv=%016lx, hash=%016lx, f=%lx, psize: %d ...",
++		 want_v, hash, flags, psize);
++
++	slot = __pSeries_lpar_hpte_find(hash, want_v);
++	if (slot < 0)
++		return -1;
++
++	lpar_rc = plpar_pte_protect(flags, slot, want_v);
++	if (lpar_rc == H_NOT_FOUND) {
++		pr_devel("not found !\n");
++		return -1;
++	}
++	pr_devel("ok\n");
++	BUG_ON(lpar_rc != H_SUCCESS);
++
++	return 0;
++}
+ 
+ static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
+ 					     unsigned long ea,
+@@ -784,6 +814,7 @@ void __init hpte_init_pseries(void)
+ 	mmu_hash_ops.hpte_invalidate	 = pSeries_lpar_hpte_invalidate;
+ 	mmu_hash_ops.hash_invalidate	 = pSeries_lpar_hash_invalidate;
+ 	mmu_hash_ops.hpte_updatepp	 = pSeries_lpar_hpte_updatepp;
++	mmu_hash_ops.hash_updatepp	 = pSeries_lpar_hash_updatepp;
+ 	mmu_hash_ops.hpte_updateboltedpp = pSeries_lpar_hpte_updateboltedpp;
+ 	mmu_hash_ops.hpte_insert	 = pSeries_lpar_hpte_insert;
+ 	mmu_hash_ops.hpte_remove	 = pSeries_lpar_hpte_remove;
 -- 
 2.13.6
