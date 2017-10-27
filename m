@@ -3,31 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVkD4XNCzDrbn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVkF16tXzDrcR
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:09:08 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9R492KZ091623
+ v9R495tg140054
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:09:06 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2duvcejpmp-1
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dusbaadn8-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:09:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:09:06 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 26 Oct 2017 22:09:05 -0600
+ Thu, 26 Oct 2017 22:09:00 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 03/16] powerpc/pseries: Update hpte find helper to take hash
- value
-Date: Fri, 27 Oct 2017 09:38:20 +0530
+Subject: [PATCH 02/16] powerpc/mm: Update native_hpte_find to return hash pte
+Date: Fri, 27 Oct 2017 09:38:19 +0530
 In-Reply-To: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20171027040833.3644-4-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20171027040833.3644-3-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,82 +36,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The helper now also does secondary hash search so that we can use this in other
+The helper now also does a secondary hash search so that we can use this in other
 functions.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/lpar.c | 28 +++++++++++++++++-----------
- 1 file changed, 17 insertions(+), 11 deletions(-)
+ arch/powerpc/mm/hash_native_64.c | 73 ++++++++++++++++++++++++----------------
+ 1 file changed, 44 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 495ba4e7336d..edab68d9f9f3 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -328,15 +328,21 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
- 	return 0;
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 3848af167df9..496b1680ba24 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -351,32 +351,49 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
+ 	return ret;
  }
  
--static long __pSeries_lpar_hpte_find(unsigned long want_v, unsigned long hpte_group)
-+static long __pSeries_lpar_hpte_find(unsigned long hash, unsigned long want_v)
+-static long native_hpte_find(unsigned long vpn, int psize, int ssize)
++/* returns a locked hash pte */
++struct hash_pte *native_hpte_find(unsigned long hash, unsigned long vpn,
++				  unsigned long bpsize, unsigned long ssize)
  {
- 	long lpar_rc;
- 	unsigned long i, j;
-+	unsigned long hpte_group;
++	int i;
++	unsigned long hpte_v;
+ 	struct hash_pte *hptep;
+-	unsigned long hash;
+-	unsigned long i;
+-	long slot;
+-	unsigned long want_v, hpte_v;
+-
+-	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
+-	want_v = hpte_encode_avpn(vpn, psize, ssize);
++	unsigned long want_v, slot;
 +	bool secondary_search = false;
- 	struct {
- 		unsigned long pteh;
- 		unsigned long ptel;
- 	} ptes[4];
  
-+	/* first check primary */
-+	hpte_group = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-	/* Bolted mappings are only ever in the primary group */
++	want_v = hpte_encode_avpn(vpn, bpsize, ssize);
+ 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-	for (i = 0; i < HPTES_PER_GROUP; i++) {
+-		hptep = htab_address + slot;
 +
++	/*
++	 * search for hpte in the primary group
++	 */
 +search_again:
- 	for (i = 0; i < HPTES_PER_GROUP; i += 4, hpte_group += 4) {
++	hptep = htab_address + slot;
++	for (i = 0; i < HPTES_PER_GROUP; i++, hptep++) {
++		/* check locklessly first */
+ 		hpte_v = be64_to_cpu(hptep->v);
+ 		if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 			hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
++		if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID))
++			continue;
  
- 		lpar_rc = plpar_pte_read_4(0, hpte_group, (void *)ptes);
-@@ -346,31 +352,31 @@ static long __pSeries_lpar_hpte_find(unsigned long want_v, unsigned long hpte_gr
- 		for (j = 0; j < 4; j++) {
- 			if (HPTE_V_COMPARE(ptes[j].pteh, want_v) &&
- 			    (ptes[j].pteh & HPTE_V_VALID))
--				return i + j;
-+				return hpte_group + j;
- 		}
+-		if (HPTE_V_COMPARE(hpte_v, want_v) && (hpte_v & HPTE_V_VALID))
+-			/* HPTE matches */
+-			return slot;
+-		++slot;
++		native_lock_hpte(hptep);
++		hpte_v = be64_to_cpu(hptep->v);
++		if (cpu_has_feature(CPU_FTR_ARCH_300))
++			hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
++		if (unlikely(!HPTE_V_COMPARE(hpte_v, want_v) ||
++			     !(hpte_v & HPTE_V_VALID)))
++			native_unlock_hpte(hptep);
++		else
++			return hptep;
  	}
 -
+-	return -1;
 +	if (!secondary_search) {
-+		hpte_group = (~hash & htab_hash_mask) * HPTES_PER_GROUP;
++		/* Search for hpte in the secondary group */
++		slot = (~hash & htab_hash_mask) * HPTES_PER_GROUP;
 +		secondary_search = true;
 +		goto search_again;
 +	}
- 	return -1;
++	return NULL;
  }
  
- static long pSeries_lpar_hpte_find(unsigned long vpn, int psize, int ssize)
+ /*
+@@ -389,23 +406,22 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
+ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
+ 				       int psize, int ssize)
  {
- 	long slot;
--	unsigned long hash;
--	unsigned long want_v;
--	unsigned long hpte_group;
-+	unsigned long hash, want_v;
+-	unsigned long vpn;
+-	unsigned long vsid;
+-	long slot;
++	unsigned long hash;
++	unsigned long vpn, vsid;
+ 	struct hash_pte *hptep;
  
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
- 	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 	vsid = get_kernel_vsid(ea, ssize);
+ 	vpn = hpt_vpn(ea, vsid, ssize);
 -
--	/* Bolted entries are always in the primary group */
--	hpte_group = (hash & htab_hash_mask) * HPTES_PER_GROUP;
--	slot = __pSeries_lpar_hpte_find(want_v, hpte_group);
-+	slot = __pSeries_lpar_hpte_find(hash, want_v);
- 	if (slot < 0)
- 		return -1;
--	return hpte_group + slot;
-+	return slot;
- }
+-	slot = native_hpte_find(vpn, psize, ssize);
+-	if (slot == -1)
++	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
++	hptep = native_hpte_find(hash, vpn, psize, ssize);
++	if (!hptep)
+ 		panic("could not find page to bolt\n");
+-	hptep = htab_address + slot;
  
-+
- static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
- 					     unsigned long ea,
- 					     int psize, int ssize)
+ 	/* Update the HPTE */
+ 	hptep->r = cpu_to_be64((be64_to_cpu(hptep->r) &
+ 				~(HPTE_R_PPP | HPTE_R_N)) |
+ 			       (newpp & (HPTE_R_PPP | HPTE_R_N)));
++	native_unlock_hpte(hptep);
+ 	/*
+ 	 * Ensure it is out of the tlb too. Bolted entries base and
+ 	 * actual page size will be same.
+@@ -422,18 +438,17 @@ static int native_hpte_removebolted(unsigned long ea, int psize, int ssize)
+ {
+ 	unsigned long vpn;
+ 	unsigned long vsid;
+-	long slot;
++	unsigned long hash;
+ 	struct hash_pte *hptep;
+ 
+ 	vsid = get_kernel_vsid(ea, ssize);
+ 	vpn = hpt_vpn(ea, vsid, ssize);
++	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
+ 
+-	slot = native_hpte_find(vpn, psize, ssize);
+-	if (slot == -1)
++	hptep = native_hpte_find(hash, vpn, psize, ssize);
++	if (!hptep)
+ 		return -ENOENT;
+ 
+-	hptep = htab_address + slot;
+-
+ 	VM_WARN_ON(!(be64_to_cpu(hptep->v) & HPTE_V_BOLTED));
+ 
+ 	/* Invalidate the hpte */
 -- 
 2.13.6
