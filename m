@@ -3,30 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVlN0SzkzDrbr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:10:07 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVlS4HLHzDrcj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:10:12 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9R4A1Gv023269
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:05 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dupjy9cah-1
+ v9R492IF036380
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:10 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2duuqmvm1c-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:01 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:10:10 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 26 Oct 2017 22:09:36 -0600
+ Thu, 26 Oct 2017 22:10:09 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 09/16] powerpc/mm: Add new firmware feature HASH API
-Date: Fri, 27 Oct 2017 09:38:26 +0530
+Subject: [PATCH 15/16] powerpc/mm/pseries: Move slot based bulk remove to
+ helper
+Date: Fri, 27 Oct 2017 09:38:32 +0530
 In-Reply-To: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20171027040833.3644-10-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20171027040833.3644-16-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,76 +37,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will use this feature to check whether hypervisor implements hash based
-remove and protect hcalls
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/firmware.h       | 3 ++-
- arch/powerpc/kvm/powerpc.c                | 4 ++++
- arch/powerpc/platforms/pseries/firmware.c | 1 +
- include/uapi/linux/kvm.h                  | 1 +
- 4 files changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/lpar.c | 51 +++++++++++++++++++++--------------
+ 1 file changed, 31 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 8645897472b1..152d704ac3c3 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -51,6 +51,7 @@
- #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
- #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
- #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
-+#define FW_FEATURE_HASH_API	ASM_CONST(0x0000000400000000)
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 41512aaa8c8e..4ea9224cbeb6 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -632,6 +632,34 @@ static int pSeries_lpar_hpte_removebolted(unsigned long ea,
+ 	return 0;
+ }
  
- #ifndef __ASSEMBLY__
- 
-@@ -67,7 +68,7 @@ enum {
- 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
- 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
- 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
--		FW_FEATURE_HPT_RESIZE,
-+		FW_FEATURE_HPT_RESIZE | FW_FEATURE_HASH_API,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 3480faaf1ef8..6fb91198dc90 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -637,6 +637,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		/* Disable this on POWER9 until code handles new HPTE format */
- 		r = !!hv_enabled && !cpu_has_feature(CPU_FTR_ARCH_300);
- 		break;
-+	case KVM_CAP_SPAPR_HASH_API:
-+		/* Only enable for HV kvm */
-+		r = is_kvmppc_hv_enabled(kvm);
-+		break;
- #endif
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	case KVM_CAP_PPC_FWNMI:
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 63cc82ad58ac..32081d4406e8 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -65,6 +65,7 @@ hypertas_fw_features_table[] = {
- 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
- 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
- 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
-+	{FW_FEATURE_HASH_API,		"hcall-hash-api"},
- };
- 
- /* Build up the firmware features bitmask using the contents of
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index 838887587411..780433b1f179 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -930,6 +930,7 @@ struct kvm_ppc_resize_hpt {
- #define KVM_CAP_PPC_SMT_POSSIBLE 147
- #define KVM_CAP_HYPERV_SYNIC2 148
- #define KVM_CAP_HYPERV_VP_INDEX 149
-+#define KVM_CAP_SPAPR_HASH_API 150
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
++static int plpar_bluk_remove(unsigned long *param, int index, unsigned long slot,
++			     unsigned long vpn, unsigned long psize,
++			     unsigned long ssize, int local)
++{
++	unsigned long rc;
++	if (!firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
++		/*
++		 * lpar doesn't use the passed actual page size
++		 */
++		pSeries_lpar_hpte_invalidate(slot, vpn, psize,
++					     0, ssize, local);
++	} else {
++		param[index] = HBR_REQUEST | HBR_AVPN | slot;
++		param[index+1] = hpte_encode_avpn(vpn, psize,
++						ssize);
++		index += 2;
++		if (index == 8) {
++			rc = plpar_hcall9(H_BULK_REMOVE, param,
++					  param[0], param[1], param[2],
++					  param[3], param[4], param[5],
++					  param[6], param[7]);
++			BUG_ON(rc != H_SUCCESS);
++			index = 0;
++		}
++	}
++	return index;
++}
++
+ /*
+  * Take a spinlock around flushes to avoid bouncing the hypervisor tlbie
+  * lock.
+@@ -661,29 +689,12 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
+ 			slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
+ 			if (slot < 0)
+ 				continue;
+-			if (!firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
+-				/*
+-				 * lpar doesn't use the passed actual page size
+-				 */
+-				pSeries_lpar_hpte_invalidate(slot, vpn, psize,
+-							     0, ssize, local);
+-			} else {
+-				param[pix] = HBR_REQUEST | HBR_AVPN | slot;
+-				param[pix+1] = hpte_encode_avpn(vpn, psize,
+-								ssize);
+-				pix += 2;
+-				if (pix == 8) {
+-					rc = plpar_hcall9(H_BULK_REMOVE, param,
+-						param[0], param[1], param[2],
+-						param[3], param[4], param[5],
+-						param[6], param[7]);
+-					BUG_ON(rc != H_SUCCESS);
+-					pix = 0;
+-				}
+-			}
++			pix = plpar_bluk_remove(param, pix, slot, vpn,
++						psize, ssize, local);
+ 		} pte_iterate_hashed_end();
+ 	}
+ 	if (pix) {
++		/* We have a flush pending */
+ 		param[pix] = HBR_END;
+ 		rc = plpar_hcall9(H_BULK_REMOVE, param, param[0], param[1],
+ 				  param[2], param[3], param[4], param[5],
 -- 
 2.13.6
