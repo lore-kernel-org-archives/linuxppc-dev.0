@@ -1,28 +1,30 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qk0-x22a.google.com (mail-qk0-x22a.google.com
- [IPv6:2607:f8b0:400d:c09::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNc0v2WjYzDqjm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 19:07:10 +1100 (AEDT)
-Received: by mail-qk0-x22a.google.com with SMTP id l194so7354446qke.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 01:07:10 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAOSf1CGx2E3dOPPSrKOxHahGcu8BjRq02xeyEitPmiwoFcdo+w@mail.gmail.com>
-References: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
- <CAKTCnz=6ab=TCWFOknvAq2QxoXbTMhDfQMt5wOFzzUoYJRnUMA@mail.gmail.com>
- <AF0CC512-DC7D-45EB-B1AB-7132B48C38E1@raithlin.com>
- <20171023135338.58d0ab31@MiWiFi-R3-srv>
- <C65BF19B-49B3-480E-9435-17949645B992@raithlin.com>
- <CAOSf1CGx2E3dOPPSrKOxHahGcu8BjRq02xeyEitPmiwoFcdo+w@mail.gmail.com>
-From: Oliver <oohall@gmail.com>
-Date: Fri, 27 Oct 2017 19:07:07 +1100
-Message-ID: <CAOSf1CHWZfEyK-oM+4dPpamX-XbxM13mtHjKoYWGEdmQ7wCd_g@mail.gmail.com>
-Subject: Re: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
-To: Stephen Bates <sbates@raithlin.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, Logan Gunthorpe <logang@deltatee.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, aik@ozlabs.ru
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNdyG6hzFzDqfh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 20:35:01 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9R9YY5P039346
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 05:34:59 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dux744ncr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 05:34:58 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Fri, 27 Oct 2017 10:34:56 +0100
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ maddy@linux.vnet.ibm.com, anju@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/kernel/sysfs: Export ldbar spr to sysfs
+Date: Fri, 27 Oct 2017 15:04:50 +0530
+Message-Id: <1509096890-22655-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 26, 2017 at 1:34 AM, Oliver <oohall@gmail.com> wrote:
-> On Tue, Oct 24, 2017 at 7:17 AM, Stephen  Bates <sbates@raithlin.com> wro=
-te:
->>
->>> [    3.537780] lpar: Attempting to resize HPT to shift 21
->>> [    3.539251] Unable to resize hash page table to target order 21: -1
->>> [    3.541079] Unable to create mapping for hot added memory 0xc0002100=
-00000000..0xc000210004000000: -2
->>
->>> For #1 above please check if your qemu supports H_RESIZE_HPT_* hcalls?
->>
->> Balbir do you have any suggestions as to how to test for this support? N=
-ote I am running this on my x86_64 host so there is no virtualization hardw=
-are in my QEMU. My qemu is very recent (QEMU emulator version 2.10.50 (v2.1=
-0.0-1026-gd8f932c-dirty)).
->
-> Honestly I'd just ignore the resize error. The hash table stores PTE
-> entries so it should be sized based on the amount of memory in the
-> system. If it's drastically under sized there'll be a performance hit,
-> but  everything should still work.
->
->>> For create mapping failures, the rc is -ENOENT. Can you help debug this=
- further? We could do hcall tracing or enable debugging.
->>
->> Sure I can help debug. My original email also had all you needed to recr=
-eate this issue so that=E2=80=99s an option too?
->
-> I'm not too sure what's happening there. My hunch is that the
-> hypervisor (qemu in this case) is rejecting the attempt to map the PCI
-> device MMIO space as cachable memory. On bare metal systems this can
-> result in cache paradoxes which will kill the system so the hypervisor
-> has an incentive to prevent that situation.
+Add ldbar spr to sysfs. The spr will hold thread level In-Memory Collection (IMC)
+counter configuration data.
 
-So I had a deeper look and found the hypervisor interface spec (PAPR)
-says the hypervisor should reject attempts to map memory with
-inappropriate attributes for the type of memory being mapped. The
-pseries model in qemu interprets this by only allowing cacheable
-mappings on memory ranges that it considers as RAM. While KVM will
-allow any mappings provided they have the same cachable attribute as
-the hypervisor's mapping. Either way trying to use
-devm_memremap_pages() like this on pseries is fundementally broken.
-The alternative approach you mentioned that uses ioremap() should work
-fine though.
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Acked-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/sysfs.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Also, Alexy (+cc) said he was interested in trying this on some real
-hardware. Is there a test suite for p2pmem floating around that he can
-use?
-
-Thanks,
-Oliver
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 4437c70c7c2b..8efcaece4796 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -466,6 +466,7 @@ static ssize_t __used \
+ #ifdef HAS_PPC_PMC_CLASSIC
+ SYSFS_PMCSETUP(mmcr0, SPRN_MMCR0);
+ SYSFS_PMCSETUP(mmcr1, SPRN_MMCR1);
++SYSFS_PMCSETUP(ldbar, SPRN_LDBAR);
+ SYSFS_PMCSETUP(pmc1, SPRN_PMC1);
+ SYSFS_PMCSETUP(pmc2, SPRN_PMC2);
+ SYSFS_PMCSETUP(pmc3, SPRN_PMC3);
+@@ -492,6 +493,7 @@ SYSFS_SPRSETUP(pir, SPRN_PIR);
+   Lets be conservative and default to pseries.
+ */
+ static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
++static DEVICE_ATTR(ldbar, 0600, show_ldbar, store_ldbar);
+ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+ static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
+ static DEVICE_ATTR(pir, 0400, show_pir, NULL);
+@@ -757,6 +759,9 @@ static int register_cpu_online(unsigned int cpu)
+ 			device_create_file(s, &pmc_attrs[i]);
+ 
+ #ifdef CONFIG_PPC64
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		device_create_file(s, &dev_attr_ldbar);
++
+ 	if (cpu_has_feature(CPU_FTR_MMCRA))
+ 		device_create_file(s, &dev_attr_mmcra);
+ 
+@@ -842,6 +847,9 @@ static int unregister_cpu_online(unsigned int cpu)
+ 			device_remove_file(s, &pmc_attrs[i]);
+ 
+ #ifdef CONFIG_PPC64
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		device_remove_file(s, &dev_attr_ldbar);
++
+ 	if (cpu_has_feature(CPU_FTR_MMCRA))
+ 		device_remove_file(s, &dev_attr_mmcra);
+ 
+-- 
+2.14.1
