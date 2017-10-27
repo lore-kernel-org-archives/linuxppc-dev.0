@@ -1,37 +1,36 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNhcY04fzzDqfh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 22:34:52 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9RBYlxX141527
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 07:34:50 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dv00055q4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 07:34:49 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 27 Oct 2017 12:34:47 +0100
-Date: Fri, 27 Oct 2017 17:04:42 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/4] powerpc/kprobes: refactor kprobe_lookup_name for
- safer string operations
-References: <2a4b854c7fc11db576e3b7ff6dcfda94c64d2842.1508776485.git.naveen.n.rao@linux.vnet.ibm.com>
- <88995231cc2266dd11fac018bb2027bfbf4d255b.1508776485.git.naveen.n.rao@linux.vnet.ibm.com>
- <20171026013551.b48917de3f85993b6fee70e7@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNxrG6lvYzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2017 08:30:54 +1100 (AEDT)
+Date: Fri, 27 Oct 2017 16:30:39 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Juan Alvarez <jjalvare@linux.vnet.ibm.com>
+Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Steven Royer <seroyer@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
+ benh@kernel.crashing.org, paulus@samba.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "Juan J . Alvarez" <jjalvare@us.ibm.com>,
+ Bodong Wang <bodong@mellanox.com>, Eli Cohen <eli@mellanox.com>,
+ Saeed Mahameed <saeedm@mellanox.com>
+Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
+Message-ID: <20171027213039.GB9235@bhelgaas-glaptop.roam.corp.google.com>
+References: <88eab212351a662dda330071d9afe9dc@linux.vnet.ibm.com>
+ <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
+ <20171013120558.1a129183@t450s.home>
+ <24fdec01-8df4-f027-0b3c-0472a2d73946@linux.vnet.ibm.com>
+ <20171017135123.GA5641@bhelgaas-glaptop.roam.corp.google.com>
+ <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
+ <20171017162621.GB5641@bhelgaas-glaptop.roam.corp.google.com>
+ <f8fbbd56-f165-0a17-a24a-2b021f7fa238@linux.vnet.ibm.com>
+ <20171017185242.GG5641@bhelgaas-glaptop.roam.corp.google.com>
+ <eb1ac136-a054-ea2b-2368-af740e0c23d4@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171026013551.b48917de3f85993b6fee70e7@kernel.org>
-Message-Id: <20171027113442.di6746kkwb7f74pc@naverao1-tp.localdomain>
+In-Reply-To: <eb1ac136-a054-ea2b-2368-af740e0c23d4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,118 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/10/25 04:35PM, Masami Hiramatsu wrote:
-> On Mon, 23 Oct 2017 22:07:41 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Tue, Oct 17, 2017 at 06:13:35PM -0500, Juan Alvarez wrote:
+> On 10/17/17 1:52 PM, Bjorn Helgaas wrote:
+> > I'm suggesting that maybe there should be a generic way to prevent
+> > binding to VF devices that works for everybody and doesn't require any
+> > arch-specific code at all.
 > 
-> > Use safer string manipulation functions when dealing with a
-> > user-provided string in kprobe_lookup_name().
-> > 
+> The patch that you have suggested in kernel 4.12 is also a generic way.
 > 
-> What would you mean "safer" here? using strnchr()?
-> Could you please show at least an example case that causes problem in original code.
+> https://marc.info/?l=linux-kernel&m=149002335105804&w=2
 
-Yes, essentially about using bounded string operations. Since the 'name' 
-parameter is provided by user, it's better to ensure it is within 
-limits. Granted, this isn't a big deal since user needs to be root for 
-accessing this API, but we felt it is good to clean up this code.
+The patch mentioned above is now upstream:
 
-> And have one comment below:
-> 
-> > Reported-by: David Laight <David.Laight@ACULAB.COM>
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/kernel/kprobes.c | 47 ++++++++++++++++++-------------------------
-> >  1 file changed, 20 insertions(+), 27 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> > index a14c61855705..bbb4795660f8 100644
-> > --- a/arch/powerpc/kernel/kprobes.c
-> > +++ b/arch/powerpc/kernel/kprobes.c
-> > @@ -53,7 +53,7 @@ bool arch_within_kprobe_blacklist(unsigned long addr)
-> >  
-> >  kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
-> >  {
-> > -	kprobe_opcode_t *addr;
-> > +	kprobe_opcode_t *addr = NULL;
-> >  
-> >  #ifdef PPC64_ELF_ABI_v2
-> >  	/* PPC64 ABIv2 needs local entry point */
-> > @@ -85,36 +85,29 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
-> >  	 * Also handle <module:symbol> format.
-> >  	 */
-> >  	char dot_name[MODULE_NAME_LEN + 1 + KSYM_NAME_LEN];
-> > -	const char *modsym;
-> >  	bool dot_appended = false;
-> > -	if ((modsym = strchr(name, ':')) != NULL) {
-> > -		modsym++;
-> > -		if (*modsym != '\0' && *modsym != '.') {
-> > -			/* Convert to <module:.symbol> */
-> > -			strncpy(dot_name, name, modsym - name);
-> > -			dot_name[modsym - name] = '.';
-> > -			dot_name[modsym - name + 1] = '\0';
-> > -			strncat(dot_name, modsym,
-> > -				sizeof(dot_name) - (modsym - name) - 2);
-> > -			dot_appended = true;
-> > -		} else {
-> > -			dot_name[0] = '\0';
-> > -			strncat(dot_name, name, sizeof(dot_name) - 1);
-> > -		}
-> > -	} else if (name[0] != '.') {
-> > -		dot_name[0] = '.';
-> > -		dot_name[1] = '\0';
-> > -		strncat(dot_name, name, KSYM_NAME_LEN - 2);
-> > +	const char *c;
-> > +	ssize_t ret = 0;
-> > +	int len = 0;
-> > +
-> > +	if ((c = strnchr(name, MODULE_NAME_LEN, ':')) != NULL) {
-> > +		c++;
-> > +		len = c - name;
-> > +		memcpy(dot_name, name, len);
-> > +	} else
-> > +		c = name;
-> > +
-> > +	if (*c != '\0' && *c != '.') {
-> > +		dot_name[len++] = '.';
-> >  		dot_appended = true;
-> 
-> It is odd, you can call kallsyms_lookup_name(dot_name) here.
+http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=0e7df22401a3
 
-We'll then have to duplicate the strscpy() here.
+> Perhaps we can use the same constructs that this patch uses at our level.
+> Nonetheless, that will take a rework to this patch and possibly an export
+> of a function to set drivers_autoprobe globally. I know that was frowned
+> upon on first email thread. Let me know if this is an acceptable
+> solution.
 
-Thanks for the review,
-- Naveen
+I would definitely like to see you use a solution that is somehow
+connected with the sriov->drivers_autoprobe mechanism added by
+0e7df22401a3.
 
-> 
-> > -	} else {
-> > -		dot_name[0] = '\0';
-> > -		strncat(dot_name, name, KSYM_NAME_LEN - 1);
-> >  	}
-> > -	addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-> > -	if (!addr && dot_appended) {
-> > -		/* Let's try the original non-dot symbol lookup	*/
-> > +	ret = strscpy(dot_name + len, c, KSYM_NAME_LEN);
-> > +	if (ret > 0)
-> > +		addr = (kprobe_opcode_t *)kallsyms_lookup_name(dot_name);
-> > +
-> > +	/* Fallback to the original non-dot symbol lookup */
-> > +	if (!addr && dot_appended)
-> >  		addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
-> 
-> Then we can remove dot_appended.
-> 
-> Thank you,
-> 
-> > -	}
-> >  #else
-> >  	addr = (kprobe_opcode_t *)kallsyms_lookup_name(name);
-> >  #endif
-> > -- 
-> > 2.14.2
-> > 
-> 
-> 
-> -- 
-> Masami Hiramatsu <mhiramat@kernel.org>
-> 
+0e7df22401a3 is a per-PF solution, and you're looking for a
+system-wide switch.  I could imagine a system-wide flag exposed in
+sysfs and used by pci_device_can_probe().  Or maybe some arch hook in
+the pci_device_add() path that clears sriov->drivers_autoprobe for
+every PF.
+
+I think the important thing is that it is coordinated as much as
+possible with other driver binding controls and not unnecessarily
+arch-dependent.
+
+Bjorn
