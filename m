@@ -1,21 +1,28 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qk0-x22a.google.com (mail-qk0-x22a.google.com
+ [IPv6:2607:f8b0:400d:c09::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNXmz6k8dzDrbl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 16:41:39 +1100 (AEDT)
-Date: Fri, 27 Oct 2017 16:41:36 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/16] Remove hash page table slot tracking from linux PTE
-Message-ID: <20171027054136.GC27483@fergus.ozlabs.ibm.com>
-References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
- <20171027043430.GA27483@fergus.ozlabs.ibm.com>
- <adf2d270-29df-701f-206e-0d8a35084e47@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNc0v2WjYzDqjm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 19:07:10 +1100 (AEDT)
+Received: by mail-qk0-x22a.google.com with SMTP id l194so7354446qke.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 01:07:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <adf2d270-29df-701f-206e-0d8a35084e47@linux.vnet.ibm.com>
+In-Reply-To: <CAOSf1CGx2E3dOPPSrKOxHahGcu8BjRq02xeyEitPmiwoFcdo+w@mail.gmail.com>
+References: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
+ <CAKTCnz=6ab=TCWFOknvAq2QxoXbTMhDfQMt5wOFzzUoYJRnUMA@mail.gmail.com>
+ <AF0CC512-DC7D-45EB-B1AB-7132B48C38E1@raithlin.com>
+ <20171023135338.58d0ab31@MiWiFi-R3-srv>
+ <C65BF19B-49B3-480E-9435-17949645B992@raithlin.com>
+ <CAOSf1CGx2E3dOPPSrKOxHahGcu8BjRq02xeyEitPmiwoFcdo+w@mail.gmail.com>
+From: Oliver <oohall@gmail.com>
+Date: Fri, 27 Oct 2017 19:07:07 +1100
+Message-ID: <CAOSf1CHWZfEyK-oM+4dPpamX-XbxM13mtHjKoYWGEdmQ7wCd_g@mail.gmail.com>
+Subject: Re: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
+To: Stephen Bates <sbates@raithlin.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, Logan Gunthorpe <logang@deltatee.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, aik@ozlabs.ru
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +32,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 27, 2017 at 10:57:13AM +0530, Aneesh Kumar K.V wrote:
-> 
-> 
-> On 10/27/2017 10:04 AM, Paul Mackerras wrote:
-> >How do we interpret these numbers?  Are they times, or speed?  Is
-> >larger better or worse?
-> 
-> Sorry for not including the details. They are time in seconds. Test case is
-> a modified mmap_bench included in powerpc/selftest.
-> 
-> >
-> >Can you give us the mean and standard deviation for each set of 5
-> >please?
-> >
-> 
-> powernv without patch
-> median= 51.432255
-> stdev = 0.370835
-> 
-> with patch
-> median = 50.739922
-> stdev = 0.06419662
-> 
-> pseries without patch
-> median = 116.617884
-> stdev = 3.04531023
-> 
-> with patch no hcall
-> median = 119.42494
-> stdev = 0.85874552
-> 
-> with patch and hcall
-> median = 117.735808
-> stdev = 2.7624151
+On Thu, Oct 26, 2017 at 1:34 AM, Oliver <oohall@gmail.com> wrote:
+> On Tue, Oct 24, 2017 at 7:17 AM, Stephen  Bates <sbates@raithlin.com> wro=
+te:
+>>
+>>> [    3.537780] lpar: Attempting to resize HPT to shift 21
+>>> [    3.539251] Unable to resize hash page table to target order 21: -1
+>>> [    3.541079] Unable to create mapping for hot added memory 0xc0002100=
+00000000..0xc000210004000000: -2
+>>
+>>> For #1 above please check if your qemu supports H_RESIZE_HPT_* hcalls?
+>>
+>> Balbir do you have any suggestions as to how to test for this support? N=
+ote I am running this on my x86_64 host so there is no virtualization hardw=
+are in my QEMU. My qemu is very recent (QEMU emulator version 2.10.50 (v2.1=
+0.0-1026-gd8f932c-dirty)).
+>
+> Honestly I'd just ignore the resize error. The hash table stores PTE
+> entries so it should be sized based on the amount of memory in the
+> system. If it's drastically under sized there'll be a performance hit,
+> but  everything should still work.
+>
+>>> For create mapping failures, the rc is -ENOENT. Can you help debug this=
+ further? We could do hcall tracing or enable debugging.
+>>
+>> Sure I can help debug. My original email also had all you needed to recr=
+eate this issue so that=E2=80=99s an option too?
+>
+> I'm not too sure what's happening there. My hunch is that the
+> hypervisor (qemu in this case) is rejecting the attempt to map the PCI
+> device MMIO space as cachable memory. On bare metal systems this can
+> result in cache paradoxes which will kill the system so the hypervisor
+> has an incentive to prevent that situation.
 
-So on powernv, the patch set *improves* performance by about 1.3%
-(almost 2 standard deviations).  Do we know why that is?
+So I had a deeper look and found the hypervisor interface spec (PAPR)
+says the hypervisor should reject attempts to map memory with
+inappropriate attributes for the type of memory being mapped. The
+pseries model in qemu interprets this by only allowing cacheable
+mappings on memory ranges that it considers as RAM. While KVM will
+allow any mappings provided they have the same cachable attribute as
+the hypervisor's mapping. Either way trying to use
+devm_memremap_pages() like this on pseries is fundementally broken.
+The alternative approach you mentioned that uses ioremap() should work
+fine though.
 
-On pseries, performance is about 2.4% worse without new hcalls, but
-that is less than 1 standard deviation.  With new hcalls, performance
-is 0.95% worse, only a third of a standard deviation.  I think we need
-to do more measurements to try to get a more accurate picture here.
+Also, Alexy (+cc) said he was interested in trying this on some real
+hardware. Is there a test suite for p2pmem floating around that he can
+use?
 
-Were the pseries numbers done on KVM or PowerVM?  Could you do a set
-of measurements on the other one too please?  (I assume the numbers
-with the new hcall were done on KVM, and can't be done on PowerVM.)
-
-Paul.
+Thanks,
+Oliver
