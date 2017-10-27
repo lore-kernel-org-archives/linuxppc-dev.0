@@ -1,16 +1,30 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3yNTCK0bSBzDrbl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 14:00:44 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: [PATCH kernel] vfio/spapr: Add trace points for map/unmap
-Date: Fri, 27 Oct 2017 14:00:08 +1100
-Message-Id: <20171027030008.17200-1-aik@ozlabs.ru>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yNVjy1d9zzDrbl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 15:08:53 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9R47kdA137528
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:08:50 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2duusgmdgs-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Oct 2017 00:08:50 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 26 Oct 2017 22:08:49 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 00/16] Remove hash page table slot tracking from linux PTE
+Date: Fri, 27 Oct 2017 09:38:17 +0530
+Message-Id: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,71 +34,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds trace_map/trace_unmap tracepoints to spapr driver. Type1 already
-uses these via the IOMMU API (iommu_map/__iommu_unmap).
+Hi,
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
+With hash translation mode we always tracked the hash pte slot details in linux page table.
+This occupied space in the linux page table and also limitted our ability to support
+linux features that require additional PTE bits. This series attempt to lift this
+limitation by not tracking slot number in linux page table. We still track slot details
+w.r.t Transparent Hugepage entries because an invalidate there requires us to go through
+all the 256 hash pte slots. So tracking whether hash page table entry is valid helps us in
+avoiding a lot of hcalls there. With THP entries we don't keep slot details in the primary
+linux page table entry but in the second half of page table. Hence tracking slot details
+for THP doesn't take up space in PTE.
 
-Example:
- qemu-system-ppc-8655  [096]   724.662740: unmap:                IOMMU: iova=0x000000003ffff000 size=4096 unmapped_size=4096
- qemu-system-ppc-8656  [104]   724.970912: map:                  IOMMU: iova=0x0800000000000000 paddr=0x00007ffef7ff0000 size=65536
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+Even though we don't track slot, for removing/updating hash page table entry, PAPR hcalls expect
+hash page table slot details. On pseries we find slot using H_READ hcall using H_READ_4 flags.
+This implies an additional 2 hcalls in the updatepp and remove paths. The patch series also
+attempt to limit the impact of this by adding new hcalls that does remove/update of hash page table
+entry using hash value instead of hash page table slot.
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 63112c36ab2d..4531486c77c6 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -22,6 +22,7 @@
- #include <linux/vmalloc.h>
- #include <linux/sched/mm.h>
- #include <linux/sched/signal.h>
-+#include <trace/events/iommu.h>
- 
- #include <asm/iommu.h>
- #include <asm/tce.h>
-@@ -502,17 +503,19 @@ static int tce_iommu_clear(struct tce_container *container,
- 		struct iommu_table *tbl,
- 		unsigned long entry, unsigned long pages)
- {
--	unsigned long oldhpa;
-+	unsigned long oldhpa, unmapped, firstentry = entry, totalpages = pages;
- 	long ret;
- 	enum dma_data_direction direction;
- 
--	for ( ; pages; --pages, ++entry) {
-+	for (unmapped = 0; pages; --pages, ++entry) {
- 		direction = DMA_NONE;
- 		oldhpa = 0;
- 		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
- 		if (ret)
- 			continue;
- 
-+		++unmapped;
-+
- 		if (direction == DMA_NONE)
- 			continue;
- 
-@@ -523,6 +526,9 @@ static int tce_iommu_clear(struct tce_container *container,
- 
- 		tce_iommu_unuse_page(container, oldhpa);
- 	}
-+	trace_unmap(firstentry << tbl->it_page_shift,
-+			totalpages << tbl->it_page_shift,
-+			unmapped << tbl->it_page_shift);
- 
- 	return 0;
- }
-@@ -965,6 +971,8 @@ static long tce_iommu_ioctl(void *iommu_data,
- 					direction);
- 
- 		iommu_flush_tce(tbl);
-+		if (!ret)
-+			trace_map(param.iova, param.vaddr, param.size);
- 
- 		return ret;
- 	}
+Below is the performance numbers observed when running a workload that does the below sequence
+
+for(5000) {
+mmap(128M)
+touch every page of 2048 page
+munmap()
+}
+
+The test is run with address randomization off, swap disabled in both host and guest.
+
+
+|------------+----------+---------------+--------------------------+-----------------------|
+| iterations | platform | without patch | With series and no hcall | With series and hcall |
+|------------+----------+---------------+--------------------------+-----------------------|
+|          1 | powernv  |               |                50.818343 |                       |
+|          2 | powernv  |               |                50.744123 |                       |
+|          3 | powernv  |               |                50.721603 |                       |
+|          4 | powernv  |               |                50.739922 |                       |
+|          5 | powernv  |               |                50.638555 |                       |
+|          1 | powernv  |     51.388249 |                          |                       |
+|          2 | powernv  |     51.789701 |                          |                       |
+|          3 | powernv  |     52.240394 |                          |                       |
+|          4 | powernv  |     51.432255 |                          |                       |
+|          5 | powernv  |     51.392947 |                          |                       |
+|------------+----------+---------------+--------------------------+-----------------------|
+|          1 | pseries  |               |                          |            123.154394 |
+|          2 | pseries  |               |                          |            122.253956 |
+|          3 | pseries  |               |                          |            117.666344 |
+|          4 | pseries  |               |                          |            117.681479 |
+|          5 | pseries  |               |                          |            117.735808 |
+|          1 | pseries  |               |               119.424940 |                       |
+|          2 | pseries  |               |               117.663078 |                       |
+|          3 | pseries  |               |               118.345584 |                       |
+|          4 | pseries  |               |               119.620934 |                       |
+|          5 | pseries  |               |               119.463185 |                       |
+|          1 | pseries  |    122.810867 |                          |                       |
+|          2 | pseries  |    115.760801 |                          |                       |
+|          3 | pseries  |    115.257030 |                          |                       |
+|          4 | pseries  |    116.617884 |                          |                       |
+|          5 | pseries  |    117.247036 |                          |                       |
+|------------+----------+---------------+--------------------------+-----------------------|
+
+-aneesh
+
+Aneesh Kumar K.V (16):
+  powerpc/mm/hash: Remove the superfluous bitwise operation when find
+    hpte group
+  powerpc/mm: Update native_hpte_find to return hash pte
+  powerpc/pseries: Update hpte find helper to take hash value
+  powerpc/mm: Add hash invalidate callback
+  powerpc/mm: use hash_invalidate for __kernel_map_pages()
+  powerpc/mm: Switch flush_hash_range to not use slot
+  powerpc/mm: Add hash updatepp callback
+  powerpc/mm/hash: Don't track hash pte slot number in linux page table.
+  powerpc/mm: Add new firmware feature HASH API
+  powerpc/kvm/hash: Implement HASH_REMOVE hcall
+  powerpc/kvm/hash: Implement HASH_PROTECT hcall
+  powerpc/kvm/hash: Implement HASH_BULK_REMOVE hcall
+  powerpc/mm/pseries: Use HASH_PROTECT hcall in guest
+  powerpc/mm/pseries: Use HASH_REMOVE hcall in guest
+  powerpc/mm/pseries: Move slot based bulk remove to helper
+  powerpc/mm/pseries: Use HASH_BULK_REMOVE hcall in guest
+
+ arch/powerpc/include/asm/book3s/64/hash-4k.h       |  16 +-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h      |  44 +--
+ arch/powerpc/include/asm/book3s/64/hash.h          |   5 +-
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h      |  12 +
+ arch/powerpc/include/asm/book3s/64/pgtable.h       |  26 --
+ arch/powerpc/include/asm/book3s/64/tlbflush-hash.h |   3 +-
+ arch/powerpc/include/asm/firmware.h                |   3 +-
+ arch/powerpc/include/asm/hvcall.h                  |   5 +-
+ arch/powerpc/include/asm/pgtable-be-types.h        |  10 -
+ arch/powerpc/include/asm/pgtable-types.h           |   9 -
+ arch/powerpc/include/asm/plpar_wrappers.h          |  23 ++
+ arch/powerpc/kvm/book3s_hv.c                       |   3 +
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c                | 297 ++++++++++++++++++---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   4 +
+ arch/powerpc/kvm/powerpc.c                         |   4 +
+ arch/powerpc/mm/dump_hashpagetable.c               |   2 +-
+ arch/powerpc/mm/dump_linuxpagetables.c             |  10 -
+ arch/powerpc/mm/hash64_4k.c                        |  17 +-
+ arch/powerpc/mm/hash64_64k.c                       | 124 +++------
+ arch/powerpc/mm/hash_native_64.c                   | 175 ++++++++----
+ arch/powerpc/mm/hash_utils_64.c                    |  75 ++----
+ arch/powerpc/mm/hugepage-hash64.c                  |   9 +-
+ arch/powerpc/mm/hugetlbpage-hash64.c               |  13 +-
+ arch/powerpc/mm/tlb_hash64.c                       |   9 +-
+ arch/powerpc/platforms/ps3/htab.c                  |  88 ++++++
+ arch/powerpc/platforms/pseries/firmware.c          |   1 +
+ arch/powerpc/platforms/pseries/lpar.c              | 196 +++++++++++---
+ include/uapi/linux/kvm.h                           |   1 +
+ 28 files changed, 760 insertions(+), 424 deletions(-)
+
 -- 
-2.11.0
+2.13.6
