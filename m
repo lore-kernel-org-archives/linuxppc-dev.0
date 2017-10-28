@@ -1,36 +1,28 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sbates@raithlin.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0126.outbound.protection.outlook.com [104.47.37.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yNxrG6lvYzDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2017 08:30:54 +1100 (AEDT)
-Date: Fri, 27 Oct 2017 16:30:39 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Juan Alvarez <jjalvare@linux.vnet.ibm.com>
-Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Steven Royer <seroyer@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
- benh@kernel.crashing.org, paulus@samba.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "Juan J . Alvarez" <jjalvare@us.ibm.com>,
- Bodong Wang <bodong@mellanox.com>, Eli Cohen <eli@mellanox.com>,
- Saeed Mahameed <saeedm@mellanox.com>
-Subject: Re: [PATCH v3 2/2] pseries/eeh: Add Pseries pcibios_bus_add_device
-Message-ID: <20171027213039.GB9235@bhelgaas-glaptop.roam.corp.google.com>
-References: <88eab212351a662dda330071d9afe9dc@linux.vnet.ibm.com>
- <11c15c773aefcc0490e197051c2eaf41@linux.vnet.ibm.com>
- <20171013120558.1a129183@t450s.home>
- <24fdec01-8df4-f027-0b3c-0472a2d73946@linux.vnet.ibm.com>
- <20171017135123.GA5641@bhelgaas-glaptop.roam.corp.google.com>
- <7e23c703-750b-b4f8-f252-0c872a40ae8a@linux.vnet.ibm.com>
- <20171017162621.GB5641@bhelgaas-glaptop.roam.corp.google.com>
- <f8fbbd56-f165-0a17-a24a-2b021f7fa238@linux.vnet.ibm.com>
- <20171017185242.GG5641@bhelgaas-glaptop.roam.corp.google.com>
- <eb1ac136-a054-ea2b-2368-af740e0c23d4@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yPY0J4vVdzDrVv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 07:54:53 +1100 (AEDT)
+From: "Stephen  Bates" <sbates@raithlin.com>
+To: Oliver <oohall@gmail.com>
+CC: Balbir Singh <bsingharora@gmail.com>, Logan Gunthorpe
+ <logang@deltatee.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "aik@ozlabs.ru" <aik@ozlabs.ru>
+Subject: Re: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
+Date: Sat, 28 Oct 2017 20:54:47 +0000
+Message-ID: <B75498AD-593B-45E0-AE9D-CA00C7A2885F@raithlin.com>
+References: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
+ <CAKTCnz=6ab=TCWFOknvAq2QxoXbTMhDfQMt5wOFzzUoYJRnUMA@mail.gmail.com>
+ <AF0CC512-DC7D-45EB-B1AB-7132B48C38E1@raithlin.com>
+ <20171023135338.58d0ab31@MiWiFi-R3-srv>
+ <C65BF19B-49B3-480E-9435-17949645B992@raithlin.com>
+ <CAOSf1CGx2E3dOPPSrKOxHahGcu8BjRq02xeyEitPmiwoFcdo+w@mail.gmail.com>
+ <CAOSf1CHWZfEyK-oM+4dPpamX-XbxM13mtHjKoYWGEdmQ7wCd_g@mail.gmail.com>
+In-Reply-To: <CAOSf1CHWZfEyK-oM+4dPpamX-XbxM13mtHjKoYWGEdmQ7wCd_g@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <eb1ac136-a054-ea2b-2368-af740e0c23d4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,38 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 17, 2017 at 06:13:35PM -0500, Juan Alvarez wrote:
-> On 10/17/17 1:52 PM, Bjorn Helgaas wrote:
-> > I'm suggesting that maybe there should be a generic way to prevent
-> > binding to VF devices that works for everybody and doesn't require any
-> > arch-specific code at all.
-> 
-> The patch that you have suggested in kernel 4.12 is also a generic way.
-> 
-> https://marc.info/?l=linux-kernel&m=149002335105804&w=2
-
-The patch mentioned above is now upstream:
-
-http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=0e7df22401a3
-
-> Perhaps we can use the same constructs that this patch uses at our level.
-> Nonetheless, that will take a rework to this patch and possibly an export
-> of a function to set drivers_autoprobe globally. I know that was frowned
-> upon on first email thread. Let me know if this is an acceptable
-> solution.
-
-I would definitely like to see you use a solution that is somehow
-connected with the sriov->drivers_autoprobe mechanism added by
-0e7df22401a3.
-
-0e7df22401a3 is a per-PF solution, and you're looking for a
-system-wide switch.  I could imagine a system-wide flag exposed in
-sysfs and used by pci_device_can_probe().  Or maybe some arch hook in
-the pci_device_add() path that clears sriov->drivers_autoprobe for
-every PF.
-
-I think the important thing is that it is coordinated as much as
-possible with other driver binding controls and not unnecessarily
-arch-dependent.
-
-Bjorn
+DQpPbGl2ZXINCg0KPlRoZSBhbHRlcm5hdGl2ZSBhcHByb2FjaCB5b3UgbWVudGlvbmVkIHRoYXQg
+dXNlcyBpb3JlbWFwKCkgc2hvdWxkIHdvcmsNCj5maW5lIHRob3VnaC4NCg0KR3JlYXQsIHRoYW5r
+cyBmb3IgdGhpcyB1c2VmdWwgaW5mb3JtYXRpb24gT2xpdmVyLiBJIGFtIHdvcmtpbmcgb24gcmVi
+YXNpbmcgdGhlIGlvcmVtYXAoKSANCnBhdGNoIG9uIDQuMTQgYW5kIHdpbGwgbGV0IHlvdSBrbm93
+IGhvdyBpdCBnb2VzLg0KDQo+IEFsc28sIEFsZXh5ICgrY2MpIHNhaWQgaGUgd2FzIGludGVyZXN0
+ZWQgaW4gdHJ5aW5nIHRoaXMgb24gc29tZSByZWFsDQo+IGhhcmR3YXJlLiBJcyB0aGVyZSBhIHRl
+c3Qgc3VpdGUgZm9yIHAycG1lbSBmbG9hdGluZyBhcm91bmQgdGhhdCBoZSBjYW4NCj4gdXNlPw0K
+DQpFeGNlbGxlbnQhIEkgdHlwaWNhbGx5IHVzZSBwMnBtZW0tdGVzdCBbMV0uIFlvdSB3aWxsIG5l
+ZWQgYXQgbGVhc3Qgb25lIE5WTWUgU1NEIGFuZCBvbmUgcDJwbWVtIGNhcGFibGUgZGV2aWNlIGFu
+ZCB5b3UgKm1pZ2h0KiBuZWVkIHRvIHBsYWNlIHRob3NlIHR3byBkZXZpY2VzIGJlaGluZCBhIFBD
+SWUgc3dpdGNoIGFuZCBjb25maWd1cmUgQUNTIFsyLTNdIGRlcGVuZGluZyBvbiBob3cgdGhlIENQ
+VSBSQyB0cmVhdHMgcGVlciB0byBwZWVyIFBDSSBUTFBzLiBJIGFtIGhhcHB5IHRvIGhlbHAgQWxl
+eCBzZXQgdGhpcyBhbGwgdXAgc28gcmVhY2ggb3V0IGVpdGhlciBwdWJsaWNhbGx5IG9yIHByaXZh
+dGVseSBpZiB5b3UgbGlrZS4gSSBqdXN0IGFkZGVkIGEgKGhvcGVmdWxseSkgZGVjZW50IFJFQURN
+RSB0byBoZWxwIGdldCBwZW9wbGUgc3RhcnRlZC4NCg0KU3RlcGhlbg0KDQpbMV0gaHR0cHM6Ly9n
+aXRodWIuY29tL3NiYXRlczEzMDI3Mi9wMnBtZW0tdGVzdA0KWzJdIGh0dHBzOi8vd3d3LnN1cGVy
+bWljcm8uY29tL3N1cHBvcnQvZmFxcy9mYXEuY2ZtP2ZhcT0yMDczMg0KWzNdIGh0dHBzOi8vbGtt
+bC5vcmcvbGttbC8yMDE3LzEwLzI2LzY3OCANCg0K
