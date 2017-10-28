@@ -1,28 +1,36 @@
-Return-Path: <sbates@raithlin.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0126.outbound.protection.outlook.com [104.47.37.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yPY0J4vVdzDrVv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 07:54:53 +1100 (AEDT)
-From: "Stephen  Bates" <sbates@raithlin.com>
-To: Oliver <oohall@gmail.com>
-CC: Balbir Singh <bsingharora@gmail.com>, Logan Gunthorpe
- <logang@deltatee.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "aik@ozlabs.ru" <aik@ozlabs.ru>
-Subject: Re: lpar issue for ZONE_DEVICE p2pmem in 4.14-rc
-Date: Sat, 28 Oct 2017 20:54:47 +0000
-Message-ID: <B75498AD-593B-45E0-AE9D-CA00C7A2885F@raithlin.com>
-References: <2A16FB2A-71B2-41F1-993C-5A66DB2ADB1F@raithlin.com>
- <CAKTCnz=6ab=TCWFOknvAq2QxoXbTMhDfQMt5wOFzzUoYJRnUMA@mail.gmail.com>
- <AF0CC512-DC7D-45EB-B1AB-7132B48C38E1@raithlin.com>
- <20171023135338.58d0ab31@MiWiFi-R3-srv>
- <C65BF19B-49B3-480E-9435-17949645B992@raithlin.com>
- <CAOSf1CGx2E3dOPPSrKOxHahGcu8BjRq02xeyEitPmiwoFcdo+w@mail.gmail.com>
- <CAOSf1CHWZfEyK-oM+4dPpamX-XbxM13mtHjKoYWGEdmQ7wCd_g@mail.gmail.com>
-In-Reply-To: <CAOSf1CHWZfEyK-oM+4dPpamX-XbxM13mtHjKoYWGEdmQ7wCd_g@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yPbDb0pzNzDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 09:35:42 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9SMXiXh110028
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2017 18:35:39 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dvp3cqjvj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2017 18:35:39 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Sat, 28 Oct 2017 16:35:38 -0600
+Date: Sat, 28 Oct 2017 15:35:32 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 00/16] Remove hash page table slot tracking from linux PTE
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20171027043430.GA27483@fergus.ozlabs.ibm.com>
+ <adf2d270-29df-701f-206e-0d8a35084e47@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <adf2d270-29df-701f-206e-0d8a35084e47@linux.vnet.ibm.com>
+Message-Id: <20171028223532.GA5587@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +40,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQpPbGl2ZXINCg0KPlRoZSBhbHRlcm5hdGl2ZSBhcHByb2FjaCB5b3UgbWVudGlvbmVkIHRoYXQg
-dXNlcyBpb3JlbWFwKCkgc2hvdWxkIHdvcmsNCj5maW5lIHRob3VnaC4NCg0KR3JlYXQsIHRoYW5r
-cyBmb3IgdGhpcyB1c2VmdWwgaW5mb3JtYXRpb24gT2xpdmVyLiBJIGFtIHdvcmtpbmcgb24gcmVi
-YXNpbmcgdGhlIGlvcmVtYXAoKSANCnBhdGNoIG9uIDQuMTQgYW5kIHdpbGwgbGV0IHlvdSBrbm93
-IGhvdyBpdCBnb2VzLg0KDQo+IEFsc28sIEFsZXh5ICgrY2MpIHNhaWQgaGUgd2FzIGludGVyZXN0
-ZWQgaW4gdHJ5aW5nIHRoaXMgb24gc29tZSByZWFsDQo+IGhhcmR3YXJlLiBJcyB0aGVyZSBhIHRl
-c3Qgc3VpdGUgZm9yIHAycG1lbSBmbG9hdGluZyBhcm91bmQgdGhhdCBoZSBjYW4NCj4gdXNlPw0K
-DQpFeGNlbGxlbnQhIEkgdHlwaWNhbGx5IHVzZSBwMnBtZW0tdGVzdCBbMV0uIFlvdSB3aWxsIG5l
-ZWQgYXQgbGVhc3Qgb25lIE5WTWUgU1NEIGFuZCBvbmUgcDJwbWVtIGNhcGFibGUgZGV2aWNlIGFu
-ZCB5b3UgKm1pZ2h0KiBuZWVkIHRvIHBsYWNlIHRob3NlIHR3byBkZXZpY2VzIGJlaGluZCBhIFBD
-SWUgc3dpdGNoIGFuZCBjb25maWd1cmUgQUNTIFsyLTNdIGRlcGVuZGluZyBvbiBob3cgdGhlIENQ
-VSBSQyB0cmVhdHMgcGVlciB0byBwZWVyIFBDSSBUTFBzLiBJIGFtIGhhcHB5IHRvIGhlbHAgQWxl
-eCBzZXQgdGhpcyBhbGwgdXAgc28gcmVhY2ggb3V0IGVpdGhlciBwdWJsaWNhbGx5IG9yIHByaXZh
-dGVseSBpZiB5b3UgbGlrZS4gSSBqdXN0IGFkZGVkIGEgKGhvcGVmdWxseSkgZGVjZW50IFJFQURN
-RSB0byBoZWxwIGdldCBwZW9wbGUgc3RhcnRlZC4NCg0KU3RlcGhlbg0KDQpbMV0gaHR0cHM6Ly9n
-aXRodWIuY29tL3NiYXRlczEzMDI3Mi9wMnBtZW0tdGVzdA0KWzJdIGh0dHBzOi8vd3d3LnN1cGVy
-bWljcm8uY29tL3N1cHBvcnQvZmFxcy9mYXEuY2ZtP2ZhcT0yMDczMg0KWzNdIGh0dHBzOi8vbGtt
-bC5vcmcvbGttbC8yMDE3LzEwLzI2LzY3OCANCg0K
+On Fri, Oct 27, 2017 at 10:57:13AM +0530, Aneesh Kumar K.V wrote:
+> 
+> 
+> On 10/27/2017 10:04 AM, Paul Mackerras wrote:
+> >On Fri, Oct 27, 2017 at 09:38:17AM +0530, Aneesh Kumar K.V wrote:
+> >>Hi,
+> >>
+> >>With hash translation mode we always tracked the hash pte slot details in linux page table.
+> >>This occupied space in the linux page table and also limitted our ability to support
+> >>linux features that require additional PTE bits. This series attempt to lift this
+> >>limitation by not tracking slot number in linux page table. We still track slot details
+> >>w.r.t Transparent Hugepage entries because an invalidate there requires us to go through
+> >>all the 256 hash pte slots. So tracking whether hash page table entry is valid helps us in
+> >>avoiding a lot of hcalls there. With THP entries we don't keep slot details in the primary
+> >>linux page table entry but in the second half of page table. Hence tracking slot details
+> >>for THP doesn't take up space in PTE.
+> >>
+> >>Even though we don't track slot, for removing/updating hash page table entry, PAPR hcalls expect
+> >>hash page table slot details. On pseries we find slot using H_READ hcall using H_READ_4 flags.
+> >>This implies an additional 2 hcalls in the updatepp and remove paths. The patch series also
+> >>attempt to limit the impact of this by adding new hcalls that does remove/update of hash page table
+> >>entry using hash value instead of hash page table slot.
+> >>
+> >>Below is the performance numbers observed when running a workload that does the below sequence
+> >>
+> >>for(5000) {
+> >>mmap(128M)
+> >>touch every page of 2048 page
+> >>munmap()
+> >>}
+> >>
+
+I like the idea of not tracking the slots at all. It is something the
+guest should not be knowing or tracking.
+
+> >>The test is run with address randomization off, swap disabled in both host and guest.
+> >>
+> >>
+> >>|------------+----------+---------------+--------------------------+-----------------------|
+> >>| iterations | platform | without patch | With series and no hcall | With series and hcall |
+> >>|------------+----------+---------------+--------------------------+-----------------------|
+> >>|          1 | powernv  |               |                50.818343 |                       |
+> >>|          2 | powernv  |               |                50.744123 |                       |
+> >>|          3 | powernv  |               |                50.721603 |                       |
+> >>|          4 | powernv  |               |                50.739922 |                       |
+> >>|          5 | powernv  |               |                50.638555 |                       |
+> >>|          1 | powernv  |     51.388249 |                          |                       |
+> >>|          2 | powernv  |     51.789701 |                          |                       |
+> >>|          3 | powernv  |     52.240394 |                          |                       |
+> >>|          4 | powernv  |     51.432255 |                          |                       |
+> >>|          5 | powernv  |     51.392947 |                          |                       |
+> >>|------------+----------+---------------+--------------------------+-----------------------|
+> >>|          1 | pseries  |               |                          |            123.154394 |
+> >>|          2 | pseries  |               |                          |            122.253956 |
+> >>|          3 | pseries  |               |                          |            117.666344 |
+> >>|          4 | pseries  |               |                          |            117.681479 |
+> >>|          5 | pseries  |               |                          |            117.735808 |
+> >>|          1 | pseries  |               |               119.424940 |                       |
+> >>|          2 | pseries  |               |               117.663078 |                       |
+> >>|          3 | pseries  |               |               118.345584 |                       |
+> >>|          4 | pseries  |               |               119.620934 |                       |
+> >>|          5 | pseries  |               |               119.463185 |                       |
+> >>|          1 | pseries  |    122.810867 |                          |                       |
+> >>|          2 | pseries  |    115.760801 |                          |                       |
+> >>|          3 | pseries  |    115.257030 |                          |                       |
+> >>|          4 | pseries  |    116.617884 |                          |                       |
+> >>|          5 | pseries  |    117.247036 |                          |                       |
+> >>|------------+----------+---------------+--------------------------+-----------------------|
+> >>
+> >
+
+What does 'With series and no hcall' mean?  does it mean -- no calls to  new hcalls,
+     instead use H_READ_4 followed by old HCALLs?
+
+And I am assuming the code is not using any of my slot-move-to-secondary-pte changes.
+
+RP
