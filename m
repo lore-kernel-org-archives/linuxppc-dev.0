@@ -1,38 +1,38 @@
-Return-Path: <linuxram@us.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yPcBK2sTVzDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 10:18:48 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9SNDXgU028884
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2017 19:18:45 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dvp3crp8t-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yPzqL6RNHzDqkH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 01:03:41 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9TDx95q031384
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 10:03:38 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dvnw41ta3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Oct 2017 19:18:45 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 10:03:37 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sat, 28 Oct 2017 17:18:44 -0600
-Date: Sat, 28 Oct 2017 16:18:35 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, mhocko@kernel.org,
- paulus@samba.org, ebiederm@xmission.com, bauerman@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com
-Subject: Re: [PATCH 09/25] powerpc: ability to create execute-disabled pkeys
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 29 Oct 2017 14:03:36 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Ram Pai <linuxram@us.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com
+Subject: Re: [PATCH 20/25] powerpc: Handle exceptions caused by pkey violation
+In-Reply-To: <874lqo4kf9.fsf@concordia.ellerman.id.au>
 References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-18-git-send-email-linuxram@us.ibm.com>
- <87h8up88n1.fsf@linux.vnet.ibm.com>
+ <1504910713-7094-29-git-send-email-linuxram@us.ibm.com>
+ <874lqo4kf9.fsf@concordia.ellerman.id.au>
+Date: Sun, 29 Oct 2017 19:33:25 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87h8up88n1.fsf@linux.vnet.ibm.com>
-Message-Id: <20171028231835.GB5587@ram.oc3035372033.ibm.com>
+Content-Type: text/plain
+Message-Id: <8737622gr6.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,25 +42,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 24, 2017 at 10:06:18AM +0530, Aneesh Kumar K.V wrote:
+Michael Ellerman <mpe@ellerman.id.au> writes:
+
 > Ram Pai <linuxram@us.ibm.com> writes:
-> 
-> > powerpc has hardware support to disable execute on a pkey.
-> > This patch enables the ability to create execute-disabled
-> > keys.
-> 
-> Can you summarize here how this works?  Access to IAMR is
-> privileged so how will keys framework work with IAMR? 
-> 
-> -aneesh
+>
+>> Handle Data and  Instruction exceptions caused by memory
+>> protection-key.
+>>
+>> The CPU will detect the key fault if the HPTE is already
+>> programmed with the key.
+>>
+>> However if the HPTE is not  hashed, a key fault will not
+>> be detected by the  hardware. The   software will detect
+>> pkey violation in such a case.
+>
+> That seems like the wrong trade off to me.
+>
+> It means every fault has to go through arch_vma_access_permitted(),
+> which is at least a function call in the best case, even when pkeys are
+> not in use, and/or the range in question is not protected by a key.
 
-right. IAMR will have to programmed through a system call.
-I have introduced a sys_pkey_modify()  which takes a key value
-and the permission that it wants to enable/disable on that key.
-This syscall is powerpc specific only for now, since no other
-arch's need it.
+We don't really need to call arch_vma_access_permitted() in
+arch/powerpc/ do_page_fault(). Core kernel does that in
+handle_mm_fault(). So if the first fault is a bad access handle_mm_fault
+handle this. If it is a valid access we insert the right hash page table
+entry and then we do a wrong access, we detect that a key fault in the
+low level hash fault handler. IIUC, the call the
+arch_vma_access_permitted() from arch/powerpc/ can go away?
 
-The patch is at http://patchwork.ozlabs.org/patch/817961/
-
--- 
-Ram Pai
+-aneesh
