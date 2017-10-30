@@ -1,39 +1,39 @@
 Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yQFtl2sQlzDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 11:37:34 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9U0YNcU133697
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 20:37:30 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dwdxqyb04-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yQGBd6G4JzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 11:51:21 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9U0mk4J022869
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 20:51:19 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dwevc68ea-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 20:37:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Oct 2017 20:51:18 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sun, 29 Oct 2017 18:37:30 -0600
-Date: Sun, 29 Oct 2017 17:37:19 -0700
+ Sun, 29 Oct 2017 18:51:18 -0600
+Date: Sun, 29 Oct 2017 17:51:06 -0700
 From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- mhocko@kernel.org, paulus@samba.org, ebiederm@xmission.com,
- bauerman@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
-Subject: Re: [PATCH 20/25] powerpc: Handle exceptions caused by pkey violation
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 00/16] Remove hash page table slot tracking from linux PTE
 Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1504910713-7094-1-git-send-email-linuxram@us.ibm.com>
- <1504910713-7094-29-git-send-email-linuxram@us.ibm.com>
- <874lqo4kf9.fsf@concordia.ellerman.id.au>
- <8737622gr6.fsf@linux.vnet.ibm.com>
+References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20171027043430.GA27483@fergus.ozlabs.ibm.com>
+ <adf2d270-29df-701f-206e-0d8a35084e47@linux.vnet.ibm.com>
+ <20171028223532.GA5587@ram.oc3035372033.ibm.com>
+ <20171029220417.GA3317@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8737622gr6.fsf@linux.vnet.ibm.com>
-Message-Id: <20171030003719.GC5587@ram.oc3035372033.ibm.com>
+In-Reply-To: <20171029220417.GA3317@fergus.ozlabs.ibm.com>
+Message-Id: <20171030005106.GD5587@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,40 +43,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Oct 29, 2017 at 07:33:25PM +0530, Aneesh Kumar K.V wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+On Mon, Oct 30, 2017 at 09:04:17AM +1100, Paul Mackerras wrote:
+> On Sat, Oct 28, 2017 at 03:35:32PM -0700, Ram Pai wrote:
+> > 
+> > I like the idea of not tracking the slots at all. It is something the
+> > guest should not be knowing or tracking.
 > 
-> > Ram Pai <linuxram@us.ibm.com> writes:
-> >
-> >> Handle Data and  Instruction exceptions caused by memory
-> >> protection-key.
-> >>
-> >> The CPU will detect the key fault if the HPTE is already
-> >> programmed with the key.
-> >>
-> >> However if the HPTE is not  hashed, a key fault will not
-> >> be detected by the  hardware. The   software will detect
-> >> pkey violation in such a case.
-> >
-> > That seems like the wrong trade off to me.
-> >
-> > It means every fault has to go through arch_vma_access_permitted(),
-> > which is at least a function call in the best case, even when pkeys are
-> > not in use, and/or the range in question is not protected by a key.
-> 
-> We don't really need to call arch_vma_access_permitted() in
-> arch/powerpc/ do_page_fault(). Core kernel does that in
-> handle_mm_fault(). So if the first fault is a bad access handle_mm_fault
-> handle this. If it is a valid access we insert the right hash page table
-> entry and then we do a wrong access, we detect that a key fault in the
-> low level hash fault handler. IIUC, the call the
-> arch_vma_access_permitted() from arch/powerpc/ can go away?
+> Why do you say that?
 
-
-Yes. since handle_mm_fault() checks for key-violation, we can leverage
-that in __do_page_fault(), instead of calling arch_vma_access_permitted().
-
-Have fixed it in the next version of patches, about to to hit the mailing
-list this week.
+'slot' is a internal mechanism used by the hash table to accelerate
+mapping an address to a hash-page.  If the hash-table implementation
+choose to use a different mechanism to accelerate the mapping, it can't
+because that mechanism is baked into the logic of all the consumers.
 
 RP
