@@ -1,19 +1,17 @@
 Return-Path: <boris.brezillon@free-electrons.com>
 Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3yQTMS024xzDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 20:14:43 +1100 (AEDT)
-Date: Mon, 30 Oct 2017 10:14:12 +0100
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yQTNj3mHGzDrd8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 20:15:49 +1100 (AEDT)
+Date: Mon, 30 Oct 2017 10:15:37 +0100
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
 To: Cyril Bur <cyrilbur@gmail.com>
 Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  stewart@linux.vnet.ibm.com, dwmw2@infradead.org,
  computersforpeace@gmail.com, sjitindarsingh@gmail.com
-Subject: Re: [PATCH v4 10/10] mtd: powernv_flash: Use
- opal_async_wait_response_interruptible()
-Message-ID: <20171030101412.300b8c5d@bbrezillon>
-In-Reply-To: <20171010033302.20854-11-cyrilbur@gmail.com>
+Subject: Re: [PATCH v4 00/10] Allow opal-async waiters to get interrupted
+Message-ID: <20171030101537.7c40d29a@bbrezillon>
+In-Reply-To: <20171010033302.20854-1-cyrilbur@gmail.com>
 References: <20171010033302.20854-1-cyrilbur@gmail.com>
- <20171010033302.20854-11-cyrilbur@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,117 +23,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Oct 2017 14:33:02 +1100
+On Tue, 10 Oct 2017 14:32:52 +1100
 Cyril Bur <cyrilbur@gmail.com> wrote:
 
-> The OPAL calls performed in this driver shouldn't be using
-> opal_async_wait_response() as this performs a wait_event() which, on
-> long running OPAL calls could result in hung task warnings. wait_event()
-> prevents timely signal delivery which is also undesirable.
+> V4: Rework and rethink.
 > 
-> This patch also attempts to quieten down the use of dev_err() when
-> errors haven't actually occurred and also to return better information up
-> the stack rather than always -EIO.
+> To recap:
+> Userspace MTD read()s/write()s and erases to powernv_flash become
+> calls into the OPAL firmware which subsequently handles flash access.
+> Because the read()s, write()s or erases can be large (bounded of
+> course my the size of flash) OPAL may take some time to service the
+> request, this causes the powernv_flash driver to sit in a wait_event()
+> for potentially minutes. This causes two problems, firstly, tools
+> appear to hang for the entire time as they cannot be interrupted by
+> signals and secondly, this can trigger hung task warnings. The correct
+> solution is to use wait_event_interruptible() which my rework (as part
+> of this series) of the opal-async infrastructure provides.
 > 
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-
-Have some minor comments (see below). Once addressed you can add
-
-Acked-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-
-> ---
->  drivers/mtd/devices/powernv_flash.c | 57 +++++++++++++++++++++++--------------
->  1 file changed, 35 insertions(+), 22 deletions(-)
+> The final patch in this series achieves this. It should eliminate both
+> hung tasks and threads locking up.
 > 
-> diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-> index 3343d4f5c4f3..42383dbca5a6 100644
-> --- a/drivers/mtd/devices/powernv_flash.c
-> +++ b/drivers/mtd/devices/powernv_flash.c
-> @@ -1,7 +1,7 @@
->  /*
->   * OPAL PNOR flash MTD abstraction
->   *
-> - * Copyright IBM 2015
-> + * Copyright IBM 2015-2017
+> Included in this series are other simpler fixes for powernv_flash:
+> 
+> Don't always return EIO on error. OPAL does mutual exclusion on the
+> flash and also knows when the service processor takes control of the
+> flash, in both of these cases it will return OPAL_BUSY, translating
+> this to EIO is misleading to userspace.
+> 
+> Handle receiving OPAL_SUCCESS when it expects OPAL_ASYNC_COMPLETION
+> and don't treat it as an error. Unfortunately there are too many drivers
+> out there with the incorrect behaviour so this means OPAL can never
+> return anything but OPAL_ASYNC_COMPLETION, this shouldn't prevent the
+> code from being correct.
+> 
+> Don't return ERESTARTSYS if token acquisition is interrupted as
+> powernv_flash can't be sure it hasn't already performed some work, let
+> userspace deal with the problem.
+> 
+> Change the incorrect use of BUG_ON() to WARN_ON() in powernv_flash.
+> 
+> Not for powernv_flash, a fix from Stewart Smith which fits into this
+> series as it relies on my improvements to the opal-async
+> infrastructure.
+> 
+> V3: export opal_error_code() so that powernv_flash can be built=m
+> 
+> Hello,
+> 
+> Version one of this series ignored that OPAL may continue to use
+> buffers passed to it after Linux kfree()s the buffer. This version
+> addresses this, not in a particularly nice way - future work could
+> make this better. This version also includes a few cleanups and fixups
+> to powernv_flash driver one along the course of this work that I
+> thought I would just send.
+> 
+> The problem we're trying to solve here is that currently all users of
+> the opal-async calls must use wait_event(), this may be undesirable
+> when there is a userspace process behind the request for the opal
+> call, if OPAL takes too long to complete the call then hung task
+> warnings will appear.
+> 
+> In order to solve the problem callers should use
+> wait_event_interruptible(), due to the interruptible nature of this
+> call the opal-async infrastructure needs to track extra state
+> associated with each async token, this is prepared for in patch 6/10.
+> 
+> While I was working on the opal-async infrastructure improvements
+> Stewart fixed another problem and he relies on the corrected behaviour
+> of opal-async so I've sent it here.
+> 
+> Hello MTD folk, traditionally Michael Ellerman takes powernv_flash
+> driver patches through the powerpc tree, as always your feedback is
+> very welcome.
 
-Not a big deal, but this copyright update is not really related to the
-change you describe in your commit message. Maybe this should be done
-in a separate commit.
+Just gave my acks on patches 1 to 4 and patch 10 (with minor comments
+on patch 3 and 10). Feel free to take the patches directly through the
+powerpc tree.
 
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License as published by
-> @@ -89,33 +89,46 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
->  		return -EIO;
->  	}
->  
-> -	if (rc == OPAL_SUCCESS)
-> -		goto out_success;
-> +	if (rc == OPAL_ASYNC_COMPLETION) {
-> +		rc = opal_async_wait_response_interruptible(token, &msg);
-> +		if (rc) {
-> +			/*
-> +			 * If we return the mtd core will free the
-> +			 * buffer we've just passed to OPAL but OPAL
-> +			 * will continue to read or write from that
-> +			 * memory.
-> +			 * It may be tempting to ultimately return 0
-> +			 * if we're doing a read or a write since we
-> +			 * are going to end up waiting until OPAL is
-> +			 * done. However, because the MTD core sends
-> +			 * us the userspace request in chunks, we need
-> +			 * to it know we've been interrupted.
-
-			   ^ 'it to' ?
-
-> +			 */
-> +			rc = -EINTR;
-> +			if (opal_async_wait_response(token, &msg))
-> +				dev_err(dev, "opal_async_wait_response() failed\n");
-> +			goto out;
-> +		}
-> +		rc = opal_get_async_rc(msg);
-> +	}
->  
-> -	if (rc != OPAL_ASYNC_COMPLETION) {
-> +	/*
-> +	 * OPAL does mutual exclusion on the flash, it will return
-> +	 * OPAL_BUSY.
-> +	 * During firmware updates by the service processor OPAL may
-> +	 * be (temporarily) prevented from accessing the flash, in
-> +	 * this case OPAL will also return OPAL_BUSY.
-> +	 * Both cases aren't errors exactly but the flash could have
-> +	 * changed, userspace should be informed.
-> +	 */
-> +	if (rc != OPAL_SUCCESS && rc != OPAL_BUSY)
->  		dev_err(dev, "opal_flash_async_op(op=%d) failed (rc %d)\n",
->  				op, rc);
-> -		rc = -EIO;
-> -		goto out;
-> -	}
->  
-> -	rc = opal_async_wait_response(token, &msg);
-> -	if (rc) {
-> -		dev_err(dev, "opal async wait failed (rc %d)\n", rc);
-> -		rc = -EIO;
-> -		goto out;
-> -	}
-> -
-> -	rc = opal_get_async_rc(msg);
-> -out_success:
-> -	if (rc == OPAL_SUCCESS) {
-> -		rc = 0;
-> -		if (retlen)
-> +	if (rc == OPAL_SUCCESS && retlen)
->  			*retlen = len;
-
-There's one too many tabs here.
-
-> -	} else {
-> -		rc = -EIO;
-> -	}
->  
-> +	rc = opal_error_code(rc);
->  out:
->  	opal_async_release_token(token);
->  	return rc;
+> 
+> Thanks,
+> 
+> Cyril
+> 
+> Cyril Bur (9):
+>   mtd: powernv_flash: Use WARN_ON_ONCE() rather than BUG_ON()
+>   mtd: powernv_flash: Don't treat OPAL_SUCCESS as an error
+>   mtd: powernv_flash: Remove pointless goto in driver init
+>   mtd: powernv_flash: Don't return -ERESTARTSYS on interrupted token
+>     acquisition
+>   powerpc/opal: Make __opal_async_{get,release}_token() static
+>   powerpc/opal: Rework the opal-async interface
+>   powerpc/opal: Add opal_async_wait_response_interruptible() to
+>     opal-async
+>   powerpc/powernv: Add OPAL_BUSY to opal_error_code()
+>   mtd: powernv_flash: Use opal_async_wait_response_interruptible()
+> 
+> Stewart Smith (1):
+>   powernv/opal-sensor: remove not needed lock
+> 
+>  arch/powerpc/include/asm/opal.h              |   4 +-
+>  arch/powerpc/platforms/powernv/opal-async.c  | 183 +++++++++++++++++++--------
+>  arch/powerpc/platforms/powernv/opal-sensor.c |  17 +--
+>  arch/powerpc/platforms/powernv/opal.c        |   2 +
+>  drivers/mtd/devices/powernv_flash.c          |  83 +++++++-----
+>  5 files changed, 194 insertions(+), 95 deletions(-)
+> 
