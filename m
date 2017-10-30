@@ -1,36 +1,46 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yQXpL1CZqzDqmt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 22:49:42 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9UBj8Hp097751
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 07:49:39 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dx0vsredd-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yQXyF5VsHzDqmt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 22:56:37 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9UBtnYh074219
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 07:56:35 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dx284maat-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 07:49:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 07:56:34 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 30 Oct 2017 11:49:38 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/16] Remove hash page table slot tracking from linux PTE
-In-Reply-To: <20171027054136.GC27483@fergus.ozlabs.ibm.com>
-References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
- <20171027043430.GA27483@fergus.ozlabs.ibm.com>
- <adf2d270-29df-701f-206e-0d8a35084e47@linux.vnet.ibm.com>
- <20171027054136.GC27483@fergus.ozlabs.ibm.com>
-Date: Mon, 30 Oct 2017 17:19:31 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 30 Oct 2017 11:56:33 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v9UBuUTA23068880
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 11:56:30 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 673D54C04E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 11:52:02 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA9254C046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 11:52:01 +0000 (GMT)
+Received: from [9.79.221.32] (unknown [9.79.221.32])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 11:52:01 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/kernel/sysfs: Export ldbar spr to sysfs
+To: linuxppc-dev@lists.ozlabs.org
+References: <1509096890-22655-1-git-send-email-anju@linux.vnet.ibm.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Mon, 30 Oct 2017 17:26:27 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87tvyg26us.fsf@linux.vnet.ibm.com>
+In-Reply-To: <1509096890-22655-1-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <5412d102-b586-76e7-1133-7f09e70cdcb4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,51 +50,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
 
-> On Fri, Oct 27, 2017 at 10:57:13AM +0530, Aneesh Kumar K.V wrote:
->> 
->> 
->> On 10/27/2017 10:04 AM, Paul Mackerras wrote:
->> >How do we interpret these numbers?  Are they times, or speed?  Is
->> >larger better or worse?
->> 
->> Sorry for not including the details. They are time in seconds. Test case is
->> a modified mmap_bench included in powerpc/selftest.
->> 
->> >
->> >Can you give us the mean and standard deviation for each set of 5
->> >please?
->> >
->> 
->> powernv without patch
->> median= 51.432255
->> stdev = 0.370835
->> 
->> with patch
->> median = 50.739922
->> stdev = 0.06419662
->> 
->> pseries without patch
->> median = 116.617884
->> stdev = 3.04531023
->> 
->> with patch no hcall
->> median = 119.42494
->> stdev = 0.85874552
->> 
->> with patch and hcall
->> median = 117.735808
->> stdev = 2.7624151
+
+On Friday 27 October 2017 03:04 PM, Anju T Sudhakar wrote:
+> Add ldbar spr to sysfs. The spr will hold thread level In-Memory Collection (IMC)
+> counter configuration data.
 >
-> So on powernv, the patch set *improves* performance by about 1.3%
-> (almost 2 standard deviations).  Do we know why that is?
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Acked-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/kernel/sysfs.c | 8 ++++++++
+>   1 file changed, 8 insertions(+)
 >
+> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> index 4437c70c7c2b..8efcaece4796 100644
+> --- a/arch/powerpc/kernel/sysfs.c
+> +++ b/arch/powerpc/kernel/sysfs.c
+> @@ -466,6 +466,7 @@ static ssize_t __used \
+>   #ifdef HAS_PPC_PMC_CLASSIC
+>   SYSFS_PMCSETUP(mmcr0, SPRN_MMCR0);
+>   SYSFS_PMCSETUP(mmcr1, SPRN_MMCR1);
+> +SYSFS_PMCSETUP(ldbar, SPRN_LDBAR);
 
-I looked at the perf data and with the test, we are doing larger number
-of hash faults and then around 10k flush_hash_range. Can the small
-improvement in number be due to the fact that we are not storing slot
-number when doing an insert now?. Also in the flush path we are now not
-using real_pte_t.
+My bad. Missed to mention this. For ldbar spr,
+use SYSFS_SPRSETUP macro instead.
 
-aneesh
+Maddy
+
+>   SYSFS_PMCSETUP(pmc1, SPRN_PMC1);
+>   SYSFS_PMCSETUP(pmc2, SPRN_PMC2);
+>   SYSFS_PMCSETUP(pmc3, SPRN_PMC3);
+> @@ -492,6 +493,7 @@ SYSFS_SPRSETUP(pir, SPRN_PIR);
+>     Lets be conservative and default to pseries.
+>   */
+>   static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
+> +static DEVICE_ATTR(ldbar, 0600, show_ldbar, store_ldbar);
+>   static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+>   static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
+>   static DEVICE_ATTR(pir, 0400, show_pir, NULL);
+> @@ -757,6 +759,9 @@ static int register_cpu_online(unsigned int cpu)
+>   			device_create_file(s, &pmc_attrs[i]);
+>
+>   #ifdef CONFIG_PPC64
+> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> +		device_create_file(s, &dev_attr_ldbar);
+> +
+>   	if (cpu_has_feature(CPU_FTR_MMCRA))
+>   		device_create_file(s, &dev_attr_mmcra);
+>
+> @@ -842,6 +847,9 @@ static int unregister_cpu_online(unsigned int cpu)
+>   			device_remove_file(s, &pmc_attrs[i]);
+>
+>   #ifdef CONFIG_PPC64
+> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> +		device_remove_file(s, &dev_attr_ldbar);
+> +
+>   	if (cpu_has_feature(CPU_FTR_MMCRA))
+>   		device_remove_file(s, &dev_attr_mmcra);
+>
