@@ -1,33 +1,19 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yQzng4DyczDqMY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 16:05:43 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9V53Y48074218
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 01:05:41 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2dxdsxyre8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 01:05:40 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 31 Oct 2017 05:05:38 -0000
-From: Cyril Bur <cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yR20Z5YRVzDqwZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 17:45:18 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id b192so13850871pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 23:45:17 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: mikey@neuling.org, leitao@debian.org, gromero@linux.vnet.ibm.com,
- andrew@aj.id.au, jk@ozlabs.org, sam@mendozajonas.com
-Subject: [PATCH v2 2/4] powerpc: Force reload for recheckpoint during tm {fp,
- vec, vsx} unavailable exception
-Date: Tue, 31 Oct 2017 16:05:15 +1100
-In-Reply-To: <20171031050517.3198-1-cyrilbur@gmail.com>
-References: <20171031050517.3198-1-cyrilbur@gmail.com>
-Message-Id: <20171031050517.3198-2-cyrilbur@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 0/7] powerpc/64s/radix TLB flush performance improvements
+Date: Tue, 31 Oct 2017 16:44:57 +1000
+Message-Id: <20171031064504.25245-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,133 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Lazy save and restore of FP/Altivec means that a userspace process can
-be sent to userspace with FP or Altivec disabled and loaded only as
-required (by way of an FP/Altivec unavailable exception). Transactional
-Memory complicates this situation as a transaction could be started
-without FP/Altivec being loaded up. This causes the hardware to
-checkpoint incorrect registers. Handling FP/Altivec unavailable
-exceptions while a thread is transactional requires a reclaim and
-recheckpoint to ensure the CPU has correct state for both sets of
-registers.
+Here's a random mix of performance improvements for radix TLB flushing
+code. The main aims are to reduce the amount of translation that gets
+invalidated, and to reduce global flushes where we can do local.
 
-tm_reclaim() has optimisations to not always save the FP/Altivec
-registers to the checkpointed save area. This was originally done
-because the caller might have information that the checkpointed
-registers aren't valid due to lazy save and restore. We've also been a
-little vague as to how tm_reclaim() leaves the FP/Altivec state since it
-doesn't necessarily always save it to the thread struct. This has lead
-to an (incorrect) assumption that it leaves the checkpointed state on
-the CPU.
+To that end, a parallel kernel compile benchmark using powerpc:tlbie
+tracepoint shows a reduction in tlbie instructions from about 290,000
+to 80,000, and a reduction in tlbiel instructions from 49,500,000 to
+15,000,000. Looks great, but unfortunately does not translate to a
+statistically significant performance improvement! The needle on TLB
+misses does not move much, I suspect because a lot of the flushing is
+done a startup and shutdown, and because a significant cost of TLB
+flushing itself is in the barriers.
 
-tm_recheckpoint() has similar optimisations in reverse. It may not
-always reload the checkpointed FP/Altivec registers from the thread
-struct before the trecheckpoint. It is therefore quite unclear where it
-expects to get the state from. This didn't help with the assumption
-made about tm_reclaim().
+I have some microbenchmarks in the individual patches, and should
+start looking around for some more interesting workloads. I think
+most of this series is pretty obviously the right thing to do though.
 
-This patch is a minimal fix for ease of backporting. A more correct fix
-which removes the msr parameter to tm_reclaim() and tm_recheckpoint()
-altogether has been upstreamed to apply on top of this patch.
+This goes on top of the 3 radix TLB fixes I sent out earlier.
 
-Fixes: dc3106690b20 ("powerpc: tm: Always use fp_state and vr_state to
-store live registers")
+Thanks,
+Nick
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
-V2: Add this patch for ease of backporting the same fix as the next
-patch.
+Nicholas Piggin (7):
+  powerpc/64s/radix: optimize TLB range flush barriers
+  powerpc/64s/radix: Implement _tlbie(l)_va_range flush functions
+  powerpc/64s/radix: Optimize flush_tlb_range
+  powerpc/64s/radix: Introduce local single page ceiling for TLB range
+    flush
+  powerpc/64s/radix: Improve TLB flushing for page table freeing
+  powerpc/64s/radix: reset mm_cpumask for single thread process when
+    possible
+  powerpc/64s/radix: Only flush local TLB for spurious fault flushes
 
- arch/powerpc/kernel/process.c |  4 ++--
- arch/powerpc/kernel/traps.c   | 22 +++++++++++++++++-----
- 2 files changed, 19 insertions(+), 7 deletions(-)
+ .../powerpc/include/asm/book3s/64/tlbflush-radix.h |   5 +
+ arch/powerpc/include/asm/book3s/64/tlbflush.h      |  11 +
+ arch/powerpc/include/asm/mmu_context.h             |  19 ++
+ arch/powerpc/mm/pgtable-book3s64.c                 |   5 +-
+ arch/powerpc/mm/pgtable.c                          |   2 +-
+ arch/powerpc/mm/tlb-radix.c                        | 363 ++++++++++++++++-----
+ 6 files changed, 325 insertions(+), 80 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ebb5b58a4138..cfa75e99dcfb 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -866,6 +866,8 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- 	if (!MSR_TM_SUSPENDED(mfmsr()))
- 		return;
- 
-+	giveup_all(container_of(thr, struct task_struct, thread));
-+
- 	/*
- 	 * If we are in a transaction and FP is off then we can't have
- 	 * used FP inside that transaction. Hence the checkpointed
-@@ -885,8 +887,6 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- 		memcpy(&thr->ckvr_state, &thr->vr_state,
- 		       sizeof(struct thread_vr_state));
- 
--	giveup_all(container_of(thr, struct task_struct, thread));
--
- 	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
- }
- 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index ef6a45969812..a7d42c89a257 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1471,6 +1471,12 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 
- void fp_unavailable_tm(struct pt_regs *regs)
- {
-+	/*
-+	 * Save the MSR now because tm_reclaim_current() is likely to
-+	 * change it
-+	 */
-+	unsigned long orig_msr = regs->msr;
-+
- 	/* Note:  This does not handle any kind of FP laziness. */
- 
- 	TM_DEBUG("FP Unavailable trap whilst transactional at 0x%lx, MSR=%lx\n",
-@@ -1495,10 +1501,10 @@ void fp_unavailable_tm(struct pt_regs *regs)
- 	 * If VMX is in use, the VRs now hold checkpointed values,
- 	 * so we don't want to load the VRs from the thread_struct.
- 	 */
--	tm_recheckpoint(&current->thread, MSR_FP);
-+	tm_recheckpoint(&current->thread, orig_msr | MSR_FP);
- 
- 	/* If VMX is in use, get the transactional values back */
--	if (regs->msr & MSR_VEC) {
-+	if (orig_msr & MSR_VEC) {
- 		msr_check_and_set(MSR_VEC);
- 		load_vr_state(&current->thread.vr_state);
- 		/* At this point all the VSX state is loaded, so enable it */
-@@ -1508,6 +1514,12 @@ void fp_unavailable_tm(struct pt_regs *regs)
- 
- void altivec_unavailable_tm(struct pt_regs *regs)
- {
-+	/*
-+	 * Save the MSR now because tm_reclaim_current() is likely to
-+	 * change it
-+	 */
-+	unsigned long orig_msr = regs->msr;
-+
- 	/* See the comments in fp_unavailable_tm().  This function operates
- 	 * the same way.
- 	 */
-@@ -1517,10 +1529,10 @@ void altivec_unavailable_tm(struct pt_regs *regs)
- 		 regs->nip, regs->msr);
- 	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
- 	current->thread.load_vec = 1;
--	tm_recheckpoint(&current->thread, MSR_VEC);
-+	tm_recheckpoint(&current->thread, orig_msr | MSR_VEC);
- 	current->thread.used_vr = 1;
- 
--	if (regs->msr & MSR_FP) {
-+	if (orig_msr & MSR_FP) {
- 		msr_check_and_set(MSR_FP);
- 		load_fp_state(&current->thread.fp_state);
- 		regs->msr |= MSR_VSX;
-@@ -1559,7 +1571,7 @@ void vsx_unavailable_tm(struct pt_regs *regs)
- 	/* This loads & recheckpoints FP and VRs; but we have
- 	 * to be sure not to overwrite previously-valid state.
- 	 */
--	tm_recheckpoint(&current->thread, regs->msr & ~orig_msr);
-+	tm_recheckpoint(&current->thread, orig_msr | MSR_FP | MSR_VEC);
- 
- 	msr_check_and_set(orig_msr & (MSR_FP | MSR_VEC));
- 
 -- 
-2.14.3
+2.15.0.rc2
